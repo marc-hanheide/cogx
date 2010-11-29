@@ -44,15 +44,15 @@ scenario from our physical robotic system. Here, a robot is
 exploring an office or living environment, and trying to report the
 locations of objects to their owner.
 
-\begin{figure}[h]
-  \centering
-  \input{figures/dora}
-  \caption{A exploration domain with three rooms and 13 places. The
-    robot is in in the centre of room A}
-\label{fig:dora2}
-\end{figure}
-An instance of this domain is shown in figure \ref{fig:dora2}. Basic
-types of element are {\tt rooms}, {\tt places} and {\tt
+% \begin{figure}[h]
+%   \centering
+%   \input{figures/dora}
+%   \caption{A exploration domain with three rooms and 13 places. The
+%     robot is in in the centre of room A}
+% \label{fig:dora2}
+% \end{figure}
+% An instance of this domain is shown in figure \ref{fig:dora2}. 
+Basic types of element are {\tt rooms}, {\tt places} and {\tt
   objects}. Places are topological map nodes that occur in rooms.
 Objects, including the robot, are always located at a place. The robot
 can move around the rooms via connections between places given by the
@@ -106,7 +106,7 @@ longer contingent planning times and higher plan quality.
 Using a satisficing, optimistic serial planner in sequential sessions
 makes optimising for the expected reward difficult. Only reasoning
 about single traces, it is optimistic wrt the remaining costs to a
-goal and pessimistic regarding the probability of reaching tat. By
+goal and pessimistic regarding the probability of reaching it. By
 setting the rewards to non-extremal values has little effect on that
 system. Therefore, we do not consider expected utility in our
 experiments. Instead, we report average costs of the plans and the

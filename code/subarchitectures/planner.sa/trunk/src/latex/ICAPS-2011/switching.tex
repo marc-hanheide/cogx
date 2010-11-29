@@ -308,52 +308,181 @@ probability that $x$ is true.
 %% derived.
 
 The starting belief-state for the abstract process is given in terms
-of a {\em relaxed} $(\pp{:init})$ declaration.  We first construct a
+of a {\em relaxed} $(\pp{:init})$ declaration. We first construct a
 tree which only includes terms from the {\em relaxed} visitation
 characterised by the active {\em assumptive} actions in the current
-sequential plan. Taking our example trace from earlier, we have a {\em
-relaxed} declaration:
+sequential plan. Figure \ref{fig:abstraction} shows the belief state
+of a more detailed version of our previous example. The diamonds
+represent probabilistic terms of the state description while circles
+represent conjunctive or atomic terms. 
 
-\small
-\begin{tabtt}
-(\=:init (= (is-in DORA) kitchen) \+ \\
-       (probabilistic \=.8 (= (is-in box) office)  \\
-		      \>.2 (= (is-in box) kitchen))) \\
-\end{tabtt}
-\normalsize
+\begin{figure}[h!]
+  \centering
+  \tikzstyle{tree} = [sibling distance=4mm]
+  \tikzstyle{toplevel} = [grow'=right, sibling distance=18mm]
+  \tikzstyle{seclevel} = [sibling distance=8mm]
+  \tikzstyle{pnode} = [diamond, draw=black, minimum size=2mm]
+  \tikzstyle{cnode} = [circle, draw=black, minimum size=2.5mm]
+  \tikzstyle{assumption} = [solid, thick, draw=black]
+  \tikzstyle{selected} = [solid, draw=black]
+  \tikzstyle{unused} = [densely dashed, draw=black!40]
+  \subfloat[The initial belief state with the assumptions made by the continual
+    planner.]{
+      \label{fig:abstraction-a}
+      \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode] (cup) {} 
+          child {node [cnode] (cupp1) {}}
+          child {node [cnode] (cupp2) {}}
+        }
+      }
+      child {node[cnode] (kitchen) {}
+        child {node [pnode] (box2) {} 
+          child {node [cnode] (box2p1) {}}
+          child {node [cnode] (box2p2) {}}
+        }
+      };
+   \tiny
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of kitchen] {$\pp{kitchen}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[below=0 of cup] {$\pp{(is-in cup)}$};
+   \node[right=0 of boxp1] {$\pp{place1}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p1] {$\pp{place1}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+   \node[right=0 of cupp1] {$\pp{place1}$};
+   \node[right=0 of cupp2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
+\qquad
+  \subfloat[Remove facts that are not part of an assumption.]{
+    \label{fig:abstraction-b}
+    \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode, unused] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode, unused] (cup) {} 
+          child {node [cnode, unused] (cupp1) {}}
+          child {node [cnode, unused] (cupp2) {}}
+        }
+      }
+      child {node[cnode, selected] (kitchen) {}
+        child {node [pnode, selected] (box2) {} 
+          child {node [cnode, unused] (box2p1) {}}
+          child {node [cnode, selected] (box2p2) {}}
+        }
+      };
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
+   \tiny
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
+\qquad
+  \subfloat[Re-add relevant facts until the belief space limit is reached.]{
+    \label{fig:abstraction-c}
+    \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode, selected] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode, unused] (cup) {} 
+          child {node [cnode, unused] (cupp1) {}}
+          child {node [cnode, unused] (cupp2) {}}
+        }
+      }
+      child {node[cnode, selected] (kitchen) {}
+        child {node [pnode, selected] (box2) {} 
+          child {node [cnode, selected] (box2p1) {}}
+          child {node [cnode, selected] (box2p2) {}}
+        }
+      };
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \draw[selected] (box) -- (boxp1);
+   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
+   \draw[selected] (box2) -- (box2p1);
+   \tiny
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[right=0 of boxp1] {$\pp{place1}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p1] {$\pp{place1}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
+  
+  \caption{Generating the abstract belief space.}
+\label{fig:abstraction}
+\end{figure}
 
-\noindent and therefore, the belief-state $\bstate_0$ is:
+% \small
+% \begin{tabtt}
+% (\=:init (= (is-in DORA) kitchen) \+ \\
+%        (probabilistic \=.8 (= (is-in box) office)  \\
+% 		      \>.2 (= (is-in box) kitchen))) \\
+% \end{tabtt}
+% \normalsize
 
-\small
-\begin{tabular}{cccc}
-\hline
-Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
-\hline
-.8 & kitchen & office & \# \\
-.2 & kitchen & kitchen & \# \\
-\hline
-\end{tabular}
-\normalsize
+% \noindent and therefore, the belief-state $\bstate_0$ is:
 
-\noindent At this point, the session would proceed in an
-abstraction of the environment that does not contain a
-$\pp{cup}$. With regards to abstraction, the contingent and serial
-sessions apply the same applicability conditions ---i.e., that each
-effect and condition $\prop$ is specified, $\prop\in\state$--- to
-actions from the DTPDDL problem description.
+% \small
+% \begin{tabular}{cccc}
+% \hline
+% Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+% \hline
+% .8 & kitchen & office & \# \\
+% .2 & kitchen & kitchen & \# \\
+% \hline
+% \end{tabular}
+% \normalsize
+
+ % With
+% regards to abstraction, the contingent and serial sessions apply the
+% same applicability conditions ---i.e., that each effect and condition
+% $\prop$ is specified, $\prop\in\state$--- to actions from the DTPDDL
+% problem description.
+
+In the first step, we remove all facts that are not part of an
+assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
+would proceed in an abstraction of the environment where that does not
+contain $\pp{place2}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
 
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
-number of abstract states in $\bstate_0$ that occur with non-zero
-probability according to that refined declaration remains of a
-practicable size. In detail, for each excluded atomic term, we compute
-the {\em entropy} of the active assumptions, {\em conditional} on the
-corresponding proposition. Loosely speaking, the {\em conditional
-entropy} measure is higher the more uncertain those assumptions are
-given truth assignment to the proposition. Propositions that in the
-first place were excluded are iteratively added to the problem posed
-to the conditional session in increasing order according to that
-measure.
+number of abstract states in $\bstate_0$ that occur with non-zero probability
+according to that refined declaration remains of a practicable
+size. In detail, for each excluded atomic term, we compute the {\em
+  entropy} of the active assumptions, {\em conditional} on the
+corresponding proposition.  Loosely speaking, the lower the {\em
+  conditional entropy} of an atom is, the more information about the
+assumptions can the contingent planner expect to derive from it. Thus,
+propositions that in the first place were excluded are iteratively
+added to the problem posed to the conditional session in increasing
+order according to that measure (Fig. \ref{fig:abstraction-c}).
 
 
 %% In detail, for each excluded atomic term, we compute the {\em
@@ -388,3 +517,8 @@ measure.
 
 
 
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "moritz_2011"
+%%% End: 
