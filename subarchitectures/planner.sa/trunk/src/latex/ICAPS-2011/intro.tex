@@ -37,8 +37,8 @@ subproblems where reasoning about observations might be useful. We
 refer to the complete system as a {\em switching continual
 planner}. The approach is not optimal, particularly as it is based on
 a satisficing sequential planner, but it performs better than the
-sequential planner alone, and is fast enough to be used in real-time
-on a mobile robot for decision-making. 
+sequential planner alone, and is fast enough to be used for real-time
+decision-making on a mobile robot.
 
 %% As an illustration, consider a robot searching for a box that it knows
 %% is often found in offices. The sequential planner might produce a plan
@@ -57,21 +57,21 @@ on a mobile robot for decision-making.
 Our switching system is domain independent, taking domain and problem
 descriptions in a first-order declarative language we have developed,
 called the decision-theoretic planning domain definition language
-(DTPDDL). From those descriptions of POMDP, we automatically construct
-a deterministic model for the sequential planner, that includes
-operators which correspond to assumptions about the values of
+(DTPDDL). From those descriptions of POMDPs, we automatically
+construct a deterministic model for the sequential planner. That model
+includes operators which correspond to assumptions about the values of
 imperfectly known state variables. Assumptions scheduled by the
 sequential system are used to propose a pragmatic abstract
 belief-state space to the decision-theoretic system, and to modify the
-reward function for the decision-theoretic planner, so that it might
-pursue sensing related to those assumptions.
+reward function, so that system might pursue sensing related to those
+assumptions.
 
 %%  which can operate
 %% with the original representation of the domain.
 
 
 The sequential planner we use is based
-on \fastdownward \cite{fast-downward}. We add the capability to
+on \fastdownward~\cite{fast-downward}. We add the capability to
 replan, and also allow agent knowledge to be represented explicitly,
 so we can write actions that gain the agent knowledge. LEASE CITE
 MICHAEL's WORK AS THE BASIS FOR THIS. For the decision-theoretic
