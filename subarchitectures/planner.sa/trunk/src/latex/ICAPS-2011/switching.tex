@@ -311,7 +311,7 @@ The starting belief-state for the abstract process is given in terms
 of a {\em relaxed} $(\pp{:init})$ declaration. We first construct a
 tree which only includes terms from the {\em relaxed} visitation
 characterised by the active {\em assumptive} actions in the current
-sequential plan. Figure \ref{fig:abstraction} shows the belief state
+sequential plan. Figure \ref{fig:abstraction} shows the belief-state
 of a more detailed version of our previous example. The diamonds
 represent probabilistic terms of the state description while circles
 represent conjunctive or atomic terms. 
@@ -326,7 +326,7 @@ represent conjunctive or atomic terms.
   \tikzstyle{assumption} = [solid, thick, draw=black]
   \tikzstyle{selected} = [solid, draw=black]
   \tikzstyle{unused} = [densely dashed, draw=black!40]
-  \subfloat[The initial belief state with the assumptions made by the continual
+  \subfloat[The initial belief-state with the assumptions made by the continual
     planner.]{
       \label{fig:abstraction-a}
       \begin{tikzpicture}[
@@ -473,13 +473,13 @@ contain $\pp{place2}$, the $\pp{cup}$ or a $\pp{kitchen}$.
 
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
-number of abstract states in $\bstate_0$ that occur with non-zero probability
-according to that refined declaration remains of a practicable
-size. In detail, for each excluded atomic term, we compute the {\em
-  entropy} of the active assumptions, {\em conditional} on the
+number of abstract states in $\bstate_0$ that occur with non-zero
+probability according to that refined declaration remains of a
+practicable size. In detail, for each excluded atomic term, we compute
+the {\em entropy} of the active assumptions, {\em conditional} on the
 corresponding proposition.  Loosely speaking, the lower the {\em
-  conditional entropy} of an atom is, the more information about the
-assumptions can the contingent planner expect to derive from it. Thus,
+  conditional entropy} of an atom, the more information about the
+assumptions the contingent planner expect to derive from it. Thus,
 propositions that in the first place were excluded are iteratively
 added to the problem posed to the conditional session in increasing
 order according to that measure (Fig. \ref{fig:abstraction-c}).
