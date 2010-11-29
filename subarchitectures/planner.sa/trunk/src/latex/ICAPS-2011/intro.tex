@@ -10,9 +10,9 @@ problem of planning in completely observable stochastic domains, an
 alternative approach has been to use classical sequential planners and
 replan when actions have unplanned-for outcomes~\cite{yoon:etal:2007}.
 Execution monitoring tracks properties of the state that determine
-whether a new plan is necessary. For partially observable domains,
-only probabilistic information about such properties will, in general,
-be available.
+whether further planning is required. For partially observable
+domains, only probabilistic information about such properties will, in
+general, be available.
 
 %% However, these approaches rely
 %% crucially on being able to determine properties of the current state
@@ -40,6 +40,17 @@ particularly as it relies on the results of sequential planning
 directly. It does nevertheless perform better than a purely sequential
 replanner, and is fast enough to be used for real-time decision-making
 on a mobile robot.
+
+
+%% Switching gives us some important advantages in our robotic
+%% domain. First, the significant source of uncertainty in the domain is
+%% the unreliability of observations, and this approach is particularly
+%% suited to problems that combine a deterministic task planning problem
+%% with observations as the decision-theoretic planner is often invoked
+%% to determine a characteristic of the underlying state. Secondly,
+%% replanning makes our system robust to changing objectives and the
+%% discovery of new facts about the world.
+
 
 %% As an illustration, consider a robot searching for a box that it knows
 %% is often found in offices. The sequential planner might produce a plan
@@ -79,16 +90,6 @@ assumptions.
 %% THIS. For the decision-theoretic planner we have implemented our own
 %% forward search in the belief-state space.
 
-
-Our switching planner gives us some important advantages in our
-robotic domain. First, the significant source of uncertainty in the
-domain is the unreliability of observations, and this approach is
-particularly suited to problems that combine a deterministic task
-planning problem with observations as the decision-theoretic planner
-is only invoked to determine a characteristic of the underlying
-state. Secondly, the replanning makes the system very robust to
-changing objectives and the discovery of new facts about the world,
-both of which are features of our domain.
 
 The remainder of the paper proceeds as follows. We begin by describing
 POMDPs with a propositionally factored representation of states and
