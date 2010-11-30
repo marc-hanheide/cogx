@@ -300,11 +300,12 @@ sensing is scheduled, or to completion. Lastly, we note that in our
 project the rewards, i.e., functions
 $\$,\hat\$:2^\propositions\to\Re$, for the POMDP posed to the
 contingent session are sourced from a motivational component of our
-robotic architecture. In this paper, for $\assumptiveDT{i}$ actions
-we set $\$(x)$ to be a positive constant, and have $\hat\$(x)= -
-\$(x)(1 - p) / p$ where $p$ is the probability that $x$ is true. For
+robotic architecture. In this paper, for $\assumptiveDT{i}$ actions we
+set $\$(x)$ to be a positive constant, and have $\hat\$(x)= - \$(x)(1
+- \prob) / \prob$ where $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
-\$(x)p/(1-p)$.\footnote{These values were chosen to encourage sensing.}
+\$(x)\prob/(1-\prob)$.\footnote{These values were chosen to encourage
+  sensing.}
 
 %%  We make no assumptions here about how they are
 %% derived.
