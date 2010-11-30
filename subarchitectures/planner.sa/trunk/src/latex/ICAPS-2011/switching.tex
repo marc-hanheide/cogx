@@ -34,7 +34,7 @@ assumptions made in the trace hold.
 We add {\em disconfirm} and {\em confirm} actions to the model, so
 that session is encouraged to judge the assumptions made in the
 trace. On execution of one of those actions, control is returned to
-the sequential session that continues at the {\em underlying}
+the sequential session that continues at the current%%{\em underlying}
 belief-state.
 %%
 %% For each assumption we add a {\em
@@ -248,7 +248,7 @@ $\assumptiveDT{i}$ so that $\forall\state\in\states$:
 
 \noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a positive
 (negative) numeric quantity which captures the utility the agent
-receives for correctly (incorrectly) rejecting a false assumption. The
+receives for correctly (incorrectly) rejecting an assumption. The
 added dual actions are propositionally trivial -- i.e.,
 $\forall\state\in\states$ $\poss(\assumptiveDT{i})
 \subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
