@@ -27,12 +27,12 @@ observability of the precondition $\poss(\action)$.
 Our approach always begins with a sequential session. Non-assumptive
 actions from the trace are executed in sequence until the
 applicability of the next scheduled action is uncertain. We denote
-that action \switchAction.  A contingent session then begins, that
+that action by \switchAction.  A contingent session then begins that
 tailors sensory processing by the agent to determine whether the
 assumptions made in the trace hold. 
 %%
 We add {\em disconfirm} and {\em confirm} actions to the model, so
-that session is encouraged to judge the assumptions made in the
+the session is encouraged to judge the assumptions made in the
 trace. On execution of one of those actions, control is returned to
 the sequential session that continues at the current%%{\em underlying}
 belief-state.
@@ -57,7 +57,7 @@ practicable size.
 
 Finally, whether proceeding in a sequential or contingent session, our
 continual planner maintains a factored representation of successive
-belief-states, by performing belief revision according to
+belief-states by performing belief revision according to
 Eq~\ref{eq:revision}. Moreover, our internal representation of the
 underlying belief-state corresponds more-or-less directly to an
 $(\pp{:init})$ declaration. Our approach uses that distribution: (1)
@@ -129,7 +129,7 @@ In order to make assumptions available to the sequential planner, we
 add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
 each element, $\prob_i (T_i)$, of each probabilistic term from
 $(\pp{:init})$. The physics of these actions is as
-follows. $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
+follows: $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
 $j \neq i$, has been executed from the same probabilistic term, and,
 either $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root
 conjunct, or it occurs in $T_k$ for some executed
