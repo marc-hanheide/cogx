@@ -94,25 +94,23 @@ the probability that the process is in $\state$ according to
 $\bstate$, and $\bstate_0$ when discussing the starting
 configuration. 
 
-Finally, we make some fairly standard assumptions. First, that
-action execution and sensing occur instantaneously, and that only one
-action can be applied per plan-step. Second, 
-that
-%it can arise that in
-%some propositional states an action is applicable, and in others it is
-%not. Moreover, a belief-state can assign non-zero probability to
-%states where that applicability holds, and states where it does
-%not. We differ
-%%in situations where an action exists that is applicable in some state 
+Finally, we make some fairly standard assumptions. First, that action
+execution and sensing occur instantaneously, and that only one action
+can be applied per plan-step. Secondly, it can arise that in some
+states an action is applicable, and in others it is not. Moreover, a
+belief-state can assign non-zero probability to states where that
+applicability holds, and states where it does not. %% We differ
+%% from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04})
+%% In beliefs where an action exists that is applicable in some state 
 %% with non-zero probability, and not applicable in another, we differ
-%from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
-%because 
-%%in that
-%we forbid the execution of the action.
-%actions that are not applicable in
-%any state of the current belief.  
-%Also,
-unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
+%% from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
+%% because 
+%% in that
+%% we forbid the execution of the action.
+%% actions that are not applicable in
+%% any state of the current belief.  
+%% Also,
+Unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
 we incorporate a PPDDL-like default semantics, treating an action
 \stochAction\ executed at $\state_i$ as if it has no effect at
 states $\state$ if $\poss(\stochAction) \not\subseteq
