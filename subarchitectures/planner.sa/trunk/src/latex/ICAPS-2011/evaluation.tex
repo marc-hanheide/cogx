@@ -63,7 +63,7 @@ running a vision algorithm (cost of 8 vs costs of 3).
 %% not proof positive of it being there.
 
 We evaluated our switching planner against the baseline in several
-problems with the number of rooms ranging from 3 to 6. We examine the
+tasks with the number of rooms ranging from 3 to 6. We examine the
 impact of sensing reliability, experimenting using sensor models that
 are: ({\em reliable}) $0.9$ chance the object is perceived if it is
 present, ({\em semi-reliable}) chance is 0.65, and ({\em noisy})
@@ -72,7 +72,7 @@ Figure~\ref{fig:results-time}, and the quality data in
 Figure~\ref{fig:results-quality}. Here, in switching runs we examine
 the performance of our system where $b_0$ allocates non-zero
 probability to between 20 and 200 abstract states during contingent
-sessions. For Items~$a$-$e$ the objective is to find one or more
+sessions. For Item~$a$-$e$ the objective is to find one or more
 objects and report their position to the user. In some of the tasks we
 configured the environment so that no plan exists, by excluding the
 desired object from the environment. Item~$f$ reports for tasks
@@ -144,13 +144,13 @@ surprisingly, as sensing degrades contingent planning pays off.  Also,
 we find that time spent in contingent planning increases steeply as
 the abstraction $\bstate_0$ becomes more refined.  That refinement
 seems to be paying off in terms of the success ratio, particularly for
-problems $d$ and $e$, where we had sequential sessions using weighted
-$A^*$ (rather than $A^*$). For less refined initial configurations, the
-increase cost of contingent planning is compensated by a decrease in
-time spent executing the serial system Fast Downward. The relatively
-high success rate irrespective of the level of refinement in the
-initial configuration indicates the effectiveness of using conditional
-entropy to guide abstraction refinement in our setting.
+tasks $d$ and $e$, where we had sequential sessions using weighted
+$A^*$ (rather than $A^*$). For less refined initial configurations,
+the increase cost of contingent planning is compensated by a decrease
+in Fast Downward planning times. The relatively high success rate
+irrespective of the level of refinement in the initial configuration
+indicates the effectiveness of using conditional entropy to guide
+abstraction refinement in our setting.
 
 
 %% :
