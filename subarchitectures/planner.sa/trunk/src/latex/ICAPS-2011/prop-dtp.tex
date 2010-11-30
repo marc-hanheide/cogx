@@ -17,7 +17,7 @@ state-characterising propositions $\propositions$.
 We say an action $\stochAction \in \stochActions$ is
 applicable if its precondition $\poss(\stochAction)$, a set of
 propositions, are satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
-\state$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
+\state$. We denote by $\mu_{\stochAction}(\detAction_i)$ the probability that
 nature chooses a deterministic STRIPS effect $\detAct_i$, and for
 all \stochAction\ we require
 $\sum_{\detAction_i \in \detActions(\stochAction)}
@@ -54,17 +54,17 @@ $\sum_{\detAction_i \in \detActions(\stochAction)}
 We are concerned with problems that feature partial
 observability. Although we could invoke {\em extended probabilistic
 STRIPS operators}~\cite{rintanen:01} to model actions and observations
-propositionally, we find it convenient for our presentation to clearly
+propositionally, we find it convenient for presentation and computation to
 separate sensing and action. Therefore, we suppose a POMDP has a
 perceptual model given in terms of a finite set of stochastic {\em
 senses} $\stochSenses$, deterministic sensing outcomes $\detSenses$,
 and perceptual propositions $\percepts$, called {\em percepts}. In
 detail, we take an observation $\observ$ to be a set of percepts
-$\observ \subseteq \percepts$, and denote \observations\ the set of
+$\observ \subseteq \percepts$, and denote by \observations\ the set of
 reachable observations. The underlying state of the process cannot be
 observed directly, rather, senses $\stochSense \in \stochSenses$
 effect an observation $\observ \in
-\observations$ that informs what should be believed about the state a
+\observations$ that informs what should be believed about the state the
 process is in. If $\action$ is applied effecting a
 transition to a successor state $\state'$, then an observation occurs
 according to the active senses $\stochSenses(\stochAction, \state')
@@ -145,23 +145,23 @@ exists so that for all $\state \in \states$ and $\action \in
 \actions$, $|\reward(\state, \action)| < c$. We model costs as
 negative rewards.
 %%
-From $\psi$ we have that for each $\state \in \states$ and action
+From $\psi$ we have that for each $\state' \in \states$ and action
 $\action \in \actions$, an observation $\observ \in \observations$ is
 generated independently according to a probability distribution
-$\obsDist(\state, \action)$. We denote $\obsDist_\observ(\state,
+$\obsDist(\state', \action)$. We denote by $\obsDist_\observ(\state',
 \action)$ the probability of getting observation $\observ$ in state
-$\state$. For $\state$ and $\action$ we have $\sum_{\observ \in
-\observations} \obsDist_\observ(\state, \action) = 1$.
+$\state'$. For $\state'$ and $\action$ we have $\sum_{\observ \in
+\observations} \obsDist_\observ(\state', \action) = 1$.
 
 Successive state estimation is by application of Bayes'
 rule.  Taking the current belief $\bstate$ as the {\em prior}, and
 supposing action $\action$ is executed with perceptive outcome
-$\observ$, the probability that we are in $\state$ in the
+$\observ$, the probability that we are in $\state'$ in the
 successive belief-state $\bstate'$ is:
 
 \begin{equation}\label{eq:revision}
-\bstate'(\state) = \frac{\obsDist_\observ(\state, \action)
-  \sum_{\state'\in \states} \transProb(\state', \action, \state) \bstate(\state') }{\pp{Pr}(\observ | \action, \bstate)}
+\bstate'(\state') = \frac{\obsDist_\observ(\state', \action)
+  \sum_{\state\in \states} \transProb(\state, \action, \state') \bstate(\state) }{\pp{Pr}(\observ | \action, \bstate)}
 \end{equation}
 
 \noindent where $\pp{Pr}(\observ | \action, \bstate)$ is the
