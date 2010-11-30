@@ -40,37 +40,24 @@ resulting belief-state.
 %% confirm its assumption.
 
 To test our approach we use a robot exploration domain based on a
-scenario from our physical robotic system. Here, a robot is
-exploring an office or living environment, and trying to report the
-locations of objects to their owner.
-
-% \begin{figure}[h]
-%   \centering
-%   \input{figures/dora}
-%   \caption{A exploration domain with three rooms and 13 places. The
-%     robot is in in the centre of room A}
-% \label{fig:dora2}
-% \end{figure}
-% An instance of this domain is shown in figure \ref{fig:dora2}. 
-Basic types of element are {\tt rooms}, {\tt places} and {\tt
-  objects}. Places are topological map nodes that occur in rooms.
-Objects, including the robot, are always located at a place. The robot
-can move around the rooms via connections between places given by the
+scenario from our physical robotic system. Here, a robot is exploring
+an office or living environment, and trying to report the locations of
+objects to their owner. Basic types are {\tt rooms}, {\tt places} and
+{\tt objects}. Places are topological map nodes that occur in rooms.
+Objects, and also the robot, are always located at a place. The robot
+can move around the rooms via connections between places given by a
 {\tt connected} predicate. Each room has a, possibly unknown, {\em
-  category} (e.g. kitchen, office, living room) and depending on this
-category, objects are placed inside the rooms.
-
-The robot can look for an object at a place by executing a {\tt
-  look-for-object} action. Moreover, the contents of a room indicate
-its category, because certain objects are more likely to be located in
-rooms of particular categories. For example, a box of cornflakes is
-more likely to be located in the kitchen than the office. Executing
-{\tt look-for-object} results in a noisy sensing outcome, sometimes
-indicating a positive perception if the object is there. Here, some
-objects are harder to detect than others. Lastly, if the robot is in
-the presence of a human, it can ask what type of room it is currently
-in, however conducting a dialogue is more costly than running a vision
-algorithm (cost of 8 vs costs of 3).
+  category} (e.g. kitchen, office, living room). Certain objects are
+more likely to be located in rooms of a particular category.  For
+example, a box of cornflakes is more likely to be located in the
+kitchen than the office. The robot can look for an object at a place
+by executing a {\tt look-for-object} action. Executing {\tt
+  look-for-object} results in a noisy sensing outcome, sometimes
+indicating a positive perception if the object is there. We have that
+some objects are harder to detect than others. Finally, if the robot
+is in the presence of a human, it can ask what type of room it is
+currently in, however conducting a dialogue is more costly than
+running a vision algorithm (cost of 8 vs costs of 3).
 
 %%  Therefore, an instantaneous positive detection of an object is
 %% not proof positive of it being there.
