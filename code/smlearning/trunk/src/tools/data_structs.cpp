@@ -33,7 +33,7 @@ namespace smlearning {
 ///Write DataSet vector to a file
 ///
 bool LearningData::write_dataset (string fileName, const DataSet& data, const CoordinateLimits& limits) {
-	fileName += ".seq2";
+	fileName += ".seq";
 	ofstream writeFile(fileName.c_str(), ios::out | ios::binary);
 	if (!writeFile)
 		return false;
@@ -53,15 +53,19 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 	cout << numSeqs << " sequences." << endl;
 	DataSet::const_iterator d_iter;
 	for (d_iter=data.begin(); d_iter!=data.end(); d_iter++) {
-		MotorCommand mC = d_iter->first;
-		Chunk::Seq seq = d_iter->second;
-		writeFile.write((const char*)&mC, sizeof(mC));
+		// MotorCommand mC = d_iter->first;
+		Chunk::Seq seq = *d_iter;
+		//writeFile.write((const char*)&mC, sizeof(mC));
 		long seqSize = seq.size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
   		// cout << "\t" << seqSize << endl;
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
-			writeFile.write ((const char*)&(*s_iter), sizeof(*s_iter));
+			Chunk currentChunk = *s_iter;
+			//writeFile.write ((const char*)&(*s_iter), sizeof(*s_iter));
+			writeFile.write ((const char*)&(currentChunk.object), sizeof(currentChunk.object));
+			writeFile.write ((const char*)&(currentChunk.action), sizeof(currentChunk.action));
+			
 		}
 
 		
@@ -74,7 +78,7 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 ///Read DataSet vector from a file
 ///
 bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimits& limits) {
-	fileName  += ".seq2";
+	fileName  += ".seq";
 	ifstream readFile(fileName.c_str(), ios::in | ios::binary);
 	if (!readFile)
 		return false;
@@ -94,23 +98,24 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 // 	cout << "Nr. of seq.: " << numSeq << endl;
 
 	for (int s=0; s<numSeq; s++) {
-		Sequence currentSequence;
+		//Sequence currentSequence;
 		Chunk::Seq currentChunkSeq;
-		MotorCommand currentMotorCommand;
+		//MotorCommand currentMotorCommand;
 
-		readFile.read((char *)&currentMotorCommand, sizeof (currentMotorCommand));
+		//readFile.read((char *)&currentMotorCommand, sizeof (currentMotorCommand));
 		long seqSize;
 		readFile.read((char *)&seqSize, sizeof(seqSize));
 // 		cout << "  Seq. size: " << seqSize << endl;
 //  		print_motorCommand (currentMotorCommand);
 		for (int c=0; c<seqSize; c++) {
 			Chunk currentChunk;
-			readFile.read((char *)&currentChunk, sizeof(currentChunk));
+			readFile.read((char *)&currentChunk.object, sizeof(currentChunk.object));
+			readFile.read((char *)&currentChunk.action, sizeof(currentChunk.action));
 // 			print_Chunk (currentChunk);
 			currentChunkSeq.push_back (currentChunk);
 		}
-		currentSequence = make_pair (currentMotorCommand, currentChunkSeq);
-		data.push_back (currentSequence);
+		//currentSequence = make_pair (currentMotorCommand, currentChunkSeq);
+		data.push_back (currentChunkSeq);
 	}
 
 	return true;	
@@ -120,10 +125,11 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 ///
 ///print a motor command struct
 ///
-void LearningData::print_motorCommand (const MotorCommand& mC) {
+void LearningData::print_motorCommand (const Chunk::Action& mC) {
 	cout << "\tmC=(";
-	cout << " V=[" << mC.initEfPosition.v1 << " "
-	     << mC.initEfPosition.v2 << " " <<  mC.initEfPosition.v3<< "],";
+	cout << " P=[" << mC.effectorPose.p.v1 << " "
+	     << mC.effectorPose.p.v2 << " " <<  mC.effectorPose.p.v3<< "],";
+	cout << " O=[" << mC.efRoll << " "  << mC.efPitch << " " <<  mC.efYaw << "],";
 	cout << " s=" << mC.pushDuration << ",";
 	cout << " hA=" << mC.horizontalAngle << ")" << endl;
 }
@@ -133,12 +139,14 @@ void LearningData::print_motorCommand (const MotorCommand& mC) {
 ///
 void LearningData::print_Chunk (const Chunk& c) {
 	cout << "\tC=[";
-	cout << " eP=" << c.effectorPose.p.v1 << " "
-	     << c.effectorPose.p.v2 << " " << c.effectorPose.p.v2<< ",";
-	cout << " oP=" << c.effectorPose.p.v1 << " "
-	     << c.effectorPose.p.v2 << " " << c.effectorPose.p.v2<< ",";
-	cout << " eO=" << c.efRoll << " " << c.efPitch << " " << c.efYaw << ",";
-	cout << " oO=" << c.obRoll << " " << c.obPitch << " " << c.obYaw << " ]" << endl;
+	cout << " pD=" << c.action.pushDuration << ", ";
+	cout << " hA=" << c.action.horizontalAngle << ", ";
+	cout << " eP=" << c.action.effectorPose.p.v1 << " "
+	     << c.action.effectorPose.p.v2 << " " << c.action.effectorPose.p.v3 << ",";
+	cout << " eO=" << c.action.efRoll << " " << c.action.efPitch << " " << c.action.efYaw << ",";
+	cout << " oP=" << c.object.objectPose.p.v1 << " "
+	     << c.object.objectPose.p.v2 << " " << c.object.objectPose.p.v3 << ",";
+	cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << " ]" << endl;
 }
 
 ///
@@ -166,12 +174,11 @@ void LearningData::print_dataset (const DataSet &d) {
 	DataSet::const_iterator d_iter;
 
 	for (d_iter = d.begin(); d_iter != d.end(); d_iter++) {
-		MotorCommand mC = d_iter->first;
+		//MotorCommand mC = d_iter->first;
 		cout << "{";
 
-		Chunk::Seq seq = d_iter->second;
+		Chunk::Seq seq = *d_iter;
 
-		print_motorCommand (mC);
 		cout << "\tSeq (size=" << seq.size() << ")" << "=(\n";
 
 		Chunk::Seq::const_iterator s_iter;
@@ -303,7 +310,5 @@ bool LearningData::write_nc_data (string fileName, size_t numSeqs_len, int input
 	return true;
 
 }
-
-
 
 };  /* smlearning namespace */

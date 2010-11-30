@@ -73,72 +73,106 @@ struct CanonicalData {
 	DataSetStruct data;
 };
 
+/** flags for storing different Chunk parts in feature vectors */
+enum chunk_flags {
+        _object = 1L << 0,
+        _effector = 1L << 1,
+        _action_params = 1L << 2
+};
+
+inline chunk_flags
+operator&(chunk_flags __a, chunk_flags __b)
+{ return chunk_flags(static_cast<int>(__a) & static_cast<int>(__b)); }
+
+inline chunk_flags
+operator|(chunk_flags __a, chunk_flags __b)
+{ return chunk_flags(static_cast<int>(__a) | static_cast<int>(__b)); }
+
+inline chunk_flags
+operator^(chunk_flags __a, chunk_flags __b)
+{ return chunk_flags(static_cast<int>(__a) ^ static_cast<int>(__b)); }
+
+inline chunk_flags&
+operator|=(chunk_flags& __a, chunk_flags __b)
+{ return __a = __a | __b; }
+
+inline chunk_flags&
+operator&=(chunk_flags& __a, chunk_flags __b)
+{ return __a = __a & __b; }
+
+inline chunk_flags&
+operator^=(chunk_flags& __a, chunk_flags __b)
+{ return __a = __a ^ __b; }
+
+inline chunk_flags
+operator~(chunk_flags __a)
+{ return chunk_flags(~static_cast<int>(__a)); }
+
 
 /** Learning data format */
 struct LearningData {
-
+	
 	/** Data chunk */
 	struct Chunk {
 		typedef std::vector<Chunk> Seq;
 		
 		/** Data chunk time stamp */
 		golem::SecTmReal timeStamp;
-		
-		/** Arm state - (joint) dynamic configuration */
-		golem::GenConfigspaceState armState;
-		/** End-effector GLOBAL pose */
-		golem::Mat34 effectorPose;
-		/** Object GLOBAL pose */
-		golem::Mat34 objectPose;
-		/** End-effector orientation in Euler coordinates */
-		golem::Real efRoll, efPitch, efYaw; 
-		/** Object orientation in Euler coordinates */
-		golem::Real obRoll, obPitch, obYaw;
-		/** label */
-		//TO DO!
-		//T label;
-		/** feature vector (here any vectorial representation is possible) */
-		vector<Real> featureVector;
+
+		struct Object {
+			/** Object GLOBAL pose */
+			golem::Mat34 objectPose;
+			/** Object orientation in Euler coordinates */
+			golem::Real obRoll, obPitch, obYaw;
+			/** label */
+			/** feature vector (here any vectorial representation is possible) */
+			FeatureVector featureVector;
+		};
+
+		struct Action {
+			/** Arm state - (joint) dynamic configuration */
+			golem::GenConfigspaceState armState;
+			/** End-effector GLOBAL pose */
+			golem::Mat34 effectorPose;
+			/** End-effector orientation in Euler coordinates */
+			golem::Real efRoll, efPitch, efYaw; 
+			/** horizontal angle */
+			golem::Real horizontalAngle;
+			/** speed ( 3 (fast), 4 (middle), 5 (low) */
+			golem::Real pushDuration;
+			/** feature vector (here any vectorial representation is possible) */
+			FeatureVector featureVector;
+		};
+		/** object related chunk part */
+		Object object;
+		/** action related chunk part */
+		Action action;
+		/** feature vector corresponding to the whole chunk (any vectorial representation is possible) */
+		FeatureVector featureVector;
+		/** a label for this chunk */
+		Real label;
+			
 		
 	};
 
-	/** Motor Primitive */
-	struct MotorCommand {
-		/** initial effector pose before the movement */
-		golem::Vec3 initEfPosition;
-		/** horizontal angle */
-		golem::Real horizontalAngle;
-		/** speed ( 3 (fast), 4 (middle), 5 (low) */
-		golem::Real pushDuration;
-		/** feature vector (here any vectorial representation is possible) */
-		vector<Real> featureVector;
-	};
-	typedef std::pair<MotorCommand, Chunk::Seq> Sequence;
-	
-	typedef std::vector<Sequence> DataSet;
+	typedef std::vector<Chunk::Seq> DataSet;
 
-	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
+	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Action::effectorPose */
 	golem::Bounds::Seq effector;
-	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
+	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Object::objectPose */
 	golem::Bounds::Seq object;
 	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
 	golem::Bounds::Seq obstacles;
 	
 	/** Time-dependent data */
 	Chunk::Seq currentChunkSeq;
-	Sequence _currentSeq;
 	//DataSet data;
 	/** current predicted polyflap poses sequence */
 	vector<Mat34> currentPredictedPfSeq;
 	/** current predicted effector poses sequence */
 	vector<Mat34> currentPredictedEfSeq;
-	/** current polyflap poses and motor command sequence */
-	smlearning::Sequence currentSeq;
-	/** current motor command */
-	FeatureVector currentMotorCommandVector;
-	MotorCommand currentMotorCommand;
 	/** size of motor vector for NN training */
-	static const int motorVectorSize = 5;
+	//static const int motorVectorSize = 5;
 	/** size of polyflap pose vector for NN training */
 	static const int pfVectorSize = 6;
 	/** size of effector pose vector for NN training */
@@ -163,6 +197,7 @@ struct LearningData {
 		
 	};
 	CoordinateLimits coordLimits;
+	
 	/** Record validity */
 	//bool bArmState;
 	//bool bEffectorPose;
@@ -234,7 +269,7 @@ struct LearningData {
 	///
 	///print a motor command struct
 	///
-	static void print_motorCommand (const MotorCommand& mC);
+	static void print_motorCommand (const Chunk::Action& mC);
 
 	///
 	///print a chunk (features)
@@ -253,14 +288,14 @@ struct LearningData {
 		FeatureVector targetVector;
 		vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
+		const int motorVectorSize = 2;
 		const int inputSize = motorVectorSize + pfVectorSize + efVectorSize;
 		const int outputSize = pfVectorSize;
 
 		DataSet::const_iterator d_iter;
 
 		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
-			MotorCommand mC = d_iter->first;
-			Chunk::Seq seq = d_iter->second;
+			Chunk::Seq seq = *d_iter;
 
 			size_t seqSize = seq.size();
 			seqLengthsVector.push_back ( seqSize );
@@ -271,25 +306,25 @@ struct LearningData {
 				if (s_iter+1 != seq.end()) {
 					if (s_iter == seq.begin()) {
 						//motor command
-						write_motorCommand_to_featvector (inputVector, mC, normalize, limits);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params);
 						//completing with feature vector
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
 
 						//zero padding
 						for (int i=0; i<motorVectorSize; i++)
 							inputVector.push_back (0.0);
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
 					}
 					
 					else {
 						//zero padding
 						for (int i=0; i<motorVectorSize; i++)
 							inputVector.push_back (0.0);
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
 					}
 				}
 				//target vector corresponds to polyflap pose vector
-				write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, false);
+				write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, _object);
 			
 			}
 		}
@@ -313,15 +348,15 @@ struct LearningData {
 		FeatureVector targetVector;
 		vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
+		const int motorVectorSize = 2;
 
-		const int inputSize = /*motorVectorSize*/2 + efVectorSize + pfVectorSize;
+		const int inputSize = motorVectorSize + efVectorSize + pfVectorSize;
 		const int outputSize = pfVectorSize;
 
 		DataSet::const_iterator d_iter;
 
 		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
-			MotorCommand mC = d_iter->first;
-			Chunk::Seq seq = d_iter->second;
+			Chunk::Seq seq = *d_iter;
 
 			size_t seqSize = seq.size() - 1;
 			seqLengthsVector.push_back ( seqSize );
@@ -331,16 +366,13 @@ struct LearningData {
 
 			for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
 				if (s_iter+1 != seq.end()) {
-					//motor command
-					inputVector.push_back (normalize(mC.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
-					inputVector.push_back (normalize(mC.pushDuration, 3.0, 5.0));
-					//completing with feature vector
+					//input feature vector
 					write_chunk_to_featvector (inputVector, *s_iter, normalize, limits);
 				
 				}
 				if (s_iter != seq.begin())
 					//target vector corresponds to polyflap pose vector
-					write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, false);
+					write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, _object);
 			
 			}
 		}
@@ -357,70 +389,68 @@ struct LearningData {
 	///write a chunk to feature vector
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, CoordinateLimits coordLimits, bool pfEfVector = true) {
-		if ( pfEfVector ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector | _action_params ) {
+		try { 
+			if ( flags & _action_params ) {
+				featVector.push_back (normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration));
+				featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
+			}
+		
+			if ( flags & _effector ) {
 			
-			featVector.push_back (normalize(chunk.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
-			featVector.push_back (normalize(chunk.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
-			featVector.push_back (normalize(chunk.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
-			featVector.push_back (normalize(chunk.efRoll, -REAL_PI, REAL_PI));
-			featVector.push_back (normalize(chunk.efPitch,-REAL_PI, REAL_PI));
-			featVector.push_back (normalize(chunk.efYaw, -REAL_PI, REAL_PI));
-		}
-		featVector.push_back (normalize(chunk.objectPose.p.v1, coordLimits.minX, coordLimits.maxX));
-		featVector.push_back (normalize(chunk.objectPose.p.v2, coordLimits.minY, coordLimits.maxY));
-		featVector.push_back (normalize(chunk.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
-		featVector.push_back (normalize(chunk.obRoll, -REAL_PI, REAL_PI));
-		featVector.push_back (normalize(chunk.obPitch, -REAL_PI, REAL_PI));
-		featVector.push_back (normalize(chunk.obYaw, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.action.efRoll, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.efPitch,-REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.efYaw, -REAL_PI, REAL_PI));
+			}
+			if ( flags & _object ) {
+				featVector.push_back (normalize(chunk.object.objectPose.p.v1, coordLimits.minX, coordLimits.maxX));
+				featVector.push_back (normalize(chunk.object.objectPose.p.v2, coordLimits.minY, coordLimits.maxY));
+				featVector.push_back (normalize(chunk.object.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.object.obRoll, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.object.obPitch, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.object.obYaw, -REAL_PI, REAL_PI));
+			}
+		} catch ( ... ) {
+			cerr << "Error normalizing effector feature vector " << endl;
+		};
 	}
 
 	///
 	///write a chunk to feature vector with memory assigned
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits, bool pfEfVector = true) {
-		if ( pfEfVector ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector | _action_params ) {
+		try { 
+			if ( flags & _action_params ) {
+				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration);
+				featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
+			}
+			if ( flags & _effector ) {
 
-			featVector[vectorIndex++] = normalize(chunk.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
-			featVector[vectorIndex++] = normalize(chunk.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
-			featVector[vectorIndex++] = normalize(chunk.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
-			featVector[vectorIndex++] = normalize(chunk.efRoll, -REAL_PI, REAL_PI);
-			featVector[vectorIndex++] = normalize(chunk.efPitch, -REAL_PI, REAL_PI);
-			featVector[vectorIndex++] = normalize(chunk.efYaw, -REAL_PI, REAL_PI);
-		}
-		featVector[vectorIndex++] = normalize(chunk.objectPose.p.v1, coordLimits.minX, coordLimits.maxX);
-		featVector[vectorIndex++] = normalize(chunk.objectPose.p.v2, coordLimits.minY, coordLimits.maxY);
-		featVector[vectorIndex++] = normalize(chunk.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
-		featVector[vectorIndex++] = normalize(chunk.obRoll, -REAL_PI, REAL_PI);
-		featVector[vectorIndex++] = normalize(chunk.obPitch, -REAL_PI, REAL_PI);
-		featVector[vectorIndex++] = normalize(chunk.obYaw, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.action.efRoll, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.efPitch, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.efYaw, -REAL_PI, REAL_PI);
+			}
+			if ( flags & _object ) {
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v1, coordLimits.minX, coordLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v2, coordLimits.minY, coordLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.object.obRoll, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.object.obPitch, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.object.obYaw, -REAL_PI, REAL_PI);
+			}
+		} catch ( ... ) {
+			cerr << "Error normalizing effector feature vector " << endl;
+		};			
 
 	}
 
-	///
-	///write motor command to feature vector
-	///
-	template <typename T, class Normalization>
-	static void write_motorCommand_to_featvector (vector<T>& featVector, const MotorCommand& mC, Normalization normalize, CoordinateLimits coordLimits) {
-		featVector.push_back (normalize(mC.initEfPosition.v1, coordLimits.minX, coordLimits.maxX));
-		featVector.push_back (normalize(mC.initEfPosition.v2, coordLimits.minY, coordLimits.maxY));
-		featVector.push_back (normalize(mC.initEfPosition.v3, coordLimits.minZ, coordLimits.maxZ));
-		featVector.push_back (normalize(mC.pushDuration, /*coordLimits.minDuration*/3.0, /*coordLimits.maxDuration*/5.0));
-		featVector.push_back (normalize(mC.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
-	}
-
-	///
-	///write motor command to feature vector with memory assigned
-	///
-	template <typename T, class Normalization>
-	static void write_motorCommand_to_featvector (vector<T>& featVector, const MotorCommand& mC, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits) {
-		featVector[vectorIndex++] = normalize(mC.initEfPosition.v1, coordLimits.minX, coordLimits.maxX);
-		featVector[vectorIndex++] = normalize(mC.initEfPosition.v2, coordLimits.minY, coordLimits.maxY);
-		featVector[vectorIndex++] = normalize(mC.initEfPosition.v3, coordLimits.minZ, coordLimits.maxZ);
-		featVector[vectorIndex++] = normalize(mC.pushDuration, /*coordLimits.minDuration*/3.0, /*coordLimits.maxDuration*/5.0);
-		featVector[vectorIndex++] = normalize(mC.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
-	}
 
 
 	///
@@ -531,38 +561,16 @@ struct LearningData {
 	
 	}
 
-	///
-	///load training data in RNNLIB format
-	///
-	template<class LoadSequenceMethod, class Normalization >
-	static rnnlib::DataSequence* load_NNtrainSeq ( Sequence& seq, LoadSequenceMethod loadSequenceMethod, Normalization normalize, CoordinateLimits limits) {
-		rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (/*motorVectorSize*/2+pfVectorSize+efVectorSize, pfVectorSize);
-		vector<int> inputShape, targetShape;
-		cout << " loadSequenceMethod is: " << typeid(loadSequenceMethod).name() << endl;
-		inputShape.push_back (seq.second.size() - 1);
-		targetShape.push_back (seq.second.size() - 1);
-		trainSeq->inputs.reshape(inputShape);
-		trainSeq->targetPatterns.reshape(targetShape);
-		// cout << "input size: " << trainSeq->inputs.data.size() << endl;
-		// cout << "output size: " << trainSeq->targetPatterns.data.size() << endl;
-		//load_NNsequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
-		//load_NNsequence_markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
-		loadSequenceMethod (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
-		return trainSeq;
-	
-	
-	}
 
 
 	///
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s, Normalization normalize, CoordinateLimits limits) {
+	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, CoordinateLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
-		MotorCommand mC = s.first;
-		Chunk::Seq seq = s.second;
+		const int motorVectorSize = 2;
 
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
@@ -570,25 +578,25 @@ struct LearningData {
 			if (s_iter+1 != seq.end()) {
 				if (s_iter == seq.begin () ) {
 					//motor command
-					write_motorCommand_to_featvector (inputVector, mC, contInput, normalize, limits);
-					//completing with next feature vector
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits,  _action_params);
+					//completing with feature vector
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
 
 					//zero padding
 					for (int i=0; i<motorVectorSize; i++)
 						inputVector[contInput++] = 0.0;
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
 			
 				}
 				else {
 					//zero padding
 					for (int i=0; i<motorVectorSize; i++)
 						inputVector[contInput++] = 0.0;
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
 				
 				}	
 			}
-			write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, false);
+			write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, _object);
 		}
 	}
 
@@ -596,28 +604,55 @@ struct LearningData {
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_markov (vector<float>& inputVector, vector<float>& targetVector, Sequence s, Normalization normalize, CoordinateLimits limits) {
+	static void load_NNsequence_markov (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, CoordinateLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
-		MotorCommand mC = s.first;
-		Chunk::Seq seq = s.second;
 
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
 			if (s_iter+1 != seq.end()) {
-				inputVector[contInput++] = normalize(mC.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI );
-				inputVector[contInput++] = normalize(mC.pushDuration, 3.0, 5.0);
-				//completing with feature vector
+				//input feature vector
 				write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits);
 				
 			}
 			if (s_iter != seq.begin() )
 				//target vector corresponds to polyflap pose vector
-				write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, false);
+				write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, _object);
 			
 		}
 	}
+
+	///
+	///load training data in RNNLIB format
+	///
+	template<class Normalization >
+	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, string featureSelectionMethod, Normalization normalize, CoordinateLimits limits, int motorVectorSize) {
+		rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (motorVectorSize+pfVectorSize+efVectorSize, pfVectorSize);
+		vector<int> inputShape, targetShape;
+
+		//TODO: correct here sequence size:
+		if (featureSelectionMethod == "basis") {
+			inputShape.push_back (seq.size());
+			targetShape.push_back (seq.size());
+		}
+		else if (featureSelectionMethod == "markov") {
+			inputShape.push_back (seq.size() - 1);
+			targetShape.push_back (seq.size() - 1);
+		}
+		trainSeq->inputs.reshape(inputShape);
+		trainSeq->targetPatterns.reshape(targetShape);
+		// cout << "input size: " << trainSeq->inputs.data.size() << endl;
+		// cout << "output size: " << trainSeq->targetPatterns.data.size() << endl;
+		if (featureSelectionMethod == "basis")
+			load_NNsequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
+		else if (featureSelectionMethod == "markov")
+			load_NNsequence_markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
+		return trainSeq;
 	
+	
+	}
+
+
 };
 
 }; /* smlearning namespace */

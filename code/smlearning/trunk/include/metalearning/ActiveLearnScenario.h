@@ -79,12 +79,10 @@ protected:
 	rnnlib::DataSequence* trainSeq;
 
 	/** map of indexed sensorimotor regions */
-	//typedef map<int, SMRegion> RegionsMap;
 	SMRegion::RegionsMap regions;
 
-	/** struct defining an action tuple */
-	// struct Action { int startPosition; int speed; Real horizontalAngle; };
-	typedef vector<pair<FeatureVector, LearningData::MotorCommand> > ActionsVector;
+	/** type for vector of candidate actions */
+	typedef vector<LearningData::Chunk::Action> ActionsVector;
 
 	/** regions counter for defining regions indices */
 	int regionsCount;
@@ -106,6 +104,11 @@ protected:
 
 	/** number of instances to decide splitting a region */
 	int splittingCriterion1;
+
+	/** size of motor Context Vector */
+	static const int motorContextSize = 5;
+	/** size of motor Feature Vector */
+	int motorVectorSize;
 
 	/** canonical positions */
 	map<Vec3, int, compare_Vec3> positionsT;
@@ -178,7 +181,7 @@ protected:
 	///
 	///get the actions vector that maximizes learning progress
 	///
-	pair<FeatureVector, LearningData::MotorCommand> get_action_maxLearningProgress (const ActionsVector& candidateActions);
+	LearningData::Chunk::Action get_action_maxLearningProgress (const ActionsVector& candidateActions);
 		
 	///
 	///Update learners according to a sensorimotor region splitting criterion
@@ -193,12 +196,12 @@ protected:
 	///
 	///variance calculation of a dataset
 	///
-	double variance (const DataSet& data, int sMContextSize);
+	double variance (const LearningData::DataSet& data, int sMContextSize);
 
 	///
 	///minimality criterion for splitting a sensorimotor region
 	///
-	double evaluate_minimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize);
+	double evaluate_minimality (const LearningData::DataSet& firstSplittingSet, const LearningData::DataSet& secondSplittingSet, int sMContextSize);
 
 	///
 	///partition of regions according to variance of dataset instances

@@ -81,48 +81,37 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 			return;
 		}
 
-		FeatureVector currentFeatureVector;
 		LearningData::Chunk chunk;
 		chunk.timeStamp = trialTime;
-		arm->getArm().lookupInp(chunk.armState, context.getTimer()->elapsed());
-		chunk.effectorPose = effector->getPose();
-		chunk.objectPose = object->getPose();
-// 		golem::Mat34 p = chunk.objectPose; 
-// 		cout << "pose: ";
-// 		printf("%.20f %.20f %.20f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
+		arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
+		chunk.action.effectorPose = effector->getPose();
+		chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
 
-		chunk.effectorPose.R.toEuler (chunk.efRoll, chunk.efPitch, chunk.efYaw);
-// 		cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
-		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
+		chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+		chunk.action.horizontalAngle = horizontalAngle;
+		chunk.action.pushDuration = pushDuration;
+ 		// golem::Mat34 p = chunk.action.effectorPose; 
+		// cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
+		chunk.object.objectPose = object->getPose();
+		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+ 		// golem::Mat34 p = chunk.objectPose; 
 		// cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
 
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
-		add_feature_vector (currentFeatureVector, chunk); 
-		if (storeLabels) add_label (currentFeatureVector, chunk);
+		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
+		if (storeLabels) add_label (chunk);
 		
-		write_feature_vector_into_current_sequence (currentFeatureVector, chunk);
+		learningData.currentChunkSeq.push_back (chunk);
 
-		// int size = learningData.currentSeq.size();
-		// for (int i=0; i<learningData.currentSeq[size-1].size(); i++) 
-		// 	cout << learningData.currentSeq[size-1][i] << " ";
-		// cout << endl;
+		currentPfRoll = chunk.object.obRoll;
+		currentPfY = chunk.object.objectPose.p.v2;
 
-		currentPfRoll = chunk.obRoll;
-		currentPfY = chunk.objectPose.p.v2;
-
-		//trainSeq = load_trainSeq (learningData.currentSeq, currentRegion->learner.header->inputSize, currentRegion->learner.header->outputSize, motorVectorSize, efVectorSize);
-		if (learningData._currentSeq.second.size() > 1) {
-			if (featureSelectionMethod == "basis") 
-				trainSeq = LearningData::load_NNtrainSeq (learningData._currentSeq, LearningData::load_NNsequence_basis<float(*)(float const&, float const&, float const&)>, normalize<float>, learningData.coordLimits);
-			else if (featureSelectionMethod == "markov") 
-				trainSeq = LearningData::load_NNtrainSeq (learningData._currentSeq, LearningData::load_NNsequence_markov<float(*)(float const&, float const&, float const&)>, normalize<float>, learningData.coordLimits);
+		if (learningData.currentChunkSeq.size() > 1) {
+			trainSeq = LearningData::load_NNtrainSeq (learningData.currentChunkSeq, featureSelectionMethod, normalize<float>, learningData.coordLimits, motorVectorSize);
 				
-				
-			//trainSeq = load_trainSeq (learningData.currentSeq, data.second);
 			currentRegion->learner.feed_forward (*trainSeq);
 		
-			//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 			get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, /*desc.maxRange, desc.minZ,*/ learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq, denormalize<Real>);
 		}
 	
@@ -157,11 +146,11 @@ void ActiveLearnScenario::initialize_polyflap(){
 ///
 ///get the action that maximizes learning progress
 ///
-pair<FeatureVector, LearningData::MotorCommand> ActiveLearnScenario::get_action_maxLearningProgress (const ActionsVector& candidateActions) {
+LearningData::Chunk::Action ActiveLearnScenario::get_action_maxLearningProgress (const ActionsVector& candidateActions) {
 	double maxLearningProgress = -1e6;
 	int index = -1;
 	for (int i=0; i < candidateActions.size(); i++) {
-		SMRegion contextRegion = regions[SMRegion::get_SMRegion (regions, candidateActions[i].first)];
+		SMRegion contextRegion = regions[SMRegion::get_SMRegion (regions, candidateActions[i].featureVector)];
 		double learningProgress;
 		if (contextRegion.learningProgressHistory.size() > 0)
 			learningProgress = contextRegion.learningProgressHistory.back();
@@ -198,25 +187,29 @@ void ActiveLearnScenario::choose_action () {
 			ActionsVector candidateActions;
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
-				LearningData::MotorCommand action;
+				LearningData::Chunk chunk_cand;
 				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
-				action.pushDuration = 3.0;
-				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
-				FeatureVector motorVector;
+				chunk_cand.action.pushDuration = 3.0;
+				chunk_cand.action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				Vec3 pos;
 				init_positionT (pos);
-				set_coordinates_into_target(/*action.*/startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-				write_finger_pos_and_or (motorVector, action, pos);
-				write_finger_speed_and_angle (motorVector, action, action.pushDuration, action.horizontalAngle);
-				candidateActions.push_back (make_pair (motorVector, action));
+				set_coordinates_into_target(startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+				chunk_cand.action.effectorPose.p = pos;
+				chunk_cand.action.efRoll = orientationT.v1;
+				chunk_cand.action.efPitch = orientationT.v2;
+				chunk_cand.action.efYaw = orientationT.v3;
+				
+				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.coordLimits, _effector | _action_params );
+				candidateActions.push_back (chunk_cand.action);
 			}
 
-			pair<FeatureVector, LearningData::MotorCommand> chosenAction = get_action_maxLearningProgress(candidateActions);
+			// current chosen Action
+			LearningData::Chunk::Action chosenAction = get_action_maxLearningProgress(candidateActions);
 			
-			this->pushDuration = chosenAction.second.pushDuration;
-			this->horizontalAngle = chosenAction.second.horizontalAngle;
-			this->positionT = chosenAction.second.initEfPosition;
+			this->pushDuration = chosenAction.pushDuration;
+			this->horizontalAngle = chosenAction.horizontalAngle;
+			this->positionT = chosenAction.effectorPose.p;
 			this->startPosition = positionsT[this->positionT];
 
 			usedStartingPositions.push_back(startPosition);
@@ -233,11 +226,9 @@ void ActiveLearnScenario::write_data (bool final){
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
 	if (final) {
-		write_dataset (dataFileName, data);
+		LearningData::write_dataset (dataFileName, data, learningData.coordLimits);
 		string stpFileName = dataFileName + ".stp";
 		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-		//write_intvector(writeToFile, usedStartingPositions);
-		//write_realvector(writeToFile, usedStartingPositions);
 		write_vector<double>(writeToFile, usedStartingPositions);
 	}
 
@@ -273,13 +264,15 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	positionsT = get_canonical_positions (desc);
 
+	//Set first sensorimotor region and corresponding learner
 	regionsCount = 0;
-	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1);
+	SMRegion firstRegion (regionsCount, motorContextSize, splittingCriterion1);
 	regions[regionsCount] = firstRegion;
 	if (netconfigFileName.empty())
-		regions[regionsCount].learner.init (/*learningData.motorVectorSize*/2 + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize);
+		regions[regionsCount].learner.init (motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize);
 	else
-		regions[regionsCount].learner.init (/*learningData.motorVectorSize*/2 + learningData.efVectorSize + learningData.pfVectorSize, learningData.pfVectorSize, netconfigFileName);
+		regions[regionsCount].learner.init (motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize, learningData.pfVectorSize, netconfigFileName);
+	currentRegion = &regions[regionsCount];
 
 	plotApp->init (regionsCount+1, firstRegion.smoothing + firstRegion.timewindow);
 	plotApp->resize(640,480);
@@ -296,7 +289,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//polyflap actor
 		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
-
+		
 		//select an optimal action from a random set of actions
 		{
 			CriticalSectionWrapper csw (cs);
@@ -309,36 +302,27 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		//move the finger to the beginnign of experiment trajectory
 		send_position(target, ReacPlanner::ACTION_GLOBAL);
-		
+
 		//create feature sequence and vector
 		init_writing();
-
-		//write initial position and orientation of the finger
-		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
-
-		//write chosen speed and angle of the finger experiment trajectory	
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, pushDuration, horizontalAngle);
-		//add motor vector to the sequence
-		write_motor_vector_into_current_sequence();
-
-		//update context region
-		update_currentRegion ();
 
 		//compute direction and other features of trajectory
 		set_up_movement();
 
 		//move the finger along described experiment trajectory
 		move_finger();
+		
+		//update context region
+		update_currentRegion ();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data.first, _data);
-		write_current_sequence_into_dataset(currentRegion->data, currentRegion->_data);
-
+		data.push_back(learningData.currentChunkSeq);
+		currentRegion->data.push_back(learningData.currentChunkSeq);
 
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			//update_learners ();
+			update_learners ();
 			int windowSize = currentRegion->smoothing + currentRegion->timewindow;
 			vector<double> learnProgData;
 			vector<double> errorData;
@@ -449,7 +433,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 ///
 void ActiveLearnScenario::update_currentRegion () {
 
-	int regionIdx = SMRegion::get_SMRegion (regions, learningData.currentMotorCommandVector);
+	int regionIdx = SMRegion::get_SMRegion (regions, learningData.currentChunkSeq[0].featureVector);
 	assert (regionIdx != -1);
 	currentRegion = &regions[regionIdx];
 
@@ -495,7 +479,7 @@ void ActiveLearnScenario::update_learners () {
 ///
 ///variance calculation of a dataset
 ///
-double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
+double ActiveLearnScenario::variance (const LearningData::DataSet& data, int sMContextSize) {
 	vector<double> means;
 	vector<double> variances;
 
@@ -504,17 +488,17 @@ double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
 	
 	assert (data[0].size() >= 2);
 	double featVectorSize;
-	assert ((featVectorSize = data[0][1].size()) > 0);
+	assert ((featVectorSize = data[0][1].featureVector.size()) > 0);
 	means.resize (featVectorSize, 0.0);
 	variances.resize (featVectorSize, 0.0);
 	int numInstances = 0;
 	
 	for (int i=0; i<data.size(); i++)
 		for (int j=1; j<data[i].size(); j++) {
-			assert (data[i][j].size() == featVectorSize);
+			assert (data[i][j].featureVector.size() == featVectorSize);
 			numInstances++;
 			for (int k=0; k<featVectorSize; k++)
-				means[k] += data[i][j][k];
+				means[k] += data[i][j].featureVector[k];
 	}
 	for (int k=0; k<featVectorSize; k++)
 		means[k] /= numInstances;
@@ -522,7 +506,7 @@ double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
 	for (int k=0; k<featVectorSize; k++) {
 		for (int i=0; i<data.size(); i++)
 			for (int j=1; j<data[i].size(); j++) {
-				double meanDiff = data[i][j][k] - means[k];
+				double meanDiff = data[i][j].featureVector[k] - means[k];
 				variances[k] += (meanDiff * meanDiff);
 			}
 		variances[k] /= numInstances;
@@ -538,7 +522,7 @@ double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
 ///
 ///minimality criterion for splitting a sensorimotor region
 ///
-double ActiveLearnScenario::evaluate_minimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize) {
+double ActiveLearnScenario::evaluate_minimality (const LearningData::DataSet& firstSplittingSet, const LearningData::DataSet& secondSplittingSet, int sMContextSize) {
 	//calculate variance of sequence S(t+1),...S(t+n) for each splitting set
 	double varianceLastSC1stSet = variance (firstSplittingSet, sMContextSize);
 	double varianceLastSC2ndSet = variance (secondSplittingSet, sMContextSize);
@@ -552,25 +536,24 @@ double ActiveLearnScenario::evaluate_minimality (const DataSet& firstSplittingSe
 ///
 void ActiveLearnScenario::split_region (SMRegion& region) {
 	double minimalQuantity = 1e6;
-	DataSet firstSplittingSet;
-	DataSet secondSplittingSet;
+	LearningData::DataSet firstSplittingSet;
+	LearningData::DataSet secondSplittingSet;
 	double cuttingValue = -1.0;
 	int cuttingIdx = -1;
-	// SMRegion& region = regions[regionIdx];
 	//for (int i=0; i<region.sMContextSize; i++) {
-	for (int i=0; i<LearningData::motorVectorSize; i++) {
+	for (int i=0; i<motorContextSize; i++) {
 		for (double j=-0.999; j<1.0; j=j+0.001) {
-			DataSet firstSplittingSetTry;
-			DataSet secondSplittingSetTry;
+			LearningData::DataSet firstSplittingSetTry;
+			LearningData::DataSet secondSplittingSetTry;
 			for (int k=0; k < region.data.size(); k++) {
-				FeatureVector currentSMContext = region.data[k][0];
+				FeatureVector currentSMContext = region.data[k][0].featureVector;
 				//cutting criterion for splitting
 				if (currentSMContext[i] < j)
 					firstSplittingSetTry.push_back (region.data[k]);
 				else
 					secondSplittingSetTry.push_back (region.data[k]);
 			}
-			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, learningData.motorVectorSize);
+			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, motorContextSize);
 			if (quantityEval < minimalQuantity) {
 				minimalQuantity = quantityEval;
 				firstSplittingSet = firstSplittingSetTry;
@@ -589,8 +572,8 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 	regions[firstRegion.index] = firstRegion;
 	regions[secondRegion.index] = secondRegion;
 
-	regions[firstRegion.index].learner.init (learningData.motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
-	regions[secondRegion.index].learner.init (learningData.motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
+	regions[firstRegion.index].learner.init (motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
+	regions[secondRegion.index].learner.init (motorVectorSize + learningData.efVectorSize + learningData.pfVectorSize,  learningData.pfVectorSize, region.learner.net->weightContainer);
 
 	assert (regions.erase (region.index) == 1);
 	
@@ -602,7 +585,6 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 }
 
 
-//void ActiveLearnScenario::init(map<string, string> m) {
 void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	
 	Scenario::init(vm);
@@ -616,10 +598,6 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	
 	netconfigFileName = "";
 
-/*	if (m.count("netconfigFileName")) {
-		netconfigFileName = m["netconfigFileName"];
-	}
-*/
 	if (vm.count("netconfigFileName")) {
 		netconfigFileName = vm["netconfigFileName"].as<string>();
 	}
@@ -630,8 +608,10 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		featureSelectionMethod = vm["featureSelectionMethod"].as<string>();
 	}
 
-
-
+	if (featureSelectionMethod == "basis" )
+		motorVectorSize = 2;
+	else if (featureSelectionMethod == "markov" )
+		motorVectorSize = 2;
 	
 }
 
@@ -664,26 +644,6 @@ try {
 
 
 
-/*
-
-void ActivePushingApplication::read_program_options(int argc, char *argv[]) {
-
-	try {
-		PushingApplication::read_program_options(argc, argv);
-
-		if (vm.count("netconfigFileName")) {
-			arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
-		}
-
-	} catch(std::exception& e) {
-		cerr << "error: " << e.what() << "\n";
-	} catch(...) {
-		cerr << "Exception of unknown type!\n";
-
-	}
-
-}
-*/
 
 
 

@@ -140,13 +140,11 @@ void print_dataset_params (const DataSetParams& p);
 ///write DataSet vector to a file
 ///
 bool write_dataset (string fileName, const DataSetStruct& data);
-bool write_dataset (string fileName, const LearningData::DataSet& data);
 
 ///
 ///read DataSet vector from a file
 ///
 bool read_dataset (string fileName, DataSetStruct& data);
-bool read_dataset (string fileName, LearningData::DataSet& data);
 
 ///
 ///write DataSet vector to a nc (netcdf format) file using basis feature vectors

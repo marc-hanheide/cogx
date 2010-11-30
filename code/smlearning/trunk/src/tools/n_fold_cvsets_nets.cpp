@@ -9,7 +9,7 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
-	DataSetStruct savedDataold;
+	//DataSetStruct savedDataold;
 	LearningData::DataSet savedData;
 	LearningData::CoordinateLimits limits;
 	string seqFile = string (argv[1]);
@@ -23,21 +23,21 @@ int main(int argc, char * argv[]) {
 		cerr << "error reading data" << endl;
 		return 1;
 	}
-	if (!read_dataset (seqFile, savedDataold)) {
-		cerr << "error reading data" << endl;
-		return 1;
-	}
+	// if (!read_dataset (seqFile, savedDataold)) {
+	// 	cerr << "error reading data" << endl;
+	// 	return 1;
+	// }
 
 	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
 	//print_dataset<double> (savedData);
 	//writing to nc file
-	if (featureselection == "basis") {
-		if (LearningData::write_nc_file_NNbasis/*write_nc_file_basis*/ (target_dir + "/" + seqBaseFileName, savedData/*old*/, normalize<Real>, limits))
-			cout << "nc file written" << endl;
-		else
-			cerr << "nc file NOT written" << endl;
-	}
+	// if (featureselection == "basis") {
+	// 	if (LearningData::write_nc_file_NNbasis/*write_nc_file_basis*/ (target_dir + "/" + seqBaseFileName, savedData/*old*/, normalize<Real>, limits))
+	// 		cout << "nc file written" << endl;
+	// 	else
+	// 		cerr << "nc file NOT written" << endl;
+	// }
 	// else if (featureselection == "padding") {
 	// 	if (write_cdl_file_padding (target_dir + "/" + seqBaseFileName, savedData))
 	// 		cout << "nc file written" << endl;
@@ -52,7 +52,7 @@ int main(int argc, char * argv[]) {
 	// }
 	//generate n fold cross validation sets
 	if (featureselection == "basis")
-		LearningData::write_n_fold_cross_valid_sets (seqFile, n, LearningData::write_nc_file_NNbasis<Real(*)(Real const&, Real const&, Real const&) >, donotnormalize<Real>, limits, target_dir );
+		LearningData::write_n_fold_cross_valid_sets (seqFile, n, LearningData::write_nc_file_NNbasis<Real(*)(Real const&, Real const&, Real const&) >, normalize<Real>, limits, target_dir );
 	// else if (featureselection == "padding")
 	// 	write_n_fold_cross_valid_sets (seqFile, n, write_cdl_file_padding, target_dir );
 	else if (featureselection == "markov")

@@ -53,10 +53,10 @@ struct SMRegion {
 	/** vector of maximum values of the motor context vectors in the dataset */
 	vector<double> maxValuesSMVector;
 	/** size of the motor context */
-	//int sMContextSize;
+	int sMContextSize;
 	/** instances corresponding to the region */
-	DataSet data;
-	LearningData::DataSet _data;
+	// DataSet data;
+	LearningData::DataSet data;
 	/** RNN learner corresponding to the region */
 	ActiveRNN learner;
 	/** vector corresponding to learning progress */
@@ -74,14 +74,14 @@ struct SMRegion {
 	SMRegion () {
 	}
 	
-	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1/*, int created = 0*/) :
-		index(idx)//,
-		//sMContextSize (smCtxtSize) {
+	SMRegion (int idx, int smCtxtSize, int splittingCriterion1/*, int created = 0*/) :
+		index(idx),
+		sMContextSize (smCtxtSize)
 	{
-		//minValuesSMVector.resize(sMContextSize, -1.0);
-		//maxValuesSMVector.resize(sMContextSize, 1.0);
-		minValuesSMVector.resize(LearningData::motorVectorSize, -1.0);
-		maxValuesSMVector.resize(LearningData::motorVectorSize, 1.0);
+		minValuesSMVector.resize(sMContextSize, -1.0);
+		maxValuesSMVector.resize(sMContextSize, 1.0);
+		// minValuesSMVector.resize(LearningData::motorVectorSize, -1.0);
+		// maxValuesSMVector.resize(LearningData::motorVectorSize, 1.0);
 		timewindow = splittingCriterion1 * 0.375;
 		smoothing = splittingCriterion1 * 0.625;
 		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
@@ -91,9 +91,9 @@ struct SMRegion {
 		
 	}
 
-	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion) :
+	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, LearningData::DataSet inheritedData, bool firstRegion) :
 		index (idx),
-		//sMContextSize (parentRegion.sMContextSize),
+		sMContextSize (parentRegion.sMContextSize),
 		minValuesSMVector (parentRegion.minValuesSMVector),
 		maxValuesSMVector (parentRegion.maxValuesSMVector),
 		learner (parentRegion.learner),
