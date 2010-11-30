@@ -300,7 +300,7 @@ sensing is scheduled, or to completion. Lastly, we note that in our
 project the rewards, i.e., functions
 $\$,\hat\$:2^\propositions\to\Re$, for the POMDP posed to the
 contingent session are sourced from a motivational component of our
-robotic architecture. For this paper, for $\assumptiveDT{i}$ actions
+robotic architecture. In this paper, for $\assumptiveDT{i}$ actions
 we set $\$(x)$ to be a positive constant, and have $\hat\$(x)= -
 \$(x)(1 - p) / p$ where $p$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
@@ -329,7 +329,7 @@ represent conjunctive or atomic terms.
   \tikzstyle{selected} = [solid, draw=black]
   \tikzstyle{unused} = [densely dashed, draw=black!40]
   \subfloat[The initial belief-state with the assumptions made by the continual
-    planner.]{
+    planner in bold.]{
       \label{fig:abstraction-a}
       \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -400,7 +400,7 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
 \qquad
-  \subfloat[Re-adding relevant facts until the belief-state size limit is reached.]{
+  \subfloat[Refinement, by adding relevant facts until the $\bstate_0$ size limit is reached.]{
     \label{fig:abstraction-c}
     \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -472,7 +472,7 @@ In the first step, we remove all facts that are not part of an
 assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
 would proceed in an abstraction of the environment that does not
 contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
-
+%%
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
 number of abstract states in $\bstate_0$ that occur with non-zero
