@@ -129,6 +129,12 @@ private:
 	/** Name of the DefaultChainGraphInferencer component.  */
 	std::string _defaultChainGraphInferencerName;
 
+	/** Name of the file to which the graph is saved.  */
+	std::string _saveGraphFileName;
+
+	/** Name of the file to which the info about variables and their values is saved.  */
+	std::string _saveGraphInfoFileName;
+
 	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
 
@@ -160,6 +166,9 @@ private:
 
 	/** List of all factors in the graph. */
 	std::vector<dai::Factor> _factors;
+
+	/** List of all names for all factors. */
+	std::vector<std::string> _factorNames;
 
 	/** The main factor graph used for inference. */
 	dai::FactorGraph _factorGraph;
