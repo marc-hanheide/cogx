@@ -340,7 +340,10 @@ void Scenario::choose_action () {
 	//pushDuration = floor (randomG.nextUniform (3.0, 6.0));
 	pushDuration = 3;
 
+	//chose random horizontal and vertical angle
+	// use disc for integer values and cont for continuous values
 	horizontalAngle = choose_angle(60.0, 120.0, "cont");
+	//int verticalAngle = rand() % 7;
 
 }
 
@@ -386,13 +389,11 @@ void Scenario::prepare_target(){
 	// and set target waypoint
 	//golem::GenWorkspaceState target;
 	fromCartesianPose(target.pos, positionT, orientationT);
+	// cout << "target pos: " << target.pos.p.v1 << ", " << target.pos.p.v2 << ", " << target.pos.p.v3 << endl;
 	target.vel.setId(); // it doesn't move
 	
 	target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 	
-	//tuple<golem::GenWorkspaceState, Vec3, int> t = make_tuple(target, positionT, startPosition);
-	//return t;
-	//return startPosition;
 }
 
 
@@ -463,76 +464,35 @@ void Scenario::set_up_movement(){
 	//the lenght of the movement
 	Real currDistance = desc.distance;
 
-	//chose random horizontal and vertical angle
-	// use disc for integer values and cont for non-integer values
-	//horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
-	//horizontalAngle = choose_angle(60.0, 120.0, "disc");
-	// horizontalAngle = choose_angle(60.0, 120.0, "cont");
-				
-		
-	//int verticalAngle = rand() % 7;
-
 	set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 	cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
-	//return horizontalAngle;
 }
 
-///
-///storing a feature vector
-///
-void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
-
-	try {
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
-	currentFeatureVector.push_back(normalize(chunk.efRoll, -REAL_PI, REAL_PI));
-	currentFeatureVector.push_back(normalize(chunk.efPitch, -REAL_PI, REAL_PI));
-	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
-
-	assert (currentFeatureVector.size() == learningData.efVectorSize);
-	} catch ( ... ) {
-		cerr << "Error normalizing effector feature vector " << endl;
-	};
-
-	try {
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
-	currentFeatureVector.push_back(normalize(chunk.obRoll, -REAL_PI, REAL_PI));
-	currentFeatureVector.push_back(normalize(chunk.obPitch, -REAL_PI, REAL_PI));
-	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
-
-	assert (currentFeatureVector.size() == learningData.efVectorSize + learningData.pfVectorSize);
-	} catch ( ... ) {
-		cerr << "Error normalizing polyflap feature vector " << endl;
-	};
-	
-}
 
 ///
 ///storing a label (in this case polyflap status)
+///(TO DO: to be deprecated)
 ///
-void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
+void Scenario::add_label (LearningData::Chunk& chunk) {
 	Real polStateOutput = 0; //polyflap moves with the same Y angle
 	Real epsilonAngle = 0.005;
 	// Real pfFlipThreshold = REAL_PI / 4.0;
 	
-	if (learningData.currentSeq.size() > 1) {
-		if (currentPfRoll < (chunk.obRoll - epsilonAngle) ) {//polyflap Y angle increases
+	if (learningData.currentChunkSeq.size() > 1) {
+		if (currentPfRoll < (chunk.object.obRoll - epsilonAngle) ) {//polyflap Y angle increases
 			polStateOutput = 1;
 			// if (obRoll > pfFlipThreshold)
 			// 	polStateOutput = 1;
 			// else
 			// 	polStateOutput = 0.75;
 		}
-		if (currentPfRoll > (chunk.obRoll + epsilonAngle) )//polyflap Y angle decreases
+		if (currentPfRoll > (chunk.object.obRoll + epsilonAngle) )//polyflap Y angle decreases
 			polStateOutput = -1;
 		Real epsilonPfY = 0.000001;
-		if (polStateOutput == 0 && currentPfY < (chunk.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
+		if (polStateOutput == 0 && currentPfY < (chunk.object.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
 			polStateOutput = 0.5;
-		if (polStateOutput == 0 && currentPfY > (chunk.objectPose.p.v2 + epsilonPfY) ) //polyflap Y position decreases
+		if (polStateOutput == 0 && currentPfY > (chunk.object.objectPose.p.v2 + epsilonPfY) ) //polyflap Y position decreases
 			polStateOutput = -0.5;
 	}
 	
@@ -541,28 +501,8 @@ void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chu
 	// if (obRoll > reachedAngle)
 	// 	reachedAngle = obRoll;
 	
-	currentFeatureVector.push_back(polStateOutput);
+	chunk.label = polStateOutput;
 
-}
-
-///
-///add the feature vector to the current sequence
-///
-void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector, LearningData::Chunk& chunk){
-
-	if (storeLabels)
-		assert (featureVector.size() == learningData.efVectorSize + learningData.pfVectorSize + 1);
-	else
-		assert (featureVector.size() == learningData.efVectorSize + learningData.pfVectorSize);
-	/////////////////////////////////////////////////
-	//writing of the feature vector into sequence
-	learningData.currentSeq.push_back(featureVector);
-	/////////////////////////////////////////////////
-
-	learningData.currentChunkSeq.push_back(chunk);
-
-	learningData._currentSeq.second = learningData.currentChunkSeq;
-	
 }
 
 
@@ -573,32 +513,34 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 			return;
 		}
 
-		FeatureVector currentFeatureVector;
 		LearningData::Chunk chunk;
 		chunk.timeStamp = trialTime;
-		arm->getArm().lookupInp(chunk.armState, context.getTimer()->elapsed());
-		chunk.effectorPose = effector->getPose();
-		chunk.objectPose = object->getPose();
-	
-		chunk.effectorPose.R.toEuler (chunk.efRoll, chunk.efPitch, chunk.efYaw);
-		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
+		arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
+		chunk.action.effectorPose = effector->getPose();
+		chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
+		chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+		chunk.action.horizontalAngle = horizontalAngle;
+		chunk.action.pushDuration = pushDuration;
 
-		// golem::Mat34 p = chunk.objectPose; 
-		// golem::Mat34 p = chunk.effectorPose; 
+		chunk.object.objectPose = object->getPose();
+		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+
+		// golem::Mat34 p = chunk.object.objectPose; 
+		// golem::Mat34 p = chunk.action.effectorPose; 
 		// cout << "pose: ";
 
-		// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.efRoll << " " << chunk.efPitch << " " << chunk.efYaw << endl;
+		// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.action.efRoll << " " << chunk.action.efPitch << " " << chunk.action.efYaw << endl;
 
-		add_feature_vector (currentFeatureVector, chunk);
-		if (storeLabels) add_label (currentFeatureVector, chunk);
+		//LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
+		if (storeLabels) add_label (chunk);
 
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 
-		write_feature_vector_into_current_sequence (currentFeatureVector, chunk);
+		learningData.currentChunkSeq.push_back (chunk);
 
-		currentPfRoll = chunk.obRoll;
-		currentPfY = chunk.objectPose.p.v2;
+		currentPfRoll = chunk.object.obRoll;
+		currentPfY = chunk.object.objectPose.p.v2;
 	}
 }
 
@@ -617,6 +559,9 @@ void Scenario::first_init(){
 	// get initial configuration (it is the current joint configuration)
 	//golem::GenConfigspaceState initial;
 	arm->getArm().lookupInp(initial, context.getTimer()->elapsed());
+
+	learningData.setToDefault(desc.coordLimits);
+
 }
 
 
@@ -665,79 +610,11 @@ void Scenario::init_writing(){
 
 	/////////////////////////////////////////////////
 	//create sequence for this loop run and initial (motor command) vector
-	learningData.currentSeq.clear();
-	learningData.currentMotorCommandVector.clear();
+	// learningData.currentSeq.clear();
+	// learningData.currentMotorCommandVector.clear();
 
 	learningData.currentChunkSeq.clear();
 	/////////////////////////////////////////////////	
-}
-
-
-///
-///write finger features to the vector
-///
-void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Vec3& positionT){
-
-	/////////////////////////////////////////////////
-	//writing in the initial vector	
-	//initial position, normalized
-	try {
-	featureVector.push_back(normalize<double>(positionT.v1, desc.coordLimits.minX, desc.coordLimits.maxX));
-	featureVector.push_back(normalize<double>(positionT.v2, desc.coordLimits.minY, desc.coordLimits.maxY));
-	featureVector.push_back(normalize<double>(positionT.v3, desc.coordLimits.minZ, desc.coordLimits.maxZ));
-	//initial orientation, normalized
-//	currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
-//	currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
-//	currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
-	//end pose info missing (must be added later 
-	/////////////////////////////////////////////////
-	} catch ( ... ) {
-		cerr << "Error normalizing finger pos. feature vector..." << endl;
-	}
-
-	motorCommand.initEfPosition = positionT;
-}
-
-
-///
-///write finger features to the vector
-///
-void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Real pushDuration, const Real horizontalAngle){
-
-	try {
-	/////////////////////////////////////////////////
-	//writing in the initial vector
-	featureVector.push_back(normalize<double>(pushDuration, 3.0, 5.0));
-	/////////////////////////////////////////////////
-
-
-
-	/////////////////////////////////////////////////
-	//writing in the initial vector
-	featureVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
-	/////////////////////////////////////////////////
-	} catch ( ... ) {
-		cerr << "Error normalizing finger speed/angle..." << endl;
-	}
-
-	motorCommand.horizontalAngle = horizontalAngle;
-	motorCommand.pushDuration = pushDuration;
-	
-	
-}
-
-
-///
-///add the motor vector to the current sequence
-///
-void Scenario::write_motor_vector_into_current_sequence(){
-
-	assert (learningData.currentMotorCommandVector.size() == learningData.motorVectorSize);
-	/////////////////////////////////////////////////
-	//writing of the initial vector into sequence
-	learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
-	/////////////////////////////////////////////////
-	learningData._currentSeq.first = learningData.currentMotorCommand;
 }
 
 
@@ -746,7 +623,6 @@ void Scenario::write_motor_vector_into_current_sequence(){
 ///
 void Scenario::init_data(){
 	// initialize data
-	learningData.setToDefault(desc.coordLimits);
 	learningData.effector = effectorBounds;
 	learningData.object = *object->getLocalBoundsSeq();
 	learningData.obstacles = *obstacles->getGlobalBoundsSeq();
@@ -781,19 +657,6 @@ void Scenario::move_finger(){
 
 
 ///
-///write vector sequence into current dataset
-///
-void Scenario::write_current_sequence_into_dataset(DataSet& data, LearningData::DataSet& _data){
-	/////////////////////////////////////////////////
-	//writing the sequence into the dataset
-	data.push_back(learningData.currentSeq);
-
-	_data.push_back(learningData._currentSeq);
-	/////////////////////////////////////////////////
-}
-
-
-///
 ///turn the finger collision detection on (true) or off (false)
 ///
 void Scenario::set_collision_detection(bool b){
@@ -813,7 +676,7 @@ void Scenario::set_collision_detection(bool b){
 ///print out desired sequenc information
 ///
 void Scenario::print_sequence_info(){
-	cout << "sequence size: " << learningData.currentSeq.size() << endl;
+	cout << "sequence size: " << learningData.currentChunkSeq.size() << endl;
 }
 
 
@@ -859,7 +722,11 @@ void Scenario::move_finger_home() {
 	
 	//move the finger to home position
 	send_position(home , ReacPlanner::ACTION_GLOBAL);
+	
+	context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
+	arm->getReacPlanner().waitForEnd(60000);
 
+	
 }
 
 
@@ -900,15 +767,11 @@ void Scenario::write_data (){
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	//writedown_collected_data(data);
-	write_dataset (dataFileName, data);
-	LearningData::write_dataset (dataFileName, _data, learningData.coordLimits);
+	LearningData::write_dataset (dataFileName, data, learningData.coordLimits);
 	/////////////////////////////////////////////////
 
 	string stpFileName = dataFileName + ".stp";
 	ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-	//write_intvector(writeToFile, usedStartingPositions);
-	//write_realvector(writeToFile, usedStartingPositions);
 	write_vector<double> (writeToFile, usedStartingPositions);
 }
 
@@ -950,14 +813,6 @@ void Scenario::run(int argc, char* argv[]) {
 		//create feature sequence and vector
 		init_writing();	
 
-		//write initial position and orientation of the finger
-		write_finger_pos_and_or(learningData.currentMotorCommandVector, learningData.currentMotorCommand, positionT);
-
-		//write chosen speed and angle of the finger experiment trajectory
-		write_finger_speed_and_angle(learningData.currentMotorCommandVector, learningData.currentMotorCommand, pushDuration, horizontalAngle);
-		//add motor feature vector to the sequence
-		write_motor_vector_into_current_sequence();
-
 		//compute direction and other features of trajectory
 		set_up_movement();
 
@@ -965,7 +820,7 @@ void Scenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data.first, _data);
+		data.push_back(learningData.currentChunkSeq);
 
 		//turn off collision detection
 		set_collision_detection(false);		
@@ -982,9 +837,6 @@ void Scenario::run(int argc, char* argv[]) {
 		//move finger to initial position
 		move_finger_home ();
 
-		//context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
-		//arm->getReacPlanner().waitForEnd(60000);
-		
 		//print out end information of this iteration
 		iteration_end_info();		
 	
@@ -1029,26 +881,11 @@ void Scenario::set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,
 ///
 ///set experiment default values
 ///
-//void Scenario::init(map<string, string> m) {
 void Scenario::init(boost::program_options::variables_map vm) {
 	numSequences = 10000;
 	startingPosition = 0;
 	storeLabels = false;
 	
-/*	if (m.count("numSequences")) {
-		numSequences = atoi((m["numSequences"]).c_str());
-		
-	}
-
-	if (m.count("startingPosition")) {
-		startingPosition = atoi((m["startingPosition"]).c_str());
-	}
-
-	if (m.count("storeLabels") && (m["storeLabels"] == "true")) {
-		storeLabels = true;
-	}
-*/
-
 	if (vm.count("numSequences")) {
 		numSequences = atoi(vm["numSequences"].as<string>().c_str());
 	}
@@ -1058,14 +895,10 @@ void Scenario::init(boost::program_options::variables_map vm) {
 	}
 
 	if (vm.count("storeLabels")) {
-		//if (vm["storeLabels"].as<string>() == "true") {
-			storeLabels = true;
-		//}
+		storeLabels = true;
 	}
 
 
-
-	data.second = make_tuple (make_tuple((int)learningData.motorVectorSize, (int)learningData.pfVectorSize + learningData.efVectorSize, (int)learningData.pfVectorSize, (int)learningData.efVectorSize), storeLabels, make_tuple(desc.coordLimits.minX, desc.coordLimits.minY, desc.coordLimits.minZ, desc.coordLimits.maxX, desc.coordLimits.maxY, desc.coordLimits.maxZ));
 
 	dataFileName = get_base_filename_from_time ();
 
@@ -1081,22 +914,13 @@ void PushingApplication::define_program_options_desc() {
 
 	try {
 
-	//po::options_description desc("Allowed options");
-	//const string prgOptDescName = "Allowed options";
-	//prgOptDesc/* = new po::options_description("Allowed options")*/();
 	prgOptDesc.add_options()
 		("help,h", "produce help message")
 		("numSequences,S", po::value<string>(), "number of sequences")
 		("startingPosition,P", po::value<string>(), "only starting position to use")
 		("storeLabels,L", "store labels")
-		//("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
 		("configFile,C", po::value<string>(), "name of the xml config file")
 	;
-
-	//po::positional_options_description p;
-	//p.add("configFile", -1);
-
-	
 
 
 
@@ -1115,40 +939,22 @@ void PushingApplication::define_program_options_desc() {
 int PushingApplication::read_program_options(int argc, char *argv[]) {
 
 
-try {
-	//po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, prgOptDesc), vm);
-//	po::store(po::command_line_parser(argc, argv).options(prgOptDesc).positional(p).run(), vm);
-	po::notify(vm);
+	try {
+		po::store(po::parse_command_line(argc, argv, prgOptDesc), vm);
+		po::notify(vm);
 
-	if (vm.count("help")) {
-		cout << prgOptDesc << endl;
-		return 1;
+		if (vm.count("help")) {
+			cout << prgOptDesc << endl;
+			return 1;
+		}
+
+
+	}catch(std::exception& e) {
+		cerr << "error: " << e.what() << "\n";
+	}catch(...) {
+		cerr << "Exception of unknown type!\n";
+
 	}
-/*
-	if (vm.count("numSequences")) {
-		arguments["numSequences"]=vm["numSequences"].as<string>();
-	}
-
-	if (vm.count("startingPosition")) {
-		arguments["startingPosition"]=vm["startingPosition"].as<string>();
-	}
-
-	if (vm.count("storeLabels")) {
-		arguments["storeLabels"]=vm["storeLabels"].as<string>();
-	}
-*/
-	//if (vm.count("netconfigFileName")) {
-	//	arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
-	//}
-
-
-}catch(std::exception& e) {
-	cerr << "error: " << e.what() << "\n";
-}catch(...) {
-	cerr << "Exception of unknown type!\n";
-
-}
 
 
 }
@@ -1182,26 +988,14 @@ int PushingApplication::main(int argc, char *argv[]) {
 
 	try {
 
-	define_program_options_desc();
+		define_program_options_desc();
 
-	if (read_program_options(argc, argv)) {
-		return 1;
-	}
+		if (read_program_options(argc, argv)) {
+			return 1;
+		}
 
 
-	start_experiment(argv);
-/*
-	if (vm.count("configFile")) {
-		char* arr[2];
-		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
-		arr[0] = argv[0];
-		arr[1] =  (char*)vm["configFile"].as<string>().c_str();
-		Application::main(2, arr);
-	} else {
-		char* arr [] = {argv[0]};
-		Application::main(1, arr);
-	}
-*/	
+		start_experiment(argv);
 
 
 

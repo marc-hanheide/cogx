@@ -244,8 +244,8 @@ protected:
 	/** Trial data */
 	LearningData learningData;
 	/** Dataset */
- 	DataSetStruct data;
-	LearningData::DataSet _data;
+ 	// DataSetStruct data;
+	LearningData::DataSet data;
 	/** base file name for dataset */
 	string dataFileName;
 	/** Time */
@@ -383,25 +383,6 @@ protected:
 	///
 	void init_writing();
 
-	///
-	///write finger features to the vector
-	///
-	void write_finger_pos_and_or(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Vec3& pos);
-
-	///
-	///write finger features to the vector
-	///
-	void write_finger_speed_and_angle(FeatureVector& featureVector, LearningData::MotorCommand &motorCommand, const Real pushDuration, const Real horizontalAngle);
-
-	///
-	///add the vector to the current sequence
-	///
-	void write_motor_vector_into_current_sequence();
-
-	///
-	///add the feature vector to the current sequence
-	///
-	void write_feature_vector_into_current_sequence(FeatureVector& featureVector, LearningData::Chunk& chunk);
 
 	///
 	///initialize learning data
@@ -414,19 +395,9 @@ protected:
 	void move_finger();
 
 	///
-	///storing a feature vector
-	///
-	void add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk);
-
-	///
 	///storing a label (in this case polyflap status)
 	///
-	void add_label (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk);
-
-	///
-	///write vector sequence into current dataset
-	///
-	void write_current_sequence_into_dataset(DataSet& data, LearningData::DataSet& _data);
+	void add_label (LearningData::Chunk& chunk);
 
 	///
 	///turn the finger collision detection on (true) or off (false)
@@ -528,13 +499,14 @@ public:
 	virtual void define_program_options_desc();
 	virtual int read_program_options(int argc, char *argv[]);
 
+	/** options map */
 	boost::program_options::variables_map vm;
 
 	
 protected:
 
+	/** options description */
 	boost::program_options::options_description prgOptDesc;
-	boost::program_options::positional_options_description p;	
 
 	virtual int start_experiment(char *argv[]);
 
