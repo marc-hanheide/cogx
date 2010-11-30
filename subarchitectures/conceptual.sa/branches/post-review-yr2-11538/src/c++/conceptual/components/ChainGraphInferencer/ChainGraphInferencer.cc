@@ -13,7 +13,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/assign/list_of.hpp>
-
+#include <fstream>
 
 
 /** The function called to create a new instance of our component. */
@@ -72,6 +72,14 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	if((it = _config.find("--defaultchaingraphinferencer")) != _config.end())
 	{
 		_defaultChainGraphInferencerName = it->second;
+	}
+	if((it = _config.find("--save-graph")) != _config.end())
+	{
+		_saveGraphFileName = it->second;
+	}
+	if((it = _config.find("--save-graph-info")) != _config.end())
+	{
+		_saveGraphInfoFileName = it->second;
 	}
 
 	log("Configuration parameters:");
@@ -298,6 +306,33 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 		_variableNameToDai.clear();
 		addDaiFactors();
 		_factorGraph = dai::FactorGraph(_factors);
+
+		// Save the generated factor graph
+		if (!_saveGraphFileName.empty())
+		{
+			_factorGraph.WriteToFile(_saveGraphFileName.c_str());
+		}
+		if (!_saveGraphInfoFileName.empty())
+		{
+			ofstream file(_saveGraphInfoFileName.c_str());
+			for (std::map<std::string, DaiVariable>::iterator i = _variableNameToDai.begin();
+					i!=_variableNameToDai.end(); ++i)
+			{
+				file << i->second.var << " " << i->first.c_str() << endl;
+				for (std::map<int, std::string>::iterator j = i->second.valueIdToName.begin();
+									j!=i->second.valueIdToName.end(); ++j)
+				{
+					file << " " << j->first << " " << j->second << endl;
+				}
+				file <<endl;
+			}
+			for (unsigned int i = 0; i< _factors.size(); ++i)
+			{
+				file << "f" << i << " " << _factorNames[i] << endl;
+			}
+			file << endl;
+			file.close();
+		}
 	}
 
 	// Unlock world state
@@ -414,6 +449,7 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 }
 
 
@@ -429,6 +465,7 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
+
 	// Note: first fariable changes faster
 	// Go over the second variable
 	int roomCatCount = _roomCategories.size();
@@ -444,6 +481,7 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("SingleRoomFactor");
 }
 
 
@@ -490,6 +528,8 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+
 }
 
 
@@ -541,6 +581,7 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 
 }
 
@@ -587,6 +628,8 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedShapePropertyFactor");
+
 }
 
 
@@ -638,6 +681,7 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 
 }
 
@@ -684,6 +728,8 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedAppearancePropertyFactor");
+
 }
 
 
