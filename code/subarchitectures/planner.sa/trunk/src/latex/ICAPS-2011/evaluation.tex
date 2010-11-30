@@ -62,42 +62,41 @@ running a vision algorithm (cost of 8 vs costs of 3).
 %%  Therefore, an instantaneous positive detection of an object is
 %% not proof positive of it being there.
 
-We perform experiments on tasks of several sizes. The objective is to
-find one or more objects and report their position to the user. In
-order to determine the impact of the reliability of sensing in a
-comparison with the baseline, we run tests on identical problems but
-changed the sensor model for the target objects: the probability for
-perceiving the object if it was there went from 0.9 in the easiest
-case to 0.65 and 0.4 in the average and hard cases respectively. In
-addition, we test how our system performs in tasks requiring indirect
-sensing. Here, we gave the planner rewards for visiting a certain type
-of room (e.g. kitchen or office). We did not place any humans in those
-scenarios, so the only way of determining the room category is by
-looking for objects typical for that room type. As this indirect
-reasoning is a tasks that cannot be performed by the continual planner
-alone, we did not run the baseline system on those problems.
+We evaluated our switching planner against the baseline in several
+problems with the number of rooms ranging from 3 to 6. We examine the
+impact of sensing reliability, experimenting using sensor models that
+are: ({\em reliable}) $0.9$ chance the object is perceived if it is
+present, ({\em semi-reliable}) chance is 0.65, and ({\em noisy})
+chance is 0.4. The continual planning times are reported in
+Figure~\ref{fig:results-time}, and the quality data in
+Figure~\ref{fig:results-quality}. Here, in switching runs we examine
+the performance of our system where $b_0$ allocates non-zero
+probability to between 20 and 200 abstract states during contingent
+sessions. For Items~$a$-$e$ the objective is to find one or more
+objects and report their position to the user. In some of the tasks we
+configured the environment so that no plan exists, by excluding the
+desired object from the environment. Item~$f$ reports for tasks
+requiring indirect sensing, where the robot must relocate to a
+particular room category. For Item~$f$ there is no human in the
+environment, and therefore the baseline cannot be used, because there
+are no sensing schemata that directly sense room categories. In our
+evaluation we run 50 simulations in each configuration, and have a
+timeout on each simulation 30 minutes (1800 seconds). In our domain,
+rewards encapsulate a goal condition, and therefore we find it
+intuitive to report average costs of the plans and the success rate in
+problems that admit a solution (i.e., positive reward scaled by a
+constant factor).
 
+%% Because the switching utility model 
 
-
-In our evaluation we run 50 simulations in each configuration. A run
-timeouts after 30 minutes (1800 seconds). The planning and simulation
-models are in exact correspondence. Not all problems have a solution,
-so we also examine whether or not detection of the non-existence of a
-solution is important in stochastic domains.
-%% 
-We perform multiple tests with different limits for the
-belief-space size in contingent sessions.  Higher limits result in
-longer contingent planning times and higher plan quality.
-
-
-Using a satisficing, optimistic serial planner in sequential sessions
-makes optimising for the expected reward difficult. Only reasoning
-about single traces, it is optimistic wrt the remaining costs to a
-goal and pessimistic regarding the probability of reaching it. By
-setting the rewards to non-extremal values has little effect on that
-system. Therefore, we do not consider expected utility in our
-experiments. Instead, we report average costs of the plans and the
-success rate (as a ratio between solved and solvable problems).
+%% Using a satisficing, optimistic serial planner in sequential sessions
+%% makes optimising for the expected reward difficult. Only reasoning
+%% about single traces, it is optimistic wrt the remaining costs to a
+%% goal and pessimistic regarding the probability of reaching it. By
+%% setting the rewards to non-extremal values has little effect on that
+%% system. Therefore, we do not consider expected utility in our
+%% experiments. Instead, we report average costs of the plans and the
+%% success rate (as a ratio between solved and solvable problems).
 
 \begin{figure}[h!]
   % \centering
@@ -138,31 +137,41 @@ success rate (as a ratio between solved and solvable problems).
 %% executed plans as well as the percentage of solvable tasks that were
 %% actually solved by the planner. 
 
-
-Our experimental results are summarised in
-Figure~\ref{fig:results-time} and Figure~\ref{fig:results-quality}. We
-find that the time spent on contingent planning increases steeply as
-the abstraction $\bstate_0$ becomes more refined. For coarse initial
-configurations, the cost of contingent planning is compensated by the
-decrease of time spent in Fast Downward. Addressing success ratios and
-plan costs, for objects that can be easily detected there is little
-gain in using a decision-theoretic planner, as the greedy sensing
-approach by the baseline is sufficient. With decreasing sensor
-reliability contingent planning pays off.%% : while the resulting plans are still
-%% longer on average, the impact on the number of solved tasks was much
-%% smaller than for the baseline system.  Less aggressive abstraction
-of the initial configuration results in longer runtimes. In our
-scenario it is worthwhile being assumptively aggressive.  We suppose
-the relatively high success rate irrespective of the coarseness of the
+Examining success ratios and plan costs, where sensing is reliable
+there is little to be gained by using the contingent planner, as the
+greedy sensing approach of the baseline is sufficient. Not
+surprisingly, as sensing degrades contingent planning pays off.  Also,
+we find that time spent in contingent planning increases steeply as
+the abstraction $\bstate_0$ becomes more refined.  That refinement
+seems to be paying off in terms of the success ratio, particularly for
+problems $d$ and $e$, where we had sequential sessions using weighted
+$A^*$ (rather than $A^*$). For less refined initial configurations, the
+increase cost of contingent planning is compensated by a decrease in
+time spent executing the serial system Fast Downward. The relatively
+high success rate irrespective of the level of refinement in the
 initial configuration indicates the effectiveness of using conditional
-entropy to guide abstraction refinement.
+entropy to guide abstraction refinement in our setting.
 
-We find that abstraction has little impact on plan
-costs and success rate in our scenario. Increasing the size of the
-initial abstract belief beyond 50 states rarely pays off, because
-while additional information may facilitate better plans, the indirect
-sensing tests report the same result. Here, we only really see an
-impact in terms of the runtime of contingent planning. 
+
+%% :
+%%while the resulting plans are still
+%% longer on average, the impact on the number of solved tasks was much
+%% smaller than for the baseline system.  
+
+%% Less aggressive abstraction of the initial configuration results in
+%% longer runtimes, with little to be gained in terms of plan quality. We
+%% conclude that in our scenario it is worthwhile being assumptively
+%% aggressive.  
+
+
+
+%% We find that abstraction has little impact on plan
+%% costs and success rate in our scenario. Increasing the size of the
+%% initial abstract belief beyond 50 states rarely pays off, because
+%% while additional information may facilitate better plans, the indirect
+%% sensing tests report the same result. Here, we only really see an
+%% impact in terms of the runtime of contingent planning.
+
 
 % We believe that a part of the improvement is due to the segmentation of
 % the plan into several subtask, essentially performing hierarchical
