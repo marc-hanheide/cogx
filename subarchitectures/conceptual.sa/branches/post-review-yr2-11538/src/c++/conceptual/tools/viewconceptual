@@ -1,0 +1,2 @@
+#!/bin/bash
+../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps | okular -

@@ -1,0 +1,114 @@
+x4 place0_shape_property
+ 0 elongated
+ 1 square
+
+x10 place10_shape_property
+ 0 elongated
+ 1 square
+
+x11 place12_shape_property
+ 0 elongated
+ 1 square
+
+x12 place13_shape_property
+ 0 elongated
+ 1 square
+
+x13 place14_shape_property
+ 0 elongated
+ 1 square
+
+x9 place16_shape_property
+ 0 elongated
+ 1 square
+
+x5 place1_shape_property
+ 0 elongated
+ 1 square
+
+x14 place20_shape_property
+ 0 elongated
+ 1 square
+
+x15 place23_shape_property
+ 0 elongated
+ 1 square
+
+x16 place24_shape_property
+ 0 elongated
+ 1 square
+
+x6 place4_shape_property
+ 0 elongated
+ 1 square
+
+x7 place6_shape_property
+ 0 elongated
+ 1 square
+
+x8 place8_shape_property
+ 0 elongated
+ 1 square
+
+x1 room0_category
+ 0 corridor
+ 1 dining_room
+ 2 hall
+ 3 hallway
+ 4 kitchen
+ 5 living_room
+ 6 office
+ 7 toilet
+
+x2 room1_category
+ 0 corridor
+ 1 dining_room
+ 2 hall
+ 3 hallway
+ 4 kitchen
+ 5 living_room
+ 6 office
+ 7 toilet
+
+x3 room2_category
+ 0 corridor
+ 1 dining_room
+ 2 hall
+ 3 hallway
+ 4 kitchen
+ 5 living_room
+ 6 office
+ 7 toilet
+
+f0 SingleRoomFactor
+f1 f(room_category1,shape_property)
+f2 ObservedShapePropertyFactor
+f3 SingleRoomFactor
+f4 f(room_category1,shape_property)
+f5 ObservedShapePropertyFactor
+f6 f(room_category1,shape_property)
+f7 ObservedShapePropertyFactor
+f8 f(room_category1,shape_property)
+f9 ObservedShapePropertyFactor
+f10 f(room_category1,shape_property)
+f11 ObservedShapePropertyFactor
+f12 SingleRoomFactor
+f13 f(room_category1,shape_property)
+f14 ObservedShapePropertyFactor
+f15 f(room_category1,shape_property)
+f16 ObservedShapePropertyFactor
+f17 f(room_category1,shape_property)
+f18 ObservedShapePropertyFactor
+f19 f(room_category1,shape_property)
+f20 ObservedShapePropertyFactor
+f21 SingleRoomFactor
+f22 f(room_category1,shape_property)
+f23 ObservedShapePropertyFactor
+f24 f(room_category1,shape_property)
+f25 ObservedShapePropertyFactor
+f26 f(room_category1,shape_property)
+f27 ObservedShapePropertyFactor
+f28 f(room_category1,shape_property)
+f29 ObservedShapePropertyFactor
+f30 SingleRoomFactor
+
