@@ -365,7 +365,7 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
 \qquad
-  \subfloat[Remove facts that are not part of an assumption.]{
+  \subfloat[Removing facts that are not part of an assumption.]{
     \label{fig:abstraction-b}
     \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -398,7 +398,7 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
 \qquad
-  \subfloat[Re-add relevant facts until the belief space limit is reached.]{
+  \subfloat[Re-adding relevant facts until the belief-state size limit is reached.]{
     \label{fig:abstraction-c}
     \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -468,8 +468,8 @@ represent conjunctive or atomic terms.
 
 In the first step, we remove all facts that are not part of an
 assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
-would proceed in an abstraction of the environment where that does not
-contain $\pp{place2}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
+would proceed in an abstraction of the environment that does not
+contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
 
 In a second step, we iteratively refine the relaxed declaration by
 adding terms from the original statement of $(\pp{:init})$ while the
