@@ -1,10 +1,11 @@
 % coming soon
 
 We have implemented our switching continual approach in the MAPSIM
-environment~\cite{brenner:nebel:jaamas09}. Our implementation is able
-to use several underlying planning systems. We have also extended the
-MAPSIM system so that it can parse DTPDDL, and perform successive
-estimation of the underlying belief-state using
+environment~\cite{brenner:nebel:jaamas09}. 
+% Our implementation is able
+% to use several underlying planning systems.
+We have extended MAPSIM so that it can parse DTPDDL, and perform
+successive estimation of the underlying belief-state using
 \system{dlib-ml}~\cite{king:2009} for inference.  In this evaluation
 we use our own version of Fast Downward~\cite{fast-downward} for
 sequential sessions. We have extended that system to support actions
@@ -33,7 +34,7 @@ resulting belief-state.
 
 %% executes switching actions and replans in the
 %% resulting belief state.
-
+ 
 %% but instead of
 %% creating an observation problem for the decision theoretic planner it
 %% will just execute one sensing action -- assuming that this action will
@@ -81,11 +82,12 @@ particular room category. For Item~$f$ there is no human in the
 environment, and therefore the baseline cannot be used, because there
 are no sensing schemata that directly sense room categories. In our
 evaluation we run 50 simulations in each configuration, and have a
-timeout on each simulation of 30 minutes (1800 seconds). In our domain,
-rewards encapsulate a goal condition, and therefore we find it
-intuitive to report average costs of the plans and the success rate in
-problems that admit a solution (i.e., positive reward scaled by a
-constant factor).
+timeout on each simulation of 30 minutes (1800 seconds)\footnote{All
+  experiments were conducted on a 2.3GHz AMD Opteron using one CPU
+  core.}. In our domain, rewards encapsulate a goal condition, and
+therefore we find it intuitive to report average costs of the plans
+and the success rate in problems that admit a solution (i.e., positive
+reward scaled by a constant factor).
 
 %% Because the switching utility model 
 
