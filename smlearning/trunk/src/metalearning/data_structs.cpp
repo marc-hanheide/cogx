@@ -23,7 +23,7 @@
  
  */
 
-#include <tools/data_structs.h>
+#include <metalearning/data_structs.h>
 
 
 namespace smlearning {
@@ -53,16 +53,13 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 	cout << numSeqs << " sequences." << endl;
 	DataSet::const_iterator d_iter;
 	for (d_iter=data.begin(); d_iter!=data.end(); d_iter++) {
-		// MotorCommand mC = d_iter->first;
 		Chunk::Seq seq = *d_iter;
-		//writeFile.write((const char*)&mC, sizeof(mC));
 		long seqSize = seq.size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
   		// cout << "\t" << seqSize << endl;
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
 			Chunk currentChunk = *s_iter;
-			//writeFile.write ((const char*)&(*s_iter), sizeof(*s_iter));
 			writeFile.write ((const char*)&(currentChunk.object), sizeof(currentChunk.object));
 			writeFile.write ((const char*)&(currentChunk.action), sizeof(currentChunk.action));
 			
@@ -98,15 +95,11 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 // 	cout << "Nr. of seq.: " << numSeq << endl;
 
 	for (int s=0; s<numSeq; s++) {
-		//Sequence currentSequence;
 		Chunk::Seq currentChunkSeq;
-		//MotorCommand currentMotorCommand;
 
-		//readFile.read((char *)&currentMotorCommand, sizeof (currentMotorCommand));
 		long seqSize;
 		readFile.read((char *)&seqSize, sizeof(seqSize));
 // 		cout << "  Seq. size: " << seqSize << endl;
-//  		print_motorCommand (currentMotorCommand);
 		for (int c=0; c<seqSize; c++) {
 			Chunk currentChunk;
 			readFile.read((char *)&currentChunk.object, sizeof(currentChunk.object));
@@ -114,7 +107,6 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 // 			print_Chunk (currentChunk);
 			currentChunkSeq.push_back (currentChunk);
 		}
-		//currentSequence = make_pair (currentMotorCommand, currentChunkSeq);
 		data.push_back (currentChunkSeq);
 	}
 
@@ -310,5 +302,81 @@ bool LearningData::write_nc_data (string fileName, size_t numSeqs_len, int input
 	return true;
 
 }
+
+///
+///check limit parameters correspondence
+///
+bool LearningData::check_limits (CoordinateLimits params1, CoordinateLimits params2) {
+	if (params1.minX != params2.minX)
+		return false;
+	if (params1.minY != params2.minY)
+		return false;
+	if (params1.minZ != params2.minZ)
+		return false;
+	if (params1.maxX != params2.maxX)
+		return false;
+	if (params1.maxY != params2.maxY)
+		return false;
+	if (params1.maxZ != params2.maxZ)
+		return false;
+	if (params1.minDuration != params2.minDuration)
+		return false;
+	if (params1.maxDuration != params2.maxDuration)
+		return false;
+	return true;
+}
+
+
+///
+///Concatenate data sequences
+///
+bool LearningData::concatenate_datasets (string dir, string writeFileName) {
+	boost::regex seqfile_re ("(.*)\\.seq");
+	boost::cmatch matches;
+	path p(dir);
+	if(!exists(p)) {
+		cerr<<p.leaf()<<" does not exist." << endl;
+		return false;
+	}
+
+	directory_iterator dir_iter(p), dir_end;
+	DataSet data;
+	CoordinateLimits coordLimits;
+	bool checkFlag = false;
+	for(;dir_iter != dir_end; ++dir_iter) {
+		string dirstring (dir_iter->leaf().c_str());
+		char *dirchar = (char *)dirstring.c_str();
+
+		if (boost::regex_match((const char*)dirchar, matches, seqfile_re)) {
+			DataSet currentData;
+			CoordinateLimits currentCoordLimits;
+			string dataBaseName (matches[1].first, matches[1].second);
+			cout << dir_iter->leaf() << endl;
+			cout << dataBaseName << endl;
+			read_dataset (dataBaseName, currentData, currentCoordLimits);
+			if (!checkFlag) {
+				coordLimits = currentCoordLimits;
+				checkFlag = true;
+			}
+			else {
+				assert (check_limits (coordLimits, currentCoordLimits));
+			}
+
+			cout << "size current data: " << currentData.size() << endl;
+			DataSet::iterator it = data.end();
+			data.insert (it, currentData.begin(), currentData.end());
+		}
+	}
+	cout << "size data: " << data.size() << endl;
+	if (!write_dataset (writeFileName, data, coordLimits) ) {
+		cerr << "Error writing dataset file!" << endl;
+		return false;
+	}
+	
+	return true;
+
+
+}
+
 
 };  /* smlearning namespace */

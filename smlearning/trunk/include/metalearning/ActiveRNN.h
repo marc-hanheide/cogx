@@ -22,6 +22,7 @@
 
  
  */
+
 #ifndef SMLEARNING_ACTIVERNN_H_
 #define SMLEARNING_ACTIVERNN_H_
 
@@ -59,7 +60,7 @@ struct ActiveRNN : RNN {
 	///
 	double update (const rnnlib::DataSequence& seq, ostream& out = cout);
 
-
+	
 	///
 	///feedforward sequence
 	///

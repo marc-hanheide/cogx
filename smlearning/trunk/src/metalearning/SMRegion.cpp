@@ -23,7 +23,6 @@
  
  */
 
-#include <tools/data_handling.h>
 #include <metalearning/SMRegion.h>
 
 namespace smlearning {

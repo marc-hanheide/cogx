@@ -1,5 +1,5 @@
 #include <Ice/Ice.h>
-#include <tools/data_plot_test.h>
+#include <tests/data_plot_test.h>
 //#include <qapplication.h>
 //#include <qmainwindow.h>
 

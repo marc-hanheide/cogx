@@ -108,7 +108,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentPfY = chunk.object.objectPose.p.v2;
 
 		if (learningData.currentChunkSeq.size() > 1) {
-			trainSeq = LearningData::load_NNtrainSeq (learningData.currentChunkSeq, featureSelectionMethod, normalize<float>, learningData.coordLimits, motorVectorSize);
+			trainSeq = LearningData::load_NNtrainSeq (learningData.currentChunkSeq, featureSelectionMethod, normalize<float>, learningData.coordLimits);
 				
 			currentRegion->learner.feed_forward (*trainSeq);
 		
@@ -602,16 +602,21 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		netconfigFileName = vm["netconfigFileName"].as<string>();
 	}
 
-	featureSelectionMethod = "markov";
+	featureSelectionMethod = _markov;
 
+	string fSMethod;
 	if (vm.count("featureSelectionMethod")) {
-		featureSelectionMethod = vm["featureSelectionMethod"].as<string>();
+		fSMethod = vm["featureSelectionMethod"].as<string>();
 	}
 
-	if (featureSelectionMethod == "basis" )
-		motorVectorSize = 2;
-	else if (featureSelectionMethod == "markov" )
-		motorVectorSize = 2;
+	if (fSMethod == "basis" ) {
+		featureSelectionMethod = _basis;
+		motorVectorSize = LearningData::motorVectorSizeBasis;
+	}
+	else if (fSMethod == "markov" ) {
+		featureSelectionMethod = _markov;
+		motorVectorSize = LearningData::motorVectorSizeMarkov;
+	}
 	
 }
 

@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <metalearning/ActiveRNN.h>
-#include <tools/data_structs.h>
+#include <metalearning/data_structs.h>
 
 
 
@@ -40,8 +40,6 @@ namespace smlearning {
 /// using a statistical measure, i.e., variance.
 /// It also handles the error and learning progress history of the
 /// corresponding learner associated to it
-
-
 struct SMRegion {
 
 	typedef map<int, SMRegion> RegionsMap;

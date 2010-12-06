@@ -1,13 +1,14 @@
-#include <tools/data_handling.h>
+#include <metalearning/data_structs.h>
 #include <metalearning/SMRegion.h>
 
 using namespace smlearning;
 
-bool evaluate_activelearn (string seqFile, string dir) {
+bool evaluate_activelearn (string seqFile, string dir, unsigned int featureSelectionMethod) {
 
-	DataSetStruct data;
+	LearningData::DataSet data;
+	LearningData:: CoordinateLimits limits;
 
-	if (!read_dataset (seqFile, data)) {
+	if (!LearningData::read_dataset (seqFile, data, limits)) {
 		cerr << "error reading data" << endl;
 		return 1;
 	}
@@ -22,7 +23,7 @@ bool evaluate_activelearn (string seqFile, string dir) {
 	}
 
 
-	map<int, SMRegion> regions;
+	SMRegion::RegionsMap regions;
 	
 	directory_iterator dir_iter(p), dir_end;
 	for(;dir_iter != dir_end; ++dir_iter) {
@@ -42,14 +43,15 @@ bool evaluate_activelearn (string seqFile, string dir) {
 	}
 
 	double error = 0.0;
-	for (int i = 0; i < data.first.size(); i++) {
-		int regionidx = SMRegion::get_SMRegion (regions, data.first[i][0]);
+	for (int i = 0; i < data.size(); i++) {
+		FeatureVector featureVector;
+		LearningData::write_chunk_to_featvector (featureVector, data[i][0], normalize<double>, limits, _effector | _action_params);
+		int regionidx = SMRegion::get_SMRegion (regions, featureVector);
 		assert (regionidx != -1);
-		//DataSetParams params = make_tuple ((int)SMRegion::motorVectorSize + (int)SMRegion::featureVectorSize, (int)SMRegion::pfVectorSize, (int)SMRegion::motorVectorSize, (int)SMRegion::efVectorSize, false);
-		rnnlib::DataSequence* testSeq = load_trainSeq (data.first[i], data.second);
+		rnnlib::DataSequence* testSeq = LearningData::load_NNtrainSeq (data[i], featureSelectionMethod, normalize<double>, limits );
 		error += regions[regionidx].learner.net->calculate_errors (*testSeq);
 	}
-	error /= (double)data.first.size();
+	error /= (double)data.size();
 
 	cout << "Avg. sum of squares error: " << error << endl;
 
@@ -61,21 +63,27 @@ int main (int argc, char *argv[]) {
 
 	string dir;
 	string seqFile;
+	unsigned int featureSelectionMethod;
 	if (argc >= 3) {
-		dir = string (argv[2]);
-	}
-	if (argc >= 2) {
 		dir = "./";
 		seqFile = string (argv[1]);
+		string fSMethod = string (argv[2]);
+		if (fSMethod == "basis")
+			featureSelectionMethod = _basis;
+		else if (fSMethod == "markov")
+			featureSelectionMethod = _markov;			
+	}
+	if (argc >= 4) {
+		dir = string (argv[3]);
 	}
 	else {
-		cerr << argv[0] << " sequence_file (without extension) [dir (default:current dir.)]" << endl;
+		cerr << argv[0] << " sequence_file (without extension) basis/markov [dir (default:current dir.)]" << endl;
 		return 1;
 	}
 
 
 
-	return evaluate_activelearn (seqFile, dir);
+	return evaluate_activelearn (seqFile, dir, featureSelectionMethod);
 
 
 	

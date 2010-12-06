@@ -35,7 +35,7 @@
  */
 
 #include <metalearning/Scenario.h>
-#include <tools/data_handling.h>
+//#include <tools/data_handling.h>
 
 namespace smlearning {
 
@@ -855,6 +855,68 @@ void Scenario::run(int argc, char* argv[]) {
 }
 
 //------------------------------------------------------------------------------
+
+///
+///obtain a discretization of starting finger poses from a canonical set of actions
+///
+map<Vec3, int, compare_Vec3> Scenario::get_canonical_positions (Desc& desc) {
+	//generate all possible polyflap poses
+	//TODO: the following data should be obtained from an xml file
+
+	//Polyflap Position and orientation
+	/*const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
+	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
+	//Polyflap dimensions		
+	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
+		
+
+// 	//vertical distance from the ground
+// 	const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	Real over = 0.002 + 0.015;
+	//distance from the front/back of the polyflap
+	const Real dist = 0.05;
+	//distance from the side of the polyflap
+	const Real side = polyflapDimensions.v1*0.6;
+	//center of the polyflap
+	const Real center = polyflapDimensions.v2*0.6;
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	const Real top = polyflapDimensions.v2 - 0.02;
+	//lenght of the movement		
+	const Real distance = 0.2;*/
+
+	//initialization of arm target: the center of the polyflap
+	//Vec3 positionT (0.2, 0.2, 0.001);
+	Vec3 positionT (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2, desc.pfWidth * 0.5);
+	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+	//Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));
+	Vec3 standingPolyflapPosition (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2 + desc.polyflapDimensions.v2 * 0.5, desc.startPolyflapPosition.v3);
+	cout << "standingPolPos: " << standingPolyflapPosition.v1 << "," << standingPolyflapPosition.v2 << "," << standingPolyflapPosition.v3 << endl;
+	Vec3 polyflapNormalVec = computeNormalVector(desc.startPolyflapPosition, standingPolyflapPosition);
+	
+	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
+
+	map<Vec3, int, compare_Vec3> positionsT;
+
+	vector<int> availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
+
+
+	//int smRegionsCount = 18;
+	//for (int i=1; i <= smRegionsCount; i++) {
+	for (int i=0; i<availableStartingPositions.size(); i++) {
+		//arm target update
+		
+		Vec3 pos (positionT);
+		///*Scenario::*/set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		set_coordinates_into_target(availableStartingPositions[i], pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+		positionsT[pos] = availableStartingPositions[i];
+		
+	}
+
+	return positionsT;
+}
+
 
 ///
 ///Hack to solve a collision problem (don't know if it is still there):
