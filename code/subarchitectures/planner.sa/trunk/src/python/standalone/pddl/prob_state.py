@@ -180,6 +180,14 @@ class ProbabilisticState(State):
         for svar, val in self.iteritems():
             if val.value:
                 yield Fact(svar, val.value)
+
+    def is_det(self, svar):
+        if svar not in self:
+            return True
+        val = self[svar]
+        if isinstance(val, types.TypedObject):
+            return True
+        return val.value is not None
     
     def set(self, fact):
         if isinstance(fact, ProbFact):
@@ -276,24 +284,36 @@ class ProbabilisticState(State):
                 parts = eff if isinstance(eff, list) else eff.parts
                 
                 result = defaultdict(ValueDistribution)
-                branch_results = defaultdict(list)
+                assigned_vars = set()
+                # branch_results = defaultdict(list)
                 for e in parts:
-                    for fact, p in descend(e).iteritems():
-                        branch_results[fact.svar].append((fact.value, p))
+                    done = False
+                    while not done:
+                        done = True
+                        res = descend(e)
+                        if any(f.svar in assigned_vars for f in res.iterkeys()):
+                            # print "rejected:", map(str, res.iterkeys())
+                            done = False # try until we get a consistent state
+                        else:
+                            for fact, p in res.iteritems():
+                                assigned_vars.add(fact.svar)
+                                result[fact] = p
+
+                
                         
-                for svar, values in branch_results.iteritems():
-                    if len(values) == 1:
-                        val, p = values[0]
-                        result[Fact(svar, val)] = p
-                    else:
-                        #sample again:
-                        p_total = 0.0
-                        s = st.random.random() * sum(p for v,p in values)
-                        for v, p in values:
-                            p_total += p
-                            if s <= p_total:
-                                result[Fact(svar, v)] = p
-                                break
+                # for svar, values in branch_results.iteritems():
+                #     if len(values) == 1:
+                #         val, p = values[0]
+                #         result[Fact(svar, val)] = p
+                #     else:
+                #         #sample again:
+                #         p_total = 0.0
+                #         s = st.random.random() * sum(p for v,p in values)
+                #         for v, p in values:
+                #             p_total += p
+                #             if s <= p_total:
+                #                 result[Fact(svar, v)] = p
+                #                 break
                 # print map(str, result.iterkeys())
                 return result
             assert False, eff

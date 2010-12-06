@@ -152,7 +152,11 @@ class Planner(object):
             elif isinstance(pnode.action, plans.DummyAction):
                 continue
             else:
-                pnode.action = mapltask.domain.get_action(pnode.action.name)
+                try:
+                    pnode.action = mapltask.domain.get_action(pnode.action.name)
+                except:
+                    return False
+        return True
 
     def is_plan_valid(self, plan, goal_node, init_state):
         log.debug("checking plan validity.")
@@ -225,7 +229,8 @@ class Planner(object):
 
         self.statistics.increase_stat("monitoring_calls")
 
-        self.update_plan(task.get_plan(), task._mapltask)
+        if not self.update_plan(task.get_plan(), task._mapltask):
+            return True
                 
         t0 = time.time()
         state = task.get_state().copy()
@@ -336,20 +341,25 @@ class BasePlanner(object):
     def _post_process(self, task):
         raise NotImplementedError
 
+tmp_dir = None
+    
 def get_planner_tempdir(base_path):
     """creates a new subdirectory in base_path. If 'static_temp_dir' is set to True in
     config.ini, the subdirectory "static_dir_for_debugging" will be created (or cleared
     if it already exists). Otherwise, a random directory will be created in a race safe
     way (using the tmpfile module).
     """
-    if global_vars.config.static_temp_dir:
-        tmp_dir = os.path.join(base_path, "static_dir_for_debugging")
-        if os.path.exists(tmp_dir):
-            utils.removeall(tmp_dir)  # remove old version
+    global tmp_dir
+    if not tmp_dir:
+        if global_vars.config.static_temp_dir:
+            tmp_dir = os.path.join(base_path, "static_dir_for_debugging")
         else:
-            os.makedirs(tmp_dir)
-        return tmp_dir
-    return tempfile.mkdtemp(dir=base_path)
+            tmp_dir = tempfile.mkdtemp(dir=base_path)
+    if os.path.exists(tmp_dir):
+        utils.removeall(tmp_dir)  # remove old version
+    else:
+        os.makedirs(tmp_dir)
+    return tmp_dir
 
 class ContinualAxiomsFF(BasePlanner):
     """

@@ -167,6 +167,8 @@ class ConjunctiveEffect(Effect):
         is already a conjunctive effect, add its elements."""
         parts = []
         for eff in effs:
+            if not eff:
+                continue
             if isinstance(eff, ConjunctiveEffect):
                 parts += eff.parts
             else:
@@ -278,7 +280,7 @@ class ProbabilisticEffect(Effect):
             if p is None:
                 remaining_effects.append(e)
             else:
-                p = state.evaluate_term(p).value
+                p = state.evaluate_term(p).value if state else p.object.value
                 p_total += p
                 yield (p, e)
 
@@ -295,10 +297,16 @@ class ProbabilisticEffect(Effect):
             new_scope = self.scope
         if new_parts == []:
             return ProbabilisticEffect([])
-        elif new_parts:
-            return ProbabilisticEffect([(p.copy(new_scope), eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in new_parts])
-        else:
-            return ProbabilisticEffect([(p.copy(new_scope), eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
+        parts = new_parts if new_parts else self.effects
+        res_parts = []
+        for p, e in parts:
+            if p and copy_instance:
+                p = p.copy_instance()
+            elif p:
+                p = p.copy(new_scope)
+            res_parts.append((p, e.copy(new_scope, copy_instance=copy_instance)))
+            
+        return ProbabilisticEffect(res_parts)
 
     def set_scope(self, new_scope):
         self.scope = new_scope

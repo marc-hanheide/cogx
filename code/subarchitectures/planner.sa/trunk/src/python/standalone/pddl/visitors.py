@@ -133,10 +133,10 @@ def collect_free_vars(elem, results=[]):
     if isinstance(elem, predicates.Term):
         if isinstance(elem, predicates.ConstantTerm):
             return []
-        if isinstance(elem, predicates.ConstantTerm):
-            return cond.object
+        if isinstance(elem, predicates.VariableTerm):
+            return elem.object
     elif isinstance(elem, predicates.Literal):
-        return sum([t.visit(collect_free_vars) for t in cond.args], [])
+        return sum([t.visit(collect_free_vars) for t in elem.args], [])
     elif isinstance(elem, (conditions.QuantifiedCondition, effects.UniversalEffect)):
         vars = results[0]
         return [p for p in vars if p not in elem.args]
