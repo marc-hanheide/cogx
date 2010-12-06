@@ -13,7 +13,7 @@ usage: %prog [options] domain scenario
   -m, --macro_filename=FILE : set the basename of the macro file. Defaults to domain name.
   -M, --macro_version=INDEX : read/write macros from this version of the macro file [default: %default]
   -e, --enable-macros=MACROS : enable these macros in eevry case [default: %default]
-  -c, --config=FILE : load additional config file which overrides the builtin config [default: %default]
+  -c, --config=FILES : load additional config files which overrides the builtin config [default: %default]
   -o, --log_out=FILE : Write logging output to this file [default: %default]
 """
 
@@ -41,11 +41,14 @@ def parse_command_line():
     options, args = parser.parse_args()
     global_vars.mapsim_config.__dict__.update(options.__dict__)
     if options.config:
-        add_config = global_vars.load_config_file(options.config, cfg_path="", **global_vars.config_autogen.__dict__)
-        if 'standalone' in add_config.__dict__:
-            global_vars.config.merge(add_config.standalone)
-        if 'mapsim' in add_config.__dict__:
-            global_vars.mapsim_config.merge(add_config.mapsim)
+        for cfg in options.config.split(","):
+            if not cfg.strip():
+                continue
+            add_config = global_vars.load_config_file(cfg.strip(), cfg_path="", **global_vars.config_autogen.__dict__)
+            if 'standalone' in add_config.__dict__:
+                global_vars.config.merge(add_config.standalone)
+            if 'mapsim' in add_config.__dict__:
+                global_vars.mapsim_config.merge(add_config.mapsim)
     if options.log_out:
         config.set_logfile(options.log_out)
 
