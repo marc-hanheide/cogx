@@ -113,6 +113,7 @@ SET(METALEARNING_SOURCES
 #	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
+	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
 )
 
 SET(OFFLINE_EXPERIMENT_SOURCE
@@ -140,31 +141,31 @@ SET(METALEARNING_HEADERS
 #	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
+	${SMLEARNING_ROOT}/include/metalearning/data_structs.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 
 SET(TOOLS_SOURCES
-	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
-	${SMLEARNING_ROOT}/src/tools/data_structs.cpp
+	${SMLEARNING_ROOT}/src/tools/helpers.cpp
 	${SMLEARNING_ROOT}/src/tools/math_helpers.cpp
 	${SMLEARNING_ROOT}/src/tools/data_plot.cpp
 )
 
 SET(SEQUENCES_TEST_SOURCE
-       ${SMLEARNING_ROOT}/src/tools/sequences_test.cpp
+       ${SMLEARNING_ROOT}/src/tests/sequences_test.cpp
 )
 
 SET(PARSING_TEST_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/parsing_test.cpp
+        ${SMLEARNING_ROOT}/src/tests/parsing_test.cpp
 )
 
 SET(DATA_PLOT_TEST_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/data_plot_test.cpp
+        ${SMLEARNING_ROOT}/src/tests/data_plot_test.cpp
 )
 
-SET(CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/canonical_input_output_enumerator_test.cpp
-)
+# SET(CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE
+#         ${SMLEARNING_ROOT}/src/tools/canonical_input_output_enumerator_test.cpp
+# )
 
 SET(PRINT_DATASET_SOURCE
         ${SMLEARNING_ROOT}/src/tools/print_dataset.cpp
@@ -196,9 +197,8 @@ SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
 )
 
 SET(TOOLS_HEADERS
-	${SMLEARNING_ROOT}/include/tools/data_handling.h
+	${SMLEARNING_ROOT}/include/tools/helpers.h
 	${SMLEARNING_ROOT}/include/tools/math_helpers.h
-	${SMLEARNING_ROOT}/include/tools/data_structs.h
 )
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
@@ -208,7 +208,7 @@ SET(DATA_PLOT_MOC_HEADERS
 QT4_WRAP_CPP( DATA_PLOT_GEN_MOC ${DATA_PLOT_MOC_HEADERS} )
 
 SET(DATA_PLOT_TEST_MOC_HEADERS
-	${SMLEARNING_ROOT}/include/tools/data_plot_test.h
+	${SMLEARNING_ROOT}/include/tests/data_plot_test.h
 )
 QT4_WRAP_CPP( DATA_PLOT_TEST_GEN_MOC ${DATA_PLOT_TEST_MOC_HEADERS} )
 
@@ -243,12 +243,12 @@ ADD_CUSTOM_COMMAND(
 )
 
 SET(DATA_PLOT_TEST_SERVER_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/data_plot_test_server.cpp
+        ${SMLEARNING_ROOT}/src/tests/data_plot_test_server.cpp
         ${SMLEARNING_ROOT}/slice/PlotApp.cc
 )
 
 SET(DATA_PLOT_TEST_CLIENT_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/data_plot_test_client.cpp
+        ${SMLEARNING_ROOT}/src/tests/data_plot_test_client.cpp
         ${SMLEARNING_ROOT}/slice/PlotApp.cc
 )
 
@@ -276,7 +276,7 @@ ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
-ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
+# ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
 ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 ADD_EXECUTABLE(eval_plotting ${EVAL_PLOTTING_SOURCE})
 ADD_EXECUTABLE(evaluate_activelearn ${EVALUATE_ACTIVELEARN_SOURCE})
@@ -288,16 +288,12 @@ ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 
-INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
-INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/metalearning/ensemble_experiment.sh DESTINATION bin/SMLearning)
+INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
+INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS canonical_input_output_enumerator_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
@@ -306,8 +302,6 @@ INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
-INSTALL(TARGETS data_plot_test_server RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS data_plot_test_client RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_server RUNTIME DESTINATION bin/SMLearning)
 
 

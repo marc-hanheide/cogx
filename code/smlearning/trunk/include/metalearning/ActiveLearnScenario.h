@@ -27,8 +27,6 @@
 #include <Ice/Ice.h>
 #include <PlotApp.hh>
 
-#include <tools/data_handling.h>
-
 
 
 //------------------------------------------------------------------------------
@@ -94,7 +92,7 @@ protected:
 	string netconfigFileName;
 
 	/** method for feature selection (basis/markov/...?) */
-	string featureSelectionMethod;
+	unsigned int featureSelectionMethod;
 
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
@@ -179,7 +177,7 @@ protected:
 	virtual void write_data (bool final = false);
 
 	///
-	///get the actions vector that maximizes learning progress
+	///get the action that maximizes learning progress
 	///
 	LearningData::Chunk::Action get_action_maxLearningProgress (const ActionsVector& candidateActions);
 		

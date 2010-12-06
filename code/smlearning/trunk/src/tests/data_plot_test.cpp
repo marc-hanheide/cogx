@@ -1,4 +1,4 @@
-#include <tools/data_plot_test.h>
+#include <tests/data_plot_test.h>
 
 int main(int argc, char **argv)
 {

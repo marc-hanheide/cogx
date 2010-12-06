@@ -1,49 +1,44 @@
-#include <tools/data_handling.h>
+#include <metalearning/data_structs.h>
 
 using namespace smlearning;
 
 int main (int argc, char* argv[]) {
 
-	// string seqFile;
-	// string target_dir;
-	// int modulo = 0;
-	// if (argc == 3) {
-	// 	target_dir = string (argv[2]);
-	// }
-	// if (argc >= 2) {
-	// 	seqFile = string (argv[1]);
-	// }
-	// else {
-	// 	cerr << argv[0] << " [sequence_file (without extension)] [modulo] [target_dir (default:current file dir.)]" << endl;
-	// 	return 1;
-	// }
-
 	string seqFile;
 	string target_dir;
-	int modulo = 0;
+	// int modulo = 0;
+	unsigned int featureSelectionMethod;
 	if (argc >= 4) {
 		target_dir = string (argv[3]);
 	}
-	if (argc >= 3) {
-		modulo = atoi(argv[2]);
-		cout << modulo << endl;
-	}
-	if (argc >= 2)
+	if (argc == 3) {
+		string fSMethod = string (argv[2]);
+		if (fSMethod == "obpose")
+			featureSelectionMethod = _obpose;
+		else if (fSMethod == "efobpose")
+			featureSelectionMethod = _efobpose;
 		seqFile = string (argv[1]);
+	}
+	// if (argc >= 3) {
+	// 	modulo = atoi(argv[2]);
+	// 	cout << modulo << endl;
+	// }
 	else {
-		cerr << argv[0] << " [sequence_file (without extension)]  [modulo] [target_dir (default:current file dir.)]" << endl;
+		// cerr << argv[0] << " sequence_file (without extension) [modulo] [target_dir (default:current file dir.)]" << endl;
+		cerr << argv[0] << " sequence_file (without extension) obpose/efobpose [target_dir (default:current file dir.)]" << endl;
 		return 1;
 	}
 
-	if (modulo <= 0) {
-		cout << "modulo assumed to be 1" << endl;
-		modulo = 1;
-	}
+	// if (modulo <= 0) {
+	// 	cout << "modulo assumed to be 1" << endl;
+	// 	modulo = 1;
+	// }
 
 
-	DataSetStruct savedData;
+	LearningData::DataSet savedData;
+	LearningData::CoordinateLimits limits;
 
-	if (!read_dataset (seqFile, savedData)) {
+	if (!LearningData::read_dataset (seqFile, savedData, limits)) {
 		cerr << "error reading data" << endl;
 		return 1;
 	}
@@ -51,9 +46,9 @@ int main (int argc, char* argv[]) {
 	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
 	if (argc == 4)
-		write_dataset_cryssmex_fmt_with_label (target_dir + "/" + seqBaseFileName, savedData.first, modulo);
-	else if (argc == 3 || argc == 2)
-		write_dataset_cryssmex_fmt_with_label (seqFile, savedData.first, modulo);
+		LearningData::write_cryssmexdataset_regression (target_dir + "/" + seqBaseFileName, savedData, normalize<double>, limits, featureSelectionMethod/*, modulo*/);
+	else if (/*argc == 3 || */ argc == 3)
+		LearningData::write_cryssmexdataset_regression (seqFile, savedData, normalize<double>, limits, featureSelectionMethod/*, modulo*/);
 
 	return 0;
 }

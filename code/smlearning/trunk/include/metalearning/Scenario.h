@@ -52,7 +52,7 @@
 #include <XMLDataCtrl.h>
 #include <XMLDataPhys.h>
 #include <iostream>
-#include <tools/data_structs.h>
+#include <metalearning/data_structs.h>
 #include <tools/math_helpers.h>
 
 #include <boost/program_options.hpp>
@@ -338,6 +338,11 @@ protected:
 	///
 	bool check_pf_position(const Actor* polyFlapActor, const Mat34& refPos);
 
+	///
+	///obtain a discretization of starting finger poses from a canonical set of actions
+	///
+	map<Vec3, int, compare_Vec3> get_canonical_positions (Desc&);
+	
 	///
 	///calculate final pose according to the given direction angle
 	///

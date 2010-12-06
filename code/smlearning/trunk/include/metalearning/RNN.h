@@ -31,7 +31,6 @@
 #include <SteepestDescent.hpp>
 #include <Rprop.hpp>
 
-
 namespace smlearning {
 
 ///

@@ -25,59 +25,32 @@
 #ifndef SMLEARNING_DATASTRUCTS_H_
 #define SMLEARNING_DATASTRUCTS_H_
 
-#include <vector>
-
 #include <Tools/Tools.h>
 
 #include <netcdf.h>
-#include <boost/regex.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <metalearning/RNN.h>
 #include <tools/math_helpers.h>
-
-#include <boost/tuple/tuple.hpp>
+#include <tools/helpers.h>
 
 using namespace golem;
 using namespace std;
-using namespace boost;
+using namespace boost::filesystem;
 
+/** \namespace smlearning
+    \brief The highest namespace in the hierarchy of this package
+*/
 namespace smlearning {
 
-///
-///this representation should also allow for labels, i.e., a vector of size 1
-///properly discretized
-///
-typedef vector<double> FeatureVector;
-typedef vector<FeatureVector> Sequence;
-typedef vector<Sequence> DataSet;
-/** LearningParams tuple <motorVectorSize, featureVectorSize, pfVectorSize, efVectorSize> */
-enum { mVSize, fVSize, pfVSize, efVSize };
-typedef tuple<int, int, int, int> LearningParams;
-/** DataSetValueLimits tuple < minX, minY, minZ, maxX, maxY, maxZ> */
-enum { minX, minY, minZ, maxX, maxY, maxZ };
-typedef tuple<double, double, double, double, double, double> DataSetValueLimits;
-/** DataSetParams tuple <LearningParams, storeLabels, DataSetValueLimits> */
-enum {lParams, labels, limits };
-typedef tuple<LearningParams, bool, DataSetValueLimits> DataSetParams;
-typedef pair<DataSet, DataSetParams> DataSetStruct;
-
-struct CanonicalData {
-	struct FeatureVector {
-		smlearning::FeatureVector rawVector;
-		string motorCommand;
-		string label;
-	};
-	typedef vector<FeatureVector> Sequence;
-	typedef vector<Sequence> DataSet;
-	typedef pair<DataSet, DataSetParams> DataSetStruct;
-	
-	DataSetStruct data;
-};
-
-/** flags for storing different Chunk parts in feature vectors */
+/**
+   \enum chunk_flags
+   \brief flags for storing different Chunk parts in feature vectors
+*/
 enum chunk_flags {
-        _object = 1L << 0,
-        _effector = 1L << 1,
-        _action_params = 1L << 2
+
+        _object = 1L << 0, /**< For storing object features. */
+        _effector = 1L << 1, /**< For storing effector features. */
+        _action_params = 1L << 2 /**< For storing other motor action features. */
 };
 
 inline chunk_flags
@@ -108,8 +81,22 @@ inline chunk_flags
 operator~(chunk_flags __a)
 { return chunk_flags(~static_cast<int>(__a)); }
 
+/**
+   \enum feature_selection
+   \brief flags for choosing the type of feature selection method 
+*/
+enum feature_selection {
+	_basis, /**< First vector stores motor command information */
+	_markov, /**< Each vector stores motor command information */
+	_obpose, /**< For automata generation: input are action related features, states are object f., output is object next time f. */
+	_efobpose /**< For automata generation: input are action related features, states are object and effector f., output is object next time f. */
+};
 
-/** Learning data format */
+
+/**
+   \class LearningData
+   \brief Learning data format and corresponding methods and data conversions
+*/
 struct LearningData {
 	
 	/** Data chunk */
@@ -171,8 +158,10 @@ struct LearningData {
 	vector<Mat34> currentPredictedPfSeq;
 	/** current predicted effector poses sequence */
 	vector<Mat34> currentPredictedEfSeq;
-	/** size of motor vector for NN training */
-	//static const int motorVectorSize = 5;
+	/** size of motor vector for NN training for basis representation */
+	static const int motorVectorSizeBasis = 2;
+	/** size of motor vector for NN training for markov representation */
+	static const int motorVectorSizeMarkov = 2;	
 	/** size of polyflap pose vector for NN training */
 	static const int pfVectorSize = 6;
 	/** size of effector pose vector for NN training */
@@ -277,6 +266,16 @@ struct LearningData {
 	static void print_Chunk (const Chunk& c);
 
 	///
+	///check limit parameters correspondence
+	///
+	static bool check_limits (CoordinateLimits params1, CoordinateLimits params2);
+
+	///
+	///Concatenate data sequences
+	///
+	static bool concatenate_datasets (string dir, string writeFileName);
+
+	///
 	///write a netcdf nc file format for feature vectors using basis representation
 	///
 	template<class Normalization>
@@ -288,7 +287,7 @@ struct LearningData {
 		FeatureVector targetVector;
 		vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
-		const int motorVectorSize = 2;
+		const int motorVectorSize = motorVectorSizeBasis;
 		const int inputSize = motorVectorSize + pfVectorSize + efVectorSize;
 		const int outputSize = pfVectorSize;
 
@@ -348,7 +347,7 @@ struct LearningData {
 		FeatureVector targetVector;
 		vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
-		const int motorVectorSize = 2;
+		const int motorVectorSize = motorVectorSizeMarkov;
 
 		const int inputSize = motorVectorSize + efVectorSize + pfVectorSize;
 		const int outputSize = pfVectorSize;
@@ -570,7 +569,7 @@ struct LearningData {
 	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, CoordinateLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
-		const int motorVectorSize = 2;
+		const int motorVectorSize = motorVectorSizeBasis;
 
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
@@ -626,16 +625,21 @@ struct LearningData {
 	///load training data in RNNLIB format
 	///
 	template<class Normalization >
-	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, string featureSelectionMethod, Normalization normalize, CoordinateLimits limits, int motorVectorSize) {
+	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, CoordinateLimits limits) {
+		int motorVectorSize;
+		if (featureSelectionMethod == _basis)
+			motorVectorSize = motorVectorSizeBasis;
+		else if (featureSelectionMethod == _markov)
+			motorVectorSize = motorVectorSizeMarkov;
 		rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (motorVectorSize+pfVectorSize+efVectorSize, pfVectorSize);
 		vector<int> inputShape, targetShape;
 
 		//TODO: correct here sequence size:
-		if (featureSelectionMethod == "basis") {
+		if (featureSelectionMethod == _basis) {
 			inputShape.push_back (seq.size());
 			targetShape.push_back (seq.size());
 		}
-		else if (featureSelectionMethod == "markov") {
+		else if (featureSelectionMethod == _markov) {
 			inputShape.push_back (seq.size() - 1);
 			targetShape.push_back (seq.size() - 1);
 		}
@@ -643,15 +647,84 @@ struct LearningData {
 		trainSeq->targetPatterns.reshape(targetShape);
 		// cout << "input size: " << trainSeq->inputs.data.size() << endl;
 		// cout << "output size: " << trainSeq->targetPatterns.data.size() << endl;
-		if (featureSelectionMethod == "basis")
+		if (featureSelectionMethod == _basis)
 			load_NNsequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
-		else if (featureSelectionMethod == "markov")
+		else if (featureSelectionMethod == _markov)
 			load_NNsequence_markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, normalize, limits);
 		return trainSeq;
 	
 	
 	}
 
+
+	///
+	///Writing a dataset in CrySSMEx format. It works as a regression method.
+	///All data are vectorial.
+	///\param featureSelectionMethod allows different feature selection methods and state spaces.
+	template<class Normalization>
+	static void write_cryssmexdataset_regression (string writeFileName, DataSet& data, Normalization normalize, CoordinateLimits limits, int featureSelectionMethod) {
+		writeFileName += ".cry";
+
+		assert (data.size() >= 1);
+		int inputVectorSize, stateVectorSize, outputVectorSize;
+
+		if (featureSelectionMethod == _obpose) {
+			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
+			stateVectorSize = pfVectorSize;
+			outputVectorSize = pfVectorSize;
+		}
+		else if (featureSelectionMethod == _efobpose) {
+			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
+			stateVectorSize = efVectorSize + pfVectorSize;
+			outputVectorSize = pfVectorSize;
+		}
+		ofstream writeFile(writeFileName.c_str(), ios::out);
+
+		writeFile << "# input dim" << endl;
+		writeFile << inputVectorSize << endl;
+		writeFile << "# state dim" << endl;
+		writeFile << stateVectorSize << endl;
+		writeFile << "# output dim" << endl;
+		writeFile << outputVectorSize << endl;
+		
+		writeFile << "# nr input symbols" << endl << "0.0" << endl;
+		writeFile << "# output examples" << endl << "0.0" << endl;
+		// writeFile.precision(20);
+
+		DataSet::const_iterator d_iter;
+		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
+			Chunk::Seq seq = *d_iter;
+
+			Chunk::Seq::const_iterator s_iter;
+
+			for (s_iter = seq.begin(); s_iter != seq.end(); s_iter++) {
+				if (s_iter+1 != seq.end()) {
+
+					FeatureVector inputVector, stateVector, outputVector;
+
+					if (featureSelectionMethod == _obpose) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params | _effector);
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
+						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
+
+					}
+					else if (featureSelectionMethod == _efobpose) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params | _effector);
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector | _object);
+						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
+					}
+					write_vector (writeFile, inputVector, _text);
+					write_vector (writeFile, stateVector, _text);
+					write_vector (writeFile, outputVector, _text);
+					writeFile << endl;
+				}
+			}
+		}
+		writeFile.close();
+	
+	}
+
+	
 
 };
 

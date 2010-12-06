@@ -1,4 +1,4 @@
-#include <tools/data_handling.h>
+#include <metalearning/data_structs.h>
 
 using namespace smlearning;
 
@@ -14,7 +14,7 @@ int main (int argc, char *argv[]) {
 		return 1;
 	}
 	
-	if (concatenate_datasets ( dir, argv[1] ))
+	if (LearningData::concatenate_datasets ( dir, argv[1] ))
 		cout << "Successful concatenation." << endl;
 	else {
 		cerr << "Error in concatenation." << endl;

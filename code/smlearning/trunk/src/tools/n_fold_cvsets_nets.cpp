@@ -1,4 +1,4 @@
-#include <tools/data_handling.h>
+#include <metalearning/data_structs.h>
 #include <metalearning/RNN.h>
 
 using namespace smlearning;
@@ -9,7 +9,6 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
-	//DataSetStruct savedDataold;
 	LearningData::DataSet savedData;
 	LearningData::CoordinateLimits limits;
 	string seqFile = string (argv[1]);
