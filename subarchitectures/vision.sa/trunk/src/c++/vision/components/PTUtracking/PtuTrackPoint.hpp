@@ -10,6 +10,7 @@
 #include <Math.hpp>
 #include <PTZ.hpp>
 #include <NavData.hpp>
+#include <VisionData.hpp>
 
 #include <Transformation/Pose3D.hh>
 
@@ -21,22 +22,20 @@ private:
   double pan;
   double tilt;
   
+  //position of the robot in world coordinate frame
+  Cure::Pose3D cp;
+
   //target point
   double x;
   double y; 
   double z;
   
-  //variables needed for calculation of pan and tilt angles in trackTargetPoint
-  double T_R0x, T_R0y; 
-  double T_Rx, T_Ry;
-  double phi_R, phi_R_abs;
-  double T_R_abs, TD, sin_alpha;
-  double T_PD_abs;
-  double c, gamma, beta, gamma2;
-  
-  
+  bool dontTrackSOIs;
+  bool trackFirstSOI;
+
   void MovePanTilt(double pan, double tilt, double tolerance);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+  void trackSOI(const cast::cdl::WorkingMemoryChange &objID);
   void trackTargetPoint(Cure::Pose3D cp);
   
 protected:
