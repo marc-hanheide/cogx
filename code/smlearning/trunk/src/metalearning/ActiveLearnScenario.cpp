@@ -71,36 +71,16 @@ void ActiveLearnScenario::render () {
 
 void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {
-// 		bRec = true;
-// 		trialTime = SEC_TM_REAL_ZERO;
-// 		cout << "starting postprocess" << endl;
-// 	}
-// 	if (bRec) {
 		CriticalSectionWrapper csw(cs);
 		if (object == NULL) {
 			return;
 		}
 
 		LearningData::Chunk chunk;
-		chunk.timeStamp = trialTime;
-		arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
-		chunk.action.effectorPose = effector->getPose();
-		chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
-
-		chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
-		chunk.action.horizontalAngle = horizontalAngle;
-		chunk.action.pushDuration = pushDuration;
- 		// golem::Mat34 p = chunk.action.effectorPose; 
-		// cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
-		chunk.object.objectPose = object->getPose();
-		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
- 		// golem::Mat34 p = chunk.objectPose; 
-		// cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
+		write_chunk (chunk);
 
 // 		learningData.data.push_back(chunk);
-// 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
-		if (storeLabels) add_label (chunk);
 		
 		learningData.currentChunkSeq.push_back (chunk);
 
@@ -113,18 +93,8 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 			currentRegion->learner.feed_forward (*trainSeq);
 		
 			get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, /*desc.maxRange, desc.minZ,*/ learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq, denormalize<Real>);
-		}
-	
+		}	
 	}
-// 	if (bStop) {
-// 		CriticalSectionWrapper csw (cs);
-// 		bStart = false;
-// 		bRec = false;
-// 		bStop = false;
-	        
-// 		//bStart = bStop = bRec = false;
-// // 		ev.set(true);
-// 	}
 }
 
 ///
@@ -199,7 +169,12 @@ void ActiveLearnScenario::choose_action () {
 				chunk_cand.action.efRoll = orientationT.v1;
 				chunk_cand.action.efPitch = orientationT.v2;
 				chunk_cand.action.efYaw = orientationT.v3;
-				
+				Vec3 polyflapCenterNormalVec = computeNormalVector(pos, Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5));
+				Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
+				fromCartesianPose(chunk_cand.action.endEffectorPose, pos, orientationT);
+				set_movement_angle(chunk_cand.action.horizontalAngle, chunk_cand.action.endEffectorPose, desc.distance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+				chunk_cand.action.endEffectorPose.R.toEuler (chunk_cand.action.endEfRoll, chunk_cand.action.endEfPitch, chunk_cand.action.endEfYaw);
+
 				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.coordLimits, _effector | _action_params );
 				candidateActions.push_back (chunk_cand.action);
 			}
@@ -602,8 +577,6 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		netconfigFileName = vm["netconfigFileName"].as<string>();
 	}
 
-	featureSelectionMethod = _markov;
-
 	string fSMethod;
 	if (vm.count("featureSelectionMethod")) {
 		fSMethod = vm["featureSelectionMethod"].as<string>();
@@ -613,7 +586,7 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		featureSelectionMethod = _basis;
 		motorVectorSize = LearningData::motorVectorSizeBasis;
 	}
-	else if (fSMethod == "markov" ) {
+	else if (fSMethod == "markov" || fSMethod == "" ) {
 		featureSelectionMethod = _markov;
 		motorVectorSize = LearningData::motorVectorSizeMarkov;
 	}

@@ -127,6 +127,10 @@ struct LearningData {
 			golem::Real horizontalAngle;
 			/** speed ( 3 (fast), 4 (middle), 5 (low) */
 			golem::Real pushDuration;
+			/** direction vector (target pose) */
+			golem::Mat34 endEffectorPose;
+			/** target effector orientation in Euler coordinates */
+			golem::Real endEfRoll, endEfPitch, endEfYaw;
 			/** feature vector (here any vectorial representation is possible) */
 			FeatureVector featureVector;
 		};
@@ -159,9 +163,9 @@ struct LearningData {
 	/** current predicted effector poses sequence */
 	vector<Mat34> currentPredictedEfSeq;
 	/** size of motor vector for NN training for basis representation */
-	static const int motorVectorSizeBasis = 2;
+	static const int motorVectorSizeBasis = 7;
 	/** size of motor vector for NN training for markov representation */
-	static const int motorVectorSizeMarkov = 2;	
+	static const int motorVectorSizeMarkov = 7;	
 	/** size of polyflap pose vector for NN training */
 	static const int pfVectorSize = 6;
 	/** size of effector pose vector for NN training */
@@ -392,7 +396,13 @@ struct LearningData {
 		try { 
 			if ( flags & _action_params ) {
 				featVector.push_back (normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration));
-				featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
+				//featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.endEfPitch,-REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.endEfYaw, -REAL_PI, REAL_PI));
 			}
 		
 			if ( flags & _effector ) {
@@ -425,7 +435,13 @@ struct LearningData {
 		try { 
 			if ( flags & _action_params ) {
 				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration);
-				featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
+				// featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.endEfPitch,-REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.endEfYaw, -REAL_PI, REAL_PI);
 			}
 			if ( flags & _effector ) {
 

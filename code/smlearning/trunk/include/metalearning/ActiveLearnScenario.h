@@ -104,7 +104,7 @@ protected:
 	int splittingCriterion1;
 
 	/** size of motor Context Vector */
-	static const int motorContextSize = 5;
+	static const int motorContextSize = 10;
 	/** size of motor Feature Vector */
 	int motorVectorSize;
 
