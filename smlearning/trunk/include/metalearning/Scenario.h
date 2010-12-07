@@ -400,6 +400,11 @@ protected:
 	void move_finger();
 
 	///
+	///write data chunk (used in postprocess function)
+	///
+	void write_chunk (LearningData::Chunk& chunk);
+	
+	///
 	///storing a label (in this case polyflap status)
 	///
 	void add_label (LearningData::Chunk& chunk);

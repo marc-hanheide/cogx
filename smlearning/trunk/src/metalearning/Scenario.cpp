@@ -461,10 +461,7 @@ void Scenario::set_up_movement(){
 	// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
 
 
-	//the lenght of the movement
-	Real currDistance = desc.distance;
-
-	set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+	set_movement_angle(horizontalAngle, end, desc.distance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 	cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
 }
@@ -506,6 +503,36 @@ void Scenario::add_label (LearningData::Chunk& chunk) {
 }
 
 
+///
+///write data chunk (used in postprocess function)
+///
+void Scenario::write_chunk (LearningData::Chunk& chunk) {
+	chunk.timeStamp = trialTime;
+	arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
+	chunk.action.effectorPose = effector->getPose();
+	chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
+	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
+	chunk.action.horizontalAngle = horizontalAngle;
+	chunk.action.pushDuration = pushDuration;
+	chunk.action.endEffectorPose = end;
+	chunk.action.endEffectorPose.R.toEuler (chunk.action.endEfRoll, chunk.action.endEfPitch, chunk.action.endEfYaw);
+
+	chunk.object.objectPose = object->getPose();
+	chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
+
+	// golem::Mat34 p = chunk.object.objectPose; 
+	// golem::Mat34 p = chunk.action.effectorPose; 
+	// golem::Mat34 p = chunk.action.endEffectorPose;
+	// cout << "pose: ";
+
+	// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.action.endEfRoll << " " << chunk.action.endEfPitch << " " << chunk.action.endEfYaw << endl;
+
+	if (storeLabels) add_label (chunk);
+	// trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
+
+}
+
+
 void Scenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {
 		CriticalSectionWrapper csw(cs);
@@ -514,28 +541,11 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		}
 
 		LearningData::Chunk chunk;
-		chunk.timeStamp = trialTime;
-		arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
-		chunk.action.effectorPose = effector->getPose();
-		chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
-		chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
-		chunk.action.horizontalAngle = horizontalAngle;
-		chunk.action.pushDuration = pushDuration;
-
-		chunk.object.objectPose = object->getPose();
-		chunk.object.objectPose.R.toEuler (chunk.object.obRoll, chunk.object.obPitch, chunk.object.obYaw);
-
-		// golem::Mat34 p = chunk.object.objectPose; 
-		// golem::Mat34 p = chunk.action.effectorPose; 
-		// cout << "pose: ";
-
-		// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.action.efRoll << " " << chunk.action.efPitch << " " << chunk.action.efYaw << endl;
+		write_chunk (chunk);
 
 		//LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
-		if (storeLabels) add_label (chunk);
 
 // 		learningData.data.push_back(chunk);
-// 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 
 		learningData.currentChunkSeq.push_back (chunk);
 
