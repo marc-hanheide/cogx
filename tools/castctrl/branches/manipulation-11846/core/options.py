@@ -107,6 +107,7 @@ class CUserOptions(object):
 class CCastOptions(object):
     def __init__(self):
         self.mruCfgPlayer = []
+        self.mruCfgGolem = []
         self.mruCfgCast = []
         self.mruCfgHosts = []
         self.options = {}
@@ -186,6 +187,7 @@ class CCastOptions(object):
             l = l.strip()
             if l == "[MRU-CAST]": section = self.mruCfgCast
             elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
+            elif l == "[MRU-GOLEM]": section = self.mruCfgGolem
             elif l == "[MRU-HOSTS]": section = self.mruCfgHosts
             elif l == "[OPTIONS]": section = options
             elif l.startswith('['): section = None
@@ -229,6 +231,9 @@ class CCastOptions(object):
             f.write(ln); f.write("\n")
         f.write("[MRU-PLAYER]\n")
         for ln in self.mruCfgPlayer:
+            f.write(ln); f.write("\n")
+        f.write("[MRU-GOLEM]\n")
+        for ln in self.mruCfgGolem:
             f.write(ln); f.write("\n")
         f.write("[MRU-HOSTS]\n")
         for ln in self.mruCfgHosts:
@@ -304,6 +309,10 @@ class CCastOptions(object):
 
     def addPlayerConfig(self, filename):
         self._storeMru(self.mruCfgPlayer, filename)
+        pass
+
+    def addGolemConfig(self, filename):
+        self._storeMru(self.mruCfgGolem, filename)
         pass
 
     def addCastConfig(self, filename):
