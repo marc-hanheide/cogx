@@ -868,12 +868,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowseHostFile, QtCore.SIGNAL("clicked()"), self.actOpenHostConfig.trigger)
-<<<<<<< .mine
         QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
         QtCore.QObject.connect(self.btBrowseGolemFile, QtCore.SIGNAL("clicked()"), self.actOpenGolemConfig.trigger)
-=======
-        QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
->>>>>>> .r11848
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
