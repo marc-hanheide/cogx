@@ -2,6 +2,8 @@
 
 PIDS=""
 
+CLASSPATH=/opt/local/share/java/jakarta-log4j.jar:$CLASSPATH 
+
 trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP 
 
 if [ "$1" ]; then
@@ -16,7 +18,7 @@ xterm -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml
 PIDS="$PIDS $!"
 sleep 2
 
-xterm -e player instantiations/stage/spring-school/cogxp3-spring-school.cfg &
+xterm -e player instantiations/stage/alu/alu.cfg &
 PIDS="$PIDS $!"
 rm -f  robotpose.ccf
 
