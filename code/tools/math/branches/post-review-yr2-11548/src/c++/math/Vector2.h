@@ -338,10 +338,12 @@ inline bool vequals(const Vector2& a, const Vector2& b, double eps)
 /**
  * Returns true if the two vectors are not exactly equal.
  */
+/*
 inline bool operator != (const Vector2 &a, const Vector2 &b)
 {
   return a.x != b.x || a.y != b.y;
 }
+*/
 
 inline Vector2 operator - (const Vector2 &a)
 {
