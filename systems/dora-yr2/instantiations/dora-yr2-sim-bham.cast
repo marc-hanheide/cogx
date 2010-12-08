@@ -1,0 +1,87 @@
+HOST localhost
+
+# spatial #####################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+INCLUDE includes/spatial.sa/spatial-objsearch.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-shape-sim.cast
+
+
+# vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-blobs-dora.cast
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
+
+
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+#JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
+
+# dialogue stuff ##############################################################
+INCLUDE includes/dialogue.sa/dialogue-base.cast
+INCLUDE includes/dialogue.sa/dialogue-dora.cast
+
+JAVA MG verbal.kint verbalisation.DoraVerbalisation
+
+
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/switching-planner-dora.cast
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+
+INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation-goals-dora.cast
+
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+
+# exection ####################################################################
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cereal_box,filing_box,matchbox,table_for_meal
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+
+
+# viewing and debugging #######################################################
+
+#JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, castutils.slice.WMMap, motivation.slice.ExploreMotive, comadata.ComaRoom"
+
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, SpatialProperties.ConnectivityPathProperty, comadata.ComaRoom, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief,  castutils.slice.WMMap"
+
+
+JAVA MG display.GroundedBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.GroundedBelief" --generic-col
+JAVA MG display.PerceptBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.PerceptBelief" --generic-col
+
+JAVA MG display.places castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "SpatialData.Place"
+JAVA MG display.goals castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "motivation.slice.Motive" --generic-col
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
+
+JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
+
+#JAVA MG conedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.ViewPoint" --generic-col
