@@ -1,0 +1,32 @@
+# Parameter descriptions:
+#    <parameter>     mandatory
+#    <parameter?>    optional
+#    <par1>//<par2>  alternatives
+
+# Define host names
+# HOST <id>  <ip>//<hostname>
+HOST  TheOne         localhost
+HOST  Player         localhost
+
+# All subarchitectures executed on the same host
+# SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
+SA    none           [TheOne]  # This is for the default HOST in .cast file (ie. no SA defined yet)
+SA    binder         [TheOne]
+SA    coma.sa        [TheOne]
+SA    comsys         [TheOne]
+SA    fakemotivation.sa [TheOne]
+SA    motivation.sa  [TheOne]
+SA    nav.sa         [TheOne]
+SA    planner.sa     [TheOne]
+SA    spatial.sa     [TheOne]
+SA    vision.sa      [TheOne]
+
+# Special settings for individual components
+# ID  <component_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
+# ID    video.viewer   [TheOne]
+
+# Parameters that define hosts
+# HPAR <component_id?>|<param>  [<host_id>]//<ip>//<hostname>
+# Player may execute on a separate computer
+HPAR  |--player-host   [Player]
+
