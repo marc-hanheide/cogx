@@ -30,6 +30,8 @@ import cast.cdl.WorkingMemoryPermissions;
  */
 public class MotiveFilterManager extends ManagedComponent {
 
+	private static final int RECHECK_INTERVAL_DEFAULT = 5000;
+	private int recheckInterval = RECHECK_INTERVAL_DEFAULT;
 	WorkingMemoryChangeReceiver receiver;
 	WMMotiveView motives;
 
@@ -93,13 +95,17 @@ public class MotiveFilterManager extends ManagedComponent {
 	protected void configure(Map<String, String> arg0) {
 		log("configure filter");
 		super.configure(arg0);
-		String subscrStr = arg0.get("--filter");
-		if (subscrStr != null) {
-			StringTokenizer st = new StringTokenizer(subscrStr, ",");
+		String argStr = arg0.get("--recheck-interval");
+		if (argStr != null) {
+			recheckInterval=Integer.parseInt(argStr);
+		}
+		argStr = arg0.get("--filter");
+		if (argStr != null) {
+			StringTokenizer st = new StringTokenizer(argStr, ",");
 			while (st.hasMoreTokens()) {
 				String className = st.nextToken();
 				className = this.getClass().getPackage().getName() + "."
-						+ className.trim();
+				+ className.trim();
 				try {
 					log("add type '" + className + "'");
 					ClassLoader.getSystemClassLoader().loadClass(className);
@@ -162,6 +168,23 @@ public class MotiveFilterManager extends ManagedComponent {
 			receiver.workingMemoryChanged(wmc);
 		}
 
+	}
+
+	/* (non-Javadoc)
+	 * @see cast.core.CASTComponent#runComponent()
+	 */
+	@Override
+	protected void runComponent() {
+		if (recheckInterval>0) {
+			while(isRunning()) {
+				sleepComponent(recheckInterval);
+				try {
+					checkAll();
+				} catch (CASTException e) {
+					logException(e);
+				}
+			}
+		}
 	}
 
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
