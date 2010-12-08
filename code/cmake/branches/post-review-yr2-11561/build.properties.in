@@ -1,5 +1,5 @@
 debug=true
-ice.slice.dir=${ICE_SLICE_DIR}
+ice.slice.dir=${ICE_SLICE_DIR}:/opt/local/share/slice
 castslice.dir=${CAST_SLICE_DIR}
 cast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar
 log4j.jar=/usr/share/java/log4j-1.2.jar
