@@ -41,7 +41,8 @@ using namespace std;
 namespace smlearning {
 
 ///
-///this representation should also allow for labels, i.e., a vector of size 1
+///Floating point representation for a feature vector.
+///This representation should also allow for labels, i.e., a vector of size 1
 ///properly discretized
 ///
 typedef vector<double> FeatureVector;

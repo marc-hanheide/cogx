@@ -244,7 +244,6 @@ protected:
 	/** Trial data */
 	LearningData learningData;
 	/** Dataset */
- 	// DataSetStruct data;
 	LearningData::DataSet data;
 	/** base file name for dataset */
 	string dataFileName;
@@ -313,7 +312,7 @@ protected:
 
 
 
-	/** (Post)processing function called AFTER every physics simulation step and before randering. */
+	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** Creates Scenario from description. */
 	bool create(const Scenario::Desc& desc);
@@ -481,9 +480,9 @@ protected:
 	void prepare_target();
 
 	///
-	///select random angle (discrete or continouos)
+	///select random angle (discrete or continuous)
 	///
-	Real choose_angle(Real min, Real max, string form);
+	Real choose_angle(Real min, Real max, bool continuous = true);
 
 
 	
