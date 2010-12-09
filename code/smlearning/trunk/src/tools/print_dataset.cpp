@@ -9,17 +9,6 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 	
-	/*DataSetStruct savedData;
-	string seqFile = string (argv[1]);
-
-	if (!read_dataset (seqFile, savedData)) {
-		cerr << "error reading data" << endl;
-		return 1;
-	}
-
-	print_dataset<double> (savedData.first);
-	print_dataset_params (savedData.second);*/
-
 	LearningData::DataSet savedData;
 	LearningData::CoordinateLimits limits;
 	string seqFile = string (argv[1]);

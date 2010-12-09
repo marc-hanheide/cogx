@@ -49,8 +49,11 @@ namespace smlearning {
 enum chunk_flags {
 
         _object = 1L << 0, /**< For storing object features. */
-        _effector = 1L << 1, /**< For storing effector features. */
-        _action_params = 1L << 2 /**< For storing other motor action features. */
+        _effector_pos = 1L << 1, /**< For storing effector position. */
+	_effector_orient = 1L << 2, /**< For storing effector orientation. */
+	_end_effector_pos = 1L << 3, /**< For storing end effector position. */
+	_end_effector_orient = 1L << 4, /**< For storing end effector orientation. */
+        _action_params = 1L << 5 /**< For storing other motor action features. */
 };
 
 inline chunk_flags
@@ -111,7 +114,6 @@ struct LearningData {
 			golem::Mat34 objectPose;
 			/** Object orientation in Euler coordinates */
 			golem::Real obRoll, obPitch, obYaw;
-			/** label */
 			/** feature vector (here any vectorial representation is possible) */
 			FeatureVector featureVector;
 		};
@@ -163,9 +165,9 @@ struct LearningData {
 	/** current predicted effector poses sequence */
 	vector<Mat34> currentPredictedEfSeq;
 	/** size of motor vector for NN training for basis representation */
-	static const int motorVectorSizeBasis = 7;
+	static const int motorVectorSizeBasis = 3;
 	/** size of motor vector for NN training for markov representation */
-	static const int motorVectorSizeMarkov = 7;	
+	static const int motorVectorSizeMarkov = 3;	
 	/** size of polyflap pose vector for NN training */
 	static const int pfVectorSize = 6;
 	/** size of effector pose vector for NN training */
@@ -260,11 +262,6 @@ struct LearningData {
 	static void print_dataset_limits (const CoordinateLimits limits);
 
 	///
-	///print a motor command struct
-	///
-	static void print_motorCommand (const Chunk::Action& mC);
-
-	///
 	///print a chunk (features)
 	///
 	static void print_Chunk (const Chunk& c);
@@ -300,7 +297,7 @@ struct LearningData {
 		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
 			Chunk::Seq seq = *d_iter;
 
-			size_t seqSize = seq.size();
+			size_t seqSize = seq.size() - 1;
 			seqLengthsVector.push_back ( seqSize );
 			numTimesteps_len += seqSize;
 
@@ -309,25 +306,31 @@ struct LearningData {
 				if (s_iter+1 != seq.end()) {
 					if (s_iter == seq.begin()) {
 						//motor command
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params*/ _end_effector_pos );
 						//completing with feature vector
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
+						if (d_iter == data.begin())
+							assert (inputSize == inputVector.size());
 
-						//zero padding
+						/*//zero padding
 						for (int i=0; i<motorVectorSize; i++)
 							inputVector.push_back (0.0);
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector_pos | _object);*/
 					}
 					
 					else {
 						//zero padding
 						for (int i=0; i<motorVectorSize; i++)
 							inputVector.push_back (0.0);
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector | _object);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
 					}
 				}
-				//target vector corresponds to polyflap pose vector
-				write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, _object);
+				if (s_iter != seq.begin()) {
+					//target vector corresponds to polyflap pose vector
+					write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, _object);
+					if (s_iter == seq.begin()+1 && d_iter == data.begin())
+						assert (targetVector.size() == outputSize);
+				}
 			
 			}
 		}
@@ -370,13 +373,18 @@ struct LearningData {
 			for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
 				if (s_iter+1 != seq.end()) {
 					//input feature vector
-					write_chunk_to_featvector (inputVector, *s_iter, normalize, limits);
+					write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _end_effector_pos | _effector_pos | _effector_orient | _object);
+					if (s_iter == seq.begin() && d_iter == data.begin())
+						assert (inputVector.size() == inputSize);
 				
 				}
-				if (s_iter != seq.begin())
+				if (s_iter != seq.begin()) {
 					//target vector corresponds to polyflap pose vector
 					write_chunk_to_featvector (targetVector, *s_iter, normalize, limits, _object);
-			
+					if (s_iter == seq.begin()+1 && d_iter == data.begin())
+						assert (targetVector.size() == outputSize);
+
+				}
 			}
 		}
 		//netcdf file storing
@@ -392,24 +400,30 @@ struct LearningData {
 	///write a chunk to feature vector
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector | _action_params ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params ) {
 		try { 
 			if ( flags & _action_params ) {
 				featVector.push_back (normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration));
-				//featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
+			}
+			if ( flags & _end_effector_pos ) {
 				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
 				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
 				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+			}
+			if ( flags & _end_effector_orient ) {
 				featVector.push_back (normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.action.endEfPitch,-REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.action.endEfYaw, -REAL_PI, REAL_PI));
 			}
 		
-			if ( flags & _effector ) {
+			if ( flags & _effector_pos ) {
 			
 				featVector.push_back (normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
 				featVector.push_back (normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
 				featVector.push_back (normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+			}
+			if ( flags & _effector_orient ) {
 				featVector.push_back (normalize(chunk.action.efRoll, -REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.action.efPitch,-REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.action.efYaw, -REAL_PI, REAL_PI));
@@ -431,23 +445,29 @@ struct LearningData {
 	///write a chunk to feature vector with memory assigned
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector | _action_params ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params ) {
 		try { 
 			if ( flags & _action_params ) {
 				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration);
-				// featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
+				featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
+			}
+			if ( flags & _end_effector_pos ) {
 				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
 				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
 				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+			}
+			if ( flags & _end_effector_orient ) {
 				featVector[vectorIndex++] = normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.action.endEfPitch,-REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.action.endEfYaw, -REAL_PI, REAL_PI);
 			}
-			if ( flags & _effector ) {
+			if ( flags & _effector_pos ) {
 
 				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
 				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
 				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+			}
+			if ( flags & _effector_orient ) {
 				featVector[vectorIndex++] = normalize(chunk.action.efRoll, -REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.action.efPitch, -REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.action.efYaw, -REAL_PI, REAL_PI);
@@ -593,25 +613,27 @@ struct LearningData {
 			if (s_iter+1 != seq.end()) {
 				if (s_iter == seq.begin () ) {
 					//motor command
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits,  _action_params);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits,  /*_action_params*/ _end_effector_pos );
 					//completing with feature vector
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector_pos | _effector_orient | _object);
 
 					//zero padding
-					for (int i=0; i<motorVectorSize; i++)
+					/*for (int i=0; i<motorVectorSize; i++)
 						inputVector[contInput++] = 0.0;
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector_pos | _object);*/
 			
 				}
 				else {
 					//zero padding
 					for (int i=0; i<motorVectorSize; i++)
 						inputVector[contInput++] = 0.0;
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector | _object);
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector_pos | _effector_orient | _object);
 				
 				}	
 			}
-			write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, _object);
+			if (s_iter != seq.begin()) {
+				write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, _object);
+			}
 		}
 	}
 
@@ -627,12 +649,13 @@ struct LearningData {
 		for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
 			if (s_iter+1 != seq.end()) {
 				//input feature vector
-				write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits);
+				write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _end_effector_pos | _effector_pos | _effector_orient | _object );
 				
 			}
-			if (s_iter != seq.begin() )
+			if (s_iter != seq.begin() ) {
 				//target vector corresponds to polyflap pose vector
 				write_chunk_to_featvector (targetVector, *s_iter, contTarget, normalize, limits, _object);
+			}
 			
 		}
 	}
@@ -652,8 +675,8 @@ struct LearningData {
 
 		//TODO: correct here sequence size:
 		if (featureSelectionMethod == _basis) {
-			inputShape.push_back (seq.size());
-			targetShape.push_back (seq.size());
+			inputShape.push_back (seq.size() - 1);
+			targetShape.push_back (seq.size() - 1);
 		}
 		else if (featureSelectionMethod == _markov) {
 			inputShape.push_back (seq.size() - 1);
@@ -690,7 +713,7 @@ struct LearningData {
 			outputVectorSize = pfVectorSize;
 		}
 		else if (featureSelectionMethod == _efobpose) {
-			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
+			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
 			outputVectorSize = pfVectorSize;
 		}
@@ -719,15 +742,20 @@ struct LearningData {
 					FeatureVector inputVector, stateVector, outputVector;
 
 					if (featureSelectionMethod == _obpose) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params | _effector);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
 						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
 						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
 
 					}
 					else if (featureSelectionMethod == _efobpose) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _action_params | _effector);
-						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector | _object);
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
 						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
+					}
+					if (s_iter == seq.begin() ) {
+						assert (inputVector.size() == inputVectorSize);
+						assert (stateVector.size() == stateVectorSize);
+						assert (outputVector.size() == outputVectorSize);
 					}
 					write_vector (writeFile, inputVector, _text);
 					write_vector (writeFile, stateVector, _text);

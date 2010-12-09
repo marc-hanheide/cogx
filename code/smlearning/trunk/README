@@ -68,6 +68,10 @@ Finally, compile the SMLearning sources:
 $ make
 $ sudo make install
 
+In order to compile the documentation, just type in the root directory of the project:
+
+$ doxygen doc/Doxyfile
+
 Good luck! ;)
 
 --

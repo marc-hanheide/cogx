@@ -341,8 +341,7 @@ void Scenario::choose_action () {
 	pushDuration = 3;
 
 	//chose random horizontal and vertical angle
-	// use disc for integer values and cont for continuous values
-	horizontalAngle = choose_angle(60.0, 120.0, "cont");
+	horizontalAngle = choose_angle(60.0, 120.0);
 	//int verticalAngle = rand() % 7;
 
 }
@@ -417,17 +416,12 @@ void  Scenario::calculate_starting_position_coord(){
 ///
 ///select random angle (discrete or continouos)
 ///
-Real Scenario::choose_angle(Real min, Real max, string form){
+Real Scenario::choose_angle(Real min, Real max, bool continuous){
 	Real res;
-	if (form == "disc") {
+	if (!continuous)
 		res = floor(randomG.nextUniform (min, max));
-	}
-	else if (form == "cont") {
+	else 
 		res = randomG.nextUniform (min, max);
-	}
-	else {
-		res = -1.0;
-	}
 	return res;
 }
 
@@ -619,10 +613,7 @@ void Scenario::send_position(golem::GenWorkspaceState& position, golem::ReacPlan
 void Scenario::init_writing(){
 
 	/////////////////////////////////////////////////
-	//create sequence for this loop run and initial (motor command) vector
-	// learningData.currentSeq.clear();
-	// learningData.currentMotorCommandVector.clear();
-
+	//create sequence for this loop run
 	learningData.currentChunkSeq.clear();
 	/////////////////////////////////////////////////	
 }

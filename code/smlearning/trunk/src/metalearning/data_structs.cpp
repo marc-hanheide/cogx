@@ -115,18 +115,6 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 }
 
 ///
-///print a motor command struct
-///
-void LearningData::print_motorCommand (const Chunk::Action& mC) {
-	cout << "\tmC=(";
-	cout << " P=[" << mC.effectorPose.p.v1 << " "
-	     << mC.effectorPose.p.v2 << " " <<  mC.effectorPose.p.v3<< "],";
-	cout << " O=[" << mC.efRoll << " "  << mC.efPitch << " " <<  mC.efYaw << "],";
-	cout << " s=" << mC.pushDuration << ",";
-	cout << " hA=" << mC.horizontalAngle << ")" << endl;
-}
-
-///
 ///print a chunk
 ///
 void LearningData::print_Chunk (const Chunk& c) {
@@ -136,6 +124,9 @@ void LearningData::print_Chunk (const Chunk& c) {
 	cout << " eP=" << c.action.effectorPose.p.v1 << " "
 	     << c.action.effectorPose.p.v2 << " " << c.action.effectorPose.p.v3 << ",";
 	cout << " eO=" << c.action.efRoll << " " << c.action.efPitch << " " << c.action.efYaw << ",";
+	cout << " eeP=" << c.action.endEffectorPose.p.v1 << " "
+	     << c.action.endEffectorPose.p.v2 << " " << c.action.endEffectorPose.p.v3 << ",";
+	cout << " eeO=" << c.action.endEfRoll << " " << c.action.endEfPitch << " " << c.action.endEfYaw << ",";
 	cout << " oP=" << c.object.objectPose.p.v1 << " "
 	     << c.object.objectPose.p.v2 << " " << c.object.objectPose.p.v3 << ",";
 	cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << " ]" << endl;

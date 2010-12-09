@@ -45,7 +45,7 @@ bool evaluate_activelearn (string seqFile, string dir, unsigned int featureSelec
 	double error = 0.0;
 	for (int i = 0; i < data.size(); i++) {
 		FeatureVector featureVector;
-		LearningData::write_chunk_to_featvector (featureVector, data[i][0], normalize<double>, limits, _effector | _action_params);
+		LearningData::write_chunk_to_featvector (featureVector, data[i][0], normalize<double>, limits, _end_effector_pos | _effector_pos /*| _action_params*/ );
 		int regionidx = SMRegion::get_SMRegion (regions, featureVector);
 		assert (regionidx != -1);
 		rnnlib::DataSequence* testSeq = LearningData::load_NNtrainSeq (data[i], featureSelectionMethod, normalize<double>, limits );

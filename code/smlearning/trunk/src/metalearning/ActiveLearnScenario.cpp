@@ -80,7 +80,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		write_chunk (chunk);
 
 // 		learningData.data.push_back(chunk);
-		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
+		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits, _end_effector_pos | _effector_pos | _object );
 		
 		learningData.currentChunkSeq.push_back (chunk);
 
@@ -161,7 +161,7 @@ void ActiveLearnScenario::choose_action () {
 				int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
 				chunk_cand.action.pushDuration = 3.0;
-				chunk_cand.action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
+				chunk_cand.action.horizontalAngle = choose_angle(60.0, 120.0);
 				Vec3 pos;
 				init_positionT (pos);
 				set_coordinates_into_target(startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
@@ -175,7 +175,7 @@ void ActiveLearnScenario::choose_action () {
 				set_movement_angle(chunk_cand.action.horizontalAngle, chunk_cand.action.endEffectorPose, desc.distance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 				chunk_cand.action.endEffectorPose.R.toEuler (chunk_cand.action.endEfRoll, chunk_cand.action.endEfPitch, chunk_cand.action.endEfYaw);
 
-				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.coordLimits, _effector | _action_params );
+				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.coordLimits, _end_effector_pos | _effector_pos /*| _action_params*/ );
 				candidateActions.push_back (chunk_cand.action);
 			}
 
