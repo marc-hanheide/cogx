@@ -5,6 +5,7 @@ from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
 
 from standalone import task, dt_problem, plans, plan_postprocess, pddl, config
+import standalone.globals as global_vars
 from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum
 
@@ -530,6 +531,9 @@ class CASTTask(object):
         return True
 
     def dt_planning_active(self):
+        if global_vars.config.dt.enabled == False:
+            return False
+        
         plan = self.get_plan()
         if not plan or not self.dt_task:
             return False
