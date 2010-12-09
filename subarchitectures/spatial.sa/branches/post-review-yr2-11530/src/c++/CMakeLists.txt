@@ -150,12 +150,12 @@ include_directories(${GTK2_INCLUDE_DIRS})
 link_directories(${GTK2_LIBRARIES})
 
 
-IF(APPLE)
-#nah: the Find_package call doesn't seem to work for me
+
+#nah: the Find_package call doesn't seem to work for me.
+#marc: same here, neither on Apple nor on ubuntu maverick this works, pkg-search-module does the job:
 pkg_search_module(GTK2_FIX REQUIRED gtk+-2.0)
 include_directories(${GTK2_FIX_INCLUDE_DIRS})
 link_directories(${GTK2_FIX_LIBRARY_DIRS})
-ENDIF(APPLE)
 
 
 
