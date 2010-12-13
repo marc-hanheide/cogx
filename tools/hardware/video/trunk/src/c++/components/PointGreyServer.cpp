@@ -11,13 +11,6 @@
 #include <VideoUtils.h>
 #include "PointGreyServer.h"
 
-#define USE_WRAPIMAGE_HACK 1
-#ifdef USE_WRAPIMAGE_HACK
-#include <ConvertImage.h>
-IplImage* wrapFlyCaptureImage(const FlyCapture2::Image &img);
-#endif
-
-
 /**
  * The function called to create a new instance of our component.
  */
@@ -33,6 +26,11 @@ namespace cast
 
 using namespace std;
 
+#define USE_WRAPIMAGE_HACK 1
+#ifdef USE_WRAPIMAGE_HACK
+#include <ConvertImage.h>
+IplImage* wrapFlyCaptureImage(const FlyCapture2::Image &img);
+#endif
 
 /**
  * @brief Property type names from the PointGrey cameras.
