@@ -386,10 +386,15 @@ void ObjectTracker::runTracker(){
 // 	m_timer.Update();
 
 	// Get image and update it
-// 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
-// 		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
-// 		m_running = false;
-// 	}
+	if(	m_trackCamPars.width != m_ImageWidth ||
+		m_trackCamPars.height != m_ImageHeight){
+		throw runtime_error(exceptionMessage(__HERE__, "Resolution of image changed"));
+		m_running = false;
+	}
+	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
+		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
+		m_running = false;
+	}
 
 
 	lockComponent();
