@@ -1,0 +1,12 @@
+HOST localhost
+
+
+SUBARCHITECTURE motivation.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log 
+#JAVA MG PlaceGenerator motivation.components.generators.PlaceGenerator   --log
+JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.AgeFilter  --log
+JAVA MG motivation.managers.PlanAllManager motivation.components.managers.PlanAllManager  --log
+JAVA MG motivation.util.WMMotiveDisplay motivation.util.WMMotiveDisplay  --log
+JAVA MG motivation.util.viewer.ViewerCastComponent motivation.util.viewer.ViewerCastComponent --log

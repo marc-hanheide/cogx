@@ -1,0 +1,44 @@
+^/code/cmake/trunk cmake
+
+^/code/subarchitectures/motivation.sa/trunk			subarchitectures/motivation.sa    
+^/code/subarchitectures/planner.sa/trunk                        subarchitectures/planner.sa
+^/code/subarchitectures/fakemotivation.sa/trunk			subarchitectures/fakemotivation.sa
+^/code/subarchitectures/binder/trunk				subarchitectures/binder.sa
+^/code/subarchitectures/vision.sa/trunk 			subarchitectures/vision.sa
+^/code/subarchitectures/visualization.sa/trunk 	 		subarchitectures/visualization.sa
+^/code/subarchitectures/dialogue.sa/trunk			subarchitectures/dialogue.sa
+
+^/code/tools/hardware/video/trunk				tools/hardware/video              
+^/code/tools/logtools/trunk					tools/logtools
+^/code/tools/hardware/config/branches/stable-0                  tools/hardware/config
+^/code/tools/hardware/laser/branches/stable-0                   tools/hardware/laser
+^/code/tools/hardware/robotbase/branches/stable-0               tools/hardware/robotbase
+^/code/tools/hardware/sonar/branches/stable-0                   tools/hardware/sonar
+^/code/tools/hardware/utils/branches/stable-0                   tools/hardware/utils
+^/code/tools/hardware/ptz/trunk					tools/hardware/ptz
+
+^/code/tools/mary                                               tools/mary
+
+^/code/tools/beliefs/trunk						tools/beliefs
+^/code/tools/d-lib/branches/stable-0                            tools/d-lib
+^/code/tools/math/branches/stable-0                             tools/math
+^/code/tools/camcalb2/branches/stable-0  			tools/camcalb2
+^/code/tools/genroi/branches/stable-0  				tools/genroi
+^/code/tools/grabimg/branches/stable-0  			tools/grabimg
+^/code/tools/scripts/trunk					tools/scripts
+^/code/tools/castctrl/trunk					tools/castctrl
+^/code/tools/castutils/trunk                            	tools/castutils
+^/code/tools/cogxutils/trunk                            	tools/cogxutils
+^/code/tools/python/trunk         				tools/python 
+
+^/code/tools/alchemy						tools/alchemy
+
+
+^/code/scenarios/george/trunk					scenarios/george
+
+
+
+
+
+
+

@@ -1,0 +1,216 @@
+ROBOT
+CogXdemo
+
+PEEKABOT_HOST
+localhost
+
+PEEKABOT_ROBOT_XML_FILE
+CogXp3.xml
+Robone.xml
+
+PEEKABOT_PERSON_PBMF_FILE
+rolf.pbmf
+
+# Press the button with this id on the joystick and you can move the robot
+JOYSTICK_DEADSWITCH_ID
+4
+
+# These ids tell the system the id of the EW (right-left) and the NS
+# (forw-back) axes on the joystick
+JOYSTICK_DRIVESAXES_IDS
+2 3
+
+# This button when pressed in comb with the DEADSWITCH allows you to make
+# the translation of the robot motion 0, ie allows you to spin in place easily
+JOYSTICK_ZEROTRANS_ID
+5
+
+# This button when pressed in comb with the DEADSWITCH allows you to make
+# the rotation of the robot motion 0, ie allows you to move straight easily
+JOYSTICK_ZEROROT_ID
+7
+
+ROBOTSHAPE
+# You can specify the shape of the robot in different way
+# 0 - circular robot: radius (centeroffset)
+# 1 - rectangular robot: length, width and centeroffset
+# 2 - polygon shape: number_of_verticies x0 y0 x1 y1 ...
+# 3 - complex shape: 144 polar ranges from center
+#0 0.5 -0.05
+#1 0.5 0.45 -0.06
+2 12 -0.308 -0.057 -0.265 -0.149 -0.171 -0.197 0.078 -0.215 0.158 -0.163 0.191 -0.050 0.191 0.050 0.158 0.163 0.078 0.215 -0.171 0.197 -0.265 0.149 -0.308 0.057
+
+NDPARAMS
+# The parameters for ND
+# version 1: just security distance
+1 0.6
+
+SENSORCHAINS
+# List the sensors to use .
+# type: 1 sick, 2 camera
+# ver type id PredictType XtraRotCovType SensorOffsetCovType MapSensorCovType 
+1 1 0 1 0 63 63
+1 2 1 1 0 56 59
+
+SENSORPOSES
+# List the sensors and their initial poses relative to the robot pose 
+# (The Covariance is diagonal set to Covariance value)  
+# if additional covariance numbers follow they will be placed 
+# along the diagonal of the Covariance other wise the first value is repeated.
+# type id x y z theta phi psi, (opt. covtype) (opt. Covariance value(s))
+1 0 0.14 0 0.24 0 0 0 63 .000001 .000001 .000001 .0001 .0001 .0001 
+2 0 0.15 0 0.335 0 0 0
+
+ODOMMODEL
+# version odtype covDistM covAngRad covAngM CovNormalperM CovXYperRad
+# biasDistPerM biasAngPerM biasAngPerRad 
+0 1 0.001 0.002 4e-7 4E-5 1E-6 0 0 0
+
+FEATURES
+1
+
+#=========================================================================
+# These are settings for the MapHelper object that determine the preliminary
+# search for the nearest feature to a measurement.
+#=========================================================================
+FEATUREMATCHING
+# For Walls (feature type 1):
+# subcfg 1 Feature Matching
+#
+# featuretype version subcfg 
+# RoughSearchRange NearSearchRange NewFeatureRange 
+# MatchThreshold EndPointUpdateThreshold 
+1 1 1 0.5 30 4000 1000 .01
+
+#=========================================================================
+# These are settings for the MapHelper object that determine the criteria 
+# for initialization of some feature M-Space dimensions.
+#=========================================================================
+FEATUREINITIALIZATION
+# For Walls (feature type 1):
+# subcfg 2  Feature Initialization
+#
+# featuretype version subcfg 
+# CountThreshold TightnessValue
+# EndThreshold LengthThreshold VarRhoThreshold
+# DistanceThreshold UseEndpoints
+1 1 2 8 0.15 0.1 0.35 5e-3 2 1
+
+#=========================================================================
+# These are settings for the MapHelper object that determine the criteria 
+# for merging of two features or parts of features (corners).
+#=========================================================================
+FEATUREMERGING
+# For Walls (feature type 1):
+# subcfg 3 Feature Merging
+#
+# featuretype version subcfg 
+# MergeOverLap  MergeMaxGammaError MergeMaxRhoError
+# CornerSeparation
+1 1 3 .01 .03 .05 .01
+
+#=========================================================================
+# These are settings for the SLAM algorithm final matching 
+# criteria.
+#=========================================================================
+MAHALANOBIS
+1 16
+
+
+#=========================================================================
+# These are settings for the RangeHough object that depend on the  
+# sensor settings
+#=========================================================================
+SCANPARAMETERS
+# version subcfg
+# halfWidth maxRange scanHalfRes sensorVariance variancePerSquareRange
+1 1 0.005 8 2 1E-6 1E-6
+
+#=========================================================================
+# These are settings for the RangeHough object that determine the 
+# number and quality of the lines found.
+#=========================================================================
+LINEPARAMETERS
+# version subcfg
+# minLineLen minNPts rhoThres varRhoThres dGamma 
+# maxGap rhoBiasThres  EndPointBehind  
+1 2 0.5 15 0.04  0.0003 0.017 0.5  1 .03
+
+#=========================================================================
+#
+# This file contains the configuration 
+#
+# NOTE: All lines starting with # will be considered a comment
+# NOTE: No empty line after the KEYWORD 
+#
+#=========================================================================
+
+# Files for the sensor and odometry data. The first number on each
+#line is the type which can be of the follinwg types
+# 0 - raw odometry
+# 1 - cum.odometry
+# 2 - inc.odometry
+# 3 - laser scans
+# 4 - inertial sensor
+SENSORFILES
+0 odom.tdf
+1 cum.tdf
+2 inc.tdf
+3 scans.tdf
+#4 inertial.tdf
+
+# To make it easy to switch between data set in different directories
+# you can set the path to the file. By default it is assumed that it
+# is the current directory
+FILEPATH 
+data
+
+# Files for the different features. The files for features have the
+# same key as the feature.
+FEATUREFILES
+ 1 walls.tdf
+64 lamps.tdf
+66 hlines.tdf
+
+# Files for the different maps. 
+# 1 - slam save map
+# 2 - localizer map
+MAPFILES
+1 map.fmf
+2 map.fmf
+
+# You can specify a delay for each of the SENSORFILES and FEATUREFILES
+# to compensate for time registration errors. The timestamps for the
+# data in the files will be increased by the delay values below. This
+# is, a positive value means that the data will appear to have been
+# arrived later.
+SENSORDELAYS
+0 0.000
+1 0.000
+2 0.000
+3 0.000
+
+FEATUREDELAYS
+1 0.000
+64 0.000
+66 0.000
+
+#=========================================================================
+#
+# This file contains the configuration 
+#
+# NOTE: All lines starting with # will be considered a comment
+# NOTE: No empty line after the KEYWORD 
+#
+#=========================================================================
+
+EXECMODE
+# 0 - read from file
+# 1 - connect to sensor servers
+0
+
+INCLUDEPATH
+./
+
+INCLUDE
+robotpose.ccf
