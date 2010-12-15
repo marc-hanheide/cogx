@@ -131,7 +131,6 @@ class CCastConfig:
             return ["# Failed to include: '%s'" % filename]
         fdir = os.path.abspath(os.path.dirname(filename))
         lines = [
-                "# ----- include ------",
                 "SETVAR CURRENT_DIR=%s" % fdir,
                 "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
                ]
@@ -141,8 +140,18 @@ class CCastConfig:
             if setting == "": continue
             mo = CCastConfig.reInclude.match(setting)
             if mo != None:
+                lines += [
+                        "",
+                        "# ----- include ------"
+                       ]
                 fninc = os.path.join(fdir, mo.group(1))
                 lines += self.readConfig(fninc, maxdepth-1)
+                lines += [
+                        "# -----",
+                        "",
+                        "SETVAR CURRENT_DIR=%s" % fdir,
+                        "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
+                       ]
                 continue
             lines.append(line)
         return lines
