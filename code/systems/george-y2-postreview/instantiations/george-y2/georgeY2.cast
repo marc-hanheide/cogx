@@ -12,7 +12,7 @@ INCLUDE ../includes/visualization.sa/v11n-base-p.cast
 INCLUDE georgeY2-vision.incl
 
 JAVA MG vision.mediator eu.cogx.perceptmediator.components.VisualObjectMediatorComponent #--debug
-
+JAVA MG concept.status.mediator eu.cogx.perceptmediator.ModelStatusMediator #--debug
 JAVA MG exe.vision vision.execution.VisionActionInterface
 
 ####################################################################################################################
@@ -30,7 +30,8 @@ JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug
 JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
 JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
 JAVA MG goal.generator.intention eu.cogx.goals.george.IntentionGoalGenerator --log --debug
-JAVA MG goal.generator.asertion eu.cogx.goals.george.AttributedBeliefGoalGenerator
+#JAVA MG goal.generator.asertion eu.cogx.goals.george.AttributedBeliefGoalGenerator
+JAVA MG goal.generator.non-situated eu.cogx.goals.george.CannedTextGenerator --log --debug
 
 #JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
@@ -39,6 +40,7 @@ JAVA MG shared.tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-
 
 #JAVA MG execution.manager george.execution.components.GraphicalExecutionManager
 JAVA MG execution.mediator george.execution.components.GeorgeExecutionMediator
+JAVA MG verbalisation  verbalisation.GeorgeVerbalisation
 
 ####################################################################################################################
 INCLUDE ../includes/dialogue.sa/dialogue-base.cast
