@@ -1,5 +1,5 @@
-% global Classifier
-% global Data
+global Classifier
+global Data
 
 loadtrainingdata;
 
