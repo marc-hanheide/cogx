@@ -2,7 +2,12 @@
 % clear classes;
 
 %% Load the data...
-load('./Data/ICRA2009Project/PushCenter/features.mat');
+%% affordanceFeatures are set in the startup script: George Y2 used cmLearn.config.
+if exist('Settings', 'var') && isfield(Settings, 'affordanceFeatures')
+   load(Settings.affordanceFeatures);
+else
+   load('./Data/ICRA2009Project/PushCenter/features.mat');
+end
 
 %% Convert it to CrossMod format...
 Data = OPARC_CrossMod_data_struct_converter(Data);
