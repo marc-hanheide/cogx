@@ -130,7 +130,11 @@ class CCastConfig:
         except:
             return ["# Failed to include: '%s'" % filename]
         fdir = os.path.abspath(os.path.dirname(filename))
-        lines = ["# '%s'" % filename]
+        lines = [
+                "# ----- include ------",
+                "SETVAR CURRENT_DIR=%s" % fdir,
+                "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
+               ]
         for line in f.readlines():
             line = line.rstrip() # remove EOL
             setting = self.removeComment(line)
