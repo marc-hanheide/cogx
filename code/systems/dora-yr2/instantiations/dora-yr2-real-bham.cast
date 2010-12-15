@@ -13,7 +13,7 @@ INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Categorical.SA ############################################################
 INCLUDE includes/categorical.sa/categorical-shape-appearance.cast
-
+#INCLUDE includes/categorical.sa/categorical-saving.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
@@ -63,6 +63,10 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/dialogue.sa/dialogue-base.cast
 INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
+JAVA MG verbal.kint verbalisation.DoraVerbalisation
+
+
+
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
@@ -99,3 +103,5 @@ JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V1
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
 
 #JAVA MG conedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.ViewPoint" --generic-col
+
+JAVA MG ProcessViewPointCommand castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData::ProcessViewPointCommand" --generic-col
