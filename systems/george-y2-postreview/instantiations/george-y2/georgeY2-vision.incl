@@ -1,0 +1,39 @@
+# CAST config file
+
+# NOTE: camera_config_file is set in georgeY2-vision-srv.incl
+
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+#CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+INCLUDE image-live.incl
+#INCLUDE image-sequence.incl
+
+CPP MG plane.pop.out PlanePopOut --videoname videoserver --stereohost localhost --stereoname stereoserver  --displayserver "display.srv"  --minObjHeight 0.02 # --display --log
+
+CPP MG SOI.filter SOIFilter --videoname videoserver --camid 0 --display --stereoname stereoserver --objht 23 --objdt 60 -bght 24 --bgdt 9999 --fixc 24 --displayserver "display.srv" --log --debug
+
+INCLUDE ../includes/vision.sa/vision-visual-learner.cast
+
+CPP MG vis.analyzer ObjectAnalyzer  --log --debug
+
+# ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
+# Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
+# the ProtoObject.
+CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
+
+#INCLUDE ../includes/vision.sa/vision-recognizer-3d.cast
+
+##### Monitors
+
+#JAVA MG percepts castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
+#JAVA MG beliefs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
+#JAVA MG visual.objects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
+JAVA MG proto.objectrs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.ProtoObject"
+#JAVA MG SOIs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.SOI"
+#JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
+
+CPP MG video.viewer VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv"
+#CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
+
