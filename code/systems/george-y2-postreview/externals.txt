@@ -39,7 +39,7 @@
 ^/code/tools/hardware/tests/trunk                                tools/hardware/tests
 ^/code/tools/hardware/tts/trunk                                  tools/hardware/tts
 ^/code/tools/hardware/utils/branches/post-review-yr2-11543/      tools/hardware/utils
-^/code/tools/hardware/video/branches/post-review-yr2-11542/      tools/hardware/video
+^/code/tools/hardware/video/trunk                                tools/hardware/video
 ^/code/tools/interconnectivity-branches/stable-0                 tools/interconnectivity
 ^/code/tools/logtools/branches/post-review-yr2-11557/            tools/logtools
 ^/code/tools/mary                                                tools/mary
