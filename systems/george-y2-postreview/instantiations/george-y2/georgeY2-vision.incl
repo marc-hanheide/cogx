@@ -32,7 +32,7 @@ CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoW
 #JAVA MG visual.objects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
 JAVA MG proto.objectrs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.ProtoObject"
 #JAVA MG SOIs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.SOI"
-#JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
+JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
 
 CPP MG video.viewer VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv"
 #CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
