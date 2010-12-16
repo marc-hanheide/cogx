@@ -1,4 +1,6 @@
 #!/bin/sh
+echo "\n----------Linux info\n"
+lsb_release -id --release --codename
 echo "\n----------BASH\n"
 bash --version
 echo "\n----------GCC, CMAKE\n"
