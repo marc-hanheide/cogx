@@ -1,0 +1,52 @@
+#!/bin/bash
+# Absolute path and directory
+SCRIPT=$(readlink -f $0)
+SCRIPTDIR=$(dirname $SCRIPT)
+
+if [ -f CMakeCache.txt ]; then
+   fnin=CMakeCache.txt
+else 
+   for bdir in BUILD Build build ; do
+      if [ -f $bdir/CMakeCache.txt ]; then
+         fnin=$bdir/CMakeCache.txt
+         break
+      fi
+   done
+fi
+
+if [ -z $fnin ]; then
+   echo CMakeCache.txt not found
+   exit 1
+fi
+
+echo "# This is a CMake initial cache file"
+echo "# Use:"
+echo "#  cd BUILD"
+echo "#  ccmake -C <path/to/thisfile>  .."
+
+mode="comment"
+if [ "$mode" == "nocomment" ]; then
+   # Without descriptions
+   grep "BUILD.*:BOOL=" $fnin | \
+      sed -e "s/\\([^:]*\\):\\([^=]*\\)=\\(.*\\)$/set(\1 \3 CACHE \2 \"\")/"
+else
+   # With descriptions
+   grep -B 1 "BUILD.*:BOOL=" $fnin | \
+      tr "\"" "\'" | \
+      sed -e "/^--/d" \
+      -e "/\\/\\//N;""s/\\/\\/ *\\(.*\\)\\n\\([^:]*\\):\\([^=]*\\)=\\(.*\\)$/set(\2 \4 CACHE \3 \"\1\")/"
+   # GREP explanation:
+   #    when a variable definition is encountered:
+   #       - print preceding line (B 1)
+   #       - print line
+   #    In this case grep will add '--' after every match so we delete it in sed
+   #
+   # SED explanation:
+   #    when line starts with --
+   #       delete it
+   #    when line starts with //
+   #       merge next line (N)
+   #       extract: '// ' (comment) '\n' (variable) ':' (type) '=' (value)
+   #       replace with: 'set(' variable value 'CACHE' type '"' comment '"'
+fi
+
