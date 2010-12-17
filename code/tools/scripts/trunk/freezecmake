@@ -1,4 +1,17 @@
 #!/bin/bash
+
+# This script will create an initial cache file for cmake from an
+# existing CMakeLists.txt. The script will search for CMakeLists.txt
+# in the current directory and in the directories BUILD, Build and
+# build. The results will be printed to standard output.
+#
+# Only the variables of type BOOL whose name contains BUILD
+# are processed.
+#
+# Example:
+#    cd BUILD
+#    ../tools/scripts/freezecmake > frozen_settings.txt
+
 # Absolute path and directory
 SCRIPT=$(readlink -f $0)
 SCRIPTDIR=$(dirname $SCRIPT)
