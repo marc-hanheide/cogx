@@ -3,7 +3,7 @@ TARGET=pcogx
 
 CXX= g++
 
-CXXPREFIX= ccache
+CXXPREFIX= 
 
 OPTIMISE := -O3 -march=native -mno-align-stringops  -minline-all-stringops -ffast-math #-fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations -fprefetch-loop-arrays -ftracer -fipa-matrix-reorg -ftree-parallelize-loops=4  -fmodulo-sched -fmodulo-sched-allow-regmoves -fomit-frame-pointer -finline-functions -funroll-all-loops -mpush-args  -maccumulate-outgoing-args 
 
