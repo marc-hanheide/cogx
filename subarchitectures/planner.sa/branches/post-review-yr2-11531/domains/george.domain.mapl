@@ -31,6 +31,8 @@
     (has-highest-color-gain ?v - visual-object)
     (has-highest-shape-gain ?v - visual-object)
     (has-highest-ident-gain ?v - visual-object)
+    (object-of-desired-color-available ?c - color-name)
+    (object-of-desired-shape-available ?s - shape-name)
     (learning-impossible)
   )
 
@@ -385,6 +387,18 @@
     	    	 (ident-unlearned ?v)
 		 (increase (total-cost) 1)
 	    )
+  )
+
+  (:action ask-for-and-object-with-color
+    :agent (?a - robot)
+    :parameters (?c - color-name)
+    :effect (object-of-desired-color-available ?c)
+  )
+
+  (:action ask-for-and-object-with-shape
+    :agent (?a - robot)
+    :parameters (?s - shape-name)
+    :effect (object-of-desired-shape-available ?s)
   )
 
 
