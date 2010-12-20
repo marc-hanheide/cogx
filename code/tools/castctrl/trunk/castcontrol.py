@@ -460,7 +460,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
 
-        log4config = "\n".join(open(log4.clientConfigFile).readlines())
+        # The client config file was prepared in prepareClientConfig.
+        # We send it to remote agents so they use the same settings.
+        log4config = "".join(open(log4.clientConfigFile).readlines())
 
         # XXX Processes could be started for each host separately;  (id=remotestart)
         # Each process on each host could be started separately;
@@ -468,7 +470,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         for h in self._remoteHosts:
             h.agentProxy.setLog4jClientProperties(log4config)
             for p in h.proclist: p.start()
-        self.ui.processTree.expandAll()
 
     def stopServers(self):
         srvs = self.getServers(self._manager)
@@ -476,7 +477,6 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         for h in self._remoteHosts: # See <URL:#remotestart>
             for p in h.proclist: p.stop()
-        self.ui.processTree.expandAll()
 
     # Somehow we get 2 events for a button click ... filter one out
     def onStartCastServers(self):
@@ -486,9 +486,11 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
         self.startServers(log4)
+        self.ui.processTree.expandAll()
 
     def onStopCastServers(self):
         self.stopServers()
+        self.ui.processTree.expandAll()
 
     # Add components to filter; put the used components to the top of the list
     def addComponentFilters(self, components):
