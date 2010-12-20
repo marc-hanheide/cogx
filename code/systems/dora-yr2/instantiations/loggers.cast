@@ -1,0 +1,11 @@
+JAVA MG logger.WMLogger castutils.experimentation.WMLogger --subscribe "SpatialData.Place, comadata.ComaRoom, execution.slice.Action, motivation.slice.Motive, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, motivation.slice.PlanProxy"
+
+
+#JAVA MG logger.SetLogger motivation.util.castextensions.SetSizeLogger --subscribe "SpatialProperties.ConnectivityPathProperty, comadata.ComaRoom"
+#JAVA MG logger.MotiveSetLogger motivation.util.castextensions.MotiveSetSizeLogger
+#JAVA MG logger.PlaceSetLogger motivation.util.castextensions.PlaceSetSizeLogger
+
+
+JAVA MG logger.DistanceMonitor castutils.experimentation.DistanceMonitor
+JAVA MG logger.PlannerStopWatch castutils.experimentation.PlannerStopWatch
+
