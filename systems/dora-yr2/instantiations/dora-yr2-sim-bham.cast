@@ -8,7 +8,7 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter
 INCLUDE includes/spatial.sa/spatial-mediator.cast
-INCLUDE includes/spatial.sa/spatial-objsearch.cast
+INCLUDE includes/spatial.sa/spatial-objsearch-no-tilt.cast
 
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast
@@ -53,7 +53,8 @@ INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 
-INCLUDE includes/motivation.sa/motivation.cast
+#INCLUDE includes/motivation.sa/motivation.cast
+JAVA MG goal.scheduler motivation.components.managers.FirstOnlyScheduler --debug 
 INCLUDE includes/motivation.sa/motivation-goals-dora.cast
 
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
@@ -85,3 +86,7 @@ JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
 
 #JAVA MG conedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.ViewPoint" --generic-col
+
+JAVA MG ProcessViewPointCommand castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData::ProcessViewPointCommand" --generic-col
+
+include loggers.cast
