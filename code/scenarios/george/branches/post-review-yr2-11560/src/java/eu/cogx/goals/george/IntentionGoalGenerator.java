@@ -98,6 +98,9 @@ public class IntentionGoalGenerator extends
 
 				TutorInitiativeMotive goal = new TutorInitiativeMotive();
 				super.fillDefault(goal);
+				//added by alen
+				goal.informationGain = 1;
+					
 				goal.referenceEntry = addr;
 				goal.goal = new Goal(-1, "(" + concept.toLowerCase()
 						+ "-" + prefix + "learned '" + referredPrivate.getVal().id + "')",
