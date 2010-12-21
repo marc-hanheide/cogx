@@ -91,7 +91,7 @@ public class ModelStatusGoalGenerator extends
 //						ModelStatusTransferFunction.MOST_PROMISING)
 //						.getDistribution().getMostLikely().getProposition();
 
-		motive.goal = new Goal(0, "(object-of-desired-"+concept+"-available "+value+")", false);
+		motive.goal = new Goal(-1, "(object-of-desired-"+concept+"-available "+concept+"-name_"+value+")", false);
 		log("updated goal to " + motive.goal.goalString);
 	}
 
