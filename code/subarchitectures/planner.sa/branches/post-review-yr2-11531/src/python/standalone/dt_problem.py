@@ -28,9 +28,6 @@ class DTProblem(object):
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
         
         self.dtdomain = self.create_dt_domain(domain)
-        self.goal_actions = self.create_goal_actions(self.goals, self.dtdomain)
-        self.dtdomain.actions += [a for a in self.goal_actions]
-        self.dtdomain.name2action = None
 
         # dom_str, prob_str = DTPDDLOutput().write(self.problem)
         # print "\n".join(dom_str)
@@ -46,7 +43,11 @@ class DTProblem(object):
         self.relaxation_layers = self.compute_restrictions_new()
         #self.relaxation_layers = self.compute_restrictions()
         self.subproblems = self.compute_subproblems(self.state)
-        self.problem = self.create_problem(self.state, self.dtdomain)
+        self.problem, hstate = self.create_problem(self.state, self.dtdomain)
+        
+        self.goal_actions = self.create_goal_actions(self.goals, hstate, self.dtdomain)
+        self.dtdomain.actions += [a for a in self.goal_actions]
+        self.dtdomain.name2action = None
 
     def write_dt_input(self, domain_fn, problem_fn):
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
@@ -362,7 +363,7 @@ class DTProblem(object):
             
         return layers
             
-    def create_goal_actions(self, goals, domain):
+    def create_goal_actions(self, goals, hstate, domain):
         commit_actions = []
 
         confirm_score = 500
@@ -404,6 +405,12 @@ class DTProblem(object):
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
+            p = hstate.get_prob(svar, val)
+            if p < 0.00001 or p > 0.99999:
+                continue # no use in disconfirming known facts
+
+            dis_penalty = -dis_score * (1-p)/p
+            
             
             name = "disconfirm-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
             a = pddl.Action(name, [], None, None, domain)
@@ -424,7 +431,7 @@ class DTProblem(object):
             
             #commit_effect = b.effect(dtpddl.committed, term)
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_score))
-            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), -1*dis_score))
+            penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), dis_penalty))
             done_effect = b.effect('done')
             a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
             
@@ -502,7 +509,7 @@ class DTProblem(object):
         problem = pddl.Problem("cogxtask", p_objects, p_facts, None, domain, opt, opt_func )
         problem.goal = pddl.Conjunction([])
         log.debug("total time for state creation: %f", time.time()-t0)
-        return problem
+        return problem, hstate
 
     def create_prob_state(self, rules, state):
         pass
