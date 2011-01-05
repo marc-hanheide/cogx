@@ -114,7 +114,12 @@ void PtuTrackPoint::trackSOI(const cdl::WorkingMemoryChange &objID)
   
   if(trackFirstSOI)
   {
-	if(strcmp(objID.address.id.c_str(),"1:J")!=0) return;//strcmp() returns 0 if the strings are identical
+	if(waitingForFirstSOI)
+		{
+			waitingForFirstSOI = false;
+			firstSOIid = objID.address.id.c_str();
+		}
+	else if(strcmp(firstSOIid,objID.address.id.c_str())!=0) return; //strcmp() returns 0 if the strings are identical
   }
 
   shared_ptr<CASTData<VisionData::SOI> > oobj = 

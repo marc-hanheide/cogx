@@ -2,8 +2,6 @@
 #ifndef PTU_TRACK_POINT_HPP
 #define PTU_TRACK_POINT_HPP
 
-
-
 #include <stdexcept>
 #include <vector>
 #include <cast/architecture/ManagedComponent.hpp>
@@ -32,6 +30,8 @@ private:
   
   bool dontTrackSOIs;
   bool trackFirstSOI;
+  bool waitingForFirstSOI;
+  const char *firstSOIid;  
 
   void MovePanTilt(double pan, double tilt, double tolerance);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
@@ -44,7 +44,7 @@ protected:
   virtual void runComponent();
 
 public:
-  PtuTrackPoint() : pan(0), tilt(0), x(0), y(0), z(0) {}
+  PtuTrackPoint() : pan(0), tilt(0), x(0), y(0), z(0), waitingForFirstSOI(true) {}
   virtual ~PtuTrackPoint() {}
   
   void setTargetPoint(double x, double y, double z);
