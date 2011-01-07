@@ -26,6 +26,8 @@ class CSvgImage: public CDisplayObject
 private:
    friend class CSvgImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
+   friend class CSvgImage_RenderScene;
+   static std::auto_ptr<CRenderer> renderScene;
 // public:
    // A SVG image may have multiple parts: data + transformation
    class SPart
@@ -68,11 +70,22 @@ public:
    void setPart(const std::string& partId, const std::string& xmlData);
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
 
+   virtual ERenderContext getPreferredContext()
+   {
+      return ContextScene;
+   }
+
 private:
    SPart* findPart(const std::string& partId);
 };
 
 class CSvgImage_Render2D: public CRenderer
+{
+public:
+   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+};
+
+class CSvgImage_RenderScene: public CRenderer
 {
 public:
    virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/

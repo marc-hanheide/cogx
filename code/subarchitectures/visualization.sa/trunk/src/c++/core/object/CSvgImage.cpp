@@ -14,6 +14,9 @@
  * GNU General Public License for more details.
  */
 #include "CSvgImage.hpp"
+#include <QGraphicsItemGroup>
+#include <QGraphicsScene>
+#include <QGraphicsSvgItem>
 
 #ifdef DEBUG_TRACE
 //#undef DEBUG_TRACE
@@ -25,6 +28,7 @@ using namespace std;
 namespace cogx { namespace display {
 
 std::auto_ptr<CRenderer> CSvgImage::render2D(new CSvgImage_Render2D());
+std::auto_ptr<CRenderer> CSvgImage::renderScene(new CSvgImage_RenderScene());
 
 CSvgImage::CSvgImage()
 {
@@ -80,6 +84,7 @@ CRenderer* CSvgImage::getRenderer(ERenderContext context)
 {
    switch(context) {
       case Context2D: return render2D.get();
+      case ContextScene: return renderScene.get();
    }
    return NULL;
 }
@@ -116,6 +121,39 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
       catch (...) {
       }
       pPainter->restore();
+   }
+}
+
+void CSvgImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
+{
+   if (pObject == NULL || pContext == NULL) return;
+   CSvgImage *pImage = (CSvgImage*) pObject;
+   QGraphicsItemGroup *pGroup = (QGraphicsItemGroup*) pContext;
+   QGraphicsScene *pScene = pGroup->scene();
+
+   CSvgImage::SPart* pPart;
+   FOR_EACH(pPart, pImage->m_Parts) {
+      if (! pPart) continue;
+      if (pPart->data.size() < 16) continue;
+
+      QGraphicsSvgItem* pSvgItem = new QGraphicsSvgItem(pGroup);
+      pSvgItem->setFlags(QGraphicsItem::ItemClipsToShape);
+      pSvgItem->setCacheMode(QGraphicsItem::NoCache);
+
+      // XXX Unsafe when pPart is deleted !!! COULD CRASH.
+      pSvgItem->setSharedRenderer(&pPart->getSvgDoc());
+
+      if (pPart->trmatrix.size() == 9) {
+         std::vector<double>& trmatrix = pPart->trmatrix;
+         QTransform trans;
+         trans.setMatrix(
+               trmatrix[0], trmatrix[1], trmatrix[2],
+               trmatrix[3], trmatrix[4], trmatrix[5],
+               trmatrix[6], trmatrix[7], trmatrix[8]);
+         pSvgItem->setTransform(trans, true);
+      }
+
+      pGroup->addToGroup(pSvgItem);
    }
 }
 
