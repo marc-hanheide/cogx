@@ -15,12 +15,15 @@
  */
 
 #include "CRasterImage.hpp"
+#include <QGraphicsItemGroup>
+#include <QGraphicsScene>
 
 using namespace std;
 
 namespace cogx { namespace display {
 
 std::auto_ptr<CRenderer> CRasterImage::render2D(new CRasterImage_Render2D());
+std::auto_ptr<CRenderer> CRasterImage::renderScene(new CRasterImage_RenderScene());
 
 CRasterImage::CRasterImage()
 {
@@ -42,6 +45,7 @@ CRenderer* CRasterImage::getRenderer(ERenderContext context)
 {
    switch(context) {
       case Context2D: return render2D.get();
+      case ContextScene: return renderScene.get();
       default: break;
    }
    return NULL;
@@ -55,6 +59,22 @@ void CRasterImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
    QPainter *pPainter = (QPainter*) pContext;
    if (pImage->m_pImage) {
       pPainter->drawImage(0, 0, *(pImage->m_pImage));
+   }
+}
+
+void CRasterImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
+{
+   if (pObject == NULL || pContext == NULL) return;
+   CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);
+   if (pImage == NULL) return;
+
+   QGraphicsItemGroup *pGroup = (QGraphicsItemGroup*) pContext;
+   QGraphicsScene *pScene = pGroup->scene();
+   if (! pScene) return;
+
+   if (pImage->m_pImage) {
+      QGraphicsItem* pImg = pScene->addPixmap(QPixmap::fromImage(*(pImage->m_pImage)));
+      pGroup->addToGroup(pImg);
    }
 }
 
