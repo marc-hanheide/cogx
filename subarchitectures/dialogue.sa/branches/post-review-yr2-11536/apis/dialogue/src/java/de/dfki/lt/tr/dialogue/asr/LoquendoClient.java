@@ -54,8 +54,13 @@ extends _ResultListenerDisp {
 	 */
 	public LoquendoClient(String name, String endpoint) {
 		log("connecting to the Loquendo server \"" + name + "\" at \"" + endpoint + "\"");
-        ic = Ice.Util.initialize();
-		ic = Ice.Util.initialize();
+
+		Ice.Properties properties = Ice.Util.createProperties();
+		properties.setProperty("Ice.ACM.Client", "0");
+		Ice.InitializationData id = new Ice.InitializationData();
+		id.properties = properties;
+		ic = Ice.Util.initialize(id);
+
 		Ice.ObjectPrx base = ic.stringToProxy(name + ":" + endpoint);
 		prx = RecogniserPrxHelper.checkedCast(base);
 		if (prx == null) {
