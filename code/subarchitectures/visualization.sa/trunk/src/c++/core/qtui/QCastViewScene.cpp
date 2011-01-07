@@ -16,6 +16,7 @@
 
 #include "QCastViewScene.hpp"
 #include <QWheelEvent>
+#include <QScrollBar>
 
 #ifdef DEBUG_TRACE
 // #undef DEBUG_TRACE
@@ -27,8 +28,7 @@ QCastViewScene::QCastViewScene( QWidget* parent, Qt::WindowFlags flags )
 {
    pView = NULL;
    m_bNeedsRebuild = true;
-   //m_scale = 1.0;
-   //m_offset = QPointF(0, 0);
+   m_scale = 1.0;
    m_pScene = new QGraphicsScene(this);
    setScene(m_pScene);
 
@@ -106,39 +106,39 @@ void QCastViewScene::paintEvent ( QPaintEvent * event )
    QGraphicsView::paintEvent(event);
 }
 
-//void QCastViewScene::resetOffset()
-//{
-//   m_offset = QPointF(0, 0);
-//}
+void QCastViewScene::wheelEvent(QWheelEvent *e)
+{
+   if (e->modifiers() & Qt::ControlModifier) {
+      const double sclmin = 1/32.0;
+      const double sclmax = 32.0;
 
-//void QCastViewScene::resetScale()
-//{
-//   m_scale = 1.0;
-//}
+      // TODO: perfrom the scaling with the center under the mouse pointer.
+      QTransform T = transform();
+      T = T.scale(1.0/m_scale, 1.0/m_scale);
 
+      if (e->delta() > 0) m_scale *= 2;
+      else m_scale /= 2;
+      if (m_scale < sclmin) m_scale = sclmin;
+      if (m_scale > sclmax) m_scale = sclmax;
 
-//void QCastViewScene::wheelEvent(QWheelEvent *e)
-//{
-//   if (e->modifiers() & Qt::ControlModifier) {
-//      const double sclmin = 1/32.0;
-//      const double sclmax = 32.0;
+      T = T.scale(m_scale, m_scale);
+      setTransform(T);
+   }
+   else {
+      const int hscrollarea = 32;
 
-//      // world-coord of pixel under cursor
-//      QPointF ppix = (e->pos() - m_offset * m_scale) / m_scale; 
+      QScrollBar* sb = verticalScrollBar();
+      int h = viewport()->height();
 
-//      if (e->delta() > 0) m_scale *= 2;
-//      else m_scale /= 2;
-//      if (m_scale < sclmin) m_scale = sclmin;
-//      if (m_scale > sclmax) m_scale = sclmax;
+      if (h >= 5*hscrollarea) {
+         if (e->pos().y() < hscrollarea || e->pos().y() > h - hscrollarea) {
+            sb = horizontalScrollBar();
+         }
+      }
 
-//      m_offset = (e->pos() - ppix * m_scale) / m_scale;
-//      update();
-//   }
-//   else {
-//      QPointF yoffs(0, 32.0/m_scale);
-//      if (e->delta() > 0) m_offset += yoffs;
-//      else m_offset -= yoffs;
-//      update();
-//   }
-//}
+      if (sb) {
+         sb->setSliderPosition(sb->sliderPosition() - e->delta());
+      }
+   }
+}
 
