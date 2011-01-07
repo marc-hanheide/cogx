@@ -130,6 +130,7 @@ set(GUI_CPP
    qtui/QCastApplication.cpp
    qtui/QCastMainFrame.cpp
    qtui/QCastView.cpp
+   qtui/QCastViewScene.cpp
    qtui/QCustomGuiPanel.cpp
    qtui/QViewContainer.cpp
    qtui/ChangeSlot.cpp
@@ -138,6 +139,7 @@ set(SERVER_MOC_HEADERS
    qtui/QCastApplication.hpp
    qtui/QCastMainFrame.hpp
    qtui/QCastView.hpp
+   qtui/QCastViewScene.hpp
    qtui/ChangeSlot.hpp
    qtui/QCustomGuiPanel.hpp
    qtui/QViewContainer.hpp

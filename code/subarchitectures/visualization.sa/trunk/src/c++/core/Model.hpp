@@ -22,6 +22,7 @@
 #include "HtmlElements.hpp"
 
 #include <QPainter>
+#include <QGraphicsScene>
 #include <QStringList>
 #include <string>
 #include <map>
@@ -35,7 +36,7 @@ class CDisplayModel;
 class CRasterImage;
 class CRenderer;
 
-typedef enum { Context2D=1, ContextGL=2, ContextHtml=3 } ERenderContext;
+typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextScene=4 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
 typedef TObjectMap::iterator TObjectMapIterator;
@@ -173,6 +174,7 @@ public:
    virtual void drawGL();
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
+   virtual void drawScene(QGraphicsScene &scene);
    virtual void drawHtml(QStringList &head, QStringList &body);
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
 

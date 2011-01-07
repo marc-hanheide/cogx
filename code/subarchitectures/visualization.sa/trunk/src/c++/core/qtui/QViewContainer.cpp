@@ -16,6 +16,7 @@
 
 #include "QViewContainer.hpp"
 #include "QCastView.hpp"
+#include "QCastViewScene.hpp"
 #ifdef V11N_VIEW_GL
 #include "QCastViewGL.hpp"
 #endif
@@ -85,6 +86,9 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    if (! m_pDisplay) {
       if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
+      }
+      else if (pView->m_preferredContext == cogx::display::ContextScene) {
+         m_pDisplay = new QCastViewScene(this);
       }
 #ifdef V11N_VIEW_GL
       else if (pView->m_preferredContext == cogx::display::ContextGL) {

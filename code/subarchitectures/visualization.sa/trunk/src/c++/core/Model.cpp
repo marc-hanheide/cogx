@@ -14,9 +14,12 @@
  * GNU General Public License for more details.
  */
 #include "Model.hpp"
+#include <QList>
+#include <QGraphicsItem>
+#include <QGraphicsItemGroup>
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -386,6 +389,7 @@ void CDisplayView::replaceObject(const std::string& id, CDisplayObject *pNew)
 
 void CDisplayView::refreshObject(const std::string& id)
 {
+   DTRACE("CDisplayView::refreshObject");
    //CDisplayObject *pExisting = m_Objects.find(pObject->m_id);
    //if (! pExisting) return;
    TObjectMap::iterator existing = m_Objects.find(id);
@@ -446,6 +450,30 @@ void CDisplayView::draw2D(QPainter &painter)
          }
          pRender->draw(pObject, &painter);
          painter.restore();
+      }
+   }
+}
+
+// TODO: drawScene should replace draw2D!
+void CDisplayView::drawScene(QGraphicsScene &scene)
+{
+   CDisplayObject *pObject;
+   CRenderer *pRender;
+   FOR_EACH_V(pObject, m_Objects) {
+      if (!pObject) continue;
+      pRender = pObject->getRenderer(ContextScene);
+      if (pRender) {
+         QGraphicsItemGroup* pGroup = scene.createItemGroup(QList<QGraphicsItem*>());
+         if (m_Trafos.count(pObject->m_id)) {
+            std::vector<double>& trmatrix = m_Trafos[pObject->m_id];
+            QTransform trans;
+            trans.setMatrix(
+                 trmatrix[0], trmatrix[1], trmatrix[2],
+                 trmatrix[3], trmatrix[4], trmatrix[5],
+                 trmatrix[6], trmatrix[7], trmatrix[8]);
+            pGroup->setTransform(trans);
+         }
+         pRender->draw(pObject, pGroup);
       }
    }
 }
