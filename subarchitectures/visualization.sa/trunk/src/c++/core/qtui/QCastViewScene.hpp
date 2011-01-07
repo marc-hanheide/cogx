@@ -31,6 +31,7 @@ private:
    // XXX: scale and offset should be stored in pView or in a map<pview,viewState>
    QGraphicsScene* m_pScene;
    bool m_bNeedsRebuild;
+   double m_scale;
 
 public:
    QCastViewScene( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
@@ -58,7 +59,7 @@ signals:
 protected:
    // Qt events
    virtual void paintEvent(QPaintEvent * event); /*override*/
-//   virtual void wheelEvent(QWheelEvent *e); [>override<]
+   virtual void wheelEvent(QWheelEvent *e); /*override*/
 
 };
 
