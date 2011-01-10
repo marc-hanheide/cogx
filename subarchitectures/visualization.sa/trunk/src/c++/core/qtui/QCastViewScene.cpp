@@ -76,6 +76,8 @@ void QCastViewScene::getViewPosition(std::vector<double>& matrix)
    matrix.push_back(t.m31());
    matrix.push_back(t.m32());
    matrix.push_back(t.m33());
+   // TODO: also store scrollbar positions; figure out how to restore them.
+   //   -> they are not yet available in setViewPosition.
 }
 
 void QCastViewScene::setViewPosition(const std::vector<double>& matrix)
