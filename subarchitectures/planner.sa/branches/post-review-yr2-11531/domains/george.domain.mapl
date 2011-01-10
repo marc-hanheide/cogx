@@ -401,6 +401,7 @@
 		  )
     :effect (and 
      	       (object-of-desired-color-available ?c) 
+	       (update (object-of-desired-color-available ?c) true)
 	       (asked-for ?v)
 	    )
   )
@@ -414,6 +415,7 @@
 		  )
     :effect (and 
     	       (object-of-desired-shape-available ?s) 
+	       (update (object-of-desired-shape-available ?c) true)
 	       (asked-for ?v)
 	    )
   )
