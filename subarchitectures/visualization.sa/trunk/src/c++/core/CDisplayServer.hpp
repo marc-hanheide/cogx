@@ -102,6 +102,8 @@ public:
       hostname = m_standaloneHost;
    }
 
+   void createView(const std::string& id, const std::string& type, const std::vector<std::string>& objects);
+
    // TODO: (maybe) create a different image implementation for client/server comm.
    void setRawImage(const std::string& id, int width, int height, int channels,
          const std::vector<unsigned char>& data);
@@ -158,6 +160,12 @@ public:
    // These methods will be called by remote clients. They should just
    // pass the parameters to the worker (m_pDisplayServer) and return
    // its results.
+   virtual void createView(const std::string& id, const std::string& type,
+         const std::vector<std::string>& objects, const Ice::Current&)
+   {
+      m_pDisplayServer->createView(id, type, objects);
+   }
+
    virtual void setObject(const std::string& id, const std::string& partId,
          const std::string& xmlData, const Ice::Current&)
    {

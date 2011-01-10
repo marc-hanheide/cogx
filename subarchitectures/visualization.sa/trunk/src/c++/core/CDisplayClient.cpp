@@ -176,6 +176,13 @@ bool CDisplayClient::getFormData(const std::string& id, const std::string& partI
    return false;
 }
 
+void CDisplayClient::createView(const std::string& id, const std::string& type,
+      const std::vector<std::string>& objects)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->createView(id, type, objects);
+}
+
 void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 {
    if (m_pServer == NULL) return;

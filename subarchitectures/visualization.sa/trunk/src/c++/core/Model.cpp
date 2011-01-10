@@ -66,6 +66,45 @@ CDisplayModel::~CDisplayModel()
    m_GuiElements.clear();
 }
 
+void CDisplayModel::createView(const std::string& id, const std::string& type,
+      const std::vector<std::string>& objects)
+{
+   CDisplayView *pview;
+   TViewMap::iterator itview = m_Views.find(id);
+   pview = (itview == m_Views.end()) ? NULL : itview->second;
+   
+   if (! pview) {
+      DMESSAGE("Creating new view: " << id << ": " << type);
+      pview = new cogx::display::CDisplayView();
+
+      pview->m_id = id;
+      m_Views[pview->m_id] = pview;
+   }
+   else {
+      DMESSAGE("Replacing view: " << id << ": " << type);
+      pview->removeAllObjects();
+   }
+
+   if (type == "html") pview->m_preferredContext = ContextHtml;
+   else if (type == "graphics") pview->m_preferredContext = ContextScene;
+   else if (type == "gl") pview->m_preferredContext = ContextGL;
+   else pview->m_preferredContext = ContextHtml; // Some default...
+
+   std::vector<std::string>::const_iterator it;
+   for (it = objects.begin(); it != objects.end(); it++) {
+      CDisplayObject *pObj = getObject(*it);
+      if (pObj) pview->addObject(pObj);
+      else
+         pview->m_SubscribedObjects[*it] = true;
+   }
+
+   CDisplayModelObserver *pobsrvr;
+   CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+   FOR_EACH(pobsrvr, modelObservers) {
+      if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+   }
+}
+
 CDisplayView* CDisplayModel::getView(const string& id)
 {
    CDisplayView *pview;
@@ -372,6 +411,12 @@ void CDisplayView::removeObject(const std::string& id)
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onViewChanged(NULL, this);
    }
+}
+
+void CDisplayView::removeAllObjects()
+{
+   m_Objects.clear();
+   m_SubscribedObjects.clear();
 }
 
 void CDisplayView::replaceObject(const std::string& id, CDisplayObject *pNew)
