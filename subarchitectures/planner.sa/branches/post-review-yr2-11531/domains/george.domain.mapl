@@ -4,7 +4,8 @@
 
   (:types
     robot - agent
-    visual-object color-name shape-name ident-name - object
+    visual-object concept-name visual-concept-model-status - object
+    color-name shape-name ident-name - concept-name
   )
 
   (:constants
@@ -34,6 +35,7 @@
     (object-of-desired-color-available ?c - color-name)
     (object-of-desired-shape-available ?s - shape-name)
     (learning-impossible)
+    (asked-for ?v - visual-concept-model-status)
   )
 
  
@@ -50,6 +52,7 @@
     (max-gain-value-color ?v - visual-object) - number
     (max-gain-value-shape ?v - visual-object) - number
     (max-gain-value-ident ?v - visual-object) - number
+    (most-promising ?v - visual-concept-model-status) - concept-name
   )
 
   (:init-rule set-max-gain-value-color
@@ -391,15 +394,27 @@
 
   (:action ask-for-and-object-with-color
     :agent (?a - robot)
-    :parameters (?c - color-name)
-    :effect (object-of-desired-color-available ?c)
+    :parameters (?c - color-name ?v - visual-concept-model-status)
+    :precondition (and 
+    		     (= (most-promising ?v) ?c) 
+		     (not (asked-for ?v))
+		  )
+    :effect (and 
+     	       (object-of-desired-color-available ?c) 
+	       (asked-for ?v)
+	    )
   )
 
   (:action ask-for-and-object-with-shape
     :agent (?a - robot)
-    :parameters (?s - shape-name)
-    :effect (object-of-desired-shape-available ?s)
+    :parameters (?s - shape-name ?v - visual-concept-model-status)
+    :precondition (and 
+    		     (= (most-promising ?v) ?s) 
+		     (not (asked-for ?v))
+		  )
+    :effect (and 
+    	       (object-of-desired-shape-available ?s) 
+	       (asked-for ?v)
+	    )
   )
-
-
 )
