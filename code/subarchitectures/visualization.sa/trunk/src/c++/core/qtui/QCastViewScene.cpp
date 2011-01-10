@@ -36,6 +36,8 @@ QCastViewScene::QCastViewScene( QWidget* parent, Qt::WindowFlags flags )
    connect(this, 
       SIGNAL(signalViewChanged()), this,
       SLOT(requestFullRedraw()), Qt::QueuedConnection);
+
+   setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
 QCastViewScene::~QCastViewScene()
@@ -61,6 +63,37 @@ void QCastViewScene::setView(cogx::display::CDisplayView* pDisplayView)
    emit signalViewChanged();
 }
 
+void QCastViewScene::getViewPosition(std::vector<double>& matrix)
+{
+   QTransform t = transform();
+   matrix.clear();
+   matrix.push_back(t.m11());
+   matrix.push_back(t.m12());
+   matrix.push_back(t.m13());
+   matrix.push_back(t.m21());
+   matrix.push_back(t.m22());
+   matrix.push_back(t.m23());
+   matrix.push_back(t.m31());
+   matrix.push_back(t.m32());
+   matrix.push_back(t.m33());
+}
+
+void QCastViewScene::setViewPosition(const std::vector<double>& matrix)
+{
+   if (! m_pScene) return;
+   if (matrix.size() == 9) {
+      QTransform trans(
+            matrix[0], matrix[1], matrix[2],
+            matrix[3], matrix[4], matrix[5],
+            matrix[6], matrix[7], matrix[8]);
+      setTransform(trans);
+   }
+   else {
+      setTransform(QTransform());
+   }
+ 
+}
+
 void QCastViewScene::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastViewScene::onViewChanged");
@@ -72,7 +105,7 @@ void QCastViewScene::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::d
 void QCastViewScene::requestFullRedraw()
 {
    DTRACE("QCastViewScene::requestFullRedraw");
-   m_bNeedsRebuild = true;
+   m_bNeedsRebuild = true; // will be picked up in paintEvent().
    // QGraphicsView::update() and similar have no effect. We have to call QGraphicsScene::update().
    if (m_pScene) m_pScene->update();
 }
@@ -88,22 +121,32 @@ void QCastViewScene::rebuildScene(cogx::display::CDisplayView* pDisplayView)
       m_pScene->clear();
       if (pDisplayView) {
          pDisplayView->drawScene(*m_pScene);
+         setSceneRect(QRectF()); // trigger size recalculation
          QList<QGraphicsItem*> items = m_pScene->items();
          DMESSAGE("Items in scene: " << items.size() << "  View: " << pDisplayView->m_id);
       }
    }
 }
 
+void QCastViewScene::showEvent(QShowEvent * event)
+{
+  if (m_bNeedsRebuild) {
+     rebuildScene(pView);
+  }
+}
 
 void QCastViewScene::paintEvent ( QPaintEvent * event )
 {
-   DTRACE("QCastViewScene::paintEvent");
-   if (m_bNeedsRebuild) {
-      // We are only allowed to rebuild the scene in the GUI thread,
-      // so we do this in the paintEvent
-      rebuildScene(pView);
-   }
-   QGraphicsView::paintEvent(event);
+  DTRACE("QCastViewScene::paintEvent");
+  if (m_bNeedsRebuild) {
+     // We are only allowed to rebuild the scene in the GUI thread, so we do
+     // this in the paintEvent. The other place to rebuild it would be
+     // requestFullRedraw, but it may be better to do it here, because the
+     // scene will be rebuilt only when it has to be redrawn and not when
+     // objects change in it (multiple updates can lead to a single paintEvent).
+     rebuildScene(pView);
+  }
+  QGraphicsView::paintEvent(event);
 }
 
 void QCastViewScene::wheelEvent(QWheelEvent *e)

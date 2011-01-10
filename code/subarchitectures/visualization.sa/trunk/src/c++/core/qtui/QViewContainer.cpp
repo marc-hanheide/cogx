@@ -60,6 +60,10 @@ void QViewContainer::removeUi()
         cogx::display::CDisplayView* pView = pViewWin->getView();
         if (pView) {
            pView->viewObservers.removeObserver(pViewWin);
+           std::vector<double>data;
+           pViewWin->getViewPosition(data);
+           if (data.size() > 0)
+              m_viewPosMap[QString::fromStdString(pView->m_id)] = data;
         }
      }
      pobj->deleteLater();
@@ -121,6 +125,10 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    if (m_pDisplay) {
       m_pDisplay->setModel(pModel);
       m_pDisplay->setView(pView);
+      QHash<QString, std::vector<double> >::const_iterator ivp =
+         m_viewPosMap.find(QString::fromStdString(pView->m_id));
+      if (ivp != m_viewPosMap.end()) 
+         m_pDisplay->setViewPosition(ivp.value());
    }
 }
 
