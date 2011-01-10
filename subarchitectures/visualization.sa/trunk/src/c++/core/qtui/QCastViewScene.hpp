@@ -44,11 +44,13 @@ public:
    operator QWidget&() { return *this; } /*override*/
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
+   void getViewPosition(std::vector<double>& matrix); /*override*/
+   void setViewPosition(const std::vector<double>& matrix); /*override*/
 
 protected:
    void rebuildScene(cogx::display::CDisplayView* pDisplayView);
 
-public slots:
+private slots:
    void requestFullRedraw();
 //   void resetOffset();
 //   void resetScale();
@@ -59,6 +61,7 @@ signals:
 protected:
    // Qt events
    virtual void paintEvent(QPaintEvent * event); /*override*/
+   virtual void showEvent(QShowEvent * event); /*override*/
    virtual void wheelEvent(QWheelEvent *e); /*override*/
 
 };

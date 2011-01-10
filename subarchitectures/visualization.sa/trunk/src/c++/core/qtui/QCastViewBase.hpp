@@ -18,6 +18,7 @@
 
 #include "../Model.hpp"
 #include <QWidget>
+#include <vector>
 
 /*abstract class (interface)*/
 class QCastViewBase: public cogx::display::CDisplayModelObserver
@@ -27,6 +28,11 @@ public:
    virtual void setView(cogx::display::CDisplayView* pDisplayView) = 0;
    virtual cogx::display::CDisplayView* getView() = 0;
    virtual operator QWidget&() = 0;
+
+   // Remember the current view position as an array of doubles (eg. transform).
+   // The contents of the matrix depends on the DisplayContext.
+   virtual void getViewPosition(std::vector<double>& data) {}
+   virtual void setViewPosition(const std::vector<double>& data) {}
 };
 
 

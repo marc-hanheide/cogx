@@ -120,6 +120,7 @@ public:
    double m_timestamp;
    CDisplayObject();
    virtual ~CDisplayObject();
+   bool hasDefaultView();
    virtual bool isBitmap();
    virtual ERenderContext getPreferredContext();
 
@@ -138,7 +139,8 @@ public:
 //
 // A renderer should not have any member variables so that a single
 // static instance can be used for all drawing -- the renderer can
-// be safely shared between multiple threads.
+// be safely shared between multiple threads (although it will allways
+// be executed in the GUI thread).
 class CRenderer
 {
 public:
@@ -146,7 +148,7 @@ public:
    // the pointers to the desired types draws the object.
    virtual void draw(CDisplayObject *pObject, void *pContext) = 0;
 
-   // Some contexts require extra drawing info
+   // Some contexts require extra drawing info (eg. htlm: head & body rendered separately)
    virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 

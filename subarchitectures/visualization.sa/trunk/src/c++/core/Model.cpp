@@ -165,7 +165,8 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
    }
 
    CDisplayModelObserver *pobsrvr;
-   if (views.size() < 1) {
+   if (views.size() < 1 && pObject->hasDefaultView()) {
+
       // XXX Create a default view for each object (this may create too many views)
       DMESSAGE("Creating new view for: " << pObject->m_id);
       pview = new cogx::display::CDisplayView();
@@ -282,6 +283,11 @@ CDisplayObject::CDisplayObject()
 
 CDisplayObject::~CDisplayObject()
 {
+}
+
+bool CDisplayObject::hasDefaultView()
+{
+   return m_id.size() > 0 && m_id[0] != '!';
 }
 
 bool CDisplayObject::isBitmap()
