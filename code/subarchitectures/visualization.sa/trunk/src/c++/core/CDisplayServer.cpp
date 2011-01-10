@@ -174,6 +174,12 @@ void CDisplayServer::runComponent()
    debug("CDisplayServer Server: Done.");
 }
 
+void CDisplayServer::createView(const std::string& id, const std::string& type,
+      const std::vector<std::string>& objects)
+{
+   m_Model.createView(id, type, objects);
+}
+
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       int channels, const std::vector<unsigned char>& data)
 {

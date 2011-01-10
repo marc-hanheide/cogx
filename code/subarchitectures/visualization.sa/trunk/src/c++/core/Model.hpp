@@ -96,6 +96,7 @@ public:
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
    bool isValidView(CDisplayView *pView);
+   void createView(const std::string& id, const std::string& type, const std::vector<std::string>& objects);
 
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
@@ -157,6 +158,7 @@ public:
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
 {
+   friend class CDisplayModel; // FIXME CDisplayModel needs access. FIXME
    TObjectMap m_Objects;
    std::map<std::string, std::vector<double> > m_Trafos;
    std::map<std::string, bool> m_SubscribedObjects;
@@ -168,8 +170,9 @@ public:
    virtual ~CDisplayView();
    void addObject(CDisplayObject *pObject);
    void replaceObject(const std::string& id, CDisplayObject *pNew);
-   void removeObject(const std::string& id);
    void refreshObject(const std::string& id);
+   void removeObject(const std::string& id);
+   void removeAllObjects();
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
 

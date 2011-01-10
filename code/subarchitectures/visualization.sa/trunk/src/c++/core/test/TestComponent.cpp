@@ -329,6 +329,12 @@ void VideoViewer::runComponent()
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
     m_display.setHtml("!@info.TestComponent", "zclock_test", strB.str());
   }
+  {
+    std::vector<std::string> views;
+    views.push_back("@info.TestComponent");
+    views.push_back("!@info.TestComponent");
+    m_display.createView("Composite.View", "html", views);
+  }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {
     // XXX: This is not working because libflashplugin.so crashes.

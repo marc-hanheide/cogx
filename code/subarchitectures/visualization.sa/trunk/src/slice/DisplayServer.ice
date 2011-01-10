@@ -14,6 +14,7 @@ module Visualization
 
    sequence<byte> ByteSeq;
    sequence<double> FloatSeq;
+   sequence<string> StringSeq;
 
    struct Quaternion {
       double x;
@@ -43,6 +44,9 @@ module Visualization
    {
       // Get the parameters to connect to a remote Display Server
       void getStandaloneHost(out string hostname);
+
+      // type: graphics, html, gl; 2d is deprecated
+      void createView(string id, string type, StringSeq objects);
 
       void setObject(string id, string partId, string svgObject);
       void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
