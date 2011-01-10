@@ -23,6 +23,7 @@ import motivation.slice.MotivePriority;
 import motivation.slice.PatrolMotive;
 import motivation.slice.RobotInitiativeMotive;
 import motivation.slice.TutorInitiativeMotive;
+import motivation.slice.RobotNonSituatedMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
@@ -54,6 +55,7 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JSlider jcannedPrioritySlider = null;
 	private JSlider jRobotInitiativePrioritySlider = null;
 	private JSlider jTutorInitiativePrioritySlider = null;
+	private JSlider jRobotNonSituatedPrioritySlider = null;
 
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
@@ -68,11 +70,15 @@ public class ManualSelectFilter implements MotiveFilter {
 		else if (motive instanceof PatrolMotive)
 			return MotivePriority.values()[jPatrolPrioritySlider.getValue()];
 		else if (motive instanceof RobotInitiativeMotive)
-			return MotivePriority.values()[jRobotInitiativePrioritySlider
-					.getValue()];
-		else if (motive instanceof TutorInitiativeMotive)
-			return MotivePriority.values()[jTutorInitiativePrioritySlider
-					.getValue()];
+			return MotivePriority.values()[jRobotInitiativePrioritySlider.getValue()];
+		else if (motive instanceof TutorInitiativeMotive) {
+			component.log("JUHU 1");
+			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
+		}
+		else if (motive instanceof RobotNonSituatedMotive) {
+			component.log("JUHU 2");
+			return MotivePriority.values()[jRobotNonSituatedPrioritySlider.getValue()];
+		}
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -164,6 +170,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderRobotInitiative());
 			jMotivesPanel.add(new JLabel("Tutor Init."));
 			jMotivesPanel.add(getJSliderTutorInitiative());
+			jMotivesPanel.add(new JLabel("Robot NonSit."));
+			jMotivesPanel.add(getJSliderRobotNonSituated());
 			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
@@ -236,6 +244,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jcannedPrioritySlider.setValue(0);
 					jRobotInitiativePrioritySlider.setValue(0);
 					jTutorInitiativePrioritySlider.setValue(0);
+					jRobotNonSituatedPrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -258,6 +267,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jcannedPrioritySlider.setValue(1);
 					jRobotInitiativePrioritySlider.setValue(2);
 					jTutorInitiativePrioritySlider.setValue(3);
+					jRobotNonSituatedPrioritySlider.setValue(1);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -377,6 +387,17 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jTutorInitiativePrioritySlider;
 	}
 
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderRobotNonSituated() {
+		if (jRobotNonSituatedPrioritySlider == null) {
+			jRobotNonSituatedPrioritySlider = createPrioritySlider();
+		}
+		return jRobotNonSituatedPrioritySlider;
+	}
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
