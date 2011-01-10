@@ -6,7 +6,7 @@ import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
-import motivation.slice.RobotInitiativeMotive;
+import motivation.slice.RobotNonSituatedMotive;
 import VisionData.VisualConceptModelStatus;
 import autogen.Planner.Goal;
 import cast.cdl.WorkingMemoryAddress;
@@ -17,7 +17,7 @@ import eu.cogx.perceptmediator.ModelStatusTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class ModelStatusGoalGenerator extends
-		AbstractBeliefMotiveGenerator<RobotInitiativeMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<RobotNonSituatedMotive, GroundedBelief> {
 
 	private static final String OBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils
@@ -26,17 +26,17 @@ public class ModelStatusGoalGenerator extends
 	private static final int MAX_PLANNING_TIME = 10;
 
 	public ModelStatusGoalGenerator() {
-		super(OBJECTTYPE, RobotInitiativeMotive.class, GroundedBelief.class);
+		super(OBJECTTYPE, RobotNonSituatedMotive.class, GroundedBelief.class);
 	}
 
 	@Override
-	protected RobotInitiativeMotive checkForAddition(WorkingMemoryAddress adr,
+	protected RobotNonSituatedMotive checkForAddition(WorkingMemoryAddress adr,
 			GroundedBelief newEntry) {
 		assert (newEntry.type.equals(OBJECTTYPE));
 		log("checkForAddition(): check belief " + newEntry.id + " for addition");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		RobotInitiativeMotive result = new RobotInitiativeMotive();
+		RobotNonSituatedMotive result = new RobotNonSituatedMotive();
 		result.created = getCASTTime();
 		result.correspondingUnion = "";
 		result.maxExecutionTime = MAX_EXECUTION_TIME;
@@ -49,8 +49,8 @@ public class ModelStatusGoalGenerator extends
 	}
 
 	@Override
-	protected RobotInitiativeMotive checkForUpdate(GroundedBelief newEntry,
-			RobotInitiativeMotive motive) {
+	protected RobotNonSituatedMotive checkForUpdate(GroundedBelief newEntry,
+			RobotNonSituatedMotive motive) {
 		assert (newEntry.type.equals(OBJECTTYPE));
 		log("check goal " + CASTUtils.toString(motive.thisEntry)
 				+ " for update");
@@ -86,7 +86,7 @@ public class ModelStatusGoalGenerator extends
 		String value=belief.getContent().get(
 				ModelStatusTransferFunction.MOST_PROMISING).getDistribution()
 				.getMostLikely().getProposition();
-		//		((RobotInitiativeMotive) motive).text = "show me something "
+		//		((RobotNonSituatedMotive) motive).text = "show me something "
 //				+ belief.getContent().get(
 //						ModelStatusTransferFunction.MOST_PROMISING)
 //						.getDistribution().getMostLikely().getProposition();
