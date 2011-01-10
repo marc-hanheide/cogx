@@ -307,6 +307,11 @@ void VideoViewer::runComponent()
     strA << "This is the TestComponent for the Display Server<br>";
     m_display.setHtml("@info.TestComponent", "text", strA.str());
   }
+  {
+    std::stringstream strA;
+    strA << "This is the HIDDEN TestComponent for the Display Server<br>";
+    m_display.setHtml("!@info.TestComponent", "text", strA.str());
+  }
   if (1) {
     std::stringstream strB;
     clock_t a, b;
@@ -322,6 +327,7 @@ void VideoViewer::runComponent()
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
     strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" />" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
+    m_display.setHtml("!@info.TestComponent", "zclock_test", strB.str());
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {
