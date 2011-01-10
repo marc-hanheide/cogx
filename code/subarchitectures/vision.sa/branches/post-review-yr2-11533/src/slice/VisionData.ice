@@ -347,6 +347,7 @@ sequence<OneObj> ObjSeq;
     // concepts: red, compact, box
     StringSeq labels;
     DoubleSeq gains;
+    BoolSeq askedFor;
   };
 
 
