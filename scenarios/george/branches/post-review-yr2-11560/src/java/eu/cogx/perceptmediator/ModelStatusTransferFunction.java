@@ -45,7 +45,11 @@ public class ModelStatusTransferFunction
 		double maxGain = 0.0;
 		String maxLabel = null;
 		for (int i = 0; i < from.gains.length; i++) {
-			if (from.gains[i] > maxGain && !from.askedFor[i]) {
+			// if we have asked for it already we can skip it.
+			if (from.askedFor.length>=i+1)
+				if (from.askedFor[i])
+					continue;
+			if (from.gains[i] >= maxGain) {
 				maxGain = from.gains[i];
 				maxLabel = from.labels[i];
 			}
