@@ -754,7 +754,9 @@ public class PlaceMonitor extends ManagedComponent {
 				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each remaining place loop
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
-				unlockEntry(comaRoomWME.getID()); 
+				if (existsOnWorkingMemory(comaRoomWME.getID())) {
+					unlockEntry(comaRoomWME.getID()); 
+				}
 			}
 			log("unlocked all ComaRoom WMEs.");
 		} catch (NumberFormatException e) {
