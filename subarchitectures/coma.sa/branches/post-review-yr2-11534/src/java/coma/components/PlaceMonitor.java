@@ -1,6 +1,5 @@
 package coma.components;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
@@ -34,6 +32,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTData;
 
 /**
@@ -68,10 +67,10 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private int m_roomIndexCounter = 0;
 	private int m_objectIndexCounter = 0;
-	private HashSet<String> m_existingRoomProxies;
-	private HashMap<String,HashSet<String>> m_existingRelationProxies;
+	//private HashSet<String> m_existingRoomProxies;
+	//private HashMap<String,HashSet<String>> m_existingRelationProxies;
 	
-	private boolean m_createDummyObjects;
+	private boolean m_createDummyObjects = false;
 	
 	private boolean maintainRoomsTaskPending = false;
 
@@ -90,8 +89,8 @@ public class PlaceMonitor extends ManagedComponent {
 		m_placeholders = new HashSet<Long>();
 		m_trueplaces = new HashSet<Long>();
 		m_tempAdjacencyStore = new HashMap<Long, HashSet<WorkingMemoryAddress>>();
-		m_existingRoomProxies = new HashSet<String>();
-		m_existingRelationProxies = new HashMap<String,HashSet<String>>();
+		//m_existingRoomProxies = new HashSet<String>();
+		//m_existingRelationProxies = new HashMap<String,HashSet<String>>();
 	}
 	
 	
@@ -565,7 +564,10 @@ public class PlaceMonitor extends ManagedComponent {
 			_knownRoomsOnWM = new LinkedList<CASTData<ComaRoom>>();
 			int _count=0;
 			getMemoryEntriesWithData(ComaRoom.class, _knownRoomsOnWM, _count);
-			log("loaded all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
+			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
+				lockEntry(comaRoomWME.getID(), WorkingMemoryPermissions.LOCKEDODR);
+			}
+			log("loaded and locked all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
 			Collections.sort(_knownRoomsOnWM, new Comparator<CASTData<ComaRoom>>() {
 					public int compare(CASTData<ComaRoom> arg0, CASTData<ComaRoom> arg1) {
 					int x = arg0.getData().roomId;
@@ -751,6 +753,10 @@ public class PlaceMonitor extends ManagedComponent {
 				} // end else create a new room for non-doorway seeds
 				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each remaining place loop
+			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
+				unlockEntry(comaRoomWME.getID()); 
+			}
+			log("unlocked all ComaRoom WMEs.");
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
