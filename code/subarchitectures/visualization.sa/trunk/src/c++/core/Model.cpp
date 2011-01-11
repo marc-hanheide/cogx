@@ -287,7 +287,37 @@ void CDisplayModel::removeObject(const std::string &id)
    pfound = (itobj == m_Objects.end()) ? NULL : itobj->second;
    if (pfound != NULL) {
       m_Objects.erase(m_Objects.find(pfound->m_id));
+
+      CPtrVector<CDisplayView> views = findViewsWithObject(id);
+      CDisplayView *pview;
+      FOR_EACH(pview, views) {
+         pview->removeObject(id);
+      }
+
       delete pfound;
+   }
+}
+
+void CDisplayModel::removePart(const std::string &id, const std::string& partId)
+{
+   DTRACE("CDisplayModel::removePart");
+   CDisplayObject *pfound;
+   TObjectMap::iterator itobj = m_Objects.find(id);
+   pfound = (itobj == m_Objects.end()) ? NULL : itobj->second;
+   if (pfound != NULL) {
+      // TODO: removing a part should be a 3 stage process
+      //    1. remove part from object parts
+      //    2. notify observers
+      //    3. delete the part <- this one is now in 1 and could cause a segfault.
+      // Also: only view observers are notified, but model observers may have to
+      // be notified, too.
+      pfound->removePart(partId);
+
+      CPtrVector<CDisplayView> views = findViewsWithObject(id);
+      CDisplayView *pview;
+      FOR_EACH(pview, views) {
+         pview->refreshObject(id);
+      }
    }
 }
 
@@ -340,11 +370,6 @@ int CDisplayModel::getGuiElements(const std::string &viewId, CPtrVector<CGuiElem
    return count;
 }
 
-//bool CDisplayModel::Merge(CDisplayObject *pObject)
-//{
-//   return false;
-//}
-
 CDisplayObject::CDisplayObject()
 {
    m_timestamp = 0;
@@ -357,6 +382,10 @@ CDisplayObject::~CDisplayObject()
 bool CDisplayObject::isBitmap()
 {
    return false;
+}
+
+void CDisplayObject::removePart(const std::string& partId)
+{
 }
 
 void CDisplayObject::setTransform2D(const std::string& partId, const std::vector<double>& transform)

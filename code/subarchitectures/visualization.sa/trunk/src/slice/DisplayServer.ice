@@ -89,6 +89,10 @@ module Visualization
       // (eg. after a CogxJsSendValue event) this method can be used.
       void setHtmlFormData(string id, string partId, TFormFieldMap fields);
 
+      // Remove objects and object parts
+      void removeObject(string id);
+      void removePart(string id, string partId);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       // nah: added extra parameters to

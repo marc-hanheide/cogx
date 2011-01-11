@@ -240,7 +240,7 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       }
    }
    else if (channels == 3) {
-      bool bgr = true;
+      bool bgr = true; // reverse channels by default; TODO: parameter in setRawImage
       if (bgr) {
          int r, g, b;
          for (int i = 0; i < npix; i++) {
@@ -266,13 +266,6 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
 
    if (pImage != pExisting) m_Model.setObject(pImage);
    else m_Model.refreshObject(id);
-
-   if (pMainFrame) {
-      // TODO: pMainFrame->notifyObjectAdded(pImage);
-      //    Is this ok? some objects may be associated with views, but not all!
-      //    The application/component should register it's basic views!
-      //    registerObjectView("object_id");
-   }
 }
 
 void CDisplayServer::setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
@@ -325,6 +318,16 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       pImage->setPart(partId, xmlData);
       m_Model.setObject(pImage);
    }
+}
+
+void CDisplayServer::removeObject(const std::string& id)
+{
+   m_Model.removeObject(id);
+}
+
+void CDisplayServer::removePart(const std::string& id, const std::string& partId)
+{
+   m_Model.removePart(id, partId);
 }
 
 void CDisplayServer::setTomGineObject(const std::string& id, const std::string& partId, 

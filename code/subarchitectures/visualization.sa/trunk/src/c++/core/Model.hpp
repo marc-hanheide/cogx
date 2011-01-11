@@ -93,6 +93,7 @@ public:
    void setObject(CDisplayObject *pObject);
    void refreshObject(const std::string &id);
    void removeObject(const std::string &id);
+   void removePart(const std::string &id, const std::string& partId);
    CDisplayObject* getObject(const std::string &id);
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
@@ -136,6 +137,7 @@ public:
          const std::vector<double>& rotationQaternionXYZW);
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
+   virtual void removePart(const std::string& partId);
 };
 
 
