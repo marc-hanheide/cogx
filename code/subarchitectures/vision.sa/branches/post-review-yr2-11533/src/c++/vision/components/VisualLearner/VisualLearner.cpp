@@ -521,7 +521,7 @@ void VisualLearner::updateWmModelStatus()
          plabel++, pconcpt++, pgain++)
    {
       // Concept mapping is done in Matlab
-      if (*pconcpt == 1){ // color concept
+      if (*pconcpt == 1) { // color concept
          stColor->labels.push_back(*plabel);
          stColor->gains.push_back(*pgain);
       }
@@ -533,6 +533,9 @@ void VisualLearner::updateWmModelStatus()
          println(" *** VisualLearner/updateWmModelStatus Invalid concept ID: %d", *pconcpt);
       }
    }
+
+   while (stColor->askedFor.size() < stColor->labels.size()) stColor->askedFor.push_back(false);
+   while (stShape->askedFor.size() < stShape->labels.size()) stShape->askedFor.push_back(false);
 
    _l_::writeWmStatus(this, stColor, m_addrColorStatus);
    _l_::writeWmStatus(this, stShape, m_addrShapeStatus);
