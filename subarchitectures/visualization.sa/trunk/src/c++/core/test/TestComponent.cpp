@@ -326,7 +326,7 @@ void VideoViewer::runComponent()
     sleepComponent(1000);
     fb = fclocks();
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
-    strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" />" << endl;
+    strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" /><br>" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
     m_display.setHtml("@info.HiddenComponent", "zclock_test", strB.str());
   }
