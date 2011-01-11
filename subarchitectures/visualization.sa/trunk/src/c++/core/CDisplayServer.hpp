@@ -126,6 +126,10 @@ public:
          const std::vector<double>& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,
          const Math::Vector3& position, const Visualization::Quaternion& rotation);
+
+   void removeObject(const std::string& id);
+   void removePart(const std::string& id, const std::string& partId);
+
    void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label);
    void addButton(const Ice::Identity& ident, const std::string& viewId,
@@ -256,6 +260,16 @@ public:
          const Math::Vector3& position, const Visualization::Quaternion& rotation, const Ice::Current&)
    {
       m_pDisplayServer->setObjectPose3D(id, partId, position, rotation);
+   }
+
+   virtual void removeObject(const std::string& id, const Ice::Current&)
+   {
+      m_pDisplayServer->removeObject(id);
+   }
+
+   virtual void removePart(const std::string& id, const std::string& partId, const Ice::Current&)
+   {
+      m_pDisplayServer->removePart(id, partId);
    }
 
    virtual void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
