@@ -84,7 +84,7 @@ CRenderer* CSvgImage::getRenderer(ERenderContext context)
 {
    switch(context) {
       case Context2D: return render2D.get();
-      case ContextScene: return renderScene.get();
+      case ContextGraphics: return renderScene.get();
    }
    return NULL;
 }

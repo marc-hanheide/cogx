@@ -72,7 +72,7 @@ public:
 
    virtual ERenderContext getPreferredContext()
    {
-      return ContextScene;
+      return ContextGraphics;
    }
 
 private:

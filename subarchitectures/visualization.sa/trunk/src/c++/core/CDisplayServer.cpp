@@ -174,10 +174,29 @@ void CDisplayServer::runComponent()
    debug("CDisplayServer Server: Done.");
 }
 
-void CDisplayServer::createView(const std::string& id, const std::string& type,
+void CDisplayServer::createView(const std::string& id, Visualization::ViewType type,
       const std::vector<std::string>& objects)
 {
-   m_Model.createView(id, type, objects);
+   ERenderContext ctx;
+   switch (type) {
+      case Visualization::VtGraphics:
+         ctx = ContextGraphics;
+         break;
+      case Visualization::VtOpenGl:
+         ctx = ContextGL;
+         break;
+      case Visualization::VtHtml:
+         ctx = ContextHtml;
+         break;
+      default:
+         ctx = ContextGraphics;
+   }
+   m_Model.createView(id, ctx, objects);
+}
+
+void CDisplayServer::enableDefaultView(const std::string& objectId, bool enable)
+{
+   m_Model.enableDefaultView(objectId, enable);
 }
 
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,

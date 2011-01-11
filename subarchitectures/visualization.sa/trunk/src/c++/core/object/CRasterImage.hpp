@@ -38,7 +38,7 @@ public:
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    virtual ERenderContext getPreferredContext()
    {
-      return ContextScene;
+      return ContextGraphics;
    }
 };
 
