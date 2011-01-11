@@ -66,29 +66,30 @@ CDisplayModel::~CDisplayModel()
    m_GuiElements.clear();
 }
 
-void CDisplayModel::createView(const std::string& id, const std::string& type,
+void CDisplayModel::createView(const std::string& id, ERenderContext context,
       const std::vector<std::string>& objects)
 {
-   CDisplayView *pview;
+   CDisplayModelObserver *pobsrvr;
    TViewMap::iterator itview = m_Views.find(id);
-   pview = (itview == m_Views.end()) ? NULL : itview->second;
+   CDisplayView *pview = (itview == m_Views.end()) ? NULL : itview->second;
    
    if (! pview) {
-      DMESSAGE("Creating new view: " << id << ": " << type);
+      DMESSAGE("Creating new view: " << id << ": context " << context);
       pview = new cogx::display::CDisplayView();
-
       pview->m_id = id;
-      m_Views[pview->m_id] = pview;
    }
    else {
-      DMESSAGE("Replacing view: " << id << ": " << type);
+      DMESSAGE("Replacing view: " << id << ": context " << context);
+      CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+      m_Views.erase(itview);
+      FOR_EACH(pobsrvr, modelObservers) {
+         if (pobsrvr) pobsrvr->onViewRemoved(this, pview->m_id);
+      }
       pview->removeAllObjects();
    }
 
-   if (type == "html") pview->m_preferredContext = ContextHtml;
-   else if (type == "graphics") pview->m_preferredContext = ContextScene;
-   else if (type == "gl") pview->m_preferredContext = ContextGL;
-   else pview->m_preferredContext = ContextHtml; // Some default...
+   pview->m_bDefaultView = false;
+   pview->m_preferredContext = context;
 
    std::vector<std::string>::const_iterator it;
    for (it = objects.begin(); it != objects.end(); it++) {
@@ -98,10 +99,37 @@ void CDisplayModel::createView(const std::string& id, const std::string& type,
          pview->m_SubscribedObjects[*it] = true;
    }
 
-   CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+   m_Views[pview->m_id] = pview;
    FOR_EACH(pobsrvr, modelObservers) {
       if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+   }
+}
+
+void CDisplayModel::enableDefaultView(const std::string& objectId, bool enable)
+{
+   if (enable) {
+      std::map<std::string, bool>::iterator it = m_DisabledDefaultViews.find(objectId);
+      if (it != m_DisabledDefaultViews.end()) {
+         m_DisabledDefaultViews.erase(it);
+      }
+      return;
+   }
+
+   m_DisabledDefaultViews[objectId] = true;
+
+   // enable=false => Remove an existing default view
+   TViewMap::iterator itview = m_Views.find(objectId);
+   CDisplayView *pview = (itview == m_Views.end()) ? NULL : itview->second;
+   if (pview && pview->m_bDefaultView) {
+      DMESSAGE("Removing default view: " << id );
+      CDisplayModelObserver *pobsrvr;
+      CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+      m_Views.erase(itview);
+      FOR_EACH(pobsrvr, modelObservers) {
+         if (pobsrvr) pobsrvr->onViewRemoved(this, pview->m_id);
+      }
+      delete pview;
    }
 }
 
@@ -204,22 +232,24 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
    }
 
    CDisplayModelObserver *pobsrvr;
-   if (views.size() < 1 && pObject->hasDefaultView()) {
-
+   if (views.size() < 1) {
       // XXX Create a default view for each object (this may create too many views)
-      DMESSAGE("Creating new view for: " << pObject->m_id);
-      pview = new cogx::display::CDisplayView();
-      // XXX: Set preferred context based on object type
-      pview->m_preferredContext = pObject->getPreferredContext();
+      std::map<std::string, bool>::iterator it = m_DisabledDefaultViews.find(pObject->m_id);
+      if (it == m_DisabledDefaultViews.end()) {
+         DMESSAGE("Creating default view for: " << pObject->m_id);
+         pview = new cogx::display::CDisplayView();
+         pview->m_bDefaultView = true;
+         pview->m_preferredContext = pObject->getPreferredContext();
 
-      pview->m_id = pObject->m_id;
-      pview->addObject(pObject);
-      m_Views[pview->m_id] = pview;
-      views.push_back(pview);
+         pview->m_id = pObject->m_id;
+         pview->addObject(pObject);
+         views.push_back(pview);
 
-      CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
-      FOR_EACH(pobsrvr, modelObservers) {
-         if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+         CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+         m_Views[pview->m_id] = pview;
+         FOR_EACH(pobsrvr, modelObservers) {
+            if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+         }
       }
    }
    else {
@@ -324,11 +354,6 @@ CDisplayObject::~CDisplayObject()
 {
 }
 
-bool CDisplayObject::hasDefaultView()
-{
-   return m_id.size() > 0 && m_id[0] != '!';
-}
-
 bool CDisplayObject::isBitmap()
 {
    return false;
@@ -351,7 +376,7 @@ void CDisplayObject::setPose3D(const std::string& partId, const std::vector<doub
 
 ERenderContext CDisplayObject::getPreferredContext()
 {
-   return Context2D;
+   return ContextGraphics;
 }
 
 int CDisplayObject::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
@@ -361,7 +386,8 @@ int CDisplayObject::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
 
 CDisplayView::CDisplayView()
 {
-   m_preferredContext = Context2D;
+   m_preferredContext = ContextGraphics;
+   m_bDefaultView = false;
 }
 
 CDisplayView::~CDisplayView()
@@ -512,7 +538,7 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
    CRenderer *pRender;
    FOR_EACH_V(pObject, m_Objects) {
       if (!pObject) continue;
-      pRender = pObject->getRenderer(ContextScene);
+      pRender = pObject->getRenderer(ContextGraphics);
       if (pRender) {
          QGraphicsItemGroup* pGroup = scene.createItemGroup(QList<QGraphicsItem*>());
          if (m_Trafos.count(pObject->m_id)) {

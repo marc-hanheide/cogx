@@ -310,7 +310,8 @@ void VideoViewer::runComponent()
   {
     std::stringstream strA;
     strA << "This is the HIDDEN TestComponent for the Display Server<br>";
-    m_display.setHtml("!@info.TestComponent", "text", strA.str());
+    m_display.setHtml("@info.HiddenComponent", "text", strA.str());
+    m_display.enableDefaultView("@info.HiddenComponent", false);
   }
   if (1) {
     std::stringstream strB;
@@ -327,13 +328,13 @@ void VideoViewer::runComponent()
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
     strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" />" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
-    m_display.setHtml("!@info.TestComponent", "zclock_test", strB.str());
+    m_display.setHtml("@info.HiddenComponent", "zclock_test", strB.str());
   }
   {
     std::vector<std::string> views;
     views.push_back("@info.TestComponent");
-    views.push_back("!@info.TestComponent");
-    m_display.createView("Composite.View", "html", views);
+    views.push_back("@info.HiddenComponent");
+    m_display.createView("Composite.View", Visualization::VtHtml, views);
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {

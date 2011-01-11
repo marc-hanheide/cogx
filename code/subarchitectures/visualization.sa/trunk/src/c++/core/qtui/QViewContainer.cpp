@@ -91,7 +91,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
       }
-      else if (pView->m_preferredContext == cogx::display::ContextScene) {
+      else if (pView->m_preferredContext == cogx::display::ContextGraphics) {
          m_pDisplay = new QCastViewScene(this);
       }
 #ifdef V11N_VIEW_GL

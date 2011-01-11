@@ -36,7 +36,7 @@ class CDisplayModel;
 class CRasterImage;
 class CRenderer;
 
-typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextScene=4 } ERenderContext;
+typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextGraphics=4 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
 typedef TObjectMap::iterator TObjectMapIterator;
@@ -81,6 +81,7 @@ class CDisplayModel
 private:
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
+   std::map<std::string, bool> m_DisabledDefaultViews;
    // TODO: locking for m_Objects, m_Views, m_GuiElements
 
 public: // XXX Qt needs to know about the views.
@@ -96,7 +97,12 @@ public:
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
    bool isValidView(CDisplayView *pView);
-   void createView(const std::string& id, const std::string& type, const std::vector<std::string>& objects);
+   void createView(const std::string& id, ERenderContext context, const std::vector<std::string>& objects);
+
+   // Default views are created for objects that don't exist in any other
+   // views. They are enabled by default. This function can be used to remove a
+   // default view that was (or would be) created for an object.
+   void enableDefaultView(const std::string& objectId, bool enable=true);
 
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
@@ -121,7 +127,6 @@ public:
    double m_timestamp;
    CDisplayObject();
    virtual ~CDisplayObject();
-   bool hasDefaultView();
    virtual bool isBitmap();
    virtual ERenderContext getPreferredContext();
 
@@ -158,10 +163,11 @@ public:
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
 {
-   friend class CDisplayModel; // FIXME CDisplayModel needs access. FIXME
+   friend class CDisplayModel; // FIXME CDisplayModel needs access to m_SubscribedObjects. FIXME
    TObjectMap m_Objects;
    std::map<std::string, std::vector<double> > m_Trafos;
    std::map<std::string, bool> m_SubscribedObjects;
+   bool m_bDefaultView;
 
 public:
    std::string m_id;

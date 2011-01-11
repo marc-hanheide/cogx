@@ -86,7 +86,8 @@ public:
    // pass the parameters to the server (m_pServer) and return its results.
    // -----------------------------------------------------------------
 public:
-   void createView(const std::string& id, const std::string& type, const std::vector<std::string>& objects);
+   void createView(const std::string& id, Visualization::ViewType type, const std::vector<std::string>& objects);
+   void enableDefaultView(const std::string& objectId, bool enable=true);
 
    // Set image from raw data.
    void setImage(const std::string& id, int width, int height, int channels,
