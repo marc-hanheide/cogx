@@ -211,16 +211,16 @@ public:
   double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);											/// TODO Gehört eigentlich zu den Stereo's oder zu 2D-3D's?
 	
 
-	// virtual functions for the stereo classes.
-	virtual int NumStereoMatches() = 0;
-#ifdef HAVE_CAST_HERE
-	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
+  // virtual functions for the stereo classes.
+  virtual int NumStereoMatches() = 0;
+#ifdef HAVE_CAST
+  virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
 #endif
-	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
-	virtual void DrawMatched(int side, bool single, int id, int detail) = 0;
-	virtual void Process() = 0;
-	virtual void Process(int oX, int oY, int sc) = 0;
-	virtual void ClearResults() {}
+  virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
+  virtual void DrawMatched(int side, bool single, int id, int detail) = 0;
+  virtual void Process() = 0;
+  virtual void Process(int oX, int oY, int sc) = 0;
+  virtual void ClearResults() {}
 
 };
 
