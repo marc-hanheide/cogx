@@ -37,6 +37,7 @@ INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 1000 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
