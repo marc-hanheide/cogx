@@ -23,7 +23,7 @@ namespace Z
 class TmpRectangle
 {
 public:
-  Surf2D surf;												///< Tmp. 2D surface
+  Surf2D surf;							///< Tmp. 2D surface
 
   TmpRectangle() {}
   TmpRectangle(Rectangle *rectangle);
@@ -42,7 +42,7 @@ public:
 class Rectangle3D
 {
 public:
-  Surf3D surf;												///< 3D surface
+  Surf3D surf;							///< 3D surface
 
 //   bool Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right);
 };

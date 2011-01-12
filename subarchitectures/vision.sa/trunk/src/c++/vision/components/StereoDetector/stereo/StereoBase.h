@@ -9,8 +9,6 @@
 #ifndef Z_STEREO_BASE_HH
 #define Z_STEREO_BASE_HH
 
-#define HAVE_CAST TRUE
-
 #ifdef HAVE_CAST
   #include <VisionData.hpp>
 #endif
@@ -171,34 +169,35 @@ class StereoBase
 public:
   enum Type
   {
-		STEREO_LJUNCTION,
-		STEREO_ELLIPSE,
-		STEREO_CLOSURE,
-		STEREO_RECTANGLE,
-		STEREO_FLAP,
-		STEREO_FLAP_ARI,
-		STEREO_CUBE,
+    STEREO_LJUNCTION,
+    STEREO_ELLIPSE,
+    STEREO_CLOSURE,
+    STEREO_RECTANGLE,
+    STEREO_FLAP,
+    STEREO_FLAP_ARI,
+    STEREO_CUBE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
-  };														///< Type of stereo Gestalts for matching
+  };						///< Type of stereo Gestalts for matching
 
-  VisionCore *vcore[2];					///< Left and right vision core
-	StereoCamera *stereo_cam;			///< Stereo camera parameters
+  VisionCore *vcore[2];				///< Left and right vision core
+  StereoCamera *stereo_cam;			///< Stereo camera parameters
 
-	struct PruningParameter				///< Parameters, when pruned image will be processed at stereo core
-	{
-		bool pruning;								///< Pruned image delivered
-		int offsetX;								///< Offset x-coordinate
-		int offsetY;								///< Offset y-coordinate
-		int scale;									///< Scale between original and pruned image
-	};
-	PruningParameter pPara;				///< Pruning parameters of an image.
+  struct PruningParameter			///< Parameters, when pruned image will be processed at stereo core
+  {
+    bool pruning;				///< Pruned image delivered
+    int offsetX;				///< Offset x-coordinate
+    int offsetY;				///< Offset y-coordinate
+    int scale;					///< Scale between original and pruned image
+  };
+  PruningParameter pPara;			///< Pruning parameters of an image.
 
 private:
-	bool enabled;									///< Enabled / disabled Stereo-Gestalt
+  bool enabled;					///< Enabled / disabled Stereo-Gestalt
+  bool masking;					///< TODO 
 
 protected:
-	Type type;										///< StereoBase Type
+	Type type;				///< StereoBase Type
 
 public:
   static const char* TypeName(Type t);
@@ -214,7 +213,7 @@ public:
 
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;
-#ifdef HAVE_CAST
+#ifdef HAVE_CAST_HERE
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
 #endif
 	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.

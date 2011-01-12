@@ -19,8 +19,8 @@ extern void SetActiveDrawArea(IplImage *iI);
  */
 StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
 {
-	pPara = new PruningParameter;
-	pPara->pruning = false;
+  pPara = new PruningParameter;
+  pPara->pruning = false;
 
   for(int side = LEFT; side <= RIGHT; side++)
   {
@@ -30,19 +30,19 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
     // hardwire the gestalt principles we need, saves loading a config file
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SEGMENTS);
 
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
 
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_JUNCTIONS);
-		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);								/// TODO New corners!
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);								/// TODO New corners!
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
@@ -50,7 +50,7 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
   }
 
-	// init stereo camera calibration parameters
+  // init stereo camera calibration parameters
   stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (std::runtime_error("StereoCore::StereoCore: Cannot open calibration file for stereo camera."));
 
@@ -66,7 +66,7 @@ StereoCore::~StereoCore()
   delete stereo_cam;
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
     if(stereoGestalts[i]->IsEnabled())
-			delete stereoGestalts[i];
+      delete stereoGestalts[i];
 }
 
 
@@ -79,23 +79,23 @@ void StereoCore::InitStereoGestalts()
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
     stereoGestalts[i] = 0;
 
-	// initialise all principles
-	stereoGestalts[StereoBase::STEREO_LJUNCTION] = new StereoLJunctions(vcore, stereo_cam);
-	stereoGestalts[StereoBase::STEREO_ELLIPSE] = new StereoEllipses(vcore, stereo_cam);
+  // initialise all principles
+  stereoGestalts[StereoBase::STEREO_LJUNCTION] = new StereoLJunctions(vcore, stereo_cam);
+  stereoGestalts[StereoBase::STEREO_ELLIPSE] = new StereoEllipses(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_CLOSURE] = new StereoClosures(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_RECTANGLE] = new StereoRectangles(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_FLAP] = new StereoFlaps(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_FLAP_ARI] = new StereoFlapsAri(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_CUBE] = new StereoCubes(vcore, stereo_cam);
 
-	// set principles enabled or disabled
-	stereoGestalts[StereoBase::STEREO_LJUNCTION]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_FLAP]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(true);
-	stereoGestalts[StereoBase::STEREO_CUBE]->EnablePrinciple(true);
+  // set principles enabled or disabled
+  stereoGestalts[StereoBase::STEREO_LJUNCTION]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_FLAP]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(true);
+  stereoGestalts[StereoBase::STEREO_CUBE]->EnablePrinciple(true);
 }
 
 
