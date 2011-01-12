@@ -253,6 +253,14 @@ void VideoViewer::runComponent()
     m_display.setObject("Visualization.test.SVG", "little-lion", str.str());
   }
   {
+    std::ifstream infile;
+    infile.open("subarchitectures/visualization.sa/config/test/images/shapes.svg", std::ifstream::in);
+    std::stringstream str;
+    str << infile.rdbuf();
+    infile.close();
+    m_display.setObject("Visualization.test.SVG-Ani", "shapes", str.str());
+  }
+  {
     std::stringstream str;
     str << "function initlists()\n";
     str <<   "dirty = DispList:getDirty({'myobject'})\n";
@@ -351,9 +359,21 @@ void VideoViewer::runComponent()
   }
   {
     std::vector<std::string> views;
+    views.push_back(getComponentID());
+    views.push_back("Visualization.test.SVG-Ani");
+    m_display.createView("Composite.Image+Svg-Ani", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
     views.push_back("Visualization.sa.LuaGL");
     views.push_back("Visualization.test.Pusher");
     m_display.createView("Composite.Spiral+Pusher", Visualization::VtOpenGl, views);
+  }
+  {
+    // The default view won't be created if the object is already in another view. Create manually.
+    std::vector<std::string> views;
+    views.push_back(getComponentID());
+    m_display.createView(getComponentID(), Visualization::VtGraphics, views);
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {
