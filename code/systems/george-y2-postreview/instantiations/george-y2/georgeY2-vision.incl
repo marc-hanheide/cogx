@@ -7,8 +7,8 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 #CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-INCLUDE image-live.incl
-#INCLUDE image-sequence.incl
+#INCLUDE image-live.incl
+INCLUDE image-sequence.incl
 
 CPP MG plane.pop.out PlanePopOut --videoname videoserver --stereohost localhost --stereoname stereoserver  --displayserver "display.srv"  --minObjHeight 0.02 # --display --log
 
