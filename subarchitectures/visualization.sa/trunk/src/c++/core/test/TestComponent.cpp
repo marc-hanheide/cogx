@@ -330,11 +330,30 @@ void VideoViewer::runComponent()
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
     m_display.setHtml("@info.HiddenComponent", "zclock_test", strB.str());
   }
+  // Composed views
   {
     std::vector<std::string> views;
     views.push_back("@info.TestComponent");
     views.push_back("@info.HiddenComponent");
     m_display.createView("Composite.View", Visualization::VtHtml, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back(getComponentID());
+    views.push_back("Visualization.test.SVG");
+    m_display.createView("Composite.Image+Svg", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back("Visualization.test.SVG");
+    views.push_back(getComponentID());
+    m_display.createView("Composite.Svg+Image", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back("Visualization.sa.LuaGL");
+    views.push_back("Visualization.test.Pusher");
+    m_display.createView("Composite.Spiral+Pusher", Visualization::VtOpenGl, views);
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {
