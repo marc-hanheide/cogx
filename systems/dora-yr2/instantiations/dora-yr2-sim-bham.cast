@@ -30,6 +30,7 @@ INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
 
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/mug.ply instantiations/ply-models/coffee_filter.ply instantiations/ply-models/coffee.ply instantiations/ply-models/ricedream.ply instantiations/ply-models/sugar.ply instantiations/ply-models/grape_juice.ply instantiations/ply-models/cocopops.ply instantiations/ply-models/frosties.ply instantiations/ply-models/table.ply" --siftfiles "instantiations/sift-models/mug.sift instantiations/sift-models/coffee_filter.sift instantiations/sift-models/coffee.sift instantiations/sift-models/ricedream.sift instantiations/sift-models/sugar.sift instantiations/sift-models/grape_juice.sift instantiations/sift-models/cocopops.sift instantiations/sift-models/frosties.sift instantiations/ply-models/table.sift" --labels "mug coffee_filter coffee milk_carton sugar grape_juice chocolate_chips cornflakes table" --log --simulation-only
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
