@@ -106,6 +106,7 @@ public class WMLogger extends ManagedComponent {
 		@Override
 		public synchronized void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
+			try {
 			T m;
 			String wmcXML = IceXMLSerializer.toXMLString(_wmc);
 			String contentXML = "";
@@ -128,7 +129,10 @@ public class WMLogger extends ManagedComponent {
 			}
 			logger.info("<WM_OP><WMC>"+wmcXML+"</WMC><CONTENT>" + contentXML+"</CONTENT></WM_OP>");
 
+		} catch(CASTException e) {
+			logger.warn("CASTException caught: ", e);
 		}
+		} 
 	}
 
 }
