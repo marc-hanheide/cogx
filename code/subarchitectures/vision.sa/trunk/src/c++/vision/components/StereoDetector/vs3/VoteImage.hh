@@ -76,10 +76,10 @@ public:
   {
   public:
     /* Gestalt::Type type;  // line, arc, ellipse, also end types? */
-    unsigned id;																		///< search line id
-    Elem *next;																			///< next element
-    Elem() {}																				///< standard constructor for first element
-    Elem(const Elem &e) : id(e.id), next(0) {}			///< constructor for next elements.
+    unsigned id;                                                ///< search line id
+    Elem *next;                                                 ///< next element
+    Elem() {}                                                   ///< standard constructor for first element
+    Elem(const Elem &e) : id(e.id), next(0) {}                  ///< constructor for next elements.
     bool operator==(const Elem &e) { return id == e.id; }
   };
 
@@ -93,13 +93,13 @@ public:
 
 private:
   bool activeJcts, activeEJcts, activeAJcts;
-  bool initialized;								// true, if already initialized
-  unsigned baseIndex;							// number of search lines
-  unsigned arcOffset;							// number of lines (== offset to arcs)
-  unsigned ellOffset;							// number of lines + arcs (== offset to ellipses)
+  bool initialized;                                     // TODO SINNLOS, da NIE verwendet!      true, if already initialized
+  unsigned baseIndex;                                   // number of search lines
+  unsigned arcOffset;                                   // number of lines (== offset to arcs)
+  unsigned ellOffset;                                   // number of lines + arcs (== offset to ellipses)
   unsigned isct_ok[18][18];				// admissibility matrix
-	unsigned sline;									// Extended search line (id)
-  Array<Elem> iscts;							// Found intersections
+	unsigned sline;                                 // Extended search line (id)
+  Array<Elem> iscts;                                    // Found intersections
   VisionCore *core;
 
   void SetupAdmissibilityMatrix();
@@ -114,16 +114,16 @@ private:
   void ExtendEnd(Line *line, int end);
 
 private:
-  Elem **data;											///< elements ???
-  Elem *store;											///< ????
-  int store_size;										///< size of store
-  int fill;													///< ???
-  Array<LineStub> lines;						///< search lines
+  Elem **data;                                           ///< elements ???
+  Elem *store;                                           ///< ????
+  int store_size;                                        ///< size of store
+  int fill;                                              ///< ???
+  Array<LineStub> lines;                                 ///< search lines
 
 
-public:																															/// TODO Alle Funktionen in private verschieben!!!
-  int width;												///< image width
-  int height;												///< image height
+public:                                                  /// TODO Alle Funktionen in private verschieben!!!
+  int width;                                             ///< image width
+  int height;                                            ///< image height
 
   VoteImage(VisionCore *vc, int w, int h);
   virtual ~VoteImage();
@@ -162,13 +162,13 @@ public:																															/// TODO Alle Funktionen in private versch
   bool FindLineEnd(int x1, int y1, int x2, int y2, unsigned id, int *xe, int *ye);
 
 public:
-	unsigned InitEllipseSearchLines(Ellipse *ell, Array<unsigned> &sl, Array<Elem> &is);
-	bool Extend(unsigned &sline, Array<VoteImage::Elem> &is);
+  unsigned InitEllipseSearchLines(Ellipse *ell, Array<unsigned> &sl, Array<Elem> &is);
+  bool Extend(unsigned &sline, Array<VoteImage::Elem> &is);
   unsigned IsctTypeAdmissible(int type_i, int type_j) {return isct_ok[type_i][type_j];}
-	unsigned GetBaseIndex() {return baseIndex;}
-	unsigned GetArcOffset() {return arcOffset;}
-	unsigned GetEllOffset() {return ellOffset;}
-	bool IsInitialized() {return initialized;}
+  unsigned GetBaseIndex() {return baseIndex;}
+  unsigned GetArcOffset() {return arcOffset;}
+  unsigned GetEllOffset() {return ellOffset;}
+  bool IsInitialized() {return initialized;}
 };
 
 }

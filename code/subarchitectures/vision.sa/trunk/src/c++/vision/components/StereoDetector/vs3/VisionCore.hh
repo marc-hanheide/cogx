@@ -37,26 +37,26 @@ namespace Z
 class VisionCore
 {
 private:
-  Config config;																								///< configuration of the perceptual grouping
-  const IplImage *img;																					///< iplImage
-  double realRuntime;																						///< Estimated runtime
-	VoteImage *vote_img;																					///< Vote image for all Gestalt principles.
+  Config config;						///< configuration of the perceptual grouping
+  const IplImage *img;						///< iplImage
+  double realRuntime;						///< Estimated runtime
+  VoteImage *vote_img;						///< Vote image for all Gestalt principles.
 
 
-  GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];			///< principle list 
-  Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];									///< gestalt list 
-  Array<Gestalt*> ranked_gestalts[Gestalt::MAX_TYPE];						///< ranked_gestalt list
+  GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];	///< principle list 
+  Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];			///< gestalt list 
+  Array<Gestalt*> ranked_gestalts[Gestalt::MAX_TYPE];		///< ranked_gestalt list
 
   void InitGestaltPrinciples();
 
 public:
 
-	double p_e;																										///< probability of an edgel 							TODO das sollte hier weg => für sig-Berechnung
-	double p_ee;																									///< probability of an edgel given another edgel
+  double p_e;					///< probability of an edgel 				TODO das sollte hier weg => für sig-Berechnung
+  double p_ee;					///< probability of an edgel given another edgel
 
-  bool use_masking;																							///< use masking of gestalts for stereo processing. TODO sollte überall eigens def. werden.
-  Vector2 roi_center;																						///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
-  double roi_sigma;																							///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
+  bool use_masking;				///< use masking of gestalts for stereo processing. 	TODO sollte für alle Gestalts eigens def. werden.
+  Vector2 roi_center;				///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
+  double roi_sigma;				///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
 
 
 public:
@@ -86,12 +86,12 @@ public:
   void DrawGestalt(Gestalt::Type type, unsigned num, int detail = 0);
   void DrawGestaltInfo(Gestalt::Type type, unsigned num);
   void DrawPrinciple(GestaltPrinciple::Type type, int detail = 0);
-	const char* GetInfo(Gestalt::Type type, int id);
-	const char* GetGestaltTypeName(Gestalt::Type type);
-	const char* GetGestaltListInfo();
+  const char* GetInfo(Gestalt::Type type, int id);
+  const char* GetGestaltTypeName(Gestalt::Type type);
+  const char* GetGestaltListInfo();
   unsigned PickGestaltAt(Gestalt::Type type, int x, int y, unsigned start_at, bool reject_masked = false);
   double RunTime();
-	void PrintRunTime();
+  void PrintRunTime();
   void SetROI(const Vector2 center, double sigma);
   void NewGestalt(GestaltPrinciple::Type type, Z::Gestalt* g, bool inform = true);
   void InformNewGestalt(Gestalt::Type type, unsigned id);

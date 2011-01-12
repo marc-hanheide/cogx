@@ -67,12 +67,12 @@ VisionCore::VisionCore(const string &config_name)
 {
   InitMath();
   img = 0;
-	vote_img = 0;
+  vote_img = 0;
   p_e = 0.;
   p_ee = 0.;
   roi_center = Vector2(0., 0.);
   roi_sigma = 0.;
-  use_masking = true;
+  use_masking = false;
   InitGestaltPrinciples();
   Configure(config_name);
 }
@@ -175,12 +175,14 @@ void VisionCore::ClearGestalts()
     gestalts[i].Clear();
     ranked_gestalts[i].Clear();
   }
-	if (vote_img != 0) vote_img->Clear();
+  if (vote_img != 0) vote_img->Clear();
 }
 
 /**
  * @brief Informs the vision core about a new image and prepares for new processing (clear and reset).
  * @param new_img New openCV ipl-image.
+ * TODO Es sollte eigentlich reichen, wenn man das vote_img cleared, außer man ändert auch die Bildgröße ect. 
+ * TODO Das sollte das VoteImage schneller machen, weil nicht immer der ganze Speicherplatz neu reserviert werden muss!
  */
 void VisionCore::NewImage(const IplImage *new_img)
 {
@@ -222,7 +224,12 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
 		// ------------------------------------------------------------- //
 		// -------- incremental processing: extend search lines -------- //
 		// ------------------------------------------------------------- //
-printf("VisionCore::ProcessImage: start incremental processing!\n");
+		if(vote_img == 0) 
+		{
+		  printf(" VisionCore::ProcessImage: NO VOTE IMAGE AVAILABLE!!!!\n");
+		  return;
+		}
+printf("VisionCore::ProcessImage: start incremental processing: echter start!\n");
 		vote_img->Initialize();			// initialize vote image after creating arcs and lines!
 		do // start
     {
