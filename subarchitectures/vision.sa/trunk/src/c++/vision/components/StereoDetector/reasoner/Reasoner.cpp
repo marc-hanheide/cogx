@@ -214,7 +214,7 @@ void Reasoner::CreateObjects()
  */
 void Reasoner::GetResults(Array<VisionData::VisualObjectPtr> &objs, bool unprojected)
 {			
-printf("Reasoner::GetResults: objects: %u\n", objects.Size());
+// printf("Reasoner::GetResults: objects: %u\n", objects.Size());
 	for(unsigned i=0; i<objects.Size(); i++)
 	{
 		VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
@@ -231,7 +231,7 @@ printf("Reasoner::GetResults: objects: %u\n", objects.Size());
 		}
 	}
 	
-printf("Reasoner::GetResults: objs: %u\n", objs.Size());
+// printf("Reasoner::GetResults: objs: %u\n", objs.Size());
 	
 // 	objs = filteredObjs;
 }
