@@ -137,10 +137,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.hfc = None
     self.planner = StandalonePlanner()
     self.tasks = {}
+    self.dt_tasks = {}
+    
     self.beliefs = None
     self.address_dict = {}
 
-    self.dttasks = {}
     self.last_dt_id = 0
     self.m_display = PlannerDisplayClient()
 
@@ -302,12 +303,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
   @pdbdebug
   def start_dt_planning(self, task):
+      assert task.dt_id is None, "There is already a DT task (%d) for task %d" % (task.dt_id, task.id)
+      
       planning_tmp_dir =  standalone.globals.config.tmp_dir
-      tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
-      domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % self.last_dt_id)
-      problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % self.last_dt_id)
-      log.debug("Starting new DT task with id %d", self.last_dt_id)
+      task.dt_id = self.last_dt_id
       self.last_dt_id += 1
+      
+      tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
+      domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % task.dt_id)
+      problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % task.dt_id)
+      log.debug("Starting new DT task with id %d", task.dt_id)
+      self.dt_tasks[task.dt_id] = task
 
       #Write dtpddl domain for debugging
       domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
@@ -315,8 +321,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       w.write(task.dt_task.problem, domain_fn=domain_out_fn)
       
       task.dt_task.write_dt_input(domain_fn, problem_fn)
-      self.getDT().newTask(task.id, problem_fn, domain_fn);
+      self.getDT().newTask(task.dt_id, problem_fn, domain_fn);
 
+  @pdbdebug
+  def cancel_dt_session(self, task):
+      assert task.dt_id is not None, "No DT task running for task %d" % task.id
+      self.getDT().deliverObservation(task.dt_id, [])
+      log.info("cancelled DT task %d for task %d", task.dt_id, task.id)
+      task.dt_id = None
 
   @pdbdebug
   def queryGoal(self, beliefs, goal, current=None):
@@ -339,8 +351,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
   @pdbdebug
   def deliverAction(self, taskId, action, value, current=None):
-      if taskId not in self.tasks:
-          log.warning("Warning: received action for task %d, but no such task found.", taskId)
+      if taskId not in self.dt_tasks:
+          log.warning("Warning: received action for DT task %d, but no such task found.", taskId)
           return
     
       log.info("%d: received new action from DT", taskId)
@@ -350,18 +362,18 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       #     self.getDT().improvePlanQuality(taskId)
       #     return
       
-      task = self.tasks[taskId]
+      task = self.dt_tasks[taskId]
       task.action_delivered(action)
 
       
   @pdbdebug
   def updateStatus(self, taskId, status, message, current=None):
-      if taskId not in self.dttasks:
+      if taskId not in self.dt_tasks:
           log.warning("Warning: received state update for task %d, but no such task found.", taskId)
           return
 
       log.info("DT planner updates status to %s with the following message: %s", str(status), message)
-      task = self.tasks[taskId]
+      task = self.dt_tasks[taskId]
 
       #notify the cp planner that the subtask is finished
       if status == Planner.Completion.SUCCEEDED:
