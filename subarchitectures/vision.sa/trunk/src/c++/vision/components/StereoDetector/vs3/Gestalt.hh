@@ -58,9 +58,9 @@ protected:
   unsigned rank;
 
 public:
-  double acc;  ///< probability of accidental occurrance
-  double sig;  ///< significance
-  unsigned masked;  // TODO: might be masked by more gestalts
+  double acc;		///< probability of accidental occurrance
+  double sig;		///< significance
+  unsigned masked;  	///< TODO: might be masked by more gestalts
 
 public:
   static const char* TypeName(Type t);
