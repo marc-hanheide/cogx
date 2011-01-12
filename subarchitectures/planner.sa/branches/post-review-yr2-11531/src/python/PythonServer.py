@@ -306,6 +306,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
       domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % self.last_dt_id)
       problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % self.last_dt_id)
+      log.debug("Starting new DT task with id %d", self.last_dt_id)
       self.last_dt_id += 1
 
       #Write dtpddl domain for debugging
