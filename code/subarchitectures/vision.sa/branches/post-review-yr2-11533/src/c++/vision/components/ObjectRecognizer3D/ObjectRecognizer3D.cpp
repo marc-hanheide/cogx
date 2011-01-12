@@ -26,6 +26,7 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
 	m_detect = 0;
 	m_showCV = true;
 	m_confidence = 0.08;
+	m_simulationOnly=false;
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -43,6 +44,10 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 
   if((it = _config.find("--videoname")) != _config.end()){
     videoServerName = it->second;
+  }
+
+  if((it = _config.find("--simulation-only")) != _config.end()){
+    m_simulationOnly=true;
   }
 
   if((it = _config.find("--camid")) != _config.end())  {
@@ -83,36 +88,41 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 }
 
 void ObjectRecognizer3D::start(){
-  // get connection to the video server
-  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+  
+  if (!m_simulationOnly) {
+    // get connection to the video server
+    videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
-  // register our client interface to allow the video server pushing images
-  Video::VideoClientInterfacePtr servant = new VideoClientI(this);
-  registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
+    // register our client interface to allow the video server pushing images
+    Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+    registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-  addChangeFilter(createLocalTypeFilter<VisionData::TrackingCommand>(cdl::OVERWRITE),
+    addChangeFilter(createLocalTypeFilter<VisionData::TrackingCommand>(cdl::OVERWRITE),
+		    new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+									 &ObjectRecognizer3D::receiveTrackingCommand));
+
+    addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
+		    new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+									 &ObjectRecognizer3D::receiveRecognizer3DCommand));
+
+    addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-        &ObjectRecognizer3D::receiveTrackingCommand));
+        &ObjectRecognizer3D::receiveDetectionCommand));
 
-  addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
-      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-	&ObjectRecognizer3D::receiveRecognizer3DCommand));
-
+  }
   addChangeFilter(createGlobalTypeFilter<VisionData::Post3DObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
 	&ObjectRecognizer3D::PostFake3DObject));
 
 
-  addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
-      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-        &ObjectRecognizer3D::receiveDetectionCommand));
-
   // init recognizer, phase 1
   initInStart();
 
 #ifdef FEAT_VISUALIZATION        
-  m_display.connectIceClient(*this);
-  m_display.setClientData(this);
+  if (!m_simulationOnly) {
+    m_display.connectIceClient(*this);
+    m_display.setClientData(this);
+  }
 #endif
 }
 
@@ -125,7 +135,8 @@ Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
 
 
 void ObjectRecognizer3D::runComponent(){
-
+  if (m_simulationOnly)
+    return;
   P::DetectGPUSIFT 	sift;
 
   sleepProcess(1000);  // HACK

@@ -77,6 +77,7 @@ private:
 
 	float m_confidence;
 
+  bool m_simulationOnly;
   bool m_starttask;
   bool m_wait4data;
   bool m_delete_command_from_wm;
