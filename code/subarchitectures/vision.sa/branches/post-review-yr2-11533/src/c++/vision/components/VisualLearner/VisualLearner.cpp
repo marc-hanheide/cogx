@@ -443,6 +443,27 @@ bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
    return true;
 }
 
+   template<typename T>
+static void updateElement(const std::string& id, T value, std::vector<std::string>& labels,
+      std::vector<T>& values)
+{
+   vector<string>::iterator plabel = labels.begin();
+   // Find the label and its index
+   int i = -1;
+   for(plabel = labels.begin(); plabel != labels.end(); plabel++) {
+      i++;
+      if (*plabel == id) break;
+   }
+   // Add the label if not in labels
+   if (plabel == labels.end()) {
+      i++;
+      labels.push_back(id);
+      //plabel = labels.rbegin();
+   }
+   // Set the value for the label
+   while (values.size() < i+1) values.push_back(0);
+   values[i] = value;
+}
 
 // The VisualConceptModelStatus for the VisualLearner is represented with 2 entries in WM.
 // One entry is for colors, the other for shapes.
@@ -499,6 +520,7 @@ void VisualLearner::updateWmModelStatus()
          pComponent->addToWorkingMemory(addr, pStatus);
          pComponent->log("VisualConceptModelStatus added ... %s", descAddr(addr).c_str());
       }
+
    };
 
    debug("::updateWmModelStatus");
@@ -522,12 +544,10 @@ void VisualLearner::updateWmModelStatus()
    {
       // Concept mapping is done in Matlab
       if (*pconcpt == 1) { // color concept
-         stColor->labels.push_back(*plabel);
-         stColor->gains.push_back(*pgain);
+         updateElement(*plabel, *pgain, stColor->labels, stColor->gains);
       }
       else if (*pconcpt == 2) { // shape concept
-         stShape->labels.push_back(*plabel);
-         stShape->gains.push_back(*pgain);
+         updateElement(*plabel, *pgain, stShape->labels, stShape->gains);
       }
       else {
          println(" *** VisualLearner/updateWmModelStatus Invalid concept ID: %d", *pconcpt);
