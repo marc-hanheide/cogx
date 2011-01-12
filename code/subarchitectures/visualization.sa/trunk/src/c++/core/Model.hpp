@@ -165,18 +165,24 @@ public:
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
 {
-   friend class CDisplayModel; // FIXME CDisplayModel needs access to m_SubscribedObjects. FIXME
    TObjectMap m_Objects;
+   std::vector<std::string> m_ObjectOrder;
+
+   // Each object may have its own transformation in the view. XXX NOT YET
    std::map<std::string, std::vector<double> > m_Trafos;
+
+   // The view may know about objects even before they exists. When objects
+   // are created, they are added to the subscribed views.
    std::map<std::string, bool> m_SubscribedObjects;
-   bool m_bDefaultView;
 
 public:
    std::string m_id;
+   bool m_bDefaultView;
    ERenderContext m_preferredContext;
    CDisplayView();
    virtual ~CDisplayView();
    void addObject(CDisplayObject *pObject);
+   void setSubscription(const std::string& id, bool active=true);
    void replaceObject(const std::string& id, CDisplayObject *pNew);
    void refreshObject(const std::string& id);
    void removeObject(const std::string& id);

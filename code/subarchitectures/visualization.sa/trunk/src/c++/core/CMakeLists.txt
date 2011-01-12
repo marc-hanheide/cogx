@@ -118,6 +118,7 @@ set(SERVER_CPP
    convenience.cpp
    CDisplayServer.cpp
    Model.cpp
+   View.cpp
    GuiElements.cpp
    HtmlElements.cpp
    object/CSvgImage.cpp
