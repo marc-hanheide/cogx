@@ -21,12 +21,14 @@ extern "C"
   }
 }
 
-// Convenience
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
 #include <ctime>
+#ifdef HAS_LIBPLOT
+#include <plotter.h> // libplot-dev
+#endif
 
 namespace cogx { namespace test {
 
@@ -260,6 +262,26 @@ void VideoViewer::runComponent()
     infile.close();
     m_display.setObject("Visualization.test.SVG-Ani", "shapes", str.str());
   }
+#if HAS_LIBPLOT
+  {
+    std::ostringstream svg;
+    SVGPlotter p(std::cin, svg, std::cerr);
+    p.openpl();
+    p.fspace (0.0, 0.0, 1000.0, 1000.0); // specify user coor system
+    p.fscale (1.0, -1.0);
+    p.ftranslate(0.0, -1000.0);
+    p.bgcolorname("none");
+    p.erase();
+    p.flinewidth (1.0);        // line thickness in user coordinates
+    p.pencolorname ("red");    // path will be drawn in red
+    p.line(110, 110, 230, 230);
+    p.closepl();
+
+    m_display.setObject("Visualization.test.SVGPlotter", "simple", svg.str());
+    println(svg.str());
+  }
+#endif
+
   {
     std::stringstream str;
     str << "function initlists()\n";
@@ -349,6 +371,7 @@ void VideoViewer::runComponent()
     std::vector<std::string> views;
     views.push_back(getComponentID());
     views.push_back("Visualization.test.SVG");
+    views.push_back("Visualization.test.SVGPlotter");
     m_display.createView("Composite.Image+Svg", Visualization::VtGraphics, views);
   }
   {
