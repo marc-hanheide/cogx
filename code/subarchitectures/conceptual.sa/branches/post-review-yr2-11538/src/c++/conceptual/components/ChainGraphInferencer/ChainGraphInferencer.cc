@@ -226,6 +226,7 @@ void ChainGraphInferencer::inferenceQueryAdded(const cast::cdl::WorkingMemoryCha
 	catch(CASTException &e)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+		return;
 	}
 
 	// Lock the mutex to make the operations below atomic
