@@ -23,15 +23,15 @@ namespace Z
 class TmpLJunction
 {
 public:
-	Vertex2D point2D;						///< 2D intersection point
+  Vertex2D point2D;						///< 2D intersection point
 
   TmpLJunction() {}
   TmpLJunction(LJunction *ljct);
-	void RePrune(int oX, int oY, int sc);
+  void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
-	bool IsValid() {return true;}															// TODO is always valid
+  bool IsValid() {return true;}									// TODO is always valid
 };
 
 
@@ -41,9 +41,8 @@ public:
 class LJunction3D
 {
 public:
-	Vertex3D point3D;						///< 3D intersection point
-	
-	Vector3 dir[2];						///< 3D direction of the 2 arms of the L-Junction								/// TODO Calculate
+  Vertex3D point3D;						///< 3D intersection point
+  Vector3 dir[2];						///< 3D direction of the 2 arms of the L-Junction								/// TODO Calculate
 };
 
 

@@ -20,7 +20,7 @@ namespace Z
  */
 TmpRectangle::TmpRectangle(Rectangle *rectangle)
 {
-	surf.Init(rectangle);
+  surf.Init(rectangle);
 }
 
 
@@ -32,7 +32,7 @@ TmpRectangle::TmpRectangle(Rectangle *rectangle)
  */
 void TmpRectangle::RePrune(int oX, int oY, int sc)
 {
-	surf.RePrune(oX, oY, sc);
+  surf.RePrune(oX, oY, sc);
 }
 
 /**
@@ -42,7 +42,7 @@ void TmpRectangle::RePrune(int oX, int oY, int sc)
  */
 void TmpRectangle::Rectify(StereoCamera *stereo_cam, int side)
 {
-	surf.Rectify(stereo_cam, side);
+  surf.Rectify(stereo_cam, side);
 }
 
 
@@ -86,9 +86,9 @@ void TmpRectangle::Fuddle(unsigned off0)
  */
 StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   rectMatches = 0;
 }
 
@@ -377,6 +377,29 @@ void StereoRectangles::Process(int oX, int oY, int sc)
 }
 
 
+/**
+ * @brief Get a matched 3D Gestalt
+ * @param values Values of a rectangle:
+ * 	x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ... corner points of the rectangle
+ * @param id ID of result
+ */
+void StereoRectangles::Get3DGestalt(Array<double> &values, int id)
+{
+  values.PushBack(rectangle3ds[id].surf.vertices[0].p.x);
+  values.PushBack(rectangle3ds[id].surf.vertices[0].p.y);
+  values.PushBack(rectangle3ds[id].surf.vertices[0].p.z);
+  values.PushBack(rectangle3ds[id].surf.vertices[1].p.x);
+  values.PushBack(rectangle3ds[id].surf.vertices[1].p.y);
+  values.PushBack(rectangle3ds[id].surf.vertices[1].p.z);
+  values.PushBack(rectangle3ds[id].surf.vertices[2].p.x);
+  values.PushBack(rectangle3ds[id].surf.vertices[2].p.y);
+  values.PushBack(rectangle3ds[id].surf.vertices[2].p.z);
+  values.PushBack(rectangle3ds[id].surf.vertices[3].p.x);
+  values.PushBack(rectangle3ds[id].surf.vertices[3].p.y);
+  values.PushBack(rectangle3ds[id].surf.vertices[3].p.z);
+}
+
+  
 }
 
 
