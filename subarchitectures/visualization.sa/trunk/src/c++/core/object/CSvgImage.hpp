@@ -68,6 +68,7 @@ public:
    ~CSvgImage();
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    void setPart(const std::string& partId, const std::string& xmlData);
+   void removePart(const std::string& partId);
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
 
    virtual ERenderContext getPreferredContext()
