@@ -1,0 +1,172 @@
+/**
+ * @file StereoTypes.h
+ * @author Andreas Richtsfeld
+ * @date Januray 2011
+ * @version 0.1
+ * @brief Base class for stereo calculated features.
+ */
+
+#ifndef Z_STEREO_TYPES_HH
+#define Z_STEREO_TYPES_HH
+
+#include "StereoCamera.hh"
+
+#include <vector>
+#include "Vector.hh"
+#include "Draw.hh"
+#include "Line.hh"
+#include "Closure.hh"
+#include "Cube.hh"
+
+
+namespace Z
+{
+
+/// TODO Was für Thresholds sind das genau: Beschreiben und alle anderen herausziehen: Surf u. Point
+// These are some tuning parameters to filter out "bad" surface hypotheses.
+// These might need adjusting to a specific use case.
+
+// maximum allowed angle of one vertex normal to the mean of all vertex
+// normals, e.g. 15 deg = pi/12 = 0.2618
+static const double SC_MAX_NORMAL_DEVIATION = 0.50;
+
+// minimum required cirumference of a surface in [m]
+static const double SC_MIN_CIRC = 0.060;
+
+// maximum allowed side length of a surface (wrong matches often
+// tend to produce impossibly long, thing surfaces)
+const double SC_MAX_LENGTH = 0.5;  // in [m]
+
+// maximum allowed vertical deviation of line based stereo for all surface points
+static const double SC_MAX_DELTA_V_SURF = 10.;
+
+// maximum allowed vertical deviation of line based stereo for points
+static const double SC_MAX_DELTA_V_POINT = 10.;
+
+// minimum disparity (distance to point must be higher than this value)
+static const double SC_MIN_DISPARITY = 0.;
+
+
+// Space of interest (SOI) check.
+// Sanity check for points: max. and min. distances in x,y,z-direction, relative to
+// the camera
+static const double SC_MIN_DIST_X = -3.;	// 3m to the left
+static const double SC_MAX_DIST_X =  3.;	// 3m to the right			/// TODO TODO TODO MAX-MIN richtig?
+static const double SC_MIN_DIST_Y = -3.;	// 3m up
+static const double SC_MAX_DIST_Y =  3.;	// 3m down
+static const double SC_MIN_DIST_Z =  0.;	// 0m away
+static const double SC_MAX_DIST_Z =  3.;	// 3m away !!! (do not consider points farer than 4m away!
+
+
+//----------------------------------------------------------------//
+//----------------- struct -- TmpLine ----------------------------// 
+//----------------------------------------------------------------//
+/**																									/// TODO Wo wird TmpLine gebraucht?
+ * @brief TmpLine
+ */
+struct TmpLine
+{
+  Vector2 p;  ///< some point on the line
+  Vector2 d;  ///< direction of the line
+  TmpLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
+};
+
+//----------------------------------------------------------------//
+//-------------------------- Vertex2D ----------------------------// 
+//----------------------------------------------------------------//
+/**
+ * @class Vertex2D
+ * @brief A 2D vertex class to store and manipulate vs3 vertices.
+ */
+class Vertex2D
+{
+public:
+  bool is_valid;					///< validation parameter
+  Vector2 p;							///< point
+  Vector2 pr;							///< rectified point
+ 
+  void RePrune(int oX, int oY, int sc);
+  void Rectify(StereoCamera *stereo_cam, int side);
+  void Refine();
+  bool IsAtPosition(int x, int y) const;
+  void Draw();
+};
+
+//----------------------------------------------------------------//
+//-------------------------- Surface 2D --------------------------//
+//----------------------------------------------------------------//
+/**
+ * @class Surf2D
+ * @brief A 2D surface class to store and manipulate vs3 surfaces.
+ * (for closures, rectangles, flaps, cubes ...)
+ */
+class Surf2D
+{
+public:
+  bool is_valid;                        ///< validation parameter
+  vector<Vector2> p;                    ///< original (distorted, unrectified) points
+  vector<Vector2> pr;                   ///< rectified points
+
+  Surf2D() {is_valid = false;}
+  Surf2D(Closure *clos) {Init(clos);}
+// 	Surf2D(Rectangle *rectangle) {Init(rectangle);}
+//	Surf2D(Cube *cube) {Init(cube, int side);}								TODO TODO /// das funktioniert mit den Seiten nicht!!!
+
+  void Init(Closure *clos);
+  void Init(Rectangle *rectangle);
+  void Init(Cube *cube, int side);
+
+  void ShiftPointsLeft(unsigned offs);
+  void RePrune(int oX, int oY, int sc);
+  void Rectify(StereoCamera *stereo_cam, int side);
+  void Refine();
+  bool IsAtPosition(int x, int y) const;
+  void Draw(unsigned detail);
+};
+
+//--------------------------------------------------------------//
+//-------------------------- Vertex3D --------------------------//
+//--------------------------------------------------------------//
+/**
+ * @brief Vertex in 3D
+ */
+class Vertex3D
+{
+public:
+  Vector3 p;						///< position vector
+  Vector3 n;						///< normal vector
+
+private:
+  bool SanityOK();
+
+public:
+  bool Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right);
+  double Distance(Vertex3D point);
+};
+
+//----------------------------------------------------------------//
+//-------------------------- Surf3D ------------------------------//
+//----------------------------------------------------------------//
+/**
+ * @class Surf3D
+ * @brief Class for 3D surfaces.
+ */
+class Surf3D
+{
+public:
+  Array<Vertex3D> vertices;
+
+private:
+  bool NormalsOK();
+  bool SizeOK();
+  bool SanityOK();
+  void RefineVertices();
+
+public:
+  bool Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine);
+};
+
+
+}
+
+#endif
