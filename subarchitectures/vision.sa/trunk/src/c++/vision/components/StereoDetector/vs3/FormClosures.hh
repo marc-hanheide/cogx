@@ -82,8 +82,7 @@ private:
   //void NewClosure(ClosCand *cand);
   void NewClosure(Line *first, Line *last);
   void CreateNAngles(Closure *clos);
-  void ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Line *t,
-      int end_s, int end_t);
+  void ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Line *t, int end_s, int end_t);
   void ClearPaths(unsigned n);
   void ClearNode(unsigned i);
   int ExtendLJunctions(Line *u);
@@ -91,8 +90,7 @@ private:
   int ExtendNonConvexLJunctions(Line *u);
   int ExtendCollinearities(Line *u);
   bool LineIntersectingPath(Line *l_new, LJunction *j_new, Collinearity *c_new);
-  bool ClosingLineIntersectingPath(Line *l_close, Line *l_open,
-      LJunction *j_init, Collinearity *c_init);
+  bool ClosingLineIntersectingPath(Line *l_close, Line *l_open, LJunction *j_init, Collinearity *c_init);
   void Mask();
 
 public:

@@ -63,7 +63,7 @@ public:
 };
 
 /**
- * Comparison function for sorting LJunctions of a closure according to openeing
+ * @brief Comparison function for sorting LJunctions of a closure according to openeing
  * angles, smallest to largest.
  */
 static int CmpAngles(const void *a, const void *b)
@@ -195,7 +195,7 @@ void FormClosures::Reset()
  */
 void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-	StartRunTime();
+  StartRunTime();
   switch(type)
   {
     case Gestalt::L_JUNCTION:
@@ -481,6 +481,8 @@ void FormClosures::NewClosure(ClosCand *cand)
  * @brief Dijkstra shortest path algorithm. \n
  * Find a path from right to left line taking only left turns. \n
  *
+ * @param ljct L-Junction from which we start
+ * @param coll Collinearity from which we start
  * @param s  start line, which is the RIGHT arm of an L-jct
  * @param t  target line, which is the LEFT arm of that L-jct
  * @param end_s  the open end of line s (opposite to the joined end)
@@ -497,7 +499,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
   Line *u = 0;
   bool have_connected_vertices = true;
   CompCostLargerThan comp(dist);
-  int nsteps = 0;
+  int nsteps = 0;				/// unneccessary
   int cycles = 0; // HACK
 
   ClearPaths(n);
@@ -516,8 +518,8 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
     bend[s->ID()] = LEFT;
   // prepare min-heap (priority queue)
   make_heap(Q.begin(), Q.end(), comp);
-
-	while(n_visited < n && have_connected_vertices)
+printf("\nFormClosures::ShortestPath: start\n");
+  while(n_visited < n && have_connected_vertices)
   {
     // Remove best vertex from priority queue
     u = Q.front();
@@ -535,15 +537,18 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
         if(!ClosingLineIntersectingPath(u, s, ljct, coll))
         {
           NewClosure(s, t);
-          /* find more than just one shortest path: TODO: think properly
-          unsigned l = t;
-          while(l != s)
-          {
-            dist[l] = COST_INF;
-            l = prev[l];
-          }*/
+printf("FormClosures::ShortestPath: Closure\n");
+	  
+          // find more than just one shortest path: TODO: think properly
+//           unsigned l = t;
+//           while(l != s)
+//           {
+//             dist[l] = COST_INF;
+//             l = prev[l];
+//           }
           cycles++;  // HACK
         }
+        else printf("FormClosures::ShortestPath: Warning: Line intersects path.\n");
       }
       else
       {
@@ -562,7 +567,9 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
     }
     else
       have_connected_vertices = false;
+    
     nsteps++;
+    printf("FormClosures::ShortestPath: nsteps: %u\n", nsteps);
   }
 
   // HACK: only clear used nodes
@@ -738,7 +745,7 @@ int FormClosures::ExtendCollinearities(Line *u)
 
 /**
  * @brief Form a new closure along path from first to last line. \n
- * Note: path formation made sure that the resulting polygon in non-intersecting \n
+ * Note: path formation made sure that the resulting polygon is non-intersecting \n
  * and (mostly) convex.
  * @param first First line of new closure.
  * @param last Last line of new closure.
@@ -819,58 +826,6 @@ void FormClosures::NewClosure(Line *first, Line *last)
   Mask();
 }
 
-/**
- * HACK: this is still a bit hacky, using thresholds etc.
- * TODO: for now we only check for quadrilaterals
- * TODO: use different criterion, enable jumping over e.g. two small 45deg
- * angles to get one 90deg angle. how much of the closure is still covered when
- * taking out such small lines in order to get rectangle?
- */
-/*void FormClosures::CreateNAngles(Closure *clos)
-{
-/// TODO ARI: Wird nicht mehr benötigt, weil in Rectangles implementiert.
-
-  // if closure has 4 L-junctions, it definitely is a quadrilateral
-  if(clos->NumLJunctions() == 4)
-  {
-    LJunction *ljcts[4];
-    for(unsigned i = 0, j = 0; i < clos->jcts.Size(); i++)
-      if(clos->jcts[i] != 0)
-        ljcts[j++] = clos->jcts[i];
-    core->NewGestalt(new Rectangle(core, clos, ljcts));
-  }
-  // else check whether the 4 smallest inner angles sum up to 2pi
-  // Note that this only makes sense for more than 4 lines
-  else if(clos->NumLines() > 4)
-  {
-    const double delta = M_PI/8.;  // HACK: ad-hoc threshold
-    double sum_angles = 0.;
-    Array<LJunction*> ordered_ljcts(clos->jcts);
-
-    ordered_ljcts.Sort(CmpAngles);
-    for(unsigned i = 0; i < 4; i++)
-      if(ordered_ljcts[i] != 0)
-        sum_angles += ordered_ljcts[i]->OpeningAngle();
-    if(fabs(2*M_PI - sum_angles) <= delta)
-    {
-      // note that junctions in ordered_ljcts are not in counter-clockwise order
-      // -> go through original junction list and collect those which are the
-      // first 4 in ordered_ljcts
-      LJunction *ljcts[4];
-      for(unsigned i = 0, j = 0; i < clos->jcts.Size() && j < 4; i++)
-      {
-        // if junction i is among the first 4
-        // TODO: note that this is a bit inefficient..
-        // TODO: sometimes j can become > 3 (hence the check in for(..)
-        if(ordered_ljcts.Find(clos->jcts[i]) < 4)
-          ljcts[j++] = clos->jcts[i];
-      }
-      core->NewGestalt(new Rectangle(core, clos, ljcts));
-    }
-  }
-
-}
-*/
 
 /**
  * @brief Helper function to get the vertex point of whatever there is between two lines.
@@ -879,14 +834,14 @@ void FormClosures::NewClosure(Line *first, Line *last)
  */
 inline static Vector2 GetVertex(LJunction *j, Collinearity *c)
 {
-	if(j != 0 && c != 0) 
-		throw std::runtime_error("FormClosures: GetVertex: Need either L-jct or collinearity");
-	else if(j != 0) 
-		return j->isct;
+  if(j != 0 && c != 0) 
+    throw std::runtime_error("FormClosures: GetVertex: Need either L-jct or collinearity");
+  else if(j != 0) 
+    return j->isct;
   else if(c != 0)
-		return c->vertex;
-	else
-		throw std::runtime_error("FormClosures: GetVertex: Need one of L-jct or collinearity");
+    return c->vertex;
+  else
+    throw std::runtime_error("FormClosures: GetVertex: Need one of L-jct or collinearity");
 }
 
 /**
