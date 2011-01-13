@@ -114,6 +114,9 @@ public:
    void setObjectPose3D(const std::string& id, const std::string& partId,
          const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation);
 
+   void removeObject(const std::string& id);
+   void removePart(const std::string& id, const std::string& partId);
+
    // Events from GUI are only available in CActiveDisplayClient.
    // component-id, view-id, control-id, ...
    void addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label);

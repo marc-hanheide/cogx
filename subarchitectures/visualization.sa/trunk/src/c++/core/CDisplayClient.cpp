@@ -383,6 +383,18 @@ void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& p
    m_pServer->setObjectPose3D(id, partId, position, rotation);
 }
 
+void CDisplayClient::removeObject(const std::string& id)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->removeObject(id);
+}
+
+void CDisplayClient::removePart(const std::string& id, const std::string& partId)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->removePart(id, partId);
+}
+
 void CDisplayClient::addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label)
 {
    if (m_pServer == NULL) return;
