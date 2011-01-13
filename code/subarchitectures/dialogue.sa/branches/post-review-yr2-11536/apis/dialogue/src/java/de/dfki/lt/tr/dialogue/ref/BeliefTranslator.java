@@ -7,6 +7,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
@@ -46,10 +47,15 @@ public class BeliefTranslator {
 	public List<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>> assf_world_exist = new LinkedList<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>>();
 	public List<List<ModalisedAtom>> disjoints = new LinkedList<List<ModalisedAtom>>();
 	public List<Rule> rules = new LinkedList<Rule>();
+	public List<Term> sh_belief_pointers = new LinkedList<Term>();
 
 	public void addBelief(WorkingMemoryAddress addr, dBelief bel) {
 
 		Term belIdTerm = ConversionUtils.workingMemoryAddressToTerm(addr);
+
+		if (bel.estatus instanceof SharedEpistemicStatus) {
+			sh_belief_pointers.add(belIdTerm);
+		}
 
 		// epistemic status
 		facts_epst.add(
@@ -205,7 +211,16 @@ public class BeliefTranslator {
 		StringBuilder sb = new StringBuilder();
 		List<String> args = new LinkedList<String>();
 
+		sb.append("% current shared beliefs\n");
+		args.clear();
+		for (Term t : sh_belief_pointers) {
+			args.add(MercuryUtils.termToString(t));
+		}
+		sb.append("shared_beliefs_list([").append(join(", ", args)).append("]).\n");
+		sb.append("\n");
+
 		sb.append("% epistemic statuses\n");
+		args.clear();
 		for (ModalisedAtom ma : facts_epst) {
 			args.add(MercuryUtils.modalisedAtomToString(ma) + ".");
 		}
