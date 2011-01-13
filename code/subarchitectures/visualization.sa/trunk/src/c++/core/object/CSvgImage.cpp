@@ -57,11 +57,24 @@ void CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
    SPart* pPart = findPart(partId);
    if (! pPart) {
       pPart = new SPart(partId);
-      pPart->setIdentity();
       m_Parts.push_back(pPart);
    }
    if (pPart) {
       pPart->setData(xmlData);
+   }
+}
+
+void CSvgImage::removePart(const std::string& partId)
+{
+   typeof(m_Parts.begin()) itpart;
+   for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
+      SPart* pPart = *itpart;
+      if (! pPart) continue;
+      if (pPart->id == partId) {
+         m_Parts.erase(itpart);
+         delete pPart;
+         break;
+      }
    }
 }
 
