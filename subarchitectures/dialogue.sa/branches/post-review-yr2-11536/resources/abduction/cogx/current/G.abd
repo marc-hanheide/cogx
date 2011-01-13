@@ -229,6 +229,14 @@ generate : object_description(Int, Nom, PrivBId, _Block) <-
 	generate : using_salience(PrivBId) / -5.0,
 	generate : it(Nom).
 
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : object_description(Int, Nom, PrivBId, _Block) <-
+	bel : ancestor(UpBId, PrivBId, _T),
+	shared_beliefs_list([UpBId]),
+	generate : using_demonstrative(PrivBId) / -4.5,
+	generate : this(Nom).
+
 %-------------------------------------------------------------------------
 
 %generate : get_label(PrivBId, Label) <-
