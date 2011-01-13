@@ -24,6 +24,13 @@ include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 
 set(SOURCES TestComponent.cpp)
+
+set(HAS_LIBPLOT 0)
+if(HAS_LIBPLOT)
+   add_definitions(-DHAS_LIBPLOT)
+   set(LIBPLOT_LIBS plotter)
+endif(HAS_LIBPLOT)
+
 add_definitions(-DFEAT_VISUALIZATION)
 include_directories( .
    ${VISUALIZATION_INCLUDE_DIRS}
@@ -42,5 +49,6 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisionData Video VideoUtils
    DisplayServer DisplayClient VisualizationData
    ${OPENCV_LDFLAGS}
+   ${LIBPLOT_LIBS}
    )
 
