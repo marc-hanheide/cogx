@@ -31,7 +31,7 @@ include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
 endif(BUILD_SA_BINDING)
 
-option(DISPLAY_COMA_PB NO)
+option(DISPLAY_COMA_PB YES)
 if(DISPLAY_COMA_PB)
      add_definitions(-DDISPLAY_COMA)
      include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
