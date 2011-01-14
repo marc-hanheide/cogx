@@ -844,7 +844,7 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 			msg = "Variable '"+varName+"' not found! Variables we know:";
 			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
 				msg+=varIter->first+" ";
-			error(msg.c_str());
+			log(msg.c_str());
 			return;
 		}
 		// Retrieve marginal
