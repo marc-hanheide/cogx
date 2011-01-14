@@ -195,22 +195,21 @@ endif(BUILD_SA_V11N_SERVER)
 
 option(BUILD_SA_V11N_CLIENT "Build the visualisation display client library" YES)
 if(BUILD_SA_V11N_CLIENT)
-
    find_package(OpenCV REQUIRED)
    include_directories(${OPENCV_INCLUDE_DIRS})
+   include_directories(client)
    link_directories(${OPENCV_LIBRARY_DIRS})
    add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-   add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
+   add_cast_component(DisplayClient client/CDisplayClient.cpp client/CFormValues.cpp)
    link_cast_component(${CAST_COMPONENT_NAME}
       VisualizationData Math Video VideoUtils
       # CogxIceAutogen
       ${OPENCV_LDFLAGS}
       )
-
 endif(BUILD_SA_V11N_CLIENT)
 
-option(BUILD_SA_V11N_TESTS "Build the test component for V11N" OFF)
+option(BUILD_SA_V11N_TESTS "Build the test component for V11N (requires the client library)" OFF)
 if(BUILD_SA_V11N_TESTS)
    add_subdirectory(test)
 endif(BUILD_SA_V11N_TESTS)

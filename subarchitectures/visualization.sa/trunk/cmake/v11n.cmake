@@ -5,7 +5,7 @@ option(BUILD_SA_V11N "Build visualization libraries (Requires QT4)" NO)
 if(BUILD_SA_V11N)
    set(VISUALIZATION_INCLUDE_DIRS
       ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/autogen
-      ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core
+      ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core/client
       )
    set(VISUALIZATION_LIBRARIES
       DisplayClient VisualizationData
