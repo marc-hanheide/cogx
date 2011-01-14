@@ -27,7 +27,8 @@ extern "C"
 #include <iomanip>
 #include <ctime>
 #ifdef HAS_LIBPLOT
-#include <plotter.h> // libplot-dev
+//#include <plotter.h> // libplot-dev
+#include <CSvgPlotter.hpp>
 #endif
 
 namespace cogx { namespace test {
@@ -217,6 +218,7 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
     mdata[6] = 100;            mdata[7] = 100;           mdata[8] = 1;
     CvMat mat = cvMat(3, 3, CV_64FC1, mdata);
     m_display.setObjectTransform2D("Visualization.test.SVG", "little-lion", &mat);
+    m_display.setObjectTransform2D("Visualization.test.SVGPlotter-online", "little-shapes", &mat);
   }
   {
     std::stringstream str;
@@ -264,21 +266,79 @@ void VideoViewer::runComponent()
   }
 #if HAS_LIBPLOT
   {
-    std::ostringstream svg;
-    SVGPlotter p(std::cin, svg, std::cerr);
-    p.openpl();
-    p.fspace (0.0, 0.0, 1000.0, 1000.0); // specify user coor system
-    p.fscale (1.0, -1.0);
-    p.ftranslate(0.0, -1000.0);
-    p.bgcolorname("none");
-    p.erase();
-    p.flinewidth (1.0);        // line thickness in user coordinates
-    p.pencolorname ("red");    // path will be drawn in red
-    p.line(110, 110, 230, 230);
-    p.closepl();
+    if (1) {
+      std::ostringstream ssvg;
+      cogx::display::CSvgStringPlotter p(ssvg);
 
-    m_display.setObject("Visualization.test.SVGPlotter", "simple", svg.str());
-    println(svg.str());
+      p.openpl();
+      p.removeViewport();
+
+      p.flinewidth (1.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+      int a = 160;
+      int b = 240;
+      p.line(a, a, b, b);
+      p.line(0, b, 2*a, b);
+      p.line(2*a, 0, 2*a, b);
+      p.line(a, a, -a, a);
+      p.line(-a, a, b, b);
+      p.closepl();
+
+      string s = p.getScreenSvg();
+
+      m_display.setObject("Visualization.test.SVGPlotter", "simple", s);
+      m_display.setObject("Visualization.test.SVGPlotter-online", "little-shapes", s);
+    }
+    else {
+      std::ostringstream svg;
+      SVGPlotter p(std::cin, svg, std::cerr);
+      p.openpl();
+      // p.parampl("PAGESIZE", (char*)"a4"); // doesn't work for SVG
+      if (0) {
+        p.fspace (0.0, 0.0, 640.0, 480.0); // specify user coor system
+        // flip the Y coordinate
+        p.fscale (1.0, -1.0);
+        p.ftranslate(0.0, -480.0);
+      }
+      else {
+        // flip the Y coordinate (default viewport is 0,0 1,1)
+        p.fscale (1.0, -1.0);
+        p.ftranslate(0.0, -1.0);
+      }
+
+      p.bgcolorname("none");
+      p.erase();
+      p.flinewidth (1.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+      int a = 160;
+      int b = 240;
+      p.line(a, a, b, b);
+      p.line(0, b, 2*a, b);
+      p.line(2*a, 0, 2*a, b);
+      p.line(a, a, -a, a);
+      p.line(-a, a, b, b);
+      p.closepl();
+
+      // Replace line 3 (<svg tag>) to remove size and viewport information
+      string str = svg.str();
+      ostringstream svgfix;
+      size_t pos, ppos = 0;
+      for (int i = 0; i < 3; i++) {
+        pos = str.find("\n", ppos+1);
+        if (pos == str.npos) break; // error
+        if (i == 1)
+          svgfix << str.substr(0, pos+1);
+        ppos = pos;
+      }
+      svgfix << "<svg version=\"1.1\" baseProfile=\"full\" id=\"body\" preserveAspectRatio=\"none\" "
+        "xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+        "xmlns:ev=\"http://www.w3.org/2001/xml-events\">\n";
+      svgfix << str.substr(ppos+1);
+
+      m_display.setObject("Visualization.test.SVGPlotter", "simple", svgfix.str());
+      m_display.setObject("Visualization.test.SVGPlotter-online", "little-shapes", svgfix.str());
+      //println(svg.str());
+    }
   }
 #endif
 
@@ -372,6 +432,7 @@ void VideoViewer::runComponent()
     views.push_back(getComponentID());
     views.push_back("Visualization.test.SVG");
     views.push_back("Visualization.test.SVGPlotter");
+    views.push_back("Visualization.test.SVGPlotter-online");
     m_display.createView("Composite.Image+Svg", Visualization::VtGraphics, views);
   }
   {
