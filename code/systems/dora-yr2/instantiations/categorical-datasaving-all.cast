@@ -4,7 +4,7 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+#INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
