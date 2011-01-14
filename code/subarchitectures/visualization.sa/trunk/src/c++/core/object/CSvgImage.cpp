@@ -19,7 +19,7 @@
 #include <QGraphicsSvgItem>
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "../convenience.hpp"
 
@@ -153,18 +153,27 @@ void CSvgImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
       pSvgItem->setFlags(QGraphicsItem::ItemClipsToShape);
       pSvgItem->setCacheMode(QGraphicsItem::NoCache);
 
+      QTransform trans;
+
+      QSvgRenderer* pRndr = &pPart->getSvgDoc();
+      // TODO: translation of the origin to 0,0 should be optional in CDisplayObject/SPart
+      // eg. setPartOption("name", "value");
+      QRectF vb = pRndr->viewBox();
+      trans.translate(vb.left(), vb.top());
+
       // XXX Unsafe when pPart is deleted !!! COULD CRASH.
-      pSvgItem->setSharedRenderer(&pPart->getSvgDoc());
+      pSvgItem->setSharedRenderer(pRndr);
 
       if (pPart->trmatrix.size() == 9) {
          std::vector<double>& trmatrix = pPart->trmatrix;
-         QTransform trans;
-         trans.setMatrix(
+         QTransform t2;
+         t2.setMatrix(
                trmatrix[0], trmatrix[1], trmatrix[2],
                trmatrix[3], trmatrix[4], trmatrix[5],
                trmatrix[6], trmatrix[7], trmatrix[8]);
-         pSvgItem->setTransform(trans, true);
+         trans = trans * t2;
       }
+      pSvgItem->setTransform(trans, true);
 
       pGroup->addToGroup(pSvgItem);
    }
