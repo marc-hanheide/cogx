@@ -620,8 +620,9 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 		}
 		if (potential<0)
 		{
-			error("We can't find potential for a shape building DAI factor! Implementation error!!");
-			potential=0.01;
+			error("Can't find potential for an shape %s while building observed shape property DAI factor! Implementation error!!",
+					shape.c_str());
+			potential=0.001;
 		}
 		daiFactor.set(index, potential);
 		++index;
@@ -720,8 +721,9 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 		}
 		if (potential<0)
 		{
-			error("We can't find potential for a appearance building DAI factor! Implementation error!!");
-			potential=0.01;
+			error("Can't find potential for an appearance %s while building observed appearance property DAI factor! Implementation error!!",
+					appearance.c_str());
+			potential=0.001;
 		}
 		daiFactor.set(index, potential);
 		++index;
