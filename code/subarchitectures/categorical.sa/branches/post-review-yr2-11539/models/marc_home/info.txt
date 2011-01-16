@@ -1,0 +1,14 @@
+Trainin: marc_home-set2
+Testing: marc_home-set1
+
+Shape:
+- C: 100 
+- gamma: 0.0562341
+- svm: OaA
+- kernel: gaussian
+
+Appearance:
+- C: 100
+- gamma:
+- svm: OaA
+- kernel: Chi2
