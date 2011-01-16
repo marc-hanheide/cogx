@@ -1,11 +1,10 @@
 PROJECT(libcrfh)
-SET(VERSION "0.6.3")
 
 # Set build type
 SET(CMAKE_BUILD_TYPE Release)
 
 # Add definition with version
-ADD_DEFINITIONS(-DVERSION=\\"${VERSION}\\")
+ADD_DEFINITIONS(-DVERSION="0.6.3")
 
 # Depend upon QT4 
 FIND_PACKAGE( Qt4 REQUIRED )
@@ -23,6 +22,10 @@ SET(LIBCRFH_HEADERS  src/libCRFH.h src/CImage.h src/global.h src/CMatrix.h src/C
 ADD_LIBRARY(crfh SHARED ${LIBCRFH_SOURCES})
 TARGET_LINK_LIBRARIES(crfh ${QT_LIBRARIES})
 
+ADD_EXECUTABLE(crfh-extract src/crfh-extract.cpp)
+TARGET_LINK_LIBRARIES(crfh-extract crfh)
+
 # Installing
 INSTALL(TARGETS crfh DESTINATION lib)
+INSTALL(TARGETS crfh-extract DESTINATION bin)
 
