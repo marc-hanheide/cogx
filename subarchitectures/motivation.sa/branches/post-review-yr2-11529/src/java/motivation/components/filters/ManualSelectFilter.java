@@ -72,11 +72,9 @@ public class ManualSelectFilter implements MotiveFilter {
 		else if (motive instanceof RobotInitiativeMotive)
 			return MotivePriority.values()[jRobotInitiativePrioritySlider.getValue()];
 		else if (motive instanceof TutorInitiativeMotive) {
-			component.log("JUHU 1");
 			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
 		}
 		else if (motive instanceof RobotNonSituatedMotive) {
-			component.log("JUHU 2");
 			return MotivePriority.values()[jRobotNonSituatedPrioritySlider.getValue()];
 		}
 		else
@@ -403,6 +401,9 @@ public class ManualSelectFilter implements MotiveFilter {
 		jFrame.setVisible(true);
 		jFrame.pack();
 		jFrame.setSize(800, 600);
+		jTutorInitiativePrioritySlider.setValue(3);
+
+		
 	}
 
 	@Override
