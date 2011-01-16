@@ -304,6 +304,7 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 
 		// RECREATE THE FACTOR GRAPH FROM WORLD STATE AND DEFAULT KNOWLEDGE
 		_factors.clear();
+		_factorNames.clear();
 		_variableNameToDai.clear();
 		addDaiFactors();
 		_factorGraph = dai::FactorGraph(_factors);
