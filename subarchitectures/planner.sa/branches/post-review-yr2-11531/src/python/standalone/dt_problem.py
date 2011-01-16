@@ -49,7 +49,9 @@ class DTProblem(object):
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
 
-    def write_dt_input(self, domain_fn, problem_fn):
+    def write_dt_input(self, domain_fn, problem_fn, dt_id=0):
+        self.problem.name = "cogx-dt-task-%d" % dt_id
+        self.problem.domain.name = "cogx-dt-domain-%d" % dt_id
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
 
     def observation_expected(self, action):

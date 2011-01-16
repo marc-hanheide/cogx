@@ -315,12 +315,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       log.debug("Starting new DT task with id %d", task.dt_id)
       self.dt_tasks[task.dt_id] = task
 
+      
+      
       #Write dtpddl domain for debugging
       domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
       w = standalone.task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
       w.write(task.dt_task.problem, domain_fn=domain_out_fn)
       
-      task.dt_task.write_dt_input(domain_fn, problem_fn)
+      task.dt_task.write_dt_input(domain_fn, problem_fn, task.dt_id)
       self.getDT().newTask(task.dt_id, problem_fn, domain_fn);
 
   @pdbdebug
