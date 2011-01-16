@@ -28,33 +28,24 @@ package de.dfki.lt.tr.dialogue.util;
 
 // Java
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.LinkedList;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-// Meta
-import de.dfki.lt.tr.meta.TRResultListener;
-
-// Dialogue API slice
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
-import java.util.LinkedList;
+import de.dfki.lt.tr.meta.TRResultListener;
 
 
 /**
@@ -106,6 +97,7 @@ implements ActionListener
 		
 		inputField = new JTextField(50);
 		inputField.addActionListener(this);
+		inputField.setText("find me some cornflakes");
 		
 		// Add the text field and the utterances to the frame
 		Container contentPane = getContentPane();
