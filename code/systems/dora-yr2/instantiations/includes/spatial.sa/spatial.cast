@@ -1,5 +1,5 @@
-CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric --no-file-output
-CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --no-file-output
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph #--no-file-output
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf 
 
 CPP MG spatial.translation SpatialTranslation 
