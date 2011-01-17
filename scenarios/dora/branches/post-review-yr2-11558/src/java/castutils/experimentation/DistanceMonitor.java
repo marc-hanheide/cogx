@@ -139,6 +139,6 @@ public class DistanceMonitor extends ManagedComponent implements
 		// Use XMLTag for output
 		getLogger().info(
 				"<DISTANCE time=\"" + time.s + "." + time.us / 1000
-						+ "\" distance=\"" + distance + "\">");
+						+ "\" distance=\"" + distance + "\" />");
 	}
 }
