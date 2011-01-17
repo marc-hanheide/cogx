@@ -53,12 +53,12 @@ def parseArgs(title):
                         help='path to a dataset')
     group1 = parser.add_mutually_exclusive_group(required=True)
     group1.add_argument('--no-params', action='store_true', default=False,
-                        help='run the training procedure without parameter selection; only one dataset is required')
+                        help='run the training procedure without parameter selection; only one dataset is required and gamma can be specified using --gamma')
     group1.add_argument('--reduced', action='store_true', default=False,
                         help='run the reduced cross-validation procedure; two datasets are required and the second one is always used for testing')
     group1.add_argument('--full', action='store_true', default=False,
                         help='run the full cross-validation procedure; at least two datasets are required')
-    parser.add_argument('--gammas',  metavar='values', action='store',
+    parser.add_argument('--gammas',  metavar='values', action='store', default="",
                        help='comma separated list of gamma values')
     group3 = parser.add_argument_group('debugging')
     group3.add_argument('--temp', action='store_true', default=False,
@@ -74,7 +74,7 @@ def parseArgs(title):
         parser.error("Only one dataset can be provided if the --no-params option is used.")
     elif args.reduced and len(args.dataset)!=2:
         parser.error("Two datasets must be provided if the --reduced option is used.")
-    elif len(args.dataset)<2:
+    elif args.full and len(args.dataset)<2:
         parser.error("At least two datasets are required for the full training procedure.")
 
     if args.log == None:
@@ -83,6 +83,11 @@ def parseArgs(title):
         args.log=os.path.basename(sys.argv[0]).split('.')[0]+".log"
     else:
         args.log = args.log[0]
+
+    if len(args.gammas)>0:
+        args.gammas = args.gammas.split(',')
+    else:
+        args.gammas=[]
 
     return args
 
@@ -128,13 +133,8 @@ def main():
  
     # Run training
     logging.getLogger().info("Performing training:")
-    shapeTrainer = ShapeTrainer()
-    if args.no_params:
-        pass
-    elif args.reduced:
-        pass
-    elif args.full:
-        shapeTrainer.trainFull(args.dataset, args.gammas)
+    shapeTrainer = ShapeTrainer(args.gammas)
+    shapeTrainer.train(args.full, args.reduced, args.no_params, args.dataset)
         
 
 # =======================================
