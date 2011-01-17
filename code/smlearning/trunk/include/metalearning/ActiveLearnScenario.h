@@ -12,12 +12,12 @@
 
 //------------------------------------------------------------------------------
 
-#include <Golem/Application.h>
-#include <Golem/PhysReacPlanner.h>
-#include <Golem/Katana.h>
-#include <Golem/Simulator.h>
-#include <Golem/Rand.h>
-#include <Golem/Renderer.h>
+#include <Golem/Phys/Application.h>
+#include <Golem/PhysCtrl/PhysReacPlanner.h>
+#include <Golem/Device/Katana/Katana.h>
+//#include <Simulator.h> //not present anymore
+#include <Golem/Math/Rand.h>
+#include <Golem/Phys/Renderer.h>
 
 #include <algorithm>
 

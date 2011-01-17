@@ -47,11 +47,15 @@ bool XMLData(Scenario::Desc &val, XMLContext* context) {
 		return false;
 	}
         // arm setup
-        golem::XMLData(val.armDesc.pArmDesc, context->getContextFirst("arm"));
+        //golem::XMLData(val.armDesc.pArmDesc, context->getContextFirst("arm")); //doesn't work anymore
+	std::string driver;
+	XMLData("driver", driver, context->getContextFirst("arm")); // Get arm driver name
+	val.armDesc.pArmDesc = Arm::Desc::load(driver); // Load driver
 	
 	// finger setup
 	val.fingerDesc.clear();
-	golem::Real baseLength = golem::KatArm::L3;
+	//golem::Real baseLength = golem::KatArm::L3; //not present anymore
+	golem::Real baseLength = 0.1848;
 	XMLData(baseLength, context->getContextFirst("effector base_length"));
 	golem::Real fingerLength = 0.135;
 	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
@@ -224,16 +228,22 @@ Actor* Scenario::setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Ve
 	//-sets coordinates
 	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(desc.startPolyflapPosition.v1), NxReal(desc.startPolyflapPosition.v2), NxReal(desc.startPolyflapPosition.v3));	
 
+
+	/*  not necessary anymore
 	Mat34 pose;
 	pose.R.fromEuler(
 		desc.startPolyflapRotation.v1, 
 		desc.startPolyflapRotation.v2, 
 		desc.startPolyflapRotation.v3 
 	);
-
-	//-sets rotations	
-	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&pose.R._m._11);	
+	*/
 	
+	//-sets rotations	
+	//pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&pose.R._m._11); //_m not present anymore	
+	pActorDesc->nxActorDesc.globalPose.M.rotX(desc.startPolyflapRotation.v1);	
+	pActorDesc->nxActorDesc.globalPose.M.rotY(desc.startPolyflapRotation.v2);	
+	pActorDesc->nxActorDesc.globalPose.M.rotZ(desc.startPolyflapRotation.v3);	
+
 	//-density
 // 	pActorDesc->nxActorDesc.density = NxReal(5.0);	
 
@@ -262,7 +272,11 @@ Actor* Scenario::setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions
 
 
 	//-sets rotations	
-	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&globalPose.R._m._11);	
+	//pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&globalPose.R._m._11); //_m not present anymore	
+	pActorDesc->nxActorDesc.globalPose.M.rotX(desc.startPolyflapRotation.v1);	
+	pActorDesc->nxActorDesc.globalPose.M.rotY(desc.startPolyflapRotation.v2);	
+	pActorDesc->nxActorDesc.globalPose.M.rotZ(desc.startPolyflapRotation.v3);	
+
 	
 	//-density
 // 	pActorDesc->nxActorDesc.density = NxReal(5.0);	
@@ -502,7 +516,8 @@ void Scenario::add_label (LearningData::Chunk& chunk) {
 ///
 void Scenario::write_chunk (LearningData::Chunk& chunk) {
 	chunk.timeStamp = trialTime;
-	arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed());
+	//arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed()); //not present anymore
+	arm->getArm().lookupState(chunk.action.armState, context.getTimer()->elapsed()); //other possibility: lookupCommand
 	chunk.action.effectorPose = effector->getPose();
 	chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
 	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
@@ -562,7 +577,8 @@ void Scenario::first_init(){
 
 	// get initial configuration (it is the current joint configuration)
 	//golem::GenConfigspaceState initial;
-	arm->getArm().lookupInp(initial, context.getTimer()->elapsed());
+	//arm->getArm().lookupInp(initial, context.getTimer()->elapsed()); //not present anymore
+	arm->getArm().lookupState(initial, context.getTimer()->elapsed()); //other possibility: lookupCommand
 
 	learningData.setToDefault(desc.coordLimits);
 

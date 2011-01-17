@@ -28,9 +28,9 @@
 #define SMLEARNING_MATHHELPERS_H_
 
 #include <math.h>
-#include <Math.h>
+#include <Math/Math.h>
 #include <stdlib.h>
-#include <Vec3.h>
+#include <Math/Vec3.h>
 #include <iostream>
 
 using namespace golem;
