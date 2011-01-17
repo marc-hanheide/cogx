@@ -2973,6 +2973,8 @@ log("filled");
 		VPcmd->status = SpatialData::SUCCESS;
 		overwriteWorkingMemory(m_ProcessVPID,VPcmd);
 		m_ProcessVPID="";
+		//Moving pant-tilt back (to zero?)
+		MovePanTilt(0.0,0.0,0.08);
 	      }
 
 	     if(m_publishSimCones); 
@@ -3102,6 +3104,7 @@ log("Posting Recognition command for object %s",m_objectlist[i].c_str());
 	    //}
 	  //}
 	}
+
       }
       /*      void VisualObjectSearch::addARTagCommand(std::string label){
 	      VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;
