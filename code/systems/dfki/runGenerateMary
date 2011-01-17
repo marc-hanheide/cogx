@@ -1,0 +1,9 @@
+if [ $# != 2 ]
+then
+        echo "Usage: runGenerateMary MaryLangOpt \"CSV file containing the experiment\""
+        echo "e.g.: runGenerateMary us2 exp1-setup.csv" 
+        echo "e.g.: runGenerateMary de2 exp1-setup.csv" 
+	exit 1
+fi
+
+java -ea -classpath ./output/classes/ comsys.components.tts.EyeTrackerGenerateWavFiles $1 $2 $HOME/talkingrobots/experiment/EyeTracker/material
