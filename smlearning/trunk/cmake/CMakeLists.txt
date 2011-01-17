@@ -35,6 +35,9 @@ SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.1 CACHE PATH "Path prefix for PhysX librar
 SET(KNI_INCLUDE /usr/local/include/KNI CACHE PATH "Path prefix for KNI include")
 SET(KNI_LIBRARY /usr/local/lib CACHE PATH "Path prefix for KNI library")
 
+##### NEW ##### ##### NEW ##### ##### NEW #####
+# Katana drivers for Golem are with the Golem executables
+set(GOLEM_KATANA_DRIVERS /usr/local/bin/Golem CACHE PATH "Path prefix to find Katana drivers for Golem")
 SET(GOLEM_INCLUDE /usr/local/include/Golem CACHE PATH "Path prefix for Golem include")
 SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 
@@ -72,7 +75,9 @@ SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SM
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
-               GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
+               GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools #GolemTinyIce !!not created anymore
+		##### NEW ##### ##### NEW ##### ##### NEW #####
+		GolemDemoCommon #newly added
 	       pthread rt GL glut GLU expat SMLearning netcdf
  	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
@@ -220,6 +225,14 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/valid.nc
 )
 
+##### NEW ##### ##### NEW ##### ##### NEW #####
+#Katana drivers are needed for arm configuration
+SET(GOLEM_KATANA_DRIVERS_FILES
+	${GOLEM_KATANA_DRIVERS}/GolemDeviceKatana300Sim.xml # simulated arm
+	# more available
+)
+
+
 ###
 ###PlotApp Ice interface
 ###
@@ -303,7 +316,8 @@ INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_server RUNTIME DESTINATION bin/SMLearning)
-
+##### NEW ##### ##### NEW ##### ##### NEW #####
+INSTALL(FILES ${GOLEM_KATANA_DRIVERS_FILES} DESTINATION bin/SMLearning)
 
 
 ## SMLearning tools library

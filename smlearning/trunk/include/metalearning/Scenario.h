@@ -39,18 +39,20 @@
 #ifndef SMLEARNING_SCENARIO_H_
 #define SMLEARNING_SCENARIO_H_
 
-#include <Golem/Application.h>
-#include <XMLParser.h>
-#include <PhysReacPlanner.h>
-#include <Katana.h>
-#include <Simulator.h>
-#include <Message.h>
-#include <Tools/MsgTools.h>
-#include <Tools/Tools.h>
-#include <Creator.h>
-#include <Math.h>
-#include <XMLDataCtrl.h>
-#include <XMLDataPhys.h>
+#include <Golem/Phys/Application.h>
+#include <Golem/Tools/XMLParser.h>
+#include <Golem/PhysCtrl/PhysReacPlanner.h>
+#include <Golem/Device/Katana/Katana.h>
+//#include <Simulator.h> //not present anymore
+#include <Golem/Tools/Message.h>
+//#include <Tools/MsgTools.h> //not present anymore, trying <Golem/Tools/Msg.h> instead
+#include <Golem/Tools/Msg.h>
+#include <Golem/Demo/Common/Tools.h>
+#include <Golem/PhysCtrl/Creator.h>
+#include <Golem/Math/Math.h>
+//#include <XMLDataCtrl.h>  //not present anymore, trying <Golem/Tools/XMLData.h> instead
+//#include <XMLDataPhys.h> //not present anymore, trying <Golem/Tools/XMLData.h> instead
+#include <Golem/Tools/XMLData.h>
 #include <iostream>
 #include <metalearning/data_structs.h>
 #include <tools/math_helpers.h>
@@ -60,7 +62,7 @@
 
 using namespace std;
 using namespace golem;
-using namespace golem::tools;
+//using namespace golem::tools; //not present anymore
 namespace po = boost::program_options;
 
 
@@ -147,7 +149,8 @@ public:
 			
 			// default arm description
 			armDesc.setToDefault();
-			armDesc.pArmDesc.reset(new golem::KatSimArm::Desc);
+			//armDesc.pArmDesc.reset(new golem::KatSimArm::Desc); //not present anymore
+			armDesc.pArmDesc = Arm::Desc::load("GolemDeviceKatana300Sim");
 			armDesc.pPlannerDesc->pHeuristicDesc->distJointcoordMax[4] = golem::Real(1.0)*golem::REAL_PI; // last joint of Katana
 			// Effector group
 			effectorGroup = 0x4;

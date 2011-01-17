@@ -25,7 +25,7 @@
 #ifndef SMLEARNING_DATASTRUCTS_H_
 #define SMLEARNING_DATASTRUCTS_H_
 
-#include <Tools/Tools.h>
+#include <Demo/Common/Tools.h>
 
 #include <netcdf.h>
 #include <boost/filesystem/operations.hpp>
