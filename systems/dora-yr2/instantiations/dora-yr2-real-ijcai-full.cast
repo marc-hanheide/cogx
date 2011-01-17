@@ -12,8 +12,8 @@ INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-shape-appearance.cast
-
+#INCLUDE includes/categorical.sa/categorical-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-marc-home-shape-appearance.cast
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
@@ -80,7 +80,7 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 #JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, SpatialProperties.ConnectivityPathProperty, comadata.ComaRoom, de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief,  castutils.slice.WMMap"
 
-#CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
 
 #JAVA MG display.GroundedBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.GroundedBelief" 
 #JAVA MG display.PerceptBeliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "eu.cogx.beliefs.slice.PerceptBelief" 

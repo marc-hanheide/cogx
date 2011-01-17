@@ -7,7 +7,7 @@ INCLUDE includes/visualization.sa/v11n-base.cast
 #INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-savelocalmaps.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 
