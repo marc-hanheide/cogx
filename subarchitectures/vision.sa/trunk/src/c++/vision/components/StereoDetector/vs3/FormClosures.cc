@@ -518,6 +518,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
     bend[s->ID()] = LEFT;
   // prepare min-heap (priority queue)
   make_heap(Q.begin(), Q.end(), comp);
+// printf("\nFormClosures::ShortestPath: start\n");
   while(n_visited < n && have_connected_vertices)
   {
     // Remove best vertex from priority queue
@@ -536,6 +537,11 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
         if(!ClosingLineIntersectingPath(u, s, ljct, coll))
         {
           NewClosure(s, t);
+	  
+	  static int found = 0;
+	  found++;
+	  if(found > 1) printf("FormClosures::ShortestPath: More than one closure found\n");
+	  
           // find more than just one shortest path: TODO: think properly
 //           unsigned l = t;
 //           while(l != s)
@@ -566,6 +572,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
       have_connected_vertices = false;
     
     nsteps++;
+//     printf("FormClosures::ShortestPath: nsteps: %u\n", nsteps);
   }
 
   // HACK: only clear used nodes
