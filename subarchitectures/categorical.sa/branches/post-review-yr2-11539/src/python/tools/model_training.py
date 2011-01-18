@@ -7,6 +7,8 @@ import subprocess
 import logging
 import os.path
 import re
+import glob
+import sys
 from copy import copy
 
 
@@ -62,6 +64,17 @@ def getMatchedSubStr(strings, pattern, groupName="", occurNo=1):
                 if occ==occurNo:
                     return m.group(groupName)
         return -1
+
+
+# ========================================
+def getDirFiles(path=".", mask="*"):
+    list=glob.glob(os.path.join(os.path.expanduser(path),mask))
+    list2=[]
+    for l in list:
+        if os.path.isfile(l):
+            list2.append(os.path.basename(l))
+    list2.sort()
+    return list2
 
 
 # ========================================
@@ -181,6 +194,58 @@ class GeometricalFeatureExtractor(FeatureExtractor):
                          "Closing files... Done!")
         except Exception as e:
             raise Exception("Error during geometrical feature extraction from the dataset %s!\n%s" % 
+                            (self.dataSet, str(e)))
+        self.logger.info(endStep()+"Done!")
+
+
+# ========================================
+class CrfhFeatureExtractor(FeatureExtractor):
+    # ------------------------------------
+    def __init__(self, dataSet, outputFile):
+        FeatureExtractor.__init__(self, dataSet, outputFile)
+        
+    # ------------------------------------
+    def _runExtraction(self):
+        self.logger.info(startStep()+"Preparing list of images for the dataset %s..." % os.path.basename(self.dataSet))
+        try:
+            try:
+                cf = open(self.dataSet)
+                cfLines = cf.readlines()
+                cf.close()
+            finally:
+                cf.close()
+            imageDir = os.path.dirname(self.dataSet)+"/"+getMatchedSubStr(cfLines, r'DataDir = (?P<str>.*)$', "str")
+            filesList = getDirFiles(imageDir, "*.pgm")
+            targetFile = os.path.dirname(self.dataSet)+"/"+getMatchedSubStr(cfLines, r'DataFile = (?P<str>.*)$', "str", 3)
+            try:
+                tf = open(targetFile)
+                tfLines = tf.readlines()
+                tf.close()
+            finally:
+                tf.close()
+            imageList = paths.getTempFile("tmp-crfh.list")
+            try:
+                imf = open(imageList, 'w')
+                if len(filesList) != len(tfLines):
+                    raise Exception('The target file does not match the image files.')
+                for i in range(len(filesList)):
+                    if int(filesList[i].split('_')[0]) != int(tfLines[i].split(' ')[0]):
+                        raise Exception('The target file does not match the image files.')
+                    imf.write("%s/%s %s\n" % (imageDir, filesList[i], tfLines[i].split(' ')[1]))
+                imf.close()
+            finally:
+                tf.close()
+        except Exception as e:
+            raise Exception("Error while preparing list of images for the dataset %s!\n%s" % 
+                            (self.dataSet, str(e)))
+        self.logger.info(endStep()+"Done!")
+        self.logger.info(startStep()+"Extracting CRFH features from the dataset %s..." % os.path.basename(self.dataSet))
+        try:
+            paths.runBin("crfh-extract", 
+                         ['"Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)"', "@"+imageList, self.outputFile],
+                         "Finished!")
+        except Exception as e:
+            raise Exception("Error during CRFH feature extraction from the dataset %s!\n%s" % 
                             (self.dataSet, str(e)))
         self.logger.info(endStep()+"Done!")
 
@@ -312,19 +377,16 @@ class Trainer():
             self.logger.error(e)
 
 
-
 # ========================================
 class ShapeTrainer(Trainer):
     
-    defaultGammas=["0.00001", "0.0000133352", "0.0000177828", "0.0000237137", "0.0000316228", "0.0000421697", "0.0000562341", "0.0000749894",
-                   "0.0001", "0.000133352", "0.000177828", "0.000237137", "0.000316228", "0.000421697", "0.000562341", "0.000749894",
+    defaultGammas=["0.0001", "0.000133352", "0.000177828", "0.000237137", "0.000316228", "0.000421697", "0.000562341", "0.000749894",
                    "0.001", "0.00133352", "0.00177828", "0.00237137", "0.00316228", "0.00421697", "0.00562341", "0.00749894",
                    "0.01", "0.0133352", "0.0177828", "0.0237137", "0.0316228", "0.0421697", "0.0562341", "0.0749894",
                    "0.1", "0.133352", "0.177828", "0.237137", "0.316228", "0.421697", "0.562341", "0.749894",
                    "1",   "1.33352",  "1.77828",  "2.37137",  "3.16228",  "4.21697",  "5.62341",  "7.49894",
                    "10",  "13.3352",  "17.7828",  "23.7137",  "31.6228",  "42.1697",  "56.2341",  "74.9894",
-                   "100",  "133.352",  "177.828",  "237.137",  "316.228",  "421.697",  "562.341",  "749.894",
-                   "1000" ]
+                   "100" ]
     
     defaultBestGamma = "0.07"
 
@@ -532,6 +594,193 @@ class ShapeTrainer(Trainer):
             inf.write("Parameter selection: No parameter selection (default used)")
             inf.write("Features: geometrical features\n")
             inf.write("SVM Kernel: Gaussian\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % self.bestGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+
+# ========================================
+class AppearanceTrainer(Trainer):
+    
+    defaultGammas=["0.001", "0.00133352", "0.00177828", "0.00237137", "0.00316228", "0.00421697", "0.00562341", "0.00749894",
+                   "0.01", "0.0133352", "0.0177828", "0.0237137", "0.0316228", "0.0421697", "0.0562341", "0.0749894",
+                   "0.1", "0.133352", "0.177828", "0.237137", "0.316228", "0.421697", "0.562341", "0.749894",
+                   "1",   "1.33352",  "1.77828",  "2.37137",  "3.16228",  "4.21697",  "5.62341",  "7.49894",
+                   "10",  "13.3352",  "17.7828",  "23.7137",  "31.6228" ]
+    
+    defaultBestGamma = "0.3"
+
+
+    # ------------------------------------
+    def __init__(self, gammas):
+        Trainer.__init__(self, gammas)
+
+    # ------------------------------------
+    def _runFullTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 1 + len(self.dataSets)*2 + len(self.gammas)*len(self.dataSets)*3 + 3
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets:
+            fSet = paths.getTempFile("dataset%d-appearance.crfh" % i)
+            self.featureSets.append(fSet)
+            cfe = CrfhFeatureExtractor(d, fSet)
+            cfe.extract()
+            i=i+1
+        # Parameter selection by cross-validation
+        self.mergedFeatures = paths.getTempFile("merged-appearance.crfh")
+        sm = SetMerger()
+        maxAccuracy = 0.0
+        maxGamma = -1
+        for g in self.gammas:
+            overAllSetsAccuracy = 0.0
+            for i in range(len(self.featureSets)):
+                # Create a training set for this partitioning
+                tmp = copy(self.featureSets)
+                del tmp[i]
+                sm.mergeSets(tmp, self.mergedFeatures)
+                # Train
+                tmpModelFile = paths.getTempFile("tmp-appearance.cmdl")
+                svm=SvmModel(tmpModelFile)
+                svm.train(self.mergedFeatures, "2", g)
+                # Test on the test set
+                accuracy=svm.test(self.featureSets[i], paths.getTempFile("tmp-appearance.output"))
+                overAllSetsAccuracy+=accuracy
+            overAllSetsAccuracy/=float(len(self.featureSets))
+            if overAllSetsAccuracy > maxAccuracy:
+                maxAccuracy = overAllSetsAccuracy
+                maxGamma = g
+        self.logger.info("-> Best recognition rate (over all sets) is %s for gamma=%s", str(maxAccuracy), maxGamma)
+        # Final training
+        sm.mergeSets(self.featureSets, self.mergedFeatures)
+        self.modelFile = paths.getModelFile("appearance.cmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.mergedFeatures, "2", maxGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("appearance.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: Full gamma cross-validation")
+            inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
+            inf.write("SVM Kernel: Chi2\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % maxGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+    # ------------------------------------
+    def _runReducedTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 1 + 2*2 + len(self.gammas)*2 + 3
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets[:2]:
+            fSet = paths.getTempFile("dataset%d-appearance.crfh" % i)
+            self.featureSets.append(fSet)
+            cfe = CrfhFeatureExtractor(d, fSet)
+            cfe.extract()
+            i=i+1
+        # Parameter selection by cross-validation
+        self.mergedFeatures = paths.getTempFile("merged-appearance.crfh")
+        sm = SetMerger()
+        maxAccuracy = 0.0
+        maxGamma = -1
+        for g in self.gammas:
+            # Train
+            tmpModelFile = paths.getTempFile("tmp-appearance.cmdl")
+            svm=SvmModel(tmpModelFile)
+            svm.train(self.featureSets[0], "2", g)
+            # Test on the test set
+            accuracy=svm.test(self.featureSets[1], paths.getTempFile("tmp-appearance.output"))
+            if accuracy > maxAccuracy:
+                maxAccuracy = accuracy
+                maxGamma = g
+        self.logger.info("-> Best recognition rate is %s for gamma=%s", str(maxAccuracy), maxGamma)
+        # Final training
+        sm.mergeSets(self.featureSets, self.mergedFeatures)
+        self.modelFile = paths.getModelFile("appearance.cmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.mergedFeatures, "2", maxGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("appearance.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: Reduced gamma cross-validation")
+            inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
+            inf.write("SVM Kernel: Chi2\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % maxGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+    # ------------------------------------
+    def _runNoParamsTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 1 + 2 + 2
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets[:2]:
+            fSet = paths.getTempFile("dataset%d-appearance.crfh" % i)
+            self.featureSets.append(fSet)
+            cfe = CrfhFeatureExtractor(d, fSet)
+            cfe.extract()
+            i=i+1
+        # Final training
+        self.mergedFeatures = paths.getTempFile("merged-appearance.crfh")
+        sm = SetMerger()
+        self.modelFile = paths.getModelFile("appearance.cmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.featureSets[0], "2", self.bestGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("appearance.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: No parameter selection (default used)")
+            inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
+            inf.write("SVM Kernel: Chi2\n")
             inf.write("SVM Multi-class: One-against-all\n")
             inf.write("SVM C: 100\n")
             inf.write("SVM Kernel Gamma: %s\n" % self.bestGamma)

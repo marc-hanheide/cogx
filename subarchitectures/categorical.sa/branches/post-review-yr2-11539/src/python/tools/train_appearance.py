@@ -4,7 +4,7 @@ import argparse
 import os.path
 import sys
 import logging.handlers
-from model_training import initPaths, ShapeTrainer
+from model_training import initPaths, AppearanceTrainer
 
 # =======================================
 def printOptions(args, title):
@@ -116,7 +116,7 @@ def configureLog(args):
 def main():
 
     # Title
-    propertyName="shape"
+    propertyName="appearance"
     title = "Training '%s' property models for Categorical Subarchitecture" % propertyName
 
     # Args
@@ -129,8 +129,8 @@ def main():
  
     # Run training
     logging.getLogger().info("Performing training:")
-    shapeTrainer = ShapeTrainer(args.gammas)
-    shapeTrainer.train(args.full, args.reduced, args.no_params, args.dataset)
+    appearanceTrainer = AppearanceTrainer(args.gammas)
+    appearanceTrainer.train(args.full, args.reduced, args.no_params, args.dataset)
         
 
 # =======================================
