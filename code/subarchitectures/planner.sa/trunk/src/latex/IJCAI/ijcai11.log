@@ -1,0 +1,413 @@
+This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2010.5.20)  18 JAN 2011 17:27
+entering extended mode
+**ijcai11.tex
+(./ijcai11.tex
+LaTeX2e <2003/12/01>
+Babel <v3.8d> and hyphenation patterns for american, french, german, ngerman, b
+ahasa, basque, bulgarian, catalan, croatian, czech, danish, dutch, esperanto, e
+stonian, finnish, greek, icelandic, irish, italian, latin, magyar, norsk, polis
+h, portuges, romanian, russian, serbian, slovak, slovene, spanish, swedish, tur
+kish, ukrainian, nohyphenation, loaded.
+IJCAI-11 Instructions for Authors
+(/usr/share/texmf/tex/latex/base/article.cls
+Document Class: article 2004/02/16 v1.4f Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/size10.clo
+File: size10.clo 2004/02/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./ijcai11.sty
+Conference Style, version of 6 September 1995 (revised Nov 2010)
+\titlebox=\skip43
+Named Citation Style, version of 30 November 1994
+) (/usr/share/texmf/tex/latex/psnfss/times.sty
+Package: times 2004/09/15 PSNFSS-v9.2 (SPQR) 
+)
+(/usr/share/texmf/tex/latex/subfig/subfig.sty
+Package: subfig 2004/01/28 ver: 1.2 subfig package
+
+(/usr/share/texmf/tex/latex/caption/caption.sty
+Package: caption 2006/01/12 v3.0i Customising captions (AR)
+
+(/usr/share/texmf/tex/latex/caption/caption3.sty
+Package: caption3 2006/01/12 v3.0i caption3 kernel (AR)
+
+(/usr/share/texmf/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+\captionmargin=\dimen103
+\captionmarginx=\dimen104
+\captionwidth=\dimen105
+\captionindent=\dimen106
+\captionparindent=\dimen107
+\captionhangindent=\dimen108
+))
+\c@KVtest=\count87
+\sf@farskip=\skip44
+\sf@captopadj=\dimen109
+\sf@capskip=\skip45
+\sf@nearskip=\skip46
+\c@subfigure=\count88
+\c@subfigure@save=\count89
+\c@lofdepth=\count90
+\c@subtable=\count91
+\c@subtable@save=\count92
+\c@lotdepth=\count93
+\sf@top=\skip47
+\sf@bottom=\skip48
+)
+(/usr/share/texmf/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf/tex/latex/graphics/graphics.sty
+Package: graphics 2001/07/07 v1.0n Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/share/texmf/tex/latex/graphics/graphics.cfg
+File: graphics.cfg 2005/02/03 v1.3 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: pdftex.def on input line 80.
+
+(/usr/share/texmf/tex/latex/graphics/pdftex.def
+File: pdftex.def 2002/06/19 v0.03k graphics/color for pdftex
+\Gread@gobject=\count94
+))
+\Gin@req@height=\dimen110
+\Gin@req@width=\dimen111
+)
+\@input{macros.aux}
+\openout2 = `macros.aux'.
+
+(./macros.tex
+\c@definition=\count95
+\c@proposition=\count96
+\c@lemma=\count97
+\c@theorem=\count98
+\c@property=\count99
+\c@corollary=\count100
+) (./ijcai11.aux)
+\openout1 = `ijcai11.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 53.
+ (/usr/share/texmf/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+(/usr/share/texmf/tex/latex/ms/ragged2e.sty
+Package: ragged2e 2003/03/25 v2.04 ragged2e Package (MS)
+
+(/usr/share/texmf/tex/latex/ms/everysel.sty
+Package: everysel 1999/06/08 v1.03 EverySelectfont Package (MS)
+LaTeX Info: Redefining \selectfont on input line 125.
+)
+\CenteringLeftskip=\skip49
+\RaggedLeftLeftskip=\skip50
+\RaggedRightLeftskip=\skip51
+\CenteringRightskip=\skip52
+\RaggedLeftRightskip=\skip53
+\RaggedRightRightskip=\skip54
+\CenteringParfillskip=\skip55
+\RaggedLeftParfillskip=\skip56
+\RaggedRightParfillskip=\skip57
+\JustifyingParfillskip=\skip58
+\CenteringParindent=\skip59
+\RaggedLeftParindent=\skip60
+\RaggedRightParindent=\skip61
+\JustifyingParindent=\skip62
+)
+(/usr/share/texmf/tex/context/base/supp-pdf.tex
+(/usr/share/texmf/tex/context/base/supp-mis.tex
+loading : Context Support Macros / Miscellaneous (2004.10.26)
+\protectiondepth=\count101
+\scratchcounter=\count102
+\scratchtoks=\toks15
+\scratchdimen=\dimen112
+\scratchskip=\skip63
+\scratchmuskip=\muskip10
+\scratchbox=\box26
+\scratchread=\read1
+\scratchwrite=\write3
+\zeropoint=\dimen113
+\onepoint=\dimen114
+\onebasepoint=\dimen115
+\minusone=\count103
+\thousandpoint=\dimen116
+\onerealpoint=\dimen117
+\emptytoks=\toks16
+\nextbox=\box27
+\nextdepth=\dimen118
+\everyline=\toks17
+\!!counta=\count104
+\!!countb=\count105
+\recursecounter=\count106
+)
+loading : Context Support Macros / PDF (2004.03.26)
+\nofMPsegments=\count107
+\nofMParguments=\count108
+\MPscratchCnt=\count109
+\MPscratchDim=\dimen119
+\MPnumerator=\count110
+\everyMPtoPDFconversion=\toks18
+)
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 55.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 55.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 55.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 55.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 55.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 295.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 295.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 304.
+
+ (/usr/share/texmf/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [1{/usr/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+
+
+
+]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 411.
+
+Underfull \vbox (badness 5022) has occurred while \output is active []
+
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 483.
+
+
+(/usr/share/texmf/tex/latex/psnfss/ot1phv.fd
+File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
+) [2]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <9> on input line 575.
+
+Underfull \hbox (badness 3333) in paragraph at lines 569--576
+\OT1/ptm/m/n/10 In a slight de-par-ture from PPDDL, we sup-pose that
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 597--606
+\OT1/ptm/m/n/10 Here, the \OT1/ptm/m/it/10 ex-e-cu-tion \OT1/ptm/m/n/10 dec-la-
+ra-tion is a lifted de-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 597--606
+\OT1/ptm/m/n/10 scrip-tion of the sense action-precondition -- i.e,
+ []
+
+
+Underfull \hbox (badness 4819) in paragraph at lines 597--606
+\OT1/cmr/m/n/10 ([] [][] [][] [][])$ \OT1/ptm/m/n/10 is equal
+ []
+
+[3] [4]
+Underfull \hbox (badness 1005) in paragraph at lines 922--936
+\OT1/ptm/m/n/10 dual ac-tions are propo-si-tion-ally triv-ial -- i.e., $\OMS/cm
+sy/m/n/10 8\OML/cmm/m/it/10 s \OMS/cmsy/m/n/10 2 S$
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 948--954
+\OT1/ptm/m/n/10 Taking the switch-ing ac-tion $[]$ to be
+ []
+
+
+Underfull \hbox (badness 2469) in paragraph at lines 948--954
+\OT1/cmr/m/n/10 ([] [][] [][] [][])$\OT1/ptm/m/n/10 , we have
+ []
+
+
+Underfull \hbox (badness 1389) in paragraph at lines 955--957
+[]\OT1/ptm/m/n/10 We also in-clude an-other propo-si-tion-ally triv-ial ac-tion
+
+ []
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 990.
+
+LaTeX Warning: Reference `fig:abstraction' on page 5 undefined on input line 99
+0.
+
+
+LaTeX Warning: Reference `fig:abstraction-b' on page 5 undefined on input line 
+1156.
+
+
+LaTeX Warning: Reference `fig:abstraction-c' on page 5 undefined on input line 
+1171.
+
+[5] <plots/dora2-time.pdf, id=80, 232.87pt x 86.3225pt>
+File: plots/dora2-time.pdf Graphic file (type pdf)
+
+<use plots/dora2-time.pdf> <plots/dora3-time.pdf, id=81, 232.87pt x 78.2925pt>
+File: plots/dora3-time.pdf Graphic file (type pdf)
+
+<use plots/dora3-time.pdf>
+<plots/dora4-time.pdf, id=82, 232.87pt x 71.26625pt>
+File: plots/dora4-time.pdf Graphic file (type pdf)
+
+<use plots/dora4-time.pdf>
+<plots/dora56-time.pdf, id=83, 232.87pt x 71.26625pt>
+File: plots/dora56-time.pdf Graphic file (type pdf)
+
+<use plots/dora56-time.pdf>
+<plots/dora-cat-time.pdf, id=84, 232.87pt x 71.26625pt>
+File: plots/dora-cat-time.pdf Graphic file (type pdf)
+
+<use plots/dora-cat-time.pdf>
+Underfull \hbox (badness 10000) in paragraph at lines 1313--1322
+[][]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1313--1322
+[]
+ []
+
+<plots/dora2-quality.pdf, id=85, 229.85875pt x 86.3225pt>
+File: plots/dora2-quality.pdf Graphic file (type pdf)
+
+<use plots/dora2-quality.pdf>
+<plots/dora3-quality.pdf, id=86, 229.85875pt x 78.2925pt>
+File: plots/dora3-quality.pdf Graphic file (type pdf)
+
+<use plots/dora3-quality.pdf>
+<plots/dora4-quality.pdf, id=87, 229.85875pt x 71.26625pt>
+File: plots/dora4-quality.pdf Graphic file (type pdf)
+
+<use plots/dora4-quality.pdf>
+<plots/dora56-quality.pdf, id=88, 229.85875pt x 71.26625pt>
+File: plots/dora56-quality.pdf Graphic file (type pdf)
+
+<use plots/dora56-quality.pdf>
+<plots/dora-cat-quality.pdf, id=89, 229.85875pt x 71.26625pt>
+File: plots/dora-cat-quality.pdf Graphic file (type pdf)
+
+<use plots/dora-cat-quality.pdf>
+Underfull \hbox (badness 10000) in paragraph at lines 1330--1339
+[][]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1330--1339
+[]
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [6 <./plots/dora2-time.pdf> <./plots/dora3-time.pdf> <./plots/dora4-time.pdf> 
+<./plots/dora56-time.pdf> <./plots/dora-cat-time.pdf>] [7 <./plots/dora2-qualit
+y.pdf> <./plots/dora3-quality.pdf> <./plots/dora4-quality.pdf> <./plots/dora56-
+quality.pdf> <./plots/dora-cat-quality.pdf>] (./ijcai11.bbl
+Underfull \hbox (badness 1910) in paragraph at lines 13--18
+\OT1/ptm/m/it/10 Na-tional Con-fer-ence on Ar-ti-fi-cial In-tel-li-gence\OT1/pt
+m/m/n/10 , pages
+ []
+
+
+Underfull \hbox (badness 3690) in paragraph at lines 27--30
+[]\OT1/ptm/m/n/10 Olivier Buf-fet and Dou-glas
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 69--72
+[]\OT1/ptm/m/n/10 M. Mund-henk, J. Gold-smith,
+ []
+
+
+Underfull \hbox (badness 3449) in paragraph at lines 82--86
+[]\OT1/ptm/m/n/10 Hector Pala-cios and Hec-tor
+ []
+
+
+Underfull \hbox (badness 2150) in paragraph at lines 94--98
+[]\OT1/ptm/m/n/10 Mohan Srid-ha-ran, Jeremy Wy-att,
+ []
+
+Missing character: There is no é in font ptmr7t!
+
+Underfull \hbox (badness 10000) in paragraph at lines 114--119
+[]\OT1/ptm/m/n/10 H. L. S. Younes and
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 114--119
+\OT1/ptm/m/n/10 Tech-ni-cal Re-port CMU-CS-04-167, School of Com-
+ []
+
+
+Underfull \hbox (badness 3895) in paragraph at lines 122--126
+[]\OT1/ptm/m/n/10 H[]akan L. S. Younes, Michael L.
+ []
+
+) [8] (./ijcai11.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 1895 strings out of 94500
+ 26569 string characters out of 1176766
+ 77886 words of memory out of 1000000
+ 5037 multiletter control sequences out of 10000+50000
+ 32784 words of font info for 67 fonts, out of 500000 for 2000
+ 580 hyphenation exceptions out of 1000
+ 41i,10n,40p,223b,244s stack positions out of 1500i,500n,5000p,200000b,5000s
+PDF statistics:
+ 159 PDF objects out of 300000
+ 0 named destinations out of 131072
+ 51 words of extra memory for PDF output out of 65536
+</usr/share/texmf/fonts/type1/bluesky/cm/cmr5.pfb></usr/share/texmf/fonts/typ
+e1/bluesky/cm/cmmi6.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr
+/share/texmf/fonts/type1/bluesky/cm/cmmi9.pfb></usr/share/texmf/fonts/type1/blu
+esky/cm/cmr9.pfb>{/usr/share/texmf/fonts/enc/dvips/psnfss/8r.enc}</usr/share/te
+xmf/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texmf/fonts/type1/bluesky/c
+m/cmsy5.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmti10.pfb></usr/share/tex
+mf/fonts/type1/bluesky/cm/cmss10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/c
+mr7.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsy7.pfb></usr/share/texmf/fo
+nts/type1/bluesky/cm/cmmi5.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.
+pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi7.pfb></usr/share/texmf/fonts/
+type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/urw/courier/ucrr8a.pfb
+></usr/share/texmf/fonts/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/ty
+pe1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/urw/times/utmri8a.pfb><
+/usr/share/texmf/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf/fonts/type1
+/urw/times/utmb8a.pfb>
+Output written on ijcai11.pdf (8 pages, 281139 bytes).
