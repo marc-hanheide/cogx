@@ -15,6 +15,7 @@ namespace Z
 static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
   "STEREO_LJUNCTION",
+  "STEREO_CORNER",
   "STEREO_ELLIPSE",
   "STEREO_CLOSURE",
   "STEREO_RECTANGLE",
@@ -49,8 +50,9 @@ StereoBase::Type StereoBase::EnumType(const char *type_name)
 /**
  * @brief Constructor of the stereo base.
  */
-StereoBase::StereoBase()
+StereoBase::StereoBase(StereoCore *sc)
 {
+  score = sc;
   enabled = false;                      // disabled by default
   pPara.pruning = false;                // disabled by default
 }

@@ -118,11 +118,11 @@ printf("  Flap3D::Reconstruct: Reconstruct in Calculate3DFlaps with surfaces!\n"
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoFlaps::StereoFlaps(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoFlaps::StereoFlaps(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   flapMatches = 0;
 }
 

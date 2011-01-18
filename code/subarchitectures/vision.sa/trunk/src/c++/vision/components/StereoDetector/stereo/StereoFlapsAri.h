@@ -67,32 +67,32 @@ private:
   int flapMatches;										///< stereo matched flaps
 
 #ifdef HAVE_CAST
-	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
+  bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
-	void RecalculateCoordsystem(Flap3DAri &flap, Pose3 &pose);
+  void RecalculateCoordsystem(Flap3DAri &flap, Pose3 &pose);
 
   double MatchingScore(TmpFlapAri &left_flap, TmpFlapAri &right_flap, unsigned &off_0, unsigned &off_1, bool &cross);
   unsigned FindMatchingFlap(TmpFlapAri &left_flap, Array<TmpFlapAri> &right_flaps, unsigned l);
   void MatchFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &matches);
   void Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &flapMatches, Array<Flap3DAri> &flap3ds);
-	void DrawSingleMatched(int side, int id, int detail);
+  void DrawSingleMatched(int side, int id, int detail);
 
 public:
-	StereoFlapsAri(VisionCore *vc[2], StereoCamera *sc);
-	~StereoFlapsAri() {}
+  StereoFlapsAri(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  ~StereoFlapsAri() {}
 
   int NumFlaps2D(int side);
-	int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP_ARI);}		///<
-	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP_ARI);}	///<
+  int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP_ARI);}		///<
+  int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP_ARI);}	///<
 
   const TmpFlapAri &Flaps2D(int side, int i);
   const Flap3DAri &Flaps(int i) {return flap3ds[i];}														///<
 
-	int NumStereoMatches() {return flapMatches;}																	///<
-	void DrawMatched(int side, bool single, int id, int detail);
-	void ClearResults();
-	void Process();
-	void Process(int oX, int oY, int sc);
+  int NumStereoMatches() {return flapMatches;}																	///<
+  void DrawMatched(int side, bool single, int id, int detail);
+  void ClearResults();
+  void Process();
+  void Process(int oX, int oY, int sc);
 };
 
 }

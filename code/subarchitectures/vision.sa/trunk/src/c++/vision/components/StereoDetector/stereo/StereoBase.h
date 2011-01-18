@@ -22,6 +22,8 @@
 namespace Z
 {
 
+class StereoCore;		// forward declaration necessary
+
 /**
  * @class StereoBase
  * @brief Base class for all stereo matching classes.
@@ -32,6 +34,7 @@ public:
   enum Type
   {
     STEREO_LJUNCTION,
+    STEREO_CORNER,
     STEREO_ELLIPSE,
     STEREO_CLOSURE,
     STEREO_RECTANGLE,
@@ -42,7 +45,7 @@ public:
     UNDEF = MAX_TYPE
   };						///< Type of stereo Gestalts for matching
 
-  VisionCore *vcore[2];				///< Left and right vision core
+  VisionCore *vcore[2];				///< Left and right vision core		/// TODO public???
   StereoCamera *stereo_cam;			///< Stereo camera parameters
 
   struct PruningParameter			///< Parameters, when pruned image will be processed at stereo core
@@ -54,20 +57,21 @@ public:
   };
   PruningParameter pPara;			///< Pruning parameters of an image.
 
+protected:
+  StereoCore *score;				///< Stereo core
+  Type type;					///< StereoBase Type
+
 private:
   bool enabled;					///< Enabled / disabled Stereo-Gestalt
   bool masking;					///< TODO 
 
-protected:
-	Type type;				///< StereoBase Type
-
 public:
-  static const char* TypeName(Type t);
-  static Type EnumType(const char *type_name);
-
-  StereoBase();
+  StereoBase(StereoCore *sc);
   void EnablePrinciple(bool status);
   bool IsEnabled() {return enabled;}
+
+  static const char* TypeName(Type t);
+  static Type EnumType(const char *type_name);
 
   double MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs);			/// TODO Gehört eigentlich zu den StereoTypes?
   double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);					/// TODO Gehört eigentlich zu den StereoTypes?
@@ -84,7 +88,7 @@ public:
   virtual void Process(int oX, int oY, int sc) = 0;
   virtual void ClearResults() {}						// TODO pure virtual setzen
 
-  virtual void Get3DGestalt(Array<double> &values, int id) {}		// TODO pure virtual setzen
+  virtual void Get3DGestalt(Array<double> &values, int id) {}			// TODO pure virtual setzen ?
 
 };
 

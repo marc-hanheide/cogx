@@ -424,11 +424,11 @@ double Ellipse3D::Compare(Ellipse3D &ell)
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera paramters and functions.
  */
-StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoEllipses::StereoEllipses(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   ellMatches = 0;
 }
 
@@ -441,11 +441,11 @@ StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase
  */
 void StereoEllipses::DrawMatched(int side, bool single, int id, int detail)
 {
-	if(single)
-		DrawSingleMatched(side, id, detail);
-	else
-		for(int i=0; i<candMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+    DrawSingleMatched(side, id, detail);
+  else
+    for(int i=0; i<candMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
 /**
@@ -455,120 +455,120 @@ void StereoEllipses::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoEllipses::DrawSingleMatched(int side, int id, int detail)
 {
-	if(detail == 0) 			// draw then original ellises of the matching ellipses in 2D
+  if(detail == 0) 			// draw then original ellises of the matching ellipses in 2D
+  {
+    if(id >= 0 && id < ellMatches) 
+    {
+      if(side == LEFT)		// rectified new ellipse
+      {
+	DrawEllipse2D(ellipses[LEFT][id].center.p.x, ellipses[LEFT][id].center.p.y, 
+		      ellipses[LEFT][id].a, ellipses[LEFT][id].b, ellipses[LEFT][id].phi, RGBColor::blue);
+      }
+      if(side == RIGHT)		// rectified new ellipse
+      {
+	DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
+		      ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
+      }
+    }
+  }
+  
+  if(detail == 1)				// draw resulting ellipse
+  {
+	  if(id >= 0 && id < ellMatches) 
+	  {
+		  if(side == LEFT)		// rectified new ellipse
+		  {
+			  DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
+										  ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
+										  ellipse3ds[id].phi_e, RGBColor::blue);				
+			  DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
+										  ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
+										  ellipse3ds[id].phi_e, RGBColor::blue);
+			  for(unsigned i=0; i<6; i++)
+				  DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::yellow);
+		  }
+		  else								// rectified points of right ellipse
+			  for(unsigned i=0; i<6; i++)
+			  {
+				  DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::blue);
+				  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
+			  }
+	  }
+  }
+  
+  if(detail == 2 || detail == 3)		// draw the ellipse candidates, before 3D calculated
+  {
+    if(id >= 0 && id < candMatches) 
+    {
+      DrawEllipse2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y,
+		    ellipses[side][id].a, ellipses[side][id].b, ellipses[side][id].phi, RGBColor::blue);
+    }
+  }
+
+  if(detail == 3)		// draw the candidates, before 3D calculated, with center point and id
+  {
+    if(id >= 0 && id < candMatches) 
+    {
+      DrawPoint2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
+      char id_str[20];
+      snprintf(id_str, 20, "%u", ellipses[side][id].id);
+      DrawText2D(id_str, ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
+    }
+  }
+
+  if(detail == 4)
+  {
+    if(id >= 0 && id < ellMatches) 
+    {
+      if(side == LEFT)
+      {
+	// rectified new ellipse
+	DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
+		      ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
+		      ellipse3ds[id].phi_e, RGBColor::blue);
+
+	// draw epipolar lines
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipses[LEFT][id].center.p.x, ellipses[LEFT][id].center.p.y, 
-											ellipses[LEFT][id].a, ellipses[LEFT][id].b, ellipses[LEFT][id].phi, RGBColor::blue);
-			}
-			if(side == RIGHT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
-											ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
-			}
-		}
+	  DrawLine2D(0, ellipse3ds[id].y_g[i], 640, ellipse3ds[id].y_g[i], RGBColor::red);
 	}
+
+	// draw solutions
+	for(unsigned i=0; i<6; i++)
+	{
+	  DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
+						  ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
+	  DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
+						  ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
+	  DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
+						  ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
+	  DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
+						  ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
+
+	  char id_str[20];
+	  snprintf(id_str, 20, "%u", i);
+	  DrawText2D(id_str, ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i], RGBColor::blue);
+	}
+      }
+
+      if(side == RIGHT)
+      {
+	// draw epipolar lines
+	for(unsigned i=0; i<6; i++)
+	  DrawLine2D(0, ellipses[side][id].hullPoint[i].pr.y, 640, ellipses[side][id].hullPoint[i].pr.y, RGBColor::red);
 	
-	if(detail == 1)				// draw resulting ellipse
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);				
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);
-				for(unsigned i=0; i<6; i++)
-					DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::yellow);
-			}
-			else								// rectified points of right ellipse
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::blue);
-					DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
-				}
-		}
+	  // rectified points of right ellipse
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
+
+	  char id_str[20];
+	  snprintf(id_str, 20, "%u", i);
+	  DrawText2D(id_str, ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::blue);
 	}
-	
-	if(detail == 2 || detail == 3)		// draw the ellipse candidates, before 3D calculated
-	{
-		if(id >= 0 && id < candMatches) 
-		{
-			DrawEllipse2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y,
-										ellipses[side][id].a, ellipses[side][id].b, ellipses[side][id].phi, RGBColor::blue);
-		}
-	}
-
-	if(detail == 3)		// draw the candidates, before 3D calculated, with center point and id
-	{
-		if(id >= 0 && id < candMatches) 
-		{
-			DrawPoint2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
-			char id_str[20];
-			snprintf(id_str, 20, "%u", ellipses[side][id].id);
-			DrawText2D(id_str, ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
-		}
-	}
-
-	if(detail == 4)
-	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)
-			{
-				// rectified new ellipse
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);
-
-				// draw epipolar lines
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawLine2D(0, ellipse3ds[id].y_g[i], 640, ellipse3ds[id].y_g[i], RGBColor::red);
-				}
-
-				// draw solutions
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-
-					char id_str[20];
-					snprintf(id_str, 20, "%u", i);
-					DrawText2D(id_str, ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i], RGBColor::blue);
-				}
-			}
-
-			if(side == RIGHT)
-			{
-				// draw epipolar lines
-				for(unsigned i=0; i<6; i++)
-					DrawLine2D(0, ellipses[side][id].hullPoint[i].pr.y, 640, ellipses[side][id].hullPoint[i].pr.y, RGBColor::red);
-				
-				for(unsigned i=0; i<6; i++)
-				{
-					// rectified points of right ellipse
-					DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
-
-					char id_str[20];
-					snprintf(id_str, 20, "%u", i);
-					DrawText2D(id_str, ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::blue);
-				}
-			}
-		}
-	}
+      }
+    }
+  }
 }
 
 /**

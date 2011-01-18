@@ -32,8 +32,8 @@ TmpFlapAri::TmpFlapAri(FlapAri *flap)
  */
 void TmpFlapAri::RePrune(int oX, int oY, int sc)
 {
-	surf[0].RePrune(oX, oY, sc);
-	surf[1].RePrune(oX, oY, sc);
+  surf[0].RePrune(oX, oY, sc);
+  surf[1].RePrune(oX, oY, sc);
 }
 
 /**
@@ -116,11 +116,11 @@ bool Flap3DAri::Reconstruct(StereoCamera *stereo_cam, TmpFlapAri &left, TmpFlapA
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoFlapsAri::StereoFlapsAri(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoFlapsAri::StereoFlapsAri(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   flapMatches = 0;
 }
 

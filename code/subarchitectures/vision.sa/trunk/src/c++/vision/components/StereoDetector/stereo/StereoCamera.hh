@@ -54,11 +54,11 @@ public:
   class MonoParam
   {
   public:
-    int width, height;						///< Width and heigt of the image in pixels.
-    double fx, fy, cx, cy;				///< focal length and principal points
+    int width, height;			///< Width and heigt of the image in pixels.
+    double fx, fy, cx, cy;		///< focal length and principal points
     double k1, k2, k3, t1, t2;		///< distortion parameters
-    double proj[3][4];						///< TODO ???
-    double rect[3][3];						///< TODO ???
+    double proj[3][4];			///< TODO ???
+    double rect[3][3];			///< TODO ???
 
     MonoParam()
     {

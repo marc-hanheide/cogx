@@ -21,27 +21,30 @@ namespace Z
 class Gestalt3D
 {
 public:
+  enum Type
+  {
+    CORNER,
+    RECTANGLE,
+    MAX_TYPE,
+    UNDEF = MAX_TYPE
+  };
+
+protected:
+//  StereoCore *score;
+  Type type;
+  unsigned id;
+  unsigned rank;
 
 private:
-  
-protected:
+  static const char* TypeName(Type t);
+  static const int TypeNameLength(Type t);
+  static Type EnumType(const char *type_name);
+
 
 public:
+  Gestalt3D(/*StereoCore *sc, */Type t);
+  Type GetType() const {return type;}
 
-  Gestalt3D();
-
-};
-
-
-/**
- * @brief Class Rectangle3D
- */
-class Rectangle3D : public Gestalt3D
-{
-public:
-  Surf3D surf;                                                  ///< 3D surface
-
-//   bool Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right);
 };
 
 }
