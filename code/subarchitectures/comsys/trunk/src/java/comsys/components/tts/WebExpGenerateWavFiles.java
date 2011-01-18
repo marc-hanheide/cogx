@@ -1,17 +1,18 @@
+/**
+ * This procedural java code was written by Raveesh for processing bits of information for WebExperiment. Users are required to either do
+ * a code read, or generate a java doc to understand the procedural code. The code is not so neat, as it has been written for some very specific tasks.
+ * As the nature of this task changes, this code will also need a change.
+ * Date: Jan 2010
+ */
 package comsys.components.tts;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 import java.util.*;
 
-import de.dfki.lt.mary.client.MaryClient;
+import marytts.client.MaryClient;
 
-public class RavGenerateWavFiles {
+public class WebExpGenerateWavFiles {
 	private static Boolean debug=true;
 	private static String g_Lang="";
 	private static String l_tuneA="A"; //is that a red@L* box HH%
@@ -110,8 +111,8 @@ public class RavGenerateWavFiles {
 		ProsodicTextToRawMARYXml l_prs2xml = new ProsodicTextToRawMARYXml(l_rawmary,l_outputloc_mary,"misc");
 		
 		
-		MaryClient l_mary = new MaryClient("localhost", 59125);
-		//MaryClient l_mary = MaryClient.getMaryClient();
+		//MaryClient l_mary = new MaryClient("localhost", 59125);
+		MaryClient l_mary = MaryClient.getMaryClient();
 		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", g_Lang, false, "WAVE");
 		SynthesisRAWMaryXMLInput l_synthsis = new SynthesisRAWMaryXMLInput(l_ttslocal);
 		
