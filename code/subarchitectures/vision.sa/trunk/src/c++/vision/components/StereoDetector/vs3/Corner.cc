@@ -19,27 +19,28 @@ namespace Z
  */
 Corner::Corner(VisionCore *vc, Array<LJunction*> j, Array<Line*> l, Array<unsigned> np) : Gestalt(vc, CORNER)
 {
-	ljcts = j;
-	lines = l;
-	near_points = np;
-	
-	// Add the new created corner to the lines
-	for(unsigned i=0; i<lines.Size(); i++)
-		lines[i]->corners[near_points[i]].PushBack(this);
-	
-// printf("ljcts: ");
+  ljcts = j;
+  lines = l;
+  near_points = np;
+  
+  // Add the new created corner to the lines
+  for(unsigned i=0; i<lines.Size(); i++)
+    lines[i]->corners[near_points[i]].PushBack(this);
+  
+  
+// printf("NEW CORNER: ljcts: ");
 // for(unsigned i=0; i<ljcts.Size(); i++)
 // {
-// 	printf("%u  ", ljcts[i]->ID());
+//   printf("%u  ", ljcts[i]->ID());
 // }
 // printf("\nlines: ");
 // for(unsigned i=0; i<lines.Size(); i++)
 // {
-// 	printf("%u@%u  ", lines[i]->ID(), near_points[i]);
+//   printf("%u@%u  ", lines[i]->ID(), near_points[i]);
 // }
 // printf("\n");
 
-	CalculateProperties();
+  CalculateProperties();
 }
 
 
@@ -76,42 +77,43 @@ Corner::Corner(VisionCore *vc, Array<LJunction*> j, Array<Line*> l, Array<unsign
  */
 void Corner::CalculateProperties()
 {
-	// get the mean between the intersection points
-	Vector2 zw;
-	zw.x = 0;	zw.y = 0;
-	unsigned counter = 0;
-	gap = 0.;
-	for(unsigned i=0; i<ljcts.Size(); i++)
-	{
-		zw += ljcts[i]->isct;
-		counter++;
-	}
-	isct = zw / (double) counter;
+  // get the mean between the intersection points
+  Vector2 zw;
+  zw.x = 0;
+  zw.y = 0;
+  unsigned counter = 0;
+  gap = 0.;
+  for(unsigned i=0; i<ljcts.Size(); i++)
+  {
+    zw += ljcts[i]->isct;
+    counter++;
+  }
+  isct = zw / (double) counter;
 // printf("Corner::CalculateIntersection: intersection: %4.3f - %4.3f\n", isct.x, isct.y);
 
-	// calculate mean gap to the new intersection point!
-	zw.x = 0;	zw.y = 0;
-	counter = 0;
-	for(unsigned i=0; i<ljcts.Size(); i++)
-	{
-		Vector2 zwi = ljcts[i]->isct - isct;
+  // calculate mean gap to the new intersection point!
+  zw.x = 0;	zw.y = 0;
+  counter = 0;
+  for(unsigned i=0; i<ljcts.Size(); i++)
+  {
+	  Vector2 zwi = ljcts[i]->isct - isct;
 // printf("Corner::CalculateIntersection: zwi: %4.3f - %4.3f\n", zwi.x, zwi.y);
 // printf("Corner::CalculateIntersection: gap: %4.3f\n", Length(zwi));
-		gap += Length(zwi);
-		counter++;
-	}
-  gap /= (double) counter;
+	  gap += Length(zwi);
+	  counter++;
+  }
+gap /= (double) counter;
 
 // printf("Corner::CalculateIntersection: mean gap: %4.3f\n", gap);
-	
-	// calculate angles
-	for(unsigned i=0; i<lines.Size(); i++)
-	{
-		Vector2 zwi = lines[i]->point[Other(near_points[i])] - isct;
-		double ang = PolarAngle(zwi);
+  
+  // calculate angles
+  for(unsigned i=0; i<lines.Size(); i++)
+  {
+	  Vector2 zwi = lines[i]->point[Other(near_points[i])] - isct;
+	  double ang = PolarAngle(zwi);
 // printf("Corner::CalculateIntersection: angles: %4.0f\n", ang*180/M_PI);
-		angle.PushBack(ang);
-	}
+	  angle.PushBack(ang);
+  }
 }
 
 /*

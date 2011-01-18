@@ -22,16 +22,16 @@ class FormRectangles : public GestaltPrinciple
 {
 private:
 
-	/**
-	* @brief TempLine
-	*/
-	struct TempLine
-	{
-		Vector2 p;  ///< some point on the line
-		Vector2 d;  ///< direction of the line
+  /**
+  * @brief TempLine
+  */
+  struct TempLine
+  {
+    Vector2 p;    ///< some point on the line
+    Vector2 d;    ///< direction of the line
 
-		TempLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
-	};
+    TempLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
+  };
 
   void Rank();
   void Mask();
