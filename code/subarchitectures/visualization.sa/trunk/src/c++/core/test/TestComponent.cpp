@@ -265,23 +265,28 @@ void VideoViewer::runComponent()
     m_display.setObject("Visualization.test.SVG-Ani", "shapes", str.str());
   }
 #if HAS_LIBPLOT
+#define YY(y) -(y)
   {
     if (1) {
       std::ostringstream ssvg;
       cogx::display::CSvgStringPlotter p(ssvg);
 
       p.openpl();
-      p.removeViewport();
-
-      p.flinewidth (1.0);        // line thickness in user coordinates
+      p.flinewidth (2.0);        // line thickness in user coordinates
       p.pencolorname ("red");    // path will be drawn in red
       int a = 160;
       int b = 240;
-      p.line(a, a, b, b);
-      p.line(0, b, 2*a, b);
-      p.line(2*a, 0, 2*a, b);
-      p.line(a, a, -a, a);
-      p.line(-a, a, b, b);
+      p.line(a, YY(a), b, YY(b));
+      p.line(0, YY(b), 4*a, YY(b));
+      p.line(2*a, YY(0), 2*a, YY(2*b));
+      p.line(a, YY(a), -a, YY(a));
+      p.line(-a, YY(a), b, YY(b));
+      p.fontsize(20);
+      p.fontname("serif");
+      p.framecolor("yellow");
+      p.fframewidth(3);
+      p.textangle(30);
+      p.fframedtext(a, YY(a), "Coordinate test");
       p.closepl();
 
       string s = p.getScreenSvg();

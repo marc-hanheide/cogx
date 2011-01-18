@@ -25,32 +25,98 @@ namespace cogx { namespace display {
 // A helper class for libplot.
 //
 // The funcion getScreenSvg() will create an SVG string suitable for drawing on
-// screen with pixel coordinates.
+// screen with pixel coordinates. This means that it will remove viewport/image
+// size information from the <svg> tag.
+//
+// When the viewport information is removed from the SVG image QtSvg can
+// calculate the viewport R from vector data in the SVG image. To precisely
+// position such an image to the screen (in screen coordinates), the image has
+// to be translated with T.translate(R.left, R.top) in QtSvg.
+//
+// The alternative would be to calculate the viewport and image size based on
+// some predefined screen size. The drawback of this approach is that at least
+// in QtSvg all graphic elements are clipped to the viewport. In our application
+// it is possible that some elemets extend beyond the limits of the screen and
+// would thus be clipped.
+//
+// IMPORTANT: All drawing commands should use -y instead of y. By default
+// Plotter uses non-flipped coordinates, ie. y+ is up. Screen and SVG
+// coordiantes are flipped, ie. y+ is down. For compatibility with other
+// plotters SVGPlotter uses non-flipped coordinates and applies the
+// transformation scale(1,-1) to the resulting plot. To compensate, all texts
+// are also (unconditionally) transformed with scale(1,-1) otherwise they would
+// all be flipped vertically.
+//
+// Unfortunately we can't just apply scale(1,-1) to the plot because this will
+// make all texts upside-down. Scaling each text with fscale(1,-1) also doesn't
+// work because it moves the text to a different location. The only (known) way 
+// to remove scale(1,-1) from SVG texts is to use a negative ysize in PAGESIZE,
+// which also implies negative y coordinates.
+//
+// SUGGESTION: use #define YY(y) -(y) in your application.
 class CSvgStringPlotter: public SVGPlotter
 {
    std::ostringstream* pStream;
+   double _framewidth;
+   std::string _framecolor;
 public:
    CSvgStringPlotter(std::ostringstream& ssvg) 
       : SVGPlotter(ssvg)
    {
+      parampl("PAGESIZE", (char*)"ysize=-8in");
       pStream = &ssvg;
+      _framewidth = 0;
+      _framecolor = "white";
    }
 
-   // Set the viewport to the default range, flip the Y coordinate and erase -- removes background rect.
-   // Useful when coordinates are pixel coordinates for drawing on screen.
-   // Assumption: openpl() was called. Will erase() the object.
-   void removeViewport()
+   // Open the plotter and remove the background rectangle.
+   int openpl(void)
    {
-      // back to the default viewport
-      fspace (0.0, 0.0, 1.0, 1.0);
-
-      // flip the Y coordinate
-      fscale (1.0, -1.0);
-      ftranslate(0.0, -1.0);
-
-      // remove background rectangle
+      int rv = SVGPlotter::openpl();
       bgcolorname("none");
       erase();
+      return rv;
+   }
+
+   // Put a frame around the text so that it will be included in the calculated
+   // viewport in QtSvg.
+   //
+   // x0 and y0 are the coordinates of the top-left corner.
+   // Default frame width is 0, use fframewidth() to show it.
+   // Default frame color is white. Use framecolor() to change it.
+   void fframedtext(double x0, double y0, const std::string& str)
+   {
+      double fontsize = 20;
+      double angle = 0;
+      if (drawstate) {
+         fontsize = drawstate->font_size;
+         angle = drawstate->text_rotation;
+      }
+      double true_size = ffontsize (fontsize);
+      double width = flabelwidth (str.c_str());
+      savestate();
+      ftranslate(x0, y0);
+      frotate(angle);
+      textangle(0);
+      savestate();
+      pencolorname(_framecolor.c_str());
+      flinewidth(_framewidth);
+      box(0, 0, width+_framewidth, -(true_size+_framewidth));
+      restorestate();
+      move(_framewidth/2, -(_framewidth/2));
+      alabel('l', 't', str.c_str());
+      restorestate();
+   }
+
+   void fframewidth(double width)
+   {
+      _framewidth = width;
+      if (_framewidth < 0) _framewidth = 0;
+   }
+
+   void framecolor(const std::string& color)
+   {
+      _framecolor = color;
    }
 
    // Assumption: closepl() was called.
@@ -67,7 +133,7 @@ public:
    // resulting SVG and apply the translation T.translate(R.left, R.top) to the
    // object.
    //
-   // Assumption: removeViewport() and closepl() were called.
+   // Assumption: closepl() was called.
    std::string getScreenSvg()
    {
       string str = pStream->str();
