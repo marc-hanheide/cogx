@@ -1,0 +1,49 @@
+/**
+ * @file Corner3D.h
+ * @author Andreas Richtsfeld
+ * @date Januray 2011
+ * @version 0.1
+ * @brief Base class for stereo calculated corners in 3D.
+ */
+
+#ifndef Z_CORNER3D_HH
+#define Z_CORNER3D_HH
+
+#include "Gestalt3D.h"
+#include "StereoTypes.h"
+#include "StereoCore.hh"
+
+namespace Z
+{
+
+/**
+ * @brief Class Corner3D
+ */
+class Corner3D : public Gestalt3D
+{
+public:
+  Vertex3D point3D;						///< 3D intersection point
+  Vector3 dir[3];						///< 3D direction of the 3 arms of the L-Junction	/// TODO Calculate
+
+  Corner3D();
+//   bool Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right);
+};
+
+
+inline Array<Gestalt3D*>& Corners3D(StereoCore *score)
+{
+  return score->Gestalts3D(Gestalt3D::CORNER);
+}
+inline Corner3D* Corners3D(StereoCore *score, unsigned id)
+{
+  return (Corner3D*)score->Gestalts3D(Gestalt3D::CORNER, id);
+}
+inline unsigned NumCorners3D(StereoCore *score)
+{
+  return score->NumGestalts3D(Gestalt3D::CORNER);
+}
+
+
+}
+
+#endif
