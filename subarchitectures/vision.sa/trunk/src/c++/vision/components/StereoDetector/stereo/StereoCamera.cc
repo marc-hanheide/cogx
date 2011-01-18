@@ -43,50 +43,50 @@ StereoCamera::StereoCamera()
 bool StereoCamera::ReadSVSCalib(const string &calibfile)
 {
   CDataFile file;
-	if(file.Load(calibfile))
-	{
-		cam[LEFT].width = file.GetInt("pwidth", "left camera");
-		cam[LEFT].height = file.GetInt("pheight", "left camera");
-		cam[LEFT].fx = file.GetFloat("f", "left camera");
-		cam[LEFT].fy = file.GetFloat("fy", "left camera");
-		cam[LEFT].cx = file.GetFloat("Cx", "left camera");
-		cam[LEFT].cy = file.GetFloat("Cy", "left camera");
-		cam[LEFT].k1 = file.GetFloat("kappa1", "left camera");
-		cam[LEFT].k2 = file.GetFloat("kappa2", "left camera");
-		cam[LEFT].k3 = file.GetFloat("kappa3", "left camera");
-		cam[LEFT].t1 = file.GetFloat("tau1", "left camera");
-		cam[LEFT].t2 = file.GetFloat("tau2", "left camera");
-	
-		string str1 = file.GetString("proj", "left camera");
-		istringstream sstr1(str1);
-		ReadMat34(sstr1, cam[LEFT].proj);
-	
-		string str2 = file.GetString("rect", "left camera");
-		istringstream sstr2(str2);
-		ReadMat33(sstr2, cam[LEFT].rect);
-	
-		cam[RIGHT].width = file.GetInt("pwidth", "right camera");
-		cam[RIGHT].height = file.GetInt("pheight", "right camera");
-		cam[RIGHT].fx = file.GetFloat("f", "right camera");
-		cam[RIGHT].fy = file.GetFloat("fy", "right camera");
-		cam[RIGHT].cx = file.GetFloat("Cx", "right camera");
-		cam[RIGHT].cy = file.GetFloat("Cy", "right camera");
-		cam[RIGHT].k1 = file.GetFloat("kappa1", "right camera");
-		cam[RIGHT].k2 = file.GetFloat("kappa2", "right camera");
-		cam[RIGHT].k3 = file.GetFloat("kappa3", "right camera");
-		cam[RIGHT].t1 = file.GetFloat("tau1", "right camera");
-		cam[RIGHT].t2 = file.GetFloat("tau2", "right camera");
-	
-		string str3 = file.GetString("proj", "right camera");
-		istringstream sstr3(str3);
-		ReadMat34(sstr3, cam[RIGHT].proj);
-	
-		string str4 = file.GetString("rect", "right camera");
-		istringstream sstr4(str4);
-		ReadMat33(sstr4, cam[RIGHT].rect);
-	
-		return true;
-	} else return false;
+  if(file.Load(calibfile))
+  {
+    cam[LEFT].width = file.GetInt("pwidth", "left camera");
+    cam[LEFT].height = file.GetInt("pheight", "left camera");
+    cam[LEFT].fx = file.GetFloat("f", "left camera");
+    cam[LEFT].fy = file.GetFloat("fy", "left camera");
+    cam[LEFT].cx = file.GetFloat("Cx", "left camera");
+    cam[LEFT].cy = file.GetFloat("Cy", "left camera");
+    cam[LEFT].k1 = file.GetFloat("kappa1", "left camera");
+    cam[LEFT].k2 = file.GetFloat("kappa2", "left camera");
+    cam[LEFT].k3 = file.GetFloat("kappa3", "left camera");
+    cam[LEFT].t1 = file.GetFloat("tau1", "left camera");
+    cam[LEFT].t2 = file.GetFloat("tau2", "left camera");
+
+    string str1 = file.GetString("proj", "left camera");
+    istringstream sstr1(str1);
+    ReadMat34(sstr1, cam[LEFT].proj);
+
+    string str2 = file.GetString("rect", "left camera");
+    istringstream sstr2(str2);
+    ReadMat33(sstr2, cam[LEFT].rect);
+
+    cam[RIGHT].width = file.GetInt("pwidth", "right camera");
+    cam[RIGHT].height = file.GetInt("pheight", "right camera");
+    cam[RIGHT].fx = file.GetFloat("f", "right camera");
+    cam[RIGHT].fy = file.GetFloat("fy", "right camera");
+    cam[RIGHT].cx = file.GetFloat("Cx", "right camera");
+    cam[RIGHT].cy = file.GetFloat("Cy", "right camera");
+    cam[RIGHT].k1 = file.GetFloat("kappa1", "right camera");
+    cam[RIGHT].k2 = file.GetFloat("kappa2", "right camera");
+    cam[RIGHT].k3 = file.GetFloat("kappa3", "right camera");
+    cam[RIGHT].t1 = file.GetFloat("tau1", "right camera");
+    cam[RIGHT].t2 = file.GetFloat("tau2", "right camera");
+
+    string str3 = file.GetString("proj", "right camera");
+    istringstream sstr3(str3);
+    ReadMat34(sstr3, cam[RIGHT].proj);
+
+    string str4 = file.GetString("rect", "right camera");
+    istringstream sstr4(str4);
+    ReadMat33(sstr4, cam[RIGHT].rect);
+
+    return true;
+  } else return false;
 }
 
 /**

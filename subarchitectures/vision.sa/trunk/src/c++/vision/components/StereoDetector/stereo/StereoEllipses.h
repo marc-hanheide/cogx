@@ -104,7 +104,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoEllipses(VisionCore *vc[2], StereoCamera *sc);
+  StereoEllipses(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
   ~StereoEllipses() {}
 
   int NumEllipsesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE);}		///< 

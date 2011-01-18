@@ -157,11 +157,11 @@ bool Cube3D::Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoCubes::StereoCubes(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoCubes::StereoCubes(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   cubeMatches = 0;
 }
 

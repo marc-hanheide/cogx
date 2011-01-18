@@ -77,7 +77,7 @@ private:
 	void DrawSingleMatched(int side, int id, int detail);
 
 public:
-	StereoClosures(VisionCore *vc[2], StereoCamera *sc);
+	StereoClosures(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
 	~StereoClosures() {}
 
 	int NumClosures2D(int side);

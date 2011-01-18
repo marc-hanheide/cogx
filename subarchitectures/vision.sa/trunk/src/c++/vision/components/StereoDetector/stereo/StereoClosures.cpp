@@ -84,11 +84,11 @@ void TmpClosure::Fuddle(unsigned off0)
  * @brief Constructor of StereoClosures: Calculate stereo matching of closures
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoClosures::StereoClosures(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoClosures::StereoClosures(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   closMatches = 0;
 }
 
