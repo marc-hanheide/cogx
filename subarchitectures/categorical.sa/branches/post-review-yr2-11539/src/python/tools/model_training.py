@@ -94,7 +94,7 @@ def endStep():
 # ========================================
 class Paths():
     # ------------------------------------
-    def __init__(self, modelName, leaveTempFiles):
+    def __init__(self, modelName, leaveTempFiles = False):
         self.tempDir=""
         # Logger
         self.logger = logging.getLogger()
@@ -109,8 +109,12 @@ class Paths():
         self.binDir = self.cogxRoot + "/output/bin"
         self.configDir = self.cogxRoot + "/subarchitectures/categorical.sa/config"
         self.modelDir = self.cogxRoot + "/subarchitectures/categorical.sa/models/" + modelName
+        self.includesDir = self.cogxRoot + "/instantiations/includes/categorical.sa"
+
+    # ------------------------------------
+    def createPaths(self):
         # Setup the temporary dir
-        self.tempDir = tempfile.mkdtemp('_categorical.sa_'+modelName)
+        self.tempDir = tempfile.mkdtemp('_categorical.sa_'+self.modelName)
         # Setup the model dir
         if os.path.exists(self.modelDir):
             if not os.path.isdir(self.modelDir):
@@ -149,6 +153,10 @@ class Paths():
         return self.configDir + "/" + fileName
 
     # ------------------------------------
+    def getIncludesFile(self, fileName):
+        return self.includesDir + "/" + fileName
+
+    # ------------------------------------
     def getTempFile(self, fileName):
         return self.tempDir + "/" + fileName
 
@@ -164,6 +172,7 @@ def initPaths(modelName, leaveTempFiles):
     global paths
     try:
         paths = Paths(modelName, leaveTempFiles)
+        paths.createPaths()
     except Exception as e:
         logger.info("")
         logger.error("Error while initializing paths!\n"+str(e))        
