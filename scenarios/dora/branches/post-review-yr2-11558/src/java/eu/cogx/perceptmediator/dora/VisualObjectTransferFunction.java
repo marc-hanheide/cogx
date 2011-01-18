@@ -144,8 +144,7 @@ public class VisualObjectTransferFunction
 		} catch (BeliefException e) {
 			component.logException(e);
 		} catch (UnknownSubarchitectureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			component.logException(e);
 		}
 	}
 }
