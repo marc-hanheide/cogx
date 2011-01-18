@@ -95,6 +95,7 @@ def endStep():
 class Paths():
     # ------------------------------------
     def __init__(self, modelName, leaveTempFiles):
+        self.tempDir=""
         # Logger
         self.logger = logging.getLogger()
         # Paths
@@ -138,7 +139,9 @@ class Paths():
     def cleanTempDir(self):
         if not self.leaveTempFiles:
             self.logger.info(startStep()+"Cleaning temporary files...")
-            shutil.rmtree(self.tempDir)
+            if os.path.exists(self.tempDir):
+                if os.path.isdir(self.tempDir):
+                    shutil.rmtree(self.tempDir)
             self.logger.info(endStep()+"Done!")
 
     # ------------------------------------
@@ -164,6 +167,7 @@ def initPaths(modelName, leaveTempFiles):
     except Exception as e:
         logger.info("")
         logger.error("Error while initializing paths!\n"+str(e))        
+        sys.exit()
 
 
 # ========================================
@@ -375,6 +379,7 @@ class Trainer():
         except Exception as e:
             self.logger.info("")
             self.logger.error(e)
+            sys.exit()
 
 
 # ========================================
@@ -462,7 +467,7 @@ class ShapeTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: Full gamma cross-validation")
+            inf.write("Parameter selection: Full gamma cross-validation\n")
             inf.write("Features: geometrical features\n")
             inf.write("SVM Kernel: Gaussian\n")
             inf.write("SVM Multi-class: One-against-all\n")
@@ -534,7 +539,7 @@ class ShapeTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: Reduced gamma cross-validation")
+            inf.write("Parameter selection: Reduced gamma cross-validation\n")
             inf.write("Features: geometrical features\n")
             inf.write("SVM Kernel: Gaussian\n")
             inf.write("SVM Multi-class: One-against-all\n")
@@ -591,7 +596,7 @@ class ShapeTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: No parameter selection (default used)")
+            inf.write("Parameter selection: No parameter selection (default used)\n")
             inf.write("Features: geometrical features\n")
             inf.write("SVM Kernel: Gaussian\n")
             inf.write("SVM Multi-class: One-against-all\n")
@@ -614,7 +619,7 @@ class AppearanceTrainer(Trainer):
                    "1",   "1.33352",  "1.77828",  "2.37137",  "3.16228",  "4.21697",  "5.62341",  "7.49894",
                    "10",  "13.3352",  "17.7828",  "23.7137",  "31.6228" ]
     
-    defaultBestGamma = "0.3"
+    defaultBestGamma = "2.0"
 
 
     # ------------------------------------
@@ -675,7 +680,7 @@ class AppearanceTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: Full gamma cross-validation")
+            inf.write("Parameter selection: Full gamma cross-validation\n")
             inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
             inf.write("SVM Kernel: Chi2\n")
             inf.write("SVM Multi-class: One-against-all\n")
@@ -734,7 +739,7 @@ class AppearanceTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: Reduced gamma cross-validation")
+            inf.write("Parameter selection: Reduced gamma cross-validation\n")
             inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
             inf.write("SVM Kernel: Chi2\n")
             inf.write("SVM Multi-class: One-against-all\n")
@@ -778,7 +783,7 @@ class AppearanceTrainer(Trainer):
             inf.write("Training sets:\n")
             for d in self.dataSets:
                 inf.write(" - %s\n" % d)
-            inf.write("Parameter selection: No parameter selection (default used)")
+            inf.write("Parameter selection: No parameter selection (default used)\n")
             inf.write("Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)\n")
             inf.write("SVM Kernel: Chi2\n")
             inf.write("SVM Multi-class: One-against-all\n")
