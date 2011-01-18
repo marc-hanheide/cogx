@@ -350,6 +350,9 @@ sequence<OneObj> ObjSeq;
   };
 
 
+  /**
+   * The segmentation mask is a grayscale image.
+   */
   struct SegmentMask {
     int width;
     int height;
