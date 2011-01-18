@@ -3,7 +3,7 @@ package comsys.components.tts;
 import java.io.BufferedReader;
 import java.io.FileReader;
 //import marytts.client.MaryClient;
-import de.dfki.lt.mary.client.*;
+import marytts.client.*;
 
 import comsys.components.tts.TTSLocal;
 //import marytts.client.http.Address;
@@ -20,7 +20,8 @@ public SynthesisRAWMaryXMLInput(TTSLocal i_ttslocal){
 	 */
 	public static void main(String[] args){
 		try {
-			MaryClient l_mary = new MaryClient("localhost", 59125);
+			MaryClient l_mary =  MaryClient.getMaryClient();
+			//MaryClient l_mary = new MaryClient("localhost", 59125);
 			TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", args[1], false, "WAVE");
 			l_ttslocal.m_AudioFileName=args[1];
 			l_ttslocal.m_SaveAudio2Wav=Boolean.valueOf(args[2]);

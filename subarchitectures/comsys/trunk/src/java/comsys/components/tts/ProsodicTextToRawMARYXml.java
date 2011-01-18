@@ -5,7 +5,7 @@ import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 
-import de.dfki.lt.mary.client.MaryClient;
+import marytts.client.MaryClient;
 
 public class ProsodicTextToRawMARYXml {
 
@@ -22,9 +22,11 @@ public class ProsodicTextToRawMARYXml {
 	private static final String XMLtag_BREAKInd_prefix = new String("breakindex=\"");
 	private static final String XMLtag_BREAKInd_suffix = new String("\"");
 	private static final String XMLtag_BOUNDARY_close = new String("/>");
-	private static String XMLtag_BOUNDARY_pause = new String("6");
+	private static final String XMLtag_en_BOUNDARY_pause = new String("6");
+	private static final String XMLtag_de_BOUNDARY_pause = new String("5");
+	private static String XMLtag_BOUNDARY_pause = new String();
 	
-	private static final String SententialPause = new String ("6");
+	private static final String SententialPause = new String ("5");
 	private static final String IntraSententialPause = new String ("2");
 	private static final String ProsodicKey = new String ("@");
 	private static final String BoundryKey = new String ("%");
@@ -36,11 +38,10 @@ public class ProsodicTextToRawMARYXml {
 	private  String g_stub;
 			
 	private boolean debug=false;
-	/**
-	 * @param i_maryXmlHdr RAWMaryXml header.
-	 * @param i_writeFile2Dir Location to keep the generated XMLFile.
-	 * @param i_stub  a prefix for XMLFilename.
-	 * @param i_prosody text is prosodic.
+	/** This constructor to instantiate a ProsodicTextToRawMARYXml which converts a text with prosodic markers into RAWMaryXML format.
+	 * @param i_maryXmlHdr RAWMaryXml header (Was too lazy to use a smarter way).
+	 * @param i_writeFile2Dir Location to keep/save the generated RAWMaryXML File.
+	 * @param i_stub  a prefix for XML Filename.
 	 */
 	public ProsodicTextToRawMARYXml(String i_maryXmlHdr, String i_writeFile2Dir, String i_stub){
 		this.RAWMARYXMLHead=i_maryXmlHdr;
@@ -48,17 +49,19 @@ public class ProsodicTextToRawMARYXml {
 		this.g_stub=i_stub;
 	}
 	/**	A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename 
+	 *	This function is called from cc_TTS / or other Components requesting Speech Synthesis e.g. EyeTrackerGenerateWavFiles or the main() in this program
+	 * 	Any changes in main() should also be reflected here
 	 * @param inp_prosodictxt text to be spoken.
 	 */
-	//This is a function called from cc_TTS / or other Components requesting Speech Synthesis
-	// Any changes in main() should also be reflected here
+	//
 	public  String ConvertToRawMarxXml(String i_prosodictxt){
 		if(debug){
 			System.out.println("Convert to XML got: " + i_prosodictxt);
 		}
 		
 		StringBuffer l_str2xml =new StringBuffer();
-		//tokenize the input string
+		
+		//First tokenize the input string
 		StringTokenizer l_tkns = new StringTokenizer(i_prosodictxt," ");
 		Integer l_tkncnt=l_tkns.countTokens();
 		Integer l_bndrycnt=0;
@@ -67,7 +70,7 @@ public class ProsodicTextToRawMARYXml {
 			String l_word=l_tkns.nextToken();
 			String l_returned_xml =new String("");;
 			
-			//token bears accent
+			//if the tokenzed word bears accent
 			if(AccentedWord(l_word)) {
 			l_returned_xml=HandleAccentedWord(l_word);
 			l_str2xml.append(l_returned_xml);
@@ -96,7 +99,7 @@ public class ProsodicTextToRawMARYXml {
 	}
 
 	private static boolean AccentedWord(String i_word){
-		if (i_word.contains(ProsodicKey)) return true; //for the moment we only check for an "@" in accented words. e.g. red_H*, red_L+H*
+		if (i_word.contains(ProsodicKey)) return true; //for the moment we only check for an "@" in accented words. e.g. red_L*, red_L+H*
 		else return false;
 		
 	}
@@ -105,6 +108,12 @@ public class ProsodicTextToRawMARYXml {
 		else return false;
 	}
 	
+	/**
+	 * This piece of code prepares the RawMaryXml equivalent of a accent bearing word. 
+	 * e.g red@H* -> <t accent="L*">red</t>
+	 * @param i_acc_word a word with accent mark
+	 * @return RAWMaryXML fragment for the accented word
+	 */
 	private String HandleAccentedWord(String i_acc_word) {
 		if(debug){
 			System.out.println("Handle accented word got: " + i_acc_word);
@@ -131,6 +140,12 @@ public class ProsodicTextToRawMARYXml {
 		return l_xml2rtrn.toString();
 
 	}
+	/**
+	 * This piece of code prepares the RawMaryXml equivalent of an unaccent word. 
+	 * e.g red -> <t accent="none">red</t>
+	 * @param i_acc_word a word with accent mark
+	 * @return RAWMaryXML fragment for the unaccented word
+	 */
 	private String HandleUnAccentedWord(String i_acc_word) {
 		if(debug){
 			System.out.println("Handle accented word got: " + i_acc_word);
@@ -148,6 +163,12 @@ public class ProsodicTextToRawMARYXml {
 		return l_xml2rtrn.toString();
 
 	}
+	/**
+	 * This piece of code prepares the RawMaryXml equivalent of a boundary tone 
+	 * e.g red -> <t accent="none">red</t>
+	 * @param i_bndry
+	 * @return
+	 */
 	private String HandleBoundaryTone(String i_bndry){
 		if(debug){
 			System.out.println("Handle boundary tones got: " + i_bndry);
@@ -159,7 +180,19 @@ public class ProsodicTextToRawMARYXml {
 		l_xml2rtrn.append(XMLtag_whitespace);
 		l_xml2rtrn.append(XMLtag_TONE_prefix);
 		
-		 //RawMaryXML takes LL% as L-L%, !LH% as !L-H% and L as L-
+		 //RawMaryXML takes LL% as L-L%, L-% as L-% !LH% as !L-H% and L as L-
+		if(i_bndry.contains("-")){
+		//Boundary tone for German	. This check is not strong enough
+			l_lhs=i_bndry;
+			l_rhs="";
+			
+			 l_xml2rtrn.append(l_lhs);
+			 // l_xml2rtrn.append(XMLtag_hyphen);
+			 //l_xml2rtrn.append(l_rhs);
+			 XMLtag_BOUNDARY_pause=XMLtag_de_BOUNDARY_pause;
+		}
+		else
+		{ //Boundary tones for English
 		 if(i_bndry.length()>2 && i_bndry.length() <5 ){
 			//e.g. LL% as L-L%, !LH% as !L-H%
 			l_lhs=i_bndry.substring(0,1);
@@ -176,6 +209,10 @@ public class ProsodicTextToRawMARYXml {
 		 l_xml2rtrn.append(l_lhs);
 		 l_xml2rtrn.append(XMLtag_hyphen);
 		 l_xml2rtrn.append(l_rhs);
+		 
+		 XMLtag_BOUNDARY_pause=XMLtag_en_BOUNDARY_pause;
+		}
+		
 		 l_xml2rtrn.append(XMLtag_TONE_suffix);
 		 l_xml2rtrn.append(XMLtag_whitespace);
 		 l_xml2rtrn.append(XMLtag_BREAKInd_prefix);
@@ -290,7 +327,8 @@ public static void main(String[] args) {
 	Integer l_substr;
 	//Initialise an Instant of TTS Local.
 	try{
-		MaryClient l_mary = new MaryClient("localhost", 59125);
+		MaryClient l_mary =  MaryClient.getMaryClient();
+		//MaryClient l_mary = new MaryClient("localhost", 59125);
 		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		
 		System.out.println("RAWMARYXMLHead is in file : " + args[1]);

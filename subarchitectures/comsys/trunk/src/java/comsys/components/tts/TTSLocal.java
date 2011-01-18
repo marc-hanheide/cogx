@@ -26,9 +26,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import javax.sound.sampled.*;
-import de.dfki.lt.mary.client.MaryClient;
-
-import de.dfki.lt.signalproc.util.AudioPlayer;
+import marytts.client.MaryClient;
+import marytts.util.data.audio.AudioPlayer;
 
 
 import java.io.File;
@@ -41,16 +40,16 @@ public class TTSLocal {
 
 	// mary client
 	private  MaryClient m_mary ;
+
 	// basic TTS parameters
 	public  String m_inputType = "TEXT_EN";
-	//private  String m_inputType = "RAWMARYXML";
 	private  String m_outputType = "AUDIO";
 	private  String m_audioType = "WAVE";
-	//private  String m_locale = "en_US"; for Mary.4
+	private  String m_locale = "en_US";// Default NLP Unit
+	private String m_effect= "";
 	
 	// The name of the voice to be used
-	//private   String m_voiceName = "female";
-	public   String m_voiceName = "us2"; //MBROLO male sounds
+	public String m_voiceName = "us2"; //Default male sounds
 		
 	// System lock
 	protected boolean m_isFree = true ;
@@ -61,18 +60,19 @@ public class TTSLocal {
 	//Prosodic changes 
 	private ByteArrayOutputStream m_baos;
 	
+	//Save wav file
 	public  boolean m_SaveAudio2Wav=false;
 	public  String m_AudioFileName=null;
 	
 	/** 
-	 * Create a local TTS system.
-	 *
-	 * @param mary A mary client
-	 * @param voiceName a string representing the voice name 
-	          (must correspond to one voice installed on the mary server)
-	* @param m_bSilentMode true if system must remain silent, false otherwise
+	 * Constructor for a local TTS
+	 * @param mary  an Instance of Mary client
+	 * @param inputType Type of input: text, rawmaryxml,...
+	 * @param voiceName us2, de7,...Mary voices for speech synthesis 
+	 * (must correspond to one voice installed on the Mary server)
+	 * @param bSilentMode true if system must remain silent, false otherwise
+	 * @param audioType	Speech output format e.g. WAV, AUDIO
 	*/
-	
 	public TTSLocal (MaryClient mary, String inputType, String voiceName, boolean bSilentMode,  String audioType) {
 			this.m_mary = mary ;
 			this.m_inputType = inputType;
@@ -81,14 +81,23 @@ public class TTSLocal {
 			this.m_audioType = audioType;
 							
 	}
-	/* for Mary.4
-	public TTSLocal (MaryClient mary, String voiceName, boolean bSilentMode, String locale, String audioType) {
-		this.m_mary = mary ;
-		this.m_voiceName = voiceName ;
-		this.m_bSilentMode = bSilentMode ;
-		this.m_audioType = audioType;
-		this.m_locale=locale;
-}*/
+	
+	/**
+	 * This constructor takes the Effect type argument in addition to the other standard parameters.
+	 * @param mary  an Instance of Mary client
+	 * @param inputType Type of input: text, rawmaryxml,...
+	 * @param voiceName us2, de7...Mary voices for speech synthesis
+	 * @param bSilentMode silent (no idea what this is)
+	 * @param audioType	Speech output format e.g. WAV, AUDIO
+	 * @param effectType Effect. Ref. MaryClient GUI.
+	 * @param locale a parameter used to distinguish language specific NLP modules in MARY.
+	 * e.g. 'de', 'en_US', 'en_GB'
+	 */
+	public TTSLocal (MaryClient mary, String inputType, String voiceName, boolean bSilentMode,  String audioType, String effectType, String nlpUnit) {
+		this(mary,inputType,voiceName,bSilentMode,audioType);
+		this.m_effect = effectType;
+		this.m_locale = nlpUnit;
+	}
 
 	
 	/**
@@ -104,10 +113,8 @@ public class TTSLocal {
 		   else {
 			   try {
 			   		m_baos = new ByteArrayOutputStream();
-			   		//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-			   		m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-		        
-			    	   
+			   		m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, "", m_effect, null, m_baos);
+			    
 			   		AudioInputStream ais = AudioSystem.getAudioInputStream(
 			   								new ByteArrayInputStream(m_baos.toByteArray()));
 			        LineListener lineListener = new LineListener() {
@@ -161,9 +168,7 @@ public class TTSLocal {
 			   try {
 			         
 					m_baos = new ByteArrayOutputStream();
-			        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-				   	m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-				 				   	 
+			       	m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, "", m_effect, null, m_baos);		   	 
 				   	m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
 		        	System.out.println("Wave file saved to: "+ m_AudioFileName );
 		        	
