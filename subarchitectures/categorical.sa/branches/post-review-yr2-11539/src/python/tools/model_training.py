@@ -653,7 +653,7 @@ class AppearanceTrainer(Trainer):
                 # Train
                 tmpModelFile = paths.getTempFile("tmp-appearance.cmdl")
                 svm=SvmModel(tmpModelFile)
-                svm.train(self.mergedFeatures, "2", g)
+                svm.train(self.mergedFeatures, "5", g)
                 # Test on the test set
                 accuracy=svm.test(self.featureSets[i], paths.getTempFile("tmp-appearance.output"))
                 overAllSetsAccuracy+=accuracy
@@ -666,7 +666,7 @@ class AppearanceTrainer(Trainer):
         sm.mergeSets(self.featureSets, self.mergedFeatures)
         self.modelFile = paths.getModelFile("appearance.cmdl")
         svm = SvmModel(self.modelFile)
-        svm.train(self.mergedFeatures, "2", maxGamma)
+        svm.train(self.mergedFeatures, "5", maxGamma)
         # Writing info file
         self.infoFile = paths.getModelFile("appearance.info")
         self.logger.info(startStep()+"Writing info file...")
@@ -714,7 +714,7 @@ class AppearanceTrainer(Trainer):
             # Train
             tmpModelFile = paths.getTempFile("tmp-appearance.cmdl")
             svm=SvmModel(tmpModelFile)
-            svm.train(self.featureSets[0], "2", g)
+            svm.train(self.featureSets[0], "5", g)
             # Test on the test set
             accuracy=svm.test(self.featureSets[1], paths.getTempFile("tmp-appearance.output"))
             if accuracy > maxAccuracy:
@@ -725,7 +725,7 @@ class AppearanceTrainer(Trainer):
         sm.mergeSets(self.featureSets, self.mergedFeatures)
         self.modelFile = paths.getModelFile("appearance.cmdl")
         svm = SvmModel(self.modelFile)
-        svm.train(self.mergedFeatures, "2", maxGamma)
+        svm.train(self.mergedFeatures, "5", maxGamma)
         # Writing info file
         self.infoFile = paths.getModelFile("appearance.info")
         self.logger.info(startStep()+"Writing info file...")
@@ -769,7 +769,7 @@ class AppearanceTrainer(Trainer):
         sm = SetMerger()
         self.modelFile = paths.getModelFile("appearance.cmdl")
         svm = SvmModel(self.modelFile)
-        svm.train(self.featureSets[0], "2", self.bestGamma)
+        svm.train(self.featureSets[0], "5", self.bestGamma)
         # Writing info file
         self.infoFile = paths.getModelFile("appearance.info")
         self.logger.info(startStep()+"Writing info file...")
