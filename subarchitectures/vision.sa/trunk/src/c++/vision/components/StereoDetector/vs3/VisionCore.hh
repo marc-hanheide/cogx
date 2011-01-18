@@ -63,7 +63,7 @@ public:
   VisionCore(const string &config_name = "");
   ~VisionCore();
   void Configure(const string &config_name);
-  Config& GetConfig() {return config;}													///< Return configuration
+  Config& GetConfig() {return config;}							///< Return configuration
   void NewImage(const IplImage *new_img);
   bool HaveImage() {return img != 0;}														///< Return true, if have image.
   const IplImage* GetImage() {return img;}											///< Returns image (openCV ipl-image)

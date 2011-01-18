@@ -29,13 +29,13 @@ namespace Z
  */
 Rectangle::Rectangle(VisionCore *vc, Closure *c, Vector2 is[4], double par) : Gestalt(vc, RECTANGLE)
 {
-	closure = c;
-	parallelity = par;
+  closure = c;
+  parallelity = par;
 
   for(unsigned i = 0; i < 4; i++)
-		isct[i] = is[i];
+    isct[i] = is[i];
 
-	Init();
+  Init();
 }
 
 
@@ -44,56 +44,56 @@ Rectangle::Rectangle(VisionCore *vc, Closure *c, Vector2 is[4], double par) : Ge
  */
 void Rectangle::Init()
 {
-	// Calculate pixelsupport
+  // Calculate pixelsupport
   data = new unsigned[core->IW()*core->IH()];
-	pixelmass = 0;
-	for (unsigned i=0; i<(core->IW()*core->IH()); i++)
-		data[i] = UNDEF_ID;
-	pixelsupport = CalculateSupport();
+  pixelmass = 0;
+  for (unsigned i=0; i<(core->IW()*core->IH()); i++)
+	  data[i] = UNDEF_ID;
+  pixelsupport = CalculateSupport();
 
-	// get direction (PI) and angle of the two line-pairs
-	unsigned j;
-	Vector2 isctLine[4];
-	for(unsigned i=0; i<4; i++)
-	{
-		if((i+1) > 3) j=0;
-		else j=i+1;
+  // get direction (PI) and angle of the two line-pairs
+  unsigned j;
+  Vector2 isctLine[4];
+  for(unsigned i=0; i<4; i++)
+  {
+	  if((i+1) > 3) j=0;
+	  else j=i+1;
 
-		isctLine[i] = isct[i] - isct[j];
-	}
+	  isctLine[i] = isct[i] - isct[j];
+  }
 
-	Vector2 v[2];
-	v[0] = isctLine[0]-isctLine[2];
-	v[1] = isctLine[1]-isctLine[3];
+  Vector2 v[2];
+  v[0] = isctLine[0]-isctLine[2];
+  v[1] = isctLine[1]-isctLine[3];
 
-	direction[0] = Normalise(v[0]-v[2]);
-	direction[1] = Normalise(v[1]-v[3]);
+  direction[0] = Normalise(v[0]-v[2]);
+  direction[1] = Normalise(v[1]-v[3]);
 
-	phi[0] = ScaleAngle_0_pi(PolarAngle(direction[0]));
-	phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
+  phi[0] = ScaleAngle_0_pi(PolarAngle(direction[0]));
+  phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
 
-	// calculate center point of rectangle
-	centerPoint.x = 0;
-	centerPoint.y = 0;
-	for(unsigned i=0; i<4; i++)
-	{
-		centerPoint.x += isct[i].x;
-		centerPoint.y += isct[i].y;
-	}
-	centerPoint.x = centerPoint.x/4.;
-	centerPoint.y = centerPoint.y/4.;
+  // calculate center point of rectangle
+  centerPoint.x = 0;
+  centerPoint.y = 0;
+  for(unsigned i=0; i<4; i++)
+  {
+	  centerPoint.x += isct[i].x;
+	  centerPoint.y += isct[i].y;
+  }
+  centerPoint.x = centerPoint.x/4.;
+  centerPoint.y = centerPoint.y/4.;
 
-	// calculate maximum distance from centerPoint to one of the corner of the rectangle
-	radius = (isct[0] - centerPoint).Norm();
-	radius = max(radius, (isct[1] - centerPoint).Norm());
-	radius = max(radius, (isct[2] - centerPoint).Norm());
-	radius = max(radius, (isct[3] - centerPoint).Norm());
+  // calculate maximum distance from centerPoint to one of the corner of the rectangle
+  radius = (isct[0] - centerPoint).Norm();
+  radius = max(radius, (isct[1] - centerPoint).Norm());
+  radius = max(radius, (isct[2] - centerPoint).Norm());
+  radius = max(radius, (isct[3] - centerPoint).Norm());
 
-	// calculate inner radius from centerPoint to one of the mid points of the rectangle lines
-	innerRadius = ((isct[0] + isct[1]/2.) - centerPoint).Norm();
-	innerRadius = min(innerRadius,((((isct[1] + isct[2])/2.) - centerPoint).Norm()));
-	innerRadius = min(innerRadius,((((isct[2] + isct[3])/2.) - centerPoint).Norm()));
-	innerRadius = min(innerRadius,((((isct[3] + isct[0])/2.) - centerPoint).Norm()));
+  // calculate inner radius from centerPoint to one of the mid points of the rectangle lines
+  innerRadius = ((isct[0] + isct[1]/2.) - centerPoint).Norm();
+  innerRadius = min(innerRadius,((((isct[1] + isct[2])/2.) - centerPoint).Norm()));
+  innerRadius = min(innerRadius,((((isct[2] + isct[3])/2.) - centerPoint).Norm()));
+  innerRadius = min(innerRadius,((((isct[3] + isct[0])/2.) - centerPoint).Norm()));
 
   CalculateSignificance();
 }

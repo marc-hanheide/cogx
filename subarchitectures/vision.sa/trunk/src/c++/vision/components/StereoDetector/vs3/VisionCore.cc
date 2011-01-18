@@ -97,9 +97,9 @@ void VisionCore::InitGestaltPrinciples()
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     principles[i] = 0;
 
-	principles[GestaltPrinciple::FORM_SEGMENTS] = new FormSegments(this);
+  principles[GestaltPrinciple::FORM_SEGMENTS] = new FormSegments(this);
   principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
-	principles[GestaltPrinciple::FORM_ARCS] = new FormArcs(this);
+  principles[GestaltPrinciple::FORM_ARCS] = new FormArcs(this);
 
   principles[GestaltPrinciple::FORM_CONVEX_ARC_GROUPS] = new FormConvexArcGroups(this);
   principles[GestaltPrinciple::FORM_ARC_JUNCTIONS] = new FormArcJunctions(this);
@@ -128,7 +128,7 @@ void VisionCore::InitGestaltPrinciples()
  */
 void VisionCore::EnableGestaltPrinciple(GestaltPrinciple::Type p)
 {
-  string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
+  std::string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
   config.items[type] = "1";
 }
 
@@ -138,7 +138,7 @@ void VisionCore::EnableGestaltPrinciple(GestaltPrinciple::Type p)
  */
 void VisionCore::DisableGestaltPrinciple(GestaltPrinciple::Type p)
 {
-  string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
+  std::string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
   config.items[type] = "0";
 }
 
@@ -214,44 +214,45 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   try
   {
-		// ----------------------------- //
-		// -------- pre-operate -------- //
-		// ----------------------------- //
-		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
-			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
-				principles[i]->PreOperate();
+    // ----------------------------- //
+    // -------- pre-operate -------- //
+    // ----------------------------- //
+    for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
+      if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
+	principles[i]->PreOperate();
 
-		// ------------------------------------------------------------- //
-		// -------- incremental processing: extend search lines -------- //
-		// ------------------------------------------------------------- //
-		if(vote_img == 0) 
-		{
-		  printf(" VisionCore::ProcessImage: NO VOTE IMAGE AVAILABLE!!!!\n");
-		  return;
-		}
-printf("VisionCore::ProcessImage: start incremental processing: echter start!\n");
-		vote_img->Initialize();			// initialize vote image after creating arcs and lines!
-		do // start
+    // ------------------------------------------------------------- //
+    // -------- incremental processing: extend search lines -------- //
+    // ------------------------------------------------------------- //
+    if(vote_img == 0) 
     {
-			Array<VoteImage::Elem> iscts;
-			unsigned sline;
-			for(unsigned i=0; i<=100; i++)
-				if(vote_img->Extend(sline, iscts))
-					InformNewIntersection(sline, iscts);
+      printf(" VisionCore::ProcessImage: NO VOTE IMAGE AVAILABLE!!!!\n");
+      return;
+    }
+printf("VisionCore::ProcessImage: start incremental processing: echter start!\n");
+
+    vote_img->Initialize();			// initialize vote image after creating arcs and lines!
+    do // start
+    {
+      Array<VoteImage::Elem> iscts;
+      unsigned sline;
+      for(unsigned i=0; i<=100; i++)
+	if(vote_img->Extend(sline, iscts))
+	  InformNewIntersection(sline, iscts);
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
 printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", timespec_diff(&cur, &start));
 
-		// ------------------------------ //
-		// -------- post-operate -------- //
-		// ------------------------------ //
-		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
-			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
-				principles[i]->PostOperate();
+    // ------------------------------ //
+    // -------- post-operate -------- //
+    // ------------------------------ //
+    for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
+      if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
+	principles[i]->PostOperate();
   }
-	catch (exception &e)
+  catch (exception &e)
   {
-		printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
+    printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
     cout << e.what() << endl;
   }
   realRuntime = timespec_diff(&cur, &start);
@@ -262,7 +263,7 @@ printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", t
  */
 void VisionCore::ProcessImage()
 {
-	printf("VisionCore::ProcessImage: warning: function antiquated.\n");
+  printf("VisionCore::ProcessImage: warning: function antiquated.\n");
   try
   {
     for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
@@ -277,9 +278,9 @@ void VisionCore::ProcessImage()
       }
     }
   }
-	catch (exception &e)
+  catch (exception &e)
   {
-		printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
+    printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
     cout << e.what() << endl;
   }
 }
@@ -298,7 +299,7 @@ void VisionCore::Draw(int detail)
  */
 void VisionCore::DrawImage()
 {
-	printf("VisionCore::DrawImage: not yet implemented!\n");
+  printf("VisionCore::DrawImage: not yet implemented!\n");
 //   if(img != 0)
 //     DrawImageRGB24(img->imageData, img->width, img->height);
 }
@@ -365,8 +366,8 @@ void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
  */
 const char* VisionCore::GetInfo(Gestalt::Type type, int id)
 {
-	const char* text = (Gestalts(type, id))->GetInfo();
-	return text;
+  const char* text = (Gestalts(type, id))->GetInfo();
+  return text;
 }
 
 /**
@@ -380,12 +381,12 @@ const char* VisionCore::GetGestaltTypeName(Gestalt::Type type)
   static char info_text[info_size] = "";
   int n = 0;
 
-	n += snprintf(info_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
+  n += snprintf(info_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
 
-	for(int i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
-		n += snprintf(info_text + n, info_size -n, " ");
-	
-	return info_text;
+  for(int i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
+    n += snprintf(info_text + n, info_size -n, " ");
+  
+  return info_text;
 }
 
 /**
@@ -398,10 +399,10 @@ const char* VisionCore::GetGestaltListInfo()
   static char info_text[info_size] = "";
   int n = 0;
 
-	for(int i=0; i < Gestalt::MAX_TYPE; i++)
-		n += snprintf(info_text + n, info_size - n, "%s %u\n", GetGestaltTypeName((Gestalt::Type)i), gestalts[i].Size());
+  for(int i=0; i < Gestalt::MAX_TYPE; i++)
+    n += snprintf(info_text + n, info_size - n, "%s %u\n", GetGestaltTypeName((Gestalt::Type)i), gestalts[i].Size());
 
-	return info_text;
+  return info_text;
 }
 
 /**
@@ -442,16 +443,16 @@ double VisionCore::RunTime()
  */
 void VisionCore::PrintRunTime()
 {
-	printf("Runtime VC:\n");
+  printf("Runtime VC:\n");
   double sum = 0.;
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type) i))
-		{
+    {
       printf("  %s :: %4.3fs\n",(principles[i]->TypeName((GestaltPrinciple::Type) i)), principles[i]->RunTime());
-			sum+= principles[i]->RunTime();
-		}
-	printf("  RUNTIME SUM :: %4.3fs\n", sum);
-	printf("ESTIMATED RUNTIME FOR WHOLE VC: %4.3f\n", realRuntime);
+      sum+= principles[i]->RunTime();
+    }
+  printf("  RUNTIME SUM :: %4.3fs\n", sum);
+  printf("ESTIMATED RUNTIME FOR WHOLE VC: %4.3f\n", realRuntime);
 }
 
 /**
@@ -462,12 +463,12 @@ void VisionCore::PrintRunTime()
  */
 void VisionCore::NewGestalt(GestaltPrinciple::Type type, Gestalt *g, bool inform)
 {
-	Principles(type)->StopRunTime();
-	Gestalts(g->GetType()).PushBack(g);
+  Principles(type)->StopRunTime();
+  Gestalts(g->GetType()).PushBack(g);
   RankedGestalts(g->GetType()).PushBack(g);
   if(inform)
     InformNewGestalt(g->GetType(), g->ID());
-	Principles(type)->StartRunTime();
+  Principles(type)->StartRunTime();
 }
 
 /**
