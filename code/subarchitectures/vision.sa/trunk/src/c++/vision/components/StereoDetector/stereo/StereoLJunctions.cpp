@@ -20,8 +20,8 @@ namespace Z
  */
 TmpLJunction::TmpLJunction(LJunction *ljct)
 {
-	point2D.p.x = ljct->isct.x;
-	point2D.p.y = ljct->isct.y;
+  point2D.p.x = ljct->isct.x;
+  point2D.p.y = ljct->isct.y;
 }
 
 
@@ -33,33 +33,33 @@ TmpLJunction::TmpLJunction(LJunction *ljct)
  */
 void TmpLJunction::RePrune(int oX, int oY, int sc)
 {
-	point2D.RePrune(oX, oY, sc);
+  point2D.RePrune(oX, oY, sc);
 }
 
 /**
- * @brief Rectify TmpFlap
+ * @brief Rectify TmpLJunction
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
 void TmpLJunction::Rectify(StereoCamera *stereo_cam, int side)
 {
-	point2D.Rectify(stereo_cam, side);
+  point2D.Rectify(stereo_cam, side);
 }
 
 
 /**
- * @brief Refine TmpFlap
+ * @brief Refine TmpLJunction
  */
 void TmpLJunction::Refine()
 {
-	point2D.Refine();
+  point2D.Refine();
 }
 
 /**
  * @brief Returns true, if junction is at the x/y-position in the image.
  * @param x X-coordinate in image pixel.
  * @param y Y-coordinate in image pixel.
- * @return Returns true, if flap is at this position.
+ * @return Returns true, if junction is at this position.
  */
 bool TmpLJunction::IsAtPosition(int x, int y) const
 {
@@ -71,15 +71,15 @@ bool TmpLJunction::IsAtPosition(int x, int y) const
 //------------------------- StereoLJunctions ------------------------//
 //-------------------------------------------------------------------//
 /**
- * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
+ * @brief Constructor of StereoLJunctions: Calculate stereo matching of L-junctions
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoLJunctions::StereoLJunctions(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoLJunctions::StereoLJunctions(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
-	ljctMatches = 0;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
+  ljctMatches = 0;
 }
 
 
@@ -93,18 +93,18 @@ StereoLJunctions::StereoLJunctions(VisionCore *vc[2], StereoCamera *sc) : Stereo
 void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
 {
 // printf("StereoLJunctions::DrawMatched!\n");
-	if(single)
-	{
-		if(id < 0 || id >= ljctMatches)
-		{
-			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
-			return;
-		}
-		DrawSingleMatched(side, id, detail);
-	}
-	else
-		for(int i=0; i< ljctMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+  {
+    if(id < 0 || id >= ljctMatches)
+    {
+      printf("StereoLJunctions::DrawMatched: warning: id out of range!\n");
+      return;
+    }
+    DrawSingleMatched(side, id, detail);
+  }
+  else
+    for(int i=0; i< ljctMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
 /**
@@ -115,7 +115,7 @@ void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoLJunctions::DrawSingleMatched(int side, int id, int detail)
 {
-	ljcts[side][id].point2D.Draw();
+  ljcts[side][id].point2D.Draw();
 }
 
 /**
@@ -219,24 +219,24 @@ printf("StereoLJunctions::RecalculateCoordsystem: Not yet implemented!\n");
  */
 unsigned StereoLJunctions::FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l)
 {
-	double match, best_match = HUGE;
-	unsigned j, j_best = UNDEF_ID;				// we start at j and try to find j_best (!=UNDEF_ID)
+  double match, best_match = HUGE;
+  unsigned j, j_best = UNDEF_ID;				// we start at j and try to find j_best (!=UNDEF_ID)
 
-	for(j = l; j < right_ljcts.Size(); j++)
-	{
-		match = MatchingScorePoint(left_ljct.point2D, right_ljcts[j].point2D);
+  for(j = l; j < right_ljcts.Size(); j++)
+  {
+    match = MatchingScorePoint(left_ljct.point2D, right_ljcts[j].point2D);
 
 // printf("      match = %6.5f\n", match);
 // if (match < HUGE)
 // 	printf("  found matching score of right rect %u\n", j);
 
-		if(match < best_match)
-		{
-			best_match = match;
-			j_best = j;
-		}
-	}
-	return j_best;
+    if(match < best_match)
+    {
+      best_match = match;
+      j_best = j;
+    }
+}
+  return j_best;
 }
 
 
@@ -286,8 +286,8 @@ void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Ar
   for(unsigned i = 0; i < u;)
   {
     LJunction3D ljct3d;
-		if (ljct3d.point3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
-		{
+    if (ljct3d.point3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
+    {
       ljct3ds.PushBack(ljct3d);
       i++;
     }
@@ -308,10 +308,10 @@ void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Ar
  */
 void StereoLJunctions::ClearResults()
 {
-	ljcts[LEFT].Clear();
-	ljcts[RIGHT].Clear();
-	ljct3ds.Clear();
-	ljctMatches = 0;
+  ljcts[LEFT].Clear();
+  ljcts[RIGHT].Clear();
+  ljct3ds.Clear();
+  ljctMatches = 0;
 }
 
 
@@ -324,31 +324,31 @@ void StereoLJunctions::Process()
 // printf("StereoLJunctions::Process: implemented!\n");
   for(int side = LEFT; side <= RIGHT; side++)
   {
-		for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::L_JUNCTION); i++)
-		{
-			LJunction *core_ljct = (LJunction*)vcore[side]->Gestalts(Gestalt::L_JUNCTION, i);
-			if(!vcore[side]->use_masking || !core_ljct->IsMasked())
-			{
-				TmpLJunction ljct(core_ljct);
-				if(ljct.IsValid())
-					ljcts[side].PushBack(ljct);
-			}
-		}
-		if(pPara.pruning)
-			for(unsigned i = 0; i < ljcts[side].Size(); i++)
-				ljcts[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
-		for(unsigned i = 0; i < ljcts[side].Size(); i++)
-			ljcts[side][i].Rectify(stereo_cam, side);
-		for(unsigned i = 0; i < ljcts[side].Size(); i++)
-			ljcts[side][i].Refine();
-	}
+    for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::L_JUNCTION); i++)
+    {
+      LJunction *core_ljct = (LJunction*)vcore[side]->Gestalts(Gestalt::L_JUNCTION, i);
+      if(!vcore[side]->use_masking || !core_ljct->IsMasked())
+      {
+	TmpLJunction ljct(core_ljct);
+	if(ljct.IsValid())
+	   ljcts[side].PushBack(ljct);
+      }
+    }
+    if(pPara.pruning)
+      for(unsigned i = 0; i < ljcts[side].Size(); i++)
+	ljcts[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+    for(unsigned i = 0; i < ljcts[side].Size(); i++)
+	ljcts[side][i].Rectify(stereo_cam, side);
+    for(unsigned i = 0; i < ljcts[side].Size(); i++)
+	ljcts[side][i].Refine();
+  }
 
-	// do stereo matching and depth calculation
-	ljctMatches = 0;
+  // do stereo matching and depth calculation
+  ljctMatches = 0;
 // printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
-	MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
+  MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
 // printf("MatchedLJunctions: %u\n", ljctMatches);
-	Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches, ljct3ds);
+  Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches, ljct3ds);
 }
 
 
@@ -358,12 +358,12 @@ void StereoLJunctions::Process()
  */
 void StereoLJunctions::Process(int oX, int oY, int sc)
 {
-	pPara.pruning = true;
-	pPara.offsetX = oX;
-	pPara.offsetY = oY;
-	pPara.scale = sc;
-	Process();
-	pPara.pruning = false;
+  pPara.pruning = true;
+  pPara.offsetX = oX;
+  pPara.offsetY = oY;
+  pPara.scale = sc;
+  Process();
+  pPara.pruning = false;
 }
 
 

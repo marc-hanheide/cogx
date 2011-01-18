@@ -9,10 +9,12 @@
 #ifndef Z_STEREO_RECTS_HH
 #define Z_STEREO_RECTS_HH
 
+#include "StereoCore.hh"
 #include "StereoBase.h"
 #include "StereoCamera.hh"
 #include "Rectangle.hh"
 
+#include "Rectangle3D.h"
 
 namespace Z
 {
@@ -44,32 +46,25 @@ class StereoRectangles : public StereoBase
 private:
 
   Array<TmpRectangle> rectangles[2];                    ///< Tmp. rectangles from the vision cores.
-  Array<Rectangle3D> rectangle3ds;			///< 3D rectangles
   int rectMatches;					///< Number of stereo matched rectangles
 
 #ifdef HAVE_CAST
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
-  void RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pose);
 
+  void RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pose);
   unsigned FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l);
   void MatchRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches);
-  void Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches, Array<Rectangle3D> &rectangle3ds);
+  void Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches);
   void DrawSingleMatched(int side, int id, int detail);
 
-//   Gestalt3D Get3DGestalt(int id) {return (Gestalt3D) rectangle3ds[id];}
-  void Get3DGestalt(Array<double> &values, int id);
-
 public:
-  StereoRectangles(VisionCore *vc[2], StereoCamera *sc);
+  StereoRectangles(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
   ~StereoRectangles() {}
 
   int NumRectangles2D(int side) {return vcore[side]->NumGestalts(Gestalt::RECTANGLE);};
-//	int NumRectanglesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE);}		///< TODO weg
-//	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}	///< TODO weg
 
-  const TmpRectangle &Rectangles2D(int side, int i);
-  const Rectangle3D &Rectangles(int i) {return rectangle3ds[i];}         ///< 
+  const TmpRectangle &Rectangles2D(int side, int i);			///< TODO Public? Überhaupt notwendig?
 
   int NumStereoMatches() {return rectMatches;}                           ///< 
   void DrawMatched(int side, bool single, int id, int detail);
@@ -77,9 +72,6 @@ public:
   void ClearResults();
   void Process();
   void Process(int oX, int oY, int sc);
-  
-//   void Get3DGestalts(Array<Rectangle3D> rects) {rects = rectangle3ds;}
-//   Array<Rectangle3D> Get3DGestalts() { return rectangle3ds;}
 };
 
 }

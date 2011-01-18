@@ -84,7 +84,7 @@ void TmpRectangle::Fuddle(unsigned off0)
  * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoRectangles::StereoRectangles(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];
@@ -101,18 +101,18 @@ StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : Stereo
  */
 void StereoRectangles::DrawMatched(int side, bool single, int id, int detail)
 {
-	if(single)
-	{
-		if(id < 0 || id >= rectMatches)
-		{
-			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
-			return;
-		}
-		DrawSingleMatched(side, id, detail);
-	}
-	else
-		for(int i=0; i< rectMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+  {
+    if(id < 0 || id >= rectMatches)
+    {
+      printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+      return;
+    }
+    DrawSingleMatched(side, id, detail);
+}
+  else
+    for(int i=0; i< rectMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
 /**
@@ -123,7 +123,7 @@ void StereoRectangles::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
 {
-	rectangles[side][id].surf.Draw(detail);
+  rectangles[side][id].surf.Draw(detail);
 }
 
 /**
@@ -135,42 +135,42 @@ void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
 #ifdef HAVE_CAST
 bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
-	obj->model = new VisionData::GeometryModel;
-	Rectangle3D rectangle = Rectangles(id);
+  obj->model = new VisionData::GeometryModel;
+  Rectangle3D rectangle = Rectangles(id);
 
-	// Recalculate pose of vertices (relative to the pose of the flap == cog)
-	Pose3 pose;
-	RecalculateCoordsystem(rectangle, pose);
+  // Recalculate pose of vertices (relative to the pose of the flap == cog)
+  Pose3 pose;
+  RecalculateCoordsystem(rectangle, pose);
 
-	// add center point to the model
-	cogx::Math::Pose3 cogxPose;
-	cogxPose.pos.x = pose.pos.x;
-	cogxPose.pos.y = pose.pos.y;
-	cogxPose.pos.z = pose.pos.z;
-	obj->pose = cogxPose;
+  // add center point to the model
+  cogx::Math::Pose3 cogxPose;
+  cogxPose.pos.x = pose.pos.x;
+  cogxPose.pos.y = pose.pos.y;
+  cogxPose.pos.z = pose.pos.z;
+  obj->pose = cogxPose;
 
-	// create vertices (relative to the 3D center point)
-	for(unsigned i=0; i<rectangle.surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
-	{
-		VisionData::Vertex v;
-		v.pos.x = rectangle.surf.vertices[i].p.x;
-		v.pos.y = rectangle.surf.vertices[i].p.y;
-		v.pos.z = rectangle.surf.vertices[i].p.z;
-		obj->model->vertices.push_back(v);
-	}
+  // create vertices (relative to the 3D center point)
+  for(unsigned i=0; i<rectangle.surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
+  {
+    VisionData::Vertex v;
+    v.pos.x = rectangle.surf.vertices[i].p.x;
+    v.pos.y = rectangle.surf.vertices[i].p.y;
+    v.pos.z = rectangle.surf.vertices[i].p.z;
+    obj->model->vertices.push_back(v);
+  }
 
-	// add faces to the vision model
-	VisionData::Face f;
-	f.vertices.push_back(0);
-	f.vertices.push_back(1);
-	f.vertices.push_back(2);
-	f.vertices.push_back(3);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
+  // add faces to the vision model
+  VisionData::Face f;
+  f.vertices.push_back(0);
+  f.vertices.push_back(1);
+  f.vertices.push_back(2);
+  f.vertices.push_back(3);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
 
-	obj->detectionConfidence = 1.0;															// TODO detection confidence is always 1
+  obj->detectionConfidence = 1.0;															// TODO detection confidence is always 1
 
-	return true;
+  return true;
 }
 #endif
 
@@ -185,12 +185,13 @@ void StereoRectangles::RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pos
 {
   Vector3 c(0., 0., 0.);
   int cnt = 0;
+
   // find the center of gravity
-	for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
-	{
-		c += rectangle.surf.vertices[i].p;
-		cnt++;
-	}
+  for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
+  {
+    c += rectangle.surf.vertices[i].p;
+    cnt++;
+}
 
   c /= (double)cnt;
   pose.pos.x = c.x;
@@ -205,14 +206,14 @@ void StereoRectangles::RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pos
   // invert to get pose of world w.r.t. flap
   Pose3 inv = pose.Inverse();
 
-	// recalculate the vectors to the vertices from new center point
-	for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
-	{
-		Vector3 p(rectangle.surf.vertices[i].p.x,
-							rectangle.surf.vertices[i].p.y,
-							rectangle.surf.vertices[i].p.z);
-		rectangle.surf.vertices[i].p = inv.Transform(p);
-	}
+  // recalculate the vectors to the vertices from new center point
+  for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
+  {
+    Vector3 p(rectangle.surf.vertices[i].p.x,
+	      rectangle.surf.vertices[i].p.y,
+	      rectangle.surf.vertices[i].p.z);
+	      rectangle.surf.vertices[i].p = inv.Transform(p);
+  }
 }
 
 
@@ -226,31 +227,31 @@ void StereoRectangles::RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pos
 unsigned StereoRectangles::FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l)
 {
 // printf("    FindMatchingRectangle:\n");
-	double match, best_match = HUGE;
-	unsigned j, j_best = UNDEF_ID;
-	unsigned off_0, off_0_best = 0;
+  double match, best_match = HUGE;
+  unsigned j, j_best = UNDEF_ID;
+  unsigned off_0, off_0_best = 0;
 
 // 	bool cross = false, cross_best = false;
-	for(j = l; j < right_rects.Size(); j++)
-	{
+  for(j = l; j < right_rects.Size(); j++)
+  {
 // 		match = MatchingScore(left_rect, right_rects[j], off_0);
 // printf("    find matching score of right rect %u\n", j);
     match = MatchingScoreSurf(left_rect.surf, right_rects[j].surf, off_0);
 // printf("      match = %6.5f\n", match);
-		if(match < best_match)
-		{
-			best_match = match;
-			j_best = j;
+    if(match < best_match)
+    {
+      best_match = match;
+      j_best = j;
 // 			cross_best = cross;
-			off_0_best = off_0;
+      off_0_best = off_0;
 // 			off_1_best = off_1;
-		}
-	}
-	if(j_best != UNDEF_ID)
-	{
-		right_rects[j_best].Fuddle(off_0_best);
-	}
-	return j_best;
+    }
+}
+  if(j_best != UNDEF_ID)
+  {
+    right_rects[j_best].Fuddle(off_0_best);
+  }
+  return j_best;
 }
 
 
@@ -287,20 +288,19 @@ void StereoRectangles::MatchRectangles(Array<TmpRectangle> &left_rects, Array<Tm
 
 /**
  * @brief Calculate 3D rectangles from matched rectangles.
- * @param left_rects Array of all flaps from left stereo image.
- * @param right_rects Array of all flaps from right stereo image.
+ * @param left_rects Array of all rectangles from left stereo image.
+ * @param right_rects Array of all rectangles from right stereo image.
  * @param matches Number of matched rectangles.
- * @param rectangle3ds Array of calculated 3d flaps.
  */
-void StereoRectangles::Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches, Array<Rectangle3D> &rectangle3ds)
+void StereoRectangles::Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches)
 {
   unsigned u = matches;
   for(unsigned i = 0; i < u;)
   {
-    Rectangle3D rectangle3d;
-		if (rectangle3d.surf.Reconstruct(stereo_cam, left_rects[i].surf, right_rects[i].surf, true))
-		{
-      rectangle3ds.PushBack(rectangle3d);
+    Rectangle3D *rectangle3d = new Rectangle3D();
+    if (rectangle3d->surf.Reconstruct(stereo_cam, left_rects[i].surf, right_rects[i].surf, true))
+    {
+      score->NewGestalt3D(rectangle3d);
       i++;
     }
     // move unacceptable flaps to the end
@@ -320,10 +320,9 @@ void StereoRectangles::Calculate3DRectangles(Array<TmpRectangle> &left_rects, Ar
  */
 void StereoRectangles::ClearResults()
 {
-	rectangles[LEFT].Clear();
-	rectangles[RIGHT].Clear();
-	rectangle3ds.Clear();
-	rectMatches = 0;
+  rectangles[LEFT].Clear();
+  rectangles[RIGHT].Clear();
+  rectMatches = 0;
 }
 
 
@@ -334,29 +333,29 @@ void StereoRectangles::Process()
 {
   for(int side = LEFT; side <= RIGHT; side++)
   {
-		for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::RECTANGLE); i++)
-		{
-			Rectangle *core_rectangle = (Rectangle*)vcore[side]->Gestalts(Gestalt::RECTANGLE, i);
-			if(!vcore[side]->use_masking || !core_rectangle->IsMasked())
-			{
-				TmpRectangle rectangle(core_rectangle);
-				if(rectangle.IsValid())
-					rectangles[side].PushBack(rectangle);
-			}
-		}
-		if(pPara.pruning)
-			for(unsigned i = 0; i < rectangles[side].Size(); i++)
-				rectangles[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
-		for(unsigned i = 0; i < rectangles[side].Size(); i++)
-			rectangles[side][i].Rectify(stereo_cam, side);
-		for(unsigned i = 0; i < rectangles[side].Size(); i++)
-			rectangles[side][i].Refine();
-	}
+    for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::RECTANGLE); i++)
+    {
+      Rectangle *core_rectangle = (Rectangle*)vcore[side]->Gestalts(Gestalt::RECTANGLE, i);
+      if(!vcore[side]->use_masking || !core_rectangle->IsMasked())
+      {
+	TmpRectangle rectangle(core_rectangle);
+	if(rectangle.IsValid())
+	  rectangles[side].PushBack(rectangle);
+      }
+    }
+    if(pPara.pruning)
+      for(unsigned i = 0; i < rectangles[side].Size(); i++)
+	rectangles[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+    for(unsigned i = 0; i < rectangles[side].Size(); i++)
+      rectangles[side][i].Rectify(stereo_cam, side);
+    for(unsigned i = 0; i < rectangles[side].Size(); i++)
+      rectangles[side][i].Refine();
+}
 
   // do stereo matching and depth calculation
-	rectMatches = 0;
-	MatchRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches);
-	Calculate3DRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches, rectangle3ds);
+  rectMatches = 0;
+  MatchRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches);
+  Calculate3DRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches);
 }
 
 
@@ -368,37 +367,13 @@ void StereoRectangles::Process()
  */
 void StereoRectangles::Process(int oX, int oY, int sc)
 {
-	pPara.pruning = true;
-	pPara.offsetX = oX;
-	pPara.offsetY = oY;
-	pPara.scale = sc;
-	Process();
-	pPara.pruning = false;
+  pPara.pruning = true;
+  pPara.offsetX = oX;
+  pPara.offsetY = oY;
+  pPara.scale = sc;
+  Process();
+  pPara.pruning = false;
 }
-
-
-/**
- * @brief Get a matched 3D Gestalt
- * @param values Values of a rectangle:
- * 	x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ... corner points of the rectangle
- * @param id ID of result
- */
-void StereoRectangles::Get3DGestalt(Array<double> &values, int id)
-{
-  values.PushBack(rectangle3ds[id].surf.vertices[0].p.x);
-  values.PushBack(rectangle3ds[id].surf.vertices[0].p.y);
-  values.PushBack(rectangle3ds[id].surf.vertices[0].p.z);
-  values.PushBack(rectangle3ds[id].surf.vertices[1].p.x);
-  values.PushBack(rectangle3ds[id].surf.vertices[1].p.y);
-  values.PushBack(rectangle3ds[id].surf.vertices[1].p.z);
-  values.PushBack(rectangle3ds[id].surf.vertices[2].p.x);
-  values.PushBack(rectangle3ds[id].surf.vertices[2].p.y);
-  values.PushBack(rectangle3ds[id].surf.vertices[2].p.z);
-  values.PushBack(rectangle3ds[id].surf.vertices[3].p.x);
-  values.PushBack(rectangle3ds[id].surf.vertices[3].p.y);
-  values.PushBack(rectangle3ds[id].surf.vertices[3].p.z);
-}
-
   
 }
 
