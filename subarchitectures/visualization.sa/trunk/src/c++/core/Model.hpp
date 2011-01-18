@@ -117,6 +117,12 @@ private:
    CPtrVector<CDisplayView> findViewsWaitingFor(const std::string &objectId);
 };
 
+class CDisplayObjectPart
+{
+public:
+   virtual ~CDisplayObjectPart() {}
+};
+
 // The base class for an object to be displayed.
 class CDisplayObject
 {
