@@ -1,0 +1,112 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="comsys" default="compile" basedir=".">
+
+	<!-- Controls where the output goes -->
+	<property name="output.dir" value="../../output/classes" />
+
+        <!-- =================================================================== -->
+        <!-- Add JAR files to classpath                                          -->
+        <!-- =================================================================== -->
+        <path id="build.classpath">
+            <pathelement path="${ice.jar}"/>
+            <pathelement path="${cast.jar}"/>
+            <fileset dir="lib">
+              <include name="**/*.jar"/>
+            </fileset>
+        </path>
+
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java/comsys/components/tts" />
+
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask">
+	</taskdef>
+
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                              -->
+	<!-- =================================================================== -->
+
+
+	<target name="clean">
+	  <echo message="cleaning comsys mess..."/>
+            <delete file="${src.dir}/.depend"/>
+	</target>
+
+	
+	<property name="castslice.dir" value="/usr/local/share"/>
+
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare"  description="any project-specific init">
+	  <mkdir dir="${output.dir}"/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+
+        <target name="expandlibs" depends="prepare">
+           <echo message="Expanding external libraries for comsys.mk5 to output/classes"/>
+           <unzip dest="${output.dir}" src="./lib/nsc.jar"/>       <!-- Nuance for ASR-->
+           <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>    <!-- VOiP for ASR  -->
+           <unzip dest="${output.dir}" src="./lib/jdom.jar"/>       <!-- JDOM for openCCG  -->
+           <unzip dest="${output.dir}" src="./lib/jline.jar"/>      <!-- JLINE for openCCG -->
+           <unzip dest="${output.dir}" src="./lib/trove.jar"/>      <!-- TROVE for openCCG -->
+           <unzip dest="${output.dir}" src="./lib/maryclient.jar"/> <!-- Maryclient for TTS -->         
+</target>
+
+
+
+	<!-- =================================================================== -->
+	<!-- Source generation                                                   -->
+	<!-- =================================================================== -->
+	<target name="slice-lf" depends="prepare" description="generates source from slice">
+ 		 <slice2java tie="true" outputdir="${src.dir}">
+		    <fileset dir="${slice.dir}" includes="LF.ice"/>
+	    <includepath>
+              <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
+	     <pathelement path="${castslice.dir}/cast/slice/"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<target name="slice-comsys" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+	    <fileset dir="${slice.dir}" includes="Comsys.ice"/>
+	    <includepath>
+              <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
+	      <pathelement path="${castslice.dir}/cast/slice/"/>
+	      <pathelement path="${slice.dir}:../../tools/beliefmodels/src/slice"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<target name="slice-abducer" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+	    <fileset dir="${slice.dir}" includes="Abducer.ice"/>
+	    <includepath>
+              <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
+	      <pathelement path="${slice.dir}:../../tools/cast/src/slice"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<target name="slice" depends="slice-lf, slice-comsys, slice-abducer" description="generates source from slice">
+
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="expandlibs" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<classpath refid="build.classpath"/> </javac>
+	</target>
+
+
+
+</project>
