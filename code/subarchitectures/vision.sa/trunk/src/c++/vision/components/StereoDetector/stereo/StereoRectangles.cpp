@@ -136,7 +136,7 @@ void StereoRectangles::DrawSingleMatched(int side, int id, int detail)
 bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
   obj->model = new VisionData::GeometryModel;
-  Rectangle3D rectangle = Rectangles(id);
+  Rectangle3D *rectangle = Rectangles3D(score, id);
 
   // Recalculate pose of vertices (relative to the pose of the flap == cog)
   Pose3 pose;
@@ -150,12 +150,12 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   obj->pose = cogxPose;
 
   // create vertices (relative to the 3D center point)
-  for(unsigned i=0; i<rectangle.surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
+  for(unsigned i=0; i<rectangle->surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
   {
     VisionData::Vertex v;
-    v.pos.x = rectangle.surf.vertices[i].p.x;
-    v.pos.y = rectangle.surf.vertices[i].p.y;
-    v.pos.z = rectangle.surf.vertices[i].p.z;
+    v.pos.x = rectangle->surf.vertices[i].p.x;
+    v.pos.y = rectangle->surf.vertices[i].p.y;
+    v.pos.z = rectangle->surf.vertices[i].p.z;
     obj->model->vertices.push_back(v);
   }
 
@@ -181,15 +181,15 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
  * @param rectangle 3D rectangle
  * @param pose calculated pose
  */
-void StereoRectangles::RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pose)
+void StereoRectangles::RecalculateCoordsystem(Rectangle3D *rectangle, Pose3 &pose)
 {
   Vector3 c(0., 0., 0.);
   int cnt = 0;
 
   // find the center of gravity
-  for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
+  for(unsigned i = 0; i < rectangle->surf.vertices.Size(); i++)
   {
-    c += rectangle.surf.vertices[i].p;
+    c += rectangle->surf.vertices[i].p;
     cnt++;
 }
 
@@ -207,12 +207,12 @@ void StereoRectangles::RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pos
   Pose3 inv = pose.Inverse();
 
   // recalculate the vectors to the vertices from new center point
-  for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
+  for(unsigned i = 0; i < rectangle->surf.vertices.Size(); i++)
   {
-    Vector3 p(rectangle.surf.vertices[i].p.x,
-	      rectangle.surf.vertices[i].p.y,
-	      rectangle.surf.vertices[i].p.z);
-	      rectangle.surf.vertices[i].p = inv.Transform(p);
+    Vector3 p(rectangle->surf.vertices[i].p.x,
+	      rectangle->surf.vertices[i].p.y,
+	      rectangle->surf.vertices[i].p.z);
+	      rectangle->surf.vertices[i].p = inv.Transform(p);
   }
 }
 

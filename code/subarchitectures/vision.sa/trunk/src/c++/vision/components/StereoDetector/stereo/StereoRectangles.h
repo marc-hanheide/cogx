@@ -12,7 +12,7 @@
 #include "StereoCore.hh"
 #include "StereoBase.h"
 #include "StereoCamera.hh"
-#include "Rectangle.hh"
+//#include "Rectangle.h"
 
 #include "Rectangle3D.h"
 
@@ -52,7 +52,7 @@ private:
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
 
-  void RecalculateCoordsystem(Rectangle3D &rectangle, Pose3 &pose);
+  void RecalculateCoordsystem(Rectangle3D *rectangle, Pose3 &pose);
   unsigned FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l);
   void MatchRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches);
   void Calculate3DRectangles(Array<TmpRectangle> &left_rects, Array<TmpRectangle> &right_rects, int &matches);

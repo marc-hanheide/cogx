@@ -250,7 +250,7 @@ void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage
 #ifdef HAVE_CAST
 bool StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj)
 {
-  return stereoGestalts[type]->StereoGestalt2VisualObject(obj, id);
+  return stereoPrinciples[type]->StereoGestalt2VisualObject(obj, id);
 }
 #endif
 
