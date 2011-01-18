@@ -8,6 +8,7 @@ SET(SOURCES Scene2D.cpp)
 add_cast_component(VirtualScene2D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME}
    VisionData
+   ${OPENCV_LDFLAGS}
    ${VISUALIZATION_LIBRARIES}
    plotter
    )

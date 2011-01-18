@@ -18,6 +18,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <CDisplayClient.hpp>
+#include <VisionData.hpp>
 
 namespace cogx { namespace vision {
 
@@ -40,6 +41,9 @@ private:
    };
    CDisplayClient m_display;
 
+   double m_outputWidth;
+   double m_outputHeight;
+
 protected:
    // ManagedComponent overrides
    virtual void configure(const std::map<std::string,std::string> & _config);
@@ -50,6 +54,8 @@ protected:
    void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onDelete_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
+   void drawVisualObject(const std::string& id, const VisionData::VisualObjectPtr& pVisObj,
+         const VisionData::ProtoObjectPtr& pProtoObj);
 
 public:
    CScene2D();
