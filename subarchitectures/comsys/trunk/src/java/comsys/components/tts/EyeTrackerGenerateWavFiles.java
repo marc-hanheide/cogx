@@ -1,3 +1,9 @@
+/**
+ * This procedural java code was written by Raveesh for processing bits of information for WebExperiment. Users are required to either do
+ * a code read, or generate a java doc to understand the procedural code. The code is not so neat, as it has been written for some very specific tasks.
+ * As the nature of this task changes, this code will also need a change.
+ * Date: Jan 2011
+ */
 package comsys.components.tts;
 import java.io.*;
 import java.util.*;
