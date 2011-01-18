@@ -85,6 +85,9 @@ def parseArgs(title):
     else:
         args.gammas=[]
 
+    if args.model_name.find('/')>=0 or args.model_name.find('.')>=0:
+        parser.error("Incorrect model name.")
+
     return args
 
 
