@@ -30,7 +30,7 @@ private:
    static std::auto_ptr<CRenderer> renderScene;
 // public:
    // A SVG image may have multiple parts: data + transformation
-   class SPart
+   class SPart: public CDisplayObjectPart
    {
       QSvgRenderer* _psvgdoc;
    public:
@@ -42,7 +42,7 @@ private:
          _psvgdoc = NULL;
       }
       ~SPart() {
-         if (_psvgdoc) delete _psvgdoc;
+         if (_psvgdoc) _psvgdoc->deleteLater();
          _psvgdoc = NULL;
       }
       void setIdentity() {
