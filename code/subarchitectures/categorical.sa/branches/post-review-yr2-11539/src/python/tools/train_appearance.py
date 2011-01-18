@@ -120,7 +120,7 @@ def main():
 
     # Title
     propertyName="appearance"
-    title = "Training '%s' property models for Categorical Subarchitecture" % propertyName
+    title = "Training '%s' property models for the Categorical Subarchitecture" % propertyName
 
     # Args
     args=parseArgs(title)
