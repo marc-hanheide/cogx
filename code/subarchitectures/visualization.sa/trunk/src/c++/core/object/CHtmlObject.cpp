@@ -319,24 +319,14 @@ void CHtmlObject::removePart(const std::string& partId)
 
 void CHtmlObject_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL) return;
-   CHtmlObject *pHtml = dynamic_cast<CHtmlObject*>(pObject);
-   if (pHtml->m_Parts.size() < 1) return;
-
-   QStringList *pList = (QStringList*) pContext;
-
-   typeof(pHtml->m_Parts.begin()) itmap;
-   for(itmap = pHtml->m_Parts.begin(); itmap != pHtml->m_Parts.end(); itmap++) {
-      CHtmlChunk *pChunk = itmap->second;
-      pList->append(pChunk->m_html);
-   }
+   if (pObject && pContext)
+      draw("body", pObject, pContext);
 }
 
 void CHtmlObject_RenderHtml::draw(const std::string& info, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL) return;
    CHtmlObject *pHtml = dynamic_cast<CHtmlObject*>(pObject);
-   if (pHtml->m_Parts.size() < 1) return;
 
    QStringList *pList = (QStringList*) pContext;
 
