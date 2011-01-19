@@ -7,13 +7,16 @@
  */
 
 #include "Corner3D.h"
+#include "Corner.hh"
 
 namespace Z
 {
 
+/**
+ * @brief Constructor of class Corner3D.
+ */
 Corner3D::Corner3D() : Gestalt3D(Gestalt3D::CORNER)
-{
-}
+{}
 
 }
 
