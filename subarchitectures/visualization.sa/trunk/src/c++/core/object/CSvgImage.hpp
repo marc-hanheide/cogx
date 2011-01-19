@@ -28,6 +28,8 @@ private:
    static std::auto_ptr<CRenderer> render2D;
    friend class CSvgImage_RenderScene;
    static std::auto_ptr<CRenderer> renderScene;
+   friend class CSvgImage_RenderHtml;
+   static std::auto_ptr<CRenderer> renderHtml;
 // public:
    // A SVG image may have multiple parts: data + transformation
    class SPart: public CDisplayObjectPart
@@ -91,6 +93,12 @@ public:
    virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
 };
 
+class CSvgImage_RenderHtml: public CRenderer
+{
+public:
+   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
+};
 
 }} // namespace
 #endif /* end of include guard: CSVGIMAGE_IRJTSHTI */

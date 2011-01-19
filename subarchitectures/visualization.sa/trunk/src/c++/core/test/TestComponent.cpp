@@ -428,9 +428,16 @@ void VideoViewer::runComponent()
   // Composed views
   {
     std::vector<std::string> views;
+    views.push_back("@htmlhead.TestComponent");
     views.push_back("@info.TestComponent");
     views.push_back("@info.HiddenComponent");
-    m_display.createView("Composite.View", Visualization::VtHtml, views);
+    views.push_back("Visualization.test.SVG");
+    views.push_back("Visualization.test.SVGPlotter");
+    m_display.createView("Composite.HTML", Visualization::VtHtml, views);
+
+    m_display.setHtmlHead("@htmlhead.TestComponent", "svgstyle",
+        "<style>div.svgpart{background:yellow;margin-top:4px;height:120px;}</style>");
+    m_display.enableDefaultView("@htmlhead.TestComponent", false);
   }
   {
     std::vector<std::string> views;

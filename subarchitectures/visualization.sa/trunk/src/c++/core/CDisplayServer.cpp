@@ -396,27 +396,26 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtml");
 
-   CHtmlObject *pModel = NULL;
+   CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CHtmlObject*>(pExisting);
-      if (! pModel) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
          DMESSAGE("setHtml: Replacing an exisiting object of different type.");
       }
    }
 
-   if (pModel) {
-      if (htmlData.size() < 1) pModel->removePart(partId);
-      else pModel->setHtml(partId, htmlData);
+   if (pObject) {
+      pObject->setHtml(partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {
-      pModel = new CHtmlObject();
-      pModel->m_id = id;
-      pModel->setHtml(partId, htmlData);
-      m_Model.setObject(pModel);
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      pObject->setHtml(partId, htmlData);
+      m_Model.setObject(pObject);
    }
 #endif
 }
@@ -426,27 +425,26 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlHead");
 
-   CHtmlObject *pModel = NULL;
+   CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CHtmlObject*>(pExisting);
-      if (! pModel) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
          DMESSAGE("setHtmlHead: Replacing an exisiting object of different type.");
       }
    }
 
-   if (pModel) {
-      if (htmlData.size() < 1) pModel->removePart(partId);
-      else pModel->setHead(partId, htmlData);
+   if (pObject) {
+      pObject->setHead(partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {
-      pModel = new CHtmlObject();
-      pModel->m_id = id;
-      pModel->setHead(partId, htmlData);
-      m_Model.setObject(pModel);
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      pObject->setHead(partId, htmlData);
+      m_Model.setObject(pObject);
    }
 #endif
 }
@@ -470,8 +468,7 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 
    if (pObject) {
       CHtmlChunk* pForm = NULL;
-      if (htmlData.size() < 1) pObject->removePart(partId);
-      else pForm = pObject->setForm(ident, partId, htmlData);
+      pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }

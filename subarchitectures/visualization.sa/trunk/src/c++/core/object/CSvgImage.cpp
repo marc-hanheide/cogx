@@ -29,6 +29,7 @@ namespace cogx { namespace display {
 
 std::auto_ptr<CRenderer> CSvgImage::render2D(new CSvgImage_Render2D());
 std::auto_ptr<CRenderer> CSvgImage::renderScene(new CSvgImage_RenderScene());
+std::auto_ptr<CRenderer> CSvgImage::renderHtml(new CSvgImage_RenderHtml());
 
 CSvgImage::CSvgImage()
 {
@@ -98,6 +99,7 @@ CRenderer* CSvgImage::getRenderer(ERenderContext context)
    switch(context) {
       case Context2D: return render2D.get();
       case ContextGraphics: return renderScene.get();
+      case ContextHtml: return renderHtml.get();
    }
    return NULL;
 }
@@ -176,6 +178,31 @@ void CSvgImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
       pSvgItem->setTransform(trans, true);
 
       pGroup->addToGroup(pSvgItem);
+   }
+}
+
+void CSvgImage_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
+{
+   if (pObject && pContext)
+      draw("body", pObject, pContext);
+}
+
+void CSvgImage_RenderHtml::draw(const std::string& info, CDisplayObject *pObject, void *pContext)
+{
+   if (pObject == NULL || pContext == NULL) return;
+   CSvgImage *pImage = (CSvgImage*) pObject;
+
+   QStringList *pList = (QStringList*) pContext;
+
+   if (info == "body") {
+      CSvgImage::SPart* pPart;
+      FOR_EACH(pPart, pImage->m_Parts) {
+         if (! pPart) continue;
+         if (pPart->data.size() < 16) continue;
+         pList->append("<div class='svgpart' >");
+         pList->append(QString::fromStdString(pPart->data));
+         pList->append("</div>");
+      }
    }
 }
 
