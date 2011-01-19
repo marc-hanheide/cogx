@@ -17,6 +17,7 @@
 #define QCASTVIEWHTML_X94VTZ5D
 
 #include "QCastViewBase.hpp"
+#include "HtmlElements.hpp"
 #include <QWebView>
 #include <iostream>
 

@@ -14,6 +14,8 @@
  * GNU General Public License for more details.
  */
 #include "QCastMainFrame.hpp"
+#include "../ptrvector.hpp"
+#include "../HtmlElements.hpp"
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>

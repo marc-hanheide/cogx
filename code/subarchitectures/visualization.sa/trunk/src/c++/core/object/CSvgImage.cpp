@@ -47,7 +47,7 @@ CSvgImage::SPart* CSvgImage::findPart(const std::string& partId)
 {
    SPart* pPart;
    FOR_EACH(pPart, m_Parts) {
-      if (pPart && pPart->id == partId) return pPart;
+      if (pPart && pPart->m_id == partId) return pPart;
    }
    return NULL;
 }
@@ -70,7 +70,7 @@ void CSvgImage::removePart(const std::string& partId)
    for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
       SPart* pPart = *itpart;
       if (! pPart) continue;
-      if (pPart->id == partId) {
+      if (pPart->m_id == partId) {
          m_Parts.erase(itpart);
          delete pPart;
          break;

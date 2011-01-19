@@ -49,8 +49,8 @@ std::string CHtmlChunk::makeHtmlId(EChunkType type, const std::string& objectId,
 CHtmlChunk::CHtmlChunk(const std::string& id, const std::string& partId, EChunkType type,
       const Ice::Identity& ident)
 {
-   m_id = id;
-   m_partId = partId;
+   m_parentId = id;
+   m_id = partId;
    m_type = type;
    m_dataOwner = ident;
    m_htmlId = makeHtmlId(m_type, id, partId);
