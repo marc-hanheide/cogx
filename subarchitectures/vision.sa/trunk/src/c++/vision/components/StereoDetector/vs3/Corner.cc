@@ -27,6 +27,8 @@ Corner::Corner(VisionCore *vc, Array<LJunction*> j, Array<Line*> l, Array<unsign
   for(unsigned i=0; i<lines.Size(); i++)
     lines[i]->corners[near_points[i]].PushBack(this);
   
+  if(lines.Size() != 3) 
+    printf("Corner::Corner: Warning: Corner with more ore less than 3 arms!\n");
   
 // printf("NEW CORNER: ljcts: ");
 // for(unsigned i=0; i<ljcts.Size(); i++)
