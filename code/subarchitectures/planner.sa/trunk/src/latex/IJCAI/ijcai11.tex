@@ -1,6 +1,6 @@
 %%%% ijcai11.tex
 
-\typeout{IJCAI-11 Instructions for Authors}
+\typeout{IJCAI Switching Planner Submission}
 
 % These are the instructions for authors for IJCAI-11.
 % They are the same as the ones for IJCAI-07 with superficical wording
@@ -39,9 +39,9 @@
 
 
 \usepackage{subfig}
-%% \usepackage{tikz}
-%% \usetikzlibrary{shapes}
-%% \usetikzlibrary{positioning}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{positioning}
 
 \usepackage{graphicx}
 \graphicspath{{plots/}}
@@ -992,128 +992,128 @@ of a more detailed version of our previous example. The diamonds
 represent probabilistic terms of the state description while circles
 represent conjunctive or atomic terms. 
 
-%% \begin{figure}[h!]
-%%   \centering
-%%   \tikzstyle{tree} = [sibling distance=4.5mm]
-%%   \tikzstyle{toplevel} = [grow'=right, sibling distance=22mm]
-%%   \tikzstyle{seclevel} = [sibling distance=9mm]
-%%   \tikzstyle{pnode} = [diamond, draw=black, minimum size=2.5mm]
-%%   \tikzstyle{cnode} = [circle, draw=black, minimum size=3mm]
-%%   \tikzstyle{assumption} = [solid, very thick, draw=black]
-%%   \tikzstyle{selected} = [solid, draw=black]
-%%   \tikzstyle{unused} = [densely dashed, draw=black!40]
-%%   \subfloat[The initial belief-state with the assumptions made by the continual
-%%     planner in bold.]{
-%%       \label{fig:abstraction-a}
-%%       \begin{tikzpicture}[
-%%     level 3/.style={tree}]
-%%     \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
-%%       child[seclevel] {node[cnode, assumption] (office) {}
-%%         child {node [pnode, assumption] (box) {}
-%%           child {node [cnode] (boxp1) {}}
-%%           child {node [cnode, assumption] (boxp2) {}}
-%%         }
-%%         child {node [pnode] (cup) {} 
-%%           child {node [cnode] (cupp1) {}}
-%%           child {node [cnode] (cupp2) {}}
-%%         }
-%%       }
-%%       child {node[cnode] (kitchen) {}
-%%         child {node [pnode] (box2) {} 
-%%           child {node [cnode] (box2p1) {}}
-%%           child {node [cnode] (box2p2) {}}
-%%         }
-%%       };
-%%    \tiny
-%%    \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-%%    \node[above=0 of cat] {$\pp{(category room1)}$};
-%%    \node[below=0 of kitchen] {$\pp{kitchen}$};
-%%    \node[below=0 of office] {$\pp{office}$};
-%%    \node[below=0 of box] {$\pp{(is-in box)}$};
-%%    \node[below=0 of box2] {$\pp{(is-in box)}$};
-%%    \node[below=0 of cup] {$\pp{(is-in cup)}$};
-%%    \node[right=0 of boxp1] {$\pp{place1}$};
-%%    \node[right=0 of boxp2] {$\pp{place2}$};
-%%    \node[right=0 of box2p1] {$\pp{place1}$};
-%%    \node[right=0 of box2p2] {$\pp{place2}$};
-%%    \node[right=0 of cupp1] {$\pp{place1}$};
-%%    \node[right=0 of cupp2] {$\pp{place2}$};
-%%     % \node[node] (kitchen) right of (cat) {};
-%%   \end{tikzpicture}}
-%% \qquad
-%%   \subfloat[Removing facts that are not part of an assumption.]{
-%%     \label{fig:abstraction-b}
-%%     \begin{tikzpicture}[
-%%     level 3/.style={tree}]
-%%     \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
-%%       child[seclevel] {node[cnode, assumption] (office) {}
-%%         child {node [pnode, assumption] (box) {}
-%%           child {node [cnode, unused] (boxp1) {}}
-%%           child {node [cnode, assumption] (boxp2) {}}
-%%         }
-%%         child {node [pnode, unused] (cup) {} 
-%%           child {node [cnode, unused] (cupp1) {}}
-%%           child {node [cnode, unused] (cupp2) {}}
-%%         }
-%%       }
-%%       child {node[cnode, selected] (kitchen) {}
-%%         child {node [pnode, selected] (box2) {} 
-%%           child {node [cnode, unused] (box2p1) {}}
-%%           child {node [cnode, selected] (box2p2) {}}
-%%         }
-%%       };
-%%    \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-%%    \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
-%%    \tiny
-%%    \node[above=0 of cat] {$\pp{(category room1)}$};
-%%    \node[below=0 of office] {$\pp{office}$};
-%%    \node[below=0 of box] {$\pp{(is-in box)}$};
-%%    \node[below=0 of box2] {$\pp{(is-in box)}$};
-%%    \node[right=0 of boxp2] {$\pp{place2}$};
-%%    \node[right=0 of box2p2] {$\pp{place2}$};
-%%     % \node[node] (kitchen) right of (cat) {};
-%%   \end{tikzpicture}}
-%% \vspace{2mm}
-%%   \subfloat[Refinement, by adding relevant facts until the $\bstate_0$ size limit is reached.]{
-%%     \label{fig:abstraction-c}
-%%     \begin{tikzpicture}[
-%%     level 3/.style={tree}]
-%%     \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
-%%       child[seclevel] {node[cnode, assumption] (office) {}
-%%         child {node [pnode, assumption] (box) {}
-%%           child {node [cnode, selected] (boxp1) {}}
-%%           child {node [cnode, assumption] (boxp2) {}}
-%%         }
-%%         child {node [pnode, unused] (cup) {} 
-%%           child {node [cnode, unused] (cupp1) {}}
-%%           child {node [cnode, unused] (cupp2) {}}
-%%         }
-%%       }
-%%       child {node[cnode, selected] (kitchen) {}
-%%         child {node [pnode, selected] (box2) {} 
-%%           child {node [cnode, selected] (box2p1) {}}
-%%           child {node [cnode, selected] (box2p2) {}}
-%%         }
-%%       };
-%%    \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-%%    \draw[selected] (box) -- (boxp1);
-%%    \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
-%%    \draw[selected] (box2) -- (box2p1);
-%%    \tiny
-%%    \node[above=0 of cat] {$\pp{(category room1)}$};
-%%    \node[below=0 of office] {$\pp{office}$};
-%%    \node[below=0 of box] {$\pp{(is-in box)}$};
-%%    \node[below=0 of box2] {$\pp{(is-in box)}$};
-%%    \node[right=0 of boxp1] {$\pp{place1}$};
-%%    \node[right=0 of boxp2] {$\pp{place2}$};
-%%    \node[right=0 of box2p1] {$\pp{place1}$};
-%%    \node[right=0 of box2p2] {$\pp{place2}$};
-%%     % \node[node] (kitchen) right of (cat) {};
-%%   \end{tikzpicture}}
+\begin{figure}[h!]
+  \centering
+  \tikzstyle{tree} = [sibling distance=4.5mm]
+  \tikzstyle{toplevel} = [grow'=right, sibling distance=22mm]
+  \tikzstyle{seclevel} = [sibling distance=9mm]
+  \tikzstyle{pnode} = [diamond, draw=black, minimum size=2.5mm]
+  \tikzstyle{cnode} = [circle, draw=black, minimum size=3mm]
+  \tikzstyle{assumption} = [solid, very thick, draw=black]
+  \tikzstyle{selected} = [solid, draw=black]
+  \tikzstyle{unused} = [densely dashed, draw=black!40]
+  \subfloat[The initial belief-state with the assumptions made by the continual
+    planner in bold.]{
+      \label{fig:abstraction-a}
+      \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode] (cup) {} 
+          child {node [cnode] (cupp1) {}}
+          child {node [cnode] (cupp2) {}}
+        }
+      }
+      child {node[cnode] (kitchen) {}
+        child {node [pnode] (box2) {} 
+          child {node [cnode] (box2p1) {}}
+          child {node [cnode] (box2p2) {}}
+        }
+      };
+   \tiny
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of kitchen] {$\pp{kitchen}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[below=0 of cup] {$\pp{(is-in cup)}$};
+   \node[right=0 of boxp1] {$\pp{place1}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p1] {$\pp{place1}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+   \node[right=0 of cupp1] {$\pp{place1}$};
+   \node[right=0 of cupp2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
+\qquad
+  \subfloat[Removing facts that are not part of an assumption.]{
+    \label{fig:abstraction-b}
+    \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode, unused] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode, unused] (cup) {} 
+          child {node [cnode, unused] (cupp1) {}}
+          child {node [cnode, unused] (cupp2) {}}
+        }
+      }
+      child {node[cnode, selected] (kitchen) {}
+        child {node [pnode, selected] (box2) {} 
+          child {node [cnode, unused] (box2p1) {}}
+          child {node [cnode, selected] (box2p2) {}}
+        }
+      };
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
+   \tiny
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
+\vspace{2mm}
+  \subfloat[Refinement, by adding relevant facts until the $\bstate_0$ size limit is reached.]{
+    \label{fig:abstraction-c}
+    \begin{tikzpicture}[
+    level 3/.style={tree}]
+    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
+      child[seclevel] {node[cnode, assumption] (office) {}
+        child {node [pnode, assumption] (box) {}
+          child {node [cnode, selected] (boxp1) {}}
+          child {node [cnode, assumption] (boxp2) {}}
+        }
+        child {node [pnode, unused] (cup) {} 
+          child {node [cnode, unused] (cupp1) {}}
+          child {node [cnode, unused] (cupp2) {}}
+        }
+      }
+      child {node[cnode, selected] (kitchen) {}
+        child {node [pnode, selected] (box2) {} 
+          child {node [cnode, selected] (box2p1) {}}
+          child {node [cnode, selected] (box2p2) {}}
+        }
+      };
+   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+   \draw[selected] (box) -- (boxp1);
+   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
+   \draw[selected] (box2) -- (box2p1);
+   \tiny
+   \node[above=0 of cat] {$\pp{(category room1)}$};
+   \node[below=0 of office] {$\pp{office}$};
+   \node[below=0 of box] {$\pp{(is-in box)}$};
+   \node[below=0 of box2] {$\pp{(is-in box)}$};
+   \node[right=0 of boxp1] {$\pp{place1}$};
+   \node[right=0 of boxp2] {$\pp{place2}$};
+   \node[right=0 of box2p1] {$\pp{place1}$};
+   \node[right=0 of box2p2] {$\pp{place2}$};
+    % \node[node] (kitchen) right of (cat) {};
+  \end{tikzpicture}}
   
-%%   \caption{Generating the abstract belief space.}
-%% \label{fig:abstraction}
-%% \end{figure}
+  \caption{Generating the abstract belief space.}
+\label{fig:abstraction}
+\end{figure}
 
 
 
