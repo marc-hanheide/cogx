@@ -15,6 +15,7 @@
  */
 #include "QCastViewHtml.hpp"
 #include "html/formcap.hpp"
+#include "../ptrvector.hpp"
 #include <QWebFrame>
 #include <QFile>
 #include <QAction>
@@ -215,8 +216,9 @@ void QCastViewHtml::doUpdateContent()
    DTRACE("QCastViewHtml::doUpdateContent");
    m_Chunks.clear();
    pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
-   m_bHasForms = false;
+
    cxd::CHtmlChunk* pChunk;
+   m_bHasForms = false;
    FOR_EACH(pChunk, m_Chunks) {
       if (pChunk && pChunk->type() == cxd::CHtmlChunk::form) {
          m_bHasForms = true;

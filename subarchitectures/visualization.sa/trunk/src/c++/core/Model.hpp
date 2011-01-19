@@ -19,7 +19,6 @@
 #include "ptrvector.hpp"
 #include "observer.hpp"
 #include "GuiElements.hpp"
-#include "HtmlElements.hpp"
 
 #include <QPainter>
 #include <QGraphicsScene>
@@ -30,11 +29,16 @@
 
 namespace cogx { namespace display {
 
+class CDisplayObjectPart;
 class CDisplayObject;
 class CDisplayView;
 class CDisplayModel;
 class CRasterImage;
 class CRenderer;
+
+// CHtmlChunk is a CDisplayObjectPart; defined in "HtmlElements.hpp"
+// Used in some functions instead of CDisplayObjectPart for convenience.
+class CHtmlChunk;
 
 typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextGraphics=4 } ERenderContext;
 
@@ -119,6 +123,9 @@ private:
 
 class CDisplayObjectPart
 {
+public:
+   std::string m_id;
+
 public:
    virtual ~CDisplayObjectPart() {}
 };

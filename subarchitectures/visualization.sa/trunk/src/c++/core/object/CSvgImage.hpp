@@ -34,11 +34,10 @@ private:
    {
       QSvgRenderer* _psvgdoc;
    public:
-      std::string id;
       std::string data;
       std::vector<double> trmatrix;
       SPart(const std::string& partId) {
-         id = partId;
+         m_id = partId;
          _psvgdoc = NULL;
       }
       ~SPart() {

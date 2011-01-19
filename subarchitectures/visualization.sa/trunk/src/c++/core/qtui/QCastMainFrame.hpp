@@ -18,6 +18,7 @@
 
 #include "ui_castor.h"
 #include <QMainWindow>
+#include <QSettings>
 #include <QMutex>
 #include "../Model.hpp"
 
