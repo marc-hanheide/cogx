@@ -494,6 +494,8 @@ void FormClosures::NewClosure(ClosCand *cand)
  */
 void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Line *t, int end_s, int end_t)
 {
+  int found = 0;				/// TODO nur zum debuggen
+
   unsigned n = NumLines(core);
   unsigned n_visited = 0;
   Line *u = 0;
@@ -524,7 +526,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
     // Remove best vertex from priority queue
     u = Q.front();
     // TODO: keep whole heap??
-    pop_heap(Q.begin(), Q.end() - n_visited, comp);
+    std::pop_heap(Q.begin(), Q.end() - n_visited, comp);
     n_visited++;
     // If the best vertex has infinite distance (i.e. there is no path to it)
     // then there is no point in continuing
@@ -538,7 +540,6 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
         {
           NewClosure(s, t);
 	  
-	  static int found = 0;
 	  found++;
 	  if(found > 1) printf("FormClosures::ShortestPath: More than one closure found\n");
 	  
@@ -551,7 +552,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
 //           }
           cycles++;  // HACK
         }
-        else printf("FormClosures::ShortestPath: Warning: Line intersects path.\n");
+        else std::printf("FormClosures::ShortestPath: Warning: Line intersects path.\n");
       }
       else
       {
@@ -565,7 +566,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
 #endif
         // TODO: take whole heap??
         if(cnt > 0)
-          make_heap(Q.begin(), Q.end() - n_visited, comp);
+          std::make_heap(Q.begin(), Q.end() - n_visited, comp);
       }
     }
     else
