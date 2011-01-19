@@ -66,6 +66,7 @@ double AbsDistPointToLine(const Vector2 &q, const Vector2 &p, const Vector2 &d);
 Vector2 Rotate(const Vector2 &a, double phi);
 Vector2 CircleCenter(const Vector2 &pi, const Vector2 &pj, const Vector2 &pk);
 Vector2 MidPoint(const Vector2 &a, const Vector2 &b);
+double OpeningAngle(const Vector2 &a, const Vector2 &b);
 
 std::ostream& operator<<(std::ostream &os, const Vector2 &v);
 std::istream& operator>>(std::istream &is, Vector2 &v) throw (std::runtime_error);
