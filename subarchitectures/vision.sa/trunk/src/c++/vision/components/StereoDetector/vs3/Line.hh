@@ -41,35 +41,35 @@ class Corner;
 class Line : public Gestalt
 {
 protected:
-  RGBColor mean_col[2];  							///< mean color LEFT/RIGHT
+  RGBColor mean_col[2];                ///< mean color LEFT/RIGHT
   void CalculateParameters();
   virtual void CalculateColors() = 0;
   void MoveJunctions(Line *l2, int end);
 
 public:
-	Vector2 point[2];										///< end points, START/END
-	Vector2 dir;												///< direction of the line, normalised to 1
-  Vector2 tang[2];										///< tangents STAR/END
-  double phi;													///< angular direction
-  double len;													///< length of line
-  //double s;														///< hessian form: distance
-  //double theta;												///< hessian form: angle
-  Array<Collinearity*> coll[2];				///< collinearities at line-end [START/END]
-  Array<LJunction*> l_jct[2][2];			///< L-junctions at START/END and LEFT/RIGHT
-  TJunction* t_jct[2];								///< T-junctions at START/END
-  Array<TJunction*> pt_jct[2][2];			///< passive T-jcts, START/END and LEFT/RIGHT
-  Array<Closure*> closures; 					///< Closures TODO: have two lists, for both senses
-  Array<Corner*> corners[2];	 				///< Corners at [START/END]
-  int label;													///< label LEFT/RIGHT
-  double energy;											///< energy for global conistency
-  double stability;										///< stability for global consistency
-  set<Line*> neighbors;								///< neighbors for global consistency
-  Line* next;													///< next line if split
-  Line* defer_vote;										///< lines created by splitting don't vote themselves
-																			/// but defer votes to original line
+  Vector2 point[2];                     ///< end points, START/END
+  Vector2 dir;                          ///< direction of the line, normalised to 1
+  Vector2 tang[2];                      ///< tangents STAR/END
+  double phi;                           ///< angular direction
+  double len;                           ///< length of line
+  //double s;                           ///< hessian form: distance
+  //double theta;                       ///< hessian form: angle
+  Array<Collinearity*> coll[2];         ///< collinearities at line-end [START/END]
+  Array<LJunction*> l_jct[2][2];        ///< L-junctions at START/END and LEFT/RIGHT
+  TJunction* t_jct[2];                  ///< T-junctions at START/END
+  Array<TJunction*> pt_jct[2][2];       ///< passive T-jcts, START/END and LEFT/RIGHT
+  Array<Closure*> closures;             ///< Closures TODO: have two lists, for both senses
+  Array<Corner*> corners[2];            ///< Corners at [START/END]
+  int label;                            ///< label LEFT/RIGHT
+  double energy;                        ///< energy for global conistency
+  double stability;                     ///< stability for global consistency
+  set<Line*> neighbors;                 ///< neighbors for global consistency
+  Line* next;                           ///< next line if split
+  Line* defer_vote;                     ///< lines created by splitting don't vote themselves
+                                        /// but defer votes to original line
 
-  unsigned idx[2];										///< index of start and end point 	HACK ARI: moved from VisibleLine
-  Segment* seg;												///< the originating segment				HACK ARI: moved from VisibleLine
+  unsigned idx[2];                      ///< index of start and end point 	HACK ARI: moved from VisibleLine
+  Segment* seg;                         ///< the originating segment				HACK ARI: moved from VisibleLine
 
 protected:
   Line(VisionCore *vc);
