@@ -22,11 +22,11 @@ namespace Z
 class Corner3D : public Gestalt3D
 {
 public:
-  Vertex3D point3D;						///< 3D intersection point
-  Vector3 dir[3];						///< 3D direction of the 3 arms of the L-Junction	/// TODO Calculate
+  Vertex3D isct3D;                     ///< 3D intersection point
+  Vertex3D armPoints3D[3];             ///< 3D arm points
+  Vector3 armDir3D[3];                 ///< 3D direction of the 3 arms of the L-Junction
 
   Corner3D();
-//   bool Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right);
 };
 
 

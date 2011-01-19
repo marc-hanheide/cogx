@@ -21,10 +21,29 @@ namespace Z
  */
 TmpCorner::TmpCorner(Corner *corner)
 {
-  point2D.p.x = corner->isct.x;
-  point2D.p.y = corner->isct.y;
-}
+  id = corner->ID();
+  
+  isct2D.p.x = corner->isct.x;
+  isct2D.p.y = corner->isct.y;
+  
+  if(corner->lines.Size() == 3)
+  {
+    armDir[0] = corner->lines[0]->dir;
+    armDir[1] = corner->lines[1]->dir;
+    armDir[2] = corner->lines[2]->dir;
+    
+    armPoint[0].p = isct2D.p + 10*armDir[0];			/// TODO Theoretische Punkte 10 px entfernt von der Intersection!
+    armPoint[1].p = isct2D.p + 10*armDir[1];
+    armPoint[2].p = isct2D.p + 10*armDir[2];
 
+    isValid = true;
+  }
+  else
+  {
+    isValid = false;
+    printf("TmpCorner::TmpCorner: Warning: More or less than 3 corner arms: %u arms\n", corner->lines.Size());
+  }
+}
 
 /**
  * @brief Recalculate all rectangle parameters, when image was pruned from HR image.
@@ -34,7 +53,7 @@ TmpCorner::TmpCorner(Corner *corner)
  */
 void TmpCorner::RePrune(int oX, int oY, int sc)
 {
-  point2D.RePrune(oX, oY, sc);
+  isct2D.RePrune(oX, oY, sc);
 }
 
 /**
@@ -44,7 +63,32 @@ void TmpCorner::RePrune(int oX, int oY, int sc)
  */
 void TmpCorner::Rectify(StereoCamera *stereo_cam, int side)
 {
-  point2D.Rectify(stereo_cam, side);
+  isct2D.Rectify(stereo_cam, side);
+ 
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[0]: %4.2f / %4.2f\n", id, armDir[0].x, armDir[0].y);
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[1]: %4.2f / %4.2f\n", id, armDir[1].x, armDir[1].y);
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[2]: %4.2f / %4.2f\n", id, armDir[2].x, armDir[2].y);
+  
+  armPoint[0].Rectify(stereo_cam, side);
+  armPoint[1].Rectify(stereo_cam, side);
+  armPoint[2].Rectify(stereo_cam, side);
+  
+  armDir[0] = Normalise(armPoint[0].p - isct2D.p);
+  armDir[1] = Normalise(armPoint[1].p - isct2D.p);
+  armDir[2] = Normalise(armPoint[2].p - isct2D.p); 
+  
+  // Recalculate arm points (10px away from center) after rectification
+  armPoint[0].p = isct2D.p + 10 * armDir[0];
+  armPoint[1].p = isct2D.p + 10 * armDir[1];
+  armPoint[2].p = isct2D.p + 10 * armDir[2];
+  
+//   printf("TmpCorner::Rectify: %u => armPoint[0]-isct2D: %4.2f / %4.2f\n", id, armPoint[0].p.x - isct2D.p.x, armPoint[0].p.y - isct2D.p.y);
+//   printf("TmpCorner::Rectify: %u => armPoint[1]-isct2D: %4.2f / %4.2f\n", id, armPoint[1].p.x - isct2D.p.x, armPoint[1].p.y - isct2D.p.y);
+//   printf("TmpCorner::Rectify: %u => armPoint[2]-isct2D: %4.2f / %4.2f\n", id, armPoint[2].p.x - isct2D.p.x, armPoint[2].p.y - isct2D.p.y);
+
+//   printf("TmpCorner::Rectify: %u after rectify: armDir[0]: %4.2f / %4.2f\n", id, armDir[0].x, armDir[0].y);
+//   printf("TmpCorner::Rectify: %u after rectify: armDir[1]: %4.2f / %4.2f\n", id, armDir[1].x, armDir[1].y);
+//   printf("TmpCorner::Rectify: %u after rectify: armDir[2]: %4.2f / %4.2f\n\n", id, armDir[2].x, armDir[2].y);
 }
 
 
@@ -53,7 +97,7 @@ void TmpCorner::Rectify(StereoCamera *stereo_cam, int side)
  */
 void TmpCorner::Refine()
 {
-  point2D.Refine();
+  isct2D.Refine();
 }
 
 /**
@@ -64,7 +108,7 @@ void TmpCorner::Refine()
  */
 bool TmpCorner::IsAtPosition(int x, int y) const
 {
-  return point2D.IsAtPosition(x, y);
+  return isct2D.IsAtPosition(x, y);
 }
 
 
@@ -116,7 +160,7 @@ void StereoCorners::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoCorners::DrawSingleMatched(int side, int id, int detail)
 {
-  corners[side][id].point2D.Draw();
+  corners[side][id].isct2D.Draw();
 }
 
 /**
@@ -225,7 +269,7 @@ unsigned StereoCorners::FindMatchingCorner(TmpCorner &left_corner, Array<TmpCorn
 
   for(j = l; j < right_corners.Size(); j++)
   {
-    match = MatchingScorePoint(left_corner.point2D, right_corners[j].point2D);
+    match = MatchingScorePoint(left_corner.isct2D, right_corners[j].isct2D);
 
 // printf("      match = %6.5f\n", match);
 // if (match < HUGE)
@@ -273,6 +317,106 @@ void StereoCorners::MatchCorners(Array<TmpCorner> &left_corners, Array<TmpCorner
   matches = u;
 }
 
+/**	TODO Besser und vor allem genauer formulieren!
+ * @brief Calculate 3D points of the corner arms and calculate later the direction. 
+ * @param left_corners Array of all corners from left stereo image.
+ */
+void StereoCorners::Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corner, TmpCorner &right_corner)
+{
+//   printf("\nStereoCorners::Calculate3DCornerArms: armDir: %4.2f / %4.2f\n", left_corner.armDir[i], left_corner.armDir[i]);
+//   printf("\nStart Calculate3DCornerArms\n");
+  
+  /// rausfinden, welche Arme zusammen gehören => In 2D!
+  double angle[3][3];
+  for(unsigned i=0; i<3; i++)
+    for(unsigned j=0; j<3; j++)
+//     {
+      angle[i][j] = OpeningAngle(left_corner.armDir[i], right_corner.armDir[j]);
+// printf("StereoCorners::Calculate3DCornerArms:  left armDir[%u]: %4.2f / %4.2f\n", i, left_corner.armDir[i].x, left_corner.armDir[i].y);
+// printf("StereoCorners::Calculate3DCornerArms: right armDir[%u]: %4.2f / %4.2f\n", j, right_corner.armDir[j].x, right_corner.armDir[j].y);
+//     }
+  // kleinster Winkel
+  double ref = HUGE;
+  unsigned k=0, l=0;
+  for(unsigned i=0; i<3; i++)
+  {
+    for(unsigned j=0; j<3; j++)
+    {
+// printf("StereoCorners::Calculate3DCornerArms: Winkel[%u][%u]: %4.3f!\n", i, j, angle[i][j]);
+      if(angle[i][j] < ref)
+      {
+	ref = angle[i][j];
+	k = i; l = j;
+      }
+    }
+  }
+  
+// printf("StereoCorners::Calculate3DCornerArms: Kleinster Winkel: %4.3f von [%u][%u]!\n", ref, k, l);
+
+  ref = HUGE;
+  unsigned m=0, n=0;
+  for(unsigned i=0; i<3; i++)
+  {
+    for(unsigned j=0; j<3; j++)
+    {
+      if(i != k && j != l)
+      {
+	if(angle[i][j] < ref)
+	{
+	  ref = angle[i][j];
+	  m = i; n = j;
+	}
+      }
+    }
+  }
+
+//  printf("StereoCorners::Calculate3DCornerArms: 2. Kleinst Winkel: %4.3f von [%u][%u]!\n", ref, m, n);
+
+  ref = HUGE;
+  unsigned o=0, p=0;
+  for(unsigned i=0; i<3; i++)
+  {
+    for(unsigned j=0; j<3; j++)
+    {
+      if(i != k && j != l && i != m & j != n)
+      {
+	ref = angle[i][j];
+	o = i; 
+	p = j;
+	
+      }
+    }
+  }
+  
+// printf("StereoCorners::Calculate3DCornerArms: 3. Kleinst Winkel: %4.3f von [%u][%u]!\n", ref, o, p);
+
+//   double sum = angle[k][l] + angle[m][n] + angle[o][p]; 
+// printf("StereoCorners::Calculate3DCornerArms: Summe: %4.3f\n", sum);
+
+  
+
+  /// 3D Triangulieren der zusammengehörenden ArmPunkte
+  corner->armPoints3D[0].Reconstruct(stereo_cam, left_corner.armPoint[k], right_corner.armPoint[l]);
+  corner->armPoints3D[1].Reconstruct(stereo_cam, left_corner.armPoint[m], right_corner.armPoint[n]);
+  corner->armPoints3D[2].Reconstruct(stereo_cam, left_corner.armPoint[o], right_corner.armPoint[p]);
+//   corner->dir[0]; 
+
+// printf("StereoCorners::Calculate3DCornerArms: isct3D: %4.2f / %4.2f / %4.2f\n", corner->isct3D.p.x, corner->isct3D.p.y, corner->isct3D.p.z);
+
+// printf("StereoCorners::Calculate3DCornerArms: armPoints[0]: %4.2f / %4.2f / %4.2f\n", corner->armPoints3D[0].p.x, corner->armPoints3D[0].p.y, corner->armPoints3D[0].p.z);
+// printf("StereoCorners::Calculate3DCornerArms: armPoints[1]: %4.2f / %4.2f / %4.2f\n", corner->armPoints3D[1].p.x, corner->armPoints3D[1].p.y, corner->armPoints3D[1].p.z);
+// printf("StereoCorners::Calculate3DCornerArms: armPoints[2]: %4.2f / %4.2f / %4.2f\n", corner->armPoints3D[2].p.x, corner->armPoints3D[2].p.y, corner->armPoints3D[2].p.z);
+
+  /// Berechnen der direction in 3D
+  corner->armDir3D[0] = Normalise(corner->armPoints3D[0].p - corner->isct3D.p);
+  corner->armDir3D[1] = Normalise(corner->armPoints3D[1].p - corner->isct3D.p);
+  corner->armDir3D[2] = Normalise(corner->armPoints3D[2].p - corner->isct3D.p);
+
+// printf("StereoCorners::Calculate3DCornerArms: armDir3D[0]: %4.2f / %4.2f / %4.2f\n", corner->armDir3D[0].x, corner->armDir3D[0].y, corner->armDir3D[0].z);
+// printf("StereoCorners::Calculate3DCornerArms: armDir3D[1]: %4.2f / %4.2f / %4.2f\n", corner->armDir3D[1].x, corner->armDir3D[1].y, corner->armDir3D[1].z);
+// printf("StereoCorners::Calculate3DCornerArms: armDir3D[2]: %4.2f / %4.2f / %4.2f\n", corner->armDir3D[2].x, corner->armDir3D[2].y, corner->armDir3D[2].z);
+}
+
 
 /**
  * @brief Calculate 3D points from matched corners.
@@ -287,10 +431,15 @@ void StereoCorners::Calculate3DCorners(Array<TmpCorner> &left_corners, Array<Tmp
   for(unsigned i = 0; i < u;)
   {
     Corner3D *corner3d = new Corner3D();
-    if (corner3d->point3D.Reconstruct(stereo_cam, left_corners[i].point2D, right_corners[i].point2D))
+    if (corner3d->isct3D.Reconstruct(stereo_cam, left_corners[i].isct2D, right_corners[i].isct2D))
     {
-      score->NewGestalt3D(corner3d);
-      i++;
+      // calculate direction of arms if we have 3 arms per corner
+      if(left_corners[i].IsValid() && right_corners[i].IsValid())
+      {
+	Calculate3DCornerArms(corner3d, left_corners[i], right_corners[i]);
+        score->NewGestalt3D(corner3d);
+        i++;
+      }
     }
     // move unacceptable points to the end
     else
