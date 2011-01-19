@@ -274,6 +274,14 @@ inline Vector2 MidPoint(const Vector2 &a, const Vector2 &b)
 }
 
 /**
+ * @brief Calcualates the opening angle between two vectors.
+ */
+inline double OpeningAngle(const Vector2 &a, const Vector2 &b)
+{
+  return acos(Dot(Normalise(a), Normalise(b)));
+}
+
+/**
  * @brief Print a vector to a stream: '[x y]`
  */
 inline std::ostream& operator<<(std::ostream &os, const Vector2 &v)
