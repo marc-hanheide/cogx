@@ -47,7 +47,11 @@
 \graphicspath{{plots/}}
 \include{macros}%
 
-\title{A Switching Planner for Combined Task and Observation Planning}
+\title{Interleaved Serial and Decision-Theoretic Planning for a Mobile Robot}
+%%\title{Interleaved Serial and Decision-Theoretic Planning for
+%%Practical Robot Control}
+
+%% \title{A Switching Planner for Combined Task and Observation Planning}
 \author{anonymous}
 
 \begin{document}
@@ -56,18 +60,45 @@
 
 \begin{abstract}
 
-Realistic robot planning problems in uncertain environments often
-require achieving tasks while also finding out about the
-world. Because the world state cannot be observed directly, these
-problems are naturally represented as partially observable Markov
-decision problems (POMDPs). However, these are typically intractable
-for realistic problems.
+%% Those processes must 
+
+From an automated planning perspective the problem of practical mobile
+robot control in realistic environments poses many important and
+contrary challenges.  On the one hand, the planning process must be
+lightweight, robust, and timely. Over the lifetime of the robot it
+must always respond quickly with new plans that accommodate exogenous
+events, changing objectives, and the underlying unpredictability of
+the environment.  On the other hand, in order to exhibit useful
+behaviours the planning process must perform computationally expensive
+reasoning about contingencies and possible revisions of subjective
+beliefs according to quantitatively modelled uncertainty in acting and
+sensing.
 %%
-We present a \emph{switching planner} that employs fast sequential
-planning to decide on the overall strategy, and uses a
-decision-theoretic planner to solve the subproblems where partial
-observability will significantly impact the quality of the plan. We
-demonstrate the approach in a realistic robot exploration domain.
+Addressing these challenges, we develop a \emph{continual planning}
+approach that {\em switches} between using a fast satisficing
+``classical'' planner, to decide on the overall strategy, and
+decision-theoretic planning to solve small subproblems where deeper
+consideration of the sensing model is practical, and can significantly
+impact overall performance. We demonstrate our approach in a realistic
+robot exploration domain.
+
+%% partial observability
+
+
+
+%% In cooperation with execution monitoring, it must perform repair
+%% and/or replanning in order to seamlessly accommodate exogenous events,
+%% changing objectives, and the underlying unpredictability of the
+%% environment.
+
+%% Realistic robot planning problems in uncertain environments often
+%% require achieving tasks while also finding out about the
+%% world. Because the world state cannot be observed directly, these
+%% problems are naturally represented as partially observable Markov
+%% decision problems (POMDPs). However, these are typically intractable
+%% for realistic problems.
+%%
+
 
 \end{abstract}
 
