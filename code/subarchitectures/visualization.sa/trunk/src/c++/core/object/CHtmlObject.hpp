@@ -43,6 +43,7 @@ public:
    void setHead(const std::string& partId, const std::string& text);
    CHtmlChunk* getPart(const std::string& partId);
    void removePart(const std::string& partId);
+   void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
 };
 
 class CHtmlObject_RenderHtml: public CRenderer

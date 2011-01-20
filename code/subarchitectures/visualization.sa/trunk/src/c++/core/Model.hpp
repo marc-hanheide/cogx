@@ -151,6 +151,7 @@ public:
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
    virtual void removePart(const std::string& partId);
+   virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false);
 };
 
 
@@ -202,6 +203,7 @@ public:
    void removeAllObjects();
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
+   void getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered=false);
 
    virtual void drawGL();
    // XXX: Qt objects shouldn't be here ...

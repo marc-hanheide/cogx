@@ -19,6 +19,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QTreeWidgetItem>
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
@@ -371,6 +372,36 @@ void QCastMainFrame::updateViewMenu()
    ui.actViewSelectSubmenu->setEnabled(true);
 }
 
+// Brute-force update: remove everything and re-add
+void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
+{
+   QAbstractItemModel* pModel = ui.treeObjects->model();
+   if (pModel) {
+      int ni = pModel->rowCount();
+      pModel->removeRows(0, ni);
+   }
+   if (!pView) return;
+   CPtrVector<cogx::display::CDisplayObject> objects;
+   pView->getObjects(objects);
+   cogx::display::CDisplayObject *pObject;
+   QStringList ss;
+   FOR_EACH(pObject, objects) {
+      ss.clear();
+      ss << QString::fromStdString(pObject->m_id);
+      QTreeWidgetItem* pItem = new QTreeWidgetItem(ui.treeObjects, ss);
+
+      cogx::display::CDisplayObjectPart *pPart;
+      CPtrVector<cogx::display::CDisplayObjectPart> parts;
+      pObject->getParts(parts);
+      FOR_EACH(pPart, parts) {
+         ss.clear();
+         ss << QString::fromStdString(pPart->m_id);
+         new QTreeWidgetItem(pItem, ss);
+      }
+   }
+   ui.treeObjects->expandAll();
+}
+
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
@@ -455,12 +486,14 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    if (! pView) {
       setWindowTitle(m_winText);
       updateCustomUi(NULL);
+      updateObjectList(NULL);
       ui.drawingArea->setView(NULL, NULL);
    }
    else {
       setWindowTitle(QString::fromStdString(pView->m_id) + " - " + m_winText);
       if (! ui.wgCustomGui->hasView(pView)) {
          updateCustomUi(pView);
+         updateObjectList(pView);
          // retrieve data for custom widgets from remote display clients
          if (m_pControlDataProxy) {
             cogx::display::CGuiElement* pgel;

@@ -142,6 +142,20 @@
         <attribute name="toolTip">
          <string>Objects in current view</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QTreeWidget" name="treeObjects">
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>

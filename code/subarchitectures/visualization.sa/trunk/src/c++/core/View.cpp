@@ -197,6 +197,27 @@ void CDisplayView::onOwnerDataChanged(CGuiElement *pElement, const std::string& 
    }
 }
 
+void CDisplayView::getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered)
+{
+   CDisplayObject *pObject;
+   if (bOrdered) {
+      typeof(m_ObjectOrder.begin()) itorder;
+      typeof(m_Objects.begin()) itobj;
+      for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+         itobj = m_Objects.find(*itorder);
+         if (itobj == m_Objects.end()) continue;
+         pObject = itobj->second;
+         if (!pObject) continue;
+         objects.push_back(pObject);
+      }
+   }
+   else {
+      FOR_EACH_V(pObject, m_Objects) {
+         if (pObject) objects.push_back(pObject);
+      }
+   }
+}
+
 // The CDisplayObject should not draw itself, instead it should provide another
 // object (Renderer) that will draw it. function: getRenderer(context).
 // Implementation: all objects of the same class share the same (static)
@@ -312,15 +333,15 @@ int CDisplayView::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
 {
    int count = 0;
    CDisplayObject *pObject;
-   //FOR_EACH_V(pObject, m_Objects) {
+   // FOR_EACH_V(pObject, objects) {
    typeof(m_ObjectOrder.begin()) itorder;
    typeof(m_Objects.begin()) itobj;
    for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      itobj = m_Objects.find(*itorder);
-      if (itobj == m_Objects.end()) continue;
-      pObject = itobj->second;
-      if (!pObject) continue;
-      count += pObject->getHtmlChunks(forms, typeMask);
+     itobj = m_Objects.find(*itorder);
+     if (itobj == m_Objects.end()) continue;
+     pObject = itobj->second;
+     if (!pObject) continue;
+     count += pObject->getHtmlChunks(forms, typeMask);
    }
    return count;
 }

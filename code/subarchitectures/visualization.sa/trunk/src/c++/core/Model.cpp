@@ -390,4 +390,8 @@ int CDisplayObject::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
    return 0;
 }
 
+void CDisplayObject::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
+{
+}
+
 }} // namespace

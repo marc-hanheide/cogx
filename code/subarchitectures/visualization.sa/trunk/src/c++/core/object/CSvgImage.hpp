@@ -77,6 +77,8 @@ public:
       return ContextGraphics;
    }
 
+   virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false); /*override*/
+
 private:
    SPart* findPart(const std::string& partId);
 };
