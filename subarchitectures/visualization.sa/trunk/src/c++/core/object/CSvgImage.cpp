@@ -79,6 +79,16 @@ void CSvgImage::removePart(const std::string& partId)
    }
 }
 
+void CSvgImage::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
+{
+   // TODO: bOrdered
+   typeof(m_Parts.begin()) itpart;
+   for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
+      SPart* pPart = *itpart;
+      if (pPart) objects.push_back(pPart);
+   }
+}
+
 void CSvgImage::setTransform2D(const std::string& partId, const std::vector<double> &matrix)
 {
    DTRACE("CSvgImage::setTransform2D");

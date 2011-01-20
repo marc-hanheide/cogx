@@ -100,6 +100,7 @@ private:
    void updateViewList();
    void updateViewMenu();
    void syncViewListItem();
+   void updateObjectList(cogx::display::CDisplayView *pView);
    QWidgetList getCastFrames();
 
    // CDisplayModelObserver notifications

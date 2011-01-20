@@ -317,6 +317,21 @@ void CHtmlObject::removePart(const std::string& partId)
    }
 }
 
+void CHtmlObject::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
+{
+   CHtmlObject *pHtml;
+   typeof(m_HeadParts.begin()) itmap;
+   for(itmap = m_HeadParts.begin(); itmap != m_HeadParts.end(); itmap++) {
+      CHtmlChunk *pChunk = itmap->second;
+      if (pChunk) parts.push_back(pChunk);
+   }
+
+   for(itmap = m_Parts.begin(); itmap != m_Parts.end(); itmap++) {
+      CHtmlChunk *pChunk = itmap->second;
+      if (pChunk) parts.push_back(pChunk);
+   }
+}
+
 void CHtmlObject_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
 {
    if (pObject && pContext)
