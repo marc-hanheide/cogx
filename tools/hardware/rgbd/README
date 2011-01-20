@@ -1,0 +1,11 @@
+hardware/rgbd
+
+Place for all current and future RGB-D camera server code.
+
+Currently there is a server for Microsoft Kinect sensor.
+Note that for this to work, you need OpenNI unstable branch (check it out at openni.org) and SensorKinect fork of PrimeSense Senso from here: https://github.com/avin2/SensorKinect
+KinectPushServer operates very much like Odometry and LaserScan push servers.
+There is a test component under .../src/c++/test and a corresponding cast file for quick checking your sensor.
+
+In the future as new RGB-D devices appear more push servers can be implemented under the same folder.
+
