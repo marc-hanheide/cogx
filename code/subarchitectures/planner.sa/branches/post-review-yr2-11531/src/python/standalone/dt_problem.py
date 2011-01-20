@@ -450,8 +450,12 @@ class DTProblem(object):
     def recompute_problem(self, new_state):
         self.state = new_state
         self.subproblems = self.compute_subproblems(self.state)
-        self.problem = self.create_problem(self.state, self.dtdomain)
-
+        self.problem, hstate = self.create_problem(self.state, self.dtdomain)
+        
+        self.goal_actions = self.create_goal_actions(self.goals, hstate, self.dtdomain)
+        self.dtdomain.actions += [a for a in self.goal_actions]
+        self.dtdomain.name2action = None
+        
     def compute_subproblems(self, prob_state):
         # import debug
         # debug.set_trace()
