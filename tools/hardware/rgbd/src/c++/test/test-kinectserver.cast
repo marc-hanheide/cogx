@@ -1,0 +1,7 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST localhost
+
+COMPONENT CPP kinect.server RGBDServer
+COMPONENT CPP kinect.client RGBDClient --log --debug
+
