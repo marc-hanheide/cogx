@@ -10,23 +10,29 @@
 
 module RGBD {
 
-sequence<int> DepthData;
-struct KinectData{
-int XRes;
-int YRes;
-DepthData depth;
-int frameid;
+  // Depth from Xn is an array of uint16
+  sequence<int> DepthData;
+
+  // The main data structure for Kinect Sensor data
+  // TODO: add image, more metadata fields.
+  struct KinectData{
+    int XRes;
+    int YRes;
+    DepthData depth;
+    int frameid;
+  };
+
+  // Kinect push client base class
+  interface KinectPushClient{
+    void receiveKinectData(KinectData data);
+  };
+
+  // All RGB-D push servers for different sensors.
+  interface RGBDPushServer extends cast::interfaces::CASTComponent{
+  
+    void registerKinectPushClient(KinectPushClient* client, double interval);
+  };
+
 };
-interface KinectPushClient{
-void receiveKinectData(KinectData data);
-};
 
-interface RGBDPushServer extends cast::interfaces::CASTComponent{
-void registerKinectPushClient(KinectPushClient* client, double interval);
-};
-
-
-};
-
-
-#endif // LASER_ICE
+#endif // RGBD_ICE
