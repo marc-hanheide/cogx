@@ -88,6 +88,7 @@ public slots:
 
 private slots:
    void onShowViewListChanged();
+   void onShowCustomControls();
    void onRefreshViewList();
    void onNewWindow();
    void onSaveWindowList();

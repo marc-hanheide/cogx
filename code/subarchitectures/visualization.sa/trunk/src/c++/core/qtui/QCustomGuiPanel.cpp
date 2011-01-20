@@ -38,6 +38,7 @@ QCustomGuiPanel::QCustomGuiPanel(QWidget* parent, Qt::WindowFlags flags)
       SLOT(doUiDataChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*,
             cogx::display::CGuiElement*, QString)),
       Qt::QueuedConnection);
+   m_controlCount = 0;
 }
 
 QCustomGuiPanel::~QCustomGuiPanel()
@@ -98,9 +99,10 @@ void QCustomGuiPanel::removeUi()
       if (pobj)
          pobj->deleteLater();
    }
+   m_controlCount = 0;
 }
 
-void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+int QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCustomGuiPanel::updateUi");
    if (m_pView) m_pView->viewObservers -= this;
@@ -109,11 +111,13 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
    removeUi();
 
    m_pView = pView;
-   if (!pModel || !pView) return;
+   if (!pModel || !pView) return 0;
 
    CPtrVector<cogx::display::CGuiElement> elements;
    pModel->getGuiElements(pView->m_id, elements);
-   if (elements.size() < 1) return;
+   if (elements.size() < 1) return 0;
+
+   m_controlCount = 0;
 
    // Create new widgets
    cogx::display::CGuiElement* pgel;
@@ -131,12 +135,14 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
             pLayout->addWidget(pBox);
             pSlot = new CChangeSlot(pgel, pView, pBox);
             connect(pBox, SIGNAL(stateChanged(int)), pSlot, SLOT(onCheckBoxChange(int)));
+            m_controlCount++;
             break;
          case cogx::display::CGuiElement::wtButton:
             pButton = new QPushButton(QString(pgel->m_label.c_str()), this);
             pLayout->addWidget(pButton);
             pSlot = new CChangeSlot(pgel, pView, pButton);
             connect(pButton, SIGNAL(clicked(bool)), pSlot, SLOT(onButtonClick(bool)));
+            m_controlCount++;
             break;
          default: break;
       }
@@ -145,4 +151,5 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
    setLayout(pLayout);
    if (pView) pView->viewObservers += this;
    setVisible(true);
+   return m_controlCount;
 }
