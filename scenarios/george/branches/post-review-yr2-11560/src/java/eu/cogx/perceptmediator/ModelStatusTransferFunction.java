@@ -44,22 +44,25 @@ public class ModelStatusTransferFunction
 				.getAsFormula());
 		double maxGain = 0.0;
 		String maxLabel = null;
+		boolean maxAsked4 = false;
 		for (int i = 0; i < from.gains.length; i++) {
 			// if we have asked for it already we can skip it.
-			if (from.askedFor.length>=i+1)
-				if (from.askedFor[i])
-					continue;
+			
+//				if (from.askedFor[i])
+//					continue;
 			if (from.gains[i] >= maxGain) {
 				maxGain = from.gains[i];
 				maxLabel = from.labels[i];
+				if (from.askedFor.length>=i+1)
+					maxAsked4 = from.askedFor[i];
 			}
 		}
-		if (maxLabel == null)
+		if (maxLabel == null || maxAsked4 == true)
 			return null;
 		result.put(MOST_PROMISING, PropositionFormula.create(maxLabel)
 				.getAsFormula());
 		result.put(GAIN, DoubleFormula.create(maxGain).getAsFormula());
-		result.put(ASKED_FOR, BoolFormula.create(false).getAsFormula());
+		result.put(ASKED_FOR, BoolFormula.create(maxAsked4).getAsFormula());
 		return result;
 	}
 
