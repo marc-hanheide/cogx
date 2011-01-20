@@ -239,8 +239,13 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.actRestoreWindowLayout, SIGNAL(triggered()),
          this, SLOT(onRestoreWindowLayout()));
 
+   connect(ui.actShowCustomControls, SIGNAL(triggered()),
+         this, SLOT(onShowCustomControls()));
+
    ui.wgCustomGui->setVisible(false);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
+   ui.ckCustomControls->setEnabled(false);
+   ui.wgCustomGui->setVisible(false);
 
    // XXX: Passing pointers is unsafe
    qRegisterMetaType<cogx::display::CDisplayModel*>("cogx::display::CDisplayModel*");
@@ -370,12 +375,19 @@ void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
    DVERIFYGUITHREAD("Custom GUI", this);
-   ui.wgCustomGui->updateUi(m_pModel, pView);
+   int nc = ui.wgCustomGui->updateUi(m_pModel, pView);
+   ui.ckCustomControls->setEnabled(nc > 0);
+   ui.wgCustomGui->setVisible(ui.ckCustomControls->isChecked() && nc > 0);
 }
 
 void QCastMainFrame::onShowViewListChanged()
 {
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
+}
+
+void QCastMainFrame::onShowCustomControls()
+{
+   ui.wgCustomGui->setVisible(ui.ckCustomControls->isChecked() && ui.wgCustomGui->controlCount() > 0);
 }
 
 void QCastMainFrame::onRefreshViewList()
