@@ -32,6 +32,7 @@ protected:
 	virtual void runComponent();
 	virtual void configure(const std::map<std::string,std::string> & config);
 	XnStatus readFromKinect();
+	XnStatus InitKinect();
 
 	class KinectClient {
 	  public:

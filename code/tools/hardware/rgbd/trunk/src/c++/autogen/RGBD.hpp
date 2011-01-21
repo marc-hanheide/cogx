@@ -109,13 +109,16 @@ void ice_readRGBDPushServer(const ::Ice::InputStreamPtr&, RGBDPushServerPtr&);
 namespace RGBD
 {
 
-typedef ::std::vector< ::Ice::Int> DepthData;
+typedef ::std::vector< ::Ice::Int> IntSeq;
+
+typedef ::std::vector< ::Ice::Byte> ByteSeq;
 
 struct KinectData
 {
     ::Ice::Int XRes;
     ::Ice::Int YRes;
-    ::RGBD::DepthData depth;
+    ::RGBD::IntSeq depth;
+    ::RGBD::ByteSeq image;
     ::Ice::Int frameid;
 
     bool operator==(const KinectData&) const;

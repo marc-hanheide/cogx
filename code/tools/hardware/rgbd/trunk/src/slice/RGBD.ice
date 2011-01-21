@@ -11,15 +11,16 @@
 module RGBD {
 
   // Depth from Xn is an array of uint16
-  sequence<int> DepthData;
-
+  sequence<int> IntSeq;
+  sequence<byte> ByteSeq;
   // The main data structure for Kinect Sensor data
   // TODO: add image, more metadata fields.
   struct KinectData{
     int XRes;
     int YRes;
-    DepthData depth;
-    int frameid;
+    IntSeq depth;
+    ByteSeq image;
+    int frameid; 
   };
 
   // Kinect push client base class
