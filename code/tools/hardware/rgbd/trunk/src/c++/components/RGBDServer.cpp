@@ -76,7 +76,7 @@ XnStatus RGBDServer::readFromKinect(){
 	xnFPSMarkFrame(&m_xnFPS);
 
 	m_depth.GetMetaData(depthMD);
-	const XnDepthPixel* pDepthMap = depthMD.Data();
+	//const XnDepthPixel* pDepthMap = depthMD.Data();
 	//Convert to Ice
 
 	m_kdata.XRes = depthMD.XRes();
