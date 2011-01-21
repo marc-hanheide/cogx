@@ -431,16 +431,20 @@ void QCastMainFrame::onTreeItemChanged(QTreeWidgetItem* pItem, int column)
    if (!pView) return;
 
    bool bVisible = (pItem->checkState(column) == Qt::Checked);
+   std::string objid;
    if (pItem->parent()) {
-      QString objid = pItem->parent()->text(column);
+      objid = pItem->parent()->text(column).toStdString();
       QString partid = pItem->text(column);
-      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid.toStdString());
+      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid);
       pState->m_childState[partid.toStdString()].m_bVisible = bVisible;
    }
    else {
-      QString objid = pItem->text(column);
-      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid.toStdString());
+      objid = pItem->text(column).toStdString();
+      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid);
       pState->m_bVisible = bVisible;
+   }
+   if (m_pModel) {
+      m_pModel->refreshObject(objid, /*bNotifyChanged=*/ true);
    }
 
 }

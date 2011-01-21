@@ -124,10 +124,12 @@ void CSvgImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void
    if (pObject == NULL || pContext == NULL) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
    QPainter *pPainter = (QPainter*) pContext;
+   CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 
    CSvgImage::SPart* pPart;
    FOR_EACH(pPart, pImage->m_Parts) {
       if (! pPart) continue;
+      if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
       if (pPart->data.size() < 16) continue;
 
       pPainter->save();
@@ -160,10 +162,12 @@ void CSvgImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, v
    CSvgImage *pImage = (CSvgImage*) pObject;
    QGraphicsItemGroup *pGroup = (QGraphicsItemGroup*) pContext;
    QGraphicsScene *pScene = pGroup->scene();
+   CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 
    CSvgImage::SPart* pPart;
    FOR_EACH(pPart, pImage->m_Parts) {
       if (! pPart) continue;
+      if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
       if (pPart->data.size() < 16) continue;
 
       QGraphicsSvgItem* pSvgItem = new QGraphicsSvgItem(pGroup);
@@ -207,6 +211,7 @@ void CSvgImage_RenderHtml::draw(CDisplayView *pView, const std::string& info,
 {
    if (pObject == NULL || pContext == NULL) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
+   CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 
    QStringList *pList = (QStringList*) pContext;
 
@@ -214,6 +219,7 @@ void CSvgImage_RenderHtml::draw(CDisplayView *pView, const std::string& info,
       CSvgImage::SPart* pPart;
       FOR_EACH(pPart, pImage->m_Parts) {
          if (! pPart) continue;
+         if (! pState->m_childState[pPart->m_id].m_bVisible) continue;
          if (pPart->data.size() < 16) continue;
          pList->append("<div class='svgpart' >");
          pList->append(QString::fromStdString(pPart->data));
