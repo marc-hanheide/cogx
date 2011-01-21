@@ -19,11 +19,13 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
-#include <QTreeWidgetItem>
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
 
+#ifdef DEBUG_TRACE
+// #undef DEBUG_TRACE
+#endif
 #include "../convenience.hpp"
 
 QCastFrameManager::QCastFrameManager()
@@ -243,6 +245,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.actShowCustomControls, SIGNAL(triggered()),
          this, SLOT(onShowCustomControls()));
 
+   connect(ui.treeObjects, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+         this, SLOT(onTreeItemChanged(QTreeWidgetItem*, int)));
+
    ui.wgCustomGui->setVisible(false);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
    ui.ckCustomControls->setEnabled(false);
@@ -256,6 +261,11 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
       SIGNAL(signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
       this,
       SLOT(doViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
+      Qt::QueuedConnection);
+   connect(this, 
+      SIGNAL(signalViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
+      this,
+      SLOT(doViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
       Qt::QueuedConnection);
 
    QStatusBar *pBar = statusBar();
@@ -381,6 +391,9 @@ void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
       pModel->removeRows(0, ni);
    }
    if (!pView) return;
+
+   // We block the singals so that itemChanged()..onTreeItemChanged() is not called.
+   ui.treeObjects->blockSignals(true);
    CPtrVector<cogx::display::CDisplayObject> objects;
    pView->getObjects(objects);
    cogx::display::CDisplayObject *pObject;
@@ -389,6 +402,8 @@ void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
       ss.clear();
       ss << QString::fromStdString(pObject->m_id);
       QTreeWidgetItem* pItem = new QTreeWidgetItem(ui.treeObjects, ss);
+      cogx::display::CViewedObjectState* pState = pView->getObjectState(pObject->m_id);
+      pItem->setCheckState(0, pState->m_bVisible ? Qt::Checked : Qt::Unchecked);
 
       cogx::display::CDisplayObjectPart *pPart;
       CPtrVector<cogx::display::CDisplayObjectPart> parts;
@@ -396,10 +411,38 @@ void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
       FOR_EACH(pPart, parts) {
          ss.clear();
          ss << QString::fromStdString(pPart->m_id);
-         new QTreeWidgetItem(pItem, ss);
+         QTreeWidgetItem *pChild = new QTreeWidgetItem(pItem, ss);
+         
+         pChild->setCheckState(0, pState->m_childState[pPart->m_id].m_bVisible ? Qt::Checked : Qt::Unchecked);
       }
    }
    ui.treeObjects->expandAll();
+   ui.treeObjects->blockSignals(false);
+}
+
+// This should only happen when the checkbox in column 0 changes.
+// We update the object/part state in CDisplayView to reflect the value of the checkbox.
+// TODO: The view should be redrawn!
+void QCastMainFrame::onTreeItemChanged(QTreeWidgetItem* pItem, int column)
+{
+   DTRACE("onTreeItemChanged");
+   if (column != 0) return;
+   cogx::display::CDisplayView* pView = getView();
+   if (!pView) return;
+
+   bool bVisible = (pItem->checkState(column) == Qt::Checked);
+   if (pItem->parent()) {
+      QString objid = pItem->parent()->text(column);
+      QString partid = pItem->text(column);
+      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid.toStdString());
+      pState->m_childState[partid.toStdString()].m_bVisible = bVisible;
+   }
+   else {
+      QString objid = pItem->text(column);
+      cogx::display::CViewedObjectState* pState = pView->getObjectState(objid.toStdString());
+      pState->m_bVisible = bVisible;
+   }
+
 }
 
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
@@ -505,6 +548,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
             }
 
             CPtrVector<cogx::display::CHtmlChunk> forms;
+            // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
             pView->getHtmlChunks(forms, cogx::display::CHtmlChunk::form);
             cogx::display::CHtmlChunk* pForm;
             FOR_EACH(pForm, forms) {
@@ -517,6 +561,13 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    }
 
    syncViewListItem();
+}
+
+cogx::display::CDisplayView* QCastMainFrame::getView()
+{
+   if (ui.drawingArea)
+      return ui.drawingArea->getView();
+   return 0;
 }
 
 void QCastMainFrame::closeEvent(QCloseEvent *event)
@@ -567,4 +618,20 @@ void QCastMainFrame::doViewAdded(cogx::display::CDisplayModel *pModel, cogx::dis
    updateViewList();
    updateViewMenu();
    // ui.drawingArea->onViewChanged(pModel, pView);
+}
+
+void QCastMainFrame::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+{
+   DTRACE("QCastMainFrame::onViewChanged " << (pView ? pView->m_id : "NULL"));
+   if (pView == getView()) {
+      DMESSAGE("emitting signalViewChanged");
+      emit signalViewChanged(pModel, pView); // connection to doViewChanged has to be of type 'queued' or 'auto'
+   }
+}
+
+void QCastMainFrame::doViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+{
+   DTRACE("QCastMainFrame::doViewChanged");
+   if (pView == getView())
+      updateObjectList(pView);
 }

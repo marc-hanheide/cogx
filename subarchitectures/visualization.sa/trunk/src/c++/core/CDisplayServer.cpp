@@ -309,8 +309,8 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
    }
 
    if (pImage) {
-      pImage->setPart(partId, xmlData);
-      m_Model.refreshObject(id);
+      bool bNotifyNew = pImage->setPart(partId, xmlData);
+      m_Model.refreshObject(id, bNotifyNew);
    }
    else {
       pImage = new CSvgImage();

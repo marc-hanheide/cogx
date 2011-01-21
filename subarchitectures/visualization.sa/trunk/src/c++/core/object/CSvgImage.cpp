@@ -53,30 +53,35 @@ CSvgImage::SPart* CSvgImage::findPart(const std::string& partId)
    return NULL;
 }
 
-void CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
+bool CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 {
    SPart* pPart = findPart(partId);
-   if (! pPart) {
+   bool exists = pPart != 0;
+   if (! exists) {
       pPart = new SPart(partId);
       m_Parts.push_back(pPart);
    }
    if (pPart) {
       pPart->setData(xmlData);
    }
+   return !exists;
 }
 
-void CSvgImage::removePart(const std::string& partId)
+bool CSvgImage::removePart(const std::string& partId)
 {
    typeof(m_Parts.begin()) itpart;
+   bool removed = false;
    for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
       SPart* pPart = *itpart;
       if (! pPart) continue;
       if (pPart->m_id == partId) {
          m_Parts.erase(itpart);
          delete pPart;
+         removed = true;
          break;
       }
    }
+   return removed;
 }
 
 void CSvgImage::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
@@ -114,7 +119,7 @@ CRenderer* CSvgImage::getRenderer(ERenderContext context)
    return NULL;
 }
 
-void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
+void CSvgImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
@@ -149,7 +154,7 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
    }
 }
 
-void CSvgImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
+void CSvgImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
@@ -191,13 +196,14 @@ void CSvgImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
    }
 }
 
-void CSvgImage_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
+void CSvgImage_RenderHtml::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject && pContext)
-      draw("body", pObject, pContext);
+      draw(pView, "body", pObject, pContext);
 }
 
-void CSvgImage_RenderHtml::draw(const std::string& info, CDisplayObject *pObject, void *pContext)
+void CSvgImage_RenderHtml::draw(CDisplayView *pView, const std::string& info,
+      CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
    CSvgImage *pImage = (CSvgImage*) pObject;

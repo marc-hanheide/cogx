@@ -68,8 +68,11 @@ public:
    CSvgImage();
    ~CSvgImage();
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
-   void setPart(const std::string& partId, const std::string& xmlData);
-   void removePart(const std::string& partId);
+
+   // Returns true if this is a new part;
+   bool setPart(const std::string& partId, const std::string& xmlData);
+
+   bool removePart(const std::string& partId);
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
 
    virtual ERenderContext getPreferredContext()
@@ -86,20 +89,20 @@ private:
 class CSvgImage_Render2D: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 class CSvgImage_RenderScene: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 class CSvgImage_RenderHtml: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
-   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 }} // namespace

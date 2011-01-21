@@ -242,7 +242,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
    }
 }
 
-void CDisplayModel::refreshObject(const std::string &id)
+void CDisplayModel::refreshObject(const std::string &id, bool bNotifyChanged)
 {
    //DTRACE("CDisplayModel::refreshObject");
    TObjectMap::iterator itobj = m_Objects.find(id);
@@ -252,6 +252,13 @@ void CDisplayModel::refreshObject(const std::string &id)
       CDisplayView *pview;
       FOR_EACH(pview, views) {
          pview->refreshObject(id);
+         if (bNotifyChanged) {
+            CDisplayModelObserver *pobsrvr;
+            CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+            FOR_EACH(pobsrvr, modelObservers) {
+               if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+            }
+         }
       }
    }
 }
@@ -269,6 +276,11 @@ void CDisplayModel::removeObject(const std::string &id)
       CDisplayView *pview;
       FOR_EACH(pview, views) {
          pview->removeObject(id);
+         CDisplayModelObserver *pobsrvr;
+         CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+         FOR_EACH(pobsrvr, modelObservers) {
+            if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+         }
       }
 
       delete pfound;
@@ -286,14 +298,18 @@ void CDisplayModel::removePart(const std::string &id, const std::string& partId)
       //    1. remove part from object parts
       //    2. notify observers
       //    3. delete the part <- this one is now in 1 and could cause a segfault.
-      // Also: only view observers are notified, but model observers may have to
-      // be notified, too.
-      pfound->removePart(partId);
+      if (pfound->removePart(partId)) {
+         CPtrVector<CDisplayView> views = findViewsWithObject(id);
+         CDisplayView *pview;
+         FOR_EACH(pview, views) {
+            pview->refreshObject(id);
 
-      CPtrVector<CDisplayView> views = findViewsWithObject(id);
-      CDisplayView *pview;
-      FOR_EACH(pview, views) {
-         pview->refreshObject(id);
+            CDisplayModelObserver *pobsrvr;
+            CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+            FOR_EACH(pobsrvr, modelObservers) {
+               if (pobsrvr) pobsrvr->onViewChanged(this, pview);
+            }
+         }
       }
    }
 }
@@ -361,8 +377,9 @@ bool CDisplayObject::isBitmap()
    return false;
 }
 
-void CDisplayObject::removePart(const std::string& partId)
+bool CDisplayObject::removePart(const std::string& partId)
 {
+   return false;
 }
 
 void CDisplayObject::setTransform2D(const std::string& partId, const std::vector<double>& transform)

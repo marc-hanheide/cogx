@@ -225,16 +225,21 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
    }
 }
 
-void CLuaGlScript::removePart(const std::string& partId)
+bool CLuaGlScript::removePart(const std::string& partId)
 {
    typeof(m_Models.begin()) it = m_Models.find(partId);
+   bool removed = false;
    //if (it->second != NULL) {
    if (it != m_Models.end()) {
       IceUtil::RWRecMutex::WLock lock(_objectMutex);
       CScript* pModel = m_Models[partId];
       m_Models.erase(it);
-      if (pModel) delete pModel;
+      if (pModel) {
+         delete pModel;
+	 removed = true;
+      }
    }
+   return removed;
 }
 
 ERenderContext CLuaGlScript::getPreferredContext()
@@ -273,7 +278,7 @@ void CLuaGlScript::setPose3D(const std::string& partId, const std::vector<double
    //pModel->m_pose.q.w = rotation[3];
 }
 
-void CLuaGlScript_RenderGL::draw(CDisplayObject *pObject, void *pContext)
+void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CLuaGlScript_RenderGL::draw");
    if (pObject == NULL) return;

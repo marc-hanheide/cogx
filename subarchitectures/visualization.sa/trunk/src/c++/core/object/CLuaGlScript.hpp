@@ -48,7 +48,7 @@ public:
    CLuaGlScript();
    ~CLuaGlScript();
    void loadScript(const std::string& partId, const std::string& script);
-   void removePart(const std::string& partId);
+   bool removePart(const std::string& partId);
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
@@ -58,7 +58,7 @@ public:
 class CLuaGlScript_RenderGL: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 
