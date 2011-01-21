@@ -159,6 +159,10 @@ RGBD::KinectData::operator==(const KinectData& __rhs) const
     {
         return false;
     }
+    if(image != __rhs.image)
+    {
+        return false;
+    }
     if(frameid != __rhs.frameid)
     {
         return false;
@@ -197,6 +201,14 @@ RGBD::KinectData::operator<(const KinectData& __rhs) const
     {
         return false;
     }
+    if(image < __rhs.image)
+    {
+        return true;
+    }
+    else if(__rhs.image < image)
+    {
+        return false;
+    }
     if(frameid < __rhs.frameid)
     {
         return true;
@@ -221,6 +233,14 @@ RGBD::KinectData::__write(::IceInternal::BasicStream* __os) const
     {
         __os->write(&depth[0], &depth[0] + depth.size());
     }
+    if(image.size() == 0)
+    {
+        __os->writeSize(0);
+    }
+    else
+    {
+        __os->write(&image[0], &image[0] + image.size());
+    }
     __os->write(frameid);
 }
 
@@ -230,6 +250,9 @@ RGBD::KinectData::__read(::IceInternal::BasicStream* __is)
     __is->read(XRes);
     __is->read(YRes);
     __is->read(depth);
+    ::std::pair<const ::Ice::Byte*, const ::Ice::Byte*> ___image;
+    __is->read(___image);
+    ::std::vector< ::Ice::Byte>(___image.first, ___image.second).swap(image);
     __is->read(frameid);
 }
 
@@ -239,6 +262,7 @@ RGBD::KinectData::ice_write(const ::Ice::OutputStreamPtr& __outS) const
     __outS->writeInt(XRes);
     __outS->writeInt(YRes);
     __outS->writeIntSeq(depth);
+    __outS->writeByteSeq(image);
     __outS->writeInt(frameid);
 }
 
@@ -248,6 +272,7 @@ RGBD::KinectData::ice_read(const ::Ice::InputStreamPtr& __inS)
     XRes = __inS->readInt();
     YRes = __inS->readInt();
     depth = __inS->readIntSeq();
+    image = __inS->readByteSeq();
     frameid = __inS->readInt();
 }
 
