@@ -342,10 +342,13 @@ void CHtmlObject_RenderHtml::draw(CDisplayView *pView, CDisplayObject *pObject, 
       draw(pView, "body", pObject, pContext);
 }
 
-void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject, void *pContext)
+void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject,
+      void *pContext)
 {
-   if (pObject == NULL) return;
+   if (! pObject || !pContext) return;
    CHtmlObject *pHtml = dynamic_cast<CHtmlObject*>(pObject);
+   if (! pHtml) return;
+   CViewedObjectState *pState = pView->getObjectState(pHtml->m_id);
 
    QStringList *pList = (QStringList*) pContext;
 
@@ -353,6 +356,7 @@ void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, 
       typeof(pHtml->m_HeadParts.begin()) itmap;
       for(itmap = pHtml->m_HeadParts.begin(); itmap != pHtml->m_HeadParts.end(); itmap++) {
          CHtmlChunk *pChunk = itmap->second;
+         if (!pChunk || !pState->m_childState[pChunk->m_id].m_bVisible) continue;
          pList->append(pChunk->m_html);
       }
    }
@@ -361,6 +365,7 @@ void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, 
       typeof(pHtml->m_Parts.begin()) itmap;
       for(itmap = pHtml->m_Parts.begin(); itmap != pHtml->m_Parts.end(); itmap++) {
          CHtmlChunk *pChunk = itmap->second;
+         if (!pChunk || !pState->m_childState[pChunk->m_id].m_bVisible) continue;
          pList->append(pChunk->m_html);
       }
    }
