@@ -96,7 +96,7 @@ CRenderer* CTomGineModel::getRenderer(ERenderContext context)
 }
 
 // OpenGL context is selected by Qt, so pContext is NULL.
-void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
+void CTomGineModel_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CTomGineModel_RenderGL::draw");
    if (pObject == NULL) return;

@@ -42,15 +42,15 @@ public:
    CHtmlChunk* setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);
    CHtmlChunk* getPart(const std::string& partId);
-   void removePart(const std::string& partId);
+   bool removePart(const std::string& partId);
    void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
 };
 
 class CHtmlObject_RenderHtml: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
-   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 }} // namespace

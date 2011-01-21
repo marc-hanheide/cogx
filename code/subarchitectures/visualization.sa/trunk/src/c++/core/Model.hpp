@@ -95,7 +95,7 @@ public:
    CDisplayModel();
    virtual ~CDisplayModel();
    void setObject(CDisplayObject *pObject);
-   void refreshObject(const std::string &id);
+   void refreshObject(const std::string &id, bool bNotifyChanged=false);
    void removeObject(const std::string &id);
    void removePart(const std::string &id, const std::string& partId);
    CDisplayObject* getObject(const std::string &id);
@@ -150,10 +150,24 @@ public:
          const std::vector<double>& rotationQaternionXYZW);
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
-   virtual void removePart(const std::string& partId);
    virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false);
+
+   // Returns true if the part existed and was successfully removed.
+   virtual bool removePart(const std::string& partId);
 };
 
+// The state can't be stored with CDisplayObject because an object may be
+// displayed in multiple views.
+// Note: CViewedObjectState is a nested map.
+class CViewedObjectState
+{
+public:
+   bool m_bVisible;
+   std::map<std::string, CViewedObjectState> m_childState;
+   CViewedObjectState() {
+      m_bVisible = true;
+   }
+};
 
 // An abstract class that renders an object into a context.
 // Each object returns an instance of a renderer to render it in
@@ -168,10 +182,10 @@ class CRenderer
 public:
    // Draws the object into the specified context. The function casts
    // the pointers to the desired types draws the object.
-   virtual void draw(CDisplayObject *pObject, void *pContext) = 0;
+   virtual void draw(CDisplayView* pView, CDisplayObject *pObject, void *pContext) = 0;
 
    // Some contexts require extra drawing info (eg. htlm: head & body rendered separately)
-   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext) {}
+   virtual void draw(CDisplayView* pView, const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 
 
@@ -185,9 +199,14 @@ class CDisplayView: public CGuiElementObserver
    // Each object may have its own transformation in the view. XXX NOT YET
    std::map<std::string, std::vector<double> > m_Trafos;
 
-   // The view may know about objects even before they exists. When objects
+   // The view may know about objects even before they exist. When objects
    // are created, they are added to the subscribed views.
    std::map<std::string, bool> m_SubscribedObjects;
+
+   // Display properties of objects and parts.
+   // We keep state information even after an object/part is removed from
+   // the view just in case if an object with the same id is recreated.
+   CViewedObjectState m_ObjectState;
 
 public:
    std::string m_id;
@@ -204,12 +223,15 @@ public:
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
    void getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered=false);
+   CViewedObjectState* getObjectState(const std::string& id);
 
    virtual void drawGL();
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
    virtual void drawScene(QGraphicsScene &scene);
    virtual void drawHtml(QStringList &head, QStringList &body);
+
+   // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
 
 public:

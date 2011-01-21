@@ -296,14 +296,16 @@ CHtmlChunk* CHtmlObject::getPart(const std::string& partId)
    return NULL;
 }
 
-void CHtmlObject::removePart(const std::string& partId)
+bool CHtmlObject::removePart(const std::string& partId)
 {
    typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
+   bool removed = false;
    //if (itpart->second != NULL) {
    if (itpart != m_Parts.end()) {
       CHtmlChunk* pPart = itpart->second;
       m_Parts.erase(itpart);
       delete pPart;
+      removed = true;
    }
 
    typeof(m_HeadParts.begin()) ithd = m_HeadParts.find(partId);
@@ -314,7 +316,9 @@ void CHtmlObject::removePart(const std::string& partId)
       //    setHtml() -> (when data is empty) -> removePart()
       m_HeadParts.erase(ithd);
       delete pPart;
+      removed = true;
    }
+   return removed;
 }
 
 void CHtmlObject::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
@@ -332,13 +336,13 @@ void CHtmlObject::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
    }
 }
 
-void CHtmlObject_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
+void CHtmlObject_RenderHtml::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject && pContext)
-      draw("body", pObject, pContext);
+      draw(pView, "body", pObject, pContext);
 }
 
-void CHtmlObject_RenderHtml::draw(const std::string& info, CDisplayObject *pObject, void *pContext)
+void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL) return;
    CHtmlObject *pHtml = dynamic_cast<CHtmlObject*>(pObject);

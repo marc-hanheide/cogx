@@ -45,13 +45,13 @@ public:
 class CRasterImage_Render2D: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 class CRasterImage_RenderScene: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 }} // namespace

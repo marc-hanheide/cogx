@@ -43,7 +43,7 @@ public:
 class CTomGineModel_RenderGL: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 

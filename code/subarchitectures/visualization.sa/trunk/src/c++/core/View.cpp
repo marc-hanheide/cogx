@@ -20,7 +20,7 @@
 #include <QGraphicsItemGroup>
 
 #ifdef DEBUG_TRACE
-// #undef DEBUG_TRACE
+#undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -218,6 +218,11 @@ void CDisplayView::getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered
    }
 }
 
+CViewedObjectState* CDisplayView::getObjectState(const std::string& id)
+{
+   return &m_ObjectState.m_childState[id]; // if it doesn't exist, std::map creates one
+}
+
 // The CDisplayObject should not draw itself, instead it should provide another
 // object (Renderer) that will draw it. function: getRenderer(context).
 // Implementation: all objects of the same class share the same (static)
@@ -237,6 +242,7 @@ void CDisplayView::draw2D(QPainter &painter)
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
+      if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
       pRender = pObject->getRenderer(Context2D);
       if (pRender) {
          painter.save();
@@ -249,7 +255,7 @@ void CDisplayView::draw2D(QPainter &painter)
                  trmatrix[6], trmatrix[7], trmatrix[8]);
             painter.setWorldTransform(trans, true);
          }
-         pRender->draw(pObject, &painter);
+         pRender->draw(this, pObject, &painter);
          painter.restore();
       }
    }
@@ -270,6 +276,7 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
+      if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
       pRender = pObject->getRenderer(ContextGraphics);
       if (pRender) {
          QGraphicsItemGroup* pGroup = scene.createItemGroup(QList<QGraphicsItem*>());
@@ -282,7 +289,7 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
                  trmatrix[6], trmatrix[7], trmatrix[8]);
             pGroup->setTransform(trans);
          }
-         pRender->draw(pObject, pGroup);
+         pRender->draw(this, pObject, pGroup);
       }
    }
 }
@@ -302,9 +309,10 @@ void CDisplayView::drawGL()
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
+      if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
       pRender = pObject->getRenderer(ContextGL);
       if (pRender) {
-         pRender->draw(pObject, NULL);
+         pRender->draw(this, pObject, NULL);
       }
    }
 }
@@ -321,10 +329,11 @@ void CDisplayView::drawHtml(QStringList &head, QStringList &body)
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
+      if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
       pRender = pObject->getRenderer(ContextHtml);
       if (pRender) {
-         pRender->draw("head", pObject, &head);
-         pRender->draw("body", pObject, &body);
+         pRender->draw(this, "head", pObject, &head);
+         pRender->draw(this, "body", pObject, &body);
       }
    }
 }
@@ -337,11 +346,12 @@ int CDisplayView::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
    typeof(m_ObjectOrder.begin()) itorder;
    typeof(m_Objects.begin()) itobj;
    for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-     itobj = m_Objects.find(*itorder);
-     if (itobj == m_Objects.end()) continue;
-     pObject = itobj->second;
-     if (!pObject) continue;
-     count += pObject->getHtmlChunks(forms, typeMask);
+      itobj = m_Objects.find(*itorder);
+      if (itobj == m_Objects.end()) continue;
+      pObject = itobj->second;
+      if (!pObject) continue;
+      // TODO: ??? getHtmlChunks: if (!m_ObjectState[pObject->m_id].m_bVisible) continue;
+      count += pObject->getHtmlChunks(forms, typeMask);
    }
    return count;
 }

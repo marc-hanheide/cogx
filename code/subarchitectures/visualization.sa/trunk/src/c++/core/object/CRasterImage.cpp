@@ -51,7 +51,7 @@ CRenderer* CRasterImage::getRenderer(ERenderContext context)
    return NULL;
 }
 
-void CRasterImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
+void CRasterImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
    CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);
@@ -62,7 +62,7 @@ void CRasterImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
    }
 }
 
-void CRasterImage_RenderScene::draw(CDisplayObject *pObject, void *pContext)
+void CRasterImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
    CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);

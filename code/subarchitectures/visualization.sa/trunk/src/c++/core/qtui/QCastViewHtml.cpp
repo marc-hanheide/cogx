@@ -215,6 +215,7 @@ void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
    m_Chunks.clear();
+   // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
 
    cxd::CHtmlChunk* pChunk;
