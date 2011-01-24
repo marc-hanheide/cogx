@@ -106,7 +106,7 @@ public:
   Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}		///< Returns ranked Gestat of "type" and "id"
   unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}												///< Ruturns number of Gestalts of "type"
   GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}						///< Returns Gestalt principle of "type"
-	VoteImage* VI() {return vote_img;}
+  VoteImage* VI() {return vote_img;}
 };
 
 }
