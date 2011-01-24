@@ -13,11 +13,12 @@ namespace Z
 
 static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
-  "CORNER"
+  "LJUNCTION"
+  "CORNER",
   "RECTANGLE",
   "UNDEF"
 };
-static const int type_names_length[] = {6, 9,0,0};
+static const int type_names_length[] = {9, 6, 9, 0, 0};
  
 
 /**
