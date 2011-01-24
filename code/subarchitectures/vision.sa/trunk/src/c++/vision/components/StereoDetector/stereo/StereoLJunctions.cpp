@@ -280,15 +280,16 @@ void StereoLJunctions::MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<Tm
  * @param matches Number of matched points.
  * @param ljct3ds Array of calculated 3d l-junctions.
  */
-void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches, Array<LJunction3D> &ljct3ds)
+void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches/*, Array<LJunction3D> &ljct3ds*/)
 {
   unsigned u = matches;
   for(unsigned i = 0; i < u;)
   {
-    LJunction3D ljct3d;
-    if (ljct3d.point3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
+    LJunction3D *ljct3d = new LJunction3D();
+    if (ljct3d->isct3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
     {
-      ljct3ds.PushBack(ljct3d);
+      score->NewGestalt3D(ljct3d);
+//       ljct3ds.PushBack(ljct3d);
       i++;
     }
     // move unacceptable points to the end
@@ -310,7 +311,6 @@ void StereoLJunctions::ClearResults()
 {
   ljcts[LEFT].Clear();
   ljcts[RIGHT].Clear();
-  ljct3ds.Clear();
   ljctMatches = 0;
 }
 
@@ -348,7 +348,7 @@ void StereoLJunctions::Process()
 // printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
   MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
 // printf("MatchedLJunctions: %u\n", ljctMatches);
-  Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches, ljct3ds);
+  Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
 }
 
 

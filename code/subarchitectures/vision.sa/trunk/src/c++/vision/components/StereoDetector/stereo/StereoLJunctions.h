@@ -13,6 +13,7 @@
 #include "StereoCamera.hh"
 #include "LJunction.hh"
 #include "Vector.hh"
+#include "LJunction3D.h"
 
 namespace Z
 {
@@ -38,12 +39,12 @@ public:
 /**
  * @brief Class LJunction3D
  */
-class LJunction3D
-{
-public:
-  Vertex3D point3D;               ///< 3D intersection point
-  Vector3 dir[2];                 ///< 3D direction of the 2 arms of the L-Junction	/// TODO Calculate
-};
+// class LJunction3D
+// {
+// public:
+//   Vertex3D point3D;               ///< 3D intersection point
+//   Vector3 dir[2];                 ///< 3D direction of the 2 arms of the L-Junction	/// TODO Calculate
+// };
 
 
 /**
@@ -54,7 +55,7 @@ class StereoLJunctions : public StereoBase
 private:
 
   Array<TmpLJunction> ljcts[2];   ///< Tmp. l-junctions from the vision cores.
-  Array<LJunction3D> ljct3ds;     ///< 3D l-junctions
+//  Array<LJunction3D> ljct3ds;     ///< 3D l-junctions
   int ljctMatches;                ///< Number of stereo matched l-junctions
 
 #ifdef HAVE_CAST
@@ -64,7 +65,7 @@ private:
 
   unsigned FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l);
   void MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches);
-  void Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches, Array<LJunction3D> &ljct3ds);
+  void Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches/*, Array<LJunction3D> &ljct3ds*/);
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
