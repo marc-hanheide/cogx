@@ -23,6 +23,7 @@ class Gestalt3D
 public:
   enum Type
   {
+    LJUNCTION,
     CORNER,
     RECTANGLE,
     MAX_TYPE,
