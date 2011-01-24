@@ -717,6 +717,7 @@ void PlanePopOut::runComponent()
 		pointsN.clear();
 		objnumber = 0;
 		N = (int)points.size()/5000;
+		if (N < 1) N = 1; // if ponits.size() < 5000, the loop will never end!
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
