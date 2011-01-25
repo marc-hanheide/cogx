@@ -130,14 +130,14 @@ double StereoBase::MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsi
 double StereoBase::MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point)
 {
   double dv, du;
-	dv = fabs(left_point.pr.y - right_point.pr.y);	// distance in y-dir (should be zero)
-	du = left_point.pr.x - right_point.pr.x;				// distance in z-dir 
+  dv = fabs(left_point.pr.y - right_point.pr.y);        // distance in y-dir (should be zero)
+  du = left_point.pr.x - right_point.pr.x;              // distance in z-dir 
 
 //printf("  StereoBase::MatchingScorePoint => du: %4.2f - dv: %4.2f\n", du, dv);
 
-	if(dv < SC_MAX_DELTA_V_POINT && du > SC_MIN_DISPARITY)
-		return dv;
-	else return HUGE;
+  if(dv < SC_MAX_DELTA_V_POINT && du > SC_MIN_DISPARITY)
+    return dv;
+  else return HUGE;
 }
 
 

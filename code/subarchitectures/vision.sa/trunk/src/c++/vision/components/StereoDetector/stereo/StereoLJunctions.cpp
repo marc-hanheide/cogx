@@ -7,6 +7,7 @@
  */
 
 #include "StereoLJunctions.h"
+#include "StereoTypes.h"
 
 namespace Z
 {
@@ -22,6 +23,9 @@ TmpLJunction::TmpLJunction(LJunction *ljct)
 {
   point2D.p.x = ljct->isct.x;
   point2D.p.y = ljct->isct.y;
+  
+  dir[0] = ljct->dir[0];
+  dir[1] = ljct->dir[1];
 }
 
 
@@ -119,106 +123,87 @@ void StereoLJunctions::DrawSingleMatched(int side, int id, int detail)
 }
 
 /**
- * @brief Convert rectangle from object detector to working memory's visual object.
+ * @brief Convert the l-junction to a working memory's visual object.
  * @param obj Visual object to create.
- * @param id ID of the object detector rectangle.
+ * @param id ID of the l-junction.
  * @return Return true for success
  */
 #ifdef HAVE_CAST
 bool StereoLJunctions::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
-// printf("StereoLJunctions::StereoGestalt2VisualObject: Not yet implemented.\n");														/// TODO TODO TODO Not yet implemented!
-// 	obj->model = new VisionData::GeometryModel;
-// 	Rectangle3D rectangle = Rectangles(id);
-// 
-// 	// Recalculate pose of vertices (relative to the pose of the flap == cog)
-// 	Pose3 pose;
-// 	RecalculateCoordsystem(rectangle, pose);
-// 
-// 	// add center point to the model
-// 	cogx::Math::Pose3 cogxPose;
-// 	cogxPose.pos.x = pose.pos.x;
-// 	cogxPose.pos.y = pose.pos.y;
-// 	cogxPose.pos.z = pose.pos.z;
-// 	obj->pose = cogxPose;
-// 
-// 	// create vertices (relative to the 3D center point)
-// 	for(unsigned i=0; i<rectangle.surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
-// 	{
-// 		VisionData::Vertex v;
-// 		v.pos.x = rectangle.surf.vertices[i].p.x;
-// 		v.pos.y = rectangle.surf.vertices[i].p.y;
-// 		v.pos.z = rectangle.surf.vertices[i].p.z;
-// 		obj->model->vertices.push_back(v);
-// 	}
-// 
-// 	// add faces to the vision model
-// 	VisionData::Face f;
-// 	f.vertices.push_back(0);
-// 	f.vertices.push_back(1);
-// 	f.vertices.push_back(2);
-// 	f.vertices.push_back(3);
-// 	obj->model->faces.push_back(f);
-// 	f.vertices.clear();
-// 
-// 	obj->detectionConfidence = 1.0;															// TODO detection confidence is always 1
+  obj->model = new VisionData::GeometryModel;
+  LJunction3D *ljct = LJunctions3D(score, id);
 
-	return false;
+  // Recalculate pose of vertices (relative to the pose of the flap == cog)
+  Pose3 pose;
+  Vector3 c(0., 0., 0.);
+  c = ljct->isct3D.p;
+
+  pose.pos.x = c.x;
+  pose.pos.y = c.y;
+  pose.pos.z = c.z;
+  pose.rot.x = 0.;   // set the orientation to identity, i.e. parallel to world coordinate system
+  pose.rot.y = 0.;
+  pose.rot.z = 0.;
+
+  // invert to get pose of world w.r.t. flap
+  Pose3 inv = pose.Inverse();
+
+  // recalculate the vectors to the vertices from new center point
+  Vector3 p(ljct->isct3D.p.x, ljct->isct3D.p.y, ljct->isct3D.p.z);
+  p = inv.Transform(p);
+  
+  // add center point to the model
+  cogx::Math::Pose3 cogxPose;
+  cogxPose.pos.x = pose.pos.x;
+  cogxPose.pos.y = pose.pos.y;
+  cogxPose.pos.z = pose.pos.z;
+  obj->pose = cogxPose;
+
+  // create vertices (relative to the 3D center point)
+  /// TODO Ich erzeuge hier eine Fläche aus 3 Punkten!
+  VisionData::Vertex v;
+  v.pos.x = p.x + 0.002;
+  v.pos.y = p.y;
+  v.pos.z = p.z;
+  obj->model->vertices.push_back(v);
+  VisionData::Vertex w;
+  w.pos.x = p.x;
+  w.pos.y = p.y + 0.002;
+  w.pos.z = p.z;
+  obj->model->vertices.push_back(w);
+  VisionData::Vertex x;
+  x.pos.x = p.x;
+  x.pos.y = p.y;
+  x.pos.z = p.z;
+  obj->model->vertices.push_back(x);
+
+  // add faces to the vision model
+  VisionData::Face f;
+  f.vertices.push_back(0);
+  f.vertices.push_back(1);
+  f.vertices.push_back(2);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
+
+  obj->detectionConfidence = 1.0;					// TODO detection confidence is always 1
+
+  return true;
 }
 #endif
 
-/**
- * @brief Try to find a "natural" looking coordinate system for a flap.
- * The coordinate system is really arbitrary, there is no proper implicitly defined coordinate system.
- * We take the (geometrical) center of gravity of the corner points as position and set orientation to identity.
- * @param rectangle 3D rectangle
- * @param pose calculated pose
- */
-void StereoLJunctions::RecalculateCoordsystem(LJunction3D &ljct, Pose3 &pose)
-{
-printf("StereoLJunctions::RecalculateCoordsystem: Not yet implemented!\n");
-//   Vector3 c(0., 0., 0.);
-//   int cnt = 0;
-//   // find the center of gravity
-// 	for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
-// 	{
-// 		c += rectangle.surf.vertices[i].p;
-// 		cnt++;
-// 	}
-// 
-//   c /= (double)cnt;
-//   pose.pos.x = c.x;
-//   pose.pos.y = c.y;
-//   pose.pos.z = c.z;
-// 
-// 	// set the orientation to identity, i.e. parallel to world coordinate system
-//   pose.rot.x = 0.;
-//   pose.rot.y = 0.;
-//   pose.rot.z = 0.;
-// 
-//   // invert to get pose of world w.r.t. flap
-//   Pose3 inv = pose.Inverse();
-// 
-// 	// recalculate the vectors to the vertices from new center point
-// 	for(unsigned i = 0; i < rectangle.surf.vertices.Size(); i++)
-// 	{
-// 		Vector3 p(rectangle.surf.vertices[i].p.x,
-// 							rectangle.surf.vertices[i].p.y,
-// 							rectangle.surf.vertices[i].p.z);
-// 		rectangle.surf.vertices[i].p = inv.Transform(p);
-// 	}
-}
-
 
 /**
- * @brief Find right best matching rectangle for given left rectangles, begining at position l of right rectangle array.
- * @param left_rect Tmp. rectangle of left stereo image.
- * @param right_rects Array of all rectangles from right stereo image.
- * @param l Begin at position l of right rectangle array
- * @return Returns position of best matching right rectangle from the right_rects array.
+ * @brief Find right best matching l-junction for given left l-junction, begining at position l of right l-junction array.
+ * @param left_rect Tmp. l-junction of left stereo image.
+ * @param right_rects Array of all l-junctions from right stereo image.
+ * @param l Begin at position l of right ljct array
+ * @return Returns position of best matching right l-junction from the right_ljcts array.
  */
 unsigned StereoLJunctions::FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l)
 {
+// printf("\nStereoLJunctions: Find best match:\n");
+// printf("  angles: %4.2f - %4.2f\n", PolarAngle(left_ljct.dir[0]), PolarAngle(left_ljct.dir[1]));
   double match, best_match = HUGE;
   unsigned j, j_best = UNDEF_ID;				// we start at j and try to find j_best (!=UNDEF_ID)
 
@@ -226,16 +211,33 @@ unsigned StereoLJunctions::FindMatchingLJunction(TmpLJunction &left_ljct, Array<
   {
     match = MatchingScorePoint(left_ljct.point2D, right_ljcts[j].point2D);
 
-// printf("      match = %6.5f\n", match);
-// if (match < HUGE)
-// 	printf("  found matching score of right rect %u\n", j);
+    if(match < HUGE && SC_USE_LJCT_THRESHOLDS)
+    {
+// printf(" %u match = %6.5f\n", j, match);
+// printf("  angles: %4.2f - %4.2f\n", PolarAngle(right_ljcts[j].dir[0]), PolarAngle(right_ljcts[j].dir[1]));
+
+      // Winkelabweichung berechnen (ist im Bereich 0 bis 2*2*PI = 12,5
+      double oa0 = OpeningAngle(left_ljct.dir[0], right_ljcts[j].dir[0]) + OpeningAngle(left_ljct.dir[1], right_ljcts[j].dir[1]);;
+      double oa1 = OpeningAngle(left_ljct.dir[0], right_ljcts[j].dir[1]) + OpeningAngle(left_ljct.dir[1], right_ljcts[j].dir[0]);
+
+      double minAngle = min(oa0, oa1);
+// printf("    min Angle: %4.3f\n", minAngle);
+      match = match * minAngle;
+// printf(" new match = %6.5f\n", match);
+    }
+
+    /// TODO Auch die Richtungen der Arme mit in das Matchen einbeziehen!
 
     if(match < best_match)
     {
       best_match = match;
       j_best = j;
     }
-}
+  }
+  
+  if(best_match > SC_LJCTS_MATCH_LIMIT && SC_USE_LJCT_THRESHOLDS)
+    return UNDEF_ID;
+// printf("BEST MATCH: %4.3f\n", best_match);
   return j_best;
 }
 

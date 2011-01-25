@@ -23,7 +23,7 @@ namespace Z
 {
 
 /// TODO Was für Thresholds sind das genau: Beschreiben und alle anderen herausziehen: Surf u. Point
-// These are some tuning parameters to filter out "bad" surface hypotheses.
+// These are some tuning parameters to filter "bad" surface hypotheses.
 // These might need adjusting to a specific use case.
 
 // maximum allowed angle of one vertex normal to the mean of all vertex
@@ -56,6 +56,14 @@ static const double SC_MIN_DIST_Y = -3.;	// 3m up
 static const double SC_MAX_DIST_Y =  3.;	// 3m down
 static const double SC_MIN_DIST_Z =  0.;	// 0m away
 static const double SC_MAX_DIST_Z =  3.;	// 3m away !!! (do not consider points farer than 4m away!
+
+
+// matching limit for deviations of L-Junctions (StereoLJunctions.cpp)
+static const bool SC_USE_LJCT_THRESHOLDS = true;
+static const double SC_LJCTS_MATCH_LIMIT = 0.2;
+
+static const bool SC_USE_CORNER_THRESHOLDS = true;
+static const double SC_CORNER_MATCH_LIMIT = 2.0;
 
 
 //----------------------------------------------------------------//

@@ -10,6 +10,7 @@
 #ifndef Z_STEREO_CORNERS_HH
 #define Z_STEREO_CORNERS_HH
 
+#include <cstdio>
 #include "StereoBase.h"
 #include "StereoCamera.hh"
 #include "Corner.hh"
@@ -30,10 +31,13 @@ private:
   bool isValid;                         ///< True, if corner is valid!
 
 public:
-  Vertex2D isct2D;                     ///< 2D intersection point of the corner
+  Vertex2D isct2D;                      ///< 2D intersection point of the corner
   Vector2 armDir[3];                    ///< The three arm directions of the corner in 2D 
-  Vertex2D armPoint[3];                 ///< Points on the arm 10px away from intersection
-
+  Vertex2D armPoint[3];                 ///< Points on the arm 10px away from intersection point (TODO used for matching!)
+  
+  unsigned armMatch[3];                 ///< Which arm has the best match with another arm in the other image
+  double armMatchValue[3];              ///< The opening angle of the best(second/third) match.
+  
   TmpCorner() {}
   TmpCorner(Corner *corner);
   void RePrune(int oX, int oY, int sc);
@@ -52,17 +56,17 @@ class StereoCorners : public StereoBase
 {
 private:
 
-  Array<TmpCorner> corners[2];           ///< Tmp. corners from the vision cores.
-//  Array<Corner3D> corner3ds;             ///< 3D corners				/// TODO 
-  int cornerMatches;                     ///< Number of stereo matched corners
+  Array<TmpCorner> corners[2];          ///< Tmp. corners from the vision cores.
+  int cornerMatches;                    ///< Number of stereo matched corners
 
 #ifdef HAVE_CAST
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
-  void RecalculateCoordsystem(Corner3D &ljct, Pose3 &pose);
 
   unsigned FindMatchingCorner(TmpCorner &left_corner, Array<TmpCorner> &right_corners, unsigned l);
   void MatchCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, int &matches);
+  double CalculateBestArmMatches(TmpCorner &left_corner, TmpCorner &right_corner,
+		unsigned &k, unsigned &l, unsigned &m, unsigned &n, unsigned &o, unsigned &p);
   void Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corner, TmpCorner &right_corner);
   void Calculate3DCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, int &matches);
   void DrawSingleMatched(int side, int id, int detail);

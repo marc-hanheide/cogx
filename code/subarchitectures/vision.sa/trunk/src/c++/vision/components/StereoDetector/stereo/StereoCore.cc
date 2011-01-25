@@ -448,6 +448,7 @@ void StereoCore::PrintResults()
 	/// print results of stereo core
   printf("Corners: 2D corners left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CORNER), vcore[RIGHT]->NumGestalts(Gestalt::CORNER));
   printf("Stereo:CORNERS: corner-matches: %d\n", stereoPrinciples[StereoBase::STEREO_CORNER]->NumStereoMatches());
+  printf("Stereo:LJUNCTIONS: ljct-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LJUNCTION]->NumStereoMatches());
 
 //   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
 //   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());

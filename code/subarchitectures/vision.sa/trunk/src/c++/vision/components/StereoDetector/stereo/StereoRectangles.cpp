@@ -138,9 +138,25 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   obj->model = new VisionData::GeometryModel;
   Rectangle3D *rectangle = Rectangles3D(score, id);
 
-  // Recalculate pose of vertices (relative to the pose of the flap == cog)
+  // Recalculate pose of vertices (relative to the center of gravity = cog)
   Pose3 pose;
-  RecalculateCoordsystem(rectangle, pose);
+  Vector3 c(0., 0., 0.);
+  int cnt = 0;
+  for(unsigned i = 0; i < rectangle->surf.vertices.Size(); i++)
+  {
+    c += rectangle->surf.vertices[i].p;
+    cnt++;
+  }
+  c /= (double)cnt;
+  pose.pos.x = c.x;
+  pose.pos.y = c.y;
+  pose.pos.z = c.z;
+  pose.rot.x = 0.;   // set the orientation to identity, i.e. parallel to world coordinate system
+  pose.rot.y = 0.;
+  pose.rot.z = 0.;
+
+  // invert to get pose of world w.r.t. flap
+  Pose3 inv = pose.Inverse();
 
   // add center point to the model
   cogx::Math::Pose3 cogxPose;
@@ -152,10 +168,15 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   // create vertices (relative to the 3D center point)
   for(unsigned i=0; i<rectangle->surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
   {
+    Vector3 p(rectangle->surf.vertices[i].p.x,
+	      rectangle->surf.vertices[i].p.y,
+	      rectangle->surf.vertices[i].p.z);
+    p = inv.Transform(p);
+    
     VisionData::Vertex v;
-    v.pos.x = rectangle->surf.vertices[i].p.x;
-    v.pos.y = rectangle->surf.vertices[i].p.y;
-    v.pos.z = rectangle->surf.vertices[i].p.z;
+    v.pos.x = p.x;
+    v.pos.y = p.y;
+    v.pos.z = p.z;
     obj->model->vertices.push_back(v);
   }
 
@@ -173,48 +194,6 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   return true;
 }
 #endif
-
-/**
- * @brief Try to find a "natural" looking coordinate system for a flap.
- * The coordinate system is really arbitrary, there is no proper implicitly defined coordinate system.
- * We take the (geometrical) center of gravity of the corner points as position and set orientation to identity.
- * @param rectangle 3D rectangle
- * @param pose calculated pose
- */
-void StereoRectangles::RecalculateCoordsystem(Rectangle3D *rectangle, Pose3 &pose)
-{
-  Vector3 c(0., 0., 0.);
-  int cnt = 0;
-
-  // find the center of gravity
-  for(unsigned i = 0; i < rectangle->surf.vertices.Size(); i++)
-  {
-    c += rectangle->surf.vertices[i].p;
-    cnt++;
-}
-
-  c /= (double)cnt;
-  pose.pos.x = c.x;
-  pose.pos.y = c.y;
-  pose.pos.z = c.z;
-
-	// set the orientation to identity, i.e. parallel to world coordinate system
-  pose.rot.x = 0.;
-  pose.rot.y = 0.;
-  pose.rot.z = 0.;
-
-  // invert to get pose of world w.r.t. flap
-  Pose3 inv = pose.Inverse();
-
-  // recalculate the vectors to the vertices from new center point
-  for(unsigned i = 0; i < rectangle->surf.vertices.Size(); i++)
-  {
-    Vector3 p(rectangle->surf.vertices[i].p.x,
-	      rectangle->surf.vertices[i].p.y,
-	      rectangle->surf.vertices[i].p.z);
-	      rectangle->surf.vertices[i].p = inv.Transform(p);
-  }
-}
 
 
 /**
