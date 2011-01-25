@@ -1,5 +1,7 @@
 include_directories(.)
 
+add_definitions(-DHAVE_CAST)
+
 include_directories(matas)
 include_directories(math)
 include_directories(utils)
@@ -8,7 +10,6 @@ include_directories(stereo)
 include_directories(reasoner)
 
 add_subdirectory(matas)
-add_subdirectory(math)
 add_subdirectory(utils)
 add_subdirectory(vs3)
 add_subdirectory(stereo)
