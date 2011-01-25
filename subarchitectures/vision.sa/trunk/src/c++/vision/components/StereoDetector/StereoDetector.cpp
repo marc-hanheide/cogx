@@ -809,7 +809,7 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 		}
 	}
 	
-	// Send newFrame command for Reasoner component => delete later
+	// Send newFrame command for Reasoner component => TODO delete later
 	VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
 	newFrame->cmd = VisionData::NEWFRAME;
 	addToWorkingMemory(newDataID(), newFrame);
@@ -1221,6 +1221,13 @@ void StereoDetector::SingleShotMode()
 			log("Show CUBES");
 			showType = Z::Gestalt::CUBE;
 			showStereoType = Z::StereoBase::STEREO_CUBE;
+			ShowImages(true);
+			WriteVisualObjects();
+			break;
+		case 'p':
+			log("Show CORNERS");
+			showType = Z::Gestalt::CORNER;
+			showStereoType = Z::StereoBase::STEREO_CORNER;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
