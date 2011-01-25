@@ -25,6 +25,7 @@ class TmpLJunction
 {
 public:
   Vertex2D point2D;              ///< 2D intersection point
+  Vector2 dir[2];               ///< Angles of the two arms
 
   TmpLJunction() {}
   TmpLJunction(LJunction *ljct);
@@ -34,17 +35,6 @@ public:
   bool IsAtPosition(int x, int y) const;
   bool IsValid() {return true;}									// TODO is always valid
 };
-
-
-/**
- * @brief Class LJunction3D
- */
-// class LJunction3D
-// {
-// public:
-//   Vertex3D point3D;               ///< 3D intersection point
-//   Vector3 dir[2];                 ///< 3D direction of the 2 arms of the L-Junction	/// TODO Calculate
-// };
 
 
 /**
@@ -61,7 +51,6 @@ private:
 #ifdef HAVE_CAST
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
-  void RecalculateCoordsystem(LJunction3D &ljct, Pose3 &pose);
 
   unsigned FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l);
   void MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches);
