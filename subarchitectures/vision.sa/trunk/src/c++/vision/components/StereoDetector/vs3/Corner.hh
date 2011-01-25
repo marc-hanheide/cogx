@@ -16,6 +16,7 @@
 #include "Vector.hh"
 #include "LJunction.hh"
 #include "Line.hh"
+#include "Draw.hh"
 
 namespace Z
 {
@@ -41,11 +42,11 @@ public:
   Corner(VisionCore *vc, Array<LJunction*> j, Array<Line*> l, Array<unsigned> np);
 //   void AddLJunctions(Array<unsigned> &lj, Array<unsigned> &li, Array<unsigned> &np);
   void CalculateProperties();
-//   void CalculateSignificance(double gap);
 //   void Recalc(unsigned lj);
-//   virtual void Draw(int detail = 0);
-//   virtual const char* GetInfo();
-//   virtual bool IsAtPosition(int x, int y);
+  virtual void Draw(int detail = 0);
+  virtual const char* GetInfo();
+  virtual bool IsAtPosition(int x, int y);
+  void CalculateSignificance(double gap);
 };
 
 inline Array<Gestalt*>& Corners(VisionCore *core)
