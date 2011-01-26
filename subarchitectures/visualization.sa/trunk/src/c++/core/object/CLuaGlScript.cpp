@@ -195,7 +195,8 @@ CLuaGlScript::CLuaGlScript()
 CLuaGlScript::~CLuaGlScript()
 {
    CScript* pModel;
-   IceUtil::RWRecMutex::WLock lock(_objectMutex);
+   //IceUtil::RWRecMutex::WLock lock(_objectMutex);
+   CDisplayObject::WriteLock lock(*this);
    FOR_EACH_V(pModel, m_Models) {
       if (pModel) delete pModel;
    }
@@ -205,7 +206,8 @@ CLuaGlScript::~CLuaGlScript()
 void CLuaGlScript::loadScript(const std::string& partId, const std::string& script)
 {
    CScript* pModel = NULL;
-   IceUtil::RWRecMutex::WLock lock(_objectMutex);
+   // IceUtil::RWRecMutex::WLock lock(_objectMutex);
+   CDisplayObject::WriteLock lock(*this);
    // if (m_Models.find(partId)->second != NULL) {
    typeof(m_Models.begin()) itExtng = m_Models.find(partId);
    if (itExtng != m_Models.end()) {
@@ -231,7 +233,8 @@ bool CLuaGlScript::removePart(const std::string& partId)
    bool removed = false;
    //if (it->second != NULL) {
    if (it != m_Models.end()) {
-      IceUtil::RWRecMutex::WLock lock(_objectMutex);
+      // IceUtil::RWRecMutex::WLock lock(_objectMutex);
+      CDisplayObject::WriteLock lock(*this);
       CScript* pModel = m_Models[partId];
       m_Models.erase(it);
       if (pModel) {
@@ -289,7 +292,8 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
 
    CLuaGlScript::CScript* pPart;
    // Prevent script modification while executing
-   IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
+   //IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
+   CDisplayObject::ReadLock lock(*pObject);
    FOR_EACH_V(pPart, pModel->m_Models) {
       if (!pPart) continue;
       glPushMatrix();

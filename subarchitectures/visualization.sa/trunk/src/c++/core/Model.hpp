@@ -35,6 +35,7 @@ class CDisplayView;
 class CDisplayModel;
 class CRasterImage;
 class CRenderer;
+class CGarbage;
 
 // CHtmlChunk is a CDisplayObjectPart; defined in "HtmlElements.hpp"
 // Used in some functions instead of CDisplayObjectPart for convenience.
@@ -79,10 +80,46 @@ public:
    virtual std::string getPersistentStorageName() = 0;
 };
 
+// A temporary fix for crashes when objects are deleted during redraw.
+class CGarbage
+{
+   CPtrVector<CDisplayObject> m_objects;
+   CPtrVector<CDisplayObjectPart> m_parts;
+   public:
+   ~CGarbage()
+   {
+      m_objects.delete_all();
+      m_parts.delete_all();
+   }
+   void add(CPtrVector<CDisplayObject>& objects)
+   {
+      CDisplayObject* pObject;
+      FOR_EACH(pObject, objects) {
+         if (pObject) m_objects.push_back(pObject);
+      }
+   }
+   void add(CDisplayObject* pObject)
+   {
+      if (pObject) m_objects.push_back(pObject);
+   }
+   void add(CPtrVector<CDisplayObjectPart>& parts)
+   {
+      CDisplayObjectPart* pPart;
+      FOR_EACH(pPart, parts) {
+         if (pPart) m_parts.push_back(pPart);
+      }
+   }
+   void add(CDisplayObjectPart* pPart)
+   {
+      if (pPart) m_parts.push_back(pPart);
+   }
+};
+
 // Holder for all data that can be displayed.
 class CDisplayModel
 {
 private:
+   CGarbage m_garbage;
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
    std::map<std::string, bool> m_DisabledDefaultViews;
@@ -134,7 +171,25 @@ public:
 class CDisplayObject
 {
 public:
+   class ReadLock
+   {
+      CDisplayObject* pOwner;
+   public:
+      ReadLock(CDisplayObject& owner) { pOwner = &owner; pOwner->_objectMutex.readLock(); }
+      ~ReadLock() { pOwner->_objectMutex.unlock(); }
+   };
+   class WriteLock
+   {
+      CDisplayObject* pOwner;
+   public:
+      WriteLock(CDisplayObject& owner) { pOwner = &owner; pOwner->_objectMutex.writeLock(); }
+      ~WriteLock() { pOwner->_objectMutex.unlock(); }
+   };
+
+private:
    IceUtil::RWRecMutex _objectMutex;
+   friend class CDisplayObject::ReadLock;
+   friend class CDisplayObject::WriteLock;
 
 public:
    std::string m_id;
@@ -150,10 +205,10 @@ public:
          const std::vector<double>& rotationQaternionXYZW);
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
-   virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false);
+   virtual void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false);
 
    // Returns true if the part existed and was successfully removed.
-   virtual bool removePart(const std::string& partId);
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) = 0;
 };
 
 // The state can't be stored with CDisplayObject because an object may be
@@ -193,6 +248,7 @@ public:
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
 {
+   CDisplayModel *m_pModel;
    TObjectMap m_Objects;
    std::vector<std::string> m_ObjectOrder;
 
@@ -212,7 +268,7 @@ public:
    std::string m_id;
    bool m_bDefaultView;
    ERenderContext m_preferredContext;
-   CDisplayView();
+   CDisplayView(CDisplayModel *pModel);
    virtual ~CDisplayView();
    void addObject(CDisplayObject *pObject);
    void setSubscription(const std::string& id, bool active=true);

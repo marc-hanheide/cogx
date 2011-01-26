@@ -72,7 +72,7 @@ public:
    // Returns true if this is a new part;
    bool setPart(const std::string& partId, const std::string& xmlData);
 
-   bool removePart(const std::string& partId);
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts); /*override*/
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
 
    virtual ERenderContext getPreferredContext()
