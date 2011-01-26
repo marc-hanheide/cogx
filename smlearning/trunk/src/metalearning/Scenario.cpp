@@ -49,7 +49,6 @@ bool XMLData(Scenario::Desc &val, XMLContext* xmlcontext, Context *context) {
         // arm setup
         //golem::XMLData(val.armDesc.pArmDesc, xmlcontext->getContextFirst("arm")); //doesn't work anymore
 	std::string driver;
-	cout << "trying to load driver..." << endl;
 	XMLData("driver", driver, xmlcontext->getContextFirst("arm")); // Get arm driver name
 	val.armDesc.pArmDesc = Arm::Desc::load(*context, driver); // Load driver
 	
@@ -1095,9 +1094,7 @@ int PushingApplication::main(int argc, char *argv[]) {
 void PushingApplication::run(int argc, char *argv[]) {
 
 
-	cout << "entering run()..." << endl;
 	Scenario::Desc desc;
-	cout << "desc created..." << endl;
 	XMLData(desc, xmlcontext(), context());
 
 	Scenario *pScenario = dynamic_cast<Scenario*>(scene()->createObject(desc)); // throws
