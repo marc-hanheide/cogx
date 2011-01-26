@@ -500,8 +500,8 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
    }
 
    if (pObject) {
-      if (htmlData.size() < 1) pObject->removePart(partId);
-      else pObject->setActiveHtml(ident, partId, htmlData);
+      //if (htmlData.size() < 1) pObject->removePart(partId); --> use RemovePart for this
+      pObject->setActiveHtml(ident, partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {

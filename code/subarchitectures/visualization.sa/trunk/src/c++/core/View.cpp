@@ -28,8 +28,9 @@ using namespace std;
 
 namespace cogx { namespace display {
 
-CDisplayView::CDisplayView()
+CDisplayView::CDisplayView(CDisplayModel *pModel)
 {
+   m_pModel = pModel;
    m_preferredContext = ContextGraphics;
    m_bDefaultView = false;
 }

@@ -53,7 +53,7 @@ void CDisplayModel::createView(const std::string& id, ERenderContext context,
    
    if (! pview) {
       DMESSAGE("Creating new view: " << id << ": context " << context);
-      pview = new cogx::display::CDisplayView();
+      pview = new cogx::display::CDisplayView(this);
       pview->m_id = id;
    }
    else {
@@ -184,7 +184,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       FOR_EACH_V(pview, m_Views) {
          pview->replaceObject(pfound->m_id, pObject);
       }
-      delete pfound;
+      m_garbage.add(pfound);
    }
    else if (!pfound) {
       m_Objects[pObject->m_id] = pObject;
@@ -214,7 +214,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       std::map<std::string, bool>::iterator it = m_DisabledDefaultViews.find(pObject->m_id);
       if (it == m_DisabledDefaultViews.end()) {
          DMESSAGE("Creating default view for: " << pObject->m_id);
-         pview = new cogx::display::CDisplayView();
+         pview = new cogx::display::CDisplayView(this);
          pview->m_bDefaultView = true;
          pview->m_preferredContext = pObject->getPreferredContext();
 
@@ -283,7 +283,7 @@ void CDisplayModel::removeObject(const std::string &id)
          }
       }
 
-      delete pfound;
+      m_garbage.add(pfound);
    }
 }
 
@@ -298,7 +298,8 @@ void CDisplayModel::removePart(const std::string &id, const std::string& partId)
       //    1. remove part from object parts
       //    2. notify observers
       //    3. delete the part <- this one is now in 1 and could cause a segfault.
-      if (pfound->removePart(partId)) {
+      CPtrVector<CDisplayObjectPart> removed;
+      if (pfound->removePart(partId, removed)) {
          CPtrVector<CDisplayView> views = findViewsWithObject(id);
          CDisplayView *pview;
          FOR_EACH(pview, views) {
@@ -311,6 +312,7 @@ void CDisplayModel::removePart(const std::string &id, const std::string& partId)
             }
          }
       }
+      m_garbage.add(removed);
    }
 }
 
@@ -337,7 +339,7 @@ bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
       }
    }
    if (! found) {
-     pview = new cogx::display::CDisplayView();
+     pview = new cogx::display::CDisplayView(this);
      pview->m_id = pGuiElement->m_viewId;
      m_Views[pview->m_id] = pview;
 
@@ -377,10 +379,10 @@ bool CDisplayObject::isBitmap()
    return false;
 }
 
-bool CDisplayObject::removePart(const std::string& partId)
-{
-   return false;
-}
+//bool CDisplayObject::removePart(const std::string& partId)
+//{
+//   return false;
+//}
 
 void CDisplayObject::setTransform2D(const std::string& partId, const std::vector<double>& transform)
 {

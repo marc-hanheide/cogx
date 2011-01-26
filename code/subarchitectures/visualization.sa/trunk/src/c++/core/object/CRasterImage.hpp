@@ -40,6 +40,9 @@ public:
    {
       return ContextGraphics;
    }
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
+   {
+   }
 };
 
 class CRasterImage_Render2D: public CRenderer

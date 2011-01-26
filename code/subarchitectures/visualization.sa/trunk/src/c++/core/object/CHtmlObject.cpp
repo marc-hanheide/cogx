@@ -168,6 +168,7 @@ void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
       // TODO: if type != html, delete
    }
 
+   CDisplayObject::WriteLock lock(*this);
    if (pPart == NULL) {
       pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::html);
       m_Parts[partId] = pPart;
@@ -190,6 +191,7 @@ CHtmlChunk* CHtmlObject::setActiveHtml(const Ice::Identity& ident, const std::st
       // TODO: if type != activehtml, delete
    }
 
+   CDisplayObject::WriteLock lock(*this);
    if (pPart == NULL) {
       pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::activehtml, ident);
       m_Parts[partId] = pPart;
@@ -216,6 +218,7 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
       // TODO: if type != form, delete
    }
 
+   CDisplayObject::WriteLock lock(*this);
    if (pPart == NULL) {
       pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::form, ident);
       m_Parts[partId] = pPart;
@@ -273,6 +276,7 @@ void CHtmlObject::setHead(const std::string& partId, const std::string& text)
 
 int CHtmlObject::getHtmlChunks(CPtrVector<CHtmlChunk>& chunks, int typeMask)
 {
+   CDisplayObject::ReadLock lock(*this);
    typeof(m_Parts.begin()) itmap;
    int count = 0;
    for(itmap = m_Parts.begin(); itmap != m_Parts.end(); itmap++) {
@@ -287,6 +291,7 @@ int CHtmlObject::getHtmlChunks(CPtrVector<CHtmlChunk>& chunks, int typeMask)
 
 CHtmlChunk* CHtmlObject::getPart(const std::string& partId)
 {
+   CDisplayObject::ReadLock lock(*this);
    typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
    if (itpart != m_Parts.end()) return itpart->second;
 
@@ -296,15 +301,16 @@ CHtmlChunk* CHtmlObject::getPart(const std::string& partId)
    return NULL;
 }
 
-bool CHtmlObject::removePart(const std::string& partId)
+bool CHtmlObject::removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts)
 {
    typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
    bool removed = false;
    //if (itpart->second != NULL) {
    if (itpart != m_Parts.end()) {
       CHtmlChunk* pPart = itpart->second;
+      CDisplayObject::WriteLock lock(*this);
       m_Parts.erase(itpart);
-      delete pPart;
+      parts.push_back(pPart);
       removed = true;
    }
 
@@ -314,8 +320,9 @@ bool CHtmlObject::removePart(const std::string& partId)
       CHtmlChunk* pPart = ithd->second; // m_HeadParts[partId];
       // XXX: This is where a segfault occurs occasionally
       //    setHtml() -> (when data is empty) -> removePart()
+      CDisplayObject::WriteLock lock(*this);
       m_HeadParts.erase(ithd);
-      delete pPart;
+      parts.push_back(pPart);
       removed = true;
    }
    return removed;
@@ -323,6 +330,7 @@ bool CHtmlObject::removePart(const std::string& partId)
 
 void CHtmlObject::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
 {
+   CDisplayObject::ReadLock lock(*this);
    CHtmlObject *pHtml;
    typeof(m_HeadParts.begin()) itmap;
    for(itmap = m_HeadParts.begin(); itmap != m_HeadParts.end(); itmap++) {
@@ -353,6 +361,7 @@ void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, 
    QStringList *pList = (QStringList*) pContext;
 
    if (info == "head") {
+      CDisplayObject::ReadLock lock(*pObject);
       typeof(pHtml->m_HeadParts.begin()) itmap;
       for(itmap = pHtml->m_HeadParts.begin(); itmap != pHtml->m_HeadParts.end(); itmap++) {
          CHtmlChunk *pChunk = itmap->second;
@@ -362,6 +371,7 @@ void CHtmlObject_RenderHtml::draw(CDisplayView *pView, const std::string& info, 
    }
 
    if (info == "body") {
+      CDisplayObject::ReadLock lock(*pObject);
       typeof(pHtml->m_Parts.begin()) itmap;
       for(itmap = pHtml->m_Parts.begin(); itmap != pHtml->m_Parts.end(); itmap++) {
          CHtmlChunk *pChunk = itmap->second;

@@ -42,7 +42,7 @@ public:
    CHtmlChunk* setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);
    CHtmlChunk* getPart(const std::string& partId);
-   bool removePart(const std::string& partId);
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts); /*override*/
    void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
 };
 
