@@ -642,12 +642,12 @@ int ActivePushingApplication::main(int argc, char *argv[]) {
 void ActivePushingApplication::run(int argc, char *argv[]) {
 
 	ActiveLearnScenario::Desc desc;
-	XMLData((Scenario::Desc&)desc, xmlcontext());
+	XMLData((Scenario::Desc&)desc, xmlcontext(), context());
 
 	ActiveLearnScenario *pActiveLearnScenario = dynamic_cast<ActiveLearnScenario*>(scene()->createObject(desc)); // throws
 
 	if (pActiveLearnScenario == NULL) {
-		context()->getLogger()->post(Message::LEVEL_CRIT, "ActivePushingApplication::run(): unable to cast to ActiveLearnScenario");
+		context()->getMessageStream()->write(Message::LEVEL_CRIT, "ActivePushingApplication::run(): unable to cast to ActiveLearnScenario");
 		return;
 	}
 
@@ -655,7 +655,7 @@ void ActivePushingApplication::run(int argc, char *argv[]) {
 
 
 	// Random number generator seed
-	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
+	context()->getMessageStream()->write(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
 		//pActiveLearnScenario->init(arguments);

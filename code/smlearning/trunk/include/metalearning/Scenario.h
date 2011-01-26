@@ -89,7 +89,7 @@ public:
 	class Desc : public golem::Object::Desc {
 	protected:
 		/** Creates the object from the description. */
-		CREATE_FROM_OBJECT_DESC(Scenario, golem::Object::Ptr, golem::Scene)
+		CREATE_FROM_OBJECT_DESC1(Scenario, golem::Object::Ptr, golem::Scene&)
 
 	public:
 		/** Arm */
@@ -150,7 +150,7 @@ public:
 			// default arm description
 			armDesc.setToDefault();
 			//armDesc.pArmDesc.reset(new golem::KatSimArm::Desc); //not present anymore
-			armDesc.pArmDesc = Arm::Desc::load("GolemDeviceKatana300Sim");
+			//armDesc.pArmDesc = Arm::Desc::load("GolemDeviceKatana300Sim");
 			armDesc.pPlannerDesc->pHeuristicDesc->distJointcoordMax[4] = golem::Real(1.0)*golem::REAL_PI; // last joint of Katana
 			// Effector group
 			effectorGroup = 0x4;
@@ -495,7 +495,7 @@ protected:
 //------------------------------------------------------------------------------
 
 /** Reads/writes Scenario description from/to a given context */
-bool XMLData(Scenario::Desc &val, golem::XMLContext* context);
+bool XMLData(Scenario::Desc &val, golem::XMLContext* xmlcontext, golem::Context* context);
 
 //------------------------------------------------------------------------------
 

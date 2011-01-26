@@ -3,7 +3,7 @@
 <golem>
   <rand seed="0"></rand>
   <parallels threads="0"></parallels>
-
+  <messages level="info"/>
   <universe name="Golem">
     <window x="0" y="0" width="800" height="600"></window>
     <physx fps="30" skin_width="0.005" sleep_lin_vel_squared="0.0025" sleep_ang_vel_squared="0.0025" max_angular_velocity="7.0" bounce_threshold="-2.0"></physx>

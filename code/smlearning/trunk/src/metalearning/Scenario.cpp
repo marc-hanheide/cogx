@@ -41,28 +41,29 @@ namespace smlearning {
 
 //------------------------------------------------------------------------------
 
-bool XMLData(Scenario::Desc &val, XMLContext* context) {
-	if (context == NULL) {
+bool XMLData(Scenario::Desc &val, XMLContext* xmlcontext, Context *context) {
+	if (xmlcontext == NULL) {
 		ASSERT(false)
 		return false;
 	}
         // arm setup
-        //golem::XMLData(val.armDesc.pArmDesc, context->getContextFirst("arm")); //doesn't work anymore
+        //golem::XMLData(val.armDesc.pArmDesc, xmlcontext->getContextFirst("arm")); //doesn't work anymore
 	std::string driver;
-	XMLData("driver", driver, context->getContextFirst("arm")); // Get arm driver name
-	val.armDesc.pArmDesc = Arm::Desc::load(driver); // Load driver
+	cout << "trying to load driver..." << endl;
+	XMLData("driver", driver, xmlcontext->getContextFirst("arm")); // Get arm driver name
+	val.armDesc.pArmDesc = Arm::Desc::load(*context, driver); // Load driver
 	
 	// finger setup
 	val.fingerDesc.clear();
 	//golem::Real baseLength = golem::KatArm::L3; //not present anymore
 	golem::Real baseLength = 0.1848;
-	XMLData(baseLength, context->getContextFirst("effector base_length"));
+	XMLData(baseLength, xmlcontext->getContextFirst("effector base_length"));
 	golem::Real fingerLength = 0.135;
-	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
+	XMLData(fingerLength, xmlcontext->getContextFirst("effector finger_length"));
 	golem::Real fingerDiam = 0.02;
-	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
+	XMLData(fingerDiam, xmlcontext->getContextFirst("effector finger_diameter"));
 	golem::Real tipRadius = 0.015;
-	XMLData(tipRadius, context->getContextFirst("effector tip_radius"));
+	XMLData(tipRadius, xmlcontext->getContextFirst("effector tip_radius"));
 	
 	golem::BoundingBox::Desc* pFingerRodShapeDesc = new golem::BoundingBox::Desc;
 	pFingerRodShapeDesc->dimensions.set(fingerDiam/2.0, fingerLength/2.0, fingerDiam/2.0);
@@ -88,26 +89,26 @@ bool XMLData(Scenario::Desc &val, XMLContext* context) {
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
 	//maxRange = 0.4;
-	//XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//XMLData(val.maxRange, xmlcontext->getContextFirst("polyflapInteraction maxRange"));
 	//maximum X value for polyflap position
-	XMLData(val.coordLimits.maxX, context->getContextFirst("polyflapInteraction maxX"));
+	XMLData(val.coordLimits.maxX, xmlcontext->getContextFirst("polyflapInteraction maxX"));
 	//maximum Y value for polyflap position
-	XMLData(val.coordLimits.maxY, context->getContextFirst("polyflapInteraction maxY"));
+	XMLData(val.coordLimits.maxY, xmlcontext->getContextFirst("polyflapInteraction maxY"));
 	//maximum Z value for polyflap position
-	XMLData(val.coordLimits.maxZ, context->getContextFirst("polyflapInteraction maxZ"));
+	XMLData(val.coordLimits.maxZ, xmlcontext->getContextFirst("polyflapInteraction maxZ"));
 	//minimum X value for polyflap position
-	XMLData(val.coordLimits.minX, context->getContextFirst("polyflapInteraction minX"));
+	XMLData(val.coordLimits.minX, xmlcontext->getContextFirst("polyflapInteraction minX"));
 	//minimum Y value for polyflap position
-	XMLData(val.coordLimits.minY, context->getContextFirst("polyflapInteraction minY"));
+	XMLData(val.coordLimits.minY, xmlcontext->getContextFirst("polyflapInteraction minY"));
 	//minimum Z value for polyflap position
-	XMLData(val.coordLimits.minZ, context->getContextFirst("polyflapInteraction minZ"));
+	XMLData(val.coordLimits.minZ, xmlcontext->getContextFirst("polyflapInteraction minZ"));
 	//minimum duration value for pushing action
-	XMLData(val.coordLimits.minDuration, context->getContextFirst("polyflapInteraction minPushDuration"));
+	XMLData(val.coordLimits.minDuration, xmlcontext->getContextFirst("polyflapInteraction minPushDuration"));
 	//maximum duration value for pushing action
-	XMLData(val.coordLimits.maxDuration, context->getContextFirst("polyflapInteraction maxPushDuration"));
+	XMLData(val.coordLimits.maxDuration, xmlcontext->getContextFirst("polyflapInteraction maxPushDuration"));
 
 	//minimal duration of a movement (by normal speed)
-	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
+	XMLData(val.minDuration, xmlcontext->getContextFirst("polyflapInteraction minDuration"));
 
 
 	Real x;
@@ -115,49 +116,49 @@ bool XMLData(Scenario::Desc &val, XMLContext* context) {
 	Real z;
 	
 	//Polyflap Position and orientation
-	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapPosition x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapPosition y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapPosition z"));
+	XMLData(x, xmlcontext->getContextFirst("polyflapInteraction startPolyflapPosition x"));
+	XMLData(y, xmlcontext->getContextFirst("polyflapInteraction startPolyflapPosition y"));
+	XMLData(z, xmlcontext->getContextFirst("polyflapInteraction startPolyflapPosition z"));
 	val.startPolyflapPosition.set(x, y, z);
 
-	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapRotation x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapRotation y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapRotation z"));
+	XMLData(x, xmlcontext->getContextFirst("polyflapInteraction startPolyflapRotation x"));
+	XMLData(y, xmlcontext->getContextFirst("polyflapInteraction startPolyflapRotation y"));
+	XMLData(z, xmlcontext->getContextFirst("polyflapInteraction startPolyflapRotation z"));
 	val.startPolyflapRotation.set(y, x, z);
 
 	//Polyflap dimensions		
-	XMLData(x, context->getContextFirst("polyflapInteraction polyflapDimensions x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
+	XMLData(x, xmlcontext->getContextFirst("polyflapInteraction polyflapDimensions x"));
+	XMLData(y, xmlcontext->getContextFirst("polyflapInteraction polyflapDimensions y"));
+	XMLData(z, xmlcontext->getContextFirst("polyflapInteraction polyflapDimensions z"));
 	val.polyflapDimensions.set(x, y, z);
 	//Polyflap width
-	XMLData(val.pfWidth, context->getContextFirst("polyflapInteraction polyflapDimensions width"));
+	XMLData(val.pfWidth, xmlcontext->getContextFirst("polyflapInteraction polyflapDimensions width"));
 	
 
 	//vertical distance from the ground
 	//const Real over = 0.01;
 	//vertical distance from the ground considering fingertip radius
-	XMLData(val.over, context->getContextFirst("polyflapInteraction over"));
+	XMLData(val.over, xmlcontext->getContextFirst("polyflapInteraction over"));
 	//distance from the front/back of the polyflap
-	XMLData(val.dist, context->getContextFirst("polyflapInteraction dist"));
+	XMLData(val.dist, xmlcontext->getContextFirst("polyflapInteraction dist"));
 
 	Real r;
 
 	//distance from the side of the polyflap
-	XMLData(r, context->getContextFirst("polyflapInteraction side"));
+	XMLData(r, xmlcontext->getContextFirst("polyflapInteraction side"));
 	val.side = val.polyflapDimensions.v1*r;
 	//center of the polyflap
-	XMLData(r, context->getContextFirst("polyflapInteraction center"));
+	XMLData(r, xmlcontext->getContextFirst("polyflapInteraction center"));
 	val.center = val.polyflapDimensions.v2*r;
 	//distance from the top of the polyflap
 	//const Real top = polyflapDimensions.v2* 1.2;
-	XMLData(r, context->getContextFirst("polyflapInteraction top"));
+	XMLData(r, xmlcontext->getContextFirst("polyflapInteraction top"));
 	val.top = val.polyflapDimensions.v2 - r;
 	//lenght of the movement		
-	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
+	XMLData(val.distance, xmlcontext->getContextFirst("polyflapInteraction distance"));
 	
 
-	XMLData(val.startingPositionsConfig, context->getContextFirst("loop startingPositions"));
+	XMLData(val.startingPositionsConfig, xmlcontext->getContextFirst("loop startingPositions"));
 	
 	
 	return true;
@@ -175,7 +176,7 @@ Scenario::Scenario(golem::Scene &scene) : Object(scene), creator(scene) {
 
 bool Scenario::create(const Scenario::Desc& desc) {
 	if (!desc.isValid()) {
-		context.getLogger()->post(Message::LEVEL_CRIT, "Scenario::create(): invalid description");
+		context.getMessageStream()->write(Message::LEVEL_CRIT, "Scenario::create(): invalid description");
 		return false;
 	}
 	this->desc = desc;
@@ -405,7 +406,7 @@ void Scenario::prepare_target(){
 	// cout << "target pos: " << target.pos.p.v1 << ", " << target.pos.p.v2 << ", " << target.pos.p.v3 << endl;
 	target.vel.setId(); // it doesn't move
 	
-	target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
+	target.t = context.getTimer().elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 	
 }
 
@@ -516,8 +517,8 @@ void Scenario::add_label (LearningData::Chunk& chunk) {
 ///
 void Scenario::write_chunk (LearningData::Chunk& chunk) {
 	chunk.timeStamp = trialTime;
-	//arm->getArm().lookupInp(chunk.action.armState, context.getTimer()->elapsed()); //not present anymore
-	arm->getArm().lookupState(chunk.action.armState, context.getTimer()->elapsed()); //other possibility: lookupCommand
+	//arm->getArm().lookupInp(chunk.action.armState, context.getTimer().elapsed()); //not present anymore
+	arm->getArm().lookupState(chunk.action.armState, context.getTimer().elapsed()); //other possibility: lookupCommand
 	chunk.action.effectorPose = effector->getPose();
 	chunk.action.effectorPose.multiply (chunk.action.effectorPose, effectorBounds.at(1)->getPose());
 	chunk.action.effectorPose.R.toEuler (chunk.action.efRoll, chunk.action.efPitch, chunk.action.efYaw);
@@ -577,8 +578,8 @@ void Scenario::first_init(){
 
 	// get initial configuration (it is the current joint configuration)
 	//golem::GenConfigspaceState initial;
-	//arm->getArm().lookupInp(initial, context.getTimer()->elapsed()); //not present anymore
-	arm->getArm().lookupState(initial, context.getTimer()->elapsed()); //other possibility: lookupCommand
+	//arm->getArm().lookupInp(initial, context.getTimer().elapsed()); //not present anymore
+	arm->getArm().lookupState(initial, context.getTimer().elapsed()); //other possibility: lookupCommand
 
 	learningData.setToDefault(desc.coordLimits);
 
@@ -593,7 +594,7 @@ void Scenario::setup_home(){
 	//GenWorkspaceState home;
 	home.pos = desc.homePose;
 	// move the arm with global path planning and collision detection
-	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
+	home.t = context.getTimer().elapsed() + tmDeltaAsync + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
 	arm->getReacPlanner().send(home, ReacPlanner::ACTION_GLOBAL);
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
@@ -613,11 +614,11 @@ void Scenario::send_position(golem::GenWorkspaceState& position, golem::ReacPlan
 		if (arm->getReacPlanner().send(position, action)) {
 			break;
 		}
-		context.getLogger()->post(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
+		context.getMessageStream()->write(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
 	}
 
 
-	context.getLogger()->post(Message::LEVEL_INFO, "Moving...");
+	context.getMessageStream()->write(Message::LEVEL_INFO, "Moving...");
 	// wait for completion of the action (until the arm stops moving)
 	arm->getReacPlanner().waitForEnd(60000);
 }
@@ -651,7 +652,7 @@ void Scenario::init_data(){
 ///
 void Scenario::move_finger(){
 	target.pos = end;
-	target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
+	target.t = context.getTimer().elapsed() + tmDeltaAsync + duration;
 
 	//arm->setCollisionBoundsGroup(0x0);
 	set_collision_detection(false);	
@@ -663,12 +664,12 @@ void Scenario::move_finger(){
 		
 	// wait for the movement to start, but no longer than 60 seconds
 	(void)arm->getReacPlanner().waitForBegin(60000);
-	context.getTimer()->sleep(tmDeltaAsync);
+	context.getTimer().sleep(tmDeltaAsync);
 	bStart = true;
 		
 	// wait for the movement end, no longer than 60 seconds
 	(void)arm->getReacPlanner().waitForEnd(60000);
-	context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
+	context.getTimer().sleep(tmDeltaAsync + desc.speriod);
 	bStart = false;
 }
 
@@ -708,7 +709,7 @@ void Scenario::move_finger_up(){
 	preHome.pos.R = home.pos.R;
 	preHome.vel.setId(); // it doesn't move
 
-	preHome.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(2.0); // i.e. the movement will last at least 2 sec
+	preHome.t = context.getTimer().elapsed() + tmDeltaAsync + SecTmReal(2.0); // i.e. the movement will last at least 2 sec
 
 	// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 	arm->getReacPlanner().send(preHome, ReacPlanner::ACTION_GLOBAL);
@@ -732,7 +733,7 @@ void Scenario::remove_polyflap(){
 ///movement to home position
 ///
 void Scenario::move_finger_home() {
-	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
+	home.t = context.getTimer().elapsed() + tmDeltaAsync + SecTmReal(3.0);
 
 	//turn on collision detection
 	set_collision_detection(true);
@@ -740,7 +741,7 @@ void Scenario::move_finger_home() {
 	//move the finger to home position
 	send_position(home , ReacPlanner::ACTION_GLOBAL);
 	
-	context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
+	context.getMessageStream()->write(Message::LEVEL_INFO, "Moving home...");
 	arm->getReacPlanner().waitForEnd(60000);
 
 	
@@ -751,7 +752,7 @@ void Scenario::move_finger_home() {
 ///print out desired information at the end of a sequence
 ///
 void Scenario::iteration_end_info(){
-	context.getLogger()->post(Message::LEVEL_INFO, "Done");
+	context.getMessageStream()->write(Message::LEVEL_INFO, "Done");
 	cout << "Iteration " << iteration << " completed!" << endl;
 }
 
@@ -769,7 +770,7 @@ void Scenario::check_interrupted(){
 ///move the arm to its initial position
 ///
 void Scenario::move_to_initial(){
-	initial.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
+	initial.t = context.getTimer().elapsed() + tmDeltaAsync + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
 	arm->getReacPlanner().send(initial, ReacPlanner::ACTION_GLOBAL);
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
@@ -1094,17 +1095,19 @@ int PushingApplication::main(int argc, char *argv[]) {
 void PushingApplication::run(int argc, char *argv[]) {
 
 
+	cout << "entering run()..." << endl;
 	Scenario::Desc desc;
-	XMLData(desc, xmlcontext());
+	cout << "desc created..." << endl;
+	XMLData(desc, xmlcontext(), context());
 
 	Scenario *pScenario = dynamic_cast<Scenario*>(scene()->createObject(desc)); // throws
 	if (pScenario == NULL) {
-		context()->getLogger()->post(Message::LEVEL_CRIT, "PushingApplication::run(): unable to cast to Scenario");
+		context()->getMessageStream()->write(Message::LEVEL_CRIT, "PushingApplication::run(): unable to cast to Scenario");
 		return;
 	}
 
 	// Random number generator seed
-	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
+	context()->getMessageStream()->write(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
 		//pScenario->init(arguments);

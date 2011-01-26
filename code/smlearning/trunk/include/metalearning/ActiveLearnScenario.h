@@ -58,7 +58,7 @@ public:
 	class Desc : public Scenario::Desc {
 	protected:
 		/** Creates the object from the description. */
-		CREATE_FROM_OBJECT_DESC(ActiveLearnScenario, golem::Object::Ptr, golem::Scene)
+		CREATE_FROM_OBJECT_DESC1(ActiveLearnScenario, golem::Object::Ptr, golem::Scene)
 
 	public:
 		/** Constructs description object */
