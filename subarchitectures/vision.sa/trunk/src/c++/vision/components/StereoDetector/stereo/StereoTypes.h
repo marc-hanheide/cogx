@@ -63,7 +63,7 @@ static const bool SC_USE_LJCT_THRESHOLDS = true;
 static const double SC_LJCTS_MATCH_LIMIT = 0.2;
 
 static const bool SC_USE_CORNER_THRESHOLDS = true;
-static const double SC_CORNER_MATCH_LIMIT = 2.0;
+static const double SC_CORNER_MATCH_LIMIT = 1.0;
 
 
 //----------------------------------------------------------------//
