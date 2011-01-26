@@ -32,12 +32,11 @@ SET(CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Path prefix for SMLearning insta
 SET(PHYSX_INCLUDE /usr/include/PhysX/v2.8.1 CACHE PATH "Path prefix for PhysX include")
 SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.1 CACHE PATH "Path prefix for PhysX library")
 
-SET(KNI_INCLUDE /usr/local/include/KNI CACHE PATH "Path prefix for KNI include")
-SET(KNI_LIBRARY /usr/local/lib CACHE PATH "Path prefix for KNI library")
+#SET(KNI_INCLUDE /usr/local/include/KNI CACHE PATH "Path prefix for KNI include")
+#SET(KNI_LIBRARY /usr/local/lib CACHE PATH "Path prefix for KNI library")
 
 ##### NEW ##### ##### NEW ##### ##### NEW #####
 # Katana drivers for Golem are with the Golem executables
-set(GOLEM_KATANA_DRIVERS /usr/local/bin/Golem CACHE PATH "Path prefix to find Katana drivers for Golem")
 SET(GOLEM_INCLUDE /usr/local/include/Golem CACHE PATH "Path prefix for Golem include")
 SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 
@@ -74,7 +73,7 @@ SET(ICE_BIN /usr/bin CACHE PATH "Path prefix for ZeroC Ice binaries")
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
-LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
+LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader #KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools #GolemTinyIce !!not created anymore
 		##### NEW ##### ##### NEW ##### ##### NEW #####
 		GolemDemoCommon #newly added
@@ -92,7 +91,7 @@ INCLUDE_DIRECTORIES(
 	${PHYSX_INCLUDE}/SDKs/Foundation/include
 	${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
 	${PHYSX_INCLUDE}/SDKs/Cooking/include
-	${KNI_INCLUDE}
+	#${KNI_INCLUDE}
 	${Boost_INCLUDE_DIRS}
 	${RNNLIB_INCLUDE}
 	${QT_INCLUDE_DIR}
@@ -102,7 +101,7 @@ INCLUDE_DIRECTORIES(
 
 LINK_DIRECTORIES(
 	${PHYSX_LIBRARY}
-	${KNI_LIBRARY}
+	#${KNI_LIBRARY}
 	${GOLEM_LIBRARY}
 	${Boost_LIBRARY_DIRS}
 	${RNNLIB_LIBRARY}
@@ -223,13 +222,9 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
-)
-
-##### NEW ##### ##### NEW ##### ##### NEW #####
-#Katana drivers are needed for arm configuration
-SET(GOLEM_KATANA_DRIVERS_FILES
-	${GOLEM_KATANA_DRIVERS}/GolemDeviceKatana300Sim.xml # simulated arm
-	# more available
+#	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
+#	${SMLEARNING_ROOT}/config/GolemDeviceKatana300.xml
+#	${SMLEARNING_ROOT}/config/katana300_6M180.cfg
 )
 
 

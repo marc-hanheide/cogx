@@ -620,7 +620,7 @@ struct LearningData {
 					//zero padding
 					/*for (int i=0; i<motorVectorSize; i++)
 						inputVector[contInput++] = 0.0;
-					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector_pos | _object);*/
+					write_chunk_to_featvector (inputVector, *s_iter, contInput, normalize, limits, _effector_pos | _effector_orient | _object);*/
 			
 				}
 				else {
