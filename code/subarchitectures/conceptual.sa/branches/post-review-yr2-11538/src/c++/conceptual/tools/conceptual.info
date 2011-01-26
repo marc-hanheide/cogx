@@ -1,52 +1,60 @@
+x5 place0_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
+
 x4 place0_shape_property
  0 elongated
  1 square
 
-x10 place10_shape_property
+x7 place1_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
+
+x6 place1_shape_property
  0 elongated
  1 square
 
-x11 place12_shape_property
+x9 place2_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
+
+x8 place2_shape_property
  0 elongated
  1 square
 
-x12 place13_shape_property
+x11 place4_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
+
+x10 place4_shape_property
  0 elongated
  1 square
 
-x13 place14_shape_property
+x13 place6_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
+
+x12 place6_shape_property
  0 elongated
  1 square
 
-x9 place16_shape_property
- 0 elongated
- 1 square
+x15 place7_appearance_property
+ 0 corridor
+ 1 kitchen
+ 2 living_room
+ 3 office
 
-x5 place1_shape_property
- 0 elongated
- 1 square
-
-x14 place20_shape_property
- 0 elongated
- 1 square
-
-x15 place23_shape_property
- 0 elongated
- 1 square
-
-x16 place24_shape_property
- 0 elongated
- 1 square
-
-x6 place4_shape_property
- 0 elongated
- 1 square
-
-x7 place6_shape_property
- 0 elongated
- 1 square
-
-x8 place8_shape_property
+x14 place7_shape_property
  0 elongated
  1 square
 
@@ -80,35 +88,34 @@ x3 room2_category
  6 office
  7 toilet
 
-f0 SingleRoomFactor
-f1 f(room_category1,shape_property)
-f2 ObservedShapePropertyFactor
+f0 f(room_category1,room_category2)
+f1 f(room_category1,room_category2)
+f2 SingleRoomFactor
 f3 SingleRoomFactor
-f4 f(room_category1,shape_property)
-f5 ObservedShapePropertyFactor
+f4 SingleRoomFactor
+f5 f(room_category1,object_table_property)
 f6 f(room_category1,shape_property)
 f7 ObservedShapePropertyFactor
-f8 f(room_category1,shape_property)
-f9 ObservedShapePropertyFactor
+f8 f(room_category1,appearance_property)
+f9 ObservedAppearancePropertyFactor
 f10 f(room_category1,shape_property)
 f11 ObservedShapePropertyFactor
-f12 SingleRoomFactor
-f13 f(room_category1,shape_property)
-f14 ObservedShapePropertyFactor
-f15 f(room_category1,shape_property)
-f16 ObservedShapePropertyFactor
-f17 f(room_category1,shape_property)
-f18 ObservedShapePropertyFactor
-f19 f(room_category1,shape_property)
-f20 ObservedShapePropertyFactor
-f21 SingleRoomFactor
+f12 f(room_category1,appearance_property)
+f13 ObservedAppearancePropertyFactor
+f14 f(room_category1,shape_property)
+f15 ObservedShapePropertyFactor
+f16 f(room_category1,appearance_property)
+f17 ObservedAppearancePropertyFactor
+f18 f(room_category1,shape_property)
+f19 ObservedShapePropertyFactor
+f20 f(room_category1,appearance_property)
+f21 ObservedAppearancePropertyFactor
 f22 f(room_category1,shape_property)
 f23 ObservedShapePropertyFactor
-f24 f(room_category1,shape_property)
-f25 ObservedShapePropertyFactor
+f24 f(room_category1,appearance_property)
+f25 ObservedAppearancePropertyFactor
 f26 f(room_category1,shape_property)
 f27 ObservedShapePropertyFactor
-f28 f(room_category1,shape_property)
-f29 ObservedShapePropertyFactor
-f30 SingleRoomFactor
+f28 f(room_category1,appearance_property)
+f29 ObservedAppearancePropertyFactor
 
