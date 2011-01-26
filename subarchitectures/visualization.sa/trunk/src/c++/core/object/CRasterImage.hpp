@@ -42,6 +42,7 @@ public:
    }
    virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
    {
+      return false;
    }
 };
 

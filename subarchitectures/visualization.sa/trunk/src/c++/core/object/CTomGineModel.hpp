@@ -40,6 +40,7 @@ public:
          const std::vector<double>& rotation); /*override*/
    virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
    {
+      return false;
    }
 };
 
