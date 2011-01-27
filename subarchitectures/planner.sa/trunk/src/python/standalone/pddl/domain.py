@@ -120,7 +120,7 @@ class Domain(Scope):
 
         self.stratify_axioms()
         self.name2action = None
-
+        self.objects_by_type = {}
 
     @hook
     def copy(self):
@@ -129,8 +129,6 @@ class Domain(Scope):
         dom.actions = [a.copy(dom) for a in self.actions]
         dom.axioms = [a.copy(dom) for a in self.axioms]
             
-        dom.stratify_axioms()
-
         return dom
 
     @hook
@@ -161,7 +159,24 @@ class Domain(Scope):
             self.constants.remove(self[object.name])
         self.constants.add(object)
         self.add(object)
+        for typ, objs in self.objects_by_type.iteritems():
+            if object.is_instance_of(typ):
+                objs.add(object)
 
+    def remove_constant(self, object):
+        if dict.__contains__(self, object.name):
+            self.constants.remove(self[object.name])
+            del self[object.name]
+            for typ, objs in self.objects_by_type.iteritems():
+                if object.is_instance_of(typ):
+                    objs.discard(object)
+
+    def get_all_objects(self, type):
+        if type not in self.objects_by_type:
+            self.objects_by_type[type] = set(o for o in self.constants if o.is_instance_of(type) and o != builtin.UNKNOWN)
+        for obj in self.objects_by_type[type]:
+            yield obj
+        
     @hook
     def add_action(self, action):
         if action.__class__ == Action:
@@ -188,9 +203,23 @@ class Domain(Scope):
     def get_action_like(self):
         return self.actions
 
+    def get_stratification(self):
+        if self._stratification is None:
+            self._stratification, self._nonrecursive = axioms.stratify(self.axioms)
+        return self._stratification
+
+    def get_nonrecursive(self):
+        if self._nonrecursive is None:
+            self._stratification, self._nonrecursive = axioms.stratify(self.axioms)
+        return self._nonrecursive
+
+    stratification = property(get_stratification)
+    nonrecursive = property(get_nonrecursive)
+
     def stratify_axioms(self):
-        """Compute stratification layers for the axioms in this domain."""
-        self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
+        """Compute lazily stratification layers for the axioms in this domain."""
+        self._stratification = None
+        self._nonrecursive = None
 
     def add_requirement(self, req):
         if req not in supported:
@@ -202,8 +231,8 @@ class Domain(Scope):
         
             for t in module.types:
                 self.types[t.name] = t
-            self.constants |= set(module.constants)
-            self.add(module.constants)
+            for obj in module.constants:
+                self.add_constant(obj)
             self.predicates.add(module.predicates)
             self.functions.add(module.functions)
 
