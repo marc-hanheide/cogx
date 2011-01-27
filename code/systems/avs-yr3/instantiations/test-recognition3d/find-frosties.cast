@@ -1,0 +1,31 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+INCLUDE includes/vision.sa/vision-mediators-dora.cast 
+
+# live images
+# NOTE: provide your own camera calibration file here
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass USB --devnums "1" "instantiations/test-recognition3d/dora.right.cal"
+
+# stored images
+# image 0 is far, image 1 is in between, image 2 is near
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 1000 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties.ply" --siftfiles "instantiations/sift-models/frosties.sift" --labels "frosties" --log
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "frosties" --mode RECOGNIZE --log
+
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0 --displayserver "boo.view" $V11N_STANDALONE $V11N_STANDALONE_HOST 
+
+# viewing and debugging
+
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --log true --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"
+
