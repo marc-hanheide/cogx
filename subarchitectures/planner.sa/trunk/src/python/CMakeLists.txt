@@ -28,9 +28,11 @@ add_custom_target(python ALL DEPENDS ${GENERATED})
 #file(GLOB_RECURSE moduleFilesRel RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
 
  install(DIRECTORY ./ DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+          FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                           GROUP_WRITE GROUP_READ
           PATTERN ".svn" EXCLUDE
-          PERMISSIONS OWNER_WRITE OWNER_READ
-                      GROUP_WRITE GROUP_READ)
+          PATTERN "mapsim" EXCLUDE
+)
 
 install(CODE "exec_program(\"${CMAKE_COMMAND}\" ARGS -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/planner)")
 
