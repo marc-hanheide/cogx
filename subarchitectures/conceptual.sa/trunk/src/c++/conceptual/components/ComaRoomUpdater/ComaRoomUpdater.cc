@@ -142,6 +142,7 @@ void ComaRoomUpdater::runComponent()
 				}
 				catch(DoesNotExistOnWMException)
 				{
+					unlockEntry(it->second);
 					debug("WARNING: Information about coma room (roomId=%d) taken from the world set is not up to date!", it->first);
 				}
 			}

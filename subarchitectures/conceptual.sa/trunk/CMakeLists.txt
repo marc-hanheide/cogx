@@ -19,6 +19,9 @@ include_directories(${ROCS_SRC_INCLUDES})
 add_subdirectory (src/c++/conceptual/autogen)
 include_directories(src/c++/conceptual/autogen)
 
+# Conceptual.SA Tools
+add_subdirectory (src/c++/conceptual/tools/conceptualviewer)
+
 # Conceptual.SA C++ Components
 add_subdirectory (src/c++/conceptual/components/QueryHandler)
 add_subdirectory (src/c++/conceptual/components/ChainGraphInferencer)
