@@ -8,7 +8,7 @@ qt4_wrap_cpp( MOC_SOURCES ${MOC_HEADERS} )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${MOC_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} boost_filesystem)
+target_link_libraries(${PROJECT_NAME} boost_filesystem boost_system)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} CDL CategoricalData)
 
