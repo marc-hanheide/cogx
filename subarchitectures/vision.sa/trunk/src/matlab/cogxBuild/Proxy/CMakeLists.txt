@@ -20,7 +20,7 @@ target_link_libraries(VisualLearnerProxy VisionData VideoUtils)
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
-target_link_libraries(VisualLearnerProxy cv highgui cxcore)
+target_link_libraries(VisualLearnerProxy ${OPENCV_LDFLAGS})
 
 install(TARGETS VisualLearnerProxy LIBRARY DESTINATION lib)
 
