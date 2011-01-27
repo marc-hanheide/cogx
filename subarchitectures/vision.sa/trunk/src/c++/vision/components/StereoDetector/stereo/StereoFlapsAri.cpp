@@ -6,6 +6,7 @@
  * @brief Stereo matching of flaps, based on rectangles.
  */
 
+#include <vector>
 #include "StereoFlapsAri.h"
 
 namespace Z
@@ -16,12 +17,22 @@ namespace Z
 //-----------------------------------------------------------------//
 /**
  * @brief Constructor TmpFlapAri
+ * Construct TmpFlapAri from the six isct-points of FlapAri
  * @param flap vs3 flap
  */
 TmpFlapAri::TmpFlapAri(FlapAri *flap)
 {
-  surf[0].Init(flap->rectangle[0]);
-  surf[1].Init(flap->rectangle[1]);
+  id2D = flap->ID();
+  vector<Vector2> p0, p1;
+  int j;
+  for(unsigned i=0; i<4; i++)
+  {
+    p0.push_back(flap->isct[i]);
+    j=i+3; if(j>5) j=0;
+    p1.push_back(flap->isct[j]);
+  }
+  surf[0].Init(p0);
+  surf[1].Init(p1);
 }
 
 /**
@@ -89,25 +100,6 @@ void TmpFlapAri::Fuddle(unsigned off0, unsigned off1, bool swap)
 }
 
 
-//----------------------------------------------------------------//
-//---------------------------- Flap3DAri ----------------------------//
-//----------------------------------------------------------------//
-
-/**
- * @brief Reconstruct the flap in 3D
- * @param left Left TmpFlap
- * @param right Right TmpFlap
- * @param cam Stereo camera parameters and functions.
- */
-bool Flap3DAri::Reconstruct(StereoCamera *stereo_cam, TmpFlapAri &left, TmpFlapAri &right)
-{
-  bool ok0 = surf[0].Reconstruct(stereo_cam, left.surf[0], right.surf[0], true);
-  bool ok1 = surf[1].Reconstruct(stereo_cam, left.surf[1], right.surf[1], true);
-  return ok0 && ok1;
-}
-
-
-
 //------------------------------------------------------------------//
 //--------------------------- StereoFlaps --------------------------//
 //------------------------------------------------------------------//
@@ -123,27 +115,6 @@ StereoFlapsAri::StereoFlapsAri(StereoCore *sco, VisionCore *vc[2], StereoCamera 
   stereo_cam = sc;
   flapMatches = 0;
 }
-
-/**
- * @brief Number of Surfaces in 2D 
- * @param side LEFT/RIGHT side of stereo rig.
- */
-// int StereoFlaps::NumSurfaces2D(int side)
-// {
-//   assert(side == LEFT || side == RIGHT);
-//   return surfs[side].Size();
-// }
-
-/**
- * @brief Delivers 2D tmp. surface.
- * @param side LEFT/RIGHT side of stereo rig.
- * @param i Position of the surface in the array.
- */
-// const Surf2D &StereoFlaps::Surfaces2D(int side, int i)
-// {
-//   assert(side == LEFT || side == RIGHT);
-//   return surfs[side][i];
-// }
 
 /**
  * @brief Number of Flaps in 2D 
@@ -175,18 +146,18 @@ const TmpFlapAri &StereoFlapsAri::Flaps2D(int side, int i)
  */
 void StereoFlapsAri::DrawMatched(int side, bool single, int id, int detail)
 {
-	if(single)
-	{
-		if(id < 0 || id >= flapMatches)
-		{
-			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
-			return;
-		}
-		DrawSingleMatched(side, id, detail);
-	}
-	else
-		for(int i=0; i< flapMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+  {
+    if(id < 0 || id >= flapMatches)
+    {
+      printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+      return;
+    }
+    DrawSingleMatched(side, id, detail);
+  }
+  else
+    for(int i=0; i< flapMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
 /**
@@ -197,8 +168,8 @@ void StereoFlapsAri::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
 {
-	flaps[side][id].surf[0].Draw(detail);
-	flaps[side][id].surf[1].Draw(detail);
+  flaps[side][id].surf[0].Draw(detail);
+  flaps[side][id].surf[1].Draw(detail);
 }
 
 
@@ -211,65 +182,18 @@ void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
 #ifdef HAVE_CAST
 bool StereoFlapsAri::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
-	obj->model = new VisionData::GeometryModel;
-	Flap3DAri flap = Flaps(id);
+  obj->model = new VisionData::GeometryModel;
+  Flap3D *flap = Flaps3D(score, id);
 
-	// Recalculate pose of vertices (relative to the pose of the flap == COG)
-	Pose3 pose;
-	RecalculateCoordsystem(flap, pose);
-
-	// add center point to the model
-	cogx::Math::Pose3 cogxPose;
-	cogxPose.pos.x = pose.pos.x;
-	cogxPose.pos.y = pose.pos.y;
-	cogxPose.pos.z = pose.pos.z;
-	obj->pose = cogxPose;
-
-	// create vertices (relative to the 3D center point)
-	for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
-	{
-		VisionData::Face f;
-
-		for(unsigned j=0; j<flap.surf[i].vertices.Size(); j++)
-		{
-			VisionData::Vertex v;
-			v.pos.x = flap.surf[i].vertices[j].p.x;
-			v.pos.y = flap.surf[i].vertices[j].p.y;
-			v.pos.z = flap.surf[i].vertices[j].p.z;
-			obj->model->vertices.push_back(v);
-
-			f.vertices.push_back(j+(i*4));
-		}
-
-		obj->model->faces.push_back(f);
-		f.vertices.clear();
-	}
-
-	obj->detectionConfidence = 1.0;						// TODO detection confidence is always 1
-
-	return true;
-}
-#endif
-
-/**
- * TODO: 
- * Es wird der Schwerpunkt des Flaps als Zentrum des Flap-Koordinatensystem verwendet und die Pose zur Kamera errechnet.
- * @brief Try to find a "natural" looking coordinate system for a flap.
- * The coordinate system is really arbitrary, there is no proper implicitly defined coordinate system.
- * We take the (geometrical) center of gravity of the corner points as position and set orientation to identity.
- * @param flap 3D Flap
- * @param pose pose
- */
-void StereoFlapsAri::RecalculateCoordsystem(Flap3DAri &flap, Pose3 &pose)
-{
+  // Recalculate pose of vertices (relative to the center of gravity == COG)
+  Pose3 pose;
   Vector3 c(0., 0., 0.);
   int cnt = 0;
-  // find the center of gravity
-  for(int i = 0; i <= 1; i++)
+  for(int i = 0; i <= 1; i++)   // find the center of gravity
   {
-    for(unsigned j = 0; j < flap.surf[i].vertices.Size(); j++)
+    for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
     {
-      c += flap.surf[i].vertices[j].p;
+      c += flap->surf[i].vertices[j].p;
       cnt++;
     }
   }
@@ -277,27 +201,55 @@ void StereoFlapsAri::RecalculateCoordsystem(Flap3DAri &flap, Pose3 &pose)
   pose.pos.x = c.x;
   pose.pos.y = c.y;
   pose.pos.z = c.z;
-
-	// set the orientation to identity, i.e. parallel to world coordinate system
-  pose.rot.x = 0.;
+  pose.rot.x = 0.;   // set the orientation to identity, i.e. parallel to world coordinate system
   pose.rot.y = 0.;
   pose.rot.z = 0.;
 
   // invert to get pose of world w.r.t. flap
   Pose3 inv = pose.Inverse();
 
-	// recalculate the vectors to the vertices from new center point
+  // add center point to the model
+  cogx::Math::Pose3 cogxPose;
+  cogxPose.pos.x = pose.pos.x;
+  cogxPose.pos.y = pose.pos.y;
+  cogxPose.pos.z = pose.pos.z;
+  obj->pose = cogxPose;
+
+  // recalculate the vectors to the vertices from new center point
   for(int i = 0; i <= 1; i++)
   {
-    for(unsigned j = 0; j < flap.surf[i].vertices.Size(); j++)
+    for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
     {
-      Vector3 p(flap.surf[i].vertices[j].p.x,
-                flap.surf[i].vertices[j].p.y,
-                flap.surf[i].vertices[j].p.z);
-			flap.surf[i].vertices[j].p = inv.Transform(p);
+      Vector3 p(flap->surf[i].vertices[j].p.x,
+                flap->surf[i].vertices[j].p.y,
+                flap->surf[i].vertices[j].p.z);
+      p = inv.Transform(p);
+      
+      VisionData::Vertex v;
+      v.pos.x = p.x;
+      v.pos.y = p.y;
+      v.pos.z = p.z;
+      obj->model->vertices.push_back(v);
     }
-	}
+  }
+
+  // create vertices (relative to the 3D center point)
+  VisionData::Face f;
+  for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
+  {
+    for(unsigned j=0; j<flap->surf[i].vertices.Size(); j++)
+    {
+      f.vertices.push_back(j+(i*4));
+    }
+    obj->model->faces.push_back(f);
+    f.vertices.clear();
+  }
+
+  obj->detectionConfidence = 1.0;                                // TODO detection confidence is always 1
+  return true;
 }
+#endif
+
 
 
 /**
@@ -318,7 +270,6 @@ double StereoFlapsAri::MatchingScore(TmpFlapAri &left_flap, TmpFlapAri &right_fl
   double sc_x = MatchingScoreSurf(left_flap.surf[0], right_flap.surf[1], off_x1) +
                 MatchingScoreSurf(left_flap.surf[1], right_flap.surf[0], off_x0);
 
-// printf("	Matching score: %4.2f - %4.2f\n", sc_s, sc_x);
   // if flaps match "straight"
   if(sc_s < sc_x)
   {
@@ -346,7 +297,6 @@ double StereoFlapsAri::MatchingScore(TmpFlapAri &left_flap, TmpFlapAri &right_fl
  */
 unsigned StereoFlapsAri::FindMatchingFlap(TmpFlapAri &left_flap, Array<TmpFlapAri> &right_flaps, unsigned l)
 {
-// printf("    FindMatchingFlap:\n");
   double match, best_match = HUGE;
   unsigned j, j_best = UNDEF_ID;
   unsigned off_0, off_1, off_0_best = 0, off_1_best = 0;
@@ -384,14 +334,12 @@ void StereoFlapsAri::MatchFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri>
   for(; l < u && l < right_flaps.Size();)
   {
     j = FindMatchingFlap(left_flaps[l], right_flaps, l);
-    // found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
+    if(j != UNDEF_ID)    // found a matching right, move it to same index position as left
     {
       right_flaps.Swap(l, j);
       l++;
     }
-    // found no right, move left to end and decrease end
-    else
+    else                 // found no right, move left to end and decrease end
     {
       left_flaps.Swap(l, u-1);
       u--;
@@ -409,17 +357,17 @@ void StereoFlapsAri::MatchFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri>
  * @param matches Number of matched flaps.
  * @param flap3ds Array of calculated 3d flaps.
  */
-void StereoFlapsAri::Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &matches, Array<Flap3DAri> &flap3ds)
+void StereoFlapsAri::Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFlapAri> &right_flaps, int &matches)
 {
   unsigned u = matches;
   for(unsigned i = 0; i < u;)
   {
-    Flap3DAri flap3d;
-    bool ok0 = flap3d.surf[0].Reconstruct(stereo_cam, left_flaps[i].surf[0], right_flaps[i].surf[0], true);
-    bool ok1 = flap3d.surf[1].Reconstruct(stereo_cam, left_flaps[i].surf[1], right_flaps[i].surf[1], true);
+    Flap3D *flap3d = new Flap3D();
+    bool ok0 = flap3d->surf[0].Reconstruct(stereo_cam, left_flaps[i].surf[0], right_flaps[i].surf[0], true);
+    bool ok1 = flap3d->surf[1].Reconstruct(stereo_cam, left_flaps[i].surf[1], right_flaps[i].surf[1], true);
     if(ok0 && ok1)
     {
-      flap3ds.PushBack(flap3d);
+      score->NewGestalt3D(flap3d);
       i++;
     }
     // move unacceptable flaps to the end
@@ -438,11 +386,9 @@ void StereoFlapsAri::Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFl
  */
 void StereoFlapsAri::ClearResults()
 {
-	flaps[LEFT].Clear();
-	flaps[RIGHT].Clear();
-	flap3ds.Clear();
-
-	flapMatches = 0;
+  flaps[LEFT].Clear();
+  flaps[RIGHT].Clear();
+  flapMatches = 0;
 }
 
 /**
@@ -452,29 +398,29 @@ void StereoFlapsAri::Process()
 {
   for(int side = LEFT; side <= RIGHT; side++)
   {
-		for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::FLAP_ARI); i++)
-		{
-			FlapAri *core_flap = (FlapAri*)vcore[side]->Gestalts(Gestalt::FLAP_ARI, i);
-			if(!vcore[side]->use_masking || !core_flap->IsMasked())
-			{
-				TmpFlapAri flap(core_flap);
-				if(flap.IsValid())
-					flaps[side].PushBack(flap);
-			}
-		}
-		if(pPara.pruning)
-			for(unsigned i = 0; i < flaps[side].Size(); i++)
-				flaps[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
-		for(unsigned i = 0; i < flaps[side].Size(); i++)
-			flaps[side][i].Rectify(stereo_cam, side);
-		for(unsigned i = 0; i < flaps[side].Size(); i++)
-			flaps[side][i].Refine();
-	}
+    for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::FLAP_ARI); i++)
+    {
+      FlapAri *core_flap = (FlapAri*)vcore[side]->Gestalts(Gestalt::FLAP_ARI, i);
+      if(!vcore[side]->use_masking || !core_flap->IsMasked())
+      {
+	TmpFlapAri flap(core_flap);
+	if(flap.IsValid())
+	  flaps[side].PushBack(flap);
+      }
+    }
+    if(pPara.pruning)
+      for(unsigned i = 0; i < flaps[side].Size(); i++)
+	flaps[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+    for(unsigned i = 0; i < flaps[side].Size(); i++)
+      flaps[side][i].Rectify(stereo_cam, side);
+    for(unsigned i = 0; i < flaps[side].Size(); i++)
+      flaps[side][i].Refine();
+}
 
   // do stereo matching and depth calculation
   flapMatches = 0;
   MatchFlaps(flaps[LEFT], flaps[RIGHT], flapMatches);
-  Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], flapMatches, flap3ds);
+  Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], flapMatches);
 }
 
 
@@ -483,12 +429,12 @@ void StereoFlapsAri::Process()
  */
 void StereoFlapsAri::Process(int oX, int oY, int sc)
 {
-	pPara.pruning = true;
-	pPara.offsetX = oX;
-	pPara.offsetY = oY;
-	pPara.scale = sc;
-	Process();
-	pPara.pruning = false;
+  pPara.pruning = true;
+  pPara.offsetX = oX;
+  pPara.offsetY = oY;
+  pPara.scale = sc;
+  Process();
+  pPara.pruning = false;
 }
 
 }

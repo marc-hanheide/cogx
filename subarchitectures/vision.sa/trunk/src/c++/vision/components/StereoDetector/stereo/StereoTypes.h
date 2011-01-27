@@ -16,7 +16,10 @@
 #include "Draw.hh"
 #include "Line.hh"
 #include "Closure.hh"
+#include "Rectangle.hh"
+#include "FlapAri.hh"
 #include "Cube.hh"
+
 
 
 namespace Z
@@ -116,13 +119,15 @@ public:
   vector<Vector2> pr;                   ///< rectified points
 
   Surf2D() {is_valid = false;}
+  Surf2D(vector<Vector2> points) {Init(points);}
   Surf2D(Closure *clos) {Init(clos);}
-// 	Surf2D(Rectangle *rectangle) {Init(rectangle);}
-//	Surf2D(Cube *cube) {Init(cube, int side);}								TODO TODO /// das funktioniert mit den Seiten nicht!!!
-
+  Surf2D(Rectangle *rectangle) {Init(rectangle);}
+//  Surf2D(Cube *cube) {Init(cube, side);}								TODO TODO /// das funktioniert mit den Seiten nicht!!!
+													/// Initialisierung sollte im StereoCube sein!
+  void Init(vector<Vector2> points);
   void Init(Closure *clos);
   void Init(Rectangle *rectangle);
-  void Init(Cube *cube, int side);
+  void Init(Cube *cube, int side);									/// TODO sollte wegfallen: Siehe oben
 
   void ShiftPointsLeft(unsigned offs);
   void RePrune(int oX, int oY, int sc);

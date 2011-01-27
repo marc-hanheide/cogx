@@ -255,13 +255,13 @@ unsigned StereoCorners::FindMatchingCorner(TmpCorner &left_corner, Array<TmpCorn
     
     if(match < HUGE && SC_USE_CORNER_THRESHOLDS)					/// TODO TODO
     {
-printf(" %u match = %6.5f\n", j, match);
+// printf(" %u match = %6.5f\n", j, match);
 // printf(" StereoCorners::FindMatchingCorner: %u/%u/%u bzw. %u/%u/%u\n", k, m, o, l, n, p);
 // printf("  angles: %4.2f - %4.2f\n", PolarAngle(left_corner.armDir), PolarAngle(right_corners[j].dir[1]));
 
       // The angle difference is between 0 and 3*2*PI = 18,85 rad
       match = match * angleSum;
-printf(" %u new match = %6.5f\n\n", j, match);
+// printf(" %u new match = %6.5f\n\n", j, match);
 
 // printf("    min Angle: %4.3f\n", minAngle);
 // printf(" new match = %6.5f\n", match);

@@ -26,6 +26,7 @@ public:
     LJUNCTION,
     CORNER,
     RECTANGLE,
+    FLAP,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };

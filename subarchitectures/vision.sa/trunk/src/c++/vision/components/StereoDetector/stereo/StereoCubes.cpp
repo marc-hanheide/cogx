@@ -20,9 +20,10 @@ namespace Z
  */
 TmpCube::TmpCube(Cube *cube)
 {
-	surf[0].Init(cube, 0);
-	surf[1].Init(cube, 1);
-	surf[2].Init(cube, 2);
+  printf("TmpCube::TmpCube: Surface init bad implemented!\n");
+  surf[0].Init(cube, 0);
+  surf[1].Init(cube, 1);
+  surf[2].Init(cube, 2);
 }
 
 /**
@@ -33,9 +34,9 @@ TmpCube::TmpCube(Cube *cube)
  */
 void TmpCube::RePrune(int oX, int oY, int sc)
 {
-	surf[0].RePrune(oX, oY, sc);
-	surf[1].RePrune(oX, oY, sc);
-	surf[2].RePrune(oX, oY, sc);
+  surf[0].RePrune(oX, oY, sc);
+  surf[1].RePrune(oX, oY, sc);
+  surf[2].RePrune(oX, oY, sc);
 }
 
 /**
