@@ -49,16 +49,22 @@ sequence<OneObj> ObjSeq;
 
   sequence<string> IdSeq;
 
-  // RGB color
-  // NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
-  // char in your code.
+  /**
+   * RGB color
+   * NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
+   * char in your code.
+   * @author Michael Zillich
+   */
   struct ColorRGB {
     byte r;
     byte g;
     byte b;
   };
 
-  // A 3D point with a color, as e.g. returned by stereo
+  /**
+   * A 3D point with a color, as e.g. returned by stereo
+   * @author Michael Zillich
+   */
   struct SurfacePoint {
     cogx::Math::Vector3 p;
     VisionData::ColorRGB c;
@@ -82,8 +88,8 @@ sequence<OneObj> ObjSeq;
   sequence<SurfacePatch> SurfacePatchSeq;
 
   /**
-   * @brief ???
-   * @author ???
+   * @brief Data related to one (of possibly several) view on an object.
+   * @author Michael Zillich
    */
   struct VisualObjectView {
     // 2D bounding box in the image
