@@ -18,6 +18,10 @@ namespace Z
 
 // class VisionCore;
 
+// When creating rectangles, we use a method, where we delete short lines to create quadrangles.
+// After meassuring the maximum line length, we delete all lines which are LENGTH_THR_FACTOR*maxLineLength
+const static double LENGTH_THR_FACTOR = 0.25;
+
 /**
  * @brief Class GestaltPrinciple
  */
