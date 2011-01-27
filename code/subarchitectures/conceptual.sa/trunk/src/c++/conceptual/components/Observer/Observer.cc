@@ -1,3 +1,4 @@
+
 /**
  * @author Andrzej Pronobis
  *
@@ -13,6 +14,7 @@
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <math.h>
 
 /** The function called to create a new instance of our component. */
@@ -918,8 +920,9 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 {
 //	debug("getConnectedPlaces(placeId=%d)", placeId);
 
+	boost::scoped_ptr<set<int> > alloc_traversedPlaces;
 	if (!traversedPlaces)
-		traversedPlaces = new set<int>();
+		alloc_traversedPlaces.reset(traversedPlaces = new set<int>());
 	traversedPlaces->insert(placeId);
 
 	map<cast::cdl::WorkingMemoryAddress,

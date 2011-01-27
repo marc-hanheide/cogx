@@ -13,7 +13,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/assign/list_of.hpp>
-
+#include <fstream>
 
 
 /** The function called to create a new instance of our component. */
@@ -72,6 +72,14 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	if((it = _config.find("--defaultchaingraphinferencer")) != _config.end())
 	{
 		_defaultChainGraphInferencerName = it->second;
+	}
+	if((it = _config.find("--save-graph")) != _config.end())
+	{
+		_saveGraphFileName = it->second;
+	}
+	if((it = _config.find("--save-graph-info")) != _config.end())
+	{
+		_saveGraphInfoFileName = it->second;
 	}
 
 	log("Configuration parameters:");
@@ -218,6 +226,7 @@ void ChainGraphInferencer::inferenceQueryAdded(const cast::cdl::WorkingMemoryCha
 	catch(CASTException &e)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+		return;
 	}
 
 	// Lock the mutex to make the operations below atomic
@@ -295,9 +304,37 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 
 		// RECREATE THE FACTOR GRAPH FROM WORLD STATE AND DEFAULT KNOWLEDGE
 		_factors.clear();
+		_factorNames.clear();
 		_variableNameToDai.clear();
 		addDaiFactors();
 		_factorGraph = dai::FactorGraph(_factors);
+
+		// Save the generated factor graph
+		if (!_saveGraphFileName.empty())
+		{
+			_factorGraph.WriteToFile(_saveGraphFileName.c_str());
+		}
+		if (!_saveGraphInfoFileName.empty())
+		{
+			ofstream file(_saveGraphInfoFileName.c_str());
+			for (std::map<std::string, DaiVariable>::iterator i = _variableNameToDai.begin();
+					i!=_variableNameToDai.end(); ++i)
+			{
+				file << i->second.var << " " << i->first.c_str() << endl;
+				for (std::map<int, std::string>::iterator j = i->second.valueIdToName.begin();
+									j!=i->second.valueIdToName.end(); ++j)
+				{
+					file << " " << j->first << " " << j->second << endl;
+				}
+				file <<endl;
+			}
+			for (unsigned int i = 0; i< _factors.size(); ++i)
+			{
+				file << "f" << i << " " << _factorNames[i] << endl;
+			}
+			file << endl;
+			file.close();
+		}
 	}
 
 	// Unlock world state
@@ -414,6 +451,7 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 }
 
 
@@ -429,6 +467,7 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
+
 	// Note: first fariable changes faster
 	// Go over the second variable
 	int roomCatCount = _roomCategories.size();
@@ -444,6 +483,7 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("SingleRoomFactor");
 }
 
 
@@ -490,6 +530,8 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+
 }
 
 
@@ -541,6 +583,7 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 
 }
 
@@ -578,7 +621,9 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 		}
 		if (potential<0)
 		{
-			error("We can't find potential for a shape building DAI factor! Implementation error!!");
+			log("Warning: Can't find potential for a shape %s while building observed shape property DAI factor!"
+					"This probably means that the shape value is not present in the model for this property.",
+					shape.c_str());
 			potential=0.01;
 		}
 		daiFactor.set(index, potential);
@@ -587,6 +632,8 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedShapePropertyFactor");
+
 }
 
 
@@ -638,6 +685,7 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 
 }
 
@@ -675,7 +723,10 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 		}
 		if (potential<0)
 		{
-			error("We can't find potential for a appearance building DAI factor! Implementation error!!");
+			log("Warning: Can't find potential for an appearance %s while building observed appearance property DAI factor!"
+					"This probably means that the appearance value is not present in the model for this property.",
+					appearance.c_str());
+
 			potential=0.01;
 		}
 		daiFactor.set(index, potential);
@@ -684,6 +735,8 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedAppearancePropertyFactor");
+
 }
 
 
@@ -797,7 +850,7 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 			msg = "Variable '"+varName+"' not found! Variables we know:";
 			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
 				msg+=varIter->first+" ";
-			error(msg.c_str());
+			log(msg.c_str());
 			return;
 		}
 		// Retrieve marginal
