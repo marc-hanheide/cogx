@@ -175,7 +175,7 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 	}
 
 	// HACK by Alen
-	@Override	
+	// @Override	
 	protected void newPlanProxy(WorkingMemoryAddress _planProxyAddr)
 			throws SubarchitectureComponentException {
 		log("newPlanProxy so creating new plan executor");
