@@ -201,7 +201,11 @@ if(BUILD_SA_V11N_CLIENT)
    link_directories(${OPENCV_LIBRARY_DIRS})
    add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-   add_cast_component(DisplayClient client/CDisplayClient.cpp client/CFormValues.cpp)
+   add_cast_component(DisplayClient
+      client/CDisplayClient.cpp
+      client/CFormValues.cpp
+      client/CMilliTimer.cpp
+      )
    link_cast_component(${CAST_COMPONENT_NAME}
       VisualizationData Math Video VideoUtils
       # CogxIceAutogen

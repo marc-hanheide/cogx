@@ -24,6 +24,7 @@
 
 // convenient classes for clients
 #include "CFormValues.hpp"
+#include "CMilliTimer.hpp"
 
 // Optional use of opencv on the client
 #ifdef FEAT_VISUALIZATION_OPENCV
@@ -39,6 +40,13 @@ namespace cogx { namespace display {
 
 class CDisplayClient
 {
+   // The timer is restarted in connectIceClient. If you clear it manually, also clear m_nextSendTime;
+   CMilliTimer m_timer;
+   std::map<std::string, long long> m_nextSendTime;
+   void setRawImageInternal(const std::string& id, int width, int height, int channels,
+         const std::vector<unsigned char>& data);
+   void setCompressedImageInternal(const std::string& id, const std::vector<unsigned char>& data,
+         const std::string &format="");
 protected:
 
    /// if this is not "" then try to connect to a display server outside of CAST on this host
@@ -48,6 +56,11 @@ protected:
    std::string m_serverName;
    Visualization::DisplayInterfacePrx m_pServer;
    cast::CASTComponent* m_pOwner;
+
+   // If gt 0 it will send images to the server at most every xMs millisecons (per object/part)
+   int m_imageSendLocalMs;
+   int m_imageSendRemoteMs;
+   int m_imageSendMs; // depends on display host; either equal to LocalMs or RemoteMs
 
    std::string getComponentId() {
       if (! m_pOwner) return "";
