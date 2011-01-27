@@ -1,3 +1,4 @@
+FIND_PACKAGE( OpenCV REQUIRED )
 
 # Set the sources.
 SET(SOURCES
@@ -13,6 +14,6 @@ add_cast_component(VideoGrabber ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    VisionData Video VideoUtils
    ${VISUALIZATION_LIBRARIES}
-   ${OPENCV_LDFLAGS}
+   ${OpenCV_LIBS}
    )
 
