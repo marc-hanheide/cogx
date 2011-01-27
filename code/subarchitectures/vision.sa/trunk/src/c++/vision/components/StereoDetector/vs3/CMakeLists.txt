@@ -1,6 +1,6 @@
 PROJECT(SDvs3)
 
-include_directories(.)
+FIND_PACKAGE( OpenCV REQUIRED )
 
 SET(SOURCES 
 	betacf.c
@@ -109,29 +109,13 @@ SET(SOURCES
 include_directories(.)
 
 
-# INCLUDE DIRECTORIES WITH HEADERS (EXTERN)
-include_directories(/usr/local/include)
-include_directories(/usr/include)
-include_directories(/usr/include/qt3)
-
-
-link_cast_component(${CAST_COMPONENT_NAME} glut)
-link_cast_component(${CAST_COMPONENT_NAME} GLU)
-link_cast_component(${CAST_COMPONENT_NAME} SDL)
-link_cast_component(${CAST_COMPONENT_NAME} SDLmain)
-link_cast_component(${CAST_COMPONENT_NAME} Imlib)
-link_cast_component(${CAST_COMPONENT_NAME} rt)
-link_cast_component(${CAST_COMPONENT_NAME} m)
-link_cast_component(${CAST_COMPONENT_NAME} dl)
-link_cast_component(${CAST_COMPONENT_NAME} pthread)
-link_cast_component(${CAST_COMPONENT_NAME} highgui)
-link_cast_component(${CAST_COMPONENT_NAME} cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} cv)
-link_cast_component(${CAST_COMPONENT_NAME} qt-mt)
-
-link_cast_component(${CAST_COMPONENT_NAME} SDUtils)
-
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME} SDL SDLmain)
+target_link_libraries(${PROJECT_NAME} rt)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME} SDUtils)
+
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 

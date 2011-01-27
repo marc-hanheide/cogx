@@ -1,11 +1,12 @@
 # needed to allow visualization to use IplImages 
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
+FIND_PACKAGE( OpenCV REQUIRED )
+
 include_directories(.)
 include_directories(./ODetect3D)
 include_directories(./matrix)
 include_directories(./SiftGPU/src/SiftGPU)
-include_directories(/usr/include/opencv)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 link_directories(${CUDA_INSTALLROOT}/lib)
@@ -39,5 +40,5 @@ add_cast_component(ObjectRecognizer3D2 ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Stereo StereoClient VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} matrix2 siftgpu)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore Cg CgGL GLEW glut IL)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} Cg CgGL GLEW glut IL)
 
