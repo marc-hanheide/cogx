@@ -157,7 +157,7 @@ class DTProblem(object):
 
     def write_dt_input(self, domain_fn, problem_fn, dt_id=0):
         self.problem.name = "cogx-dt-task-%d" % dt_id
-        self.problem.domain.name = "cogx-dt-problem-%d" % dt_id
+        self.problem.domain.name = "cogx-dt-domain-%d" % dt_id
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
 
     def observation_expected(self, action):
@@ -316,6 +316,12 @@ class DTProblem(object):
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
+            p = hstate.get_prob(svar, val)
+            if p < 0.00001 or p > 0.99999:
+                continue # no use in disconfirming known facts
+
+            dis_penalty = -dis_score * (1-p)/p
+            
             
             name = "disconfirm-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
             a = pddl.Action(name, [], None, None, domain)
@@ -354,8 +360,12 @@ class DTProblem(object):
     def recompute_problem(self, new_state):
         self.state = new_state
         self.subproblems = self.compute_subproblems(self.state)
-        self.problem = self.create_problem(self.state, self.dtdomain)
-
+        self.problem, hstate = self.create_problem(self.state, self.dtdomain)
+        
+        self.goal_actions = self.create_goal_actions(self.goals, hstate, self.dtdomain)
+        self.dtdomain.actions += [a for a in self.goal_actions]
+        self.dtdomain.name2action = None
+        
     def compute_subproblems(self, prob_state):
         # import debug
         # debug.set_trace()
@@ -422,7 +432,7 @@ class DTProblem(object):
         problem.goal = pddl.Conjunction([])
         
         log.debug("total time for state creation: %f", time.time()-t0)
-        return problem
+        return problem, hstate
 
     def reduce_state(self, limit):
         levels = defaultdict(lambda: -1)

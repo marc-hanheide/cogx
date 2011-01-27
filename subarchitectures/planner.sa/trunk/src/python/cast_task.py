@@ -5,6 +5,7 @@ from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
 
 from standalone import task, dt_problem, plans, plan_postprocess, pddl, config
+import standalone.globals as global_vars
 from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum
 
@@ -58,6 +59,7 @@ class CASTTask(object):
         self.component = component
 
         self.id = planning_task.id
+        self.dt_id = None
         self.slice_goals = planning_task.goals
         self.dt_task = None
         self.step = 0
@@ -317,7 +319,7 @@ class CASTTask(object):
         if self.dt_task.replanning_neccessary(self.state.prob_state):
             log.info("DT task requires replanning")
             #send empty observations to terminate previous task
-            self.component.getDT().deliverObservation(self.id, [])
+            self.component.cancel_dt_session(self)
             self.dt_task.recompute_problem(self.state.prob_state)
             self.update_status(TaskStateEnum.WAITING_FOR_DT)
             self.component.start_dt_planning(self)
@@ -337,14 +339,14 @@ class CASTTask(object):
                 log.info("Still waiting for observations from %s...", str(self.dt_task.dt_plan[-1]))
                 return False
             self.update_status(TaskStateEnum.WAITING_FOR_DT)
-            self.component.getDT().deliverObservation(self.id, observations)
+            self.component.getDT().deliverObservation(self.dt_id, observations)
             return True
 
         def wait_timeout():
             log.info("Got no observations from %s", str(self.dt_task.dt_plan[-1]))
             observations = [Planner.Observation("null", [])]
             self.update_status(TaskStateEnum.WAITING_FOR_DT)
-            self.component.getDT().deliverObservation(self.id, observations)
+            self.component.getDT().deliverObservation(self.dt_id, observations)
             
         observations = get_observations()
         if not self.dt_task.observation_expected(dt_pnode.action):
@@ -357,7 +359,7 @@ class CASTTask(object):
 
         log.debug("delivered observations")
         self.update_status(TaskStateEnum.WAITING_FOR_DT)
-        self.component.getDT().deliverObservation(self.id, observations)
+        self.component.getDT().deliverObservation(self.dt_id, observations)
   
     def monitor_cp(self):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
@@ -413,7 +415,7 @@ class CASTTask(object):
                 break
 
         log.info("dt planning cancelled.")
-        self.component.getDT().deliverObservation(self.id, [])
+        self.component.cancel_dt_session(self)
             
         self.get_plan().execution_position = last_dt_action
         self.update_status(TaskStateEnum.PROCESSING)
@@ -457,7 +459,7 @@ class CASTTask(object):
         def wait_timeout():
             self.plan_history.append(self.dt_task)
             self.cp_task.set_plan(None, update_status=True)
-            self.component.getDT().deliverObservation(self.id, [])
+            self.component.cancel_dt_session(self)
             self.update_status(TaskStateEnum.FAILED)
             return
         
@@ -530,6 +532,9 @@ class CASTTask(object):
         return True
 
     def dt_planning_active(self):
+        if global_vars.config.dt.enabled == False:
+            return False
+        
         plan = self.get_plan()
         if not plan or not self.dt_task:
             return False

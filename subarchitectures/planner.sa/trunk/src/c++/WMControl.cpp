@@ -62,6 +62,8 @@ void WMControl::start() {
 
     addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::ADD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::newPercept));
+    addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::OVERWRITE),
+            new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::newPercept));
 
     connectToPythonServer();
 }

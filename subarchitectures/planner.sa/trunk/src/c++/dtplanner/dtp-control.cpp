@@ -498,10 +498,12 @@ void DTPCONTROL::get_observation(Ice::Int id,
 }
 
 void DTPCONTROL::deliverObservation(Ice::Int id,
-                                    const autogen::Planner::ObservationSeq& observationSeq,
+                                    const autogen::Planner::ObservationSeq& _observationSeq,
                                     const Ice::Current&){
     
     VERBOSER(1001, "DTP THREAD SPAWNING got an observation posted for task :: "<<id);
+
+    autogen::Planner::ObservationSeq observationSeq = _observationSeq;
     spawn__get_observation__thread(id, observationSeq);
 }
 
