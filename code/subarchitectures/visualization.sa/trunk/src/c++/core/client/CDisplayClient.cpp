@@ -219,7 +219,7 @@ void CDisplayClient::setRawImageInternal(const std::string& id, int width, int h
       typeof(m_nextSendTime.begin()) it = m_nextSendTime.find(id);
       if (it != m_nextSendTime.end()) nexttm = it->second;
       long long now = m_timer.elapsed();
-      if (now < nexttm) return;
+      if (now < nexttm) return; // XXX: should cache the image and send it at nexttm; it's too much work for now.
       if (now - nexttm < m_imageSendMs) nexttm = nexttm + m_imageSendMs;
       else nexttm = now + m_imageSendMs;
       m_nextSendTime[id] = nexttm;
@@ -231,6 +231,16 @@ void CDisplayClient::setCompressedImageInternal(const std::string& id,
       const std::vector<unsigned char>& data, const std::string &format)
 {
    if (! m_pServer) return;
+   long long nexttm = 0;
+   if (m_imageSendMs > 0) {
+      typeof(m_nextSendTime.begin()) it = m_nextSendTime.find(id);
+      if (it != m_nextSendTime.end()) nexttm = it->second;
+      long long now = m_timer.elapsed();
+      if (now < nexttm) return; // XXX: should cache the image and send it at nexttm; it's too much work for now.
+      if (now - nexttm < m_imageSendMs) nexttm = nexttm + m_imageSendMs;
+      else nexttm = now + m_imageSendMs;
+      m_nextSendTime[id] = nexttm;
+   }
    m_pServer->setCompressedImage(id, data, format);
 }
 
