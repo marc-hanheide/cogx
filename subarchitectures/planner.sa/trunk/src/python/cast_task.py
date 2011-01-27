@@ -1,5 +1,6 @@
 import os
 from os.path import abspath, join
+from collections import defaultdict
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
@@ -64,6 +65,7 @@ class CASTTask(object):
         self.dt_task = None
         self.step = 0
         self.plan_history = []
+        self.fail_count = defaultdict(lambda: 0)
 
         self.load_domain(domain_fn)
         if problem_fn:
@@ -76,7 +78,7 @@ class CASTTask(object):
             
         self.percepts = []
 
-        cp_problem, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True, domain=self.cp_domain)
+        cp_problem, cp_domain, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True, domain=self.domain)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
@@ -94,7 +96,7 @@ class CASTTask(object):
         domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
         w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
-        
+
         
     def update_status(self, status):
         self.internal_state = status
@@ -105,11 +107,6 @@ class CASTTask(object):
     def load_domain(self, domain_fn):
         log.info("Loading domain %s.", domain_fn)
         self.domain = pddl.load_domain(domain_fn)
-
-        if "partial-observability" in self.domain.requirements:
-            self.cp_domain = pddl.dtpddl.DT2MAPLCompiler().translate(self.domain)
-        else:
-            self.cp_domain = self.domain
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
@@ -192,7 +189,8 @@ class CASTTask(object):
 
         if "partial-observability" in self.domain.requirements:
             log.info("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.domain)
+            # self.dt_task = dt_problem.DTProblem(plan, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -511,7 +509,7 @@ class CASTTask(object):
             return True
         
         self.state = cast_state.CASTState(beliefs, self.domain, self.state, component=self.component)
-        new_cp_problem, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True, domain=self.cp_domain)
+        new_cp_problem, new_cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True, domain=self.domain)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)

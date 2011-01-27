@@ -59,6 +59,39 @@ class PNode(object):
         assert p_total <= 1.0001, "p(%s) = %.4f (%s)" % (str(svar), p_total, peff.pddl_str())
         return PNode(svar, children)
 
+
+    @staticmethod
+    def from_fact(fact, rules=[], stat=None):
+        def get_firing_rules(facts):
+            for r in rules:
+                deps = r.deps()
+                rule_facts = {}
+                for svar,v in facts.iteritems():
+                    if svar.function in deps:
+                        rule_facts[svar] = v
+                if rule_facts:
+                    yield (r, rule_facts)
+            
+        obj = pddl.TypedObject("node%d" % PNode.nodeid, dtpddl.t_node)
+        PNode.nodeid += 1
+        svar = state.StateVariable(dtpddl.selected, [obj])
+            
+        children = {}
+        p_total = 0
+        fsvar = fact.svar
+        for i, (val, p) in enumerate(fact.value.iteritems()):
+            facts = {fsvar : val}
+            nodes = []
+            for rule, fixed in get_firing_rules(facts):
+                nodes += LazyPNode.from_rule(rule, rules, fixed, stat)
+            val = pddl.TypedObject("choice%d" % i, dtpddl.t_node_choice)
+                
+            children[val] = (p, nodes, facts)
+            p_total += p
+
+        assert p_total <= 1.0001, "p(%s) = %.4f (%s)" % (str(svar), p_total, peff.pddl_str())
+        return PNode(svar, children)
+    
     def hash(self):
         hashes = []
         for val, (p, nodes, facts) in self.children.iteritems():
@@ -301,6 +334,16 @@ class PNode(object):
             
         return nodes
 
+    @staticmethod
+    def from_state(stat):
+        rules = pddl.translators.Translator.get_annotations(stat.problem.domain).get('dt_rules', [])
+        nodes = []
+        for fact in stat.iterdists():
+            if fact.value.value is None:
+                nodes.append(PNode.from_fact(fact, rules, stat))
+            
+        return nodes
+    
     def prepare_actions(self):
         pass
         # self.visited_by = set()
@@ -448,7 +491,9 @@ class LazyPNode(PNode):
     @staticmethod
     def from_rule(rule, rules, fixed_facts, stat):
         stat = stat.copy()
-        stat.update(fixed_facts)
+        for svar, val in fixed_facts.iteritems():
+            stat[svar] = val
+            
         pre_mapping = rule.match_args(fixed_facts.iteritems())
         if pre_mapping is None:
             #rule doesn't match at all

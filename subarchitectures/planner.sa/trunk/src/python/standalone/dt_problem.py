@@ -27,6 +27,7 @@ class DTProblem(object):
             return
         
         self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
+        self.prob_functions |= set(r.function for r in self.dt_rules)
         
         self.dtdomain = self.create_dt_domain(domain)
 
@@ -228,13 +229,16 @@ class DTProblem(object):
 
 
     def replanning_neccessary(self, new_state):
-        #if self.selected_subproblem == -1:
+        # if self.selected_subproblem == -1:
         #    return True
-        #new_objects = new_state.problem.objects - self.state.problem.objects
-        #problem = self.subproblems[self.selected_subproblem]
-        #for o in new_objects:
+        
+        # new_objects = new_state.problem.objects - self.state.problem.objects
+        # problem = self.subproblems[self.selected_subproblem]
+        
+        # for o in new_objects:
         #    if all(c.matches(o, self.state) for c in problem.constraints):
         #        return True
+           
         return False
             
     def create_goal_actions(self, goals, fail_counts, selected,  domain):
@@ -316,8 +320,8 @@ class DTProblem(object):
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
-            p = hstate.get_prob(svar, val)
-            if p < 0.00001 or p > 0.99999:
+            p = self.abstract_state[svar][val]
+            if p < 0.001 or p > 0.999:
                 continue # no use in disconfirming known facts
 
             dis_penalty = -dis_score * (1-p)/p
