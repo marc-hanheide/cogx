@@ -42,6 +42,7 @@ float_state.cc
 global.cc
 gmres.cc
 integer_state.cc
+main.cpp
 markov_decision_process_state.cc
 observational__state.cc
 observation.cc
