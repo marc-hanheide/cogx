@@ -155,6 +155,7 @@ class Planner(object):
                 try:
                     pnode.action = mapltask.domain.get_action(pnode.action.name)
                 except:
+                    log.warning("problem getting action description for %s", str(pnode))
                     return False
         return True
 
@@ -225,11 +226,13 @@ class Planner(object):
         task.pending_action = None
         
         if task.get_plan() is None:
+            log.info("Plan is empty, replanning");
             return True
 
         self.statistics.increase_stat("monitoring_calls")
 
         if not self.update_plan(task.get_plan(), task._mapltask):
+            log.warning("Error updating plan, replanning.");
             return True
                 
         t0 = time.time()

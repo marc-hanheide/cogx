@@ -1,8 +1,9 @@
 from itertools import chain
 import re
 
-from standalone import pddl, config
+from standalone import pddl, pstatenode, config
 from standalone.pddl import state, prob_state
+import standalone.globals as global_vars
 
 import de.dfki.lt.tr.beliefs.slice as bm
 from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
@@ -71,10 +72,24 @@ class CASTState(object):
             self.prob_state.set(f)
         self.objects |= self.generated_objects
 
+        self.generate_belief_state(self.prob_state)
+
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         if oldstate:
             self.match_generated_objects(oldstate)
 
+
+    def generate_belief_state(self, prob_state):
+        pnodes = pstatenode.PNode.from_state(prob_state)
+        pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
+        assert not det_lits, map(str, det_lits)
+        # mapltask.init += det_lits
+        self.pnodes = pnodes
+                
+        # self.prob_functions = dt_compiler.get_prob_functions(mapltask)
+        # self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+
+        
             
     def generate_init_facts(self, problem, oldstate=None):
         cstate = self.prob_state.determinized_state(0.05, 0.95)
@@ -259,16 +274,31 @@ class CASTState(object):
         if domain is None:
             domain = self.domain
 
+        if global_vars.config.base_planner.name == "TFD":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
+        elif global_vars.config.base_planner.name == "ProbDownward":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
+        else:
+            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
+
+        def prob_functions(stat):
+            for svar, val in stat.iteritems():
+                if val.value is None:
+                    yield svar.function
+            
+        self.prob_functions = set(prob_functions(self.prob_state))
+        cp_domain = dt_compiler.translate(domain, prob_functions=self.prob_functions)
+            
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
-            if 'numeric-fluents' in domain.requirements:
+            if 'numeric-fluents' in cp_domain.requirements:
                 pass
                 #b = pddl.Builder(domain)
                 #facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
         else:
             facts = self.facts
 
-        problem = pddl.Problem("cogxtask", self.objects | self.generated_objects, facts, None, domain, opt, opt_func )
+        problem = pddl.Problem("cogxtask", self.objects | self.generated_objects, facts, None, cp_domain, opt, opt_func )
 
         if deterministic:
             self.state.problem = problem
@@ -299,7 +329,7 @@ class CASTState(object):
 
         log.debug("goal: %s", problem.goal)
         
-        return problem, goaldict
+        return problem, cp_domain, goaldict
 
     def convert_percepts(self, percepts):
         objdict = dict((o.name, o) for o in chain(self.objects, self.domain.constants))
