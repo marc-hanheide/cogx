@@ -130,6 +130,22 @@ void Vertex2D::Draw()
 //---------------------------- Surf2D ----------------------------//
 //----------------------------------------------------------------//
 /**
+ * @brief Init tmp. surface with data of a rectangle.
+ * Set the size of the point-vectors (p, pr) and copy corner coordinates to p.
+ * @param p Points to init the surface.
+ */
+void Surf2D::Init(vector<Vector2> points)
+{
+  p.resize(points.size());
+  pr.resize(points.size());
+  
+  for(unsigned i=0; i<points.size(); i++)
+    p[i] = points[i];
+
+  is_valid = true;
+}
+
+/**
  * @brief Init 2D surface with data from a closure.
  * 																																								TODO Why calculation with edgels ...? Whats going on here?
  * @param clos Closure to init surface
@@ -216,11 +232,11 @@ void Surf2D::Init(Closure *clos)
  */
 void Surf2D::Init(Rectangle *rectangle)
 {
-	p.resize(4);
-	pr.resize(4);
+  p.resize(4);
+  pr.resize(4);
 
-	for(unsigned i=0; i<4; i++)
-		p[i] = rectangle->isct[i];
+  for(unsigned i=0; i<4; i++)
+    p[i] = rectangle->isct[i];
 
   is_valid = true;
 }

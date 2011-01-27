@@ -53,9 +53,9 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);								/// TODO New corners!
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS_ARI);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS_ARI);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
   }
 
   // init stereo camera calibration parameters
@@ -103,9 +103,9 @@ void StereoCore::InitStereoGestalts()
   stereoPrinciples[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(false);						/// TODO disabled
   stereoPrinciples[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
-  stereoPrinciples[StereoBase::STEREO_FLAP]->EnablePrinciple(false);						/// TODO disabled
-  stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(false);					/// TODO disabled
-  stereoPrinciples[StereoBase::STEREO_CUBE]->EnablePrinciple(false);						/// TODO disabled
+  stereoPrinciples[StereoBase::STEREO_FLAP]->EnablePrinciple(true);						/// TODO disabled
+  stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(true);
+  stereoPrinciples[StereoBase::STEREO_CUBE]->EnablePrinciple(true);						/// TODO disabled
 }
 
 
