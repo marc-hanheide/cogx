@@ -13,7 +13,7 @@
 // standard libraries
 #include <iostream>
 #include <fstream>
-#include <values.h>
+#include <limits.h>
 #include <math.h>
 
 using namespace oscar;

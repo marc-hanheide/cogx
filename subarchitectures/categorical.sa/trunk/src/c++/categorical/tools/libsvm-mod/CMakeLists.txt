@@ -14,5 +14,10 @@ SET(LIBSVMMOD_HEADERS src/allocMatrix.h src/localkernels.h src/localkernel2.h sr
                       src/svm.h src/svreduction.h src/confidence.h src/predict.h src/time.h)
 ADD_LIBRARY(svm-mod SHARED ${LIBSVMMOD_SOURCES})
 
+ADD_EXECUTABLE(svm-predict ${LIBSVMMOD_SOURCES} src/svm-predict.cpp)
+ADD_EXECUTABLE(svm-train ${LIBSVMMOD_SOURCES} src/svm-train.cpp)
+ADD_EXECUTABLE(svm-scale src/svm-scale.cpp)
+
 # Installing
 INSTALL(TARGETS svm-mod LIBRARY DESTINATION lib)
+INSTALL(TARGETS svm-predict svm-train svm-scale RUNTIME DESTINATION bin)
