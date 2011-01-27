@@ -81,8 +81,8 @@ kval_axiom = """
 hyp_axiom = """
 (:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
           (or (= ?svar ?val)
-              (and (commit ?svar ?val)
-                   (i_in-domain ?svar ?val))
+              (and (commit ?svar ?val))
+                   ;;(i_in-domain ?svar ?val))
           )
 )
 """

@@ -9,7 +9,7 @@ import builtin
 from builder import Builder
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Parameter
-from predicates import Predicate, Function, FunctionTerm, VariableTerm
+from predicates import Predicate, Function, FunctionTerm, VariableTerm, ConstantTerm
 from builtin import t_object, t_number, UNKNOWN
 
 t_node = types.Type("node")
@@ -340,10 +340,7 @@ class DTRule(scope.Scope):
         return set(f for f in funcs if f != self.function)
 
     def depends_on(self, other):
-        for func in self.deps():
-            if func == other.function:
-                return True
-        return False
+        return other.function in self.deps()
 
     def instantiate(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
@@ -373,9 +370,13 @@ class DTRule(scope.Scope):
             self.pcond = conditions.LiteralCondition(builtin.gt, [self.values[0][0], predicates.Term(0)])
 
         self.lit_by_arg = defaultdict(set)
+        self.free_args = {}
+
         for lit in self.conditions + [self.pcond]:
             if lit:
-                for arg in lit.free():
+                free = lit.free()
+                self.free_args[lit] = free
+                for arg in free:
                     self.lit_by_arg[arg].add(lit)
         self.inst_func_init = True
 
@@ -406,6 +407,7 @@ class DTRule(scope.Scope):
             for lit in self.conditions + [self.pcond]:
                 if lit == ignored_cond or lit in checked or lit is None:
                     continue
+                # print lit.pddl_str()
 
                 if lit.predicate == builtin.equals and isinstance(lit.args[0], FunctionTerm) and isinstance(lit.args[1], VariableTerm):
                     v = lit.args[-1]
@@ -414,7 +416,7 @@ class DTRule(scope.Scope):
                         forced = v.object, st[svar]
                         forced_lit = lit
 
-                if all(a.is_instantiated() for a in lit.free()):
+                if all(a.is_instantiated() for a in self.free_args[lit]):
                     if lit == self.pcond:
                         svar = state.StateVariable.from_literal(lit, st)
                         val = st[svar]
@@ -426,10 +428,11 @@ class DTRule(scope.Scope):
                         exst = st.get_extended_state([fact.svar])
                         #val = st.evaluate_term(v)
                         if exst[fact.svar] != fact.value:
+                            # print fact, exst[fact.svar]
                             return None, None
                     checked.add(lit)
                 else:
-                    next_candidates.append([a for a in lit.free() if not a.is_instantiated()])
+                    next_candidates.append([a for a in self.free_args[lit] if not a.is_instantiated()])
 
             if forced:
                 checked.add(forced_lit)
@@ -464,6 +467,28 @@ class DTRule(scope.Scope):
     #     result = p.copy_instance()
     #     self.uninstantiate()
     #     return result
+
+    def match_args(self, facts):
+        mapping = {}
+        for svar, val in facts:
+            for lit in self.conditions:
+                if lit.predicate == builtin.equals and lit.args[0].function == svar.function:
+                    for a, a2 in zip(lit.args[0].args + [lit.args[1]], svar.args + (val,)):
+                        if isinstance(a, VariableTerm):
+                            assert mapping.get(a.object, a2) == a2
+                            mapping[a.object] = a2
+                        elif isinstance(a, ConstantTerm) and a.object != a2:
+                            return None
+                elif lit.predicate == svar.function:
+                    v = builtin.TRUE if not lit.negated else builtin.FALSE
+                    for a, a2 in zip(lit.args + [v], self.svar.args + (val,)):
+                        if isinstance(a, VariableTerm):
+                            assert mapping.get(a.object, a2) == a2
+                            mapping[a.object] = a2
+                        elif isinstance(a, ConstantTerm) and a.object != a2:
+                            return None
+        return mapping
+
 
     def get_value_args(self):
         result = set()
@@ -618,16 +643,20 @@ class DT2MAPLCompiler(translators.Translator):
                     a.sensors.append(mapl.SenseEffect(s_atom, a))
                 else:
                     #Free parameter on rhs => fully observable
-                    if isinstance(atom.args[1], predicates.VariableTerm) and not atom.args[1].is_instantiated():
-                        s_term = a.lookup([atom.args[0].copy_instance()])[0]
-                        a.sensors.append(mapl.SenseEffect(s_term, a))
+                    # if isinstance(atom.args[1], predicates.VariableTerm) and not atom.args[1].is_instantiated():
+                    #     s_term = a.lookup([atom.args[0].copy_instance()])[0]
+                    #     a.sensors.append(mapl.SenseEffect(s_term, a))
+                    # el
+                    if any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
+                        continue
                     else:
+                        # print map(str, atom.visit(visitors.collect_free_vars))
                         s_atom = atom.copy_instance()
                         s_atom.set_scope(a)
                         a.sensors.append(mapl.SenseEffect(s_atom, a))
             observe.uninstantiate()
 
-    def create_commit_actions(self, rules, domain):
+    def create_commit_actions(self, rules, domain, prob_functions):
         import durative
 
         p_functions = [r.function for r in rules]
@@ -732,22 +761,23 @@ class DT2MAPLCompiler(translators.Translator):
         self.add_function(total_p_cost, dom)
         self.add_function(started, dom)
 
-        for o in dom.observe:
-            self.translate_observable(o, prob_functions, dom)
-
-        sample_functions = set()
-        actions = []
         rules = []
         for a in dom.actions:
             if a.name.startswith("_sample_"):
                 try:
                     new_rules = DTRule.from_action(a)
                     for r in new_rules:
-                        sample_functions.add(r.function)
+                        prob_functions.add(r.function)
                     rules += new_rules
                 except:
-                    actions.append(self.translate_action(a, prob_functions))
-            else:
+                    pass
+        
+        for o in dom.observe:
+            self.translate_observable(o, prob_functions, dom)
+
+        actions = []
+        for a in dom.actions:
+            if not a.name.startswith("_sample_"):
                 actions.append(self.translate_action(a, prob_functions))
                 
         for f in dom.functions:
@@ -763,7 +793,7 @@ class DT2MAPLCompiler(translators.Translator):
             rules.append(rule)
 
         dom.clear_actions()
-        commit_actions = self.create_commit_actions(rules, dom)
+        commit_actions = self.create_commit_actions(rules, dom, prob_functions)
         for a in chain(actions, commit_actions):
             dom.add_action(a)
                 
@@ -803,357 +833,13 @@ class DT2MAPLCompiler(translators.Translator):
         # p2.init.append(b.init('=', (total_p_cost,), p_cost_value))
         return p2
 
-class PNode(object):
-    nodeid = 0
-    actionid = 0
-        
-    def __init__(self, svar, children):
-        self.svar = svar
-        self.parent = None
-        self.children = children
-        for p, nodes, facts in self.children.itervalues():
-            for n in nodes:
-                n.parent = self
-        
-        self.branch_vars = self.get_branch_vars()
-
-        #self.hash = hash(tuple(self.children)) #TODO make order invariant
-
-    @staticmethod
-    def from_effect(peff):
-        def get_children(eff):
-            if isinstance(eff, effects.ConjunctiveEffect):
-                return eff.parts
-            else:
-                return [eff]
-            
-        obj = types.TypedObject("node%d" % PNode.nodeid, t_node)
-        PNode.nodeid += 1
-        svar = state.StateVariable(selected, [obj])
-            
-        children = {}
-        p_total = 0
-        for i, (p, eff) in enumerate(peff.effects):
-            p = p.object.value
-            facts = [state.Fact.from_literal(e) for e in get_children(eff) if isinstance(e, effects.SimpleEffect)]
-            facts = dict((f.svar, f.value) for f in facts)
-            nodes = [PNode.from_effect(e) for e in get_children(eff) if isinstance(e, effects.ProbabilisticEffect)]
-            val = types.TypedObject("choice%d" % i, t_node_choice)
-                
-            children[val] = (p, nodes, facts)
-            p_total += p
-
-        assert p_total <= 1.0001, "p(%s) = %.4f" % (str(svar), p_total)
-        return PNode(svar, children)
-        
-
-    def hash(self):
-        hashes = []
-        for val, (p, nodes, facts) in self.children.iteritems():
-            hashes.append(hash((p, frozenset([n.hash() for n in nodes]), frozenset(facts.iteritems()))))
-        return hash(frozenset(hashes))
-
-    def consolidate(self, nodedict):
-        for val, (p, nodes, facts) in self.children.iteritems():
-            nodes = [n.consolidate(nodedict) for n in nodes]
-            self.children[val] = (p, nodes, facts)
-        
-        if self.hash() in nodedict:
-            #print "duplicate found"
-            return nodedict[self.hash()]
-        nodedict[self.hash()] = self
-        return self
-
-    def replace_branch_var(self, svar):
-        self.svar = svar
-        children_new = {}
-        for val, (p, nodes, facts) in self.children.iteritems():
-            newval = facts[svar]
-            del facts[svar]
-            children_new[newval] = (p, nodes, facts)
-        self.children = children_new
-
-    def get_branches_for_fact(self, fact):
-        if fact.svar == self.svar:
-            if fact.value in self.children:
-                return [fact.value]
-            return []
-        result = []
-        for var, (p, nodes, facts) in self.children.iteritems():
-            if facts[fact.svar] == fact.value:
-                result.append(var)
-        return result
-
-    def get_nodedicts(self, ndict=None, fdict=None):
-        if ndict is None:
-            ndict = {}
-        if fdict is None:
-            fdict = defaultdict(set)
-        assert ndict.get(self.svar, self) == self, self.svar
-        
-        if self.svar in ndict:
-            return
-        ndict[self.svar] = self
-        fdict[self.svar].add(self)
-        for p, nodes, facts in self.children.itervalues():
-            for svar, val in facts.iteritems():
-                fdict[svar].add(self)
-            for n in nodes:
-                n.get_nodedicts(ndict, fdict)
-        return ndict, fdict
-            
-    @staticmethod
-    def consolidate_all(nodes):
-        assert False
-        nodedict = {}
-        nodes = [n.consolidate(nodedict) for n in nodes]
-        svardict = defaultdict(set)
-        for n in nodedict.itervalues():
-            for svar in n.branch_vars:
-                svardict[svar].add(n)
-        for svar, nset in svardict.iteritems():
-            print svar, len(nset)
-            if len(nset) == 1:
-                n = nset.pop()
-                n.replace_branch_var(svar)
-        return nodes
-        
-
-    @staticmethod
-    def simplify_all(nodes):
-        noderesult = nodes[:]
-        factresult = {}
-        for n in nodes:
-            dn, df, empty = n.simplify()
-            noderesult += dn
-            factresult.update(df)
-            if empty:
-                noderesult.remove(n)
-        return noderesult, factresult
-
-    def simplify(self):
-        if not self.children:
-            return [], {}, True
-        
-        #TODO propagate constant literal outwards?
-        for val, (p, nodes, facts) in self.children.iteritems():
-            for n in nodes:
-                dn, df, empty = n.simplify()
-                nodes += dn
-                facts.update(df)
-                if empty:
-                    nodes.remove(n)
-            if p >= 1.0:
-                cleaned_facts = dict((svar, val) for svar, val in facts.iteritems() if svar.function != selected)
-                return nodes, cleaned_facts, True
-            
-        return [], {}, False
-
-
-    def size(self, selected_facts=None):
-        # if selected_facts is not None and self.svar not in selected_facts:
-        #     print "tree not evaluated:", self.svar
-        #     return 1
-        print "start:", self.svar
-        size = 0
-        total_p = 0
-        for val, (p, nodes, facts) in self.children.iteritems():
-            total_p += p
-            # if selected_facts is not None and val not in selected_facts[self.svar]:
-            #     print "branch not evaluated:", self.svar, val
-            #     continue
-            bsize = 1
-            for n in nodes:
-                # print "child", n.svar
-                bsize *= n.size(selected_facts)
-            size += bsize
-            print "evaluated:", self.svar, val, bsize
-        if total_p < 1.0:
-            size += 1
-        print "size of", self.svar, size
-        return size
-
-    def add_facts(self, choices):
-        cval = choices.get(self.svar, None)
-        if cval:
-            p, nodes, facts = self.children[cval]
-            for n in nodes:
-                #print "subtrees of %s=%s" % (str(self.svar), str(cval));
-                yield n.all_facts()
-        for val, (p, nodes, facts) in self.children.iteritems():
-            if val == cval:
-                continue
-            result = set(state.Fact(svar, val) for svar, val in facts.iteritems())
-            #result.add(state.Fact(self.svar, val))
-            for n in nodes:
-                result |= n.all_facts()
-            # print "branch %s=%s" % (str(self.svar), str(val))
-            yield result
-
-    def get_level(self, choices, level=0):
-        cval = choices.get(self.svar, None)
-        if not cval:
-            return [(self, -1)]
-        
-        p, nodes, facts = self.children[cval]
-        
-    
-    def all_facts(self):
-        result = set()
-        for val, (p, nodes, facts) in self.children.iteritems():
-            #result.add(state.Fact(self.svar, val))
-            result |= set(state.Fact(svar, val) for svar, val in facts.iteritems())
-            for n in nodes:
-                result |= n.all_facts()
-        return result
-
-    def reduce(self, choices, limit):
-        cval = choices.get(self.svar, None)
-
-        if not cval:
-            #no further choices:
-            return 1, []
-
-        p, nodes, facts = self.children[cval]
-        size = 1
-        next = [n for n in nodes if n.svar in choices]
-        branch_limit = limit/2 # final limit will be 2*size of one branch when using branch combining
-        # heuristic: if we need to select n subtrees, the limit of each is the nth root of the combined limit.
-        subtree_limit = branch_limit**(1/float(len(next))) 
-        selected_facts = set(facts + [state.Fact(self.svar, cval)])
-        for n in next:
-            s, f = n.reduce(choices, subtree_limit)
-            size *= s
-            selected_facts |= f
-        
-        #have a look at parallel subtrees first:
-        #TODO: which branch to select?
-        alloc_size = size
-        for n in nodes:
-            if n in next:
-                continue
-            if alloc_size * n.size() < branch_limit:
-                print "choosing ", n.svar
-                selected_facts |= n.all_facts()
-                alloc_size *= n.size()
-                
-        #add alternative branches
-        for val, (p, nodes, facts) in self.children.iteritems():
-            if val == cval:
-                continue
-            branch_size = 1
-            branch_facts = set()
-            for n in nodes:
-                branch_size *= n.size()
-                branch_facts |= n.all_facts()
-            if alloc_size + branch_size < branch_limit:
-                print "choosing ", self.svar, cval
-                
-
-    def get_branch_vars(self):
-        c_values = None
-        for p, nodes, facts in self.children.itervalues():
-            if not facts:
-                return []
-            
-            if c_values is None:
-                c_values = dict((svar, set([val])) for svar, val in facts.iteritems())
-            else:
-                for svar, vals in c_values.items():
-                    if svar not in facts or facts[svar] in vals:
-                        del c_values[svar]
-                    else:
-                        vals.add(facts[svar])
-
-            if not c_values:
-                return []
-            
-        return c_values
-
-    @staticmethod
-    def from_problem(problem):
-        nodes = []
-        for i in problem.init:
-            if isinstance(i, effects.ProbabilisticEffect):
-                nodes.append(PNode.from_effect(i))
-        return nodes
-
-    def prepare_actions(self):
-        self.visited_by = set()
-        for val, (p, nodes, facts) in self.children.iteritems():
-            for n in nodes:
-                n.prepare_actions()
-
-    def to_actions(self, domain, parent_conds=None):
-        actions = []
-        # if parent_conds:
-        #     if frozenset(parent_conds) in self.visited_by:
-        #         return []
-        #     self.visited_by.add(frozenset(parent_conds))
-
-        for o in self.svar.args:
-            domain.add_constant(o)
-            
-        for val, (p, nodes, facts) in self.children.iteritems():
-            if p <= 0.00001:
-                continue
-            name = "commit-%s-%s-%s" % (self.svar.function.name, "-".join(a.name for a in self.svar.args), val.name)
-            PNode.actionid += 1
-            domain.add_constant(val)
-                
-            agent = predicates.Parameter("?a", mapl.t_agent)
-            a = mapl.MAPLAction(name, [agent], [], [], conditions.Conjunction([]), None, effects.ConjunctiveEffect([]), [], domain)
-            actions.append(a)
-            b = Builder(a)
-            a.precondition.parts.append(b.cond("not", ("committed", self.svar.as_term())))
-            a.precondition.parts.append(b.cond("not", ("started",)))
-            if parent_conds:
-                a.precondition.parts += [c.copy(a) for c in parent_conds]
-
-            a.effect.parts.append(b.effect("assign", self.svar.as_term(), val))
-            for svar, value in facts.iteritems():
-                for c in chain(svar.args, [value]):
-                    domain.add_constant(c)
-                cvar = svar.as_modality(mapl.commit, [value])
-                a.effect.parts.append(cvar.as_literal(_class=effects.SimpleEffect))
-                
-            a.effect.parts.append(b.effect("assign", ("probability",), p))
-
-            new_parent_cond = b.cond("=", self.svar.as_term(), val)
-
-            for n in nodes:
-                actions += n.to_actions(domain, [new_parent_cond])
-
-        return actions
-
-    def to_init(self, selected_facts=None):
-        effs = []
-        for val, (p, nodes, facts) in self.children.iteritems():
-            ceff = effects.ConjunctiveEffect([])
-            for svar, val in chain(facts.iteritems(), [(self.svar, val)]):
-                #if svar.function == selected:
-                #    continue
-                f = state.Fact(svar, val)
-                if selected_facts is not None and f not in selected_facts:
-                    continue
-                eff = f.as_literal(_class=effects.SimpleEffect)
-                ceff.parts.append(eff)
-            for n in nodes:
-                eff = n.to_init(selected_facts)
-                if eff:
-                    ceff.parts.append(eff)
-            if ceff.parts:
-                effs.append((predicates.Term(p), ceff))
-        if effs:
-            return effects.ProbabilisticEffect(effs)
-        return None
 
 class DT2MAPLCompilerFD(DT2MAPLCompiler):
     def __init__(self, nodes=None, **kwargs):
         DT2MAPLCompiler.__init__(self, **kwargs)
         self.pnodes = nodes
 
-    def create_commit_actions(self, rules, domain):
+    def create_commit_actions(self, rules, domain, prob_functions):
         assert self.pnodes
 
         self.add_function(probability, domain)
@@ -1167,7 +853,8 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
             n.prepare_actions()
         for n in self.pnodes:
             actions += n.to_actions(domain)
-        return actions
+            
+        return actions + self.commit_actions_from_rules(rules, domain, prob_functions)
     
     @translators.requires('partial-observability')
     def translate_problem(self, _problem):
@@ -1176,39 +863,38 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
             p2.remove_object(c)
             
         return p2
-    # def create_commit_actions_old(self, rules, domain):
-    #     import durative
+    
+    def commit_actions_from_rules(self, rules, domain, prob_functions):
+        import durative
 
-    #     if "probability" not in domain.functions:
-    #         domain.functions.add(probability)
+        if "probability" not in domain.functions:
+            domain.functions.add(probability)
         
-    #     p_functions = [r.function for r in rules]
-
-    #     actions = []
-    #     action_count = defaultdict(lambda: 0)
+        actions = []
+        action_count = defaultdict(lambda: 0)
         
-    #     for r in rules:
-    #         for p, v in r.values:
-    #             agent = predicates.Parameter("?a", mapl.t_agent)
-    #             i = action_count[r.function]
-    #             action_count[r.function] += 1
-    #             a = mapl.MAPLAction("select-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, None, None, None, [], domain)
-    #             b = Builder(a)
-    #             cparts = []
-    #             for lit in r.conditions:
-    #                 if lit.predicate == builtin.equals and lit.args[0].function in p_functions:
-    #                     cparts.append(b.cond("hyp", lit.args[0], lit.args[1]))
-    #                 else:
-    #                     cparts.append(lit)
+        for r in rules:
+            for p, v in r.values:
+                agent = predicates.Parameter("?a", mapl.t_agent)
+                i = action_count[r.function]
+                action_count[r.function] += 1
+                a = mapl.MAPLAction("commit-%s-%d" % (r.function.name,i), [agent], r.args, r.add_args, None, None, None, [], domain)
+                b = Builder(a)
+                cparts = []
+                for lit in r.conditions:
+                    if lit.predicate == builtin.equals and lit.args[0].function in prob_functions:
+                        cparts.append(b.cond("hyp", lit.args[0], lit.args[1]))
+                    else:
+                        cparts.append(lit)
 
-    #             a.precondition = conditions.Conjunction(cparts)
-    #             commit_eff = b.effect("commit", b(r.function, *r.args), v)
-    #             prob_eff = b.effect("assign", ("probability",), p )
-    #             a.effect = effects.ConjunctiveEffect([commit_eff, prob_eff], a)
+                a.precondition = conditions.Conjunction(cparts)
+                commit_eff = b.effect("commit", b(r.function, *r.args), v)
+                prob_eff = b.effect("assign", ("probability",), p )
+                a.effect = effects.ConjunctiveEffect([commit_eff, prob_eff], a)
 
-    #             actions.append(a)
+                actions.append(a)
             
-    #     return actions
+        return actions
 
 class DTPDDLCompiler(translators.Translator):
     def __init__(self, copy=True, **kwargs):
