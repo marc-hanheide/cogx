@@ -33,6 +33,7 @@ class Problem(Scope):
             self.goal = goal.copy(self)
         self.optimization = optimization
         self.opt_func = opt_func
+        self.objects_by_type = {}
 
     @property
     def domain(self):
@@ -50,11 +51,17 @@ class Problem(Scope):
             self.objects.remove(self[object.name])
         self.objects.add(object)
         self.add(object)
+        for typ, objs in self.objects_by_type.iteritems():
+            if object.is_instance_of(typ):
+                objs.add(object)
 
     def remove_object(self, object):
         if dict.__contains__(self, object.name):
             self.objects.remove(self[object.name])
             del self[object.name]
+            for typ, objs in self.objects_by_type.iteritems():
+                if object.is_instance_of(typ):
+                    objs.discard(object)
 
     def get_all_objects(self, type):
         if isinstance(type, types.FunctionType):
@@ -68,9 +75,14 @@ class Problem(Scope):
                         #print FunctionTerm(func, c, self.problem)
                         yield predicates.FunctionTerm(func, c, self)
         else:
-            for obj in itertools.chain(self.objects, self.domain.constants):
-                if obj.is_instance_of(type) and obj != builtin.UNKNOWN:
-                    yield obj
+            if isinstance(type, types.ProxyType):
+                type = type.effective_type()
+            if type not in self.objects_by_type:
+                self.objects_by_type[type] = set(o for o in self.objects if o.is_instance_of(type) and o != builtin.UNKNOWN)
+            for obj in self.domain.get_all_objects(type):
+                yield obj
+            for obj in self.objects_by_type[type]:
+                yield obj
         
 
     @staticmethod

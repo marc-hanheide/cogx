@@ -87,7 +87,10 @@ class AxiomTest(unittest.TestCase):
         self.assert_(a2.predicate in self.domain.nonrecursive)
 
         self.domain.axioms.append(aerror)
-        self.assertRaises(Exception, self.domain.stratify_axioms)
+        def test_wrong_axtioms():
+            self.domain.stratify_axioms()
+            x = self.domain.stratification
+        self.assertRaises(Exception, test_wrong_axtioms)
         
         
         

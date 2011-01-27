@@ -306,7 +306,7 @@ class Scope(dict):
         if parent:
             self.original_parent = self.parent
             self.set_parent(parent)
-            
+        
         values = {}
         mapping = {}
         stack = []
@@ -321,13 +321,17 @@ class Scope(dict):
                 stack.append((a,0))
                 a.instantiate(l[0])
                 remaining.discard(a)
-            
+        
         curr_arg = None
         curr_index = -1
         while True:
             next, nextval = func(mapping, [s[0] for s in stack])
+
+            if next is not None and next not in values:
+                next = True
+                nextval = None
+
             if next == True and len(stack) == len(args):
-                assert len(stack) == len(args)
 #                print ["%s=%s" % (s[0].name, mapping[s[0]]) for s in stack]
                 yield mapping
                 next = False
@@ -343,6 +347,7 @@ class Scope(dict):
                     next = iter(remaining).next()
                 curr_arg = next
                 curr_index = 0
+                # print curr_arg
                 if values[curr_arg]:
                     nextval = values[curr_arg][curr_index]
                 else:
@@ -353,8 +358,11 @@ class Scope(dict):
                 while (curr_index == -1 or curr_index >= len(values[curr_arg])):
                     if not stack:
                         self.uninstantiate()
+                        # print calls
                         return
                     curr_arg, curr_index = stack.pop()
+                    # print ["%s = %s" % (str(k),str(v)) for k,v in mapping.iteritems() ]
+                    # print curr_arg
                     del mapping[curr_arg]
                     remaining.add(curr_arg)
                     curr_arg.instantiate(None)
@@ -367,6 +375,9 @@ class Scope(dict):
             mapping[curr_arg] = nextval
             curr_arg.instantiate(nextval)
             remaining.discard(curr_arg)
+
+            # print ["%s = %s" % (str(k),str(mapping[k])) for k,v in stack ]
+            # print "push:", curr_arg, mapping[curr_arg]
             stack.append((curr_arg, curr_index))
             
     def uninstantiate(self):
