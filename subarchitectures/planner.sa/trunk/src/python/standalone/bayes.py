@@ -3,7 +3,7 @@ import sys, itertools
 from itertools import chain, product
 from collections import defaultdict
 
-import config, pddl, dt_problem
+import config, pddl, dt_problem, pstatenode
 import globals as global_vars
 
 from simplegraph import Graph
@@ -402,7 +402,7 @@ class BayesianState(object):
                 new_nodes = [replace_tree(n, next_branch_p) for n in nodes]
                 new_children[var] = (next_branch_p/branch_p, new_nodes, facts)
             #print self.svar, [p for p, _, _ in new_children.itervalues()]
-            return pddl.dtpddl.PNode(node.svar, new_children)
+            return pstatenode.PNode(node.svar, new_children)
 
         return [replace_tree(n, 1.0) for n in pnodes]
         

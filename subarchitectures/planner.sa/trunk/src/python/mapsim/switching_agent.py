@@ -1,6 +1,6 @@
 import os, re
 from collections import defaultdict
-from standalone import pddl, plans, task, statistics, planner, dt_problem, plan_postprocess, bayes
+from standalone import pddl, plans, task, statistics, planner, dt_problem, plan_postprocess, bayes, pstatenode
 #from standalone import statistics
 
 import standalone.globals as global_vars
@@ -110,8 +110,8 @@ class SwitchingAgent(agent.Agent):
         w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
         w.write(hierarchical, problem_fn="tree.pddl")
         
-        pnodes = pddl.dtpddl.PNode.from_problem(hierarchical)
-        pnodes, det_lits = pddl.dtpddl.PNode.simplify_all(pnodes)
+        pnodes = pstatenode.PNode.from_problem(hierarchical)
+        pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         mapltask.init += det_lits
         self.init_pnodes = pnodes
         self.pnodes = pnodes
@@ -129,7 +129,7 @@ class SwitchingAgent(agent.Agent):
         self.state = pddl.prob_state.ProbabilisticState.from_problem(hierarchical)
         det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
-        facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
+        # facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
 
         self.bayes = bayes.BayesianState(self.state, mapltask, pnodes, self.domain)
@@ -149,17 +149,17 @@ class SwitchingAgent(agent.Agent):
         self.task.replan()
         self.process_cp_plan()
 
-    def compute_logps(self, st):
-        import math
-        pfuncs = set(f for f in self.domain.functions if "log-%s" % f.name in self.domain.functions)
-        facts = []
-        for svar, val in st.iteritems():
-            if svar.function in pfuncs and val != pddl.UNKNOWN and val.is_instance_of(pddl.t_number) and val.value > 0:
-                logfunc = self.domain.functions.get("log-%s" % svar.function.name, svar.args)
-                logvar = pddl.state.StateVariable(logfunc, svar.args)
-                logval = pddl.types.TypedNumber(max(-math.log(val.value, 2), 0.1))
-                facts.append(pddl.state.Fact(logvar, logval))
-        return facts
+    # def compute_logps(self, st):
+    #     import math
+    #     pfuncs = set(f for f in self.domain.functions if "log-%s" % f.name in self.domain.functions)
+    #     facts = []
+    #     for svar, val in st.iteritems():
+    #         if svar.function in pfuncs and val != pddl.UNKNOWN and val.is_instance_of(pddl.t_number) and val.value > 0:
+    #             logfunc = self.domain.functions.get("log-%s" % svar.function.name, svar.args)
+    #             logvar = pddl.state.StateVariable(logfunc, svar.args)
+    #             logval = pddl.types.TypedNumber(max(-math.log(val.value, 2), 0.1))
+    #             facts.append(pddl.state.Fact(logvar, logval))
+    #     return facts
         
     def process_cp_plan(self):
         plan = self.get_plan()
@@ -233,6 +233,10 @@ class SwitchingAgent(agent.Agent):
             #if any(fact not in self.state for fact in pnode.effects):
                 sat = False
                 break
+        if len(self.dt_task.dt_plan) > 20:
+            log.debug("More than 20 actions from dt. Force cancellation.")
+            self.dt_done()
+            return
         # if sat:
         #     log.debug("dt planning stopped. Subgoal reached.")
         #     self.dt_done()
@@ -297,10 +301,12 @@ class SwitchingAgent(agent.Agent):
             log.debug("dt plan returned without action.")
             for goal in self.dt_task.goals:
                 self.fail_count[goal] += 1
-        # else:
-        #     for goal in self.dt_task.goals:
-        #         if goal in self.fail_count:
-        #             del self.fail_count[goal]
+                if self.fail_count[goal] > 4:
+                    return
+        else:
+            for goal in self.dt_task.goals:
+                if goal in self.fail_count:
+                    del self.fail_count[goal]
         
         self.get_plan().execution_position = last_dt_action
         self.plan_history.append(self.dt_task)
@@ -370,7 +376,7 @@ class SwitchingAgent(agent.Agent):
                 continue
 
             if not self.dt_task.expected_observation(svar):
-                log.debug("observation %s was rejected by dt task.", str(svar))
+                log.info("observation %s was rejected by dt task.", str(svar))
                 rawobs.append("(null)")
                 continue
             
@@ -402,7 +408,7 @@ class SwitchingAgent(agent.Agent):
     def updateTask(self, new_facts, action_status=None):
         new_percepts = []
         for f in new_facts:
-            if f.svar.modality == pddl.dtpddl.observed:
+            if f.svar.modality == pddl.dtpddl.observed or f.svar.function in self.domain.percepts:
                 new_percepts.append(f.svar)
             else:
                 self.state.set(f)
@@ -435,7 +441,7 @@ class SwitchingAgent(agent.Agent):
 
         det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
-        facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
+        # facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)
         
         self.task.mapltask = cp_problem
