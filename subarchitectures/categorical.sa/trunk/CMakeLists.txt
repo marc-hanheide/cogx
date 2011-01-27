@@ -52,6 +52,6 @@ add_subdirectory(src/c++/categorical/components/AppearanceIntegrator)
 option(BUILD_SA_CATEGORICAL_AUX "Build categorical subarchitecture auxiliary components" NO)
 if(BUILD_SA_CATEGORICAL_AUX)
     add_subdirectory(src/c++/categorical/tools/dataeditor)
-#    add_subdirectory(src/c++/categorical/components/Monitor)
+    add_subdirectory(src/python/tools)
 endif(BUILD_SA_CATEGORICAL_AUX)
 
