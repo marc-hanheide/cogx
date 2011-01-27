@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <cstdio>
-#include "Vector2.hh"
+#include "Vector.hh"
 #include "VisionCore.hh"
 #include "Line.hh"
 #include "LJunction.hh"
@@ -18,7 +18,6 @@
 #include "Closure.hh"
 #include "Rectangle.hh"
 #include "FormClosures.hh"
-// #include "HCF.hh"
 
 namespace Z
 {
@@ -29,6 +28,10 @@ namespace Z
 // try to also find non-convex paths
 // TODO: this still has bugs
 //#define FIND_NON_CONVEX
+
+// not LEFT nor RIGHT
+const int FormClosures::NONE = RIGHT + 1;
+
 
 static int CmpClosures(const void *a, const void *b)
 {
@@ -65,6 +68,8 @@ public:
 /**
  * @brief Comparison function for sorting LJunctions of a closure according to openeing
  * angles, smallest to largest.
+ * @param a 
+ * @param b
  */
 static int CmpAngles(const void *a, const void *b)
 {
@@ -82,111 +87,21 @@ static int CmpAngles(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
-/**
- * @brief Initiate a new closure candidate from a junction and its two lines.
- */
-FormClosures::ClosCand::ClosCand(Line *line0, Line *line1,
-    int open0, int open1, Bending b)
-{
-  lines.push_back(line0);
-  lines.push_back(line1);
-  open[START] = open0;
-  open[END] = open1; 
-  bend = b;
-}
-
-/**
- * @brief Extending a given closure candidate. \n
- * If extending at START, add left line of jct to front.\n
- * If extending at END, add right line of jct to back.
- */
-FormClosures::ClosCand::ClosCand(ClosCand *old)
-{
-  lines = old->lines;
-  open[START] = old->open[START];
-  open[END] = old->open[END]; 
-  bend = old->bend;
-}
-
-/**
- * @brief Return first line of a closure candidate.
- * @return First line of closure candidate.
- */
-Line *FormClosures::ClosCand::FirstLine()
-{
-  return lines.front();
-}
-
-/**
- * @brief Return last line of a closure candidate.
- * @return Last line of closure candidate.
- */
-Line *FormClosures::ClosCand::LastLine()
-{
-  return lines.back();
-}
-
-/**
- * @brief Return first open line number.
- * @return Last number of first open line.
- */
-int FormClosures::ClosCand::FirstOpen()
-{
-  return open[START];
-}
-
-/**
- * @brief Return last open line number.
- * @return Last number of last open line.
- */
-int FormClosures::ClosCand::LastOpen()
-{
-  return open[END];
-}
-
-
-/**
- * Check whether adding jct at START/END would lead to a self-intersection.
- * TODO: check
- * TODO: obsolete?
- */
-bool FormClosures::ClosCand::Intersects(Line *line)
-{
-/* HACK: disable check
-  if(end == START)
-  {
-    unsigned left = LJunctions(jct)->line[LEFT];
-    for(list<unsigned>::reverse_iterator j = jcts.rbegin(); j != jcts.rend(); ++j)
-      if(LJunctions(*j)->line[LEFT] == left)
-        return true;
-  }
-  else  // END
-  {
-    unsigned right = LJunctions(jct)->line[RIGHT];
-    for(list<unsigned>::iterator j = jcts.begin(); j != jcts.end(); ++j)
-      if(LJunctions(*j)->line[RIGHT] == right)
-        return true;
-  }*/
-  return false;
-}
 
 /**
  * @brief Constructor of Gestalt principle class FormClosures.
  * @param vc Vision core
  */
 FormClosures::FormClosures(VisionCore *vc) : GestaltPrinciple(vc)
-{}
+{
+  debug = false;
+}
 
 /**
- * @brief Reset Gestalt principle class.
- * @param vc Vision core
+ * @brief Reset Gestalt principle class
  */
 void FormClosures::Reset()
-{
-  for(unsigned i = 0; i < cands.Size(); i++)
-    delete cands[i];
-  cands.Clear();
-}
+{}
 
 /**
  * @brief Inform about new Gestalt.
@@ -195,7 +110,6 @@ void FormClosures::Reset()
  */
 void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-  StartRunTime();
   switch(type)
   {
     case Gestalt::L_JUNCTION:
@@ -210,7 +124,6 @@ void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
     default:
       break;
   }
-  StopRunTime();
 }
 
 /**
@@ -220,16 +133,17 @@ void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
 void FormClosures::HaveNewLJunction(unsigned idx)
 {
   LJunction *ljct = LJunctions(core, idx);
+// TODO  core->stats.attempt_path_search++;
   // only attempt shortest path search if the L-jct is not isolated
   if(!IsIsolatedL(ljct))
   {
-    ShortestPath(ljct, 0,
-                 ljct->line[RIGHT],
-                 ljct->line[LEFT],
-                 Other(ljct->near_point[RIGHT]),
-                 Other(ljct->near_point[LEFT]));
+    ClearBlacklist();
+    while(ShortestPath(ljct, 0,
+                       ljct->line[RIGHT],
+                       ljct->line[LEFT],
+                       Other(ljct->near_point[RIGHT]),
+                       Other(ljct->near_point[LEFT])));
   }
-  UpdateLNeighbors(ljct);
 }
 
 /**
@@ -239,16 +153,17 @@ void FormClosures::HaveNewLJunction(unsigned idx)
 void FormClosures::HaveNewCollinearity(unsigned idx)
 {
   Collinearity *coll = Collinearities(core, idx);
+// TODO  core->stats.attempt_path_search++;
   // only attempt shortest path search if the collinearity is not isolated
   if(!IsIsolatedC(coll))
   {
-    ShortestPath(0, coll,
-                 coll->line[0],
-                 coll->line[1],
-                 Other(coll->near_point[0]),
-                 Other(coll->near_point[1]));
+    ClearBlacklist();
+    while(ShortestPath(0, coll,
+                       coll->line[0],
+                       coll->line[1],
+                       Other(coll->near_point[0]),
+                       Other(coll->near_point[1])));
   }
-  UpdateCNeighbors(coll);
 }
 
 /**
@@ -257,22 +172,11 @@ void FormClosures::HaveNewCollinearity(unsigned idx)
  */
 void FormClosures::HaveNewTJunction(unsigned idx)
 {
-  TJunction *tjct = TJunctions(core, idx);
-  UpdateTNeighbors(tjct);
-	printf("FormClosures::HaveNewTJunction: function is obsolete: splitting T-Junctions into 2L+C?\n");
+//   TJunction *tjct = TJunctions(core, idx);
+//   UpdateTNeighbors(tjct);
+    printf("FormClosures::HaveNewTJunction: function is obsolete: splitting T-Junctions into 2L+C?\n");
 }
 
-void FormClosures::UpdateLNeighbors(LJunction *ljct)			/// TODO obsolete
-{
-}
-
-void FormClosures::UpdateCNeighbors(Collinearity *coll)		/// TODO obsolete
-{
-}
-
-void FormClosures::UpdateTNeighbors(TJunction *tjct)			/// TODO obsolete
-{
-}
 
 /**
  * @brief Checks whether the given L-junction is isolated, i.e. can not form a closure. \n
@@ -333,151 +237,6 @@ bool FormClosures::InSameClosure(Line *a, Line *b)
 }
 
 /**
- * @brief Add new candidate.
- * @param jct L-Junction
- */
-void FormClosures::NewCandidateL(LJunction *jct)
-{
-  unsigned new_c = cands.Size();
-  cands.PushBack(new ClosCand(
-          jct->line[LEFT],
-          jct->line[RIGHT],
-          Other(jct->near_point[LEFT]),
-          Other(jct->near_point[RIGHT]),
-          ClosCand::BEND_LEFT));
-  is_end_of[jct->line[LEFT]->ID()].push_back(new_c);
-  is_end_of[jct->line[RIGHT]->ID()].push_back(new_c);
-}
-
-/**
- * @brief Add new candidate.
- * @param coll Collinearity
- * TODO obsolete?
- */
-void FormClosures::NewCandidateC(Collinearity *coll)
-{}
-
-#if 0
-/**
- * TODO: beautify
- *       check auf uberkreuzung von linien
- */
-void FormClosures::ExtendClosuresL(unsigned jct)
-{
-  for(int side = LEFT; side <= RIGHT; side++)
-  {
-    unsigned line = LJunctions(jct)->line[side];
-    unsigned other = LJunctions(jct)->line[Other(side)];
-    for(list<unsigned>::iterator ended = is_end_of[line].begin();
-      ended != is_end_of[line].end(); ++ended)
-    {
-      ClosCand *cand = cands[*ended];
-      if(line == cand->FirstLine() &&
-         cand->FirstOpen() == LJunctions(jct)->near_point[side])
-         // && !cands[*ended]->Intersects(jct, END)) TODO
-      {
-        if(cand->bend == ClosCand::BEND_NONE ||
-           (side == RIGHT && cand->bend == ClosCand::BEND_LEFT) ||
-           (side == LEFT && cand->bend == ClosCand::BEND_RIGHT))
-        {
-          // if the other line is the other end, we have a complete closure
-          if(other == cand->LastLine())
-          {
-            NewClosure(cand);
-          }
-          // else just a new candidate
-          else
-          {
-            unsigned new_id = cands.Size();
-            ClosCand *new_c = new ClosCand(cand);
-            cands.PushBack(new_c);
-            new_c->lines.push_front(other);
-            new_c->open[START] =
-              Other(LJunctions(jct)->near_point[Other(side)]);
-            // if has no bending direction yet, new we can set it
-            if(new_c->bend == ClosCand::BEND_NONE)
-            {
-              if(side == RIGHT)
-                new_c->bend = ClosCand::BEND_LEFT;
-              else // side == LEFT
-                new_c->bend = ClosCand::BEND_RIGHT;
-            }
-            is_end_of[new_c->FirstLine()].push_back(new_id);
-            is_end_of[new_c->LastLine()].push_back(new_id);
-          }
-        }
-      }
-      else if(line == cand->LastLine() &&
-              cand->LastOpen() == LJunctions(jct)->near_point[side])
-              // && !cands[*ended]->Intersects(jct, END)) TODO
-      {
-        if(cand->bend == ClosCand::BEND_NONE ||
-           (side == LEFT && cand->bend == ClosCand::BEND_LEFT) ||
-           (side == RIGHT && cand->bend == ClosCand::BEND_RIGHT))
-        {
-          // if the other line is the other end, we have a complete closure
-          if(other == cand->FirstLine())
-          {
-            NewClosure(cand);
-          }
-          else
-          {
-            unsigned new_id = cands.Size();
-            ClosCand *new_c = new ClosCand(cand);
-            cands.PushBack(new_c);
-            new_c->lines.push_back(other);
-            new_c->open[END] =
-              Other(LJunctions(jct)->near_point[Other(side)]);
-            // if has no bending direction yet, new we can set it
-            if(new_c->bend == ClosCand::BEND_NONE)
-            {
-              if(side == RIGHT)
-                new_c->bend = ClosCand::BEND_RIGHT;
-              else // side == LEFT
-                new_c->bend = ClosCand::BEND_LEFT;
-            }
-            is_end_of[new_c->FirstLine()].push_back(new_id);
-            is_end_of[new_c->LastLine()].push_back(new_id);
-          }
-        }
-      }
-    }
-  }
-}
-
-void FormClosures::ExtendClosuresC(unsigned coll)
-{
-}
-
-void FormClosures::JoinClosuresL(unsigned jct)
-{
- 
-}
-
-void FormClosures::NewClosure(ClosCand *cand)
-{
-  unsigned new_c = core->NewGestalt(new Closure(core));
-  unsigned n = cand->lines.size(), i = 0;
-  //Closures(new_c)->jcts.Resize(n);
-  Closures(new_c)->lines.Resize(n);
-  for(list<unsigned>::iterator j = cand->lines.begin();
-      j != cand->lines.end(); ++j)
-  {
-    Closures(new_c)->lines[i] = *j;
-    // make closure known to constituent line
-    Lines(*j)->closures.PushBack(new_c);
-    i++;
-  }
-
-  // if BEND_RIGHT, reverse above insert order
-  // if BEND_NONE (e.g. collinearities forming a big circle), find bending via
-  // summation if bending angles
-
-  // TODO: remove cand from is_left_of and is_right_of lists
-}
-#endif
-
-/**
  * @brief Dijkstra shortest path algorithm. \n
  * Find a path from right to left line taking only left turns. \n
  *
@@ -487,24 +246,16 @@ void FormClosures::NewClosure(ClosCand *cand)
  * @param t  target line, which is the LEFT arm of that L-jct
  * @param end_s  the open end of line s (opposite to the joined end)
  * @param end_t  the open end of line t (opposite to the joined end)
- *
- * TODO: - book_s1.png: right rectangle is not found (jct 411)
- *       - find a better distance function, properly taking into account sig.
- *         e.g. accumulated (relative) gap size
  */
-void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Line *t, int end_s, int end_t)
+bool FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll,
+    Line *s, Line *t, int end_s, int end_t)
 {
-  int found = 0;				/// TODO nur zum debuggen
-
-  unsigned n = NumLines(core);
-  unsigned n_visited = 0;
   Line *u = 0;
   bool have_connected_vertices = true;
+  bool have_closure = false;
   CompCostLargerThan comp(dist);
-  int nsteps = 0;				/// unneccessary
-  int cycles = 0; // HACK
 
-  ClearPaths(n);
+  ClearPaths();
   // Distance from s to s is 0.
   dist[s->ID()] = 0.;
   // Note prev[s] is UNDEF_ID, not t. This serves as stopping criterion when
@@ -519,120 +270,134 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Li
   if(jcts[s->ID()] != 0)
     bend[s->ID()] = LEFT;
   // prepare min-heap (priority queue)
-  make_heap(Q.begin(), Q.end(), comp);
-// printf("\nFormClosures::ShortestPath: start\n");
-  while(n_visited < n && have_connected_vertices)
+  Q_size = Q.size();
+  make_heap(Q.begin(), Q.begin() + Q_size, comp);
+  if(debug) printf("%s: start search s: %d, t: %d\n", __FUNCTION__, s->ID(), t->ID());
+  while(!have_closure && have_connected_vertices && Q_size > 0)
   {
+    if(debug) printf("before pop:\n");
+    PrintHeap();
     // Remove best vertex from priority queue
     u = Q.front();
-    // TODO: keep whole heap??
-    std::pop_heap(Q.begin(), Q.end() - n_visited, comp);
-    n_visited++;
+    if(debug) printf("%s: searching: visiting: %d from %d\n", __FUNCTION__,
+        u->ID(), (prev[u->ID()] != 0 ? prev[u->ID()]->ID() : -1));
     // If the best vertex has infinite distance (i.e. there is no path to it)
     // then there is no point in continuing
     if(dist[u->ID()] != COST_INF)
     {
-      // If we reached the target and the ends interlock (u's open end along the
-      // path is opposite the open end of the original L-jct)
-      if(u == t && ends[u->ID()] == Other(end_t))
+      pop_heap(Q.begin(), Q.begin() + Q_size, comp);
+      Q_size--;
+      if(!blacklist[u->ID()])
       {
-        if(!ClosingLineIntersectingPath(u, s, ljct, coll))
+        // If we reached the target and the ends interlock (u's open end along
+        // the path is opposite the open end of the original L-jct)
+        if(u == t && ends[u->ID()] == Other(end_t))
         {
-          NewClosure(s, t);
-	  
-	  found++;
-	  if(found > 1) printf("FormClosures::ShortestPath: More than one closure found\n");
-	  
-          // find more than just one shortest path: TODO: think properly
-//           unsigned l = t;
-//           while(l != s)
-//           {
-//             dist[l] = COST_INF;
-//             l = prev[l];
-//           }
-          cycles++;  // HACK
+          if(!ClosingLineIntersectingPath(u, s, ljct, coll))
+          {
+            if(debug) printf("%s: have closure ****************************\n",
+                __FUNCTION__);
+            NewClosure(s, t);
+            if(debug) printf("after new closure:\n");
+            PrintHeap();
+            // found a path to target, which is guaranteed to be the shortest,
+            // so can stop here
+            have_closure = true;
+          }
         }
-        else std::printf("FormClosures::ShortestPath: Warning: Line intersects path.\n");
-      }
-      else
-      {
-        int cnt = 0;
-        // For each edge (u,v) outgoing from u and not intersecting the path so far
-        cnt += ExtendLJunctions(u);
-        cnt += ExtendCollinearities(u);
+        else
+        {
+          int cnt = 0;
+          // For each edge (u,v) outgoing from u and not intersecting the path
+          // so far
+          cnt += ExtendLJunctions(u);
+          cnt += ExtendCollinearities(u);
 #ifdef FIND_NON_CONVEX
-        if(cnt == 0)
-          cnt += ExtendNonConvexLJunctions(u);
+          if(cnt == 0)
+            cnt += ExtendNonConvexLJunctions(u);
 #endif
-        // TODO: take whole heap??
-        if(cnt > 0)
-          std::make_heap(Q.begin(), Q.end() - n_visited, comp);
+          exts[u->ID()] = cnt;
+          if(cnt > 0)
+            make_heap(Q.begin(), Q.begin() + Q_size, comp);
+          if(debug) printf("%s: extensions: %d\n", __FUNCTION__, cnt);
+        }
       }
+      // else if u is blacklisted, do nothing, continue with next node
     }
     else
+    {
+      if(debug) printf("INF cost -> end search\n");
       have_connected_vertices = false;
-    
-    nsteps++;
-//     printf("FormClosures::ShortestPath: nsteps: %u\n", nsteps);
+    }
   }
+  if(debug) printf("%s: end search\n\n", __FUNCTION__);
+  // HACK: gather search statistics
+// TODO  core->stats.path_max_visited =
+//     max(core->stats.path_max_visited, (int)(Q.size() - Q_size));
+//   core->stats.path_avg_visited =
+//     (double)(core->stats.path_search*core->stats.path_avg_visited +
+//      (int)(Q.size() - Q_size))/(double)(core->stats.path_search + 1);
+//   core->stats.path_search++;
+  return have_closure;
+}
 
-  // HACK: only clear used nodes
-  //for(unsigned i = Q.size() - n_visited; i < Q.size(); i++)
-  //  ClearNode(Q[i]);
-  // HACK END
-	
-  if(cycles > 1)
-    printf("%d cycles\n", cycles);  // HACK
+/**
+ * @brief Clear node blacklist, which is _not_ cleared between searches.
+ */
+void FormClosures::ClearBlacklist()
+{
+  unsigned n = NumLines(core);
+  blacklist.resize(n);
+  fill(blacklist.begin(), blacklist.end(), false);
 }
 
 /**
  * @brief Clear all temporary path stuff for new search.
- * @param n Number of nodes in the search graph (= number of lines)
  */
-void FormClosures::ClearPaths(unsigned n)
+void FormClosures::ClearPaths()
 {
-  //int old_n = Q.size();  // HACK: only clear used nodes
-
+  unsigned n = NumLines(core);
   dist.resize(n);
-  // TODO: use fill(dist.begin(), dist.end(), COST_INF);
+  fill(dist.begin(), dist.end(), COST_INF);
   prev.resize(n);
+  fill(prev.begin(), prev.end(), (Line*)0);
+  exts.resize(n);
+  fill(exts.begin(), exts.end(), 0);
+  ins.resize(n);
+  fill(ins.begin(), ins.end(), 0);
   ends.resize(n);
+  fill(ends.begin(), ends.end(), NONE);
   jcts.resize(n);
+  fill(jcts.begin(), jcts.end(), (LJunction*)0);
   colls.resize(n);
+  fill(colls.begin(), colls.end(), (Collinearity*)0);
   bend.resize(n);
+  fill(bend.begin(), bend.end(), NONE);
   Q.resize(n);
-  //for(unsigned i = old_n; i < n; i++)  // HACK: clear only used nodes
   for(unsigned i = 0; i < n; i++)
-  {
-    dist[i] = COST_INF;
-    prev[i] = 0;
-    ends[i] = NONE;
-    jcts[i] = 0;
-    colls[i] = 0;
-    bend[i] = NONE;
     // enter each node 0..n-1 into the priority queue
     Q[i] = Lines(core, i);
-  }
 }
 
 /**
  * @brief Clear all node stuff for new search.
- * @param i Number of nodes in the search graph (= number of lines)
+ * @param u Line
  */
-void FormClosures::ClearNode(unsigned i)
+void FormClosures::ClearNode(Line *u)
 {
-  dist[i] = COST_INF;
-  prev[i] = 0;
-  ends[i] = NONE;
-  jcts[i] = 0;
-  colls[i] = 0;
-  bend[i] = NONE;
+  dist[u->ID()] = COST_INF;
+  prev[u->ID()] = (Line*)0;
+  exts[u->ID()] = 0;
+  ins[u->ID()] = 0;
+  ends[u->ID()] = NONE;
+  jcts[u->ID()] = (LJunction*)0;
+  colls[u->ID()] = (Collinearity*)0;
+  bend[u->ID()] = NONE;
 }
 
 /**
  * @brief Extend path using L-junctions.
- * @param u Last line of path so far.
- * @return Number of extensions. 						/// TODO right?
+ * @param u  last line of path so far
  */
 int FormClosures::ExtendLJunctions(Line *u)
 {
@@ -654,9 +419,8 @@ int FormClosures::ExtendLJunctions(Line *u)
 }
 
 /**
- * @brief Extend path using non-convex L-junctions.
- * @param u Last line of path so far.
- * @return Number of extensions. 						/// TODO right?
+ * @brief Extend non-convex path using L-junctions.
+ * @param u  last line of path so far
  */
 int FormClosures::ExtendNonConvexLJunctions(Line *u)
 {
@@ -670,10 +434,10 @@ int FormClosures::ExtendNonConvexLJunctions(Line *u)
 
 /**
  * @brief Extend path using L-junctions.
+ * TODO: decide for a proper cost function
  * @param u  last line of path so far
  * @param side  extend LEFT or RIGHT L-junctions at the end of u
  * @return Returns the number of extensions.
- * TODO: decide for a proper cost function
  */
 int FormClosures::ExtendLJunctions(Line *u, int side)
 {
@@ -688,16 +452,14 @@ int FormClosures::ExtendLJunctions(Line *u, int side)
     Line *v = j->line[other];
     // if the extended path to v would be consistent and shorter than the path
     // to v so far
+    double alt = dist[u->ID()] + j->acc; 
+    // alt = dist[u] + 1.; 
+    // alt = dist[u] + SIG_OFFSET - LJunctions(j)->sig; 
+    // alt = dist[u] + 1./LJunctions(j)->sig; 
     if(!LineIntersectingPath(u, j, 0) &&
-       dist[u->ID()] + j->acc < dist[v->ID()])
-       //dist[u] + 1. < dist[v])
-       //dist[u] + SIG_OFFSET - LJunctions(j)->sig < dist[v])
-       //dist[u] + 1./LJunctions(j)->sig < dist[v])
+       alt < dist[v->ID()])
     {
-      dist[v->ID()] = dist[u->ID()] + j->acc; 
-      //dist[v] = dist[u] + 1.; 
-      //dist[v] = dist[u] + SIG_OFFSET - LJunctions(j)->sig; 
-      //dist[v] = dist[u] + 1./LJunctions(j)->sig; 
+      dist[v->ID()] = alt; 
       prev[v->ID()] = u;
       ends[v->ID()] = Other(j->near_point[other]);
       jcts[v->ID()] = j;
@@ -705,7 +467,13 @@ int FormClosures::ExtendLJunctions(Line *u, int side)
       // If side is LEFT (u is the LEFT arm of an L-jct), then v is the RIGHT,
       // and we have a LEFT bending curve. RIGHT accordingly.
       bend[v->ID()] = side;
+      ins[v->ID()]++;
       cnt++;
+    }
+    else
+    {
+      // else just note that there is a further (more expensive) path to node v
+      ins[v->ID()]++;
     }
   }
   return cnt;
@@ -725,23 +493,27 @@ int FormClosures::ExtendCollinearities(Line *u)
     Line *v = c->OtherLine(u);
     // if the extended path to v would be consistent and shorter than the path
     // to v so far
+    double alt = dist[u->ID()] + c->acc;
+    // alt = dist[u] + 1.; 
+    // alt = dist[u] + SIG_OFFSET - Collinearities(c)->sig; 
+    // alt = dist[u] + 1./Collinearities(c)->sig; 
     if(!LineIntersectingPath(u, 0, c) &&
-       dist[u->ID()] + c->acc < dist[v->ID()])
-       //dist[u] + 1. < dist[v])
-       //dist[u] + SIG_OFFSET - Collinearities(c)->sig < dist[v])
-       //dist[u] + 1./Collinearities(c)->sig < dist[v])
+       alt < dist[v->ID()])
     {
-      dist[v->ID()] = dist[u->ID()] + c->acc; 
-      //dist[v] = dist[u] + 1.; 
-      //dist[v] = dist[u] + SIG_OFFSET - Collinearities(c)->sig; 
-      //dist[v] = dist[u] + 1./Collinearities(c)->sig; 
+      dist[v->ID()] = alt;
       prev[v->ID()] = u;
       ends[v->ID()] = Other(c->WhichEndIs(v));
       colls[v->ID()] = c;
       jcts[v->ID()] = 0;
       // collinearities don't change the bending direction
       bend[v->ID()] = bend[u->ID()];
+      ins[v->ID()]++;
       cnt++;
+    }
+    else
+    {
+      // else just note that there is a further (more expensive) path to node v
+      ins[v->ID()]++;
     }
   }
   return cnt;
@@ -759,7 +531,9 @@ void FormClosures::NewClosure(Line *first, Line *last)
 {
   Line *u = last;
   int b = bend[u->ID()];
+  CompCostLargerThan comp(dist);
   Closure *new_c = new Closure(core);
+  bool reached_branch_point = false;
 
   // At this point jct i is the jct between line i and prev[i] (same with coll).
   // Put lines (and jcts) into closure in reverse order (last in path is first
@@ -771,7 +545,59 @@ void FormClosures::NewClosure(Line *first, Line *last)
     new_c->jcts.PushBack(jcts[u->ID()]);
     new_c->colls.PushBack(colls[u->ID()]);
     u->closures.PushBack(new_c);
-    u = prev[u->ID()];
+    Line *p = prev[u->ID()];
+    if(p != 0 && !reached_branch_point)
+    {
+      // If u has a single predecessor p and p has several extenions, there
+      // might be another, longer path through p. Blacklist u, so that this
+      // shortest path is not found again.
+      assert(ins[u->ID()] > 0);
+      if(ins[u->ID()] == 1 && exts[p->ID()] > 1)
+      {
+        if(debug) printf(
+            "alternative path from line %d, adding %d to blacklist\n",
+            p->ID(), u->ID());
+        blacklist[u->ID()] = true;
+        reached_branch_point = true;
+      }
+      // Note: If u has several predecessors, there might be a further, longer
+      // path through u, so do not blacklist it. Continue until eventually
+      // reaching the branching point where the several paths leading to u
+      // separate, and blacklist there.
+    }
+    // If there was no branching and we reached the start node (which has p = 0)
+    // blacklist the start node, essentially terminating any further search.
+    else if(p == 0 && !reached_branch_point)
+    {
+      if(debug) printf(
+          "reached start node, adding %d to blacklist\n",
+          u->ID());
+      blacklist[u->ID()] = true;
+    }
+    /*if(p != 0 && !reached_branch_point)
+    {
+      assert(exts[p->ID()] > 0);
+      // if the predecessor has only one extension 
+      if(exts[p->ID()] == 1)
+      {
+        if(debug) printf("re-adding to heap %d with INF cost\n", u->ID());
+        ClearNode(u);
+        assert(Q_size <= Q.size() - 1);
+        Q[Q_size] = u;
+        push_heap(Q.begin(), Q.begin() + Q_size, comp);
+        Q_size++;
+      }
+      else
+      {
+        if(debug) printf("not re-adding to heap %d\n", u->ID());
+        if(debug) printf(
+            "alternative path from line %d, branches reduced from %d to %d\n",
+            p->ID(), exts[p->ID()], exts[p->ID()] - 1);
+        exts[p->ID()]--;
+        reached_branch_point = true;
+      }
+    }*/
+    u = p;
   }
   // if bend is left, we have to reverse the list to put lines into counter
   // clockwise order.
@@ -821,26 +647,33 @@ void FormClosures::NewClosure(Line *first, Line *last)
   // TODO: does this really belong here...?
   //if(core->IsEnabledGestaltPrinciple(GestaltPrinciple::FORM_SURFACES))
   //  SolveHCF();
+  // HACK: collect statistics
+//   core->stats.avg_clos_sig =
+//     (core->stats.new_clos*core->stats.avg_clos_sig +
+//      new_c->sig)/(double)(core->stats.new_clos + 1);
+//   core->stats.new_clos++;
+  // HACK END
 
   core->NewGestalt(GestaltPrinciple::FORM_CLOSURES, new_c);
   // now re-rank all closure
   // TODO: this has O(n^2 log n) complexity, which is bad ... However typically
   // the number of closures tends to be small. So we are fine for a while.
-  RankGestalts(Gestalt::CLOSURE, CmpClosures);
-  Mask();
+//   RankGestalts(Gestalt::CLOSURE, CmpClosures);
+//   Mask();
 }
 
 
 /**
- * @brief Helper function to get the vertex point of whatever there is between two lines.
+ * @brief Helper function to get the vertex point of whatever there is between two
+ * lines.
  * @param j  L-jct between lines or UNDEF_ID
  * @param c  collinearity between lines or UNDEF_ID
  */
 inline static Vector2 GetVertex(LJunction *j, Collinearity *c)
 {
-  if(j != 0 && c != 0) 
+  if(j != 0 && c != 0)
     throw std::runtime_error("FormClosures: GetVertex: Need either L-jct or collinearity");
-  else if(j != 0) 
+  else if(j != 0)
     return j->isct;
   else if(c != 0)
     return c->vertex;
@@ -849,12 +682,11 @@ inline static Vector2 GetVertex(LJunction *j, Collinearity *c)
 }
 
 /**
- * @brief Helper function to get the vertex point of whatever there is between line \n
+ * @brief Helper function to get the vertex point of whatever there is between line
  * l and its previous line.
  * @param l_idx  line of interest
  * @param jcts  array of L-junctions of lines, containing some UNDEF_IDs
  * @param colls  array of collinearities of lines, containing some UNDEF_IDs
- * @return Returns vertex point
  */
 inline static Vector2 GetVertex(Line *line, vector<LJunction*> &jcts,
     vector<Collinearity*> &colls)
@@ -862,17 +694,16 @@ inline static Vector2 GetVertex(Line *line, vector<LJunction*> &jcts,
   return GetVertex(jcts[line->ID()], colls[line->ID()]);
 }
 
-
 /**
- * @brief Check whether a new line with its new L-jct or collinearity intersects the \n
+ * @brief Check whether a new line with its new L-jct or collinearity intersects the
  * path so far.
  * @param l_last  new line
  * @param j_new  the L-jct which connects l_last to the path
  * @param c_new  the coll. which connects l_last to the path
  *               (one and only one of j_new, c_new must be != UNDEF)
- * @return Returns false, if the lines do not intersect.
- * 
- * The last line must not intersect geometrically with the previous lines in the  path.
+ * The last line must not intersect geometrically with the previous lines in the
+ * path.
+ * @return Returns true for success
  */
 bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
     Collinearity *c_new)
@@ -895,6 +726,8 @@ bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
     catch (exception &e)
     {
       // lines do not intersect, carry on
+//       printf("FormClosures::LineIntersectingPath: unknown exception.\n");
+//       std::cout << e.what() << std::endl;
     }
     l = prev[l->ID()];
   }
@@ -902,18 +735,17 @@ bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
 }
 
 /**
- * @brief Check whether the closing line of a possible closure intersects the \n
+ * @brief Check whether the closing line of a possible closure intersects the
  * path so far.
  * @param l_close  the closing line = last on path
  * @param l_open  the opening line = first on path
  * @param j_init  the initialising L-jct between l_open and l_close, or UNDEF
  * @param c_init  the initialising coll. between l_open and l_close, or UNDEF
- * @return Returns false, if the lines do not intersect.
- * 
  * Note that one of j_init, c_init must be defined.
  * This function differs from LineIntersectingPath() by the fact that we do not
  * check against the opening line (which by definition must intersect with the
  * closing line).
+ * @return Returns true for success
  */
 bool FormClosures::ClosingLineIntersectingPath(Line *l_close,
     Line *l_open, LJunction *j_init, Collinearity *c_init)
@@ -935,8 +767,8 @@ bool FormClosures::ClosingLineIntersectingPath(Line *l_close,
     catch (exception &e)
     {
       // lines do not intersect, carry on
-      //printf("FormClosures::ClosingLineIntersectingPath: unknown exception.\n");
-      //cout << e.what() << endl;
+//       printf("FormClosures::ClosingLineIntersectingPath: unknown exception.\n");
+//       std::cout << e.what() << std::endl;
     }
     l = prev[l->ID()];
   }
@@ -985,6 +817,35 @@ void FormClosures::Mask()
       owner[clos->lines[l]->ID()] = clos->ID();
     }
   }
+}
+
+/**
+ * @brief Print the heap
+ */
+void FormClosures::PrintHeap()
+{
+  if(debug) printf("id   prev   exts  cost\n");
+  for(size_t i = 0; i < Q_size; i++)
+  {
+    if(debug) printf("%3d %3d %3d %lf\n",
+        Q[i]->ID(),
+        (prev[Q[i]->ID()] != 0 ? prev[Q[i]->ID()]->ID() : -1),
+        exts[Q[i]->ID()],
+        dist[Q[i]->ID()]
+        );
+  }
+  if(debug) printf("removed: -------------\n");
+  for(size_t i = Q_size; i < Q.size(); i++)
+  {
+    if(debug) printf("%3d %3d %3d %lf\n",
+        Q[i]->ID(),
+        (prev[Q[i]->ID()] != 0 ? prev[Q[i]->ID()]->ID() : -1),
+        exts[Q[i]->ID()],
+        dist[Q[i]->ID()]
+        );
+  }
+  if(debug) printf("----------------------\n");
+
 }
 
 }
