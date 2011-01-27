@@ -342,6 +342,8 @@ public class ManualPlanningTaskFrame extends JFrame {
 		this.setContentPane(getJContentPane());
 		this.setTitle("ManualPlanningTask");
 		this.pack();
+		jGoalTextEditField.setText("(exists (?o - visualobject) (and (= (label ?o) cornflakes) (position-reported ?o)))");
+		
 	}
 
 	/**
