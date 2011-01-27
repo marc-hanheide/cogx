@@ -1,3 +1,5 @@
+FIND_PACKAGE( OpenCV REQUIRED )
+
 include_directories(.)
 include_directories(/opt/local/include)
 link_directories (/opt/local/lib)
@@ -26,7 +28,7 @@ if(BUILD_HAL_VIDEO_IMG_SEQ)
 
    add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
    link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-   link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
+   link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS})
 
    if(BUILD_HAL_VIDEO_IMG_SEQ_UI)
       link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
@@ -37,7 +39,7 @@ option(BUILD_HAL_VIDEO_LIVE "Build live video server" YES)
 if(BUILD_HAL_VIDEO_LIVE)
    add_cast_component(OpenCvLiveServer OpenCvLiveServer.cpp)
    link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-   link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
+   link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS})
 endif(BUILD_HAL_VIDEO_LIVE)
 
 option(BUILD_HAL_VIDEO_POINTGREY "Build Point Grey video server" NO)
