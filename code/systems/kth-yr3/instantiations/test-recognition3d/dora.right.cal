@@ -1,0 +1,79 @@
+# camera parameter file generated Mon Sep 13 18:09:50 2010
+
+# Intrinsic parameters for pinhole camera model.
+# The pinhole camera model is as follows:
+# m = A*(R*M + t)
+#
+# M .. 3x1 world point [mm]
+# A .. 3x3 camera intrinsic matrix
+#          |f_x  0  c_x|
+#      A = | 0  f_y c_y|
+#          | 0   0   1 |
+#      c_x, c_y .. principal point [pix]
+#      f_x, f_y .. focal length in [pix]
+#                  f_x = f/s_x, f_y = f/s_y
+#                  with f the focal length in [mm] and s_x, s_y the pixel
+#                  sizes in [mm/pix]
+# R,t .. 3x3 rotation matrix and 3x1 translation vector [mm]
+#      pose of camera w.r.t. world (= extrinsic parameters)
+# m .. 3x1 image point in homogenous co-ordinates
+#      image point in cartesian pixel co-ordinates is given as
+#      (x, y) = (m_x/m_z, m_y/m_z)
+# Note that only the ratios focal length to pixel size can be determined.
+# Given a (known) nominal focal length f (e.g. from camera data sheet) we
+# can calculate:
+# s_x = f/f_x .. horizontal pixel size [mm/pix]
+# s_y = f/f_y .. vertical pixel size [mm/pix]
+# r = s_x/s_y .. pixel aspect ratio
+#
+# Distortion is modelled as follows:
+# x_d = x + x*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*x^2)
+# y_d = y + y*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*y^2)
+#
+# where (x, y) are ideal, distortion-free image physical co-ordinates,
+# (x_d, y_d) are distorted image physical co-ordinates and r^2 = x^2 + y^2
+#
+# w, h .. image width and height
+
+# focal lengths in [pix]
+fx = 816.208435
+fy = 817.011902
+# principal point [pix]
+cx = 300.978394
+cy = 251.706039
+
+# (nominal) focal length [mm]
+f  = 6.000000
+# pixel size [mm/pix]
+sx = 0.007351
+sy = 0.007344
+# aspect ratio: pixel size x/y
+r  = 1.000984
+# image width and height
+w =  640
+h =  480
+
+# distortion parameters
+k1 = -0.113563
+k2 = 0.214102
+p1 = -0.002410
+p2 = -0.001450
+
+
+# poses of calibration object w.r.t. camera for each image
+# 3x1 translation vector t [m] and 3x3 rotation matrix R (in row major order)
+nposes = 7
+# img000.jpg
+pose0 = [58.359 -37.314 728.929]  [-1.000 0.030 -0.000 0.029 0.989 0.145 0.004 0.145 -0.989]
+# img001.jpg
+pose1 = [115.833 -68.596 442.481]  [-0.995 0.003 -0.101 0.006 0.999 -0.033 0.101 -0.033 -0.994]
+# img002.jpg
+pose2 = [261.327 -31.963 849.979]  [-0.978 -0.208 0.000 -0.207 0.975 -0.085 0.017 -0.084 -0.996]
+# img006.jpg
+pose3 = [160.886 -15.910 560.461]  [-0.754 -0.622 -0.212 -0.572 0.780 -0.255 0.324 -0.071 -0.943]
+# img007.jpg
+pose4 = [60.797 105.325 532.550]  [-0.053 -0.997 0.063 -0.989 0.044 -0.138 0.135 -0.070 -0.988]
+# img009.jpg
+pose5 = [189.217 112.237 614.086]  [-0.038 -0.847 -0.530 -0.992 0.095 -0.082 0.120 0.522 -0.844]
+# img013.jpg
+pose6 = [227.990 -66.140 627.123]  [-0.694 0.000 -0.720 -0.077 0.994 0.075 0.716 0.108 -0.689]

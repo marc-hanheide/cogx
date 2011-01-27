@@ -1,0 +1,23 @@
+HOST 127.0.0.1
+
+COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
+
+# NICK'S NOTE this won't do anything correctly, but not all components run on my laptop...
+
+SUBARCHITECTURE spatial.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation --log #--debug
+CPP MG trans.process TranslationProcess --log
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --log --no-file-output #-m tmpmap.metric --debug
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --log #--debug
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --log #--debug --no-x-window
+CPP GD objsearch.process ObjectSearch -c instantiations/cureconfig/cogxp3.ccf --explore-range 5 --log --gridsize 200 --cellsize 0.2 --objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 50 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 0 --away-from-obstacles 1 --disp-magn 1 --cam-step 60 #--ctrl-ptu
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --log #--debug
+
+# Action interface for planning. Listens for events from the executor then generates correct navcommand
+JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  --avs-timeout 10000 --log
+JAVA MG exe-gui     execution.components.GraphicalExecutionManager
+
