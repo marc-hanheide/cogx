@@ -378,21 +378,21 @@ void StereoViewer::runComponent()
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
   glutDisplayFunc(DisplayWin);
-  int imgWidth = 320;
+  int stereoWidth = 640;
 
   cvNamedWindow(getComponentID().c_str(), 1);
 
   while(isRunning())
   {
     points.resize(0);
-    getPoints(false, imgWidth, points);
+    getPoints(false, stereoWidth, points);
     selectPointNearLeftOpticalAxis();
 
     IplImage *iplImage = 0;
     for(int side = LEFT; side <= RIGHT; side++)
     {
       Video::Image image;
-      getRectImage(side, imgWidth, image);
+      getRectImage(side, stereoWidth, image);
       cvReleaseImage(&iplImage);
       iplImage = convertImageToIpl(image);
 
@@ -436,7 +436,7 @@ void StereoViewer::runComponent()
       cvSaveImage(side == LEFT ? "viewer-overlay-L.png" : "viewer-overlay-R.png",
         iplImage);
 
-      if(side == RIGHT)
+      if(side == LEFT)
         cvShowImage(getComponentID().c_str(), iplImage);
     }
 
