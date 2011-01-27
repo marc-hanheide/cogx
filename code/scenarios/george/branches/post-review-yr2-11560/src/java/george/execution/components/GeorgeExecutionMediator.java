@@ -175,7 +175,6 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 	}
 
 	// HACK by Alen
-	// @Override	
 	protected void newPlanProxy(WorkingMemoryAddress _planProxyAddr)
 			throws SubarchitectureComponentException {
 		log("newPlanProxy so creating new plan executor");
@@ -238,11 +237,11 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 					overwriteWorkingMemory(msAddr, ms);
 					
 					ask4action.status = Completion.SUCCEEDED;
-//					overwriteWorkingMemory(m_actionAddress, ask4action);
-					deleteFromWorkingMemory(m_planAddress);
+					overwriteWorkingMemory(m_actionAddress, ask4action);
+//					deleteFromWorkingMemory(m_planAddress);
 				}
-//				else
-//					new Ask4Interrupter(m_actionAddress, m_concept).start();
+				else
+					new Ask4Interrupter(m_actionAddress, m_concept).start();
 					
 				unlockComponent();
 
