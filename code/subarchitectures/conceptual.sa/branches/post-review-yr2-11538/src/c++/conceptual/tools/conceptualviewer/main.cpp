@@ -73,7 +73,7 @@ int main( int argc, char *argv[] )
 	} // else, write to cout
 
 	// Write the factor graph
-    (*os) << "graph FactorGraph { overlap=scale splines=true" << endl;
+    (*os) << "graph FactorGraph { overlap=orthoxy splines=true" << endl;
     (*os) << "node[shape=ellipse];" << endl;
     for( size_t i = 0; i < fg.nrVars(); i++ )
     {
