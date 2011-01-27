@@ -343,15 +343,9 @@ inline const std::string& operator>>(const std::string &s, Vector2 &v)
  * @param d2 Direction of second line (unit vector!)
  * @return Returns the intersect point.
  */
-inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
-    const Vector2 &p2, const Vector2 &d2) throw (std::runtime_error)
+inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1, const Vector2 &p2, const Vector2 &d2) throw (std::runtime_error)
 {
   double d = Cross(d2, d1);
-//   if(d == 0.)
-// 	{
-//     printf("Vector2::LineIntersection: data: point 1: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p1.x, p1.y, d1.x, d1.y);
-//     printf("Vector2::LineIntersection: data: point 2: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p2.x, p2.y, d2.x, d2.y);
-// 	}
   if(d == 0.)    
     throw std::runtime_error("Vector2::LineIntersection: lines do not intersect exception");
   double l = Cross(d2, p2 - p1)/d;
@@ -373,11 +367,6 @@ inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
     const Vector2 &p2, const Vector2 &d2, double *l1, double *l2) throw (std::runtime_error)
 {
   double d = Cross(d2, d1);
-//   if(d == 0.)
-// 	{
-//     printf("Vector2::LineIntersection: data: point 1: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p1.x, p1.y, d1.x, d1.y);
-//     printf("Vector2::LineIntersection: data: point 2: %4.2f/%4.2f with dir: %4.2f/%4.2f\n", p2.x, p2.y, d2.x, d2.y);
-// 	}
   if(d == 0.)    
     throw std::runtime_error("Vector2::LineIntersection: lines do not intersect exception");
   Vector2 p12 = p2 - p1;
@@ -394,7 +383,7 @@ inline Vector2 LineIntersection(const Vector2 &p1, const Vector2 &d1,
  * @param b2 End point of second line.
  * @return Returns true, when the lines intersect.
  */
-inline bool LinesIntersecting(const Vector2 &a1, const Vector2 &a2, const Vector2 &b1, const Vector2 &b2)
+inline bool LinesIntersecting(const Vector2 &a1, const Vector2 &a2, const Vector2 &b1, const Vector2 &b2) throw (std::runtime_error)
 {
   double l1 = 0., l2 = 0.;
   LineIntersection(a1, a2 - a1, b1, b2 - b1, &l1, &l2);
