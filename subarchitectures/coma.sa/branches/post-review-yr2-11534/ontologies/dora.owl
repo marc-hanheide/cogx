@@ -95,6 +95,9 @@
       <owl:ObjectProperty rdf:about="#contains"/>
     </owl:inverseOf>
   </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="on">
+    <rdfs:domain rdf:resource="#Object"/>
+  </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#contains">
     <rdfs:range rdf:resource="#Object"/>
     <owl:inverseOf rdf:resource="#in"/>
