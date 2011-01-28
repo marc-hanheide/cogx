@@ -1,0 +1,350 @@
+
+
+% File: formatting-instruction.tex
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+
+
+
+\usepackage{subfig}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{positioning}
+
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{graphicx}
+\graphicspath{{plots/}}
+\include{macros}%
+
+\nocopyright
+
+\pdfinfo{
+/Title (Switching in Continual Planning for Practical Robot Control)
+/Subject (Proceedings of the 21st International Conference on Automated Planning and Scheduling)
+/Author (NA)}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+%% \title{Interleaved Serial and Decision-Theoretic Planning for a Mobile Robot}
+
+%% \title{Interleaved Serial and Decision-Theoretic Planning for
+%% Practical Robot Control}
+
+\title{Interleaved Serial and Decision-Theoretic Planning for High-Level Robot Control}
+
+%% \title{A Switching Planner for Combined Task and Observation Planning}
+\author{anonymous}
+\setcounter{secnumdepth}{0}
+
+
+\begin{document} 
+\maketitle
+
+\begin{abstract}
+
+%% Those processes must 
+
+From an automated planning perspective the problem of practical mobile
+robot control in realistic environments poses many important and
+contrary challenges.  On the one hand, the planning process must be
+lightweight, robust, and timely. Over the lifetime of the robot it
+must always respond quickly with new plans that accommodate exogenous
+events, changing objectives, and the underlying unpredictability of
+the environment.  On the other hand, in order to exhibit useful
+behaviours the planning process must perform computationally expensive
+reasoning about contingencies and possible revisions of subjective
+beliefs according to quantitatively modelled uncertainty in acting and
+sensing.
+%%
+Towards addressing these challenges, we develop a \emph{continual
+planning} approach that {\em switches} between using a fast
+satisficing ``classical'' planner, to decide on the overall strategy,
+and decision-theoretic planning to solve small subproblems where
+deeper consideration of the sensing model is both practical, and can
+significantly impact overall performance. We demonstrate our approach
+in large problems from a realistic robot exploration domain.
+
+%% partial observability
+
+
+
+%% In cooperation with execution monitoring, it must perform repair
+%% and/or replanning in order to seamlessly accommodate exogenous events,
+%% changing objectives, and the underlying unpredictability of the
+%% environment.
+
+%% Realistic robot planning problems in uncertain environments often
+%% require achieving tasks while also finding out about the
+%% world. Because the world state cannot be observed directly, these
+%% problems are naturally represented as partially observable Markov
+%% decision problems (POMDPs). However, these are typically intractable
+%% for realistic problems.
+%%
+
+\end{abstract}
+
+%% \section{Moritz's Initial Outline}
+
+%% \subsection{Switching Planner Outline}
+
+%% Outline the high level approach here:
+%% \begin{itemize}
+%% \item Problem input (factored initial state, DTPDDL observations)
+%% \item Determinisation
+%% \item Problem generation for DT
+%% \item Belief revision
+%% \end{itemize}
+
+%% \subsection{Determinisation}
+
+%% \begin{itemize}
+%% \item Generation of deterministic sensing models
+%% \item Determinisation of the initial state
+%% \item Compiling reward model into (soft-)goal model
+%% \item Cost function in FD (maybe this could mentioned in the outline?)
+%% \end{itemize}
+
+%% \subsection{Subtask Generation}
+%% \begin{itemize}
+%% \item Goal generation from CP trace
+%% \item Disconfirm actions
+%% \item State pruning according to CP trace
+%% \end{itemize}
+
+%% \subsection{Belief revision}
+%% Not sure if this needs its own section
+%% \begin{itemize}
+%% \item Convert inital state into bayesian network
+%% \item Belief updates with observation nodes
+%% \item Create new network for next planning runs
+%% \end{itemize}
+
+\section{Introduction}
+\input{intro.tex}
+
+\section{Propositional Decision-Theoretic Planning}
+\input{prop-dtp.tex}
+
+\section{Decision-Theoretic PDDL}
+\input{dtpddl.tex}
+
+\section{Switching Continual Planner}
+\input{switching.tex}
+
+\section{Evaluation}
+\input{evaluation.tex}
+
+%% \section{Discussion}
+%% \input{discussion.tex}
+
+\section{Related Work}
+\input{relatex.tex}
+
+\section{Concluding Remarks}
+\input{conc.tex}
+
+
+\bibliographystyle{aaai}
+\bibliography{papers}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{PPDDL}
+
+We briefly discuss the description language PPDDL, a fairly
+straight-forward extension of the Planning Domain Definition Language
+for describing fully observable Markov decision processes.
+
+\small{
+\begin{tabtt}
+(\= :action look-at-object \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - label ?l - location) \\
+  \> :precondition (and (= (is-in ?r) ?l) \\
+  \> \> (= (label ?o) ?l) ) \\
+  \> :effect (and (assign (reward) -3) ) ) \\
+\end{tabtt}
+}
+
+\small{
+\begin{tabtt}
+(\= :observe visual-object \\
+  \> :parameters \=(?r - robot ?v - visual-object\\
+  \> \> ?l - label ?l - location) \\
+  \> :execution (look-at-object ?r ?v ?l ?l) \\
+  \> :effect (when (= (is-in ?o) ?l) (probabilistic 0.8)) \\
+\end{tabtt}
+}
+
+\small{
+\begin{tabtt}
+(\= :sensor look-for-object \\
+  \> :agent (?a - robot) \\
+  \> :parameters (?l - label ?l - location) \\
+  \> :variables (?o - visual-object) \\
+  \> :precondition (\=and (= (is-in ?r) ?l) \\
+  \> \> (= (label ?o) ?l) (assume (is-in ?o) ?l) ) \\
+  \> :effect () \\
+  \> :sense (= (is-in ?o) ?l) \\
+\end{tabtt}
+}
+
+\subsection{MAPL}
+
+
+
+%% \scriptsize
+%% \begin{nopagebreak}\begin{tabtt}
+%% <observation-def> \=::= \=(:sense <observation symbol> \\
+%%                         \> \> :parameters (<typed list (variable)>)  \\
+%%                         \> \> <o-def body>) \\
+%%   <o-symbol> \> ::= <name> \\
+%%   <o-def body> \> ::= [:precondition <GD>] \\
+%%   \> \> [:execution <atomic action(term)> ] \\
+%%     \> \> [:effect <o-effect>] \\
+%%   <atomic action(t)> \> ::= (<action symbol> t\zom) \\
+%%   <o-effect> \> ::= (and <c-o-effect>\zom) \\
+%%   <o-effect> \> ::= <c-o-effect> \\
+%%   <c-o-effect> \> ::= \req{:probabilistic-effects} (probabilistic <prob> <o-effect>) \\
+%%   <c-o-effect> \> ::= <p-o-effect> \\
+%%   <atomic o-formula(t)> \> ::= (<observation> t\zom) \\
+%%   <p-o-effect> \> ::= <atomic o-formula(term)> \\
+%%   <p-o-effect> \> ::= (not <atomic o-formula(term)>) \\
+%%   <o-f-comp> \> ::= (<binary-comp> <o-f-exp> <o-f-exp>)\\
+%%   <o-f-exp> \> ::= <number>\\
+%%   <o-f-exp> \> ::= (- <o-f-exp>)\\
+%%   <o-f-exp> \> ::= <o-f-head>\\
+%%   <o-f-head> \> ::= (<o-function-symbol> <term>\zom )\\
+%%   <o-f-head> \> ::= <o-function-symbol>\\
+%% \end{tabtt}\end{nopagebreak}
+%% \noteme{<structure-def> ::= <attach-def>}
+%% \normalsize
+
+
+
+%% \footnote{We have simplified the schemata for illustrative
+%% purposes. In practice, the probabilities of a particular observation
+%% here should be parametrised by the type of visual object the robot is
+%% searching for, and category of the location.}
+
+
+We suppose $\bstate_0$ is given in a factored tree format of the
+form:
+
+
+%% \small{
+%% \begin{tabtt}
+%% (:init  (and \=f_{11} f_{12} ..
+%%  \> (probabilistic p_{}) 
+%%  \> (probabilistic ..) ..) \\
+%% \end{tabtt}
+%% }
+
+%% \[(:\pp{init} (and f_{11} f_{12} .. (\pp{probabilistic} p_) ))\]
+
+
+planning in practical sized POMDPs is intractable. One approach is to
+described the task hierarchically, thereby constrain and simplify the
+policy search task. The approach ~\cite{}. 
+
+
+%% More generally, a useful
+%% formalism for representing solutions to POMDPs is the finite-state
+%% controller (FSC). This is a three-tuple $\langle \nodes, \selection,
+%% \transition \rangle$ where: $\node \in \nodes$ is a set of nodes,
+%% $\selection_\node(\action) = P(\action | \node)$, and
+%% $\transition_\node(\action, \observation, \node') = P(\node'|\node,
+%% \action, \observation)$. Where the value of acting is the discounted
+%% accumulated reward over an infinite horizon, then each controller can
+%% be assigned a value, written $V_\node(\state)$, expressed in the usual
+%% way according to the Bellman equation:
+
+%% \begin{equation}\label{eq:evaluation}
+%% \begin{array}{lcl}
+%% V_\node(\state) & = & \sum_{\action \in \actions}
+%% \selection_\node(\action) \reward(\state, \action) \;\; + \vspace{1ex} \\
+
+%% && \hspace{-10ex} \beta \sum_{\action, \observation,
+%% \state', \node'} \transition_\node(\action, \observation, \node')
+%% \transProb(\state, \action, \state') \obsDist_\observ(\state',
+%% \action) V_{\node'}(\state')
+%% \end{array}
+%% \end{equation}
+
+%% \noindent Here, the value of {\em prior} $\bstate$ given an FSC is
+%% then:
+
+%% \begin{equation} \label{eq:valueBelief}
+%% V_{\pp{FSC}}(\bstate) = \max_{\node \in \nodes} \sum_{\state \in \states} \bstate(\state) V_\node(\state)
+%% \end{equation}
+
+%% \noindent There is a corresponding deterministic FSCs for both
+%% sequential (i.e., conformant) and contingent
+%% plans. Eq~\ref{eq:evaluation} gives their value in the finite-horizon
+%% case, if we take $\beta = 1$, and alter the process dynamics so there
+%% is a compulsory transition to a zero utility sink state when that
+%% horizon is reached.
+
+
+ ---i.e., the values of {\em
+runtime variables} in the continual paradigm--- are treated , and
+therefore plan for a specific eventuality, replanning from scratch if
+something
+
+
+
+
+Sequential planning in our approach proceeds in two phases. In the
+first phase, the goal is to identify a plan prefix
+
+In sequential planning, the plan prefix corresponds to choosing a
+valid abstract starting state. 
+
+moreover, for the purpose of decision-theoretic abstractions, 
+
+
+A relaxed form of {\em visitation} we call {\em abstract
+  visitation}. In the abstract case a conjunctive term is visited
+  provided all its atomic subterms are visited, and zero or more of
+  its probabilistic terms are visited.
+
+The planner has a compulsory starting action, that visits the root
+term, and then has to execute visitation actions until that plan
+prefix corresponds to a valid {\em abstract visitation} of the {\em
+:init} decleration. Beyond such a prefix, the process actions and senses are
+available to the planner 
+
+
+Goal expressions in the problem description ---for example
+$(\pp{kval}~(\pp{location}~\pp{box}))$ expresses ``the robot knows the
+location of the {\em box}--- are treated as control-knowledge by the
+planner. Here, a plan is not considered valid unless in the finial
+stet the goal condition is satisfied.
