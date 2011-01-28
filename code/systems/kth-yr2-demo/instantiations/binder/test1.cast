@@ -1,0 +1,6 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+JAVA WM binder.arch.BindingWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA GD test1 binder.testing.BasicPerceptInsertion --log
