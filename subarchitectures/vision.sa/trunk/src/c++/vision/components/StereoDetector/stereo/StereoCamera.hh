@@ -9,9 +9,10 @@
 #ifndef STEREO_CAMERA_HH
 #define STEREO_CAMERA_HH
 
-// #include "Namespace.hh"
-//#include "Pose3.hh"
+#include "Vector.hh"
 #include "Math.hh"
+#include <opencv/cv.h>
+#include <opencv/cv.hpp>
 
 namespace Z
 {
@@ -48,17 +49,20 @@ namespace Z
 class StereoCamera
 {
 public:
-	/**
-	 * @brief Mono parameter class for a single camera.
-	 */
+  enum MatchingAlgorithm {BLOCK_MATCH, SEMI_GLOBAL_BLOCK_MATCH, GRAPH_CUT};
+  
+  /**
+    * @brief Mono parameter class for a single camera.
+    */
   class MonoParam
   {
   public:
     int width, height;			///< Width and heigt of the image in pixels.
     double fx, fy, cx, cy;		///< focal length and principal points
     double k1, k2, k3, t1, t2;		///< distortion parameters
-    double proj[3][4];			///< TODO ???
-    double rect[3][3];			///< TODO ???
+    double proj[3][4];			///< projection matrix
+    double rect[3][3];			///< rectification matrix
+    Pose3 pose;				///< TODO ???
 
     MonoParam()
     {
@@ -75,21 +79,63 @@ public:
   }; 
 
   MonoParam cam[2];			///< parameters specific to LEFT and RIGHT camera
-  double maxDistortion;	///< maximum of distortion
-  // pose of left camera
-  //Pose3 pose;
+  Pose3 pose;
+  /// remaping images for simultaneous undistortion and rectification
+  IplImage *mapx[2], *mapy[2];
+  double maxDistortion;
+  // size of input images, can differ from size of calibration images!
+  CvSize inImgSize;
+  // scaling parameters in case input image size differs from calibration image
+  // size
+  double sx;
+  double sy;
+  MatchingAlgorithm matchAlgorithm;
+  CvStereoBMState *stereo_bm_state;
+  cv::StereoBM *stereoBM;
+  cv::StereoSGBM *stereoSGBM;
 
 public:
   StereoCamera();
+  ~StereoCamera();
   bool ReadSVSCalib(const string &calibfile);
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
   void ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
+  void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);
   void DistortPoint(double u, double d, double &ud, double &vd, int side);
   bool UndistortPoint(double ud, double vd, double &u, double &v,int side);
   void SetMaxDistortion(double err=.5){maxDistortion=err;}
   void RectifyPoint(double u, double v, double &ur, double &vr, int side);
+  void UnrectifyPointFast(double ur, double vr, double &ud, double &vd, int side);
+  void SetupImageRectification();
+  void RectifyImage(const IplImage *src, IplImage *dst, int side);
+  void SetDisparityRange(int minDisp, int maxDisp);
+  void SetInputImageSize(CvSize size);
+  void SetMatchingAlgoritm(MatchingAlgorithm algo);
+  void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
 };
 
+
+
+/**
+ * Access raw image data at position (x,y), where x and y are not checked for valid range.
+ * const version.
+ */
+inline const char* cvAccessImageData(const IplImage *img, int x, int y)
+{
+  return img->imageData + y*img->widthStep + x*img->nChannels*img->depth/8;
+}
+
+/**
+ * similar to isnan() or isinf(), check a float for being zero
+ * Note: This is safer than testing for == REAL_ZERO as +0.0 and -0.0 are
+ * distinct values.
+ * Note 2: It seems however that still +0.0 == -0.0 is true.
+ * Note 3: Anyway.
+ */
+inline bool iszero(float a)
+{
+  return std::fpclassify(a) == FP_ZERO;
+}
 }
 
 #endif
