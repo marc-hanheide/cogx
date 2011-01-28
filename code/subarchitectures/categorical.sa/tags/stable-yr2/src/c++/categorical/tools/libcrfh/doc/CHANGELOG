@@ -1,0 +1,26 @@
+========================
+libCRFH 0.6
+========================
+* Changed the build system to CMake
+* Cleaned the code a bit
+
+
+========================
+libCRFH 0.6.1
+========================
+* Fixed small bugs in the CMakeLists.txt
+* Added the VERSION define.
+
+
+========================
+libCRFH 0.6.2
+========================
+* Cleaned the code a bit to remove compilation warnings.
+
+
+========================
+libCRFH 0.6.3 2009-02-26
+========================
+* Added copyright notice and licence
+* Prepared for release
+* Fixed build system for Windows
