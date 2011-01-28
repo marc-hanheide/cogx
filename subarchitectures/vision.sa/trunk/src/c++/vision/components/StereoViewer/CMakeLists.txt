@@ -16,4 +16,4 @@ add_cast_component(StereoViewer StereoViewer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
-    ${GLUT_LDFLAGS} ${OpenCV_LIBS} glut)
+    ${GLUT_LDFLAGS} ${OPENCV_LDFLAGS} glut)
