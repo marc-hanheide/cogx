@@ -12,6 +12,6 @@ add_cast_component(VideoViewer ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    VisionData Video VideoUtils
    ${VISUALIZATION_LIBRARIES}
-   ${OpenCV_LIBS}
+   ${OPENCV_LDFLAGS}
    )
 
