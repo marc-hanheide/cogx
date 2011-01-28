@@ -1,0 +1,209 @@
+
+
+Planning for agents acting in partially observable environments with
+stochastic actions is extremely computationally
+expensive~\cite{mdp-complexity}. Even relatively small partially
+observable Markov decision problems (POMDPs), represented by tens of
+propositional variables, have state spaces far larger than existing
+optimal or close to optimal planners can handle. For the easier
+problem of planning in completely observable stochastic domains, an
+alternative has been to use classical sequential planners and
+replan when actions have unplanned-for outcomes~\cite{yoon:etal:2007}.
+Execution monitoring tracks properties of the state that determine
+whether further planning is required. For partially observable
+domains, only probabilistic information about such properties will, in
+general, be available.
+
+%% However, these approaches rely
+%% crucially on being able to determine properties of the current state
+%% in order to decide to replan. For partially observable domains, only
+%% probabilistic information about these properties will in general be
+%% available.
+
+This paper describes the planning component for a robotic system that
+continuously deliberates in a stochastic dynamic environment in order
+to achieve objectives set by the user, and acquire knowledge about its
+surroundings. This domain features partial observability, particularly
+because the state is not perfectly known, and state information is
+gained by the robot through the use of unreliable sensing
+actions. 
+%Using a propositionally factored state representation, for
+For
+interesting sized tasks the corresponding POMDP model is too large for a
+POMDP solver to be applied directly. Inspired by the replanning
+approaches used successfully for MDP
+planning~\cite{yoon:etal:2007,yoon:etal:2008}, we propose a continual
+planning approach that uses a classical planning system to compute a
+reasonably valuable trace in the model, and then uses a
+decision-theoretic planner on small subproblems where reasoning about
+observations might be useful. We refer to the complete system as a
+{\em switching continual planner}. The approach is not optimal,
+particularly as it relies on the results of sequential planning
+directly. It does nevertheless perform better than a purely sequential
+replanner, and is fast enough to be used for real-time decision-making
+on a mobile robot.
+
+
+%% Switching gives us some important advantages in our robotic
+%% domain. First, the significant source of uncertainty in the domain is
+%% the unreliability of observations, and this approach is particularly
+%% suited to problems that combine a deterministic task planning problem
+%% with observations as the decision-theoretic planner is often invoked
+%% to determine a characteristic of the underlying state. Secondly,
+%% replanning makes our system robust to changing objectives and the
+%% discovery of new facts about the world.
+
+
+%% As an illustration, consider a robot searching for a box that it knows
+%% is often found in offices. The sequential planner might produce a plan
+%% that assumes that {\sc Room a} is an office, that the box is in {\sc
+%% Room a}, and that the box is in location 1 in {\sc Room a}. Given
+%% these assumptions, the plan might be to go to {\sc Room a}, go to
+%% location 1 and search for the box. When the plan gets executed and the
+%% search begins the decision-theoretic planner is called since searching
+%% involves making observations. The decision-theoretic planner might
+%% retract the last assumption but leave the others, and build a plan to
+%% search the whole of {\sc Room a} for the box. If this plan fails to
+%% find the box, it will disprove the assumption that the box is in {\sc
+%% Room a}, which will then lead to replanning by the sequential planner
+%% based on the newly discovered knowledge.
+
+Our system is domain independent, taking domain and problem
+descriptions in a first-order declarative language we have developed,
+called the decision-theoretic planning domain definition language
+(DTPDDL). From these descriptions of POMDPs, we automatically
+construct a deterministic model for the sequential planner. That model
+includes actions which correspond to making assumptions about the values of
+imperfectly known state variables. Assumptions scheduled by the
+sequential system are used to propose a pragmatic abstract
+belief-state space to the decision-theoretic system, and to modify the
+reward function, so that system might pursue sensing related to those
+assumptions.
+
+%%  which can operate
+%% with the original representation of the domain.
+
+
+%% The sequential planner we use is based
+%% on \fastdownward~\cite{fast-downward}. We add the capability to replan
+%% ~\cite{brenner:nebel:jaamas09}, and also allow agent
+%% knowledge to be represented explicitly, so we can write actions that
+%% gain the agent knowledge. LEASE CITE MICHAEL's WORK AS THE BASIS FOR
+%% THIS. For the decision-theoretic planner we have implemented our own
+%% forward search in the belief-state space.
+
+
+The switching planner provides important advantages in our
+mobile robot domain. First, the significant source of uncertainty in the
+domain is the unreliability of observations and this approach is
+particularly suited to problems that combine a deterministic task
+planning problem with observations because the decision-theoretic planner
+is only invoked to deal with state uncertainty.
+%determine a characteristic of the underlying state. 
+Secondly, replanning makes the system robust to
+changing objectives and discoveries about the world,
+both of which feature in our domain.
+
+The remainder of the paper proceeds as follows. We begin by describing
+POMDPs with a propositionally factored representation of states and
+observations. We also outline the relationship between this and a flat
+POMDP representation. Next we describe our DTPDDL language with
+example declarations from a mobile robot exploration task. Then we
+describe the switching planner, including how the sequential domain is
+produced and a plan is generated, and how this then provides the input
+for the decision-theoretic planner. Finally we provide an evaluation
+of the system on the example robot domain, and finish with a short
+survey of related work and some concluding remarks.
+
+
+
+
+
+%To accompany
+%that language we have implemented an information-state
+%\laostar\ procedure for solving problems expressed in DTPDDL. 
+
+%%
+
+%Have a good understanding of the contents and function of rooms, as
+%well as the linguistic referrents to rooms, widgets, and their visual
+%qualities.
+
+%Having confidence in its beliefs about the linguistic terms for
+%spaces, and the function of those spaces.
+
+
+
+%sometimes difficult to predict, with exogenous events, such as the
+%changing of the objective, 
+
+
+
+
+
+%the speed and scalability of software for sequential planning in
+%deterministic
+
+
+
+
+%% We developed a first-order declarative language, called DTPDDL, for
+%% describing domains of planning problems that correspond to POMDPs.  To
+%% accompany that language we have implemented an information-state
+%% \laostar\ procedure for solving problems expressed in DTPDDL. 
+
+%% We have extended MAPSIM to parse and simulate DTPDDL problems, and
+%% modified \fastdownward\ so that it can find useful sequential executions
+%% given DTPDDL models of the problem at hand.
+
+
+
+
+%%  called DTPDDL, along
+%% the lines of PDDL for the partially observable case, an \laostar\
+%% solution procedure, a determinisation of the DTPDDL problem in MAPL,
+%% and modify the \fastdownward\ system to find high quality sequential plans
+%% .
+
+%% We model the environment as a partially observable Markov decision
+%% process. Although planning in that model is undecidable in
+%% general~\cite{}, an optimal finite-horizon plan corresponds to a
+%% contingent plan, that is a function mapping action-observation
+%% histories to actions.
+
+%% our continual planner is reactive, replanning whenever the underlying
+%% domain and problem models change. For example, replanning occurs if
+%% the motivational component alters the objectives, and if an assumed
+%% outcome of a sensing action is not realised.
+
+%% brittle sensing model, 
+
+%% the evaluation of a fluent at a state is either known. Moreover, there
+%% is a sensing process that run-time variables  after-which 
+
+%% For $\prop \in \state$ we say proposition $\prop$ characterises state
+%% $\state$. There is always a unique starting state $\state_0$. The goal
+%% $\goal$ is a set of propositions, and we say that state $\state$ is a
+%% goal state iff $\goal \subseteq \state$.
+
+%%  To keep this exposition
+%% simple, for any two distinct actions $\stochAction_i \neq
+%% \stochAction_j$, if outcome $\detAct$ is a possibility for
+%% $\stochAction_i$ then it cannot also be a possibility for
+%% $\stochAction_j$ -- i.e., if $\detAct \in
+%% \detActions(\stochAction_i)$ then $\detAct \not\in
+%% \detActions(\stochAction_j)$.
+
+
+%% The solution to a probabilistic planning problem is a contingency
+%% plan. This consists of an assignment of actions to states at each
+%% discrete timestep up to the planning horizon $n$. The optimal
+%% contingency plan is one which prescribes actions to states that
+%% maximise the probability that the goal is achieved within $n$ steps
+%% from the starting state $\state_0$. For the purposes of this paper
+%% we say a plan fails, i.e. achieves the goal with probability $0$, in
+%% situations where it does not prescribe an action. Computing the
+%% optimal plan for a problem is computationally intractable, and an
+%% important direction for research in the field is to develop
+%% heuristic mechanisms for generating small linear plans
+%% quickly~\cite{littman:etal:98}

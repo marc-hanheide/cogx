@@ -1,0 +1,210 @@
+
+%% {\em runtime variables}
+%% {\em decision variables}
+%% {\em uninitialised variables}
+%% {\em omitted variables}
+
+We describe the partially observable propositional probabilistic
+planning problem, with costs and rewards. We model a process state
+$\state$ as the set of propositions that are true of the
+state. Notationally, $\props$ is the set of propositions, $\prop$ is
+an element from that set, and we have $\state \subseteq
+\props$. The underlying process
+dynamics are modelled in terms of a finite set of {\em probabilistic
+STRIPS operators}~\cite{boutilier:abstraction} $\stochActions$ over
+state-characterising propositions $\propositions$.
+%%
+We say an action $\stochAction \in \stochActions$ is
+applicable if its precondition $\poss(\stochAction)$, a set of
+propositions, are satisfied in the current state -- i.e., $\poss(\stochAction) \subseteq
+\state$. We denote by $\mu_{\stochAction}(\detAction_i)$ the probability that
+nature chooses a deterministic STRIPS effect $\detAct_i$, and for
+all \stochAction\ we require
+$\sum_{\detAction_i \in \detActions(\stochAction)}
+\mu_{\stochAction}(\detAction_i) = 1$.
+
+%% We model a process state $\state$ as the set of propositions that are
+%% true of the state. Notationally, we have $\state \subseteq
+%% \props$. State change is induced by application of actions. A
+%% stochastic action $\stochAction \in \stochActions$ is applicable if
+%% its precondition $\poss(\stochAction)$, a set of propositions, are
+%% satisfied in the current state. We write $\stochActions(\state)$ for set of actions
+%% applicable at state $\state$.  If action $\stochAction \in
+%% \stochActions(\state)$ is applied at \state, nature chooses one
+%% element amongst a small set of deterministic outcomes
+%% $\detActions(\stochAction) \equiv \{\detAction_1, \ldots, \detAction_k
+%% \}$. We denote $\mu_{\stochAction}(\detAction_i)$ the probability that
+%% nature takes outcome $\detAct_i$, and for all \stochAction\ we require
+%% $\sum_{\detAction_i \in \detActions(\stochAction)}
+%% \mu_{\stochAction}(\detAction_i) = 1$. The chosen outcome has an
+%% effect on the state given in terms of two lists of propositions. The
+%% add-list $\add(\detAction)$ and delete-list
+%% $\delete(\detAction)$.\footnote{If a proposition is in the add-list of
+%% $\detAction$, then it cannot be in the delete-list and vice versa.}
+%% If outcome $\detAction$ with $\add(\detAction) := [\prop_1,
+%% ..,\prop_n]$ and $\delete(\detAction) := [\prop_{n+1},
+%% ..,\prop_m]$ is chosen by nature when \stochAction\ is
+%% applied at state $\state$, then the resultant state is $ ( \state \cup
+%% \add(\detAction) ) \backslash \delete(\detAction)$ -- i.e.,
+%% propositions from $\add(\detAction)$ are added to $\state$, and those
+%% from $\delete(\detAction)$ are removed from $\state$.
+
+%% \citeauthor{rintanen:01}~(\citeyear{rintanen:01})
+
+We are concerned with problems that feature partial
+observability. Although we could invoke {\em extended probabilistic
+STRIPS operators}~\cite{rintanen:01} to model actions and observations
+propositionally, we find it convenient for presentation and computation to
+separate sensing and action. Therefore, we suppose a POMDP has a
+perceptual model given in terms of a finite set of stochastic {\em
+senses} $\stochSenses$, deterministic sensing outcomes $\detSenses$,
+and perceptual propositions $\percepts$, called {\em percepts}. In
+detail, we take an observation $\observ$ to be a set of percepts
+$\observ \subseteq \percepts$, and denote by \observations\ the set of
+reachable observations. The underlying state of the process cannot be
+observed directly, rather, senses $\stochSense \in \stochSenses$
+effect an observation $\observ \in
+\observations$ that informs what should be believed about the state the
+process is in. If $\action$ is applied effecting a
+transition to a successor state $\state'$, then an observation occurs
+according to the active senses $\stochSenses(\stochAction, \state')
+\subseteq \stochSenses$. A sense $\stochSense$ is active, written
+$\stochSense \in \stochSenses(\stochAction, \state')$, if the senses'
+action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
+$\stochAction$, and the state-precondition $\poss_\states(\stochSense)
+\subseteq \propositions$ is satisfied by the state $\state'$ -- In the
+usual sense that \mbox{$\poss_\states(\stochSense)\subseteq\state'$}.
+%%
+When a sense is active, nature must choose exactly one outcome amongst
+a small set of deterministic choices $\detSenses(\stochSense)
+\equiv \{\detSense_1, \ldots, \detSense_k \}$, so that for each
+$i$ we have $\detSense_i \subseteq \percepts$. The probability of
+the $i^{th}$ element being chosen is given by
+$\psi_{\stochSense}(\detSense_i)$, where $\sum_{\detSense_i \in
+\detSenses(\stochSense)} \psi_{\stochSense}(\detSense_i) =
+1$. The observation received by the agent corresponds to the union of
+perceptual propositions from the chosen elements of active
+senses.
+
+A POMDP has a starting configuration that corresponds to a Bayesian
+belief-state. Intuitively, this is the robot's subjective belief about
+its environment. Formally, a belief-state $\bstate$ is a probability
+distribution over process states. We write $\bstate(\state)$ to denote
+the probability that the process is in $\state$ according to
+$\bstate$, and $\bstate_0$ when discussing the starting
+configuration. 
+
+Finally, we make some fairly standard assumptions. First, that action
+execution and sensing occur instantaneously, and that only one action
+can be applied per plan-step. Secondly, it can arise that in some
+states an action is applicable, and in others it is not. Moreover, a
+belief-state can assign non-zero probability to states where that
+applicability holds, and states where it does not. %% We differ
+%% from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04})
+%% In beliefs where an action exists that is applicable in some state 
+%% with non-zero probability, and not applicable in another, we differ
+%% from~\citeauthor{younes:littman:04}~(\citeyear{younes:littman:04}),
+%% because 
+%% in that
+%% we forbid the execution of the action.
+%% actions that are not applicable in
+%% any state of the current belief.  
+%% Also,
+Unlike~\citeauthor{hoffmann:brafman:2006}~(\citeyear{hoffmann:brafman:2006}),
+we incorporate a PPDDL-like default semantics, treating an action
+\stochAction\ executed at $\state_i$ as if it has no effect at
+states $\state$ if $\poss(\stochAction) \not\subseteq
+\state$.
+
+% Mucked around with this, then realised the two sentences were
+% contradictory. If we forbid actions applicable in one state but not
+% another in the belief state, then clearly we aren't using a
+% PPDDL-like semantics.
+%% Doubled comments are stuff I added, then removed.
+
+\subsection{Costs, Rewards, and Belief Revision}
+
+Until now we have discussed the POMDP in terms of propositions and
+percepts. In order to address belief revision and utility it is
+convenient to consider the underlying decision process in a flat
+format. This is given by the tuple
+$\langle \states, \bstate_0, \actions, \transProb, \reward,
+\observations, \obsDist \rangle$. Here, $\bstate_0$ is the initial
+belief-state, \states\ is the finite set of reachable propositional
+states, \actions\ is the finite set of actions, and \observations\ is
+the finite set of reachable observations (i.e., perceptual states).
+Where $\state, \state' \in \states$, $a \in \actions$, from $\mu$ we
+have a state transition function $\transProb(\state, \action,
+\state')$ giving the probability of a transition from state $s$ to
+$s'$ if $a$ is applied. For any $\state$ and $\action$ we have
+$\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
+%%
+The function $\reward:\states \times \actions \to \Re$ is a bounded real
+valued reward function. Therefore a finite positive constant $c$
+exists so that for all $\state \in \states$ and $\action \in
+\actions$, $|\reward(\state, \action)| < c$. We model costs as
+negative rewards.
+%%
+From $\psi$ we have that for each $\state' \in \states$ and action
+$\action \in \actions$, an observation $\observ \in \observations$ is
+generated independently according to a probability distribution
+$\obsDist(\state', \action)$. We denote by $\obsDist_\observ(\state',
+\action)$ the probability of getting observation $\observ$ in state
+$\state'$. For $\state'$ and $\action$ we have $\sum_{\observ \in
+\observations} \obsDist_\observ(\state', \action) = 1$.
+
+Successive state estimation is by application of Bayes'
+rule.  Taking the current belief $\bstate$ as the {\em prior}, and
+supposing action $\action$ is executed with perceptive outcome
+$\observ$, the probability that we are in $\state'$ in the
+successive belief-state $\bstate'$ is:
+
+\begin{equation}\label{eq:revision}
+\bstate'(\state') = \frac{\obsDist_\observ(\state', \action)
+  \sum_{\state\in \states} \transProb(\state, \action, \state') \bstate(\state) }{\pp{Pr}(\observ | \action, \bstate)}
+\end{equation}
+
+\noindent where $\pp{Pr}(\observ | \action, \bstate)$ is the
+normalising factor, that is, the probability of getting observation
+$\observ$ given we execute $\action$ in $\bstate$.
+
+\subsection{Plan Evaluation}
+
+An optimal solution to a finite-horizon POMDP is a contingent plan,
+and can be expressed as a mapping from observation histories to
+actions. Although suboptimal in general, useful plans can also take a
+classical sequential format. This is the case in {\em conformant}
+planning, where the objective is to find a sequence of actions that
+achieves a goal ---i.e., reaches a state that satisfies a given
+Boolean condition--- with probability $1$.  Generally, whatever the
+structure of a plan, its value corresponds to the expected cumulative
+reward:
+
+%% More generally, a useful
+%% formalism for representing solutions to POMDPs is the finite-state
+%% controller (FSC). This is a three-tuple $\langle \nodes, \selection,
+%% \transition \rangle$ where: $\node \in \nodes$ is a set of controller
+%% states, $\selection_\node(\action) = P(\action | \node)$ gives the
+%% probability that the controller prescribes \action\ when in state
+%% \node, and $\transition_\node(\action, \observation, \node') =
+%% P(\node'|\node, \action, \observation)$ gives the probability the
+%% controller transitions to state $\node'$, supposing we execute
+%% \action\ in state \node\ receiving observation \observation. When
+%% acting for finite $N$ steps from controller state $n$, the value of a
+%% controller corresponds to the expected cumulative reward:
+
+\begin{equation}\label{eq:expectedvalue}
+V_{\pp{PLAN}}(\bstate) = \Expect \bigg{[} 
+\sum_{t=0}^{N-1}  \reward(\bstate_t, \pp{PLAN}_t) \mid \pp{PLAN}, \bstate_0 = \bstate \bigg{]}
+\end{equation}
+
+\noindent Where $b_t$ is the belief-state at step $t$, $\pp{PLAN}_t$ is
+the action prescribed at step $t$, and
+
+\[\reward(\bstate, \action) = \sum_{\state \in \states}
+\bstate(\state)\reward(\state, \action).\] 
+
+%% \noindent Finally, it is
+%% useful to note that there is a corresponding deterministic FSCs for
+%% both sequential (e.g., conformant) and contingent plan formats.
+

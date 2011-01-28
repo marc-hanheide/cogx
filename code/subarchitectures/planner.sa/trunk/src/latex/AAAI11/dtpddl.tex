@@ -1,0 +1,168 @@
+
+The modelling language of choice for planning in probabilistic
+problems is the Probabilistic Planning Domain Definition
+Language~\cite{younes:littman:04,younes:etal:2005}. PPDDL has been
+used in all three of the International Planning Competitions since
+2004. A variation on PDDL for describing domains with stochastic
+actions and uncertain starting configurations, PPDDL is a declarative
+first-order language that facilitates factored descriptions of domains
+and problems. There are straightforward compilations from problems
+expressed in PPDDL to propositional representations amenable
+to state-of-the-art planners.
+
+Because PPDDL cannot model domains that feature partial observability,
+we develop an extension we call {\em Decision-Theoretic
+(DT)PDDL}. This can express probabilistic models of the sensing
+consequences of acting, to quantitatively capture unreliability in
+perception. That expressive power is achieved by incorporating
+perceptual analogues of fluent, predicate, and action definitions. In
+detail, we have declarations of state characterising predicate and
+fluent symbols according to the PPDDL syntax. In addition, we allow
+two other declarations, for perceptual predicates and fluents
+respectively. For example, suppose our robot is tasked with exploring
+{\em locations} in order to identify the whereabouts of a {\em
+visual-object}. We must describe state and perceptual facts that model
+the {\em true}, resp. perceived, locations of objects. In DTPDDL,
+these declarations appear as:
+
+\small
+\begin{tabtt}
+(\=:functions  ;; state fluents\\
+  \> (is-in ?v - visual-object) - location )\\
+(:observable-functions  ;; perceptual fluents\\
+  \> (o-is-in ?v - visual-object) - location )
+\end{tabtt}
+\normalsize
+
+\noindent To model the sensing capabilities of the agent, we have
+operator-like declarations, with preconditions expressed using state
+predicate and action function symbols, and uniformly positive effects
+over perceptual predicates. A sense declaration corresponds to a
+lifted description of proposition {\em senses}. Whereas the effects of
+an {\em operator} schema describe how states change under application
+of actions, the effects of a {\em sense} schema are perceptual,
+specifying the composition of an observation following the execution
+of an action. 
+
+%% Also, and without a loss of generality, we find it
+%% convenient to separate the actional precondition from the state
+%% precondition.
+
+Making the above ideas concrete with an example, suppose a robot
+called $\pp{DORA}$ is able to look for a visual-object, such as a
+$\pp{box}$, at a given place. We can model that deterministic action
+using the following operator schema:
+
+
+\small
+\begin{tabtt}
+(\=:action look-for-object \+ \\
+   :parameters (\=?r - robot ?v - visual-object\\
+   \> ?l - location) \\
+   :precondition (and (= (is-in ?r) ?l) ) \\
+   :effect (and (assign (reward) -3) ) ) \\
+\end{tabtt}
+\normalsize
+
+
+\noindent In a slight departure from PPDDL, we suppose that
+$\pp{look-for-object}$ has an effect on the state. That is, its
+execution incurs an instantaneous penalty, $3$, that corresponds to
+the {\em cost} of performing the visual search.\footnote{In PPDDL {\em
+reward} is a {\em reserved word}, and occurs in {\em increased} and
+{\em decreased} terms in operator schemata. In that setting, reward is
+accumulated, whereas in DTPDDL it is instantaneous.}
+
+Completing the example, we model the sensing that results from
+instantiating the $\pp{look-for-object}$ operator:
+
+\small
+\begin{tabtt}
+(\= :sense vision \+\\
+ :parameters \= (\= ?r - robot ?v - visual-object\\
+ \>\>  ?l - location) \\
+ :execution \> ( \> look-for-object ?r ?v ?l) \\
+ :precondition (and (= (is-in ?r) ?l) ) \\
+ :effect \>  (  \> and (when (= (is-in ?v) ?l) \\
+   \> \> (probabilistic 0.8 \\
+   \>  \>(= (o-is-in ?v) ?l))) \\
+  \> (when (not (= (is-in ?v) ?l)) \\
+   \>  \> (probabilistic 0.1 \\
+   \>  \> (= (o-is-in ?v) ?l))))) \\
+\end{tabtt}
+\normalsize
+
+
+\noindent Here, the {\em execution} declaration is a lifted description of
+the sense action-precondition -- i.e,
+$(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$ is equal to
+$\poss_\stochActions(\pp{vision}~\pp{DORA}~\pp{box}~\pp{office})$. Above,
+we include a redundant state-precondition, $(=(\pp{is-in}~?r)?l)$ in
+order to fully demonstrate the syntax. Interpreting the above schema,
+if action $(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$ is
+executed, there is a $0.8$ chance of perceiving the box if it is in
+the $\pp{office}$, and otherwise a $0.1$ chance of perceiving it.
+
+The syntax and semantics for describing initial state distributions in
+DTPDDL is taken verbatim from PPDDL. It is useful to present that
+factored tree-like structure here, in order to aid us when discussing
+our switching continual planner. The distribution is expressed in a
+tree-like structure of terms. Each term is either: (1) atomic, e.g., a
+state proposition such as $(=(\pp{is-in}~\pp{box})~\pp{office})$, (2)
+probabilistic, e.g., $(\pp{probabilistic}~\prob_1 (T_1) .. \prob_n
+(T_n))$ where $T_i$ are conjunctive, or (3) a conjunct over
+probabilistic and atomic terms. The root term is always conjunctive,
+and the leaves are atomic. For example, the starting distribution for
+$\pp{DORA}$ might be described as follows:\footnote{In PDDL,
+$(\pp{:init}~T_1..T_n)$ expresses the conjunctive root of the tree --
+i.e., the root node $(\pp{and}~T_1..T_n)$. Also, we shall write
+$\prop$, rather than $(\pp{and}~\prop)$, for conjunctive terms
+that contain a single atomic subterm.}
+
+\small
+\begin{tabtt}
+(\=:init (= (is-in DORA) kitchen) \+ \\
+       (probabilistic \=.8 (= (is-in box) office)  \\
+		      \>.2 (= (is-in box) kitchen)) \\
+       (probabilistic .3 (= (is-in cup) office)  \\
+		      \>.7 (= (is-in cup) kitchen))) \\
+\end{tabtt}
+\normalsize
+
+
+\noindent The interpretation of such an expression can be given
+by a {\em visitation} of terms: An atom is {\em visited} iff
+its conjunctive parent is visited, and a conjunctive term is visited
+iff all its immediate subterms are visited. A probabilistic term is
+visited iff its conjunctive parent is visited, and exactly one of its
+subterms, $T_i$, is visited. Each visitation of the root term
+according to this recursive definition encapsulates a starting state,
+along with the probability that it occurs. The former corresponds to the
+union of all visited atoms, and the latter corresponds to the product
+of $\prob_i$ entries on the visited subterms of probabilistic
+elements. Making these ideas concrete, our example yields the
+following flat state distribution:
+
+
+\small
+\begin{tabular}{cccc}
+\hline
+Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+\hline
+.24 & kitchen & office & office \\
+.06 & kitchen & kitchen & office \\
+.56 & kitchen & office & kitchen \\
+.14 & kitchen & kitchen & kitchen \\
+\hline
+\end{tabular}
+\normalsize
+
+From hereon, to simplify the discussion (and implementation)
+we shall restrict our attention to POMDPs with deterministic
+actions. We note that POMDPs with stochastic
+actions can be compiled into equivalent deterministic-action POMDPs,
+where all the original action uncertainty is expressed in the
+starting-state distribution~\cite{ng:Jordan:2000}. In our setting,
+that of finite-horizon planning, such a compilation yields a finite
+flat representation of the original POMDP, only with deterministic
+actions.

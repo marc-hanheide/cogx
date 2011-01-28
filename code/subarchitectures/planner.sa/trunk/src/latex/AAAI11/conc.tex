@@ -1,0 +1,138 @@
+
+
+From an automated planning perspective, the problem of practical
+mobile robot control poses important and contrary challenges.
+%%
+On the one hand, planning and execution monitoring must be
+lightweight, robust, timely, and should span the lifetime of the
+robot. Those processes must seamlessly accommodate exogenous events,
+changing objectives, and the underlying unpredictability of the
+environment.
+%%
+On the other hand, robot planning should perform computationally
+expensive reasoning about contingencies, and possible revisions of
+subjective belief according to quantitatively modelled uncertainty in
+acting and sensing. 
+
+In this paper we address these challenges, developing a continual
+planner that switches between fast sequential and expensive
+decision-theoretic planning. Given a POMDP model of the environment,
+sequential planning is used to compute an initial deterministic
+sequential plan and complementary runtime evolution of the decision
+process. That plan is executed until testing of an assumption about
+the runtime state is scheduled. At that point a contingent session
+performs some sensing which determines whether or not the sequential
+session should be allowed to continue, or otherwise acts to achieve
+the overall objectives.
+
+
+The most pressing item for future research, is to develop a scheme
+whereby the serial planner can relax {\em executability} assumptions,
+so that conformant (or semi-conformant) plans can be executed without
+interruption by a contingent session. A more general criticism of
+switching continual planning concerns interleaved sequential and
+contingent sessions failing to make any progress towards the
+objectives. For example, in the worst case we can have each sequential
+session producing an identical plan, and each decision-theoretic
+session rejecting it without further sensing. Although this has not
+been an issue in our work so far, it must be dealt with rigorously
+in the future. We suggest that a good way to mitigate this problem is
+by developing a {\em motivational} component that maintains a {\em
+dynamic} reward model whose limiting behaviour prevents that switching
+deadlock.
+
+
+
+
+
+%% The sequential mode of our system always schedules decision-theoretic
+%% planning before executing actions that are not applicable with
+%% certainty. This is inefficient if the utility of the plan is not
+%% dependent on that actions successful execution. This situation always
+%% arises for conformant plans. 
+
+
+
+%% The switching continual planning system we have described serves as
+%% the underlying planner for CogX.
+
+
+
+
+%% the effects of a {\em sense} schema are perceptual, whereas the
+%% effects of an {\em operator} schema are over state propositions.
+
+
+
+
+%% posted by a motivational component of the underlying robotic
+%% architecture. 
+
+%% contingent sensory plans that are tailored to current
+%% objectives.
+
+%% In this paper we present an approach to continual planning that uses
+%% two planning systems. The first 
+				   
+%%  to a distinct class of
+%% challenges. We suppose 
+%% %%
+%% The underlying environment is modelled as a POMDP. We use the fast
+%% classical satisficing system FastDownward to find a deterministic
+%% sequential plan and complementary runtime evolution of that
+%% process. This corresponds to a generalisation of replanning in
+%% probabilistic planning to problems with partial observability.
+
+%% Interaction between the sequential planner and execution proceeds
+%% more-or-less analogously to popular replanning approaches
+
+%% Addressing these challenges in a monolithic framework, we present a
+%% {\em switching} continual planner, that uses the fast sequential
+%% satisficing procedure FastDownward to perform net-benefit
+%% %%
+%% makes reasonable assumptions about the evolution of the runtime state
+%% given a POMDP model of the environment. 
+
+%% contingent sensory plans that are tailored to current
+%% objectives.
+
+
+%% The decision-theoretic planner is able to tailor sensory processing on
+%% a robot platform to the current objective, while FastDownward  quickly 
+
+
+%% In this paper we develop a continual planing system that uses two
+%% planning systems. The first, is a state-of-the-art domain independent
+%% planner for deterministic problems. The second is a information-state
+%% contingency planning the information-state space of 
+
+
+%% Continual planning is a powerful technique that goes some way to
+%% addressing those challenges. That approach interleaves planning and
+%% execution, deliberately postponing planning for contingencies unless
+%% they eventuate during execution. 
+
+
+%% computing a single sequential plan and
+%% eventuality
+
+
+
+%% To these challenges it seems a continual planning approach is best, 
+
+%% where the runtime state evolves during plan execution 
+
+
+%% interleaved planning and execution. 
+
+%% the latter is able to tailor sensory processing on a robot platform,
+%% in order that it.
+
+%% {\em ad-hoc} 
+
+%% , reason about degrees of belief and uncertainty about the world, 
+
+%% probabilistic sequential decision making in practical sized problems
+%% is intractable.
+
+%% quantitative probabilistic models of the perception and action .
