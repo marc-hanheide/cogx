@@ -42,5 +42,5 @@ add_cast_component(ObjectRecognizer3D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix siftgpu)
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} Cg CgGL GLEW glut IL)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} Cg CgGL GLEW glut IL)
 
