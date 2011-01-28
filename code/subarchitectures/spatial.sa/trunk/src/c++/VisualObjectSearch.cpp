@@ -2973,6 +2973,8 @@ log("filled");
 		VPcmd->status = SpatialData::SUCCESS;
 		overwriteWorkingMemory(m_ProcessVPID,VPcmd);
 		m_ProcessVPID="";
+		//Moving pant-tilt back (to zero?)
+		MovePanTilt(0.0,0.0,0.08);
 	      }
 
 	     if(m_publishSimCones); 
@@ -3033,7 +3035,7 @@ log("filled");
 	    double actualtilt = ptuPose.pose.tilt;
 
 	    while (run) {
-	      //m_PTUServer->setPose(p);
+	      m_ptzInterface->setPose(p);
 	      ptuPose = m_ptzInterface->getPose();
 	      actualpan = ptuPose.pose.pan;
 	      actualtilt = ptuPose.pose.tilt;
@@ -3063,7 +3065,7 @@ log("filled");
 		}
 	      }
 
-	      usleep(10000);
+	      usleep(100000);
 	    }
 	    log("Moved.");
 	    sleep(1);
@@ -3087,7 +3089,7 @@ log("filled");
 	   MovePanTilt(anglediff,m_nbv.tilt,0.08);
 	 */
 	for(unsigned int i = 0; i < m_objectlist.size(); i++){
-	  if (find(m_recognizedobjects.begin(), m_recognizedobjects.end(),m_objectlist[i]) == m_recognizedobjects.end()){
+	  /*if (find(m_recognizedobjects.begin(), m_recognizedobjects.end(),m_objectlist[i]) == m_recognizedobjects.end()){
 
 	    /* if(m_objectlist[i] == "metalbox" || m_objectlist[i] == "table1" || m_objectlist[i] == "table2"
 	       || m_objectlist[i] == "shelves" ){
@@ -3100,8 +3102,9 @@ log("Posting Recognition command for object %s",m_objectlist[i].c_str());
 	    addRecognizer3DCommand(VisionData::RECOGNIZE,m_objectlist[i],"");
 	    waitingForDetection.insert(m_objectlist[i]);
 	    //}
-	  }
+	  //}
 	}
+
       }
       /*      void VisualObjectSearch::addARTagCommand(std::string label){
 	      VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;

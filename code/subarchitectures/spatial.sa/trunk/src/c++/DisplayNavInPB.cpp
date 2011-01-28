@@ -233,6 +233,15 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newNavGraphEdge));  
 
+  // Places
+  addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newPlace));
+  addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newPlace));
+
+
   // Hook up changes to the tracked People to a callback function
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -1477,17 +1486,6 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     }
 
 
-    char buf[32];
-    peekabot::LabelProxy text;
-    sprintf(buf, "%d", GetPlaceIdFromNodeId(node.m_Id));
-    text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-    text.set_text(buf);
-  text.set_pose(node.m_X,node.m_Y,0.3,0,0.0,0);
- //text.set_rotation(0,0,M_PI/2);  
- text.set_rotation(0,0,0);
- text.set_scale(20, 20, 20);
-    text.set_alignment(peekabot::ALIGN_CENTER);
-    text.set_color(1,0,0);
 
   } else { // Node already exists
     log("Node %d already there, should be changed", fnode->nodeId);
@@ -1599,11 +1597,55 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
   m_Mutex.unlock();
 }
- int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId){
+
+
+void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
+{
+	SpatialData::PlacePtr placePtr;
+	try
+	{
+		placePtr =
+				getMemoryEntry<SpatialData::Place>(wmChange.address);
+	}
+	catch(CASTException &e)
+	{
+		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+		return;
+	}
+
+	int placeId = placePtr->id;
+
+	// Get node Id for this place
+    FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(placeId);
+    int nodeId=(fnodePtr)?fnodePtr->nodeId:-1;
+
+    // Find the node
+    std::map<long,Node>::iterator n = m_Nodes.find(nodeId);
+    if (n != m_Nodes.end())
+    {
+    	// Add text
+    	char buf[32];
+        peekabot::LabelProxy text;
+        sprintf(buf, "%d", placeId);
+        text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+        text.set_text(buf);
+        text.set_pose(n->second.m_X,n->second.m_Y,0.3,0,0.0,0);
+        text.set_rotation(0,0,0);
+        text.set_scale(20, 20, 20);
+        text.set_alignment(peekabot::ALIGN_CENTER);
+        text.set_color(1,0,0);
+    }
+}
+
+
+
+int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId)
+{
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
     int d = agg->getPlaceFromNodeID(nodeId)->id;
     return d;
-  }
+}
 
 void DisplayNavInPB::addDoorpost(double x, double y, double theta, 
                                  double width, 
