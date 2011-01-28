@@ -23,7 +23,7 @@ namespace Z
 TmpFlapAri::TmpFlapAri(FlapAri *flap)
 {
   id2D = flap->ID();
-  vector<Vector2> p0, p1;
+  std::vector<Vector2> p0, p1;
   int j;
   for(unsigned i=0; i<4; i++)
   {
@@ -31,8 +31,8 @@ TmpFlapAri::TmpFlapAri(FlapAri *flap)
     j=i+3; if(j>5) j=0;
     p1.push_back(flap->isct[j]);
   }
-  surf[0].Init(p0);
-  surf[1].Init(p1);
+  surf[0].Init(p0);   // isct[0/1/2/3]
+  surf[1].Init(p1);   // isct[3/4/5/0]
 }
 
 /**
@@ -98,7 +98,6 @@ void TmpFlapAri::Fuddle(unsigned off0, unsigned off1, bool swap)
     surf[0] = t;
   }
 }
-
 
 //------------------------------------------------------------------//
 //--------------------------- StereoFlaps --------------------------//
@@ -169,7 +168,7 @@ void StereoFlapsAri::DrawMatched(int side, bool single, int id, int detail)
 void StereoFlapsAri::DrawSingleMatched(int side, int id, int detail)
 {
   flaps[side][id].surf[0].Draw(detail);
-  flaps[side][id].surf[1].Draw(detail);
+  flaps[side][id].surf[1].Draw(detail); 
 }
 
 
@@ -189,14 +188,16 @@ bool StereoFlapsAri::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj
   Pose3 pose;
   Vector3 c(0., 0., 0.);
   int cnt = 0;
-  for(int i = 0; i <= 1; i++)   // find the center of gravity
+  Vertex3D point[6];
+  if(!flap->GetPoints(point)) 
+    printf("StereoFlapsAri::StereoGestalt2VisualObject: Warning: No flap corner points calculated!\n");
+  for(int i = 0; i < 6; i++)   // find the center of gravity
   {
-    for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
-    {
-      c += flap->surf[i].vertices[j].p;
-      cnt++;
-    }
+    c += point[i].p;
+    cnt++;
   }
+  
+printf("StereoFlapsAri::StereoGestalt2VisualObject: point: %4.2f/%4.2f/%4.2f\n", point[0].p.x, point[0].p.y, point[0].p.z);
   c /= (double)cnt;
   pose.pos.x = c.x;
   pose.pos.y = c.y;
@@ -216,36 +217,101 @@ bool StereoFlapsAri::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj
   obj->pose = cogxPose;
 
   // recalculate the vectors to the vertices from new center point
-  for(int i = 0; i <= 1; i++)
+  for(int i = 0; i < 6; i++)
   {
-    for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
-    {
-      Vector3 p(flap->surf[i].vertices[j].p.x,
-                flap->surf[i].vertices[j].p.y,
-                flap->surf[i].vertices[j].p.z);
-      p = inv.Transform(p);
-      
-      VisionData::Vertex v;
-      v.pos.x = p.x;
-      v.pos.y = p.y;
-      v.pos.z = p.z;
-      obj->model->vertices.push_back(v);
-    }
+    Vector3 p(point[i].p.x,
+	      point[i].p.y,
+	      point[i].p.z);
+    p = inv.Transform(p);
+    
+    VisionData::Vertex v;
+    v.pos.x = p.x;
+    v.pos.y = p.y;
+    v.pos.z = p.z;
+    obj->model->vertices.push_back(v);
   }
 
   // create vertices (relative to the 3D center point)
   VisionData::Face f;
-  for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
-  {
-    for(unsigned j=0; j<flap->surf[i].vertices.Size(); j++)
-    {
-      f.vertices.push_back(j+(i*4));
-    }
-    obj->model->faces.push_back(f);
-    f.vertices.clear();
-  }
-
+  f.vertices.push_back(0);
+  f.vertices.push_back(1);
+  f.vertices.push_back(2);
+  f.vertices.push_back(3);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
+  f.vertices.push_back(3);
+  f.vertices.push_back(4);
+  f.vertices.push_back(5);
+  f.vertices.push_back(0);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
+  
   obj->detectionConfidence = 1.0;                                // TODO detection confidence is always 1
+
+//   obj->model = new VisionData::GeometryModel;
+//   Flap3D *flap = Flaps3D(score, id);
+// 
+//   // Recalculate pose of vertices (relative to the center of gravity == COG)
+//   Pose3 pose;
+//   Vector3 c(0., 0., 0.);
+//   int cnt = 0;
+//   for(int i = 0; i <= 1; i++)   // find the center of gravity
+//   {
+//     for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
+//     {
+//       c += flap->surf[i].vertices[j].p;
+//       cnt++;
+//     }
+//   }
+//   c /= (double)cnt;
+//   pose.pos.x = c.x;
+//   pose.pos.y = c.y;
+//   pose.pos.z = c.z;
+//   pose.rot.x = 0.;   // set the orientation to identity, i.e. parallel to world coordinate system
+//   pose.rot.y = 0.;
+//   pose.rot.z = 0.;
+// 
+//   // invert to get pose of world w.r.t. flap
+//   Pose3 inv = pose.Inverse();
+// 
+//   // add center point to the model
+//   cogx::Math::Pose3 cogxPose;
+//   cogxPose.pos.x = pose.pos.x;
+//   cogxPose.pos.y = pose.pos.y;
+//   cogxPose.pos.z = pose.pos.z;
+//   obj->pose = cogxPose;
+// 
+//   // recalculate the vectors to the vertices from new center point
+//   for(int i = 0; i <= 1; i++)
+//   {
+//     for(unsigned j = 0; j < flap->surf[i].vertices.Size(); j++)
+//     {
+//       Vector3 p(flap->surf[i].vertices[j].p.x,
+//                 flap->surf[i].vertices[j].p.y,
+//                 flap->surf[i].vertices[j].p.z);
+//       p = inv.Transform(p);
+//       
+//       VisionData::Vertex v;
+//       v.pos.x = p.x;
+//       v.pos.y = p.y;
+//       v.pos.z = p.z;
+//       obj->model->vertices.push_back(v);
+//     }
+//   }
+// 
+//   // create vertices (relative to the 3D center point)
+//   VisionData::Face f;
+//   for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
+//   {
+//     for(unsigned j=0; j<flap->surf[i].vertices.Size(); j++)
+//     {
+//       f.vertices.push_back(j+(i*4));
+//     }
+//     obj->model->faces.push_back(f);
+//     f.vertices.clear();
+//   }
+// 
+//   obj->detectionConfidence = 1.0;                                // TODO detection confidence is always 1
   return true;
 }
 #endif
@@ -313,12 +379,20 @@ unsigned StereoFlapsAri::FindMatchingFlap(TmpFlapAri &left_flap, Array<TmpFlapAr
       off_1_best = off_1;
     }
   }
-  if(j_best != UNDEF_ID)
+  
+  // NOTE: The corners of the flaps are ordered (inner corner and than clockwise 6 points => therefore it is
+  // not possible that a fuddling is necessary. Nevertheless a warning.
+//   if(j_best != UNDEF_ID)	
+//   {
+//     right_flaps[j_best].Fuddle(off_0_best, off_1_best, cross_best);
+//   }
+  if(off_0_best != 0 || off_1_best !=0 || cross_best)
   {
-    right_flaps[j_best].Fuddle(off_0_best, off_1_best, cross_best);
+    printf("StereoFlapsAri::FindMatchingFlap: Warning: fuddling necessary and not done.\n");
+    printf("                                  offset left/right: %u/%u and crossing: %u\n", off_0_best, off_1_best, cross_best);
   }
   return j_best;
-	return -1;
+//   return -1;
 }
 
 
@@ -367,11 +441,11 @@ void StereoFlapsAri::Calculate3DFlaps(Array<TmpFlapAri> &left_flaps, Array<TmpFl
     bool ok1 = flap3d->surf[1].Reconstruct(stereo_cam, left_flaps[i].surf[1], right_flaps[i].surf[1], true);
     if(ok0 && ok1)
     {
+      flap3d->CalcIdealFlap();
       score->NewGestalt3D(flap3d);
       i++;
     }
-    // move unacceptable flaps to the end
-    else
+    else    // move unacceptable flaps to the end
     {
       left_flaps.Swap(i, u-1);
       right_flaps.Swap(i, u-1);

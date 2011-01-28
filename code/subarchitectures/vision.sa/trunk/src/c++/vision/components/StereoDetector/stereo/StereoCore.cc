@@ -103,9 +103,9 @@ void StereoCore::InitStereoGestalts()
   stereoPrinciples[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(false);						/// TODO disabled
   stereoPrinciples[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
-  stereoPrinciples[StereoBase::STEREO_FLAP]->EnablePrinciple(true);						/// TODO disabled
+  stereoPrinciples[StereoBase::STEREO_FLAP]->EnablePrinciple(false);						/// TODO disabled
   stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(true);
-  stereoPrinciples[StereoBase::STEREO_CUBE]->EnablePrinciple(true);						/// TODO disabled
+  stereoPrinciples[StereoBase::STEREO_CUBE]->EnablePrinciple(true);
 }
 
 

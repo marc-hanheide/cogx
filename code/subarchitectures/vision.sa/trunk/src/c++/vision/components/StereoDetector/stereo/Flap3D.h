@@ -21,11 +21,17 @@ namespace Z
  */
 class Flap3D : public Gestalt3D
 {
-public:
-  Surf3D surf[2];        ///< 3D surface
+private:
+  bool pointsCalculated;        ///< True if CalcIdealFlap was already called
+  Vertex3D point[6];            ///< The six corner points of the flap (0 and 3 are joint points, the rest clockwise)
 
-//  bool Reconstruct(StereoCamera *stereo_cam, TmpFlapAri &left, TmpFlapAri &right);
+public:
+  Surf3D surf[2];               ///< The two matched 3D surfaces
+
   Flap3D();
+  void CalcIdealFlap();
+  bool IsCalcIdealFlap() {return pointsCalculated;}
+  bool GetPoints(Vertex3D p[6]);
 };
 
 
