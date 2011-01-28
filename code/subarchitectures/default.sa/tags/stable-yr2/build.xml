@@ -1,0 +1,76 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="default.sa" default="compile" basedir=".">
+	<property name="projectroot.dir" value="${basedir}/../.." />
+	<property file="${projectroot.dir}/build.properties" />
+	
+	<!-- =================================================================== -->
+	<!-- Add JAR files to classpath                                          -->
+	<!-- =================================================================== -->
+	<path id="build.classpath">
+		<pathelement path="${ice.jar}" />
+		<pathelement path="${cast.jar}" />
+		<pathelement path="${log4j.jar}" />
+		<pathelement path="${hfc.jar}" />
+	</path>
+
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java" />
+	<property name="slice.dir" value="./src/slice" />
+
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask" />
+
+
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare" description="any project-specific init">
+		<mkdir dir="${output.dir}" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Source generation                                                   -->
+	<!-- =================================================================== -->
+	<target name="slice" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+			<fileset dir="${slice.dir}" includes="DefaultData.ice" />
+			<includepath>
+				<pathelement path="${slice.dir}" />
+				<pathelement path="${castslice.dir}" />
+				<pathelement path="/opt/local/share" />
+				<pathelement path="${basedir}/../../subarchitectures/spatial.sa/src/slice" />
+				<pathelement path="/usr/local/share" />
+				<pathelement path="/usr/share" />
+			</includepath>
+		</slice2java>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- slice file compilation                                              -->
+	<!-- =================================================================== -->
+	<target name="compile-slice" depends="slice" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="compile-slice" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                             -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<delete dir="${src.dir}/DefaultData" />
+		<delete file="${src.dir}/.depend" />
+	</target>
+
+
+</project>
