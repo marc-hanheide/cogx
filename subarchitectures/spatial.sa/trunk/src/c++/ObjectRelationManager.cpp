@@ -640,10 +640,11 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//    log("5");
 
 	// Check degree of onness
+/* HACK HACK Marc (15/01/2011) disabled for IJCAI eval and Dora yr2 stable
 	recomputeOnnessForObject(obsLabel);
 	recomputeInnessForObject(obsLabel);
 
-
+*/
 	if (m_placeInterface != 0) {
 	  // Check degree of containment in Places
 	  FrontierInterface::PlaceMembership membership = 

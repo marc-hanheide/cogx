@@ -31,7 +31,7 @@ include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
 endif(BUILD_SA_BINDING)
 
-option(DISPLAY_COMA_PB NO)
+option(DISPLAY_COMA_PB YES)
 if(DISPLAY_COMA_PB)
      add_definitions(-DDISPLAY_COMA)
      include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
@@ -48,8 +48,9 @@ link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData La
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
 if(DISPLAY_COMA_PB)
-  link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface ComaData)
+  link_cast_component(${CAST_COMPONENT_NAME} ComaData)
 endif(DISPLAY_COMA_PB)
 endif(BUILD_SA_SPATIAL_PEEKABOT)
 
@@ -94,7 +95,7 @@ add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 #link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
-link_cast_component(${CAST_COMPONENT_NAME} -lcv -lcxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 #add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
@@ -149,12 +150,12 @@ include_directories(${GTK2_INCLUDE_DIRS})
 link_directories(${GTK2_LIBRARIES})
 
 
-IF(APPLE)
-#nah: the Find_package call doesn't seem to work for me
+
+#nah: the Find_package call doesn't seem to work for me.
+#marc: same here, neither on Apple nor on ubuntu maverick this works, pkg-search-module does the job:
 pkg_search_module(GTK2_FIX REQUIRED gtk+-2.0)
 include_directories(${GTK2_FIX_INCLUDE_DIRS})
 link_directories(${GTK2_FIX_LIBRARY_DIRS})
-ENDIF(APPLE)
 
 
 
@@ -172,7 +173,7 @@ endif(BUILD_AVS)
 
 add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
 add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
