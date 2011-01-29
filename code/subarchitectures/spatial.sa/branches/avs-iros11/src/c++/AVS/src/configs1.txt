@@ -1,0 +1,14 @@
+Needle
+.4 Needle IN Haystack ON Bill IN room1
+.4 Needle IN Haystack IN room1
+.5 Needle ON Bill IN room1
+.05 Needle IN Box IN room1
+.6 Needle IN room1
+.2 Needle IN room2
+.2 Needle ON A IN room2
+.15 Needle IN B ON A IN room2
+.05 Needle IN C ON A IN room2
+.1 Needle ON Table IN room3
+.1 Needle ON B IN room3
+.1 Needle ON B ON Table IN room3
+.15 Needle IN room3
