@@ -24,7 +24,7 @@ ADD_LIBRARY(LaserClientUtils SHARED ${SOURCES})
 # Add libraries to link against.
 TARGET_LINK_LIBRARIES(LaserClientUtils Laser)
 TARGET_LINK_LIBRARIES(LaserClientUtils CDL CASTCore)
-TARGET_LINK_LIBRARIES(LaserClientUtils Ice IceUtil)
+TARGET_LINK_LIBRARIES(LaserClientUtils ${ICE_LIBS})
 INSTALL(TARGETS LaserClientUtils LIBRARY DESTINATION lib)
 
 # Set the sources.
