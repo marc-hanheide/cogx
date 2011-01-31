@@ -20,7 +20,8 @@ namespace Z
  */
 TmpClosure::TmpClosure(Closure *closure)
 {
-	surf.Init(closure);
+  surf.Init(closure);
+  vs3ID = closure->ID();
 }
 
 /**
@@ -31,7 +32,7 @@ TmpClosure::TmpClosure(Closure *closure)
  */
 void TmpClosure::RePrune(int oX, int oY, int sc)
 {
-	surf.RePrune(oX, oY, sc);
+  surf.RePrune(oX, oY, sc);
 }
 
 /**
@@ -41,7 +42,7 @@ void TmpClosure::RePrune(int oX, int oY, int sc)
  */
 void TmpClosure::Rectify(StereoCamera *stereo_cam, int side)
 {
-	surf.Rectify(stereo_cam, side);
+  surf.Rectify(stereo_cam, side);
 }
 
 
@@ -50,7 +51,7 @@ void TmpClosure::Rectify(StereoCamera *stereo_cam, int side)
  */
 void TmpClosure::Refine()
 {
-	surf.Refine();
+  surf.Refine();
 }
 
 /**
@@ -72,7 +73,7 @@ void TmpClosure::Refine()
  */
 void TmpClosure::Fuddle(unsigned off0)
 {
-	surf.ShiftPointsLeft(off0);
+  surf.ShiftPointsLeft(off0);
 }
 
 
@@ -101,18 +102,18 @@ StereoClosures::StereoClosures(StereoCore *sco, VisionCore *vc[2], StereoCamera 
  */
 void StereoClosures::DrawMatched(int side, bool single, int id, int detail)
 {
-	if(single)
-	{
-		if(id < 0 || id >= closMatches)
-		{
-			printf("StereoClosures::DrawMatched: warning: id out of range!\n");
-			return;
-		}
-		DrawSingleMatched(side, id, detail);
-	}
-	else
-		for(int i=0; i< closMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+  {
+    if(id < 0 || id >= closMatches)
+    {
+      printf("StereoClosures::DrawMatched: warning: id out of range!\n");
+      return;
+    }
+    DrawSingleMatched(side, id, detail);
+  }
+  else
+    for(int i=0; i< closMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
 /**
@@ -123,7 +124,7 @@ void StereoClosures::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoClosures::DrawSingleMatched(int side, int id, int detail)
 {
-	closures[side][id].surf.Draw(detail);
+  closures[side][id].surf.Draw(detail);
 }
 
 
@@ -136,83 +137,60 @@ void StereoClosures::DrawSingleMatched(int side, int id, int detail)
 #ifdef HAVE_CAST
 bool StereoClosures::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
-	obj->model = new VisionData::GeometryModel;
-	Closure3D closure = Closures(id);
+  obj->model = new VisionData::GeometryModel;
+  Closure3D *closure = Closures3D(score, id);
 
-	// Recalculate pose of vertices (relative to the pose of the flap == cog)
-	Pose3 pose;
-	RecalculateCoordsystem(closure, pose);
-
-	// add center point to the model
-	cogx::Math::Pose3 cogxPose;
-	cogxPose.pos.x = pose.pos.x;
-	cogxPose.pos.y = pose.pos.y;
-	cogxPose.pos.z = pose.pos.z;
-	obj->pose = cogxPose;
-
-	// create vertices (relative to the 3D center point)
-	// How many vertices?
-	for(unsigned i=0; i<closure.surf.vertices.Size(); i++)
-	{
-		VisionData::Vertex v;
-		v.pos.x = closure.surf.vertices[i].p.x;
-		v.pos.y = closure.surf.vertices[i].p.y;
-		v.pos.z = closure.surf.vertices[i].p.z;
-		obj->model->vertices.push_back(v);
-	}
-
-	VisionData::Face f;
-	for(unsigned j=0; j<closure.surf.vertices.Size(); j++)
-		f.vertices.push_back(j);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-	obj->detectionConfidence = 1.0;						// TODO detection confidence is always 1
-
-	return true;
-}
-#endif
-
-/**
- * @brief Try to find a "natural" looking coordinate system for a flap.
- * The coordinate system is really arbitrary, there is no proper implicitly defined coordinate system.
- * We take the (geometrical) center of gravity of the corner points as position and set orientation to identity.
- * @param rectangle 3D rectangle
- * @param pose calculated pose
- */
-void StereoClosures::RecalculateCoordsystem(Closure3D &closure, Pose3 &pose)
-{
+  // Recalculate pose of vertices (relative to the center of gravity = cog)
+  Pose3 pose;
   Vector3 c(0., 0., 0.);
   int cnt = 0;
-  // find the center of gravity
-	for(unsigned i = 0; i < closure.surf.vertices.Size(); i++)
-	{
-		c += closure.surf.vertices[i].p;
-		cnt++;
-	}
+  for(unsigned i = 0; i < closure->surf.vertices.Size(); i++)
+  {
+    c += closure->surf.vertices[i].p;
+    cnt++;
+  }
 
   c /= (double)cnt;
   pose.pos.x = c.x;
   pose.pos.y = c.y;
   pose.pos.z = c.z;
-
-	// set the orientation to identity, i.e. parallel to world coordinate system
-  pose.rot.x = 0.;
+  pose.rot.x = 0.;   // set the orientation to identity, i.e. parallel to world coordinate system
   pose.rot.y = 0.;
   pose.rot.z = 0.;
 
-  // invert to get pose of world w.r.t. flap
+  // invert to get pose of world w.r.t. flap and add center point to the model
   Pose3 inv = pose.Inverse();
+  cogx::Math::Pose3 cogxPose;
+  cogxPose.pos.x = pose.pos.x;
+  cogxPose.pos.y = pose.pos.y;
+  cogxPose.pos.z = pose.pos.z;
+  obj->pose = cogxPose;
 
-	// recalculate the vectors to the vertices from new center point
-	for(unsigned i = 0; i < closure.surf.vertices.Size(); i++)
-	{
-		Vector3 p(closure.surf.vertices[i].p.x,
-							closure.surf.vertices[i].p.y,
-							closure.surf.vertices[i].p.z);
-		closure.surf.vertices[i].p = inv.Transform(p);
-	}
+  // recalculate the vectors to the vertices from new center point
+  for(unsigned i = 0; i < closure->surf.vertices.Size(); i++)
+  {
+    Vector3 p(closure->surf.vertices[i].p.x,
+	      closure->surf.vertices[i].p.y,
+	      closure->surf.vertices[i].p.z);
+    p = inv.Transform(p);
+    
+    VisionData::Vertex v;
+    v.pos.x = p.x;
+    v.pos.y = p.y;
+    v.pos.z = p.z;
+    obj->model->vertices.push_back(v);
+  }
+
+  VisionData::Face f;
+  for(unsigned j=0; j<closure->surf.vertices.Size(); j++)
+    f.vertices.push_back(j);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
+  
+  obj->detectionConfidence = closure->GetSignificance();
+  return true;
 }
-
+#endif
 
 /**
  * @brief Find right best matching closure for given left closures, begining at position l of right closure array.
@@ -223,31 +201,25 @@ void StereoClosures::RecalculateCoordsystem(Closure3D &closure, Pose3 &pose)
  */
 unsigned StereoClosures::FindMatchingClosure(TmpClosure &left_clos, Array<TmpClosure> &right_clos, unsigned l)
 {
-	double match, best_match = HUGE;
-	unsigned j, j_best = UNDEF_ID;
-	unsigned off_0, off_0_best = 0;
+  double match, best_match = HUGE;
+  unsigned j, j_best = UNDEF_ID;
+  unsigned off_0, off_0_best = 0;
 
-// 	bool cross = false, cross_best = false;
-	for(j = l; j < right_clos.Size(); j++)
-	{
-// 		match = MatchingScore(left_rect, right_rects[j], off_0);
-// printf("    find matching score of right rect %u\n", j);
+  for(j = l; j < right_clos.Size(); j++)
+  {
     match = MatchingScoreSurf(left_clos.surf, right_clos[j].surf, off_0);
-// printf("      match = %6.5f\n", match);
-		if(match < best_match)
-		{
-			best_match = match;
-			j_best = j;
-// 			cross_best = cross;
-			off_0_best = off_0;
-// 			off_1_best = off_1;
-		}
-	}
-	if(j_best != UNDEF_ID)
-	{
-		right_clos[j_best].Fuddle(off_0_best);
-	}
-	return j_best;
+    if(match < best_match)
+    {
+      best_match = match;
+      j_best = j;
+      off_0_best = off_0;
+    }
+  }
+  if(j_best != UNDEF_ID)
+  {
+    right_clos[j_best].Fuddle(off_0_best);
+  }
+  return j_best;
 }
 
 
@@ -263,19 +235,14 @@ void StereoClosures::MatchClosures(Array<TmpClosure> &left_clos, Array<TmpClosur
   for(; l < u && l < right_clos.Size();)
   {
     j = FindMatchingClosure(left_clos[l], right_clos, l);
-// printf("  left: %u - best right found: %u:", l, j);
-    // found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
+    if(j != UNDEF_ID)    // found a matching right, move it to same index position as left
     {
-// printf(" MATCH!\n");
-      right_clos.Swap(l, j);				/// wechsle gefundenes right_rects[j] an selbe Stelle wie left_rects ==> l
+      right_clos.Swap(l, j);            // wechsle gefundenes right_rects[j] an selbe Stelle wie left_rects ==> l
       l++;
     }
-    // found no right, move left to end and decrease end
-    else
+    else    // found no right, move left to end and decrease end
     {
-// printf(" No match!\n");
-      left_clos.Swap(l, u-1);				/// wechsle left_rects[l] an die letzte Stelle u-1 und mach u um eins kleiner
+      left_clos.Swap(l, u-1);           // wechsle left_rects[l] an die letzte Stelle u-1 und mach u um eins kleiner
       u--;
     }
   }
@@ -291,19 +258,20 @@ void StereoClosures::MatchClosures(Array<TmpClosure> &left_clos, Array<TmpClosur
  * @param matches Number of matched closures.
  * @param closure3ds Array of calculated 3d closures.
  */
-void StereoClosures::Calculate3DClosures(Array<TmpClosure> &left_clos, Array<TmpClosure> &right_clos, int &matches, Array<Closure3D> &closure3ds)
+void StereoClosures::Calculate3DClosures(Array<TmpClosure> &left_clos, Array<TmpClosure> &right_clos, int &matches)
 {
   unsigned u = matches;
   for(unsigned i = 0; i < u;)
   {
-    Closure3D closure3d;
-		if (closure3d.surf.Reconstruct(stereo_cam, left_clos[i].surf, right_clos[i].surf, false))
-		{
-			closure3ds.PushBack(closure3d);
-			i++;
+    Closure3D *closure3d = new Closure3D();
+
+    if(closure3d->surf.Reconstruct(stereo_cam, left_clos[i].surf, right_clos[i].surf, false))
+    {
+      closure3d->CalculateSignificance(Closures(vcore[LEFT], left_clos[i].vs3ID)->sig, Closures(vcore[RIGHT], right_clos[i].vs3ID)->sig);
+      score->NewGestalt3D(closure3d);
+      i++;
     }
-    // move unacceptable closures to the end
-    else
+    else    // move unacceptable closures to the end
     {
       left_clos.Swap(i, u-1);
       right_clos.Swap(i, u-1);
@@ -319,10 +287,9 @@ void StereoClosures::Calculate3DClosures(Array<TmpClosure> &left_clos, Array<Tmp
  */
 void StereoClosures::ClearResults()
 {
-	closure3ds.Clear();
-	closures[LEFT].Clear();
-	closures[RIGHT].Clear();
-	closMatches = 0;
+  closures[LEFT].Clear();
+  closures[RIGHT].Clear();
+  closMatches = 0;
 }
 
 
@@ -333,43 +300,46 @@ void StereoClosures::Process()
 {
   for(int side = LEFT; side <= RIGHT; side++)
   {
-		for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::CLOSURE); i++)
-		{
-			Closure *core_closure = (Closure*)vcore[side]->Gestalts(Gestalt::CLOSURE, i);
-			if(!vcore[side]->use_masking || !core_closure->IsMasked())
-			{
-				TmpClosure closure(core_closure);
-				if(closure.IsValid())
-					closures[side].PushBack(closure);
-			}
-		}
-		if(pPara.pruning)
-			for(unsigned i = 0; i < closures[side].Size(); i++)
-				closures[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
-		for(unsigned i = 0; i < closures[side].Size(); i++)
-			closures[side][i].Rectify(stereo_cam, side);
-		for(unsigned i = 0; i < closures[side].Size(); i++)
-			closures[side][i].Refine();
-	}
+    for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::CLOSURE); i++)
+    {
+      Closure *core_closure = (Closure*)vcore[side]->Gestalts(Gestalt::CLOSURE, i);
+      if(!vcore[side]->use_masking || !core_closure->IsMasked())
+      {
+	TmpClosure closure(core_closure);
+	if(closure.IsValid())
+	  closures[side].PushBack(closure);
+      }
+    }
+    if(pPara.pruning)
+      for(unsigned i = 0; i < closures[side].Size(); i++)
+	closures[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+    for(unsigned i = 0; i < closures[side].Size(); i++)
+      closures[side][i].Rectify(stereo_cam, side);
+    for(unsigned i = 0; i < closures[side].Size(); i++)
+      closures[side][i].Refine();
+  }
 
   // do stereo matching and depth calculation
-	closMatches = 0;
-	MatchClosures(closures[LEFT], closures[RIGHT], closMatches);
-	Calculate3DClosures(closures[LEFT], closures[RIGHT], closMatches, closure3ds);
+  closMatches = 0;
+  MatchClosures(closures[LEFT], closures[RIGHT], closMatches);
+  Calculate3DClosures(closures[LEFT], closures[RIGHT], closMatches);
 }
 
 
 /**
  * @brief Match and calculate 3D closures from 2D closures.
+ * @param oX Offset x-coordinate
+ * @param oY Offset y-coordinate
+ * @param sc Scale
  */
 void StereoClosures::Process(int oX, int oY, int sc)
 {
-	pPara.pruning = true;
-	pPara.offsetX = oX;
-	pPara.offsetY = oY;
-	pPara.scale = sc;
-	Process();
-	pPara.pruning = false;
+  pPara.pruning = true;
+  pPara.offsetX = oX;
+  pPara.offsetY = oY;
+  pPara.scale = sc;
+  Process();
+  pPara.pruning = false;
 }
 
 

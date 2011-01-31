@@ -21,6 +21,7 @@ namespace Z
 TmpRectangle::TmpRectangle(Rectangle *rectangle)
 {
   surf.Init(rectangle);
+  vs3ID = rectangle->ID();
 }
 
 
@@ -189,7 +190,7 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   obj->model->faces.push_back(f);
   f.vertices.clear();
 
-  obj->detectionConfidence = 1.0;															// TODO detection confidence is always 1
+  obj->detectionConfidence = rectangle->GetSignificance();	// TODO detection confidence is always 1
 
   return true;
 }
@@ -205,27 +206,20 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
  */
 unsigned StereoRectangles::FindMatchingRectangle(TmpRectangle &left_rect, Array<TmpRectangle> &right_rects, unsigned l)
 {
-// printf("    FindMatchingRectangle:\n");
   double match, best_match = HUGE;
   unsigned j, j_best = UNDEF_ID;
   unsigned off_0, off_0_best = 0;
 
-// 	bool cross = false, cross_best = false;
   for(j = l; j < right_rects.Size(); j++)
   {
-// 		match = MatchingScore(left_rect, right_rects[j], off_0);
-// printf("    find matching score of right rect %u\n", j);
     match = MatchingScoreSurf(left_rect.surf, right_rects[j].surf, off_0);
-// printf("      match = %6.5f\n", match);
     if(match < best_match)
     {
       best_match = match;
       j_best = j;
-// 			cross_best = cross;
       off_0_best = off_0;
-// 			off_1_best = off_1;
     }
-}
+  }
   if(j_best != UNDEF_ID)
   {
     right_rects[j_best].Fuddle(off_0_best);
@@ -247,16 +241,14 @@ void StereoRectangles::MatchRectangles(Array<TmpRectangle> &left_rects, Array<Tm
   {
     j = FindMatchingRectangle(left_rects[l], right_rects, l);
 
-		// found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
+    if(j != UNDEF_ID)          // found a matching right, move it to same index position as left
     {
-      right_rects.Swap(l, j);			// change right_rects[j] to same place as left_rects (==>l)
+      right_rects.Swap(l, j);  // change right_rects[j] to same place as left_rects (==>l)
       l++;
     }
-    // found no right, move left to end and decrease end
-    else
+    else                       // found no right, move left to end and decrease end
     {
-      left_rects.Swap(l, u-1);		// change left_rects[l] to last place (u-1) and do not consider in future.
+      left_rects.Swap(l, u-1); // change left_rects[l] to last place (u-1) and do not consider in future.
       u--;
     }
   }
@@ -279,11 +271,11 @@ void StereoRectangles::Calculate3DRectangles(Array<TmpRectangle> &left_rects, Ar
     Rectangle3D *rectangle3d = new Rectangle3D();
     if (rectangle3d->surf.Reconstruct(stereo_cam, left_rects[i].surf, right_rects[i].surf, true))
     {
+      rectangle3d->CalculateSignificance(Rectangles(vcore[LEFT], left_rects[i].vs3ID)->sig, Rectangles(vcore[RIGHT], right_rects[i].vs3ID)->sig);
       score->NewGestalt3D(rectangle3d);
       i++;
     }
-    // move unacceptable flaps to the end
-    else
+    else  // move unacceptable flaps to the end
     {
       left_rects.Swap(i, u-1);
       right_rects.Swap(i, u-1);

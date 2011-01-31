@@ -25,6 +25,7 @@ public:
   {
     LJUNCTION,
     CORNER,
+    CLOSURE,
     RECTANGLE,
     FLAP,
     MAX_TYPE,
@@ -35,6 +36,7 @@ protected:
 //  StereoCore *score;
   Type type;
   unsigned id;
+  double sig;
   unsigned rank;
 
 private:
@@ -46,6 +48,7 @@ private:
 public:
   Gestalt3D(/*StereoCore *sc, */Type t);
   Type GetType() const {return type;}
+  double GetSignificance() {return sig;}
 
 };
 
