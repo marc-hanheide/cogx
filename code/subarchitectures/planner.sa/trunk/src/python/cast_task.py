@@ -78,7 +78,7 @@ class CASTTask(object):
             
         self.percepts = []
 
-        cp_problem, cp_domain, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True, domain=self.domain)
+        cp_problem, cp_domain, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
@@ -138,7 +138,6 @@ class CASTTask(object):
         log.debug("Dot file for plan is stored in %s", dot_fn)
 
         if self.component.show_dot:
-            log.info("Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh")
             show_dot_script = abspath(join(self.component.get_path(), "show_dot.sh"))
             os.system("%s %s" % (show_dot_script, dot_fn))
 
@@ -188,7 +187,7 @@ class CASTTask(object):
             log.debug("Goal: %s, p:%.2f, sat: %d", g.goalString, g.importance, g.isInPlan)
 
         if "partial-observability" in self.domain.requirements:
-            log.info("creating dt task")
+            log.debug("creating dt task")
             # self.dt_task = dt_problem.DTProblem(plan, self.domain)
             self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.domain)
 
@@ -196,14 +195,14 @@ class CASTTask(object):
                 if pnode.is_virtual():
                     pnode.status = plans.ActionStatusEnum.EXECUTED
             
-            #self.update_status(self.status)
             if self.dt_planning_active():
+                log.info("starting dt task")
                 self.dt_task.initialize(self.state.prob_state)
                 self.update_status(TaskStateEnum.WAITING_FOR_DT)
                 self.component.start_dt_planning(self)
                 return
             
-        log.debug("The following plan was found %s:\n", plan)
+        log.debug("Current plan:\n%s", plan)
 
         self.write_plan()
 
@@ -507,9 +506,13 @@ class CASTTask(object):
         import fake_cast_state
         if isinstance(self.state, fake_cast_state.FakeCASTState):
             return True
+
+        oldstate = self.state
+        self.state = cast_state.CASTState(beliefs, self.domain, oldstate, component=self.component)
+        new_cp_problem, new_cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
+
+        self.state.print_state_difference(oldstate)
         
-        self.state = cast_state.CASTState(beliefs, self.domain, self.state, component=self.component)
-        new_cp_problem, new_cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True, domain=self.domain)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)

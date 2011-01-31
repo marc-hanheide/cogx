@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import time, random
-from itertools import imap
+from itertools import imap, chain
 from collections import defaultdict
 
 import mapltypes as types
@@ -412,7 +412,8 @@ class State(dict):
 
         Arguments:
         facts -- List of Fact objects or (StateVariable, TypedObject) tuples the State should be initialized with.
-        prob -- The PDDL problem description this State is based on."""
+        prob -- The PDDL problem description this State is based on.
+        parent -- An optional parent state. If a value can't be found in this state, it will be looked up in the parent state."""
         
         #defaultdict.__init__(self, lambda: UNKNOWN)
         assert prob is None or isinstance(prob, problem.Problem)
@@ -1117,3 +1118,54 @@ class State(dict):
                 if rule.precondition is None or self.is_satisfied(rule.precondition):
                     self.apply_effect(rule.effect)
                 rule.uninstantiate()
+
+
+class SubState(State):
+    """This class represents a planning state that is attached to a parent State.
+    if a value can't be found in this state, it is looked up in the parent.
+
+"""
+    
+    def __init__(self, parent, facts=[]):
+        """Create a new State object.
+
+        Arguments:
+        parent -- The parent state. If a value can't be found in this state, it will be looked up in the parent state.
+        facts -- List of Fact objects or (StateVariable, TypedObject) tuples the State should be initialized with."""
+
+        State.__init__(self, facts)
+        self.parent = parent
+        self.problem = parent.problem
+        
+        if isinstance(parent, SubState):
+            self.base_state = parent.base_state
+        else:
+            self.base_state = parent
+        
+    def copy(self):
+        """Create a copy of this State."""
+        s = SubState(self.parent)
+        for svar, val in self.iteritems():
+            s[svar] = val
+        return s
+
+    def iterfacts(self):
+        """Returns an iterator of all Facts contained in this
+        State."""
+        return chain((Fact.from_tuple(tup) for tup in self.iteritems()), self.parent.iterfacts())
+
+    def __getitem__(self, key):
+        try:
+            return dict.__getitem__(self, key)
+        except:
+            return self.parent[key]
+            
+    def __contains__(self, key):
+        if isinstance(key, Fact):
+            return dict.__contains__(self, key.svar) and self[key.svar] == key.value
+        return dict.__contains__(self, key) or key in self.parent
+
+    def __str__(self):
+        elems = sorted("%s = %s" % (str(k), v.name) for k,v in self.iteritems())
+        return "\n".join(elems) + "\n\nParent:\n" + str(self.parent)
+        

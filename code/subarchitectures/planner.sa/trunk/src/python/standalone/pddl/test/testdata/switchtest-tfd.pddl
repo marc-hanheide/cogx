@@ -36,16 +36,14 @@
                                                    (assign (label ?o) ?l)))
               )
 
-  (:action sample_existence
-           :agent (?a - agent)
+  (:dtrule sample_existence
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
            :effect (probabilistic (p-ex-in-room ?l ?c) (assign (ex-in-room ?l ?r) true) 
                                                        (assign (ex-in-room ?l ?r) false))
            )
 
-  (:action sample_is_in
-           :agent (?a - agent)
+  (:dtrule sample_is_in
            :parameters (?l - label ?r - room ?c - cone ?o - visualobject)
            :precondition (and (= (room ?c) ?r)
                               (= (label ?o) ?l)

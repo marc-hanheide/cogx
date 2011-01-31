@@ -211,7 +211,7 @@ class Scope(dict):
             self.requirements = set()
             self.parse_handlers = []
 
-    
+            
     def lookup(self, args):
         """Lookup a list of symbols in this Scope. Returns a list of
         Terms corresponding to the supplied symbols.
