@@ -48,7 +48,7 @@ void Rectangle::Init()
   data = new unsigned[core->IW()*core->IH()];
   pixelmass = 0;
   for (unsigned i=0; i<(core->IW()*core->IH()); i++)
-	  data[i] = UNDEF_ID;
+    data[i] = UNDEF_ID;
   pixelsupport = CalculateSupport();
 
   // get direction (PI) and angle of the two line-pairs
@@ -56,10 +56,9 @@ void Rectangle::Init()
   Vector2 isctLine[4];
   for(unsigned i=0; i<4; i++)
   {
-	  if((i+1) > 3) j=0;
-	  else j=i+1;
-
-	  isctLine[i] = isct[i] - isct[j];
+    if((i+1) > 3) j=0;
+    else j=i+1;
+    isctLine[i] = isct[i] - isct[j];
   }
 
   Vector2 v[2];
@@ -72,13 +71,12 @@ void Rectangle::Init()
   phi[0] = ScaleAngle_0_pi(PolarAngle(direction[0]));
   phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
 
-  // calculate center point of rectangle
   centerPoint.x = 0;
   centerPoint.y = 0;
   for(unsigned i=0; i<4; i++)
   {
-	  centerPoint.x += isct[i].x;
-	  centerPoint.y += isct[i].y;
+    centerPoint.x += isct[i].x;
+    centerPoint.y += isct[i].y;
   }
   centerPoint.x = centerPoint.x/4.;
   centerPoint.y = centerPoint.y/4.;
@@ -100,8 +98,8 @@ void Rectangle::Init()
 
 
 /**
- *	@brief Draw rectangles.
- *	@param detail Degree of details.
+ * @brief Draw rectangles.
+ * @param detail Degree of details.
  */
 void Rectangle::Draw(int detail)
 {
@@ -110,12 +108,12 @@ void Rectangle::Draw(int detail)
     for(unsigned i = 0; i < 4; i++)
       DrawLine2D(isct[i].x, isct[i].y, isct[(i<3?i+1:0)].x, isct[(i<3?i+1:0)].y);
   }
-	if(detail == 1)
-	{
-		FillEllipse2D(centerPoint.x, centerPoint.y, 2, 2, 0, RGBColor::white);
-		DrawEllipse2D(centerPoint.x, centerPoint.y, radius, radius, 0, RGBColor::white);
-		DrawEllipse2D(centerPoint.x, centerPoint.y, innerRadius, innerRadius, 0, RGBColor::white);
-	}
+  if(detail == 1)
+  {
+    FillEllipse2D(centerPoint.x, centerPoint.y, 2, 2, 0, RGBColor::white);
+    DrawEllipse2D(centerPoint.x, centerPoint.y, radius, radius, 0, RGBColor::white);
+    DrawEllipse2D(centerPoint.x, centerPoint.y, innerRadius, innerRadius, 0, RGBColor::white);
+  }
   if(detail >= 2)
     closure->Draw(detail - 2);
 }
@@ -128,21 +126,19 @@ const char* Rectangle::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  snprintf(info_text, info_size, "%s"
-                                 "  closure: %u\n",
-//                                  "  junctions: %u %u %u %u\n",
+  snprintf(info_text, info_size, "%s  closure: %u\n",
       Gestalt::GetInfo(), closure->ID()/*, ljcts[0]->ID(), ljcts[1]->ID(), ljcts[2]->ID(), ljcts[3]->ID()*/);
   return info_text;
 }
 
 /**
- *	@brief Returns true, if the rectangle center point is inside another rectangle radius.
- *	@param rectangle Index of rectangle to compare.
+ * @brief Returns true, if the rectangle center point is inside another rectangle radius.
+ * @param rectangle Index of rectangle to compare.
  */
 bool Rectangle::IsInside(unsigned rectangle)
 {
-	if((Rectangles(core, rectangle)->centerPoint - centerPoint).Length() < innerRadius) return true;
-	else return false;
+  if((Rectangles(core, rectangle)->centerPoint - centerPoint).Length() < innerRadius) return true;
+  else return false;
 }
 
 /**
@@ -161,65 +157,50 @@ bool Rectangle::IsAtPosition(int x, int y)
  */
 void Rectangle::CalculateSignificance()
 {
-  //sig = -log(fmax(1., SumGaps())/fmax(1., Area()));
-  //sig = SumGaps()/Circumference();
-
-  // TODO ARI	
-  //sig = parallelity * exp(4.-nrOfLJcts);
-
-	sig = (pixelsupport * parallelity);
-//printf("Rect: %u: pixelsupport: %6.3f - parallelity: %4.2f\n", id, pixelsupport, parallelity);
+  sig = (pixelsupport * parallelity);
 }
 
 
 /**
  * @brief Calculate pixel-support: Get the line pixels from the constructed rectangle with bresenham \n
  * line drawing algorithm and compare them with the underlying line pixels.
+ * @return Returns relation between underlying line-pixels and number of edge pixels of the rectangle
  */
 double Rectangle::CalculateSupport()
 {
-	double support = 0;
+  double support = 0;
+  GetRectPixels();
 
-	GetRectPixels();				// write all pixels from new drawn rectangle into data[]
+  // Catch Pixel from rect->clos->line=>idx[start/end] from
+  // Segment->edgels(idx[Start/End]) for all lines from the closure
+  Array<unsigned> lines;
+  for(unsigned i=0; i<closure->lines.Size(); i++)
+    lines.PushBack (closure->lines[i]->ID());
 
-	// Catch Pixel from rect->clos->line=>idx[start/end] from
-	// Segment->edgels(idx[Start/End]) for all lines from the closure
-	Array<unsigned> lines;
-	for(unsigned i=0; i<closure->lines.Size(); i++)
-		lines.PushBack (closure->lines[i]->ID());
-
-	for(unsigned i=0; i<lines.Size(); i++)
-	{
-		for(unsigned j=Lines(core, lines[i])->idx[0]; j<Lines(core, lines[i])->idx[1]; j++)
-		{
-			Vector2 p = Segments(core, Lines(core, lines[i])->seg->ID())->edgels[j].p;		// pixel from segment
-			if (CountSupport((int)p.x, (int)p.y, 100)) support += 1;
-		}
-	}
-
-//printf("support - pixelmass: %4.2f, %u\n", support, pixelmass);
-	return support*10/((double)pixelmass);	
+  for(unsigned i=0; i<lines.Size(); i++)
+  {
+    for(unsigned j=Lines(core, lines[i])->idx[0]; j<Lines(core, lines[i])->idx[1]; j++)
+    {
+      Vector2 p = Segments(core, Lines(core, lines[i])->seg->ID())->edgels[j].p;   // pixel from segment
+      if (CountSupport((int)p.x, (int)p.y, 100)) support += 1;
+    }
+  }
+  return support*10/((double)pixelmass);	
 }
 
 /**																																								/// TODO Sollte innerhalb der isct-points zeichnen!
  *  @brief GetRectPixels:
- *  Draws the rectangle between the estimated four L-Junctions.
+ *  Get the number of pixels of the rectangle.
  */
 void Rectangle::GetRectPixels()
 {
-	// Get all corner points of rect																								/// TODO dieser Teil weg!!!
-// 	Vector2 isct[4];
-// 	for (unsigned i=0; i<4; i++)
-// 		isct[i] = LJunctions(core, ljcts[i]->ID())->isct;
-
-	// Calculate all line pixels
-	int j = 0;
-	for (unsigned i=0; i<4; i++)
-	{
-		if (i==3) j=0;
-		else j=i+1;
-		GetLinePixels(int(isct[i].x), int(isct[i].y), int(isct[j].x), int(isct[j].y), i);
-	}
+  int j = 0;
+  for (unsigned i=0; i<4; i++)
+  {
+    if (i==3) j=0;
+    else j=i+1;
+    GetLinePixels(int(isct[i].x), int(isct[i].y), int(isct[j].x), int(isct[j].y), i);
+  }
 }
 
 /**
@@ -319,7 +300,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
 void Rectangle::SetPixel(int x, int y, unsigned id)
 {
   data[y*core->IW() + x] = id;
-	pixelmass ++;
+    pixelmass ++;
 }
 
 /**
