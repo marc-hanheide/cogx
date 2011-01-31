@@ -24,8 +24,9 @@ class Rectangle3D : public Gestalt3D
 public:
   Surf3D surf;                                                  ///< 3D surface
 
+public:
   Rectangle3D();
-//   bool Reconstruct(StereoCamera *stereo_cam, TmpFlap &left, TmpFlap &right);
+  void CalculateSignificance(double sigLeft, double sigRight);
 };
 
 

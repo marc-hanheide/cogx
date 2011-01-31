@@ -45,8 +45,8 @@ public:
     UNDEF = MAX_TYPE
   };						///< Type of stereo Gestalts for matching
 
-  VisionCore *vcore[2];				///< Left and right vision core		/// TODO public???
-  StereoCamera *stereo_cam;			///< Stereo camera parameters
+  VisionCore *vcore[2];				///< Left and right vision core		/// TODO public??? => change!!!
+  StereoCamera *stereo_cam;			///< Stereo camera parameters		/// TODO public??? => change!!!
 
   struct PruningParameter			///< Parameters, when pruned image will be processed at stereo core
   {

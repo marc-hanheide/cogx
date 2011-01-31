@@ -11,9 +11,19 @@
 namespace Z
 {
 
+/**
+ * @brief Constructor of Class Rectangle3D
+ */
 Rectangle3D::Rectangle3D() : Gestalt3D(Gestalt3D::RECTANGLE)
 {
 }
+
+void Rectangle3D::CalculateSignificance(double sigLeft, double sigRight)
+{
+  sig = sigLeft * sigRight;
+//   printf(" Sigs: %4.1f/%4.1f => sig: %4.1f\n", sigLeft, sigRight, sig);
+}
+
 
 }
 

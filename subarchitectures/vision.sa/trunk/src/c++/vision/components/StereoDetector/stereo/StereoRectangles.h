@@ -12,9 +12,8 @@
 #include "StereoCore.hh"
 #include "StereoBase.h"
 #include "StereoCamera.hh"
-//#include "Rectangle.h"
-
 #include "Rectangle3D.h"
+#include "Rectangle.hh"
 
 namespace Z
 {
@@ -25,16 +24,17 @@ namespace Z
 class TmpRectangle
 {
 public:
-  Surf2D surf;
+  Surf2D surf;                                           /// surface of the rectangle
+  unsigned vs3ID;                                        /// id of the vs3 rectangle
 
   TmpRectangle() {}
   TmpRectangle(Rectangle *rectangle);
   void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
-  bool IsAtPosition(int x, int y) const;					/// TODO weg damit? oder braucht man noch?
+  bool IsAtPosition(int x, int y) const;                 /// TODO weg damit? oder braucht man noch?
   void Fuddle(unsigned off0);
-  bool IsValid() {return surf.is_valid;}					/// do not show if it is not valid!
+  bool IsValid() {return surf.is_valid;}                 /// do not show if it is not valid!
 };
 
 
@@ -45,7 +45,7 @@ class StereoRectangles : public StereoBase
 {
 private:
 
-  Array<TmpRectangle> rectangles[2];                    ///< Tmp. rectangles from the vision cores.
+  Array<TmpRectangle> rectangles[2];                    ///< Left/Right tmp. rectangles from the vision cores.
   int rectMatches;					///< Number of stereo matched rectangles
 
 #ifdef HAVE_CAST
@@ -65,7 +65,7 @@ public:
 
   const TmpRectangle &Rectangles2D(int side, int i);			///< TODO Public? Überhaupt notwendig?
 
-  int NumStereoMatches() {return rectMatches;}                           ///< 
+  int NumStereoMatches() {return rectMatches;}                          ///< 
   void DrawMatched(int side, bool single, int id, int detail);
 	
   void ClearResults();

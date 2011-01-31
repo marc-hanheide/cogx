@@ -15,11 +15,12 @@ static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
   "LJUNCTION"
   "CORNER",
+  "CLOSURE",
   "RECTANGLE",
   "FLAP",
   "UNDEF"
 };
-static const int type_names_length[] = {9, 6, 9, 4, 5};
+static const int type_names_length[] = {9, 6, 7, 9, 4, 5};
  
 
 /**
@@ -59,16 +60,10 @@ Gestalt3D::Type Gestalt3D::EnumType(const char *type_name)
  * @brief 3D Gestalt constructor.
  * @param t Type of 3D Gestalt
  */
-Gestalt3D::Gestalt3D(/*StereoCore *sc, */Type t)
+Gestalt3D::Gestalt3D(Type t)
 {
-//   core = c;
-//   score = sc;
   type = t;
-//   SetID(core->NumGestalts(type));
-//   SetRank(id); // as long as no ranking is performed, the rank is simply the id
-//   acc = 0.;
-//   sig = 0.;
-//   masked = UNDEF_ID;
+  sig = 0.;
 }
 
 }
