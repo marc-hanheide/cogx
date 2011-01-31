@@ -33,8 +33,8 @@ private:
   double CalculateSupport();
   void GetRectPixels();
   void GetLinePixels(int x1, int y1, int x2, int y2, unsigned id);
-  void SetPixel(int x, int y, unsigned id);
-  bool CountSupport(int x, int y, unsigned id);
+  void SetPixel(int x, int y, unsigned id, bool neighboring);
+  bool CountSupport(int x, int y);
 
 public:
   Closure *closure;			///< The underlying closure

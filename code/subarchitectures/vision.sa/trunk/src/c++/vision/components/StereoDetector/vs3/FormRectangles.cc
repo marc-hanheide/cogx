@@ -89,13 +89,13 @@ void FormRectangles::Mask()
 {
   for(unsigned i=0; i<NumRectangles(core); i++)
   {
-		for(unsigned j=0; j<NumRectangles(core); j++)
-		{
-			if(!Rectangles(core, i)->IsMasked() && !Rectangles(core, j)->IsMasked())
-				if(Rectangles(core, i)->sig < Rectangles(core, j)->sig)
-					if(Rectangles(core, i)->IsInside(j))
-						Rectangles(core, i)->Mask(j);	
-		}
+    for(unsigned j=0; j<NumRectangles(core); j++)
+    {
+      if(!Rectangles(core, i)->IsMasked() && !Rectangles(core, j)->IsMasked())
+	if(Rectangles(core, i)->sig < Rectangles(core, j)->sig)
+	  if(Rectangles(core, i)->IsInside(j))
+	    Rectangles(core, i)->Mask(j);	
+    }
   }
 }
 
@@ -109,9 +109,9 @@ void FormRectangles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
   StartRunTime();
   if (type == Gestalt::CLOSURE)
-		CreateQuadrilateral(idx);
-	Rank();
-	Mask();
+    CreateQuadrilateral(idx);
+  Rank();
+  Mask();
   StopRunTime();
 }
 
@@ -123,14 +123,14 @@ void FormRectangles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 void FormRectangles::CreateQuadrilateral(unsigned clos)
 {
   if(Closures(core, clos)->NumLJunctions() == 4)
-	{
-		CreateWithFourLJ(clos);
-	}
+  {
+    CreateWithFourLJ(clos);
+  }
   else if (Closures(core, clos)->NumLJunctions() > 4)
-	{
-		if(!CreateWithMoreLJLine(clos))
-		  CreateWithMoreLJAngle(clos);
-	}
+  {
+    if(!CreateWithMoreLJLine(clos))
+      CreateWithMoreLJAngle(clos);
+  }
 }
 
 /**
@@ -150,7 +150,7 @@ void FormRectangles::CreateWithFourLJ(unsigned clos)
   if (IsConvexPolygon(isct))
   {
     double parallelity = IsRectangle(isct);
-    if(parallelity > 5.)																																		// TODO ARI: parallelity-threshold
+    if(parallelity > 0.5)										// TODO ARI: parallelity-threshold
     {
       Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
       core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
@@ -240,7 +240,7 @@ bool FormRectangles::CreateWithMoreLJLine(unsigned clos)
     done = !erased_short_line;
   }
 
-  std::vector<Vector2> p;			// intersection (corner) points
+  std::vector<Vector2> p;  // intersection (corner) points
   p.resize(lines.size());
   for(i = 0; i < lines.size(); i++)
   {
@@ -255,7 +255,7 @@ bool FormRectangles::CreateWithMoreLJLine(unsigned clos)
       isct[i] = p[i];
 
     double parallelity = IsRectangle(isct);
-    if(parallelity > 5.)   																		// TODO ARI: parallelity-threshold 
+    if(parallelity > MIN_PARALLELITY)
     {
       Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
       core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
@@ -274,69 +274,69 @@ bool FormRectangles::CreateWithMoreLJLine(unsigned clos)
  */
 bool FormRectangles::CreateWithMoreLJAngle(unsigned clos)
 {
-	const double delta = M_PI/4.;  															// TODO Another threshold 
-	double sum_angles = 0.;
+  const double delta = M_PI/4.;  											// TODO Another threshold 
+  double sum_angles = 0.;
 
-	Array<unsigned> ordered_ljcts;
-	for(unsigned i=0; i<Closures(core, clos)->jcts.Size(); i++)
-		if(Closures(core, clos)->jcts[i] != 0)			// "without holes ;-)"
-			ordered_ljcts.PushBack(Closures(core, clos)->jcts[i]->ID());
+  Array<unsigned> ordered_ljcts;
+  for(unsigned i=0; i<Closures(core, clos)->jcts.Size(); i++)
+    if(Closures(core, clos)->jcts[i] != 0)			// "without holes ;-)"
+      ordered_ljcts.PushBack(Closures(core, clos)->jcts[i]->ID());
 
-	if (IsConvexPolygon(ordered_ljcts))
-	{
+  if (IsConvexPolygon(ordered_ljcts))
+  {
 //       ordered_ljcts.Sort(CmpAngles);		// sort by angles
-		// TODO Search the biggest four ordered LJunctions (by hand, because sort-function don't want work.
-		for(unsigned a=0; a<4; a++)
-		{
-			unsigned biggest = 0;
-			double comp = 0.0;
-			for(unsigned b=a; b<ordered_ljcts.Size(); b++)
-			{
-				if(LJunctions(core, ordered_ljcts[b])->OpeningAngle() > comp)
-				{
-					comp = LJunctions(core, ordered_ljcts[b])->OpeningAngle();
-					biggest = b;
-				}
-			}
-			unsigned sav = ordered_ljcts[a];
-			ordered_ljcts[a] = ordered_ljcts[biggest];
-			ordered_ljcts[biggest] = sav;
-		}
-
-		// calculate sum of the 4 greatest angles
-		for(unsigned i = 0; i < 4; i++)
-			if(ordered_ljcts[i] != 0)
-				sum_angles += LJunctions(core, ordered_ljcts[i])->OpeningAngle();
-
-		if(fabs(2*M_PI - sum_angles) <= delta)
-		{
-			// go throug junction-list and reorder the four junctions clockwise
-			unsigned ljcts[4];
-			for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size() && j < 4; i++)
-			{
-				// if junction i is among the first 4
-				// TODO: note that this is a bit inefficient..
-				// TODO: sometimes j can become > 3 (hence the check in for(..)
-				if(Closures(core, clos)->jcts[i] != 0)					// Note: Be carefull: Zero-Holes in jcts[]
-					if(ordered_ljcts.Find(Closures(core, clos)->jcts[i]->ID()) < 4)
-						ljcts[j++] = Closures(core, clos)->jcts[i]->ID();
-			}
-
-			Vector2 isct[4]; 
-			for(unsigned i=0; i<4; i++)
-				isct[i] = LJunctions(core, ljcts[i])->isct;
-
-			double parallelity = IsRectangle(isct);
-			if(parallelity > 5.)   																																// TODO ARI: parallelity-threshold 
-			{
-printf("FormRectangles::CreateWithMoreLJAngle: Hier wurde ein Rechteck erzeugt (Angle ding)!\n");
-				Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
-				core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
-				return true;
-			}
-		}
+    // TODO Search the biggest four ordered LJunctions (by hand, because sort-function don't want work.
+    for(unsigned a=0; a<4; a++)
+    {
+      unsigned biggest = 0;
+      double comp = 0.0;
+      for(unsigned b=a; b<ordered_ljcts.Size(); b++)
+      {
+	if(LJunctions(core, ordered_ljcts[b])->OpeningAngle() > comp)
+	{
+	  comp = LJunctions(core, ordered_ljcts[b])->OpeningAngle();
+	  biggest = b;
 	}
-	return false;
+      }
+      unsigned sav = ordered_ljcts[a];
+      ordered_ljcts[a] = ordered_ljcts[biggest];
+      ordered_ljcts[biggest] = sav;
+    }
+
+    // calculate sum of the 4 greatest angles
+    for(unsigned i = 0; i < 4; i++)
+	    if(ordered_ljcts[i] != 0)
+		    sum_angles += LJunctions(core, ordered_ljcts[i])->OpeningAngle();
+
+    if(fabs(2*M_PI - sum_angles) <= delta)
+    {
+      // go throug junction-list and reorder the four junctions clockwise
+      unsigned ljcts[4];
+      for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size() && j < 4; i++)
+      {
+	// if junction i is among the first 4
+	// TODO: note that this is a bit inefficient..
+	// TODO: sometimes j can become > 3 (hence the check in for(..)
+	if(Closures(core, clos)->jcts[i] != 0)					// Note: Be carefull: Zero-Holes in jcts[]
+	  if(ordered_ljcts.Find(Closures(core, clos)->jcts[i]->ID()) < 4)
+	    ljcts[j++] = Closures(core, clos)->jcts[i]->ID();
+      }
+
+      Vector2 isct[4]; 
+      for(unsigned i=0; i<4; i++)
+	isct[i] = LJunctions(core, ljcts[i])->isct;
+
+      double parallelity = IsRectangle(isct);
+      if(parallelity > MIN_PARALLELITY) 
+      {
+printf("FormRectangles::CreateWithMoreLJAngle: Hier wurde ein Rechteck erzeugt (Angle ding)!\n");
+	Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
+	core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
+	return true;
+      }
+    }
+  }
+  return false;
 }
 
 
@@ -349,35 +349,37 @@ printf("FormRectangles::CreateWithMoreLJAngle: Hier wurde ein Rechteck erzeugt (
  */
 double FormRectangles::IsRectangle(Vector2 isct[4])
 {
-  Vector2 line[4];			// lines between intersections
-  Vector2 dir[4];				// direction of lines
-  double phi[4];				// angle of lines
+  Vector2 line[4];      // lines between intersections
+  Vector2 dir[4];       // direction of lines
+  double phi[4];        // angle of lines
 
   // calc lines, direction, angle
   for(int i=0; i<4; i++)
-	{
-		int j=i+1;
-		if (j==4) j=0;
-		line[i].x=isct[i].x-isct[j].x;
-		line[i].y=isct[i].y-isct[j].y;
-		if (line[i].y!=0.) dir[i] = Normalise(line[i]);
-		phi[i]= ScaleAngle_0_2pi(PolarAngle(dir[i]));
-	}
+  {
+    int j=i+1;
+    if (j==4) j=0;
+    line[i].x=isct[i].x-isct[j].x;
+    line[i].y=isct[i].y-isct[j].y;
+    if (line[i].y!=0.) dir[i] = Normalise(line[i]);
+    phi[i]= ScaleAngle_0_2pi(PolarAngle(dir[i]));
+  }
 
   // calculate difference of angles from opposed edges
   double diff[2];
   diff[0] = fabs(fabs(phi[0]-phi[2])-M_PI);
   diff[1] = fabs(fabs(phi[1]-phi[3])-M_PI);
 
- 	// TODO ARI: check this calculation of parallelity (0-100)
+  // TODO ARI: check this calculation of parallelity (0-100)
   // calculate parallelity of best (min) opposing edge-pair (in degree)
   // parallelity = 10*e^(-diff/20°)
-  double parallelity = 10.*exp(0.-((fmin(diff[0], diff[1]))*(180./M_PI)/20.));
+  double parallelity = 0.9*exp(0.-((fmin(diff[0], diff[1]))/0.349));
 
+//   printf("FormRectangles::IsRectangle: parallelity first: %4.2f\n", parallelity);
   // calculate parallelity of worst (max) opposing edge-pair (in degree)
   // parallelity = 10*e^(-diff/20°)
-  parallelity *= 10.*exp(0.-((fmax(diff[0], diff[1]))*(180./M_PI)/20.));
+  parallelity += 0.1*exp(0.-((fmax(diff[0], diff[1]))/0.349));
 
+// printf("      FormRectangles::IsRectangle: parallelity: %4.2f\n", parallelity);
   return parallelity;
 }	
 
@@ -429,13 +431,13 @@ bool FormRectangles::IsConvexPolygon(Array<unsigned> ljcts)
 
   // get every junction and check if LJunction (could also be a coll.)
   for (unsigned l=0; l<ljcts.Size(); l++)
-	{
-		try
-		{
-			LJunctions(core, ljcts[l])->isct;																											/// TODO Ist das hier Blödsinn? Wieso try-catch block?
-			intscts[m++] = LJunctions(core, ljcts[l])->isct;
-		}
-		catch (exception &e){}
+  {
+    try
+    {
+      LJunctions(core, ljcts[l])->isct;							/// TODO Ist das hier Blödsinn? Wieso try-catch block?
+      intscts[m++] = LJunctions(core, ljcts[l])->isct;
+    }
+    catch (exception &e){}
   }	
 	
   // copy intersections to array with size m
