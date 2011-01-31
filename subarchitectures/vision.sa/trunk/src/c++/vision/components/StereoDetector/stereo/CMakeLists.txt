@@ -4,6 +4,7 @@ include_directories(.)
 
 # Set the sources.
 SET(HEADERS
+	Closure3D.h
 	Corner3D.h
 	Flap3D.h
 	Gestalt3D.h
@@ -24,6 +25,7 @@ SET(HEADERS
 )
 
 SET(SOURCES 
+	Closure3D.cpp
 	Corner3D.cpp
 	Flap3D.cpp
 	Gestalt3D.cpp
