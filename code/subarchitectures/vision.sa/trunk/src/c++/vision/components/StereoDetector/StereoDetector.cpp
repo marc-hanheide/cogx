@@ -215,55 +215,55 @@ void StereoDetector::runComponent()
  */
 void StereoDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
-	if(single) return;		// return if single shot mode is on
+  if(single) return;		// return if single shot mode is on
 
-	StereoDetectionCommandPtr detect_cmd = getMemoryEntry<StereoDetectionCommand>(_wmc.address);
-	
-	log("received detection command ...");
-	switch(detect_cmd->cmd){
-		case VisionData::SDSTART:
-			if(cmd_detect){
-				log("stereo detection is already started");
-			}else{
-				log("starting stereo detection");
-        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);		/// TODO Hier wird videoServer->startReceiveImages aufgerufen
-				receiveImagesStarted = true;
-				cmd_detect = true;
-			}
-			break;
-		case VisionData::SDSTOP:
-			if(cmd_detect){
-				log("stopping stereo detection");
-				cmd_detect = false;
-				videoServer->stopReceiveImages(getComponentID().c_str());
-				receiveImagesStarted = false;
-			}else{
-				log("stereo detection is already stopped");
-			}
-			break;
-		case VisionData::SDSINGLE:
-			if(!cmd_single){
-				log("single stereo detection command received");
-				cmd_single = true;
-				processImage();
-				cmd_single = false;
-			}else{
-				log("single stereo detection command already received: too fast triggering!");
-			}
-			break;
-		case VisionData::SDSINGLEHR:																										/// TODO Hier wird videoServer->getImage aufgerufen
-			if(!cmd_single_hr){
-				log("single HR stereo detection command received");
-				ProcessPrunedHRImages();
-				cmd_single_hr = false;
-			}else{
-				log("single HR detection already received: too fast triggering!");
-			}
-			break;
-		default:
-			log("unknown detection command received, doing nothing");
-			break;
-	}	
+  StereoDetectionCommandPtr detect_cmd = getMemoryEntry<StereoDetectionCommand>(_wmc.address);
+  
+  log("received detection command ...");
+  switch(detect_cmd->cmd){
+    case VisionData::SDSTART:
+      if(cmd_detect){
+	log("stereo detection is already started");
+      }else{
+	log("starting stereo detection");
+	videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);		/// TODO Hier wird videoServer->startReceiveImages aufgerufen
+	receiveImagesStarted = true;
+	cmd_detect = true;
+      }
+      break;
+    case VisionData::SDSTOP:
+      if(cmd_detect){
+	      log("stopping stereo detection");
+	      cmd_detect = false;
+	      videoServer->stopReceiveImages(getComponentID().c_str());
+	      receiveImagesStarted = false;
+      }else{
+	      log("stereo detection is already stopped");
+      }
+      break;
+    case VisionData::SDSINGLE:
+      if(!cmd_single){
+	      log("single stereo detection command received");
+	      cmd_single = true;
+	      processImage();
+	      cmd_single = false;
+      }else{
+	      log("single stereo detection command already received: too fast triggering!");
+      }
+      break;
+    case VisionData::SDSINGLEHR:																										/// TODO Hier wird videoServer->getImage aufgerufen
+      if(!cmd_single_hr){
+	      log("single HR stereo detection command received");
+	      ProcessPrunedHRImages();
+	      cmd_single_hr = false;
+      }else{
+	      log("single HR detection already received: too fast triggering!");
+      }
+      break;
+    default:
+      log("unknown detection command received, doing nothing");
+      break;
+  }	
 }
 
 /**
@@ -317,27 +317,27 @@ void StereoDetector::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
  */
 void StereoDetector::receiveROI(const cdl::WorkingMemoryChange & _wmc)
 {
-	try
-	{
-		ROIPtr roiPtr = getMemoryEntry<ROI>(_wmc.address);
-		ROIData roiData;
-		roiData.rect.width = roiPtr->rect.width;
-		roiData.rect.height = roiPtr->rect.height;
-		roiData.rect.x = roiPtr->rect.pos.x - roiData.rect.width/2;
-		roiData.rect.y = roiPtr->rect.pos.y - roiData.rect.height/2;	
-		PlausibleROI(&roiData);
-		rcvROIs[_wmc.address.id] = roiData;
+  try
+  {
+    ROIPtr roiPtr = getMemoryEntry<ROI>(_wmc.address);
+    ROIData roiData;
+    roiData.rect.width = roiPtr->rect.width;
+    roiData.rect.height = roiPtr->rect.height;
+    roiData.rect.x = roiPtr->rect.pos.x - roiData.rect.width/2;
+    roiData.rect.y = roiPtr->rect.pos.y - roiData.rect.height/2;	
+    PlausibleROI(&roiData);
+    rcvROIs[_wmc.address.id] = roiData;
 // 		log("received roi: x=%i, y=%i, width=%i, height=%i @ %s", roiData.rect.x, roiData.rect.y, roiData.rect.width, roiData.rect.height, _wmc.address.id.c_str());
-	}
-	catch (DoesNotExistOnWMException e)
-	{
+}
+  catch (DoesNotExistOnWMException e)
+  {
 // 		log("ROI with id %s was removed from WM before it could be processed", _wmc.address.id.c_str());
 // 		log("  => receiving was not possible.");
-	}
-	catch (std::exception e)
-	{
-		log("unknown exception during reading from WM.");
-	}
+  }
+  catch (std::exception e)
+  {
+    log("unknown exception during reading from WM.");
+  }
 }
 
 /**
@@ -346,27 +346,27 @@ void StereoDetector::receiveROI(const cdl::WorkingMemoryChange & _wmc)
  */
 void StereoDetector::updatedROI(const cdl::WorkingMemoryChange & _wmc)
 {
-	try
-	{
-		ROIPtr roiPtr = getMemoryEntry<ROI>(_wmc.address);
-		ROIData roiData;
-		roiData.rect.width = roiPtr->rect.width;
-		roiData.rect.height = roiPtr->rect.height;
-		roiData.rect.x = roiPtr->rect.pos.x - roiData.rect.width/2;
-		roiData.rect.y = roiPtr->rect.pos.y - roiData.rect.height/2;	
-		PlausibleROI(&roiData);
-		rcvROIs[_wmc.address.id] = roiData;
-// 		log("updated roi: x=%i, y=%i, width=%i, height=%i @ %s", roiData.rect.x, roiData.rect.y, roiData.rect.width, roiData.rect.height, _wmc.address.id.c_str());
-	}
-	catch (DoesNotExistOnWMException e)
-	{
+  try
+  {
+    ROIPtr roiPtr = getMemoryEntry<ROI>(_wmc.address);
+    ROIData roiData;
+    roiData.rect.width = roiPtr->rect.width;
+    roiData.rect.height = roiPtr->rect.height;
+    roiData.rect.x = roiPtr->rect.pos.x - roiData.rect.width/2;
+    roiData.rect.y = roiPtr->rect.pos.y - roiData.rect.height/2;	
+    PlausibleROI(&roiData);
+    rcvROIs[_wmc.address.id] = roiData;
+  // 		log("updated roi: x=%i, y=%i, width=%i, height=%i @ %s", roiData.rect.x, roiData.rect.y, roiData.rect.width, roiData.rect.height, _wmc.address.id.c_str());
+}
+  catch (DoesNotExistOnWMException e)
+  {
 // 		log("ROI with id %s was removed from WM before it could be processed", _wmc.address.id.c_str());
 // 		log("  => Update not possible");
-	}
-	catch (std::exception e)
-	{
-		log("unknown exception during reading from WM.");
-	}
+  }
+  catch (std::exception e)
+  {
+    log("unknown exception during reading from WM.");
+  }
 }
 
 /**
@@ -375,19 +375,19 @@ void StereoDetector::updatedROI(const cdl::WorkingMemoryChange & _wmc)
  */
 void StereoDetector::deletedROI(const cdl::WorkingMemoryChange & _wmc)
 {
-	try
-	{
-		rcvROIs.erase(_wmc.address.id);
+  try
+  {
+    rcvROIs.erase(_wmc.address.id);
 // 		log("deleted roi @ %s", _wmc.address.id.c_str());
-	}
-	catch (DoesNotExistOnWMException e)
-	{
-		log("ROI with id %s was removed from WM before it could be processed", _wmc.address.id.c_str());
-	}
-	catch (std::exception e)
-	{
-		log("unknown exception during reading from WM.");
-	}
+  }
+  catch (DoesNotExistOnWMException e)
+  {
+    log("ROI with id %s was removed from WM before it could be processed", _wmc.address.id.c_str());
+  }
+  catch (std::exception e)
+  {
+    log("unknown exception during reading from WM.");
+  }
 }
 
 /**
@@ -396,42 +396,42 @@ void StereoDetector::deletedROI(const cdl::WorkingMemoryChange & _wmc)
  */
 void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-	ProtoObjectPtr poPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  ProtoObjectPtr poPtr = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
 
-	Video::Image img;
-	img = poPtr->image;
-	poImg = convertImageToIpl(img);
+  Video::Image img;
+  img = poPtr->image;
+  poImg = convertImageToIpl(img);
 
 // 	Video::ByteSeq data;
 // 	data = poPtr->mask.data;
 
-	// write mask to console
-	poMask = new int [poPtr->mask.width*poPtr->mask.height];
-	for (int i=0; i< poPtr->mask.width*poPtr->mask.height; i++)
-	{
-		poMask[i] = poPtr->mask.data[i];
-		printf("%u  ", poMask[i]);
-	}
+  // write mask to console
+  poMask = new int [poPtr->mask.width*poPtr->mask.height];
+  for (int i=0; i< poPtr->mask.width*poPtr->mask.height; i++)
+  {
+    poMask[i] = poPtr->mask.data[i];
+    printf("%u  ", poMask[i]);
+  }
 
-	// create iplMask image
-	IplImage *iplMask;
-	iplMask = cvCreateImage(cvSize(poPtr->mask.width, poPtr->mask.height), IPL_DEPTH_8U, 1);
-	for(unsigned i=0; i< poPtr->mask.data.size(); i++)
-	{
-		iplMask->imageData[i] = (char) poPtr->mask.data[i];
-	}
+  // create iplMask image
+  IplImage *iplMask;
+  iplMask = cvCreateImage(cvSize(poPtr->mask.width, poPtr->mask.height), IPL_DEPTH_8U, 1);
+  for(unsigned i=0; i< poPtr->mask.data.size(); i++)
+  {
+    iplMask->imageData[i] = (char) poPtr->mask.data[i];
+  }
 
-	poPatchImage = cvCreateImage(cvSize(poPtr->mask.width*2, poPtr->mask.height*2), IPL_DEPTH_8U, 3);
-	cvSetImageROI(poPatchImage, cvRect( 0, 0, poPtr->mask.width, poPtr->mask.height) );
-	cvCopyImage(poImg, poPatchImage);
-	cvSetImageROI(poPatchImage, cvRect( poPtr->mask.width, 0, poPtr->mask.width, poPtr->mask.height) );
-	cvCvtColor(iplMask, poPatchImage, CV_GRAY2RGB);
+  poPatchImage = cvCreateImage(cvSize(poPtr->mask.width*2, poPtr->mask.height*2), IPL_DEPTH_8U, 3);
+  cvSetImageROI(poPatchImage, cvRect( 0, 0, poPtr->mask.width, poPtr->mask.height) );
+  cvCopyImage(poImg, poPatchImage);
+  cvSetImageROI(poPatchImage, cvRect( poPtr->mask.width, 0, poPtr->mask.width, poPtr->mask.height) );
+  cvCvtColor(iplMask, poPatchImage, CV_GRAY2RGB);
 // 	cvCopyImage(iplMask, poPatchImage);
-	cvSetImageROI(poPatchImage, cvRect( 0, poPtr->mask.height, poPtr->mask.width, poPtr->mask.height) );
-	cvCopyImage(poImg, poPatchImage);
-	cvSetImageROI(poPatchImage, cvRect( poPtr->mask.width, poPtr->mask.height, poPtr->mask.width, poPtr->mask.height) );
-	cvCopyImage(poImg, poPatchImage);
-	cvResetImageROI(poPatchImage);
+  cvSetImageROI(poPatchImage, cvRect( 0, poPtr->mask.height, poPtr->mask.width, poPtr->mask.height) );
+  cvCopyImage(poImg, poPatchImage);
+  cvSetImageROI(poPatchImage, cvRect( poPtr->mask.width, poPtr->mask.height, poPtr->mask.width, poPtr->mask.height) );
+  cvCopyImage(poImg, poPatchImage);
+  cvResetImageROI(poPatchImage);
 
 //	cvReleaseImage(&poPatchImage);
 // 	cvReleaseImage(&iplMask);
@@ -442,7 +442,7 @@ void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
 
 // 	delete []poMask;
 
-	printf("  Proto object received:\n    mask w-h: %u - %u\n", poPtr->mask.width, poPtr->mask.height);
+  printf("  Proto object received:\n    mask w-h: %u - %u\n", poPtr->mask.width, poPtr->mask.height);
 // 	printf("    data.size: %u\n", data.size());
 }
 
@@ -452,39 +452,39 @@ void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
  */
 void StereoDetector::receiveConvexHull(const cdl::WorkingMemoryChange & _wmc)
 {
-	log("Process new convex hull");
-	ConvexHullPtr chPtr = getMemoryEntry<VisionData::ConvexHull>(_wmc.address);
+  log("Process new convex hull");
+  ConvexHullPtr chPtr = getMemoryEntry<VisionData::ConvexHull>(_wmc.address);
 
-	// Create a visual object for the plane as mesh and recalculate point sequence 
-	// of convex hull in respect to the center.
-	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-	obj->pose = chPtr->center;
-	VEC::Vector3 p;
-	std::vector<VEC::Vector3> points;
-	for(unsigned i=0; i< chPtr->PointsSeq.size(); i++)
-	{
-		p.x = chPtr->PointsSeq[i].x - obj->pose.pos.x;	// shift the plane in respect to the pose
-		p.y = chPtr->PointsSeq[i].y - obj->pose.pos.y;
-		p.z = chPtr->PointsSeq[i].z - obj->pose.pos.z;
-		points.push_back(p);
-	}
-	
-	VEC::Vector3 pos;				// center position of the plane
-	pos.x = obj->pose.pos.x;
-	pos.y = obj->pose.pos.y;
-	pos.z = obj->pose.pos.z;
-	double radius = chPtr->radius;
-	
-	if(activeReasonerPlane)
-	{
-		reasoner->ProcessConvexHull(pos, radius, points);
-		if(reasoner->GetPlane(obj))
-		{
-			planeID = newDataID();
-			addToWorkingMemory(planeID, obj);
-			log("Wrote new dominant plane as visual object to working memory: %s", planeID.c_str());
-		}
-	}
+  // Create a visual object for the plane as mesh and recalculate point sequence 
+  // of convex hull in respect to the center.
+  VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+  obj->pose = chPtr->center;
+  VEC::Vector3 p;
+  std::vector<VEC::Vector3> points;
+  for(unsigned i=0; i< chPtr->PointsSeq.size(); i++)
+  {
+    p.x = chPtr->PointsSeq[i].x - obj->pose.pos.x;	// shift the plane in respect to the pose
+    p.y = chPtr->PointsSeq[i].y - obj->pose.pos.y;
+    p.z = chPtr->PointsSeq[i].z - obj->pose.pos.z;
+    points.push_back(p);
+  }
+  
+  VEC::Vector3 pos;				// center position of the plane
+  pos.x = obj->pose.pos.x;
+  pos.y = obj->pose.pos.y;
+  pos.z = obj->pose.pos.z;
+  double radius = chPtr->radius;
+  
+  if(activeReasonerPlane)
+  {
+    reasoner->ProcessConvexHull(pos, radius, points);
+    if(reasoner->GetPlane(obj))
+    {
+      planeID = newDataID();
+      addToWorkingMemory(planeID, obj);
+      log("Wrote new dominant plane as visual object to working memory: %s", planeID.c_str());
+    }
+  }
 
 // 	printf("  center position: %4.2f / %4.2f / %4.2f\n", chPtr->center.pos.x, chPtr->center.pos.y, chPtr->center.pos.z);
 // 	printf("  center rotation matrix:\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n    %4.2f / %4.2f / %4.2f\n", 
@@ -506,12 +506,12 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
   if(images.size() <= 1)
     throw runtime_error(exceptionMessage(__HERE__, "image list too short: stereo image expected."));
 
-	lockComponent();
-	image_l = images[0];							/// TODO sollte man hier gleich auf iplImage konvertieren?
-	image_r = images[1];
-	haveImage = true;
-	if (cmd_detect) processImage();
-	unlockComponent();
+  lockComponent();
+  image_l = images[0];			/// TODO sollte man hier gleich auf iplImage konvertieren?
+  image_r = images[1];
+  haveImage = true;
+  if (cmd_detect) processImage();
+  unlockComponent();
 }
 
 /**
@@ -520,32 +520,32 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
  */
 void StereoDetector::processImage()
 {
-	log("Process new images with runtime: %ums", runtime);
-//	score->ClearResults();
-	p_score[nr_p_score]->ClearResults();
-	GetImages();
+  log("Process new images with runtime: %ums", runtime);
+//  score->ClearResults();
+  p_score[nr_p_score]->ClearResults();
+  GetImages();
 
-	log("Got images.");
+  log("Got images.");
 
-	try 
-	{
-		p_score[nr_p_score]->ProcessStereoImage(runtime/2, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
-	}
+  try 
+  {
+    p_score[nr_p_score]->ProcessStereoImage(runtime/2, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
+  }
   catch (exception &e)
   {
-		log("StereoDetector::processImage: Unknown exception during processing of stereo images.\n");
+    log("StereoDetector::processImage: Unknown exception during processing of stereo images.\n");
     cout << e.what() << endl;
   }
 
-	log("Processed images.");
-	score = p_score[nr_p_score];			// copy processed score to main score for displaying
-	log("Copied processed score to main.");
+  log("Processed images.");
+  score = p_score[nr_p_score];			// copy processed score to main score for displaying
+  log("Copied processed score to main.");
 
-	if(activeReasoner)	// do the reasoner things!
-	{
-		log("Start reasoner.");
-		reasoner->Process(score);
-		
+  if(activeReasoner)	// do the reasoner things!
+  {
+    log("Start reasoner.");
+    reasoner->Process(score);
+    log("Reasoner finished.");
 // 		if(reasoner->Process(score))														/// TODO delete
 // 		{
 // 			log("Get results.");
@@ -556,15 +556,15 @@ void StereoDetector::processImage()
 // 			WriteToWM(objects);
 // 		}
 // 		log("End reasoner.");
-	}
+  }
 // 	else WriteVisualObjects();
-	
-	WriteVisualObjects();
-	ShowImages(false);
-	
-	nr_p_score++;
-	if(nr_p_score > 2) nr_p_score=0;
-	log("Processing of stereo images ended.");
+  
+  WriteVisualObjects();
+  ShowImages(false);
+  
+  nr_p_score++;
+  if(nr_p_score > 2) nr_p_score=0;
+  log("Processing of stereo images ended.");
 }
 
 /**
@@ -573,39 +573,39 @@ void StereoDetector::processImage()
  */
 void StereoDetector::ProcessHRImages()
 {
-	log("Process new HR- images with runtime: %ums", runtime);
+  log("Process new HR- images with runtime: %ums", runtime);
 
-	// Get HR images
-	GetHRImages();
-	if(!haveHRImage) log("No HR image available.");
-	if(!haveHRImage) return;
+  // Get HR images
+  GetHRImages();
+  if(!haveHRImage) log("No HR image available.");
+  if(!haveHRImage) return;
 
-	score->ClearResults();
-	cvResize(iplImage_l_hr, iplImage_l);
-	cvResize(iplImage_r_hr, iplImage_r);
+  score->ClearResults();
+  cvResize(iplImage_l_hr, iplImage_l);
+  cvResize(iplImage_r_hr, iplImage_r);
 
-	map<std::string, ROIData>::iterator it;
-	for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
-	{
-		CvRect roi640 = ((*it).second).rect640;
-		bool rect640valid = ((*it).second).rect640valid;
-		if(rect640valid)
-		{
-			log("Process HR images with ROI: %u/%u", roi640.x, roi640.y);
-			iplImage_l_pr = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, iplImage_l_hr->nChannels);
-			iplImage_r_pr = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, iplImage_r_hr->nChannels);
-			PruneImageArea(iplImage_l_hr, *iplImage_l_pr, 640, 480, roi640.x, roi640.y);
-			PruneImageArea(iplImage_r_hr, *iplImage_r_pr, 640, 480, roi640.x, roi640.y);
-			havePrunedImage = true;
+  map<std::string, ROIData>::iterator it;
+  for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
+  {
+    CvRect roi640 = ((*it).second).rect640;
+    bool rect640valid = ((*it).second).rect640valid;
+    if(rect640valid)
+    {
+      log("Process HR images with ROI: %u/%u", roi640.x, roi640.y);
+      iplImage_l_pr = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, iplImage_l_hr->nChannels);
+      iplImage_r_pr = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, iplImage_r_hr->nChannels);
+      PruneImageArea(iplImage_l_hr, *iplImage_l_pr, 640, 480, roi640.x, roi640.y);
+      PruneImageArea(iplImage_r_hr, *iplImage_r_pr, 640, 480, roi640.x, roi640.y);
+      havePrunedImage = true;
 
-			processPrunedHRImage(roi640.x, roi640.y, 2);		/// TODO Now process the two images
-		}
-		else log("ROI not valid.");
-	}
+      processPrunedHRImage(roi640.x, roi640.y, 2);		/// TODO Now process the two images
+    }
+    else log("ROI not valid.");
+  }
 
-	WriteVisualObjects();
-	ShowImages(false);
-	havePrunedImage = false;
+  WriteVisualObjects();
+  ShowImages(false);
+  havePrunedImage = false;
 }
 
 /**
@@ -615,35 +615,35 @@ void StereoDetector::ProcessHRImages()
 void StereoDetector::ProcessPrunedHRImages()
 {
 printf("ProcessPrunedHRImages\n");
-	GetImages();
+  GetImages();
 
 printf("ProcessPrunedHRImages 1\n");
-	map<std::string, ROIData>::iterator it;
-	for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
-	{
-		CvRect roi640 = ((*it).second).rect640;
-		bool rect640valid = ((*it).second).rect640valid;
-		if(rect640valid)
-		{
-			// get pruned images
-			if(!GetPrunedHRImages(roi640.x, roi640.y))
-			{
-				log("Could not get pruned HR image. Processing stopped.");
-				return;
-			}
-			processPrunedHRImage(roi640.x, roi640.y, 2);						/// TODO Add scale (2:1)
+  map<std::string, ROIData>::iterator it;
+  for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
+  {
+    CvRect roi640 = ((*it).second).rect640;
+    bool rect640valid = ((*it).second).rect640valid;
+    if(rect640valid)
+    {
+      // get pruned images
+      if(!GetPrunedHRImages(roi640.x, roi640.y))
+      {
+	log("Could not get pruned HR image. Processing stopped.");
+	return;
+      }
+      processPrunedHRImage(roi640.x, roi640.y, 2);						/// TODO Add scale (2:1)
 printf("ProcessPrunedHRImages 2\n");
-		}
-		else log("ROI not valid.");
-	}
+    }
+    else log("ROI not valid.");
+  }
 
 printf("ProcessPrunedHRImages 3\n");
-	WriteVisualObjects();
+  WriteVisualObjects();
 printf("ProcessPrunedHRImages 4\n");
 // 	ShowImages(false);
 printf("ProcessPrunedHRImages 5\n");
 
-	log("processing of pruned stereo images ended.");
+  log("processing of pruned stereo images ended.");
 }
 
 /**
@@ -654,19 +654,19 @@ printf("ProcessPrunedHRImages 5\n");
  */
 void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
 {
-	log("Process pruned image with runtime: %ums", runtime);
+  log("Process pruned image with runtime: %ums", runtime);
 
-	score->ClearResults();
-	try 
-	{
-		double ca = 0.4;		// Canny alpha
-		double co = 0.001;	// Canny omega
-		score->ProcessStereoImage(runtime/2, ca, co, iplImage_l_pr, iplImage_r_pr, oX, oY, sc);
-		log("Calculation of pruned stereo images ended!");
-	}
+  score->ClearResults();
+  try 
+  {
+    double ca = 0.4;		// Canny alpha
+    double co = 0.001;	// Canny omega
+    score->ProcessStereoImage(runtime/2, ca, co, iplImage_l_pr, iplImage_r_pr, oX, oY, sc);
+    log("Calculation of pruned stereo images ended!");
+  }
   catch (exception &e)
   {
-		log("StereoDetector::processPrunedHRImage: Exception during processing of stereo images");
+    log("StereoDetector::processPrunedHRImage: Exception during processing of stereo images");
     cout << e.what() << endl;
   }
 }
@@ -677,75 +677,75 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
  */
 void StereoDetector::ShowImages(bool convertNewIpl)
 {
-	if(!haveImage || !showImages) return;
+  if(!haveImage || !showImages) return;
 
-	if(convertNewIpl)
+  if(convertNewIpl)
+  {
+    iplImage_l = convertImageToIpl(image_l);
+    iplImage_r = convertImageToIpl(image_r);
+  }
+
+  // segments
+  if(showSegments)
+    score->DrawMonoResults(Z::Gestalt::SEGMENT, iplImage_l, iplImage_r, true, false, mouseSide, showID, detail);
+
+  // mono results
+  if(showDetected || showSingleGestalt) 
+  {
+    while(!(score->DrawMonoResults(showType, iplImage_l, iplImage_r, showMasked, showSingleGestalt, mouseSide, showID, detail)) && showID > 0)
+      showID--;
+    if(showSingleGestalt) log("show single mono feature: %u", showID);
+  }
+
+  // stereo results (2, 3, 4)
+  if(showAllStereoMatched || showStereoMatched || showSingleStereo)
+  {
+    if(showStereoType != Z::StereoBase::UNDEF || showAllStereoMatched)
+      score->DrawStereoResults(showStereoType, iplImage_l, iplImage_r, showAllStereoMatched, showSingleStereo, showID, detail);
+    if(showSingleStereo) log("show single stereo match: %u", showID);
+  }
+
+  // get rectified image from stereo server
+  Video::Image image;
+  getRectImage(0, 640, image);						// 0 = left image / 640 = width
+  IplImage *rImg;
+  rImg = convertImageToIpl(image);
+  
+  if(showROIs)
+  {
+    // draw the ROIs and the rectangle for the pruning
+    map<std::string, ROIData>::iterator it;
+    for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
+    {
+      CvRect roi = ((*it).second).rect;
+      CvRect roi640 = ((*it).second).rect640;
+      bool roi640valid = ((*it).second).rect640valid;
+      int roiScale = ((*it).second).roiScale;
+
+      score->DrawROI(0, roi, 1, rImg, iplImage_r);													/// TODO Wieso braucht man hier rImg???
+      if(!havePrunedImage)																									/// TODO ist das noch richtig?
+      {
+	score->DrawROI(0, roi, roiScale, iplImage_l, iplImage_r);
+	if(roi640valid)
 	{
-		iplImage_l = convertImageToIpl(image_l);
-		iplImage_r = convertImageToIpl(image_r);
+	  score->DrawPrunedROI(0, roi640.x/2, roi640.y/2, iplImage_l, iplImage_r);		// TODO Draw 640x480 ROI for pruned image => /2 kann nicht stimmen
+	  score->DrawPrunedROI(1, roi640.x/2, roi640.y/2, iplImage_l, iplImage_r);		// TODO Draw 640x480 ROI for pruned image
 	}
+	else log("ROI for pruning from HR image is not valid!");
+      }
+    }
+  }
 
-	// segments
-	if(showSegments)
-		score->DrawMonoResults(Z::Gestalt::SEGMENT, iplImage_l, iplImage_r, true, false, mouseSide, showID, detail);
+  cvShowImage("Stereo left", iplImage_l);
+  cvShowImage("Stereo right", iplImage_r);
+  cvShowImage("rectified", rImg);
+  if (havePrunedImage) 
+  {
+// 	cvShowImage("Pruned left", iplImage_l_pr);
+// 	cvShowImage("Pruned right", iplImage_r_pr);
+  }
 
-	// mono results
-	if(showDetected || showSingleGestalt) 
-	{
-		while(!(score->DrawMonoResults(showType, iplImage_l, iplImage_r, showMasked, showSingleGestalt, mouseSide, showID, detail)) && showID > 0)
-			showID--;
-		if(showSingleGestalt) log("show single mono feature: %u", showID);
-	}
-
-	// stereo results (2, 3, 4)
-	if(showAllStereoMatched || showStereoMatched || showSingleStereo)
-	{
-		if(showStereoType != Z::StereoBase::UNDEF || showAllStereoMatched)
-			score->DrawStereoResults(showStereoType, iplImage_l, iplImage_r, showAllStereoMatched, showSingleStereo, showID, detail);
-		if(showSingleStereo) log("show single stereo match: %u", showID);
-	}
-
-	// get rectified image from stereo server
-	Video::Image image;
-	getRectImage(0, 640, image);						// 0 = left image / 640 = width
-	IplImage *rImg;
-	rImg = convertImageToIpl(image);
-	
-	if(showROIs)
-	{
-		// draw the ROIs and the rectangle for the pruning
-		map<std::string, ROIData>::iterator it;
-		for (it=rcvROIs.begin(); it != rcvROIs.end(); it++)
-		{
-			CvRect roi = ((*it).second).rect;
-			CvRect roi640 = ((*it).second).rect640;
-			bool roi640valid = ((*it).second).rect640valid;
-			int roiScale = ((*it).second).roiScale;
-	
-			score->DrawROI(0, roi, 1, rImg, iplImage_r);													/// TODO Wieso braucht man hier rImg???
-			if(!havePrunedImage)																									/// TODO ist das noch richtig?
-			{
-				score->DrawROI(0, roi, roiScale, iplImage_l, iplImage_r);
-				if(roi640valid)
-				{
-					score->DrawPrunedROI(0, roi640.x/2, roi640.y/2, iplImage_l, iplImage_r);		// TODO Draw 640x480 ROI for pruned image => /2 kann nicht stimmen
-					score->DrawPrunedROI(1, roi640.x/2, roi640.y/2, iplImage_l, iplImage_r);		// TODO Draw 640x480 ROI for pruned image
-				}
-				else log("ROI for pruning from HR image is not valid!");
-			}
-		}
-	}
-
-	cvShowImage("Stereo left", iplImage_l);
-	cvShowImage("Stereo right", iplImage_r);
-	cvShowImage("rectified", rImg);
-	if (havePrunedImage) 
-	{
-// 		cvShowImage("Pruned left", iplImage_l_pr);
-// 		cvShowImage("Pruned right", iplImage_r_pr);
-	}
-
-	cvWaitKey(50);	///< TODO TODO wait key to allow openCV to show the images on the window.
+  cvWaitKey(50);	///< TODO TODO wait key to allow openCV to show the images on the window.
 }
 
 /**
@@ -753,69 +753,69 @@ void StereoDetector::ShowImages(bool convertNewIpl)
  */
 void StereoDetector::WriteVisualObjects()
 {
-	DeleteVisualObjectsFromWM();	
+  DeleteVisualObjectsFromWM();	
 
-	if(showAllStereo)
-	{
-		for(int i=0; i<Z::StereoBase::MAX_TYPE; i++)
-		WriteToWM((Z::StereoBase::Type) i);
-	}
-	else
-	{
-		if(showStereoType != Z::StereoBase::UNDEF)
-			WriteToWM(showStereoType);
-	}
-	
-	if(showReasoner)
-	{
-		Z::Array<VisionData::VisualObjectPtr> objects;
-		reasoner->GetResults(objects, showReasonerUnprojected);
-// 		log("Write reasoner results to working memory!");
-		WriteToWM(objects);
-	}
+  if(showAllStereo)
+  {
+    for(int i=0; i<Z::StereoBase::MAX_TYPE; i++)
+    WriteToWM((Z::StereoBase::Type) i);
+  }
+  else
+  {
+    if(showStereoType != Z::StereoBase::UNDEF)
+      WriteToWM(showStereoType);
+  }
+  
+  if(showReasoner)
+  {
+    Z::Array<VisionData::VisualObjectPtr> objects;
+    reasoner->GetResults(objects, showReasonerUnprojected);
+    WriteToWM(objects);
+  }
 }
 
 /**
- * @brief Write visual objects of different type to the working memory.
+ * @brief Write visual objects of a specific type to the working memory.
  * @param type Type of StereoBase feature to write.
  */
 void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 {
-	static unsigned frameNumber = 0;
+  static unsigned frameNumber = 0;
 // 	static unsigned numStereoObjects = 0;
-	VisionData::VisualObjectPtr obj;
+  VisionData::VisualObjectPtr obj;
 
-	for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) type); i++)
-	{
-		obj = new VisionData::VisualObject;
-		bool success = score->GetVisualObject((Z::StereoBase::Type) type, i, obj);
+  for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) type); i++)
+  {
+    obj = new VisionData::VisualObject;
 
-		if(success)
-		{
-			// add visual object to working memory
-			std::string objectID = newDataID();
-			objectIDs.push_back(objectID);
+    bool success = score->GetVisualObject((Z::StereoBase::Type) type, i, obj);
 
-// 			VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;						/// TODO TODO TODO Write to Reasoner COMPONENT => delete later
-// 			reaObj->obj = obj;
-// 			reaObj->frameNr = frameNumber;
-// 			addToWorkingMemory(objectID, reaObj);
+    if(success)
+    {
+      // add visual object to working memory
+      std::string objectID = newDataID();
+      objectIDs.push_back(objectID);
 
-			addToWorkingMemory(objectID, obj);																									/// TODO TODO TODO Write Visual Object!!!
+// 	VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;		/// TODO TODO TODO Write to Reasoner COMPONENT => delete later
+// 	reaObj->obj = obj;
+// 	reaObj->frameNr = frameNumber;
+// 	addToWorkingMemory(objectID, reaObj);
 
-			cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+      addToWorkingMemory(objectID, obj);						/// TODO TODO TODO Write Visual Object!!!
 
-			log("Add new visual object to working memory: %s", objectID.c_str());
-		}
-	}
-	
-	// Send newFrame command for Reasoner component => TODO delete later
-	VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
-	newFrame->cmd = VisionData::NEWFRAME;
-	addToWorkingMemory(newDataID(), newFrame);
-	debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
+      cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 
-	frameNumber++;
+      log("Add new visual object to working memory: %s", objectID.c_str());
+}
+  }
+  
+  // Send newFrame command for Reasoner component => TODO delete later
+  VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
+  newFrame->cmd = VisionData::NEWFRAME;
+  addToWorkingMemory(newDataID(), newFrame);
+  debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
+
+  frameNumber++;
 }
 
 /**																																					TODO New version!
@@ -825,18 +825,18 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
  */
 void StereoDetector::WriteToWM(Z::Array<VisionData::VisualObjectPtr> objects)
 {
-	VisionData::VisualObjectPtr obj;
-	for(unsigned i=0; i< objects.Size(); i++)
-	{
-		obj = new VisionData::VisualObject;
-		obj = objects[i];
-		std::string objectID = newDataID();
-		objectIDs.push_back(objectID);
-		addToWorkingMemory(objectID, obj);
+  VisionData::VisualObjectPtr obj;
+  for(unsigned i=0; i< objects.Size(); i++)
+  {
+    obj = new VisionData::VisualObject;
+    obj = objects[i];
+    std::string objectID = newDataID();
+    objectIDs.push_back(objectID);
+    addToWorkingMemory(objectID, obj);
 
-		cvWaitKey(200);			/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
-		log("New visual object to WM: %s", objectID.c_str());
-	}
+    cvWaitKey(200);			/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+    log("New visual object to WM: %s", objectID.c_str());
+  }
 }
 
 /**
