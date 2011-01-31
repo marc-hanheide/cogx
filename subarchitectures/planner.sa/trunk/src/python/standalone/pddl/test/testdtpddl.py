@@ -64,6 +64,8 @@ obs_error4 = """
 )
 """
 
+adl_support = ["strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated"]
+
 class DTTest(common.PddlTest):
 
     def setUp(self):
@@ -157,7 +159,57 @@ class DTTest(common.PddlTest):
             self.assertEqual(e.token.string, "notexists")
             self.assertEqual(e.token.line, 5)
             
+
+    def testMDTTPDDLtoMAPL(self):
+        """Testing compilation of DTPDDL/MAPL to MAPL"""
+        import dtpddl
         
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        t = dtpddl.DT2MAPLCompiler()
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+
+        self.assertEqual(len(dom2.observe), 0)
+        
+        self.roundtrip(dom2, prob2)
+        
+    def testMDTTPDDLtoDTPDDL(self):
+        """Testing compilation of DTPDDL/MAPL to DTPDDL"""
+        import dtpddl
+        
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        supported = adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
+        t1 = dom.compile_to(supported)
+        t2 = dtpddl.DTPDDLCompiler()
+        t = translators.ChainingTranslator(t1, t2)
+
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+        self.assertEqual(len(dom2.observe), 1)
+        
+        self.roundtrip(dom2, prob2)
+
+    def testMDTTPDDLtoSimpleDTPDDL(self):
+        """Testing compilation of DTPDDL/MAPL to DTPDDL/ADL"""
+        import dtpddl
+        
+        dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+
+        supported = adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
+        t1 = dom.compile_to(supported)
+        t2 = dtpddl.DTPDDLCompiler()
+        t3 = dtpddl.ProbADLCompiler()
+        t = translators.ChainingTranslator(t1, t2, t3)
+
+        dom2 = t.translate(dom)
+        prob2 = t.translate(prob)
+
+        self.assertEqual(len(dom2.observe), 1)
+        
+        self.roundtrip(dom2, prob2)
+            
 if __name__ == '__main__':
     unittest.main()    
         

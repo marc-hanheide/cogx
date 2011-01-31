@@ -1,6 +1,5 @@
 import os, sys, traceback
 from os.path import abspath, dirname, join
-from collections import defaultdict
 
 # initialize logging EARLY
 
@@ -248,14 +247,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
   @pdbdebug
   def updateWaitingTask(self, task):
-      old_state = task.state.state
-      
       if not task.update_state(self.beliefs):
-          print_state_difference(old_state, task.state.state)
           log.warning("goal became invalid while waiting for action effects.")
           return
 
-      print_state_difference(old_state, task.state.state)
       task.wait_update()
 
   @pdbdebug
@@ -282,16 +277,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
         
       task = self.tasks[task_desc.id]
 
-      old_state = task.state.state
-      
       if not task.update_state(self.beliefs):
-          print_state_difference(old_state, task.state.state)
+          log.warning("Failed to update planning task. Setting status to FAILED.")
           task.update_status(TaskStateEnum.FAILED)
           self.deliver_plan(task, [])
           return
 
-      print_state_difference(old_state, task.state.state)
-      
       if task.internal_state == TaskStateEnum.FAILED:
           log.info("Retry planning after failure")
           task.retry()
@@ -305,17 +296,15 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def start_dt_planning(self, task):
       assert task.dt_id is None, "There is already a DT task (%d) for task %d" % (task.dt_id, task.id)
       
-      planning_tmp_dir =  standalone.globals.config.tmp_dir
+      planning_tmp_dir = standalone.globals.config.tmp_dir
       task.dt_id = self.last_dt_id
       self.last_dt_id += 1
       
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
       domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % task.dt_id)
       problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % task.dt_id)
-      log.debug("Starting new DT task with id %d", task.dt_id)
+      log.info("Starting new DT task with id %d", task.dt_id)
       self.dt_tasks[task.dt_id] = task
-
-      
       
       #Write dtpddl domain for debugging
       domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
@@ -337,7 +326,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       import cast_state
       import task_preprocessor as tp
       
-      log.info("Loading domain %s.", self.domain_fn)
+      log.debug("Loading domain %s.", self.domain_fn)
       domain = pddl.load_domain(self.domain_fn)
       state = cast_state.CASTState([e.belief for e in beliefs], domain, component=self)
       cstate = state.state
@@ -358,7 +347,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           return
     
       log.info("%d: received new action from DT", taskId)
-      log.info("%d: expected value is %.2f", taskId, value)
+      log.debug("%d: expected value is %.2f", taskId, value)
       # if value < 50:
       #     log.info("%d: expected value is not good enough, requesting improvement.", taskId)
       #     self.getDT().improvePlanQuality(taskId)
@@ -386,67 +375,3 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.getClient().updateStatus(task.id, status)
 
   
-def print_state_difference(state1, state2, print_fn=None):
-  def collect_facts(state):
-    facts = defaultdict(set)
-    for svar,val in state.iteritems():
-      if not svar.args:
-          continue # those shouldn't appear on the binder but are possible with a fake state
-      facts[svar.args[0]].add((svar, val))
-    return facts
-
-  if not print_fn:
-    print_fn = log.debug
-
-  f1 = collect_facts(state1)
-  f2 = collect_facts(state2)
-
-  new = []
-  changed = []
-  removed = []
-  for o in f2.iterkeys():
-    if o not in f1:
-      new.append(o)
-    else:
-      changed.append(o)
-  for o in f1.iterkeys():
-    if o not in f2:
-      removed.append(o)
-
-  if new:
-    print_fn("\nNew objects:")
-    for o in new:
-      print " %s:" % o.name
-      for svar, val in f2[o]:
-        print_fn( "    %s = %s", str(svar), str(val))
-
-  if changed:
-    print_fn("\nChanged objects:")
-    for o in changed:
-      fnew = []
-      fchanged = []
-      fremoved = []
-      for svar,val in f2[o]:
-        if svar not in state1:
-          fnew.append(svar)
-        elif state1[svar] != val:
-          fchanged.append(svar)
-      for svar,val in f2[0]:
-        if svar not in state2:
-          fremoved.append(svar)
-      if fnew or fchanged or fremoved:
-        print_fn(" %s:", o.name)
-        for svar in fnew:
-          print_fn("    %s: unknown => %s", str(svar), str(state2[svar]))
-        for svar in fchanged:
-          print_fn("    %s: %s => %s", str(svar), str(state1[svar]), str(state2[svar]))
-        for svar in fremoved:
-          print_fn("    %s: %s => unknown", str(svar), str(state1[svar]))
-                            
-  if removed:
-    print_fn("\nRemoved objects:")
-    for o in removed:
-      print_fn(" %s:", o.name)
-      for svar, val in f1[o]:
-        print_fn("    %s = %s", str(svar), str(val))
-                             

@@ -72,19 +72,14 @@ class PNode(object):
                 if rule_facts:
                     yield (r, rule_facts)
             
-        obj = pddl.TypedObject("node%d" % PNode.nodeid, dtpddl.t_node)
-        PNode.nodeid += 1
-        svar = state.StateVariable(dtpddl.selected, [obj])
-            
+        svar = fact.svar
         children = {}
         p_total = 0
-        fsvar = fact.svar
         for i, (val, p) in enumerate(fact.value.iteritems()):
-            facts = {fsvar : val}
+            facts = {svar : val}
             nodes = []
             for rule, fixed in get_firing_rules(facts):
                 nodes += LazyPNode.from_rule(rule, rules, fixed, stat)
-            val = pddl.TypedObject("choice%d" % i, dtpddl.t_node_choice)
                 
             children[val] = (p, nodes, facts)
             p_total += p
@@ -222,7 +217,7 @@ class PNode(object):
 
     def add_facts(self, choices):
         cval = choices.get(self.svar, None)
-        if cval:
+        if cval and cval in self.children:
             p, nodes, facts = self.children[cval]
             for n in nodes:
                 #print "subtrees of %s=%s" % (str(self.svar), str(cval));
@@ -326,8 +321,12 @@ class PNode(object):
                 peffs.append(i)
             else:
                 s.set(state.Fact.from_literal(i))
-                
-        rules = pddl.translators.Translator.get_annotations(problem.domain).get('dt_rules', [])
+
+        try:
+            rules = problem.domain.dt_rules
+        except:
+            rules = []
+            
         nodes = []
         for e in peffs:
             nodes.append(PNode.from_effect(e, rules, s))
@@ -335,12 +334,16 @@ class PNode(object):
         return nodes
 
     @staticmethod
-    def from_state(stat):
-        rules = pddl.translators.Translator.get_annotations(stat.problem.domain).get('dt_rules', [])
+    def from_state(probstate, detstate):
+        try:
+            rules = probstate.problem.domain.dt_rules
+        except:
+            rules = []
+            
         nodes = []
-        for fact in stat.iterdists():
+        for fact in probstate.iterdists():
             if fact.value.value is None:
-                nodes.append(PNode.from_fact(fact, rules, stat))
+                nodes.append(PNode.from_fact(fact, rules, detstate))
             
         return nodes
     
@@ -463,7 +466,7 @@ class LazyPNode(PNode):
             return list(self.state.problem.get_all_objects(arg.type))
         
         args = self.rule.args + self.rule.add_args
-        # print "creating subtree for %s" % str(self.svar)
+        print "creating subtree for %s using rule %s" % (str(self.svar), self.rule.name)
         # print ["%s = %s" % (str(k),str(v)) for k,v in self.mapping.iteritems() ]
         for mapping in self.rule.smart_instantiate(self.rule.get_inst_func(self.state), args, [get_objects(a) for a in args], self.state.problem):
             # log.debug("creating subtree for %s", str(self.svar))
@@ -475,7 +478,7 @@ class LazyPNode(PNode):
                     continue
                 val = self.state.evaluate_term(value)
                 facts = {self.svar : val}
-                # print "  generating child for %s = %s (p=%.2f)" % (str(self.svar), str(val), p.value)
+                print "  generating child for %s = %s (p=%.2f)" % (str(self.svar), str(val), p.value)
 
                 nodes = []
                 for rule, fixed in get_firing_rules(facts):
@@ -486,11 +489,10 @@ class LazyPNode(PNode):
         return self._children
             
     children = property(get_children)
-        
 
     @staticmethod
     def from_rule(rule, rules, fixed_facts, stat):
-        stat = stat.copy()
+        stat = state.SubState(stat)
         for svar, val in fixed_facts.iteritems():
             stat[svar] = val
             
@@ -516,7 +518,7 @@ class LazyPNode(PNode):
         args = rule.args + list(a for a in pre_mapping.iterkeys() if a not in rule.args)
         for mapping in rule.smart_instantiate(rule.get_inst_func(stat), args, [get_objects(a) for a in args], stat.problem):
             svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
-            # print "building rule for", svar
+            print "building rule for", svar
             node = LazyPNode(rule, dict(mapping), svar, rules)
             node.state = stat
             nodes.append(node)

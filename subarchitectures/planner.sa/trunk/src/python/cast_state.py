@@ -1,4 +1,5 @@
 from itertools import chain
+from collections import defaultdict
 import re
 
 from standalone import pddl, pstatenode, config
@@ -71,24 +72,39 @@ class CASTState(object):
         for f in self.generated_facts:
             self.prob_state.set(f)
         self.objects |= self.generated_objects
-
-        self.generate_belief_state(self.prob_state)
-
+        
         self.state = self.prob_state.determinized_state(0.05, 0.95)
+        
+        self.generate_belief_state(self.prob_state, self.state)
+
         if oldstate:
             self.match_generated_objects(oldstate)
 
+    def translate_domain(self, stat):
+        if global_vars.config.base_planner.name == "TFD":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
+        elif global_vars.config.base_planner.name == "ProbDownward":
+            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
+        else:
+            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
 
-    def generate_belief_state(self, prob_state):
-        pnodes = pstatenode.PNode.from_state(prob_state)
+        def prob_functions(s):
+            for svar, val in s.iteritems():
+                if val.value is None:
+                    yield svar.function
+            
+        self.prob_functions = set(prob_functions(stat))
+        cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+        return cp_domain
+        
+            
+    def generate_belief_state(self, probstate, detstate):
+        pnodes = pstatenode.PNode.from_state(probstate, detstate)
+        
         pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         assert not det_lits, map(str, det_lits)
         # mapltask.init += det_lits
         self.pnodes = pnodes
-                
-        # self.prob_functions = dt_compiler.get_prob_functions(mapltask)
-        # self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
-
         
             
     def generate_init_facts(self, problem, oldstate=None):
@@ -263,7 +279,7 @@ class CASTState(object):
             self.state = self.prob_state.determinized_state(0.05, 0.95)
 
 
-    def to_problem(self, slice_goals, deterministic=True, domain=None):
+    def to_problem(self, slice_goals, deterministic=True):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -271,23 +287,7 @@ class CASTState(object):
             opt = None
             opt_func = None
 
-        if domain is None:
-            domain = self.domain
-
-        if global_vars.config.base_planner.name == "TFD":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
-        elif global_vars.config.base_planner.name == "ProbDownward":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
-        else:
-            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
-
-        def prob_functions(stat):
-            for svar, val in stat.iteritems():
-                if val.value is None:
-                    yield svar.function
-            
-        self.prob_functions = set(prob_functions(self.prob_state))
-        cp_domain = dt_compiler.translate(domain, prob_functions=self.prob_functions)
+        cp_domain = self.translate_domain(self.prob_state)
             
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
@@ -511,3 +511,67 @@ class CASTState(object):
 
         return [self.beliefdict[id] for id in changed_ids] + new_beliefs
     
+    def print_state_difference(self, previous, print_fn=None):
+        def collect_facts(state):
+            facts = defaultdict(set)
+            for svar,val in state.iteritems():
+                if not svar.args:
+                    continue # those shouldn't appear on the binder but are possible with a fake state
+                facts[svar.args[0]].add((svar, val))
+            return facts
+
+        if not print_fn:
+            print_fn = log.debug
+
+        f1 = collect_facts(previous.state)
+        f2 = collect_facts(self.state)
+
+        new = []
+        changed = []
+        removed = []
+        for o in f2.iterkeys():
+            if o not in f1:
+                new.append(o)
+            else:
+                changed.append(o)
+        for o in f1.iterkeys():
+            if o not in f2:
+                removed.append(o)
+
+        if new:
+            print_fn("\nNew objects:")
+            for o in new:
+                print " %s:" % o.name
+                for svar, val in f2[o]:
+                    print_fn( "    %s = %s", str(svar), str(val))
+
+        if changed:
+            print_fn("\nChanged objects:")
+            for o in changed:
+                fnew = []
+                fchanged = []
+                fremoved = []
+                for svar,val in f2[o]:
+                    if svar not in previous.state:
+                        fnew.append(svar)
+                    elif previous.state[svar] != val:
+                        fchanged.append(svar)
+                for svar,val in f2[0]:
+                    if svar not in self.state:
+                        fremoved.append(svar)
+                if fnew or fchanged or fremoved:
+                    print_fn(" %s:", o.name)
+                    for svar in fnew:
+                        print_fn("    %s: unknown => %s", str(svar), str(self.state[svar]))
+                    for svar in fchanged:
+                        print_fn("    %s: %s => %s", str(svar), str(previous.state[svar]), str(self.state[svar]))
+                    for svar in fremoved:
+                        print_fn("    %s: %s => unknown", str(svar), str(previous.state[svar]))
+
+        if removed:
+            print_fn("\nRemoved objects:")
+            for o in removed:
+                print_fn(" %s:", o.name)
+                for svar, val in f1[o]:
+                    print_fn("    %s = %s", str(svar), str(val))
+

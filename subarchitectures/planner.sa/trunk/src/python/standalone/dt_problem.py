@@ -25,10 +25,13 @@ class DTProblem(object):
         self.goals, self.assumptions = self.create_goals(plan)
         if not self.goals:
             return
-        
-        self.dt_rules = pddl.translators.Translator.get_annotations(domain).get('dt_rules', [])
+
+        try:
+            self.dt_rules = domain.dt_rules
+        except:
+            self.dt_rules = []
         self.prob_functions |= set(r.function for r in self.dt_rules)
-        
+            
         self.dtdomain = self.create_dt_domain(domain)
 
         # dom_str, prob_str = DTPDDLOutput().write(self.problem)
@@ -38,10 +41,13 @@ class DTProblem(object):
     def initialize(self, prob_state):
         self.state = prob_state
         def node_filter(node):
+            print node
             for f in node.all_facts():
+                print "  ", f
                 if f.svar.function == dtpddl.selected:
                     continue
                 if f.svar not in self.state or not self.state.is_det(f.svar):
+                    print "    accept"
                     return True
             return False
 
@@ -67,6 +73,7 @@ class DTProblem(object):
             relevant = False
             for val, (p, nodes, facts) in node.children.iteritems():
                 branch_rel = state.Fact(node.svar, val) in self.selected_facts
+                # print "rel:", branch_rel, node.svar, val
                 branch_used = set()
                 branch_pruned = set()
                 for svar, val in facts.iteritems():
@@ -76,7 +83,8 @@ class DTProblem(object):
                     # print "rel:", branch_rel, f
                 for n in nodes:
                     nused, npruned, nrel = get_used_objects(n)
-                    branch_used |= nused
+                    if nrel:
+                        branch_used |= nused
                     branch_pruned |= npruned
                     branch_rel |= nrel
                 relevant |= branch_rel
@@ -87,9 +95,9 @@ class DTProblem(object):
                     pruned |= branch_used
             pruned -= used
             if used:
-                used |= pruned
-                pruned = set()
-                # print map(str, used)
+                # used |= pruned
+                # pruned = set()
+                # print node, map(str, used)
                 assert relevant
 
             return used, pruned, relevant
@@ -98,8 +106,10 @@ class DTProblem(object):
         used_objects = set(chain(*[pnode.full_args for pnode, level in self.assumptions]))
         for used, pruned, rel in map(get_used_objects, self.pnodes):
             pruned_objects |= pruned
-            used_objects |= used
+            if rel:
+                used_objects |= used
         pruned_objects -= used_objects
+        log.debug("pruned objects: %s", map(str, pruned_objects))
 
         # unused_objects = set()
         # for svar, val in chain(*map(all_facts, self.pnodes)):
@@ -308,7 +318,7 @@ class DTProblem(object):
         if not disconfirm:
             return commit_actions
                         
-        dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
+        # dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
         disconfirm_actions = []
         for svar, val, level in disconfirm:
             dis_reward = float(confirm_score)/(2**(max_level-level))
@@ -320,11 +330,11 @@ class DTProblem(object):
             term = pddl.Term(svar.function, svar.get_args())
             domain.constants |= set(svar.get_args() + [val])
             domain.add(svar.get_args() + [val])
-            p = self.abstract_state[svar][val]
-            if p < 0.001 or p > 0.999:
-                continue # no use in disconfirming known facts
+            # p = self.abstract_state[svar][val]
+            # if p < 0.001 or p > 0.999:
+            #     continue # no use in disconfirming known facts
 
-            dis_penalty = -dis_score * (1-p)/p
+            # dis_penalty = -dis_score * (1-p)/p
             
             
             name = "disconfirm-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
@@ -442,7 +452,7 @@ class DTProblem(object):
         levels = defaultdict(lambda: -1)
         def get_level(node, level):
             cval, clevel = choices.get(node.svar, (None, -1))
-            if cval and levels[node] < level:
+            if cval and levels[node] < level and cval in node.children:
                 levels[node] = level
                 p, nodes, facts = node.children[cval]
                 for svar, val in facts.iteritems():

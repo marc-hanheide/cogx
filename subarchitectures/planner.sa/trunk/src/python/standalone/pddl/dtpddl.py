@@ -2,7 +2,7 @@ import itertools, math
 from itertools import chain
 from collections import defaultdict
 
-import predicates, conditions, effects, actions, scope, visitors, translators, writer, problem, state, mapl
+import parser, predicates, conditions, effects, actions, scope, visitors, translators, writer, problem, state, mapl
 import mapltypes as types
 import builtin
 
@@ -38,9 +38,18 @@ default_functions = [reward, selected]
 def prepare_domain(domain):
     domain.observe = []
     domain.percepts = scope.FunctionTable()
+    domain.dt_rules = []
 
 def observe_handler(it, domain):
     domain.observe.append(Observation.parse(it, domain))
+    return True
+
+def rule_handler(it, domain):
+    it.get(":dtrule").token
+    new_token = parser.Token(":action", 0, 0)
+    it.element[0] = parser.Element(new_token)
+    a = actions.Action.parse(iter(it.element), domain)
+    domain.dt_rules += DTRule.from_action(a)
     return True
 
 def percept_handler(it, domain):
@@ -55,12 +64,14 @@ def percept_handler(it, domain):
 
 parse_handlers = {
     ":percepts" : percept_handler,
-    ":observe" : observe_handler
+    ":observe" : observe_handler,
+    ":dtrule" : rule_handler
     }
 
 def copy_hook(self, result):
     result.percepts = self.percepts.copy()
     result.observe = [s.copy(result) for s in self.observe]
+    result.dt_rules = [r.copy(result) for r in self.dt_rules]
 
 def copy_skel_hook(self, result):
     result.percepts = self.percepts.copy()
@@ -341,6 +352,22 @@ class DTRule(scope.Scope):
 
     def depends_on(self, other):
         return other.function in self.deps()
+    
+    def copy(self, newdomain=None):
+        """Create a deep copy of this Rule.
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
+        if not newdomain:
+            newdomain = self.parent
+            
+        r = DTRule(self.function, [], [], [], [], newdomain, self.name)
+        r.args = r.copy_args(self.args)
+        r.add_args = r.copy_args(self.add_args)
+        r.conditions = [c.copy(new_scope=r) for c in self.conditions]
+        r.values = [tuple(r.lookup(c)) for c in self.values]
+        
+        return r
 
     def instantiate(self, mapping, parent=None):
         """Instantiate the Parameters of this action.
@@ -421,6 +448,7 @@ class DTRule(scope.Scope):
                         svar = state.StateVariable.from_literal(lit, st)
                         val = st[svar]
                         if val == builtin.UNKNOWN or val.value <= 0.001:
+                            # print "failed:", svar, val
                             return None, None
                     else:
                         fact = state.Fact.from_literal(lit, st)
@@ -428,7 +456,7 @@ class DTRule(scope.Scope):
                         exst = st.get_extended_state([fact.svar])
                         #val = st.evaluate_term(v)
                         if exst[fact.svar] != fact.value:
-                            # print fact, exst[fact.svar]
+                            # print "failed:", fact, exst[fact.svar]
                             return None, None
                     checked.add(lit)
                 else:
@@ -656,10 +684,10 @@ class DT2MAPLCompiler(translators.Translator):
                         a.sensors.append(mapl.SenseEffect(s_atom, a))
             observe.uninstantiate()
 
-    def create_commit_actions(self, rules, domain, prob_functions):
+    def create_commit_actions(self, domain, prob_functions):
         import durative
 
-        p_functions = [r.function for r in rules]
+        p_functions = [r.function for r in domain.dt_rules]
 
         actions = []
         action_count = defaultdict(lambda: 0)
@@ -674,7 +702,7 @@ class DT2MAPLCompiler(translators.Translator):
                 domain.functions.add(func)
             return predicates.Term(func, p.args)
         
-        for r in rules:
+        for r in domain.dt_rules:
             for p, v in r.values:
                 agent = predicates.Parameter("?a", mapl.t_agent)
                 i = action_count[r.function]
@@ -751,8 +779,6 @@ class DT2MAPLCompiler(translators.Translator):
         translators.Translator.get_annotations(_domain)['has_commit_actions'] = True
         #if 'observe_effects' not in translators.Translator.get_annotations(_domain):
         translators.Translator.get_annotations(_domain)['observe_effects'] = []
-        #if 'dt_rules' not in translators.Translator.get_annotations(_domain):
-        translators.Translator.get_annotations(_domain)['dt_rules'] = []
         self.annotations = translators.Translator.get_annotations(_domain)['observe_effects']
             
         dom = _domain.copy()
@@ -761,45 +787,33 @@ class DT2MAPLCompiler(translators.Translator):
         self.add_function(total_p_cost, dom)
         self.add_function(started, dom)
 
-        rules = []
-        for a in dom.actions:
-            if a.name.startswith("_sample_"):
-                try:
-                    new_rules = DTRule.from_action(a)
-                    for r in new_rules:
-                        prob_functions.add(r.function)
-                    rules += new_rules
-                except:
-                    pass
+        for r in _domain.dt_rules:
+            prob_functions.add(r.function)
         
         for o in dom.observe:
             self.translate_observable(o, prob_functions, dom)
 
         actions = []
         for a in dom.actions:
-            if not a.name.startswith("_sample_"):
-                actions.append(self.translate_action(a, prob_functions))
+            actions.append(self.translate_action(a, prob_functions))
                 
-        for f in dom.functions:
-            if "p-%s" % f.name not in dom.functions:
-                continue
-            args = [predicates.Parameter(a.name, a.type) for a in f.args]
-            varg = predicates.Parameter("?val", f.type)
-            pfunc = dom.functions.get("p-%s" % f.name, args+[varg])
-            if not pfunc:
-                continue
-            pterm = predicates.Term(pfunc, args+[varg])
-            rule = DTRule(f, args, [varg], [], [(pterm, predicates.Term(varg))], dom)
-            rules.append(rule)
+        # for f in dom.functions:
+        #     if "p-%s" % f.name not in dom.functions:
+        #         continue
+        #     args = [predicates.Parameter(a.name, a.type) for a in f.args]
+        #     varg = predicates.Parameter("?val", f.type)
+        #     pfunc = dom.functions.get("p-%s" % f.name, args+[varg])
+        #     if not pfunc:
+        #         continue
+        #     pterm = predicates.Term(pfunc, args+[varg])
+        #     rule = DTRule(f, args, [varg], [], [(pterm, predicates.Term(varg))], dom)
+        #     rules.append(rule)
 
         dom.clear_actions()
-        commit_actions = self.create_commit_actions(rules, dom, prob_functions)
+        commit_actions = self.create_commit_actions(dom, prob_functions)
         for a in chain(actions, commit_actions):
             dom.add_action(a)
                 
-        dtrules = translators.Translator.get_annotations(_domain)['dt_rules']
-        dtrules.extend(rules)
-
         dom.observe = []
         return dom
 
@@ -839,7 +853,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         DT2MAPLCompiler.__init__(self, **kwargs)
         self.pnodes = nodes
 
-    def create_commit_actions(self, rules, domain, prob_functions):
+    def create_commit_actions(self, domain, prob_functions):
         assert self.pnodes
 
         self.add_function(probability, domain)
@@ -854,7 +868,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         for n in self.pnodes:
             actions += n.to_actions(domain)
             
-        return actions + self.commit_actions_from_rules(rules, domain, prob_functions)
+        return actions + self.commit_actions_from_rules(domain, prob_functions)
     
     @translators.requires('partial-observability')
     def translate_problem(self, _problem):
@@ -864,7 +878,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
             
         return p2
     
-    def commit_actions_from_rules(self, rules, domain, prob_functions):
+    def commit_actions_from_rules(self, domain, prob_functions):
         import durative
 
         if "probability" not in domain.functions:
@@ -873,7 +887,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         actions = []
         action_count = defaultdict(lambda: 0)
         
-        for r in rules:
+        for r in domain.dt_rules:
             for p, v in r.values:
                 agent = predicates.Parameter("?a", mapl.t_agent)
                 i = action_count[r.function]
@@ -965,8 +979,6 @@ class ProbADLCompiler(translators.ADLCompiler):
         
     def translate_domain(self, _domain):
         dom = translators.Translator.translate_domain(self, _domain)
-        #FIXME: the "sample_" prefix for dora collides with the rovers domain!!!
-        dom.actions = [a for a in dom.actions if not a.name.startswith("_sample_")]
         dom.axioms = []
         dom.name2action = None
         return dom

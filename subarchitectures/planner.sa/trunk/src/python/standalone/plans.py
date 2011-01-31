@@ -224,6 +224,10 @@ class MAPLPlan(networkx.MultiDiGraph):
             open |= (succ - closed)
         return result
 
+    def __str__(self):
+        nodes = self.topological_sort()
+        return "\n".join(map(str, nodes))
+
     def to_dot(self, name="plan", ranks=[]):
         from pygraphviz import AGraph
         def declare_rank(same_rank_list):
