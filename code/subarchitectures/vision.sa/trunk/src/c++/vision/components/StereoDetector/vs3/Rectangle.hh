@@ -37,20 +37,20 @@ private:
   bool CountSupport(int x, int y, unsigned id);
 
 public:
-  Closure *closure;					///< The underlying closure
-  Vector2 isct[4]; 					///< Intersection points in clockwise order
+  Closure *closure;			///< The underlying closure
+  Vector2 isct[4]; 			///< Intersection points in clockwise order
 
-  unsigned *data;						///< Image from CalculateSupport: Draw into this image to count pixels. (Bresenham alg.)
-  unsigned pixelmass;				///< Number of pixels from lines of closure
+  unsigned *data;			///< Image from CalculateSupport: Draw into this image to count pixels. (Bresenham alg.)
+  unsigned pixelmass;			///< Number of pixels from lines of closure
   double pixelsupport; 			///< pixelsupport of the rectangle (in %) (>100 possible?)
 
   double parallelity; 			///< parallelity value of the two opposed edge pairs. (see FormRectangles)
   Vector2 direction[2];			///< mean direction of the two line-pairs (1,3 and 2,4) (should be between isct-points)
-  double phi[2];						///< mean angle of the two line-pairs
+  double phi[2];			///< mean angle of the two line-pairs
 
   Vector2 centerPoint;			///< center point of the rectangle (2D mean value of corners)
-  double radius; 						///< maximum distance from center-point to a corner-point
-  double innerRadius;				///< minimum distance from center-point to middle of lines.
+  double radius; 			///< maximum distance from center-point to a corner-point
+  double innerRadius;			///< minimum distance from center-point to middle of lines.
 
   Rectangle(VisionCore *vc, Closure *c, Vector2 is[4], double par);
   ~Rectangle(){ delete data; };
