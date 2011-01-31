@@ -182,10 +182,10 @@ double Rectangle::CalculateSupport()
     for(unsigned j=Lines(core, lines[i])->idx[0]; j<Lines(core, lines[i])->idx[1]; j++)
     {
       Vector2 p = Segments(core, Lines(core, lines[i])->seg->ID())->edgels[j].p;   // pixel from segment
-      if (CountSupport((int)p.x, (int)p.y, 100)) support += 1;
+      if (CountSupport((int)p.x, (int)p.y)) support += 1;
     }
   }
-  return support*10/((double)pixelmass);	
+  return support/((double)pixelmass);	
 }
 
 /**																																								/// TODO Sollte innerhalb der isct-points zeichnen!
@@ -205,14 +205,15 @@ void Rectangle::GetRectPixels()
 
 /**
  * @brief LineDrawing Algorithm from Bresnham. Draw a line from x1/y1 to x2/y2.
- * @param x1 x-Coordinate
- * @param y1 y-Coordinate
- * @param x2 x-Coordinate
- * @param y2 y-Coordinate
+ * @param x1 x-Coordinate of start point.
+ * @param y1 y-Coordinate of start point.
+ * @param x2 x-Coordinate of end point.
+ * @param y2 y-Coordinate of end point.
  * @param id ID of the line to draw.
  */
 void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
 {
+  bool neighboring = true; // set also the neighboring pixels of the line
   int dx, dy, err, incr, x, y;
 
   if(!ClipLine(core->IW()-1, core->IH()-1, &x1, &y1, &x2, &y2))
@@ -240,7 +241,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
     err = -dx/2;
     x = x1;
     y = y1;
-    SetPixel(x, y, id);
+    SetPixel(x, y, id, neighboring);
     while(x < x2-1) // <= x2  version A
     {
       //SetPixel(x, y, id);  version A
@@ -251,7 +252,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
         err -= dx;
       }
       x++;
-      SetPixel(x, y, id);
+      SetPixel(x, y, id, neighboring);
     }
   }
   // octants 2,3,6,7
@@ -275,7 +276,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
     err = -dy/2;
     x = x1;
     y = y1;
-    SetPixel(x, y, id);
+    SetPixel(x, y, id, neighboring);
     while(y < y2-1) // <= y2  version A
     {
       //SetPixel(x, y, id);  version A
@@ -286,7 +287,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
         err -= dy;
       }
       y++;
-      SetPixel(x, y, id);
+      SetPixel(x, y, id, neighboring);
     }
   }
 }
@@ -297,9 +298,14 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
  * @param y y-coordinate of the pixel
  * @param id Line-ID ???
  */
-void Rectangle::SetPixel(int x, int y, unsigned id)
+void Rectangle::SetPixel(int x, int y, unsigned id, bool neighboring)
 {
   data[y*core->IW() + x] = id;
+  // set also neighboring pixels
+  data[(y+1)*core->IW() + x] = id;
+  data[(y-1)*core->IW() + x] = id;
+  data[y*core->IW() + (x+1)] = id;
+  data[y*core->IW() + (x-1)] = id;
     pixelmass ++;
 }
 
@@ -307,13 +313,12 @@ void Rectangle::SetPixel(int x, int y, unsigned id)
  * @brief Returns true, if there is a line pixel at x,y in the image.
  * @param x x-coordinate of the pixel
  * @param y y-coordinate of the pixel
- * @param id ???
- * @return True, if pixel is line-pixel
+ * @return True, if pixel is a line-pixel
  */
-bool Rectangle::CountSupport(int x, int y, unsigned id)
+bool Rectangle::CountSupport(int x, int y)
 {
-	if (data[y*core->IW() + x] != UNDEF_ID) return true;
-	return false;
+  if (data[y*core->IW() + x] != UNDEF_ID) return true;
+  return false;
 }
 
 }
