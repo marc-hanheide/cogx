@@ -42,6 +42,7 @@
 #include "solver.hh"
 #include "simple_online_solver.hh"
 #include "two_phase_solver.hh"
+#include "flatten.hh"
 // #include "policy_iteration_over_information_state_space.hh"
 #include "policy_iteration_over_information_state_space__GMRES.hh"
 
@@ -229,6 +230,7 @@ bool read_in__problem_description()
  * Richard Dearden.*/
 
 #ifndef CHARLES_TESTING
+    
 int main(int argc, char** argv)
 {
     assert(command_Line_Arguments.size() == 0);
@@ -544,16 +546,220 @@ int main(int argc, char** argv)
 #else
 
 
+/*Charles' testing MAIN.*/
+int main_OLD(int argc, char** argv)
+{    
+    assert(command_Line_Arguments.size() == 0);
+    command_Line_Arguments = Command_Line_Arguments(argc, argv);
+
+    if(!command_Line_Arguments.got_guard("--steps")){
+        WARNING("Using --steps "<<min_nonobs_steps<<std::endl);
+    } else {
+        min_nonobs_steps = command_Line_Arguments.get_int();
+    }
+    
+    if(!command_Line_Arguments.got_guard("--max-iStates")){
+        WARNING("Using --max-iStates "<<max_expanded_states<<std::endl);
+    } else {
+        max_expanded_states = command_Line_Arguments.get_int();
+    }
+    
+    if(!command_Line_Arguments.got_guard("--beta")){
+        WARNING("Using --beta "<<beta<<std::endl);
+    } else {
+       beta = command_Line_Arguments.get_double();
+    }
+    
+    if(!command_Line_Arguments.got_guard("--beta-mdp")){
+        WARNING("Using --beta-mdp "<<beta_mdp<<std::endl);
+    } else {
+       beta_mdp = command_Line_Arguments.get_double();
+    }
+    
+    int seed = 2010;
+    srandom(seed);
+    srand(seed);
+
+    while(read_in__domain_description()){};
+    while(read_in__problem_description()){};
+    
+    assert(Planning::Parsing::domains.size() > 0);
+
+    INTERACTIVE_VERBOSER(true, 20000, "Done parsing problem and domain description");
+    
+    auto problem = Planning::Parsing::problems.begin();
+        
+    auto solver = new Planning::Two_Phase_Solver(*problem->second);
+            
+    solver->set__sink_state_penalty(-1.0); //-1234.0);//-1e6);
+            
+    INTERACTIVE_VERBOSER(true, 20000, "Made a solver, starting preprocessing.");
+            
+    solver->preprocess();
+
+    
+    solver->empty__belief_states_for_expansion();
+    solver->generate_markov_decision_process_starting_states();
+
+    Planning::Policy_Iteration__GMRES policy_Iteration__for_MDP_states
+        (solver->belief_state__space, solver->get__sink_state_penalty(), .65);
+
+    {
+        auto current_state = solver->peek__next_belief_state_for_expansion();
+        
+        INTERACTIVE_VERBOSER(true, 20000, "MDP state expansion :: "<<*current_state<<std::endl);
+        
+        
+        while(solver->expand_belief_state_space()){
+            VERBOSER(20000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
+        }
+        
+//         INTERACTIVE_VERBOSER(true, 20000, "FINISHED MDP state expansion :: "<<*current_state<<std::endl);
+//         solver->reset__pomdp_state_hash_table();
+        
+        INTERACTIVE_VERBOSER(true, 20000, "RESET POMDP hash table :: "<<*current_state<<std::endl);
+        solver->change_phase();
+        
+        INTERACTIVE_VERBOSER(true, 20000, "Reinstate starting belief state :: "<<*current_state<<std::endl);
+        
+        solver->reinstate__starting_belief_state();
+        
+        INTERACTIVE_VERBOSER(true, 20000, "FINISHED MDP state expansion :: "<<*current_state<<std::endl);
+    }
+    
+                
+
+
+    auto current_state = solver->peek__next_belief_state_for_expansion();
+#ifdef LAO_STAR
+    while(solver->lao_star()){};
+    //             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space,
+    //                                                                solver->get__sink_state_penalty(),
+    //                                                                .95);
+            
+    //             while(policy_Iteration()){};
+
+#else
+    current_state = solver->solve__for_new_starting_state(current_state);
+#endif
+
+
+    int step_count = 0;
+    bool needs_to_replan = false;
+    for(auto i = 0; i < 20; i++){
+
+                
+        INTERACTIVE_VERBOSER(true, 19000, "Current state is :: "
+                             <<*current_state<<std::endl
+                             <<"First element is :: "
+                             <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+                
+        std::pair<Planning::Formula::Action_Proposition, uint> _action
+            = solver->get_prescribed_action(current_state);
+            
+        INTERACTIVE_VERBOSER(true, 19000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
+        auto observations = current_state->get__possible_observations_given_action(_action.second);
+
+        if(1 == observations.size()){
+            needs_to_replan = needs_to_replan|false;
+        } else {
+            needs_to_replan = true;
+        }
+                
+        auto random_index = 0;
+        for(auto observation = observations.begin()
+                ; observation != observations.end()
+                ; observation++){
+            INTERACTIVE_VERBOSER(true, 19000, "Observation :: "<<*observations[random_index]<<" "<<_action.second<<std::endl);
+            
+            {char ch; std::cin>>ch; if(ch == 'y')break;}
+            random_index++;
+        }
+                
+                
+        //auto random_index = random() % observations.size();
+        auto observation = observations[random_index];
+            
+        Planning::POMDP_State* successor_state
+            = solver->take_observation(current_state,
+                                       observation,
+                                       _action.second);
+            
+        current_state = successor_state;
+
+        /*TWO DAYS TO GO -- Do not replan unless there was sensing.*/
+        if(observations.size() > 1){//;°needs_to_replan){
+                    
+            step_count++;
+
+            if(!(step_count % min_nonobs_steps)){
+                current_state = solver->solve__for_new_starting_state(successor_state);
+            }
+        }
+                
+
+                
+        INTERACTIVE_VERBOSER(true, 19000, "Current belief state is :: "<<*current_state<<std::endl);
+    }
+
+        
+    delete solver;
+    
+    INTERACTIVE_VERBOSER(true, 10004, "Passed test2 :: "<<std::endl);
+    
+    return 0;
+}
+
+/*
+  
+./pcogx --domain /data/private/grettonc/CogX/SVN/cogx/code/systems/bleeding-edge/subarchitectures/planner.sa/domains/icaps11/dora/problem01-domain.dtpddl --problem /data/private/grettonc/CogX/SVN/cogx/code/systems/bleeding-edge/subarchitectures/planner.sa/domains/icaps11/dora/problem01-problem-smaller.dtpddl  --max-iStates 1000 --steps 3 flatten
+
+*/
+
+int flatten()
+{
+    
+    while(read_in__domain_description()){};
+    
+    while(read_in__problem_description()){};
+    
+
+    auto problem = Planning::Parsing::problems.begin();
+
+    
+    auto solver = new Planning::Flatten(*problem->second);
+    
+    solver->preprocess();
+
+    
+    solver->empty__belief_states_for_expansion();
+    solver->generate_markov_decision_process_starting_states();
+
+    
+    auto current_state = solver->peek__next_belief_state_for_expansion();
+    
+    while(solver->expand_belief_state_space()){    
+        VERBOSER(19000, "MDP state expansion :: "<<solver->belief_state__space.size()<<std::endl);
+    }
+    
+    
+    solver->print_flat_problem();
+    
+    
+    return 0;
+}
 
 /*Charles' testing MAIN.*/
 int main(int argc, char** argv)
 {    
-    /*Some preliminary testing.*/
-    Turnstyle::test__turnstyle_hh();//turnstyle.hh
+//     /*Some preliminary testing.*/
+//     Turnstyle::test__turnstyle_hh();//turnstyle.hh
     
     assert(command_Line_Arguments.size() == 0);
     command_Line_Arguments = Command_Line_Arguments(argc, argv);
 
+    
     if(!command_Line_Arguments.got_guard("--steps")){
         WARNING("Using --steps "<<min_nonobs_steps<<std::endl);
     } else {
@@ -579,10 +785,16 @@ int main(int argc, char** argv)
        beta_mdp = command_Line_Arguments.get_double();
     }
     
+    
     int seed = 2010;
     srandom(seed);
     srand(seed);
 
+    if(command_Line_Arguments.is_argument("flatten")){
+        return flatten();
+    }
+
+    
     while(read_in__domain_description()){};
     
     while(read_in__problem_description()){};

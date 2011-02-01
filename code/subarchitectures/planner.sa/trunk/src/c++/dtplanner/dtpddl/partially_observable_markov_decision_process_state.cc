@@ -618,6 +618,29 @@ accept_values(boost::numeric::ublas::vector<double>& values)
     VERBOSER(14000, "Accepted values.");
 }
 
+const std::vector<uint>& Partially_Observable_Markov_Decision_Process_State::
+get__action_based_successor_driver() const
+{
+    return action_based_successor_driver;
+}
+
+
+const std::vector<std::vector< Partially_Observable_Markov_Decision_Process_State*> >&
+Partially_Observable_Markov_Decision_Process_State::get__successors_under_actions() const
+{
+    return successors;
+}
+
+const std::vector< std::vector<Observational_State*> >& Partially_Observable_Markov_Decision_Process_State::get__observation_based_successor_driver() const
+{
+    return observation_based_successor_driver;
+}
+
+const std::vector< std::vector<double> >& Partially_Observable_Markov_Decision_Process_State::get__observation_probabilities() const
+{
+    return observation_probabilities;
+}
+
 bool
 Partially_Observable_Markov_Decision_Process_State::
 unexpanded() const

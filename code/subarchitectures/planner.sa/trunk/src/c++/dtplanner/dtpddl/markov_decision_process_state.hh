@@ -80,7 +80,7 @@ namespace Planning
         int get__int(uint index) const;
         void set__int(uint index, int value);
 
-        /*(see \member{value})*/
+        /*This should be the instantanious reward associated with being in this state. (see \member{reward})*/
         double get__reward() const;
         void set__reward(double);
         
