@@ -145,7 +145,11 @@ namespace Planning
         
         const std::vector<POMDP_State*>& get__successors(uint action_index);
         std::vector<POMDP_State*> get__successors();
-        
+
+        const std::vector<uint>& get__action_based_successor_driver() const;
+        const std::vector< std::vector<Observational_State*> >& get__observation_based_successor_driver() const;
+        const std::vector< std::vector<double> >& get__observation_probabilities() const;
+        const std::vector<std::vector< Partially_Observable_Markov_Decision_Process_State*> >& get__successors_under_actions() const;
     private:
         std::vector<uint> action_based_successor_driver;
 
