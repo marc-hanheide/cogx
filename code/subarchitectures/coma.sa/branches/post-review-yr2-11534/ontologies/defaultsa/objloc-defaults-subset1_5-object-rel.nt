@@ -1,4 +1,22 @@
-<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "1"^^<xsd:float>
+<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "0.2"^^<xsd:float>
+<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#cupboard> "0.5"^^<xsd:float>
+<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#on> <http://dora.cogx.eu#coffee_machine> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#fridge> "0.1"^^<xsd:float>
+
+<http://dora.cogx.eu#book> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#book> <http://dora.cogx.eu#in> <http://dora.cogx.eu#bookcase> "0.5"^^<xsd:float>
+<http://dora.cogx.eu#book> <http://dora.cogx.eu#on> <http://dora.cogx.eu#couch> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#book> <http://dora.cogx.eu#on> <http://dora.cogx.eu#desk> "0.2"^^<xsd:float>
+
+<http://dora.cogx.eu#cup> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "0.4"^^<xsd:float>
+<http://dora.cogx.eu#cup> <http://dora.cogx.eu#in> <http://dora.cogx.eu#cupboard> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#cup> <http://dora.cogx.eu#on> <http://dora.cogx.eu#bookcase> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#cup> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dishwasher> "0.3"^^<xsd:float>
+
+
+
+
+
 <http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dining_room> "0.02761343"^^<xsd:float>
 <http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#hall> "0.07945761"^^<xsd:float>
 <http://dora.cogx.eu#cereal_box> <http://dora.cogx.eu#in> <http://dora.cogx.eu#hallway> "0.028160283"^^<xsd:float>
