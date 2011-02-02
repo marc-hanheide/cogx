@@ -124,13 +124,15 @@ class CCastConfig:
 
     def readConfig(self, filename, maxdepth=32):
         if maxdepth < 1:
-            return ["# Failed to include: '%s' - maxdepth reached." % filename]
+            raise Exception("Failed to include: '%s' - maxdepth reached." % filename)
         try:
             f = open(filename, "r")
-        except:
-            return ["# Failed to include: '%s'" % filename]
+        except Exception as e:
+            raise Exception ("Failed to include: '%s'\n%s" % (filename, e))
+
         fdir = os.path.abspath(os.path.dirname(filename))
         lines = [
+                # CURRENT_DIR is also set by cast
                 "SETVAR CURRENT_DIR=%s" % fdir,
                 "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
                ]
