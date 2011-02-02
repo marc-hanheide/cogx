@@ -8,10 +8,10 @@
 <http://dora.cogx.eu#book> <http://dora.cogx.eu#on> <http://dora.cogx.eu#couch> "0.1"^^<xsd:float>
 <http://dora.cogx.eu#book> <http://dora.cogx.eu#on> <http://dora.cogx.eu#desk> "0.2"^^<xsd:float>
 
-<http://dora.cogx.eu#cup> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "0.4"^^<xsd:float>
-<http://dora.cogx.eu#cup> <http://dora.cogx.eu#in> <http://dora.cogx.eu#cupboard> "0.1"^^<xsd:float>
-<http://dora.cogx.eu#cup> <http://dora.cogx.eu#on> <http://dora.cogx.eu#bookcase> "0.1"^^<xsd:float>
-<http://dora.cogx.eu#cup> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dishwasher> "0.3"^^<xsd:float>
+<http://dora.cogx.eu#mug> <http://dora.cogx.eu#on> <http://dora.cogx.eu#table> "0.4"^^<xsd:float>
+<http://dora.cogx.eu#mug> <http://dora.cogx.eu#in> <http://dora.cogx.eu#cupboard> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#mug> <http://dora.cogx.eu#on> <http://dora.cogx.eu#bookcase> "0.1"^^<xsd:float>
+<http://dora.cogx.eu#mug> <http://dora.cogx.eu#in> <http://dora.cogx.eu#dishwasher> "0.3"^^<xsd:float>
 
 
 
