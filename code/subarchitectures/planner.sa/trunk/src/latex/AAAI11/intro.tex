@@ -3,29 +3,6 @@
 
 
 
-
-
-
-
-%% BEGIN SCRAPPY
-
-
-%% The initial abstract process, let's suppose, has two states. The state
-%% where everything assumed is true, and the null state. This has a KL
-%% divergence from the :init term, because we can suppose it uniformly
-%% chooses one concrete state, given the abstract :init states.
-
-%% As you add propositions to the abstract :init term, then the KL
-%% divergence decreases. 
-
-
-%% END SCRAPPY
-
-%%
-%% The underlying planning procedures are {\em classical}, i.e.,
-%% sequential, planning system.
-
-
 Recently there have been a number of integrated robotic systems which
 incorporate a high-level {\em continual planning} and execution
 monitoring
@@ -55,7 +32,101 @@ deliberations according to detailed probabilistic models of the
 environment.
 
 
+This paper describes a planning approach we have developed to address
+the challenge just outlined. The approach is implemented on a mobile
+robotic platform that continuously deliberates in a stochastic dynamic
+environment in order to achieve goals set by the user, and acquire
+knowledge about its surroundings.
 
+
+This domain features partial observability, particularly
+because the state is not perfectly known, and state information is
+gained by the robot through the use of noisy sensing
+actions. 
+%Using a propositionally factored state representation, for
+For
+interesting sized tasks the corresponding POMDP model is too large for a
+POMDP solver to be applied directly. Inspired by the replanning
+approaches used successfully for MDP
+planning~\cite{yoon:etal:2007,yoon:etal:2008}, we propose a continual
+planning approach that uses a classical planning system to compute a
+reasonably valuable trace in the model, and then uses a
+decision-theoretic planner on small subproblems where reasoning about
+observations might be useful. We refer to the complete system as a
+{\em switching continual planner}. The approach is not optimal,
+particularly as it relies on the results of satisficing sequential planning
+directly. It does nevertheless perform better than a purely sequential
+replanner, and is fast enough to be used for real-time decision-making
+on a mobile robot.
+
+
+
+
+
+Our system is domain independent, taking domain and problem
+descriptions in a first-order declarative language we have developed,
+called the decision-theoretic planning domain definition language
+(DTPDDL). In this paper, we restrict our attention to deterministic
+action goal-oriented POMDPs\foonote{We note that POMDPs with
+stochastic actions can be compiled into equivalent
+deterministic-action POMDPs, where all the original action uncertainty
+is expressed in the starting-state
+distribution~\cite{ng:Jordan:2000}.} -- I.e., where a finite horizon
+optimal contingent plan exists.  
+%%
+From these descriptions of POMDPs, we
+automatically construct a deterministic model for the sequential
+planner. That model includes actions which correspond to making
+assumptions about the values of imperfectly known state
+variables. Assumptions scheduled by the sequential system are used to
+propose a pragmatic abstract belief-state space to the
+decision-theoretic system, and to modify the reward function, so that
+system might pursue sensing related to those assumptions.
+
+
+The switching planner provides important advantages in our
+mobile robot domain. First, the significant source of uncertainty in the
+domain is the unreliability of observations and this approach is
+particularly suited to problems that combine a deterministic task
+planning problem with observations because the decision-theoretic planner
+is only invoked to deal with state uncertainty.
+%determine a characteristic of the underlying state. 
+Secondly, replanning makes the system robust to
+changing objectives and discoveries about the world,
+both of which feature in our domain.
+
+
+
+The remainder of the paper proceeds as follows. We begin by describing
+related work. Next we describe our DTPDDL language with example
+declarations from a mobile robot exploration task. Then we describe
+the switching planner, how sequential planning proceeds in our problem
+models, and how this then provides the input for the
+decision-theoretic planner. Finally we provide an evaluation of the
+system on the example robot domain, and then provide some concluding
+remarks and future directions.
+
+
+
+
+
+%% BEGIN SCRAPPY
+
+
+%% The initial abstract process, let's suppose, has two states. The state
+%% where everything assumed is true, and the null state. This has a KL
+%% divergence from the :init term, because we can suppose it uniformly
+%% chooses one concrete state, given the abstract :init states.
+
+%% As you add propositions to the abstract :init term, then the KL
+%% divergence decreases. 
+
+
+%% END SCRAPPY
+
+%%
+%% The underlying planning procedures are {\em classical}, i.e.,
+%% sequential, planning system.
 
 
 
@@ -81,28 +152,6 @@ environment.
 %% probabilistic information about these properties will in general be
 %% available.
 
-This paper describes the planning component for a robotic system that
-continuously deliberates in a stochastic dynamic environment in order
-to achieve objectives set by the user, and acquire knowledge about its
-surroundings. This domain features partial observability, particularly
-because the state is not perfectly known, and state information is
-gained by the robot through the use of unreliable sensing
-actions. 
-%Using a propositionally factored state representation, for
-For
-interesting sized tasks the corresponding POMDP model is too large for a
-POMDP solver to be applied directly. Inspired by the replanning
-approaches used successfully for MDP
-planning~\cite{yoon:etal:2007,yoon:etal:2008}, we propose a continual
-planning approach that uses a classical planning system to compute a
-reasonably valuable trace in the model, and then uses a
-decision-theoretic planner on small subproblems where reasoning about
-observations might be useful. We refer to the complete system as a
-{\em switching continual planner}. The approach is not optimal,
-particularly as it relies on the results of sequential planning
-directly. It does nevertheless perform better than a purely sequential
-replanner, and is fast enough to be used for real-time decision-making
-on a mobile robot.
 
 
 %% Switching gives us some important advantages in our robotic
@@ -128,56 +177,6 @@ on a mobile robot.
 %% find the box, it will disprove the assumption that the box is in {\sc
 %% Room a}, which will then lead to replanning by the sequential planner
 %% based on the newly discovered knowledge.
-
-Our system is domain independent, taking domain and problem
-descriptions in a first-order declarative language we have developed,
-called the decision-theoretic planning domain definition language
-(DTPDDL). From these descriptions of POMDPs, we automatically
-construct a deterministic model for the sequential planner. That model
-includes actions which correspond to making assumptions about the values of
-imperfectly known state variables. Assumptions scheduled by the
-sequential system are used to propose a pragmatic abstract
-belief-state space to the decision-theoretic system, and to modify the
-reward function, so that system might pursue sensing related to those
-assumptions.
-
-%%  which can operate
-%% with the original representation of the domain.
-
-
-%% The sequential planner we use is based
-%% on \fastdownward~\cite{fast-downward}. We add the capability to replan
-%% ~\cite{brenner:nebel:jaamas09}, and also allow agent
-%% knowledge to be represented explicitly, so we can write actions that
-%% gain the agent knowledge. LEASE CITE MICHAEL's WORK AS THE BASIS FOR
-%% THIS. For the decision-theoretic planner we have implemented our own
-%% forward search in the belief-state space.
-
-
-The switching planner provides important advantages in our
-mobile robot domain. First, the significant source of uncertainty in the
-domain is the unreliability of observations and this approach is
-particularly suited to problems that combine a deterministic task
-planning problem with observations because the decision-theoretic planner
-is only invoked to deal with state uncertainty.
-%determine a characteristic of the underlying state. 
-Secondly, replanning makes the system robust to
-changing objectives and discoveries about the world,
-both of which feature in our domain.
-
-The remainder of the paper proceeds as follows. We begin by describing
-POMDPs with a propositionally factored representation of states and
-observations. We also outline the relationship between this and a flat
-POMDP representation. Next we describe our DTPDDL language with
-example declarations from a mobile robot exploration task. Then we
-describe the switching planner, including how the sequential domain is
-produced and a plan is generated, and how this then provides the input
-for the decision-theoretic planner. Finally we provide an evaluation
-of the system on the example robot domain, and finish with a short
-survey of related work and some concluding remarks.
-
-
-
 
 
 %To accompany
@@ -268,3 +267,15 @@ survey of related work and some concluding remarks.
 %% important direction for research in the field is to develop
 %% heuristic mechanisms for generating small linear plans
 %% quickly~\cite{littman:etal:98}
+
+%%  which can operate
+%% with the original representation of the domain.
+
+
+%% The sequential planner we use is based
+%% on \fastdownward~\cite{fast-downward}. We add the capability to replan
+%% ~\cite{brenner:nebel:jaamas09}, and also allow agent
+%% knowledge to be represented explicitly, so we can write actions that
+%% gain the agent knowledge. LEASE CITE MICHAEL's WORK AS THE BASIS FOR
+%% THIS. For the decision-theoretic planner we have implemented our own
+%% forward search in the belief-state space.
