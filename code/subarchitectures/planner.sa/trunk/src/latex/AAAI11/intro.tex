@@ -7,39 +7,69 @@
 
 
 
-BEGIN SCRAPPY
+%% BEGIN SCRAPPY
 
 
-The initial abstract process, let's suppose, has two states. The state
-where everything assumed is true, and the null state. This has a KL
-divergence from the :init term, because we can suppose it uniformly
-chooses one concrete state, given the abstract :init states.
+%% The initial abstract process, let's suppose, has two states. The state
+%% where everything assumed is true, and the null state. This has a KL
+%% divergence from the :init term, because we can suppose it uniformly
+%% chooses one concrete state, given the abstract :init states.
 
-As you add propositions to the abstract :init term, then the KL
-divergence decreases. 
-
-
-END SCRAPPY
+%% As you add propositions to the abstract :init term, then the KL
+%% divergence decreases. 
 
 
+%% END SCRAPPY
+
+%%
+%% The underlying planning procedures are {\em classical}, i.e.,
+%% sequential, planning system.
+
+
+Recently there have been a number of integrated robotic systems which
+incorporate a high-level {\em continual planning} and execution
+monitoring
+subsystem~\cite{wyattetal2010tamd,talamadupula:2010,Kraft2008}.
+%%
+For the purpose of planning, sensing is modelled {\em
+deterministically}, and beliefs about the underlying state are
+modelled {\em qualitatively}.
+%%
+Both~\citeauthor{talamadupula:2010} and
+~\citeauthor{wyattetal2010tamd} identify
+\emph{continual planning} with {\em probabilistic}
+models as an important challenge for future research.
+%%
+In particular, detailed models of noisy sensing and state should yield
+more efficient and robust deliberations.
+%%
+In the first place, that means moving from deterministic to
+probabilistic models of sensing, and from qualitative to quantitative
+models of state uncertainty. The key challenge then, is to develop a
+planning approach that exhibits similar speed and scalability as
+classical procedures, which is also able to synthesise relatively
+efficient deliberations according to detailed probabilistic models.
 
 
 
 
 
-Planning for agents acting in partially observable environments with
-stochastic actions is extremely computationally
-expensive~\cite{mdp-complexity}. Even relatively small partially
-observable Markov decision problems (POMDPs), represented by tens of
-propositional variables, have state spaces far larger than existing
-optimal or close to optimal planners can handle. For the easier
-problem of planning in completely observable stochastic domains, an
-alternative has been to use classical sequential planners and
-replan when actions have unplanned-for outcomes~\cite{yoon:etal:2007}.
-Execution monitoring tracks properties of the state that determine
-whether further planning is required. For partially observable
-domains, only probabilistic information about such properties will, in
-general, be available.
+
+%% Planning for agents acting in partially observable environments with
+%% stochastic actions is extremely computationally
+%% expensive~\cite{mdp-complexity}. Even relatively small partially
+%% observable Markov decision problems (POMDPs), represented by tens of
+%% propositional variables, have state spaces far larger than existing
+%% optimal or close to optimal planners can handle. For the easier
+%% problem of planning in completely observable stochastic domains, an
+%% alternative has been to use classical sequential planners and
+%% replan when actions have unplanned-for outcomes~\cite{yoon:etal:2007}.
+%% Execution monitoring tracks properties of the state that determine
+%% whether further planning is required. For partially observable
+%% domains, only probabilistic information about such properties will, in
+%% general, be available.
+
+
 
 %% However, these approaches rely
 %% crucially on being able to determine properties of the current state
