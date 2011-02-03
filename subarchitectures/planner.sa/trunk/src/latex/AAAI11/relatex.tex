@@ -1,49 +1,45 @@
 
-\cite{wyattetal2010tamd}
 
-For the purpose of symbolic
-planning,~\cite{wyattetal2010tamd,talamadupula:2010,Kraft2008} treat
-sensing deterministically and beliefs qualitatively.
+
+%%  and
+%% using various techniques to manage the large state
+%% space
+
+%% \citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) take this
+%% approach in a 
+
+
+
+Addressing task and observation planning specifically, there have been
+a number of recent developments where the underlying problem is
+modelled as a POMDP.
 %%
- Addressing specifically this second
-challenge,~\citeauthor{talamadupula:2010} identify
-\emph{continual planning} in the presence of detailed probabilistic
- models as an important direction for future research.
-
-
-Focusing now specifically on planning, our work is motivated by
-domains that contain a mixture of task planning and observation
-planning. There have been a number of recent papers representing
-observation planning problems as POMDPs and using various techniques
-to manage the large state
-space. \citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) take this
-approach in a vision algorithm selection problem. In their case there
-is a natural hierarchical decomposition of the problem which allows
-them to solve large problems by breaking them into a set of small
-POMDPs. \citeauthor{doshi08:pref_elic}~(\citeyear{doshi08:pref_elic})
+For the vision algorithm
+selection,~\citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) exploit a
+natural hierarchical decomposition of the underlying POMDP into
+subproblems where decision-theoretic planning is reasonably
+fast. \citeauthor{doshi08:pref_elic}~(\citeyear{doshi08:pref_elic})
 represent a preference elicitation problem as a POMDP and take
 advantage of symmetry in the belief space ---essentially the idea that
 it does not matter what the value of the variable you are trying to
 observe is--- to exponentially shrink the state space. Although we
 have been actively exploring the \citeauthor{doshi08:pref_elic}
-approach, those exploitable structures are not present in our domain
-due to the task planning requirement.
-
-\cite{shani:etal:08}
+approach, those exploitable structures are not present in problems we
+have considered so far due to the task planning requirement.
 
 
-Generally There has been much recent work on scaling POMDP solution procedures
-to medium-sized instances. In the case of general domain-independent
-factored systems, the state-of-the-art scales to relatively small
-problems with $2^{22}$
+More generally, there has been much recent work on scaling POMDP
+solution procedures to medium-sized instances~\cite{shani:etal:08}. In
+the case of general domain-independent factored systems, the
+state-of-the-art scales to relatively small problems with $2^{22}$
 states~\cite{shani:etal:2008}.\footnote{Considering only room
 categories and distribution of objects, problems we consider in this
 paper have $\sim 10^{27}$ states. The details of view points, from
 local active visual search, and those of robot location, further
 increase that figure. Therefore, not only because they are offline,
 but also because they have limited scalability, these approaches are
-infeasible in our setting.} At their limit, these procedures take over an
-hour to converge.  For classes of POMDP that feature exploitable
+infeasible in our setting.} At their limit, these procedures take over
+an hour to converge.  For classes of POMDP that feature exploitable
 structures (e.g., no actions with negative effects), problems with as
 many as $10^{30}$ states can be targeted by offline
 procedures~\cite{brunskill:russell:2010}. Moving someway towards
@@ -56,44 +52,30 @@ limited due to the large amount of
 \emph{problem-specific} offline processing required to get useful
 search guidance. A {\em very} recent and promising online approach for
 large POMDPs employs Monte-Carlo sampling to break the curse of
-dimensionality in situations where goal reachability is
-easy~\cite{silver:veness:2010}. Although we suppose it an interesting
-item for future work to pursue that direction, it should be noted that
-ease of goal reachability is not guaranteed in the problems we face,
-and is certainly not a property to be assumed in domain independent
-planning.
+dimensionality in situations where goal reachability is {\em easily}
+determined~\cite{silver:veness:2010}.
 
 
-There have been a number of recent papers on
-planning under uncertainty using systems that were intended for
-sequential planning in deterministic problems,  for example,
-\system{FFR$_a$}~\cite{yoon:etal:2007}, the winning entry from the
-probabilistic track of the 2004 International Planning Competition.
-In the continual paradigm, \system{FFR$_a$} uses the fast satisficing
-procedure \system{FF}~\cite{hoffmann:nebel:2001} to compute sequential
-plans and corresponding execution traces.
+%% Although we suppose it an interesting
+%% item for future work to pursue that direction, it should be noted that
+%% ease of goal reachability is not guaranteed in the problems we face,
+%% and is certainly not a property to be assumed in domain independent
+%% planning.
+
+
+In the direction of leveraging {\em classical} systems/approaches for
+planning under uncertainty, the most highlighted system to date has
+been \system{FFR$_a$}~\cite{yoon:etal:2007}; The winning entry from
+the probabilistic track of the 2004 International Planning
+Competition.  In the continual paradigm, \system{FFR$_a$} uses the
+fast satisficing procedure \system{FF}~\cite{hoffmann:nebel:2001} to
+compute sequential plans and corresponding execution traces.
 %%
 More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
 deterministic planning procedures. The outcome is typically a more
 robust sequential plan~\cite{yoon:etal:2008}, or contingent
 plan~\cite{majercik:2006}. 
-
-%%No! They simply haven't been evaluated in PO settings. They may, or
-%%may not struggle. They have sampling of traces, and that would
-%%include observations, and therefore evolutions of beliefs. SSAT was
-%%proposed by Littman for POMDPs. So the majercik stuff is perfectly
-%%suited to POMDPs.
-
-% Normally if we are going to compare with related work, we do
-% actually *compare*. Why didn't you try those approaches? I think
-% it's safe to say that FFR will struggle. Why would it even include
-% in its plan an observational action that doesn't change the world?
-
-%%
-%% However, as we said in the introduction,
-%% all these approaches struggle in partially observable domains as they
-%% rely on being able to determine the state at all times.
 
 Also leveraging deterministic planners in problems that feature
 uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
@@ -117,3 +99,20 @@ those featuring multiple communicating agents.
 %% approach assumes that such actions are deterministic and reliable, an
 %% assumption that we relax.
 
+
+
+%%No! They simply haven't been evaluated in PO settings. They may, or
+%%may not struggle. They have sampling of traces, and that would
+%%include observations, and therefore evolutions of beliefs. SSAT was
+%%proposed by Littman for POMDPs. So the majercik stuff is perfectly
+%%suited to POMDPs.
+
+% Normally if we are going to compare with related work, we do
+% actually *compare*. Why didn't you try those approaches? I think
+% it's safe to say that FFR will struggle. Why would it even include
+% in its plan an observational action that doesn't change the world?
+
+%%
+%% However, as we said in the introduction,
+%% all these approaches struggle in partially observable domains as they
+%% rely on being able to determine the state at all times.
