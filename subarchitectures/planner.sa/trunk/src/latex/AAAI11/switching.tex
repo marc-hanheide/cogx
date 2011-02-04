@@ -214,15 +214,17 @@ additive contribution a trace of the plan can make to
 Eq~\ref{eq:expectedvalue}.  In goal directed problems, where the only
 non-zero reward is received at the first transition to a goal state,
 the Eq~\ref{eq:tracevalue} criteria gives us the behaviour sought
-by \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
-gradient-based reinforcement learning systems, such as William's
-REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
-under reasonable assumptions the optimal trace identifies a maximal
-gradient step from a uniformly random soft-max policy. Finally, it is
+by \system{FFR$_a$}~\cite{yoon:etal:2007}. Finally, it is
 worth clarifying that although the above discussion has been in terms
 of a trace of length $N$, there is nothing in our approach that
 artificially limits the length of candidate sequential plans.
 
+
+%% From the perspective of
+%% gradient-based reinforcement learning systems, such as William's
+%% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
+%% under reasonable assumptions the optimal trace identifies a maximal
+%% gradient step from a uniformly random soft-max policy.
 
 \subsection{Decision-Theoretic Planning in Abstractions}
 
