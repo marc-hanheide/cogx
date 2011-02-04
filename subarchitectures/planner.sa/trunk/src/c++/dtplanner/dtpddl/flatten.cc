@@ -50,7 +50,7 @@ Flatten::Flatten(Planning::Parsing::Problem_Data& in)
 
 void Flatten::print_flat_problem()
 {
-    cout<<fixed;//setprecision(20);
+    cout<<fixed<<setprecision(15);
     cout<<"discount: 0.95"<<std::endl;
     cout<<std::endl;
     cout<<"values: reward"<<std::endl;
