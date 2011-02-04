@@ -37,28 +37,27 @@ planner--- and the underlying belief-state.
 
 
 More generally, there has been much recent work on scaling POMDP
-solution procedures to medium-sized instances~\cite{shani:etal:08}. In
-that
+solution procedures to medium-sized
+instances~\cite{shani:etal:08,KurHsu08}. In that
 setting \citeauthor{kurniawati:etal:2010}~(\citeyear{kurniawati:etal:2010})
 recently addressed an inefficiency of offline point-based techniques
 in problems with medium length planning horizons, however their
-approach take tens of minutes to start yielding good behaviour even in
-relatively small problems (tens of thousands of states). In the case
-of general domain-independent factored systems, the state-of-the-art
-scales to relatively small problems with $2^{22}$
-states~\cite{shani:etal:2008}. At their limit, these procedures take
-over an hour to converge, and $\sim10$ seconds on average to perform a
-single Bellman backup.  For classes of POMDP that feature exploitable
-structures (e.g., no actions with negative effects), problems with as
-many as $10^{30}$ states can be targeted by offline
-procedures~\cite{brunskill:russell:2010}. Moving someway towards
-addressing real-time decision making, recent online POMDP solution
-procedures have been developed which can exploit highly approximate
-value functions -- typically computed using a point-based procedure --
-and heuristics in forward search~\cite{ross:etal:2008}. Their
-applicability in our setting is limited, firstly because they only
-scale to smaller problems, with thousands of states, and also due to
-the large amount of
+approach take tens of minutes to good plans, and only scales to tens
+of thousands of states. In the case of general domain-independent
+factored systems, the state-of-the-art scales to relatively small
+problems with $2^{22}$ states~\cite{shani:etal:2008}. At their limit,
+these procedures take over an hour to converge, and $\sim10$ seconds
+on average to perform a single Bellman backup.  For classes of POMDP
+that feature exploitable structures (e.g., no actions with negative
+effects), problems with as many as $10^{30}$ states can be targeted by
+offline procedures~\cite{brunskill:russell:2010}. Moving someway
+towards addressing real-time decision making, recent online POMDP
+solution procedures have been developed which can exploit highly
+approximate value functions -- typically computed using a point-based
+procedure -- and heuristics in forward
+search~\cite{ross:etal:2008}. Their applicability in our setting is
+limited, firstly because they only scale to smaller problems, with
+thousands of states, and also due to the large amount of
 \emph{problem-specific} offline processing that might be required to get useful
 search guidance. A {\em very} recent and promising online approach for
 large POMDPs employs Monte-Carlo sampling to break the curse of
@@ -77,15 +76,14 @@ In the direction of leveraging {\em classical} systems/approaches for
 planning under uncertainty, the most highlighted system to date has
 been \system{FFR$_a$}~\cite{yoon:etal:2007}; The winning entry from
 the probabilistic track of the 2004 International Planning
-Competition.  In the continual paradigm, \system{FFR$_a$} uses the
-fast satisficing procedure \system{FF}~\cite{hoffmann:nebel:2001} to
-compute sequential plans and corresponding execution traces.
+Competition.  In the continual paradigm, \system{FFR$_a$}
+uses \system{FF} to compute sequential plans and execution traces.
 %%
 More computationally expensive approaches in this vein combine
 sampling strategies on valuations over {\em runtime variables} with
-deterministic planning procedures. The outcome is typically a more
-robust sequential plan~\cite{yoon:etal:2008}, or contingent
-plan~\cite{majercik:2006}. 
+deterministic planning procedures~\cite{yoon:etal:2008}. %% The outcome is typically a more
+%% robust sequential plan, or contingent
+%% plan~\cite{majercik:2006}. 
 
 Also leveraging deterministic planners in problems that feature
 uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
