@@ -1,0 +1,17 @@
+# Test
+HOST localhost
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+CPP MG VideoServer PointGreyServer --setAutPropAdj "1 1 1 1 1 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --swapredblue --format7 "640 480 0 0 1 1600" # --log --debug  
+
+# Grabber GUI
+CPP MG grabber VideoGrabber --videoname VideoServer --camids "0 1" --displayserver "display.srv"
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer # --redirect-to-host localhost

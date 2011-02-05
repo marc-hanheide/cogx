@@ -1,0 +1,53 @@
+/**
+ * $Id: Draw.hh,v 1.10 2006/11/24 13:47:03 mxz Exp mxz $
+ * Global functions for drawing points, lines, text, status text.
+ */
+
+#ifndef Z_DRAW_HH
+#define Z_DRAW_HH
+
+#include <string>
+#include "Color.hh"
+
+namespace Z
+{
+
+extern void SetFatLines(bool set);
+extern void SetBlackWhite(bool set);
+/// Draw printf style text in the status bar.
+extern void PrintStatus(const char *format, ...);
+extern void PrintStatus(const string &text);
+extern void DrawImageRGB24(const char *rgb24, int width, int height);
+extern void SetDrawImagesSolid();
+extern void SetDrawImagesLight();
+extern void SetDrawImagesDark();
+extern void SetClearImagesWhite();
+extern void SetClearImagesBlack();
+extern void SaveDrawArea(const string &filename);
+extern void DrawText2D(const char *text, double x, double y, RGBColor col);
+extern void DrawPoint2D(double x, double y, RGBColor col);
+extern void DrawLine2D(double x1, double y1, double x2, double y2,
+    RGBColor col);
+extern void DrawRect2D(double x1, double y1, double x2, double y2,
+    RGBColor col);
+extern void FillRect2D(double x1, double y1, double x2, double y2,
+    RGBColor col);
+extern void TransparentRect2D(double x1, double y1, double x2, double y2,
+    RGBColor col);
+extern void DrawArc2D(double x, double y, double r, double start, double span,
+    RGBColor col);
+extern void FillArc2D(double x, double y, double r, double start, double span,
+    RGBColor col);
+extern void TransparentArc2D(double x, double y, double r, double start,
+    double span, RGBColor col);
+extern void DrawEllipse2D(double x, double y, double a, double b, double phi,
+    RGBColor col);
+extern void FillEllipse2D(double x, double y, double a, double b, double phi,
+    RGBColor col);
+extern void TransparentEllipse2D(double x, double y, double a, double b,
+    double phi, RGBColor col);
+
+}
+
+#endif
+
