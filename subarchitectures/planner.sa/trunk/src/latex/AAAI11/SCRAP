@@ -1,4 +1,60 @@
 
+We describe our approach that switches between sequential and
+contingent sessions. As a continual planning approach, it proceeds by
+interleaving planning and execution in a deterministic-action POMDP
+described in DTPDDL. During a sequential session, planning is
+performed by a ``classical'' system,\footnote{That is, a planner
+designed to solve fully observable deterministic tasks.}  and
+execution proceeds according to the {\em trace} computed by that
+system. Taking the form of a classical plan, the trace specifies a
+sequence of POMDP actions that achieve the agent's objectives in a
+deterministic approximation, i.e., {\em determinisation}, of the
+problem at hand. More precisely, the trace is an interleaved sequence
+of POMDP actions and {\em assumptive} actions. The latter correspond
+to assumptions the planner makes about the truth value of propositions
+-- e.g. that a box of cornflakes is located in the kitchen at the
+third plan step. They are called {\em applicability} assumptions if
+the trace includes an action $\action$ that is not applicable with
+probability $1$ at the belief-state
+\bstate\ that the system is projected to be in when \action\ is
+scheduled for execution, i.e., $\exists\state\in\states\;
+\bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
+scheduling
+\action,  the serial planner makes an assumption about the
+observability of the precondition $\poss(\action)$.
+
+
+
+Our approach always begins with a sequential session. Non-assumptive
+actions from the trace are executed in sequence until the
+applicability of the next scheduled action is uncertain. We denote
+that action by \switchAction.  A contingent session then begins that
+tailors sensory processing by the agent to determine whether the
+assumptions made in the trace hold. 
+%%
+We add {\em disconfirm} and {\em confirm} actions to the model, so
+the session is encouraged to judge the assumptions made in the
+trace. On execution of one of those actions, control is returned to
+the sequential session that continues at the current%%{\em underlying}
+belief-state.
+%%
+%% For each assumption we add a {\em
+%% disconfirm} action to the POMDP whose execution is rewarding
+%% (resp. costly) if the assumption is false (resp. true). We also add
+%% one {\em confirm} action that is rewarding (resp. costly) to execute
+%% if $\poss(\switchAction)$ is true (resp. false). If execution of the
+%% contingent plan applies a disconfirm action, then a new sequential
+%% session begins at the {\em underlying} belief-state. If the confirm
+%% action is executed, the sequential session is resumed, and
+%% \switchAction\ is executed. Otherwise, control rests in the continual
+%% session.
+%%
+Because contingent planning is only practical in relatively small
+POMDPs, contingent sessions plan in an abstract decision process
+determined by the current trace. This abstraction is constructed by
+first omitting all propositions that do not feature in the trace, and
+by then iteratively refining the model while the result is of a
+practicable size.
 
 %%  A DT
 %% session then begins which tailors sensory processing to determine
@@ -25,3 +81,48 @@
 %% be robust and responsive to changes in its environment
 %% \emph{and} make appropriate decisions in the face of uncertainty.
 
+
+
+%% For sequential planning the operators from the POMDP model are
+%% available with semantics that accommodate the above abstraction as
+%% follows: In the deterministic model a proposition $\prop$ can be
+%% thought to have a ternary interpretation at a state \state, as either
+%% {\em true}, written $\prop\in\state$, {\em false}, written
+%% $\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
+%% notation written $\prop\#\in\state$. For example, in $\pp{DORA}$
+%% $(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
+%% $\action\in\actions$ in the deterministic model, if
+%% $\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
+%% or negative effect of $\action$, then $\action$ is not applicable
+%% in \state\ if $\prop\#\in\state$. 
+
+%% Addressing now the switching semantics of action execution. I
+%% %% In detail, we halt the sequential
+%% session at \action\ if $\exists
+%% \state$ s.t. $\bstate(\state)>0$, 
+%% $\prop\in\poss(\action)$ , and $\prop\not\in\state$. According to the
+%% semantics of action execution there must be a $\state'$ s.t.
+%% $\bstate(\state')>0$ and $\prop\in\state'$. Otherwise, \action\ must
+%% not have been scheduled at \bstate.
+
+
+%% then $\reward(\state,\action)=10$, and
+%% otherwise if $\prop\not\in\state'$ then
+%% $\reward(\state',\action)=-10$.
+
+
+%% A sequential session uses a classical planner to compute a trace. The
+%% latter encapsulates assumptions about: (1) the true underlying state,
+%% (2) how execution will progress, and (3) the possibility of the agent
+%% eventually holding strong beliefs about the truth values of specific
+%% state propositions. Here we describe the deterministic planning
+%% problem, derived from the DTPDDL model, that admits plans which
+%% correspond to traces.
+
+%% In a deterministic-action POMDP all the uncertainty in state and
+%% action is expressed in the $(\pp{:init})$ declaration. Our approach
+%% uses the structure of that, as it occurs in the problem description,
+%% to define a set of state-assumptions available to sequential planning.
+%% %%
+%% Writing \#\ if the value of a proposition is unspecified, for
+%% $\pp{DORA}$ we have the following assumptions:
