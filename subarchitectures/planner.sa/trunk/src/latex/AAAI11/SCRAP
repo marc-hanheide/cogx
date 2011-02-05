@@ -165,3 +165,89 @@ truth assignment can be modified by the DTPDDL domain operators.
 %% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
 %% under reasonable assumptions the optimal trace identifies a maximal
 %% gradient step from a uniformly random soft-max policy.
+
+
+The added dual actions are propositionally trivial --
+i.e., $\forall\state\in\states$ $\poss(\assumptiveDT{i})
+\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
+
+
+
+%%  Rather than invoking a contingent session when a
+%% switching action $\switchAction$ is scheduled for execution, the
+%% baseline simply executes one action that can trigger a sensing outcome
+%% determined by the precondition of $\switchAction$, and replans in the
+%% resulting belief-state.
+
+ 
+% Our implementation is able
+% to use several underlying planning systems.
+%% We have extended MAPSIM so that it can parse DTPDDL, and perform
+%% successive estimation of the underlying belief-state using
+%% \system{dlib-ml}~\cite{king:2009} for inference.  In this evaluation
+%% we use our own version of Fast Downward~\cite{fast-downward} for
+%% sequential sessions. We have extended that system to support actions
+%% with success probabilities. In our evaluation Fast Downward is run
+%% with the cyclic causal graph heuristic using an A* search or weighted
+%% A* (with weight 5). We use A* for easy problems and WA* for more
+%% difficult problems where A* is ineffective. Contingent sessions use
+%% our own forward search procedure.
+
+
+
+
+%% \Omit{ We then perform multiple tests with different limits for the
+%%   belief-space size in contingent sessions.  Higher limits should
+%%   cause longer planning times but be beneficial to plan quality as
+%%   more contingencies can be taken in to account by the POMDP planner.
+%% }
+
+%% executes switching actions and replans in the
+%% resulting belief state.
+ 
+%% but instead of
+%% creating an observation problem for the decision theoretic planner it
+%% will just execute one sensing action -- assuming that this action will
+%% confirm its assumption.
+
+In order to evaluate our system, we have also implemented a {\em
+baseline} approach in MAPSIM. Rather than invoking a contingent
+session when a switching action $\switchAction$ is scheduled for
+execution, the baseline simply executes one action that can trigger a
+sensing outcome determined by the precondition of $\switchAction$, and
+replans in the resulting belief-state.
+
+%% Figure \ref{fig:results-quality} shows the average costs of the
+%% executed plans as well as the percentage of solvable tasks that were
+%% actually solved by the planner. 
+
+
+%% :
+%%while the resulting plans are still
+%% longer on average, the impact on the number of solved tasks was much
+%% smaller than for the {\em baseline} system.  
+
+%% Less aggressive abstraction of the initial configuration results in
+%% longer runtimes, with little to be gained in terms of plan quality. We
+%% conclude that in our scenario it is worthwhile being assumptively
+%% aggressive.  
+
+
+
+%% We find that abstraction has little impact on plan
+%% costs and success rate in our scenario. Increasing the size of the
+%% initial abstract belief beyond 50 states rarely pays off, because
+%% while additional information may facilitate better plans, the indirect
+%% sensing tests report the same result. Here, we only really see an
+%% impact in terms of the runtime of contingent planning.
+
+
+% We believe that a part of the improvement is due to the segmentation of
+% the plan into several subtask, essentially performing hierarchical
+% planning. Especially when the continual planner performs badly this is
+% a huge gain.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "moritz_2011"
+%%% End: 
