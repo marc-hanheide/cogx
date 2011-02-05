@@ -1,0 +1,2 @@
+#!/bin/bash
+python $(pwd)/tools/castctrl/castcontrol.py &
