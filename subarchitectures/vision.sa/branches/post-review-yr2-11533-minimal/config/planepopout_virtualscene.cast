@@ -1,0 +1,30 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/stereo-tuw-2010-01-14.ini:L subarchitectures/vision.sa/config/stereo-tuw-2010-01-14.ini:R"
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_new.ini --display
+
+
+
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/test-stereo/img-160-%03d-L.jpg subarchitectures/vision.sa/config/test-stereo/img-160-%03d-R.jpg" --start 1 --end 1 --framerate_ms 30 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 1 --end 1 --framerate_ms 30 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+CPP MG PlanePopOut PlanePopOut --camid "0 1" --stereohost localhost --stereoname stereo --videoname videoserver --log true #--display
+#CPP MG Filter SOIFilter --log true --videoname videoserver --camid 0 --display --stereoname stereo --objht 23 --objdt 60 --bght 24 --bgdt 9999 --fixc 24
+
+CPP MG VirtualScene VirtualScene --videoname videoserver --camid "0" --log  #--debug 
+
+
+
+

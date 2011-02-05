@@ -1,0 +1,11 @@
+function gauss1dUnlearn1M( f, r )
+% assume r is a unimodal distribution
+
+% find location of the maximum in r
+x_max = r.mu(1) ;
+
+% eval r at maximum
+r_max = normpdf( x_max, r.mu, [], r.covariances ) ;
+
+% generate g
+g = 1.0 - 
