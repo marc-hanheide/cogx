@@ -1,0 +1,27 @@
+
+
+%%  A DT
+%% session then begins which tailors sensory processing to determine
+%% whether the assumptions made in the trace hold, or which otherwise
+%% acts to achieve the overall objectives.
+
+
+
+%% the base planner changes depending on our robot's
+%% subjective degrees of belief (i.e., POMDP belief-state), and progress
+%% in plan execution.
+
+%% {\em Fast Downward}~\cite{fast-downward}
+
+%% %%
+%% When the underlying planner is a {\em sequential}/linear planner,
+%% i.e., a {\em classical} planner, we say planning is in a sequential
+%% {\em session}, and otherwise it is in a {\em decision-theoretic} (DT)
+%% session. Finally, planning is continual in the usual sense that,
+%% whatever the session, plans are adapted and rebuilt online in reaction
+%% to changes to the planning model (e.g. when objectives are modified,
+%% or when our robot's path is obstructed by a door being closed). By
+%% autonomously mixing these two types of sessions our robot is able to
+%% be robust and responsive to changes in its environment
+%% \emph{and} make appropriate decisions in the face of uncertainty.
+
