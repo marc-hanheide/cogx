@@ -59,33 +59,26 @@ session, and (3) as a mechanism to guide construction of an abstract
 process for contingent sessions.
 
 
-\subsection{Sequential Planning in POMDPs}
+\subsection{Sequential Sessions}
 
-A sequential session uses a classical planner to compute a trace. The
-latter encapsulates assumptions about: (1) the true underlying state,
-(2) how execution will progress, and (3) the possibility of the agent
-eventually holding strong beliefs about the truth values of specific
-state propositions. Here we describe the deterministic planning
-problem, derived from the DTPDDL model, that admits plans which
-correspond to traces.
+We consider only deterministic-action POMDs, where all the uncertainty
+in state and action is expressed in the $(\pp{:init})$ declaration. In
+sequential sessions, this declaration is used by our approach to
+define a starting state, and the set of state-assumptions available to
+sequential planning.  Writing \#\ if the value of a proposition is
+unspecified, continuing our example from the previous section, we have
+the following assumptions:
 
-In a deterministic-action POMDP all the uncertainty in state and
-action is expressed in the $(\pp{:init})$ declaration. Our approach
-uses the structure of that, as it occurs in the problem description,
-to define a set of state-assumptions available to sequential planning.
-%%
-Writing \#\ if the value of a proposition is unspecified, for
-$\pp{DORA}$ we have the following assumptions:
 
 \small
 \begin{tabular}{cccc}
 \hline
 Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \hline
-.24 & kitchen & office & office \\
-.06 & kitchen & kitchen & office \\
-.56 & kitchen & office & kitchen \\
-.14 & kitchen & kitchen & kitchen \\
+%% .24 & kitchen & office & office \\
+%% .06 & kitchen & kitchen & office \\
+%% .56 & kitchen & office & kitchen \\
+%% .14 & kitchen & kitchen & kitchen \\
 .7 & kitchen & \# &  kitchen\\
 .3 & kitchen & \# & office \\
 .8 & kitchen & office & \# \\
@@ -95,13 +88,14 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent An assumption corresponds to a {\em
+\noindent Each assumption corresponds to one distinct {\em
 relaxed} visitation of the root term of $(\pp{:init})$. In this
 relaxed case, a conjunctive term is visited iff its atomic subterms
-are visited, and zero or more of its immediate probabilistic subterms
-are visited. The starting state, $\state_0$, for sequential planning
-is an {\em abstract} state that captures the unique assumption which
-has probability $1$. In $\pp{DORA}$, that is:
+are visited, and zero or one of its immediate probabilistic subterms
+are visited. For a sequential session, the starting state corresponds
+to the unique assumption with probability $1$ -- I.e., the union of
+facts from the root conjunctive term. In our example, the starting
+state is:
 
 \[
 \begin{array}{l}
@@ -110,73 +104,40 @@ has probability $1$. In $\pp{DORA}$, that is:
 \end{array}
 \]
 
-In order to make assumptions available to the sequential planner, we
-add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
-each element, $\prob_i (T_i)$, of each probabilistic term from
-$(\pp{:init})$. The physics of these actions is as
-follows: $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
-$j \neq i$, has been executed from the same probabilistic term, and,
-either $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root
-conjunct, or it occurs in $T_k$ for some executed
-$\assumptiveS{k}$. Also, an assumption about a proposition
-$\prop$ can only be made once, and must be sequenced before any POMDP
-actions that have $\prop$ in their precondition or effect.
+We also annotate DTPDDL model with an assumptive action
+$\assumptiveS{i}$ for each element $\prob_i (T_i)$, of each
+probabilistic term from $(\pp{:init})$. Here, $\assumptiveS{i}$ can be
+executed if no $\assumptiveS{j}$, $j \neq i$, has been executed from
+the same probabilistic term, and, either
+$(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct, or
+it occurs in $T_k$ for some executed $\assumptiveS{k}$. 
 %%
-In other words, an assumptive action
-must be applied to make a truth assignment to \prop, and then that
-truth assignment can be modified by the DTPDDL domain operators.
+We add additional constraints that forbid the scheduling of
+assumptions about facts after actions with preconditions, or effects,
+that mention those facts. For example, the robot cannot assume it is
+plugged into a power source immediately after it unplugs itself.
 %%
-%%
-Executing $\assumptiveS{i}$ in $\state$ effects a transition to a
-successor state $\state^{T_i}$ with probability $\prob_i$, and
+Executing $\assumptiveS{i}$ in a state $\state$ effects a transition
+to a successor state $\state^{T_i}$ with probability $\prob_i$, and
 $\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
-the union of $\state$ with atomic terms from $T_i$ with the
-proposition denoting the undefined fact is deleted. For example, if
-the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
-delete $(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added
-sink, where $\forall\action$ $\reward(\state^\bot, \action) = 0$ and
-$\transProb(\state^\bot, \action, \state^\bot) = 1$.
-%%
-Lastly, we have that if $\action$ has a precondition that is not true
-with probability $\theta$, a given threshold, in the underlying belief
-$\bstate$, then immediately before it is executed blindly the system
-switches to a contingent session (described below).
+the union of $\state$ with atomic terms from $T_i$. State
+$\state^\bot$ is an added sink.
 
 
-%% For sequential planning the operators from the POMDP model are
-%% available with semantics that accommodate the above abstraction as
-%% follows: In the deterministic model a proposition $\prop$ can be
-%% thought to have a ternary interpretation at a state \state, as either
-%% {\em true}, written $\prop\in\state$, {\em false}, written
-%% $\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
-%% notation written $\prop\#\in\state$. For example, in $\pp{DORA}$
-%% $(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
-%% $\action\in\actions$ in the deterministic model, if
-%% $\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
-%% or negative effect of $\action$, then $\action$ is not applicable
-%% in \state\ if $\prop\#\in\state$. 
+%% %%
+%% Lastly, we have that if $\action$ has a precondition that is not true
+%% with probability $\theta$, a given threshold, in the underlying belief
+%% $\bstate$, then immediately before it is executed blindly the system
+%% switches to a contingent session (described below).
 
 
 
 
 
-%% Addressing now the switching semantics of action execution. I
-%% %% In detail, we halt the sequential
-%% session at \action\ if $\exists
-%% \state$ s.t. $\bstate(\state)>0$, 
-%% $\prop\in\poss(\action)$ , and $\prop\not\in\state$. According to the
-%% semantics of action execution there must be a $\state'$ s.t.
-%% $\bstate(\state')>0$ and $\prop\in\state'$. Otherwise, \action\ must
-%% not have been scheduled at \bstate.
 
 
-%% then $\reward(\state,\action)=10$, and
-%% otherwise if $\prop\not\in\state'$ then
-%% $\reward(\state',\action)=-10$.
-
-
-We now describe the optimisation criteria given to the classical
-planner. Where $\prob_i$ is the probability that the $i^{th}$
+We now describe the optimisation criteria used during sequential
+sessions. Where $\prob_i$ is the probability that the $i^{th}$
 sequenced action $\action_i$ does not transition to $\state^\bot$, we
 define the value of a trace
 $\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
@@ -211,7 +172,7 @@ artificially limits the length of candidate sequential plans.
 %% under reasonable assumptions the optimal trace identifies a maximal
 %% gradient step from a uniformly random soft-max policy.
 
-\subsection{Decision-Theoretic Planning in Abstractions}
+\subsection{DT Sessions}
 
 In a contingent session our switching planner solves a sensing problem
 in an abstract processes defined in terms of the assumptive actions in
