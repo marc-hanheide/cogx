@@ -126,3 +126,42 @@ practicable size.
 %% %%
 %% Writing \#\ if the value of a proposition is unspecified, for
 %% $\pp{DORA}$ we have the following assumptions:
+
+
+
+We add additional constraints that ensure no action from the original
+problem model can be sequenced unless the starting states, or an
+assumptive action, has 
+
+sequenced in a plan 
+
+: (1) that a proposition cannot be
+assumed both true and false, and (2) . 
+
+Additionally, an
+assumption about a proposition $\prop$ can only be made once, and must
+be sequenced before any POMDP actions that have $\prop$ in their
+precondition or effect.
+
+
+%%
+In other words, an assumptive action
+must be applied to make a truth assignment to \prop, and then that
+truth assignment can be modified by the DTPDDL domain operators.
+
+
+%% %%
+%% Lastly, we have that if $\action$ has a precondition that is not true
+%% with probability $\theta$, a given threshold, in the underlying belief
+%% $\bstate$, then immediately before it is executed blindly the system
+%% switches to a contingent session (described below).
+
+%% that although the above criteria has been in terms of a
+%% trace of length $N$, that is not a system parameter.
+
+
+%% From the perspective of
+%% gradient-based reinforcement learning systems, such as William's
+%% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
+%% under reasonable assumptions the optimal trace identifies a maximal
+%% gradient step from a uniformly random soft-max policy.
