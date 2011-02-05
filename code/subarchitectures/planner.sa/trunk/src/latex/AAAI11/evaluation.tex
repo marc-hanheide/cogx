@@ -1,44 +1,16 @@
 % coming soon
 
 We have implemented our switching continual approach in the MAPSIM
-environment~\cite{brenner:nebel:jaamas09}. 
-% Our implementation is able
-% to use several underlying planning systems.
-We have extended MAPSIM so that it can parse DTPDDL, and perform
-successive estimation of the underlying belief-state using
-\system{dlib-ml}~\cite{king:2009} for inference.  In this evaluation
-we use our own version of Fast Downward~\cite{fast-downward} for
-sequential sessions. We have extended that system to support actions
-with success probabilities. In our evaluation Fast Downward is run
-with the cyclic causal graph heuristic using an A* search or weighted
-A* (with weight 5). We use A* for easy problems and WA* for more
-difficult problems where A* is ineffective. Contingent sessions use
-our own forward search procedure.
+environment~\cite{brenner:nebel:jaamas09},
+using \system{dlib-ml}~\cite{king:2009} for belief
+revision. Sequential sessions use a modified version of Fast
+Downward~\cite{fast-downward}, and DT sessions use our own fast
+contingent procedure. We also implemented a simple dual-mode
+replanning {\em baseline} approach in MAPSIM. Here, a DT session
+executes a single greedy entropy reduction action, wrt to active
+assumptions, when a switching action is scheduled for execution,
+returning control to a new sequential session.
 
-
-\Omit{ We then perform multiple tests with different limits for the
-  belief-space size in contingent sessions.  Higher limits should
-  cause longer planning times but be beneficial to plan quality as
-  more contingencies can be taken in to account by the POMDP planner.
-}
-
-In order to evaluate our system, we have also implemented a baseline
-approach in MAPSIM. Rather than invoking a contingent session when a
-switching action $\switchAction$ is scheduled for execution, the
-baseline simply executes one action that can trigger a sensing outcome
-determined by the precondition of $\switchAction$, and replans in the
-resulting belief-state.
-
-
-
-
-%% executes switching actions and replans in the
-%% resulting belief state.
- 
-%% but instead of
-%% creating an observation problem for the decision theoretic planner it
-%% will just execute one sensing action -- assuming that this action will
-%% confirm its assumption.
 
 To test our approach we use a robot exploration domain based on a
 scenario from our physical robotic system. Here, a robot is exploring
@@ -63,7 +35,7 @@ running a vision algorithm (cost of 8 vs costs of 3).
 %%  Therefore, an instantaneous positive detection of an object is
 %% not proof positive of it being there.
 
-We evaluated our switching planner against the baseline in several
+We evaluated our switching planner against the {\em baseline} in several
 tasks with the number of rooms ranging from 3 to 6. We examine the
 impact of sensing reliability, experimenting using sensor models that
 are: ({\em reliable}) $0.9$ chance the object is perceived if it is
@@ -79,7 +51,7 @@ configured the environment so that no plan exists, by excluding the
 desired object from the environment. Item~$f$ reports for tasks
 requiring indirect sensing, where the robot must relocate to a
 particular room category. For Item~$f$ there is no human in the
-environment, and therefore the baseline cannot be used, because there
+environment, and therefore the {\em baseline} cannot be used, because there
 are no sensing schemata that directly sense room categories. In our
 evaluation we run 50 simulations in each configuration, and have a
 timeout on each simulation of 30 minutes (1800 seconds)\footnote{All
@@ -135,13 +107,10 @@ reward scaled by a constant factor).
 \end{figure}
 
 
-%% Figure \ref{fig:results-quality} shows the average costs of the
-%% executed plans as well as the percentage of solvable tasks that were
-%% actually solved by the planner. 
 
 Examining success ratios and plan costs, where sensing is reliable
 there is little to be gained by using the contingent planner, as the
-greedy sensing approach of the baseline is sufficient. Not
+greedy sensing approach of the {\em baseline} is sufficient. Not
 surprisingly, as sensing degrades contingent planning pays off.  Also,
 we find that time spent in contingent planning increases steeply as
 the abstraction $\bstate_0$ becomes more refined.  That refinement
@@ -153,34 +122,3 @@ in Fast Downward planning times. The relatively high success rate
 irrespective of the level of refinement in the initial configuration
 indicates the effectiveness of using conditional entropy to guide
 abstraction refinement in our setting.
-
-
-%% :
-%%while the resulting plans are still
-%% longer on average, the impact on the number of solved tasks was much
-%% smaller than for the baseline system.  
-
-%% Less aggressive abstraction of the initial configuration results in
-%% longer runtimes, with little to be gained in terms of plan quality. We
-%% conclude that in our scenario it is worthwhile being assumptively
-%% aggressive.  
-
-
-
-%% We find that abstraction has little impact on plan
-%% costs and success rate in our scenario. Increasing the size of the
-%% initial abstract belief beyond 50 states rarely pays off, because
-%% while additional information may facilitate better plans, the indirect
-%% sensing tests report the same result. Here, we only really see an
-%% impact in terms of the runtime of contingent planning.
-
-
-% We believe that a part of the improvement is due to the segmentation of
-% the plan into several subtask, essentially performing hierarchical
-% planning. Especially when the continual planner performs badly this is
-% a huge gain.
-
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "moritz_2011"
-%%% End: 
