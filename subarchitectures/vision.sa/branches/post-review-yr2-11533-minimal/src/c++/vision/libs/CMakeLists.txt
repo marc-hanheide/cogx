@@ -1,16 +1,16 @@
 
-option(LIBBUILD_SIFTGPU "Build SiftGPU library" ON)
+option(LIBBUILD_SIFTGPU "Build SiftGPU library" NO)
 if (LIBBUILD_SIFTGPU)
    option(LIBBUILD_SIFTGPU_WITH_CUDA "Build SiftGPU library with CUDA support" OFF)
    add_subdirectory(SiftGPU/linux)
 endif(LIBBUILD_SIFTGPU)
 
-option(LIBBUILD_CUDASIFT "Build CudaSift library" ON)
+option(LIBBUILD_CUDASIFT "Build CudaSift library" NO)
 if (LIBBUILD_CUDASIFT)
    add_subdirectory(CudaSift)
 endif(LIBBUILD_CUDASIFT)
 
-option(LIBBUILD_PYTHON_VISION "Build Python interfaces for some of the libs used by vision.sa" ON)
+option(LIBBUILD_PYTHON_VISION "Build Python interfaces for some of the libs used by vision.sa" NO)
 if (LIBBUILD_PYTHON_VISION)
    include_directories(.)
    if (LIBBUILD_SIFTGPU)
@@ -22,7 +22,7 @@ if (LIBBUILD_PYTHON_VISION)
    endif(LIBBUILD_CUDASIFT)
 endif(LIBBUILD_PYTHON_VISION)
 
-option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" OFF)
+option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" NO)
 if (LIBBUILD_LEVMAR_HOMEST)
    # some prerequisites: liblapack-dev, libf2c2-dev && dependencies
    add_subdirectory(levmar/levmar-2.5)
