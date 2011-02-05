@@ -23,8 +23,4 @@ link_cast_component(${CAST_COMPONENT_NAME} Planner BeliefsCogX)
 link_cast_component(${CAST_COMPONENT_NAME} ${Boost_LIBRARIES})
 
 
-option(BUILD_SA_PLANNER_DT "Build DT planner in planner.sa" YES)
-if(BUILD_SA_PLANNER_DT)
-  add_subdirectory(dtplanner)
-endif(BUILD_SA_PLANNER_DT)
 
