@@ -1,32 +1,20 @@
 
 
-%% From an automated planning perspective, the problem of practical
-%% mobile robot control poses important and contrary challenges.
-%% %%
-%% On the one hand, planning and execution monitoring must be
-%% lightweight, robust, timely, and should span the lifetime of the
-%% robot. Those processes must seamlessly accommodate exogenous events,
-%% changing objectives, and the underlying unpredictability of the
-%% environment.
-%% %%
-%% On the other hand, robot planning should perform computationally
-%% expensive reasoning about contingencies, and possible revisions of
-%% subjective belief according to quantitatively modelled uncertainty in
-%% acting and sensing. 
-
 For use in an integrated continual planning and execution monitoring
 system on a mobile robot platform, we developed a base planner that
 switches between fast sequential and expensive decision-theoretic
-planning. Given a POMDP model of the environment, sequential planning
+planning. Given a DTPDDL model of the environment, sequential planning
 is used to compute an initial deterministic sequential plan and
 complementary runtime evolution of the decision process. That plan is
 executed until testing of an assumption about the runtime state is
 scheduled. At that point a contingent session performs some sensing
 which determines whether or not the sequential session should be
 allowed to continue, or otherwise acts to achieve the overall
-objectives.
+objectives. We find our approach performs quickly and relatively
+efficiently in large real-world task and observation planning
+problems.
 
-
+\Omit{
 The most pressing item for future research, is to develop a scheme
 whereby the serial planner can relax {\em executability} assumptions,
 so that conformant (or semi-conformant) plans can be executed without
@@ -41,7 +29,7 @@ in the future. We suggest that a good way to mitigate this problem is
 by developing a {\em motivational} component that maintains a {\em
 dynamic} reward model whose limiting behaviour prevents that switching
 deadlock.
-
+}
 
 
 
