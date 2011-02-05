@@ -231,7 +231,7 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \]
 
 
-\noindent We note that in our project the dual rewards are sourced
+\noindent Usually dual rewards are sourced
 from a motivational component of our robotic architecture. In this
 paper, for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a positive
 constant, and have $\hat\$(x)= - \$(x)(1 - \prob) / \prob$ where
@@ -239,25 +239,42 @@ $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
 \$(x)\prob/(1-\prob)$
 %%
-Finally, for the purposes of successive switching, execution of either a dual
-action of the form $\assumptiveDT{i}$, or the
+Finally, execution of either a dual action $\assumptiveDT{i}$, or the
 $\actions.\poss(\switchAction)$, returns control to a sequential
 session, which then continues from the underlying belief-state. If an
 assumption was rejected, we prohibit that sequential session from
 making it again.
+
+
+
+The process posed to a DT session is abstract. The abstraction is
+defined by first constructing an $(\pp{:init})$ declaration without
+any-active assumptions from the trace -- E.g.,
+(Fig.\ref{fig:abstraction-b}) gives an example, where diamonds are
+probabilistic terms, and circles are atomic and/or conjunctive.
 %%
+For each excluded atom, we compute the {\em entropy} of the active
+assumptions, {\em conditional} on that atom. Intuitively, lower
+entropy indicates an atom gives better information about
+assumptions. Facts are iteratively added to the belief-state in
+increasing order according to that measure
+(Fig.\ref{fig:abstraction-c}).
 
-%%  We make no assumptions here about how they are
-%% derived.
 
-The starting belief-state for the abstract process is given in terms
-of a {\em relaxed} $(\pp{:init})$ declaration. We first construct a
-tree which only includes terms from the {\em relaxed} visitation
-characterised by the active {\em assumptive} actions in the current
-sequential plan. Figure \ref{fig:abstraction} shows the belief-state
-of a more detailed version of our previous example. The diamonds
-represent probabilistic terms of the state description while circles
-represent conjunctive or atomic terms. 
+%% In the first step, we remove all facts that are not part of an
+%% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
+%% would proceed in an abstraction of the environment that does not
+%% contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
+%% %%
+%% In a second step, we iteratively refine the relaxed declaration by
+%% adding terms from the original statement of $(\pp{:init})$ while the
+%% number of abstract states in $\bstate_0$ that occur with non-zero
+%% probability according to that refined declaration remains of a
+%% practicable size. In detail, 
+
+
+
+
 
 \begin{figure}[h!]
   \centering
@@ -269,44 +286,44 @@ represent conjunctive or atomic terms.
   \tikzstyle{assumption} = [solid, very thick, draw=black]
   \tikzstyle{selected} = [solid, draw=black]
   \tikzstyle{unused} = [densely dashed, draw=black!40]
-  \subfloat[The initial belief-state with the assumptions made by the continual
-    planner in bold.]{
-      \label{fig:abstraction-a}
-      \begin{tikzpicture}[
-    level 3/.style={tree}]
-    \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
-      child[seclevel] {node[cnode, assumption] (office) {}
-        child {node [pnode, assumption] (box) {}
-          child {node [cnode] (boxp1) {}}
-          child {node [cnode, assumption] (boxp2) {}}
-        }
-        child {node [pnode] (cup) {} 
-          child {node [cnode] (cupp1) {}}
-          child {node [cnode] (cupp2) {}}
-        }
-      }
-      child {node[cnode] (kitchen) {}
-        child {node [pnode] (box2) {} 
-          child {node [cnode] (box2p1) {}}
-          child {node [cnode] (box2p2) {}}
-        }
-      };
-   \tiny
-   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-   \node[above=0 of cat] {$\pp{(category room1)}$};
-   \node[below=0 of kitchen] {$\pp{kitchen}$};
-   \node[below=0 of office] {$\pp{office}$};
-   \node[below=0 of box] {$\pp{(is-in box)}$};
-   \node[below=0 of box2] {$\pp{(is-in box)}$};
-   \node[below=0 of cup] {$\pp{(is-in cup)}$};
-   \node[right=0 of boxp1] {$\pp{place1}$};
-   \node[right=0 of boxp2] {$\pp{place2}$};
-   \node[right=0 of box2p1] {$\pp{place1}$};
-   \node[right=0 of box2p2] {$\pp{place2}$};
-   \node[right=0 of cupp1] {$\pp{place1}$};
-   \node[right=0 of cupp2] {$\pp{place2}$};
-    % \node[node] (kitchen) right of (cat) {};
-  \end{tikzpicture}}
+  %% \subfloat[The initial belief-state with the assumptions made by the continual
+  %%   planner in bold.]{
+  %%     \label{fig:abstraction-a}
+  %%     \begin{tikzpicture}[
+  %%   level 3/.style={tree}]
+  %%   \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
+  %%     child[seclevel] {node[cnode, assumption] (office) {}
+  %%       child {node [pnode, assumption] (box) {}
+  %%         child {node [cnode] (boxp1) {}}
+  %%         child {node [cnode, assumption] (boxp2) {}}
+  %%       }
+  %%       child {node [pnode] (cup) {} 
+  %%         child {node [cnode] (cupp1) {}}
+  %%         child {node [cnode] (cupp2) {}}
+  %%       }
+  %%     }
+  %%     child {node[cnode] (kitchen) {}
+  %%       child {node [pnode] (box2) {} 
+  %%         child {node [cnode] (box2p1) {}}
+  %%         child {node [cnode] (box2p2) {}}
+  %%       }
+  %%     };
+  %%  \tiny
+  %%  \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+  %%  \node[above=0 of cat] {$\pp{(category room1)}$};
+  %%  \node[below=0 of kitchen] {$\pp{kitchen}$};
+  %%  \node[below=0 of office] {$\pp{office}$};
+  %%  \node[below=0 of box] {$\pp{(is-in box)}$};
+  %%  \node[below=0 of box2] {$\pp{(is-in box)}$};
+  %%  \node[below=0 of cup] {$\pp{(is-in cup)}$};
+  %%  \node[right=0 of boxp1] {$\pp{place1}$};
+  %%  \node[right=0 of boxp2] {$\pp{place2}$};
+  %%  \node[right=0 of box2p1] {$\pp{place1}$};
+  %%  \node[right=0 of box2p2] {$\pp{place2}$};
+  %%  \node[right=0 of cupp1] {$\pp{place1}$};
+  %%  \node[right=0 of cupp2] {$\pp{place2}$};
+  %%   % \node[node] (kitchen) right of (cat) {};
+  %% \end{tikzpicture}}
 \qquad
   \subfloat[Removing facts that are not part of an assumption.]{
     \label{fig:abstraction-b}
@@ -341,7 +358,7 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
 \vspace{2mm}
-  \subfloat[Refinement, by adding relevant facts until the $\bstate_0$ size limit is reached.]{
+  \subfloat[Refinement, by adding relevant facts.]{
     \label{fig:abstraction-c}
     \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -378,54 +395,9 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
   
-  \caption{Generating the abstract belief space.}
+  \caption{Abstract belief-state, and refinement.}
 \label{fig:abstraction}
 \end{figure}
-
-In the first step, we remove all facts that are not part of an
-assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
-would proceed in an abstraction of the environment that does not
-contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
-%%
-In a second step, we iteratively refine the relaxed declaration by
-adding terms from the original statement of $(\pp{:init})$ while the
-number of abstract states in $\bstate_0$ that occur with non-zero
-probability according to that refined declaration remains of a
-practicable size. In detail, for each excluded atomic term, we compute
-the {\em entropy} of the active assumptions, {\em conditional} on the
-corresponding proposition.  Loosely speaking, the lower the {\em
-  conditional entropy} of an atom, the more information about the
-assumptions the contingent planner expect to derive from it. Thus,
-propositions that in the first place were excluded are iteratively
-added to the problem posed to the conditional session in increasing
-order according to that measure (Fig. \ref{fig:abstraction-c}).
-
-
-%% In detail, for each excluded atomic term, we compute the {\em
-%% entropy} of the corresponding proposition, {\em conditional} on the
-%% active assumptions. The {\em conditional entropy} measure
-%% is higher the more uncertain that proposition is given truth
-%% assignments to propositions that are the subject of active
-%% assumptions. Propositions that in the first place were excluded are
-%% iteratively added to the problem posed to the conditional session in
-%% increasing order according to that measure.
-
-
-%% In particular, we compute the {\em conditional entropy} of
-%% each excluded proposition given the active assumptions. Propositions
-%% are candidates for addition in increasing order according to that
-%% measure.
-
-%% Of course, it is expensive to measure size exactly,
-%% and in practise we estimate this to be $2^{|\propositions^\#|}$, where
-%% $\propositions^\#$ is the set of propositions in the abstraction that
-%% were not assigned the {\em unknown} value \#. Terms are proposed for
-%% addition because they are probabilistic, and because they were omitted
-%% in the {\em relaxed} visitation characterised by {\em assumptive}
-%% actions in the sequential plan. In each iteration, we add one
-%% candidate term with the largest number of parent terms already in the
-%% candidate tree.
-
 
 
 
