@@ -89,7 +89,7 @@ subterm.}
 \vspace{-1ex}
 \small
 \begin{tabtt}
-(\=:init (= (is-in DORA) kitchen) \+ \\
+(\=:init (= (is-in R2D2) kitchen) \+ \\
        (probabilistic \=.8 (= (is-in box) office)  \\
 		      \>.2 (= (is-in box) kitchen)) \\
        (probabilistic .3 (= (is-in cup) office)  \\
@@ -116,7 +116,7 @@ following flat distribution:
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \hline
 .24 & kitchen & office & office \\
 .06 & kitchen & kitchen & office \\
@@ -234,3 +234,40 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 %% the {\em true}, resp. perceived, locations of objects. In DTPDDL,
 %% these declarations appear as:
 
+
+
+
+If a dual is executed, then the sequential planner must
+replan with $\bstate_0$ equal to the underlying
+belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
+executed, then the current sequential plan is executed until further
+sensing is scheduled, or to completion.
+
+
+
+% \small
+% \begin{tabtt}
+% (\=:init (= (is-in DORA) kitchen) \+ \\
+%        (probabilistic \=.8 (= (is-in box) office)  \\
+% 		      \>.2 (= (is-in box) kitchen))) \\
+% \end{tabtt}
+% \normalsize
+
+% \noindent and therefore, the belief-state $\bstate_0$ is:
+
+% \small
+% \begin{tabular}{cccc}
+% \hline
+% Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+% \hline
+% .8 & kitchen & office & \# \\
+% .2 & kitchen & kitchen & \# \\
+% \hline
+% \end{tabular}
+% \normalsize
+
+ % With
+% regards to abstraction, the contingent and serial sessions apply the
+% same applicability conditions ---i.e., that each effect and condition
+% $\prop$ is specified, $\prop\in\state$--- to actions from the DTPDDL
+% problem description.

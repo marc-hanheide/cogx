@@ -73,7 +73,7 @@ the following assumptions:
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \hline
 %% .24 & kitchen & office & office \\
 %% .06 & kitchen & kitchen & office \\
@@ -97,12 +97,14 @@ to the unique assumption with probability $1$ -- I.e., the union of
 facts from the root conjunctive term. In our example, the starting
 state is:
 
+\small
 \[
 \begin{array}{l}
-\state_0 \equiv \{(=(\pp{is-in}~\pp{DORA})~\pp{kitchen}),\\
+\state_0 \equiv \{(=(\pp{is-in}~\pp{R2D2})~\pp{kitchen}),\\
 \;\;(=(\pp{is-in}~\pp{box})~\#), (=(\pp{is-in}~\pp{cup})~\#)\}.
 \end{array}
 \]
+\normalsize
 
 We also annotate DTPDDL model with an assumptive action
 $\assumptiveS{i}$ for each element $\prob_i (T_i)$, of each
@@ -124,110 +126,101 @@ the union of $\state$ with atomic terms from $T_i$. State
 $\state^\bot$ is an added sink.
 
 
-%% %%
-%% Lastly, we have that if $\action$ has a precondition that is not true
-%% with probability $\theta$, a given threshold, in the underlying belief
-%% $\bstate$, then immediately before it is executed blindly the system
-%% switches to a contingent session (described below).
-
-
-
-
-
-
-
 We now describe the optimisation criteria used during sequential
 sessions. Where $\prob_i$ is the probability that the $i^{th}$
-sequenced action $\action_i$ does not transition to $\state^\bot$, we
-define the value of a trace
-$\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
-deterministic model to equal:
+sequenced action $\action_i$ from trace,
+$\state_0, \action_0,\state_1, \action_1,.., \state_N$, does not
+transition to $\state^\bot$, we have that the optimal trace has value:
 
-\begin{equation}\label{eq:tracevalue}
-V(\state_0, \action_0, \state_1, \action_1,.., \state_N) =  \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
-\end{equation}
+%% define the value of a trace
+%% $\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
+%% deterministic model to equal:
 
-\noindent The optimal trace given a plan, i.e., the sequence of non-assumptive
-actions from the trace, therefore has value:
+%% \small
+%% \begin{equation}\label{eq:tracevalue}
+%% V(\state_0, \action_0, \state_1, \action_1,.., \state_N) =  \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
+%% \end{equation}
+%% \normalsize
 
+%% \noindent The
+%% optimal trace given a plan, i.e., the sequence of non-assumptive
+%% actions from the trace, therefore has value:
+
+\small
 \[
-V^* = \max_{\prob_1, .., \prob_n} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
+V^* = \max_N \max_{\state_0, \action_0,.., \state_N} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
+\normalsize
 
-\noindent which is equal to the maximal 
-additive contribution a trace of the plan can make to
-Eq~\ref{eq:expectedvalue}.  In goal directed problems, where the only
-non-zero reward is received at the first transition to a goal state,
-the Eq~\ref{eq:tracevalue} criteria gives us the behaviour sought
-by \system{FFR$_a$}~\cite{yoon:etal:2007}. Finally, it is
-worth clarifying that although the above discussion has been in terms
-of a trace of length $N$, there is nothing in our approach that
-artificially limits the length of candidate sequential plans.
+\noindent  Here,  $\reward(\state_i, \action_i)$ is the instantaneous
+reward ---i.e., can be negative for action costs, or positive for goal
+achievement--- received for executing action $\action_i$ in state
+$\state_i$. Finally, it is worth clarifying that in practise we do not
+artificially limit the length of traces that the sequential planner
+can consider. Moreover, in our setting there is always a finite
+optimal trace.
 
-
-%% From the perspective of
-%% gradient-based reinforcement learning systems, such as William's
-%% REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
-%% under reasonable assumptions the optimal trace identifies a maximal
-%% gradient step from a uniformly random soft-max policy.
 
 \subsection{DT Sessions}
 
-In a contingent session our switching planner solves a sensing problem
-in an abstract processes defined in terms of the assumptive actions in
-the current trace, and the $(\pp{:init})$ declaration that models the
-underlying belief-state.
+The DT session plans in a {\em small} abstract processes defined
+according to the assumptive actions in the proceeding trace, and the
+$(\pp{:init})$ declaration that models the underlying
+belief-state. Targeted sensing is encouraged by augmenting the reward
+model to reflect the value of knowing the truth about assumptions in
+the trace proposed by the preceding sequential deliberation. In
+detail, all rewards from the original POMDP are
+retained. Additionally, for each $\assumptiveS{i}$ action scheduled by
+the current trace, we have a {\em dual} $\assumptiveDT{i}$ so that
+forall states $\state$:
 
-The focus for contingent planning is on sensing, we therefore give the
-process in this session an augmented reward model.  This reflects the
-value of performing sensing actions in the context of the trace
-proposed by the preceding sequential deliberation. First, all rewards
-from the original POMDP are retained. Then, for each $\assumptiveS{i}$
-action scheduled by the current trace, we have a {\em dual}
-$\assumptiveDT{i}$ so that $\forall\state\in\states$:
-
+\small
 \[
 \reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
 \$(T_i) & \pp{if}~\;\;T_i \not\subseteq \state \\
 \hat\$(T_i) & \pp{otherwise} \\
 \end{array}
 \]
+\normalsize
 
-\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a positive
-(negative) numeric quantity which captures the utility the agent
-receives for correctly (incorrectly) rejecting an assumption. The
-added dual actions are propositionally trivial -- i.e.,
-$\forall\state\in\states$ $\poss(\assumptiveDT{i})
-\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
+\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a 
+relatively\footnote{Compared to rewards from the original process
+model.} small positive (negative) numeric quantity which captures the
+utility the agent receives for correctly (incorrectly) rejecting an
+assumption. Dual action execution is modelled as a self-transition --
+I.e., the process remains in the state from which the dual is
+executed.
 %%
-In order to reduce the number of possible rejections we omit
-assumptions that are not {\em active} with respect to the action,
-\switchAction, whose scheduled execution switched the system into
-the contingent session. An assumption $\assumptiveS{i}$ is active if
+Furthermore, if \switchAction\ is the action that switched the system
+to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
+active} if
 \switchAction\ is not applicable in the sequential model unless
 $\assumptiveS{i}$ is scheduled in the trace prefix
-to \switchAction. For example, if $\pp{DORA}$'s trace is:
+to \switchAction. We only include the duals of active assumptions in
+DT sessions. For example, if the trace is:
 
+\small
 \[
 \begin{array}{l}
 \actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
 \actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}));\\
-(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office});\\
-(\pp{look-for-object}~\pp{DORA}~\pp{cup}~\pp{kitchen});\\
-(\pp{report-is-in}~\pp{box}~\pp{office}); \\
-(\pp{report-is-in}~\pp{cup}~\pp{kitchen})
+(\pp{look}~\pp{box}~\pp{office});
+(\pp{look}~\pp{cup}~\pp{kitchen});\\
+(\pp{report}~\pp{box}~\pp{office}); 
+(\pp{report}~\pp{cup}~\pp{kitchen})
 \end{array}
 \]
+\normalsize
 
 \noindent Taking the switching action \switchAction\ to be
-$(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$, we have that
+$(\pp{look}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
 active, and therefore exclude
 $\actions^{\bullet}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ from the
-POMDP posed to the contingent session. 
+POMDP posed to the DT session. 
 
-We also include another propositionally trivial action
+Given \switchAction, we also include another self-transition action
 $\actions.\poss(\switchAction)$ with the reward property:
 
 \[
@@ -237,23 +230,22 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \end{array}
 \]
 
-For the purposes of successive switching, execution of either a dual
+
+\noindent We note that in our project the dual rewards are sourced
+from a motivational component of our robotic architecture. In this
+paper, for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a positive
+constant, and have $\hat\$(x)= - \$(x)(1 - \prob) / \prob$ where
+$\prob$ is the probability that $x$ is true. For
+$\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
+\$(x)\prob/(1-\prob)$
+%%
+Finally, for the purposes of successive switching, execution of either a dual
 action of the form $\assumptiveDT{i}$, or the
 $\actions.\poss(\switchAction)$, returns control to a sequential
-session. If a dual is executed, then the sequential planner must
-replan with $\bstate_0$ equal to the underlying
-belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
-executed, then the current sequential plan is executed until further
-sensing is scheduled, or to completion. Lastly, we note that in our
-project the rewards, i.e., functions
-$\$,\hat\$:2^\propositions\to\Re$, for the POMDP posed to the
-contingent session are sourced from a motivational component of our
-robotic architecture. In this paper, for $\assumptiveDT{i}$ actions we
-set $\$(x)$ to be a positive constant, and have $\hat\$(x)= - \$(x)(1
-- \prob) / \prob$ where $\prob$ is the probability that $x$ is true. For
-$\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
-\$(x)\prob/(1-\prob)$.\footnote{These values were chosen to encourage
-  sensing.}
+session, which then continues from the underlying belief-state. If an
+assumption was rejected, we prohibit that sequential session from
+making it again.
+%%
 
 %%  We make no assumptions here about how they are
 %% derived.
@@ -389,33 +381,6 @@ represent conjunctive or atomic terms.
   \caption{Generating the abstract belief space.}
 \label{fig:abstraction}
 \end{figure}
-
-% \small
-% \begin{tabtt}
-% (\=:init (= (is-in DORA) kitchen) \+ \\
-%        (probabilistic \=.8 (= (is-in box) office)  \\
-% 		      \>.2 (= (is-in box) kitchen))) \\
-% \end{tabtt}
-% \normalsize
-
-% \noindent and therefore, the belief-state $\bstate_0$ is:
-
-% \small
-% \begin{tabular}{cccc}
-% \hline
-% Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
-% \hline
-% .8 & kitchen & office & \# \\
-% .2 & kitchen & kitchen & \# \\
-% \hline
-% \end{tabular}
-% \normalsize
-
- % With
-% regards to abstraction, the contingent and serial sessions apply the
-% same applicability conditions ---i.e., that each effect and condition
-% $\prop$ is specified, $\prop\in\state$--- to actions from the DTPDDL
-% problem description.
 
 In the first step, we remove all facts that are not part of an
 assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
