@@ -1,0 +1,5 @@
+(:action foreground_model
+	   :parameters (?m - model ?s - model-slot)
+	   
+	   :precondition (forall (?x - Car) (not (or (cool ?c) (and (some ?a ?b) (other ?a ?b))))))
+	   

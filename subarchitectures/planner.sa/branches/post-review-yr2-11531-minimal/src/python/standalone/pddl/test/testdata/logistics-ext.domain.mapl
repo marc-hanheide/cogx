@@ -1,0 +1,72 @@
+;; Logistics domain, PDDL 3.1 version.
+
+(define (domain logistics-extended-object-fluents)
+
+(:requirements :mapl :typing :equality :fluents :durative-actions) 
+
+(:types  truck airplane - vehicle
+         package vehicle - thing
+         airport - location
+         city location thing agent - object)
+
+(:predicates (occupied ?l - location)
+             (interesting ?l - location)
+             (free ?l - location))
+
+(:functions  (city-of ?l - (either location vehicle)) - city
+             (location-of ?t - thing) - (either location vehicle)
+             (num_packages ?v - vehicle) - number
+             (capacity ?v - vehicle) - number
+)
+
+(:action drive
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?to - location)
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+         :effect        (assign (location-of ?t) ?to))
+
+(:action fly
+         :agent         (?a - agent)
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
+
+(:action load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (and (= (location-of ?p) (location-of ?v))
+                             (< (num_packages ?v) (capacity ?v)))
+         :effect        (and (assign (location-of ?p) ?v)
+                             (increase (num_packages ?v) 1))
+)
+
+(:action a_load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (in-domain (location-of ?p) (location-of ?v))
+         :replan        (kval ?a (location-of ?p))
+         :effect        (assign (location-of ?p) ?v))
+
+(:action unload
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) ?v)
+         :effect        (and (assign (location-of ?p) (location-of ?v))
+                             (decrease (num_packages ?v) (/ (+ (* 5 (- 2 1)) (- 3)) 2) ))
+
+)
+
+(:action double_capacity
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle)
+         :effect        (scale-up (capacity ?v) 2)
+
+)
+
+(:action halve_capacity
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle)
+         :effect        (scale-down (capacity ?v) 2)
+
+)
+
+)

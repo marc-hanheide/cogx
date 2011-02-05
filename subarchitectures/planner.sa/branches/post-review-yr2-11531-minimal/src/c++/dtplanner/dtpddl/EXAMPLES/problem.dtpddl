@@ -1,0 +1,27 @@
+(define (problem cogxtask)
+
+(:domain dt-cogx)
+
+(:objects  robot_8_pt_spatial_data - robot
+           place_2_pt_spatial_data place_1_pt_spatial_data - place
+)
+
+(:init  (placestatus place_0_pt_spatial_data trueplace)
+        (connected place_2_pt_spatial_data place_1_pt_spatial_data)
+        (placestatus place_2_pt_spatial_data trueplace)
+        (placestatus place_1_pt_spatial_data trueplace)
+        (connected place_0_pt_spatial_data place_1_pt_spatial_data)
+        (is-in robot_8_pt_spatial_data place_0_pt_spatial_data)
+        (connected place_1_pt_spatial_data place_0_pt_spatial_data)
+        (connected place_1_pt_spatial_data place_2_pt_spatial_data)
+        ;;independant probabilities would probably look like this:
+        (probabilistic 0.5 (label place_0_pt_spatial_data kitchen)
+                       0.2 (label place_0_pt_spatial_data library)
+                       0.3 (label place_0_pt_spatial_data office))
+
+)
+
+(:goal  (and  ))
+(:metric maximize (reward ))
+
+)
