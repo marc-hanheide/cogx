@@ -1,78 +1,63 @@
 
+We now describe our {\em switching} planning system that operates
+according to the continual planning paradigm, given descriptions of
+the current problem and domain in DTPDDL. Recapping, the system {\em
+switches}, in the sense that planning proceeds in interleaved
+sessions, in which the base planner is either {\em sequential}/linear
+or {\em decision-theoretic}.
+%%
+During a sequential session, a rewarding {\em trace} of a possible
+execution is computed using a cost-optimising satisficing planner
+which trades action costs, goal rewards, and determinacy.
+%%
+Formatted as a linear plan, the trace specifies a sequence of actions
+that achieves some reachable goals following a deterministic
+approximation of the problem at hand.
+%%
+Structurally, it is a sequence of elements that are either: (i) ground
+actions from the DTPDDL description of the world, or (ii) atomic {\em
+assumptions}, modelled as deterministic actions, made about the truth
+value of facts that can only be determined at runtime (e.g., that a
+box of cornflakes is located on the corner bench in the kitchen).
+%%
+The system always begins in a sequential session, so that plan
+execution proceeds by applying DTPDDL actions from the trace in
+sequence until the applicability of the next scheduled action is too
+uncertain according to a threshold parameter~(here, 95\%). In that
+eventuality a DT session commences, which tailors sensory processing
+to determine whether the assumptions made in the trace hold, or which
+otherwise acts to achieve the goals. 
 
-We describe our approach that switches between sequential and
-contingent sessions. As a continual planning approach, it proceeds by
-interleaving planning and execution in a deterministic-action POMDP
-described in DTPDDL. During a sequential session, planning is
-performed by a ``classical'' system,\footnote{That is, a planner
-designed to solve fully observable deterministic tasks.}  and
-execution proceeds according to the {\em trace} computed by that
-system. Taking the form of a classical plan, the trace specifies a
-sequence of POMDP actions that achieve the agent's objectives in a
-deterministic approximation, i.e., {\em determinisation}, of the
-problem at hand. More precisely, the trace is an interleaved sequence
-of POMDP actions and {\em assumptive} actions. The latter correspond
-to assumptions the planner makes about the truth value of propositions
--- e.g. that a box of cornflakes is located in the kitchen at the
-third plan step. They are called {\em applicability} assumptions if
-the trace includes an action $\action$ that is not applicable with
-probability $1$ at the belief-state
-\bstate\ that the system is projected to be in when \action\ is
-scheduled for execution, i.e., $\exists\state\in\states\;
-\bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
-scheduling
-\action,  the serial planner makes an assumption about the
-observability of the precondition $\poss(\action)$.
 
-Our approach always begins with a sequential session. Non-assumptive
-actions from the trace are executed in sequence until the
-applicability of the next scheduled action is uncertain. We denote
-that action by \switchAction.  A contingent session then begins that
-tailors sensory processing by the agent to determine whether the
-assumptions made in the trace hold. 
-%%
-We add {\em disconfirm} and {\em confirm} actions to the model, so
-the session is encouraged to judge the assumptions made in the
-trace. On execution of one of those actions, control is returned to
-the sequential session that continues at the current%%{\em underlying}
-belief-state.
-%%
-%% For each assumption we add a {\em
-%% disconfirm} action to the POMDP whose execution is rewarding
-%% (resp. costly) if the assumption is false (resp. true). We also add
-%% one {\em confirm} action that is rewarding (resp. costly) to execute
-%% if $\poss(\switchAction)$ is true (resp. false). If execution of the
-%% contingent plan applies a disconfirm action, then a new sequential
-%% session begins at the {\em underlying} belief-state. If the confirm
-%% action is executed, the sequential session is resumed, and
-%% \switchAction\ is executed. Otherwise, control rests in the continual
-%% session.
-%%
-Because contingent planning is only practical in relatively small
-POMDPs, contingent sessions plan in an abstract decision process
-determined by the current trace. This abstraction is constructed by
-first omitting all propositions that do not feature in the trace, and
-by then iteratively refining the model while the result is of a
-practicable size.
+Because online DT planning in large problems is impractical (we seek
+response times in seconds), DT sessions plan in an abstract process
+determined by the current trace and underlying belief-state. This
+abstraction is constructed by first excluding all propositions (and
+related actions) that are not true of any state in the trace, then
+adding them back, using as a heuristic the entropy of the trace
+assumptions conditional on a candidate proposition. Propositions are
+added, one at a time, until the number of states in the initial
+belief-state reaches a given threshold.\footnote{Our experiments are
+performed using a number of different threshold parameters.}  To the
+resulting abstract model we also add {\em disconfirm} and {\em
+confirm} actions that the contingent session can schedule in order to
+judge an atomic assumption in the trace. In the abstract model these
+actions yield a relatively small reward if the corresponding judgement
+is true (or small penalty otherwise). If a judgement action is
+scheduled for execution the contingent session is terminated, and
+control is returned to a sequential session.
+
 
 Finally, whether proceeding in a sequential or contingent session, our
 continual planner maintains a factored representation of successive
-belief-states by performing belief revision according to
-Eq~\ref{eq:revision}. Moreover, our internal representation of the
-underlying belief-state corresponds more-or-less directly to an
-$(\pp{:init})$ declaration. Our approach uses that distribution: (1)
-as the source of candidate determinisations for sequential planning,
-(2) to determine when to switch, and (3) as a mechanism to guide
-construction of an abstract process for contingent sessions.
+belief-states by performing belief revision. Our internal
+representation of the underlying belief-state corresponds more-or-less
+directly to an $(\pp{:init})$ declaration. That belief-state
+distribution is used: (1) as the source of candidate determinisations
+for sequential planning, (2) in determining when to switch to a DT
+session, and (3) as a mechanism to guide construction of an abstract
+process for contingent sessions.
 
-%% PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
-%% HOW WE DO BELIEF REVISION ACROSS SWITCHING.
-
-%% \Omit{
-%%   Therefore, although our current implementation does not
-%%   explicitly support it, our approach generalises to POMDPs with
-%%   stochastic action models.
-%% }
 
 \subsection{Sequential Planning in POMDPs}
 
