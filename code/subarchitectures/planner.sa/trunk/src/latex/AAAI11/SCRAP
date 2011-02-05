@@ -348,3 +348,18 @@ sessions.
 %% candidate term with the largest number of parent terms already in the
 %% candidate tree.
 
+
+ Figure \ref{fig:abstraction} shows the belief-state of a more
+detailed version of our previous example. The diamonds represent
+probabilistic terms of the state description while circles represent
+conjunctive or atomic terms.
+
+
+The starting belief-state for the abstract process is given in terms
+of a {\em relaxed} $(\pp{:init})$ declaration. We first construct a
+tree which only includes terms from the {\em relaxed} visitation
+characterised by the active {\em assumptive} actions in the current
+sequential plan. Figure \ref{fig:abstraction} shows the belief-state
+of a more detailed version of our previous example. The diamonds
+represent probabilistic terms of the state description while circles
+represent conjunctive or atomic terms. 
