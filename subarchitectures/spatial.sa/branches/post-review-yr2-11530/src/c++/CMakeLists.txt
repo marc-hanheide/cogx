@@ -94,8 +94,7 @@ link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 #add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
@@ -135,7 +134,7 @@ link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 # add_cast_component(Pusher Pusher.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
 
-option(BUILD_AVS NO)
+option(BUILD_AVS YES)
 
 if(BUILD_AVS)
 
