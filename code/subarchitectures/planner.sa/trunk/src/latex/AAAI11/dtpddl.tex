@@ -23,13 +23,13 @@ extension of PPDDL that can express probabilistic models of the
 sensing consequences of acting, to quantitatively capture
 unreliability in perception. There are straightforward compilations
 from problems expressed in DTPDDL to flat (and factored)
-representations of the underlying decision processes. Although similar
+representations of the underlying decision process. Although similar
 to Bryce's POND input language, DTPDDL distinguishes itself by
 explicitly treating state and perceptual symbols separately, and by
 providing distinct declarations for operators (i.e, state model) and
 senses (i.e., observation model). In this last respect, DTPDDL admits
 more compact domain descriptions where sensing effects are common
-across multiple actions. In detail, DTPDDL has perceptual analogues of
+across multiple operators. In detail, DTPDDL has perceptual analogues of
 fluent and predicate symbols. For example our {\em object search}
 domains have:
 
@@ -237,11 +237,11 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 
 
-If a dual is executed, then the sequential planner must
-replan with $\bstate_0$ equal to the underlying
-belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
-executed, then the current sequential plan is executed until further
-sensing is scheduled, or to completion.
+%% If a dual is executed, then the sequential planner must
+%% replan with $\bstate_0$ equal to the underlying
+%% belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
+%% executed, then the current sequential plan is executed until further
+%% sensing is scheduled, or to completion.
 
 
 
