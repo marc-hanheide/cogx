@@ -318,3 +318,33 @@ sessions.
 %% expensive reasoning about contingencies, and possible revisions of
 %% subjective belief according to quantitatively modelled uncertainty in
 %% acting and sensing. 
+
+
+
+
+
+%% In detail, for each excluded atomic term, we compute the {\em
+%% entropy} of the corresponding proposition, {\em conditional} on the
+%% active assumptions. The {\em conditional entropy} measure
+%% is higher the more uncertain that proposition is given truth
+%% assignments to propositions that are the subject of active
+%% assumptions. Propositions that in the first place were excluded are
+%% iteratively added to the problem posed to the conditional session in
+%% increasing order according to that measure.
+
+
+%% In particular, we compute the {\em conditional entropy} of
+%% each excluded proposition given the active assumptions. Propositions
+%% are candidates for addition in increasing order according to that
+%% measure.
+
+%% Of course, it is expensive to measure size exactly,
+%% and in practise we estimate this to be $2^{|\propositions^\#|}$, where
+%% $\propositions^\#$ is the set of propositions in the abstraction that
+%% were not assigned the {\em unknown} value \#. Terms are proposed for
+%% addition because they are probabilistic, and because they were omitted
+%% in the {\em relaxed} visitation characterised by {\em assumptive}
+%% actions in the sequential plan. In each iteration, we add one
+%% candidate term with the largest number of parent terms already in the
+%% candidate tree.
+
