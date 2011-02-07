@@ -73,7 +73,7 @@ private:
 	void createDaiConnectivityFactor(int room1Id, int room2Id);
 	void createDaiSingleRoomFactor(int room1Id);
 	void createDaiObservedObjectPropertyFactor(int room1Id,
-			std::string objectVariableName, bool objectExists);
+			const std::string &objectVariableName, bool objectExists);
 	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
@@ -91,6 +91,11 @@ private:
 
 	/** Reads the default knowledge factors from the Default.SA */
 	void getDefaultKnowledge();
+
+	/** Returns the given probability distribution from the default knowledge.
+	 * The returned pointer is valid as long _defaultKnowledge is not changed.
+	 * At the moment _defaultKnowledge only gets changed on call to getDefaultKnowledge */
+	const SpatialProbabilities::ProbabilityDistribution* getDefaultProbabilityDistribution(const std::string &factorName) const;
 
 	/** Returns probability value from the distribution. */
 	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
