@@ -18,6 +18,7 @@
 
 #include "../Model.hpp"
 #include <QWidget>
+#include <QToolBar>
 #include <vector>
 
 /*abstract class (interface)*/
@@ -33,6 +34,7 @@ public:
    // The contents of the matrix depends on the DisplayContext.
    virtual void getViewPosition(std::vector<double>& data) {}
    virtual void setViewPosition(const std::vector<double>& data) {}
+   virtual void getToolbars(CPtrVector<QToolBar>& toolbars) {}
 };
 
 
