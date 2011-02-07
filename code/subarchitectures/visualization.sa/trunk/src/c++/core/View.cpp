@@ -219,6 +219,18 @@ void CDisplayView::getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered
    }
 }
 
+int CDisplayView::getCameras(CPtrVector<CDisplayCamera>& cameras)
+{
+   CDisplayObject *pObject;
+   CPtrVector<CDisplayObject> objects;
+   int count = 0;
+   FOR_EACH_V(pObject, m_Objects) {
+      if (pObject)
+        count += pObject->getCameras(cameras);
+   }
+   return count;
+}
+
 CViewedObjectState* CDisplayView::getObjectState(const std::string& id)
 {
    return &m_ObjectState.m_childState[id]; // if it doesn't exist, std::map creates one

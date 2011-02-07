@@ -38,9 +38,10 @@ namespace cogx { namespace display {
 
 std::auto_ptr<CRenderer> CLuaGlScript::renderGL(new CLuaGlScript_RenderGL());
 
-CLuaGlScript::CScript::CScript()
+CLuaGlScript::CScript::CScript(CLuaGlScript* pOwner_)
 {
    luaS = NULL;
+   pOwner = pOwner_;
 }
 
 CLuaGlScript::CScript::~CScript()
@@ -120,6 +121,11 @@ void CLuaGlScript::CScript::initLuaState()
       lua_sethook(luaS, &FunctionHook, LUA_MASKCALL | LUA_MASKRET, 0);
 #endif
 
+      // Enable interaction with this object from Lua
+      // (the pointer will be passed to various functions in gllua/v11n.cpp)
+      lua_pushlightuserdata(luaS, pOwner);
+      lua_setglobal(luaS, "_v11n_script_object_");
+
       // application specific bindings
       tolua_gl_open(luaS);
       tolua_glu_open(luaS);
@@ -131,6 +137,7 @@ void CLuaGlScript::CScript::initLuaState()
       // load some utility scripts
       loadScript(luacode_displist_lua);
       loadScript(luacode_models_lua);
+      loadScript(luacode_camera_lua);
    }
 }
 
@@ -197,10 +204,12 @@ CLuaGlScript::~CLuaGlScript()
    CScript* pModel;
    //IceUtil::RWRecMutex::WLock lock(_objectMutex);
    CDisplayObject::WriteLock lock(*this);
-   FOR_EACH_V(pModel, m_Models) {
+   FOR_EACH_V(pModel, m_Scripts) {
       if (pModel) delete pModel;
    }
-   m_Models.erase(m_Models.begin(), m_Models.end());
+   m_Scripts.erase(m_Scripts.begin(), m_Scripts.end());
+
+   m_Cameras.delete_all();
 }
 
 void CLuaGlScript::loadScript(const std::string& partId, const std::string& script)
@@ -208,16 +217,16 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
    CScript* pModel = NULL;
    // IceUtil::RWRecMutex::WLock lock(_objectMutex);
    CDisplayObject::WriteLock lock(*this);
-   // if (m_Models.find(partId)->second != NULL) {
-   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
-   if (itExtng != m_Models.end()) {
-      pModel = m_Models[partId];
+   // if (m_Scripts.find(partId)->second != NULL) {
+   typeof(m_Scripts.begin()) itExtng = m_Scripts.find(partId);
+   if (itExtng != m_Scripts.end()) {
+      pModel = m_Scripts[partId];
       //printf("Replacing existing script\n");
    }
 
    if (pModel == NULL) {
-      pModel = new CScript();
-      m_Models[partId] = pModel;
+      pModel = new CScript(this);
+      m_Scripts[partId] = pModel;
    }
 
    try {
@@ -229,14 +238,14 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 
 bool CLuaGlScript::removePart(const std::string& partId)
 {
-   typeof(m_Models.begin()) it = m_Models.find(partId);
+   typeof(m_Scripts.begin()) it = m_Scripts.find(partId);
    bool removed = false;
    //if (it->second != NULL) {
-   if (it != m_Models.end()) {
+   if (it != m_Scripts.end()) {
       // IceUtil::RWRecMutex::WLock lock(_objectMutex);
       CDisplayObject::WriteLock lock(*this);
-      CScript* pModel = m_Models[partId];
-      m_Models.erase(it);
+      CScript* pModel = m_Scripts[partId];
+      m_Scripts.erase(it);
       if (pModel) {
          delete pModel;
 	 removed = true;
@@ -267,8 +276,8 @@ void CLuaGlScript::setPose3D(const std::string& partId, const std::vector<double
    //assert(rotation.size() == 4);
 
    //TomGine::tgRenderModel* pModel = NULL;
-   //if (m_Models.find(partId)->second != NULL) {
-   //   pModel = m_Models[partId];
+   //if (m_Scripts.find(partId)->second != NULL) {
+   //   pModel = m_Scripts[partId];
    //}
    //if (! pModel) return;
 
@@ -281,20 +290,50 @@ void CLuaGlScript::setPose3D(const std::string& partId, const std::vector<double
    //pModel->m_pose.q.w = rotation[3];
 }
 
+void CLuaGlScript::setCamera(char* name, 
+      double xFrom, double yFrom, double zFrom, // camera positon
+      double xTo, double yTo, double zTo,       // camera direction
+      double xUp, double yUp, double zUp)       // camera orientation
+{
+   CDisplayCamera* pCamera = 0;
+   FOR_EACH(pCamera, m_Cameras) {
+      if (pCamera->name == name) break;
+   }
+   if (! pCamera) {
+      pCamera = new CDisplayCamera();
+      pCamera->name = name;
+      m_Cameras.push_back(pCamera);
+   }
+   if (pCamera) {
+      pCamera->setFromPoint(xFrom, yFrom, zFrom);
+      pCamera->setToPoint(xTo, yTo, zTo);
+      pCamera->setUpVector(xUp, yUp, zUp);
+   }
+}
+
+int CLuaGlScript::getCameras(CPtrVector<CDisplayCamera>& cameras)
+{
+   CDisplayCamera* pCamera;
+   FOR_EACH(pCamera, m_Cameras) {
+      cameras.push_back(pCamera);
+   }
+   return m_Cameras.size();
+}
+
 void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CLuaGlScript_RenderGL::draw");
-   if (pObject == NULL) return;
+   if (! pObject) return;
    CLuaGlScript *pModel = dynamic_cast<CLuaGlScript*>(pObject);
-   if (pModel == NULL) return;
-   if (pModel->m_Models.size() < 1) return;
+   if (! pModel) return;
+   if (pModel->m_Scripts.size() < 1) return;
    DMESSAGE("Models present.");
 
    CLuaGlScript::CScript* pPart;
    // Prevent script modification while executing
    //IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
    CDisplayObject::ReadLock lock(*pObject);
-   FOR_EACH_V(pPart, pModel->m_Models) {
+   FOR_EACH_V(pPart, pModel->m_Scripts) {
       if (!pPart) continue;
       glPushMatrix();
       pPart->exec();
@@ -323,3 +362,6 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
 //     8.5ms    : luaL_loadstring
 //     0.03ms   : pcall (the string is parsed)
 //     0.85ms   : exec.pcall (call to render())
+
+// vim:set fileencoding=utf-8 sw=3 ts=8 et:vim
+
