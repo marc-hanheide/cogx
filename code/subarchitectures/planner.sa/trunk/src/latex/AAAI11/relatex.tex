@@ -8,32 +8,33 @@
 %% \citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) take this
 %% approach in a 
 
-
+%%  ---essentially the idea that
+%% it does not matter what the value of the variable you are trying to
+%% observe is---
 
 Addressing task and observation planning specifically, there have been
 a number of recent developments where the underlying problem is
 modelled as a POMDP.
 %%
 For vision algorithm
-selection,~\citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) exploit a
-natural hierarchical decomposition of the underlying POMDP into
-subproblems where decision-theoretic planning is reasonably
-fast. \citeauthor{doshi08:pref_elic}~(\citeyear{doshi08:pref_elic})
+selection,~\citeauthor{hippo-jnl}~(\citeyear{hippo-jnl}) exploit an
+explicitly modelled hierarchical decomposition of the underlying
+POMDP. \citeauthor{doshi08:pref_elic}~(\citeyear{doshi08:pref_elic})
 represent a preference elicitation problem as a POMDP and take
-advantage of symmetry in the belief space ---essentially the idea that
-it does not matter what the value of the variable you are trying to
-observe is--- to exponentially shrink the state space. Although we
-have been actively exploring the \citeauthor{doshi08:pref_elic}
-approach, those exploitable structures are not present in problems we
-have considered so far due to the task planning requirement. 
+advantage of symmetry in the belief space to exponentially shrink the
+state space. Although we have been actively exploring
+the \citeauthor{doshi08:pref_elic} approach, those exploitable
+symmetries are not present in problems we have considered so far due
+to the task planning requirement.
 %%
-%%
-Finally,
-our approach is in a similar vein to the more classical {\em
-dual-mode} control~\cite{cassandra96actingunder}, however in our case
-entropy reduction is targeted by planning in an abstract process which
-is informed by one execution trace ---computed by a {\em classical}
-planner--- and the underlying belief-state.
+Finally, our approach is in a similar vein to {\em dual-mode}
+control~\cite{cassandra96actingunder}, in our case we use a {\em
+classical} planner to provide guidance for reducing entropy.
+
+
+%% entropy reduction is targeted by planning in an abstract process which
+%% is informed by one execution trace ---computed by a {\em classical}
+%% planner--- and the underlying belief-state.
 
 
 There has also been much recent work on scaling offline approximate
