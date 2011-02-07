@@ -48,14 +48,15 @@ entropy and utility focuses.
 There has also been much recent work on scaling offline approximate
 POMDP solution procedures to medium-sized instances. Recent
 contributions propose more efficient belief-point sampling
-schemes~\cite{kurniawati:etal:2010,shani:etal:08}, and structured
+schemes~\cite{kurniawati:etal:2010,shani:etal:08}, and factored
 representations with procedures that can efficiently exploit
-them~\cite{brunskill:russell:2010,shani:etal:2008}. Offline domain
-independent systems scale to {\em logistics} problems with $2^{22}$
-states~\cite{shani:etal:2008}, taking over an hour to converge, and
-around 10 seconds on average to perform each Bellman
+structures in those
+representations~\cite{brunskill:russell:2010,shani:etal:2008}. Offline
+domain independent systems scale to {\em logistics} problems with
+$2^{22}$ states~\cite{shani:etal:2008}, taking over an hour to
+converge, and around 10 seconds on average to perform each Bellman
 backup. \citeauthor{brunskill:russell:2010} are able to solve problems
-with as many as $10^{30}$ states, by further exploiting certain
+with approximately $10^{30}$ states, by further exploiting certain
 problem features -- E.g., problems where no actions with negative
 effects.
 %%
@@ -69,7 +70,7 @@ expensive \emph{problem-specific} offline processing in order to yield
 good behaviours.
 %%
 A {\em very} recent and promising online approach for
-large POMDPs employs Monte-Carlo sampling to break the curse of
+larger POMDPs employs Monte-Carlo sampling to break the curse of
 dimensionality in situations where goal reachability is {\em easily}
 determined~\cite{silver:veness:2010}. 
 
