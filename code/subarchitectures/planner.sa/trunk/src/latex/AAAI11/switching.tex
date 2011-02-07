@@ -198,7 +198,7 @@ active} if
 \switchAction\ is not applicable in the sequential model unless
 $\assumptiveS{i}$ is scheduled in the trace prefix
 to \switchAction. We only include the duals of active assumptions in
-DT sessions. For example, if the trace is:
+DT sessions. Continuing our simplified example, if the trace is:
 
 \small
 \[
@@ -229,21 +229,26 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \end{array}
 \]
 
-
-\noindent Usually dual rewards are sourced
-from a motivational component of our robotic architecture. In this
-paper, for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a positive
+Execution of either a dual action $\assumptiveDT{i}$, or the
+$\actions.\poss(\switchAction)$, returns control to a sequential
+session, which then continues from the underlying
+belief-state. Turning to the detail of dual rewards, in our integrated
+system these are sourced from a motivational subsystem. In this paper,
+for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a small positive
 constant, and have $\hat\$(x)= - \$(x)(1 - \prob) / \prob$ where
 $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
 \$(x)\prob/(1-\prob)$
+
+
+
+\Omit{
 %%
-Finally, execution of either a dual action $\assumptiveDT{i}$, or the
-$\actions.\poss(\switchAction)$, returns control to a sequential
-session, which then continues from the underlying belief-state. If an
+Finally, 
+If an
 assumption was rejected, we prohibit that sequential session from
 making it again.
-
+}
 
 
 The process posed to a DT session is abstract. The abstraction is
