@@ -23,11 +23,12 @@
 QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
    DTRACE("QCastViewGL::QCastViewGL");
-   pView = NULL;
+   pView = 0;
    xRot = 0;
    yRot = 0;
    zRot = 0;
    zoomLevel = 0;
+   m_pCameraCombo = 0;
    //m_camera.eye.set(0, 0, 5);
    //m_camera.view.set(0, 0, -1);
 }
@@ -54,19 +55,52 @@ void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
    // Look from the first camera
    CPtrVector<cogx::display::CDisplayCamera> cameras;
    pView->getCameras(cameras);
-   if (cameras.size() > 0) {
-      cogx::display::CDisplayCamera *pCam = cameras.front();
-      m_camera.eye.set(pCam->xFrom, pCam->yFrom, pCam->zFrom);
-      pCam->getDirection(m_camera.view.x, m_camera.view.y, m_camera.view.z);
-      m_camera.up.set(pCam->xUp, pCam->yUp, pCam->zUp);
-      std::cout << " *** Camera set to " << pCam->name << std::endl;
-   }
+   if (cameras.size() > 0) selectCamera(cameras.front());
    update();
+}
+
+void QCastViewGL::selectCamera(cogx::display::CDisplayCamera* pCamera)
+{
+   if (! pCamera) return;
+   m_camera.eye.set(pCamera->xFrom, pCamera->yFrom, pCamera->zFrom);
+   pCamera->getDirection(m_camera.view.x, m_camera.view.y, m_camera.view.z);
+   m_camera.up.set(pCamera->xUp, pCamera->yUp, pCamera->zUp);
+   //std::cout << " *** Camera set to " << pCamera->name << std::endl;
 }
 
 void QCastViewGL::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    if (pView == this->pView) update();
+}
+
+void QCastViewGL::onCameraItemChanged(int index)
+{
+   CPtrVector<cogx::display::CDisplayCamera> cameras;
+   pView->getCameras(cameras);
+   if (index >= cameras.size()) return;
+   selectCamera(cameras[index]);
+}
+
+void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
+{
+   if (! pView) return;
+   CPtrVector<cogx::display::CDisplayCamera> cameras;
+   pView->getCameras(cameras);
+   if (cameras.size() < 1) return;
+   QToolBar *pBar = new QToolBar(this); // parent will be reset in QViewContainer
+   if (pBar) {
+     m_pCameraCombo = new QComboBox(pBar);
+
+     cogx::display::CDisplayCamera* pCamera;
+     FOR_EACH(pCamera, cameras) {
+        m_pCameraCombo->addItem(QString::fromStdString(pCamera->name));
+     }
+
+     pBar->connect(m_pCameraCombo, SIGNAL(activated(int)), this, SLOT(onCameraItemChanged(int)));
+
+     pBar->addWidget(m_pCameraCombo);
+     toolbars.push_back(pBar);
+   }
 }
 
 static void qNormalizeAngle(float &angle)

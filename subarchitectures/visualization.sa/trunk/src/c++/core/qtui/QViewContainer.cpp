@@ -27,6 +27,8 @@
 #include "QCastPlugins.hpp"
 #endif
 #include <QVBoxLayout>
+#include <QToolBar>
+#include <QToolButton>
 
 #include "../convenience.hpp"
 
@@ -83,7 +85,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    // TODO: check if the current widget supports view's m_preferredContext
    // otherwise delete the view
    removeUi();
-   QLayout *pLayout = new QVBoxLayout();
+   QVBoxLayout *pLayout = new QVBoxLayout();
    setLayout(pLayout);
 
    // TODO: Also create toolbars for active views!
@@ -129,6 +131,17 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
          m_viewPosMap.find(QString::fromStdString(pView->m_id));
       if (ivp != m_viewPosMap.end()) 
          m_pDisplay->setViewPosition(ivp.value());
+
+      // Toolbars are created after setModel and setView
+      CPtrVector<QToolBar> bars;
+      m_pDisplay->getToolbars(bars);
+      QToolBar *pBar;
+      FOR_EACH(pBar, bars) {
+         if (pBar) {
+            pBar->setParent(this);
+            pLayout->insertWidget(0, pBar);
+         }
+      }
    }
 }
 
