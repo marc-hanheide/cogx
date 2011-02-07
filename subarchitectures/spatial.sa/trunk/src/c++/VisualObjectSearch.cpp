@@ -33,7 +33,7 @@ namespace spatial
 	return new VisualObjectSearch();
       }
   } 
-  VisualObjectSearch::VisualObjectSearch() {
+  VisualObjectSearch::VisualObjectSearch() : m_sampler(0) {
     // TODO Auto-generated constructor stub
     // If we're not building the map it means we're using an already built one. Hence, read it.		         
     m_bEvaluation = false;
