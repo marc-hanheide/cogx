@@ -36,33 +36,55 @@ is informed by one execution trace ---computed by a {\em classical}
 planner--- and the underlying belief-state.
 
 
-More generally, there has been much recent work on scaling POMDP
-solution procedures to medium-sized
-instances~\cite{shani:etal:08,KurHsu08}. In that
-setting \citeauthor{kurniawati:etal:2010}~(\citeyear{kurniawati:etal:2010})
-recently addressed an inefficiency of offline point-based techniques
-in problems with medium length planning horizons, however their
-approach take tens of minutes to good plans, and only scales to tens
-of thousands of states. In the case of general domain-independent
-factored systems, the state-of-the-art scales to relatively small
-problems with $2^{22}$ states~\cite{shani:etal:2008}. At their limit,
-these procedures take over an hour to converge, and $\sim10$ seconds
-on average to perform a single Bellman backup.  For classes of POMDP
-that feature exploitable structures (e.g., no actions with negative
-effects), problems with as many as $10^{30}$ states can be targeted by
-such offline procedures~\cite{brunskill:russell:2010}. Moving someway
-towards addressing real-time decision making, recent online POMDP
-solution procedures have been developed which can exploit highly
-approximate value functions -- typically computed using a point-based
+There has also been much recent work on scaling offline approximate
+POMDP solution procedures to medium-sized instances. Recent
+contributions propose more efficient belief-point sampling
+schemes~\cite{kurniawati:etal:2010,shani:etal:08}, and structured
+representations with procedures that can efficiently exploit
+them~\cite{brunskill:russell:2010,shani:etal:2008}. Offline domain
+independent systems scale to {\em logistics} problems with $2^{22}$
+states~\cite{shani:etal:2008}, taking over an hour to converge, and
+around 10 seconds on average to perform each Bellman
+backup. \citeauthor{brunskill:russell:2010} are able to solve problems
+with as many as $10^{30}$ states, by further exploiting certain
+problem features -- E.g., no actions with negative effects.
+%%
+Moving someway towards supporting real-time decision making, recent
+online POMDP solution procedures have been developed which leverage
+highly approximate value functions -- computed using an offline
 procedure -- and heuristics in forward
-search~\cite{ross:etal:2008}. Their applicability in our setting is
-limited, firstly because they only scale to smaller problems, with
-thousands of states, and also due to the large amount of
-\emph{problem-specific} offline processing that might be required to get useful
-search guidance. A {\em very} recent and promising online approach for
+search~\cite{ross:etal:2008}. These approaches are applicable in
+relatively small problems, and can require
+expensive \emph{problem-specific} offline processing in order to yield
+good behaviours.
+%%
+A {\em very} recent and promising online approach for
 large POMDPs employs Monte-Carlo sampling to break the curse of
 dimensionality in situations where goal reachability is {\em easily}
-determined~\cite{silver:veness:2010}.
+determined~\cite{silver:veness:2010}. 
+
+%% Their applicability in our setting is
+%% limited, firstly because they only scale to smaller problems, with
+%% thousands of states, and also due to the large amount of
+%% \emph{problem-specific} offline processing that might be required to get useful
+%% search guidance. 
+
+
+%%  In that
+%% setting \citeauthor{kurniawati:etal:2010}~(\citeyear{})
+%% recently addressed an inefficiency of offline point-based techniques
+%% in problems with medium length planning horizons, however their
+%% approach take tens of minutes to good plans, and only scales to tens
+%% of thousands of states. In the case of general domain-independent
+%% factored systems, the state-of-the-art scales to relatively small
+%% problems with $2^{22}$ states~\cite{shani:etal:2008}. 
+
+%% At their limit,
+%% these procedures take over an hour to converge, and $\sim10$ seconds
+%% on average to perform a single Bellman backup.  For classes of POMDP
+%% that feature exploitable structures (e.g., no actions with negative
+%% effects), problems with as many as $10^{30}$ states can be targeted by
+%% such offline procedures~\cite{brunskill:russell:2010}. 
 
 
 %% Although we suppose it an interesting
