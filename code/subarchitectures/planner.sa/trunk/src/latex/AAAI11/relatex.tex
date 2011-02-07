@@ -28,8 +28,16 @@ symmetries are not present in problems we consider due to the task
 planning requirement.
 %%
 Finally, our approach is in a similar vein to {\em dual-mode}
-control~\cite{cassandra96actingunder}, in our case we use a {\em
-classical} planner to provide guidance for reducing entropy.
+control~\cite{cassandra96actingunder}, where planning switches between
+entropy and utility focuses.
+
+%% serial planning in
+%% problem determinisations underlines strategies to goal achievement,
+%% and 
+
+%% in our case we use serial
+%% planning in a determinisation of the underlying process to guide DT
+%% sessions, which typically act to reducing entropy.
 
 
 %% entropy reduction is targeted by planning in an abstract process which
@@ -48,7 +56,8 @@ states~\cite{shani:etal:2008}, taking over an hour to converge, and
 around 10 seconds on average to perform each Bellman
 backup. \citeauthor{brunskill:russell:2010} are able to solve problems
 with as many as $10^{30}$ states, by further exploiting certain
-problem features -- E.g., no actions with negative effects.
+problem features -- E.g., problems where no actions with negative
+effects.
 %%
 Moving someway towards supporting real-time decision making, recent
 online POMDP solution procedures have been developed which leverage
@@ -63,6 +72,33 @@ A {\em very} recent and promising online approach for
 large POMDPs employs Monte-Carlo sampling to break the curse of
 dimensionality in situations where goal reachability is {\em easily}
 determined~\cite{silver:veness:2010}. 
+
+
+In the direction of leveraging {\em classical} systems/approaches for
+planning under uncertainty, the most highlighted system to date has
+been \system{FFR$_a$}~\cite{yoon:etal:2007}; The winning entry from
+the probabilistic track of the 2004 International Planning
+Competition.  In the continual paradigm, \system{FFR$_a$}
+uses \system{FF} to compute sequential plans and execution traces.
+%%
+More computationally expensive approaches in this vein combine
+sampling strategies on valuations over {\em runtime variables} with
+deterministic planning procedures~\cite{yoon:etal:2008}. %% The outcome is typically a more
+%% robust sequential plan, or contingent
+%% plan~\cite{majercik:2006}. 
+
+Also leveraging deterministic planners in problems that feature
+uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
+$T_0$~\cite{palacios:geffner:2009} demonstrate how conformant planning
+---i.e., sequential planning in unobservable worlds--- can be modelled
+as a deterministic problem, and therefore solved using sequential
+systems. In this conformant setting, advances have been towards
+compact representations of beliefs amenable to existing best-first
+search planning procedures, and lazy evaluations of beliefs. Most
+recently this research thread has been extended to contingent planning
+in fully observable non-deterministic
+environments~\cite{albore:etal:2009}.
+
 
 %% Their applicability in our setting is
 %% limited, firstly because they only scale to smaller problems, with
@@ -95,30 +131,7 @@ determined~\cite{silver:veness:2010}.
 %% planning.
 
 
-In the direction of leveraging {\em classical} systems/approaches for
-planning under uncertainty, the most highlighted system to date has
-been \system{FFR$_a$}~\cite{yoon:etal:2007}; The winning entry from
-the probabilistic track of the 2004 International Planning
-Competition.  In the continual paradigm, \system{FFR$_a$}
-uses \system{FF} to compute sequential plans and execution traces.
-%%
-More computationally expensive approaches in this vein combine
-sampling strategies on valuations over {\em runtime variables} with
-deterministic planning procedures~\cite{yoon:etal:2008}. %% The outcome is typically a more
-%% robust sequential plan, or contingent
-%% plan~\cite{majercik:2006}. 
 
-Also leveraging deterministic planners in problems that feature
-uncertainty, \system{Conformant-FF}~\cite{hoffmann:brafman:2006} and
-$T_0$~\cite{palacios:geffner:2009} demonstrate how conformant planning
----i.e., sequential planning in unobservable worlds--- can be modelled
-as a deterministic problem, and therefore solved using sequential
-systems. In this conformant setting, advances have been towards
-compact representations of beliefs amenable to existing best-first
-search planning procedures, and lazy evaluations of beliefs. Most
-recently this research thread has been extended to contingent planning
-in fully observable non-deterministic
-environments~\cite{albore:etal:2009}.
 %%
 %% The continual planning system that motivated our
 %% project~\cite{brenner:nebel:jaamas09} also has this characteristic,
