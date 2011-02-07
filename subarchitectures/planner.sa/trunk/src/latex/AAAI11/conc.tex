@@ -7,7 +7,7 @@ planning. Given a DTPDDL model of the environment, sequential planning
 is used to compute an initial deterministic sequential plan and
 complementary runtime evolution of the decision process. That plan is
 executed until testing of an assumption about the runtime state is
-scheduled. At that point a contingent session performs some sensing
+scheduled. At that point a DT session performs some sensing
 which determines whether or not the sequential session should be
 allowed to continue, or otherwise acts to achieve the overall
 objectives. We find our approach performs quickly and relatively
@@ -18,9 +18,9 @@ planning problems.
 The most pressing item for future research, is to develop a scheme
 whereby the serial planner can relax {\em executability} assumptions,
 so that conformant (or semi-conformant) plans can be executed without
-interruption by a contingent session. A more general criticism of
+interruption by a DT session. A more general criticism of
 switching continual planning concerns interleaved sequential and
-contingent sessions failing to make any progress towards the
+DT sessions failing to make any progress towards the
 objectives. For example, in the worst case we can have each sequential
 session producing an identical plan, and each decision-theoretic
 session rejecting it without further sensing. Although this has not
