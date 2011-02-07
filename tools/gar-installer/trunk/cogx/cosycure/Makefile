@@ -4,14 +4,13 @@ CATEGORIES = bootstrap
 DISTFILES = $(GARNAME).tgz
 MAINTAINER = mhanheid
 
-MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/kth/cosycure/
+MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/nah/cosycure/trunk/
 
-
-LIBDEPS = contrib/peekabot
+#LIBDEPS = contrib/peekabot
 
 DEB_PACKAGES=
 
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 
 CONFIGURE_SCRIPTS = $(WORKSRC)/configure
