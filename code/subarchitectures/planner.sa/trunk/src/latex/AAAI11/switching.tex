@@ -14,7 +14,7 @@ Formatted as a linear plan, the trace specifies a sequence of actions
 that achieves some reachable goals following a deterministic
 approximation of the problem at hand.
 %%
-Structurally, it is a sequence of elements that are either: (i) ground
+Structurally, a trace is a sequence of elements that are either: (i) ground
 actions from the DTPDDL description of the world, or (ii) atomic {\em
 assumptions}, modelled as deterministic actions, made about the truth
 value of facts that can only be determined at runtime (e.g., that a
@@ -33,22 +33,23 @@ Because online DT planning in large problems is impractical (we seek
 response times in seconds), DT sessions plan in an abstract process
 determined by the current trace and underlying belief-state. This
 abstraction is constructed by first excluding all propositions (and
-related actions) that are not true of any state in the trace, then
-adding them back, using as a heuristic the entropy of the trace
-assumptions conditional on a candidate proposition. Propositions are
-added, one at a time, until the number of states in the initial
-belief-state reaches a given threshold.\footnote{Our experiments are
-performed using a number of different threshold parameters.}  To the
-resulting abstract model we also add {\em disconfirm} and {\em
-confirm} actions that the contingent session can schedule in order to
-judge an atomic assumption in the trace. In the abstract model these
-actions yield a relatively small reward if the corresponding judgement
-is true (or small penalty otherwise). If a judgement action is
-scheduled for execution the contingent session is terminated, and
-control is returned to a sequential session.
+related actions) that are not true, or {\em assumed } true, of states
+in the trace, then adding them back, using as a heuristic the entropy
+of the trace assumptions conditional on a candidate
+proposition. Propositions are added, one at a time, until the number
+of states in the initial belief-state reaches a given
+threshold.\footnote{Our experiments are performed using a number of
+different threshold parameters.}  To the resulting abstract model we
+also add {\em disconfirm} and {\em confirm} actions that the
+DT session can schedule in order to judge an atomic assumption
+in the trace. In the abstract model these actions yield a relatively
+small reward if the corresponding judgement is true (or small penalty
+otherwise). If a judgement action is scheduled for execution the
+DT session is terminated, and control is returned to a
+sequential session.
 
 
-Finally, whether proceeding in a sequential or contingent session, our
+Finally, whether proceeding in a sequential or DT session, our
 continual planner maintains a factored representation of successive
 belief-states by performing belief revision. Our internal
 representation of the underlying belief-state corresponds more-or-less
@@ -56,7 +57,7 @@ directly to an $(\pp{:init})$ declaration. That belief-state
 distribution is used: (1) as the source of candidate determinisations
 for sequential planning, (2) in determining when to switch to a DT
 session, and (3) as a mechanism to guide construction of an abstract
-process for contingent sessions.
+process for DT sessions.
 
 
 \subsection{Sequential Sessions}
@@ -128,9 +129,10 @@ $\state^\bot$ is an added sink.
 
 We now describe the optimisation criteria used during sequential
 sessions. Where $\prob_i$ is the probability that the $i^{th}$
-sequenced action $\action_i$ from trace,
-$\state_0, \action_0,\state_1, \action_1,.., \state_N$, does not
-transition to $\state^\bot$, we have that the optimal trace has value:
+sequenced action, $\action_i$, from a trace
+$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
+does not transition to $\state^\bot$, we have that the optimal trace
+has value:
 
 %% define the value of a trace
 %% $\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the

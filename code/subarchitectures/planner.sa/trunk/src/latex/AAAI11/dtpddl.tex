@@ -30,8 +30,8 @@ providing distinct declarations for operators (i.e, state model) and
 senses (i.e., observation model). In this last respect, DTPDDL admits
 more compact domain descriptions where sensing effects are common
 across multiple operators. In detail, DTPDDL has perceptual analogues of
-fluent and predicate symbols. For example our {\em object search}
-domains have:
+fluent and predicate symbols. For example a simple {\em object search}
+domains would have:
 
 \vspace{-1ex}
 \small
@@ -48,12 +48,12 @@ domains have:
 objects, and the second the instantaneous sensing of objects
 following application of an action with sensing consequences.
 %%
-To model sensing capabilities, we have operator-like declarations,
-with preconditions expressed using state and action symbols, and
-uniformly positive effects over perceptual symbols. For example, where
-{\em look-for-object} is the operator that applies an object detection
-algorithm at a specific place, in a simplified {\em object search} task
-we have:
+To model sensing capabilities, we have operator-like ``sense''
+declarations, with preconditions expressed using state and action
+symbols, and uniformly positive effects over perceptual symbols. For
+example, where {\em look-for-object} is the operator that applies an
+object detection algorithm at a specific place, an {\em
+object search} task will have:
 
 \vspace{-1ex}
 \small
@@ -70,6 +70,9 @@ we have:
 \end{tabtt}
 \normalsize
 \vspace{-3ex}
+
+\noindent I.e., there is a 10\% {\em false positive} rate, and 20\%
+  probability of a {\em false negative}.
 
 We now review the DTPDDL syntax for describing an initial state
 distribution, taken verbatim from PPDDL, in order to aid us in
