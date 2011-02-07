@@ -33,6 +33,7 @@ class CDisplayObjectPart;
 class CDisplayObject;
 class CDisplayView;
 class CDisplayModel;
+class CDisplayCamera;
 class CRasterImage;
 class CRenderer;
 class CGarbage;
@@ -206,6 +207,10 @@ public:
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
    virtual void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false);
+   virtual int getCameras(CPtrVector<CDisplayCamera>& cameras)
+   {
+      return 0;
+   }
 
    // Returns true if the part existed and was successfully removed.
    virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) = 0;
@@ -243,6 +248,49 @@ public:
    virtual void draw(CDisplayView* pView, const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 
+// Objects may define positions from which they are best visible.
+class CDisplayCamera
+{
+public:
+   std::string name;
+   double xFrom, yFrom, zFrom; // Camera position
+   double xTo, yTo, zTo;       // Camera is looking at this point
+   double xUp, yUp, zUp;       // Rotation around camera axis
+   double viewAngle;           // Camera 'zoom', in degrees
+
+public:
+   CDisplayCamera()
+   {
+      xFrom = yFrom = zFrom = 0;
+      xTo = yTo = 0; zTo = 1;
+      xUp = zUp = 0; yUp = 1;
+      viewAngle = 45;
+   }
+   void setFromPoint(double x, double y, double z)
+   {
+      xFrom = x;
+      yFrom = y;
+      zFrom = z;
+   }
+   void setToPoint(double x, double y, double z)
+   {
+      xTo = x;
+      yTo = y;
+      zTo = z;
+   }
+   void setUpVector(double x, double y, double z)
+   {
+      xUp = x;
+      yUp = y;
+      zUp = z;
+   }
+   void getDirection(double& x, double& y, double& z)
+   {
+      x = xTo - xFrom;
+      y = yTo - yFrom;
+      z = zTo - zFrom;
+   }
+};
 
 // A view defines a set of objects to be displayed side by side.
 // It also defines the layout of the objects.
@@ -289,6 +337,8 @@ public:
 
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
+   
+   int getCameras(CPtrVector<CDisplayCamera>& cameras);
 
 public:
    // CGuiElementObserver

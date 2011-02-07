@@ -50,6 +50,17 @@ void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
    if (pView != NULL) {
       pView->viewObservers.addObserver(this);
    }
+
+   // Look from the first camera
+   CPtrVector<cogx::display::CDisplayCamera> cameras;
+   pView->getCameras(cameras);
+   if (cameras.size() > 0) {
+      cogx::display::CDisplayCamera *pCam = cameras.front();
+      m_camera.eye.set(pCam->xFrom, pCam->yFrom, pCam->zFrom);
+      pCam->getDirection(m_camera.view.x, m_camera.view.y, m_camera.view.z);
+      m_camera.up.set(pCam->xUp, pCam->yUp, pCam->zUp);
+      std::cout << " *** Camera set to " << pCam->name << std::endl;
+   }
    update();
 }
 

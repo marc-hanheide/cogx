@@ -1,6 +1,6 @@
 /*
 ** Lua binding: v11n
-** Generated automatically by tolua++-1.0.93 on Tue Jun  8 18:56:05 2010.
+** Generated automatically by tolua++-1.0.93 on Mon Feb  7 11:27:22 2011.
 */
 
 #ifndef __cplusplus
@@ -47,6 +47,54 @@ static int tolua_v11n_v11nGetOpenGlContext00(lua_State* tolua_S)
 }
 #endif //#ifndef TOLUA_DISABLE
 
+/* function: v11nCameraLookAt */
+#ifndef TOLUA_DISABLE_tolua_v11n_v11nCameraLookAt00
+static int tolua_v11n_v11nCameraLookAt00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+ tolua_Error tolua_err;
+ if (
+     !tolua_isuserdata(tolua_S,1,0,&tolua_err) ||
+     !tolua_isstring(tolua_S,2,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,3,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,4,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,5,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,6,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,7,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,8,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,9,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,10,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,11,0,&tolua_err) ||
+     !tolua_isnoobj(tolua_S,12,&tolua_err)
+ )
+  goto tolua_lerror;
+ else
+#endif
+ {
+  void* scriptObj = ((void*)  tolua_touserdata(tolua_S,1,0));
+  char* name = ((char*)  tolua_tostring(tolua_S,2,0));
+  double x0 = ((double)  tolua_tonumber(tolua_S,3,0));
+  double y0 = ((double)  tolua_tonumber(tolua_S,4,0));
+  double z0 = ((double)  tolua_tonumber(tolua_S,5,0));
+  double x1 = ((double)  tolua_tonumber(tolua_S,6,0));
+  double y1 = ((double)  tolua_tonumber(tolua_S,7,0));
+  double z1 = ((double)  tolua_tonumber(tolua_S,8,0));
+  double xUp = ((double)  tolua_tonumber(tolua_S,9,0));
+  double yUp = ((double)  tolua_tonumber(tolua_S,10,0));
+  double zUp = ((double)  tolua_tonumber(tolua_S,11,0));
+  {
+   v11nCameraLookAt(scriptObj,name,x0,y0,z0,x1,y1,z1,xUp,yUp,zUp);
+  }
+ }
+ return 0;
+#ifndef TOLUA_RELEASE
+ tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'v11nCameraLookAt'.",&tolua_err);
+ return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
 /* Open function */
 TOLUA_API int tolua_v11n_open (lua_State* tolua_S)
 {
@@ -55,6 +103,7 @@ TOLUA_API int tolua_v11n_open (lua_State* tolua_S)
  tolua_module(tolua_S,NULL,0);
  tolua_beginmodule(tolua_S,NULL);
   tolua_function(tolua_S,"v11nGetOpenGlContext",tolua_v11n_v11nGetOpenGlContext00);
+  tolua_function(tolua_S,"v11nCameraLookAt",tolua_v11n_v11nCameraLookAt00);
  tolua_endmodule(tolua_S);
  return 1;
 }

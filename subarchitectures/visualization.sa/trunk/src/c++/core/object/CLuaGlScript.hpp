@@ -32,17 +32,19 @@ class CLuaGlScript: public CDisplayObject
    {
    private:
       lua_State* luaS;
+      CLuaGlScript* pOwner;
    private:
       void initLuaState();
    public:
-      CScript();
+      CScript(CLuaGlScript* pOwner_);
       ~CScript();
       int loadScript(const char* pscript); 
       int exec();
    };
 
 public:
-   std::map<std::string, CScript*> m_Models;
+   std::map<std::string, CScript*> m_Scripts;
+   CPtrVector<CDisplayCamera> m_Cameras;
 
 public:
    CLuaGlScript();
@@ -57,6 +59,13 @@ public:
    {
       return false;
    }
+
+public:
+   virtual int getCameras(CPtrVector<CDisplayCamera>& cameras); /*override*/
+   void setCamera(char* name, 
+         double xFrom, double yFrom, double zFrom, // camera positon
+         double xTo, double yTo, double zTo,       // camera direction
+         double xUp, double yUp, double zUp);      // camera orientation
 };
 
 class CLuaGlScript_RenderGL: public CRenderer
