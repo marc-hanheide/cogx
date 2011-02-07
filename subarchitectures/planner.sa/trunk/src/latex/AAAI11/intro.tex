@@ -4,33 +4,34 @@
 %% LONG PLANNING HORIZON. MORITZ, CAN YOU PLEASE GIVE ME THE NUMBER OF
 %% STEPS IN THE BIGGER PLANS. 
 
-Recently there have been a number of integrated robotic systems which
-incorporate a high-level {\em continual planning} and execution
-monitoring
+A number of recent integrated robotic systems incorporate a
+high-level {\em continual planning} and execution monitoring
 subsystem~\cite{wyattetal2010tamd,talamadupula:2010,Kraft2008}.
 %%
 For the purpose of planning, sensing is modelled {\em
 deterministically}, and beliefs about the underlying state are
 modelled {\em qualitatively}.
 %%
-Both~\citeauthor{talamadupula:2010} and
-~\citeauthor{wyattetal2010tamd} identify
-\emph{continual planning} with {\em probabilistic}
-models as an important challenge for future research.
+Both~\citeauthor{talamadupula:2010} and~\citeauthor{wyattetal2010tamd}
+identify
+\emph{continual planning} with {\em probabilistic} {\em quantitative}
+models of noisy sensing and state as an important challenge for future
+research.
 %%
-Motivating that sentiment, planning according to an accurate
-stochastic model of noisy sensing and state should yield more
-efficient and robust deliberations.
+Motivating that sentiment, planning according to such accurate
+stochastic models should yield more efficient and robust
+deliberations.
 %%
-In the first place, that means moving from deterministic to
-probabilistic models of noisy sensing, and from qualitative to
-quantitative models of state uncertainty. The key challenge then, is
-to develop a {\em base planner} that exhibits similar speed and
-scalability to base planners employed in existing robotic systems
----e.g.,~\citeauthor{wyattetal2010tamd} use a satisficing {\em
-classical} procedure--- which is also able to synthesise relatively
-efficient deliberations according to detailed probabilistic models of
-the environment.
+%% In the first place, that means moving from deterministic to
+%% probabilistic models of noisy sensing, and from qualitative to
+%% quantitative models of state uncertainty. 
+%%
+in essence, the challenge is to develop a {\em base planner} that
+exhibits similar speed and scalability as planners employed in
+existing robotic systems ---e.g.,~\citeauthor{wyattetal2010tamd} use a
+satisficing {\em classical} procedure--- which is also able to
+synthesise relatively efficient deliberations according to detailed
+probabilistic models of the environment.
 
 
 This paper describes a {\em switching} domain independent planning
