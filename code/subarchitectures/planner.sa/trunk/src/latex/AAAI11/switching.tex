@@ -61,13 +61,13 @@ process for DT sessions.
 
 \subsection{Sequential Sessions}
 
-We consider only deterministic-action POMDPs, where all state
+We only consider deterministic-action POMDPs, where all state
 uncertainty is expressed in the $(\pp{:init})$ declaration. This
-declaration is used by our approach to define a starting state, and
-the set of state-assumptions available to sequential planning.
-Writing \#\ if the value of a proposition is unspecified, continuing
-our example from the previous section, we have the following
-assumptions:
+declaration is used by our approach to define the starting state for
+sequential sessions, and the set of state-assumptions available to
+sequential planning.  Writing \#\ if the value of a proposition is
+unspecified, taking the $(\pp{:init})$ example from the previous
+section, we have the following assumptions:
 
 
 \small
@@ -89,12 +89,11 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \normalsize
 
 \noindent Each assumption corresponds to one distinct {\em
-relaxed} visitation of the root term of $(\pp{:init})$. In this
-relaxed case, a conjunctive term is visited iff its atomic subterms
-are visited, and zero or one of its immediate probabilistic subterms
-are visited. For a sequential session, the starting state corresponds
-to an assumption (usually unique) with probability $1$. In our
-example, the starting state is:
+relaxed} visitation of the root. Here, a conjunctive term is visited
+iff its atomic subterms are visited, and zero or one of its immediate
+probabilistic subterms are visited. For a sequential session, the
+starting state corresponds to an assumption (usually unique) with
+probability $1$. In our example, that starting state is:
 
 \small
 \[
@@ -105,13 +104,14 @@ example, the starting state is:
 \]
 \normalsize
 
-We also annotate DTPDDL model with an assumptive action
-$\assumptiveS{i}$ for each element $\prob_i (T_i)$, of each
-probabilistic term from $(\pp{:init})$. Here, $\assumptiveS{i}$ can be
-executed if no $\assumptiveS{j}$, $j \neq i$, has been executed from
-the same probabilistic term, and, either
+Encapsulating state-assumptions, we annotate the problem posed during
+a sequential session with an assumptive action $\assumptiveS{i}$ for
+each element $\prob_i (T_i)$, of each probabilistic term from
+$(\pp{:init})$. Here, $\assumptiveS{i}$ can be executed if no
+$\assumptiveS{j}$, $j \neq i$, has been executed from the same
+probabilistic term, and, either
 $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct, or
-it occurs in $T_k$ for some executed $\assumptiveS{k}$. 
+it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
 We add additional constraints that forbid the scheduling of
 assumptions about facts after actions with preconditions, or effects,
@@ -158,8 +158,8 @@ reward ---i.e., can be negative for action costs, or positive for goal
 achievement--- received for executing action $\action_i$ in state
 $\state_i$. Finally, it is worth clarifying that in practise we do not
 artificially limit the length of traces that the sequential planner
-can consider. Moreover, in our setting there is always a finite
-optimal trace.
+can consider. Moreover, for problems we consider there is always a
+finite optimal trace.
 
 
 \subsection{DT Sessions}
@@ -168,12 +168,11 @@ The DT session plans in a {\em small} abstract processes defined
 according to the assumptive actions in the proceeding trace, and the
 $(\pp{:init})$ declaration that models the underlying
 belief-state. Targeted sensing is encouraged by augmenting the reward
-model to reflect the value of knowing the truth about assumptions in
-the trace proposed by the preceding sequential deliberation. In
-detail, all rewards from the original POMDP are
-retained. Additionally, for each $\assumptiveS{i}$ action scheduled by
-the current trace, we have a {\em dual} $\assumptiveDT{i}$ so that
-forall states $\state$:
+model to reflect a heuristic value of knowing the truth about
+assumptions in the trace. In detail, all rewards from the original
+POMDP are retained. Additionally, for each $\assumptiveS{i}$ action
+scheduled by the current trace, we have a {\em dual}
+$\assumptiveDT{i}$ so that forall states $\state$:
 
 \small
 \[
@@ -188,8 +187,9 @@ forall states $\state$:
 relatively\footnote{Compared to rewards from the original process
 model.} small positive (negative) numeric quantity which captures the
 utility the agent receives for correctly (incorrectly) rejecting an
-assumption. Dual action execution is modelled as a self-transition --
-I.e., the process remains in the state from which the dual is
+assumption. A dual action can only be executed once, and corresponds
+otherwise to a self-transition -- I.e., except in the applicability of
+the dual, the process remains in the state from which a dual is
 executed.
 %%
 Furthermore, if \switchAction\ is the action that switched the system
@@ -216,8 +216,7 @@ DT sessions. For example, if the trace is:
 \noindent Taking the switching action \switchAction\ to be
 $(\pp{look}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
-active, and therefore exclude
-$\actions^{\bullet}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ from the
+active, and therefore exclude it from the
 POMDP posed to the DT session. 
 
 Given \switchAction, we also include another self-transition action
