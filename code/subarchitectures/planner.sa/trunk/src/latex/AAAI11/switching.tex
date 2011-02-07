@@ -59,16 +59,15 @@ for sequential planning, (2) in determining when to switch to a DT
 session, and (3) as a mechanism to guide construction of an abstract
 process for DT sessions.
 
-
 \subsection{Sequential Sessions}
 
-We consider only deterministic-action POMDs, where all the uncertainty
-in state and action is expressed in the $(\pp{:init})$ declaration. In
-sequential sessions, this declaration is used by our approach to
-define a starting state, and the set of state-assumptions available to
-sequential planning.  Writing \#\ if the value of a proposition is
-unspecified, continuing our example from the previous section, we have
-the following assumptions:
+We consider only deterministic-action POMDPs, where all state
+uncertainty is expressed in the $(\pp{:init})$ declaration. This
+declaration is used by our approach to define a starting state, and
+the set of state-assumptions available to sequential planning.
+Writing \#\ if the value of a proposition is unspecified, continuing
+our example from the previous section, we have the following
+assumptions:
 
 
 \small
@@ -94,9 +93,8 @@ relaxed} visitation of the root term of $(\pp{:init})$. In this
 relaxed case, a conjunctive term is visited iff its atomic subterms
 are visited, and zero or one of its immediate probabilistic subterms
 are visited. For a sequential session, the starting state corresponds
-to the unique assumption with probability $1$ -- I.e., the union of
-facts from the root conjunctive term. In our example, the starting
-state is:
+to an assumption (usually unique) with probability $1$. In our
+example, the starting state is:
 
 \small
 \[
