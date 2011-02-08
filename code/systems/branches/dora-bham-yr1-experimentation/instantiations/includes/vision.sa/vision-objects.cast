@@ -5,7 +5,7 @@
 #CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/bag.jpg:Poster ./ferns/beano.jpg:Poster ./ferns/colouring.jpg:Poster ./ferns/cornflakes.jpg:Cereal_box ./ferns/kleenex.jpg:Poster ./ferns/new-scientist.jpg:Poster ./ferns/record1.jpg:Poster ./ferns/ricemilk.jpg:Poster ./ferns/simpsons.jpg:Poster ./ferns/headlights.jpg:Poster ./ferns/johnny.jpg:Poster " --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
 
 #######  vale-experiment #######
-CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/frosties.jpg:Cereal_box ./ferns/bag.jpg:Plastic_bag ./ferns/beano.jpg:Comic ./ferns/colouring.jpg:Colouring_book ./ferns/cornflakes.jpg:Cereal_box ./ferns/kleenex.jpg:Box_of_Tissues ./ferns/new-scientist.jpg:Magazine ./ferns/record1.jpg:Record ./ferns/simpsons.jpg:Comic ./ferns/headlights.jpg:Poster ./ferns/johnny.jpg:Poster ./ferns/ironingBoard.jpg:Ironing_board" --mode DETECT_ONLY --displaylevel 2 --numattempts 3 --log
+CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/frosties.jpg:Cereal_box ./ferns/bag.jpg:Plastic_bag ./ferns/beano.jpg:Comic ./ferns/colouring.jpg:Colouring_book ./ferns/cornflakes.jpg:Cereal_box ./ferns/kleenex.jpg:Box_of_Tissues ./ferns/new-scientist.jpg:Magazine ./ferns/record1.jpg:Record ./ferns/simpsons.jpg:Comic ./ferns/headlights.jpg:Poster ./ferns/johnny.jpg:Poster" --mode DETECT_ONLY --displaylevel 2 --numattempts 3 --log
 
 
 

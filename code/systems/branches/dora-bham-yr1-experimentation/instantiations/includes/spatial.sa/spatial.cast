@@ -1,5 +1,5 @@
 CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --no-file-output
-CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --door-detection false --min-door-width 0.8 --max-door-width 0.95
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --door-detection true --min-door-width 0.5 --max-door-width 1.1
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --no-x-window
 
 CPP MG spatial.translation SpatialTranslation 

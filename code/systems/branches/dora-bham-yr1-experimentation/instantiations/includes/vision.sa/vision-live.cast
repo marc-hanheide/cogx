@@ -1,2 +1,2 @@
-CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "1" --devnums "0" --devclass FIREWIRE
 

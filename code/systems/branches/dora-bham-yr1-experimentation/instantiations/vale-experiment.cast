@@ -31,15 +31,13 @@ INCLUDE includes/coma.sa/coma.cast
 # comsys ######################################################################
 # COMMENT BACK IN BELOW TO HAVE SPEECH
 INCLUDE includes/comsys.sa/comsys-base.cast
-INCLUDE includes/comsys.sa/comsys-w-say.cast
+INCLUDE includes/comsys.sa/comsys-w-mary.cast
 
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/motivation.sa/motivation.cast
-
-#HOST 192.168.1.2
 
 JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, VisionData.VisualObject"
 

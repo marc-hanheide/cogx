@@ -10,4 +10,4 @@ INCLUDE includes/vision.sa/vision-live.cast
 # CPP MG dummy.objrecog DummyDriver --labels "Poster Cereal_box"
 
 # vale label set #####################################################
-CPP MG dummy.objrecog DummyDriver --labels "Ironing_board Poster Record" #Cereal_box Box_of_Tissues Milk Plastic_bag Colouring_book Comic Magazine"
+CPP MG dummy.objrecog DummyDriver --labels "Poster Record Cereal_box Box_of_Tissues Plastic_bag Colouring_book Comic Magazine"
