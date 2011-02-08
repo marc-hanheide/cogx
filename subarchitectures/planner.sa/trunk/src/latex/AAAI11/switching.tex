@@ -260,15 +260,15 @@ assumption was rejected, we prohibit that sequential session from
 making it again.
 }
 
-As are aiming to keep the decision theoretic session fast, we try to
-keep the state space of the abstract problem as small as possible. In
-a deterministic-actio POMDP, the state space size is determined by two
-factors: the number of non-zero states in the initial belief-state and
-the number of executable actions. We thus want to keep the number of
-uncertain facts as low as possible without losing important
-information about the sensing goal and keep the number of actions down
-without crippling the ability of the DT planner to gather the required
-information.
+As we are aiming to keep the decision theoretic session fast, we try
+to keep the state space of the abstract problem as small as
+possible. In a deterministic-action POMDP, the state space size is
+determined by two factors: the number of non-zero states in the
+initial belief-state and the number of executable actions. As
+determining the relevance of an action for a given goal in in general
+a hard problem, we concentrate on keeping the number of uncertain
+facts as low as possible without losing important information about
+the sensing goal.
 
 We perform the abstraction of the belief space by first constructing
 an $(\pp{:init})$ declaration which only contains relevant assumptions
@@ -281,28 +281,8 @@ assumptions, {\em conditional} on that atom. Intuitively, lower
 entropy indicates an atom gives better information about
 assumptions. Facts are iteratively added to the belief-state in
 increasing order according to that measure until the belief space size
-reaches a predefined limit (Fig.\ref{fig:abstraction-c}).
-
-We then proceed to limit the actions by only including those that are
-possibly required to a) reach the goal or b) to directly observe an
-atom that is part of the abstract belief state.
-
-TODO: relaxed planning graph
-
-%% In the first step, we remove all facts that are not part of an
-%% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
-%% would proceed in an abstraction of the environment that does not
-%% contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
-%% %%
-%% In a second step, we iteratively refine the relaxed declaration by
-%% adding terms from the original statement of $(\pp{:init})$ while the
-%% number of abstract states in $\bstate_0$ that occur with non-zero
-%% probability according to that refined declaration remains of a
-%% practicable size. In detail, 
-
-
-
-
+reaches a predefined limit or no more atoms that reduce the entropy
+can be added (Fig.\ref{fig:abstraction-c}).
 
 \begin{figure}[h!]
   \centering
@@ -426,6 +406,38 @@ TODO: relaxed planning graph
   \caption{Abstract belief-state, and refinement.}
 \label{fig:abstraction}
 \end{figure}
+
+% When limiting the number of actions, we aim to include those that are
+% possibly required to a) reach the goal or b) to directly observe an
+% atom that is part of the abstract belief state. In general, checking
+% this for an action is \textsc{PSPACE} complete for \textsc{STRIPS}
+% planning. 
+
+% We approximate the set of relevant actions as follows: Let
+% \relevantAtoms\ be the set of atoms that either occur in the goal
+% condition \poss(\switchAction) or in a precondition \poss($a$) of an
+% action $a$ that can directly sense any atom in the abstract belief
+% state. We construct a \emph{relaxed planning graph} with
+% \relevantAtoms\ as goal atoms from which we extract a relaxed
+% plan. 
+
+
+
+%% In the first step, we remove all facts that are not part of an
+%% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
+%% would proceed in an abstraction of the environment that does not
+%% contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
+%% %%
+%% In a second step, we iteratively refine the relaxed declaration by
+%% adding terms from the original statement of $(\pp{:init})$ while the
+%% number of abstract states in $\bstate_0$ that occur with non-zero
+%% probability according to that refined declaration remains of a
+%% practicable size. In detail, 
+
+
+
+
+
 
 
 %%% Local Variables: 
