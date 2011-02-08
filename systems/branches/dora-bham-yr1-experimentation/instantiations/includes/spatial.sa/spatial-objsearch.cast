@@ -1,4 +1,4 @@
 #CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 3 --gridsize 250 --cellsize 0.1 --objects "Cereal_box Poster" --samplesize 100 --cam-range 2 --cam-fov 45 --coverage-threshold 80  --vp-threshold 1 --away-from-obstacles 0.5 --disp-magn 1  --cam-step 33 --tilt 45  --display-coverage --ctrl-ptu
 
-CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 3 --gridsize 250 --cellsize 0.1 --objects "Cereal_box Poster Box_of_Tissues Plastic_bag Colouring_book Comic Record Magazine Ironing_board" --samplesize 100 --cam-range 2 --cam-fov 45 --coverage-threshold 80  --vp-threshold 1 --away-from-obstacles 0.5 --disp-magn 1  --cam-step 50 --tilt 45  --display-coverage --ctrl-ptu
+CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 3 --gridsize 250 --cellsize 0.1 --objects "Cereal_box Poster Box_of_Tissues Plastic_bag Colouring_book Comic Record Magazine" --samplesize 100 --cam-range 2 --cam-fov 45 --coverage-threshold 80  --vp-threshold 1 --away-from-obstacles 0.5 --disp-magn 1  --cam-step 50 --tilt 25  --display-coverage --ctrl-ptu
 
