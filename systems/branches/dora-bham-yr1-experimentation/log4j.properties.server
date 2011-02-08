@@ -1,4 +1,4 @@
-log4j.rootLogger=DEBUG, XMLLog, console
+log4j.rootLogger=TRACE, XMLLog, console
 
 
 #log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
