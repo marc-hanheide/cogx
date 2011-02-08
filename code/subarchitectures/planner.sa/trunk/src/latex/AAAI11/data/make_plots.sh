@@ -11,10 +11,11 @@ for i in $FILES; do
 	$MAPSIM/print_res.py  $i.avg $CONFIGS -- gnu > $i.time
 done
 
-echo "zpomdp     0     0   43      20.708" > pomdp-med.time
-echo "zpomdp     0     0   30           8.6" > pomdp-hard.time
-echo "zpomdp     0     0   43      20.708" > pomdp-med-solvable.time
-echo "zpomdp     0     0   30           8.6" > pomdp-hard-solvable.time
+#solved runs adjusted by 1/1.2 because of the different number of runs
+echo "zpomdp     0     0   54         55.26" > pomdp-med.time
+echo "zpomdp     0     0   41           20.1" > pomdp-hard.time
+echo "zpomdp     0     0   54      112.2810" > pomdp-med-solvable.time
+echo "zpomdp     0     0   41           61.5727" > pomdp-hard-solvable.time
 
 
 for i in $POMDP_FILES; do
