@@ -1,7 +1,7 @@
 
 We now describe our {\em switching} planning system that operates
 according to the continual planning paradigm, given descriptions of
-the current problem and domain in DTPDDL. Recapping, the system {\em
+the current problem and domain in DTPDDL. The system {\em
 switches}, in the sense that planning proceeds in interleaved
 sessions, in which the base planner is either {\em sequential}/linear
 or {\em decision-theoretic}.
@@ -127,7 +127,7 @@ $\state^\bot$ is an added sink.
 
 We now describe the optimisation criteria used during sequential
 sessions. Where $\prob_i$ is the probability that the $i^{th}$
-sequenced action, $\action_i$, from a trace
+sequenced action, $\action_i$, from a trace of state-action pairs
 $\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
 does not transition to $\state^\bot$, we have that the optimal trace
 has value:
