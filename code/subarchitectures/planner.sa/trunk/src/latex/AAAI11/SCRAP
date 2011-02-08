@@ -274,6 +274,67 @@
 %% mobile robot domain.
 
 
+%% Their applicability in our setting is
+%% limited, firstly because they only scale to smaller problems, with
+%% thousands of states, and also due to the large amount of
+%% \emph{problem-specific} offline processing that might be required to get useful
+%% search guidance. 
+
+
+%%  In that
+%% setting \citeauthor{kurniawati:etal:2010}~(\citeyear{})
+%% recently addressed an inefficiency of offline point-based techniques
+%% in problems with medium length planning horizons, however their
+%% approach take tens of minutes to good plans, and only scales to tens
+%% of thousands of states. In the case of general domain-independent
+%% factored systems, the state-of-the-art scales to relatively small
+%% problems with $2^{22}$ states~\cite{shani:etal:2008}. 
+
+%% At their limit,
+%% these procedures take over an hour to converge, and $\sim10$ seconds
+%% on average to perform a single Bellman backup.  For classes of POMDP
+%% that feature exploitable structures (e.g., no actions with negative
+%% effects), problems with as many as $10^{30}$ states can be targeted by
+%% such offline procedures~\cite{brunskill:russell:2010}. 
+
+
+%% Although we suppose it an interesting
+%% item for future work to pursue that direction, it should be noted that
+%% ease of goal reachability is not guaranteed in the problems we face,
+%% and is certainly not a property to be assumed in domain independent
+%% planning.
+
+
+
+%%
+%% The continual planning system that motivated our
+%% project~\cite{brenner:nebel:jaamas09} also has this characteristic,
+%% and has been applied in completely observable domains, particularly
+%% those featuring multiple communicating agents. 
+
+%% The use of knowledge
+%% operators in domains allows plans that act to gain knowledge, but the
+%% approach assumes that such actions are deterministic and reliable, an
+%% assumption that we relax.
+
+
+
+%%No! They simply haven't been evaluated in PO settings. They may, or
+%%may not struggle. They have sampling of traces, and that would
+%%include observations, and therefore evolutions of beliefs. SSAT was
+%%proposed by Littman for POMDPs. So the majercik stuff is perfectly
+%%suited to POMDPs.
+
+% Normally if we are going to compare with related work, we do
+% actually *compare*. Why didn't you try those approaches? I think
+% it's safe to say that FFR will struggle. Why would it even include
+% in its plan an observational action that doesn't change the world?
+
+%%
+%% However, as we said in the introduction,
+%% all these approaches struggle in partially observable domains as they
+%% rely on being able to determine the state at all times.
+
 
 %% BEGIN SCRAPPY
 
