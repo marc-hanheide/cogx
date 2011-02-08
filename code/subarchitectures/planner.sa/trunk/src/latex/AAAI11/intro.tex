@@ -53,16 +53,17 @@ actions have non-zero cost -- i.e., an optimal policy can be formatted
 as a finite horizon contingent plan. Moreover, we target problems of a
 size and complexity that is challenging to state-of-the-art sequential
 satisficing planners, and which are too large to be solved by {\em
-decision-theoretic} (DP) systems directly. Our planner {\em switches},
-in the sense that the underlying planning procedure changes depending
-on our robot's subjective degrees of belief, and progress in plan
-execution. When the underlying planner is a fast (satisficing) {\em
-classical} planner, we say planning is in a {\em sequential} session,
-and otherwise it is in a DT session.
+decision-theoretic} (DP) systems directly. 
+
+Our planner {\em switches}, in the sense that the underlying planning
+procedure changes depending on our robot's subjective degrees of
+belief, and progress in plan execution. When the underlying planner is
+a fast (satisficing) {\em classical} planner, we say planning is in a
+{\em sequential} session, and otherwise it is in a DT session.
 %%
 A {\em sequential} session plans, and then pursues a high-level
 strategy -- e.g., go to the kitchen and get the cornflakes off the
-bench. DT sessions proceed in a small {\em abstract} process when 
+bench.
 %%
 DT sessions proceed in a practically sized {\em abstract} processes,
 determined according to the current sequential strategy and underlying
