@@ -426,46 +426,6 @@ double ChainGraphInferencer::getProbabilityValue(
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
-{
-	string factorName = "f(room_category1,room_category2)";
-	const SpatialProbabilities::ProbabilityDistribution *factor =
-		getDefaultProbabilityDistribution(factorName);
-	if(!factor) return;
-
-	// Create variables
-	DaiVariable &dv1 = RoomCategoryVar(room1Id);
-	DaiVariable &dv2 = RoomCategoryVar(room2Id);
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
-
-	// Create factor
-	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// Note: first fariable changes faster
-	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
-	int index=0;
-	for (int i2 = 0; i2<roomCatCount; ++i2)
-	{
-		string var2ValueName = dv2.valueIdToName[i2];
-		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
-		{
-			string var1ValueName = dv1.valueIdToName[i1];
-			double potential = getProbabilityValue(*factor, var1ValueName, var2ValueName);
-			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
-			daiFactor.set(index, potential);
-			++index;
-		}
-	}
-
-	// Add factor to the list
-	_factors.push_back(daiFactor);
-	_factorNames.push_back(factorName);
-}
-
-
-// -------------------------------------------------------
 void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 {
 	// Create variables
@@ -531,47 +491,6 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 }
 
-// -------------------------------------------------------
-void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
-{
-	string factorName = "f(room_category1,shape_property)";
-	const SpatialProbabilities::ProbabilityDistribution *factor =
-		getDefaultProbabilityDistribution(factorName);
-	if(!factor) return;
-
-	// Create variables
-	DaiVariable &dv1 = RoomCategoryVar(room1Id);
-	DaiVariable &dv2 = PlaceShapePropertyVar(placeId);
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
-
-	// Create factor
-	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// Note: first fariable changes faster
-	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
-	int shapeCount = _shapes.size();
-	int index=0;
-	for (int i2 = 0; i2<shapeCount; ++i2)
-	{
-		string var2ValueName = dv2.valueIdToName[i2];
-		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
-		{
-			string var1ValueName = dv1.valueIdToName[i1];
-			double potential = getProbabilityValue(*factor, var1ValueName, var2ValueName);
-			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
-			daiFactor.set(index, potential);
-			++index;
-		}
-	}
-
-	// Add factor to the list
-	_factors.push_back(daiFactor);
-	_factorNames.push_back(factorName);
-
-}
-
 
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
@@ -617,48 +536,6 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 }
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
-{
-	string factorName = "f(room_category1,appearance_property)";
-	const SpatialProbabilities::ProbabilityDistribution *factor = 
-		getDefaultProbabilityDistribution(factorName);
-	if(!factor) return;
-
-	// Create variables
-	DaiVariable &dv1 = RoomCategoryVar(room1Id);
-	DaiVariable &dv2 = PlaceAppearancePropertyVar(placeId);
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
-
-	// Create factor
-	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// Note: first fariable changes faster
-	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
-	int appearanceCount = _appearances.size();
-	int index=0;
-	for (int i2 = 0; i2<appearanceCount; ++i2)
-	{
-		string var2ValueName = dv2.valueIdToName[i2];
-		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
-		{
-			string var1ValueName = dv1.valueIdToName[i1];
-			double potential = getProbabilityValue(*factor, var1ValueName, var2ValueName);
-			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
-			daiFactor.set(index, potential);
-			++index;
-		}
-	}
-
-	// Add factor to the list
-	_factors.push_back(daiFactor);
-	_factorNames.push_back(factorName);
-
-}
-
-
-// -------------------------------------------------------
 void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId,
 		ConceptualData::ValuePotentialPairs dist)
 {
@@ -702,13 +579,44 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 
 }
 
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiFactor(const string &name, DaiVariable &dv1, DaiVariable &dv2)
+{
+	debug("Creating DAI factor '%s' for variables '%s' and '%s'", name.c_str(), dv1.name.c_str(), dv2.name.c_str() );
+	const SpatialProbabilities::ProbabilityDistribution *factor = getDefaultProbabilityDistribution(name);
+	if(!factor) return;
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+
+	// Note: first fariable changes faster
+	// Go over the second variable
+	int index=0;
+	typedef pair<int,string> item_type;
+	foreach(const item_type &var2ValueName, dv2.valueIdToName)
+	{
+		// Go over the first variable
+		foreach(const item_type &var1ValueName, dv1.valueIdToName)
+		{
+			double potential = getProbabilityValue(*factor, var1ValueName.second, var2ValueName.second);
+			if (potential<0)
+				throw CASTException("Potential not found for values '"+var1ValueName.second+"' and '"+var2ValueName.second+"'");
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(name);
+}
 
 // -------------------------------------------------------
 void ChainGraphInferencer::addDaiFactors()
 {
 	// Let's go through all the room connections and add category connectivity factors
 	foreach(const ConceptualData::RoomConnectivityInfo &rci, _worldStateRoomConnections)
-		createDaiConnectivityFactor(rci.room1Id, rci.room2Id);
+		createDaiFactor("f(room_category1,room_category2)", RoomCategoryVar(rci.room1Id), RoomCategoryVar(rci.room2Id) );
 
 	// Add single room factors. Should change nothing, but help if there are unconnected or
 	// single rooms without any properties.
@@ -730,14 +638,14 @@ void ChainGraphInferencer::addDaiFactors()
 			// Shape properties
 			foreach(const ConceptualData::ShapePlacePropertyInfo &sppi, pi.shapeProperties)
 			{
-				createDaiShapePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiFactor("f(room_category1,shape_property)", RoomCategoryVar(cri.roomId), PlaceShapePropertyVar(pi.placeId));
 				createDaiObservedShapePropertyFactor(pi.placeId, sppi.distribution);
 			}
 
 			// Appearance properties
 			foreach(const ConceptualData::AppearancePlacePropertyInfo &appi, pi.appearanceProperties)
 			{
-				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiFactor("f(room_category1,appearance_property)", RoomCategoryVar(cri.roomId), PlaceAppearancePropertyVar(pi.placeId));
 				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
 			}
 		}
