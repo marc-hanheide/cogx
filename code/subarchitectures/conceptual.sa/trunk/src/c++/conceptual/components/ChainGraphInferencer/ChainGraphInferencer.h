@@ -74,14 +74,13 @@ private:
 	DaiVariable& PlaceShapePropertyVar(int placeId);
 	DaiVariable& PlaceAppearancePropertyVar(int placeId);
 
+	void createDaiFactor(const std::string &name, DaiVariable &dv1, DaiVariable &dv2);
+
 	/** Creates a DAI connectivity factor for two rooms. */
-	void createDaiConnectivityFactor(int room1Id, int room2Id);
 	void createDaiSingleRoomFactor(int room1Id);
 	void createDaiObservedObjectPropertyFactor(int room1Id,
 			const std::string &objectVariableName, bool objectExists);
-	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
-	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedAppearancePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 
 	/** Adds factors related to the factor graph */
