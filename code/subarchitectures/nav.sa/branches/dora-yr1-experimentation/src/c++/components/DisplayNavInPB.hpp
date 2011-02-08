@@ -20,6 +20,7 @@
 #include <string>
 #include <Scan2dReceiver.hpp>
 
+#include <Transformation/Transformation3D.hh>
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
 #include <PTZ.hpp>
@@ -116,6 +117,8 @@ private:
   void createRobotFOV();
   void getColorByIndex(int id, float &r, float &g, float &b);
 
+  Cure::Transformation3D getCameraToWorldTransform();
+
   bool m_ShowWalls;
   bool m_ShowGraph;
   bool m_ShowPeople;
@@ -150,7 +153,7 @@ private:
 
   peekabot::PeekabotClient m_PeekabotClient;
 
-  peekabot::ObjectProxy m_ProxyRoot;
+  //peekabot::ObjectProxy m_ProxyRoot;
   
   peekabot::GroupProxy m_ProxyRobot;
   peekabot::GroupProxy m_ProxyLaser;
