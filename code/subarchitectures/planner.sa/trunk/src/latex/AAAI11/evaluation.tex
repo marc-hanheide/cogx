@@ -31,17 +31,26 @@ objects.
 
 We compare our switching planner against the {\em baseline} in several
 realistic tasks, with the number of rooms ranging from 3 (12-places,
-13-objects, $|$states$|$$>\sim10^{48}$) to 6 (26-places, 21-objects,
-$|$states$|$ $>10^{48}$). We experiment with a sensing model that is:
-({\em reliable}) $0.1$ probability of false negative, ({\em
-semi-reliable}) chance is $0.35$, and ({\em noisy}) chance is $0.4$.
+16-objects, $|$states$|$$>\sim10^{21}$) to 6 (26-places, 21-objects,
+$|$states$|$ $>10^{36}$). For or experiments we model three sensors:
+{\em Reliable} sensors have a $0.1$ probability of a false negative,
+{\em semi-reliable} have a chance of $0.3$ of false negative and $0.1$
+of false positive , and finally {\em noisy} sensors with probabilities
+of $0.5$ and $0.2$ respectively. Each object class is assigned one
+sensor model, so e.g. cornflakes may be harder to detect than
+refrigeratos. To determine the influence of the sensor model, we
+performed several experiments where we only changed the difficulty of
+the target object(s). All non-target objects remain unchanged so the
+planner may exploit object co-occurances with reliable objects to
+compensate for the increased sensor noise.
+
 We evaluate with DT sessions taking $b_0$ admitting between 20 and 200
 abstract states with non-zero probability. We run 50 simulations in
 each configuration, and have a timeout on each simulation of 30
 minutes (1800 seconds)\footnote{All experiments were conducted on a
-2.3GHz AMD Opteron using one CPU core.}. The continual planning times
-are reported in Figure~\ref{fig:results-time}, and the quality data in
-Figure~\ref{fig:results-quality}.
+  2.3GHz AMD Opteron using one CPU core.}. The continual planning
+times are reported in Figure~\ref{fig:results-time}, and the quality
+data in Figure~\ref{fig:results-quality}.
 %%
 For Items~$a$-$e$ the goal is to find objects and report their
 position to a user. In some cases there is a non-zero probability that
@@ -65,9 +74,9 @@ constant factor).
   % \vspace{2mm}
   \includegraphics{dora4-time}\hfill
   \vspace{2mm}
-  \includegraphics{dora56-time}\hfill
-  \vspace{2mm}
-  \includegraphics{dora-cat-time}\hfill
+  % \includegraphics{dora56-time}\hfill
+  % \vspace{2mm}
+  % \includegraphics{dora-cat-time}\hfill
   \caption{Average runtime}
   \label{fig:results-time}
 \end{figure}
@@ -76,19 +85,19 @@ constant factor).
   % \centering
   % \includegraphics{dora1-quality}\hfill
   % \vspace{2mm}
+  \includegraphics{pomdp-quality}\hfill
   \includegraphics{dora2-quality}\hfill
   % \vspace{2mm}
   \includegraphics{dora3-quality}\hfill
   % \vspace{2mm}
   \includegraphics{dora4-quality}\hfill
   \vspace{2mm}
-  \includegraphics{dora56-quality}\hfill
-  \vspace{2mm}
-  \includegraphics{dora-cat-quality}\hfill
+  % \includegraphics{dora56-quality}\hfill
+  % \vspace{2mm}
+  % \includegraphics{dora-cat-quality}\hfill
   \caption{Average plan costs and number of successful runs.}
   \label{fig:results-quality}
 \end{figure}
-
 
 We find that if sensing is reliable there is little to be gained
 through DT sessions, as the greedy approach of the {\em baseline} is
@@ -102,3 +111,8 @@ times. The relatively high success rate irrespective of the level of
 refinement in the initial configuration indicates the effectiveness of
 using conditional entropy to guide abstraction refinement in our
 setting.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "aaai11"
+%%% End: 
