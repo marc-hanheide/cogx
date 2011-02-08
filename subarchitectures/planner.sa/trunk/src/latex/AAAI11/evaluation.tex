@@ -8,19 +8,19 @@ Downward~\cite{fast-downward}, and DT sessions use our own contingent
 procedure. We also implemented a simple dual-mode replanning {\em
 baseline} approach. Here, when a switching action is scheduled for
 execution the DT session executes a single entropy reduction action,
-that directly senses an active assumption -- I.e,. We say a fact can
+that directly senses an active assumption -- i.e,. We say a fact can
 be directly sensed, if there is a DTPDDL {\em sense} declaration that
 mentions the fact in its precondition.  Control is then immediately
 returned to a new sequential session.
 
 
 We evaluate our approaches in robot exploration tasks from home and
-office environments. Spatially, these consists of {\em rooms}
+office environments. Spatially, these consist of {\em rooms}
 (office/kitchen/etc), and an underlying topological map that models
 smaller areas of space, called {\em places}, and connectivity between
 those. The mobile {\em robot} and {\em visual objects} inhabit the
 topological space, the latter indicate the category of space they
-inhabit -- E.g., Spoons are likely to be in kitchens. By examining
+inhabit -- e.g., Spoons are likely to be in kitchens. By examining
 view cones at places for particular objects, the robot is able to: (1)
 categorise space at high (room) and low (place) levels, and (2) find
 objects for the user, exploiting information about object
@@ -29,7 +29,7 @@ presence of a person, the robot can ask them about the location of
 objects. 
 
 
-We compare our switching planner against the {\em baseline} in several
+We compare our switching planner with the {\em baseline} in several
 realistic tasks, with the number of rooms ranging from 3 (12-places,
 16-objects, $|$states$|$$>\sim10^{21}$) to 6 (26-places, 21-objects,
 $|$states$|$ $>10^{36}$). For or experiments we model three sensors:
@@ -105,8 +105,8 @@ sufficient. As sensing degrades contingent planning pays off.  Time
 spent in DT planning increases steeply as the abstraction $\bstate_0$
 becomes more refined.  That refinement seems to be paying off in terms
 of the success rate, particularly for tasks $d$ and $e$. For less
-refined initial configurations, the increase cost of DT
-planning is compensated by a decrease in Fast Downward planning
+refined initial configurations, the increased cost of DT
+planning is compensated for by a decrease in Fast Downward planning
 times. The relatively high success rate irrespective of the level of
 refinement in the initial configuration indicates the effectiveness of
 using conditional entropy to guide abstraction refinement in our
