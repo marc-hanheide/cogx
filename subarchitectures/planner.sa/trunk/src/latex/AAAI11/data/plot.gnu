@@ -14,9 +14,9 @@ unset xlabel
 set y2range [0:1]
 #set tics scale 0.0
 
-d2_solvable = 18.0
-d3_solvable = 18.0
-d4_solvable = 25.0
+d2_solvable = 30.0
+d3_solvable = 30.0
+d4_solvable = 41.0
 d5_solvable = 20.5
 d6_solvable = 18.0
 
@@ -27,7 +27,7 @@ offset3 = 10
 
 set ytics nomirror
 set xtics nomirror rotate by 45 offset -1.5,-1.3 font "Times-Roman,12"
-set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "cp" 5.0, "dt 20" 6.0, "dt 50" 7.0, "dt 100" 8.0, "cp" 10.0, "dt 20" 11.0, "dt 50" 13.0, "dt 100" 14.0)
+set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "cp" 5.0, "dt 20" 6.0, "dt 50" 7.0, "dt 100" 8.0, "cp" 10.0, "dt 20" 11.0, "dt 50" 12.0, "dt 100" 13.0)
 
 
 #set terminal epslatex size 8cm, cm
@@ -74,7 +74,7 @@ plot newhistogram  fs pattern 4 lt 1, 'dora4-easy.time' using 5 t "plan costs", 
 
 set output "pomdp-quality.eps"
 set multiplot
-set yrange [-60:30]
+set yrange [0:60]
 set ylabel "reward"
 unset y2label
 unset y2tics 
@@ -85,6 +85,7 @@ set size 0.45, 1.0
 set title "a) Tiny problem / semi-reliable" 
 plot 'pomdp-med.time' using 5 t "reward" fs pattern 4 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
+set yrange [-50:40]
 set y2label "success ratio" offset -2,0
 set y2tics
 
@@ -98,7 +99,7 @@ unset multiplot
 
 set output "pomdp-solvable-quality.eps"
 set multiplot
-set yrange [-40:50]
+set yrange [0:120]
 set ylabel "reward"
 unset y2label
 unset y2tics 
@@ -110,12 +111,12 @@ set title "a) Tiny (solvable only) / semi-reliable"
 plot 'pomdp-med-solvable.time' using 5 t "reward" fs pattern 4 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
 unset ylabel
+set yrange [-20:65]
 set y2label "success ratio" offset -2,0
 set y2tics
 
 set origin 0.45, 0
 set size 0.55, 1.0
-#set output "dora6-quality.eps"
 set title "b) Tiny (solvable only) / noisy"
 plot 'pomdp-hard-solvable.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
 unset multiplot
@@ -125,6 +126,7 @@ set yrange [0:*]
 
 set output "dora56-quality.eps"
 set multiplot
+set ylabel "plan costs"
 unset y2label
 unset y2tics 
 set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0)
@@ -148,7 +150,7 @@ unset multiplot
 set origin 0, 0
 set size 1,1
 
-set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "cp" 5.0, "dt 20" 6.0, "dt 50" 7.0, "dt 100" 8.0, "cp" 10.0, "dt 20" 11.0, "dt 50" 13.0, "dt 100" 14.0)
+set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "cp" 5.0, "dt 20" 6.0, "dt 50" 7.0, "dt 100" 8.0, "cp" 10.0, "dt 20" 11.0, "dt 50" 12.0, "dt 100" 13.0)
 
 
 unset y2label
