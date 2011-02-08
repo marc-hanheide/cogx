@@ -89,6 +89,7 @@ set title "f) Tiny problem / semi-reliable" offset 0,-0.5
 plot 'pomdp-med.time' using 5 t "reward" fs pattern 6 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
 set yrange [-50:40]
+set ytics auto
 unset ylabel
 set y2label "success ratio" offset -2,0
 set y2tics
@@ -150,7 +151,7 @@ set size 0.55, 1.0
 #set output "dora6-quality.eps"
 set title "e) 3 rooms/3 goals"
 plot 'dora6.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/d6_solvable) notitle axes x1y2 with lines lt 1 lw 3
-unset ytics 100
+unset ytics
 unset multiplot
 
 set origin 0, 0
@@ -161,6 +162,7 @@ set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "cp" 5.0, "dt 20" 6
 
 unset y2label
 unset y2tics 
+set ytics auto
 set terminal postscript eps size 8.7cm, 3.0cm "Times-Roman"
 
 set key at 8,75
@@ -175,6 +177,7 @@ set ytics mirror
 
 
 set key at 5.5,180
+set ytics 20
 set output "dora2-time.eps"
 set title "a) Object search task (3 rooms/1 goal)" offset 2,-0.5
 plot newhistogram "reliable" fs pattern 1 lt 1, 'dora2-easy.time' using 2 t "sequential planner", '' using 3  t "contingent planner", \
@@ -182,6 +185,7 @@ plot newhistogram "reliable" fs pattern 1 lt 1, 'dora2-easy.time' using 2 t "seq
      newhistogram "noisy" fs pattern 1 lt 1, 'dora2-hard.time' using 2 notitle, '' using 3  notitle
 
 unset key
+set ytics 100
 set terminal postscript eps size 8.7cm, 2.8cm "Times-Roman"
 
 set output "dora3-time.eps"
