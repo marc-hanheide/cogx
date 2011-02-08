@@ -29,20 +29,24 @@ presence of a person, the robot can ask them about the category of the
 current room.
 
 
-We compare our switching planner with the {\em baseline} in several
-realistic tasks, with the number of rooms ranging from 3 (12-places,
-16-objects, $|$states$|$ $>10^{21}$) to 6 (26-places, 21-objects,
-$|$states$|$ $>10^{36}$). For or experiments we model three sensors:
-{\em Reliable} sensors have a $0.1$ probability of a false negative,
-{\em semi-reliable} have a chance of $0.3$ of false negative and $0.1$
-of false positive , and finally {\em noisy} sensors with probabilities
-of $0.5$ and $0.2$ respectively. Each object class is assigned one
-sensor model, so e.g. cornflakes may be harder to detect than
-refrigeratos. To determine the influence of the sensor model, we
-performed several experiments where we only changed the difficulty of
-the target object(s). All non-target objects remain unchanged so the
-planner may exploit object co-occurances with reliable objects to
-compensate for the increased sensor noise.
+We compare switching with the {\em baseline} in several realistic
+tasks, with the number of rooms ranging from 3 (12-places, 16-objects,
+$|$states$|$ $>10^{21}$) to 6 (26-places, 21-objects, $|$states$|$
+$>10^{36}$). We also compare those systems with an approximately
+optimal policy computed using Smith's {\sc zmdp} for small 2 room
+problems (4-places, 3-objects, $|$states$|$ $\simeq 5000$). For or
+experiments we model three sensors: {\em Reliable} sensors have a
+$0.1$ probability of a false negative, {\em semi-reliable} have a
+chance of $0.3$ of false negative and $0.1$ of false positive , and
+finally {\em noisy} sensors with probabilities of $0.5$ and $0.2$
+respectively. Each object class is assigned one sensor model, so
+e.g. cornflakes may be harder to detect than refrigeratos. To
+determine the influence of the sensor model, we performed several
+experiments where we only changed the difficulty of the target
+object(s). All non-target objects remain unchanged so the planner may
+exploit object co-occurances with reliable objects to compensate for
+the increased sensor noise.
+
 
 We evaluate with DT sessions taking $b_0$ admitting between 20 and 100
 abstract states with non-zero probability. We run 50 simulations in

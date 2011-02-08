@@ -21,8 +21,8 @@ value of facts that can only be determined at runtime (e.g., that a
 box of cornflakes is located on the corner bench in the kitchen).
 %%
 The system always begins in a sequential session, so that plan
-execution proceeds by applying DTPDDL actions from the trace in
-sequence until the outcome of executing the next scheduled action is
+execution proceeds by applying DTPDDL actions from the trace, in
+sequence, until the outcome of executing the next scheduled action is
 too uncertain according to a threshold parameter~(here, 95\%). In that
 eventuality a DT session commences, which tailors sensory processing
 to determine whether the assumptions made in the trace hold, or which
@@ -30,11 +30,12 @@ otherwise acts to achieve the goals.
 
 
 Because online DT planning in large problems is impractical (we seek
-response times in seconds), a DT session plans in an abstract process
-determined by the current trace and underlying belief-state. This
-abstract problem is created by selecting only those propositions that
-are \emph{relevant} to the subproblem the DT session is asked to
-solve.
+response times in seconds), a DT session plans for an abstract process
+determined by the current trace and underlying belief-state. That
+abstract problem is characterised by a limited number of propositions,
+chosen due to their {\em relevance} to the action whose scheduled
+execution triggered the switch to the DT session.
+%%the subproblem the DT session is asked tosolve.
 % MOG: Describe this in detail in the appropriate subsection
 %  This
 % abstraction is constructed by first excluding all propositions (and
@@ -45,26 +46,23 @@ solve.
 % of states in the initial belief-state reaches a given
 % threshold.\footnote{Our experiments are performed using a number of
 % different threshold parameters.} 
-To the resulting abstract model we
-also add {\em disconfirm} and {\em confirm} actions that the
-DT session can schedule in order to judge an atomic assumption
-in the trace. In the abstract model these actions yield a relatively
-small reward if the corresponding judgement is true (or small penalty
-otherwise). If a judgement action is scheduled for execution the
-DT session is terminated, and control is returned to the
-sequential planner.
+To that abstract model we also add {\em disconfirm} and {\em confirm}
+actions that the DT session can schedule in order to judge an atomic
+assumption in the trace. Those actions yield a relatively small reward
+if the corresponding judgement is true (or small penalty
+otherwise). If a judgement action is scheduled for execution the DT
+session is terminated, and control is returned to a new sequential
+session.
 
-
-Finally, whether proceeding in a sequential or DT session, our
-continual planner maintains a factored representation of successive
-belief-states by performing belief revision. For that, we transform
-the $(\pp{:init})$ declaration into a tree-shaped bayesian network
-which gets updated whenever an actions is performed or an observation
-is received. That belief-state representation is used:
-(1) as the source of candidate determinisations for sequential
-planning, (2) in determining when to switch to a DT session, and (3)
-as a mechanism to guide construction of an abstract process for DT
-sessions.
+Whatever the session type, our continual planner maintains a factored
+representation of successive belief-states by performing belief
+revision. As an internal representation of the $(\pp{:init})$
+declaration, we keep a tree-shaped Bayesian network which gets updated
+whenever an action is performed, or an observation received. That
+belief-state representation is used: (1) as the source of candidate
+determinisations for sequential planning, (2) in determining when to
+switch to a DT session, and (3) as a mechanism to guide construction
+of an abstract process for DT sessions.
 
 \subsection{Sequential Sessions}
 
@@ -75,7 +73,6 @@ sequential sessions, and the set of state-assumptions available to
 sequential planning.  Writing \#\ if the value of a proposition is
 unspecified, taking the $(\pp{:init})$ example from the previous
 section, we have the following assumptions:
-
 
 \small
 \begin{tabular}{cccc}
@@ -96,10 +93,10 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \normalsize
 
 \noindent Each assumption corresponds to one distinct {\em
-relaxed} visitation of the root. Here, a conjunctive term is visited
+relaxed} visitation of the root term. Here, a conjunctive term is visited
 iff its atomic subterms are visited, and zero or one of its immediate
 probabilistic subterms are visited. For a sequential session, the
-starting state corresponds to an assumption (usually unique) which
+starting state corresponds to an assumption (usually unique) with
 probability $1$. In our example, that starting state is:
 
 \small
@@ -120,8 +117,8 @@ probabilistic term, and, either
 $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct, or
 it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
-We add additional constraints that forbid the scheduling of
-assumptions about facts after actions with preconditions, or effects,
+We also add constraints that forbid scheduling of
+assumptions about facts after actions with preconditions or effects
 that mention those facts. For example, the robot cannot assume it is
 plugged into a power source immediately after it unplugs itself.
 %%
@@ -138,20 +135,6 @@ sequenced action, $\action_i$, from a trace of state-action pairs
 $\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
 does not transition to $\state^\bot$, we have that the optimal trace
 has value:
-
-%% define the value of a trace
-%% $\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
-%% deterministic model to equal:
-
-%% \small
-%% \begin{equation}\label{eq:tracevalue}
-%% V(\state_0, \action_0, \state_1, \action_1,.., \state_N) =  \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
-%% \end{equation}
-%% \normalsize
-
-%% \noindent The
-%% optimal trace given a plan, i.e., the sequence of non-assumptive
-%% actions from the trace, therefore has value:
 
 \small
 \[
@@ -170,16 +153,17 @@ finite optimal trace.
 
 \subsection{DT Sessions}
 
-When an action that requires sensing is encountered, the planner
-switches to a decision theoretic session. That session plans in a {\em
-  small} abstract processes defined by the action that triggered the
-DT session, the assumptive actions in the proceeding trace and the
-current belief state. Targeted sensing is encouraged by augmenting the
-reward model to reflect a heuristic value of knowing the truth about
-assumptions in the trace. In detail, all rewards from the original
-POMDP are retained. Additionally, for each relevant assumptive action
+When an action is scheduled whose outcome is uncertain according to
+the underlying belief-state, the planner switches to a DT
+session. That plans for {\em small} abstract processes defined
+according to the action that triggered the DT session, the assumptive
+actions in the proceeding trace, and the current
+belief-state. Targeted sensing is encouraged by augmenting the reward
+model to reflect a heuristic value of knowing the truth about
+assumptions. In detail, all rewards from the underlying problem are
+retained. Additionally, for each relevant assumptive action
 $\assumptiveS{i}$ in the current trace, we have a {\em disconfirm
-  action} $\assumptiveDT{i}$ so that for all states $\state$:
+action} $\assumptiveDT{i}$ so that for all states $\state$:
 
 \small
 \[
@@ -191,16 +175,19 @@ $\assumptiveS{i}$ in the current trace, we have a {\em disconfirm
 \normalsize
 
 \noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a 
-relatively\footnote{Compared to rewards from the original process
-model.} small positive (negative) numeric quantity which captures the
-utility the agent receives for correctly (incorrectly) rejecting an
-assumption. A disconfirm action can only be executed once, and except in the
-applicability of that dual corresponds to a self-transformation
+relatively small positive (negative) numeric quantity\footnote{Small
+relative to rewards from the original process model.} which captures
+the utility the agent receives for correctly (incorrectly) rejecting
+an assumption. A disconfirm action can only be executed once, and
+except in the applicability of that dual corresponds to a
+self-transformation
 %%
-If \switchAction\ is the action that switched the system to a DT
-session, then an assumption $\assumptiveS{i}$ is {\em relevant} if it
-is directly or indirectly required for \switchAction\ to be
-applicable. Continuing our simplified example, if the trace is:
+We only consider {\em relevant} assumptions and their duals when
+constructing the abstract model.  If \switchAction\ is the action that
+switched the system to a DT session, then an assumption
+$\assumptiveS{i}$ is {\em relevant} if it is necessary for the outcome
+of \switchAction\ to be determined. Continuing our simplified example,
+if the trace is:
 
 % Furthermore, if \switchAction\ is the action that switched the system
 % to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
@@ -227,7 +214,7 @@ applicable. Continuing our simplified example, if the trace is:
 $(\pp{look}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
 relevant for this session, and therefore exclude it from the
-POMDP posed to the DT session. 
+abstract decision process. 
 
 Given \switchAction, we also include another self-transition action
 $\actions.\poss(\switchAction)$, the \emph{goal action} with the
