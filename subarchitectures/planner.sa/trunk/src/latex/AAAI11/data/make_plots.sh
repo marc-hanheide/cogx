@@ -33,3 +33,6 @@ done
 
 mv *.eps ../plots
 mv *.pdf ../plots
+
+cd ..
+pdflatex aaai11.tex
