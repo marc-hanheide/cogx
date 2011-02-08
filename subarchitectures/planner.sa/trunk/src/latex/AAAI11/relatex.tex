@@ -73,6 +73,52 @@ A {\em very} recent and promising online approach for
 larger POMDPs employs Monte-Carlo sampling to break the curse of
 dimensionality in situations where goal reachability is {\em easily}
 determined~\cite{silver:veness:2010}. 
+%%
+Our approach can also be thought of as an online POMDP solver that
+uses a sequential plan to guide the search, rather than (e.g.,
+Monte-Carlo) sampling. Also, compared to most online POMDP procedures, which
+replan at each step, our approach involves relatively little replanning.
+
+%% Our approach requires minimal DT replanning,
+%% preferring
+
+%% Also, our approach will execute a few
+%% actions (as much as it can before an assumption is found to be true or
+%% false) before needing to plan again, rather than planning after each
+%% step.
+
+
+
+
+
+%% Moving someway towards supporting real-time decision making, recent
+%% online POMDP solution procedures have been developed which leverage
+%% highly approximate value functions -- computed using an offline
+%% procedure -- and heuristics in forward
+%% search~\cite{ross:etal:2008}. These approaches are applicable in
+%% larger problems (\cite{ross:etal:2008} includes experiments in a domain
+%% with around 12 thousand states), but the fact they often require
+%% expensive \emph{problem-specific} offline processing in order to yield
+%% good behaviours means they are impractical in problems as large as ours.
+%% %%
+%% A recent and promising online approach for
+%% larger POMDPs employs Monte-Carlo sampling to break the curse of
+%% dimensionality in situations where goal reachability is {\em easily}
+%% determined~\cite{silver:veness:2010}. Our approach can also be thought of
+%% as an online POMDP solver, but uses the sequential plan to guide the
+%% search
+%% for a decision-theoretic plan, rather than Monte-Carlo sampling. In
+%% addition, our approach will execute a few actions (as much as it can
+%% before
+%% an assumption is found to be true or false) before needing to plan again,
+%% rather than planning after each step.
+
+%% [have a look at the bit in parentheses above, I'm not sure I quite
+%% characterised how much plan it executes before replanning satisfactorally]
+
+
+
+
 
 
 In the direction of leveraging {\em classical} systems/approaches for

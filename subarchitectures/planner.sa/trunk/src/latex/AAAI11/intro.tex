@@ -43,26 +43,51 @@ the user, and acquire knowledge about its surroundings.
 Our planner takes problem and domain descriptions expressed in a novel
 extension of PPDDL~\cite{younes:etal:2005}, called {\em
 Decision-Theoretic (DT)PDDL}, for modelling stochastic decision
-problems that feature partial observability.  In this paper, we
-restrict our attention to problem models that correspond to
-deterministic-action goal-oriented POMDPs\footnote{We note that POMDPs
-with stochastic actions can be compiled into equivalent
-deterministic-action POMDPs, where all the original action uncertainty
-is expressed in the starting-state
-distribution~\cite{ng:Jordan:2000}.} in which all actions have non-zero
-cost -- i.e., an optimal policy
-can be formatted as a finite horizon contingent plan.  The planner
-{\em switches}, in the sense that the underlying planning procedure
-changes depending on our robot's subjective degrees of belief, and
-progress in plan execution. When the underlying planner is a
-(satisficing) {\em classical} planner, we say planning is in a {\em
-sequential} session, and otherwise it is in a {\em decision-theoretic}
-(DT) session. Finally, planning is {\em continual} in the usual sense
-that, whatever the session, plans are adapted and rebuilt online in
-reaction to changes to the model of the underlying problem and/or
-domain -- e.g., when objectives are modified, or when the topological
-map is altered by a door being closed.
+problems that feature partial observability.  In this paper we
+consider problem models that correspond to deterministic-action
+goal/s-oriented POMDPs\footnote{We note that POMDPs with stochastic
+actions can be compiled into equivalent deterministic-action POMDPs,
+where all the original action uncertainty is expressed in the
+starting-state distribution~\cite{ng:Jordan:2000}.} in which all
+actions have non-zero cost -- i.e., an optimal policy can be formatted
+as a finite horizon contingent plan. Moreover, we target problems of a
+size and complexity that is challenging to state-of-the-art sequential
+satisficing planners, and which are too large to be solved by {\em
+decision-theoretic} (DP) systems directly. Our planner {\em switches},
+in the sense that the underlying planning procedure changes depending
+on our robot's subjective degrees of belief, and progress in plan
+execution. When the underlying planner is a fast (satisficing) {\em
+classical} planner, we say planning is in a {\em sequential} session,
+and otherwise it is in a DT session.
+%%
+A {\em sequential} session plans, and then pursues a high-level
+strategy -- e.g., go to the kitchen and get the cornflakes off the
+bench. DT sessions proceed in a small {\em abstract} process when 
+%%
+DT sessions proceed in a practically sized {\em abstract} processes,
+determined according to the current sequential strategy and underlying
+belief-state.
+%%
+Finally, planning is {\em continual}
+in the usual sense that, whatever the session, plans are adapted and
+rebuilt online in reaction to changes to the model of the underlying
+problem and/or domain -- e.g., when objectives are modified, or when
+the topological map is altered by a door being closed.
 
+
+%% When progress according to that strategy is uncertain, a DT sessions
+%% proceeds in a small {\em abstract} process, in order sense . 
+
+%%  in order to
+%% (in-)validate 
+
+%%  in order to sense
+%% whether the {\em sequential} strategy is good, and otherwise pursue
+%% the goals.
+
+%% Because DT planning is not practical in large problems, those sessions
+%% plan for a small {\em abstract} processes that typically sequential
+%% plan and underlying belief state. 
 
 We evaluate our approach in simulation on problems posed by {\em
 object search} and {\em room categorisation} tasks that our indoor
