@@ -42,7 +42,7 @@ computed using Smith's {\sc zmdp} for small 2 room problems (4-places,
 3-objects, $|$states$|$ $\simeq 5000$). Our evaluation considers 3
 levels of reliability in sensing: {\em reliable} sensors have a $.1$
 probability of a false negative, {\em semi-reliable} have a chance of
-$0.3$ of false negative and $0.1$ of false positive , and {\em noisy}
+$0.3$ of false negative and $0.1$ of false positive, and {\em noisy}
 sensors with probabilities of $0.5$ and $0.2$ respectively. Each
 object class is assigned one sensor model -- e.g. cornflakes may be
 harder to detect than refrigerators. We performed several experiments
@@ -73,10 +73,10 @@ environment.
 % where the robot must relocate to a room with a particular category
 % (e.g. kitchen). the {\em baseline} is not able to complete Item~$f$,
 % so is omitted from that reporting.  
-Because reward is only allocated on the achievement of a goal, we
-find it intuitive to report average plan costs and the success rates
-in problems that admit a solution (i.e., positive reward scaled by a
-constant factor).
+In these experiments we only allocate reward on the achievement of all
+goals, therefore we find it intuitive to report average plan costs and
+the success rates in problems that admit a complete solution (i.e.,
+positive reward scaled by a constant factor).
 
 \begin{figure}[h!]
   % \centering
@@ -127,8 +127,8 @@ success rate, particularly for tasks $d$ and $e$.
 %% partially compensated for by a decrease in Fast Downward planning
 %% times. 
 Speaking to the effectiveness of our entropy heuristic for abstraction
-refinement, we witness relatively high success rates irrespective of
-the exact level of refinement. Comparing finally to the best {\sc
+refinement, we see relatively high success rates irrespective of
+the level of refinement. Comparing finally to the best {\sc
 zmdp} policy, although producing relatively costly plans, the
 continual planners performed quite well, especially in terms success
 rate. A key source of inefficiency here, is due to sequential sessions
