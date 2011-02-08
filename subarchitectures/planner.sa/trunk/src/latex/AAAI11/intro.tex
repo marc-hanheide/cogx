@@ -35,10 +35,17 @@ probabilistic models of the environment.
 
 
 This paper describes a {\em switching} domain independent planning
-approach we have developed to address this challenge. It is
-integrated on a mobile robot platform that continuously deliberates
-in a stochastic dynamic environment in order to achieve goals set by
-the user, and acquire knowledge about its surroundings.
+approach we have developed to address this challenge. 
+%%
+Our Planner is {\em continual} in the usual sense that plans are
+adapted and rebuilt online in reaction to changes to the model of the
+underlying problem and/or domain -- e.g., when objectives are
+modified, or when the topological map is altered by a door being
+closed.
+%%
+It is integrated on a mobile robot platform that continuously
+deliberates in a stochastic dynamic environment in order to achieve
+goals set by the user, and acquire knowledge about its surroundings.
 %%
 Our planner takes problem and domain descriptions expressed in a novel
 extension of PPDDL~\cite{younes:etal:2005}, called {\em
@@ -56,7 +63,7 @@ complexity that is challenging to state-of-the-art sequential
 satisficing planners, and which are too large to be solved directly by
 {\em decision-theoretic} (DT) systems.
 
-Our planner {\em switches}, in the sense that the underlying planning
+Our planner {\em switches}, in the sense that the base planning
 procedure changes depending on our robot's subjective degrees of
 belief, and progress in plan execution. When the underlying planner is
 a fast (satisficing) {\em classical} planner, we say planning is in a
@@ -66,16 +73,10 @@ A {\em sequential} session plans, and then pursues a high-level
 strategy -- e.g., go to the kitchen bench, and then observe the
 cornflakes on it.
 %%
-DT sessions proceed in a practically sized {\em abstract} process,
+A DT session proceeds in a practically sized {\em abstract} process,
 determined according to the current sequential strategy and underlying
 belief-state.
 %%
-Planning is {\em continual} in the usual sense that, whatever the
-session, plans are adapted and rebuilt online in reaction to changes
-to the model of the underlying problem and/or domain -- e.g., when
-objectives are modified, or when the topological map is altered by a
-door being closed.
-
 
 %% When progress according to that strategy is uncertain, a DT sessions
 %% proceeds in a small {\em abstract} process, in order sense . 
