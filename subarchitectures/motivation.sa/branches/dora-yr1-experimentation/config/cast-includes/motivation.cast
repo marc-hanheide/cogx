@@ -5,7 +5,7 @@ JAVA MG executor execution.components.PrototypePlanExecutor
 # motivation ##################################################################
 JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator 
 JAVA MG PatrolPlaceGenerator spatial.motivation.PatrolPlaceGenerator 
-JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator --blockrooms
+JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator #--blockrooms
 JAVA MG HomingGenerator   spatial.motivation.HomingGenerator
 
 # located in vale-experimentation.cast ########################################
