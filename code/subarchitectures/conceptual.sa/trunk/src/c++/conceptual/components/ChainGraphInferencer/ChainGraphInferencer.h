@@ -67,7 +67,8 @@ private:
 	bool updateFactorGraph(bool &factorGraphChanged);
 
 	/** Create DAI Variable if not yet created. */
-	void createDaiVariable(std::string name, const std::vector<std::string> &values);
+	struct DaiVariable; /* forward declaration */
+	DaiVariable& createDaiVariable(const std::string &name, const std::vector<std::string> &values);
 
 	/** Creates a DAI connectivity factor for two rooms. */
 	void createDaiConnectivityFactor(int room1Id, int room2Id);
