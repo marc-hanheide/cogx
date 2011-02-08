@@ -83,7 +83,7 @@ set xtics ("zmdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
 set origin 0, 0
 set size 0.45, 1.0
 set title "a) Tiny problem / semi-reliable" 
-plot 'pomdp-med.time' using 5 t "reward" fs pattern 4 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
+plot 'pomdp-med.time' using 5 t "reward" fs pattern 6 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
 set yrange [-50:40]
 set y2label "success ratio" offset -2,0
@@ -93,7 +93,7 @@ set origin 0.45, 0
 set size 0.55, 1.0
 #set output "dora6-quality.eps"
 set title "b) Tiny problem / noisy"
-plot 'pomdp-hard.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
+plot 'pomdp-hard.time' using 5 notitle fs pattern 6 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
 unset multiplot
 
 
