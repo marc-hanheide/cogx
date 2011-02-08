@@ -32,36 +32,43 @@ otherwise acts to achieve the goals.
 Because online DT planning in large problems is impractical (we seek
 response times in seconds), a DT session plans in an abstract process
 determined by the current trace and underlying belief-state. This
-abstraction is constructed by first excluding all propositions (and
-related actions) that are not true, or {\em assumed } true, of states
-in the trace, then adding them back, using as an heuristic the entropy
-of the trace assumptions conditional on a candidate
-proposition. Propositions are added, one at a time, until the number
-of states in the initial belief-state reaches a given
-threshold.\footnote{Our experiments are performed using a number of
-different threshold parameters.}  To the resulting abstract model we
+abstract problem is created by selecting only those propositions that
+are \emph{relevant} to the subproblem the DT session is asked to
+solve.
+% MOG: Describe this in detail in the appropriate subsection
+%  This
+% abstraction is constructed by first excluding all propositions (and
+% related actions) that are not true, or {\em assumed } true, of states
+% in the trace, then adding them back, using as an heuristic the entropy
+% of the trace assumptions conditional on a candidate
+% proposition. Propositions are added, one at a time, until the number
+% of states in the initial belief-state reaches a given
+% threshold.\footnote{Our experiments are performed using a number of
+% different threshold parameters.} 
+To the resulting abstract model we
 also add {\em disconfirm} and {\em confirm} actions that the
 DT session can schedule in order to judge an atomic assumption
 in the trace. In the abstract model these actions yield a relatively
 small reward if the corresponding judgement is true (or small penalty
 otherwise). If a judgement action is scheduled for execution the
-DT session is terminated, and control is returned to a
-sequential session.
+DT session is terminated, and control is returned to the
+sequential planner.
 
 
 Finally, whether proceeding in a sequential or DT session, our
 continual planner maintains a factored representation of successive
-belief-states by performing belief revision. Our internal
-representation of the underlying belief-state corresponds more-or-less
-directly to an $(\pp{:init})$ declaration. That belief-state
-distribution is used: (1) as the source of candidate determinisations
-for sequential planning, (2) in determining when to switch to a DT
-session, and (3) as a mechanism to guide construction of an abstract
-process for DT sessions.
+belief-states by performing belief revision. For that, we transform
+the $(\pp{:init})$ declaration into a tree-shaped bayesian network
+which gets updated whenever an actions is performed or an observation
+is received. That belief-state representation is used:
+(1) as the source of candidate determinisations for sequential
+planning, (2) in determining when to switch to a DT session, and (3)
+as a mechanism to guide construction of an abstract process for DT
+sessions.
 
 \subsection{Sequential Sessions}
 
-We only consider deterministic-action POMDPs, where all state
+As we only consider deterministic-action POMDPs, all state
 uncertainty is expressed in the $(\pp{:init})$ declaration. This
 declaration is used by our approach to define the starting state for
 sequential sessions, and the set of state-assumptions available to
@@ -92,7 +99,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 relaxed} visitation of the root. Here, a conjunctive term is visited
 iff its atomic subterms are visited, and zero or one of its immediate
 probabilistic subterms are visited. For a sequential session, the
-starting state corresponds to an assumption (usually unique) with
+starting state corresponds to an assumption (usually unique) which
 probability $1$. In our example, that starting state is:
 
 \small
@@ -105,7 +112,7 @@ probability $1$. In our example, that starting state is:
 \normalsize
 
 Encapsulating state-assumptions, we annotate the problem posed during
-a sequential session with an assumptive action $\assumptiveS{i}$ for
+a sequential session with an \emph{assumptive action} $\assumptiveS{i}$ for
 each element $\prob_i (T_i)$, of each probabilistic term from
 $(\pp{:init})$. Here, $\assumptiveS{i}$ can be executed if no
 $\assumptiveS{j}$, $j \neq i$, has been executed from the same
@@ -161,18 +168,18 @@ artificially limit the length of traces that the sequential planner
 can consider. Moreover, for problems we consider there is always a
 finite optimal trace.
 
-
 \subsection{DT Sessions}
 
-A DT session plans in a {\em small} abstract processes defined
-according to the assumptive actions in the proceeding trace, and the
-$(\pp{:init})$ declaration that models the underlying
-belief-state. Targeted sensing is encouraged by augmenting the reward
-model to reflect a heuristic value of knowing the truth about
+When an action that requires sensing is encountered, the planner
+switches to a decision theoretic session. That session plans in a {\em
+  small} abstract processes defined by the action that triggered the
+DT session, the assumptive actions in the proceeding trace and the
+current belief state. Targeted sensing is encouraged by augmenting the
+reward model to reflect a heuristic value of knowing the truth about
 assumptions in the trace. In detail, all rewards from the original
-POMDP are retained. Additionally, for each $\assumptiveS{i}$ action
-scheduled by the current trace, we have a {\em dual}
-$\assumptiveDT{i}$ so that for all states $\state$:
+POMDP are retained. Additionally, for each relevant assumptive action
+$\assumptiveS{i}$ in the current trace, we have a {\em disconfirm
+  action} $\assumptiveDT{i}$ so that for all states $\state$:
 
 \small
 \[
@@ -187,16 +194,21 @@ $\assumptiveDT{i}$ so that for all states $\state$:
 relatively\footnote{Compared to rewards from the original process
 model.} small positive (negative) numeric quantity which captures the
 utility the agent receives for correctly (incorrectly) rejecting an
-assumption. A dual action can only be executed once, and except in the
+assumption. A disconfirm action can only be executed once, and except in the
 applicability of that dual corresponds to a self-transformation
 %%
-Furthermore, if \switchAction\ is the action that switched the system
-to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
-active} if
-\switchAction\ is not applicable in the sequential model unless
-$\assumptiveS{i}$ is scheduled in the trace prefix
-to \switchAction. We only include the duals of active assumptions in
-DT sessions. Continuing our simplified example, if the trace is:
+If \switchAction\ is the action that switched the system to a DT
+session, then an assumption $\assumptiveS{i}$ is {\em relevant} if it
+is directly or indirectly required for \switchAction\ to be
+applicable. Continuing our simplified example, if the trace is:
+
+% Furthermore, if \switchAction\ is the action that switched the system
+% to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
+% active} if
+% \switchAction\ is not applicable in the sequential model unless
+% $\assumptiveS{i}$ is scheduled in the trace prefix
+% to \switchAction. We only include the duals of active assumptions in
+% DT sessions. Continuing our simplified example, if the trace is:
 
 \small
 \[
@@ -214,11 +226,12 @@ DT sessions. Continuing our simplified example, if the trace is:
 \noindent Taking the switching action \switchAction\ to be
 $(\pp{look}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
-active, and therefore exclude it from the
+relevant for this session, and therefore exclude it from the
 POMDP posed to the DT session. 
 
 Given \switchAction, we also include another self-transition action
-$\actions.\poss(\switchAction)$ with the reward property:
+$\actions.\poss(\switchAction)$, the \emph{goal action} with the
+reward property:
 
 \[
 \reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
@@ -227,16 +240,15 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \end{array}
 \]
 
-Execution of either a dual action $\assumptiveDT{i}$, or the
-$\actions.\poss(\switchAction)$, returns control to a sequential
-session, which then continues from the underlying
-belief-state. Turning to the detail of dual rewards, in our integrated
-system these are sourced from a motivational subsystem. In this paper,
-for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a small positive
-constant, and have $\hat\$(x)= - \$(x)(1 - \prob) / \prob$ where
-$\prob$ is the probability that $x$ is true. For
+Execution of either a disconfirmation or the goal action returns
+control to a sequential session, which then continues from the
+underlying belief-state. Turning to the detail of rewards, in our
+integrated system these are sourced from a motivational subsystem. In
+this paper, for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a
+small positive constant, and have $\hat\$(x)= - \$(x)(1 - \prob) /
+\prob$ where $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
-\$(x)\prob/(1-\prob)$
+\$(x)\prob/(1-\prob)$.
 
 
 
@@ -248,20 +260,34 @@ assumption was rejected, we prohibit that sequential session from
 making it again.
 }
 
+As are aiming to keep the decision theoretic session fast, we try to
+keep the state space of the abstract problem as small as possible. In
+a deterministic-actio POMDP, the state space size is determined by two
+factors: the number of non-zero states in the initial belief-state and
+the number of executable actions. We thus want to keep the number of
+uncertain facts as low as possible without losing important
+information about the sensing goal and keep the number of actions down
+without crippling the ability of the DT planner to gather the required
+information.
 
-The process posed to a DT session is abstract. The abstraction is
-defined by first constructing an $(\pp{:init})$ declaration without
-any-active assumptions from the trace -- e.g.,
-(Fig.\ref{fig:abstraction-b}) gives an example, where diamonds are
-probabilistic terms, and circles are atomic and/or conjunctive.
+We perform the abstraction of the belief space by first constructing
+an $(\pp{:init})$ declaration which only contains relevant assumptions
+from the trace -- e.g., (Fig.\ref{fig:abstraction-b}) gives an
+example, where diamonds are probabilistic terms, and circles are
+atomic and/or conjunctive.
 %%
 For each excluded atom, we compute the {\em entropy} of the active
 assumptions, {\em conditional} on that atom. Intuitively, lower
 entropy indicates an atom gives better information about
 assumptions. Facts are iteratively added to the belief-state in
-increasing order according to that measure
-(Fig.\ref{fig:abstraction-c}).
+increasing order according to that measure until the belief space size
+reaches a predefined limit (Fig.\ref{fig:abstraction-c}).
 
+We then proceed to limit the actions by only including those that are
+possibly required to a) reach the goal or b) to directly observe an
+atom that is part of the abstract belief state.
+
+TODO: relaxed planning graph
 
 %% In the first step, we remove all facts that are not part of an
 %% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
@@ -402,13 +428,7 @@ increasing order according to that measure
 \end{figure}
 
 
-
-
-
-
-
-
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "moritz_2011"
+%%% TeX-master: "aaai11"
 %%% End: 
