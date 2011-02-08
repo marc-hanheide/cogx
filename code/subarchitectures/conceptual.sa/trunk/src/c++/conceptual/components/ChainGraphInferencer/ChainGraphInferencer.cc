@@ -493,26 +493,21 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
-		ConceptualData::ValuePotentialPairs dist)
+void ChainGraphInferencer::createDaiFactor(const string &name,
+										   const ConceptualData::ValuePotentialPairs &dist,
+										   ChainGraphInferencer::DaiVariable &dv)
 {
-	// Create variables
-	DaiVariable &dv = PlaceShapePropertyVar(placeId);
-	debug("Creating DAI observed shape property factor for variable '%s'", dv.name.c_str());
-
-	// Create factor
+	debug("Creating DAI factor '%s' for variable '%s'", name.c_str(), dv.name.c_str());
 	dai::Factor daiFactor( dv.var );
 
-	int shapeCount = _shapes.size();
 	int index=0;
-	for (int i = 0; i<shapeCount; ++i)
+	typedef pair<int,string> item_type;
+	foreach(const item_type &varValueName, dv.valueIdToName)
 	{
-		// Find probability for the shape
-		string shape = _shapes[i];
 		double potential = -1;
 		for (unsigned int j=0; j<dist.size(); ++j)
 		{
-			if (dist[j].value == shape)
+			if (dist[j].value == varValueName.second)
 			{
 				potential = dist[j].potential;
 				break;
@@ -522,61 +517,14 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 		{
 			log("Warning: Can't find potential for a shape %s while building observed shape property DAI factor!"
 					"This probably means that the shape value is not present in the model for this property.",
-					shape.c_str());
+					varValueName.second.c_str());
 			potential=0.01;
 		}
 		daiFactor.set(index, potential);
 		++index;
 	}
-
-	// Add factor to the list
 	_factors.push_back(daiFactor);
-	_factorNames.push_back("ObservedShapePropertyFactor");
-
-}
-
-// -------------------------------------------------------
-void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId,
-		ConceptualData::ValuePotentialPairs dist)
-{
-	// Create variables
-	DaiVariable &dv = PlaceAppearancePropertyVar(placeId);
-	debug("Creating DAI observed shape property factor for variable '%s'", dv.name.c_str());
-
-	// Create factor
-	dai::Factor daiFactor( dv.var );
-
-	int appearanceCount = _appearances.size();
-	int index=0;
-	for (int i = 0; i<appearanceCount; ++i)
-	{
-		// Find probability for the appearance
-		string appearance = _appearances[i];
-		double potential = -1;
-		for (unsigned int j=0; j<dist.size(); ++j)
-		{
-			if (dist[j].value == appearance)
-			{
-				potential = dist[j].potential;
-				break;
-			}
-		}
-		if (potential<0)
-		{
-			log("Warning: Can't find potential for an appearance %s while building observed appearance property DAI factor!"
-					"This probably means that the appearance value is not present in the model for this property.",
-					appearance.c_str());
-
-			potential=0.01;
-		}
-		daiFactor.set(index, potential);
-		++index;
-	}
-
-	// Add factor to the list
-	_factors.push_back(daiFactor);
-	_factorNames.push_back("ObservedAppearancePropertyFactor");
-
+	_factorNames.push_back(name);
 }
 
 // -------------------------------------------------------
@@ -639,14 +587,14 @@ void ChainGraphInferencer::addDaiFactors()
 			foreach(const ConceptualData::ShapePlacePropertyInfo &sppi, pi.shapeProperties)
 			{
 				createDaiFactor("f(room_category1,shape_property)", RoomCategoryVar(cri.roomId), PlaceShapePropertyVar(pi.placeId));
-				createDaiObservedShapePropertyFactor(pi.placeId, sppi.distribution);
+				createDaiFactor("ObservedShapePropertyFactor", sppi.distribution, PlaceShapePropertyVar(pi.placeId));
 			}
 
 			// Appearance properties
 			foreach(const ConceptualData::AppearancePlacePropertyInfo &appi, pi.appearanceProperties)
 			{
 				createDaiFactor("f(room_category1,appearance_property)", RoomCategoryVar(cri.roomId), PlaceAppearancePropertyVar(pi.placeId));
-				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
+				createDaiFactor("ObservedShapePropertyFactor", appi.distribution, PlaceAppearancePropertyVar(pi.placeId));
 			}
 		}
 	}
