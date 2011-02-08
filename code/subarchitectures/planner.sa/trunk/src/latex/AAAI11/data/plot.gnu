@@ -42,10 +42,10 @@ set ylabel "plan costs" offset 1,0
 #      newhistogram  fs pattern 4 lt 1, 'dora1-med.time' using 5 notitle, '' using ($0+offset2):($4*50.0/24) notitle axes x1y2 with lines lt 1 lw 3, \
 #      newhistogram  fs pattern 4 lt 1, 'dora1-hard.time' using 5 notitle, '' using ($0+offset3):($4*50.0/30) notitle axes x1y2 with lines lt 1 lw 3
 
-set key at 2.8,420
+set key at 5,340
 
 set output "dora2-quality.eps"
-set title "a) Object search task (3 rooms/1 goal)" offset 2,-0.5
+set title "a) Object search task (3 rooms/1 goal)" offset 2,0
 plot newhistogram "reliable" fs pattern 4 lt 1, 'dora2-easy.time' using 5 t "plan costs", '' using ($4/d2_solvable) t "success ratio" axes x1y2 with lines lt 1 lw 3, \
      newhistogram  fs pattern 4 lt 1, 'dora2-med.time' using 5 notitle, '' using ($0+offset2):($4/d2_solvable) notitle axes x1y2 with lines lt 1 lw 3, \
      newhistogram "noisy" fs pattern 4 lt 1, 'dora2-hard.time' using 5 notitle, '' using ($0+offset3):($4/d2_solvable) notitle axes x1y2 with lines lt 1 lw 3
@@ -168,7 +168,7 @@ set ytics mirror
 #      newhistogram  fs pattern 1 lt 1, 'dora1-hard.time' using 2 notitle, '' using 3  notitle
 
 
-set key at 4,250
+set key at 5.5,180
 set output "dora2-time.eps"
 set title "a) Object search task (3 rooms/1 goal)" offset 2,-0.5
 plot newhistogram "reliable" fs pattern 1 lt 1, 'dora2-easy.time' using 2 t "sequential planner", '' using 3  t "contingent planner", \

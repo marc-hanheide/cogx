@@ -25,13 +25,13 @@ view cones at places for particular objects, the robot is able to: (1)
 categorise space at high (room) and low (place) levels, and (2) find
 objects for the user, exploiting information about object
 co-occurrence and room categories for efficiency. Also, in the
-presence of a person, the robot can ask them about the location of
-objects. 
+presence of a person, the robot can ask them about the category of the
+current room.
 
 
 We compare our switching planner with the {\em baseline} in several
 realistic tasks, with the number of rooms ranging from 3 (12-places,
-16-objects, $|$states$|$$>\sim10^{21}$) to 6 (26-places, 21-objects,
+16-objects, $|$states$|$ $>10^{21}$) to 6 (26-places, 21-objects,
 $|$states$|$ $>10^{36}$). For or experiments we model three sensors:
 {\em Reliable} sensors have a $0.1$ probability of a false negative,
 {\em semi-reliable} have a chance of $0.3$ of false negative and $0.1$
@@ -44,24 +44,23 @@ the target object(s). All non-target objects remain unchanged so the
 planner may exploit object co-occurances with reliable objects to
 compensate for the increased sensor noise.
 
-We evaluate with DT sessions taking $b_0$ admitting between 20 and 200
+We evaluate with DT sessions taking $b_0$ admitting between 20 and 100
 abstract states with non-zero probability. We run 50 simulations in
 each configuration, and have a timeout on each simulation of 30
 minutes (1800 seconds)\footnote{All experiments were conducted on a
- 2.66GHz Intel Xeon X5355 CPU using one CPU core.}. The continual planning
+ 2.66GHz Intel Xeon X5355 using one CPU core.}. The continual planning
 times are reported in Figure~\ref{fig:results-time}, and the quality
 data in Figure~\ref{fig:results-quality}.
 %%
-For Items~$a$-$e$ the goal is to find objects and report their
-position to a user. In some cases there is a non-zero probability that
+For each task, the goal is to find one or several objects and report
+their position to a user. Usually there is a non-zero probability that
 no plan exists, as the desired object might not be present in the
-environment. 
+environment.
 % MOG: I didn't do  evaluations for those, so let's remove them
 % Item~$f$ reports for tasks requiring indirect sensing,
 % where the robot must relocate to a room with a particular category
 % (e.g. kitchen). the {\em baseline} is not able to complete Item~$f$,
 % so is omitted from that reporting.  
-
 Because reward is only allocated
 once, on the achievement of the goal,  we find it
 intuitive to report average plan costs and the success rates in
@@ -111,7 +110,7 @@ spent in DT planning increases steeply as the abstraction $\bstate_0$
 becomes more refined.  That refinement seems to be paying off in terms
 of the success rate, particularly for tasks $d$ and $e$. For less
 refined initial configurations, the increased cost of DT
-planning is compensated for by a decrease in Fast Downward planning
+planning is partially compensated for by a decrease in Fast Downward planning
 times. The relatively high success rate irrespective of the level of
 refinement in the initial configuration indicates the effectiveness of
 using conditional entropy to guide abstraction refinement in our
