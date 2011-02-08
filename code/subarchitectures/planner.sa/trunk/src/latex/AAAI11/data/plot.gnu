@@ -75,24 +75,25 @@ plot newhistogram  fs pattern 4 lt 1, 'dora4-easy.time' using 5 t "plan costs", 
 set output "pomdp-quality.eps"
 set multiplot
 set yrange [0:60]
-set ylabel "reward"
+set ylabel "reward" offset 1,0
 unset y2label
 unset y2tics 
 set xtics ("zmdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
 
-set origin 0, 0
+set origin 0.05, 0
 set size 0.45, 1.0
-set title "a) Tiny problem / semi-reliable" 
+set title "f) Tiny problem / semi-reliable" 
 plot 'pomdp-med.time' using 5 t "reward" fs pattern 6 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
 set yrange [-50:40]
+unset ylabel
 set y2label "success ratio" offset -2,0
 set y2tics
 
-set origin 0.45, 0
-set size 0.55, 1.0
+set origin 0.52, 0
+set size 0.53, 1.0
 #set output "dora6-quality.eps"
-set title "b) Tiny problem / noisy"
+set title "g) Tiny problem / noisy"
 plot 'pomdp-hard.time' using 5 notitle fs pattern 6 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
 unset multiplot
 
@@ -126,7 +127,7 @@ set yrange [0:*]
 
 set output "dora56-quality.eps"
 set multiplot
-set ylabel "plan costs"
+set ylabel "plan costs" offset 1,0
 unset y2label
 unset y2tics 
 set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0)
