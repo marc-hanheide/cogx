@@ -51,15 +51,17 @@ plot newhistogram "reliable" fs pattern 4 lt 1, 'dora2-easy.time' using 5 t "pla
      newhistogram "noisy" fs pattern 4 lt 1, 'dora2-hard.time' using 5 notitle, '' using ($0+offset3):($4/d2_solvable) notitle axes x1y2 with lines lt 1 lw 3
 
 unset key
+set terminal postscript eps size 8.7cm, 2.8cm "Times-Roman"
 
 set output "dora3-quality.eps"
-set title "b) 3 rooms/2 goals" offset 0,-0.5
+set ytics 100
+set title "b) 3 rooms/2 goals" offset 0,-1.5
 plot newhistogram "reliable" fs pattern 4 lt 1, 'dora3-easy.time' using 5 t "plan costs", '' using ($4/d3_solvable) t "success ratio" axes x1y2 with lines lt 1 lw 3, \
      newhistogram  fs pattern 4 lt 1, 'dora3-med.time' using 5 notitle, '' using ($0+offset2):($4/d3_solvable) notitle axes x1y2 with lines lt 1 lw 3, \
      newhistogram "noisy" fs pattern 4 lt 1, 'dora3-hard.time' using 5 notitle, '' using ($0+offset3):($4/d3_solvable) notitle axes x1y2 with lines lt 1 lw 3
 
 set output "dora4-quality.eps"
-set title "c) 6 rooms/1 goal"
+set title "c) 6 rooms/1 goal" offset 0,-1.5
 plot newhistogram  fs pattern 4 lt 1, 'dora4-easy.time' using 5 t "plan costs", '' using ($4/d4_solvable) t "success ratio" axes x1y2 with lines lt 1 lw 3, \
      newhistogram  fs pattern 4 lt 1, 'dora4-med.time' using 5 notitle, '' using ($0+offset2):($4/d4_solvable) notitle axes x1y2 with lines lt 1 lw 3, \
      newhistogram  fs pattern 4 lt 1, 'dora4-hard.time' using 5 notitle, '' using ($0+offset3):($4/d4_solvable) notitle axes x1y2 with lines lt 1 lw 3
@@ -75,6 +77,7 @@ plot newhistogram  fs pattern 4 lt 1, 'dora4-easy.time' using 5 t "plan costs", 
 set output "pomdp-quality.eps"
 set multiplot
 set yrange [0:60]
+set ytics 10
 set ylabel "reward" offset 1,0
 unset y2label
 unset y2tics 
@@ -82,7 +85,7 @@ set xtics ("zmdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
 
 set origin 0.05, 0
 set size 0.45, 1.0
-set title "f) Tiny problem / semi-reliable" 
+set title "f) Tiny problem / semi-reliable" offset 0,-0.5
 plot 'pomdp-med.time' using 5 t "reward" fs pattern 6 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
 set yrange [-50:40]
@@ -128,6 +131,7 @@ set yrange [0:*]
 set output "dora56-quality.eps"
 set multiplot
 set ylabel "plan costs" offset 1,0
+set ytics 100
 unset y2label
 unset y2tics 
 set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0)
@@ -146,6 +150,7 @@ set size 0.55, 1.0
 #set output "dora6-quality.eps"
 set title "e) 3 rooms/3 goals"
 plot 'dora6.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/d6_solvable) notitle axes x1y2 with lines lt 1 lw 3
+unset ytics 100
 unset multiplot
 
 set origin 0, 0
@@ -177,15 +182,16 @@ plot newhistogram "reliable" fs pattern 1 lt 1, 'dora2-easy.time' using 2 t "seq
      newhistogram "noisy" fs pattern 1 lt 1, 'dora2-hard.time' using 2 notitle, '' using 3  notitle
 
 unset key
+set terminal postscript eps size 8.7cm, 2.8cm "Times-Roman"
 
 set output "dora3-time.eps"
-set title "b) 3 rooms/2 goals" offset 0,-0.5
+set title "b) 3 rooms/2 goals" offset 0,-1.5
 plot newhistogram "reliable" fs pattern 1 lt 1, 'dora3-easy.time' using 2 t "continual planner", '' using 3  t "dt planner", \
      newhistogram  fs pattern 1 lt 1, 'dora3-med.time' using 2 notitle, '' using 3  notitle, \
      newhistogram "noisy" fs pattern 1 lt 1, 'dora3-hard.time' using 2 notitle, '' using 3  notitle
 
 set output "dora4-time.eps"
-set title "c) 6 rooms/1 goal" offset 0,-0.5
+set title "c) 6 rooms/1 goal" offset 0,-1.5
 plot newhistogram  fs pattern 1 lt 1, 'dora4-easy.time' using 2 t "continual planner", '' using 3  t "dt planner", \
      newhistogram  fs pattern 1 lt 1, 'dora4-med.time' using 2 notitle, '' using 3  notitle, \
      newhistogram  fs pattern 1 lt 1, 'dora4-hard.time' using 2 notitle, '' using 3  notitle
