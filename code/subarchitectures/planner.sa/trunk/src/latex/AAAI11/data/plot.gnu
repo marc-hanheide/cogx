@@ -14,11 +14,13 @@ unset xlabel
 set y2range [0:1]
 #set tics scale 0.0
 
-d2_solvable = 18.0/30.0
-d3_solvable = 18.0/30.0
-d4_solvable = 25.0/30.0
+d2_solvable = 18.0
+d3_solvable = 18.0
+d4_solvable = 25.0
+d5_solvable = 20.5
+d6_solvable = 18.0
 
-pomdp_solv = 15.0/30.0
+pomdp_solv = 65.0
 
 offset2 = 5
 offset3 = 10
@@ -73,16 +75,16 @@ plot newhistogram  fs pattern 4 lt 1, 'dora4-easy.time' using 5 t "plan costs", 
 set output "pomdp-quality.eps"
 set multiplot
 set yrange [-60:30]
+set ylabel "reward"
 unset y2label
 unset y2tics 
-set xtics ("zpomdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
+set xtics ("zmdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
 
 set origin 0, 0
 set size 0.45, 1.0
 set title "a) Tiny problem / semi-reliable" 
 plot 'pomdp-med.time' using 5 t "reward" fs pattern 4 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
-unset ylabel
 set y2label "success ratio" offset -2,0
 set y2tics
 
@@ -93,29 +95,55 @@ set title "b) Tiny problem / noisy"
 plot 'pomdp-hard.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
 unset multiplot
 
+
+set output "pomdp-solvable-quality.eps"
+set multiplot
+set yrange [-40:50]
+set ylabel "reward"
+unset y2label
+unset y2tics 
+set xtics ("zmdp" 0.0, "cp" 1.0, "dt 20" 2.0, "dt 50" 3.0, "dt 100" 4.0)
+
+set origin 0, 0
+set size 0.45, 1.0
+set title "a) Tiny (solvable only) / semi-reliable" 
+plot 'pomdp-med-solvable.time' using 5 t "reward" fs pattern 4 lt 1, '' using ($4/pomdp_solv) t "success ratio" axes x1y2 with lines lt 1 lw 3
+
+unset ylabel
+set y2label "success ratio" offset -2,0
+set y2tics
+
+set origin 0.45, 0
+set size 0.55, 1.0
+#set output "dora6-quality.eps"
+set title "b) Tiny (solvable only) / noisy"
+plot 'pomdp-hard-solvable.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/pomdp_solv) notitle axes x1y2 with lines lt 1 lw 3
+unset multiplot
+
+
 set yrange [0:*]
 
-# set output "dora56-quality.eps"
-# set multiplot
-# unset y2label
-# unset y2tics 
-# set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "dt 200" 4.0)
+set output "dora56-quality.eps"
+set multiplot
+unset y2label
+unset y2tics 
+set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0)
 
-# set origin 0, 0
-# set size 0.45, 1.0
-# set title "d) 6 rooms/2 goals" 
-# plot 'dora5.time' using 5 t "plan costs" fs pattern 4 lt 1, '' using ($4*50.0/34) t "success ratio" axes x1y2 with lines lt 1 lw 3
+set origin 0, 0
+set size 0.45, 1.0
+set title "d) 6 rooms/2 goals" 
+plot 'dora5.time' using 5 t "plan costs" fs pattern 4 lt 1, '' using ($4/d5_solvable) t "success ratio" axes x1y2 with lines lt 1 lw 3
 
-# unset ylabel
-# set y2label "success ratio" offset -2,0
-# set y2tics 
+unset ylabel
+set y2label "success ratio" offset -2,0
+set y2tics 
 
-# set origin 0.45, 0
-# set size 0.55, 1.0
-# #set output "dora6-quality.eps"
-# set title "e) 3 rooms/3 goals"
-# plot 'dora6.time' using 5 notitle fs pattern 4 lt 1, '' using ($4*50.0/30) notitle axes x1y2 with lines lt 1 lw 3
-# unset multiplot
+set origin 0.45, 0
+set size 0.55, 1.0
+#set output "dora6-quality.eps"
+set title "e) 3 rooms/3 goals"
+plot 'dora6.time' using 5 notitle fs pattern 4 lt 1, '' using ($4/d6_solvable) notitle axes x1y2 with lines lt 1 lw 3
+unset multiplot
 
 set origin 0, 0
 set size 1,1
@@ -168,21 +196,21 @@ plot newhistogram  fs pattern 1 lt 1, 'dora4-easy.time' using 2 t "continual pla
 #      newhistogram  fs pattern 1 lt 1, 'dora4-cat.time' using 2 notitle, '' using 3  notitle
 
 
-# set output "dora56-time.eps"
-# set multiplot
-# set title "d) 6 rooms/2 goals" offset 0,-0.5
-# set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0, "dt 200" 4.0)
-# set origin 0, 0
-# set size 0.45, 1.0
-# plot 'dora5.time' using 2 t "continual planner" fs pattern 1 lt 1, '' using 3  t "dt planner"
+set output "dora56-time.eps"
+set multiplot
+set title "d) 6 rooms/2 goals" offset 0,-0.5
+set xtics ("cp" 0.0, "dt 20" 1.0, "dt 50" 2.0, "dt 100" 3.0)
+set origin 0, 0
+set size 0.45, 1.0
+plot 'dora5.time' using 2 t "continual planner" fs pattern 1 lt 1, '' using 3  t "dt planner"
 
-# set origin 0.55, 0
-# set size 0.45, 1.0
-# set title "e) 3 rooms/3 goals" offset 0,-0.5
-# #set output "dora6-time.eps"
-# plot 'dora6.time' using 2 notitle fs pattern 1 lt 1, '' using 3  notitle
-#      # newhistogram  fs pattern 1 lt 1, 'dora1-hard.time' using 2 notitle, '' using 3  notitle
-# unset multiplot
+set origin 0.55, 0
+set size 0.45, 1.0
+set title "e) 3 rooms/3 goals" offset 0,-0.5
+#set output "dora6-time.eps"
+plot 'dora6.time' using 2 notitle fs pattern 1 lt 1, '' using 3  notitle
+     # newhistogram  fs pattern 1 lt 1, 'dora1-hard.time' using 2 notitle, '' using 3  notitle
+unset multiplot
 
 
 
