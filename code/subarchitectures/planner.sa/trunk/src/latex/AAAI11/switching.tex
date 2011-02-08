@@ -34,7 +34,7 @@ response times in seconds), DT sessions plan in an abstract process
 determined by the current trace and underlying belief-state. This
 abstraction is constructed by first excluding all propositions (and
 related actions) that are not true, or {\em assumed } true, of states
-in the trace, then adding them back, using as a heuristic the entropy
+in the trace, then adding them back, using as an heuristic the entropy
 of the trace assumptions conditional on a candidate
 proposition. Propositions are added, one at a time, until the number
 of states in the initial belief-state reaches a given
@@ -172,7 +172,7 @@ model to reflect a heuristic value of knowing the truth about
 assumptions in the trace. In detail, all rewards from the original
 POMDP are retained. Additionally, for each $\assumptiveS{i}$ action
 scheduled by the current trace, we have a {\em dual}
-$\assumptiveDT{i}$ so that forall states $\state$:
+$\assumptiveDT{i}$ so that for all states $\state$:
 
 \small
 \[
@@ -188,7 +188,7 @@ relatively\footnote{Compared to rewards from the original process
 model.} small positive (negative) numeric quantity which captures the
 utility the agent receives for correctly (incorrectly) rejecting an
 assumption. A dual action can only be executed once, and corresponds
-otherwise to a self-transition -- I.e., except in the applicability of
+otherwise to a self-transition -- i.e., except in the applicability of
 the dual, the process remains in the state from which a dual is
 executed.
 %%
@@ -253,7 +253,7 @@ making it again.
 
 The process posed to a DT session is abstract. The abstraction is
 defined by first constructing an $(\pp{:init})$ declaration without
-any-active assumptions from the trace -- E.g.,
+any-active assumptions from the trace -- e.g.,
 (Fig.\ref{fig:abstraction-b}) gives an example, where diamonds are
 probabilistic terms, and circles are atomic and/or conjunctive.
 %%
