@@ -1,5 +1,16 @@
 #!/bin/bash
 
+### cheap hack to get opencv1.1 to work -- link to 2.1
+#sudo ln -s libcv.so libcv.so.1.1
+#sudo ln -s libcv.so libcv.so.1.1export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+#sudo ln -s libhighgui.so libhighgui.so.1.1
+#sudo ln -s libcvaux.so libcvaux.so.1.1
+#sudo ln -s libml.so libml.so.1.1
+
+# clean up
+rm -f tmpmap.graph
+rm -f tmp.tmptmp
+
 #Defaults
 PEEKABOT=true
 configFile="instantiations/AAAI-experimentation.cast"
@@ -12,6 +23,7 @@ do
 #		SEARCHPATH=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
 	#		;;
    	--config=*)
+		echo "changed configFile"
 		configFile=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
 		;;
     	--peekabot)
@@ -48,10 +60,10 @@ if [[ $camerareturn != 0 ]]; then
 	exit 3
 fi
 
-#echo "Start Log4J"
-#xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
-#PIDS="$PIDS $!"
-#sleep 3
+echo "Start Log4J"
+xterm -T "LOG4J" -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
+PIDS="$PIDS $!"
+sleep 3
 
 echo "Start Player"
 #xterm -T "Player" -e 
@@ -74,7 +86,8 @@ xterm -T "Cast-Server" -e bash -c "output/bin/cast-server-start 2>&1 | tee serve
 SERVERPID="$!"
 PIDS="$PIDS $SERVERPID"
 
-sleep 15
+#sleep 15
+sleep 3
 
 echo "Start Client"
 echo "ConfigFile = " $configFile
