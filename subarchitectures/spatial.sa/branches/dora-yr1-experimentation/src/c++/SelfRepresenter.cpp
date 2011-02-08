@@ -108,6 +108,11 @@ SelfRepresenter::runComponent()
     while (isRunning()) {
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
+      if (curFNode==0) {
+	usleep(500000);
+	continue;
+      }
+
       try {
 	SpatialData::PlacePtr curPlace = agg2->getPlaceFromNodeID(curFNode->nodeId);
 

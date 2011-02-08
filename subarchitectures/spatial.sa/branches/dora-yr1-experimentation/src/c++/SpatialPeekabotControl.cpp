@@ -148,7 +148,7 @@ void SpatialPeekabotControl::runComponent() {
 
   peekabot::GroupProxy root;
   root.assign(m_PeekabotClient, "root");
-  m_placeholderModule.add(root, "placeholder", peekabot::REPLACE_ON_CONFLICT);
+  m_placeholderModule.add(m_PeekabotClient, "placeholder", peekabot::REPLACE_ON_CONFLICT);
 
 
   if(!m_hideGadget) {
@@ -215,240 +215,241 @@ void SpatialPeekabotControl::runComponent() {
     debug("Entering main loop");
     if (m_PeekabotClient.is_connected()) {
       
-      while (isRunning()) {
-	double dir;
-	peekabot::Result<peekabot::Vector3ru> r;
+      // while (isRunning()) {
+      // 	double dir;
+      // 	peekabot::Result<peekabot::Vector3ru> r;
 	
-	r = searchhere.get_position(peekabot::WORLD_COORDINATES);
-	if (r.succeeded()) {
-	  dir = atan2( (r.get_result().m_c[1] - oldposy), (r.get_result().m_c[0] - oldposx))*180/M_PI;
-	  if (dir < 0)
-	    dir += 360;
-	  //log("dir of search: %.2f",dir);
+      // 	r = searchhere.get_position(peekabot::WORLD_COORDINATES);
+      // 	if (r.succeeded()) {
+      // 	  dir = atan2( (r.get_result().m_c[1] - oldposy), (r.get_result().m_c[0] - oldposx))*180/M_PI;
+      // 	  if (dir < 0)
+      // 	    dir += 360;
+      // 	  //log("dir of search: %.2f",dir);
 	  
-	  oldposx = r.get_result().m_c[0];
-	  oldposy = r.get_result().m_c[1];
-	  if (dir >= 0 and dir <= 90)
-	    dirlist[i % lsize] = 0;
-	  else if (dir >= 90 and dir <= 180)
-	    dirlist[i % lsize] = 1;
-	  else if (dir >= 180 and dir <= 270)
-	    dirlist[i % lsize] = 2;
-	  else if (dir >= 270 and dir <= 360)
-	    dirlist[i % lsize] = 3;
-	  /*                for (unsigned int j = 0; j < dirlist.size(); j++)
-			    printf("%i",dirlist[j]);
-			    printf("\n");*/
+      // 	  oldposx = r.get_result().m_c[0];
+      // 	  oldposy = r.get_result().m_c[1];
+      // 	  if (dir >= 0 and dir <= 90)
+      // 	    dirlist[i % lsize] = 0;
+      // 	  else if (dir >= 90 and dir <= 180)
+      // 	    dirlist[i % lsize] = 1;
+      // 	  else if (dir >= 180 and dir <= 270)
+      // 	    dirlist[i % lsize] = 2;
+      // 	  else if (dir >= 270 and dir <= 360)
+      // 	    dirlist[i % lsize] = 3;
+      // 	  /*                for (unsigned int j = 0; j < dirlist.size(); j++)
+      // 			    printf("%i",dirlist[j]);
+      // 			    printf("\n");*/
 
-	  i++;
-	  // if dirlist contains all 1 2 3 directions we have a wobble!
-	  bool has1 = false;
-	  bool has2 = false;
-	  bool has3 = false;
+      // 	  i++;
+      // 	  // if dirlist contains all 1 2 3 directions we have a wobble!
+      // 	  bool has1 = false;
+      // 	  bool has2 = false;
+      // 	  bool has3 = false;
 
-	  for (unsigned int j = 0; j < dirlist.size(); j++) {
-	    if (dirlist[j] == 1)
-	      has1 = true;
-	    if (dirlist[j] == 2)
-	      has2 = true;
-	    if (dirlist[j] == 3)
-	      has3 = true;
-	  }
-	  // if we have a wobble check if we are in a free node and add that to search list
+      // 	  for (unsigned int j = 0; j < dirlist.size(); j++) {
+      // 	    if (dirlist[j] == 1)
+      // 	      has1 = true;
+      // 	    if (dirlist[j] == 2)
+      // 	      has2 = true;
+      // 	    if (dirlist[j] == 3)
+      // 	      has3 = true;
+      // 	  }
+      // 	  // if we have a wobble check if we are in a free node and add that to search list
 
-	  if (has1 and has2 and has3) {
-	    NavData::FNodeSequence fnodeseq;
-	    //                    log("WOOBLEE!!!");
-	    std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
-	    while (obj.empty()) {
-	      getWorkingMemoryEntries<NavData::FNode>(20, obj);
-	      usleep(1000);
-	    }
-	    for (unsigned int i = 0; i < obj.size() ; i++) {
-	      fnodeseq.push_back(obj[i]->getData());
-	    }
-
-
-	    for (unsigned int h = 0; h < fnodeseq.size(); h++) {
-
-	      if (hypot(fnodeseq[h]->y - r.get_result().m_c[1],
-			fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
-		// seems we are asked to search this node
-		//log("fnodeid %i",fnodeseq[h]->nodeId);
-		SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(fnodeseq[h]->nodeId);
-		//check if we already added this 
-		bool isadded = false;
-		for (unsigned int l = 0; l < placeseq.size(); l++){
-		  if (placeseq[l] == place->id)
-		    isadded = true;
-		}
-		if (!isadded){
-		  placeseq.push_back(place->id);
-		  log("placeid : %i (fnodeid: %li) added to search plan!",place->id,fnodeseq[h]->nodeId);
-		}
-	      }
-	    }
-
-	  }
-
-	  //check if we are back to start zone
-	  r = searchhere.get_position(peekabot::WORLD_COORDINATES);
-
-	  if ( r.succeeded() && hypot(searchy - r.get_result().m_c[1],
-				      searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()
-	       && !sentplancommand) {
-
-	    SpatialData::AVSCommandPtr avscmd = new SpatialData::AVSCommand;
-	    avscmd->cmd = SpatialData::PLAN;
-	    avscmd->placestosearch = placeseq;
-	    addToWorkingMemory(newDataID(), avscmd);
-	    sentplancommand = true;
-	  }
-	}
+      // 	  if (has1 and has2 and has3) {
+      // 	    NavData::FNodeSequence fnodeseq;
+      // 	    //                    log("WOOBLEE!!!");
+      // 	    std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
+      // 	    while (obj.empty()) {
+      // 	      getWorkingMemoryEntries<NavData::FNode>(20, obj);
+      // 	      usleep(1000);
+      // 	    }
+      // 	    for (unsigned int i = 0; i < obj.size() ; i++) {
+      // 	      fnodeseq.push_back(obj[i]->getData());
+      // 	    }
 
 
-	// Check if the control marker is inside or outside the control
-	// zone. If it is 
-	r = actionZone.get_position(peekabot::WORLD_COORDINATES);
+      // 	    for (unsigned int h = 0; h < fnodeseq.size(); h++) {
 
-	if (r.succeeded()) {
-	  xNoA = r.get_result().m_c[0];
-	  yNoA = r.get_result().m_c[1];
-	}
+      // 	      if (hypot(fnodeseq[h]->y - r.get_result().m_c[1],
+      // 			fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
+      // 		// seems we are asked to search this node
+      // 		//log("fnodeid %i",fnodeseq[h]->nodeId);
+      // 		SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(fnodeseq[h]->nodeId);
+      // 		//check if we already added this 
+      // 		bool isadded = false;
+      // 		for (unsigned int l = 0; l < placeseq.size(); l++){
+      // 		  if (placeseq[l] == place->id)
+      // 		    isadded = true;
+      // 		}
+      // 		if (!isadded){
+      // 		  placeseq.push_back(place->id);
+      // 		  log("placeid : %i (fnodeid: %li) added to search plan!",place->id,fnodeseq[h]->nodeId);
+      // 		}
+      // 	      }
+      // 	    }
 
-	// Get the position of the control marker
-	debug("Checking master control position");
-	r = control.get_position(peekabot::WORLD_COORDINATES);
-	debug("Checked master control position");
+      // 	  }
 
-	if (r.succeeded()) {
+      // 	  //check if we are back to start zone
+      // 	  r = searchhere.get_position(peekabot::WORLD_COORDINATES);
 
-	  // Check if the control marker is inside the action zone
-	  if (hypot(gadget_y - r.get_result().m_c[1],
-		    xNoA - r.get_result().m_c[0]) < radius) {
+      // 	  if ( r.succeeded() && hypot(searchy - r.get_result().m_c[1],
+      // 				      searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()
+      // 	       && !sentplancommand) {
 
-	    // We should listen to the control marker, since it is
-	    // inside the action zone
-
-	    // Get position of the target marker
-	    debug("Checking target position");
-	    r = target.get_position(peekabot::WORLD_COORDINATES);
-
-	    if (r.succeeded()) {
-
-	      bool sendCmd = true;
-
-	      // Check if we already were in control
-	      if (wasInCtrl &&               
-		  (xT == r.get_result().m_c[0]) &&
-		  (yT == r.get_result().m_c[1])) {
-		sendCmd = false;
-	      }
-
-	      xT = r.get_result().m_c[0];
-	      yT = r.get_result().m_c[1];
-
-	      if (sendCmd) {
-		debug("sendCmd");
-
-		SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
-
-		cmd->prio = SpatialData::NORMAL;
-
-		// If we are close enough to the line with place ids
-		// we interpret the command as a place index
-
-		std::string id = "";
-		if (yT - (gadget_y-1) < 0.5 &&
-		    yT - (gadget_y-1) > -(0.5 + gadget_ystep * (m_maxPlaces / gadgetLineLength))) { //fabs(yT-(gadget_y-1)) < 0.5) {
-
-		  // Get the place id
-		  cmd->destId.resize(1);
-		  int ypos = (int)(((gadget_y-1+0.5)-yT)/gadget_ystep);
-		  cmd->destId[0] = long(xT + 0.5) + ypos * gadgetLineLength;
-		  log("Reading command: %i, %i, %i", ypos, long(xT + 0.5), (int)cmd->destId[0]);
-		  if (cmd->destId[0] < 0) cmd->destId[0] = 0;
-
-		  cmd->cmd = SpatialData::GOTOPLACE;
-		  cmd->status = SpatialData::NONE;
-		  cmd->comp = SpatialData::COMMANDPENDING;
-
-		  if (m_doPathQuery) {
-		    // Check that the path has some chance of completing, first
-		    SpatialData::PathTransitionProbRequestPtr probRequest =
-		      new SpatialData::PathTransitionProbRequest;
-
-		    NavData::FNodePtr curNode = getCurrentNavNode();
-		    if (curNode == 0) {
-		      log("Could not compute current nav node!");
-		      probRequest->startPlaceID = 0;
-		    }
-		    else {
-		      SpatialData::PlacePtr curPlace =
-			m_placeInterface->getPlaceFromNodeID(curNode->nodeId);
-		      if (curPlace == 0) {
-			log("Could not compute current Place!");
-			probRequest->startPlaceID = 0;
-		      }
-		      else {
-			probRequest->startPlaceID = curPlace->id;
-		      }
-		    }
-
-		    probRequest->goalPlaceID = cmd->destId[0];
-		    probRequest->noSuccessors = 1;
-		    probRequest->status = SpatialData::QUERYPENDING;
-
-		    string queryID = "probreq-" + newDataID();
-		    log("Sending query: %s", queryID.c_str());
-		    m_pendingQueryReceiver.setDependentCommand(cmd);
-		    addChangeFilter(cast::createIDFilter(queryID, cast::cdl::OVERWRITE), &m_pendingQueryReceiver);
-		    addToWorkingMemory<SpatialData::PathTransitionProbRequest>(queryID, probRequest);
+      // 	    SpatialData::AVSCommandPtr avscmd = new SpatialData::AVSCommand;
+      // 	    avscmd->cmd = SpatialData::PLAN;
+      // 	    avscmd->placestosearch = placeseq;
+      // 	    addToWorkingMemory(newDataID(), avscmd);
+      // 	    sentplancommand = true;
+      // 	  }
+      // 	}
 
 
-		  }
-		  else {
-		    id = "gotoplace-" + newDataID();
+      // 	// Check if the control marker is inside or outside the control
+      // 	// zone. If it is 
+      // 	r = actionZone.get_position(peekabot::WORLD_COORDINATES);
 
-		    log("Sending robot to place %ld, task id: %s", 
-			cmd->destId[0], id.c_str());
+      // 	if (r.succeeded()) {
+      // 	  xNoA = r.get_result().m_c[0];
+      // 	  yNoA = r.get_result().m_c[1];
+      // 	}
 
-		    addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
-		  } 
-		}
-		else {
+      // 	// Get the position of the control marker
+      // 	debug("Checking master control position");
+      // 	r = control.get_position(peekabot::WORLD_COORDINATES);
+      // 	debug("Checked master control position");
 
-		  cmd->pose.resize(2);
-		  cmd->pose[0] = xT;
-		  cmd->pose[1] = yT;
-		  cmd->cmd = SpatialData::GOTOPOSITION;
-		  cmd->status = SpatialData::NONE;
-		  cmd->comp = SpatialData::COMMANDPENDING;
-		  id = "gotoxy-" + newDataID();
-		  log("Sending robot to new target position (%.2f, %.2f) task id: %s", xT, yT, id.c_str());
+      // 	if (r.succeeded()) {
 
-		  addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
-		}
+      // 	  // Check if the control marker is inside the action zone
+      // 	  if (hypot(gadget_y - r.get_result().m_c[1],
+      // 		    xNoA - r.get_result().m_c[0]) < radius) {
 
-	      }
+      // 	    // We should listen to the control marker, since it is
+      // 	    // inside the action zone
 
-	    }
+      // 	    // Get position of the target marker
+      // 	    debug("Checking target position");
+      // 	    r = target.get_position(peekabot::WORLD_COORDINATES);
 
-	    wasInCtrl = true;
+      // 	    if (r.succeeded()) {
 
-	  } else {
+      // 	      bool sendCmd = true;
 
-	    // No longer in control
-	    wasInCtrl = false;
+      // 	      // Check if we already were in control
+      // 	      if (wasInCtrl &&               
+      // 		  (xT == r.get_result().m_c[0]) &&
+      // 		  (yT == r.get_result().m_c[1])) {
+      // 		sendCmd = false;
+      // 	      }
 
-	  }
-	}
+      // 	      xT = r.get_result().m_c[0];
+      // 	      yT = r.get_result().m_c[1];
+
+      // 	      if (sendCmd) {
+      // 		debug("sendCmd");
+
+      // 		SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+
+      // 		cmd->prio = SpatialData::NORMAL;
+
+      // 		// If we are close enough to the line with place ids
+      // 		// we interpret the command as a place index
+
+      // 		std::string id = "";
+      // 		if (yT - (gadget_y-1) < 0.5 &&
+      // 		    yT - (gadget_y-1) > -(0.5 + gadget_ystep * (m_maxPlaces / gadgetLineLength))) { //fabs(yT-(gadget_y-1)) < 0.5) {
+
+      // 		  // Get the place id
+      // 		  cmd->destId.resize(1);
+      // 		  int ypos = (int)(((gadget_y-1+0.5)-yT)/gadget_ystep);
+      // 		  cmd->destId[0] = long(xT + 0.5) + ypos * gadgetLineLength;
+      // 		  log("Reading command: %i, %i, %i", ypos, long(xT + 0.5), (int)cmd->destId[0]);
+      // 		  if (cmd->destId[0] < 0) cmd->destId[0] = 0;
+
+      // 		  cmd->cmd = SpatialData::GOTOPLACE;
+      // 		  cmd->status = SpatialData::NONE;
+      // 		  cmd->comp = SpatialData::COMMANDPENDING;
+
+      // 		  if (m_doPathQuery) {
+      // 		    // Check that the path has some chance of completing, first
+      // 		    SpatialData::PathTransitionProbRequestPtr probRequest =
+      // 		      new SpatialData::PathTransitionProbRequest;
+
+      // 		    NavData::FNodePtr curNode = getCurrentNavNode();
+      // 		    if (curNode == 0) {
+      // 		      log("Could not compute current nav node!");
+      // 		      probRequest->startPlaceID = 0;
+      // 		    }
+      // 		    else {
+      // 		      SpatialData::PlacePtr curPlace =
+      // 			m_placeInterface->getPlaceFromNodeID(curNode->nodeId);
+      // 		      if (curPlace == 0) {
+      // 			log("Could not compute current Place!");
+      // 			probRequest->startPlaceID = 0;
+      // 		      }
+      // 		      else {
+      // 			probRequest->startPlaceID = curPlace->id;
+      // 		      }
+      // 		    }
+
+      // 		    probRequest->goalPlaceID = cmd->destId[0];
+      // 		    probRequest->noSuccessors = 1;
+      // 		    probRequest->status = SpatialData::QUERYPENDING;
+
+      // 		    string queryID = "probreq-" + newDataID();
+      // 		    log("Sending query: %s", queryID.c_str());
+      // 		    m_pendingQueryReceiver.setDependentCommand(cmd);
+      // 		    addChangeFilter(cast::createIDFilter(queryID, cast::cdl::OVERWRITE), &m_pendingQueryReceiver);
+      // 		    addToWorkingMemory<SpatialData::PathTransitionProbRequest>(queryID, probRequest);
 
 
-	// Sleep for a second and check again
-	sleepComponent(100);
+      // 		  }
+      // 		  else {
+      // 		    id = "gotoplace-" + newDataID();
 
-      }
+      // 		    log("Sending robot to place %ld, task id: %s", 
+      // 			cmd->destId[0], id.c_str());
+
+      // 		    addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
+      // 		  } 
+      // 		}
+      // 		else {
+
+      // 		  cmd->pose.resize(2);
+      // 		  cmd->pose[0] = xT;
+      // 		  cmd->pose[1] = yT;
+      // 		  cmd->cmd = SpatialData::GOTOPOSITION;
+      // 		  cmd->status = SpatialData::NONE;
+      // 		  cmd->comp = SpatialData::COMMANDPENDING;
+      // 		  id = "gotoxy-" + newDataID();
+      // 		  log("Sending robot to new target position (%.2f, %.2f) task id: %s", xT, yT, id.c_str());
+
+      // 		  addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
+      // 		}
+
+      // 	      }
+
+      // 	    }
+
+      // 	    wasInCtrl = true;
+
+      // 	  } else {
+
+      // 	    // No longer in control
+      // 	    wasInCtrl = false;
+
+      // 	  }
+      // 	}
+
+
+      // 	// Sleep for a second and check again
+      // 	sleepComponent(100);
+    
+
+  
     }
   }
 }
@@ -487,7 +488,7 @@ void SpatialPeekabotControl::connectPeekabot()
     log("Trying to connect to Peekabot (again) on host %s and port %d",
         m_PbHost.c_str(), m_PbPort);
 
-    m_PeekabotClient.connect(m_PbHost, m_PbPort, true);
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
   } catch(std::exception &e) {
     log("Caught exception when connecting to peekabot (%s)",
