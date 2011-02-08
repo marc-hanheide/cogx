@@ -351,6 +351,7 @@ ChainGraphInferencer::createDaiVariable(const string &name, const vector<string>
 	if (_variableNameToDai.find(name) == _variableNameToDai.end())
 	{
 		DaiVariable &dv = _variableNameToDai[name];
+		dv.name = name;
 		dv.var = dai::Var(_variableNameToDai.size(), values.size());
 		for (unsigned int i=0; i<values.size(); ++i)
 		{
@@ -358,6 +359,24 @@ ChainGraphInferencer::createDaiVariable(const string &name, const vector<string>
 		}
 	}
     return _variableNameToDai[name];
+}
+
+ChainGraphInferencer::DaiVariable& ChainGraphInferencer::RoomCategoryVar(int roomId)
+{
+	string varname = "room"+lexical_cast<string>(roomId)+"_category";
+	return createDaiVariable(varname, _roomCategories);
+}
+
+ChainGraphInferencer::DaiVariable& ChainGraphInferencer::PlaceShapePropertyVar(int placeId)
+{
+	string varname = "place"+lexical_cast<string>(placeId)+"_shape_property";
+	return createDaiVariable(varname, _shapes);
+}
+
+ChainGraphInferencer::DaiVariable& ChainGraphInferencer::PlaceAppearancePropertyVar(int placeId)
+{
+	string varname = "place"+lexical_cast<string>(placeId)+"_appearance_property";
+	return createDaiVariable(varname, _appearances);
 }
 
 // -------------------------------------------------------
@@ -415,12 +434,9 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 	if(!factor) return;
 
 	// Create variables
-	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-	string room2VarName = "room"+lexical_cast<string>(room2Id)+"_category";
-
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), room2VarName.c_str() );
-	DaiVariable &dv1 = createDaiVariable(room1VarName, _roomCategories);
-	DaiVariable &dv2 = createDaiVariable(room2VarName, _roomCategories);
+	DaiVariable &dv1 = RoomCategoryVar(room1Id);
+	DaiVariable &dv2 = RoomCategoryVar(room2Id);
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
@@ -453,10 +469,8 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 {
 	// Create variables
-	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-
-	debug("Creating DAI single room factor for variable '%s'", room1VarName.c_str());
-	DaiVariable &dv1 = createDaiVariable(room1VarName, _roomCategories);
+	DaiVariable &dv1 = RoomCategoryVar(room1Id);
+	debug("Creating DAI single room factor for variable '%s'", dv1.name.c_str());
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
@@ -490,11 +504,9 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 	if (!factor) return;
 
 	// Create variables
-	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-
-	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", room1VarName.c_str(),
+	DaiVariable &dv1 = RoomCategoryVar(room1Id);
+	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", dv1.name.c_str(),
 			objectVariableName.c_str() );
-	DaiVariable &dv1 = createDaiVariable(room1VarName, _roomCategories);
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
@@ -519,7 +531,6 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 }
 
-
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
 {
@@ -529,12 +540,9 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 	if(!factor) return;
 
 	// Create variables
-	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-	string shapePropVarName = "place"+lexical_cast<string>(placeId)+"_shape_property";
-
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), shapePropVarName.c_str() );
-	DaiVariable &dv1 = createDaiVariable(room1VarName, _roomCategories);
-	DaiVariable &dv2 = createDaiVariable(shapePropVarName, _shapes);
+	DaiVariable &dv1 = RoomCategoryVar(room1Id);
+	DaiVariable &dv2 = PlaceShapePropertyVar(placeId);
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
@@ -569,13 +577,9 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 		ConceptualData::ValuePotentialPairs dist)
 {
-	string shapePropVarName = "place"+lexical_cast<string>(placeId)+"_shape_property";
-
-	debug("Creating DAI observed shape property factor for variable '%s'",
-			shapePropVarName.c_str());
-
 	// Create variables
-	DaiVariable &dv = createDaiVariable(shapePropVarName, _shapes);
+	DaiVariable &dv = PlaceShapePropertyVar(placeId);
+	debug("Creating DAI observed shape property factor for variable '%s'", dv.name.c_str());
 
 	// Create factor
 	dai::Factor daiFactor( dv.var );
@@ -621,12 +625,9 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 	if(!factor) return;
 
 	// Create variables
-	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
-
-	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), appearancePropVarName.c_str() );
-	DaiVariable &dv1 = createDaiVariable(room1VarName, _roomCategories);
-	DaiVariable &dv2 = createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv1 = RoomCategoryVar(room1Id);
+	DaiVariable &dv2 = PlaceAppearancePropertyVar(placeId);
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", dv1.name.c_str(), dv2.name.c_str() );
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
@@ -661,13 +662,9 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId,
 		ConceptualData::ValuePotentialPairs dist)
 {
-	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
-
-	debug("Creating DAI observed appearance property factor for variable '%s'",
-			appearancePropVarName.c_str());
-
 	// Create variables
-	DaiVariable &dv = createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv = PlaceAppearancePropertyVar(placeId);
+	debug("Creating DAI observed shape property factor for variable '%s'", dv.name.c_str());
 
 	// Create factor
 	dai::Factor daiFactor( dv.var );

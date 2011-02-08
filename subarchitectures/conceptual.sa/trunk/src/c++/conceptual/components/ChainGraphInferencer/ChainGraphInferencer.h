@@ -70,6 +70,10 @@ private:
 	struct DaiVariable; /* forward declaration */
 	DaiVariable& createDaiVariable(const std::string &name, const std::vector<std::string> &values);
 
+	DaiVariable& RoomCategoryVar(int roomId);
+	DaiVariable& PlaceShapePropertyVar(int placeId);
+	DaiVariable& PlaceAppearancePropertyVar(int placeId);
+
 	/** Creates a DAI connectivity factor for two rooms. */
 	void createDaiConnectivityFactor(int room1Id, int room2Id);
 	void createDaiSingleRoomFactor(int room1Id);
@@ -164,6 +168,7 @@ private:
 	struct DaiVariable
 	{
 		dai::Var var;
+		std::string name;
 		std::map<int, std::string> valueIdToName;
 	};
 
