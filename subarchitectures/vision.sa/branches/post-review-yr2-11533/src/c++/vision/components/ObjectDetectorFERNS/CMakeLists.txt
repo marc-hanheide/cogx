@@ -32,9 +32,12 @@ ferns_demo-1.0/planar_pattern_detector.cc
 ferns_demo-1.0/pyr_yape06.cc
 ferns_demo-1.0/template_matching_based_tracker.cc)
 
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+
 
 add_cast_component(ObjectDetectorFERNS ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils ${VISUALIZATION_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore z)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} z)
 
 
