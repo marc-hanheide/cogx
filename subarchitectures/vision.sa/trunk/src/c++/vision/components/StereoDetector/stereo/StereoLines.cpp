@@ -182,28 +182,35 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 	    line->isct3D[0].p.y,
 	    line->isct3D[0].p.z);
   p = inv.Transform(p);
+  Vector3 p2(line->isct3D[1].p.x,
+             line->isct3D[1].p.y,
+             line->isct3D[1].p.z);
+  p2 = inv.Transform(p2);
   
+  Vector3 tmpV;
+  tmpV = Normalise(p2-p);
+
   VisionData::Vertex u;           /// Start point of line
   u.pos.x = p.x;
   u.pos.y = p.y;
   u.pos.z = p.z;
+  u.normal.x = tmpV.x;
+  u.normal.y = tmpV.y;
+  u.normal.z = tmpV.z;
   obj->model->vertices.push_back(u);
   VisionData::Vertex v;           /// We create a surface: point near start point
   v.pos.x = p.x + 0.002;
   v.pos.y = p.y;
   v.pos.z = p.z;
   obj->model->vertices.push_back(v);  
-  
-  
-  Vector3 p2(line->isct3D[1].p.x,
-             line->isct3D[1].p.y,
-             line->isct3D[1].p.z);
-  p2 = inv.Transform(p2);
 
   VisionData::Vertex w;           /// End point of line
   w.pos.x = p2.x;
   w.pos.y = p2.y;
   w.pos.z = p2.z;
+  w.normal.x = tmpV.x;
+  w.normal.y = tmpV.y;
+  w.normal.z = tmpV.z;
   obj->model->vertices.push_back(w);
   VisionData::Vertex x;           /// We create a surface: point near end point
   x.pos.x = p2.x + 0.002;
