@@ -36,74 +36,74 @@ extern "C" {
 namespace cast
 {
 /**
- *	@brief Destructor of class StereoDetector
+ * @brief Destructor of class StereoDetector
  */
 StereoDetector::~StereoDetector() {}
 
 /**
- *	@brief Called by the framework to configure the component.
- *	@param _config Config TODO
+ * @brief Called by the framework to configure the component.
+ * @param _config Config TODO
  */
 void StereoDetector::configure(const map<string,string> & _config)
 {
-	// first let the base classes configure themselves (for getRectImage)
-	configureStereoCommunication(_config);
+  // first let the base classes configure themselves (for getRectImage)
+  configureStereoCommunication(_config);
 
-	nr_p_score = 0;								// start with first processing score
-	
-	runtime = 1600;								// processing time for left AND right image
-	cannyAlpha = 0.75;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
-	cannyOmega = 0.001;
+  nr_p_score = 0;								// start with first processing score
+  
+  runtime = 1600;								// processing time for left AND right image
+  cannyAlpha = 0.75;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+  cannyOmega = 0.001;
 
-	activeReasoner = true;				// activate reasoner
-	activeReasonerPlane = true;		// activate plane C
-	
-	receiveImagesStarted = false;
-	haveImage = false;
-	haveHRImage = false;
-	havePrunedImage = false;
-	cmd_detect = false;
-	cmd_single = false;
-	cmd_single_hr = false;
+  activeReasoner = true;				// activate reasoner
+  activeReasonerPlane = true;		// activate plane C
+  
+  receiveImagesStarted = false;
+  haveImage = false;
+  haveHRImage = false;
+  havePrunedImage = false;
+  cmd_detect = false;
+  cmd_single = false;
+  cmd_single_hr = false;
 
-	detail = 0;
-	showImages = false;
-	showDetected = true;
-	showSingleGestalt = false;
-	showAllStereo = false;
-	showID = 0;
-	showMasked = false;
-	showStereoMatched = true;
-	showAllStereoMatched = false;
-	showSingleStereo = false;
-	single = false;
-	showType = Z::Gestalt::SEGMENT;
-	showStereoType = Z::StereoBase::STEREO_CLOSURE;
-	showSegments = false;
-	showROIs = false;
-	showReasoner = true;
-	showReasonerUnprojected = false;
+  detail = 0;
+  showImages = false;
+  showDetected = true;
+  showSingleGestalt = false;
+  showAllStereo = false;
+  showID = 0;
+  showMasked = false;
+  showStereoMatched = true;
+  showAllStereoMatched = false;
+  showSingleStereo = false;
+  single = false;
+  showType = Z::Gestalt::SEGMENT;
+  showStereoType = Z::StereoBase::STEREO_CLOSURE;
+  showSegments = false;
+  showROIs = false;
+  showReasoner = true;
+  showReasonerUnprojected = false;
 
   map<string,string>::const_iterator it;
-	if((it = _config.find("--videoname")) != _config.end())
-	{
-		videoServerName = it->second;
-	}
-	if((it = _config.find("--camconfig")) != _config.end())
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+	  videoServerName = it->second;
+  }
+  if((it = _config.find("--camconfig")) != _config.end())
   {
     camconfig = it->second;
-		try
-		{
-			score = new Z::StereoCore(camconfig);
-			p_score[0] = new Z::StereoCore(camconfig);
-			p_score[1] = new Z::StereoCore(camconfig);
-			p_score[2] = new Z::StereoCore(camconfig);
-		}
-		catch (exception &e)
-		{
-			printf("StereoDetector::configure: Error during initialisation of stereo core.\n");
-			cout << e.what() << endl;
-		}
+    try
+    {
+      score = new Z::StereoCore(camconfig);
+      p_score[0] = new Z::StereoCore(camconfig);
+      p_score[1] = new Z::StereoCore(camconfig);
+      p_score[2] = new Z::StereoCore(camconfig);
+    }
+    catch (exception &e)
+    {
+      printf("StereoDetector::configure: Error during initialisation of stereo core.\n");
+      cout << e.what() << endl;
+    }
   }
 	if((it = _config.find("--camids")) != _config.end())
   {
@@ -112,17 +112,17 @@ void StereoDetector::configure(const map<string,string> & _config)
     while(str >> id)
       camIds.push_back(id);
   }
-	if((it = _config.find("--showImages")) != _config.end())
-	{
-		showImages = true;
-	}
-	if((it = _config.find("--singleShot")) != _config.end())
-	{
-		log("single shot modus on.");
-		single = true;
-	}
-	
-	reasoner = new Z::Reasoner();
+  if((it = _config.find("--showImages")) != _config.end())
+  {
+    showImages = true;
+  }
+  if((it = _config.find("--singleShot")) != _config.end())
+  {
+    log("single shot modus on.");
+    single = true;
+  }
+  
+  reasoner = new Z::Reasoner();
 }
 
 /**
@@ -763,7 +763,10 @@ void StereoDetector::WriteVisualObjects()
   else
   {
     if(showStereoType != Z::StereoBase::UNDEF)
+    {
       WriteToWM(showStereoType);
+//     WriteToWM(Z::StereoBase::STEREO_RECTANGLE);										// TODO hier händisch Rectangles eingefügt!
+    }
   }
   
   if(showReasoner)
@@ -803,7 +806,7 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 
       addToWorkingMemory(objectID, obj);						/// TODO TODO TODO Write Visual Object!!!
 
-      cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+      cvWaitKey(200);	                                                                /// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 
       log("Add new visual object to working memory: %s", objectID.c_str());
 }
@@ -1171,7 +1174,7 @@ void StereoDetector::SingleShotMode()
 		case 'w':
 			log("Show LINES");
 			showType = Z::Gestalt::LINE;
-			showStereoType = Z::StereoBase::UNDEF;
+			showStereoType = Z::StereoBase::STEREO_LINE;
 			ShowImages(true);
 			WriteVisualObjects();
 			break;
