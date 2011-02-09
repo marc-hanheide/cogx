@@ -75,14 +75,11 @@ public:
   StereoCorners(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
   ~StereoCorners() {}
 
-  int NumCorners2D(int side) {return vcore[side]->NumGestalts(Gestalt::CORNER);}
-  int NumCornersLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CORNER);}          ///< 
-  int NumCornersRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CORNER);}        ///< 
+  int NumCorners2D(int side) {return vcore[side]->NumGestalts(Gestalt::CORNER);}      ///< Return number of corners in 2D
+  int NumCornersLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CORNER);}          ///< Return corners from left image
+  int NumCornersRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CORNER);}        ///< Return corners from right image
 
-//  const TmpLJuntion &LJunctions2D(int side, int i);
-//  const LJunction3D &LJunctions(int i) {return ljunction3ds[i];}											///< 
-
-  int NumStereoMatches() {return cornerMatches;}																				///< 
+  int NumStereoMatches() {return cornerMatches;}                                      ///< Return number of corner 3D matches
   void DrawMatched(int side, bool single, int id, int detail);
   void ClearResults();
   void Process();

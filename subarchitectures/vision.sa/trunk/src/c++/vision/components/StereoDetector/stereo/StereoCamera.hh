@@ -97,7 +97,7 @@ public:
 public:
   StereoCamera();
   ~StereoCamera();
-  bool ReadSVSCalib(const string &calibfile);
+  bool ReadSVSCalib(const std::string &calibfile);
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
   void ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
   void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);

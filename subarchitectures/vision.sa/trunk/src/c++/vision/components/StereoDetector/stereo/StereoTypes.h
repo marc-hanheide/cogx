@@ -70,17 +70,19 @@ static const double SC_CORNER_MATCH_LIMIT = 1.0;
 
 
 //----------------------------------------------------------------//
-//----------------- struct -- TmpLine ----------------------------// 
+//-------------------------- HelpLine ----------------------------// 
 //----------------------------------------------------------------//
-/**																									/// TODO Wo wird TmpLine gebraucht?
- * @brief TmpLine
+/**					// TODO Wo wird HelpLine gebraucht => kann man löschen?
+ * @brief HelpLine is used to prune short lines from closures or rectangles without destroying the Gestalt.
+ * 
  */
-struct TmpLine
+struct HelpLine
 {
-  Vector2 p;  ///< some point on the line
-  Vector2 d;  ///< direction of the line
-  TmpLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
+  Vector2 p;             ///< some point on the line
+  Vector2 d;             ///< direction of the line
+  HelpLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
 };
+
 
 //----------------------------------------------------------------//
 //-------------------------- Vertex2D ----------------------------// 
@@ -91,16 +93,20 @@ struct TmpLine
  */
 class Vertex2D
 {
+private:
+  bool is_valid;         ///< validation parameter
+  bool rectified_valid;  ///< rectified values are valid
+
 public:
-  bool is_valid;					///< validation parameter
-  Vector2 p;							///< point
-  Vector2 pr;							///< rectified point
- 
+  Vector2 p;             ///< point
+  Vector2 pr;            ///< rectified point
+
   void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   void Draw();
+  bool IsRectified() {return rectified_valid;}
 };
 
 //----------------------------------------------------------------//
@@ -114,20 +120,19 @@ public:
 class Surf2D
 {
 public:
-  bool is_valid;                        ///< validation parameter
-  vector<Vector2> p;                    ///< original (distorted, unrectified) points
-  vector<Vector2> pr;                   ///< rectified points
+  bool is_valid;         ///< validation parameter
+  vector<Vector2> p;     ///< original (distorted, unrectified) points
+  vector<Vector2> pr;    ///< rectified points
 
   Surf2D() {is_valid = false;}
   Surf2D(vector<Vector2> points) {Init(points);}
   Surf2D(Closure *clos) {Init(clos);}
   Surf2D(Rectangle *rectangle) {Init(rectangle);}
-//  Surf2D(Cube *cube) {Init(cube, side);}								TODO TODO /// das funktioniert mit den Seiten nicht!!!
-													/// Initialisierung sollte im StereoCube sein!
+												/// TODO Initialisierung sollte im StereoCube sein!
   void Init(vector<Vector2> points);
   void Init(Closure *clos);
   void Init(Rectangle *rectangle);
-  void Init(Cube *cube, int side);									/// TODO sollte wegfallen: Siehe oben
+  void Init(Cube *cube, int side);								/// TODO sollte wegfallen: Siehe oben
 
   void ShiftPointsLeft(unsigned offs);
   void RePrune(int oX, int oY, int sc);
@@ -146,8 +151,8 @@ public:
 class Vertex3D
 {
 public:
-  Vector3 p;						///< position vector
-  Vector3 n;						///< normal vector
+  Vector3 p;            ///< position vector
+  Vector3 n;            ///< normal vector
 
 private:
   bool SanityOK();

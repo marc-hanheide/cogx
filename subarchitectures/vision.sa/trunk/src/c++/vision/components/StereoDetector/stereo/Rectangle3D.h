@@ -22,7 +22,7 @@ namespace Z
 class Rectangle3D : public Gestalt3D
 {
 public:
-  Surf3D surf;                                                  ///< 3D surface
+  Surf3D surf;            ///< 3D surface
 
 public:
   Rectangle3D();

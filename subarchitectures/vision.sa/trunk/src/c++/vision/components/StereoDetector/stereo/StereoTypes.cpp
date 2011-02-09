@@ -32,7 +32,7 @@ static void AddEdgels(CvPoint2D32f *edgels, int &num_edgels, const Array<Edgel> 
  * Used to sort out the shortest lines from an array of lines (closures) 
  * @param lines Array of lines
  */
-static void RefineLines(vector<TmpLine> &lines)
+static void RefineLines(vector<HelpLine> &lines)
 {
   // minimum ratio of length to maximum length
   static double LENGTH_THR_FACTOR = 0.1;
@@ -94,6 +94,7 @@ void Vertex2D::RePrune(int oX, int oY, int sc)
 void Vertex2D::Rectify(StereoCamera *stereo_cam, int side)
 {
   stereo_cam->RectifyPoint(p.x, p.y, pr.x, pr.y, side);
+  rectified_valid = true;
 }
 
 /**
@@ -147,7 +148,7 @@ void Surf2D::Init(vector<Vector2> points)
 
 /**
  * @brief Init 2D surface with data from a closure.
- * 																																								TODO Why calculation with edgels ...? Whats going on here?
+ * 												TODO Why calculation with edgels ...? Whats going on here?
  * @param clos Closure to init surface
  */
 void Surf2D::Init(Closure *clos)
@@ -156,7 +157,7 @@ void Surf2D::Init(Closure *clos)
   // appear at some possibly distant point in the future :)
   CvPoint2D32f edgels[10000];
   int num_edgels = 0;
-  vector<TmpLine> lines;
+  vector<HelpLine> lines;
   unsigned first_l_jct = 0, i = 0;
   bool full_round = false;
 
@@ -195,7 +196,7 @@ void Surf2D::Init(Closure *clos)
       float line_params[4];
       CvMat tmp = cvMat(num_edgels, 1, CV_32FC2, edgels);
       cvFitLine(&tmp, CV_DIST_L2, 0, 0.01, 0.01, line_params);
-      lines.push_back(TmpLine(line_params[2], line_params[3],
+      lines.push_back(HelpLine(line_params[2], line_params[3],
                               line_params[0], line_params[1]));
       // and start new line
       num_edgels = 0;
@@ -256,29 +257,29 @@ void Surf2D::Init(Cube *cube, int side)
   p.resize(4);
   pr.resize(4);
 
-	if(side == 0)	// => first rectangle 0-1-2-3
-	{
-		p[0] = cube->cornerPoint[0];
-		p[1] = cube->cornerPoint[1];
-		p[2] = cube->cornerPoint[2];
-		p[3] = cube->cornerPoint[3];
-	}
-	else if(side == 1)	// => second rectangle: 0-3-4-5
-	{
-		p[0] = cube->cornerPoint[0];
-		p[1] = cube->cornerPoint[3];
-		p[2] = cube->cornerPoint[4];
-		p[3] = cube->cornerPoint[5];
-	}
-	else if(side == 2)	// => third rectangle: 0-5-6-1
-	{
-		p[0] = cube->cornerPoint[0];
-		p[1] = cube->cornerPoint[5];
-		p[2] = cube->cornerPoint[6];
-		p[3] = cube->cornerPoint[1];
-	}
-	else
-		printf("Surf2D::Init: False cube side.\n");
+  if(side == 0)	// => first rectangle 0-1-2-3
+  {
+    p[0] = cube->cornerPoint[0];
+    p[1] = cube->cornerPoint[1];
+    p[2] = cube->cornerPoint[2];
+    p[3] = cube->cornerPoint[3];
+  }
+  else if(side == 1)	// => second rectangle: 0-3-4-5
+  {
+    p[0] = cube->cornerPoint[0];
+    p[1] = cube->cornerPoint[3];
+    p[2] = cube->cornerPoint[4];
+    p[3] = cube->cornerPoint[5];
+  }
+  else if(side == 2)	// => third rectangle: 0-5-6-1
+  {
+    p[0] = cube->cornerPoint[0];
+    p[1] = cube->cornerPoint[5];
+    p[2] = cube->cornerPoint[6];
+    p[3] = cube->cornerPoint[1];
+  }
+  else
+    printf("Surf2D::Init: False cube side.\n");
 
   is_valid = true;
 }
@@ -398,12 +399,12 @@ void Surf2D::Draw(unsigned detail)
  */
 bool Vertex3D::SanityOK()
 {
-	bool sanity = true;
-	if (p.x < SC_MIN_DIST_X || p.x > SC_MAX_DIST_X) sanity = false;
-	else if(p.y < SC_MIN_DIST_Y || p.y > SC_MAX_DIST_Y) sanity = false;
-	else if(p.z < SC_MIN_DIST_Z || p.z > SC_MAX_DIST_Z) sanity = false;
-	
-	return sanity;
+  bool sanity = true;
+  if (p.x < SC_MIN_DIST_X || p.x > SC_MAX_DIST_X) sanity = false;
+  else if(p.y < SC_MIN_DIST_Y || p.y > SC_MAX_DIST_Y) sanity = false;
+  else if(p.z < SC_MIN_DIST_Z || p.z > SC_MAX_DIST_Z) sanity = false;
+  
+  return sanity;
 }
 
 /**
@@ -416,8 +417,9 @@ bool Vertex3D::SanityOK()
 bool Vertex3D::Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right)
 {
   // calculate 3d point
+printf("  Vertex2D::Reconstruct point: %4.3f/%4.3f with dis: %4.3f\n", left.pr.x, left.pr.y, left.pr.x - right.pr.x);
   stereo_cam->ReconstructPoint(left.pr.x, left.pr.y, left.pr.x - right.pr.x, p.x, p.y, p.z);
-// printf("  Vertex3D::Reconstruct: 3D point: %4.3f %4.3f %4.3f\n", p.x, p.y, p.z);
+printf("  Vertex3D::Reconstruct: 3D point: %4.3f %4.3f %4.3f\n", p.x, p.y, p.z);
 
   // calculate normals => Here for a point not possible: initialize to x-coordinate.
   n.x = 1.;
@@ -440,11 +442,11 @@ bool Vertex3D::Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &r
  */
 double Vertex3D::Distance(Vertex3D point)
 {
-	double x = point.p.x - p.x;
-	double y = point.p.y - p.y;
-	double z = point.p.z - p.z;
-	
-	return sqrt(x*x + y*y + z*z);
+  double x = point.p.x - p.x;
+  double y = point.p.y - p.y;
+  double z = point.p.z - p.z;
+  
+  return sqrt(x*x + y*y + z*z);
 }
 
 

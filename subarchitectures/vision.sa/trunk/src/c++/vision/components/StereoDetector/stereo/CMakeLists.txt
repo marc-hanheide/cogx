@@ -4,10 +4,12 @@ include_directories(.)
 
 # Set the sources.
 SET(HEADERS
+	../math/Vector2.hh
 	Closure3D.h
 	Corner3D.h
 	Flap3D.h
 	Gestalt3D.h
+	Line3D.h
 	LJunction3D.h
 	Rectangle3D.h
 	StereoBase.h
@@ -19,6 +21,7 @@ SET(HEADERS
 	StereoEllipses.h
 	StereoFlaps.h
 	StereoFlapsAri.h
+	StereoLines.h
 	StereoLJunctions.h
 	StereoRectangles.h
 	StereoTypes.h
@@ -29,6 +32,7 @@ SET(SOURCES
 	Corner3D.cpp
 	Flap3D.cpp
 	Gestalt3D.cpp
+	Line3D.cpp
 	LJunction3D.cpp
 	Rectangle3D.cpp
 	StereoBase.cpp
@@ -40,11 +44,12 @@ SET(SOURCES
 	StereoEllipses.cpp
 	StereoFlaps.cpp
 	StereoFlapsAri.cpp
+	StereoLines.cpp
 	StereoLJunctions.cpp
 	StereoRectangles.cpp
 	StereoTypes.cpp
 )
 
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 

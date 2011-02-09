@@ -22,7 +22,7 @@ namespace Z
 class TmpEllipse
 {
 public:
-  unsigned id;                                          ///< ID from the vision core																		/// TODO TODO TODO Überall integrieren zum Nachverfolgen
+  unsigned vs3ID;                                          ///< ID from the vision core												/// TODO TODO TODO Überall integrieren zum Nachverfolgen
   Vertex2D center;                                      ///< Center point of the ellipse (fix point)
   Vertex2D hullPoint[6];                                ///< Points on the ellipse (for rectifying and refitting an ellipse)
   bool isLeftOfCenter[6];                               ///< True, if hullPoint is left of center
@@ -39,7 +39,7 @@ public:
 };
 
 
-/**																														/// TODO Base class for all 3D-Gestalts?
+/**																						/// TODO Base class for all 3D-Gestalts?
  * @brief Class Ellipse3D
  * NOTE: Hypothesis of a circle!
  */
