@@ -7,10 +7,10 @@ revision. Sequential sessions use a modified version of Fast
 Downward~\cite{fast-downward}, and DT sessions use our own contingent
 procedure. Since most of the problems we consider are much larger than
 any available DT planner can solve directly, for comparison purposes
-we also implemented a simple dual-mode replanning {\em baseline}
+we also implemented a simple dual-mode replanning baseline
 approach. Here, when a switching action is scheduled for execution the
 DT session applies a single entropy reduction action, whose execution
-can provide evidence regarding the truth value of a {\em relevant}
+can provide evidence regarding the truth value of a relevant
 assumption.
 %%
 %%  -- i.e,. we say a fact can
@@ -27,7 +27,7 @@ office environments. Spatially, these consist of {\em rooms}
 smaller areas of space, called {\em places}, and connectivity between
 those. The mobile {\em robot} and {\em visual objects} inhabit the
 topological places. Objects indicate the category of space they
-inhabit -- e.g., spoons are likely to be in kitchens. By examining
+inhabit---e.g., spoons are likely to be in kitchens. By examining
 view cones at places for particular objects, the robot is able to: (1)
 categorise space at high (room) and low (place) levels, and (2) find
 objects for the user, exploiting information about object
@@ -36,7 +36,7 @@ presence of a person, the robot can ask about the category of the
 current room.
 
 
-We compare switching to the {\em baseline} in several realistic
+We compare switching to the baseline in several realistic
 tasks, with the number of rooms ranging from 3 (12-places, 16-objects,
 $|$states$|$ $>10^{21}$) to 6 (26-places, 21-objects, $|$states$|$
 $>10^{36}$). We also compare those systems with near optimal policies
@@ -46,7 +46,7 @@ levels of reliability in sensing: {\em reliable} sensors have a $.1$
 probability of a false negative, {\em semi-reliable} have a chance of
 $0.3$ of false negative and $0.1$ of false positive, and {\em noisy}
 sensors with probabilities of $0.5$ and $0.2$ respectively. Each
-object class is assigned one sensor model -- e.g. cornflakes may be
+object class is assigned one sensor model---e.g. cornflakes may be
 harder to detect than refrigerators. We performed several experiments
 with different levels of reliability for sensing the target object(s),
 while keeping sensing models for non-target objects constant.
@@ -120,7 +120,7 @@ expected discounted rewards (not plan costs).
 \end{figure}
 
 We find that if sensing is reliable, then little is gained using DT
-sessions, as the greedy approach of the {\em baseline} is
+sessions, as the greedy approach of the baseline is
 sufficient. As sensing degrades DT sessions prove more useful. Here,
 time spent on DT planning increases steeply as the abstraction becomes
 more refined, which is compensated for by fewer planning sessions
