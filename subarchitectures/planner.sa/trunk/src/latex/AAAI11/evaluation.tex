@@ -5,11 +5,13 @@ environment~\cite{brenner:nebel:jaamas09},
 using \system{dlib-ml}~\cite{king:2009} for belief
 revision. Sequential sessions use a modified version of Fast
 Downward~\cite{fast-downward}, and DT sessions use our own contingent
-procedure. We also implemented a simple dual-mode replanning {\em
-baseline} approach. Here, when a switching action is scheduled for
-execution the DT session applies a single entropy reduction action,
-whose execution can provide evidence regarding the truth value of a
-{\em relevant} assumption.
+procedure. Since most of the problems we consider are much larger than
+any available DT planner can solve, for comparison purposes we also
+implemented a simple dual-mode replanning {\em baseline}
+approach. Here, when a switching action is scheduled for execution the
+DT session applies a single entropy reduction action, whose execution
+can provide evidence regarding the truth value of a {\em relevant}
+assumption.
 %%
 %%  -- i.e,. we say a fact can
 %% be directly sensed, if there is a DTPDDL {\em sense} declaration that
