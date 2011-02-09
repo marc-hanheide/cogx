@@ -416,17 +416,13 @@ bool Vertex3D::SanityOK()
  */
 bool Vertex3D::Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right)
 {
-  // calculate 3d point
-printf("  Vertex2D::Reconstruct point: %4.3f/%4.3f with dis: %4.3f\n", left.pr.x, left.pr.y, left.pr.x - right.pr.x);
   stereo_cam->ReconstructPoint(left.pr.x, left.pr.y, left.pr.x - right.pr.x, p.x, p.y, p.z);
-printf("  Vertex3D::Reconstruct: 3D point: %4.3f %4.3f %4.3f\n", p.x, p.y, p.z);
 
-  // calculate normals => Here for a point not possible: initialize to x-coordinate.
   n.x = 1.;
   n.y = 0.;
   n.z = 0.;
 
-	// check sanity
+  // check sanity
   if(SanityOK())
     return true;
   else

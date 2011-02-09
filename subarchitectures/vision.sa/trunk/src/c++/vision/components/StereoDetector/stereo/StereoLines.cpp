@@ -239,33 +239,23 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
  * The match_map has ordered entries with the best matching right lines. We delete every result which is not 
  * on the same epipolarline. As result we get the best matching results again in the match_map.
  * @param idx Index of the left line
- * @param match_map Best match pairs (distance, index) as map
- * @param nr Compare the best "nr" matches from the match_map with another descriptor.
+ * @param match_map Best match pairs (distance, index) as map.
+ * @param nrCompare Calculate nrCompare good results for every left line.
  * @return Returns the index of the best match
- *															TODO We should work with the rectified end points of the line: lines[LEFT][idx].point2D[0].pr !!!
+ *															TODO We should work with the rectified end points of the line: lines[LEFT][idx].point2D[0].pr ???
  */
-unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned> &match_map, unsigned nr)
+unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned> &match_map, unsigned nrCompare)
 {
-// for printing debug informations
-//   static bool print = true;
-//   static int printcnt = 0;
-//   printcnt++;
-//   if(printcnt>20) print = false;
-  
-// if(print)  printf("\n\nStereoLines::GetBestMatchingPair:\n");
-  
-  if(match_map.size() < nr)
-    return 0.;
+  if(match_map.size() < nrCompare*3)
+    nrCompare = match_map.size()/3;
 
   // Checke ob sich die Linien auf der Epipolarlinie schneiden
-  unsigned results = 0;
+  unsigned nrResults = 0;
   std::map<float, unsigned>::iterator it;
   it = match_map.begin();
   int count = 0;
-  while(results < 5 && count < (nr*3))											/// TODO Austauschen mit define variablen!
+  while(nrResults < 5 && count < (nrCompare*3))											/// TODO Austauschen mit define variablen!
   {
-
-//if(print) printf("Loop: %u with: %u and %u\n", count, idx, it->second);						/// TODO idx and it->second sind die tmp-line indexes?
     Vertex2D startPointLeft, midPointLeft, endPointLeft;
     startPointLeft.p = lines[LEFT][idx].point2D[0].p;
     midPointLeft.p = (lines[LEFT][idx].point2D[0].p + lines[LEFT][idx].point2D[1].p)/2.;
@@ -303,7 +293,7 @@ unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned
     
     if(goodPoints > 1 )
     {
-      results++;
+      nrResults++;
       it++; 
     }
     else 
@@ -312,10 +302,7 @@ unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned
     }
     count++;
   }
-  
-// if(print)   printf("=> we got %u matches!\n\n", results);
-  
-  return results; 
+  return nrResults; 
 }
 
 /**
@@ -328,200 +315,100 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
 			     std::vector< std::vector<float> > descr_right, 
                              std::vector< std::pair<unsigned, unsigned> > &matches)
 {
-  unsigned idx;
-//   unsigned bidx;
-  float dist, mindist;
-  std::map<float, unsigned> best_matches[descr_left.size()];    // map for a left line[i] with the descriptor distance (float) to a right tmpLine (unsigned)
+  unsigned nrLinesLeft = descr_left.size();               // Number of left lines
+//  unsigned idx;
+  float dist; //, mindist;                                // Calculted descriptor distance
+  std::map<float, unsigned> best_matches[nrLinesLeft];    // map for a left line[i] with the descriptor distance (float) to a right tmpLine (unsigned)
+  unsigned nrMatches[nrLinesLeft];                        // Number of matches for each left line
+  
 
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  // calculate the best_matches map for each line left (i)
+  for (unsigned i=0; i<nrLinesLeft; i++)
   {
-    if (descr_left[i].size() != 0)                              // we have a descriptor for the left line
+    if (descr_left[i].size() != 0)
     {
-      mindist = FLT_MAX;
-      for (unsigned j=0; j<descr_right.size(); j++)             // j = descriptor index right
+//       mindist = FLT_MAX;
+      for (unsigned j=0; j<descr_right.size(); j++)
       {
-        if (descr_right[j].size() == descr_left[i].size())      // descriptor left and right with equal size (same descriptors)
+        if (descr_right[j].size() == descr_left[i].size())
         {
           dist = DistSqr(&descr_left[i][0], &descr_right[j][0], descr_left[i].size());
-//           if (dist < mindist)
-//           {
-//             mindist=dist;
-//             idx=j;
-//           }
 	  std::pair<float, unsigned> pair(dist, j);
 	  if(best_matches[i].find(dist) != best_matches[i].end())  // selbe dist gibt es schon!
 printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN FEHLER ####################################################\n");
 	  best_matches[i].insert(pair);
         }
       }
-      
     }
   }
   
-  unsigned nrMatches[descr_left.size()];
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {
-      // TODO TODO nun haben wir eine map mit den best_matches (Distanz und id) für den descriptor_links[i]
-      nrMatches[i] = GetBestMatchingPair(i, best_matches[i], 5);
-  }
-
-  /// write best matching pairs
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {
-    if(nrMatches[i] > 0)
-    {
-      std::map<float, unsigned>::iterator it;
-      it = best_matches[i].begin();
-      printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
-    }
-//     else printf("   no match for line: %u\n", i);
-  }
+  // Delete all matches from the best_matches map which are not on the epipolar line.
+  for (unsigned i=0; i<nrLinesLeft; i++)
+    nrMatches[i] = GetBestMatchingPair(i, best_matches[i], 5);
   
   
-  /// Jede rechte Linie sollte nur eine linke Linie haben!
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {    
+  // Each line (left or right) can have only one match.
+  bool solved = false;
+  while(!solved)
+  {
+    solved = true;
     std::map<float, unsigned>::iterator it_i;
     std::map<float, unsigned>::iterator it_j;
-//     for(it = best_matches[i].begin(); it<best_matches[i].end(); i++)
-//     {
 
-    for(unsigned j=0; j<descr_left.size(); j++)
-    {
-      if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+    for (unsigned i=0; i<nrLinesLeft; i++)
+    {    
+      for(unsigned j=0; j<nrLinesLeft; j++)
       {
-	it_i = best_matches[i].begin();
-	it_j = best_matches[j].begin();
-	
-	
-	if((*it_i).second == (*it_j).second)
+	if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
 	{
-	    printf("######################################### StereoLines::MatchLines: hab eam: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
-	    
-	  // lösche den größeren Eintrag => es ist ja die Distanz
-	  if((*it_i).first < (*it_j).first)
+	  it_i = best_matches[i].begin();
+	  it_j = best_matches[j].begin();
+	  
+	  if((*it_i).second == (*it_j).second)
 	  {
-	    best_matches[j].erase(it_j++);
-	    nrMatches[j]--;
-	  }
-	  else
-	  {
-	    best_matches[i].erase(it_i++);
-	    nrMatches[i]--;
+	    solved = false;
+// 	      printf("######################################### StereoLines::MatchLines: hab eam: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
+	    if((*it_i).first < (*it_j).first)  // lösche den größeren Eintrag => es ist ja die Distanz
+	    {
+	      best_matches[j].erase(it_j++);
+	      nrMatches[j]--;
+	    }
+	    else
+	    {
+	      best_matches[i].erase(it_i++);
+	      nrMatches[i]--;
+	    }
 	  }
 	}
       }
     }
   }
 
+  /// TODO Write best matching pairs => Delete later
+//   for (unsigned i=0; i<nrLinesLeft; i++)
+//   {
+//     if(nrMatches[i] > 0)
+//     {
+//       std::map<float, unsigned>::iterator it;
+//       it = best_matches[i].begin();
+//       printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
+//     }
+//   }
 
-  /// write best matching pairs
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {
+
+  /// copy resulting matches!
+  for (unsigned i=0; i<nrLinesLeft; i++)
+  {    
+    std::map<float, unsigned>::iterator it;
+    it = best_matches[i].begin();
+
     if(nrMatches[i] > 0)
     {
-      std::map<float, unsigned>::iterator it;
-      it = best_matches[i].begin();
-      printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
+      std::pair<unsigned, unsigned> pair(i, it->second);
+      matches.push_back(pair);
     }
-//     else printf("   no match for line: %u\n", i);
+    best_matches[i].clear();
   }
-  
-  
-  /// NOCHMAL DURCHGEHEN
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {    
-    std::map<float, unsigned>::iterator it_i;
-    std::map<float, unsigned>::iterator it_j;
-//     for(it = best_matches[i].begin(); it<best_matches[i].end(); i++)
-//     {
-
-    for(unsigned j=0; j<descr_left.size(); j++)
-    {
-      if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
-      {
-	it_i = best_matches[i].begin();
-	it_j = best_matches[j].begin();
-	
-	
-	if((*it_i).second == (*it_j).second)
-	{
-	    printf("############ StereoLines::MatchLines: nu imma: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
-	    
-	  // lösche den größeren Eintrag => es ist ja die Distanz
-	  if((*it_i).first < (*it_j).first)
-	  {
-	    best_matches[j].erase(it_j++);
-	    nrMatches[j]--;
-	  }
-	  else
-	  {
-	    best_matches[i].erase(it_i++);
-	    nrMatches[i]--;
-	  }
-	}
-      }
-    }
-  }
-
-
-  // copy results!
-  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
-  {    
-      
-// printf("StereoLines::MatchLines: nrMatches: %u\n", nrMatches);
-	std::map<float, unsigned>::iterator it;
-// 	it = best_matches.begin();
-// for(unsigned k=0; k<nrMatches; k++)
-// {
-//   printf("StereoLines::MatchLines: matches for line %u:%u\n", i, it->second);
-//   printf("   This are vs3 lines: %u-%u\n", lines[LEFT][i].vs3ID, lines[RIGHT][it->second].vs3ID);
-//   printf("   lines[LEFT][%u] st: %3.0f/%3.0f\n", i, lines[LEFT][i].point2D[0].p.x, lines[LEFT][i].point2D[0].p.y);
-//   printf("   lines[LEFT][%u] en: %3.0f/%3.0f\n", i, lines[LEFT][i].point2D[1].p.x, lines[LEFT][i].point2D[1].p.y);
-//   printf("   lines[RIGH][%u] st: %3.0f/%3.0f\n", it->second, lines[RIGHT][it->second].point2D[0].p.x, lines[RIGHT][it->second].point2D[0].p.y);
-//   printf("   lines[RIGH][%u] en: %3.0f/%3.0f\n\n", it->second, lines[RIGHT][it->second].point2D[1].p.x, lines[RIGHT][it->second].point2D[1].p.y);
-//   it++;
-// }
-
-      it = best_matches[i].begin();
-
-      if(nrMatches[i] > 0)
-      {
-// 	std::map<float, unsigned>::iterator it;
-// 	it = best_matches.begin();
-	std::pair<unsigned, unsigned> pair(i, it->second);
-	matches.push_back(pair);
-      }
-      best_matches[i].clear();
-      
-//       if (mindist < 0.55)      								                  // TODO if fixed threshold is passed => backward matching
-//       {
-//         mindist = FLT_MAX;
-//         for (unsigned j=0; j<descr_left.size(); j++)   // check backward
-//         {
-//           if (descr_left[j].size() == descr_right[idx].size())
-//           {
-//             dist = DistSqr(&descr_right[idx][0], &descr_left[j][0], descr_left[j].size());
-//             if (dist < mindist)
-//             {
-//               mindist=dist;
-//               bidx=j;
-//             }
-//           }
-//         }
-// 
-//         if (bidx == i)
-//         {
-// 	     std::pair<unsigned, unsigned> pair(i, idx);
-// 	     matches.push_back(pair);
-//         }
-//       } 
-      
-      
-      
- 
-  }
-
 }
 
 /**
@@ -573,19 +460,14 @@ void StereoLines::ProcessMSLD(std::vector< std::pair<unsigned, unsigned> > &matc
 }
 
 /**
- * @brief Calculate 3D Gestalt from matched line
+ * @brief Sort the line arrays for displaying: left_lines[i] and right_lines[i] are always correct pairs.
  * @param left_lines Array of all lines from left stereo image.
  * @param right_lines Array of all lines from right stereo image.
- * @param matches Number of matched points.
- * @param ljct3ds Array of calculated 3d lines.
+ * @param matches Vector with matching line pairs (left/right).
  */
 void StereoLines::SortLines(Array<TmpLine> &left_lines, Array<TmpLine> &right_lines, std::vector< std::pair<unsigned, unsigned> > &matches)
 {
-// for(unsigned i=0; i<matches.size(); i++)
-//   printf("matches new corr: %u - %u\n", matches[i].first, matches[i].second);
-
   Array<TmpLine> l_lines, r_lines;
-
   for(unsigned i=0; i<matches.size(); i++)
   {
     l_lines.PushBack(left_lines[matches[i].first]);
@@ -593,9 +475,6 @@ void StereoLines::SortLines(Array<TmpLine> &left_lines, Array<TmpLine> &right_li
   }
   left_lines = l_lines;
   right_lines = r_lines;
-
-// for(unsigned i=0; i<matches.size(); i++)
-//   printf("matches new swapt: %u - %u\n", left_lines[i].vs3ID, right_lines[i].vs3ID);
 }
 
 
@@ -613,18 +492,17 @@ void StereoLines::Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &r
   unsigned u = matches;
   for(unsigned i = 0; i < u;)
   {
-    Vertex2D isctPointLeft[2], isctPointRight[2];
-    Vector2 ll[2], rl[2];		// left/right line points RECTIFIED!
-    
-    unsigned leftBig, rightBig;		// the point with higher y-value left/right 
-    bool leftBiggest, leftSmallest;	// Is the point with the highest y-value left (or right)
+    Vertex2D isctPointLeft[2], isctPointRight[2];     // the four intersection points of the stereo line
+    Vector2 ll[2], rl[2];                             // left/right line points RECTIFIED!
+    unsigned leftBig, rightBig;                       // the point with higher y-value left/right 
+    bool leftBiggest, leftSmallest;                   // Is the point with the highest y-value left (or right)
     
     ll[0] = left_lines[i].point2D[0].pr;
     ll[1] = left_lines[i].point2D[1].pr;
     rl[0] = right_lines[i].point2D[0].pr;
     rl[1] = right_lines[i].point2D[1].pr;
     
-printf("\nStereoLines::Calculate3DLines: %u-%u\n", left_lines[i].vs3ID, right_lines[i].vs3ID);
+// printf("\nStereoLines::Calculate3DLines: %u-%u\n", left_lines[i].vs3ID, right_lines[i].vs3ID);
 // printf("   points x rectified: %3.0f/%3.0f/%3.0f/%3.0f: \n", ll[0].x, ll[1].x, rl[0].x, rl[1].x);
 // printf("   points y rectified: %3.0f/%3.0f/%3.0f/%3.0f: \n", ll[0].y, ll[1].y, rl[0].y, rl[1].y);
     
@@ -695,13 +573,12 @@ printf("\nStereoLines::Calculate3DLines: %u-%u\n", left_lines[i].vs3ID, right_li
     {
       if(!Prune3DLines(line3d))
       {
-printf("############ StereoLines::Calculate3DLines: We have a new Gestalt! ###############\n");
 	score->NewGestalt3D(line3d);
         i++;
       }
       else
       {
-printf("StereoLines::Calculate3DLines: AUSSORTIERT!\n");
+// printf("StereoLines::Calculate3DLines: AUSSORTIERT!\n");
 	left_lines.Swap(i, u-1);
 	right_lines.Swap(i, u-1);
 	u--;
@@ -738,20 +615,11 @@ bool StereoLines::Prune3DLines(Line3D *line3d)
   double angle3Dz = SmallestAngle(line, zCoord);
   line3d->CalculateSignificance(angle2DleftToX, angle2DRightToX, angle3Dz);
 
-  if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
+  /// Wenn die Linie länger als 30cm in z-Richtung geht, dann wird sie aussortiert!
+ if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
     
   if(line3d->GetSignificance() > 0.01) return false;
   else return true;
-  
-
-  /// Wenn die Linie länger als 30cm in z-Richtung geht, dann wird sie aussortiert!
-//   if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
-//   else return false;
-    
-
-  
-//   if(angle < (2*M_PI/3.) return true;
-//   else return false;  
 }
 
 
@@ -822,18 +690,18 @@ void StereoLines::Process()
   GetUnsplitedLines();
 
   // match lines with MSLD descriptor
-  std::vector< std::pair<unsigned, unsigned> > matches;			/// lines[LEFT/RIGHT] matches
+  std::vector< std::pair<unsigned, unsigned> > matches;  // lines[LEFT/RIGHT] matches
   ProcessMSLD(matches);
   lineMatches = matches.size();
 // printf("StereoLines::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
 
-  SortLines(lines[LEFT], lines[RIGHT], matches);						/// TODO Sortiere die lines!
+  SortLines(lines[LEFT], lines[RIGHT], matches);
   lineMatches = matches.size();
-printf("MatchedLines: %u\n", lineMatches);
+printf("StereoLines::Process: MatchedLines: %u\n", lineMatches);
 
   // do stereo matching and depth calculation
   Calculate3DLines(lines[LEFT], lines[RIGHT], lineMatches);
-printf("MatchedLines after 3D calculation: %u\n", lineMatches);
+printf("StereoLines::Process: MatchedLines after 3D calculation: %u\n", lineMatches);
 }
 
 
