@@ -473,6 +473,15 @@ void PlanePopOut::start()
   //Video::Image image;
   //m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
+
+	// we want to receive detected VisualObject
+	addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+		new MemberFunctionChangeReceiver<PlanePopOut>(this,
+		  &PlanePopOut::newVisualObject));
+	// when VisualObject is deleted
+	addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
+		new MemberFunctionChangeReceiver<PlanePopOut>(this,
+		  &PlanePopOut::deleteVisualObject));
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -663,7 +672,7 @@ void PlanePopOut::runComponent()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
-  int stereoWidth = 320;
+  int stereoWidth = 640;
   if (doDisplay)
   {
       glutInit(&argc, argv);
@@ -716,11 +725,11 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = (int)points.size()/5000;
-		if (N < 1) N = 1; // if ponits.size() < 5000, the loop will never end!
+		if (N>= 3000)	N = (int)points.size()/3000;
+		else N = 1;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
-		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
+		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<10)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -2533,5 +2542,29 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 	pointsInOneSOI.clear();
 }
 
+void PlanePopOut::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  VisualObjectPtr vis_obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+
+  VisionData::VertexSeq ver_seq = vis_obj->model->vertices;
+  
+  vlines.push_back(ver_seq.at(0).normal);
+  vlineConfidence.push_back(vis_obj->detectionConfidence);
+}
+
+void PlanePopOut::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+    vlines.clear();
+    vlineConfidence.clear();
+}
+
+void PlanePopOut::RefinePlaneEstimation(vector <Vector3> lines)
+{
+    if (lines.empty())	return;
+    Vector3 PlaneNormal;
+    PlaneNormal.x = A; PlaneNormal.y = B; PlaneNormal.z = C;
+    normalise(PlaneNormal);
+    double newD = PlaneNormal.x *D/A;
+}
 
 }
