@@ -725,7 +725,7 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		if (N>= 3000)	N = (int)points.size()/3000;
+		if (points.size()>= 3000)	N = (int)points.size()/3000;
 		else N = 1;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
@@ -767,7 +767,7 @@ void PlanePopOut::runComponent()
 			}
 			if (doDisplay)
 			{
-				//glutIdleFunc(show_window);
+				glutIdleFunc(show_window);
 				glutPostRedisplay();
 				glutMainLoopEvent();
 			}
