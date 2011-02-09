@@ -93,11 +93,13 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \normalsize
 
 \noindent Each assumption corresponds to one distinct {\em
-relaxed} visitation of the root term. Here, a conjunctive term is visited
-iff its atomic subterms are visited, and zero or one of its immediate
-probabilistic subterms are visited. For a sequential session, the
-starting state corresponds to an assumption (usually unique) with
-probability $1$. In our example, that starting state is:
+relaxed} visitation of the root term. Here, a conjunctive term is
+visited iff its atomic subterms are visited, and zero or one of its
+immediate probabilistic subterms are visited. For a sequential
+session, the starting state corresponds to an assumption (usually
+unique) with probability $1$.\footnote{To simplify the discussion, we
+suppose that the root term of $(\pp{:init})$ lists all atoms that are
+necessarily true.} In our example, that starting state is:
 
 \small
 \[
