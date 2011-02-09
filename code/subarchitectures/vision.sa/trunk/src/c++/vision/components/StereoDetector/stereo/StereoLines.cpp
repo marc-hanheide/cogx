@@ -308,7 +308,7 @@ unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned
     }
     else 
     {
-      match_map.erase(it++);			// delete the bad result!
+      match_map.erase(it++);       // delete the result, which are not on the epipolarline
     }
     count++;
   }
@@ -331,9 +331,9 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
   unsigned idx;
 //   unsigned bidx;
   float dist, mindist;
-  std::map<float, unsigned> best_matches;                       // map for a left line with the descriptor distance (float) to a right tmpLine (unsigned)
+  std::map<float, unsigned> best_matches[descr_left.size()];    // map for a left line[i] with the descriptor distance (float) to a right tmpLine (unsigned)
 
-  for (unsigned i=0; i<descr_left.size(); i++)                  // i = descriptor index left
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
   {
     if (descr_left[i].size() != 0)                              // we have a descriptor for the left line
     {
@@ -349,15 +349,125 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
 //             idx=j;
 //           }
 	  std::pair<float, unsigned> pair(dist, j);
-	  if(best_matches.find(dist) != best_matches.end()) 
+	  if(best_matches[i].find(dist) != best_matches[i].end())  // selbe dist gibt es schon!
 printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN FEHLER ####################################################\n");
-	  best_matches.insert(pair);
+	  best_matches[i].insert(pair);
         }
       }
       
+    }
+  }
+  
+  unsigned nrMatches[descr_left.size()];
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {
       // TODO TODO nun haben wir eine map mit den best_matches (Distanz und id) für den descriptor_links[i]
-      unsigned nrMatches = GetBestMatchingPair(i, best_matches, 5);
-      
+      nrMatches[i] = GetBestMatchingPair(i, best_matches[i], 5);
+  }
+
+  /// write best matching pairs
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {
+    if(nrMatches[i] > 0)
+    {
+      std::map<float, unsigned>::iterator it;
+      it = best_matches[i].begin();
+      printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
+    }
+//     else printf("   no match for line: %u\n", i);
+  }
+  
+  
+  /// Jede rechte Linie sollte nur eine linke Linie haben!
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {    
+    std::map<float, unsigned>::iterator it_i;
+    std::map<float, unsigned>::iterator it_j;
+//     for(it = best_matches[i].begin(); it<best_matches[i].end(); i++)
+//     {
+
+    for(unsigned j=0; j<descr_left.size(); j++)
+    {
+      if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+      {
+	it_i = best_matches[i].begin();
+	it_j = best_matches[j].begin();
+	
+	
+	if((*it_i).second == (*it_j).second)
+	{
+	    printf("######################################### StereoLines::MatchLines: hab eam: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
+	    
+	  // lösche den größeren Eintrag => es ist ja die Distanz
+	  if((*it_i).first < (*it_j).first)
+	  {
+	    best_matches[j].erase(it_j++);
+	    nrMatches[j]--;
+	  }
+	  else
+	  {
+	    best_matches[i].erase(it_i++);
+	    nrMatches[i]--;
+	  }
+	}
+      }
+    }
+  }
+
+
+  /// write best matching pairs
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {
+    if(nrMatches[i] > 0)
+    {
+      std::map<float, unsigned>::iterator it;
+      it = best_matches[i].begin();
+      printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
+    }
+//     else printf("   no match for line: %u\n", i);
+  }
+  
+  
+  /// NOCHMAL DURCHGEHEN
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {    
+    std::map<float, unsigned>::iterator it_i;
+    std::map<float, unsigned>::iterator it_j;
+//     for(it = best_matches[i].begin(); it<best_matches[i].end(); i++)
+//     {
+
+    for(unsigned j=0; j<descr_left.size(); j++)
+    {
+      if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+      {
+	it_i = best_matches[i].begin();
+	it_j = best_matches[j].begin();
+	
+	
+	if((*it_i).second == (*it_j).second)
+	{
+	    printf("############ StereoLines::MatchLines: nu imma: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
+	    
+	  // lösche den größeren Eintrag => es ist ja die Distanz
+	  if((*it_i).first < (*it_j).first)
+	  {
+	    best_matches[j].erase(it_j++);
+	    nrMatches[j]--;
+	  }
+	  else
+	  {
+	    best_matches[i].erase(it_i++);
+	    nrMatches[i]--;
+	  }
+	}
+      }
+    }
+  }
+
+
+  // copy results!
+  for (unsigned i=0; i<descr_left.size(); i++)                  // for each left line [i]
+  {    
       
 // printf("StereoLines::MatchLines: nrMatches: %u\n", nrMatches);
 	std::map<float, unsigned>::iterator it;
@@ -373,16 +483,16 @@ printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN 
 //   it++;
 // }
 
-      it = best_matches.begin();
+      it = best_matches[i].begin();
 
-      if(nrMatches > 0)
+      if(nrMatches[i] > 0)
       {
 // 	std::map<float, unsigned>::iterator it;
 // 	it = best_matches.begin();
 	std::pair<unsigned, unsigned> pair(i, it->second);
 	matches.push_back(pair);
       }
-      best_matches.clear();
+      best_matches[i].clear();
       
 //       if (mindist < 0.55)      								                  // TODO if fixed threshold is passed => backward matching
 //       {
@@ -406,8 +516,12 @@ printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN 
 // 	     matches.push_back(pair);
 //         }
 //       } 
-    }
+      
+      
+      
+ 
   }
+
 }
 
 /**
