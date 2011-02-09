@@ -1,62 +1,102 @@
 
 We now describe our {\em switching} planning system that operates
-according to the continual planning paradigm, given a description of
+according to the continual planning paradigm given a description of
 the current problem and domain in DTPDDL. The system {\em
-switches}, in the sense that planning proceeds in interleaved
-sessions, in which the base planner is either {\em sequential}/linear
+switches} in the sense that planning proceeds in interleaved
+sessions in which the base planner is either {\em sequential}/linear
 or {\em decision-theoretic}.
 %%
-During a sequential session, a rewarding {\em trace} of a possible
-execution is computed using a cost-optimising satisficing planner
-which trades action costs, goal rewards, and determinacy.
-%%
-Formatted as a linear plan, the trace specifies a sequence of actions
-that achieves some reachable goals following a deterministic
-approximation of the problem at hand.
-%%
-Structurally, a trace is a sequence of elements that are either: (i) ground
-actions from the DTPDDL description of the world, or (ii) atomic {\em
-assumptions}, modelled as deterministic actions, made about the truth
-value of facts that can only be determined at runtime (e.g., that a
-box of cornflakes is located on the corner bench in the kitchen).
-%%
-The system always begins in a sequential session, so that plan
-execution proceeds by applying DTPDDL actions from the trace, in
-sequence, until the outcome of executing the next scheduled action is
-too uncertain according to a threshold parameter~(here, 95\%). In that
-eventuality a DT session commences, which tailors sensory processing
-to determine whether the assumptions made in the trace hold, or which
-otherwise acts to achieve the goals.
+The system begins in a sequential session during which it runs a
+cost-based satisficing planner which trades off action costs, goal
+rewards and determinacy. This planner generates a reward-giving
+sequence of ground actions from the DTPDDL domain which may also
+include {\em assumptions}: actions that assume the truth of some fact
+that is unknown at plan time (e.g. that a box of cornflakes is located
+on the corner bench in the kitchen). We call this sequence a {\em
+trace}. Execution of the trace proceeds by applying the actions until
+the probability of the next action being applicable falls below some
+threshold (here 95\%), at which point the planner switches to a DT session. 
 
-
-Because online DT planning in large problems is impractical (we seek
-response times in seconds), a DT session plans for an abstract process
-determined by the current trace and underlying belief-state. That
-abstract problem is characterised by a limited number of propositions,
+Because online DT planning is impractical for the size of problem we
+are interested in, when a DT session begins we use the trace from the
+preceeding sequential session to restrict the state space. The state space is characterised by a limited number of propositions,
 chosen due to their {\em relevance} to the action whose scheduled
 execution triggered the switch to the DT session.
-%%the subproblem the DT session is asked tosolve.
-% MOG: Describe this in detail in the appropriate subsection
-%  This
-% abstraction is constructed by first excluding all propositions (and
-% related actions) that are not true, or {\em assumed } true, of states
-% in the trace, then adding them back, using as an heuristic the entropy
-% of the trace assumptions conditional on a candidate
-% proposition. Propositions are added, one at a time, until the number
-% of states in the initial belief-state reaches a given
-% threshold.\footnote{Our experiments are performed using a number of
-% different threshold parameters.} 
-To that abstract model we also add {\em disconfirm} and {\em confirm}
-actions that the DT session can schedule in order to judge an atomic
-assumption in the trace. Those actions yield a relatively small reward
-if the corresponding judgement is true (or small penalty
-otherwise). If a judgement action is scheduled for execution the DT
-session is terminated, and control is returned to a new sequential
-session.
+%The state
+%space is constructed by first removing all propositions (and related
+%actions) that are not true or assumed true of states in the trace,
+%then adding them back as long as the number of states does not exceed
+%a size threshold\footnote{Our experiments are performed using a number
+%of different threshold parameters.}  Propositions to add back are
+%chosen using as a heuristic the entropy of the trace assumptions
+%conditional on the candidate proposition. 
+To allow the DT planner to
+determine the truth of the assumptions in the trace, we add {\em
+disconfirm} and {\em confirm} actions to the problem for each of
+them. These actions yield a relatively small reward/penalty if the
+corresponding judgement is true/false. If a judgement action is
+scheduled for execution the DT session is terminated, and control is
+returned to a sequential session.
+
+%% We now describe our {\em switching} planning system that operates
+%% according to the continual planning paradigm, given a description of
+%% the current problem and domain in DTPDDL. The system {\em
+%% switches}, in the sense that planning proceeds in interleaved
+%% sessions, in which the base planner is either {\em sequential}/linear
+%% or {\em decision-theoretic}.
+%% %%
+%% During a sequential session, a rewarding {\em trace} of a possible
+%% execution is computed using a cost-optimising satisficing planner
+%% which trades action costs, goal rewards, and determinacy.
+%% %%
+%% Formatted as a linear plan, the trace specifies a sequence of actions
+%% that achieves some reachable goals following a deterministic
+%% approximation of the problem at hand.
+%% %%
+%% Structurally, a trace is a sequence of elements that are either: (i) ground
+%% actions from the DTPDDL description of the world, or (ii) atomic {\em
+%% assumptions}, modelled as deterministic actions, made about the truth
+%% value of facts that can only be determined at runtime (e.g., that a
+%% box of cornflakes is located on the corner bench in the kitchen).
+%% %%
+%% The system always begins in a sequential session, so that plan
+%% execution proceeds by applying DTPDDL actions from the trace, in
+%% sequence, until the outcome of executing the next scheduled action is
+%% too uncertain according to a threshold parameter~(here, 95\%). In that
+%% eventuality a DT session commences, which tailors sensory processing
+%% to determine whether the assumptions made in the trace hold, or which
+%% otherwise acts to achieve the goals.
+
+
+%% Because online DT planning in large problems is impractical (we seek
+%% response times in seconds), a DT session plans for an abstract process
+%% determined by the current trace and underlying belief-state. That
+%% abstract problem is characterised by a limited number of propositions,
+%% chosen due to their {\em relevance} to the action whose scheduled
+%% execution triggered the switch to the DT session.
+%% %%the subproblem the DT session is asked tosolve.
+%% % MOG: Describe this in detail in the appropriate subsection
+%% %  This
+%% % abstraction is constructed by first excluding all propositions (and
+%% % related actions) that are not true, or {\em assumed } true, of states
+%% % in the trace, then adding them back, using as an heuristic the entropy
+%% % of the trace assumptions conditional on a candidate
+%% % proposition. Propositions are added, one at a time, until the number
+%% % of states in the initial belief-state reaches a given
+%% % threshold.\footnote{Our experiments are performed using a number of
+%% % different threshold parameters.} 
+%% To that abstract model we also add {\em disconfirm} and {\em confirm}
+%% actions that the DT session can schedule in order to judge an atomic
+%% assumption in the trace. Those actions yield a relatively small reward
+%% if the corresponding judgement is true (or small penalty
+%% otherwise). If a judgement action is scheduled for execution the DT
+%% session is terminated, and control is returned to a new sequential
+%% session.
 
 Whatever the session type, our continual planner maintains a factored
-representation of successive belief-states by performing belief
-revision. As an internal representation of the $(\pp{:init})$
+representation of successive belief-states.
+% by performing belief revision. 
+As an internal representation of the $(\pp{:init})$
 declaration, we keep a tree-shaped Bayesian network which gets updated
 whenever an action is performed, or an observation received. That
 belief-state representation is used: (1) as the source of candidate
@@ -115,7 +155,7 @@ have negative preconditions.}  In our example, that starting state is:
 
 \vspace{-1ex}
 
-Encapsulating state-assumptions, we annotate the problem posed during
+To represent state assumptions we augment the problem posed during
 a sequential session with an \emph{assumptive action} $\assumptiveS{i}$ for
 each element $\prob_i (T_i)$, of each probabilistic term from
 $(\pp{:init})$. Here, $\assumptiveS{i}$ can be executed if no
@@ -137,11 +177,20 @@ $\state^\bot$ is an added sink.
 
 
 We now describe the optimisation criteria used during sequential
-sessions. Where $\prob_i$ is the probability that the $i^{th}$
-sequenced action, $\action_i$, from a trace of state-action pairs
+sessions. Let $\prob_i$ be the probability that the $i^{th}$ sequenced
+action, $\action_i$, from a trace of state-action pairs
 $\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
-does not transition to $\state^\bot$, we have that the optimal trace
-has value:
+does not transition to $\state^\bot$, and
+$\reward(\state_i, \action_i)$ be the instantaneous reward received
+for executing action $\action_i$ in state $\state_i$. The optimal
+trace has value:
+
+%We now describe the optimisation criteria used during sequential
+%sessions. Where $\prob_i$ is the probability that the $i^{th}$
+%sequenced action, $\action_i$, from a trace of state-action pairs
+%$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
+%does not transition to $\state^\bot$, we have that the optimal trace
+%has value:
 
 \small
 \[
@@ -150,13 +199,13 @@ V^* = \max_N \max_{\state_0, \action_0,.., \state_N} \prod_{i=1..N-1} \prob_i \s
 \]
 \normalsize
 
-\noindent  Here,  $\reward(\state_i, \action_i)$ is the instantaneous
-reward ---i.e., can be negative for action costs, or positive for goal
-achievement--- received for executing action $\action_i$ in state
-$\state_i$. Finally, it is worth clarifying that in practise we do not
-artificially limit the length of traces that the sequential planner
-can consider. Moreover, for problems we consider there is always a
-finite optimal trace.
+%\noindent  Here,  $\reward(\state_i, \action_i)$ is the instantaneous
+%reward ---i.e., can be negative for action costs, or positive for goal
+%achievement--- received for executing action $\action_i$ in state
+%$\state_i$. Finally, it is worth clarifying that in practise we do not
+%artificially limit the length of traces that the sequential planner
+%can consider. Moreover, for problems we consider there is always a
+%finite optimal trace.
 
 \subsection{DT Sessions}
 
@@ -279,8 +328,7 @@ declarations whose specification mentions an excluded fact are not
 available.
 %%
 In detail, we first construct an $(\pp{:init})$ declaration which
-contains the root term, and relevant assumptions from the trace --
-e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
+contains the root term, and relevant assumptions from the trace---e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
 diamonds are probabilistic terms, and circles are atomic and/or
 conjunctive.
 %%

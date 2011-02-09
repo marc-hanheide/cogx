@@ -8,13 +8,13 @@ A number of recent integrated robotic systems incorporate a
 high-level {\em continual planning} and execution monitoring
 subsystem~\cite{wyattetal2010tamd,talamadupula:2010,Kraft2008}.
 %%
-For the purpose of planning, sensing is modelled {\em
-deterministically}, and beliefs about the underlying state are
-modelled {\em qualitatively}.
+For the purpose of planning, sensing is modelled
+deterministically, and beliefs about the underlying state are
+modelled qualitatively.
 %%
 Both~\citeauthor{talamadupula:2010} and~\citeauthor{wyattetal2010tamd}
 identify
-\emph{continual planning} with {\em probabilistic} --i.e., {\em quantitative}--
+continual planning with probabilistic
 models of noisy sensing and state as an important challenge for future
 research.
 %%
@@ -26,10 +26,10 @@ deliberations.
 %% probabilistic models of noisy sensing, and from qualitative to
 %% quantitative models of state uncertainty. 
 %%
-In essence, the challenge is to develop a {\em base planner} that
-exhibits similar speed and scalability as planners employed in
-existing robotic systems ---e.g.,~\citeauthor{wyattetal2010tamd} use a
-satisficing {\em classical} procedure--- which is also able to
+In essence, the challenge is to develop a planner that
+exhibits speed and scalability similar to planners employed in
+existing robotic systems---e.g.,~\citeauthor{wyattetal2010tamd} use a
+satisficing {\em classical} procedure---and which is also able to
 synthesise relatively efficient deliberations according to detailed
 probabilistic models of the environment.
 
@@ -39,7 +39,7 @@ approach we have developed to address this challenge.
 %%
 Our Planner is {\em continual} in the usual sense that plans are
 adapted and rebuilt online in reaction to changes to the model of the
-underlying problem and/or domain -- e.g., when goals are
+underlying problem and/or domain---e.g., when goals are
 modified, or when the topological map is altered by a door being
 closed.
 %%
@@ -49,7 +49,7 @@ goals set by the user, and acquire knowledge about its surroundings.
 %%
 Our planner takes problem and domain descriptions expressed in a novel
 extension of PPDDL~\cite{younes:etal:2005}, called {\em
-Decision-Theoretic (DT)PDDL}, for modelling stochastic decision
+Decision-Theoretic DTPDDL}, for modelling stochastic decision
 problems that feature partial observability.  In this paper we
 restrict our attention to problem models that correspond to
 deterministic-action multi-goal-oriented POMDPs 
@@ -59,20 +59,20 @@ deterministic-action multi-goal-oriented POMDPs
 % is expressed in the starting-state
 % distribution~\cite{ng:Jordan:2000}.}
 in which all actions have
-non-zero cost -- i.e., an optimal policy can be formatted as a finite
+non-zero cost---i.e., an optimal policy can be formatted as a finite
 horizon contingent plan. Moreover, we target problems of a size and
 complexity that is challenging to state-of-the-art sequential
 satisficing planners, and which are too large to be solved directly by
-{\em decision-theoretic} (DT) systems.
+decision-theoretic (DT) systems.
 
 Our planner {\em switches}, in the sense that the base planning
 procedure changes depending on our robot's subjective degrees of
-belief, and progress in plan execution. When the underlying planner is
+belief, and on progress in plan execution. When the underlying planner is
 a fast (satisficing) {\em classical} planner, we say planning is in a
 {\em sequential} session, and otherwise it is in a DT session.
 %%
 A {\em sequential} session plans, and then pursues a high-level
-strategy -- e.g., go to the kitchen bench, and then observe the
+strategy---e.g., go to the kitchen bench, and then observe the
 cornflakes on it.
 %%
 A DT session proceeds in a practically sized {\em abstract} process,
@@ -81,8 +81,7 @@ belief-state.
 %%
 
 
-We evaluate our approach in simulation on problems posed by {\em
-object search} and {\em room categorisation} tasks that our indoor
+We evaluate our approach in simulation on problems posed by object search and room categorisation tasks that our indoor
 robot undertakes. Those feature a deterministic task planning aspect
 with an active sensing problem. The larger of these problems features
 $6$ rooms, $25$ topological places, and $21$ active sensing
