@@ -369,17 +369,13 @@ double FormRectangles::IsRectangle(Vector2 isct[4])
   diff[0] = fabs(fabs(phi[0]-phi[2])-M_PI);
   diff[1] = fabs(fabs(phi[1]-phi[3])-M_PI);
 
-  // TODO ARI: check this calculation of parallelity (0-100)
-  // calculate parallelity of best (min) opposing edge-pair (in degree)
-  // parallelity = 10*e^(-diff/20°)
+  // TODO ARI: check this calculation of parallelity (0-1)
+  // The better opposing edge-pair counts 0.9, the worser one only 0.1 times.
+  // calculate parallelity of best (min) opposing edge-pair (in degree): parallelity = 0.9*e^(-diff/20°)
   double parallelity = 0.9*exp(0.-((fmin(diff[0], diff[1]))/0.349));
-
-//   printf("FormRectangles::IsRectangle: parallelity first: %4.2f\n", parallelity);
-  // calculate parallelity of worst (max) opposing edge-pair (in degree)
-  // parallelity = 10*e^(-diff/20°)
+  // calculate parallelity of worst (max) opposing edge-pair (in degree): parallelity = 0.1*e^(-diff/20°)
   parallelity += 0.1*exp(0.-((fmax(diff[0], diff[1]))/0.349));
 
-// printf("      FormRectangles::IsRectangle: parallelity: %4.2f\n", parallelity);
   return parallelity;
 }	
 

@@ -242,6 +242,22 @@ inline double CircleArea(double r)
 }
 
 /**
+ * @brief Return squared distance between two keypoint descriptors.
+ */
+inline float DistSqr(float *desc1, float *desc2, unsigned size)
+{
+    register unsigned i;
+    float dif;
+    float distsq = 0;
+
+    for (i = 0; i < size; i++) {
+      dif = *desc1++ - *desc2++;
+      distsq += dif * dif;
+    }
+    return distsq;
+}
+
+/**
  * @brief Bivariate Gaussian (Normal) probability density function.
  * Note that: sigma_x = sigma_y = s, rho = 0
  */

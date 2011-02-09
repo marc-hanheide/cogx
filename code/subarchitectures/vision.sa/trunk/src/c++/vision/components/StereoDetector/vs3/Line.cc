@@ -193,9 +193,9 @@ double Line::MinEndpointDistance(const Line* l)
 }
 
 /**
- * 
- * @param q 
- * @return 
+ * @brief Calculate the distance to a point
+ * @param q Vector to the point
+ * @return Returns the distance from the point to the line.
  */
 double Line::DistanceToPoint(const Vector2 &q)
 {
@@ -547,9 +547,10 @@ void VisibleLine::CalculateColors()
 }
 
 /**
- * @brief Find index of edgel of line l which is closes to point p.
+ * @brief Find index of edgel of line l which is closest to point p.
  * Is used to find split point for lines.
  * @param p Point p
+ * @return Returns the minimum split index
  */
 unsigned VisibleLine::FindSplitIdx(const Vector2 &p)
 {
