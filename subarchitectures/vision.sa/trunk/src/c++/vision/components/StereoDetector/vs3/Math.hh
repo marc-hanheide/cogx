@@ -13,7 +13,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdexcept>
-// #include "Namespace.hh"
 
 namespace Z
 {
@@ -130,6 +129,7 @@ extern double timespec_diff(struct timespec *x, struct timespec *y);
 
 extern double SphereVolume(double r);
 extern double CircleArea(double r);
+extern float DistSqr(float *desc1, float *desc2, unsigned size);
 
 // Returns a pseudo random number in [0.0, 1.0]
 static float FRand();

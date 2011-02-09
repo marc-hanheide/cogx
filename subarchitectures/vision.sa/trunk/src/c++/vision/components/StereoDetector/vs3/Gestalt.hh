@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include "Array.hh"
+#include "Math.hh"
 
 namespace Z
 {

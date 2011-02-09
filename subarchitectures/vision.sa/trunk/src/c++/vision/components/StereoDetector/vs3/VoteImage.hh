@@ -97,8 +97,8 @@ private:
   unsigned baseIndex;                                   // number of search lines
   unsigned arcOffset;                                   // number of lines (== offset to arcs)
   unsigned ellOffset;                                   // number of lines + arcs (== offset to ellipses)
-  unsigned isct_ok[18][18];				// admissibility matrix
-	unsigned sline;                                 // Extended search line (id)
+  unsigned isct_ok[18][18];                             // admissibility matrix
+  unsigned sline;                                       // Extended search line (id)
   Array<Elem> iscts;                                    // Found intersections
   VisionCore *core;
 
