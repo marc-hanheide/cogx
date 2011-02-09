@@ -86,6 +86,9 @@ private:
 	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
+	void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
+	void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
+	void RefinePlaneEstimation(vector <Vector3> lines);
 
 	vector< VisionData::SurfacePointSeq > SOIPointsSeq;
 	vector< VisionData::SurfacePointSeq > BGPointsSeq;
@@ -93,6 +96,8 @@ private:
 	vector< Vector3 > v3center;
 	vector<double> vdradius;
 	vector< Vector3 > v3size;
+	vector <Vector3> vlines;
+	vector <double>	vlineConfidence;
 	IplImage* previousImg;
 	bool bIsMoving;
 	double CurrentBestDistSquared;
