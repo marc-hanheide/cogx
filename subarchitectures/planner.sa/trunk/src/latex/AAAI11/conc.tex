@@ -1,17 +1,45 @@
 %\vspace{-1ex}
 
-For use in an integrated continual planning and execution monitoring
-system on a mobile robot platform, we developed a planner that
-switches between: (a) fast sequential planning, and (b) expensive DT
-planning in small abstractions of the problem at hand. Given a DTPDDL
-model of the environment, sequential planning is used to compute an
-initial sequential plan and complementary runtime evolution of the
-decision process. That plan is executed until the outcome of the next
-action scheduled for execution is too uncertain. At that point a DT
-session performs sensing that can help determine how the sequential
-plan might evolve, or otherwise acts to achieve the goals. We find our
-approach performs quickly and relatively efficiently in a number of
-large real-world task and observation planning problems.
+We have addressed a key challenge, specifically that of high-level
+continual planning and execution monitoring for efficient
+deliberations according to rich probabilistic models afforded by
+recent integrated robotic systems. We developed a system that can plan
+quickly given large realistic probabilistic models, by switching
+between: (a) fast sequential planning, and (b) expensive DT planning
+in small abstractions of the problem at hand. Sequential and DT
+planning is interleaved, the former identifying a rewarding sequential
+plan in the underlying process, and the latter solving small sensing
+problems posed during sequential plan execution.
+%%
+We have evaluated our system in large real-world task and
+observation planning problems, finding that it performs quickly
+and relatively efficiently.
+
+%% We developed a continual planning and execution monitoring
+%% system for use on a mobile robot platform. .
+%% %%
+%% Our planner switches between: (a) fast sequential planning, and (b)
+%% expensive DT planning in small abstractions of the problem at
+%% hand. Our approach addresses a key challenge put to the community, by
+%% Planning for a DTPDDL model of the environment, sequential and DT
+%% sessions are interleaved, the former identifying a rewarding plan, and
+%% the latter solving practically sized sensing problems posed during
+%% serial plan executions execution.
+%% %%
+%% Our system answers a key challenge, with {\em probabilistic} --i.e., {\em quantitative}--
+%% models of noisy sensing and state.
+
+
+
+
+%% is used to compute an
+%% sequential plans and complementary runtime evolutions of the
+%% decision process. That plans are executed until the outcome of the next
+%% action scheduled for execution is too uncertain. At that point a DT
+%% session performs sensing that can help determine how the sequential
+%% plan might evolve, or otherwise acts to achieve the goals. We find our
+%% approach performs quickly and relatively efficiently in a number of
+%% large real-world task and observation planning problems.
 
 \Omit{
 The most pressing item for future research, is to develop a scheme
