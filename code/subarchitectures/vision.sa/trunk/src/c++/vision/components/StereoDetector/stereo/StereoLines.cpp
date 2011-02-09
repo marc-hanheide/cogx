@@ -227,7 +227,7 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
   obj->model->faces.push_back(f);
   f.vertices.clear();
 
-  obj->detectionConfidence = 1.0;	// TODO detection confidence is always 1
+  obj->detectionConfidence = line->GetSignificance();
 
   return true;
 }
