@@ -15,12 +15,13 @@ static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
   "LJUNCTION"
   "CORNER",
+  "LINE",
   "CLOSURE",
   "RECTANGLE",
   "FLAP",
   "UNDEF"
 };
-static const int type_names_length[] = {9, 6, 7, 9, 4, 5};
+static const int type_names_length[] = {9, 6, 4, 7, 9, 4, 5};
  
 
 /**

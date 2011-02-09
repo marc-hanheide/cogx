@@ -17,6 +17,7 @@ static const char type_names[][NAME_LENGTH] = {
   "STEREO_LJUNCTION",
   "STEREO_CORNER",
   "STEREO_ELLIPSE",
+  "STEREO_LINE",
   "STEREO_CLOSURE",
   "STEREO_RECTANGLE",
   "STEREO_FLAP",

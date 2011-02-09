@@ -10,6 +10,7 @@
 #include "StereoLJunctions.h"
 #include "StereoCorners.h"
 #include "StereoEllipses.h"
+#include "StereoLines.h"
 #include "StereoClosures.h"
 #include "StereoRectangles.h"
 #include "StereoFlaps.h"
@@ -38,19 +39,19 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
     // hardwire the gestalt principles we need, saves loading a config file
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SEGMENTS);
 
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
-//     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);                 /// TODO Wenn E-junctions deaktiviert und ellipsen aktiviert, dann array fehler bei search lines im vote image!
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
 
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_JUNCTIONS);
-    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);								/// TODO New corners!
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
@@ -91,6 +92,7 @@ void StereoCore::InitStereoGestalts()
   stereoPrinciples[StereoBase::STEREO_LJUNCTION] = new StereoLJunctions(this, vcore, stereo_cam);
   stereoPrinciples[StereoBase::STEREO_CORNER] = new StereoCorners(this, vcore, stereo_cam);
   stereoPrinciples[StereoBase::STEREO_ELLIPSE] = new StereoEllipses(this, vcore, stereo_cam);
+  stereoPrinciples[StereoBase::STEREO_LINE] = new StereoLines(this, vcore, stereo_cam);
   stereoPrinciples[StereoBase::STEREO_CLOSURE] = new StereoClosures(this, vcore, stereo_cam);
   stereoPrinciples[StereoBase::STEREO_RECTANGLE] = new StereoRectangles(this, vcore, stereo_cam);
   stereoPrinciples[StereoBase::STEREO_FLAP] = new StereoFlaps(this, vcore, stereo_cam);
@@ -100,7 +102,8 @@ void StereoCore::InitStereoGestalts()
   // set principles enabled or disabled
   stereoPrinciples[StereoBase::STEREO_LJUNCTION]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_CORNER]->EnablePrinciple(true);
-  stereoPrinciples[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(false);						/// TODO disabled
+  stereoPrinciples[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(true);
+  stereoPrinciples[StereoBase::STEREO_LINE]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
   stereoPrinciples[StereoBase::STEREO_FLAP]->EnablePrinciple(false);						/// TODO disabled
@@ -112,7 +115,7 @@ void StereoCore::InitStereoGestalts()
 /**
  * @brief Clear the vision cores and the used stereo Gestalts.
  */
-void StereoCore::NewGestalt3D(/*StereoBase::Type type, */Gestalt3D *g)					/// TODO TODO Wieso hier der StereoBase Type
+void StereoCore::NewGestalt3D(Gestalt3D *g)
 {
   Gestalts3D(g->GetType()).PushBack(g);
 }
@@ -449,6 +452,7 @@ void StereoCore::PrintResults()
   printf("Corners: 2D corners left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CORNER), vcore[RIGHT]->NumGestalts(Gestalt::CORNER));
   printf("Stereo:CORNERS: corner-matches: %d\n", stereoPrinciples[StereoBase::STEREO_CORNER]->NumStereoMatches());
   printf("Stereo:LJUNCTIONS: ljct-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LJUNCTION]->NumStereoMatches());
+  printf("Stereo:LINES: line-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LINE]->NumStereoMatches());
 
 //   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
 //   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());

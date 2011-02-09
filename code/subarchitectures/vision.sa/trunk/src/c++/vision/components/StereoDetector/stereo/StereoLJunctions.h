@@ -61,14 +61,11 @@ public:
   StereoLJunctions(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
   ~StereoLJunctions() {}
 
-  int NumLJunctions2D(int side) {return vcore[side]->NumGestalts(Gestalt::L_JUNCTION);}         ///< 
-  int NumLJunctionsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::L_JUNCTION);}             ///< 
-  int NumLJunctionsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::L_JUNCTION);}           ///< 
+  int NumLJunctions2D(int side) {return vcore[side]->NumGestalts(Gestalt::L_JUNCTION);}         ///< Return number of 2D junctions
+  int NumLJunctionsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::L_JUNCTION);}             ///< Return 2D junction from left image
+  int NumLJunctionsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::L_JUNCTION);}           ///< Return 2D junction from right image
 
-//  const TmpLJuntion &LJunctions2D(int side, int i);
-//  const LJunction3D &LJunctions(int i) {return ljunction3ds[i];}		///< 
-
-  int NumStereoMatches() {return ljctMatches;}                                                  ///< 
+  int NumStereoMatches() {return ljctMatches;}                                                  ///< Return number of l-junction 3D matches
   void DrawMatched(int side, bool single, int id, int detail);
   void ClearResults();
   void Process();

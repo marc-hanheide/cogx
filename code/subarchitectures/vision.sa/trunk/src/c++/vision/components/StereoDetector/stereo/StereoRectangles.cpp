@@ -167,7 +167,7 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   obj->pose = cogxPose;
 
   // create vertices (relative to the 3D center point)
-  for(unsigned i=0; i<rectangle->surf.vertices.Size(); i++)		// TODO Rectangle hat 4 L-Junctions!!! nicht immer richtig!
+  for(unsigned i=0; i<rectangle->surf.vertices.Size(); i++)
   {
     Vector3 p(rectangle->surf.vertices[i].p.x,
 	      rectangle->surf.vertices[i].p.y,
@@ -190,7 +190,7 @@ bool StereoRectangles::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
   obj->model->faces.push_back(f);
   f.vertices.clear();
 
-  obj->detectionConfidence = rectangle->GetSignificance();	// TODO detection confidence is always 1
+  obj->detectionConfidence = rectangle->GetSignificance();
 
   return true;
 }

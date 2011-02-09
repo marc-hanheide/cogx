@@ -18,10 +18,14 @@ Rectangle3D::Rectangle3D() : Gestalt3D(Gestalt3D::RECTANGLE)
 {
 }
 
+/**
+ * @brief Calculate significance value for the new estimated stereo Gestalt.
+ * @param sigLeft Significance value of the Gestalt from the left image.
+ * @param sigRight Significance value of the Gestalt from the right image.
+ */
 void Rectangle3D::CalculateSignificance(double sigLeft, double sigRight)
 {
   sig = sigLeft * sigRight;
-//   printf(" Sigs: %4.1f/%4.1f => sig: %4.1f\n", sigLeft, sigRight, sig);
 }
 
 

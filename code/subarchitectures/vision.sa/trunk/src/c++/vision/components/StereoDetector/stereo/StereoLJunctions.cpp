@@ -291,11 +291,9 @@ void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Ar
     if (ljct3d->isct3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
     {
       score->NewGestalt3D(ljct3d);
-//       ljct3ds.PushBack(ljct3d);
       i++;
     }
-    // move unacceptable points to the end
-    else
+    else    // move unacceptable points to the end
     {
       left_ljcts.Swap(i, u-1);
       right_ljcts.Swap(i, u-1);
