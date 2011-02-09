@@ -97,9 +97,10 @@ relaxed} visitation of the root term. Here, a conjunctive term is
 visited iff its atomic subterms are visited, and zero or one of its
 immediate probabilistic subterms are visited. For a sequential
 session, the starting state corresponds to an assumption (usually
-unique) with probability $1$.\footnote{To simplify the discussion, we
-suppose that conjunctive terms include all atoms that are true with
-probability 1 according to their visitation.} In our example, that starting state is:
+unique) with probability $1$.\footnote{Without a loss of generality,
+we assume conjunctive terms list atoms that are true with
+probability 1 according to a visitation, and that actions do not
+have negative preconditions.}  In our example, that starting state is:
 
 \vspace{-1ex}
 
