@@ -178,24 +178,16 @@ action} $\assumptiveDT{i}$ so that for all states $\state$:
 relatively small positive (negative) numeric quantity\footnote{Small
 relative to rewards from the original process model.} which captures
 the utility the agent receives for correctly (incorrectly) rejecting
-an assumption. A disconfirm action can only be executed once, and
-except in the applicability of that dual corresponds to a
-self-transformation
+an assumption.
 %%
-We only consider {\em relevant} assumptions and their duals when
-constructing the abstract model.  If \switchAction\ is the action that
-switched the system to a DT session, then an assumption
-$\assumptiveS{i}$ is {\em relevant} if it is necessary for the outcome
-of \switchAction\ to be determined. Continuing our simplified example,
-if the trace is:
-
-% Furthermore, if \switchAction\ is the action that switched the system
-% to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
-% active} if
-% \switchAction\ is not applicable in the sequential model unless
-% $\assumptiveS{i}$ is scheduled in the trace prefix
-% to \switchAction. We only include the duals of active assumptions in
-% DT sessions. Continuing our simplified example, if the trace is:
+In terms of action physics, a disconfirm action can only be executed
+once, and otherwise is modelled as self-transformation.
+%%
+We only consider {\em relevant} assumptions when constructing the
+abstract model.  If \switchAction\ is the action that switched the
+system to a DT session, then an assumption $\assumptiveS{i}$ is {\em
+relevant} if it is necessary for the outcome of \switchAction\ to be
+determined.  Continuing our simplified example, if the trace is:
 
 \small
 \[
@@ -216,9 +208,9 @@ $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
 relevant for this session, and therefore exclude it from the
 abstract decision process. 
 
-Given \switchAction, we also include another self-transition action
-$\actions.\poss(\switchAction)$, the \emph{goal action} with the
-reward property:
+Given \switchAction, we also include another once-only self-transition
+action $\actions.\poss(\switchAction)$, the \emph{confirmation action}
+with the reward property:
 
 \[
 \reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
@@ -227,12 +219,14 @@ reward property:
 \end{array}
 \]
 
-Execution of either a disconfirmation or the goal action returns
-control to a sequential session, which then continues from the
-underlying belief-state. Turning to the detail of rewards, in our
-integrated system these are sourced from a motivational subsystem. In
-this paper, for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a
-small positive constant, and have $\hat\$(x)= - \$(x)(1 - \prob) /
+Execution of either a disconfirmation or the confirmation action
+returns control to a sequential session, which then continues from the
+underlying belief-state.
+
+Turning to the detail of (dis-)confirmation rewards, in our integrated
+system these are sourced from a motivational subsystem. In this paper,
+for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a small positive
+constant, and have $\hat\$(x)= - \$(x)(1 - \prob) /
 \prob$ where $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
 \$(x)\prob/(1-\prob)$.
@@ -247,29 +241,48 @@ assumption was rejected, we prohibit that sequential session from
 making it again.
 }
 
-As we are aiming to keep the decision theoretic session fast, we try
-to keep the state space of the abstract problem as small as
-possible. In a deterministic-action POMDP, the state space size is
-determined by two factors: the number of non-zero states in the
-initial belief-state and the number of executable actions. As
-determining the relevance of an action for a given goal in in general
-a hard problem, we concentrate on keeping the number of uncertain
-facts as low as possible without losing important information about
-the sensing goal.
 
-We perform the abstraction of the belief space by first constructing
-an $(\pp{:init})$ declaration which only contains relevant assumptions
-from the trace -- e.g., (Fig.\ref{fig:abstraction-b}) gives an
-example, where diamonds are probabilistic terms, and circles are
-atomic and/or conjunctive.
+%%  the size of the state space
+%% is determined by two factors: the number of non-zero states in the
+%% initial belief-state, and the number of actions. Determining
+%% action reachability is intractable, as is determining their relevance
+%% to goal achievement.
+
+%% As we are aiming to keep the decision theoretic session fast, we try
+%% to keep the state space of the abstract problem as small as
+%% possible. In a deterministic-action POMDP, the state space size is
+%% determined by two factors: the number of non-zero states in the
+%% initial belief-state and the number of executable actions. As
+%% determining the relevance of an action for a given goal in in general
+%% a hard problem, we concentrate on keeping the number of uncertain
+%% facts as low as possible without losing important information about
+%% the sensing goal.
+
+In order to guarantee fast DT sessions, planning occurs for a small
+abstract problem. In our setting, where the underlying decision
+process has a deterministic action model, a significant cause of
+problem largeness is due to the number of states that occur with
+non-zero probability in the underlying belief-state. In posing a small
+abstract process for a DT session, we construct an abstract
+belief-state that is chiefly characterised by facts related to the
+current trace. In that abstraction, instances of operator or sense
+declarations whose specification mentions an excluded fact are not
+available.
+%%
+In detail, we first construct an $(\pp{:init})$ declaration which only
+contains relevant assumptions from the trace -- e.g.,
+(Fig.\ref{fig:abstraction-b}) gives an example, where diamonds are
+probabilistic terms, and circles are atomic and/or conjunctive.
 %%
 For each excluded atom, we compute the {\em entropy} of the active
 assumptions, {\em conditional} on that atom. Intuitively, lower
 entropy indicates an atom gives better information about
 assumptions. Facts are iteratively added to the belief-state in
 increasing order according to that measure until the belief space size
-reaches a predefined limit or no more atoms that reduce the entropy
-can be added (Fig.\ref{fig:abstraction-c}).
+reaches a predefined limit (Fig.\ref{fig:abstraction-c}).
+
+%%  or no more atoms that reduce the entropy
+%% can be added 
 
 \begin{figure}[h!]
   \centering

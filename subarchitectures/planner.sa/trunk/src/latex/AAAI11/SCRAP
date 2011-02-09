@@ -1,4 +1,14 @@
 
+
+% Furthermore, if \switchAction\ is the action that switched the system
+% to a DT session, then an assumption $\assumptiveS{i}$ is only {\em
+% active} if
+% \switchAction\ is not applicable in the sequential model unless
+% $\assumptiveS{i}$ is scheduled in the trace prefix
+% to \switchAction. We only include the duals of active assumptions in
+% DT sessions. Continuing our simplified example, if the trace is:
+
+
 %% When progress according to that strategy is uncertain, a DT sessions
 %% proceeds in a small {\em abstract} process, in order sense . 
 
