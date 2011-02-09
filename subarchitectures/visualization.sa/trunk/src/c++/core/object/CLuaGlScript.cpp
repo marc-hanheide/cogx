@@ -291,9 +291,9 @@ void CLuaGlScript::setPose3D(const std::string& partId, const std::vector<double
 }
 
 void CLuaGlScript::setCamera(char* name, 
-      double xFrom, double yFrom, double zFrom, // camera positon
-      double xTo, double yTo, double zTo,       // camera direction
-      double xUp, double yUp, double zUp)       // camera orientation
+      double xEye, double yEye, double zEye,
+      double xView, double yView, double zView,
+      double xUp, double yUp, double zUp)
 {
    CDisplayCamera* pCamera = 0;
    FOR_EACH(pCamera, m_Cameras) {
@@ -305,8 +305,8 @@ void CLuaGlScript::setCamera(char* name,
       m_Cameras.push_back(pCamera);
    }
    if (pCamera) {
-      pCamera->setFromPoint(xFrom, yFrom, zFrom);
-      pCamera->setToPoint(xTo, yTo, zTo);
+      pCamera->setEye(xEye, yEye, zEye);
+      pCamera->setViewVector(xView, yView, zView);
       pCamera->setUpVector(xUp, yUp, zUp);
    }
 }

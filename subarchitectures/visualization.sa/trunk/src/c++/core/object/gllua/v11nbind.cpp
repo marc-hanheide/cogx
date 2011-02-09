@@ -1,6 +1,6 @@
 /*
 ** Lua binding: v11n
-** Generated automatically by tolua++-1.0.93 on Mon Feb  7 11:27:22 2011.
+** Generated automatically by tolua++-1.0.93 on Wed Feb  9 10:45:32 2011.
 */
 
 #ifndef __cplusplus
@@ -47,9 +47,9 @@ static int tolua_v11n_v11nGetOpenGlContext00(lua_State* tolua_S)
 }
 #endif //#ifndef TOLUA_DISABLE
 
-/* function: v11nCameraLookAt */
-#ifndef TOLUA_DISABLE_tolua_v11n_v11nCameraLookAt00
-static int tolua_v11n_v11nCameraLookAt00(lua_State* tolua_S)
+/* function: v11nCamera_SetPosition */
+#ifndef TOLUA_DISABLE_tolua_v11n_v11nCamera_SetPosition00
+static int tolua_v11n_v11nCamera_SetPosition00(lua_State* tolua_S)
 {
 #ifndef TOLUA_RELEASE
  tolua_Error tolua_err;
@@ -83,13 +83,13 @@ static int tolua_v11n_v11nCameraLookAt00(lua_State* tolua_S)
   double yUp = ((double)  tolua_tonumber(tolua_S,10,0));
   double zUp = ((double)  tolua_tonumber(tolua_S,11,0));
   {
-   v11nCameraLookAt(scriptObj,name,x0,y0,z0,x1,y1,z1,xUp,yUp,zUp);
+   v11nCamera_SetPosition(scriptObj,name,x0,y0,z0,x1,y1,z1,xUp,yUp,zUp);
   }
  }
  return 0;
 #ifndef TOLUA_RELEASE
  tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'v11nCameraLookAt'.",&tolua_err);
+ tolua_error(tolua_S,"#ferror in function 'v11nCamera_SetPosition'.",&tolua_err);
  return 0;
 #endif
 }
@@ -103,7 +103,7 @@ TOLUA_API int tolua_v11n_open (lua_State* tolua_S)
  tolua_module(tolua_S,NULL,0);
  tolua_beginmodule(tolua_S,NULL);
   tolua_function(tolua_S,"v11nGetOpenGlContext",tolua_v11n_v11nGetOpenGlContext00);
-  tolua_function(tolua_S,"v11nCameraLookAt",tolua_v11n_v11nCameraLookAt00);
+  tolua_function(tolua_S,"v11nCamera_SetPosition",tolua_v11n_v11nCamera_SetPosition00);
  tolua_endmodule(tolua_S);
  return 1;
 }

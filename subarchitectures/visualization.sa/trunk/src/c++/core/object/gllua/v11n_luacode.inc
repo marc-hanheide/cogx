@@ -207,8 +207,10 @@ const char luacode_models_lua[] =
 const char luacode_camera_lua[] =
    "\n"
    "\n"
-   "function setCamera(name, xFrom, yFrom, zFrom, xTo, yTo, zTo, xUp, yUp, zUp)\n"
-   "   v11nCameraLookAt(_v11n_script_object_, name, xFrom, yFrom, zFrom, xTo, yTo, zTo, xUp, yUp, zUp)\n"
+   "\n"
+   "\n"
+   "function setCamera(name, xEye, yEye, zEye, xView, yView, zView, xUp, yUp, zUp)\n"
+   "   v11nCamera_SetPosition(_v11n_script_object_, name, xEye, yEye, zEye, xView, yView, zView, xUp, yUp, zUp)\n"
    "end\n"
    ; // luacode_camera_lua
 

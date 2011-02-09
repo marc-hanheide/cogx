@@ -253,42 +253,36 @@ class CDisplayCamera
 {
 public:
    std::string name;
-   double xFrom, yFrom, zFrom; // Camera position
-   double xTo, yTo, zTo;       // Camera is looking at this point
-   double xUp, yUp, zUp;       // Rotation around camera axis
+   double xEye, yEye, zEye;    // Camera position
+   double xView, yView, zView; // Viewing direction
+   double xUp, yUp, zUp;       // Up vector
    double viewAngle;           // Camera 'zoom', in degrees
 
 public:
    CDisplayCamera()
    {
-      xFrom = yFrom = zFrom = 0;
-      xTo = yTo = 0; zTo = 1;
+      xEye = yEye = zEye = 0;
+      xView = yView = 0; zView = 1;
       xUp = zUp = 0; yUp = 1;
       viewAngle = 45;
    }
-   void setFromPoint(double x, double y, double z)
+   void setEye(double x, double y, double z)
    {
-      xFrom = x;
-      yFrom = y;
-      zFrom = z;
+      xEye = x;
+      yEye = y;
+      zEye = z;
    }
-   void setToPoint(double x, double y, double z)
+   void setViewVector(double x, double y, double z)
    {
-      xTo = x;
-      yTo = y;
-      zTo = z;
+      xView = x;
+      yView = y;
+      zView = z;
    }
    void setUpVector(double x, double y, double z)
    {
       xUp = x;
       yUp = y;
       zUp = z;
-   }
-   void getDirection(double& x, double& y, double& z)
-   {
-      x = xTo - xFrom;
-      y = yTo - yFrom;
-      z = zTo - zFrom;
    }
 };
 
