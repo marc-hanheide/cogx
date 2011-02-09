@@ -6,7 +6,7 @@ DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
 
-#PATCHFILES= gar-base.diff
+PATCHFILES= gar-base.diff
 
 # no parallel build due to problems of player make scheme
 #MFLAGS=$(MFLAGS_NUMCPU)
