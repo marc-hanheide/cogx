@@ -101,6 +101,8 @@ unique) with probability $1$.\footnote{To simplify the discussion, we
 suppose that the root term of $(\pp{:init})$ lists all atoms that are
 necessarily true.} In our example, that starting state is:
 
+\vspace{-1ex}
+
 \small
 \[
 \begin{array}{l}
@@ -109,6 +111,8 @@ necessarily true.} In our example, that starting state is:
 \end{array}
 \]
 \normalsize
+
+\vspace{-1ex}
 
 Encapsulating state-assumptions, we annotate the problem posed during
 a sequential session with an \emph{assumptive action} $\assumptiveS{i}$ for
@@ -167,6 +171,7 @@ retained. Additionally, for each relevant assumptive action
 $\assumptiveS{i}$ in the current trace, we have a {\em disconfirm
 action} $\assumptiveDT{i}$ so that for all states $\state$:
 
+\vspace{-1ex}
 \small
 \[
 \reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
@@ -176,9 +181,10 @@ action} $\assumptiveDT{i}$ so that for all states $\state$:
 \]
 \normalsize
 
-\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a 
-relatively small positive (negative) numeric quantity\footnote{Small
-relative to rewards from the original process model.} which captures
+\vspace{-1ex}
+
+\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a
+small positive (negative) numeric quantity which captures
 the utility the agent receives for correctly (incorrectly) rejecting
 an assumption.
 %%
@@ -271,10 +277,11 @@ current trace. In that abstraction, instances of operator or sense
 declarations whose specification mentions an excluded fact are not
 available.
 %%
-In detail, we first construct an $(\pp{:init})$ declaration which only
-contains relevant assumptions from the trace -- e.g.,
-(Fig.\ref{fig:abstraction-b}) gives an example, where diamonds are
-probabilistic terms, and circles are atomic and/or conjunctive.
+In detail, we first construct an $(\pp{:init})$ declaration which
+contains the root term, and relevant assumptions from the trace --
+e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
+diamonds are probabilistic terms, and circles are atomic and/or
+conjunctive.
 %%
 For each excluded atom, we compute the {\em entropy} of the active
 assumptions, {\em conditional} on that atom. Intuitively, lower
