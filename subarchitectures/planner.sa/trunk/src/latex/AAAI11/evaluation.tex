@@ -51,16 +51,16 @@ while keeping sensing models for non-target objects constant.
 
 \Omit{
 All non-target objects remain unchanged so the planner can
-exploit object co-occurances using reliably sensed objects to
+exploit object co-occurrences using reliably sensed objects to
 compensate for the increased sensor noise.
 }
 
-We experimented with DT sessions with initial belief-states admitting
-between 20 and 100 abstract states with non-zero probability. We run
-50 simulations in each configuration, and have a timeout on each
-simulation of 30 minutes (1800 seconds)\footnote{All experiments were
-conducted on a 2.66GHz Intel Xeon X5355 using one CPU core.}. The
-continual planning times are reported in
+Our evaluation examines DT sessions with initial belief-states
+admitting between 20 and 100 abstract states with non-zero
+probability. We run 50 simulations in each configuration, and have a
+timeout on each simulation of 30 minutes (1800 seconds)\footnote{All
+experiments were conducted on a 2.66GHz Intel Xeon X5355 using one CPU
+core.}. The continual planning times are reported in
 Figure~\ref{fig:results-time}, and the quality data in
 Figure~\ref{fig:results-quality}.
 %%
@@ -76,7 +76,9 @@ environment.
 In these experiments we only allocate reward on the achievement of all
 goals, therefore we find it intuitive to report average plan costs and
 the success rates in problems that admit a complete solution (i.e.,
-positive reward scaled by a constant factor).
+positive reward scaled by a constant factor). The exception occurs for
+items f and g of Figure~\ref{fig:results-quality}, where we report the
+overall success rate of the respective approaches.
 
 \begin{figure}[h!]
   % \centering
