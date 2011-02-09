@@ -47,6 +47,8 @@ double Length(const Vector3 &v);
 double Dot(const Vector3 &a, const Vector3 &b);
 Vector3 Cross(const Vector3 &a, const Vector3 &b);
 Vector3 Normalise(const Vector3 &v);
+double OpeningAngle(const Vector3 &a, const Vector3 &b);
+double SmallestAngle(const Vector3 &a, const Vector3 &b);
 
 inline std::istream& operator>>(std::istream &is, Vector3 &v);
 inline std::ostream& operator<<(std::ostream &os, const Vector3 &v);
