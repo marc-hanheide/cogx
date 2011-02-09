@@ -62,8 +62,8 @@ void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
 void QCastViewGL::selectCamera(cogx::display::CDisplayCamera* pCamera)
 {
    if (! pCamera) return;
-   m_camera.eye.set(pCamera->xFrom, pCamera->yFrom, pCamera->zFrom);
-   pCamera->getDirection(m_camera.view.x, m_camera.view.y, m_camera.view.z);
+   m_camera.eye.set(pCamera->xEye, pCamera->yEye, pCamera->zEye);
+   m_camera.view.set(pCamera->xView, pCamera->yView, pCamera->zView);
    m_camera.up.set(pCamera->xUp, pCamera->yUp, pCamera->zUp);
    //std::cout << " *** Camera set to " << pCamera->name << std::endl;
 }

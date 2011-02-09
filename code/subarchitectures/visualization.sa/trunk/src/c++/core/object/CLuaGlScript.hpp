@@ -63,8 +63,8 @@ public:
 public:
    virtual int getCameras(CPtrVector<CDisplayCamera>& cameras); /*override*/
    void setCamera(char* name, 
-         double xFrom, double yFrom, double zFrom, // camera positon
-         double xTo, double yTo, double zTo,       // camera direction
+         double xEye, double yEye, double zEye,    // camera positon
+         double xView, double yView, double zView, // camera direction
          double xUp, double yUp, double zUp);      // camera orientation
 };
 
