@@ -190,7 +190,7 @@ the utility the agent receives for correctly (incorrectly) rejecting
 an assumption.
 %%
 In terms of action physics, a disconfirm action can only be executed
-once, and otherwise is modelled as self-transformation.
+once, and otherwise is modelled as a self-transformation.
 %%
 We only consider {\em relevant} assumptions when constructing the
 abstract model.  If \switchAction\ is the action that switched the
@@ -284,7 +284,8 @@ e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
 diamonds are probabilistic terms, and circles are atomic and/or
 conjunctive.
 %%
-For each excluded atom, we compute the {\em entropy} of the active
+For each excluded atom, we compute the {\em entropy} of the {\em
+relevant}
 assumptions, {\em conditional} on that atom. Intuitively, lower
 entropy indicates an atom gives better information about
 assumptions. Facts are iteratively added to the belief-state in
