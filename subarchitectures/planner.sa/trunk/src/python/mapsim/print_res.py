@@ -66,11 +66,16 @@ if not confs:
 
 fields = [("cost", "total_plan_cost", "%5d"),
           ("actions", "sensor_actions_executed + physical_actions_executed", "%5d"),
-          # ("reward", "100 * successful_runs - total_plan_cost", "%5d"),
-          ("time", "planning_time + dt_planning_time", "%5.1f"),
-          ("cp time", "planning_time", "%5.1f"),
+          ("reward", "reward", "%5.1f"),
+          ("time", "preprocess_time + translate_time + search_time + dt_planning_time", "%5.1f"),
+          ("pptime", "planning_time + dt_planning_time", "%5.1f"),
+          ("cp time", "preprocess_time + translate_time + search_time", "%5.1f"),
           ("dt time", "dt_planning_time", "%5.1f"),
-          ("success", "successful_runs", "%5.2f"),
+          ("cp avg. time", "planning_time/planning_calls", "%5.1f"),
+          ("dt avg. time", "dt_planning_time/dt_planning_calls", "%5.1f"),
+          ("dt avg. time2", "dt_planning_time/dt_actions_received", "%5.1f"),
+          ("success", "successful_runs * sample_count", "%5.2f"),
+          ("failures", "failed_execution_attempts * sample_count", "%5.2f"),
           ("#", "sample_count", "%5d")]
 
 def calc_averages(stats, filters, common_filters):
@@ -92,6 +97,8 @@ def calc_averages(stats, filters, common_filters):
                 common_seeds = seeds
             else:
                 common_seeds &= seeds
+
+    # common_seeds = set(range(0,30))
 
     cavgs = {}
     for conf, s in stats.iteritems():
@@ -124,16 +131,20 @@ def get_field(f, c, format, d):
         return "--"
         
     locals().update(d[c])
-    return format % eval(f)
+    try:
+        return format % eval(f)
+    except:
+        return format % 0
 
 def print_set(fields, filters=[], common_filters=[]):
     cavgs = calc_averages(statsdict, filters, common_filters)
+    name_format = "%%%ds: " % max(len(fname) for fname, _,_ in fields)
     
     for fname, f, format in fields:
         #for s_tup in itertools.izip_longest(*file_stats, fillvalue={}):
         #for c in cf_order:
         results = [get_field(f, c, format, cavgs) for c in cf_order]
-        print "%10s: " % fname + " ".join(results)
+        print name_format % fname + " ".join(results)
 
 def print_set_gnuplot(fields, filters=[], common_filters=[]):
     cavgs = calc_averages(statsdict, filters, common_filters)
@@ -141,10 +152,18 @@ def print_set_gnuplot(fields, filters=[], common_filters=[]):
         print c, " ".join(get_field(f, c, format, cavgs) for fname, f, format in fields)
 
 if "gnu" in add_args:
-    fields = [("cp time", "planning_time", "%5.1f"),
+    # fields = [("cp time", "preprocess_time + translate_time + search_time", "%5.1f"),
+    fields = [("cp time", "preprocess_time + translate_time + search_time", "%5.1f"),
               ("dt time", "dt_planning_time", "%5.1f"),
-              ("success", "successful_runs", "%5.4f"),
+              ("success", "(successful_runs - failed_execution_attempts) * sample_count", "%5.4f"),
               ("cost", "total_plan_cost", "%5d"),
+              ]
+    print_set_gnuplot(fields)
+elif "gnupomdp" in add_args:
+    fields = [("cp time", "preprocess_time + translate_time + search_time", "%5.1f"),
+              ("dt time", "dt_planning_time", "%5.1f"),
+              ("success", "(successful_runs - failed_execution_attempts) * sample_count", "%5.4f"),
+              ("reward", "reward", "%5d"),
               ]
     print_set_gnuplot(fields)
 else:
@@ -152,7 +171,7 @@ else:
     print_set(fields)
     print
     print_set(fields, common_filters=["True"])
-    # print_set(fields, common_filters=["successful_runs > 0"])
+    print_set(fields, filters=["successful_runs > 0"])
     # print
     # print_set(fields, common_filters=["successful_runs == 0"])
         
