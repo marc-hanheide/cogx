@@ -51,7 +51,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    if (m_jQuery.length() < 1) {
       DMESSAGE("Loading resource: jQuery");
       QFile file;
-      file.setFileName(":/jquery.min.js");
+      file.setFileName(":/javascript/jquery.min.js");
       file.open(QIODevice::ReadOnly);
       m_jQuery = file.readAll();
       file.close();

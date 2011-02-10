@@ -151,6 +151,7 @@ set(SERVER_UI_FILES
    )
 set(SERVER_RESOURCE_FILES
    qtui/design/jquery.qrc
+   qtui/design/images.qrc
    )
 if(QT_USE_OPENGL)
    add_definitions(-DV11N_VIEW_GL)

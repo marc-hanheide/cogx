@@ -274,6 +274,7 @@
  </customwidgets>
  <resources>
   <include location="jquery.qrc"/>
+  <include location="images.qrc"/>
  </resources>
  <connections>
   <connection>

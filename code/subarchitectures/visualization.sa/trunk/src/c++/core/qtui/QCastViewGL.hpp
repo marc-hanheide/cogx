@@ -18,7 +18,6 @@
 
 #include "QCastViewBase.hpp"
 #include <QGLWidget>
-#include <QComboBox>
 
 // class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
 class QCastViewGL: public QGLWidget, public QCastViewBase
@@ -26,7 +25,6 @@ class QCastViewGL: public QGLWidget, public QCastViewBase
    Q_OBJECT
 private:
    cogx::display::CDisplayView* pView;
-   QComboBox* m_pCameraCombo;
    QPoint m_lastPos;
    float xRot;
    float yRot;
@@ -102,6 +100,8 @@ public slots:
 
 private slots:
    void onCameraItemChanged(int index);
+   void onCameraChangeAction();
+   void onActConfigureCameras();
 
 signals:
    void cameraEyeChanged(const Vector3 &e);
