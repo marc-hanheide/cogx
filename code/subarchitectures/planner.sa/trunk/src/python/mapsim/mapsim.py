@@ -19,7 +19,7 @@ usage: %prog [options] domain scenario
 
 from os.path import abspath, dirname
 import random, logging
-#import cProfile
+import cProfile
 
 from standalone import pddl, config
 import standalone.globals as global_vars
@@ -108,13 +108,13 @@ if __name__ == '__main__':
     sim = simulation.Simulation(scenario, global_vars.mapsim_config.runs, agent_class=agent_type)
 
     print "Starting simulation..."
-    #cProfile.run('sim.run()', 'mapsim_profile')
+    # cProfile.run('sim.run()', 'mapsim_profile')
     sim.run()
     
     if global_vars.mapsim_config.runs > 1:
         print "\nAverage stats:"
-        print "Stats:", sim.collect_average_statistics()
+        print "Stats:", sim.collect_average_statistics().sorted_repr(global_vars.mapsim_config.stat_order.split())
 
     log.info("runs: %d", global_vars.mapsim_config.runs)
-    log.info("stats: %s", repr(sim.collect_average_statistics()))
+    log.info("stats: %s", sim.collect_average_statistics().sorted_repr(global_vars.mapsim_config.stat_order.split()))
 

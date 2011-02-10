@@ -1,4 +1,4 @@
-import itertools, random
+import itertools, random, time
 from collections import defaultdict
 
 from standalone import pddl
@@ -73,7 +73,7 @@ class Simulation(object):
         for i in xrange(self.number_of_runs):
             self.single_run(i)
             self.stat_per_run[self.run_index] = self.collect_statistics()
-            print "Stats:", self.stat_per_run[self.run_index]
+            print "Stats:", self.stat_per_run[self.run_index].sorted_repr(global_vars.mapsim_config.stat_order.split())
             log.info("stats: %s", repr(self.stat_per_run[self.run_index]))
         log.info("%d simulation runs completed", self.number_of_runs)
 
@@ -122,7 +122,7 @@ class Simulation(object):
         
         def remove_visitor(cond, results=[]):
             if cond.__class__ == pddl.LiteralCondition:
-                if cond.predicate in (mapl.modal_predicates):
+                if cond.predicate in (mapl.knowledge, mapl.update, mapl.update_fail):
                     return None
             if isinstance(cond, pddl.conditions.JunctionCondition):
                 cond.parts = filter(None, results)
@@ -184,17 +184,19 @@ class Simulation(object):
             print "%d: %s tried to execute action for %s (%s %s)" % (self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
             log.debug("%d: %s tried to execute action for %s (%s %s)", self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
             agent.statistics.increase_stat("failed_execution_attempts")
+            agent.statistics.increase_stat("reward", 0.95**self.time * -global_vars.mapsim_config.reward)
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
             return
 
         if self.state.is_executable(action):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
-
+            
             perceived_facts = []
             cterm = action.get_total_cost()
             cost = self.state.evaluate_term(cterm).value if cterm else 1
             agent.statistics.increase_stat("total_plan_cost", cost)
+            agent.statistics.increase_stat("reward", 0.95**self.time * -cost)
             
             if action.effect:
                 perceived_facts = self.execute_physical_action(action, agent)
@@ -213,6 +215,7 @@ class Simulation(object):
             print "%d: %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(a.name for a in args))
             log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
             agent.statistics.increase_stat("failed_execution_attempts")
+            agent.statistics.increase_stat("reward", 0.95**self.time * -global_vars.mapsim_config.reward)
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 
@@ -285,6 +288,7 @@ class Simulation(object):
 
     def signal_done(self, agent):
         print "%d: Agent %s has reached its goal." % (self.time, agent.name)
+        agent.statistics.increase_stat("reward", 0.95**self.time * global_vars.mapsim_config.reward)
         
     def collect_statistics(self):
         """ Collects statistics from agents and the planners used.
