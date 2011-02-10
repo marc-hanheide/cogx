@@ -205,6 +205,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       p.m_WMid = newDataID();
       log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
       addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+      checkUnassignedEdges(newPlaceID);
 
       m_Places[newPlaceID] = p;
 
@@ -358,6 +359,48 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
   debug("deletedNavNode exited");
 }
 
+void
+PlaceManager::checkUnassignedEdges(int newPlaceID) 
+{
+  for (set<NavData::AEdgePtr>::iterator it = 
+      m_unprocessedEdges.begin(); it != m_unprocessedEdges.end(); it++) {
+    try {
+      if ((*it)->startNodeId == newPlaceID ||
+	  (*it)->endNodeId == newPlaceID) {
+	processEdge(*it);
+	return;
+      }
+    }
+    catch (IceUtil::NullHandleException e) {
+      log("Error! edge in list of unassigned edges was null!");
+      m_unprocessedEdges.erase(it);
+      it = m_unprocessedEdges.begin();
+    }
+  }
+}
+
+void
+PlaceManager::processEdge(NavData::AEdgePtr oobj) 
+{
+  try {
+    SpatialData::PlacePtr startPlace = getPlaceFromNodeID(oobj->startNodeId);
+    SpatialData::PlacePtr endPlace = getPlaceFromNodeID(oobj->endNodeId);
+    if (startPlace != 0 && endPlace != 0) {
+      int newEdgeStartId = startPlace->id;
+      int newEdgeEndId = endPlace->id;
+      double newEdgeCost = oobj->cost;
+
+      createConnectivityProperty(newEdgeCost, newEdgeStartId, newEdgeEndId);
+      createConnectivityProperty(newEdgeCost, newEdgeEndId, newEdgeStartId);
+
+      m_unprocessedEdges.erase(oobj);
+    }
+  }
+  catch (IceUtil::NullHandleException e) {
+    log("Error! edge objects disappeared from memory!");
+  }
+}
+
 void 
 PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
@@ -370,12 +413,16 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 
     if (oobj != 0) {
       try {
-	int newEdgeStartId = getPlaceFromNodeID(oobj->startNodeId)->id;
-	int newEdgeEndId = getPlaceFromNodeID(oobj->endNodeId)->id;
-	double newEdgeCost = oobj->cost;
-
-	createConnectivityProperty(newEdgeCost, newEdgeStartId, newEdgeEndId);
-	createConnectivityProperty(newEdgeCost, newEdgeEndId, newEdgeStartId);
+	SpatialData::PlacePtr startPlace = getPlaceFromNodeID(oobj->startNodeId);
+	SpatialData::PlacePtr endPlace = getPlaceFromNodeID(oobj->endNodeId);
+	if (startPlace != 0 && endPlace != 0) {
+	  processEdge(oobj);
+	}
+	else {
+	  log("Warning: New edge was detected, but connected Places were missing!");
+	  m_unprocessedEdges.insert(oobj);
+	  return;
+	}
       }
       catch (IceUtil::NullHandleException e) {
 	log("Error! edge objects disappeared from memory!");
@@ -1307,6 +1354,7 @@ PlaceManager::processPlaceArrival(bool failed)
 	    p.m_WMid = newDataID();
 	    log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
 	    addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+	    checkUnassignedEdges(newPlaceID);
 
 	    m_Places[newPlaceID] = p;
 

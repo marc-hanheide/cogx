@@ -130,6 +130,10 @@ class PlaceManager : public cast::ManagedComponent
     // Abort any movement commands
     void cancelMovement();
 
+    // Methods to deal with synchronisation of edge addition
+    void checkUnassignedEdges(int newPlaceID);
+    void processEdge(NavData::AEdgePtr edge);
+
     // Frontier based exploration path parameters
     double m_maxFrontierDist; // Culling distance for frontiers around a given node
     double m_minFrontierDist; // Culling distance for frontiers around a given node
@@ -162,6 +166,8 @@ class PlaceManager : public cast::ManagedComponent
     std::map<int, std::string> m_borderProperties; // Keeps track of the
     				// border placeholder properties maintained
     bool m_firstMovementRegistered;
+
+    std::set<NavData::AEdgePtr> m_unprocessedEdges;
 
     FrontierInterface::FrontierReaderPrx frontierReader;
     FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;
