@@ -194,7 +194,7 @@ void QCastViewGL::resizeGL(int width, int height)
       else ang = 50 - zoomLevel*25;
       if (ang < 1) ang = 1;
       if (ang > 170) ang = 170;
-      gluPerspective(ang, aspect, 1.5, 20.0);
+      gluPerspective(ang, aspect, 0.01, 20.0);
       // glFrustum (-1.0*zoomFactor, 1.0*zoomFactor, -1.0*zoomFactor, 1.0*zoomFactor, 1.5, 20.0);
    }
    //else {
