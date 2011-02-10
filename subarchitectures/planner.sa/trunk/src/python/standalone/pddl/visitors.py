@@ -108,6 +108,13 @@ def collect_functions(elem, results=[]):
         return sum([t.visit(collect_functions) for t in elem.args], [])
 
 @collect
+def collect_all_functions(elem, results=[]):
+    if elem.__class__ == predicates.FunctionTerm:
+        return sum(results, []) + [elem.function]
+    if isinstance(elem, predicates.Literal):
+        return sum([t.visit(collect_functions) for t in elem.args], [elem.predicate])
+
+@collect
 def collect_non_builtins(elem, results=[]):
     if elem.__class__ == predicates.FunctionTerm:
         if not elem.function.builtin:
@@ -141,4 +148,4 @@ def collect_free_vars(elem, results=[]):
         vars = results[0]
         return [p for p in vars if p not in elem.args]
     elif isinstance(elem, effects.ConditionalEffect):
-        return results + eff.condition.visit(collect_free_vars)
+        return results + elem.condition.visit(collect_free_vars)

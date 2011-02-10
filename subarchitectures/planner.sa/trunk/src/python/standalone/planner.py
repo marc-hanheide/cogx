@@ -359,10 +359,22 @@ def get_planner_tempdir(base_path):
         else:
             tmp_dir = tempfile.mkdtemp(dir=base_path)
     if os.path.exists(tmp_dir):
-        utils.removeall(tmp_dir)  # remove old version
+        pass
+        # utils.removeall(tmp_dir)  # remove old version
     else:
         os.makedirs(tmp_dir)
+    log.debug("temp dir is: %s", tmp_dir)
     return tmp_dir
+
+def clear_tmpdir(*args):
+    global tmp_dir
+    if not tmp_dir:
+        return
+    for file in args:
+        fn = os.path.join(tmp_dir, file)
+        if os.path.exists(fn):
+            os.remove(fn)
+    
 
 class ContinualAxiomsFF(BasePlanner):
     """
@@ -445,6 +457,7 @@ class Downward(BasePlanner):
     def _prepare_input(self, _task):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
+        clear_tmpdir("output", "output.sas", "sas_plan")
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
@@ -566,6 +579,7 @@ class TFD(BasePlanner):
     def _prepare_input(self, _task):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
+        clear_tmpdir("output", "output.sas", "sas_plan")
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "output.sas", "output", "plan.best", "stdout.out")]
         w = task.TFDOutput()
