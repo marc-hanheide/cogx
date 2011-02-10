@@ -150,8 +150,8 @@ class Domain(Scope):
         try:
             return self.name2action[name]
         except:
-            print [a.name for a in self.actions]
-            print [n for n in self.name2action.iterkeys()]
+            # print [a.name for a in self.actions]
+            # print [n for n in self.name2action.iterkeys()]
             raise
 
     def add_constant(self, object):

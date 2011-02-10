@@ -378,10 +378,10 @@ class ADLCompiler(Translator):
         a2.condition = visitors.visit(a2.condition, ADLCompiler.condition_visitor)
         return a2
 
-    def translate_domain(self, _domain):
-        dom = Translator.translate_domain(self, _domain)
-        dom.requirements.discard('numeric-fluents')
-        return dom
+    # def translate_domain(self, _domain):
+    #     dom = Translator.translate_domain(self, _domain)
+    #     dom.requirements.discard('numeric-fluents')
+    #     return dom
     
     def translate_problem(self, _problem):
         p2 = Translator.translate_problem(self, _problem)
@@ -1108,6 +1108,9 @@ class RemoveTimeCompiler(Translator):
                 return results[0]
             if isinstance(elem, durative.TimedEffect):
                 return effects.SimpleEffect(elem.predicate, [a.copy_instance() for a in elem.args], None, elem.negated)
+            if isinstance(elem, effects.ConditionalEffect):
+                cond = elem.condition.visit(visitor)
+                return effects.ConditionalEffect(cond, results[0])
             elif isinstance(elem, effects.SimpleEffect) and elem.predicate in (change, num_change):
                 if elem.predicate == change:
                     pred = assign

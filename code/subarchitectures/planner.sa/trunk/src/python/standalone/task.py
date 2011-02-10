@@ -188,7 +188,6 @@ class PDDLOutput(object):
     def __init__(self, writer=None, compiler=None):
         self.compiler = compiler
         self.supported = None
-            
         if writer:
             self.writer = writer
         else:
@@ -269,6 +268,7 @@ class FDOutput(PDDLOutput):
         
     def write(self, problem, domain=None, domain_fn=None, problem_fn=None, mutex_fn=None):
         tr_dom, tr_prob = self.translate(problem, domain)
+        tr_dom.requirements.discard('numeric-fluents')
 
         mutex_groups = self.get_mutex_groups(tr_prob, problem)
         
