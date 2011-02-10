@@ -30,6 +30,11 @@ class Statistics(dict):
         self.clear()
         self.update(self.defaults)
 
+    def sorted_repr(self, sort_order=[]):
+        sort_dict = dict((v,i) for i,v in enumerate(sort_order))
+        sorted_elems = sorted(self.iteritems(), key=lambda (x,_): sort_dict.get(x, 1000))
+        return "{%s}" % (", ".join("%s: %s" % (repr(k), repr(v)) for k,v in sorted_elems))
+
 
 
 def time_method_for_statistics(stats_name):
