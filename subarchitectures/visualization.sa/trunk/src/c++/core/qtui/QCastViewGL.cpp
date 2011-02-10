@@ -17,6 +17,9 @@
 #include "QCastViewGL.hpp"
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QToolButton>
+#include <QMenu>
+#include <QAction>
 #include <cmath>
 #include "../convenience.hpp"
 
@@ -28,7 +31,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    yRot = 0;
    zRot = 0;
    zoomLevel = 0;
-   m_pCameraCombo = 0;
+
    //m_camera.eye.set(0, 0, 5);
    //m_camera.view.set(0, 0, -1);
 }
@@ -81,6 +84,35 @@ void QCastViewGL::onCameraItemChanged(int index)
    selectCamera(cameras[index]);
 }
 
+void QCastViewGL::onCameraChangeAction()
+{
+   QAction *pAct = qobject_cast< QAction* >(QObject::sender());
+   if (!pAct) return;
+   QVariant v = pAct->data();
+   void* pc = v.value<void*>();
+   cogx::display::CDisplayCamera* pCamera = static_cast<cogx::display::CDisplayCamera*>(pc);
+   //std::cout << pAct << " " << pAct->text().toStdString() << " " << pc << " " << pCamera << std::endl;
+
+   if (pCamera) {
+      // TODO: should check if it is valid -- is it in getCameras()?
+      selectCamera(pCamera);
+   }
+
+   QMenu *pMenu = qobject_cast< QMenu* >(pAct->parent());
+   if (pMenu) {
+      QToolButton* pBut = qobject_cast< QToolButton* >(pMenu->parent());
+      if (pBut) {
+         //std::cout << "Changing default action" << std::endl;
+         pBut->setDefaultAction(pAct);
+      }
+   }
+}
+
+void QCastViewGL::onActConfigureCameras()
+{
+   // TODO: display dialog with one list for each camera
+}
+
 void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
 {
    if (! pView) return;
@@ -89,17 +121,46 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
    if (cameras.size() < 1) return;
    QToolBar *pBar = new QToolBar(this); // parent will be reset in QViewContainer
    if (pBar) {
-     m_pCameraCombo = new QComboBox(pBar);
+      int nc = cameras.size();
+      if (nc > 3) nc = 3;
+      cogx::display::CDisplayCamera* pCamera;
+      for (int i= 0; i < nc; i++) {
+         QToolButton *pBut = new QToolButton(pBar);
+         pCamera = cameras[i];
+         QString text = QString::fromStdString(pCamera->name);
+         QAction* pAct = new QAction(QIcon(":/toolButton/camera-photo.png"), text, pBut);
+         pAct->setData(qVariantFromValue((void*)pCamera));
+         pBut->setDefaultAction(pAct);
+         pBar->addWidget(pBut);
+         pBar->connect(pAct, SIGNAL(triggered()), this, SLOT(onCameraChangeAction()));
+         if (i == 2 && cameras.size() > 2) {
+            QAction *pPopAct;
+            QMenu *pMenu = new QMenu(pBut); // parent MUST be button, see onCameraChangeAction
+            pBut->setMenu(pMenu);
+            pBut->setPopupMode(QToolButton::MenuButtonPopup);
 
-     cogx::display::CDisplayCamera* pCamera;
-     FOR_EACH(pCamera, cameras) {
-        m_pCameraCombo->addItem(QString::fromStdString(pCamera->name));
-     }
+            for (int j = 0; j < cameras.size(); j++) {
+               if (i == j) {
+                  pMenu->addAction(pAct);
+                  pAct->setParent(pMenu);   // parent MUST be menu, see onCameraChangeAction
+               }
+               else {
+                  pCamera = cameras[j];
+                  text = QString::fromStdString(pCamera->name);
+                  pPopAct = pMenu->addAction(QIcon(":/toolButton/camera-photo.png"), text);
+                  pPopAct->setData(qVariantFromValue((void*)pCamera));
+                  pBar->connect(pPopAct, SIGNAL(triggered()), this, SLOT(onCameraChangeAction()));
+               }
+            }
 
-     pBar->connect(m_pCameraCombo, SIGNAL(activated(int)), this, SLOT(onCameraItemChanged(int)));
-
-     pBar->addWidget(m_pCameraCombo);
-     toolbars.push_back(pBar);
+            if (0) {
+               text = "TODO: Configure camera buttons...";
+               pPopAct = pMenu->addAction(QIcon(":/toolButton/camera-photo.png"), text);
+               pBar->connect(pPopAct, SIGNAL(triggered()), this, SLOT(onActConfigureCameras()));
+            }
+         }
+      }
+      toolbars.push_back(pBar);
    }
 }
 

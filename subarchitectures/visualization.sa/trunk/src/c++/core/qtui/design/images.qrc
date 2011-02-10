@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/toolButton">
+    <file>camera-photo.png</file>
+  </qresource>
+</RCC>
