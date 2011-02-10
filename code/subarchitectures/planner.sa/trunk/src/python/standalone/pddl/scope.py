@@ -300,7 +300,7 @@ class Scope(dict):
             val = self[val]
             key.instantiate(val)
 
-    def smart_instantiate(self, func, args, arglists, parent=None):
+    def smart_instantiate(self, func, args, arglists, parent=None, partial_mapping={}):
         self.uninstantiate()
 
         if parent:
@@ -314,7 +314,10 @@ class Scope(dict):
         for a, l in zip(args, arglists):
             if not l:
                 return
-            l = list(l)
+            if a in partial_mapping:
+                l = [partial_mapping[a]]
+            else:
+                l = list(l)
             values[a] = l
             if len(l) == 1:
                 mapping[a] = l[0]
@@ -405,6 +408,7 @@ class Scope(dict):
         return renamings
 
     def copy_args(self, args, copy_instance=False):
+        used_names = set()
         result = []
         for arg in args:
             if isinstance(arg.type, types.ProxyType):
@@ -415,7 +419,14 @@ class Scope(dict):
             else:
                 type = arg.type
 
-            arg = types.Parameter(arg.name, type)
+            name = arg.name
+            i=0
+            while name in used_names:
+                name = "%s%d" % (arg.name, i)
+                i += 1
+
+            used_names.add(name)
+            arg = types.Parameter(name, type)
             self.add(arg)
             result.append(arg)
         return result

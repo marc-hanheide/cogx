@@ -20,6 +20,9 @@ class PNode(object):
 
         #self.hash = hash(tuple(self.children)) #TODO make order invariant
 
+    def is_expanded(self):
+        return True
+
     @staticmethod
     def from_effect(peff, rules=[], stat=None):
         def get_children(eff):
@@ -354,7 +357,7 @@ class PNode(object):
         #     for n in nodes:
         #         n.prepare_actions()
 
-    def to_actions(self, domain, parent_conds=None, parent_p=1.0):
+    def to_actions(self, domain, parent_conds=None, parent_p=1.0, filter_func=None):
         actions = []
         # if parent_conds:
         #     if frozenset(parent_conds) in self.visited_by:
@@ -368,13 +371,21 @@ class PNode(object):
             if p * parent_p <= 0.001:
                 # print "pruned due to likelihood"
                 continue
+            
+            use_this = use_children = True
+            if filter_func:
+                use_this, use_children = filter_func(self, val, p ,facts)
+                if not use_this and not use_children:
+                    continue
+                                               
             name = "commit-%s-%s-%s" % (self.svar.function.name, "-".join(a.name for a in self.svar.args), val.name)
             PNode.actionid += 1
             domain.add_constant(val)
                 
             agent = pddl.Parameter("?a", mapl.t_agent)
             a = mapl.MAPLAction(name, [agent], [], [], pddl.Conjunction([]), None, pddl.ConjunctiveEffect([]), [], domain)
-            actions.append(a)
+            if use_this:
+                actions.append(a)
             b = pddl.Builder(a)
             a.precondition.parts.append(b.cond("not", ("committed", self.svar.as_term())))
             # a.precondition.parts.append(b.cond("not", ("started",)))
@@ -387,14 +398,21 @@ class PNode(object):
                     domain.add_constant(c)
                 cvar = svar.as_modality(mapl.commit, [value])
                 a.effect.parts.append(cvar.as_literal(_class=effects.SimpleEffect))
+                # a.precondition.parts.append(b.cond("not", ("committed", svar.as_term())))
                 
             a.effect.parts.append(b.effect("assign", ("probability",), p))
             a.set_total_cost(0)
 
             new_parent_cond = b.cond("=", self.svar.as_term(), val)
 
+            child_actions = []
             for n in nodes:
-                actions += n.to_actions(domain, [new_parent_cond], p * parent_p)
+                child_actions += n.to_actions(domain, [new_parent_cond], p * parent_p, filter_func)
+
+            if child_actions and use_children:
+                if not use_this:
+                    actions.append(a)
+                actions += child_actions
 
         return actions
 
@@ -405,6 +423,8 @@ class PNode(object):
         selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
         effs = []
         for val, (p, nodes, facts) in self.children.iteritems():
+            if p < 0.0001:
+                continue
             ceff = pddl.ConjunctiveEffect([])
             for svar, val in chain(facts.iteritems(), [(self.svar, val)]):
                 #if svar.function == selected:
@@ -442,6 +462,9 @@ class LazyPNode(PNode):
 
     def simplify(self):
         return [], {}, False
+
+    def is_expanded(self):
+        return self._children is not None
         
     def get_children(self):
         if self._children is not None:
@@ -461,14 +484,12 @@ class LazyPNode(PNode):
                     yield (r, rule_facts)
         
         def get_objects(arg):
-            if arg in self.mapping:
-                return [self.mapping[arg]]
             return list(self.state.problem.get_all_objects(arg.type))
         
         args = self.rule.args + self.rule.add_args
         print "creating subtree for %s using rule %s" % (str(self.svar), self.rule.name)
         # print ["%s = %s" % (str(k),str(v)) for k,v in self.mapping.iteritems() ]
-        for mapping in self.rule.smart_instantiate(self.rule.get_inst_func(self.state), args, [get_objects(a) for a in args], self.state.problem):
+        for mapping in self.rule.smart_instantiate(self.rule.get_inst_func(self.state), args, [get_objects(a) for a in args], self.state.problem, self.mapping):
             # log.debug("creating subtree for %s", str(self.svar))
             
             # print "  ", ["%s = %s" % (str(k),str(v)) for k,v in mapping.iteritems() ]
@@ -510,13 +531,11 @@ class LazyPNode(PNode):
         #     return rule.pnode_cache.setde
 
         def get_objects(arg):
-            if arg in pre_mapping:
-                return [pre_mapping[arg]]
             return list(stat.problem.get_all_objects(arg.type))
 
         nodes = []
         args = rule.args + list(a for a in pre_mapping.iterkeys() if a not in rule.args)
-        for mapping in rule.smart_instantiate(rule.get_inst_func(stat), args, [get_objects(a) for a in args], stat.problem):
+        for mapping in rule.smart_instantiate(rule.get_inst_func(stat), args, [get_objects(a) for a in args], stat.problem, pre_mapping):
             svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
             print "building rule for", svar
             node = LazyPNode(rule, dict(mapping), svar, rules)

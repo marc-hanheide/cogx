@@ -188,6 +188,14 @@ class ProbabilisticState(State):
         if isinstance(val, types.TypedObject):
             return True
         return val.value is not None
+
+    def prob(self, svar, value):
+        if svar not in self:
+            return 0.0
+        val = self[svar]
+        if isinstance(val, types.TypedObject):
+            return 1.0
+        return val[value]
     
     def set(self, fact):
         if isinstance(fact, ProbFact):

@@ -2,7 +2,7 @@ import time, math, itertools
 from itertools import chain, product
 
 from collections import defaultdict
-from standalone import task, config, pddl, plans
+from standalone import task, config, pddl, plans, relaxed_exploration
 from standalone.pddl import state, dtpddl, mapl, translators, visitors, effects
 
 import standalone.globals as global_vars
@@ -13,7 +13,7 @@ log = config.logger("dt")
 
 
 class DTProblem(object):
-    def __init__(self, plan, pnodes, failed_goals, prob_functions, domain):
+    def __init__(self, plan, pnodes, failed_goals, prob_functions, global_rel_facts, domain):
         self.plan = plan
         self.pnodes = pnodes
         self.domain = domain
@@ -31,6 +31,7 @@ class DTProblem(object):
         except:
             self.dt_rules = []
         self.prob_functions |= set(r.function for r in self.dt_rules)
+        self.global_relevant = global_rel_facts
             
         self.dtdomain = self.create_dt_domain(domain)
 
@@ -40,14 +41,13 @@ class DTProblem(object):
         
     def initialize(self, prob_state):
         self.state = prob_state
+        self.detstate = prob_state.determinized_state(0.05, 0.95)
+        
         def node_filter(node):
-            print node
             for f in node.all_facts():
-                print "  ", f
                 if f.svar.function == dtpddl.selected:
                     continue
                 if f.svar not in self.state or not self.state.is_det(f.svar):
-                    print "    accept"
                     return True
             return False
 
@@ -64,84 +64,51 @@ class DTProblem(object):
                 self.selected_facts.add(state.Fact(var, v))
                 log.debug("selected: %s, %s", var, v)
 
+        # for o, mapping in self.get_observations(self.selected_facts):
+        #     print "(%s %s)" % (o.name, " ".join(mapping.get(a,a).name for a in o.args))
+
+        used_objects = set()
+
+        o_actions = list(self.get_observe_actions(self.selected_facts))
+        # for a, mapping in o_actions:
+        #     print "(%s %s)" % (a.name, " ".join(mapping.get(a,a).name for a in a.args))
+
+        t0 = time.time()
+        actions, explored_facts = relaxed_exploration.explore(self.domain.actions, set(), self.detstate, self.domain, o_actions)
+        print "total time for exploration: %.2f" % (time.time()-t0)
+
+        for a, args in actions:
+            used_objects |= set(args)
+                
         def objects(svar, val):
             return set(svar.args + svar.modal_args + (val,))
                 
-        def get_used_objects(node):
-            used = set()
-            pruned = set()
-            relevant = False
-            for val, (p, nodes, facts) in node.children.iteritems():
-                branch_rel = state.Fact(node.svar, val) in self.selected_facts
-                # print "rel:", branch_rel, node.svar, val
-                branch_used = set()
-                branch_pruned = set()
-                for svar, val in facts.iteritems():
-                    f = state.Fact(svar, val)
-                    branch_used |= objects(svar, val)
-                    branch_rel |= (f in self.selected_facts)
-                    # print "rel:", branch_rel, f
-                for n in nodes:
-                    nused, npruned, nrel = get_used_objects(n)
-                    if nrel:
-                        branch_used |= nused
-                    branch_pruned |= npruned
-                    branch_rel |= nrel
-                relevant |= branch_rel
-                pruned |= branch_pruned
-                if branch_rel:
-                    used |= branch_used
-                else:
-                    pruned |= branch_used
-            pruned -= used
-            if used:
-                # used |= pruned
-                # pruned = set()
-                # print node, map(str, used)
-                assert relevant
-
-            return used, pruned, relevant
-
         pruned_objects = set()
-        used_objects = set(chain(*[pnode.full_args for pnode, level in self.assumptions]))
-        for used, pruned, rel in map(get_used_objects, self.pnodes):
-            pruned_objects |= pruned
-            if rel:
-                used_objects |= used
-        pruned_objects -= used_objects
-        log.debug("pruned objects: %s", map(str, pruned_objects))
-
-        # unused_objects = set()
-        # for svar, val in chain(*map(all_facts, self.pnodes)):
-        #     for obj in objects(svar, val):
-        #         if obj not in self.domain:
-        #             unused_objects.add(obj)
-
-        # for svar, vals in facts.iteritems():
-        #     for obj in chain(svar.args, svar.modal_args, vals):
-        #         unused_objects.discard(obj)
+        used_objects |= set(chain(*[pnode.full_args for pnode, level in self.assumptions]))
+        log.debug("used_objects objects: %s", map(str, used_objects))
 
         new_objects = (self.state.problem.objects | add_objects) - pruned_objects
-        # new_objects = self.state.problem.objects | add_objects
 
-        # print map(str, selected)
+        used_objects |= self.domain.constants
 
         opt = "maximize"
         opt_func = pddl.FunctionTerm(pddl.dtpddl.reward, [])
-        init = [f.to_init() for f in self.state.deterministic() if not f.value.is_instance_of(pddl.t_number) and not (objects(*f) & pruned_objects)]
+        init = [f.to_init() for f in self.state.deterministic() if not f.value.is_instance_of(pddl.t_number) and (objects(*f) < used_objects)]
+        # for f in self.state.deterministic():
+        #     print f.to_init(),  (objects(*f) < used_objects)
+        
         for n in self.pnodes:
-            # peff = n.to_init()
             peff = n.to_init(self.selected_facts)
-            # new_objects |= set(peff.visit(pddl.visitors.collect_constants)) - self.domain.constants
+            used_objects |= set(visitors.visit(peff, pddl.visitors.collect_constants, [])) - self.domain.constants
             if peff:
                 init.append(peff)
                 
-        self.problem = pddl.Problem("cogxtask", new_objects, init, None, self.dtdomain, opt, opt_func)
+        self.problem = pddl.Problem("cogxtask", used_objects - self.domain.constants, init, None, self.dtdomain, opt, opt_func)
         self.problem.goal = pddl.Conjunction([])
 
         self.abstract_state = pddl.prob_state.ProbabilisticState.from_problem(self.problem)
 
-        self.goal_actions = self.create_goal_actions(self.goals, self.failed_goals, self.selected_facts, self.dtdomain)
+        self.goal_actions = self.create_goal_actions(self.goals, self.failed_goals, self.selected_facts, explored_facts, self.dtdomain)
         self.dtdomain.actions += [a for a in self.goal_actions]
         self.dtdomain.name2action = None
         
@@ -155,10 +122,13 @@ class DTProblem(object):
         #self.subproblems = self.compute_subproblems(self.state)
         #self.problem = self.create_problem(self.state, self.dtdomain)
 
+    def explore_state(self, goal_actions):
+        pass
+
     def extract_choices(self):
         choices = {}
         for pnode, level in self.assumptions:
-            print pnode, level, map(str, pnode.effects)
+            # print pnode, level, map(str, pnode.effects)
             for fact in pnode.effects:
                 if fact.svar.modality == mapl.commit:
                     fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
@@ -171,6 +141,43 @@ class DTProblem(object):
         self.problem.domain.name = "cogx-dt-domain-%d" % dt_id
         DTPDDLOutput().write(self.problem, domain_fn=domain_fn, problem_fn=problem_fn)
 
+
+    def get_observe_actions(self, relevant_facts):
+        for o, mapping in self.get_observations(relevant_facts):
+            for e in o.execution:
+                action = e.action
+                o_a_mapping = dict(zip(e.args, action.args))
+                a_mapping = {}
+                for oarg, val in mapping.iteritems():
+                    if oarg in o_a_mapping:
+                        a_mapping[o_a_mapping[oarg]] = val
+                yield action, a_mapping
+
+    def get_observations(self, relevant_facts):
+        relevant_functions = set(f.svar.function for f in relevant_facts)
+        @visitors.collect
+        def atom_visitor(elem, results):
+            if isinstance(elem, pddl.LiteralCondition):
+                if elem.predicate != dtpddl.observed and pddl.translators.get_function(elem) in relevant_functions:
+                    return [elem]
+
+        @visitors.collect
+        def effect_visitor(elem, results):
+            if isinstance(elem, pddl.ConditionalEffect):
+                return elem.condition.visit(atom_visitor)
+                
+        for o in self.domain.observe:
+            sensable_atoms = []
+            if o.precondition:
+                sensable_atoms += o.precondition.visit(atom_visitor)
+            sensable_atoms += o.effect.visit(effect_visitor)
+            for lit in sensable_atoms:
+                for fact in relevant_facts:
+                    mapping = fact.match_literal(lit)
+                    if mapping:
+                        yield o, mapping
+            
+        
     def observation_expected(self, action):
         for o in self.domain.observe:
             for e in o.execution:
@@ -220,9 +227,15 @@ class DTProblem(object):
                         goal_facts.add(fact)
                 self.subplan_actions.append(pnode)
                 assumptions += [(pnode,0)] + find_restrictions(pnode,0)
+                break
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
                 break
+        
+        self.remaining_costs = 0
+        for pnode in plan.topological_sort():
+            if pnode.status != plans.ActionStatusEnum.EXECUTED and not pnode.is_virtual() and pnode not in self.subplan_actions:
+                self.remaining_costs += pnode.cost
             
         return goal_facts, assumptions
 
@@ -250,18 +263,47 @@ class DTProblem(object):
         #        return True
            
         return False
-            
-    def create_goal_actions(self, goals, fail_counts, selected,  domain):
-        commit_actions = []
 
-        confirm_score = global_vars.config.dt.confirm_score
-        failure_multiplier = global_vars.config.dt.failure_multiplier
+    def calc_disconfirm_gain(self, dis_fact, dep_var):
+        def node_filter(node, val, p, facts):
+            for svar, v in chain([(node.svar, val)], facts.iteritems()):
+                if svar == dis_fact.svar and v == dis_fact.value:
+                    return False
+            return True
+
+        if self.state.is_det(dep_var):
+            return 0
+
+        relevant_facts = {dep_var : self.global_relevant[dep_var]}
+        H = -sum(p*math.log(p,2) for p in self.state[dep_var].itervalues() if p > 0)
+        cH = self.entropy(relevant_facts, {}, 100, node_filter)
+        print "H(%s) - H(.|!%s) = %.2f - %.2f =  %.2f" % (str(dep_var), str(dis_fact), H, cH, H - cH)
+        return max(H - cH, 0)
+            
+    def create_goal_actions(self, goals, fail_counts, selected, changed_facts, domain):
+        commit_actions = []
+        dt_conf = global_vars.config.dt
+
+        def clear_state_effect():
+            effs = [f.to_effect() for f in chain(selected, changed_facts) ]
+            return pddl.ConjunctiveEffect([])
+
+        for f in chain(selected, changed_facts):
+            for o in f.svar.get_args():
+                domain.add_constant(o)
+            domain.add_constant(f.value)
+
+        # confirm_score = global_vars.config.dt.confirm_score
+        # failure_multiplier = global_vars.config.dt.failure_multiplier
 
         a = pddl.Action("cancel", [], None, None, domain)
         b = pddl.builder.Builder(a)
         a.precondition = b.cond('not', ('done', ))
-        a.effect = b.effect('and', ('done', ), ('assign', ('reward',), 0))
+        a.effect = b.effect('and', ('done', ), ('assign', ('reward',), 0), clear_state_effect())
         commit_actions.append(a) # comment out to disable the cancel action
+
+        self.confirm_dict = {}
+        self.disconfirm_dict = {}
         
         for fact in goals:
             if fact.svar.modality in (mapl.knowledge, mapl.direct_knowledge):
@@ -270,27 +312,33 @@ class DTProblem(object):
                 log.debug("Goal not yet supported: %s", str(fact))
                 continue
 
-            mult = failure_multiplier**fail_counts[fact]
+            assert svar in self.global_relevant
+            mult = dt_conf.failure_multiplier**fail_counts[fact]
 
             term = pddl.Term(svar.function, svar.get_args())
-            domain.constants |= set(svar.get_args())
-            domain.add(svar.get_args())
+            for o in svar.get_args():
+                domain.add_constant(o)
 
             rel_facts = [f for f in selected if f.svar == svar]
             for f in rel_facts:
-                reward = confirm_score * mult
+                if f.value not in self.global_relevant[f.svar]:
+                    continue
                 if isinstance(self.abstract_state[svar], pddl.TypedObject):
                     p = 1.0 if self.abstract_state[svar] == f.value else 0.0
                 p = self.abstract_state[svar][f.value]
                 if p == 0.0:
                     continue
-                
-                penalty = -reward * (p)/(1-p) if p != 1.0 else 0
-                domain.constants.add(f.value)
-                domain.add(f.value)
-                
+
+                if dt_conf.commitment_mode in ("conf", "all"):
+                    reward = dt_conf.total_reward - self.remaining_costs
+                    penalty = -dt_conf.total_reward - self.remaining_costs
+                else:
+                    reward = dt_conf.confirm_score * mult
+                    penalty = -reward * (p)/(1-p) if p != 1.0 else 0
+                                    
                 #val = pddl.Parameter("?val", svar.function.type)
                 name = "commit-%s-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()), f.value.name)
+                self.confirm_dict[name] = f
                 a = pddl.Action(name, [], None, None, domain)
                 b = pddl.builder.Builder(a)
 
@@ -300,7 +348,7 @@ class DTProblem(object):
                 reward_effect = b('when', ('=', term, f.value), ('assign', ('reward',), reward ))
                 penalty_effect = b('when', ('not', ('=', term, f.value)), ('assign', ('reward',), penalty))
                 done_effect = b.effect('done')
-                a.effect = b.effect('and', reward_effect, penalty_effect, commit_effect, done_effect)
+                a.effect = b.effect('and', reward_effect, penalty_effect, done_effect, clear_state_effect())
             
                 commit_actions.append(a)
 
@@ -317,19 +365,32 @@ class DTProblem(object):
 
         if not disconfirm:
             return commit_actions
-                        
+
+        disconfirm = set((svar, val) for svar, val, _ in disconfirm)
+        
         # dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
         disconfirm_actions = []
-        for svar, val, level in disconfirm:
-            dis_reward = float(confirm_score)/(2**(max_level-level))
+        for svar, val in disconfirm:
+            dis_fact = state.Fact(svar, val)
+            dH = 0
+            count = 0
+            for goalvar in set(g.svar.nonmodal() for g in goals):
+                if goalvar in self.global_relevant:
+                    dH +=  self.calc_disconfirm_gain(dis_fact, goalvar)
+                    count += 1
+
+            if dH == 0:
+                continue
+            dH = dH/count
+                
+            dis_reward = float(dt_conf.confirm_score) * dH #/(2**(max_level-level))
             if isinstance(self.abstract_state[svar], pddl.TypedObject):
                 continue # no use in disconfirming known facts
             p = self.abstract_state[svar][val]
             dis_penalty = -dis_reward * (1-p)/p
+
             
             term = pddl.Term(svar.function, svar.get_args())
-            domain.constants |= set(svar.get_args() + [val])
-            domain.add(svar.get_args() + [val])
             # p = self.abstract_state[svar][val]
             # if p < 0.001 or p > 0.999:
             #     continue # no use in disconfirming known facts
@@ -338,6 +399,7 @@ class DTProblem(object):
             
             
             name = "disconfirm-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()))
+            self.disconfirm_dict[name] = state.Fact(svar, val)
             a = pddl.Action(name, [], None, None, domain)
             b = pddl.builder.Builder(a)
 
@@ -358,12 +420,18 @@ class DTProblem(object):
             reward_effect = b('when', ('not', ('=', term, val)), ('assign', ('reward',), dis_reward))
             penalty_effect = b('when', ('=', term, val), ('assign', ('reward',), dis_penalty))
             done_effect = b.effect('done')
-            a.effect = b.effect('and', reward_effect, penalty_effect, done_effect)
+            a.effect = b.effect('and', reward_effect, penalty_effect, done_effect, clear_state_effect())
             
             disconfirm_actions.append(a)
 
-                        
         return commit_actions + disconfirm_actions
+
+    def get_dt_results(self, action):
+        if action.name in self.confirm_dict:
+            return self.confirm_dict[action.name], None
+        if action.name in self.disconfirm_dict:
+            return None, self.disconfirm_dict[action.name]
+        return None, None
 
     def create_dt_domain(self, dom):
         dtdomain = dom.copy()
@@ -452,6 +520,7 @@ class DTProblem(object):
         levels = defaultdict(lambda: -1)
         def get_level(node, level):
             cval, clevel = choices.get(node.svar, (None, -1))
+            log.debug("get level: %s, %s", str(node), str(cval))
             if cval and levels[node] < level and cval in node.children:
                 levels[node] = level
                 p, nodes, facts = node.children[cval]
@@ -527,7 +596,7 @@ class DTProblem(object):
             for fact, H in sorted(all_facts_with_entropy, key=lambda (f,H): H):
                 next = update(selected, [fact])
                 tsize = len(self.compute_states(next, limit))
-                if tsize <= limit:# and H <= H_init - 0.05:
+                if tsize <= limit and H < H_init - 0.0001:
                     log.debug("added: %s (%d, %.3f)", str(fact), tsize, H)
                     selected = next
                 else:
@@ -583,12 +652,12 @@ class DTProblem(object):
     #         return result
             
 
-    def compute_states(self, selected_facts, limit, order=None):
+    def compute_states(self, selected_facts, limit, order=None, filter_func=None):
         if not order:
             order = list(selected_facts.iterkeys())
         svar_order = dict((var, i) for i, var in enumerate(order))
         undef = (pddl.UNKNOWN,)*len(selected_facts)
-        print "build states", map(str, selected_facts)
+        # print "build states", map(str, selected_facts)
         
         def multiply_states(sset1, sset2):
             result = defaultdict(lambda: 0.0)
@@ -619,8 +688,12 @@ class DTProblem(object):
         def build_state(node):
             result = defaultdict(lambda: 0.0)
             p_total = 0.0
+            if not node.is_expanded():
+                return result
             # print node
             for val, (p, nodes, facts) in node.children.iteritems():
+                if filter_func and not filter_func(node, val, p, facts):
+                    continue
                 p_total += p
                 sfacts = [pddl.UNKNOWN]*len(selected_facts)
                 for svar, v in chain(facts.iteritems(), [(node.svar, val)]):
@@ -655,7 +728,7 @@ class DTProblem(object):
                 break
         return states
 
-    def entropy(self, facts, condfacts, limit):
+    def entropy(self, facts, condfacts, limit, filter_func=None):
         # print "\ngiven:"
         # for svar, vals in facts.iteritems():
         #     print svar, map(str, vals)
@@ -683,7 +756,7 @@ class DTProblem(object):
             vset |= vals
 
         # print "entropy", map(str, relevant_facts)
-        states = self.compute_states(relevant_facts, limit, order)
+        states = self.compute_states(relevant_facts, limit, order, filter_func)
         cfdict = defaultdict(lambda: 0.0)
         if condfacts:
             for s, p in states.iteritems():
@@ -805,6 +878,130 @@ class DTPDDLOutput(task.PDDLOutput):
         self.writer = dtpddl.DTPDDLWriter()
         self.supported = task.adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
 
+class FlatDTPDDLOutput(task.PDDLOutput):
+    # class RemoveProbTranslator(pddl.translators.Translator):
+    #     def translate_problem(self, _problem):
+    #         p2 = pddl.translators.Translator.translate_problem(self, _problem)
+    #         p2.init = [i for i in p2.init if not isinstance(i, pddl.effects.ProbabilisticEffect)]
+    #         return p2
+        
+    class FlatWriter(dtpddl.DTPDDLWriter):
+        def __init__(self, pnodes):
+            self.pnodes = pnodes
+
+        def compute_states(self):
+            def all_svars(node):
+                return set(f.svar for f in node.all_facts())
+            svars = reduce(lambda x,y: x|y, map(all_svars, self.pnodes), set())
+            print map(str, svars)
+            order = dict((var, i) for i, var in enumerate(svars))
+
+            undef = (pddl.UNKNOWN,)*len(svars)
+            # print "build states", map(str, selected_facts)
+
+            def multiply_states(sset1, sset2):
+                result = defaultdict(lambda: 0.0)
+                # print "--------------------------"
+                # for s, p in sset1.iteritems():
+                #     print map(str,s), p
+                # print
+                # for s, p in sset2.iteritems():
+                #     print map(str,s), p
+
+                # print len(sset1), len(sset2)
+                lost_prob = 0.0
+                for (s1, p1), (s2, p2) in product(sset1.items(), sset2.items()):
+                    res = []
+                    for v1, v2 in itertools.izip(s1, s2):
+                        if v1 == pddl.UNKNOWN:
+                            res.append(v2)
+                        else:
+                            if v2 == pddl.UNKNOWN:
+                                res.append(v1)
+                            else:
+                                lost_prob += p1*p2
+                                res = None
+                                break
+                    if res:
+                        result[tuple(res)] += p1*p2
+                # print len(result)
+                if lost_prob > 0.01:
+                    print lost_prob
+                    for res, p in result.iteritems():
+                        result[res] *= 1/(1-lost_prob) - 0.01
+                return result
+
+            def build_state(node):
+                result = defaultdict(lambda: 0.0)
+                p_total = 0.0
+                # print node
+                for val, (p, nodes, facts) in node.children.iteritems():
+                    p_total += p
+                    sfacts = [pddl.UNKNOWN]*len(svars)
+                    for svar, v in chain(facts.iteritems(), [(node.svar, val)]):
+                        if svar in order:
+                            sfacts[order[svar]] = v
+                    branch_states = {tuple(sfacts) : 1.0}
+                    # print map(str, sfacts)
+
+                    for n in nodes:
+                        branch_states = multiply_states(branch_states, build_state(n))
+
+                    # print node, val, len(branch_states)
+                    for bs, bp in branch_states.iteritems():
+                        # print map(str, bs) , p*bp
+                        result[bs] += p*bp
+
+                if p_total < 1.0:
+                    result[undef] += 1.0 - p_total
+
+                return result
+
+            states = {undef : 1.0}
+
+            for n in self.pnodes:
+                states = multiply_states(states, build_state(n))
+            return states, order
+            
+        def write_flat_state(self):
+            result = ["(probabilistic"]
+            states, order = self.compute_states()
+            svars = sorted(order.iterkeys(), key=lambda x: order[x])
+            print "there are %d states" % len(states)
+            ptot = 0.0
+            for st, p in states.iteritems():
+                if p < 0.00000001:
+                    continue
+                ptot += p
+                elems = []
+                for svar, val in itertools.izip(svars, st):
+                    if val == pddl.UNKNOWN:
+                        continue
+                    if isinstance(svar.function, pddl.Predicate):
+                        if val == pddl.TRUE:
+                            elems.append("(%s %s)" % (svar.function.name, " ".join(a.name for a in svar.args)))
+                    else:
+                        elems.append("(%s %s %s)" % (svar.function.name, " ".join(a.name for a in svar.args), val.name))
+                result.append("%.10f (and %s)" % (p, " ".join(elems)))
+            print ptot
+                
+            return result + [")"]
+            
+        def write_init(self, inits):
+            strings = []
+            for i in inits:
+                if isinstance(i, effects.ProbabilisticEffect):
+                    pass
+                else:
+                    strings.append(self.write_literal(i))
+
+            return self.section(":init", strings + self.write_flat_state())
+        
+    def __init__(self, pnodes):
+        self.compiler = pddl.translators.ChainingTranslator( dtpddl.DTPDDLCompiler(), dtpddl.ProbADLCompiler())
+        self.writer = FlatDTPDDLOutput.FlatWriter(pnodes)
+        self.supported = task.adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
+        
 @visitors.collect
 def function_visitor(elem, result):
     if isinstance(elem, pddl.FunctionTerm):
