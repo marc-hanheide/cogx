@@ -26,6 +26,7 @@ namespace Z
 {
 
 /// TODO Was für Thresholds sind das genau: Beschreiben und alle anderen herausziehen: Surf u. Point
+/// Gehören die hier wirklich her => Es sind auch matching thresholds in der StereoBase.h
 // These are some tuning parameters to filter "bad" surface hypotheses.
 // These might need adjusting to a specific use case.
 
@@ -47,26 +48,18 @@ static const double SC_MAX_DELTA_V_SURF = 10.;
 static const double SC_MAX_DELTA_V_POINT = 10.;
 
 // minimum disparity (distance to point must be higher than this value)
-static const double SC_MIN_DISPARITY = 0.;
+static const double SC_MIN_DISPARITY = 0.2;
 
 
 // Space of interest (SOI) check.
 // Sanity check for points: max. and min. distances in x,y,z-direction, relative to
 // the camera
-static const double SC_MIN_DIST_X = -3.;	// 3m to the left
-static const double SC_MAX_DIST_X =  3.;	// 3m to the right			/// TODO TODO TODO MAX-MIN richtig?
-static const double SC_MIN_DIST_Y = -3.;	// 3m up
-static const double SC_MAX_DIST_Y =  3.;	// 3m down
+static const double SC_MIN_DIST_X = -2.;	// 3m to the left
+static const double SC_MAX_DIST_X =  2.;	// 3m to the right			/// TODO TODO TODO MAX-MIN richtig?
+static const double SC_MIN_DIST_Y = -2.;	// 3m up
+static const double SC_MAX_DIST_Y =  2.;	// 3m down
 static const double SC_MIN_DIST_Z =  0.;	// 0m away
-static const double SC_MAX_DIST_Z =  3.;	// 3m away !!! (do not consider points farer than 4m away!
-
-
-// matching limit for deviations of L-Junctions (StereoLJunctions.cpp)
-static const bool SC_USE_LJCT_THRESHOLDS = true;
-static const double SC_LJCTS_MATCH_LIMIT = 0.2;
-
-static const bool SC_USE_CORNER_THRESHOLDS = true;
-static const double SC_CORNER_MATCH_LIMIT = 1.0;
+static const double SC_MAX_DIST_Z =  2.;	// 3m away !!! (do not consider points farer than 4m away!
 
 
 //----------------------------------------------------------------//

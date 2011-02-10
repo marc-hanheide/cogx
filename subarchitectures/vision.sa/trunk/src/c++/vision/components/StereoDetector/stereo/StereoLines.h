@@ -63,11 +63,12 @@ private:
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
 
-  unsigned GetBestMatchingPair(unsigned idx, std::map<float, unsigned> &match_map, unsigned nr = 3);
+  unsigned EpipolarSanityCheck(unsigned idx, std::map<float, unsigned> &match_map, unsigned nr = 3);
+  void ExtendDescriptors(unsigned idx, std::map<float, unsigned> &match_map, unsigned nr = 3);
   void MatchLines(std::vector< std::vector<float> > descr_left, 
 	          std::vector< std::vector<float> > descr_right, 
                   std::vector< std::pair<unsigned, unsigned> > &matches);
-  void ProcessMSLD(std::vector< std::pair<unsigned, unsigned> > &matches);
+  void ProcessMSLD(std::vector< std::vector<float> > *descriptors);
   void SortLines(Array<TmpLine> &left_lines, Array<TmpLine> &right_lines, std::vector< std::pair<unsigned, unsigned> > &matches);
   void Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &right_lines, int &matches);
   bool Prune3DLines(Line3D *line3d);
