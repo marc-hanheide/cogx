@@ -849,12 +849,11 @@ class DT2MAPLCompiler(translators.Translator):
 
 
 class DT2MAPLCompilerFD(DT2MAPLCompiler):
-    def __init__(self, nodes=None, **kwargs):
-        DT2MAPLCompiler.__init__(self, **kwargs)
-        self.pnodes = nodes
+    # def __init__(self, **kwargs):
+    #     DT2MAPLCompiler.__init__(self, **kwargs)
 
     def create_commit_actions(self, domain, prob_functions):
-        assert self.pnodes
+        # assert self.pnodes
 
         self.add_function(probability, domain)
         self.add_function(selected, domain)
@@ -863,10 +862,10 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
             domain.types[t_node_choice] = t_node_choice
             
         actions = []
-        for n in self.pnodes:
-            n.prepare_actions()
-        for n in self.pnodes:
-            actions += n.to_actions(domain)
+        # for n in self.pnodes:
+        #     n.prepare_actions()
+        # for n in self.pnodes:
+        #     actions += n.to_actions(domain)
             
         return actions + self.commit_actions_from_rules(domain, prob_functions)
     
@@ -943,7 +942,8 @@ class DTPDDLCompiler(translators.Translator):
         # self.change_functions(dom.functions, transform)
         
         translators.change_builtin_functions(dom.predicates, default_predicates)
-        dom.functions = scope.FunctionTable(f for f in dom.functions if f.type is not builtin.t_number)
+        # dom.functions = scope.FunctionTable(f for f in dom.functions if f.type is not builtin.t_number)
+        dom.functions = scope.FunctionTable(dom.functions)
         self.add_function(reward, dom)
         translators.change_builtin_functions(dom.functions, default_functions)
 
@@ -963,6 +963,16 @@ class DTPDDLCompiler(translators.Translator):
         p2 = translators.Translator.translate_problem(self, _problem)
         p2.optimization = 'maximize'
         p2.opt_func = Builder(p2)('reward')
+
+        def is_ungroundable(action):
+            for a in action.args:
+                if len(list(p2.get_all_objects(a.type))) == 0:
+                    return True
+            return False
+        
+        p2.domain.actions = [a for a in p2.domain.actions if not is_ungroundable(a)]
+        p2.domain.observe = [a for a in p2.domain.observe if not is_ungroundable(a)]
+        
         return p2
 
 

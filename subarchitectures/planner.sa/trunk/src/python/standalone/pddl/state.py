@@ -226,23 +226,18 @@ class StateVariable(object):
     #     svar, vars = get_svars_from_term(term, state)
     #     vars.add(svar)
     #     return svar, vars
-    
-    @staticmethod
-    def from_literal(literal, state=None):
-        """Create a new StateVariable from a Literal. If the Literal
-        contains nested functions, a state must be applied to look
-        them up.
 
-        Arguments:
-        literal -- Literal
-        state -- state to look up nested function."""
-        
+    @staticmethod
+    def svar_args_from_literal(literal):
         function = None
         litargs = []
+        modality = None
         modal_args = []
+        value = None
         if literal.predicate in assignment_ops + numeric_comparators + [equals]:
             function = literal.args[0].function
             litargs = literal.args[0].args
+            value = literal.args[1]
             modal_args = None
         else:
             for arg, parg in zip(literal.args, literal.predicate.args):
@@ -259,9 +254,27 @@ class StateVariable(object):
                 function = literal.predicate
                 litargs = literal.args
                 modal_args = None
+            else:
+                modality = literal.predicate
+
+            value = ConstantTerm(TRUE if not literal.negated else FALSE)
+                
+        return function, litargs, modality, modal_args, value
+    
+    @staticmethod
+    def from_literal(literal, state=None):
+        """Create a new StateVariable from a Literal. If the Literal
+        contains nested functions, a state must be applied to look
+        them up.
+
+        Arguments:
+        literal -- Literal
+        state -- state to look up nested function."""
+
+        function, litargs, modality, modal_args, _ = StateVariable.svar_args_from_literal(literal)
 
         args = instantiate_args(litargs, state)
-        if modal_args is not None:
+        if modality is not None:
             modal_args = instantiate_args(modal_args, state)
             return StateVariable(function, args, literal.predicate, modal_args)
             
@@ -290,36 +303,57 @@ class Fact(tuple):
 
     def to_init(self):
         return self.as_literal(useEqual=True)
+
+    def match_literal(self, lit):
+        if lit.predicate in assignment_ops + [eq, equals]:
+            function = lit.args[0].function
+            svar_args = [a.object for a in lit.args[0].args]
+            val_arg = lit.args[1].object
+        elif not any (isinstance(a, FunctionTerm) for a in lit.args):
+            function = lit.predicate
+            svar_args = [a.object for a in lit.args]
+            val_arg = FALSE if lit.negated else TRUE
+        else:
+            return None
+        
+        if function != self.svar.function:
+            return None
+        
+        mapping = {}
+        for arg, val in chain(zip(svar_args, self.svar.args), [(val_arg, self.value)]):
+            if isinstance(arg, types.Parameter) and val.is_instance_of(arg.type):
+                mapping[arg] = val
+            elif arg != val:
+                mapping = None
+                break
+        return mapping
     
     def as_literal(self, useEqual=False, _class=None):
         """Return a representation of this Fact as a Literal."""
         
         if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
-            lit = self.svar.as_literal()
-            if self.value == TRUE:
-                return lit
-            elif self.value == FALSE:
-                return lit.negate()
-            
-            assert False
-
-        if _class == conditions.LiteralCondition:
-            if self.value.is_instance_of(t_number):
-                op = eq
-            else:
-                op = equals
-        elif useEqual:
-            if self.value.is_instance_of(t_number):
-                op = num_equal_assign
-            else:
-                op = equal_assign
+            l = self.svar.as_literal()
+            if self.value == FALSE:
+                l = lit.negate()
         else:
-            if self.value.is_instance_of(t_number):
-                op = num_assign
+            if _class == conditions.LiteralCondition:
+                if self.value.is_instance_of(t_number):
+                    op = eq
+                else:
+                    op = equals
+            elif useEqual:
+                if self.value.is_instance_of(t_number):
+                    op = num_equal_assign
+                else:
+                    op = equal_assign
             else:
-                op = assign
+                if self.value.is_instance_of(t_number):
+                    op = num_assign
+                else:
+                    op = assign
+
+            l = Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
             
-        l = Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
         if _class:
             l.__class__ = _class
         return l
@@ -339,6 +373,8 @@ class Fact(tuple):
         value = None
         if literal.predicate in assignment_ops + [eq, equals]:
             value = instantiate_args(literal.args[-1:], state)[0]
+            if literal.negated:
+                return NegatedFact(StateVariable.from_literal(literal, state), value)
         else:
             if literal.negated:
                 value = FALSE
@@ -398,6 +434,9 @@ class Fact(tuple):
         """Create a Fact object from a tuple containing a
         StateVariable and a TypedObject."""
         return Fact(tup[0], tup[1])
+
+class NegatedFact(Fact):
+    pass
     
 class State(dict):
     """This class represents a complete planning state. It is a

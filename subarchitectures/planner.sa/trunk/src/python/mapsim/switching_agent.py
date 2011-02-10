@@ -1,4 +1,5 @@
-import os, re
+import os, re, time
+from itertools import chain
 from collections import defaultdict
 from standalone import pddl, plans, task, statistics, planner, dt_problem, plan_postprocess, bayes, pstatenode
 #from standalone import statistics
@@ -11,9 +12,11 @@ from standalone import config
 log = config.logger("switching")
 
 sw_conf = global_vars.mapsim_config.switching
+dt_conf = global_vars.config.dt
 
 statistics_defaults = dict(
     dt_planning_calls=0,
+    dt_actions_received=0,
     dt_planning_time=0.0,
     )
 
@@ -71,6 +74,7 @@ class StandaloneDTInterface(object):
             line = self.process.stdout.readline()
             log.debug("read: %s", line)
             if (line):
+                self.statistics.increase_stat("dt_actions_received")
                 log.debug("received action: %s", line)
                 match = self.PDDL_REXP.search(line)
                 if match:
@@ -83,12 +87,15 @@ class StandaloneDTInterface(object):
         print >> self.process.stdin, "O", " ".join(str(o) for o in observations)
         log.debug("sent observations: %s", " ".join(str(o) for o in observations))
         self.wait_for_action()
-                            
-
+        
+        
 class SwitchingAgent(agent.Agent):
     def __init__(self, name, mapltask, planner, simulator):
         self.last_dt_id = 0
         self.dt_interface = None
+
+        t = pddl.translators.RemoveTimeCompiler();
+        mapltask = t.translate(mapltask)
         
         self.domain = mapltask.domain
 
@@ -104,30 +111,40 @@ class SwitchingAgent(agent.Agent):
         self.percepts = []
         self.dt_active = False
         self.fail_count = defaultdict(lambda: 0)
+        self.dt_committments = {}
+        self.dt_disconfirms = defaultdict(set)
 
         #hierarchical = self.simulator.preprocess_problem(mapltask)
-        hierarchical = mapltask
-        w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
-        w.write(hierarchical, problem_fn="tree.pddl")
+        # w = task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
+        w = dt_problem.DTPDDLOutput()
+        w.write(mapltask, problem_fn="tree.pddl")
         
-        pnodes = pstatenode.PNode.from_problem(hierarchical)
+        pnodes = pstatenode.PNode.from_problem(mapltask)
         pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         mapltask.init += det_lits
         self.init_pnodes = pnodes
         self.pnodes = pnodes
-        
-        if global_vars.config.base_planner.name == "TFD":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
-        elif global_vars.config.base_planner.name == "ProbDownward":
-            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=pnodes)
-        else:
-            assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
-        
-        self.prob_functions = dt_compiler.get_prob_functions(mapltask)
+
+        self.state = pddl.prob_state.ProbabilisticState.from_problem(mapltask)
+
+        dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD()
+        self.prob_functions = dt_compiler.get_prob_functions(self.dt_problem)
         self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+        self.unary_ops = None
+
+        self.solution_prob = -1
+        if dt_conf.enabled:
+            self.compute_solution_likelihood()
+        else:
+            self.relevant_facts = {}
         
-        self.state = pddl.prob_state.ProbabilisticState.from_problem(hierarchical)
+        self.regenerate_planning_domain()
+
+        # w = dt_problem.FlatDTPDDLOutput(self.pnodes)
+        # w.write(mapltask, problem_fn="flat.dtpddl")
+        
         det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
+                
         facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
         # facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
         cp_problem = pddl.Problem(mapltask.name, mapltask.objects, facts , mapltask.goal, self.cp_domain)
@@ -140,8 +157,25 @@ class SwitchingAgent(agent.Agent):
         self.planner.register_task(self.task)
 
     def update_state(self, svar, val):
+        self.unary_ops = None
         self.task.get_state()[svar] = val
         self.state[svar] = val
+
+    def calc_probability(self, plan):
+        uncertain_facts = set()
+        cost = 0
+        for pnode in plan.nodes_iter():
+            for svar, val in pnode.original_preconds:
+                if svar.modality == pddl.mapl.hyp:
+                    uncertain_facts.add(pddl.state.Fact(svar.nonmodal(), svar.modal_args[0]))
+            cost += pnode.cost
+
+        p = 1.0
+        for svar, val in uncertain_facts:
+            if not self.state.is_det(svar):
+                p *= self.state[svar][val]
+
+        print "p:", p, "c:", cost
         
     @loggingScope
     def run(self):
@@ -160,7 +194,35 @@ class SwitchingAgent(agent.Agent):
     #             logval = pddl.types.TypedNumber(max(-math.log(val.value, 2), 0.1))
     #             facts.append(pddl.state.Fact(logvar, logval))
     #     return facts
+
+    def compute_solution_likelihood(self):
+        from standalone import relaxed_exploration
+        goal_action = pddl.Action("goal_action", [], self.dt_problem.goal, None, self.dt_problem)
+        det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
+        actions = [a for a in self.cp_domain.actions if not a.name.startswith("commit-selected")]
+
+        t0 = time.time()
+        if not self.unary_ops:
+            self.unary_ops, applicable_ops = relaxed_exploration.instantiate(actions, set(), det_state, self.cp_domain, [(goal_action, {})])
+        else:
+            applicable_ops = relaxed_exploration.initialize_ops(self.unary_ops, det_state)
+        print "total time for preparation: %.2f" % (time.time()-t0)
+        t0 = time.time()
         
+        rel, p = relaxed_exploration.prob_explore(self.unary_ops, applicable_ops, det_state, [(goal_action, [])], self.state)
+        print "total time for exploration: %.2f" % (time.time()-t0)
+
+        self.relevant_facts = rel
+        self.solution_prob = p
+        
+        return p
+
+    def confirmation_prob(self):
+        p = 1.0
+        for svar, val in self.dt_committments.iteritems():
+            p *= self.state.prob(svar, val)
+        return p
+
     def process_cp_plan(self):
         plan = self.get_plan()
 
@@ -168,9 +230,23 @@ class SwitchingAgent(agent.Agent):
             self.plan_history.append(plan)
             return
 
+        cost = sum(pnode.cost for pnode in plan.nodes_iter())
+        reward_p = self.confirmation_prob()
+        exp_reward = dt_conf.total_reward * reward_p - (1-reward_p) * dt_conf.total_reward - cost
+        if exp_reward < 0:
+            print "c: %d, P(r): %.2f -> R = %.1f" % (cost, reward_p, exp_reward)
+            return
+
+        if dt_conf.enabled and not self.relevant_facts:
+            self.compute_solution_likelihood()
+        # p = self.compute_solution_likelihood()
+        # if dt_conf.total_reward * p < cost:
+        #     print "%.3f * %d < %d" % (p, dt_conf.total_reward, cost)
+        #     return
+
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
-            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.fail_count, self.prob_functions, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.pnodes, self.fail_count, self.prob_functions, self.relevant_facts, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -312,6 +388,10 @@ class SwitchingAgent(agent.Agent):
         self.plan_history.append(self.dt_task)
         self.dt_task = None
 
+        self.regenerate_planning_domain()
+        self.update_planning_state()
+        self.compute_solution_likelihood()
+        
         self.task.set_plan(None)
         self.task.mark_changed()
         self.monitor_cp()
@@ -325,7 +405,40 @@ class SwitchingAgent(agent.Agent):
         #log.debug("state is: %s", self.task.get_state())
 
         if pddl_action.name in set(a.name for a in self.dt_task.goal_actions):
+            
             log.info("Goal action recieved. DT task completed")
+            conf, disconf = self.dt_task.get_dt_results(pddl_action)
+            # self.dt_disconfirms.clear()
+            if conf and dt_conf.commitment_mode in ("conf", "all"):
+                p = self.state.prob(conf.svar, conf.value)
+                if p < 0.7:
+                    print "Committment %s rejected (p=%.2f)" % (str(conf), p)
+                    log.debug("Comittment %s rejected (p=%.2f)", str(conf), p)
+                else:
+                    print "Committed to:", conf, p
+                    log.debug("DT committed to %s", str(conf))
+                    self.dt_committments[conf.svar] = conf.value
+            elif conf:
+                p = self.state.prob(conf.svar, conf.value)
+                print "Committed to:", conf, p
+
+            if disconf and dt_conf.commitment_mode in ("disconfirm", "all"):
+                p = self.state.prob(disconf.svar, disconf.value)
+                if p > 0.2:
+                    print "Disconfirmation %s rejected (p=%.2f)" % (str(disconf), p)
+                    log.debug("Disconfirmation %s rejected (p=%.2f)", str(disconf), p)
+                else:
+                    print "Disconfirmed:", disconf, p
+                    log.debug("DT disconfirmed %s", str(disconf))
+                    self.dt_disconfirms[disconf.svar].add(disconf.value)
+            elif disconf:
+                p = self.state.prob(disconf.svar, disconf.value)
+                print "Disconfirmed:", disconf, p
+
+            if pddl_action.name == "cancel":
+                log.warning("DT canceled without result")
+                #return
+                
             self.dt_done()
             return
         
@@ -353,7 +466,7 @@ class SwitchingAgent(agent.Agent):
             self.done()
                 
     def dt_planning_active(self):
-        if not sw_conf.enable_dt:
+        if not dt_conf.enabled:
             return False
         
         plan = self.get_plan()
@@ -403,6 +516,67 @@ class SwitchingAgent(agent.Agent):
             return None
 
         return plan
+
+    def update_planning_state(self):
+        mod_state = self.state.copy()
+        for svar, val in self.dt_committments.iteritems():
+            mod_state[svar] = val
+        for svar, vals in self.dt_disconfirms.iteritems():
+            for val in vals:
+                if not mod_state.is_det(svar):
+                    mod_state[svar][val] = 0.0
+                    # print svar, mod_state[svar]
+
+        det_state = mod_state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
+                
+        facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
+        # facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
+        cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)
+        
+        self.task.mapltask = cp_problem
+        self.task.create_initial_state()
+
+    def regenerate_planning_domain(self):
+        def node_filter(node, val, p, facts):
+            """ Returns two boolean values:
+                First indicates that the node should always be included
+                Second indicated that the node should be included if it has children"""
+            for svar, v in chain([(node.svar, val)], facts.iteritems()):
+                if svar.function == pddl.dtpddl.selected:
+                    continue
+                if svar in self.state and self.state.is_det(svar):
+                    if self.state[svar] != v:
+                        return False, False
+                    continue
+                if v in self.dt_disconfirms[svar]:
+                    # print "reject:", node, val, " -- ", svar, v
+                    return False, False
+                if svar in self.relevant_facts and v not in self.relevant_facts[svar]:
+                    # print "reject", node, svar, v
+                    return False, False
+                if self.relevant_facts and svar not in self.relevant_facts:
+                    # print "reject", svar
+                    return False, True
+                if self.state[svar][v] < sw_conf.rejection_ratio:
+                    highest = max(self.state[svar].itervalues())
+                    if self.state[svar][v] < highest * sw_conf.rejection_ratio:
+                        # print "reject:", node, self.state[svar][v]
+                        return False, False
+            return True, True
+            
+        dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD()
+        self.prob_functions = dt_compiler.get_prob_functions(self.dt_problem)
+        self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+
+        actions = []
+        for n in self.pnodes:
+            n.prepare_actions()
+        for n in self.pnodes:
+            actions += n.to_actions(self.cp_domain, filter_func=node_filter)
+
+        for a in actions:
+            self.cp_domain.add_action(a)
+        
         
     @loggingScope
     def updateTask(self, new_facts, action_status=None):
@@ -417,36 +591,27 @@ class SwitchingAgent(agent.Agent):
         action = self.last_action.action
         action.instantiate(self.last_action.full_args, self.task.mapltask)
         if self.bayes.handle_obs(action, new_percepts):
-            def node_filter(node):
-                for f in node.all_facts():
-                    if f.svar.function == pddl.dtpddl.selected:
-                        continue
-                    if f.svar not in self.state or not self.state.is_det(f.svar):
-                        return True
-                return False
+            # def node_filter(node):
+            #     for f in node.all_facts():
+            #         if f.svar.function == pddl.dtpddl.selected:
+            #             continue
+            #         if f.svar not in self.state or not self.state.is_det(f.svar):
+            #             return True
+            #     return False
 
             result, node_probs = self.bayes.evaluate()
-            self.pnodes = filter(node_filter, self.bayes.new_ptree(self.init_pnodes, node_probs))
-            dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
-            self.cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+            self.pnodes = self.bayes.new_ptree(self.init_pnodes, node_probs)
+            self.regenerate_planning_domain()
 
             for svar, dist in result.iteritems():
                 if svar.function != pddl.dtpddl.selected and (svar not in self.state or not self.state.is_det(svar)):
                     self.state[svar] = dist
                     
             self.bayes.init(self.state, self.pnodes)
-
         
         action.uninstantiate()
-
-        det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
-        facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
-        # facts += [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.compute_logps(det_state)]
-        cp_problem = pddl.Problem(self.dt_problem.name, self.dt_problem.objects, facts , self.dt_problem.goal, self.cp_domain)
         
-        self.task.mapltask = cp_problem
-        self.task.create_initial_state()
-
+        self.update_planning_state()
         # import time
         # print "sleep"
         # time.sleep(1)
@@ -456,3 +621,74 @@ class SwitchingAgent(agent.Agent):
             self.action_executed_dt(action_status)
         else:
             self.action_executed_cp(action_status)
+
+
+class RandomAgent(SwitchingAgent):
+    def run(self):
+        agent.BaseAgent.run(self)
+        action, args = self.choose_random_action()
+        self.last_action = (action, args)
+        self.count = 1
+        self.execute(action.name, args)
+
+    @loggingScope
+    def updateTask(self, new_facts, action_status=None):
+        if self.count > 1:
+            return
+
+        new_percepts = []
+        for f in new_facts:
+            if f.svar.modality == pddl.dtpddl.observed or f.svar.function in self.domain.percepts:
+                new_percepts.append(f.svar)
+            else:
+                self.state.set(f)
+        self.percepts += new_percepts
+
+        action = self.last_action[0]
+        action.instantiate(self.last_action[1], self.task.mapltask)
+        if self.bayes.handle_obs(action, new_percepts):
+            # def node_filter(node):
+            #     for f in node.all_facts():
+            #         if f.svar.function == pddl.dtpddl.selected:
+            #             continue
+            #         if f.svar not in self.state or not self.state.is_det(f.svar):
+            #             return True
+            #     return False
+
+            result, node_probs = self.bayes.evaluate()
+            self.pnodes = self.bayes.new_ptree(self.init_pnodes, node_probs)
+            self.regenerate_planning_domain()
+
+            for svar, dist in result.iteritems():
+                if svar.function != pddl.dtpddl.selected and (svar not in self.state or not self.state.is_det(svar)):
+                    self.state[svar] = dist
+                    
+            self.bayes.init(self.state, self.pnodes)
+
+        
+        action.uninstantiate()
+        self.update_planning_state()
+
+        if self.task.get_state().is_satisfied(self.task.mapltask.goal):
+            self.done()
+        
+        action, args = self.choose_random_action()
+        self.last_action = (action, args)
+        self.count += 1
+        self.execute(action.name, args)
+    
+
+    def choose_random_action(self):
+        det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
+        prob = self.task.mapltask
+        actions = []
+        for action in self.cp_domain.actions:
+            alist = [list(prob.get_all_objects(a.type)) for a in action.args]
+            for mapping in action.smart_instantiate(action.get_inst_func(det_state), action.args, alist, prob):
+                actions.append((action, [mapping[a] for a in action.args]))
+        
+        import random
+        random.seed()
+        return random.sample(actions, 1)[0]
+        
+            

@@ -1,9 +1,9 @@
-import sys, itertools
+import os, sys, itertools, math
 
 from itertools import chain, product
 from collections import defaultdict
 
-import config, pddl, dt_problem, pstatenode
+import config, pddl, dt_problem, pstatenode, planner
 import globals as global_vars
 
 from simplegraph import Graph
@@ -61,7 +61,10 @@ class BnetInterface(object):
     def run(self):
         import subprocess, atexit
         log.debug("running bnet solver with '%s'", self.cmd)
-        self.process = subprocess.Popen(self.cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open("bnet.log", "w"))
+        planning_tmp_dir =  global_vars.config.tmp_dir
+        tmp_dir = planner.get_planner_tempdir(planning_tmp_dir)
+        logfile = os.path.join(tmp_dir, "bnet.log")
+        self.process = subprocess.Popen(self.cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open(logfile, "w"))
         if self.debug:
             self.out = tee(open("bnet_input", mode='w'), self.process.stdin)
         else:
@@ -388,6 +391,11 @@ class BayesianState(object):
         for svar, dist in sorted(fresults.iteritems(), key=lambda (svar,d): str(svar)):
             log.debug("%-30s %s", svar, str(dist))
         #    print svar, dist
+        for svar, dist in sorted(fresults.iteritems(), key=lambda (svar,d): str(svar)):
+            p_def = 1 - dist[pddl.UNKNOWN]
+            H = sum(p*math.log(p,2) for p in dist.itervalues() if p > 0)
+            log.debug("%-30s %.2f: %.3f  %.3f", svar, p_def, -H, 2**(-H))
+            
         return fresults, node_results
 
     def new_ptree(self, pnodes, newprobs):
@@ -468,14 +476,18 @@ class BayesianState(object):
             for p, cfacts in conds:
                 node_disjuncts = []
                 for f in cfacts:
+                    negated = isinstance(f, pddl.state.NegatedFact)
                     # print f, self.state[f.svar], self.state[f.svar] == f.value, f in self.state;
                     if not f.svar in self.factdict:
                         #handle deterministic facts
-                        if self.state[f.svar] == f.value:
+                        if negated ^ (self.state[f.svar] == f.value):
                             continue
                         else:
                             node_disjuncts = None
                             break
+                        
+                    # if negated:
+                    #     print "negated:", f
                         
                     nodes = list(n for n in self.factdict[f.svar] if n.get_branches_for_fact(f))
                     parents += [n for n in nodes if n not in parents]
@@ -485,7 +497,7 @@ class BayesianState(object):
                         for val in n.get_branches_for_fact(f):
                             disjunct.add((n,val))
 
-                    node_disjuncts.append(disjunct)
+                    node_disjuncts.append((disjunct, negated))
                 
                 if node_disjuncts is not None:
                     conditions.append((p, node_disjuncts))
@@ -514,8 +526,9 @@ class BayesianState(object):
                 #prob. of getting the observation is 1-(1-p_1)(...)(1-p_n)
                 #for all p_i that can cause this observation
                 for p, disjuncts in conditions:
-                    if all(dis & cset for dis in disjuncts):
+                    if all(bool(dis & cset) ^ neg for dis, neg in disjuncts):
                         inv_p *= (1-p)
+                        
                 # print map(str, c), 1-inv_p
                 
                 res = [1-inv_p, inv_p]
