@@ -469,7 +469,10 @@ void PlanePopOut::start()
 
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
-  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", "function render()\nend\n");
+  ostringstream ss;
+  ss <<  "function render()\nend\n"
+     << "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
+  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", ss.str());
   //Video::Image image;
   //m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
