@@ -199,7 +199,7 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
   u.normal.z = tmpV.z;
   obj->model->vertices.push_back(u);
   VisionData::Vertex v;           /// We create a surface: point near start point
-  v.pos.x = p.x + 0.002;
+  v.pos.x = p.x + 0.001;
   v.pos.y = p.y;
   v.pos.z = p.z;
   obj->model->vertices.push_back(v);  
@@ -213,7 +213,7 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
   w.normal.z = tmpV.z;
   obj->model->vertices.push_back(w);
   VisionData::Vertex x;           /// We create a surface: point near end point
-  x.pos.x = p2.x + 0.002;
+  x.pos.x = p2.x + 0.001;
   x.pos.y = p2.y;
   x.pos.z = p2.z;
   obj->model->vertices.push_back(x);
@@ -235,21 +235,21 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 
 
 /**
- * @brief Which pair is the best match for the left line (idx): 
+ * @brief Check the results from the match_map for epipoolar sanity. The best "nrCompare" results, which are
+ * not on the epipolar line will be deleted. 
  * The match_map has ordered entries with the best matching right lines. We delete every result which is not 
  * on the same epipolarline. As result we get the best matching results again in the match_map.
  * @param idx Index of the left line
  * @param match_map Best match pairs (distance, index) as map.
  * @param nrCompare Calculate nrCompare good results for every left line.
  * @return Returns the index of the best match
- *															TODO We should work with the rectified end points of the line: lines[LEFT][idx].point2D[0].pr ???
+ *										TODO We should work with the rectified end points of the line: lines[LEFT][idx].point2D[0].pr ???
  */
-unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned> &match_map, unsigned nrCompare)
+unsigned StereoLines::EpipolarSanityCheck(unsigned idx, std::map<float, unsigned> &match_map, unsigned nrCompare)
 {
   if(match_map.size() < nrCompare*3)
     nrCompare = match_map.size()/3;
 
-  // Checke ob sich die Linien auf der Epipolarlinie schneiden
   unsigned nrResults = 0;
   std::map<float, unsigned>::iterator it;
   it = match_map.begin();
@@ -272,37 +272,56 @@ unsigned StereoLines::GetBestMatchingPair(unsigned idx, std::map<float, unsigned
     midPointRight.Rectify(stereo_cam, RIGHT);
     endPointRight.Rectify(stereo_cam, RIGHT);
     
+    // We looking for epipolar "good" lines: 2 of the 4 endpoints must intersect the line in the other image.
     unsigned goodPoints = 0;
-    
-// if(print) printf("  1. Epipolar points: %4.0f/%4.0f and %4.0f\n", startPointRight.p.y, endPointRight.p.y, startPointLeft.p.y);
     if((startPointRight.p.y > startPointLeft.p.y && endPointRight.p.y < startPointLeft.p.y) ||
        (startPointRight.p.y < startPointLeft.p.y && endPointRight.p.y > startPointLeft.p.y)) goodPoints++;
-// if(print) printf("    ==> Good points: %u\n", goodPoints);
-// if(print) printf("  2. Epipolar points: %4.0f/%4.0f and %4.0f\n", startPointRight.p.y, endPointRight.p.y, endPointLeft.p.y);
     if((startPointRight.p.y > endPointLeft.p.y && endPointRight.p.y < endPointLeft.p.y) ||
        (startPointRight.p.y < endPointLeft.p.y && endPointRight.p.y > endPointLeft.p.y)) goodPoints++;
-// if(print) printf("    ==> Good points: %u\n", goodPoints);
-// if(print) printf("  3. Epipolar points: %4.0f/%4.0f and %4.0f\n", startPointLeft.p.y, endPointLeft.p.y, startPointRight.p.y);
     if((startPointLeft.p.y > startPointRight.p.y && endPointLeft.p.y < startPointRight.p.y) ||
        (startPointLeft.p.y < startPointRight.p.y && endPointLeft.p.y > startPointRight.p.y)) goodPoints++;
-// if(print) printf("    ==> Good points: %u\n", goodPoints);
-// if(print) printf("  3. Epipolar points: %4.0f/%4.0f and %4.0f\n", startPointLeft.p.y, endPointLeft.p.y, endPointRight.p.y);
     if((startPointLeft.p.y > endPointRight.p.y && endPointLeft.p.y < endPointRight.p.y) ||
        (startPointLeft.p.y < endPointRight.p.y && endPointLeft.p.y > endPointRight.p.y)) goodPoints++;
-// if(print) printf("    ==> Good points: %u\n", goodPoints);
     
     if(goodPoints > 1 )
     {
       nrResults++;
       it++; 
     }
-    else 
-    {
-      match_map.erase(it++);       // delete the result, which are not on the epipolarline
-    }
+    else match_map.erase(it++);       // delete the result, which are not on the epipolarline
     count++;
   }
   return nrResults; 
+}
+
+
+/**
+ * @brief Extend (change) the desciptor distance in the match map.
+ * @param idx Index of the LEFT line
+ * @param match_map Match map: desciptor distance and index of right line for the best "nrMatches" matches.
+ * @param nrMatches Number of matches for this left (idx) line.
+ */
+void StereoLines::ExtendDescriptors(unsigned idx, std::map<float, unsigned> &match_map, unsigned nrMatches)
+{
+  std::map<float, unsigned> new_map;
+  std::map<float, unsigned>::iterator it;
+  it = match_map.begin();
+  if(match_map.size() < nrMatches) nrMatches = match_map.size();
+
+  for(unsigned j=0; j<nrMatches; j++)
+  {
+    // Get the normalized angle (0-1) between the two lines
+    double angleSig = SmallestAngle(lines[LEFT][idx].point2D[0].p - lines[LEFT][idx].point2D[1].p,
+	lines[RIGHT][it->second].point2D[0].p - lines[RIGHT][it->second].point2D[1].p) / (M_PI/2.);
+
+    // normalization to a value between 0.5(good) and 0.7(worse)
+    angleSig = angleSig/5. + 0.5;
+
+    std::pair<float, unsigned> pair(it->first*angleSig, it->second);
+    new_map.insert(pair);
+    it++;
+  }
+  match_map = new_map;
 }
 
 /**
@@ -315,9 +334,8 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
 			     std::vector< std::vector<float> > descr_right, 
                              std::vector< std::pair<unsigned, unsigned> > &matches)
 {
+  float dist;                                             // Calculted descriptor distance
   unsigned nrLinesLeft = descr_left.size();               // Number of left lines
-//  unsigned idx;
-  float dist; //, mindist;                                // Calculted descriptor distance
   std::map<float, unsigned> best_matches[nrLinesLeft];    // map for a left line[i] with the descriptor distance (float) to a right tmpLine (unsigned)
   unsigned nrMatches[nrLinesLeft];                        // Number of matches for each left line
   
@@ -327,25 +345,43 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
   {
     if (descr_left[i].size() != 0)
     {
-//       mindist = FLT_MAX;
       for (unsigned j=0; j<descr_right.size(); j++)
       {
         if (descr_right[j].size() == descr_left[i].size())
         {
           dist = DistSqr(&descr_left[i][0], &descr_right[j][0], descr_left[i].size());
 	  std::pair<float, unsigned> pair(dist, j);
-	  if(best_matches[i].find(dist) != best_matches[i].end())  // selbe dist gibt es schon!
-printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN FEHLER ####################################################\n");
+	  if(best_matches[i].find(dist) != best_matches[i].end())
+	    printf("StereoLines::MatchLines: Warning: same key found!\n");
 	  best_matches[i].insert(pair);
         }
       }
     }
   }
-  
+
   // Delete all matches from the best_matches map which are not on the epipolar line.
   for (unsigned i=0; i<nrLinesLeft; i++)
-    nrMatches[i] = GetBestMatchingPair(i, best_matches[i], 5);
+    nrMatches[i] = EpipolarSanityCheck(i, best_matches[i], 5);
+
   
+  // We extend the descriptor distance with other geometric constraints!
+  for (unsigned i=0; i<nrLinesLeft; i++)
+    ExtendDescriptors(i, best_matches[i], nrMatches[i]);
+  
+  
+  /// write results
+//   for (unsigned i=0; i<nrLinesLeft; i++)
+//   {
+//     std::map<float, unsigned>::iterator it;
+//     it = best_matches[i].begin();
+//     unsigned max=5;
+//     if(nrMatches[i]<5) max=nrMatches[i];
+//     for(unsigned j=0; j<max; j++)
+//     {
+//       printf("   match: dist after extending: %4.5f of lines %u/%u\n", (*it).first, i, (*it).second);
+//       it++;
+//     }
+//   }
   
   // Each line (left or right) can have only one match.
   bool solved = false;
@@ -367,7 +403,6 @@ printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN 
 	  if((*it_i).second == (*it_j).second)
 	  {
 	    solved = false;
-// 	      printf("######################################### StereoLines::MatchLines: hab eam: i/j: %u/%u mit lines: %u/%u!\n", i, j, (*it_i).second, (*it_j).second);
 	    if((*it_i).first < (*it_j).first)  // lösche den größeren Eintrag => es ist ja die Distanz
 	    {
 	      best_matches[j].erase(it_j++);
@@ -387,21 +422,23 @@ printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN 
   /// TODO Write best matching pairs => Delete later
 //   for (unsigned i=0; i<nrLinesLeft; i++)
 //   {
-//     if(nrMatches[i] > 0)
+//     std::map<float, unsigned>::iterator it;
+//     it = best_matches[i].begin();
+//     unsigned max=5;
+//     if(nrMatches[i]<5) max=nrMatches[i];
+//     for(unsigned j=0; j<max; j++)
 //     {
-//       std::map<float, unsigned>::iterator it;
-//       it = best_matches[i].begin();
-//       printf("   match: dist: %4.2f of lines %u/%u\n", (*it).first, i, (*it).second);
+//       printf("   match: dist after: %4.5f of lines %u/%u\n", (*it).first, i, (*it).second);
+//       it++;
 //     }
 //   }
 
 
-  /// copy resulting matches!
+  // copy the best result for all lines into matches vector
   for (unsigned i=0; i<nrLinesLeft; i++)
   {    
     std::map<float, unsigned>::iterator it;
     it = best_matches[i].begin();
-
     if(nrMatches[i] > 0)
     {
       std::pair<unsigned, unsigned> pair(i, it->second);
@@ -413,21 +450,16 @@ printf(" ############################################ ACHTUNG HIER ENTSTEHT EIN 
 
 /**
  * @brief Process the MSLD descriptor for each line for stereo matching.
+ * @param desciptors MSLD descriptors for left and right lines.
  * @param matches A vector of matching line pairs 
  */
-void StereoLines::ProcessMSLD(std::vector< std::pair<unsigned, unsigned> > &matches)
+void StereoLines::ProcessMSLD(std::vector< std::vector<float> > *descriptors)
 {
-  struct timespec start, endMSLD, end;
-  clock_gettime(CLOCK_REALTIME, &start);
-
   cv::Mat image[2];
-
   std::vector< std::vector<cv::Vec2d> > vecLines[2];    // lines as openCV vectors
-  std::vector< std::vector<float> > descriptors[2];     // descriptors left/right for every line
   cv::Vec2d v; 
   for(unsigned side = LEFT; side <= RIGHT; side++)
   {
-//     lines.resize(NumLines2D(side));
     const IplImage *i = vcore[side]->GetImage();
     IplImage *grayImg = cvCreateImage(cvSize(i->width, i->height), IPL_DEPTH_8U, 1);
     cvCvtColor(i, grayImg, CV_RGB2GRAY);
@@ -443,20 +475,6 @@ void StereoLines::ProcessMSLD(std::vector< std::pair<unsigned, unsigned> > &matc
     }
     createMSLD.Operate(image[side], vecLines[side], descriptors[side]);
   }
-
-  clock_gettime(CLOCK_REALTIME, &endMSLD);
-  cout<<"StereoLines::ProcessMSLD: Time to create MSLD [s]: " << timespec_diff(&endMSLD, &start) << endl;
-
-//  printf("descriptors left/right size: %u - %u\n", descriptors[LEFT].size(),descriptors[RIGHT].size());
-
-  MatchLines(descriptors[LEFT], descriptors[RIGHT], matches);										// Sollte von der Hauptfunktion aufgerufen werden!
-
-//   for(unsigned i=0; i<matches.size(); i++)
-//     printf("matches corr: %u - %u\n", matches[i].first, matches[i].second);
-  
-  clock_gettime(CLOCK_REALTIME, &end);
-  cout<<"StereoLines::ProcessMSLD: Time to create MSLD and match lines [s]: " << timespec_diff(&end, &start) << endl;
-
 }
 
 /**
@@ -496,16 +514,13 @@ void StereoLines::Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &r
     Vector2 ll[2], rl[2];                             // left/right line points RECTIFIED!
     unsigned leftBig, rightBig;                       // the point with higher y-value left/right 
     bool leftBiggest, leftSmallest;                   // Is the point with the highest y-value left (or right)
-    
+    double length;                                    // unused
+
     ll[0] = left_lines[i].point2D[0].pr;
     ll[1] = left_lines[i].point2D[1].pr;
     rl[0] = right_lines[i].point2D[0].pr;
     rl[1] = right_lines[i].point2D[1].pr;
-    
-// printf("\nStereoLines::Calculate3DLines: %u-%u\n", left_lines[i].vs3ID, right_lines[i].vs3ID);
-// printf("   points x rectified: %3.0f/%3.0f/%3.0f/%3.0f: \n", ll[0].x, ll[1].x, rl[0].x, rl[1].x);
-// printf("   points y rectified: %3.0f/%3.0f/%3.0f/%3.0f: \n", ll[0].y, ll[1].y, rl[0].y, rl[1].y);
-    
+
     if(ll[0].y > ll[1].y) leftBig = 0;
     else leftBig = 1;
     if(rl[0].y > rl[1].y) rightBig = 0;
@@ -517,55 +532,32 @@ void StereoLines::Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &r
     if(ll[Other(leftBig)].y < rl[Other(rightBig)].y) leftSmallest = true; 
     else leftSmallest = false;
     
-// printf("    left/right big:: %u/%u\n", leftBig, rightBig);
-// printf("    left Biggest/Smallest: %u/%u\n", leftBiggest, leftSmallest);
-
-    double length;
     
-    bool biggest = false;
-    bool smallest = false;
-    
-    if(leftBiggest)		// links der größte y-Wert
+    if(leftBiggest)              // biggest y-value is on the left image line
     {
       isctPointLeft[0].pr = ll[leftBig];
       Vector2 dir = Normalise(rl[1]-rl[0]);
-// printf("    dir0: %4.2f/%4.2f  mit epi: %4.2f\n", dir.x, dir.y, isctPointLeft[0].pr.y);
       isctPointRight[0].pr = LineIntersectionEpipolarLine(rl[rightBig], dir, isctPointLeft[0].pr.y, &length);
     }
-    else			// rechts der größte y-Wert
+    else                         // biggest y-value is on the right image line
     {
       isctPointRight[0].pr = rl[rightBig];
       Vector2 dir = Normalise(ll[1]-ll[0]);
-// printf("    leftBig: \n", dir.x, dir.y);
       isctPointLeft[0].pr = LineIntersectionEpipolarLine(ll[leftBig], dir, isctPointRight[0].pr.y, &length);
-      biggest = true;
     }
 
-    if(leftSmallest)		// links der kleinste y-Wert
+    if(leftSmallest)             // smallest y-value is on the left image line
     {
       isctPointLeft[1].pr = ll[Other(leftBig)];
       Vector2 dir = Normalise(rl[1]-rl[0]);
-// printf("    dir2: %4.2f/%4.2f  mit epi: %4.2f\n", dir.x, dir.y, isctPointLeft[1].pr.y);
       isctPointRight[1].pr = LineIntersectionEpipolarLine(rl[Other(rightBig)], dir, isctPointLeft[1].pr.y, &length);
-      smallest = true;
     }
-    else			// rechts der kleinste y-Wert
+    else                         // smallest y-value is on the right image line
     {
       isctPointRight[1].pr = rl[Other(rightBig)];
       Vector2 dir = Normalise(ll[1]-ll[0]);
-// printf("    dir3: %4.2f/%4.2f\n", dir.x, dir.y);
       isctPointLeft[1].pr = LineIntersectionEpipolarLine(ll[Other(leftBig)], dir, isctPointRight[1].pr.y, &length);
     }
-
-//     isctPointLeft[0].Rectify(stereo_cam, LEFT);
-//     isctPointLeft[1].Rectify(stereo_cam, LEFT);
-//     isctPointRight[0].Rectify(stereo_cam, RIGHT);
-//     isctPointRight[1].Rectify(stereo_cam, RIGHT);
-
-// printf("  Result: isctPointLeft[0] / isctPointRight[0]: %3.0f-%3.0f / %3.0f-%3.0f\n", 
-//        isctPointLeft[0].pr.x, isctPointLeft[0].pr.y, isctPointRight[0].pr.x, isctPointRight[0].pr.y);
-// printf("  Result: isctPointLeft[1] / isctPointRight[1]: %3.0f-%3.0f / %3.0f-%3.0f\n", 
-//        isctPointLeft[1].pr.x, isctPointLeft[1].pr.y, isctPointRight[1].pr.x, isctPointRight[1].pr.y);
 
     Line3D *line3d = new Line3D(left_lines[i].vs3ID, right_lines[i].vs3ID);
     if (line3d->isct3D[0].Reconstruct(stereo_cam, isctPointLeft[0], isctPointRight[0]) &&
@@ -578,7 +570,6 @@ void StereoLines::Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &r
       }
       else
       {
-// printf("StereoLines::Calculate3DLines: AUSSORTIERT!\n");
 	left_lines.Swap(i, u-1);
 	right_lines.Swap(i, u-1);
 	u--;
@@ -615,11 +606,24 @@ bool StereoLines::Prune3DLines(Line3D *line3d)
   double angle3Dz = SmallestAngle(line, zCoord);
   line3d->CalculateSignificance(angle2DleftToX, angle2DRightToX, angle3Dz);
 
+  // Relation of the length of z-component to length of x and y component
+  double xL = Dot(line, Vector3(1., 0., 0.));
+  double yL = Dot(line, Vector3(0., 1., 0.));
+  double zL = Dot(line, Vector3(0., 0., 1.));
+  double zRelation = fabs(zL/(fabs(xL)+fabs(yL)));
+// printf("Verhältnis: %4.2f / %4.2f / %4.2f => %4.2f\n", xL, yL, zL, zRelation);
+  
   /// Wenn die Linie länger als 30cm in z-Richtung geht, dann wird sie aussortiert!
- if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
-    
-  if(line3d->GetSignificance() > 0.01) return false;
-  else return true;
+//  if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
+
+  if(SC_USE_LINE_THRESHOLDS)
+  {
+    if(fabs(zL/(xL+yL)) > SC_LINE_Z_TO_XY_LIMIT) return true;
+
+    if(line3d->GetSignificance() > SC_LINE_SIG_LIMIT) return false;
+    else return true;
+  }
+  else return false;
 }
 
 
@@ -687,21 +691,34 @@ void StereoLines::ClearResults()
  */
 void StereoLines::Process()
 {
+  // Load the unsplitted lines instead of the split lines.
   GetUnsplitedLines();
 
   // match lines with MSLD descriptor
-  std::vector< std::pair<unsigned, unsigned> > matches;  // lines[LEFT/RIGHT] matches
-  ProcessMSLD(matches);
-  lineMatches = matches.size();
-// printf("StereoLines::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
+  std::vector< std::pair<unsigned, unsigned> > matches;  // line matches <LEFT/RIGHT>
+  std::vector< std::vector<float> > descriptors[2];      // descriptor left/right for every line
+  
+  struct timespec start, endMSLD, end;
+  clock_gettime(CLOCK_REALTIME, &start);
+  
+  // Calculate MSLD descriptor
+  ProcessMSLD(descriptors);
+  clock_gettime(CLOCK_REALTIME, &endMSLD);
+  cout<<"StereoLines::Process: Time to create MSLD [s]: " << timespec_diff(&endMSLD, &start) << endl;
 
+  // Match lines
+  MatchLines(descriptors[0], descriptors[1], matches);
+  lineMatches = matches.size();
+  clock_gettime(CLOCK_REALTIME, &end);
+  cout<<"StereoLines::Process: Time to create MSLD and match lines [s]: " << timespec_diff(&end, &start) << endl;
+
+  // Sort results  
   SortLines(lines[LEFT], lines[RIGHT], matches);
   lineMatches = matches.size();
-printf("StereoLines::Process: MatchedLines: %u\n", lineMatches);
-
+  
   // do stereo matching and depth calculation
   Calculate3DLines(lines[LEFT], lines[RIGHT], lineMatches);
-printf("StereoLines::Process: MatchedLines after 3D calculation: %u\n", lineMatches);
+  // printf("StereoLines::Process: MatchedLines after 3D calculation: %u\n", lineMatches);
 }
 
 

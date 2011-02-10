@@ -22,7 +22,27 @@
 namespace Z
 {
 
-class StereoCore;		// forward declaration necessary
+// Enable pruning thresholds for lines
+static const bool SC_USE_LINE_THRESHOLDS = true;
+// Comparison between z-component and x+y-components (lines in z direction tending to be wrong)
+static const double SC_LINE_Z_TO_XY_LIMIT = 5.0;        // ~5
+// Limit of the significance value for beeing correct matched
+static const double SC_LINE_SIG_LIMIT = 0.01;          // ~0.01
+
+
+// Enable pruning thresholds for l-junctions
+static const bool SC_USE_LJCT_THRESHOLDS = true;
+// matching limit for deviations of L-Junctions (StereoLJunctions.cpp)
+static const double SC_LJCTS_MATCH_LIMIT = 0.2;         // ~0.2
+
+
+// Enable pruning thresholds for corners
+static const bool SC_USE_CORNER_THRESHOLDS = true;
+// matching limit for corners
+static const double SC_CORNER_MATCH_LIMIT = 1.0;        // ~1.0
+
+
+class StereoCore;  // forward declaration necessary
 
 /**
  * @class StereoBase
