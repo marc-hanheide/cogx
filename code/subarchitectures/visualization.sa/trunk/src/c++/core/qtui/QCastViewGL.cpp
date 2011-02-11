@@ -20,10 +20,22 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
-#include <cmath>
 #include "../convenience.hpp"
 
 const int ZOOM_RANGE = 5; // -N .. N
+
+void QCastViewGL::Camera::normalize()
+{
+   if (view.length() <= 0 || up.length() <= 0) return; // bad camera
+   QCastViewGL::Vector3 n = normal();
+   if (n.length() == 0) return; // bad camera
+   view.normalize();
+
+   QCastViewGL::Vector3 newup = view.cross(n);
+   newup.normalize();
+   up = newup;
+}
+
 QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
    DTRACE("QCastViewGL::QCastViewGL");
@@ -32,9 +44,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    yRot = 0;
    zRot = 0;
    zoomLevel = 0;
-
-   //m_camera.eye.set(0, 0, 5);
-   //m_camera.view.set(0, 0, -1);
+   m_pivot.set(0, 0, 0);
 }
 
 QCastViewGL::~QCastViewGL()
@@ -69,6 +79,7 @@ void QCastViewGL::selectCamera(cogx::display::CDisplayCamera* pCamera)
    m_camera.eye.set(pCamera->xEye, pCamera->yEye, pCamera->zEye);
    m_camera.view.set(pCamera->xView, pCamera->yView, pCamera->zView);
    m_camera.up.set(pCamera->xUp, pCamera->yUp, pCamera->zUp);
+   m_camera.normalize();
    //std::cout << " *** Camera set to " << pCamera->name << std::endl;
 }
 
@@ -328,8 +339,18 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
          setZRotation(zRot + dx*rot_scale);
       }
       else {
-         setXRotation(xRot - dy*rot_scale);
-         setYRotation(yRot + dx*rot_scale);
+         // orbit around current pivot
+         Vector3 dir = m_camera.normal()*dx + m_camera.up*dy;
+         std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
+
+         // very simple approach: keep the radius
+         double R = (m_camera.eye - m_pivot).length();
+         Vector3 neweye = m_camera.eye - dir * (R/10);
+         dir = neweye - m_pivot;
+         dir.normalize();
+         m_camera.view = dir * -1;
+         m_camera.normalize();
+         setCameraEye(dir * R);
       }
    }
    //printf("dx: %lf, dy: %lf, xRot: %f, yRot: %f, zRot: %f\n", dx, dy, xRot, yRot, zRot);
