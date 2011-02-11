@@ -378,14 +378,17 @@ int main(int argc, const char **argv) {
 int save_plan(const vector<const Operator *> &plan) {
     ofstream outfile;
     int plan_cost = 0;
+    double plan_prob = 1.0;
     outfile.open("sas_plan", ios::out);
     for (int i = 0; i < plan.size(); i++) {
-        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
+        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ", " << plan[i]->get_prob() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
         plan_cost += plan[i]->get_cost();
+        plan_prob *= plan[i]->get_prob();
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
+    cout << "Plan prob: " << plan_prob << endl;
     return plan_cost;
 }

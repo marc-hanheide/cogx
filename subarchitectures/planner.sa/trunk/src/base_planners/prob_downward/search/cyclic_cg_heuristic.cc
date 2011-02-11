@@ -66,9 +66,9 @@ void LocalTransition::on_source_expanded(const State &state) {
     assert(source->cost >= 0);
     assert(source->cost < LocalProblem::QUITE_A_LOT);
 
-    //target_cost = source->cost + action_cost;
-    target_cost = source->cost + source->prob * (action_cost + (1-action_prob) * g_reward) +1 ;
+    target_cost = source->cost + action_cost;
     target_prob = source->prob * action_prob;
+    // target_cost = source->cost + action_cost + (1-action_prob) * g_reward;
 
     if(target->cost <= target_cost) {
         // Transition cannot find a shorter path to target.
@@ -89,11 +89,13 @@ void LocalTransition::on_source_expanded(const State &state) {
     for(; curr_precond != last_precond; ++curr_precond) {
         int local_var = curr_precond->local_var;
         int current_val = children_state[local_var];
+        // double current_prob = ((double) children_state[local_var].prob) / (1 << 15);
         int precond_value = curr_precond->value;
         int precond_var_no = parent_vars[local_var];
         
-        if(current_val == precond_value)
+        if(current_val == precond_value) {
             continue;
+        }
 
         LocalProblem *&child_problem = problem_index[precond_var_no][current_val];
         if(!child_problem) {
@@ -105,9 +107,9 @@ void LocalTransition::on_source_expanded(const State &state) {
             child_problem->initialize(source->priority(), current_val, state);
         LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
         if(cond_node->expanded) {
-            target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_reward);
+            // target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_multiplier * g_reward);
             target_prob *= cond_node->prob;
-            //target_cost += cond_node->cost;
+            target_cost += cond_node->cost;
             if(target->cost <= target_cost) {
                 // Transition cannot find a shorter path to target.
                 return;
@@ -124,7 +126,7 @@ void LocalTransition::on_condition_reached(int cost, double prob) {
     assert(unreached_conditions);
     --unreached_conditions;
     target_cost += cost;
-    //target_cost = target_cost + target_prob * (cost + (1-prob) * 1000);
+    // target_cost = target_cost + target_prob * (cost + (1-prob) * g_multiplier * g_reward);
     target_prob *= prob;
 
     try_to_fire();
@@ -183,7 +185,7 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
             LocalProblemNode &target = nodes[target_value];
             for(int j = 0; j < dtg_trans.ccg_labels.size(); j++) {
                 const ValueTransitionLabel &label = dtg_trans.ccg_labels[j];
-                int action_cost = dtg->is_axiom ? 0 : label.op->get_cost();
+                int action_cost = dtg->is_axiom ? 0 : label.op->get_cost() + label.op->get_p_cost();
                 double action_prob = dtg->is_axiom ? 1.0 : label.op->get_prob();
                 LocalTransition trans(&node, &target, &label, action_cost, action_prob);
                 node.outgoing_transitions.push_back(trans);
@@ -233,6 +235,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
     }
 
     LocalProblemNode *start = &nodes[start_value];
+    // start->prob = start_prob;
     start->cost = 0;
     for(int i = 0; i < causal_graph_parents->size(); i++)
         start->children_state[i] = state[(*causal_graph_parents)[i]];
@@ -332,8 +335,13 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
             assert(node->owner->is_initialized());
             if(node->priority() < curr_priority)
                 continue;
-            if(node == goal_node)
-                return node->cost;// + (1-node->prob) * g_reward;
+            if(node == goal_node) {
+                // cout << "cea:" << node->prob << "    " << node->cost <<  endl;
+                if (node->cost == 0)
+                    return 0;
+                
+                return 1 + (1-node->prob) * g_reward;
+            }
 
             assert(node->priority() == curr_priority);
             node->on_expand();

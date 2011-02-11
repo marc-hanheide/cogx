@@ -56,6 +56,7 @@ class Operator {
     std::vector<PrePost> pre_post;     // var, old-val, new-val, effect conditions
     std::string name;
     int cost;
+    int log_p;
     double probability;
 
     mutable bool marked; // Used for short-term marking of preferred operators
@@ -101,6 +102,7 @@ public:
     mutable bool marker1, marker2; // HACK! HACK!
 
     int get_cost() const {return cost;}
+    int get_p_cost() const {return log_p;}
     double get_prob() const {return probability;}
 };
 

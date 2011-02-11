@@ -52,6 +52,7 @@ extern int g_abstraction_peak_memory;
 extern int g_abstraction_nr;
 
 extern int g_reward;
+extern int g_multiplier;
 
 extern Timer g_timer;
 
