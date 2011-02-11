@@ -33,7 +33,7 @@ namespace spatial
 	return new VisualObjectSearch();
       }
   } 
-  VisualObjectSearch::VisualObjectSearch() {
+  VisualObjectSearch::VisualObjectSearch() : m_sampler(0){
     // TODO Auto-generated constructor stub
     // If we're not building the map it means we're using an already built one. Hence, read it.		         
     m_bEvaluation = false;
@@ -3091,7 +3091,7 @@ log("filled");
 	for(unsigned int i = 0; i < m_objectlist.size(); i++){
 	  /*if (find(m_recognizedobjects.begin(), m_recognizedobjects.end(),m_objectlist[i]) == m_recognizedobjects.end()){
 
-	    /* if(m_objectlist[i] == "metalbox" || m_objectlist[i] == "table1" || m_objectlist[i] == "table2"
+	    if(m_objectlist[i] == "metalbox" || m_objectlist[i] == "table1" || m_objectlist[i] == "table2"
 	       || m_objectlist[i] == "shelves" ){
 	       log("asking to ARTag for object %s", m_objectlist[i].c_str());
 	       addARTagCommand(m_objectlist[i]);
