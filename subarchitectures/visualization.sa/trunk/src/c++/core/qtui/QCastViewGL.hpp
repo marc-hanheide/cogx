@@ -18,6 +18,7 @@
 
 #include "QCastViewBase.hpp"
 #include <QGLWidget>
+#include <cmath>
 
 // class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
 class QCastViewGL: public QGLWidget, public QCastViewBase
@@ -66,18 +67,30 @@ private:
       Vector3 cross(const Vector3& v) {
          return Vector3( y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x );
       }
+      double length() {
+         return sqrt(x*x + y*y + z*z);
+      }
+      void normalize() {
+         double s = length();
+         if (s == 0) return;
+         x = x / s;
+         y = y / s;
+         z = z / s;
+      }
    };
 
    struct Camera {
       Vector3 eye;  // eye point = origin of camera
       Vector3 view; // view direction of the camera (unit vector)
       Vector3 up;   // up vector of the camera (unit vector)
-      Camera(): eye(0, 0, 0), up(0, 1, 0), view(0, 0, 1) {}
+      Camera(): eye(0, 0, 0), view(0, 0, 1), up(0, 1, 0) {}
       Vector3 normal() {
          return up.cross(view);
       }
+      void normalize();
    };
    Camera m_camera;
+   Vector3 m_pivot;
 
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
