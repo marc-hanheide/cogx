@@ -23,6 +23,7 @@
 #include <cmath>
 #include "../convenience.hpp"
 
+const int ZOOM_RANGE = 5; // -N .. N
 QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
    DTRACE("QCastViewGL::QCastViewGL");
@@ -98,12 +99,17 @@ void QCastViewGL::onCameraChangeAction()
       selectCamera(pCamera);
    }
 
+   // Replace the action for the button.
+   // Parent hierarchy: action -> menu -> button
    QMenu *pMenu = qobject_cast< QMenu* >(pAct->parent());
    if (pMenu) {
       QToolButton* pBut = qobject_cast< QToolButton* >(pMenu->parent());
       if (pBut) {
-         //std::cout << "Changing default action" << std::endl;
-         pBut->setDefaultAction(pAct);
+         QAction *pOldAct = pBut->defaultAction();
+         if (pOldAct && pOldAct->parent() == pAct->parent()) {
+            //std::cout << "Changing default action" << std::endl;
+            pBut->setDefaultAction(pAct);
+         }
       }
    }
 }
@@ -111,6 +117,7 @@ void QCastViewGL::onCameraChangeAction()
 void QCastViewGL::onActConfigureCameras()
 {
    // TODO: display dialog with one list for each camera
+   // TODO: save camera selections to the registry; reload on (first) activation
 }
 
 void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
@@ -133,6 +140,8 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
          pBut->setDefaultAction(pAct);
          pBar->addWidget(pBut);
          pBar->connect(pAct, SIGNAL(triggered()), this, SLOT(onCameraChangeAction()));
+
+         // With more than 3 cameras things become complicated...
          if (i == 2 && cameras.size() > 2) {
             QAction *pPopAct;
             QMenu *pMenu = new QMenu(pBut); // parent MUST be button, see onCameraChangeAction
@@ -250,12 +259,23 @@ void QCastViewGL::resizeGL(int width, int height)
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    if (1) {
-      float ang;
-      if (zoomLevel >= 0) ang = 50/pow(2.0, zoomLevel);
-      else ang = 50 - zoomLevel*25;
-      if (ang < 1) ang = 1;
+      const float PI = 3.14159265;
+      const float PI2 = PI / 2;
+      const float x[3] = {0, 0.5, 1};
+      const float zoomangles[3] = {170, 50, 5}; // at x[]
+      const float A = 1.0 / ((x[0] - x[1]) * (x[0] - x[2]));
+      const float B = 1.0 / ((x[1] - x[0]) * (x[1] - x[2]));
+      const float C = 1.0 / ((x[2] - x[0]) * (x[2] - x[1]));
+      float zl = (zoomLevel + ZOOM_RANGE) / (2 * ZOOM_RANGE); // 0 .. 1
+      float ang =
+         zoomangles[0] * (A * (zl-x[1]) * (zl-x[2])) +
+         zoomangles[1] * (B * (zl-x[0]) * (zl-x[2])) +
+         zoomangles[2] * (C * (zl-x[0]) * (zl-x[1]));
+
+      if (ang < 5) ang = 5;
       if (ang > 170) ang = 170;
       gluPerspective(ang, aspect, 0.01, 20.0);
+
       // glFrustum (-1.0*zoomFactor, 1.0*zoomFactor, -1.0*zoomFactor, 1.0*zoomFactor, 1.5, 20.0);
    }
    //else {
@@ -318,10 +338,10 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
 
 void QCastViewGL::wheelEvent(QWheelEvent *e)
 {
-   double trans_scale = 0.01, zoom_scale = 1.0;
+   double trans_scale = 0.01, zoom_scale = 0.5;
    if (e->modifiers() & Qt::ControlModifier) {
-      const double lvlmin = -5;
-      const double lvlmax = 5;
+      const double lvlmin = -ZOOM_RANGE;
+      const double lvlmax = ZOOM_RANGE;
       double lvl = zoomLevel;
 
       if (e->delta() > 0) zoomLevel += zoom_scale;
