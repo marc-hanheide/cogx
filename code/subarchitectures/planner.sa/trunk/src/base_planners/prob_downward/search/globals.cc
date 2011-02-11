@@ -62,7 +62,7 @@ void read_variables(istream &in) {
     int range;
     in >> range;
     g_variable_domain.push_back(range);
-    if(range > numeric_limits<state_var_t>::max()) {
+    if(range > numeric_limits<short>::max()) {
       cout << "You bet!" << endl;
       exit(1);
     }
@@ -175,7 +175,8 @@ int g_compose_strategy = COMPOSE_LINEAR_CG_GOAL_LEVEL;
 int g_collapse_strategy = COLLAPSE_HIGH_F_LOW_H;
 bool g_merge_and_shrink_bound_is_for_product = true;
 
-int g_reward = 3000;
+int g_reward = 100;
+int g_multiplier = 100;
 
 // TODO: The following three should be command-line options.
 bool g_merge_and_shrink_simplify_labels = true;

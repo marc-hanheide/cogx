@@ -2,6 +2,7 @@
 #include "operator.h"
 
 #include <iostream>
+#include <math.h>
 using namespace std;
 
 Prevail::Prevail(istream &in) {
@@ -40,8 +41,10 @@ Operator::Operator(istream &in, bool axiom) {
     } else {
       int op_cost;
       in >> op_cost;
-      cost = g_use_metric ? op_cost+1 : 1;
+      cost = g_use_metric ? op_cost : 1;
       in >> probability;
+      log_p = (int) -log(probability);
+      // cout << probability << " = " << -log(probability) << endl;
     }
     g_min_action_cost = min(g_min_action_cost, cost);
 
