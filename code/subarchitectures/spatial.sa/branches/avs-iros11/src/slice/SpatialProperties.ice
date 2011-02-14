@@ -70,7 +70,7 @@ module SpatialProperties
   class DiscreteProbabilityDistribution extends ProbabilityDistribution
   {
     ValueProbabilityPairs data;
-  };
+  };	
 
 
   // -----------------------------------------------------------------
@@ -94,7 +94,11 @@ module SpatialProperties
 
     /** True if the MAP estimate is considered as reliable. */
     bool mapValueReliable;
+
+	/** If true, the property values are inferred not observed. */
+	bool inferred;
   };
+
 
   /** Represents the gateway property of a place. */
   class GatewayPlaceProperty extends PlaceProperty
@@ -144,6 +148,16 @@ module SpatialProperties
   {
     float value;
   };
+
+
+  /** Property of a placeholder describing the likelihood of 
+      existance of a room of specific category at or behind
+      the placeholder. */
+  class RoomCategoryPlaceholderProperty extends PlaceProperty
+  {
+  	string category;
+  };
+
 
   /** 
    * Class representing the semantic room category as observed from
