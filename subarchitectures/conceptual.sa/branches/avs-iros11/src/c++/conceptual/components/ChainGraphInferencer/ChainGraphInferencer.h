@@ -85,8 +85,15 @@ private:
 	/** Performs all inferences on the factor graph. */
 	void runAllInferences();
 
+	/** Performs generation of all imaginary worlds and runs inverence on those. */
+	void runImaginaryWorldsGeneration();
+
 	/** Prepares inference results based on the graph in which inference was performed. */
-	void prepareInferenceResult(std::string queryString,
+	void prepareInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
+			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+
+	/** Prepares inference results based on the graph and imaginary worlds. */
+	void prepareImaginaryInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
 			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
 
 	/** Reads the default knowledge factors from the Default.SA */
@@ -99,6 +106,9 @@ private:
 	/** Returns probability value from the distribution. */
 	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string var1Value, bool var2value);
+
+	/** Parses a query into a vector of variables. */
+	void parseQuery(std::string queryString, std::vector<std::string> &variables);
 
 
 private:
@@ -134,6 +144,9 @@ private:
 
 	/** Name of the file to which the info about variables and their values is saved.  */
 	std::string _saveGraphInfoFileName;
+
+	/** If true, placeholder properties will be inferred. */
+	bool _inferPlaceholderProperties;
 
 	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
@@ -172,6 +185,15 @@ private:
 
 	/** The main factor graph used for inference. */
 	dai::FactorGraph _factorGraph;
+
+	/** Inferred room category placeholder property. */
+	struct RoomCategoryPlaceholderPropertyInfo
+	{
+		int placeholderId;
+		std::string category;
+		double probability;
+	};
+	std::list<RoomCategoryPlaceholderPropertyInfo> _roomCategoryPlaceholderPropertyInfos;
 
 	/** Junction tree. */
 //	dai::JTree _junctionTree;

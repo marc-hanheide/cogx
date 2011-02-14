@@ -57,6 +57,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	{
 		_appearanceThreshold = boost::lexical_cast<double>(it->second);
 	}
+	_includePlaceholderInfo = (_config.find("--no-placeholders") == _config.end());
 
 	if ((_shapeThreshold<0.0) || (_appearanceThreshold<0.0))
 		throw CASTException(exceptionMessage(__HERE__, "Please set shape-threshold and appearance-threshold!"));
@@ -64,6 +65,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	log("Configuration parameters:");
 	log("-> Shape threshold: %f", _shapeThreshold);
 	log("-> Appearances threshold: %f", _appearanceThreshold);
+	log("-> Include placeholder information: %s", (_includePlaceholderInfo)?"yes":"no");
 
 	/** Set the initial world state */
 	initializeWorldState();
@@ -247,31 +249,48 @@ void Observer::updateWorldState()
 
 			// Get room connectivity for this place
 			int room1Id = comaRoomPtr->roomId;
-			debug("Getting room connectivity for place %d in room %d", placeId, room1Id);
+			//debug("Getting room connectivity for place %d in room %d", placeId, room1Id);
 			vector<int> connectedPlaces;
 			getConnectedPlaces(placeId, &connectedPlaces);
 			for(unsigned int j=0; j<connectedPlaces.size(); ++j)
 			{
-				int room2Id = getRoomForPlace(connectedPlaces[j]);
-				if (room2Id>=0) // We actually found a room. It's not a placeholder!
+				// Check if the connected place is a placeholder
+				if (isTruePlace(connectedPlaces[j]))
 				{
-					if (room1Id<room2Id)
+					int room2Id = getRoomForPlace(connectedPlaces[j]);
+					if (room2Id>=0) // We actually found a room. It's not a placeholder!
 					{
-						ConceptualData::RoomConnectivityInfo rci;
-						rci.room1Id=room1Id;
-						rci.room2Id=room2Id;
-						newWorldStatePtr->roomConnections.push_back(rci);
-					}
-					if (room2Id<room1Id)
-					{
-						ConceptualData::RoomConnectivityInfo rci;
-						rci.room1Id=room2Id;
-						rci.room2Id=room1Id;
-						newWorldStatePtr->roomConnections.push_back(rci);
+						if (room1Id<room2Id)
+						{
+							ConceptualData::RoomConnectivityInfo rci;
+							rci.room1Id=room1Id;
+							rci.room2Id=room2Id;
+							newWorldStatePtr->roomConnections.push_back(rci);
+						}
+						if (room2Id<room1Id)
+						{
+							ConceptualData::RoomConnectivityInfo rci;
+							rci.room1Id=room2Id;
+							rci.room2Id=room1Id;
+							newWorldStatePtr->roomConnections.push_back(rci);
+						}
 					}
 				}
-			}
+				else
+				{
+					// If we include placeholders and it's a new placeholder, add it to the room info
+					if ( (_includePlaceholderInfo) && (isPlaceholder(connectedPlaces[j]))
+							&& (!isPlaceholderPresent(cri, connectedPlaces[j])) )
+					{
+						ConceptualData::PlaceholderInfo pli;
+						pli.placeholderId = connectedPlaces[j];
 
+						// Add the place info
+						cri.placeholders.push_back(pli);
+
+					}
+				}
+			} // for(unsigned int j=0; j<connectedPlaces.size(); ++j)
 		} // for(unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
 
 		newWorldStatePtr->rooms.push_back(cri);
@@ -351,6 +370,16 @@ bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, Concep
 						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
 					return true;
 			}
+		}
+		// Check placeholders
+		if (cri1.placeholders.size() != cri2.placeholders.size())
+			return true;
+		for (unsigned int j=0; j<cri1.placeholders.size(); ++j)
+		{
+			ConceptualData::PlaceholderInfo phi1 = cri1.placeholders[j];
+			ConceptualData::PlaceholderInfo phi2 = cri2.placeholders[j];
+			if (phi1.placeholderId != phi2.placeholderId)
+				return true;
 		}
 	}
 
@@ -447,7 +476,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialData::PlacePtr placePtr;
 		try
 		{
@@ -508,7 +537,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialProperties::GatewayPlacePropertyPtr gatewayPlacePropertyPtr;
 		try
 		{
@@ -533,7 +562,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		{
 			gatewayPlacePropertyPtr =
 					getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmChange.address);
-		}
+		}// Room added
 		catch(CASTException &e)
 		{
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
@@ -571,7 +600,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr;
 		try
 		{
@@ -634,7 +663,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
 		try
 		{
@@ -698,7 +727,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr;
 		try
 		{
@@ -763,7 +792,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
-	{ // Room added
+	{
 		SpatialProperties::ConnectivityPathPropertyPtr connectivityPathPropertyPtr;
 		try
 		{
@@ -820,6 +849,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 }
 
 
+// -------------------------------------------------------
 bool Observer::isTruePlace(int placeId)
 {
 	map<cast::cdl::WorkingMemoryAddress, SpatialData::PlacePtr>::iterator placeIt;
@@ -830,6 +860,32 @@ bool Observer::isTruePlace(int placeId)
 	}
 
 	return false; // If not found, we will say it's not a true place
+}
+
+
+// -------------------------------------------------------
+bool Observer::isPlaceholder(int placeId)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialData::PlacePtr>::iterator placeIt;
+	for( placeIt=_placeWmAddressMap.begin(); placeIt!=_placeWmAddressMap.end(); ++placeIt)
+	{
+		if (placeIt->second->id == placeId)
+			return (placeIt->second->status == SpatialData::PLACEHOLDER);
+	}
+
+	return false; // If not found, we will say it's not a placeholder
+}
+
+
+// -------------------------------------------------------
+bool Observer::isPlaceholderPresent(const ConceptualData::ComaRoomInfo &cri, int placeholderId)
+{
+	for (unsigned int i=0; i<cri.placeholders.size(); ++i)
+	{
+		if (cri.placeholders[i].placeholderId == placeholderId)
+			return true;
+	}
+	return false;
 }
 
 
@@ -861,7 +917,8 @@ void Observer::getObjectPlaceProperties(int placeId,
 			objectPlacePropertyIt!=_objectPlacePropertyWmAddressMap.end(); ++objectPlacePropertyIt)
 	{
 		SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr = objectPlacePropertyIt->second;
-		if (objectPlacePropertyPtr->placeId == placeId)
+		// Get only the observed properties
+		if ((objectPlacePropertyPtr->placeId == placeId) && (!objectPlacePropertyPtr->inferred))
 			properties.push_back(objectPlacePropertyPtr);
 	}
 }
@@ -876,7 +933,8 @@ void Observer::getShapePlaceProperties(int placeId,
 			shapePlacePropertyIt!=_shapePlacePropertyWmAddressMap.end(); ++shapePlacePropertyIt)
 	{
 		SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr = shapePlacePropertyIt->second;
-		if (shapePlacePropertyPtr->placeId == placeId)
+		// Get only the observed properties
+		if ((shapePlacePropertyPtr->placeId == placeId) && (!shapePlacePropertyPtr->inferred))
 			properties.push_back(shapePlacePropertyPtr);
 	}
 }
@@ -891,7 +949,8 @@ void Observer::getAppearancePlaceProperties(int placeId,
 			appearancePlacePropertyIt!=_appearancePlacePropertyWmAddressMap.end(); ++appearancePlacePropertyIt)
 	{
 		SpatialProperties::RoomAppearancePlacePropertyPtr appearancePlacePropertyPtr = appearancePlacePropertyIt->second;
-		if (appearancePlacePropertyPtr->placeId == placeId)
+		// Get only the observed properties
+		if ((appearancePlacePropertyPtr->placeId == placeId) && (!appearancePlacePropertyPtr->inferred))
 			properties.push_back(appearancePlacePropertyPtr);
 	}
 }

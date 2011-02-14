@@ -90,6 +90,12 @@ private:
 	/** Checks if the place is a true place based on the _placeWmAddressMap */
 	bool isTruePlace(int placeId);
 
+	/** Checks if the place is a placeholder based on the _placeWmAddressMap */
+	bool isPlaceholder(int placeId);
+
+	/** Returns true if the placeholder is already added to the ComaRoomInfo. */
+	bool isPlaceholderPresent(const ConceptualData::ComaRoomInfo &cri, int placeholderId);
+
 	/** Returns true if the place has a gateway property set. */
 	bool isGatewayPlace(int placeId);
 
@@ -149,6 +155,7 @@ private:
 
 	double _shapeThreshold;
 	double _appearanceThreshold;
+	bool _includePlaceholderInfo;
 
 }; // class Observer
 } // namespace
