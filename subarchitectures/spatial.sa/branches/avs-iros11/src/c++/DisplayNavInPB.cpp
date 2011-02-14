@@ -13,21 +13,19 @@
 //
 /*----------------------------------------------------------------------*/
 
-#include <list>
-#include <string>
 #include "DisplayNavInPB.hpp"
-#include <NavData.hpp>
-#include <Laser.hpp>
-#include <CureHWUtils.hpp>
-#include <cast/architecture/ChangeFilterFactory.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
-#ifdef DISPLAY_COMA
+#include "NavData.hpp"
+#include "Laser.hpp"
+#include "CureHWUtils.hpp"
+#include "VisionData.hpp"
+#include "SpatialData.hpp"
+#include "SpatialProperties.hpp"
+#include "FrontierInterface.hpp"
+#include "ComaData.hpp"
+
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <FrontierInterface.hpp>
-#include <ComaData.hpp>
-#endif
 #include <Navigation/NavGraph.hh>
 #include <Transformation/Pose3D.hh>
 #include <AddressBank/ConfigFileReader.hh>
@@ -35,42 +33,40 @@
 #include <Navigation/NavGraphNode.hh>
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
+
 #include <boost/numeric/ublas/matrix.hpp>
-#include <VisionData.hpp>
-#include <SpatialData.hpp>
-#include <SpatialProperties.hpp>
-#include <FrontierInterface.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <list>
+#include <string>
+
+
 using namespace std;
 using namespace cast;
 using namespace boost;
-using namespace navsa;
-//using namespace VisionData;
+using namespace spatial;
 
-/**
- * The function called to create a new instance of our component.
- *
- * Taken from zwork
- */
-extern "C" {
-  cast::interfaces::CASTComponentPtr newComponent() {
-    return new DisplayNavInPB();
-  }
+extern "C"
+{
+	cast::interfaces::CASTComponentPtr newComponent()
+	{
+		return new DisplayNavInPB();
+	}
 }
 
-DisplayNavInPB::DisplayNavInPB() {
+DisplayNavInPB::DisplayNavInPB()
+{
   m_LaserConnected = false;
-
   m_NoPeopleModel = false;
-  
   m_LaserServerHost = "localhost";
-
   m_RobotPose = 0;
   m_LineMap = 0;
-
   m_FovH = 45.0;
   m_FovV = 35.0;
   previouscenter.assign(3,0.0);
 }
+
 
 DisplayNavInPB::~DisplayNavInPB() 
 {
@@ -86,15 +82,16 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPeople = (_config.find("--no-people") == _config.end());
   m_ShowScans = (_config.find("--no-scans") == _config.end());
   m_ShowObjects = (_config.find("--no-objects") == _config.end());
-  m_ShowNodeClass = (_config.find("--no-nodeclass") == _config.end());
-  m_ShowAreaClass = (_config.find("--no-areaclass") == _config.end());
   m_ShowRobotViewCone = (_config.find("--no-robotviewcone") == _config.end());
   m_ShowPlanePoints = (_config.find("--no-plane-points") == _config.end());
   m_ShowSOIs = (_config.find("--no-sois") == _config.end());
-  m_ShowProperties = (_config.find("--no-properties") == _config.end());
   m_ShowPeopleId = (_config.find("--people-id") != _config.end());
   m_NonUniqueObjects = (_config.find("--non-unique") != _config.end());
   m_ReadPTU = (_config.find("--read-ptu") != _config.end());
+  m_ShowProperties = (_config.find("--no-properties") == _config.end());
+  m_ShowPlaceholders = (_config.find("--no-placeholders") == _config.end());
+  m_ShowRoomId = (_config.find("--no-roomid") == _config.end());
+  m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
 
   if (_config.find("--laser-server-host") != _config.end()) {
     std::istringstream str(_config.find("--laser-server-host")->second);
@@ -195,7 +192,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
 
 void DisplayNavInPB::start() {
 
-  // Hook up changes to the robot pose to a callback function
+  // Robot pose
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newRobotPose));  
@@ -204,7 +201,7 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newRobotPose));  
 	
-  // Hook up changes to the nav data to a callback function
+  // NavData
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newNavGraphNode));  
@@ -218,13 +215,6 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newNavGraphObject));  
-
-  addChangeFilter(createLocalTypeFilter<NavData::Area>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                      &DisplayNavInPB::newArea));  
-  addChangeFilter(createLocalTypeFilter<NavData::Area>(cdl::OVERWRITE),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                      &DisplayNavInPB::newArea));  
   
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -240,9 +230,11 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newPlace));
+  addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::DELETE),
+		  	  	  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::deletePlace));
 
-
-  // Hook up changes to the tracked People to a callback function
+  // People
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                            &DisplayNavInPB::newPerson));
@@ -255,8 +247,6 @@ void DisplayNavInPB::start() {
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                            &DisplayNavInPB::deletePerson));    
 
-
-  // Hook up changes to the id of the tacked person to a callback function
   addChangeFilter(createLocalTypeFilter<NavData::PersonFollowed>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                &DisplayNavInPB::newPersonFollowed));
@@ -264,8 +254,7 @@ void DisplayNavInPB::start() {
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                &DisplayNavInPB::newPersonFollowed));
 
-  // Hook up changes to the LineMap to a callback function
-
+  // LineMap
   addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newLineMap));  
@@ -280,6 +269,7 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newVPlist));
 
+  // Place & Placeholder Properties
   if (m_ShowProperties)
   {
 	    addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomShapePlaceProperty>(cdl::ADD),
@@ -298,9 +288,20 @@ void DisplayNavInPB::start() {
 	    addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomAppearancePlaceProperty>(cdl::OVERWRITE),
 		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
 		  &DisplayNavInPB::newAppearanceProperty));
+
+	    if (m_ShowPlaceholders)
+	    {
+			addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomCategoryPlaceholderProperty>(cdl::ADD),
+			new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+			  &DisplayNavInPB::newRoomCategoryPlaceholderProperty));
+
+			addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomCategoryPlaceholderProperty>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+			  &DisplayNavInPB::newRoomCategoryPlaceholderProperty));
+	    }
   }
 
-
+  // SOIs
   if (m_ShowSOIs) {
     addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::ADD),
 	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -311,6 +312,7 @@ void DisplayNavInPB::start() {
 	  &DisplayNavInPB::newPointCloud));
   }
 
+  // Plane points
   if (m_ShowPlanePoints) {
     addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::ADD),
 	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -321,15 +323,13 @@ void DisplayNavInPB::start() {
 	  &DisplayNavInPB::newPlanePointCloud));
   }
 
-#ifdef DISPLAY_COMA
-    // Hook up listener for changes to the coma rooms
+  // Coma Rooms
   addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newComaRoom));
   addChangeFilter(createGlobalTypeFilter<comadata::ComaRoom>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newComaRoom));
-#endif
 
   log("start done");  
 }
@@ -433,6 +433,248 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 }
 
 
+
+void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
+{
+	// Get the property
+	SpatialProperties::RoomAppearancePlacePropertyPtr property;
+    try
+    {
+    	property = getMemoryEntry<SpatialProperties::RoomAppearancePlaceProperty>(objID.address);
+	}
+	catch (...)
+	{
+	  log("Error! property disappeared from WM.");
+	  return;
+	}
+
+	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+    m_Mutex.lock();
+    m_PeekabotClient.begin_bundle();
+
+	_appearanceProps[property->placeId] = property;
+
+	// Get node it for the place ID
+    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
+    // search m_Nodes for place and change its room id
+    std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
+
+    if (nodeIter == m_Nodes.end()) {
+        println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
+        m_PeekabotClient.end_bundle();
+        m_Mutex.unlock();
+
+        return;
+    }
+
+    DisplayNavInPB::Node node = nodeIter->second;
+
+	// Get the node proxy
+	peekabot::SphereProxy sp;
+    char name1[32];
+    sprintf(name1, "node%ld", (long)node.m_Id);
+    sp.assign(m_ProxyNodes, name1);
+
+    addProperties(sp,property->placeId);
+
+    m_PeekabotClient.end_bundle();
+    m_Mutex.unlock();
+
+}
+
+
+void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
+{
+	if (!m_PeekabotClient.is_connected())
+		return;
+
+	// Get the ComaRoom
+	comadata::ComaRoomPtr croom;
+	try
+	{
+		croom = getMemoryEntry<comadata::ComaRoom>(objID.address);
+	}
+	catch (...)
+	{
+		log("Error! coma room cloud disappeared from WM.");
+		return;
+	}
+
+	// Initialization
+	::Ice::Int roomId = croom->roomId;
+	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+	debug("New Coma Room recieved: id=%d",roomId);
+
+	// Update DisplayNavInPB
+	m_Mutex.lock();
+	m_PeekabotClient.begin_bundle();
+
+	// For each place in the room
+	for (::std::vector< ::Ice::Long>::iterator iter = croom->containedPlaceIds.begin();
+			iter != croom->containedPlaceIds.end();
+			iter++ )
+	{
+		// Get node id from place id
+		::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) *iter); // why is iter a long?
+
+		// Search m_Nodes for place and change its room id
+		std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
+
+		if (nodeIter == m_Nodes.end())
+		{
+			log("error: coma room %d contains a node I do not know about: placeID = %d",roomId, *iter);
+			continue;
+		}
+
+		DisplayNavInPB::Node node = nodeIter->second;
+		node.m_areaId = roomId;
+
+		// Is the node a gateway?
+		if(node.m_Gateway)
+		{
+			// If there is a gateway node here it means the node has changed to
+			// a door while we were processing this ComaRoom, so we can ignore it
+			log("Wasn't expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
+		}
+		else
+		{
+			// Update Peekabot
+			peekabot::SphereProxy sp;
+			char name[32];
+			sprintf(name, "node%ld", (long)node.m_Id);
+			sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+			sp.set_position(node.m_X, node.m_Y, 0);
+			float r,g,b;
+			getColorByIndex(roomId, r, g, b);
+			sp.set_scale(0.1, 0.1, 0.05);
+			debug("Added coma place with id %d", node.m_Id);
+			sp.set_color(r,g,b);
+
+			if (m_ShowProperties)
+			{
+				addProperties(sp, *iter);
+			}
+
+			if (m_ShowRoomId)
+			{
+				peekabot::CylinderProxy cp;
+				cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+				cp.set_scale(0.04, 0.04, 0.16);
+				cp.set_position(0,0,0.08);
+				getColorByIndex(roomId, r, g, b);
+				cp.set_color(r,g,b);
+
+				peekabot::SphereProxy mp;
+				mp.add(sp, "mushroom");
+				mp.set_scale(0.08, 0.08, 0.05);
+				mp.set_position(0, 0, 0.16);
+				mp.set_color(r,g,b);
+			}
+
+			if (m_ShowRoomCategory)
+			{
+				// Pie chart of category probabilities
+				double probSum=0.0;
+				double startAngle=0.0;
+				unsigned int index=0;
+				for (; index<_roomCategories.size(); ++index)
+				{
+					double prob = getProbabilityValue(
+							croom->categories, _roomCategories[index]);
+					getColorByIndex(index, r, g, b);
+					char name2[32];
+					if (index==0)
+						sprintf(name2, "node%ld.area_class", node.m_Id);
+					else
+						sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
+
+					// Calculations
+					probSum+=prob;
+					double endAngle=(2*3.1415926)*probSum;
+					// Add a polygon that corresponds to part of the pie chart
+					// between startAngle and endAngle;
+					peekabot::PolygonProxy acp;
+					acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
+					acp.add_vertex( 0, 0, 0 );
+					for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+						acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+					acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+					acp.set_opacity(0.3);
+					acp.set_color(r,g,b);
+					startAngle=endAngle;
+				}
+				// Add one for the rest
+				char name2[32];
+				if (index==0)
+					sprintf(name2, "node%ld.area_class", node.m_Id);
+				else
+					sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
+				double endAngle=(2*3.1415926);
+				peekabot::PolygonProxy acp;
+				acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
+				acp.add_vertex( 0, 0, 0 );
+				for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+					acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+				acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+				acp.set_opacity(0.3);
+				acp.set_color(0.3,0.3,0.3);
+				startAngle=endAngle;
+			}
+
+			// We also redraw the edge just to make sure that it is drawn
+			// correctly if the position of the node changed.
+			redisplayEdgesToNode(node);
+		}
+	} // end for
+	m_PeekabotClient.end_bundle();
+	m_Mutex.unlock();
+}
+
+
+
+void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID)
+{
+
+    // Get the property
+	SpatialProperties::RoomCategoryPlaceholderPropertyPtr property;
+    try
+    {
+    	property = getMemoryEntry<SpatialProperties::RoomCategoryPlaceholderProperty>(objID.address);
+	}
+	catch (...)
+	{
+	  log("Error! property disappeared from WM.");
+	  return;
+	}
+
+	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    m_Mutex.lock();
+    m_PeekabotClient.begin_bundle();
+
+    // Remember the property
+    stringstream ss;
+    ss << property->placeId << "_";
+    ss << property->category;
+    _roomCatPlaceholderProps[ss.str()] = property;
+
+	// Get node hyp for the placeholder ID
+    FrontierInterface::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
+
+	// Get the node proxy
+    peekabot::CubeProxy sp;
+    char name[32];
+    sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
+    sp.assign(m_ProxyNodes, name);
+
+    addRoomCategoryPlaceholderProperties(sp, property->placeId);
+
+    m_PeekabotClient.end_bundle();
+    m_Mutex.unlock();
+}
+
+
+
 void DisplayNavInPB::addProperties(peekabot::SphereProxy &sp, int placeId)
 {
 	if (_shapeProps.find(placeId)!=_shapeProps.end())
@@ -487,219 +729,8 @@ void DisplayNavInPB::addProperties(peekabot::SphereProxy &sp, int placeId)
 }
 
 
-void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
-{
-	// Get the property
-	SpatialProperties::RoomAppearancePlacePropertyPtr property;
-    try
-    {
-    	property = getMemoryEntry<SpatialProperties::RoomAppearancePlaceProperty>(objID.address);
-	}
-	catch (...)
-	{
-	  log("Error! property disappeared from WM.");
-	  return;
-	}
 
-	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-
-    m_Mutex.lock();
-    m_PeekabotClient.begin_bundle();
-
-	_appearanceProps[property->placeId] = property;
-
-	// Get node it for the place ID
-    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
-    // search m_Nodes for place and change its room id
-    std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
-
-    if (nodeIter == m_Nodes.end()) {
-        println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
-        m_PeekabotClient.end_bundle();
-        m_Mutex.unlock();
-
-        return;
-    }
-
-    DisplayNavInPB::Node node = nodeIter->second;
-
-	// Get the node proxy
-	peekabot::SphereProxy sp;
-    char name1[32];
-    sprintf(name1, "node%ld", (long)node.m_Id);
-    sp.assign(m_ProxyNodes, name1);
-
-    addProperties(sp,property->placeId);
-
-    m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
-
-}
-
-
-#ifdef DISPLAY_COMA
-void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID){
- 
-    if (!m_PeekabotClient.is_connected()) return;
-
-    comadata::ComaRoomPtr croom;
-    try
-    {
-    	croom = getMemoryEntry<comadata::ComaRoom>(objID.address);
-	}
-	catch (...)
-	{
-	  log("Error! coma room cloud disappeared from WM.");
-	  return;
-	}
-
-
-    ::Ice::Int roomId = croom->roomId;
-
-    ::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-	
-    println("New Coma Room recieved: id=%d",roomId);
-
-    m_Mutex.lock();
-    m_PeekabotClient.begin_bundle();
-	
-    // for each node in room change 
-    for (::std::vector< ::Ice::Long>::iterator iter = croom->containedPlaceIds.begin();
-        iter != croom->containedPlaceIds.end();
-        iter++ )
-    {
-        // get node id from place id
-        ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) *iter); // why is iter a long?
-	    
-        // search m_Nodes for place and change its room id	    
-        std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
-
-        if (nodeIter == m_Nodes.end()) {
-            println("error: coma room %d contains a node I do not know about: placeID = %d",roomId, *iter);
-            continue;
-        }
-
-        DisplayNavInPB::Node node = nodeIter->second;
-        node.m_areaId = roomId; // is this correct?
-
-
-        if(node.m_Gateway) {
-            // If there is a gateway node here it means the node has changed to
-            // a door while we were processing this ComaRoom, so we can ignore it
-            println("Wasn't expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
-            log    ("Wasn't expecting a gateway node (id %d) here! (DisplayNavInPB::newComaRoom)",node.m_Id);
-        } else {
-            // let peekabot know
-            peekabot::SphereProxy sp;
-            char name[32];
-            sprintf(name, "node%ld", (long)node.m_Id);
-            sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
-            sp.set_position(node.m_X, node.m_Y, 0);
-
-            float r,g,b;
-            getColorByIndex(roomId, r, g, b);
-            sp.set_scale(0.1, 0.1, 0.05);
-            println("Added coma place with id %d", node.m_Id);
-            sp.set_color(r,g,b);    
-            
-            if (m_ShowProperties)
-            {
-            	addProperties(sp, *iter);
-            }
-
-            if (m_ShowNodeClass) 
-            {
-                peekabot::CylinderProxy cp;
-                cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
-                cp.set_scale(0.04, 0.04, 0.16);
-                cp.set_position(0,0,0.08);
-                //FIXME
-                //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-                getColorByIndex(roomId, r, g, b);
-                cp.set_color(r,g,b);
-
-                peekabot::SphereProxy mp;
-                mp.add(sp, "mushroom");
-                mp.set_scale(0.08, 0.08, 0.05);
-                mp.set_position(0, 0, 0.16);
-                mp.set_color(r,g,b);
-            }
-            
-            if (m_ShowAreaClass)
-            {
-            	// Old code using a single circle
-//                peekabot::CylinderProxy acp;
-//                char name2[32];
-//                sprintf(name2, "node%ld.area_class", node.m_Id);
-//                acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
-//                acp.set_scale(0.5, 0.5, 0.0);
-//                acp.set_position(0,0,0);
-//                acp.set_opacity(0.3);
-//                //FIXME
-//                //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-//                getColorByIndex(roomId, r, g, b);
-//                //getColorByIndex(3+(fnode->areaId%6), r, g, b);
-//                acp.set_color(r,g,b);
-            	// Pie chart of category probabilities
-            	double probSum=0.0;
-            	double startAngle=0.0;
-            	unsigned int index=0;
-            	for (; index<_roomCategories.size(); ++index)
-            	{
-            		double prob = getComaRoomCategoryProbabilityValue(
-            				croom->categories, _roomCategories[index]);
-            		getColorByIndex(index, r, g, b);
-            		char name2[32];
-            		if (index==0)
-            			sprintf(name2, "node%ld.area_class", node.m_Id);
-            		else
-            			sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
-
-            		// Calculations
-            		probSum+=prob;
-            		double endAngle=(2*3.1415926)*probSum;
-            		// Add a polygon that corresponds to part of the pie chart
-            		// between startAngle and endAngle;
-            		peekabot::PolygonProxy acp;
-            		acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
-            		acp.add_vertex( 0, 0, 0 );
-            		for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-            		  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-         		    acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-         		    acp.set_opacity(0.3);
-         		    acp.set_color(r,g,b);
-            		startAngle=endAngle;
-            	}
-            	// Add one for the rest
-        		char name2[32];
-        		if (index==0)
-        			sprintf(name2, "node%ld.area_class", node.m_Id);
-        		else
-        			sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
-            	double endAngle=(2*3.1415926);
-        		peekabot::PolygonProxy acp;
-        		acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
-        		acp.add_vertex( 0, 0, 0 );
-        		for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-        		  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-     		    acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-     		    acp.set_opacity(0.3);
-     		    acp.set_color(0.3,0.3,0.3);
-        		startAngle=endAngle;
-
-            }
-            
-            // We also redraw the edge just to make sure that it is drawn
-            // correctly if the position of the node changed.
-            redisplayEdgesToNode(node);
-        }
-    } // end for
-    m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
-}
-
-
-double DisplayNavInPB::getComaRoomCategoryProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+double DisplayNavInPB::getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string varValue)
 {
 	for(unsigned int i=0; i<pd.massFunction.size(); ++i)
@@ -715,7 +746,24 @@ double DisplayNavInPB::getComaRoomCategoryProbabilityValue(const SpatialProbabil
 	return 0;
 }
 
-#endif
+
+double DisplayNavInPB::getProbabilityValue(const SpatialProperties::ProbabilityDistributionPtr pd,
+			int varValue)
+{
+	SpatialProperties::DiscreteProbabilityDistributionPtr dpd =
+			SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(pd);
+
+	for(unsigned int i=0; i<dpd->data.size(); ++i)
+	{
+		SpatialProperties::ValueProbabilityPair vpp = dpd->data[i];
+		int v1 = SpatialProperties::IntegerValuePtr::dynamicCast(vpp.value)->value;
+		if (v1 == varValue)
+			return vpp.probability;
+	}
+
+	return 0;
+}
+
 
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
@@ -1026,63 +1074,6 @@ void DisplayNavInPB::runComponent() {
   }
 }
 
-/*void DisplayNavInPB::newConvexHull(const cdl::WorkingMemoryChange
-				   &objID){
-
-  debug("newConvexHull called");
-  shared_ptr<CASTData<VisionData::ConvexHull> > oobj =
- getWorkingMemoryEntry<VisionData::ConvexHull>(objID.address);
-  m_Mutex.lock();
-  VisionData::ConvexHullPtr m_ConvexHull = oobj->getData();
-
-  if (previouscenter.at(0) == 0.0)
-
-    {
-      previouscenter.at(0) = m_ConvexHull->center.x;
-      previouscenter.at(1) = m_ConvexHull->center.y;
-      previouscenter.at(2) = m_ConvexHull->center.z;
-      
-      peekabot::GroupProxy planes;
-      planes.add(m_PeekabotClient,
-		 
-		 "root.ConvexHull", peekabot::REPLACE_ON_CONFLICT);
-      
-      peekabot::PolygonProxy pp;
-      char buf[32];
-      pp.add(planes, buf);
-      for (unsigned int i = 0; i < m_ConvexHull->PointsSeq.size(); i++)
-	pp.add_vertex(m_ConvexHull->PointsSeq[i].x,
-		      m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
-      pp.set_color(1.0, 0.0, 0.0);
-      pp.set_opacity(0.2);
-    }
-  else
-    {
-      
-      double dist =
-	sqrt((previouscenter.at(0)-m_ConvexHull->center.x)*(previouscenter.at(0)-m_ConvexHull->center.x)+(previouscenter.at(1)-m_ConvexHull->center.y)*(previouscenter.at(1)-m_ConvexHull->center.y)+(previouscenter.at(2)-m_ConvexHull->center.z)*(previouscenter.at(2)-m_ConvexHull->center.z));
-      
-      if (dist > m_ConvexHull->radius)
-	
-	{
-	  
-	  peekabot::GroupProxy planes;
-	  planes.add(m_PeekabotClient,
-		     "root.ConvexHull", peekabot::REPLACE_ON_CONFLICT);
-	  
-	  peekabot::PolygonProxy pp;
-	  char buf[32];
-	  pp.add(planes, buf);
-	  for (unsigned int i = 0; i < m_ConvexHull->PointsSeq.size(); i++)
-	    pp.add_vertex(m_ConvexHull->PointsSeq[i].x,
-			  m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
-	  pp.set_color(1.0, 0.0, 0.0);
-	  pp.set_opacity(0.2);
-	}
-      
-    }
-  m_Mutex.unlock();
-}*/
 
 void DisplayNavInPB::displayPeople()
 {
@@ -1160,55 +1151,7 @@ void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
   m_Scan = scan;
   m_Mutex.unlock();
 }
-     
-void DisplayNavInPB::newArea(const cdl::WorkingMemoryChange &objID)
-{
-  log("new Area");
 
-  if (!m_PeekabotClient.is_connected()) return;
-
-  // Get the area struct
-  shared_ptr<CASTData<NavData::Area> > oobj =
-      getWorkingMemoryEntry<NavData::Area>(objID.address);
-  NavData::AreaPtr area = oobj->getData();
-
-  if (!m_ShowAreaClass) 
-    return;
-
-  // Protect
-  m_Mutex.lock();
-  m_PeekabotClient.begin_bundle();
-
-  // Find nodes associated with this area
-  list<NavData::LineMapSegement> walls;
-  std::map<long, Node>::const_iterator ni;
-  for (ni=m_Nodes.begin(); ni!=m_Nodes.end(); ni++)
-  {
-    if ((*ni).second.m_areaId == area->id)
-    {
-      if (!(*ni).second.m_Gateway) 
-      {
-        peekabot::CylinderProxy acp;
-        char name2[32];
-        sprintf(name2, "node%ld/area_class", (*ni).second.m_Id);
-        log("adding: %s", name2);
-	sleep(1);
-	acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
-        acp.set_scale(0.5, 0.5, 0.0);
-        acp.set_position(0,0,0);
-        acp.set_opacity(0.2);
-        float r,g,b;
-        //FIXME
-	//place::ColorMap::getColorForPlaceClass(area->m_areaTypeNo, r, g, b);
-        getColorByIndex(3+(area->id%6), r, g, b);
-        acp.set_color(r,g,b);
-      }
-    }
-  }
-
-  m_PeekabotClient.end_bundle();
-  m_Mutex.unlock();
-}
 
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
@@ -1222,6 +1165,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
 }
+
 
 void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 {  
@@ -1383,219 +1327,169 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
-  debug("new NavGraphNode");
+	debug("new NavGraphNode");
 
-  try{
-  if (!m_PeekabotClient.is_connected()) return;
+	try
+	{
+		if (!m_PeekabotClient.is_connected())
+			return;
 
-  shared_ptr<CASTData<NavData::FNode> > oobj =
-    getWorkingMemoryEntry<NavData::FNode>(objID.address);
-  
-  NavData::FNodePtr fnode = oobj->getData();
+		shared_ptr<CASTData<NavData::FNode> > oobj =
+				getWorkingMemoryEntry<NavData::FNode>(objID.address);
 
-  m_Mutex.lock();
-  m_PeekabotClient.begin_bundle();
-  
-  std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
+		NavData::FNodePtr fnode = oobj->getData();
 
-  if (n == m_Nodes.end()) {  // Node does not exist
-    debug("Node %d new", (int)fnode->nodeId);
+		// Update DisplayNavInPB
+		m_Mutex.lock();
+		m_PeekabotClient.begin_bundle();
 
-    DisplayNavInPB::Node node;
-    node.m_Id = fnode->nodeId;
-    node.m_Gateway = (fnode->gateway != 0);
-    node.m_X = fnode->x;
-    node.m_Y = fnode->y;
-    node.m_areaId = fnode->areaId;
-    if (!fnode->type.empty()) node.m_AreaClassNo = fnode->type[0].id;
-    else node.m_AreaClassNo = -1;
-    m_Nodes.insert(std::make_pair(node.m_Id, node));
-    
-    peekabot::SphereProxy sp; // Create Root Sphere Proxy
-    char name[32];
-    sprintf(name, "node%ld", (long)fnode->nodeId);
-    sp.add(m_ProxyNodes, name);
-    sp.set_position(fnode->x, fnode->y, 0);
-    
-    float r,g,b;
-    if (fnode->gateway) {
-        // add gateway sphere
-        sp.set_scale(0.2, 0.2, 0.05);
-        getColorByIndex(1, r, g, b);
-      
-        double width = 1;
-        if (!fnode->width.empty()) width = fnode->width[0];
-            addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
-      
-        debug("Added gateway with id %d", fnode->nodeId);
-    } else {
-#ifdef DISPLAY_COMA
-        r = 0;
-        g = 0;
-        b = 0;
-        // set root sphere size zero
-        sp.set_scale(0, 0, 0);
-        debug("Added normal node with id %d", fnode->nodeId);
-#else
-        getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        sp.set_scale(0.1, 0.1, 0.05);  
-        debug("Added normal node with id %d", fnode->nodeId);
-#endif
-    }
-    sp.set_color(r,g,b);
+		// Update the node
+		std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
+		if (n == m_Nodes.end())
+		{  // Node does not exist, create new
+			debug("Node %d new", (int)fnode->nodeId);
 
-    
-#ifdef DISPLAY_COMA
-#else
-    if (m_ShowNodeClass && !fnode->gateway) 
-    {
-        peekabot::CylinderProxy cp;
-        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
-        cp.set_scale(0.04, 0.04, 0.16);
-        cp.set_position(0,0,0.08);
-        //FIXME
-        //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-        getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        cp.set_color(r,g,b);
+			DisplayNavInPB::Node node;
+			node.m_Id = fnode->nodeId;
+			node.m_Gateway = (fnode->gateway != 0);
+			node.m_X = fnode->x;
+			node.m_Y = fnode->y;
+			node.m_areaId = fnode->areaId;
+			if (!fnode->type.empty()) node.m_AreaClassNo = fnode->type[0].id;
+			else node.m_AreaClassNo = -1;
+			m_Nodes.insert(std::make_pair(node.m_Id, node));
 
-        peekabot::SphereProxy mp;
-        mp.add(sp, "mushroom");
-        mp.set_scale(0.08, 0.08, 0.05);
-        mp.set_position(0, 0, 0.16);
-        mp.set_color(r,g,b);
-    }
-#endif
+			// Update Peekabot
+			peekabot::SphereProxy sp;
+			char name[32];
+			sprintf(name, "node%ld", (long)fnode->nodeId);
+			sp.add(m_ProxyNodes, name);
+			sp.set_position(fnode->x, fnode->y, 0);
 
-    if (m_ShowAreaClass && !fnode->gateway) { 
-	    // add translucent area circle
-        peekabot::CylinderProxy acp;
-        char name2[32];
-        sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
-        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
-        acp.set_scale(0.5, 0.5, 0.0);
-        acp.set_position(0,0,0);
-        acp.set_opacity(0.3);
-        //FIXME
-        //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-#ifdef DISPLAY_COMA
-        acp.set_color(0,0,0); // Node is not assigned to a comaRoom so colour it black
-#else
-        getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        acp.set_color(r,g,b);        
-#endif
-    }
+			float r,g,b;
+			if (fnode->gateway)
+			{
+				// add gateway sphere
+				sp.set_scale(0.2, 0.2, 0.05);
+				getColorByIndex(1, r, g, b);
+
+				double width = 1;
+				if (!fnode->width.empty()) width = fnode->width[0];
+				addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
+
+				debug("Added gateway with id %d", fnode->nodeId);
+			}
+			else
+			{
+				r = 0;
+				g = 0;
+				b = 0;
+				// set root sphere size zero
+				sp.set_scale(0, 0, 0);
+				debug("Added normal node with id %d", fnode->nodeId);
+			}
+			sp.set_color(r,g,b);
 
 
+			if (m_ShowRoomId && !fnode->gateway)
+			{
+				// add translucent area circle
+				peekabot::CylinderProxy acp;
+				char name2[32];
+				sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
+				acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+				acp.set_scale(0.5, 0.5, 0.0);
+				acp.set_position(0,0,0);
+				acp.set_opacity(0.3);
+				acp.set_color(0,0,0); // Node is not assigned to a comaRoom so colour it black
+			}
 
-  } else { // Node already exists
-    log("Node %d already there, should be changed", fnode->nodeId);
+		}
+		else
+		{ // Node already exists
+			debug("Node %d already there, should be changed", fnode->nodeId);
 
-    n->second.m_Id = fnode->nodeId;
-    n->second.m_Gateway = (fnode->gateway != 0);
-    n->second.m_X = fnode->x;
-    n->second.m_Y = fnode->y;
-    n->second.m_areaId = fnode->areaId;
-    if (!fnode->type.empty()) 
-      n->second.m_AreaClassNo = fnode->type[0].id;
-    else 
-      n->second.m_AreaClassNo = -1;
+			n->second.m_Id = fnode->nodeId;
+			n->second.m_Gateway = (fnode->gateway != 0);
+			n->second.m_X = fnode->x;
+			n->second.m_Y = fnode->y;
+			n->second.m_areaId = fnode->areaId;
+			if (!fnode->type.empty())
+				n->second.m_AreaClassNo = fnode->type[0].id;
+			else
+				n->second.m_AreaClassNo = -1;
 
-    peekabot::SphereProxy sp;  // Create root sphere proxy
-    char name[32];
-    sprintf(name, "node%ld", (long)fnode->nodeId);
-    sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
-    sp.set_position(fnode->x, fnode->y, 0);
+			// Update Peekabot
+			peekabot::SphereProxy sp;
+			char name[32];
+			sprintf(name, "node%ld", (long)fnode->nodeId);
+			sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+			sp.set_position(fnode->x, fnode->y, 0);
 
-    float r,g,b;
-    if (fnode->gateway) {
-        sp.set_scale(0.2, 0.2, 0.05);
-        getColorByIndex(1, r, g, b);
+			float r,g,b;
+			if (fnode->gateway)
+			{
+				sp.set_scale(0.2, 0.2, 0.05);
+				getColorByIndex(1, r, g, b);
 
-        double width = 1;
-        if (!fnode->width.empty()) width = fnode->width[0];
-            addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
+				double width = 1;
+				if (!fnode->width.empty()) width = fnode->width[0];
+				addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
 
-        debug("modified gateway with id %d", fnode->nodeId);
-    } else { 
-#ifdef DISPLAY_COMA
-        // Do not show root sphere for non-doorways
-        r= 0; g=0; b=0;
-        sp.set_scale(0, 0, 0);
-        debug("modified normal node with id %d", fnode->nodeId);
-#else
-        getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        sp.set_scale(0.1, 0.1, 0.05);
-        debug("Added normal node with id %d", fnode->nodeId);
-#endif
-    }
-    sp.set_color(r,g,b);    
+				debug("modified gateway with id %d", fnode->nodeId);
+			} else {
+				// Do not show root sphere for non-doorways
+				r= 0; g=0; b=0;
+				sp.set_scale(0, 0, 0);
+				debug("modified normal node with id %d", fnode->nodeId);
+			}
+			sp.set_color(r,g,b);
 
-#ifdef DISPLAY_COMA
-#else
-    if (m_ShowNodeClass && !fnode->gateway)
-    {
-        peekabot::CylinderProxy cp;
-        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
-        cp.set_scale(0.04, 0.04, 0.16);
-        cp.set_position(0,0,0.08);
-        //FIXME
-	    //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-        getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        cp.set_color(r,g,b);
+			if (m_ShowRoomId && !fnode->gateway)
+			{
+				peekabot::CylinderProxy acp;
+				char name2[32];
+				sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
+				acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+				acp.set_scale(0.5, 0.5, 0.0);
+				acp.set_position(0,0,0);
+				acp.set_opacity(0.3);
+				acp.set_color(r,g,b);
+			}
 
-        peekabot::SphereProxy mp;
-        mp.add(sp, "mushroom");
-        mp.set_scale(0.08, 0.08, 0.05);
-        mp.set_position(0, 0, 0.16);
-        mp.set_color(r,g,b);
-    }
-#endif
-    if (m_ShowAreaClass && !fnode->gateway) 
-    {
-        peekabot::CylinderProxy acp;
-        char name2[32];
-        sprintf(name2, "node%ld/area_class", (long)fnode->nodeId);
-        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
-        acp.set_scale(0.5, 0.5, 0.0);
-        acp.set_position(0,0,0);
-        acp.set_opacity(0.3);
-        //FIXME
-        //place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
-        //getColorByIndex(3+(fnode->areaId%6), r, g, b);
-        acp.set_color(r,g,b);
-    }
+			// We also redraw the edge just to make sure that it is drawn
+			// correctly if the position of the node changed.
+			redisplayEdgesToNode(n->second);
+		}
 
-    // We also redraw the edge just to make sure that it is drawn
-    // correctly if the position of the node changed.
-    redisplayEdgesToNode(n->second);
-  }
+		for (std::list< std::pair<long,long> >::iterator ei = m_NewEdges.begin();
+				ei != m_NewEdges.end();)
+		{
 
-  for (std::list< std::pair<long,long> >::iterator ei = m_NewEdges.begin();
-       ei != m_NewEdges.end();) {
+			// Check if the nodes are there now
+			std::map<long,Node>::iterator n1 = m_Nodes.find(ei->first);
+			std::map<long,Node>::iterator n2 = m_Nodes.find(ei->second);
 
-    // Check if the nodes are there now
-    std::map<long,Node>::iterator n1 = m_Nodes.find(ei->first);
-    std::map<long,Node>::iterator n2 = m_Nodes.find(ei->second);
+			if (n1 != m_Nodes.end() && n2 != m_Nodes.end())
+			{ // Found nodes
 
-    if (n1 != m_Nodes.end() && n2 != m_Nodes.end()) { // Found nodes
+				displayEdge(n1->second, n2->second);
+				addEdgeToList(n1->second.m_Id, n2->second.m_Id);
+				ei = m_NewEdges.erase(ei);
+			}
+			else
+			{
+				ei++;
+			}
+		}
+		m_PeekabotClient.end_bundle();
+	}
+	catch (DoesNotExistOnWMException e)
+	{
+		log("Error! SpatialObject disappeared from WM!");
+	}
 
-      displayEdge(n1->second, n2->second);
-
-      addEdgeToList(n1->second.m_Id, n2->second.m_Id);
-
-      ei = m_NewEdges.erase(ei);
-
-    } else {
-      ei++;
-    }
-  }
-
-  m_PeekabotClient.end_bundle();
-  }catch (DoesNotExistOnWMException e) {
-    log("Error! SpatialObject disappeared from WM!");
-  }
-
-  m_Mutex.unlock();
+	m_Mutex.unlock();
 }
 
 
@@ -1613,29 +1507,211 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 		return;
 	}
 
+	// Init
 	int placeId = placePtr->id;
-
+	bool placeholder = (placePtr->status == SpatialData::PLACEHOLDER);
 	// Get node Id for this place
-    FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(placeId);
-    int nodeId=(fnodePtr)?fnodePtr->nodeId:-1;
+	FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
-    // Find the node
-    std::map<long,Node>::iterator n = m_Nodes.find(nodeId);
-    if (n != m_Nodes.end())
-    {
-    	// Add text
-    	char buf[32];
-        peekabot::LabelProxy text;
-        sprintf(buf, "%d", placeId);
-        text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-        text.set_text(buf);
-        text.set_pose(n->second.m_X,n->second.m_Y,0.3,0,0.0,0);
-        text.set_rotation(0,0,0);
-        text.set_scale(20, 20, 20);
-        text.set_alignment(peekabot::ALIGN_CENTER);
-        text.set_color(1,0,0);
-    }
+	// Does place exist? If so, delete it first.
+	if (_places.find(wmChange.address.id) != _places.end())
+		deletePlace(wmChange);
+
+	// Is it a place or a placeholder
+	if (placeholder)
+	{
+		if (m_ShowPlaceholders)
+		{
+			FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(placeId);
+			int nodeId = (nodeHypPtr)?nodeHypPtr->hypID:-1;
+
+			// Create internal representation of the placeholder
+			PlaceData pd;
+			pd.nodeId = nodeId;
+			pd.placeId = placeId;
+			pd.placeStatus = SpatialData::PLACEHOLDER;
+			_places[wmChange.address.id]=pd;
+
+			// Draw the placeholder
+			// Add text
+			char buf[32];
+			peekabot::LabelProxy text;
+			sprintf(buf, "%d", placeId);
+			text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+			text.set_text(buf);
+			text.set_pose(nodeHypPtr->x,nodeHypPtr->y,0.3,0,0.0,0);
+			text.set_rotation(0,0,0);
+			text.set_scale(20, 20, 20);
+			text.set_alignment(peekabot::ALIGN_CENTER);
+			text.set_color(1,0,0);
+
+			// Mashroom
+			peekabot::CubeProxy sp;
+			char name[32];
+			sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
+			sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+			sp.set_position(nodeHypPtr->x, nodeHypPtr->y, 0);
+			sp.set_scale(0.2, 0.2, 0.05);
+			sp.set_color(0.2, 0.2, 0.2);
+
+			peekabot::CubeProxy cp;
+			cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+			cp.set_scale(0.08, 0.08, 0.20);
+			cp.set_position(0,0,0.08);
+			cp.set_color(0.2,0.2,0.2);
+
+			peekabot::CubeProxy mp;
+			mp.add(sp, "mushroom");
+			mp.set_scale(0.16, 0.16, 0.05);
+			mp.set_position(0, 0, 0.20);
+			mp.set_color(0.2, 0.2, 0.2);
+
+			// Draw placeholder properties
+			addRoomCategoryPlaceholderProperties(sp, placeId);
+		}
+	}
+	else
+	{
+		NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(placeId);
+		int nodeId=(fnodePtr)?fnodePtr->nodeId:-1;
+
+		// Create internal representation of the placeholder
+		PlaceData pd;
+		pd.nodeId = nodeId;
+		pd.placeId = placeId;
+		pd.placeStatus = SpatialData::PLACEHOLDER;
+		_places[wmChange.address.id]=pd;
+
+		// Add PlaceID text to existing node
+		std::map<long,Node>::iterator n = m_Nodes.find(nodeId);
+		if (n != m_Nodes.end())
+		{
+			char buf[32];
+			peekabot::LabelProxy text;
+			sprintf(buf, "%d", placeId);
+			text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+			text.set_text(buf);
+			text.set_pose(n->second.m_X,n->second.m_Y,0.3,0,0.0,0);
+			text.set_rotation(0,0,0);
+			text.set_scale(20, 20, 20);
+			text.set_alignment(peekabot::ALIGN_CENTER);
+			text.set_color(1,0,0);
+		}
+	}
+}
+
+
+void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
+{
+	// Find and remove the place data
+	string wmId = wmChange.address.id;
+	map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
+	if ( it == _places.end())
+		return;
+	PlaceData pd = it->second;
+	_places.erase(it);
+	bool placeholder = (pd.placeStatus == SpatialData::PLACEHOLDER);
+
+	// Remove peekabot representation of the place
+	if (placeholder)
+	{
+		if (m_ShowPlaceholders)
+		{
+			// Delete ID text
+			peekabot::LabelProxy text;
+			char buf[32];
+			sprintf(buf, "%d", pd.placeId);
+			text.assign(m_ProxyLabels, buf);
+			text.remove();
+
+			// Delete the node
+		    peekabot::CubeProxy sp;
+		    char name[32];
+		    sprintf(name, "node_hyp%ld", (long)pd.nodeId);
+		    sp.assign(m_ProxyNodes, name);
+		    sp.remove();
+		}
+	}
+	else
+	{
+	    // Delete ID text
+		peekabot::LabelProxy text;
+		char buf[32];
+		sprintf(buf, "%d", pd.placeId);
+		text.assign(m_ProxyLabels, buf);
+		text.remove();
+	}
+}
+
+
+void DisplayNavInPB::addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp, int placeId)
+{
+	map<string, double> existsProbs;
+
+	// Get all the properties for that place
+	for (std::map<string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr>::iterator it
+			= _roomCatPlaceholderProps.begin();
+			it != _roomCatPlaceholderProps.end(); ++it)
+	{
+		if (it->second->placeId == placeId)
+		{
+			double prob = getProbabilityValue(it->second->distribution, 1);
+			existsProbs[it->second->category] = prob;
+		}
+	}
+
+	// Pie chart of category probabilities
+	double probSum=0.0;
+	double startAngle=0.0;
+	double normalizer = _roomCategories.size();
+	for (map<string,double>::iterator it = existsProbs.begin(); it!=existsProbs.end(); ++it)
+	{
+		int index=-1;
+		double prob = 0.0;
+		for(unsigned int j=0; j<_roomCategories.size(); ++j)
+		{
+			if (it->first == _roomCategories[j])
+			{
+				index = j;
+				prob = it->second;
+			}
+		}
+
+		if (index>=0)
+		{ // One of those room categories
+			float r,g,b;
+			getColorByIndex(index, r, g, b);
+			char name[32];
+			sprintf(name, "category%d", index);
+			// Calculations
+			probSum+=prob;
+			double endAngle=(2*3.1415926)*probSum/normalizer;
+
+			// Add a polygon that corresponds to part of the pie chart
+			// between startAngle and endAngle;
+			peekabot::PolygonProxy acp;
+			acp.add(sp, name, peekabot::REPLACE_ON_CONFLICT);
+			acp.add_vertex( 0, 0, 0 );
+			for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+			  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+			acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+			acp.set_opacity(0.3);
+			acp.set_color(r,g,b);
+			startAngle=endAngle;
+		}
+	}
+
+	// Add one for the rest
+	double endAngle=(2*3.1415926);
+	peekabot::PolygonProxy acp;
+	acp.add(sp, "not_exists", peekabot::REPLACE_ON_CONFLICT);
+	acp.add_vertex( 0, 0, 0 );
+	for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
+	  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+	acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+	acp.set_opacity(0.3);
+	acp.set_color(0.3,0.3,0.3);
+	startAngle=endAngle;
 }
 
 
@@ -1712,8 +1788,6 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 {
-  //log("Getting color %d",id);
-
   switch (id) {
   case 0: // Green
     r = 1.0/0xFF*0x00;
@@ -1776,10 +1850,17 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
     b = 1.0/0xFF*0x2F;
     break;
   default: // If more colours are added change
-    const int MAX_COLORS = 11;
-    const int useColor = id % MAX_COLORS;
-    debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
-    getColorByIndex(useColor, r, g, b);
+	if (id<0)
+	{
+		r=0; g=0; b=0;
+	}
+	else
+	{
+		const int MAX_COLORS = 11;
+		const int useColor = id % MAX_COLORS;
+		debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
+        getColorByIndex(useColor, r, g, b);
+	}
   }
 }
 
