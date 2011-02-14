@@ -27,5 +27,6 @@ add_subdirectory (src/c++/conceptual/components/QueryHandler)
 add_subdirectory (src/c++/conceptual/components/ChainGraphInferencer)
 add_subdirectory (src/c++/conceptual/components/Observer)
 add_subdirectory (src/c++/conceptual/components/ComaRoomUpdater)
+add_subdirectory (src/c++/conceptual/components/PlaceholderPropertyUpdater)
 add_subdirectory (src/c++/conceptual/components/Tester)
 
