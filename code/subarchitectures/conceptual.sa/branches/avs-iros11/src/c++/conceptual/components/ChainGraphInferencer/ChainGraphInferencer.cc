@@ -68,22 +68,17 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 {
 	map<string,string>::const_iterator it;
 
-	// QueryHandler name
 	if((it = _config.find("--defaultchaingraphinferencer")) != _config.end())
-	{
 		_defaultChainGraphInferencerName = it->second;
-	}
 	if((it = _config.find("--save-graph")) != _config.end())
-	{
 		_saveGraphFileName = it->second;
-	}
 	if((it = _config.find("--save-graph-info")) != _config.end())
-	{
 		_saveGraphInfoFileName = it->second;
-	}
+	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
 
 	log("Configuration parameters:");
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
+	log("-> Infer placeholder properties: %s", (_inferPlaceholderProperties)?"yes":"no");
 }
 
 
@@ -173,7 +168,8 @@ void ChainGraphInferencer::runComponent()
 
 			pthread_mutex_unlock(&_inferenceQueryAddedSignalMutex);
 
-			debug("Processing inference query '"+q.queryPtr->queryString+"'");
+			debug("Processing inference query '%s' (imaginary = %s)",
+							q.queryPtr->queryString.c_str(), (q.queryPtr->imaginary)?"true":"false");
 
 			// Update the factor graph if necessary
 			bool factorGraphChanged;
@@ -189,10 +185,37 @@ void ChainGraphInferencer::runComponent()
 			{
 				// If the factor graph changed, re-run the inferences
 				if (factorGraphChanged)
+				{
 					runAllInferences();
+					_roomCategoryPlaceholderPropertyInfos.clear(); // Clear also the placeholder stuff
+				}
 
-				// Prepare the result distribution
-				prepareInferenceResult(q.queryPtr->queryString, &(inferenceResultPtr->result));
+				// If this is a query about imaginary worlds, run imaginary world generation if the cache is empty
+				if ((q.queryPtr->imaginary) && (_roomCategoryPlaceholderPropertyInfos.empty()))
+				{
+					runImaginaryWorldsGeneration();
+				}
+
+				// Parse the query string
+				vector<string> queryVariables;
+				parseQuery(q.queryPtr->queryString, queryVariables);
+				if (!queryVariables.empty())
+				{
+					// Is this a query about an imaginary world?
+					if (q.queryPtr->imaginary)
+					{
+						// Prepare the result distribution
+						prepareImaginaryInferenceResult(q.queryPtr->queryString,
+								queryVariables, &(inferenceResultPtr->result));
+					}
+					else
+					{
+						// Prepare the result distribution
+						prepareInferenceResult(q.queryPtr->queryString,
+								queryVariables, &(inferenceResultPtr->result));
+					}
+				}
+
 			}
 			else
 				log("World state is invalid. We will not run inference. Returning empty result.");
@@ -811,37 +834,30 @@ void ChainGraphInferencer::runAllInferences()
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::prepareInferenceResult(string queryString,
+void ChainGraphInferencer::runImaginaryWorldsGeneration()
+{
+// TODO
+
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
+		std::vector<std::string> queryVariables,
 		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
 {
 	debug("Preparing inference results for inference query '"+queryString+"'");
 
-	// Check the query string
-	if ( (queryString.length()<4) || (queryString[0]!='p') ||
-		 (queryString[1]!='(') || (queryString[queryString.length()-1]!=')') )
-	{
-		error("Malformed ChainGraphInferencer query string \'%s\'! This indicates a serious implementation error!",
-				queryString.c_str());
-		return;
-	}
-
-	// Extract variable names
-	string variableString=queryString;
-	erase_head(variableString, 2);
-	erase_tail(variableString, 1);
-	vector<string> variables;
-	split( variables, variableString, is_any_of(", ") );
-
 	// Prepare the resulting distribution
 	resultDistribution->description = queryString;
-	for(unsigned int i=0; i<variables.size(); ++i)
-		resultDistribution->variableNameToPositionMap[variables[i]]=i;
+	for(unsigned int i=0; i<queryVariables.size(); ++i)
+		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
 	resultDistribution->massFunction.clear();
 
 	// Check what we need to return
-	if (variables.size()==1)
+	if (queryVariables.size()==1)
 	{
-		string varName = variables[0];
+		string varName = queryVariables[0];
 		// Find the variable
 		map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(varName);
 		if (varIter==_variableNameToDai.end())
@@ -874,6 +890,87 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
 		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
 		return;
 	}
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryString,
+		std::vector<std::string> queryVariables,
+		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+{
+	debug("Preparing imaginary inference results for inference query '"+queryString+"'");
+
+	// Prepare the resulting distribution
+	resultDistribution->description = queryString;
+	for(unsigned int i=0; i<queryVariables.size(); ++i)
+		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
+	resultDistribution->massFunction.clear();
+
+	// Check what we need to return
+	if (queryVariables.size()==1)
+	{
+		string varName = queryVariables[0];
+		// Parse the variable name
+//		string tmp;
+//		erase_head(tmp1, 2);
+//		erase_tail(tmp1, 1);
+//		vector<string> output;
+//		split( variables, variableString, is_any_of(", ") );
+
+
+
+		// Find the variable
+//		map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(varName);
+//		if (varIter==_variableNameToDai.end())
+//		{
+//			string msg;
+//			msg = "Variable '"+varName+"' not found! Variables we know:";
+//			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
+//				msg+=varIter->first+" ";
+//			log(msg.c_str());
+//			return;
+//		}
+//		// Retrieve marginal
+////        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+//        dai::Factor marginal = _bp.belief(varIter->second.var);
+//        // Convert to probability distribution
+//        for(unsigned int i=0; i<marginal.nrStates(); ++i)
+//        {
+//        	double marginalProb = marginal.get(i);
+//    		SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+//    				new SpatialProbabilities::StringRandomVariableValue(
+//    						varIter->second.valueIdToName[i]);
+//    		SpatialProbabilities::JointProbabilityValue jpv;
+//    		jpv.probability=marginalProb;
+//    		jpv.variableValues.push_back(rvvPtr);
+//    		resultDistribution->massFunction.push_back(jpv);
+//        }
+	}
+	else
+	{
+		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
+		return;
+	}
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::parseQuery(string queryString, vector<string> &variables)
+{
+	// Check the query string
+	if ( (queryString.length()<4) || (queryString[0]!='p') ||
+		 (queryString[1]!='(') || (queryString[queryString.length()-1]!=')') )
+	{
+		error("Malformed ChainGraphInferencer query string \'%s\'! This indicates a serious implementation error!",
+				queryString.c_str());
+		return;
+	}
+
+	// Extract variable names
+	string variableString=queryString;
+	erase_head(variableString, 2);
+	erase_tail(variableString, 1);
+	split( variables, variableString, is_any_of(", ") );
 }
 
 

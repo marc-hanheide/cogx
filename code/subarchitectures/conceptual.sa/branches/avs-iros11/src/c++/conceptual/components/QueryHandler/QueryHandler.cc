@@ -74,11 +74,12 @@ void QueryHandler::stop()
 }
 
 // -------------------------------------------------------
-string QueryHandler::sendInferenceQuery(std::string queryString)
+string QueryHandler::sendInferenceQuery(std::string queryString, bool imaginary)
 {
 	string inferenceQueryId = newDataID();
 	ConceptualData::InferenceQueryPtr inferenceQueryPtr = new ConceptualData::InferenceQuery();
 	inferenceQueryPtr->queryString = queryString;
+	inferenceQueryPtr->imaginary = imaginary;
 
 	_sentQueryIds.insert(inferenceQueryId);
 	addToWorkingMemory<ConceptualData::InferenceQuery>(inferenceQueryId, inferenceQueryPtr);
@@ -181,7 +182,27 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
 	_queryHandler->debug("Received query: '"+queryStr+"'");
 
 	// Send a new InferenceQuery
-	string queryId = _queryHandler->sendInferenceQuery(queryStr);
+	string queryId = _queryHandler->sendInferenceQuery(queryStr, false);
+
+	// Retrieve the inference result (blocking!)
+	SpatialProbabilities::ProbabilityDistribution d;
+	_queryHandler->retrieveInferenceResult(queryId, &d);
+
+	_queryHandler->debug("Returning inference result for query: '"+queryStr+"'");
+
+	// Return the distribution
+	return d;
+}
+
+
+// -------------------------------------------------------
+SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::imaginaryQuery(
+		const std::string &queryStr, const Ice::Current &)
+{
+	_queryHandler->debug("Received imaginary query: '"+queryStr+"'");
+
+	// Send a new InferenceQuery
+	string queryId = _queryHandler->sendInferenceQuery(queryStr, true);
 
 	// Retrieve the inference result (blocking!)
 	SpatialProbabilities::ProbabilityDistribution d;
