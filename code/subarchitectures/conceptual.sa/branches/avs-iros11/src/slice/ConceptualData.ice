@@ -20,12 +20,16 @@ module ConceptualData
 	/** Interface to the conceptual::QueryHandler::Server. */
 	interface QueryHandlerServerInterface
 	{
+		/** Query for a probability distribution extracted from the conceptual layer modeling real world. */
 		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
+		/** Query for a probability distribution extracted from the conceptual layer modeling imaginary worlds. */
+		SpatialProbabilities::ProbabilityDistribution imaginaryQuery(string queryStr);
 	};
 
 	/** Query sent to the chain graph inferencer. */ 
 	class InferenceQuery
 	{
+		bool imaginary; // If true, the query will refer to imaginary worlds
 		string queryString;
 	};
 	
@@ -92,6 +96,15 @@ module ConceptualData
 	/** Sequence of PlaceInfos. */
 	sequence <PlaceInfo> PlaceInfos;
 
+	/** Relevant information about a placeholder. Currently only id. */
+	struct PlaceholderInfo
+	{
+    	int placeholderId;
+	};
+
+	/** Sequence of placeholder infos. */
+	sequence<PlaceholderInfo> PlaceholderInfos;
+
 	/** Relevant information about a coma room. */
 	struct ComaRoomInfo
 	{
@@ -101,6 +114,9 @@ module ConceptualData
 		
 		/** Places in that room. */
 	    PlaceInfos places;
+
+		/** Placeholder infos. */
+		PlaceholderInfos placeholders;
 	};
 
 	/** Sequence of ComaRoomInfos. */
