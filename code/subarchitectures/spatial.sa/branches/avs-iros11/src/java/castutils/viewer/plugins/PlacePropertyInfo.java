@@ -16,12 +16,13 @@ public class PlacePropertyInfo implements Plugin {
 
 		Vector<Object> extraInfo = new Vector<Object>();
 		extraInfo.add("place ID=" + gpp.placeId);
-		if (gpp.distribution != null
+		// The lines below cause crash if the distribution is empty!
+/*		if (gpp.distribution != null
 				&& ((DiscreteProbabilityDistribution) gpp.distribution).data[0].value instanceof FloatValue) {
 
 			double val = ((FloatValue) ((DiscreteProbabilityDistribution) gpp.distribution).data[0].value).value;
 			extraInfo.add("val=" + val);
-		}
+		} */
 		return extraInfo;
 	}
 
