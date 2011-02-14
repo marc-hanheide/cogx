@@ -29,33 +29,47 @@
   (:functions
    (is-in ?o - agent) - place
 
-   ;;default knowledge
+   ;; === Default knowledge ===
+
+   ;; expected cost of searching for an object. Used by CP planner
    (search_cost  ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
+   ;; default probabilities. These come from Coma.
    (dora__in_room ?l - label ?c - category) - number
    (dora__in_obj ?l1 ?l2 - label ?c - category) - number
    (dora__on_obj ?l1 ?l2 - label ?c - category) - number
 
-   ;;inferred knowledge
+   ;; === inferred knowledge ===
+   ;; The result of applying the default knowledge.
+   ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
+   ;; Also see the rules below
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
 
-   ;;room properties
+   ;; === room properties ===
    (category ?r - room) - category
 
-   ;;place properties
+   ;; === place properties ===
    (placestatus ?n - place) - place_status
    (in-room ?p - place) - room
 
-   ;;object properties
+   ;; === object properties ===
    (label ?o - visualobject) - label
    (is-in ?o - visualobject) - (either visualobject room)
    (is-on ?o - visualobject) - visualobject
 
-   ;;conegroup properties
+   ;; === conegroup properties ===
+   ;; basic properties that determine what the conegroup was generated for 
+   ;; (e.g. cone group for cornflakes ON table_1)
    (label ?c - conegroup) - label
    (relation ?c - conegroup) - spatial_relation
    (related_to ?c - conegroup) - (either visualobject room)
+   ;; probability of seeing an object of type (label ?c) when looking
    (p-visible ?c - conegroup) - number
+   ;; the ground truth. Distribution should conform to the probability above.
+   ;; Assumes that an object can be viewed from more than one conegroup
    (visible_from ?o - visualobject ?c - conegroup) - boolean
+   ;; If an object can only be seen from one CG, the following would be possible:
+   ;;(visible_from ?o - visualobject) - conegroup
+  
 
    )
 
