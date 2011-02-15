@@ -661,13 +661,16 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	// Get node hyp for the placeholder ID
     FrontierInterface::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
 
-	// Get the node proxy
-    peekabot::CubeProxy sp;
-    char name[32];
-    sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
-    sp.assign(m_ProxyNodes, name);
+    if (nodeHypPtr)
+    {
+		// Get the node proxy
+		peekabot::CubeProxy sp;
+		char name[32];
+		sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
+		sp.assign(m_ProxyNodes, name);
 
-    addRoomCategoryPlaceholderProperties(sp, property->placeId);
+		addRoomCategoryPlaceholderProperties(sp, property->placeId);
+    }
 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
