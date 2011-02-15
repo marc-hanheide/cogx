@@ -32,7 +32,7 @@ long long gethrtime(void)
 }
 
 #define USE_MOTION_DETECTION
-// #define SAVE_SOI_PATCH
+//#define SAVE_SOI_PATCH
 #define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
 #define Shrink_SOI 1
@@ -47,7 +47,7 @@ long long gethrtime(void)
 #define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.75	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
