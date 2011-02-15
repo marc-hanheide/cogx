@@ -15,9 +15,10 @@
    (is-virtual ?o - object)
 
    ;; derived predicates
+   (attached_to_room ?p - place ?r - room)
+   (not_fully_explored ?r)
    ;; (cones-exist ?l - label ?r - room)
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
-   ;; (not_fully_explored ?r)
 
    ;;virtual predicates
    (cones_created  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
@@ -83,13 +84,23 @@
   (:init-rule objects
               :parameters(?l - label)
               :precondition (not (exists (?o - visualobject)
-                                         (= (label ?o) ?l)))
+                                         (and (= (label ?o) ?l)
+                                              (is-virtual ?o))))
               :effect (create (?o - visualobject) (and
                                                    (is-virtual ?o)
                                                    (assign (label ?o) ?l)
                                                    (assign (is-in ?o) UNKNOWN))
                               )
               )
+
+  (:derived (attached_to_room ?p - place ?r - room)
+            (exists (?p2 - place) (and (= (in-room ?p2) ?r)
+                                       (connected ?p2 ?p))))
+
+  (:derived (not_fully_explored ?r - room)
+            (exists (?p - place) (and (= (placestatus ?p) placeholder)
+                                      (attached_to_room ?p ?r))))
+              
 
 
   ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
@@ -188,6 +199,7 @@
                      :duration (= ?duration 10)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
+                                                    (not (not_fully_explored ?r))
                                                     (not (done))))
                                      )
                      :effect (and (at end (cones_created ?l in ?r)))
