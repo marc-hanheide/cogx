@@ -71,12 +71,10 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.values()[jPatrolPrioritySlider.getValue()];
 		else if (motive instanceof RobotInitiativeMotive)
 			return MotivePriority.values()[jRobotInitiativePrioritySlider.getValue()];
-		else if (motive instanceof TutorInitiativeMotive) {
+		else if (motive instanceof TutorInitiativeMotive)
 			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
-		}
-		else if (motive instanceof RobotNonSituatedMotive) {
+		else if (motive instanceof RobotNonSituatedMotive)
 			return MotivePriority.values()[jRobotNonSituatedPrioritySlider.getValue()];
-		}
 		else
 			return MotivePriority.NORMAL;
 	}
