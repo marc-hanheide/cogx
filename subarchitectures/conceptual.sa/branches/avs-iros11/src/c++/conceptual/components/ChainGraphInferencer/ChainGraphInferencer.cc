@@ -74,11 +74,16 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_saveGraphFileName = it->second;
 	if((it = _config.find("--save-graph-info")) != _config.end())
 		_saveGraphInfoFileName = it->second;
+	if((it = _config.find("--placeholder-in-current-room-prior")) != _config.end())
+		_placeholderInCurrentRoomPrior = atof(it->second.c_str());
+	else
+		_placeholderInCurrentRoomPrior = 0.5;
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
 
 	log("Configuration parameters:");
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
 	log("-> Infer placeholder properties: %s", (_inferPlaceholderProperties)?"yes":"no");
+	log("-> Prior probability that placeholder is in the current room: %f", _placeholderInCurrentRoomPrior);
 }
 
 
@@ -841,18 +846,18 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 	{
 		const ConceptualData::ComaRoomInfo &cri =_worldStateRooms[r];
 		// Run imaginary world generation for that room
-		vector<pair<string, double> > outputs;
+		vector<double> outputs;
 		runImaginaryWorldsGenerationForPlaceholderInRoom(cri.roomId, outputs);
 
 		// No through all the placeholders in the room and apply the results
 		for (unsigned int p=0; p<cri.placeholders.size(); ++p)
 		{
 			const ConceptualData::PlaceholderInfo &phi = cri.placeholders[p];
-			for (unsigned int i=0; i<outputs.size(); ++i)
+			for (unsigned int i=0; i<_roomCategories.size(); ++i)
 			{
 				stringstream varName;
-				varName << "placeholder" << phi.placeholderId << "_" << outputs[i].first << "_existance";
-				_placeholderRoomCategoryExistance[varName.str()] = outputs[i].second;
+				varName << "placeholder" << phi.placeholderId << "_" << _roomCategories[i] << "_existance";
+				_placeholderRoomCategoryExistance[varName.str()] = outputs[i];
 			}
 		}
 	}
@@ -861,17 +866,67 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 
 // -------------------------------------------------------
 void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
-		std::vector<std::pair<std::string, double> > &outputs)
+		std::vector<double> &outputs)
 {
-	// Go through all the room categories
-	for (unsigned int c=0; c<_roomCategories.size(); ++c)
+	outputs.clear();
+	outputs.resize(_roomCategories.size());
+	for (unsigned int i=0; i<outputs.size(); ++i)
+		outputs[i] = 0.0;
+
+	evaluateCurrentRoomImaginaryWorld(roomId, outputs, _placeholderInCurrentRoomPrior);
+	int worldCount = 2;
+	for(int worldId=0; worldId<worldCount; ++worldId)
 	{
-		// Add test values
-		outputs.push_back(make_pair(_roomCategories[c], static_cast<double>(c)/10.0));
+		evaluateImaginaryWorld(roomId, worldId, outputs, (1-_placeholderInCurrentRoomPrior)/static_cast<double>(worldCount));
 	}
-	// TODO
 }
 
+
+// -------------------------------------------------------
+void ChainGraphInferencer::evaluateCurrentRoomImaginaryWorld(int roomId, std::vector<double> &outputs, double prior)
+{
+	// Find the room category variable
+	stringstream varName;
+	varName <<"room" << roomId << "_category";
+	map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(varName.str());
+	if (varIter == _variableNameToDai.end())
+	{
+		string msg;
+		msg = "Variable '" + varName.str() + "' not found while evaluating imaginary world! Variables we know:";
+		for (varIter = _variableNameToDai.begin(); varIter
+				!= _variableNameToDai.end(); ++varIter)
+			msg += varIter->first + " ";
+		log(msg.c_str());
+		return;
+	}
+
+	// Retrieve marginal
+	// dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+	dai::Factor marginal = _bp.belief(varIter->second.var);
+
+	// Convert to output
+	// We assume that the order is the same as in _roomCategories here!!
+	for (unsigned int i = 0; i < marginal.nrStates(); ++i)
+		outputs[i]+= prior * marginal.get(i);
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::evaluateImaginaryWorld(int roomId, int worldId, std::vector<double> &outputs, double prior)
+{
+//	_factorGraph = dai::FactorGraph(_factors);
+
+}
+
+//
+//{
+//// Go through all the room categories
+//for (unsigned int c=0; c<_roomCategories.size(); ++c)
+//{
+//	// Add test values
+//	outputs.push_back(make_pair(_roomCategories[c], static_cast<double>(c)/10.0));
+//}
+//}
 
 
 // -------------------------------------------------------

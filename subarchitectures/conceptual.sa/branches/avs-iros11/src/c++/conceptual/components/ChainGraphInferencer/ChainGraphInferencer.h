@@ -90,7 +90,10 @@ private:
 
 	/** Performs imaginary world generation for a single placeholder in a single room. */
 	void runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
-			std::vector<std::pair<std::string, double> > &outputs);
+			std::vector<double> &outputs);
+
+	void evaluateCurrentRoomImaginaryWorld(int roomId, std::vector<double> &outputs, double prior);
+	void evaluateImaginaryWorld(int roomId, int worldId, std::vector<double> &outputs, double prior);
 
 	/** Prepares inference results based on the graph in which inference was performed. */
 	void prepareInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
@@ -151,6 +154,8 @@ private:
 
 	/** If true, placeholder properties will be inferred. */
 	bool _inferPlaceholderProperties;
+
+	double _placeholderInCurrentRoomPrior;
 
 	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
