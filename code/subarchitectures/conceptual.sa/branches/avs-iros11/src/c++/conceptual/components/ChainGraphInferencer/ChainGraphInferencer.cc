@@ -187,11 +187,11 @@ void ChainGraphInferencer::runComponent()
 				if (factorGraphChanged)
 				{
 					runAllInferences();
-					_roomCategoryPlaceholderPropertyInfos.clear(); // Clear also the placeholder stuff
+					_placeholderRoomCategoryExistance.clear(); // Clear also the placeholder stuff
 				}
 
 				// If this is a query about imaginary worlds, run imaginary world generation if the cache is empty
-				if ((q.queryPtr->imaginary) && (_roomCategoryPlaceholderPropertyInfos.empty()))
+				if ((q.queryPtr->imaginary) && (_placeholderRoomCategoryExistance.empty()))
 				{
 					runImaginaryWorldsGeneration();
 				}
@@ -836,9 +836,42 @@ void ChainGraphInferencer::runAllInferences()
 // -------------------------------------------------------
 void ChainGraphInferencer::runImaginaryWorldsGeneration()
 {
-// TODO
+	// Go over all rooms
+	for (unsigned int r=0; r<_worldStateRooms.size(); ++r)
+	{
+		const ConceptualData::ComaRoomInfo &cri =_worldStateRooms[r];
+		// Run imaginary world generation for that room
+		vector<pair<string, double> > outputs;
+		runImaginaryWorldsGenerationForPlaceholderInRoom(cri.roomId, outputs);
 
+		// No through all the placeholders in the room and apply the results
+		for (unsigned int p=0; p<cri.placeholders.size(); ++p)
+		{
+			const ConceptualData::PlaceholderInfo &phi = cri.placeholders[p];
+			for (unsigned int i=0; i<outputs.size(); ++i)
+			{
+				stringstream varName;
+				varName << "placeholder" << phi.placeholderId << "_" << outputs[i].first << "_existance";
+				_placeholderRoomCategoryExistance[varName.str()] = outputs[i].second;
+			}
+		}
+	}
 }
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
+		std::vector<std::pair<std::string, double> > &outputs)
+{
+	// Go through all the room categories
+	for (unsigned int c=0; c<_roomCategories.size(); ++c)
+	{
+		// Add test values
+		outputs.push_back(make_pair(_roomCategories[c], static_cast<double>(c)/10.0));
+	}
+	// TODO
+}
+
 
 
 // -------------------------------------------------------
@@ -854,41 +887,41 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
 	resultDistribution->massFunction.clear();
 
-	// Check what we need to return
-	if (queryVariables.size()==1)
-	{
-		string varName = queryVariables[0];
-		// Find the variable
-		map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(varName);
-		if (varIter==_variableNameToDai.end())
-		{
-			string msg;
-			msg = "Variable '"+varName+"' not found! Variables we know:";
-			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
-				msg+=varIter->first+" ";
-			log(msg.c_str());
-			return;
-		}
-		// Retrieve marginal
-//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
-        dai::Factor marginal = _bp.belief(varIter->second.var);
-        // Convert to probability distribution
-        for(unsigned int i=0; i<marginal.nrStates(); ++i)
-        {
-        	double marginalProb = marginal.get(i);
-    		SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
-    				new SpatialProbabilities::StringRandomVariableValue(
-    						varIter->second.valueIdToName[i]);
-    		SpatialProbabilities::JointProbabilityValue jpv;
-    		jpv.probability=marginalProb;
-    		jpv.variableValues.push_back(rvvPtr);
-    		resultDistribution->massFunction.push_back(jpv);
-        }
-	}
-	else
+	// Check
+	if (queryVariables.size()!=1)
 	{
 		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
 		return;
+	}
+	string varName = queryVariables[0];
+
+	// Find the variable
+	map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(
+			varName);
+	if (varIter == _variableNameToDai.end())
+	{
+		string msg;
+		msg = "Variable '" + varName + "' not found! Variables we know:";
+		for (varIter = _variableNameToDai.begin(); varIter
+				!= _variableNameToDai.end(); ++varIter)
+			msg += varIter->first + " ";
+		log(msg.c_str());
+		return;
+	}
+	// Retrieve marginal
+	//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+	dai::Factor marginal = _bp.belief(varIter->second.var);
+	// Convert to probability distribution
+	for (unsigned int i = 0; i < marginal.nrStates(); ++i)
+	{
+		double marginalProb = marginal.get(i);
+		SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+				new SpatialProbabilities::StringRandomVariableValue(
+						varIter->second.valueIdToName[i]);
+		SpatialProbabilities::JointProbabilityValue jpv;
+		jpv.probability = marginalProb;
+		jpv.variableValues.push_back(rvvPtr);
+		resultDistribution->massFunction.push_back(jpv);
 	}
 }
 
@@ -906,51 +939,34 @@ void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryStri
 		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
 	resultDistribution->massFunction.clear();
 
-	// Check what we need to return
-	if (queryVariables.size()==1)
-	{
-		string varName = queryVariables[0];
-		// Parse the variable name
-//		string tmp;
-//		erase_head(tmp1, 2);
-//		erase_tail(tmp1, 1);
-//		vector<string> output;
-//		split( variables, variableString, is_any_of(", ") );
-
-
-
-		// Find the variable
-//		map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(varName);
-//		if (varIter==_variableNameToDai.end())
-//		{
-//			string msg;
-//			msg = "Variable '"+varName+"' not found! Variables we know:";
-//			for (varIter = _variableNameToDai.begin(); varIter!=_variableNameToDai.end(); ++varIter)
-//				msg+=varIter->first+" ";
-//			log(msg.c_str());
-//			return;
-//		}
-//		// Retrieve marginal
-////        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
-//        dai::Factor marginal = _bp.belief(varIter->second.var);
-//        // Convert to probability distribution
-//        for(unsigned int i=0; i<marginal.nrStates(); ++i)
-//        {
-//        	double marginalProb = marginal.get(i);
-//    		SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
-//    				new SpatialProbabilities::StringRandomVariableValue(
-//    						varIter->second.valueIdToName[i]);
-//    		SpatialProbabilities::JointProbabilityValue jpv;
-//    		jpv.probability=marginalProb;
-//    		jpv.variableValues.push_back(rvvPtr);
-//    		resultDistribution->massFunction.push_back(jpv);
-//        }
-	}
-	else
+	// Check
+	if (queryVariables.size()!=1)
 	{
 		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
 		return;
 	}
+	string varName = queryVariables[0];
+	if (_placeholderRoomCategoryExistance.find(varName)==_placeholderRoomCategoryExistance.end())
+	{
+		error("Varianble name \'%s\' not found in the inferred variable set.", varName.c_str());
+		return;
+	}
+
+	// Find the variable and set the values of probability
+	double prob = _placeholderRoomCategoryExistance[varName];
+	SpatialProbabilities::IntRandomVariableValuePtr rvv1Ptr =
+			new SpatialProbabilities::IntRandomVariableValue(1);
+	SpatialProbabilities::JointProbabilityValue jpv1;
+	jpv1.probability=prob;
+	jpv1.variableValues.push_back(rvv1Ptr);
+	resultDistribution->massFunction.push_back(jpv1);
+
+	SpatialProbabilities::IntRandomVariableValuePtr rvv2Ptr =
+			new SpatialProbabilities::IntRandomVariableValue(0);
+	SpatialProbabilities::JointProbabilityValue jpv2;
+	jpv2.probability=1.0 - prob;
+	jpv2.variableValues.push_back(rvv2Ptr);
+	resultDistribution->massFunction.push_back(jpv2);
 }
 
 
