@@ -88,6 +88,10 @@ private:
 	/** Performs generation of all imaginary worlds and runs inverence on those. */
 	void runImaginaryWorldsGeneration();
 
+	/** Performs imaginary world generation for a single placeholder in a single room. */
+	void runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
+			std::vector<std::pair<std::string, double> > &outputs);
+
 	/** Prepares inference results based on the graph in which inference was performed. */
 	void prepareInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
 			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
@@ -186,14 +190,8 @@ private:
 	/** The main factor graph used for inference. */
 	dai::FactorGraph _factorGraph;
 
-	/** Inferred room category placeholder property. */
-	struct RoomCategoryPlaceholderPropertyInfo
-	{
-		int placeholderId;
-		std::string category;
-		double probability;
-	};
-	std::list<RoomCategoryPlaceholderPropertyInfo> _roomCategoryPlaceholderPropertyInfos;
+	/** Inferred probability of category existance for the room category placeholder property. */
+	std::map<std::string, double> _placeholderRoomCategoryExistance;
 
 	/** Junction tree. */
 //	dai::JTree _junctionTree;

@@ -267,17 +267,17 @@ void PlaceholderPropertyUpdater::setRoomCategoryPlaceholderPropertyDistribution(
 	// Set the distribution
 	SpatialProperties::DiscreteProbabilityDistributionPtr distributionPtr =
 			new SpatialProperties::DiscreteProbabilityDistribution();
-	SpatialProperties::StringValuePtr mapStrVal;
+	SpatialProperties::IntegerValuePtr mapIntVal;
 	double mapProb = 0;
 	for (unsigned int i=0; i<pd.massFunction.size(); ++i)
 	{
 		double prob = pd.massFunction[i].probability;
-		string value = SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(pd.massFunction[i].variableValues[0])->value;
+		int value = SpatialProbabilities::IntRandomVariableValuePtr::dynamicCast(pd.massFunction[i].variableValues[0])->value;
 
 		SpatialProperties::ValueProbabilityPair vpp;
-		SpatialProperties::StringValuePtr strVal = new SpatialProperties::StringValue();
-		strVal->value = value;
-		vpp.value = strVal;
+		SpatialProperties::IntegerValuePtr intVal = new SpatialProperties::IntegerValue();
+		intVal->value = value;
+		vpp.value = intVal;
 		vpp.probability = prob;
 		distributionPtr->data.push_back(vpp);
 
@@ -285,13 +285,13 @@ void PlaceholderPropertyUpdater::setRoomCategoryPlaceholderPropertyDistribution(
 		if (prob>mapProb)
 		{
 			mapProb = prob;
-			mapStrVal = strVal;
+			mapIntVal = intVal;
 		}
 	}
 	propertyPtr->distribution = distributionPtr;
 
 	// Set the MAP
-	propertyPtr->mapValue = mapStrVal;
+	propertyPtr->mapValue = mapIntVal;
 	propertyPtr->mapValueReliable = true;
 
 }
