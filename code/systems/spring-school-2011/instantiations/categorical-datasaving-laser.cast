@@ -1,0 +1,20 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-saving.cast
+
+# Fake Vision ###############################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 200 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0
