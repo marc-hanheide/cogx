@@ -483,6 +483,7 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 }
 
 
+
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 {
@@ -873,13 +874,133 @@ void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int 
 	for (unsigned int i=0; i<outputs.size(); ++i)
 		outputs[i] = 0.0;
 
-	evaluateCurrentRoomImaginaryWorld(roomId, outputs, _placeholderInCurrentRoomPrior);
-	int worldCount = 2;
-	for(int worldId=0; worldId<worldCount; ++worldId)
-	{
-		evaluateImaginaryWorld(roomId, worldId, outputs, (1-_placeholderInCurrentRoomPrior)/static_cast<double>(worldCount));
-	}
+	// World in which there are no other rooms
+	// This one is not included as the properties contain only the probability of
+	// categories of NEW rooms.
+	// evaluateCurrentRoomImaginaryWorld(roomId, outputs, _placeholderInCurrentRoomPrior);
+
+	vector<dai::Factor> factors = _factors;
+	dai::VarSet newVars;
+	int varId = _variableNameToDai.size();
+
+	// World in which there is one additional room
+	// -------------------------------------------
+	// Create variables & factors
+	string roomVarName = "room"+lexical_cast<string>(roomId)+"_category";
+	dai::Var v1 = dai::Var(++varId, _roomCategories.size());
+	newVars.insert(v1);
+	// Create factor
+	createDaiConnectivityFactor(factors, _variableNameToDai[roomVarName].var, v1);
+	// Create factor graph
+	dai::FactorGraph factorGraph = dai::FactorGraph(factors);
+
+	// Run inference
+	log("Running all inferences on the imaginary graph!");
+	dai::BP bp = dai::BP(factorGraph, _daiOptions("updates",string("SEQRND"))("logdomain",false));
+	bp.init();
+	bp.run();
+	// Update outputs using marginals
+	updateOutputsUsingImaginaryVariables(bp, newVars, outputs, (1.0-_placeholderInCurrentRoomPrior)/2.0);
+
+	// World in which there are 2 additional rooms
+	// -------------------------------------------
+	// Create variables & factors
+	dai::Var v2 = dai::Var(++varId, _roomCategories.size());
+	newVars.insert(v2);
+	// Create factor
+	createDaiConnectivityFactor(factors, v1, v2);
+	// Create factor graph
+	factorGraph = dai::FactorGraph(factors);
+
+	// Run inference
+	log("Running all inferences on the imaginary graph!");
+	bp = dai::BP(factorGraph, _daiOptions("updates",string("SEQRND"))("logdomain",false));
+	bp.init();
+	bp.run();
+	// Update outputs using marginals
+	updateOutputsUsingImaginaryVariables(bp, newVars, outputs, (1.0-_placeholderInCurrentRoomPrior)/2.0);
+
 }
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior)
+{
+	// Retrieve marginal
+	//        dai::Factor marginal = _junctionTree.belief(vars);
+	dai::Factor marginal = bp.belief(vars);
+
+	// Update outputs for 1 variable
+	if (vars.size() == 1)
+	{
+		for (unsigned int i = 0; i < marginal.nrStates(); ++i)
+		{
+			double marginalProb = marginal.get(i);
+			outputs[i]+=prior * marginalProb;
+		}
+	}
+	else if (vars.size() == 2)
+	{
+		int i = 0;
+		for (unsigned int v2 = 0; v2 < vars.elements()[1].states(); ++v2)
+		{
+			for (unsigned int v1 = 0; v1 < vars.elements()[0].states(); ++v1)
+			{
+				double marginalProb = marginal.get(i);
+				if (v1==v2)
+					outputs[v1]+=prior * marginalProb;
+				else
+				{
+					outputs[v1]+=prior * marginalProb;
+					outputs[v2]+=prior * marginalProb;
+				}
+				i++;
+			}
+		}
+	}
+	else
+		throw CASTException("Incorrect number of variables in updateOutputsUsingImaginaryVariables");
+}
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiConnectivityFactor(vector<dai::Factor> &factors, dai::Var &var1, dai::Var &var2)
+{
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,room_category2)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementatation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( var1, var2 ) );
+	// Note: first fariable changes faster
+	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int index=0;
+	for (int i2 = 0; i2<roomCatCount; ++i2)
+	{
+		string var2ValueName = _roomCategories[i2];
+		// Go over the first variable
+		for (int i1 = 0; i1<roomCatCount; ++i1)
+		{
+			string var1ValueName = _roomCategories[i1];
+			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			if (potential<0)
+				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	factors.push_back(daiFactor);
+}
+
 
 
 // -------------------------------------------------------
@@ -910,23 +1031,6 @@ void ChainGraphInferencer::evaluateCurrentRoomImaginaryWorld(int roomId, std::ve
 		outputs[i]+= prior * marginal.get(i);
 }
 
-
-// -------------------------------------------------------
-void ChainGraphInferencer::evaluateImaginaryWorld(int roomId, int worldId, std::vector<double> &outputs, double prior)
-{
-//	_factorGraph = dai::FactorGraph(_factors);
-
-}
-
-//
-//{
-//// Go through all the room categories
-//for (unsigned int c=0; c<_roomCategories.size(); ++c)
-//{
-//	// Add test values
-//	outputs.push_back(make_pair(_roomCategories[c], static_cast<double>(c)/10.0));
-//}
-//}
 
 
 // -------------------------------------------------------

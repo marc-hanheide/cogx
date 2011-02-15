@@ -117,6 +117,11 @@ private:
 	/** Parses a query into a vector of variables. */
 	void parseQuery(std::string queryString, std::vector<std::string> &variables);
 
+	/** Adds room connectivity factor for 2 variables representing room categories. */
+	void createDaiConnectivityFactor(std::vector<dai::Factor> &factors, dai::Var &var1, dai::Var &var2);
+
+	void updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior);
+
 
 private:
 
