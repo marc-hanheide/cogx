@@ -263,9 +263,15 @@ public class VisionActionInterface extends ManagedComponent {
 				getComponent().log(
 						"got the vis obj id: "
 								+ getComponent().getVisualObjectID(beliefID));
+								
+								// Hack  by Alen
+//				getComponent().addBooleanFeature(getAction().beliefAddress,
+//						m_concept + m_featurePostfix, true);				
 
 				addThenCompleteOnOverwrite(cmd);
-
+				
+//				getComponent().sleepComponent(10000);
+				
 			} catch (CASTException e) {
 				getComponent().logException(e);
 			}
@@ -276,6 +282,8 @@ public class VisionActionInterface extends ManagedComponent {
 			try {
 				getComponent().addBooleanFeature(getAction().beliefAddress,
 						m_concept + m_featurePostfix, true);
+				// Hack  by Alen
+//				getComponent().sleepComponent(10000);		
 			} catch (CASTException e) {
 				logException(e);
 			}
