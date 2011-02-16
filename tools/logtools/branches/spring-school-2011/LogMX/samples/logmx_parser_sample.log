@@ -1,0 +1,4 @@
+07/03/2007, 16:51:00 (T0+1834ms) | ERROR | com.company.soft.DatabaseManager | A simple text on a single line 
+07/03/2007, 16:51:01 (T0+2805ms) | INFO | com.company.soft.gui.MainFrame | A simple text on 
+two lines 
+07/03/2007, 16:51:02 (T0+3810ms) | WARNING | com.company.soft.gui.MainFrame | A simple text on a single line 
