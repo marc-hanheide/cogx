@@ -1,0 +1,56 @@
+#!/bin/sh
+
+if [ "$1" ]; then
+    propfile="$1"
+else
+    propfile="/tmp/log4j-server.$USER.props"
+    cat > $propfile <<EOF
+log4j.rootLogger=TRACE, console
+
+
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
+EOF
+fi
+
+
+
+trap 'echo "</log4j:logsequence>";exit' INT TERM PIPE QUIT ABRT HUP 
+
+
+
+
+PORT=48143
+export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$COMA_CLASS_PATH:/usr/share/java/log4j-1.2.jar:$CLASSPATH:
+
+iplist=`ip addr show  | grep "inet " | tr -s " " | cut -f3 -d" " | cut -f1 -d/`
+
+##############################################################################
+echo "starting log4j socket server">&2
+echo "server reachable on port $PORT at addresses: ">&2
+echo "$iplist" >&2
+
+lastip=`echo "$iplist"|tail -n1`
+cat >&2 <<EOF
+
+your most simplistic log4j.properties should look like this:
+##############################################################################
+log4j.rootLogger=TRACE, SocketApp
+
+# add a SocketAppender
+log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
+log4j.appender.SocketApp.Port=$PORT
+log4j.appender.SocketApp.RemoteHost=$lastip
+##############################################################################
+
+EOF
+
+
+
+
+echo '<?xml version="1.0" encoding="UTF-8"?>'
+echo "<log4j:logsequence xmlns:log4j=\"http://jakarta.apache.org/log4j/\" user=\"$USER\" time=\"`date -R`\">"
+java org.apache.log4j.net.SimpleSocketServer $PORT $propfile
+
+
+

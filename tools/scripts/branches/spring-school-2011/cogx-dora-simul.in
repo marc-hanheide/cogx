@@ -1,0 +1,15 @@
+#!/bin/bash
+
+PIDS=""
+
+@PEEKABOT_INSTALLROOT@/bin/peekabot &
+PIDS="$! $PIDS"
+
+player @CMAKE_SOURCE_DIR@/subarchitectures/nav.sa/config/stage_models/cas_floor7/cogxp3.cfg &
+PIDS="$! $PIDS"
+
+
+#kill $PIDS
+#sleep 2
+#kill -9 $PIDS
+
