@@ -1,0 +1,14 @@
+# cast config
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost --log true --debug true
+
+SUBARCHITECTURE somethingelse
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
+
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --debug true
+
