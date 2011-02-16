@@ -1,0 +1,18 @@
+HOST localhost
+
+# reading stored images
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 250
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 250
+
+# live images
+#CPP MG VideoServer OpenCvLiveServer --camids 0 --devclass USB --devnums 0
+#CPP MG VideoServer OpenCvLiveServer --camids 0 --devclass FIREWIRE --devnums 0
+CPP MG VideoServer PointGreyServer --camids 0 --swapredblue --imgsize "640 480" --framerate_fps 15 --log --debug
+
+CPP MG viewer VideoViewer --videoname VideoServer --camid 0

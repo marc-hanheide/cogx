@@ -1,0 +1,9 @@
+
+command line options:
+vs2 [-h] [-c configfile] [-b] [-f] image
+  -h  display this usage
+  -c  specify config file
+  -b  draw all overlays in black (generate high constrast snapshots)
+  -f  draw all overlays fat (generate high contrast snapshots)
+  image  image in any format
+

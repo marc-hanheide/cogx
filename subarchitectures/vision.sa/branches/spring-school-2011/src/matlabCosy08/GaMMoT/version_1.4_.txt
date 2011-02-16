@@ -1,0 +1,16 @@
+version file:
+
+12.9.07
+Added constrained optimization to "refitGaussianMixture.m"
+
+21.9.07
+Changed reference distribution in the SMO reduction.
+
+15.10.07
+added incremental bandwidth selection with plugin method
+added optimal solve-the-equation plugin method
+modified demo1 and demo2
+
+16.10.07
+added sampled estimate of the threshold for classification
+added sensor uncertainty in bw estimation

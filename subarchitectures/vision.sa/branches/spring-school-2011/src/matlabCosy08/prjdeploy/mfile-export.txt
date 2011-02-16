@@ -1,0 +1,24 @@
+# featureexrtactor eval
+extAPfeatures 
+# "addPaths", # used in both; might add this path: "C:\danijels\Matlab\cogLearn"
+# recogniser eval
+CLFstart
+VMstart
+LRstart
+KDBFrec
+qnt2ql
+lf2sfa
+LRloadAVmodels
+LRvisUpdate
+KDBFupdate
+KDBFunlearn
+# some glue
+#cosyRecogniser_recognise
+#cosyRecogniser_update
+#cosyRecogniser_unlearn
+#cosyFeatureExtractor_limitvalue
+#cosyFeatureExtractor_extract
+cogxVisualLearner_recognise
+cogxVisualLearner_update
+cogxVisualLearner_unlearn
+cosyMatlabWarnings
