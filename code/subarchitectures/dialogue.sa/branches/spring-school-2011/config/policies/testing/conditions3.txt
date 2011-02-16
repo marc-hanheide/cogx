@@ -1,0 +1,8 @@
+command1Recog = CI["Please find the cornflakes box"] (0.7,1.0)
+command2Recog = CI["Please find the mug"] (0.7,1.0)
+command1Unsure = CI["Please find the cornflakes box"] (0.2,0.7)
+command2Unsure = CI["Please find the mug"] (0.2,0.7)
+confirmed = CI[yes] (0.7,1.0)
+disproved = CI[no] (0.7,1.0)
+unrecog = CI[?]
+irrelevant = CI[*]

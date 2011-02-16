@@ -1,0 +1,196 @@
+This document describes the necessary steps to set up and run the
+system, and its work and data flow.
+
+SETTING UP THE SYSTEM
+---------------------
+
+You'll need to install the abducer to running the setup. The abducer is an
+abductive inference engine written in Mercury which communicates with the rest
+of the system via ICE. As it is a standalone server, you need to make sure
+that the server is running before starting CAST server.
+
+The abducer is included as a separate archive file named abducer-$VER.tar.gz
+in the `external' directory, where $VER is the current version of the engine.
+
+To install the abducer, do the following:
+
+ 1) tar xvzf abducer-0.2.tar.gz
+ 2) cd abducer-0.2.tar.gz
+
+INTERMEZZO: install Mercury. Follow the instructions in
+`INSTALL.Mercury.txt' and install Mercury in your system.
+
+ 3) follow the instructions in `INSTALL.Abducer.txt' and install
+    the abducer.
+
+Next, compile the CAST components by issuing `ant' in the root directory.
+
+RUNNING THE SYSTEM
+------------------
+
+ 1) run the abducer (i.e. run `./abducer-server' after it has been compiled.
+    The abducer may be run from any location.
+
+ 2) cd api-dialogue.v60
+
+ 3) run CAST server:
+    $ cast-server
+
+ 4) run CAST client:
+    $ cast-client config/cast/gui+cplan+realize.cast
+
+USING THE SYSTEM
+----------------
+
+The system will start up a simple GUI window in which you can write utterances.
+Every utterance is sent to the parser and then to the interpretation.
+
+Given an utterance, we generate an intention that links the beliefs that form
+its pre- and post-conditions. This allows us to construct them in a modular
+fashion, but it also means that in order to *generate* a communicative action,
+these linked beliefs need to be supplied.
+
+The beliefs and intentions are written to the Comsys working memory. For now,
+all beliefs linked from intentions are assumed to be in the Comsys working
+memory too.
+
+Language comprehension
+----------------------
+
+Currently, two types of utterances are recognised (i.e. assigned an intention):
+
+  (1) "X is Y", e.g. "the ball is round", "this is a box"
+  (2) "is X Y", e.g. "is this blue", "is the red box big", "is this a ball"
+  (3) "find X", e.g. "please find the ball" or "find the box please"
+
+You may observe how the preconditions and postconditions differ in each of
+the cases.
+
+To give a more detailed example, consider the utterance
+  "the red ball is round".
+The recognised intention is the following:
+
+	[ir:intention:4] ... B{robot[human]}: I(human):
+		<Pre>(
+			<BeliefRef>ir:belief:9 ^
+			<BeliefRef>ir:belief:10 ^
+			<BeliefRef>ir:belief:11) ^
+			<BeliefRef>ir:belief:12) ^
+		<Post><BeliefRef>ir:belief:13
+		@ p=1.0
+
+This means that there the epistemic status of the intention is attributed
+(B{robot[human]}), the intention is the human's private intention (I(human)),
+and there is one IntentionalContent with probability 1.0. The
+IntentionalContent specifies the pre- and postconditions, here displayed as
+a modal logic formula. Preconditions are marked by the <Pre> modality,
+postconditions are in <Post>.
+
+As we can see, the intention has four preconditions: these are expressed as
+links to beliefs, where each link is specified as a modal formula
+(ModalFormula in beliefs.ice) with the BeliefRef modality, and its argument
+is a string (ElementaryFormula) that specifies the identifier of the linked
+belief.
+
+The linked beliefs are the following:
+
+	[ir:belief:9] ... B{{human,robot}}: (<Ref>ball1_2 ^ <Color>red) @ p=1.0
+
+	[ir:belief:10] ... B{{human,robot}}: (<Ref>ball1_2 ^ <ObjectType>ball) @ p=1.0
+
+	[ir:belief:11] ... B{human}: (<Ref>ball1_2 ^ <Shape>round) @ p=1.0
+
+	[ir:belief:12] ... B{human[robot]}: (<Ref>ball1_2 ^ <Shape>unknown) @ p=1.0]
+
+	[ir:belief:13] ... B{{human,robot}}: (<Ref>ball1_2 ^ <Shape>round) @ p=1.0]
+
+Again, each belief has an epistemic status. B{human} means that the belief
+is private to the robot, B{human[robot]} is a belief attributed by the human
+to the robot, and B{human,robot} is a belief shared by the human and the robot.
+
+The belief content is a simple probability distribution with one interpretation
+that has probability 1.0 -- i.e. no uncertainties at the moment. These will
+come later with reference resolution and probabilistic abduction. The content
+formula is a ComplexFormula that has two constituents: <Ref>(...) and
+a property-value pair (e.g. <Color>red). <Ref>ball1_2 is a reference to the
+(perceived) entity. The property-value pair is a specification of a property
+and its value.
+
+In the four beliefs above, [ir:belief:9] and [ir:belief:10] are preconditions
+saying that it has been established as a shared belief (common ground) that
+the entity referred to as "ball1_2" is red and is of type ball, as both
+properties are part of the referring expression "the red ball".
+
+The postcondition of the intention, [ir:belief:13], says that the intention
+will eventually lead to a shared belief about ball1_2 with the content being
+that its shape is round. In other words, we expect this utterance to be made
+in order to make the shape and its value a shared belief.
+
+This is complemented by the two remaining preconditions, [ir:belief:11]
+and [ir:belief:12]. These encode the assumption that in order for the human
+to say "the red ball is round", he believes that the shape of the ball is
+indeed round ([ir:belief:11], from the Gricean Maxim of Quality), and that
+the robot does not know the shape ([ir:belief:12], from cooperativity
+-- if the human wants the robot to know the shape, he should first realise
+that there is the gap in the robot's knowledge).
+
+As for the third form of recognised intention ("find X"), we currently assume
+that X here has a referent, i.e. there is an entity that can be referred to.
+This utterance produces an intention with the following pre- and
+postconditions:
+
+[ir:intention:7] ... B{robot[human]}: I(human):
+		<Pre>(
+			<Belief>ir:belief:29 ^
+			<Belief>ir:belief:30) ^
+		<Post><Belief>ir:belief:31
+		@ p=1.0
+
+	[ir:belief:29] ... B{{human,robot}}: (<Ref>box1_4 ^ <ObjectType>box) @ p=1.0
+	[ir:belief:30] ... B{robot}: (<Ref>box1_4 ^ <Location>unknown) @ p=1.0
+	[ir:belief:31] ... B{{human,robot}}: (<Ref>box1_4 ^ <Location>not(unknown)) @ p=1.0
+
+The recognised intention of the human is that the robot, which is assumed not
+to know the location of the entity box1_4, makes its location known to both
+the robot itself and the human. box1_4 is to be of type "box", and this
+information is assumed to be shared among the human and the robot.
+
+Language production
+-------------------
+
+The fact that intentions link their pre- and postconditions allows them to
+be constructed in a modular fashion, BUT it also means that in order to
+generate a communicative action, one needs to supply both an intention and
+the beliefs it links to.
+
+As generating intentions requires quite complex data structures, instead
+of building a GUI where those could be specified, we are currently
+*mirroring* the intentions behind (1) above. That is, for assertions that
+"X is Y" (for example "the box is blue"), we are writing *two* intentions
+to the working memory -- the original one, and its copy with the agents
+reversed, i.e. instead of it being a (recognised) private intention of the
+human, we add a private intention of the robot.
+
+Private intentions of the robot written to the Comsys working memory are
+then picked up and a generation task is started.
+
+Note that in the terminal, this might be rather confusing as two intentions
+and their beliefs are written to the WM. Also, the realisation of the mirrored
+intention may fail, as we might not be able to produce all that we understand.
+Be patient -- we will be extending the coverage according to the needs.
+
+Let's consider an example. Typing "the box is blue" yields an intention of
+the human and the mirrored private intention of the robot. This robot's
+intention will then be picked up and realised. Unfortunately the realisation
+does not work as we would like it to at the moment, but you should get
+some output in the dialogue GUI window. For instance, when you type
+in "the box is blue", the following proto-LF will appear on the working memory:
+
+@{dn1_1:dvp}(c-goal ^ <SpeechAct>assertion ^ <QuestionType>color ^ <Relation>answer ^ <Content>(dn1_2:ascription ^ be ^ <Target>(dn1_3:entity ^ box ^ <InfoStatus>familiar) ^ <Color>(dn1_4:quality ^ blue)))
+
+This will eventually say "the box is blue".
+
+Note that the intention realisation assumes quite a lot about the structure
+of the intentions and beliefs. It is *not* yet usable for general-purpose
+intentions, but should work reasonably on those that are recognised by
+comprehension.

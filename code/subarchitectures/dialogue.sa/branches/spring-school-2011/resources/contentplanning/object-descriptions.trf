@@ -1,0 +1,151 @@
+// OBJECT DESCRIPTIONS
+
+// SETTING FLAGS
+// This isn't done the best way here: one flag covers all, which is not too good. 
+
+(:entity | :thing) ^ !<Salient>,
+##Salient ^ false
+-> 
+##Salient = false.
+
+(:entity | :thing) ^ <Salient>true 
+->
+##Salient = true.
+
+(:entity | :thing) ^ <Salient>false,
+##Salient ^ false
+-> 
+##Salient = false.
+
+// ==============================================
+// DELIMITATION, QUANTIFICATION
+// Once delimitation and quantification are set using InfoStatus, this feature is removed. 
+// The absence of Salient is required: Salient triggers realization as deictic or pronoun.
+
+:thing ^ <InfoStatus>familiar ^ !<Salient>
+-> 
+# ^ <Delimitation>unique.
+
+// We check explicitly that we neither have a salient feature, nor did we ever have one
+// (which would have let us to set the Salient global variable). 
+
+:thing ^ !<InfoStatus> ^ !<Salient>,
+##Salient ^ false
+-> 
+# ^ <Delimitation>existential. 
+
+:thing ^ <InfoStatus>new ^ !<Salient>
+-> 
+# ^ <Delimitation>existential.
+
+//(:entity | :thing) ^ !<InfoStatus> ^ !<Salient>
+//-> 
+//# ^ <Delimitation>existential. 
+
+:thing ^ <InfoStatus>familiar ^ !<Salient>
+-> 
+# ^ <Delimitation>unique. 
+
+:thing ^ !<InfoStatus> ^ <Salient>true
+->
+# ^ <Delimitation>unique.
+
+:thing ^ <InfoStatus>familiar ^ <Salient>true
+->
+# ^ <Delimitation>unique.
+
+:thing ^ <InfoStatus>new ^ !<Salient> 
+-> 
+# ^ <Quantification>specific.
+
+:thing ^ <InfoStatus>familiar ^ !<Salient> 
+-> 
+# ^ <Quantification>specific.
+
+:thing ^ !<InfoStatus> ^ <Salient>true
+->
+# ^ <Quantification>specific.
+
+:thing ^ <InfoStatus>familiar ^ <Salient>true
+->
+# ^ <Quantification>specific.
+
+
+:thing ^ !<InfoStatus> ^ !<Salient>
+-> 
+# ^ <Quantification>specific.
+
+:thing ^ <Quantification> ^ <Delimitation> ^ <InfoStatus> 
+-> 
+# ! <InfoStatus>.
+
+:thing ^ <Quantification> ^ <Delimitation> ^ <Salient> 
+-> 
+# ! <Salient>.
+
+//==============================================
+//PRONOMINALIZATION, DEICTIC
+//An object gets pronominalized if is both familiar and salient, 
+//AND WE ARE DEALING WITH AN ASCRIPTION. 
+//Both Salient and InfoStatus features are deleted, and the object proposition is replaced.
+//An object becomes a deictic if it is only Salient. 
+
+:entity ^ context ^ <InfoStatus>familiar ^ <Salient>true ^ !<Num>, 
+##ascription ^ true
+->
+# ^ it,
+# ^ <Num>sg, 
+# !<InfoStatus>,
+# !<Salient>.
+
+
+
+
+(:entity | :thing) ^ #v ^ !<InfoStatus> ^ <Salient>true ^ !<Num>, 
+##ascription ^ true
+->
+# ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific,
+# ^ <Num>sg,
+# !<Salient>.
+
+
+(:entity | :thing) ^ #v ^ !<InfoStatus> ^ <Salient>true ^ <Num>,  
+##ascription ^ true
+->
+# ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific,
+# !<Salient>.
+
+
+// ==============================================
+// NUMBER
+// The number for an entity is as specified, else it defaults to singular. 
+
+(:entity | :thing | :person) ^ !<Num> ^ !<InfoStatus>
+->
+# ^ <Num>sg.
+
+(:entity | :thing) ^ <Num>#num
+->
+# ^ <Num>#num.
+
+
+// ==============================================
+// PROPERTIES
+// Properties are single features in a proto-LF. A feature is transformed into a Modifier, 
+// after which the feature gets deleted. 
+
+(:entity | :thing) ^ <Shape>#v
+-> 
+# ^ <Modifier>(shape:q-shape ^ #v),
+# ! <Shape>. 
+
+(:entity | :thing) ^ <Color>#v 
+-> 
+# ^ <Modifier>(color:q-color ^ #v),
+# ! <Color>. 
+
+(:entity | :thing) ^ <Size>#v
+-> 
+# ^ <Modifier>(size:q-size ^ #v),
+# ! <Size>. 
+

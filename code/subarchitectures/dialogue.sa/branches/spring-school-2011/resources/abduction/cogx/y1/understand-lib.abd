@@ -1,0 +1,227 @@
+to_assertion_question(color, Entity) <-
+	?( k(now, private(r)) : color(Entity, unknownColor)).
+
+to_assertion_question(shape, Entity) <-
+	?( k(now, private(r)) : shape(Entity, unknownShape)).
+
+to_assertion_question(objecttype, Entity) <-
+	?( k(now, private(r)) : objecttype(Entity, unknownObjectType)).
+
+%-------------------------------------------------------------------------
+
+to_asserted_predicate(color, Entity, Value) <-
+	?( k(now, private(r)) : color(Entity, Value) ).
+
+to_asserted_predicate(shape, Entity, Value) <-
+	?( k(now, private(r)) : shape(Entity, Value) ).
+
+to_asserted_predicate(objecttype, Entity, Value) <-
+	?( k(now, private(r)) : objecttype(Entity, Value) ).
+
+%-------------------------------------------------------------------------
+
+to_asserted_attrib_predicate(color, Entity, Value) <-
+	?( k(now, attrib(r, h)) : color(Entity, Value) ).
+
+to_asserted_attrib_predicate(shape, Entity, Value) <-
+	?( k(now, attrib(r, h)) : shape(Entity, Value) ).
+
+to_asserted_attrib_predicate(objecttype, Entity, Value) <-
+	?( k(now, attrib(r, h)) : objecttype(Entity, Value) ).
+
+%-------------------------------------------------------------------------
+
+me(Nom) <-
+	i : sort(Nom, person),
+	i : prop(Nom, 'I').
+
+you(Nom) <-
+	i : sort(Nom, person),
+	i : prop(Nom, you).
+
+this(Nom) <-
+	i : sort(Nom, entity),
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Num(Nom, sg),
+	i : feat_Proximity(Nom, proximal),
+	i : feat_Quantification(Nom, specific).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+what_which(Nom) <-
+	i : prop(Nom, what).
+
+what_which(Nom) <-
+	i : prop(Nom, which).
+
+%-------------------------------------------------------------------------
+
+query_prop(Nom, color, PropValue) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, PropValue).
+
+query_prop(Nom, shape, Value) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, PropValue),
+	prop_to_shape(PropValue, Value).
+
+query_prop(Nom, objecttype, PropValue) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, PropValue),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+%-------------------------------------------------------------------------
+
+property_sort(color, 'q-color').
+property_sort(shape, 'q-shape').
+property_sort(objecttype, thing).
+
+to_property(object, objecttype).
+to_property(thing, objecttype).
+to_property(P, P) <-
+	property_sort(P, PropSort).
+
+%prop_to_shape(P, P).
+prop_to_shape(round, spherical).
+prop_to_shape(square, cubic).
+prop_to_shape(cubic, cubic).
+prop_to_shape(cylindrical, cylindrical).
+prop_to_shape(spherical, spherical).
+prop_to_shape(compact, compact).
+prop_to_shape(elongated, elongated).
+%-------------------------------------------------------------------------
+
+polarity(Nom, Polarity) <-
+	i : feat_Polarity(Nom, Polarity).
+
+polarity(Nom, pos) <-
+	assume_positive_polarity(Nom) / 2.0.
+
+%-------------------------------------------------------------------------
+
+union_id(Nom, UnionId) <-
+	d_units_list(Nom, FirstNom, NextNom),
+	att : refers_to(FirstNom, UnionId) / reference_resolution.
+
+union_id(Nom, Id) <-
+	att : refers_to(Nom, UnionId) / reference_resolution.
+
+%-------------------------------------------------------------------------
+
+marker_yes(Nom, Marker) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, yes).
+
+marker_no(Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, 'No').
+
+%-------------------------------------------------------------------------
+
+d_units_list(Nom, FirstNom, NextNom) <-
+	i : sort(Nom, 'd-units'),
+	i : prop(Nom, list),
+	i : rel_First(Nom, FirstNom),
+	i : rel_Next(Nom, NextNom).
+
+%-------------------------------------------------------------------------
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	property_sort(color, Sort),
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : color(Union, PolarProp) ).
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	property_sort(shape, Sort),
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	prop_to_shape(Prop, Value),
+	polarprop(Value, Polarity, PolarValue),
+	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ).
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	property_sort(shape, Sort),
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ).
+
+%-------------------------------------------------------------------------
+
+check_value_grounding(Union, color, grounded(Value)) <-
+	k(now, mutual(r, h)) : color(Union, Value) / belief_model.
+
+check_value_grounding(Union, shape, grounded(Value)) <-
+	k(now, mutual(r, h)) : shape(Union, Value) / belief_model.
+
+check_value_grounding(Union, objecttype, grounded(Value)) <-
+	k(now, mutual(r, h)) : objecttype(Union, Value) / belief_model.
+
+check_value_grounding(Union, Prop, ungrounded(Value)) <-
+	property_value_ungrounded(Union, Prop) / 15.0.
+
+%-------------------------------------------------------------------------
+
+find_assert_value_intention(Union, Prop, Value) <-
+	check_value_grounding(Union, Prop, grounded(Value)),
+	intention : already_grounded(r, Union, Prop) / 0.5.
+
+find_assert_value_intention(Union, Prop, Value) <-
+	check_value_grounding(Union, Prop, ungrounded(Value)),
+	to_asserted_attrib_predicate(Prop, Union, Value),
+	intention : value_assertion(h, Union, Prop) / 0.5.
+
+%-------------------------------------------------------------------------
+
+assert_prop(Union, Polarity, Nom) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	find_assert_value_intention(Union, color, PolarProp).
+%	check_value_grounding(Union, color, ungrounded),
+%	?( k(now, attrib(r, h)) : color(Union, PolarProp) ),
+%	intention : value_assertion(h, Union, color) / 0.5.
+
+assert_prop(Union, Polarity, Nom) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	prop_to_shape(Prop, Value),
+	polarprop(Value, Polarity, PolarValue),
+	find_assert_value_intention(Union, shape, PolarValue).
+%	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ),
+%	intention : value_assertion(h, Union, shape) / 0.5.
+
+assert_prop(Union, Polarity, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	polarprop(Prop, Polarity, PolarProp),
+	maybe_assert_modifier(Nom, Union, Polarity),
+	find_assert_value_intention(Union, objecttype, PolarProp).
+%	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
+%	maybe_assert_modifier(Nom, Union, Polarity),
+%	intention : value_assertion(h, Union, objecttype) / 0.5.
+
+%-------------------------------------------------------------------------
+
+maybe_assert_modifier(Nom, Union, Polarity) <-
+	no_modifier(Nom) / 10.0.
+
+maybe_assert_modifier(Nom, Union, Polarity) <-
+	i : rel_Modifier(Nom, ModifierNom),
+	assert_prop_noint(ModifierNom, Union, Polarity).
+
+%-------------------------------------------------------------------------
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).
