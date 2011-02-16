@@ -1,0 +1,162 @@
+= CAST Control =
+
+Version 0.5
+
+Code: https://codex.cs.bham.ac.uk/svn/nah/cogx/code/tools/castctrl/trunk
+
+Functions of CAST Control GUI:
+
+   * manage local and remote CAST processes: start and stop CAST servers, CAST
+     client, player
+
+   * monitor the status of CAST processes
+
+   * capture output from processes and display in a single window
+
+   * build and install CAST components
+
+   * select CAST client and Player configuration from a list
+
+   * all CAST settings are stored in a single configuration file (PATH, 
+   LD_LIBRARY_PATH, CLASSPATH, PYTHON_PATH, etc.). Nothing needs to be set in 
+   bash startup files, etc.
+
+'''Prerequisites''': The application UI is built with Qt. The remote processes 
+are monitored through ICE Servers implemented in CAST Agents. The following 
+packages must be installed along with all the dependencies:
+{{{python-qt4 python-zeroc-ice}}} .
+
+== Usage ==
+
+Open a console and cd to the root of the develpoment trunk. Run the application
+with:
+
+{{{
+python tools/castctrl/castcontrol.py
+}}}
+
+On statup the application will read the file {{{castcontrol.conf}}} if it is
+present in the current directory, otherwise it will use the builtin defaults.
+The configuration file will be saved to the current directory if it wasn't
+present at program startup.
+
+=== Configuration ===
+
+When the file {{{castcontrol.conf}}} is first created it has to be edited
+because some of the programs and libraries used are installed in nonstandard
+locations. Also the versions of the libraries may have changed from the time
+the defaults were prepared.
+
+The configuration file has 3 sections: Environment, Cleanup Script and User
+Options. 
+
+The '''environment variables''' that need to be configured on each machine are:
+
+{{{
+CUDA_ROOT=/usr/local/cuda
+CURE_LIB_DIR=TODO_FIXME/cosycure/lib/cure
+MERCURY_ROOT=/usr/local/mercury-rotd-2009-10-25
+MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
+}}}
+
+Also the variables that reference specific versions of native and java
+libraries may have to be changed, like:
+
+{{{
+LOG4_JAR=/usr/share/java/log4j-1.2.jar
+}}}
+
+In the '''cleanup script''' section you define the commands that need to be 
+executed togeter with the startup of CAST servers. You can put one command in 
+each line. The lines with a hash (#) are comments.
+
+In the '''user options''' section you can set your preferred editor and the 
+terminal you want to use (started from a CAST Control menu command).
+
+The editor command accepts 2 placeholders: %s will be replaced with the 
+filename of the file to be edited. %l will be replaced with the line number to 
+be displayed in the editor. %l has a 'strange' syntax to allow its use with 
+different editors. For example {{{ %l[-g ] }}} will be transformed to sth. like 
+{{{ -g 42 }}} and {{{ %l[+:] }}} will become {{{ +:42 }}} .
+
+{{{
+EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s
+}}}
+
+The examples for running a terminal are also created in the default 
+{{{castcontrol.conf}}} file. Currently there is a problem with 
+{{{gnome-terminal}}} and {{{konsole}}}: if an instance of the terminal program 
+is already running, the new instance will inherit the environment from the 
+running instance instead of the environment from CAST Control.
+
+{{{
+TERMINAL=gnome-terminal --working-directory='%s'
+}}}
+
+=== Distributed execution ===
+
+To monitor CAST on multiple machines usin CAST Control, a CAST Agent must be 
+running on every remote machine.
+
+An Agent can be started either by logging into the machine and starting it from 
+there or with the use of {{{ssh}}} to start it remotely. If the components that 
+run on a remote machine create X windows, you need to log into the machines 
+graphical desktop (locally or using a remote desktop) or use {{{ssh -Y}}} which 
+will export the {{{DISPLAY}}} from the remote machine to the local desktop.
+
+Open a console and cd to the root of the develpoment trunk. Run the application
+with:
+
+{{{
+python tools/castctrl/castagent
+}}}
+
+Additional options will be displayed if you run it with:
+
+{{{
+python tools/castctrl/castagent --help
+}}}
+
+The Agent will use the configuration file {{{castcontrol.conf}}} if present, 
+otherwise it will use the built-in defaults which may not be correct. To create 
+a new {{{castcontrol.conf}}}, run CAST Control in the same directory.
+
+Currently a CAST agent can serve only from the directory it is started in. All 
+the agents on all machines serve on the same port (7832). The port can be 
+configured for each agent at startup, but CAST Control only checks port 7832.
+
+By default only CAST servers (c++, java, python) are monitored from a CAST 
+Agent. To monitor a Player process the option {{{--player}}} must be used (see 
+{{{--help}}}. The Player on a remote machine will be started with the other 
+servers and not when 'Start Player' button is pressed in CAST Control.
+
+(NOTE: A daemon mode may be added to CAST Agent in the future so that an agent 
+could be started on system startup.)
+
+=== The basic interface ===
+
+On the left side of the application window there is a list of all available 
+machines and the available processes on each machine. On top there are the 
+buttons to start and stop the processes. Below the buttons there are three 
+tabs: the first one displays the outputs from the selected processes. The 
+second one is used for client and player configuration. The third one is used 
+for building and installing CAST components.
+
+=== The output window ===
+
+The output window merges the outputs of selected running processes. Currently 
+you can select to view the output of all processes (All) or the internal 
+messages of the CAST Control application (Control). On startup the output is 
+set to Control.
+
+The messages are merged by their timestamp. At most 500 last messages are 
+displayed in the output window.
+
+The messages from the error streams are 
+displayed in red.  The ANSI color codes from the log() messages from CAST 
+components are parsed and the messages are displayed in color.
+
+The build page has its own output window which is cleared before every build.
+
+You can select and copy parts of text from the output windows.
+
