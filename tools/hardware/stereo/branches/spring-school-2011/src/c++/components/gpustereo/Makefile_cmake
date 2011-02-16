@@ -1,0 +1,71 @@
+SOURCEDIR   ?= .
+DESTDIR 	?= obj
+ifeq ($(strip $(SOURCEDIR)),)
+  SRCDIR=.
+else
+  SRCDIR=$(SOURCEDIR)
+endif
+ifeq ($(strip $(DESTDIR)),)
+  OBJDIR=.
+else
+  OBJDIR=$(DESTDIR)
+endif
+
+IHEADERS = align.h census.h CensusGPU.h
+ISOURCES = CensusGPU.cpp census.cu
+# ICU_DEPS =
+
+HEADERS=$(addprefix $(SRCDIR)/,$(IHEADERS))
+SOURCES=$(addprefix $(SRCDIR)/,$(ISOURCES))
+# CU_DEPS=$(addprefix $(SRCDIR)/,$(ICU_DEPS))
+
+LIB = $(DESTDIR)/libgpustereo.so
+STATICLIB = $(DESTDIR)/libgpustereo.a
+PROG = $(DESTDIR)/testgpustereo
+
+CC = nvcc
+CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc -I/usr/local/cuda/sdk/C/common/inc
+NVCCFLAGS += -Xcompiler -fPIC
+LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib -L/usr/local/cuda/sdk/C/lib
+LIBS += -lcudart -lcutil -lhighgui
+
+all : lib # staticlib
+lib : $(LIB)
+staticlib : $(STATICLIB)
+prog : $(PROG)
+
+$(OBJDIR)/CensusGPU.o : $(OBJDIR) $(HEADERS) $(SRCDIR)/CensusGPU.cpp
+	$(CC) -o $@ -c $(SRCDIR)/CensusGPU.cpp $(CFLAGS) $(NVCCFLAGS)
+
+$(OBJDIR)/census.o : $(OBJDIR) $(HEADERS) $(SRCDIR)/census.cu
+	$(CC) -o $@ -c $(SRCDIR)/census.cu $(CFLAGS) $(NVCCFLAGS)
+
+$(LIB) : $(OBJDIR)/CensusGPU.o $(OBJDIR)/census.o
+	g++ -shared $(OBJDIR)/CensusGPU.o $(OBJDIR)/census.o $(LDFLAGS) -o $(LIB)
+
+$(STATICLIB) : $(OBJDIR)/CensusGPU.o $(OBJDIR)/census.o
+	ar crs $@ $(OBJDIR)/CensusGPU.o $(OBJDIR)/census.o
+
+$(OBJDIR)/testgpustereo.o : $(OBJDIR) $(HEADERS) $(SRCDIR)/testgpustereo.cpp
+	$(CC) -o $@ -c $(SRCDIR)/testgpustereo.cpp $(CFLAGS)
+
+$(PROG) : testgpustereo.o $(STATICLIB)
+	$(CC) -o $@ testgpustereo.o $(STATICLIB) $(LDFLAGS) $(LIBS)
+
+$(OBJDIR)/livegpustereo.o : $(OBJDIR) $(HEADERS) $(SRCDIR)/livegpustereo.cpp
+	$(CC) -o $@ -c $(SRCDIR)/livegpustereo.cpp $(CFLAGS)
+
+$(OBJDIR)/livegpustereo : $(OBJDIR)/livegpustereo.o $(STATICLIB)
+	$(CC) -o $@ $(OBJDIR)/livegpustereo.o $(STATICLIB) $(LDFLAGS) $(LIBS)
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+clean:
+	rm -f $(PROG)
+	rm -f $(STATICLIB)
+	rm -f $(LIB)
+	rm -f $(OBJDIR)/CensusGPU.o $(OBJDIR)/census.o
+	rmdir $(OBJDIR)
+	rm -f $(SRCDIR)/census.linkinfo
+
