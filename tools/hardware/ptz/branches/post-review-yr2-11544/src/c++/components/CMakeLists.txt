@@ -1,6 +1,7 @@
 include_directories(..)
 include_directories(.)
 
+FIND_PACKAGE(Player REQUIRED)
 
 # Set the sources.
 set(SOURCES PTZServer.cpp)
@@ -17,5 +18,5 @@ if(BUILD_HAL_PTZ_PLAYER)
   find_package(Player REQUIRED)
   add_cast_component(PlayerPTZServer PlayerPTZServer.cpp PlayerPTZServer.hpp)
   link_cast_component(${CAST_COMPONENT_NAME} PTZUtils)
-    link_cast_component(${CAST_COMPONENT_NAME} playerc m playerxdr playererror)
+  link_cast_component(${CAST_COMPONENT_NAME} m ${Player_LIBS})
 endif(BUILD_HAL_PTZ_PLAYER)
