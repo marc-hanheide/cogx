@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE coma
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG reasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name reasoner --log true
+JAVA MG comagui  coma.components.ComaInputWindow --reasoner-name reasoner --log true --debug true
