@@ -1658,14 +1658,14 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actEnableCleanupScript"/>
-   <addaction name="actStartCastServers"/>
-   <addaction name="actStopCastServers"/>
-   <addaction name="separator"/>
-   <addaction name="actStartCastClient"/>
-   <addaction name="actStopCastClient"/>
    <addaction name="separator"/>
    <addaction name="actStartExternalServers"/>
+   <addaction name="actStartCastServers"/>
+   <addaction name="actStartCastClient"/>
+   <addaction name="separator"/>
    <addaction name="actStopExternalServers"/>
+   <addaction name="actStopCastServers"/>
+   <addaction name="actStopCastClient"/>
    <addaction name="separator"/>
    <addaction name="actStartTerminal"/>
   </widget>
@@ -1745,9 +1745,9 @@
   </action>
   <action name="actStartCastServers">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/system-run.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/castStart.png</normaloff>
+     <normalon>:/icons/res/system-run.png</normalon>:/icons/res/castStart.png</iconset>
    </property>
    <property name="text">
     <string>Start CAST Servers</string>
@@ -1758,9 +1758,9 @@
   </action>
   <action name="actStopCastServers">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/system-suspend.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/castStop.png</normaloff>
+     <normalon>:/icons/res/system-suspend.png</normalon>:/icons/res/castStop.png</iconset>
    </property>
    <property name="text">
     <string>Stop CAST Servers</string>
@@ -1797,9 +1797,9 @@
   </action>
   <action name="actStartExternalServers">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/go-up.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/serverStart.png</normaloff>
+     <normalon>:/icons/res/go-up.png</normalon>:/icons/res/serverStart.png</iconset>
    </property>
    <property name="text">
     <string>Start External Servers</string>
@@ -1810,9 +1810,9 @@
   </action>
   <action name="actStopExternalServers">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/go-down.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/serverStop.png</normaloff>
+     <normalon>:/icons/res/go-down.png</normalon>:/icons/res/serverStop.png</iconset>
    </property>
    <property name="text">
     <string>Stop External Servers</string>
@@ -1908,8 +1908,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>805</x>
-     <y>322</y>
+     <x>676</x>
+     <y>214</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1924,8 +1924,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>805</x>
-     <y>229</y>
+     <x>676</x>
+     <y>151</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1940,8 +1940,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>788</x>
-     <y>135</y>
+     <x>672</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
