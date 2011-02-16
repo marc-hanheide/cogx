@@ -1,0 +1,6 @@
+# cast config
+HOST localhost
+
+COMPONENT PYTHON v11n.python.test castmodule.cogxv11n.TestClient --displayserver "display.srv" --debug
+
+INCLUDE v11n_base.cast.inc

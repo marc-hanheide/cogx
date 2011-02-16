@@ -1,0 +1,34 @@
+# In this test the clients are configured with a switch that is parsed
+# by a CAST component and passed to the clients when connected.
+# The component is a CDisplayServer; when it is run with a nonempty
+# --redirect-to-host it doesn't create any UI, but it may still
+# accept objects -- and fail if it receives an object that requires
+# a running QApplication during conversion.
+
+HOST localhost
+
+# python
+COMPONENT PYTHON v11n.python.test castmodule.cogxv11n.TestClient --displayserver "display.srv" --debug true
+
+# dummy display server
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG display.srv DisplayServer --redirect-to-host localhost --debug true
+
+# c++
+CPP MG visualization.test VisualizationTest --displayserver "display.srv" --videoname videoserver --camid 0 --debug true
+
+# java
+SUBARCHITECTURE somethingelse
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory #--log
+
+JAVA MG java.test.client si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --debug true
+
+# Input for c++
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 200 --debug true
