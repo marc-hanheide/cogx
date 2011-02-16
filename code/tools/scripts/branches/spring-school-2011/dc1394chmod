@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -c /dev/raw1394 ] ; then
+   chmod a+rw /dev/raw1394
+fi
+
+if [ -d /dev/video1394 ] ; then
+   chmod a+rw /dev/video1394/*
+elif [ -c /dev/video1394-0 ] ; then 
+   chmod a+rw /dev/video1394-*
+fi
