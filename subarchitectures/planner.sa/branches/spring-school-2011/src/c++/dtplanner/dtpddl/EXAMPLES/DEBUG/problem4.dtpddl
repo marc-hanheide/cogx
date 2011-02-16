@@ -1,0 +1,52 @@
+(define (problem cogxtask)
+
+(:domain dt-find-objects)
+
+(:objects  o-mug o-oven o-tbl - visualobject
+           mug table cornflakes - label
+           dora - robot
+           rb - room
+           c1b c2b - cone
+           p2b p1a p1b p2a - place
+           kitchen - category
+)
+
+(:init  (room p2b rb)
+        (label o-tbl table)
+        (label o-mug mug)
+        (label o-cf cornflakes)
+        (room c2b rb)
+        (is-in dora p1a)
+        (room p1b rb)
+        (room c1b rb)
+        (probabilistic  0.6000  (and  (category rb kitchen)
+                                      (probabilistic  0.8000  (and  (ex-in-room cornflakes rb true)
+                                                                    (probabilistic  0.7000  (is-in o-cf c1b)
+                                                                                    0.3000  (is-in o-cf c2b)
+                                                                    )
+                                                              )
+                                                      0.2000  (ex-in-room cornflakes rb false)
+                                      )
+                                      (probabilistic  0.8000  (and  (ex-in-room mug rb true)
+                                                                    (probabilistic  0.7000  (is-in o-mug c1b)
+                                                                                    0.3000  (is-in o-mug c2b)
+                                                                    )
+                                                              )
+                                                      0.2000  (ex-in-room mug rb false)
+                                      )
+                                      (probabilistic  0.9000  (and  (ex-in-room table rb true)
+                                                                    (probabilistic  0.7000  (is-in o-tbl c1b)
+                                                                                    0.3000  (is-in o-tbl c2b)
+                                                                    )
+                                                              )
+                                                      0.1000  (ex-in-room table rb false)
+                                      )
+                                )
+                        0.4000  (and  )
+        )
+)
+
+(:goal  (and  ))
+(:metric maximize (reward ))
+
+)

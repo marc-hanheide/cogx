@@ -1,0 +1,20 @@
+This is not going to work until you build the software on which it
+relies. For the moment you can do that manually as follows:
+
+cd dtpddl
+make libdtplanning
+
+The above is all that is required for the current code that is merged
+with CAST.
+
+Also, try and build a simple POMDP solver. This shall require you
+install some libraries. 
+
+cd cassandra
+make
+
+Testing with _domain_ and _problem_ files:
+
+
+dtpddl/EXAMPLES/test3.domain.pddl
+dtpddl/EXAMPLES/test3.problem.pddl
