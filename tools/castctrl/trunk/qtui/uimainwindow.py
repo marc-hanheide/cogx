@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Jan 26 09:14:47 2011
+# Created: Wed Feb 16 14:32:27 2011
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -712,11 +712,13 @@ class Ui_MainWindow(object):
         self.actOpenHostConfig.setObjectName("actOpenHostConfig")
         self.actStartCastServers = QtGui.QAction(MainWindow)
         icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/res/castStart.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon1.addPixmap(QtGui.QPixmap(":/icons/res/system-run.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actStartCastServers.setIcon(icon1)
         self.actStartCastServers.setObjectName("actStartCastServers")
         self.actStopCastServers = QtGui.QAction(MainWindow)
         icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/icons/res/castStop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon2.addPixmap(QtGui.QPixmap(":/icons/res/system-suspend.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actStopCastServers.setIcon(icon2)
         self.actStopCastServers.setObjectName("actStopCastServers")
@@ -732,11 +734,13 @@ class Ui_MainWindow(object):
         self.actStopCastClient.setObjectName("actStopCastClient")
         self.actStartExternalServers = QtGui.QAction(MainWindow)
         icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/icons/res/serverStart.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon5.addPixmap(QtGui.QPixmap(":/icons/res/go-up.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actStartExternalServers.setIcon(icon5)
         self.actStartExternalServers.setObjectName("actStartExternalServers")
         self.actStopExternalServers = QtGui.QAction(MainWindow)
         icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(":/icons/res/serverStop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon6.addPixmap(QtGui.QPixmap(":/icons/res/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actStopExternalServers.setIcon(icon6)
         self.actStopExternalServers.setObjectName("actStopExternalServers")
@@ -796,14 +800,14 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_Build.menuAction())
         self.menubar.addAction(self.menu_Edit.menuAction())
         self.processBar.addAction(self.actEnableCleanupScript)
-        self.processBar.addAction(self.actStartCastServers)
-        self.processBar.addAction(self.actStopCastServers)
-        self.processBar.addSeparator()
-        self.processBar.addAction(self.actStartCastClient)
-        self.processBar.addAction(self.actStopCastClient)
         self.processBar.addSeparator()
         self.processBar.addAction(self.actStartExternalServers)
+        self.processBar.addAction(self.actStartCastServers)
+        self.processBar.addAction(self.actStartCastClient)
+        self.processBar.addSeparator()
         self.processBar.addAction(self.actStopExternalServers)
+        self.processBar.addAction(self.actStopCastServers)
+        self.processBar.addAction(self.actStopCastClient)
         self.processBar.addSeparator()
         self.processBar.addAction(self.actStartTerminal)
         self.buildBar.addAction(self.actConfigureWithCMake)
