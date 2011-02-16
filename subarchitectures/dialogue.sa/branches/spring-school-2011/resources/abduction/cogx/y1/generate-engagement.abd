@@ -1,0 +1,26 @@
+%-------------------------------------------------------------------------
+
+	% GREETING
+
+generate : intention : greeting(h, r) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, greeting) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%-------------------------------------------------------------------------
+
+	% POSITIVE (NON-VERIFYING) FEEDBACK
+
+generate : intention : positive_feedback(h) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, thanking) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%-------------------------------------------------------------------------
+
+	% DISENGAGEMENT
+
+generate : intention : disengage(h) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Bye') / 1.0,
+	event : produce(r, Nom) / 1.0.

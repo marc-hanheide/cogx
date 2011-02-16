@@ -1,0 +1,98 @@
+README -- API distribution for the Dialogue API v6.0 (July 2010)
+
+== INTRODUCTION == 
+
+The API distribution for the Dialogue API v6.0 (formerly "comsys") provides functionality for situated dialogue processing. The functionality 
+is provided in several "layers": 
+
+- a core, middleware-independent framework; 
+- a CAST-extension to use the framework in a CAST cognitive architecture; and, 
+- a set of resources specifically for the CogX scenarios. 
+
+In summary, the v6.0 distribution provides the following: 
+
+- given an utterance (typed into a GUI), a complex interpretation based on an intention and beliefs is formed; 
+- given an intention with accompanying beliefs, a dialogue action is determined, and realized as an utterance. 
+
+The main point for this release is to become familiar with the
+intentions and beliefs we are producing. The GUIDE gives a detailed
+account.
+
+The coverage is currently (early July) based on the George
+scenario. The aim is to have coverage extended to include all of
+George and Dora by the end of July 2010. Functionality will be
+extended to include speech recognition (foreseen: Loquendo, Sphinx4),
+reference resolution, and further (under-the-hood) methods for
+dialogue management.
+
+The v6.0 contains several APIs: 
+
+* de.dfki.lt.sdl: 
+- System Description Language API 
+- defines a language for configuring process flow, then compiling the configuration into a Java system
+
+* de.dfki.lt.tr.meta: 
+- meta-process object API 
+- defines an abstract level of process functionality that allows for dynamics (online) configuration of processes, following SDL 
+- functionality includes a basic definition of process, and of fixed-points for guiding process flow
+
+* de.dfki.lt.tr.dialogue: 
+- dialogue processing API
+- defines several packages for situated dialogue processing
+- packages cover both comprehension and production, as well as supporting functionality
+
+* de.dfki.lt.tr.cast.dialogue: 
+- CAST-specific extension of the dialogue processing API
+- defines CAST components for including dialogue processing functionality in a CAST architecture, including an Abstract component
+  encapsulating generally needed functionality.  
+
+In addition there is a collection of classes that implement scenario-specific resources. Classes 
+are located in the [ resources/src/java ] directory: 
+
+* de.dfki.lt.tr.cogx.dialogue.readingfactories:
+- factories for creating referential readings 
+
+Additional resources such as grammars, content planning domains, etc. are under [ resources/ ]. 
+
+== INSTALLATION == 
+
+The entire distribution can be compiled by issuing [ ant ] or [ ant
+compile ] in the root directory of the distribution. For further details
+(notably on dependencies) please see the GUIDE. 
+
+Documentation for the distribution can be generated (JavaDoc) by
+issuing [ ant doc ] in the root directory of the distribution. The
+generated documentation is stored in the [ doc ] subdirectory of the
+root of each API.
+
+Several APIs included in this distribution define unit tests. These
+unit tests can all be run by issuing [ ant test ] in the root
+directory of the distribution. Alternatively, the unit tests for a
+specific API can be run by issuing [ ant test ] in the root directory
+of that particular API. Documentation of the unit test results is
+always generated, and stored in the [ reports/html ] subdirectory
+under the root directory of each API.
+
+== DOCUMENTATION == 
+
+API code documentation generated with [ ant doc ] is stored in the [
+doc ] subdirectory of each API.
+
+Unit test documentation is automatically generated when running [ ant
+test ] and is stored in the [ reports/html ] subdirectory of each API.
+
+== PLATFORMS ==
+
+The APIs have been compiled and tested with Java 1.6 on OS.X 10.5.8. 
+
+The APIs have been tested with CAST v2.1.9 (Ice 3.3.x). Ice 3.4.y is not
+supported at the moment.
+
+== CONTRIBUTORS == 
+
+Geert-Jan M. Kruijff / gj@dfki.de
+Pierre Lison / pierre.lison@dfki.de
+Miroslav Janicek / miroslav.janicek@dfki.de
+Bernd Kiefer / kiefer@dfki.de
+Hans-Ulrich Krieger / krieger@dfki.de
+

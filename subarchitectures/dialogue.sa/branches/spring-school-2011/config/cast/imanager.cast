@@ -1,0 +1,6 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	imanager	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./resources/rules/abduction/intentions-basic/index.txt --log true

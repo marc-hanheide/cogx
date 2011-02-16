@@ -1,0 +1,29 @@
+// VISION AND "SEE-ABILITY"
+
+// @d1:dvp(c-goal ^ <SpeechAct>question ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(<Questioned>true))
+// "What do/can I see?"
+
+
+:dvp ^ <SpeechAct>question ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(<Questioned>true) ^ <Content> ( #c1: )
+->
+#c1 = :perception ^ see ^ 
+                 <Mood> int ^ 
+                 <Actor>(i:person ^ I ^ <Num> sg) ^ 
+                 <Patient>(#w1:entity ^ what) ^ 
+                 <Subject>i:person ^ 
+                 <Wh-Restr>#w1:.
+
+// @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>#w1:entity)
+// "I see x"
+
+
+:dvp ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(#i:person ^ I) ^ <Target>#w1:thing ^ <Content> ( #c1: )
+->
+#c1 = :perception ^ see ^ 
+                 <Mood> ind ^
+                 <Tense> pres ^ 
+                 <Actor>(#i:person ^ I ^ <Num> sg) ^ 
+                 <Patient>#w1: ^ 
+                 <Subject>#i:person.
+
+

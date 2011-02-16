@@ -1,0 +1,6 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	asr	de.dfki.lt.tr.cast.dialogue.SphinxASR --listenOnInit --outputType phonString --configFile ./config/asr/george.sphinx-config.xml
