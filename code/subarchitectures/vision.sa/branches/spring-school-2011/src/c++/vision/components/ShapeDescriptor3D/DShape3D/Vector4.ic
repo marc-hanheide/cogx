@@ -1,0 +1,219 @@
+/**
+ * $Id$
+ */
+
+#ifndef P_VECTOR4_IC
+#define P_VECTOR4_IC
+
+#include <math.h>
+#include <sstream>
+#include "Math.hh"
+
+namespace P{
+
+inline Vector4::Vector4()
+{
+}
+
+inline Vector4::Vector4(double xx, double yy, double zz, double ww)
+: x(xx), y(yy), z(zz), w(ww)
+{
+}
+
+inline Vector4& Vector4::operator+=(const Vector4 &v)
+{
+  x += v.x;
+  y += v.y;
+  z += v.z;
+  w += v.w;
+  return *this;
+}
+
+inline Vector4& Vector4::operator-=(const Vector4 &v)
+{
+  x -= v.x;
+  y -= v.y;
+  z -= v.z;
+  w -= v.w;
+  return *this;
+}
+
+
+inline Vector4& Vector4::operator*=(double s)
+{
+  x *= s;
+  y *= s;
+  z *= s;
+  w *= s;
+  return *this;
+}
+
+inline Vector4& Vector4::operator/=(double s) throw(Except)
+{
+  if(s == 0)
+    throw Except(__HERE__, "division by zero");
+  x /= s;
+  y /= s;
+  z /= s;
+  w /= s;
+  return *this;
+}
+
+
+inline double Vector4::NormSquare() const
+{
+  return x*x + y*y + z*z + w*w;
+}
+
+inline double Vector4::LengthSquare() const
+{
+  return NormSquare();
+}
+
+inline double Vector4::Norm() const
+{
+  return sqrt(x*x + y*y + z*z + w*w);
+}
+
+inline double Vector4::Length() const
+{
+  return Norm();
+}
+
+inline void Vector4::Normalise()
+{
+  double n = Norm();
+  *this /= n;
+}
+
+inline void Vector4::Normalise4()
+{
+  x/=w;
+  y/=w;
+  z/=w;
+  w=1.;
+}
+
+inline Vector4 operator-(const Vector4 &v)
+{
+  return Vector4(-v.x, -v.y, -v.z, -v.w);
+}
+
+inline bool operator==(const Vector4 &a, const Vector4 &b)
+{
+  return (fabs(a.x-b.x)<eps) && (fabs(a.y-b.y)<eps) && 
+         (fabs(a.z-b.z)<eps) && (fabs(a.w-b.w)<eps);
+}
+
+inline bool operator!=(const Vector4 &a, const Vector4 &b)
+{
+  return !operator==(a, b);
+}
+
+inline Vector4 operator+(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+}
+inline Vector4 operator-(const Vector4 &a, const Vector4 &b)
+{
+  return Vector4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+}
+
+
+
+inline Vector4 operator*(const double s, const Vector4 &v)
+{
+  return Vector4(v.x*s, v.y*s, v.z*s, v.w*s);
+}
+
+inline Vector4 operator*(const Vector4 &v, const double s)
+{
+  return s*v;
+}
+
+inline Vector4 operator/(const Vector4 &v, const double s) throw(Except)
+{
+  if(s == 0)
+    throw Except(__HERE__, "division by zero");
+  return Vector4(v.x/s, v.y/s, v.z/s, v.w/s);
+}
+
+inline double Length(const Vector4 &v)
+{
+  return v.Norm();
+}
+
+inline Vector4 Normalise(const Vector4 &v)
+{
+  double n = v.Norm();
+  return v/n;
+}
+
+inline double DistanceSquare(const Vector4 &a, const Vector4 &b)
+{
+  return Sqr(a.x - b.x) + Sqr(a.y - b.y) + Sqr(a.z - b.z) + Sqr(a.w - b.w);
+}
+
+
+inline double Distance(const Vector4 &a, const Vector4 &b)
+{
+  return sqrt(Sqr(a.x - b.x) + Sqr(a.y - b.y) + Sqr(a.z - b.z) + Sqr(a.w - b.w));
+}
+
+/**
+ * Print a vector to a stream: '[x y z w]`
+ */
+inline ostream& operator<<(ostream &os, const Vector4 &v)
+{
+  return os << '[' << v.x << ' ' << v.y << ' '<< v.z << ' ' << v.w<<']';
+}
+
+/**
+ * Read a vector from a stream.
+ * The expected format is: '[x y z w]', white spaces are ignored.
+ */
+inline istream& operator>>(istream &is, Vector4 &v) throw(Except)
+{
+  char c;
+  is >> c;
+  if(c == '[')
+  {
+    is >> v.x >> v.y >> v.z >> v.w >> c;
+    if(c != ']')
+      throw Except(__HERE__, "error reading Vector4: ']' expected");
+  }
+  else
+  {
+    throw Except(__HERE__, "error reading Vector4: '[' expected");
+  }
+  return is;
+}
+
+/**
+ * Append a vector to a string: '[x y z w]`
+ * Actually You should use stringstreams instead.
+ */
+inline string& operator<<(string &s, const Vector4 &v)
+{
+  stringstream ss;
+  ss << v;
+  s += ss.str();
+  return s;
+}
+
+/**
+ * Reads a point from the BEGINNING of a string. Subsequent calls of operator<<
+ * will always return the same point.
+ * The expected format is: '[x y z w]', white spaces are ignored.
+ * Actually You should use stringstreams instead.
+ */
+inline const string& operator>>(const string &s, Vector4 &v)
+{
+  stringstream ss(s);
+  ss >> v;
+  return s;
+}
+
+
+}
+#endif

@@ -1,0 +1,16 @@
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG display.srv DisplayServer #--redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa
+#CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "instantiations/vision-fake" --log true --debug true
+
+JAVA MG wm.VisualObject castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject" # --generic-col
