@@ -79,6 +79,7 @@ CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
 CMD_PYTHON_SERVER=python -m ComponentServer
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
+CMD_GOLEM=golemTinyIce [GOLEM_CONFIG]
 CMD_PEEKABOT=peekabot
 CMD_LOG4J_SERVER=<multiline>
    java -ea -classpath ${CLASSPATH}
