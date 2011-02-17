@@ -12,7 +12,7 @@ from core import procman, options, messages, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
 from core import log4util
-from qtui import uimainwindow, uiresources
+from qtui import uimainwindow
 from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
 import processtree
@@ -91,6 +91,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = uimainwindow.Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
 
         self.fnconf = "castcontrol.conf"
         self.fnhist = "castcontrol.hist"
@@ -183,8 +184,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actEditUserSettings, QtCore.SIGNAL("triggered()"), self.onEditUserSettings)
         self.connect(self.ui.actEditCastEnvironment, QtCore.SIGNAL("triggered()"), self.onEditCastEnvironment)
 
-        pic = uiresources.createPixmap(uiresources.icon_cogx)
-        self.setWindowIcon(QtGui.QIcon(pic))
         LOGGER.log("CAST Control initialized")
 
     def _initContent(self):
