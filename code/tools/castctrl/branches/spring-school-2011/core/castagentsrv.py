@@ -71,16 +71,20 @@ class CAgentI(CastAgent.Agent):
         if p != None: p.stop()
         return 1 if p != None else 0
 
-    def setLog4jClientProperties(propText):
+    def setLog4jClientProperties(self, propText, current=None):
         # based on log4jutil.prepareClientConfig()
         # WARNING: if the client and the server are running from the same directory
         # the link to log4j properties will switch between two files
         logDir = os.path.abspath("./logs")
         logPropLink = "log4j.properties"
-        clientfile = os.path.join(ligDir, "ccatmp.log4client.conf")
+        clientfile = os.path.join(logDir, "ccatmp.log4client.conf")
+        if not os.path.exists(logDir):
+            os.makedirs(logDir)
+        f = open(clientfile, 'w')
+        f.write(propText)
+        f.close()
         if os.path.exists(logPropLink):
-            st = os.lstat(logPropLink)
-            if not stat.S_ISLNK(st.st_mode):
+            if not os.path.islink(logPropLink):
                 os.rename(logPropLink, os.tempnam(logDir, logPropLink))
             os.remove(logPropLink)
         os.symlink(clientfile, logPropLink)
