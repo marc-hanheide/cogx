@@ -124,21 +124,36 @@ class CCastConfig:
 
     def readConfig(self, filename, maxdepth=32):
         if maxdepth < 1:
-            return ["# Failed to include: '%s' - maxdepth reached." % filename]
+            raise Exception("Failed to include: '%s' - maxdepth reached." % filename)
         try:
             f = open(filename, "r")
-        except:
-            return ["# Failed to include: '%s'" % filename]
+        except Exception as e:
+            raise Exception ("Failed to include: '%s'\n%s" % (filename, e))
+
         fdir = os.path.abspath(os.path.dirname(filename))
-        lines = ["# '%s'" % filename]
+        lines = [
+                # CURRENT_DIR is also set by cast
+                "SETVAR CURRENT_DIR=%s" % fdir,
+                "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
+               ]
         for line in f.readlines():
             line = line.rstrip() # remove EOL
             setting = self.removeComment(line)
             if setting == "": continue
             mo = CCastConfig.reInclude.match(setting)
             if mo != None:
+                lines += [
+                        "",
+                        "# ----- include ------"
+                       ]
                 fninc = os.path.join(fdir, mo.group(1))
                 lines += self.readConfig(fninc, maxdepth-1)
+                lines += [
+                        "# -----",
+                        "",
+                        "SETVAR CURRENT_DIR=%s" % fdir,
+                        "SETVAR CURRENT_FILE=%s" % os.path.basename(filename),
+                       ]
                 continue
             lines.append(line)
         return lines
