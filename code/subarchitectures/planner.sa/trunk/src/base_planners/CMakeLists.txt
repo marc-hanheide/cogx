@@ -1,6 +1,11 @@
 # add a subdirectory containing another CMakeLists.txt file
 
+option(BUILD_SA_PLANNER_FF "Build FF planner in planner.sa" NO)
+if(BUILD_SA_PLANNER_FF)
+
 add_subdirectory(ContinualAxFF)
+
+endif(BUILD_SA_PLANNER_FF)
 
 option(BUILD_SA_PLANNER_TFD "Build TFD planner in planner.sa" YES)
 if(BUILD_SA_PLANNER_TFD)
