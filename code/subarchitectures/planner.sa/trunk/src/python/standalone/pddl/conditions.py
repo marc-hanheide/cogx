@@ -55,6 +55,7 @@ class Condition(object):
             if isinstance(cond, QuantifiedCondition):
                 vars = results[0]
                 return [p for p in vars if p not in cond.args]
+            return sum(results, [])
         return set(self.visit(visitor))
 
     def get_constants(self):
@@ -78,6 +79,7 @@ class Condition(object):
             if isinstance(cond, QuantifiedCondition):
                 vars = results[0]
                 return [p for p in vars if p not in cond.args]
+            return sum(results, [])
         return set(self.visit(visitor))
 
     def has_class(self, _class):
@@ -119,10 +121,10 @@ class Condition(object):
             if cond.__class__ == Disjunction:
                 return "(or %s)" % " ".join(results)
             if cond.__class__ == UniversalCondition:
-                args = " ".join(sorted(cond.iterkeys()))
+                args = " ".join(sorted(map(str, cond.itervalues())))
                 return "(forall (%s) %s)" % (args, " ".join(results))
             if cond.__class__ == ExistentialCondition:
-                args = " ".join(sorted(cond.iterkeys()))
+                args = " ".join(sorted(map(str, cond.itervalues())))
                 return "(exists (%s) %s)" % (args, " ".join(results))
             if cond.__class__ == PreferenceCondition:
                 return "(preference %d %s)" % (cond.penalty, results[0])

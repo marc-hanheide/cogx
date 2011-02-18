@@ -39,7 +39,7 @@ class FakeCASTState(cast_state.CASTState):
         # import debug
         # debug.set_trace()
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, None)
-        print map(str,self.generated_objects)
+        # print map(str,self.generated_objects)
         for o in self.generated_objects:
             if o not in problem.objects:
                 self.objects.add(o)
@@ -49,6 +49,8 @@ class FakeCASTState(cast_state.CASTState):
             problem.init.append(f.as_literal(useEqual=True))
             
         self.state = self.prob_state.determinized_state(0.05, 0.95)
+
+        self.generate_belief_state(self.prob_state, self.state)
         
     def convert_percepts(self, percepts):
         return []

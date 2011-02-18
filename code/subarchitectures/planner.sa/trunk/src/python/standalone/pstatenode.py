@@ -33,10 +33,9 @@ class PNode(object):
 
         def get_firing_rules(facts):
             for r in rules:
-                deps = r.deps()
                 rule_facts = {}
                 for svar,v in facts.iteritems():
-                    if svar.function in deps:
+                    if svar.function in r.deps:
                         rule_facts[svar] = v
                 if rule_facts:
                     yield (r, rule_facts)
@@ -67,10 +66,9 @@ class PNode(object):
     def from_fact(fact, rules=[], stat=None):
         def get_firing_rules(facts):
             for r in rules:
-                deps = r.deps()
                 rule_facts = {}
                 for svar,v in facts.iteritems():
-                    if svar.function in deps:
+                    if svar.function in r.deps:
                         rule_facts[svar] = v
                 if rule_facts:
                     yield (r, rule_facts)
@@ -378,7 +376,7 @@ class PNode(object):
                 if not use_this and not use_children:
                     continue
                                                
-            name = "commit-%s-%s-%s" % (self.svar.function.name, "-".join(a.name for a in self.svar.args), val.name)
+            name = "__commit-%s-%s-%s" % (self.svar.function.name, "-".join(a.name for a in self.svar.args), val.name)
             PNode.actionid += 1
             domain.add_constant(val)
                 
@@ -475,10 +473,9 @@ class LazyPNode(PNode):
 
         def get_firing_rules(facts):
             for r in self.all_rules:
-                deps = r.deps()
                 rule_facts = {}
                 for svar,v in facts.iteritems():
-                    if svar.function in deps:
+                    if svar.function in r.deps:
                         rule_facts[svar] = v
                 if rule_facts:
                     yield (r, rule_facts)
@@ -486,27 +483,32 @@ class LazyPNode(PNode):
         def get_objects(arg):
             return list(self.state.problem.get_all_objects(arg.type))
         
-        args = self.rule.args + self.rule.add_args
+        args = self.rule.args
         print "creating subtree for %s using rule %s" % (str(self.svar), self.rule.name)
         # print ["%s = %s" % (str(k),str(v)) for k,v in self.mapping.iteritems() ]
         for mapping in self.rule.smart_instantiate(self.rule.get_inst_func(self.state), args, [get_objects(a) for a in args], self.state.problem, self.mapping):
             # log.debug("creating subtree for %s", str(self.svar))
             
             # print "  ", ["%s = %s" % (str(k),str(v)) for k,v in mapping.iteritems() ]
-            for p, value in self.rule.values:
+            for p, values in self.rule.values:
                 p = self.state.evaluate_term(p)
                 if p == pddl.UNKNOWN or p.value < 0.01:
                     continue
-                val = self.state.evaluate_term(value)
-                facts = {self.svar : val}
+                
+                facts = {}
+                for (func, fargs), val in zip(self.rule.variables, values):
+                    svar = state.StateVariable(func, state.instantiate_args(fargs))
+                    val = self.state.evaluate_term(val)
+                    fargs[svar] = val
                 print "  generating child for %s = %s (p=%.2f)" % (str(self.svar), str(val), p.value)
 
                 nodes = []
                 for rule, fixed in get_firing_rules(facts):
                     nodes += LazyPNode.from_rule(rule, self.all_rules, fixed, self.state)
 
+                nodeval = facts[self.svar]
 
-                self._children[val] = (p.value, nodes, facts)
+                self._children[nodeval] = (p.value, nodes, facts)
         return self._children
             
     children = property(get_children)
@@ -517,7 +519,7 @@ class LazyPNode(PNode):
         for svar, val in fixed_facts.iteritems():
             stat[svar] = val
             
-        pre_mapping = rule.match_args(fixed_facts.iteritems())
+        pre_mapping = rule.match_args(state.Fact(svar,val) for svar, val in fixed_facts.iteritems())
         if pre_mapping is None:
             #rule doesn't match at all
             return []
@@ -534,16 +536,16 @@ class LazyPNode(PNode):
             return list(stat.problem.get_all_objects(arg.type))
 
         nodes = []
-        args = rule.args + list(a for a in pre_mapping.iterkeys() if a not in rule.args)
-        for mapping in rule.smart_instantiate(rule.get_inst_func(stat), args, [get_objects(a) for a in args], stat.problem, pre_mapping):
-            svar = state.StateVariable(rule.function, state.instantiate_args(rule.args))
+        for mapping in rule.smart_instantiate(rule.get_inst_func(stat), rule.args, [get_objects(a) for a in rule.args], stat.problem, pre_mapping):
+            func, fargs = rule.variables[0]
+            svar = state.StateVariable(func, state.instantiate_args(fargs))
             print "building rule for", svar
             node = LazyPNode(rule, dict(mapping), svar, rules)
             node.state = stat
             nodes.append(node)
         return nodes
 
-    def to_actions(self, domain, parent_conds=None, parent_p=1.0):
+    def to_actions(self, domain, parent_conds=None, parent_p=1.0, filter_func=None):
         return []
 
     def __str__(self):

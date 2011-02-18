@@ -279,7 +279,7 @@ class Writer(object):
             else:
                 strings.append(self.write_literal(i))
 
-        return self.section(":init", strings)
+        return self.section(":init", sorted(strings))
     
     def write_problem(self, problem):
         strings = ["(define (problem %s)" % problem.name]

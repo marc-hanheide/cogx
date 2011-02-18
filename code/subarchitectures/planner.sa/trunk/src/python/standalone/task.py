@@ -300,15 +300,27 @@ class FDOutput(PDDLOutput):
     def get_mutex_groups(self, prob, oldprob):
         groups = []
 
+        build_modal_groups = ('mapl' in oldprob.domain.requirements)
+
         for function in oldprob.functions:
             pred = prob.predicates.get(function.name, function.args+[function.type])
+            if build_modal_groups:
+                commit_pred = prob.predicates.get("%s-%s" % (pddl.mapl.commit.name, function.name), function.args+[function.type])
+                
             fluents_combinations = state.product(*(prob.get_all_objects(a.type) for a in function.args))
             for c in fluents_combinations:
                 group = []
+                commit_group = []
                 for v in prob.get_all_objects(function.type):
                     #print pddl.Literal(pred, c+[v]).pddl_str()
                     group.append(pddl.Literal(pred, itertools.chain(c, [v])))
+                    if build_modal_groups:
+                        commit_group.append(pddl.Literal(commit_pred, itertools.chain(c, [v])))
+                    
                 groups.append(group)
+                if build_modal_groups:
+                    groups.append(commit_group)
+        
         return groups
     
     def write_mutex(self, mutex_groups):
