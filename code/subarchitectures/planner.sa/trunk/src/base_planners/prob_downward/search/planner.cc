@@ -23,6 +23,7 @@
 #include "general_lazy_best_first_search.h"
 #include "lazy_best_first_search_engine.h"
 #include "lazy_wa_star.h"
+#include "wa_star.h"
 #include "learning/selective_max_heuristic.h"
 #include "enforced_hill_climbing_search.h"
 
@@ -275,7 +276,7 @@ int main(int argc, const char **argv) {
         } else if (use_lazy_search) {
             engine = new LazyBestFirstSearchEngine();
         } else if (use_wa_star) {
-            engine = new LazyWeightedAStar(weight);
+            engine = new WeightedAStar(weight);
         } else if (iterative_search) {
             engine = new LazyWeightedAStar(wastar_weight);
             ((LazyWeightedAStar*)engine)->set_bound(wastar_bound);

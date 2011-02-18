@@ -15,15 +15,17 @@ using namespace __gnu_cxx;
 
 EvalInfo EvalInfo::succ(const Operator *op) const {
     EvalInfo info;
-    info.g = g + p * (op->get_cost() + (1 - op->get_prob()) * g_reward) + 1;
+    info.c = c + op->get_cost();
     info.p = p * op->get_prob();
+    info.g = g_multiplier * info.c + g_multiplier * (1-info.p) * g_reward;
     return info;
 }
 
 SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
     : state_buffer(state_buffer_), info(info_) {
-    einfo.g = info.g;
+    einfo.c = info.c;
     einfo.p = info.p;
+    einfo.g = g_multiplier * einfo.c + g_multiplier * (1-einfo.p) * g_reward;
 }
 
 State SearchNode::get_state() const {
@@ -47,7 +49,7 @@ bool SearchNode::is_new() const {
 }
 
 int SearchNode::get_g() const {
-    return info.g;
+    return einfo.g;
 }
 
 int SearchNode::get_h() const {
@@ -66,8 +68,9 @@ void SearchNode::open_initial(int h) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     einfo.g = 0;
+    einfo.c = 0;
     einfo.p = 1;
-    info.g = 0;
+    info.c = 0;
     info.h = h;
     info.parent_state = 0;
     info.creating_operator = 0;
@@ -78,7 +81,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     einfo = parent_node.succ_info(parent_op);
-    info.g = einfo.g;
+    info.c = einfo.c;
     info.p = einfo.p;
     // cout << "g: "<< parent_node.get_info()->g << "->" << info.g << "  p: " << parent_node.get_info()->p << "->" << einfo.p << endl;
     info.h = h;
@@ -96,7 +99,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
     einfo = parent_node.succ_info(parent_op);
-    info.g = einfo.g;
+    info.c = einfo.c;
     info.p = einfo.p;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
@@ -110,7 +113,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     einfo = parent_node.succ_info(parent_op);
-    info.g = einfo.g;
+    info.c = einfo.c;
     info.p = einfo.p;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;

@@ -47,7 +47,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 		//guiding_heuristic->evaluate(*g_initial_state);
 		//sample.get_node(s).open_initial(heuristic->get_heuristic());
 		for (int i = 0; i < heuristics.size(); i++) {
-		    heuristics[i]->evaluate(*g_initial_state);
+		    heuristics[i]->evaluate(NULL, *g_initial_state);
 		    samp[s].push_back(heuristics[i]->get_heuristic());
 		}
 		//samp[s] = guiding_heuristic->get_heuristic();
@@ -76,7 +76,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 			for (int i = 0; i < heuristics.size(); i++) {
 			    clock_t before = times(NULL);
 			    heuristics[i]->reach_state(s, *op, succ);
-			    heuristics[i]->evaluate(succ);
+			    heuristics[i]->evaluate(NULL, succ);
 			    clock_t after = times(NULL);
 			    computation_time[i] += after - before;
                 if (heuristics[i]->is_dead_end()) {

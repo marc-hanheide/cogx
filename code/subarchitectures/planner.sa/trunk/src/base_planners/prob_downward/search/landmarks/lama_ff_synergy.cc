@@ -41,13 +41,13 @@ void LamaFFSynergy::compute_heuristics(const State& state) {
 
     exploration->set_recompute_heuristic();
 
-    lama_heuristic->evaluate(state);
+    lama_heuristic->evaluate(NULL, state);
     if(!lama_heuristic->is_dead_end()) {
 	lama_heuristic_value = lama_heuristic->get_heuristic();
 	lama_preferred_operators.clear();
 	lama_heuristic->get_preferred_operators(lama_preferred_operators);
     }
-    exploration->evaluate(state);
+    exploration->evaluate(NULL, state);
     if(!exploration->is_dead_end()) {
 	ff_heuristic_value = exploration->get_heuristic();
 	ff_preferred_operators.clear();

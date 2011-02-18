@@ -29,13 +29,13 @@ void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator * 
         if (op != NULL) {
             heuristic->reach_state(parent, *op, state);
         }
-        heuristic->evaluate(state);
+        heuristic->evaluate(NULL, state);
     }
     for (int i = 0; i < preferred_heuristics.size(); i++) {
         if (op != NULL) {
             preferred_heuristics[i]->reach_state(parent, *op, state);
         }
-        preferred_heuristics[i]->evaluate(state);
+        preferred_heuristics[i]->evaluate(NULL, state);
     }
 }
 
