@@ -1,10 +1,10 @@
-(define (domain dora-test-100)
+(define (domain dora-avs-iros11)
   (:requirements :mapl :adl :fluents :durative-actions :partial-observability :dynamic-objects)
 
   (:types
-   conegroup place room - object
-   visualobject - movable
-   robot human - agent
+   conegroup place room visualobject - object
+   robot - agent
+   human robot - movable
    place_status label category spatial_relation - object
    )
 
@@ -17,6 +17,7 @@
    ;; derived predicates
    (attached_to_room ?p - place ?r - room)
    (not_fully_explored ?r)
+   (trans_related ?o - visualobject ?where - (either visualobject room))
    ;; (cones-exist ?l - label ?r - room)
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
 
@@ -28,12 +29,14 @@
    )
 
   (:functions
-   (is-in ?o - agent) - place
+   (is-in ?o - movable) - place
 
    ;; === Default knowledge ===
 
    ;; expected cost of searching for an object. Used by CP planner
-   (search_cost  ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
+   (default_room_search_cost ?l - label) - number
+   (default_search_cost ?l - label ?rel - spatial_relation ?where - (either label category)) - number
+   (search_cost ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
    ;; default probabilities. These come from Coma.
    (dora__in_room ?l - label ?c - category) - number
    (dora__in_obj ?l1 ?l2 - label ?c - category) - number
@@ -107,15 +110,31 @@
                               )
               )
 
+  (:init-rule default_search_costs_for_room
+              :parameters (?l - label  ?r - room)
+              :precondition (= (search_cost ?l in ?r) unknown)
+              :effect (assign (search_cost ?l in ?r) (default_room_search_cost ?l))
+              )
+
+  (:init-rule default_search_costs_for_object
+              :parameters (?l - label ?rel - spatial_relation ?o - visualobject)
+              :precondition (= (search_cost ?l ?rel ?o) unknown)
+              :effect (assign (search_cost ?l ?rel ?o) (default_search_cost ?l ?rel (label ?o)))
+              )
+
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
                                        (connected ?p2 ?p))))
+
 
   (:derived (not_fully_explored ?r - room)
             (exists (?p - place) (and (= (placestatus ?p) placeholder)
                                       (attached_to_room ?p ?r))))
               
-
+  (:derived (trans_related ?o - visualobject ?where - (either visualobject room))
+            (or (poss (related-to ?o) ?where)
+                (exists (?o2 - visualobject) (and (poss (related-to ?o) ?o2)
+                                                 (trans_related ?o2 ?where)))))
 
   ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
   ;;           (exists (?p - place) (and (= (in-room ?p) ?r)
@@ -149,7 +168,7 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o ?r) in))
-           :effect (probabilistic (dora__in_obj ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
+           :effect (probabilistic (dora__in_obj ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
@@ -164,11 +183,8 @@
   ;; probability of an object being at a specific location
   ;;used only by DT (?)
   (:dtrule sample_object_location
-           :parameters (?o - visualobject ?c - conegroup ?l - label ?rel - spatial_relation ?where - (either visualobject room))
-           :precondition (and (= (relation ?c) ?rel)
-                              (= (related-to ?c) ?where)
-                              (= (label ?c) ?l)
-                              (= (label ?o) ?l)
+           :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room))
+           :precondition (and (= (label ?o) ?l)
                               (is-virtual ?o)
                               (= (obj_exists ?l ?rel ?where) true))
            :effect (probabilistic 1.0 (and (assign (related-to ?o) ?where)
@@ -202,7 +218,7 @@
            :agent (?a - robot)
            :parameters (?loc - place)
            :duration (= ?duration 0.1)
-           :condition (and (over all (= (is-in ?a) ?loc)) 
+           :condition (and (over all (= (is-in ?a) ?loc))
                            (at start (= (placestatus ?loc) placeholder)))
            :effect (change (placestatus ?loc) trueplace)
            )
@@ -237,7 +253,7 @@
                      :agent (?a - robot)
                      :parameters (?l - label ?r - room)
                      :variables (?p - place)
-                     :duration (= ?duration 10)
+                     :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
                                                     (not (not_fully_explored ?r))
@@ -252,10 +268,11 @@
                      :agent (?a - robot)
                      :parameters (?l - label ?rel - spatial_relation ?o - visualobject)
                      :variables (?r - room ?p - place)
-                     :duration (= ?duration 10)
+                     :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
-                                                    (= (related-to ?o) ?r)
+                                                    (poss (related-to ?o) ?r)
+                                                    (kval ?a (related-to ?o))
                                                     (not (done))))
                                      )
                      :effect (and (at end (cones_created ?l ?rel ?o)))
@@ -264,7 +281,7 @@
    ;; Abstract search action for the CP planner
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
-   (:durative-action seach_for_object_in_room
+   (:durative-action search_for_object_in_room
                      :agent (?a - robot)
                      :parameters (?l - label ?r - room)
                      :variables (?p - place ?o - visualobject)
@@ -273,46 +290,48 @@
                                                     (= (in-room ?p) ?r)
                                                     (= (label ?o) ?l)
                                                     (cones_created ?l in ?r)
-                                                    (hyp (obj_exists ?l in ?r) true)
+                                                    (poss (obj_exists ?l in ?r) true)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o))
                      )
                      
 
-   ;; Abstract search action for the CP planner
-   ;; Searches for an object IN another object
-   ;; precondition: robot is in the same room as the specified object
-   (:durative-action seach_for_object_in_object
-                     :agent (?a - robot)
-                     :parameters (?l - label ?o - visualobject)
-                     :variables (?p - place ?r - room ?o2 - visualobject)
-                     :duration (= ?duration (search_cost ?l in ?o))
-                     :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (= (in-room ?p) ?r)
-                                                    (= (related-to ?o) ?r)
-                                                    (= (label ?o2) ?l)
-                                                    (cones_created ?l in ?o)
-                                                    (hyp (obj_exists ?l in ?o) true)
-                                                    (not (done))))
-                                     )
-                     :effect (kval ?a (related-to ?o2))
-                     )
+   ;; ;; Abstract search action for the CP planner
+   ;; ;; Searches for an object IN another object
+   ;; ;; precondition: robot is in the same room as the specified object
+   ;; (:durative-action search_for_object_in_object
+   ;;                   :agent (?a - robot)
+   ;;                   :parameters (?l - label ?o - visualobject)
+   ;;                   :variables (?p - place ?r - room ?o2 - visualobject)
+   ;;                   :duration (= ?duration (search_cost ?l in ?o))
+   ;;                   :condition (and (at start (and (= (is-in ?a) ?p)
+   ;;                                                  (= (in-room ?p) ?r)
+   ;;                                                  (poss (related-to ?o) ?r)
+   ;;                                                  (kval ?a (related-to ?o))
+   ;;                                                  (= (label ?o2) ?l)
+   ;;                                                  (cones_created ?l in ?o)
+   ;;                                                  (poss (obj_exists ?l in ?o) true)
+   ;;                                                  (not (done))))
+   ;;                                   )
+   ;;                   :effect (kval ?a (related-to ?o2))
+   ;;                   )
 
    ;; Abstract search action for the CP planner
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
-   (:durative-action seach_for_object_on_object
+   (:durative-action search_for_object_at_object
                      :agent (?a - robot)
-                     :parameters (?l - label ?o - visualobject)
+                     :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
                      :variables (?p - place ?r - room ?o2 - visualobject)
-                     :duration (= ?duration (search_cost ?l on ?o))
+                     :duration (= ?duration (search_cost ?l ?rel ?o))
                      :condition (and (at start (and (= (is-in ?a) ?p)
                                                     (= (in-room ?p) ?r)
-                                                    (= (related-to ?o) ?r)
+                                                    (poss (related-to ?o) ?r)
+                                                    (kval ?a (related-to ?o))
                                                     (= (label ?o2) ?l)
-                                                    (cones_created ?l on ?o)
-                                                    (hyp (obj_exists ?l on ?o) true)
+                                                    (cones_created ?l ?rel ?o)
+                                                    (poss (obj_exists ?l ?rel ?o) true)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o2))
