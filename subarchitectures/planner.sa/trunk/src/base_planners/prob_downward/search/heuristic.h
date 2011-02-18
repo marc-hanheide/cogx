@@ -8,6 +8,7 @@
 
 class Operator;
 class State;
+class EvalInfo;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};
@@ -28,7 +29,10 @@ class Heuristic : public ScalarEvaluator {
 
     bool use_cache;
     std::map<State, EvaluationInfo> state_cache;
+
 protected:
+    EvalInfo const* einfo;
+
     enum {DEAD_END = -1};
     virtual void initialize() {}
     virtual int compute_heuristic(const State &state) = 0;
@@ -37,7 +41,7 @@ public:
     Heuristic(bool use_cache=false);
     virtual ~Heuristic();
 
-    void evaluate(const State &state);
+    void evaluate(EvalInfo const* info, const State &state);
     bool is_dead_end() const;
     int get_heuristic();
     // changed to virtual, so HeuristicProxy can delegate this:

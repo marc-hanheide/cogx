@@ -26,6 +26,7 @@ class LocalTransition {
     double action_prob;
 
     int target_cost;
+    int target_action_costs;
     double target_prob;
     int unreached_conditions;
 
@@ -50,6 +51,7 @@ class LocalProblemNode {
 
     // Dynamic attributes (modified during heuristic computation).
     int cost;
+    int action_cost;
     double prob;
     inline int priority() const;
     // Nodes have both a "cost" and a "priority", which are related.

@@ -19,7 +19,7 @@ void Heuristic::set_preferred(const Operator *op) {
     }
 }
 
-void Heuristic::evaluate(const State &state) {
+void Heuristic::evaluate(EvalInfo const* info, const State &state) {
     if(use_cache) {
 	map<State, EvaluationInfo>::iterator it =
 	    state_cache.find(state);
@@ -30,6 +30,8 @@ void Heuristic::evaluate(const State &state) {
 	    return;
 	}
     }
+
+    einfo = info;
 
     if(heuristic == NOT_INITIALIZED)
 	initialize();

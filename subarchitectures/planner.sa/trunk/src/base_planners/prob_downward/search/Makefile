@@ -23,7 +23,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  landmarks/landmarks_graph_rpg_search.h\
 	  hm_heuristic.h \
 	  weighted_evaluator.h sum_evaluator.h prob_evaluator.h g_evaluator.h general_lazy_best_first_search.h\
-	  lazy_best_first_search_engine.h lazy_wa_star.h \
+	  lazy_best_first_search_engine.h lazy_wa_star.h wa_star.h \
 	  learning/feature_extractor.h \
 	  learning/state_vars_feature_extractor.h \
 	  learning/composite_feature_extractor.h \

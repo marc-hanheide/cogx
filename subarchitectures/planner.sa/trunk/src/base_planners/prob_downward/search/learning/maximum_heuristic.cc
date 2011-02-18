@@ -60,7 +60,7 @@ int MaxHeuristic::compute_heuristic(const State& state)
 	for (int i = 0; i < heuristics.size(); i++)
 	{
 		//cout << "h[" << i << "] = ";
-		heuristics[i]->evaluate(state);
+		heuristics[i]->evaluate(NULL, state);
 		if (heuristics[i]->is_dead_end()) {
 			if (heuristics[i]->dead_ends_are_reliable()) {
 				return DEAD_END;

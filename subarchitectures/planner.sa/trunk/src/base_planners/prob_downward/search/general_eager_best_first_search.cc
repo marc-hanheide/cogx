@@ -46,7 +46,7 @@ void GeneralEagerBestFirstSearch::initialize() {
     assert(heuristics.size() > 0);
 
     for (unsigned int i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(*g_initial_state);
+        heuristics[i]->evaluate(NULL, *g_initial_state);
 
     SearchNode node = search_space.get_node(*g_initial_state);
     node.open_initial(heuristics[0]->get_value());
@@ -97,12 +97,13 @@ int GeneralEagerBestFirstSearch::step() {
     for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
         vector<const Operator *> pref;
         pref.clear();
-        preferred_operator_heuristics[i]->evaluate(s);
+        preferred_operator_heuristics[i]->evaluate(node.get_info(), s);
         preferred_operator_heuristics[i]->get_preferred_operators(pref);
         for (int i = 0; i < pref.size(); i++) {
             preferred_ops.insert(pref[i]);
         }
     }
+    // cout << "node: " << node.get_g() << "    " << node.get_p() << endl;
 
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -120,7 +121,7 @@ int GeneralEagerBestFirstSearch::step() {
             // Evaluate and create a new node.
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
-                heuristics[i]->evaluate(succ_state);
+                heuristics[i]->evaluate(node.get_info(), succ_state);
             }
             search_progress.inc_evaluated();
 
@@ -140,6 +141,7 @@ int GeneralEagerBestFirstSearch::step() {
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
+            // cout << succ_node.get_g() << "    " << succ_node.get_p() << endl;
 
             open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g(), succ_node.get_p());

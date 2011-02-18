@@ -179,7 +179,7 @@ void SelectiveMaxHeuristic::train() {
 
 	// initialize all heuristics
 	int goal_depth_estimate = 0;
-	max.evaluate(*g_initial_state);
+	max.evaluate(NULL, *g_initial_state);
 	int h0 = max.get_heuristic();
 	goal_depth_estimate = 2 * h0;
 
@@ -237,7 +237,7 @@ void SelectiveMaxHeuristic::train() {
             sample_t::const_iterator it;
             for (it = training_set.begin(); it != training_set.end(); it++) {
                 const State s = (*it).first;
-                heuristics[0]->evaluate(s);
+                heuristics[0]->evaluate(NULL, s);
             }
             clock_t after = times(NULL);
             total_computation_time[i] = after - before + 1;
@@ -316,7 +316,7 @@ int SelectiveMaxHeuristic::eval_heuristic(const State& state, int index, bool co
 	if (count) num_evaluated[index]++;
 	computed[index] = true;
 
-	heuristics[index]->evaluate(state);
+	heuristics[index]->evaluate(NULL, state);
 
 	if (heuristics[index]->is_dead_end()) {
 		if (heuristics[index]->dead_ends_are_reliable()) {

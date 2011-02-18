@@ -16,14 +16,14 @@ class SearchNodeInfo {
     */
 
     unsigned int status: 2;
-    int g: 30;
+    int c: 30;
     int h: 32; // TODO:CR - should we get rid of it
     double p;
     const state_var_t *parent_state;
     const Operator *creating_operator;
 
     SearchNodeInfo()
-        : status(NEW), g(-1), h(-1), p(1.0), parent_state(0), creating_operator(0) {
+        : status(NEW), c(-1), h(-1), p(1.0), parent_state(0), creating_operator(0) {
     }
 
 };

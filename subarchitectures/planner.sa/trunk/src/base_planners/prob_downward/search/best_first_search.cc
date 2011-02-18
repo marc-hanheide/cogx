@@ -64,7 +64,7 @@ int BestFirstSearchEngine::step() {
 	for(int i = 0; i < heuristics.size(); i++) {
 		if (current_predecessor != NULL)
 			heuristics[i]->reach_state(*current_predecessor, *current_operator, *parent_ptr);
-	    heuristics[i]->evaluate(current_state);
+	    heuristics[i]->evaluate(NULL, current_state);
 	}
 	if(!is_dead_end()) {
 	    if(check_goal())

@@ -95,16 +95,25 @@ void GeneralLazyBestFirstSearch::generate_successors() {
 
     for (int i = 0; i < operators.size(); i++) {
         EvalInfo new_info = current_node.succ_info(operators[i]);
-        new_info.p = 1.0;
+        // new_info.p = current_node.get_p();
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
             operators[i]->unmark();
         if (new_info.get_g() < bound) {
-            //cout << "old_g:" << current_node.get_g() <<  ", new g: " << new_info.get_g() << endl;
-            //TODO: open_list->evaluate(new_g, is_preferred);
-            open_list->evaluate(&new_info, is_preferred);
-            open_list->insert(
-                make_pair(current_state_buffer, operators[i]));
+            // cout << "old_g:" << current_node.get_g() << " -> "<< operators[i]->get_name() << " -> " << ", new g: " << new_info.get_g() << endl;
+            // if (new_info.get_p() * g_multiplier < 1.0) {
+            //     cout << "warning: no heuristic guidance: " << new_info.get_g() << " / " << new_info.get_p() << endl;
+            // }
+
+            if (new_info.get_g() < g_multiplier * g_reward) {
+                //TODO: open_list->evaluate(new_g, is_preferred);
+                open_list->evaluate(&new_info, is_preferred);
+                open_list->insert(
+                    make_pair(current_state_buffer, operators[i]));
+            }
+            else {
+                // cout << "pruned:" << new_info.get_g() << endl;
+            }
         }
     }
 }
@@ -152,7 +161,7 @@ int GeneralLazyBestFirstSearch::step() {
             if (current_operator != NULL) {
                 heuristics[i]->reach_state(parent_node.get_state(), *current_operator, perm_state);
             }
-            heuristics[i]->evaluate(current_state);
+            heuristics[i]->evaluate(node.get_info(), current_state);
         }
         search_progress.inc_evaluated();
         open_list->evaluate(node.get_info(), false);
