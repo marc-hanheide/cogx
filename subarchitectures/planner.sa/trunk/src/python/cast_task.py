@@ -1,4 +1,4 @@
-import os
+import os, time
 from os.path import abspath, join
 from collections import defaultdict
 
@@ -8,7 +8,7 @@ from autogen import Planner
 from standalone import task, dt_problem, plans, plan_postprocess, pddl, config
 import standalone.globals as global_vars
 from standalone.task import PlanningStatusEnum
-from standalone.utils import Enum
+from standalone.utils import Enum, Struct
 
 import cast_state
 
@@ -73,12 +73,14 @@ class CASTTask(object):
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
             self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component)
+            goal_from_pddl = Struct(goalString=add_problem.goal.pddl_str(), importance=-1, isInPlan=False)
+            self.slice_goals = [goal_from_pddl]
         else:
             self.state = cast_state.CASTState(beliefs, self.domain, component=component)
             
         self.percepts = []
 
-        cp_problem, cp_domain, self.goaldict = self.state.to_problem(planning_task.goals, deterministic=True)
+        cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
@@ -88,6 +90,9 @@ class CASTTask(object):
         self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
 
+        self.unary_ops = None
+        self.compute_solution_likelihood()
+        
         self.update_status(TaskStateEnum.INITIALISED)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
@@ -106,7 +111,10 @@ class CASTTask(object):
 
     def load_domain(self, domain_fn):
         log.info("Loading domain %s.", domain_fn)
-        self.domain = pddl.load_domain(domain_fn)
+        domain = pddl.load_domain(domain_fn)
+        t = pddl.translators.RemoveTimeCompiler();
+        self.domain = t.translate(domain)
+        self.domain.dt_rules = [r.copy(self.domain) for r in domain.dt_rules]
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
@@ -189,7 +197,7 @@ class CASTTask(object):
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
             # self.dt_task = dt_problem.DTProblem(plan, self.domain)
-            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.relevant_facts, self.domain)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():
@@ -499,7 +507,32 @@ class CASTTask(object):
         #TODO: create new state?
         beliefs = self.state.update_beliefs(diffstate)
         self.component.getClient().updateBeliefState(beliefs)
-                
+
+    def compute_solution_likelihood(self):
+        from standalone import relaxed_exploration
+        goal = self.cp_task.mapltask.goal
+        domain = self.cp_task.mapltask.domain
+        
+        goal_action = pddl.Action("goal_action", [], goal, None, self.cp_task.mapltask)
+        # det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
+        actions = [a for a in domain.actions if not a.name.startswith("__commit")]
+
+        t0 = time.time()
+        if not self.unary_ops:
+            self.unary_ops, applicable_ops = relaxed_exploration.instantiate(actions, set(), self.state.state, domain, [(goal_action, {})])
+        else:
+            applicable_ops = relaxed_exploration.initialize_ops(self.unary_ops, self.state.state)
+        print "total time for preparation: %.2f" % (time.time()-t0)
+        t0 = time.time()
+        
+        rel, p = relaxed_exploration.prob_explore(self.unary_ops, applicable_ops, self.state.state, [(goal_action, [])], self.state.prob_state)
+        print "total time for exploration: %.2f" % (time.time()-t0)
+
+        self.relevant_facts = rel
+        self.solution_prob = p
+        
+        return p
+        
     def update_state(self, beliefs):
         assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF, TaskStateEnum.FAILED)
         
@@ -526,6 +559,8 @@ class CASTTask(object):
         #     new_cp_problem.goal = pddl.conditions.Falsity()
         #     #self.cp_task.set_state(Planner.Completion.PLANNING_FAILURE)
         #     return False
+
+        self.compute_solution_likelihood()
         
         self.cp_task.mapltask = new_cp_problem
         self.cp_task.set_state(self.state.state)

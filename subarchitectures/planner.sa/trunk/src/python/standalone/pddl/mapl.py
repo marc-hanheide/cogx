@@ -35,7 +35,7 @@ neg_attributed = Predicate("neg-attributed", [Parameter("?a", t_agent), p, Param
 p = Parameter("?f", types.FunctionType(t_object))
 hyp = Predicate("hyp", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 p = Parameter("?f", types.FunctionType(t_object))
-commit = Predicate("commit", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+commit = Predicate("poss", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
 p = Parameter("?f", types.FunctionType(t_object))
 committed = Predicate("committed", [p], builtin=True)
@@ -49,7 +49,7 @@ update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p))
 
 modal_predicates = [knowledge, indomain,\
                     direct_knowledge, i_indomain, \
-                    hyp, commit, committed, attributed, neg_attributed, \
+                    commit, committed, attributed, neg_attributed, \
                     update, update_fail]
 # shared_knowledge, , ,\
 
@@ -78,18 +78,20 @@ kval_axiom = """
 )
 """
 
-hyp_axiom = """
-(:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
-          (or (= ?svar ?val)
-              (and (commit ?svar ?val)
-                   (i_in-domain ?svar ?val))
-          )
-)
-"""
+# hyp_axiom = """
+# (:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
+#           (or (= ?svar ?val)
+#               (and (commit ?svar ?val)
+#                    ;;(i_in-domain ?svar ?val)
+#                    )
+#           )
+# )
+# """
 
 committed_axiom = """
 (:derived (committed ?svar - (function object))
-          (exists (?val - (typeof ?svar)) (= ?svar ?val))
+          (exists (?val - (typeof ?svar)) (or (= ?svar ?val)
+                                              (poss ?svar ?val)))
 )
 """
 
@@ -102,7 +104,7 @@ in_domain_axiom = """
 )
 """
 
-mapl_axioms = [kval_axiom, in_domain_axiom, hyp_axiom, committed_axiom]
+mapl_axioms = [kval_axiom, in_domain_axiom, committed_axiom]
 
 def prepare_domain(domain):
     domain.init_rules = []
@@ -130,15 +132,29 @@ parse_handlers = {
     ":init-rule" : initrule_handler
     }
 
+def copy_hook(self, result):
+    result.init_rules = [r.copy(result) for r in self.init_rules]
+
 def add_hook(self, result, action):
     if isinstance(action, MAPLAction):
         self.actions.append(action)
         self.name2action = None
+    if isinstance(action, InitRule):
+        self.init_rules.append(action)
+
+def clear_hook(self, result):
+    self.init_rules = []
+
+def get_action_hook(self, result):
+    return result + self.init_rules
 
 domain_hooks = {
-    'add_action' : add_hook
+    'copy' : copy_hook,
+    'add_action' : add_hook,
+    'clear_actions' : clear_hook,
+    'get_action_like' : get_action_hook
     }
-        
+
         
 def post_parse(domain):
     import axioms

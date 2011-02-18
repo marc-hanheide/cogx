@@ -158,6 +158,8 @@ class EffectGenerator(object):
                 value = pddl.TRUE if not lit.negated else pddl.FALSE
             else:
                 function, args, modality, modal_args, value = state.StateVariable.svar_args_from_literal(lit)
+                if function.type == pddl.t_number:
+                    continue
                 args = [a.object for a in args]
                 modal_args = [a.object for a in modal_args] if modal_args else []
                 value = value.object
@@ -166,6 +168,10 @@ class EffectGenerator(object):
                 continue
 
             self.funcdict[(modality, function)].append((args, modal_args, value, function_arg, action))
+            # if function_arg:
+            #     print modality, function_arg, map(str, modal_args), value, action.name
+            # else:
+            #     print modality, function, map(str, modal_args), map(str, args), value, action.name
                 
             # if lit.predicate in pddl.assignment_ops:
             #     function = lit.args[0].function
@@ -490,6 +496,9 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
                 action.uninstantiate()
             else:
                 arg_lists = [get_objects(a) for a in action.args]
+
+            # import debug
+            # debug.set_trace()
                 
             func = instantiation_function(action, stat.problem, check_func, force_func, clear_func)
             for full_mapping in action.smart_instantiate(func, action.args, arg_lists, stat.problem, mapping):

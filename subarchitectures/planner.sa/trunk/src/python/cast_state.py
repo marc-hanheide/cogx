@@ -95,6 +95,16 @@ class CASTState(object):
             
         self.prob_functions = set(prob_functions(stat))
         cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+
+        actions = []
+        for n in self.pnodes:
+            n.prepare_actions()
+        for n in self.pnodes:
+            actions += n.to_actions(cp_domain, filter_func=None)
+
+        for a in actions:
+            cp_domain.add_action(a)
+        
         return cp_domain
         
             
@@ -134,6 +144,7 @@ class CASTState(object):
         # import debug
         # debug.set_trace()
         for rule in self.domain.init_rules:
+            print "rule: ", rule.name
             def inst_func(mapping, args):
                 if len(args) != len(rule.args):
                     return True, None
@@ -144,12 +155,14 @@ class CASTState(object):
                 return True, None
             
             for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
+                # print map(str,mapping.values())
+                # print rule.precondition.pddl_str()
                 if rule.precondition is None or cstate.is_satisfied(rule.precondition):
                     for e in rule.get_effects():
-                        #print e.pddl_str()
+                        # print e.pddl_str()
                           #apply effects seperately in order to allow later effects affecting previously set values
                         facts = cstate.get_effect_facts(e)
-                        #print ["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
+                        # print ["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
                         cstate.update(facts)
                         generated_facts.update(facts)
 
@@ -157,7 +170,8 @@ class CASTState(object):
                       
         if 'partial-observability' in self.domain.requirements:
             generated_facts.update(self.compute_logps(cstate))
-                      
+
+        # print [str(pddl.state.Fact(svar,val)) for svar, val in generated_facts.iteritems()]
         return [pddl.state.Fact(svar,val) for svar, val in generated_facts.iteritems()], generated_objects
 
     def compute_logps(self, st):
@@ -178,7 +192,9 @@ class CASTState(object):
         for f in chain(self.domain.predicates, self.domain.functions):
             if not f.name.startswith("dora__"):
                 continue
-            assert len(f.args) == 2
+            if len(f.args) != 2:
+                continue
+            # assert len(f.args) == 2
             query = "SELECT ?x ?y ?p where ?x <%s> ?y ?p" % f.name.replace("dora__","dora:")
             try:
                 results = component.getHFC().querySelect(query)
