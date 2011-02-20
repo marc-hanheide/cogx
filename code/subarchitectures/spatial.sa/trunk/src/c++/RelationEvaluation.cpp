@@ -545,23 +545,38 @@ RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1,
     }
   }
 
-  std::vector<Vector3> newInterestPoints;
+  vector<Vector3> outPolygon;
+
+  computeConvexHull(interestPoints, polygonNormal, outPolygon);
+
+  return outPolygon;
+}
+
+void
+RelationEvaluator::computeConvexHull(const std::vector<Vector3>& points, const Vector3 &polygonNormal, std::vector<Vector3>& hull)
+{
+  double epsilon = 1e-6;
+
+  std::vector<Vector3> newPoints;
+
   // Eliminate redundant interest points
-  for (unsigned int i = 0; i < interestPoints.size(); i++) {
+  for (unsigned int i = 0; i < points.size(); i++) {
     bool keepThis = true;
-    for (unsigned int j = i+1; j < interestPoints.size(); j++) {
-      if (vequals(interestPoints[i], interestPoints[j], epsilon)) {
+    for (unsigned int j = i+1; j < points.size(); j++) {
+      if (vequals(points[i], points[j], epsilon)) {
 	keepThis = false;
 	break;
       }
     }
     if (keepThis) {
-      newInterestPoints.push_back(interestPoints[i]);
+      newPoints.push_back(points[i]);
     }
   }
 
-  if (newInterestPoints.size() < 4)
-    return newInterestPoints;
+  if (newPoints.size() < 4) {
+    hull = newPoints;
+    return;
+  }
 
   //Compute convex hull
   //Find rightmost point
@@ -571,21 +586,21 @@ RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1,
   double minY = FLT_MAX;
   unsigned int highestXPoint;
   unsigned int highestYPoint;
-  for (unsigned int i = 0; i < newInterestPoints.size(); i++) {
-    if (newInterestPoints[i].x > maxX) {
+  for (unsigned int i = 0; i < newPoints.size(); i++) {
+    if (newPoints[i].x > maxX) {
       highestXPoint = i;
-      maxX = newInterestPoints[i].x;
+      maxX = newPoints[i].x;
     }
-    if (newInterestPoints[i].y > maxY) {
+    if (newPoints[i].y > maxY) {
       highestYPoint = i;
-      maxY = newInterestPoints[i].y;
+      maxY = newPoints[i].y;
     }
 
-    if (newInterestPoints[i].x < minX) {
-      minX = newInterestPoints[i].x;
+    if (newPoints[i].x < minX) {
+      minX = newPoints[i].x;
     }
-    if (newInterestPoints[i].y < minY) {
-      minY = newInterestPoints[i].y;
+    if (newPoints[i].y < minY) {
+      minY = newPoints[i].y;
     }
   }
   // Avoid case where all points have the same X (or Y)
@@ -593,7 +608,7 @@ RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1,
     highestXPoint :
     highestYPoint;
 
-  // Compute convex hull of newInterestPoints
+  // Compute convex hull of points
   unsigned int currentPoint = startPoint;
 
   std::deque<int> outPoints;
@@ -601,18 +616,18 @@ RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1,
   do {
     outPoints.push_back(currentPoint);
     donePoints.insert(currentPoint);
-    unsigned int nextPoint = (currentPoint == newInterestPoints.size()-1 ?
+    unsigned int nextPoint = (currentPoint == newPoints.size()-1 ?
 	0 : currentPoint + 1);
     
-    Vector3 edge = newInterestPoints[nextPoint] - 
-      newInterestPoints[currentPoint];
-    for (unsigned int otherPoint = 0; otherPoint < newInterestPoints.size(); otherPoint++) {
+    Vector3 edge = newPoints[nextPoint] - 
+      newPoints[currentPoint];
+    for (unsigned int otherPoint = 0; otherPoint < newPoints.size(); otherPoint++) {
       if (otherPoint != currentPoint && otherPoint != nextPoint) {
 	double leftness = dot(polygonNormal,
-	    cross(edge, newInterestPoints[otherPoint]-newInterestPoints[currentPoint]));
-	if (leftness < -epsilon) {
+	    cross(edge, newPoints[otherPoint]-newPoints[currentPoint]));
+	if (leftness < 0) {
 	  nextPoint = otherPoint;
-	  edge = newInterestPoints[otherPoint] - newInterestPoints[currentPoint];
+	  edge = newPoints[otherPoint] - newPoints[currentPoint];
 	}
       }
     }
@@ -624,13 +639,13 @@ RelationEvaluator::findPolygonIntersection(const std::vector<Vector3> &polygon1,
     outPoints.pop_front();
     startPoint = outPoints.front();
   }
-  std::vector<Vector3> outPolygon;
+
+  hull.clear();
+
   while (!outPoints.empty()) {
-    outPolygon.push_back(newInterestPoints[outPoints.front()]);
+    hull.push_back(newPoints[outPoints.front()]);
     outPoints.pop_front();
   }
-
-  return outPolygon;
 }
 
 double
@@ -867,6 +882,37 @@ RelationEvaluator::RelationEvaluator::getPolygonArea(const std::vector<Vector3> 
     ret += dot(normal, cross(polygon[i], polygon[iplus]));
   }
   return 0.5*ret;
+}
+
+double
+RelationEvaluator::RelationEvaluator::getPolygonAreaAndCentroid(const std::vector<Vector3> &polygon, Vector3 &centroid)
+{
+  double ret = 0.0;
+//  for (unsigned int i = 0; i < polygon.size(); i++) {
+//    unsigned int iplus = (i == polygon.size()-1) ? 0 : i + 1;
+//    ret += polygon[i].x*polygon[iplus].y - polygon[i].y*polygon[iplus].x;
+//  }
+  if (polygon.size() < 3) {
+    return 0.0;
+  }
+
+  centroid = vector3(0,0,0);
+  Vector3 normal = cross(polygon[1]-polygon[0], polygon.back()-polygon[0]);
+  normalise(normal);
+  // The origin, as projected onto the polygon plane (in world coordinates)
+  Vector3 originInPolygon = normal*dot(normal,polygon[0]);
+
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    unsigned int iplus = (i == polygon.size()-1) ? 0 : i + 1;
+    // Effectively, the area of a triangle between the origin, and the line segment
+    // in question; projected down into the polygon plane, and taken negative if
+    // flattened rear side up
+    double weight = 0.5*dot(normal, cross(polygon[i], polygon[iplus]));
+    ret += weight;
+    centroid += weight * (polygon[i] + polygon[iplus] + originInPolygon);
+  }
+  centroid /= (3*ret);
+  return ret;
 }
 
 bool
