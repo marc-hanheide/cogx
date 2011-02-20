@@ -101,8 +101,16 @@ class RelationEvaluator {
     double
       computePolyhedronVolume(const Polyhedron &polyhedron);
 
+    void
+      computeConvexHull(const std::vector<Vector3>& points, 
+	  const Vector3 &polygonNormal, std::vector<Vector3>& hull);
+
     double
       getPolygonArea(const std::vector<Vector3> &polygon);
+
+    double
+      getPolygonAreaAndCentroid(const std::vector<Vector3> &polygon, 
+	  Vector3 &centroid);
 
     Witness
       findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
