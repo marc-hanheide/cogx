@@ -96,6 +96,9 @@
 	<target name="sa.visualization" if="build.visualization_sa">
 	  <ant target="${target}" dir="subarchitectures/visualization.sa" />
 	</target>
+	<target name="sa.manipulation" if="build.manipulation_sa">
+	  <ant target="${target}" dir="subarchitectures/manipulation.sa" />
+	</target>
 	<target name="sa.planner" if="build.planner_sa">
 	  <ant target="${target}" dir="subarchitectures/planner.sa" />
 	</target>
@@ -127,6 +130,7 @@
 		<ant target="${target}" dir="tools/beliefs" />
 		<ant target="${target}" dir="tools/hardware/video" />
 <!--		<ant target="${target}" dir="tools/hardware/blobfinder" />-->
+		<ant target="${target}" dir="tools/hardware/ptz" />
 		<ant target="${target}" dir="tools/hardware/laser" />
 		<ant target="${target}" dir="tools/hardware/robotbase" />
 
@@ -163,6 +167,9 @@
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.motivation">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="sa.manipulation">
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.execution">

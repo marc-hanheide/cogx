@@ -21,6 +21,7 @@ build_sa_categorical=${BUILD_SA_CATEGORICAL}
 build_sa_default=${BUILD_SA_DEFAULT}
 build_sa_conceptual=${BUILD_SA_CONCEPTUAL}
 build_sa_vision=${BUILD_SA_VISION}
+build_sa_manipulation=${BUILD_SA_MANIPULATION}
 build_sa_coma=${BUILD_SA_COMA}
 build_sa_dialogue=${BUILD_SA_DIALOGUE}
 build_sa_visualization=${BUILD_SA_V11N}
