@@ -48,7 +48,7 @@
 	</condition>
 	<condition property="build.conceptual_sa">
 		<equals arg1="${build_sa_conceptual}" arg2="ON" />
-	</condition>s
+	</condition>
 	<condition property="build.dialogue_sa">
 		<equals arg1="${build_sa_dialogue}" arg2="ON" />
 	</condition>
@@ -126,7 +126,7 @@
 		<ant target="${target}" dir="tools/castutils" />
 		<ant target="${target}" dir="tools/beliefs" />
 		<ant target="${target}" dir="tools/hardware/video" />
-		<ant target="${target}" dir="tools/hardware/blobfinder" />
+<!--		<ant target="${target}" dir="tools/hardware/blobfinder" />-->
 		<ant target="${target}" dir="tools/hardware/laser" />
 		<ant target="${target}" dir="tools/hardware/robotbase" />
 
