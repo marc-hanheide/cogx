@@ -9,10 +9,8 @@
 
 import os, sys
 import re
-import messages
+import logger
 import options
-
-LOGGER = messages.CInternalLogger()
 
 def parsebool(val, default=0):
     val = val.lower().strip()
@@ -112,7 +110,7 @@ class CCastConfig:
                     if self.hosts.has_key(host): rs[2] = self.hosts[host]
                 self.rules.append(rs)
                 continue
-            LOGGER.warn("Bad rule: '%s'" % line)
+            logger.get().warn("Bad rule: '%s'" % line)
 
     def removeComment(self, line):
         pos = line.find("#")

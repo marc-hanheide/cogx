@@ -8,7 +8,7 @@ import re
 import tempfile
 from PyQt4 import QtCore, QtGui
 
-from core import procman, options, messages, confbuilder, network
+from core import procman, options, messages, logger, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
 from core import log4util
@@ -17,9 +17,8 @@ from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
 import processtree
 
-LOGGER = messages.CInternalLogger()
-procman.LOGGER = LOGGER
-castagentsrv.LOGGER = LOGGER
+LOGGER = logger.get()
+NOFILE_FILENAME = "<none>"
 
 class CLogDisplayer:
     def __init__(self, qtext):
@@ -316,6 +315,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         if rp.startswith(".."): return fn
         return rp
 
+    def isNullFilename(self, fn):
+        if fn == None: return True
+        test = fn.lower().strip()
+        if test == "": return True
+        if test.startswith(NOFILE_FILENAME): return True
+        if test.startswith("-"): return True
+        return False
+
     @property
     def _clientConfig(self):
         cmb = self.ui.clientConfigCmbx
@@ -342,7 +349,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         cmb = self.ui.hostConfigCmbx
         i = cmb.currentIndex()
         fn = cmb.itemData(i)
-        return fn.toString()
+        return "%s" % fn.toString()
 
     @property
     def _localhost(self):
@@ -406,13 +413,20 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.stopReaderThread()
         self._manager.stopAll()
         time.sleep(0.2)
-        def getitems(cmbx, count=30):
+        def getitems(cmbx, count=30, hasNullFile=False):
             mx = cmbx.count()
-            if mx > count: mx = count
             lst = []
+            nullSelected = False
             for i in xrange(mx):
-                fn = cmbx.itemData(i).toString()
-                lst.append("%s" % fn)
+                fn = "%s" % cmbx.itemData(i).toString()
+                if hasNullFile and self.isNullFilename(fn):
+                    if i == 0: nullSelected = True
+                    continue
+                lst.append(fn)
+            lst = lst[:count]
+            if hasNullFile:
+                if nullSelected: lst.insert(0, NOFILE_FILENAME)
+                else: lst.append(NOFILE_FILENAME)
             return lst
 
         try:
@@ -425,7 +439,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
             self._options.mruCfgGolem = getitems(self.ui.golemConfigCmbx)
-            self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx)
+            self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx, hasNullFile=True)
             self._options.setOption("log4jServerPort", self._log4jServerPort)
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
             self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
@@ -526,7 +540,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         clientConfig = clientConfig.strip()
         if clientConfig == "": return
 
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -543,7 +557,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if self._clientConfig == None: clientConfig = ""
         else: clientConfig = "%s" % self._clientConfig
         clientConfig = clientConfig.strip()
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -565,7 +579,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def getConfiguredHosts(self):
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -842,7 +856,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btEditHostConfig_clicked(self, valid=True):
         if not valid: return
-        self.editFile(self._hostConfig)
+        if not self.isNullFilename(self._hostConfig):
+            self.editFile(self._hostConfig)
 
     def on_btDetectLocalHost_clicked(self, valid=True):
         if not valid: return
@@ -945,19 +960,26 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onBrowseHostConfig(self):
         qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(
+        fn = "%s" % qfd.getOpenFileName(
             self, self.ui.actOpenHostConfig.text(),
             "", "Component Host Config (*.hconf)")
-        if fn != None and len(fn) > 1:
+        if fn == None or len(fn) < 2:
+            return
+        elif self.isNullFilename(fn):
+            self._ComboBox_AddMru(self.ui.hostConfigCmbx, NOFILE_FILENAME, NOFILE_FILENAME)
+        else:
             fn = self.makeConfigFileRelPath(fn)
             self._ComboBox_AddMru(self.ui.hostConfigCmbx,
                     self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onHostConfigChanged(self, index):
         if index < 1: return
-        fn = self._hostConfig
-        self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        fn = "%s" % self._hostConfig
+        if self.isNullFilename(fn):
+            self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index, NOFILE_FILENAME, NOFILE_FILENAME)
+        else:
+            self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def _ComboBox_AddMru(self, uiCmbx, title, varData):
         uiCmbx.blockSignals(True)

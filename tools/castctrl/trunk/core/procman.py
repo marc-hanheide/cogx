@@ -10,11 +10,11 @@ import subprocess as subp
 import tempfile
 import select, signal, threading
 import fcntl
-import options, messages
+import options, messages, logger
 import itertools
 import legacy
 
-LOGGER = None
+LOGGER = logger.get()
 def log(msg):
     global LOGGER
     if LOGGER != None: LOGGER.log(msg)
