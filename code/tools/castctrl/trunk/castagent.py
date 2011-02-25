@@ -8,11 +8,8 @@ import shutil
 import optparse
 from string import Template
 
-from core import castagentsrv, procman, options, messages
-# LOGGER = messages.CStdoutLogger()
-LOGGER = messages.CInternalLogger()
-procman.LOGGER = LOGGER
-castagentsrv.LOGGER = LOGGER
+from core import castagentsrv, procman, options, messages, logger
+LOGGER = logger.get()
 
 import threading
 import Ice
@@ -85,7 +82,6 @@ class CLogDisplayer(threading.Thread):
         self._isRunning = False
 
 
-
 class CConsoleAgent:
     def __init__(self, appOptions):
         port = appOptions.port
@@ -112,13 +108,15 @@ class CConsoleAgent:
                 cmd = self._options.xe("${CMD_PLAYER}")
                 cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
                 self.manager.addProcess(procman.CProcess("player", cmd))
-         if appOptions.golem_cfg != None:
+
+        if appOptions.golem_cfg != None:
             if not os.path.exists(appOptions.golem_cfg):
                 LOGGER.warn("Golem configuration file '%s' not found." % appOptions.golem_cfg)
             else:
                 cmd = self._options.xe("${CMD_GOLEM}")
                 cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
                 self.manager.addProcess(procman.CProcess("golem", cmd))
+
         #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
         #self.procBuild.allowTerminate = True
