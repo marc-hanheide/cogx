@@ -182,23 +182,23 @@ public class BhamDoraBaseConnector implements BaseConnector {
 	 */
 	@Override
 	public void startExplore() {
-		logger.debug("explore");
+		logger.debug("explore not implemented yet");
 
-		stop();
-
-		NavCommand nav = newNavCommand();
-		nav.cmd = CommandType.EXPLORE;
-
-		String id = ((BhamRunner) manipulator.getRunner()).newDataID();
-
-		try {
-			((BhamRunner) manipulator.getRunner()).addToWorkingMemory(id, nav);
-		} catch (AlreadyExistsOnWMException e) {
-			logger.error(e);
-		}
-
-		setMoving(true);
-		exploring = true;
+//		stop();
+//
+//		NavCommand nav = newNavCommand();
+//		nav.cmd = CommandType.EXPLORE;
+//
+//		String id = ((BhamRunner) manipulator.getRunner()).newDataID();
+//
+//		try {
+//			((BhamRunner) manipulator.getRunner()).addToWorkingMemory(id, nav);
+//		} catch (AlreadyExistsOnWMException e) {
+//			logger.error(e);
+//		}
+//
+//		setMoving(true);
+//		exploring = true;
 
 	}
 
