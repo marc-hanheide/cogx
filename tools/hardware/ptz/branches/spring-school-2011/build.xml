@@ -43,11 +43,17 @@
       </slice2java>
     </target>
     
+
+	<target name="compile-slice" depends="slice" description="compiles the source code">
+	  <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
+	    <classpath refid="build.classpath"/> </javac>
+	</target>
+
 	
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="compile-slice" description="compiles the source code">
 	  <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
 	    <classpath refid="build.classpath"/> </javac>
 	</target>
