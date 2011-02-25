@@ -58,8 +58,9 @@ class CNullFile:
 
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
-    reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
+    reHostName = re.compile(r"^\s*hostname\s+(\S+)\s+(\S+)", re.IGNORECASE)
     reHost = re.compile(r"^\s*host\s+(\S+)", re.IGNORECASE)
+    reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
     reComponent = re.compile(r"^\s*component\s+(\S+\s+)?(cpp|java|python)\s+(\S+)(\s+.*)?", re.IGNORECASE)
     reSubComponent = re.compile(r"^\s*(\S+\s+)?(cpp|java|python)\s+(\S\S)\s+(\S+)(\s+.*)?", re.IGNORECASE)
     def __init__(self):
@@ -68,8 +69,17 @@ class CCastConfig:
         self._localhost = "127.0.0.1"
         self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
         self.rules = []
-        self.subarch = ""
         self.components = []
+        self._cast_hostnames = {} # defined in .cast
+
+    # all but SETVAR, VARDEFAULT and HOSTNAME are 'headers'
+    def _isHeader(self, line):
+        for rex in [
+                CCastConfig.reSubarch, CCastConfig.reHost,
+                CCastConfig.reComponent, CCastConfig.reSubComponent]:
+            mo = rex.match(line)
+            if mo != None: return True
+        return False
 
     def clearRules(self):
         self.rules = []
@@ -95,7 +105,7 @@ class CCastConfig:
             if r.lower().startswith("host"):
                 rs = r.split()
                 if rs[1].lower() == "localhost": self.setLocalhost(rs[2])
-                else: self.hosts[rs[1].lower()] = rs[2]
+                else: self.hosts[rs[1]] = rs[2]
                 continue
             rs = r.split()
             if len(rs) < 2: continue
@@ -106,8 +116,9 @@ class CCastConfig:
             goodrule = [ 1 for desc in ['SA', 'ID', 'HPAR'] if rs[0] == desc]
             if len(goodrule) > 0:
                 if rs[2].startswith("[") and rs[2].endswith("]"):
-                    host = rs[2].strip(" []").lower()
-                    if self.hosts.has_key(host): rs[2] = self.hosts[host]
+                    # TODO: Should leave hosts as they are; let _update_cast_hostnames take care of translation
+                    host = rs[2].strip(" []")
+                    if host in self.hosts: rs[2] = self.hosts[host]
                 self.rules.append(rs)
                 continue
             logger.get().warn("Bad rule: '%s'" % line)
@@ -156,7 +167,72 @@ class CCastConfig:
             lines.append(line)
         return lines
 
+
+    # TODO: support the new HOSTNAME entries in CAST file
+    # done: HOSTNAME entries are overwritten by hconf HOST entries
+    # done: new HOSTNAME entries are added
+    # maybe: HPAR rules may be dropped (use SETVAR instead?)
+    # Currently only works if there is a HOSTNAME entry in the cast file
+    def _update_cast_hostnames(self, lines):
+        self._cast_hostnames = {}
+        first = -1
+        last = 0
+        for i,line in enumerate(lines):
+            mo = CCastConfig.reHostName.match(line)
+            if mo != None:
+                if first < 0: first = i
+                last = i+1
+                self._cast_hostnames[mo.group(1)] = mo.group(2)
+
+        if first < 0: return # Remove for cast 2.1.13
+
+        # add localhost definition
+        if not "localhost" in self._cast_hostnames:
+            self._cast_hostnames["localhost"] = self._fixLocalhost("localhost")
+            lines.insert(first, "HOSTNAME  localhost  %s" % self._cast_hostnames["localhost"])
+            last = last + 1
+
+        # replace hosts from hconf
+        for i in xrange(first, last):
+            line = lines[i]
+            mo = CCastConfig.reHostName.match(line)
+            if mo == None: continue
+            if mo.group(1) in self.hosts:
+                lines[i] = "HOSTNAME  %s  %s" % (mo.group(1), self.hosts[mo.group(1)])
+
+        # add additional hosts from hconf
+        for k,v in self.hosts.items():
+            if k in self._cast_hostnames: continue
+            mo = re.match("^[a-zA-Z][a-zA-Z0-9_]*$", k)
+            if not mo: continue;
+            self._cast_hostnames[k] = v
+            lines.insert(last, "HOSTNAME  %s  %s" % (k, v))
+            last = last + 1
+
+        # remove invalid HOST declarations
+        defaultHostFound = False
+        otherHeaderFound = False
+        for i,line in enumerate(lines):
+            mo = CCastConfig.reHost.match(line)
+            if mo != None:
+                host = mo.group(1).strip(" []")
+                valid = host in self._cast_hostnames
+                if not valid: lines[i] = "# disabled " + line
+                if valid and not defaultHostFound: defaultHostFound = not otherHeaderFound
+                continue
+
+            if not otherHeaderFound and self._isHeader(line):
+                otherHeaderFound = True
+                continue
+
+        # add the missing HOST
+        if not defaultHostFound:
+            lines.insert(last, "HOST localhost")
+            last = last + 1
+
+
     #  TODO: How to support multiple HOST definitions in .cast?
+    #  Remove extra HOSTs if there are rules 
     def prepareConfig(self, filename, afile=CNullFile()):
         """
         Reads the config file and writes it to an open file-like object 'afile'
@@ -164,18 +240,21 @@ class CCastConfig:
         Fixes the localchost IP. Distributes the components to remote machines
         according to rules.
         """
-        lines = []
-        lines += [ "SETVAR CONFIG_DIR=%s" % os.path.dirname(os.path.abspath(filename)) ]
-
+        lines = [ "SETVAR CONFIG_DIR=%s" % os.path.dirname(os.path.abspath(filename)) ]
         lines += self.readConfig(filename)
-        self.subarch = ""
+        self._update_cast_hostnames(lines)
+
+        removeExtraHosts = len(self.rules) > 0 # ie. a hconf was added
+        defaultHostFound = False
+
+        subarch = ""
         for line in lines:
             mo = CCastConfig.reSubarch.match(line)
             if mo != None:
-                self.subarch = mo.group(1)
+                subarch = mo.group(1)
                 disabled = None
                 for r in self.rules:
-                    if r[0] == "SA" and r[1].lower() == self.subarch.lower():
+                    if r[0] == "SA" and r[1].lower() == subarch.lower():
                         if len(r) > 3 and not parsebool(r[3], 1):
                             disabled = r
                             break
@@ -185,16 +264,20 @@ class CCastConfig:
 
             mo = CCastConfig.reHost.match(line)
             if mo != None:
+                if defaultHostFound and removeExtraHosts:
+                    # TODO: HOST entries are removed if the server is not defined in _cast_hostnames
+                    continue
                 host = mo.group(1)
-                if self.subarch == "":
+                if subarch == "":
                     for r in self.rules:
                         if r[0] == "SA" and r[1].lower() == "none":
                             host = r[2]
                 newline = "HOST %s" % self._fixLocalhost(host)
                 afile.write(newline + "\n")
+                defaultHostFound = True
                 continue
 
-            (ok, newline) = self._processComponent(line)
+            (ok, newline) = self._processComponent(line, subarch)
             if ok:
                 afile.write(newline + "\n")
                 continue
@@ -203,8 +286,8 @@ class CCastConfig:
 
     def _fixLocalhost(self, host):
         h = host.lower()
-        if h == "localhost" or h == "127.0.0.1":
-            if self.hosts.has_key(h): host = self.hosts[h]
+        if h == "localhost" or h.startswith("127.0.0.") or h == "::1":
+            if "localhost" in self.hosts: host = self.hosts["localhost"]
         return host
 
     def _fixHostParam(self, text, param):
@@ -222,15 +305,15 @@ class CCastConfig:
             text = text[:mo.start(1)] + '"' + value + '"' + text[mo.end(1):]
         return text
 
-    def _processComponent(self, line):
+    def _processComponent(self, line, subarch):
         cpid = None
         mo = CCastConfig.reComponent.match(line)
         if mo != None:
             prefix = "COMPONENT"
             host   = mo.group(1)
             lang   = mo.group(2)
-            cpid   = mo.group(3)
             cptype = ""
+            cpid   = mo.group(3)
             rest   = mo.group(4)
 
         mo = CCastConfig.reSubComponent.match(line)
@@ -247,13 +330,14 @@ class CCastConfig:
         if rest == None: rest = ""
         rest = rest.strip()
 
-        comp = CComponent(self.subarch, cpid, cptype, lang)
+        comp = CComponent(subarch, cpid, cptype, lang)
         self.components.append(comp)
 
+        # host is currently preserved if defined for component in .cast but not in .hconf
         disabled = None
         for r in self.rules:
             if disabled != None: break
-            if r[0] == "SA" and r[1].lower() == self.subarch.lower():
+            if r[0] == "SA" and r[1].lower() == subarch.lower():
                 host = r[2]
                 if len(r) > 3 and not parsebool(r[3], 1): disabled = r
             elif r[0] == "ID" and r[1].lower() == cpid.lower():

@@ -549,8 +549,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         cfg.clearRules()
         if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
+
         cfg.prepareConfig(clientConfig)
         self.addComponentFilters(cfg.components)
+
 
     # build config file from rules in hostconfig
     def buildConfigFile(self):
@@ -793,7 +795,13 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btEditFilterComponents_clicked(self, valid=True):
         if not valid: return
-        self.extractComponentsFromConfig()
+
+        try:
+            self.extractComponentsFromConfig()
+        except Exception as e:
+            LOGGER.error("%s" % e)
+            return
+
         dlg = CSelectComponentsDlg(self)
         dlg.setComponentList(self.componentFilter)
         rv = dlg.exec_()
