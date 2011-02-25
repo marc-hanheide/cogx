@@ -9,9 +9,9 @@ import stat
 import modice
 import icemodule.castcontrol.CastAgent as CastAgent
 # import icemodule.castcontrol.ProcessInfo as ProcessInfo
-from core import messages, options, procman
+from core import messages, logger, options, procman
 
-LOGGER = messages.CInternalLogger()
+LOGGER = logger.get()
 
 # Default port for the Ice server of a CastAgent.
 SLAVE_PORT=7832
