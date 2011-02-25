@@ -99,6 +99,10 @@ if(BUILD_SA_EXECUTION)
 add_subdirectory (subarchitectures/execution.sa)
 endif(BUILD_SA_EXECUTION)
 
+option(BUILD_SA_MANIPULATION "Build manipulation subarchitecure" NO)
+if(BUILD_SA_MANIPULATION)
+add_subdirectory (subarchitectures/manipulation.sa)
+endif(BUILD_SA_MANIPULATION)
 
 option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
 if(BUILD_SA_DIALOGUE)

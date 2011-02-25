@@ -48,13 +48,17 @@
 	</condition>
 	<condition property="build.conceptual_sa">
 		<equals arg1="${build_sa_conceptual}" arg2="ON" />
-	</condition>
+	</condition>s
 	<condition property="build.dialogue_sa">
 		<equals arg1="${build_sa_dialogue}" arg2="ON" />
 	</condition>
 	<condition property="build.visualization_sa">
 		<equals arg1="${build_sa_visualization}" arg2="ON" />
 	</condition>
+	<condition property="build.manipulation_sa">
+		<equals arg1="${build_sa_manipulation}" arg2="ON" />
+	</condition>
+
 	<condition property="build.shared">
 		<equals arg1="${build_shared}" arg2="ON" />
 	</condition>
