@@ -1,0 +1,46 @@
+HOST localhost
+
+# spatial #####################################################################
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
+COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+
+#INCLUDE includes/spatial.sa/spatial-base.cast
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+SUBARCHITECTURE spatial.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#INCLUDE includes/spatial.sa/spatial-gripper.sa
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #-m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #-m tmpmap.graph #--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 1.0 --min-node-separation 2.5 --hyp-path-length 2.0  #--no-placeholders --log
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 2 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
+
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office --debug -c instantiations/cureconfig/cogxp3.ccf
+
+
+
+# vision ######################################################################
+#CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+#CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video2/soup-0000000%d.ppm" --start "100" --end "600" --framerate_ms "100" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties_small.ply" --siftfiles "instantiations/sift-models/frosties_small.sift" --labels "frosties_small" --log $V11N_STANDALONE $V11N_STANDALONE_HOST
+
+#CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log $V11N_STANDALONE #$V11N_STANDALONE_HOST
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log $V11N_STANDALONE $V11N_STANDALONE_HOST
+
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
+
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
+
+JAVA MG manipulatorRunner manipulation.runner.bham.BhamRunner --reachingDistance "0.01" --distanceInFrontDesk "0.5" --configPath "/home/ttoenige/Desktop/calib_real.xml" --maxDistanceVP "1" --nearPoints "0.5" --simulation --fixedTilt "-65"
+
+JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
