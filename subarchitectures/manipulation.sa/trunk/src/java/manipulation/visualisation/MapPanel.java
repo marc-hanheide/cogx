@@ -152,67 +152,72 @@ public class MapPanel extends JPanel implements Observer {
 		logger.debug("Click at " + gridCoordinates);
 		logger.debug("Click at " + worldCoordinates);
 
-		if (observable instanceof ItemMemory) {
-			ItemMemory itemMemory = (ItemMemory) observable;
+		Vector3D translationData = new Vector3D(worldCoordinates.getX(),
+				worldCoordinates.getY(), 0.2);
 
-			Vector3D translationData = new Vector3D(worldCoordinates.getX(),
-					worldCoordinates.getY(), 0.2);
+		Matrix rotationData = new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
-			Matrix rotationData = new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
+		if (manipulator.getItemMemory().getItemList().isEmpty()) {
 
-			if (itemMemory.getItemList().isEmpty()) {
+			try {
+				item = new Item();
+				item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
+				item.setAttribute(PropertyName.WORLD_POSITION, translationData);
+				item.setAttribute(PropertyName.WORLD_ROTATION, rotationData);
+				item.setAttribute(PropertyName.INTENTION,
+						ItemIntention.GRASP_ME);
+				surrounding = manipulator.getMapAlgorithms()
+						.updateSurroundingFromWorldCoordinates(item);
 
+				item.setAttribute(PropertyName.SURROUNDING, surrounding);
+
+				ViewPoints vps = new ViewPoints(manipulator.getMapAlgorithms()
+						.generatePotentialViewPoints(item));
+				item.setAttribute(PropertyName.VIEW_POINTS, vps);
+
+				item.setAttribute(PropertyName.BEST_VIEW_POINT, manipulator
+						.getMapAlgorithms().getBestViewPoint(vps.getPoints()));
+
+				manipulator.getItemMemory().addItemToQueue(item);
+				repaint();
+			} catch (MathException e) {
+				logger.error(e);
+			} catch (ItemException e) {
+				logger.error(e);
+			}
+		} else {
+			try {
+
+				manipulator.getItemMemory().updatePosition(changedItem,
+						translationData, new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1),
+						manipulator, true);
+
+				ViewPoints vps;
 				try {
-					item = new Item();
-					item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
-					item.setAttribute(PropertyName.WORLD_POSITION,
-							translationData);
-					item
-							.setAttribute(PropertyName.WORLD_ROTATION,
-									rotationData);
-					item.setAttribute(PropertyName.INTENTION,
-							ItemIntention.GRASP_ME);
-					surrounding = manipulator.getMapAlgorithms()
-							.updateSurroundingFromWorldCoordinates(item);
-
-					item.setAttribute(PropertyName.SURROUNDING, surrounding);
-
-					ViewPoints vps = new ViewPoints(manipulator
-							.getMapAlgorithms().generatePotentialViewPoints(
-									item));
-					item.setAttribute(PropertyName.VIEW_POINTS, vps);
-
-					item.setAttribute(PropertyName.BEST_VIEW_POINT, manipulator
-							.getMapAlgorithms().getBestViewPoint(
+					vps = new ViewPoints(manipulator.getMapAlgorithms()
+							.generatePotentialViewPoints(changedItem));
+					manipulator.getItemMemory().updateViewPoints(
+							changedItem,
+							vps,
+							manipulator.getMapAlgorithms().getBestViewPoint(
 									vps.getPoints()));
-
-					itemMemory.addItemToQueue(item);
-
-				} catch (MathException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				} catch (ItemException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				try {
-					itemMemory.updatePosition(changedItem, translationData,
-							new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1), manipulator,
-							true);
-				} catch (InternalMemoryException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error(e);
+				} catch (MathException e) {
+					logger.error(e);
 				}
 
+				repaint();
+
+			} catch (InternalMemoryException e) {
+				logger.error(e);
 			}
 
 		}
 
-		// updateMap();
-		repaint();
-
 	}
+
+	// updateMap();
 
 	private Vector2D panelCoordinates2Grid(Vector2D panelCoordinates) {
 		try {
@@ -509,6 +514,15 @@ public class MapPanel extends JPanel implements Observer {
 			if (arg instanceof Item) {
 				Item argItem = ((Item) arg);
 				changedItem = argItem;
+			}
+			if (arg instanceof Vector3D) {
+				try {
+					changedItem = manipulator.getItemMemory()
+							.getFirstGraspItem();
+				} catch (InternalMemoryException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}

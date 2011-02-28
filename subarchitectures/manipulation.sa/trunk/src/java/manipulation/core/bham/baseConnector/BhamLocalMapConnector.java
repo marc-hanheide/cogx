@@ -1,8 +1,5 @@
 package manipulation.core.bham.baseConnector;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.baseConnector.MapConnector;
 import manipulation.core.share.exceptions.ExternalMemoryException;
@@ -32,15 +29,13 @@ public class BhamLocalMapConnector implements MapConnector {
 
 	private GlobalMap map = new GlobalMap();
 
-	final Lock lock = new ReentrantLock();
-
 	private LocalMapInterfacePrx localMapInterface;
 	// TODO das ist doof
 
 	private Manipulator manipulator;
 
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private Thread t;
 
 	/**
@@ -145,7 +140,6 @@ public class BhamLocalMapConnector implements MapConnector {
 	 */
 	@Override
 	public void updateMap() throws ExternalMemoryException {
-		lock.lock();
 		try {
 			CASTData<Place> allPlaces[];
 			allPlaces = ((BhamRunner) manipulator.getRunner())
@@ -171,7 +165,6 @@ public class BhamLocalMapConnector implements MapConnector {
 		} catch (SubarchitectureComponentException e) {
 			throw new ExternalMemoryException("Cannot get a map");
 		}
-		lock.unlock();
 
 	}
 
