@@ -389,8 +389,7 @@ public class ItemMemory extends Observable {
 	}
 
 	public void updateViewPoints(Item item, ViewPoints viewPoints,
-			ViewPoint bestVP, ViewPoints bestRotVPs)
-			throws InternalMemoryException {
+			ViewPoint bestVP) throws InternalMemoryException {
 		boolean success = false;
 		Item newItem = new Item(item);
 
@@ -548,15 +547,18 @@ public class ItemMemory extends Observable {
 
 	public void updateRotationAwareViewPoints(Item item,
 			Manipulator manipulator, UpdateAction ua)
-			throws InternalMemoryException, ItemException, MathException, ExternalMemoryException {
+			throws InternalMemoryException, ItemException, MathException,
+			ExternalMemoryException {
 
 		List<ViewPoint> rotationalVP = new LinkedList<ViewPoint>();
 		Item newItem = new Item(item);
 
 		switch (ua) {
 		case GENERATE:
-			rotationalVP = manipulator.getMapAlgorithms()
-					.generateRotationalViewPoints(item, manipulator.getBaseConnector().getCurrentPosition());
+			rotationalVP = manipulator
+					.getMapAlgorithms()
+					.generateRotationalViewPoints(item,
+							manipulator.getBaseConnector().getCurrentPosition());
 
 			ViewPoints rotationalVPstuct = new ViewPoints(rotationalVP);
 

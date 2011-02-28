@@ -504,8 +504,8 @@ public class BhamSimulationConnector implements SimulationConnector {
 		BoxShapeDesc obstacleShape = new BoxShapeDescI();
 		// TODO itemgroesse
 		// TODO itemrotation
-		obstacleShape.dimensions.v1 = 0.1;
-		obstacleShape.dimensions.v2 = 0.1;
+		obstacleShape.dimensions.v1 = 0.15;
+		obstacleShape.dimensions.v2 = 0.15;
 		obstacleShape.dimensions.v3 = (((((Vector3D) item
 				.getAttribute(PropertyName.WORLD_POSITION)).getZ())) / 2) - 0.02;
 		obstacle.shapes[0] = obstacleShape;

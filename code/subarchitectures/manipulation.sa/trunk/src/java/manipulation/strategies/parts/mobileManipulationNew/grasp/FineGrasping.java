@@ -143,7 +143,7 @@ public class FineGrasping extends StrategyPart {
 
 			while (!getManipulator().getArmConnector().isReached()) {
 				try {
-					Thread.sleep(200);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					logger.error(e);
 				}
@@ -157,11 +157,6 @@ public class FineGrasping extends StrategyPart {
 		getManipulator().getArmConnector().closeGripper(10);
 
 		if (getManipulator().getArmConnector().isGraspingObject()) {
-			try {
-				getManipulator().getCamConnector().resetTracker();
-			} catch (ExternalMemoryException e) {
-				logger.error(e);
-			}
 			logger.error("Object in the gripper");
 			try {
 				getManipulator().getArmConnector().goHome();
@@ -184,11 +179,6 @@ public class FineGrasping extends StrategyPart {
 
 		} else {
 			try {
-				try {
-					getManipulator().getCamConnector().resetTracker();
-				} catch (ExternalMemoryException e) {
-					logger.error(e);
-				}
 				getManipulator().getArmConnector().goHome();
 
 				while (!getManipulator().getArmConnector().isHome()) {
