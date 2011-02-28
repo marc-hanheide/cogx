@@ -180,7 +180,11 @@ def parseOptions():
 
 def main():
     opts, args = parseOptions()
-    print opts, args
+    for o in dir(opts):
+        if o.startswith("_"): continue
+        if o in ['read_file', 'read_module', 'ensure_value']: continue
+        try: print "%14s:\t%s" % (o, eval("opts.%s" % o))
+        except: pass
     agent = CConsoleAgent(opts)
     agent.startServing()
     try:
