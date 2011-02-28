@@ -13,7 +13,7 @@ import manipulation.core.share.ManipulatorPartFactory;
  */
 public class BhamIntGraspingManipulator extends Manipulator {
 	ManipulatorPartFactory partFactory;
-	
+
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	/**
@@ -33,12 +33,14 @@ public class BhamIntGraspingManipulator extends Manipulator {
 	protected void prepare() {
 		logger.debug("Prepare " + this.getName().toString());
 
+	
+		setBaseConnector(partFactory.createBaseConnector(this));
 		setSimulationConnector(partFactory.createSimulationConnector(this));
 		setArmConnector(partFactory.createArmConnector(this));
-		setBaseConnector(partFactory.createBaseConnector(this));
 		setCamConnector(partFactory.createCamConnector(this));
 		setMapConnector(partFactory.createMapConnector(this));
 		setCalibrationConnector(partFactory.createCalibrationConnector(this));
+
 		setPanTiltConnector(partFactory.createPanTiltConnector(this));
 
 	}

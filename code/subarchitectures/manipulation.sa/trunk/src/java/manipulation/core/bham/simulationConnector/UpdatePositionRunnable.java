@@ -19,7 +19,7 @@ public class UpdatePositionRunnable implements Runnable {
 	
 	private BhamSimulationConnector simCon;
 	private Manipulator manipulator;
-
+	
 	/**
 	 * constructor for the robot position update runnable
 	 * 

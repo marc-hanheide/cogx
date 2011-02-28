@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 public class UpdateItemPositionRunnable implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass());
 	
-	
 	private BhamSimulationConnector simCon;
 	private Manipulator manipulator;
 
