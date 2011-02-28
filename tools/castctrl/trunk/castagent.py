@@ -180,6 +180,7 @@ def parseOptions():
 
 def main():
     opts, args = parseOptions()
+    print "Settings:"
     for o in dir(opts):
         if o.startswith("_"): continue
         if o in ['read_file', 'read_module', 'ensure_value']: continue
