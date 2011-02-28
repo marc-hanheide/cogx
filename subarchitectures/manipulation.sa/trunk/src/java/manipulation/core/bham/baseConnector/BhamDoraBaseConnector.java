@@ -270,14 +270,14 @@ public class BhamDoraBaseConnector implements BaseConnector {
 	public void setMoving(boolean movingIn) {
 		if (movingIn) {
 			((BhamRunner) manipulator.getRunner()).addBaseMovementListener();
-			((BhamSimulationConnector) manipulator.getSimulationConnector())
-					.startPosThread();
+//			((BhamSimulationConnector) manipulator.getSimulationConnector())
+//					.startPosThread();
 			manipulator.getMapConnector().updateMapConstant();
 		} else {
 
 			((BhamRunner) manipulator.getRunner()).removeMovementListener();
-			((BhamSimulationConnector) manipulator.getSimulationConnector())
-					.stopPosThread();
+//			((BhamSimulationConnector) manipulator.getSimulationConnector())
+//					.stopPosThread();
 			manipulator.getMapConnector().stopupdateMapConstant();
 		}
 

@@ -222,8 +222,8 @@ public class BhamBlortConnector implements CamConnector {
 
 		}
 
-		((BhamSimulationConnector) manipulator.getSimulationConnector())
-				.startItemThread();
+//		((BhamSimulationConnector) manipulator.getSimulationConnector())
+//				.startItemThread();
 	}
 
 	/**
@@ -233,8 +233,8 @@ public class BhamBlortConnector implements CamConnector {
 	public void stopTracking() throws ExternalMemoryException {
 		logger.debug("stop tracking");
 
-		((BhamSimulationConnector) manipulator.getSimulationConnector())
-				.stopItemThread();
+//		((BhamSimulationConnector) manipulator.getSimulationConnector())
+//				.stopItemThread();
 
 		TrackingCommand trackCom = new TrackingCommand();
 		trackCom.cmd = TrackingCommandType.STOP;

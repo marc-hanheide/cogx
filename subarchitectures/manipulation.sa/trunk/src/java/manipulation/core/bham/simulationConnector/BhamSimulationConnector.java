@@ -119,6 +119,9 @@ public class BhamSimulationConnector implements SimulationConnector {
 			logger.error(e);
 		}
 
+		posThread.start();
+		itemThread.start();
+
 	}
 
 	private RigidBodyPrx createGroundPlane() throws Exception {
@@ -341,46 +344,48 @@ public class BhamSimulationConnector implements SimulationConnector {
 		return allPoints;
 	}
 
-	/**
-	 * starts a thread to update the position of the robot in the virtual scene
-	 */
-	public void startPosThread() {
-		if (!posThread.isAlive()) {
-			posThread = new Thread(
-					new UpdatePositionRunnable(this, manipulator));
-			posThread.start();
-		}
-	}
-
-	/**
-	 * stops updating the position of the robot in the virtual scene
-	 */
-	public void stopPosThread() {
-		if (posThread.isAlive()) {
-
-			posThread.interrupt();
-		}
-	}
-
-	/**
-	 * starts a thread to update the positions of the item in the virtual scene
-	 */
-	public void startItemThread() {
-		if (!itemThread.isAlive()) {
-			itemThread = new Thread(new UpdateItemPositionRunnable(this,
-					manipulator));
-			itemThread.start();
-		}
-	}
-
-	/**
-	 * stops updating the positions of the items in the virtual scene
-	 */
-	public void stopItemThread() {
-		if (itemThread.isAlive()) {
-			itemThread.interrupt();
-		}
-	}
+	// /**
+	// * starts a thread to update the position of the robot in the virtual
+	// scene
+	// */
+	// public void startPosThread() {
+	// if (!posThread.isAlive()) {
+	// posThread = new Thread(
+	// new UpdatePositionRunnable(this, manipulator));
+	// posThread.start();
+	// }
+	// }
+	//
+	// /**
+	// * stops updating the position of the robot in the virtual scene
+	// */
+	// public void stopPosThread() {
+	// if (posThread.isAlive()) {
+	//
+	// posThread.interrupt();
+	// }
+	// }
+	//
+	// /**
+	// * starts a thread to update the positions of the item in the virtual
+	// scene
+	// */
+	// public void startItemThread() {
+	// if (!itemThread.isAlive()) {
+	// itemThread = new Thread(new UpdateItemPositionRunnable(this,
+	// manipulator));
+	// itemThread.start();
+	// }
+	// }
+	//
+	// /**
+	// * stops updating the positions of the items in the virtual scene
+	// */
+	// public void stopItemThread() {
+	// if (itemThread.isAlive()) {
+	// itemThread.interrupt();
+	// }
+	// }
 
 	/**
 	 * update the arm in the virtual scene
@@ -709,7 +714,9 @@ public class BhamSimulationConnector implements SimulationConnector {
 
 	@Override
 	public void clearScene() {
-		stopItemThread();
+		// stopItemThread();
+
+		itemThread.interrupt();
 
 		for (RigidBodyPrx table : getTables()) {
 			try {
