@@ -1,6 +1,5 @@
 package manipulation.core.bham.baseConnector;
 
-import manipulation.core.bham.simulationConnector.BhamSimulationConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.baseConnector.BaseConnector;
 import manipulation.core.share.exceptions.ExternalMemoryException;
@@ -37,7 +36,7 @@ import cast.cdl.WorkingMemoryChange;
 public class BhamDoraBaseConnector implements BaseConnector {
 
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private BasePositionData currentPosition;
 	private Manipulator manipulator;
 
@@ -184,21 +183,21 @@ public class BhamDoraBaseConnector implements BaseConnector {
 	public void startExplore() {
 		logger.debug("explore not implemented yet");
 
-//		stop();
-//
-//		NavCommand nav = newNavCommand();
-//		nav.cmd = CommandType.EXPLORE;
-//
-//		String id = ((BhamRunner) manipulator.getRunner()).newDataID();
-//
-//		try {
-//			((BhamRunner) manipulator.getRunner()).addToWorkingMemory(id, nav);
-//		} catch (AlreadyExistsOnWMException e) {
-//			logger.error(e);
-//		}
-//
-//		setMoving(true);
-//		exploring = true;
+		// stop();
+		//
+		// NavCommand nav = newNavCommand();
+		// nav.cmd = CommandType.EXPLORE;
+		//
+		// String id = ((BhamRunner) manipulator.getRunner()).newDataID();
+		//
+		// try {
+		// ((BhamRunner) manipulator.getRunner()).addToWorkingMemory(id, nav);
+		// } catch (AlreadyExistsOnWMException e) {
+		// logger.error(e);
+		// }
+		//
+		// setMoving(true);
+		// exploring = true;
 
 	}
 
@@ -268,19 +267,6 @@ public class BhamDoraBaseConnector implements BaseConnector {
 	 */
 	@Override
 	public void setMoving(boolean movingIn) {
-		if (movingIn) {
-			((BhamRunner) manipulator.getRunner()).addBaseMovementListener();
-//			((BhamSimulationConnector) manipulator.getSimulationConnector())
-//					.startPosThread();
-			manipulator.getMapConnector().updateMapConstant();
-		} else {
-
-			((BhamRunner) manipulator.getRunner()).removeMovementListener();
-//			((BhamSimulationConnector) manipulator.getSimulationConnector())
-//					.stopPosThread();
-			manipulator.getMapConnector().stopupdateMapConstant();
-		}
-
 		this.moving = movingIn;
 	}
 
