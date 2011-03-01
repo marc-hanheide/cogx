@@ -543,6 +543,9 @@ PlaceManager::evaluateUnexploredPaths()
     try {
       // Year 1 implementation: base exploration edges on Cure exploration
       // frontiers
+
+      //NOTE: May block, but shouldn't since SpatialControl::getFrontiers
+      //will only block until the first scan is added
       points = frontierReader->getFrontiers();
 
       log("Retrieved %i frontiers", points.size());
@@ -723,6 +726,8 @@ PlaceManager::evaluateUnexploredPaths()
 
 	    if (placeholder != 0) {
 
+	      //NOTE: May block, but shouldn't since 
+	      //LocalMapManager::getHypothesisEvaluation only waits for the first scan
 	      FrontierInterface::HypothesisEvaluation eval = 
 		hypothesisEvaluator->getHypothesisEvaluation(hypID);
 	      log("Hypothesis %i evaluates to %f %f.", hypID, eval.freeSpaceValue,
