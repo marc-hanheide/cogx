@@ -40,9 +40,6 @@ public class BhamRunner extends ManagedComponent implements Runner {
 
 	private Manipulator manipulator;
 
-	private WorkingMemoryChangeReceiver addBaseMotion;
-	private WorkingMemoryChangeReceiver overwriteBaseMotion;
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -82,7 +79,7 @@ public class BhamRunner extends ManagedComponent implements Runner {
 	@Override
 	protected void start() {
 		logger.debug("Adding Listener");
-		// addBaseMovementListener();
+		addBaseMovementListener();
 		addVisionListener();
 	}
 
@@ -98,44 +95,24 @@ public class BhamRunner extends ManagedComponent implements Runner {
 	 * add a robot base position listener to the CAST working memory
 	 */
 	public void addBaseMovementListener() {
-		addBaseMotion = new WorkingMemoryChangeReceiver() {
-
-			@Override
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				((BhamDoraBaseConnector) manipulator.getBaseConnector())
-						.robotPositionChanged(_wmc);
-			}
-		};
-
-		overwriteBaseMotion = new WorkingMemoryChangeReceiver() {
-
-			@Override
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				((BhamDoraBaseConnector) manipulator.getBaseConnector())
-						.robotPositionChanged(_wmc);
-			}
-
-		};
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				RobotPose2d.class, WorkingMemoryOperation.ADD), addBaseMotion);
+				RobotPose2d.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						((BhamDoraBaseConnector) manipulator.getBaseConnector())
+								.robotPositionChanged(_wmc);
+					}
+				});
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 				RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
-				overwriteBaseMotion);
-	}
-
-	/**
-	 * remove a robot base position listener from the CASt working memory
-	 */
-	public void removeMovementListener() {
-		try {
-			removeChangeFilter(addBaseMotion);
-			removeChangeFilter(overwriteBaseMotion);
-		} catch (SubarchitectureComponentException e) {
-			logger.error(e);
-		}
-
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						((BhamDoraBaseConnector) manipulator.getBaseConnector())
+								.robotPositionChanged(_wmc);
+					}
+				});
 	}
 
 	/**

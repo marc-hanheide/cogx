@@ -57,6 +57,8 @@ public class BhamLocalMapConnector implements MapConnector {
 		}
 
 		t = new Thread(new MapUpdaterRunnable(manipulator));
+
+		updateMapConstant();
 	}
 
 	/**
