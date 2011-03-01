@@ -29,7 +29,8 @@
    )
 
   (:functions
-   (is-in ?o - movable) - place
+   (is-in ?o - robot) - place
+   (is-in ?o - human) - place
 
    ;; === Default knowledge ===
 
@@ -66,9 +67,10 @@
    ;; === conegroup properties ===
    ;; basic properties that determine what the conegroup was generated for 
    ;; (e.g. cone group for cornflakes ON table_1)
-   (label ?c - conegroup) - label
-   (relation ?c - conegroup) - spatial_relation
-   (related-to ?c - conegroup) - (either visualobject room)
+   (cg-label ?c - conegroup) - label
+   (cg-relation ?c - conegroup) - spatial_relation
+   (cg-related-to ?c - conegroup) - (either visualobject room)
+   (cg-place ?c - conegroup) - place
    ;; probability of seeing an object of type (label ?c) when looking
    (p-visible ?c - conegroup) - number
    ;; the ground truth. Distribution should conform to the probability above.
@@ -105,7 +107,8 @@
                                          (and (= (category ?r) ?c)
                                               (is-virtual ?r))))
               :effect (create (?r - room) (and
-                                           (is-virtual ?c)
+                                           (is-virtual ?r)
+                                           (poss (category ?r) ?c)
                                            (assign (category ?r) ?c))
                               )
               )
@@ -128,7 +131,7 @@
 
 
   (:derived (not_fully_explored ?r - room)
-            (exists (?p - place) (and (= (placestatus ?p) placeholder)
+            (exists (?p - place) (and (not (= (placestatus ?p) trueplace))
                                       (attached_to_room ?p ?r))))
               
   (:derived (trans_related ?o - visualobject ?where - (either visualobject room))
@@ -195,11 +198,11 @@
   ;;used only by DT (?)
   (:dtrule sample_cone_visibility
            :parameters (?o - visualobject ?c - conegroup ?l - label ?rel - spatial_relation ?where - (either visualobject room))
-           :precondition (and (= (relation ?c) ?rel)
-                              (= (related-to ?c) ?where)
+           :precondition (and (= (cg-relation ?c) ?rel)
+                              (= (cg-related-to ?c) ?where)
                               (= (relation ?o ?where) ?rel)
                               (= (related-to ?o) ?where)
-                              (= (label ?c) ?l)
+                              (= (cg-label ?c) ?l)
                               (= (label ?o) ?l))
            :effect (probabilistic (p-visible ?c) (assign (visible_from ?o ?c) true))
            )
@@ -255,7 +258,7 @@
                      :variables (?p - place)
                      :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
-                                                    (= (in-room ?p) ?r)
+                                                    (poss (in-room ?p) ?r)
                                                     (not (not_fully_explored ?r))
                                                     (not (done))))
                                      )
@@ -270,7 +273,7 @@
                      :variables (?r - room ?p - place)
                      :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
-                                                    (= (in-room ?p) ?r)
+                                                    (poss (in-room ?p) ?r)
                                                     (poss (related-to ?o) ?r)
                                                     (kval ?a (related-to ?o))
                                                     (not (done))))
@@ -287,10 +290,11 @@
                      :variables (?p - place ?o - visualobject)
                      :duration (= ?duration (search_cost ?l in ?r))
                      :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (= (in-room ?p) ?r)
+                                                    (poss (in-room ?p) ?r)
                                                     (= (label ?o) ?l)
                                                     (cones_created ?l in ?r)
-                                                    (poss (obj_exists ?l in ?r) true)
+                                                    (poss (related-to ?o) ?r)
+                                                    (poss (relation ?o ?r) in)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o))
@@ -326,12 +330,13 @@
                      :variables (?p - place ?r - room ?o2 - visualobject)
                      :duration (= ?duration (search_cost ?l ?rel ?o))
                      :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (= (in-room ?p) ?r)
+                                                    (poss (in-room ?p) ?r)
                                                     (poss (related-to ?o) ?r)
                                                     (kval ?a (related-to ?o))
                                                     (= (label ?o2) ?l)
                                                     (cones_created ?l ?rel ?o)
-                                                    (poss (obj_exists ?l ?rel ?o) true)
+                                                    (poss (related-to ?o2) ?o)
+                                                    (poss (relation ?o2 ?o) ?rel)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o2))
@@ -348,6 +353,7 @@
                      :variables (?p - place)
                      :duration (= ?duration 4)
                      :condition (over all (and (not (done))
+                                               (= (cg-place ?c) ?p)
                                                (= (is-in ?a) ?p)))
                      :effect (and )
                      )
@@ -360,8 +366,8 @@
              :parameters (?c - conegroup ?o - visualobject ?l - label ?where - (either visualobject room) ?p - place)
              :execution (process_conegroup ?a ?c ?p)
              :precondition (and (= (label ?o) ?l)
-                                (= (label ?c) ?l)
-                                (= (related-to ?c) ?where))
+                                (= (cg-label ?c) ?l)
+                                (= (cg-related-to ?c) ?where))
                                 
              :effect (and (when (= (visible_from ?o ?c) true)
                             (probabilistic 0.8 (observed (related-to ?o) ?where)))
