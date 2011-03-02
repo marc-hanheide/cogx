@@ -376,7 +376,7 @@ class DTRule(scope.Scope):
                 lit_mapping = fact.match_literal(lit)
                 if lit_mapping is None:
                     continue
-                if any(mapping.get(a,a) != val for a, val in lit_mapping.iteritems()):
+                if any(mapping.get(a,val) != val for a, val in lit_mapping.iteritems()):
                     # conflict!
                     return None
                 mapping.update(lit_mapping)
@@ -929,11 +929,11 @@ class DT2MAPLCompiler(translators.Translator):
         return actions
 
     def translate_action(self, action, prob_functions, domain=None):
-        # @visitors.replace
-        # def condition_visitor(cond, results):
-        #     if isinstance(cond, conditions.LiteralCondition):
-        #         if translators.get_function(cond) in prob_functions:
-        #             return translators.set_modality(cond, mapl.hyp) 
+        @visitors.replace
+        def condition_visitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if translators.get_function(cond) in prob_functions:
+                    return translators.set_modality(cond, mapl.committed) 
 
         # dep_conditions = set()
         # @visitors.replace
@@ -958,7 +958,7 @@ class DT2MAPLCompiler(translators.Translator):
         # if dep_conditions:
         #     action.effect = effects.ConjunctiveEffect.join([action.effect] + list(dep_conditions))
 
-        action.effect = effects.ConjunctiveEffect.join([action.effect, effects.SimpleEffect(started,[])])
+        # action.effect = effects.ConjunctiveEffect.join([action.effect, effects.SimpleEffect(started,[])])
             
         # if action.sensors:
         #     commit_cond = action.commit_condition()
@@ -1101,6 +1101,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                 
                 a.precondition = conditions.Conjunction(cparts)
                 a.effect = effects.ConjunctiveEffect(commit_effects + [prob_eff], a)
+                a.set_total_cost(0)
 
                 actions.append(a)
             
@@ -1111,6 +1112,17 @@ class DTPDDLCompiler(translators.Translator):
         self.depends = [translators.MAPLCompiler(**kwargs)]
         self.set_copy(copy)
 
+    def is_pure_epistemic_action(self, action):
+        @visitors.collect
+        def eff_visitor(eff, results):
+            if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate not in (mapl.knowledge, mapl.direct_knowledge):
+                    return eff
+                
+        if visitors.visit(action.effect, []):
+            return False
+        return True
+
     def translate_action(self, action, domain):
         cost_term = action.get_total_cost()
         if cost_term is None:
@@ -1119,8 +1131,13 @@ class DTPDDLCompiler(translators.Translator):
         a2 = action.copy(newdomain=domain)
         a2.set_total_cost(None)
         b = Builder(a2)
-        
-        new_reward_eff = b.effect("assign", ("reward",), predicates.Term(-cost_term.object.value))
+
+        try:
+            new_reward_eff = b.effect("assign", ("reward",), predicates.Term(-cost_term.object.value))
+        except:
+            #FIXME: HACK!!!!! EVIL EVIL HACK!!!! JUST FOR TESTING
+            new_reward_eff = b.effect("assign", ("reward",), -10)
+            
         if isinstance(a2.effect, effects.ConjunctiveEffect):
             a2.effect.parts.append(new_reward_eff)
         else:

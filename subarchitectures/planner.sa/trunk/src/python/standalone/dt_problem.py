@@ -30,7 +30,7 @@ class DTProblem(object):
             self.dt_rules = domain.dt_rules
         except:
             self.dt_rules = []
-        self.prob_functions |= set(r.function for r in self.dt_rules)
+        # self.prob_functions |= set(r.function for r in self.dt_rules)
         self.global_relevant = global_rel_facts
             
         self.dtdomain = self.create_dt_domain(domain)
@@ -122,6 +122,8 @@ class DTProblem(object):
         #self.subproblems = self.compute_subproblems(self.state)
         #self.problem = self.create_problem(self.state, self.dtdomain)
 
+        self.write_dt_input("dtdomain.dtpddl", "dtproblem.dtpddl")
+
     def explore_state(self, goal_actions):
         pass
 
@@ -201,18 +203,30 @@ class DTProblem(object):
 
     def create_goals(self, plan):
         observe_actions = translators.Translator.get_annotations(self.domain).get('observe_effects', [])
+
+        @pddl.visitors.collect
+        def knowledge_effects(eff, results):
+            if isinstance(eff, pddl.SimpleEffect) and eff.predicate in (pddl.mapl.knowledge, pddl.mapl.direct_knowledge):
+                return eff
+
+        for a in self.domain.actions:
+            if pddl.visitors.visit(a.effect, knowledge_effects, None):
+                observe_actions.append(a.name)
+        
         if not observe_actions:
             return []
 
         def find_restrictions(pnode, level):
-            others = []
+            result = {}
             for pred in plan.predecessors_iter(pnode, 'depends'):
                 restr = find_restrictions(pred, level+1)
-                if pred.action.name.startswith("commit-"):
-                    return [(pred, level+1)] + restr
-                if restr:
-                    others = restr
-            return others
+                if pred.action.name.startswith("__commit-"):
+                    result[pred] = max(result.get(pred, -1), level+1)
+                    # others.append((pred, level+1))
+                    # return [(pred, level+1)] + restr
+                for pn, l in restr.iteritems():
+                    result[pn] = max(result.get(pn, -1), l)
+            return result
 
         goal_facts = set()
         assumptions = []
@@ -226,7 +240,9 @@ class DTProblem(object):
                     if fact.svar.function not in (pddl.builtin.total_cost, ):
                         goal_facts.add(fact)
                 self.subplan_actions.append(pnode)
-                assumptions += [(pnode,0)] + find_restrictions(pnode,0)
+                print pnode
+                assumptions += [(pnode,0)] + [(pn, l) for pn, l in find_restrictions(pnode,0).iteritems()]
+                print "assumptions:", ["%s/%d" % (str(a),l) for a,l in assumptions]
                 break
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
@@ -789,55 +805,55 @@ class DTProblem(object):
                 if not ex.negated and ex.action == action:
                     yield o
 
-    def relevant_actions(self, goals):
-        @pddl.visitors.collect
-        def collect_vars(elem, results):
-            if isinstance(elem, pddl.Literal):
-                return state.StateVariable.from_literal(elem)
+    # def relevant_actions(self, goals):
+    #     @pddl.visitors.collect
+    #     def collect_vars(elem, results):
+    #         if isinstance(elem, pddl.Literal):
+    #             return state.StateVariable.from_literal(elem)
             
-        def get_abstract_observations(observe, agent):
-            @pddl.visitors.collect
-            def eff_collector(eff, results):
-                if isinstance(eff, pddl.ConditionalEffect):
-                    return eff.condition.visit(collect_vars)
+    #     def get_abstract_observations(observe, agent):
+    #         @pddl.visitors.collect
+    #         def eff_collector(eff, results):
+    #             if isinstance(eff, pddl.ConditionalEffect):
+    #                 return eff.condition.visit(collect_vars)
                 
-            observe.instantiate(observe.args)
-            for svar in chain(pddl.visitors.visit(observe.precondition, collect_vars, []), observe.effect.visit(eff_collector)):
-                if svar.function in self.prob_functions:
-                    yield svar.as_modality(mapl.knowledge, [agent])
-            observe.uninstantiate()
+    #         observe.instantiate(observe.args)
+    #         for svar in chain(pddl.visitors.visit(observe.precondition, collect_vars, []), observe.effect.visit(eff_collector)):
+    #             if svar.function in self.prob_functions:
+    #                 yield svar.as_modality(mapl.knowledge, [agent])
+    #         observe.uninstantiate()
                 
-        def get_abstract_transitions(action):
-            action.instantiate(action.args) # workaround because StateVariables cannot be created from ungrounded literals
-            pre = set(pddl.visitors.visit(action.precondition, collect_vars, set()))
-            eff = set(pddl.visitors.visit(action.effect, collect_vars, set()))
-            for o in self.get_observations_for(action):
-                eff |= set(get_abstract_observations(o, action.agents[0]))
-            action.uninstantiate()
-            return pre , eff
+    #     def get_abstract_transitions(action):
+    #         action.instantiate(action.args) # workaround because StateVariables cannot be created from ungrounded literals
+    #         pre = set(pddl.visitors.visit(action.precondition, collect_vars, set()))
+    #         eff = set(pddl.visitors.visit(action.effect, collect_vars, set()))
+    #         for o in self.get_observations_for(action):
+    #             eff |= set(get_abstract_observations(o, action.agents[0]))
+    #         action.uninstantiate()
+    #         return pre , eff
 
-        relevant_actions = defaultdict(lambda: defaultdict(set))
-        for a in self.domain.actions:
-            pre, eff = get_abstract_transitions(a)
-            for p, e in product(pre, eff):
-                relevant_actions[e.function][p.function].add(a)
+    #     relevant_actions = defaultdict(lambda: defaultdict(set))
+    #     for a in self.domain.actions:
+    #         pre, eff = get_abstract_transitions(a)
+    #         for p, e in product(pre, eff):
+    #             relevant_actions[e.function][p.function].add(a)
                 
-        open = set(svar.function for svar, val in goals)
+    #     open = set(svar.function for svar, val in goals)
 
-        closed = set()
-        result = set()
-        while open:
-            var = open.pop()
-            closed.add(var)
-            for pre, actions in relevant_actions[var].iteritems():
-                result |= actions
-                if pre not in closed:
-                    open.add(pre)
+    #     closed = set()
+    #     result = set()
+    #     while open:
+    #         var = open.pop()
+    #         closed.add(var)
+    #         for pre, actions in relevant_actions[var].iteritems():
+    #             result |= actions
+    #             if pre not in closed:
+    #                 open.add(pre)
 
-        for a in result:
-            print a.name
+    #     for a in result:
+    #         print a.name
                     
-        return result
+    #     return result
 
     
     def find_observation_actions(self):

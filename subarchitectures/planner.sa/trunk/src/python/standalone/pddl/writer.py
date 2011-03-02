@@ -273,13 +273,14 @@ class Writer(object):
 
     def write_init(self, inits):
         strings = []
+        probstrings = []
         for i in inits:
             if isinstance(i, effects.ProbabilisticEffect):
-                strings += self.write_effect(i)
+                probstrings += self.write_effect(i)
             else:
                 strings.append(self.write_literal(i))
 
-        return self.section(":init", sorted(strings))
+        return self.section(":init", sorted(strings) + probstrings)
     
     def write_problem(self, problem):
         strings = ["(define (problem %s)" % problem.name]
