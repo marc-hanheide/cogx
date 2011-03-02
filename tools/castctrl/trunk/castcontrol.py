@@ -410,8 +410,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             if self._pumpRemoteMessages: rpm.pumpRemoteMessages()
 
     def closeEvent(self, event):
-        self._manager.stopReaderThread()
         self._manager.stopAll()
+        self._manager.stopReaderThread()
         time.sleep(0.2)
         def getitems(cmbx, count=30, hasNullFile=False):
             mx = cmbx.count()
@@ -1008,8 +1008,9 @@ def guiMain():
     app = QtGui.QApplication(sys.argv)
     myapp = CCastControlWnd()
     myapp.show()
-    sys.exit(app.exec_())
-    pass
+    rv = app.exec_()
+    sys.exit(rv)
+
 
 if __name__ == "__main__":
     guiMain()
