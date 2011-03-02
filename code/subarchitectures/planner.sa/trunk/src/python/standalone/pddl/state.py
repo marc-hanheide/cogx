@@ -514,7 +514,11 @@ class State(dict):
 
     def __contains__(self, key):
         if isinstance(key, Fact):
-            return dict.__contains__(self, key.svar) and self[key.svar] == key.value
+            if not dict.__contains__(self, key.svar):
+                if isinstance(key.svar.function, Predicate):
+                    return key.value == FALSE
+                return key.value == UNKNOWN
+            return self[key.svar] == key.value
         return dict.__contains__(self, key)
 
     def __str__(self):

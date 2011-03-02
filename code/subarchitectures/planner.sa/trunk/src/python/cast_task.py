@@ -73,7 +73,7 @@ class CASTTask(object):
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
             self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component)
-            goal_from_pddl = Struct(goalString=add_problem.goal.pddl_str(), importance=-1, isInPlan=False)
+            goal_from_pddl = Planner.Goal(importance=-1.0, goalString=add_problem.goal.pddl_str(), isInPlan=False)
             self.slice_goals = [goal_from_pddl]
         else:
             self.state = cast_state.CASTState(beliefs, self.domain, component=component)
@@ -198,6 +198,7 @@ class CASTTask(object):
             log.debug("creating dt task")
             # self.dt_task = dt_problem.DTProblem(plan, self.domain)
             self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.relevant_facts, self.domain)
+            # self.dt_task.initialize(self.state.prob_state)
 
             for pnode in plan.nodes_iter():
                 if pnode.is_virtual():

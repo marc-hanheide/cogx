@@ -232,12 +232,15 @@ class UnaryOp(object):
             if all(mapping[action[a.name]] == val for a, val in zip(op.action.args, op.args)):
                 # print "merge", op, action.name, map(str,args)
                 all_preconds = preconds | op.all_preconds
-                unsat_preconds = set(f for f in all_preconds if f not in st)
+                unsat_preconds = set(f for f in all_preconds if f not in st and f.svar.modality != mapl.commit)
                 yield UnaryOp(action, args, op.effect, unsat_preconds, all_preconds)
         
     @staticmethod
     def build_ops(action, args, preconds, st):
-        unsat_preconds = set(f for f in preconds if f not in st)
+        unsat_preconds = set(f for f in preconds if f not in st and f.svar.modality != mapl.commit)
+        # if any("not_fully" in p.svar.function.name for p in preconds):
+        #     import debug
+        #     debug.set_trace()
         found = False
         for lit in visitors.visit(action.effect, visitors.collect_literals, []):
             if lit.predicate in pddl.builtin.numeric_ops:
@@ -379,7 +382,7 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
         if ga not in actions:
             actions.append(ga)
     
-    nonstatic = set(sum((get_nonstatic(a) for a in actions), [])) | set([mapl.hyp, mapl.knowledge, mapl.direct_knowledge, mapl.indomain, mapl.i_indomain])
+    nonstatic = set(sum((get_nonstatic(a) for a in actions), [])) | set([mapl.commit, mapl.knowledge, mapl.direct_knowledge, mapl.indomain, mapl.i_indomain])
 
     new_start_actions = []
     new_actions = []
@@ -413,6 +416,11 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
         #         return prob_state[svar] == val
         #     return prob_state[svar][val] > 0
         if fact.svar.modality == pddl.mapl.commit:
+            nvar = fact.svar.nonmodal()
+            if nvar in stat and nvar.function not in nonstatic:
+                nval = fact.svar.modal_args[0]
+                return stat[nvar] == nval
+            fact_by_cond[cond].add(fact)
             return True
         if (fact.svar.function in nonstatic and not fact.svar.modality) or fact.svar.modality in nonstatic:
             fact_by_cond[cond].add(fact)
@@ -579,7 +587,7 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
 
             succ.unsat_preconds -= 1
             if succ.unsat_preconds == 0 and succ.effect not in forward_closed:
-                # print " *", succ, next.effect
+                print " *", succ, next.effect
                 forward_open.append(succ)
                 forward_closed.add(succ)
 
@@ -593,8 +601,8 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
         goal |= (next.preconds - facts)
         facts |= next.all_preconds
         
-    # for a, args in actions:
-    #     print "(%s %s)" % (a.name, " ".join(str(ar) for ar in args))
+    for a, args in actions:
+        print "(%s %s)" % (a.name, " ".join(str(ar) for ar in args))
 
     return [a for a in actions if not a[0].name.startswith("axiom_")], facts
         
@@ -603,7 +611,7 @@ def initialize_ops(successors, stat):
     applicable_ops = []
     for ops in successors.itervalues():
         for o in ops:
-            o.preconds = set(f for f in o.all_preconds if f not in stat)
+            o.preconds = set(f for f in o.all_preconds if f not in stat and f.svar.modality != mapl.commit)
             o.unsat_preconds = len(o.preconds)
             o.expanded = False
             o.initialised = False
@@ -641,6 +649,9 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
         reachable = False
         open = init[:]
         reached_by = defaultdict(set)
+        for f in stat.iterfacts():
+            reached_by[f] = set()
+        
         while open:
             next = open.pop(0)
             if full:
@@ -661,7 +672,7 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
             # print next#, "=>", map(str, unary_successors[next.effect])
             expanded = next.effect in reached_by
             if next.effect:
-                if next.effect.svar.modality == mapl.hyp:
+                if next.effect.svar.modality == mapl.commit:
                     svar = next.effect.svar.nonmodal()
                     val = next.effect.svar.modal_args[0]
                     relevant_prob_facts.add(state.Fact(svar, val))
@@ -691,8 +702,9 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
             for succ in successors[next.effect]:
                 if succ.expanded:
                     continue
-                # if succ.action.name.startswith("look"):
-                #     print "  ", succ, next.effect, succ.unsat_preconds 
+                # if "room" in succ.action.name:
+                #     print "  ", succ, next.effect, succ.unsat_preconds
+                #     print "       ", map(str, succ.preconds)
 
                 succ.unsat_preconds -= 1
                 if succ.unsat_preconds == 0 and not succ.initialised: # and succ.effect not in forward_closed:
@@ -702,7 +714,7 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
                     # forward_closed.add(succ)
 
         def get_fact(prop):
-            if prop.svar.modality == mapl.hyp:
+            if prop.svar.modality == mapl.commit:
                 return state.Fact(prop.svar.nonmodal(), prop.svar.modal_args[0])
             return prop
 
@@ -729,7 +741,7 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
 
         def propagate_op_constraints(op, constraints, d=0):
             new_constraints = op_constraints.setdefault(op, dict())
-            pre_constraints = ((f.svar, set([f.value])) for f in map(get_fact, op.preconds))
+            pre_constraints = ((f.svar, set([f.value])) for f in map(get_fact, op.all_preconds))
             # print "  "*d, "->", op
                 
             for svar, vals in chain(constraints.iteritems(), pre_constraints):
@@ -775,13 +787,14 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
                     propagate_op_constraints(op, prop_constraints[prop], d+1)
                     
         if full:
-            # print "-------------------"
+            print "-------------------"
             rel = defaultdict(set)
             rel_ops = set()
             for op in goal_achievers:
                 find_parents(op)
 
             for op in goal_achievers:
+                # print op
                 propagate_op_constraints(op, {})
 
             for op, con in op_constraints.iteritems():
@@ -790,9 +803,11 @@ def prob_explore(unary_successors, applicable_ops, stat, start_actions=[], prob_
                     # print op
                     for svar, vals in con.iteritems():
                         rel[svar] |= vals
-                        # print svar, map(str, vals)
+                        # print "    ", svar, map(str, vals)
             for svar, vals in rel.iteritems():
                 print svar, map(str, vals)
+            # import debug
+            # debug.set_trace()
             return reachable, rel
                         
         return reachable
