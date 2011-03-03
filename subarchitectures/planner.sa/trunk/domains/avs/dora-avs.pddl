@@ -36,8 +36,9 @@
    ;; === Default knowledge ===
 
    ;; expected cost of searching for an object. Used by CP planner
-   (default_room_search_cost ?l - label) - number
-   (default_search_cost ?l - label ?rel - spatial_relation ?where - (either label category)) - number
+   (dora__cost_inroom ?l - label) - number
+   (dora__cost_inobj ?l1 ?l2 - label) - number
+   (dora__cost_on ?l1 ?l2 - label) - number
    (search_cost ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
    ;; default probabilities. These come from Coma.
    (dora__inroom ?l - label ?c - category) - number
@@ -117,13 +118,19 @@
   (:init-rule default_search_costs_for_room
               :parameters (?l - label  ?r - room)
               :precondition (= (search_cost ?l in ?r) unknown)
-              :effect (assign (search_cost ?l in ?r) (default_room_search_cost ?l))
+              :effect (assign (search_cost ?l in ?r) (dora__cost_inroom ?l))
               )
 
-  (:init-rule default_search_costs_for_object
-              :parameters (?l - label ?rel - spatial_relation ?o - visualobject)
-              :precondition (= (search_cost ?l ?rel ?o) unknown)
-              :effect (assign (search_cost ?l ?rel ?o) (default_search_cost ?l ?rel (label ?o)))
+  (:init-rule default_search_costs_for_object_in
+              :parameters (?l - label ?o - visualobject)
+              :precondition (= (search_cost ?l in ?o) unknown)
+              :effect (assign (search_cost ?l in ?o) (dora__cost_inobj ?l (label ?o)))
+              )
+
+  (:init-rule default_search_costs_for_object_on
+              :parameters (?l - label ?o - visualobject)
+              :precondition (= (search_cost ?l on ?o) unknown)
+              :effect (assign (search_cost ?l on ?o) (dora__cost_on ?l (label ?o)))
               )
 
   (:derived (attached_to_room ?p - place ?r - room)
