@@ -799,7 +799,7 @@ void ChainGraphInferencer::addDaiFactors()
 			{
 				const ConceptualData::ObjectPlacePropertyInfo &oppi = pi.objectProperties[o];
 				createDaiObservedObjectPropertyFactor(cri.roomId,
-						"object_"+oppi.category+"_property", oppi.present);
+						"object_"+oppi.category+"_property", oppi.count>0);  // TODO!
 			} // o
 
 			// Shape properties

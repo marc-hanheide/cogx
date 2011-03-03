@@ -198,7 +198,7 @@ void Observer::updateWorldState()
 				double objPresenceProbability = dpdPtr->data[0].probability;
 				ConceptualData::ObjectPlacePropertyInfo oppi;
 				oppi.category = objCategory;
-				oppi.present = (objPresenceProbability>0.5);
+				oppi.count = (objPresenceProbability>0.5); // TODO
 				pi.objectProperties.push_back(oppi);
 			}
 
