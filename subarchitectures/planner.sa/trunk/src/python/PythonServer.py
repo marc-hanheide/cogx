@@ -173,7 +173,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
         self.dtproblem_fn = join(standalone.globals.config.domain_dir, config["--dtproblem"])
     else:
         self.dtproblem_fn = None
-    
+
+    if "--default" in config:
+        self.default_fn = join(standalone.globals.config.cogx_dir, config["--default"])
+    else:
+        self.default_fn = join(standalone.globals.config.cogx_dir, "instantiations/defaultprobs/defaultprobs.txt")
+        
     if "--domain" in config:
       self.domain_fn = join(standalone.globals.config.domain_dir, config["--domain"])
 

@@ -518,21 +518,21 @@ class CASTTask(object):
         # det_state = self.state.determinized_state(sw_conf.rejection_ratio, sw_conf.known_threshold)
         actions = [a for a in domain.actions if not a.name.startswith("__commit")]
 
-        t0 = time.time()
-        if not self.unary_ops:
-            self.unary_ops, applicable_ops = relaxed_exploration.instantiate(actions, set(), self.state.state, domain, [(goal_action, {})])
-        else:
-            applicable_ops = relaxed_exploration.initialize_ops(self.unary_ops, self.state.state)
-        print "total time for preparation: %.2f" % (time.time()-t0)
-        t0 = time.time()
+        # t0 = time.time()
+        # if not self.unary_ops:
+        #     self.unary_ops, applicable_ops = relaxed_exploration.forward_instantiate(domain.actions, set(), self.state.state, domain, [(goal_action, {})])
+        # else:
+        #     applicable_ops = relaxed_exploration.initialize_ops(self.unary_ops, self.state.state)
+        # print "total time for preparation: %.2f" % (time.time()-t0)
+        # t0 = time.time()
         
-        rel, p = relaxed_exploration.prob_explore(self.unary_ops, applicable_ops, self.state.state, [(goal_action, [])], self.state.prob_state)
-        print "total time for exploration: %.2f" % (time.time()-t0)
+        # rel, p = relaxed_exploration.prob_explore(self.unary_ops, applicable_ops, self.state.state, [(goal_action, [])], self.state.prob_state)
+        # print "total time for exploration: %.2f" % (time.time()-t0)
 
-        self.relevant_facts = rel
-        self.solution_prob = p
+        self.relevant_facts = None
+        self.solution_prob = 1.0
         
-        return p
+        return self.solution_prob
         
     def update_state(self, beliefs):
         assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION, TaskStateEnum.WAITING_FOR_BELIEF, TaskStateEnum.FAILED)
