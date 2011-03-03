@@ -8,7 +8,7 @@ SET(SOURCES
 #	fitcircle.c
 #	fitellipse.c
 	gammln.c
-	Math.ic
+#	Math.ic
 	nrutil.c
 #	Vector2.ic
 	AJunction.cc
@@ -70,10 +70,11 @@ SET(SOURCES
 	Line.cc
 #	LiveVideo.cc
 	LJunction.cc
-#	Main.cc
+#	Main.cc#target_link_libraries(${PROJECT_NAME} ${OPENCV_LDFLAGS})
+
 #	main_small.cc
  #	MainWin.cc
-	Math.cc
+#	Math.cc
  #	moc_MainWin.cpp
 #	MotionField.cc
 #	MotionFieldElement.cc
