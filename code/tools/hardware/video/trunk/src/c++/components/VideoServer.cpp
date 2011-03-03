@@ -310,9 +310,19 @@ bool VideoServer::getHRImages(std::vector<Video::Image> &images)
 }
 
 
-void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) {}
-bool VideoServer::inFormat7Mode() {}
-const std::string VideoServer::getServerName() {}
+void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+{
+}
+
+bool VideoServer::inFormat7Mode()
+{
+  return false;
+}
+
+const std::string VideoServer::getServerName()
+{
+  return "VideoServer";
+}
 
 void VideoServer::runComponent()
 {

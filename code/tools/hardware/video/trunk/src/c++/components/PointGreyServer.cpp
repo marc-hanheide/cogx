@@ -631,6 +631,8 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
     }
     return FlyCapture2::VIDEOMODE_1280x960YUV422;
   }
+
+  return FlyCapture2::VIDEOMODE_640x480RGB; // must return something to make the compiler happy
 }
 
 

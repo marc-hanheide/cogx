@@ -184,7 +184,7 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
 {
   if(dev_nums.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__,
-          "must specify at least one camera"));
+	  "must specify at least one camera"));
   if(dev_nums.size() != camIds.size())
     throw runtime_error(exceptionMessage(__HERE__,
           "number of devices %d does not match number of camera IDs %d",
@@ -402,7 +402,7 @@ void OpenCvLiveServer::retrieveFrames(int width, int height,
     std::vector<Video::Image> &frames)
 {
   frames.resize(getNumCameras());
-  for(size_t i = 0; i < getNumCameras(); i++)
+  for(int i = 0; i < getNumCameras(); i++)
     retrieveFrameInternal(i, width, height, frames[i]);
 }
 
@@ -415,7 +415,7 @@ void OpenCvLiveServer::retrieveFrame(int camId, int width, int height,
 
 void OpenCvLiveServer::retrieveHRFrames(std::vector<Video::Image> &frames)
 {
-	log("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
+  log("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
 }
 
 void OpenCvLiveServer::getImageSize(int &width, int &height)
@@ -503,12 +503,12 @@ void OpenCvLiveServer::copyImage(const IplImage *iplImg, Video::Image &img)
  */
 void OpenCvLiveServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
 {
-	log("only for the PointGrey server available: abort.");
+  log("only for the PointGrey server available: abort.");
 }
 
 bool OpenCvLiveServer::inFormat7Mode()
 {
-	return false;
+  return false;
 }
 
 /**
@@ -517,8 +517,8 @@ bool OpenCvLiveServer::inFormat7Mode()
  */
 const std::string OpenCvLiveServer::getServerName()
 {
-	const std::string str("OpenCvLiveServer");
-	return str;
+  const std::string str("OpenCvLiveServer");
+  return str;
 }
 
 }
