@@ -30,25 +30,31 @@
 #include "Reasoner.h"
 #include "Array.hh"
 
+#include "ObjRep.h"
+#include "TomGineWraper/TomGineThread.hh"
+
 namespace cast
 {
 
 /**
-	* @class StereoDetector
-	* @brief Implementation of the stereo detector as cast component.
-	*/
+ * @class StereoDetector
+ * @brief Implementation of the stereo detector as cast component.
+ */
 class StereoDetector : public ManagedComponent,
                        public VideoClient,
                        public StereoClient
 {
 private:
-
+  
+	P::TomGineThread *tgRenderer;                   ///< 3D render engine
+  
 	int runtime;                                    ///< Overall processing runtime for one image (pair)
 	Z::StereoCore *score;                           ///< Stereo core
 	Z::StereoCore *p_score[3];                      ///< Processing stereo cores for three frames
 	int nr_p_score;                                 ///< Actual number of processing score
 	int showFrame;                                  ///< Show another frame (p_score[showFrame])
-	Z::Reasoner *reasoner;                          ///< Reasoner (and Filter)
+//	Z::Reasoner *reasoner;                          ///< Reasoner (and Filter)
+	Z::ObjRep *objRep;                              ///< Object representation as graph
 	
 	float cannyAlpha, cannyOmega;                   ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
 	std::vector<int> camIds;                        ///< Which cameras to get images from
@@ -105,7 +111,7 @@ private:
 	Z::Gestalt::Type showType;                      ///< Show this type of Gestalt
 	Z::StereoBase::Type showStereoType;             ///< Show this type of stereo matched Gestalt
 
-  void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
+	void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 	void receiveSOI(const cdl::WorkingMemoryChange & _wmc);
 	void updatedSOI(const cdl::WorkingMemoryChange & _wmc);
 	void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
@@ -119,6 +125,7 @@ private:
 	void ProcessPrunedHRImages();
 	void processPrunedHRImage(int oX, int oY, int sc);
 
+	void DrawIntoTomGine();
 	void ShowImages(bool convertNewIpl);
 	void WriteVisualObjects();
 	void WriteToWM(Z::StereoBase::Type type);
