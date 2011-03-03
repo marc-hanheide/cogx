@@ -28,6 +28,8 @@ public:
 
   Line3D(unsigned vs3IDleft, unsigned vs3IDright);
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
+  
+  bool GetLinks(vector<GraphLink> &links);
 };
 
 

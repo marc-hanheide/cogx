@@ -53,7 +53,7 @@ private:
 
   void SetActiveDrawAreaSide(int side);
   void SetImages(IplImage *iIl, IplImage *iIr);
-  void InitStereoGestalts();
+  void InitStereoPrinciples();
   const StereoCamera* GetCamera() {return stereo_cam;}          ///< Return stereo camera parameters
 
 public:
@@ -61,7 +61,7 @@ public:
   ~StereoCore();
 
   VisionCore* GetMonoCore(int side) {return vcore[side];}                                               ///< Return single vision core [LEFT/RIGHT]
-  StereoBase* GetStereoGestalts(int type) {return stereoPrinciples[type];}                              ///< Return the stereo principles TODO Rename: GetStereoPrinciples
+  StereoBase* GetStereoPrinciples(int type) {return stereoPrinciples[type];}                            ///< Return the stereo principles 
 
   Array<Gestalt3D*>* Gestalts3D() {return stereoGestalts;}                                              ///< Return Gestalt array
   Array<Gestalt3D*>& Gestalts3D(Gestalt3D::Type type) {return stereoGestalts[type];}                    ///< Returns Gestalt array of "type"

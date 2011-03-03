@@ -19,9 +19,10 @@ static const char type_names[][NAME_LENGTH] = {
   "CLOSURE",
   "RECTANGLE",
   "FLAP",
+  "ELLIPSE",
   "UNDEF"
 };
-static const int type_names_length[] = {9, 6, 4, 7, 9, 4, 5};
+static const int type_names_length[] = {9, 6, 4, 7, 9, 4, 7, 5};
  
 
 /**

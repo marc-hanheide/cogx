@@ -53,6 +53,46 @@ bool Flap3D::GetPoints(Vertex3D p[6])
     p[i] = point[i];
   return pointsCalculated;
 }
+
+/**
+ * @brief Get the nodes vector for this 3D Gestalt.
+ * @param nodes Vector with n nodes, consisting of 3 position values.
+ * @return Returns true, if nodes from this 3D Gestalt are available.
+ */
+bool Flap3D::GetLinks(std::vector<GraphLink> &links)
+{
+// printf("Flap3D::GetLinks: sig: %4.3f\n", sig);
+
+ for(unsigned id=0; id<6; id++)
+  {
+    unsigned id2 = id+1;
+    if(id2 >= 6) id2 = 0;
+    
+    GraphLink l;
+    l.node[0].x = point[id].p.x;
+    l.node[0].y = point[id].p.y;
+    l.node[0].z = point[id].p.z;
+    l.node[1].x = point[id2].p.x;
+    l.node[1].y = point[id2].p.y;
+    l.node[1].z = point[id2].p.z;
+    l.probability = 0.9;
+    links.push_back(l);
+  }
+  
+  // link between the two rectangles
+  GraphLink l;
+  l.node[0].x = point[0].p.x;
+  l.node[0].y = point[0].p.y;
+  l.node[0].z = point[0].p.z;
+  l.node[1].x = point[3].p.x;
+  l.node[1].y = point[3].p.y;
+  l.node[1].z = point[3].p.z;
+  l.probability = 0.9;
+  links.push_back(l);
+
+  return true;
+}
+
 }
 
 

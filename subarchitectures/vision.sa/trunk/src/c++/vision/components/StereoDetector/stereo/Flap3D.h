@@ -32,6 +32,7 @@ public:
   void CalcIdealFlap();
   bool IsCalcIdealFlap() {return pointsCalculated;}
   bool GetPoints(Vertex3D p[6]);
+  bool GetLinks(std::vector<GraphLink> &links);
 };
 
 
