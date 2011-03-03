@@ -17,6 +17,7 @@
 #include "Draw.hh"
 
 #include "Mouse.cpp"
+#include "stereo/StereoCamera.hh"
 
 
 using namespace std;
@@ -49,14 +50,14 @@ void StereoDetector::configure(const map<string,string> & _config)
   // first let the base classes configure themselves (for getRectImage)
   configureStereoCommunication(_config);
 
-  nr_p_score = 0;								// start with first processing score
+  nr_p_score = 0;                       // start with first processing score
   
-  runtime = 1600;								// processing time for left AND right image
-  cannyAlpha = 0.75;							// Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+  runtime = 1600;                       // processing time for left AND right image
+  cannyAlpha = 0.75;                    // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
   cannyOmega = 0.001;
 
-  activeReasoner = true;				// activate reasoner
-  activeReasonerPlane = true;		// activate plane C
+  activeReasoner = false;               // activate reasoner
+  activeReasonerPlane = false;          // activate plane C
   
   receiveImagesStarted = false;
   haveImage = false;
@@ -81,13 +82,13 @@ void StereoDetector::configure(const map<string,string> & _config)
   showStereoType = Z::StereoBase::STEREO_CLOSURE;
   showSegments = false;
   showROIs = false;
-  showReasoner = true;
+  showReasoner = false;
   showReasonerUnprojected = false;
 
   map<string,string>::const_iterator it;
   if((it = _config.find("--videoname")) != _config.end())
   {
-	  videoServerName = it->second;
+    videoServerName = it->second;
   }
   if((it = _config.find("--camconfig")) != _config.end())
   {
@@ -105,7 +106,7 @@ void StereoDetector::configure(const map<string,string> & _config)
       cout << e.what() << endl;
     }
   }
-	if((it = _config.find("--camids")) != _config.end())
+  if((it = _config.find("--camids")) != _config.end())
   {
     istringstream str(it->second);
     int id;
@@ -122,29 +123,47 @@ void StereoDetector::configure(const map<string,string> & _config)
     single = true;
   }
   
-  reasoner = new Z::Reasoner();
+//   reasoner = new Z::Reasoner();
+
+  // initialize tgRenderer
+  Z::StereoCamera *stereo_cam = new Z::StereoCamera();
+  if(!stereo_cam->ReadSVSCalib(camconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
+  cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
+  
+  cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+  cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+  cv::Vec3d rotCenter(0,0,0.4);
+  
+  // Initialize 3D render engine 
+  tgRenderer = new P::TomGineThread(1024, 768);
+  tgRenderer->SetParameter(intrinsic);
+  tgRenderer->SetCamera(R, t, rotCenter);			/// TODO funktioniert nicht => Wieso?
+//   tgRenderer->SetRotationCenter(rotCenter);			/// TODO funktioniert nicht => Wieso?
+  
+  // initialize object representation
+  objRep = new Z::ObjRep();
 }
 
 /**
- *	@brief Called by the framework after configuration, before run loop.
+ * @brief Called by the framework after configuration, before run loop.
  */
 void StereoDetector::start()
 {
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
-	// start stereo communication
+  // start stereo communication
   startStereoCommunication(*this);
 
   // register our client interface to allow the video server pushing images
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-	// add change filter for vision commands
+  // add change filter for vision commands
   addChangeFilter(createLocalTypeFilter<StereoDetectionCommand>(cdl::ADD),
     new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveDetectionCommand));
 
-	// TODO add change filter for SOI changes (add / update / delete)
+  // TODO add change filter for SOI changes (add / update / delete)
 //   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
 //     new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveSOI));
 //   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
@@ -152,7 +171,7 @@ void StereoDetector::start()
 //   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::DELETE),
 // 	  new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::deletedSOI));
 
-	// add change filter for ROI changes
+  // add change filter for ROI changes
   addChangeFilter(createLocalTypeFilter<VisionData::ROI>(cdl::ADD),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveROI));
   addChangeFilter(createLocalTypeFilter<VisionData::ROI>(cdl::OVERWRITE),
@@ -160,53 +179,55 @@ void StereoDetector::start()
   addChangeFilter(createLocalTypeFilter<VisionData::ROI>(cdl::DELETE),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::deletedROI));
 
-	// add change filter for ProtoObject changes
+  // add change filter for ProtoObject changes
   addChangeFilter(createLocalTypeFilter<ProtoObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveProtoObject));
 
-	// add change filter for ConvexHull changes
+  // add change filter for ConvexHull changes
   addChangeFilter(createLocalTypeFilter<ConvexHull>(cdl::ADD),
       new MemberFunctionChangeReceiver<StereoDetector>(this, &StereoDetector::receiveConvexHull));
 
-	// initialize openCV windows
+  // initialize openCV windows
   if(showImages) 
-	{
-		cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
-		cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
-		cvNamedWindow("rectified", CV_WINDOW_AUTOSIZE);
-// 		cvNamedWindow("Pruned left", CV_WINDOW_AUTOSIZE);
-// 		cvNamedWindow("Pruned right", CV_WINDOW_AUTOSIZE);
+  {
+    cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("rectified", CV_WINDOW_AUTOSIZE);
+    // 		cvNamedWindow("Pruned left", CV_WINDOW_AUTOSIZE);
+    // 		cvNamedWindow("Pruned right", CV_WINDOW_AUTOSIZE);
 
-		cvMoveWindow("Stereo left", 10, 10);
-		cvMoveWindow("Stereo right", 680, 10);
-		cvMoveWindow("rectified",  1350, 10);
-// 		cvMoveWindow("Pruned left",  10, 500);
-// 		cvMoveWindow("Pruned right",  680, 500);
+    cvMoveWindow("Stereo left", 10, 10);
+    cvMoveWindow("Stereo right", 680, 10);
+    cvMoveWindow("rectified",  1350, 10);
+    // 		cvMoveWindow("Pruned left",  10, 500);
+    // 		cvMoveWindow("Pruned right",  680, 500);
 
-	  int mouseParam=0;
-		cvSetMouseCallback("Stereo left", LeftMouseHandler, &mouseParam);
-		cvSetMouseCallback("Stereo right", RightMouseHandler, &mouseParam);
-	}
+    int mouseParam=0;
+    cvSetMouseCallback("Stereo left", LeftMouseHandler, &mouseParam);
+    cvSetMouseCallback("Stereo right", RightMouseHandler, &mouseParam);
+  }
 
-	isFormat7 = videoServer->inFormat7Mode();
+  isFormat7 = videoServer->inFormat7Mode();
 }
 
 /**
- *	@brief Called by the framework to start component run loop.
- *	@TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
+ * @brief Called by the framework to start component run loop.
+ * @TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
  */
 void StereoDetector::runComponent()
-{
-	while(single && isRunning()) SingleShotMode();
-	while(isRunning()) {}
+{	
+  while(single && isRunning()){
+    SingleShotMode();
+  }
+  while(isRunning()) {}
 
-	log("destroy openCV windows.");
-	cvDestroyWindow("Stereo left");
-	cvDestroyWindow("Stereo right");
-	cvDestroyWindow("rectified");
+  log("destroy openCV windows.");
+  cvDestroyWindow("Stereo left");
+  cvDestroyWindow("Stereo right");
+  cvDestroyWindow("rectified");
 // 	cvDestroyWindow("Pruned left");
 // 	cvDestroyWindow("Pruned right");
-	log("windows destroyed");
+  log("windows destroyed");
 }
 
 /**
@@ -477,13 +498,13 @@ void StereoDetector::receiveConvexHull(const cdl::WorkingMemoryChange & _wmc)
   
   if(activeReasonerPlane)
   {
-    reasoner->ProcessConvexHull(pos, radius, points);
-    if(reasoner->GetPlane(obj))
-    {
-      planeID = newDataID();
-      addToWorkingMemory(planeID, obj);
-      log("Wrote new dominant plane as visual object to working memory: %s", planeID.c_str());
-    }
+//     reasoner->ProcessConvexHull(pos, radius, points);
+//     if(reasoner->GetPlane(obj))
+//     {
+//       planeID = newDataID();
+//       addToWorkingMemory(planeID, obj);
+//       log("Wrote new dominant plane as visual object to working memory: %s", planeID.c_str());
+//     }
   }
 
 // 	printf("  center position: %4.2f / %4.2f / %4.2f\n", chPtr->center.pos.x, chPtr->center.pos.y, chPtr->center.pos.z);
@@ -543,9 +564,9 @@ void StereoDetector::processImage()
 
   if(activeReasoner)	// do the reasoner things!
   {
-    log("Start reasoner.");
-    reasoner->Process(score);
-    log("Reasoner finished.");
+//     log("Start reasoner.");
+//     reasoner->Process(score);
+//     log("Reasoner finished.");
 // 		if(reasoner->Process(score))														/// TODO delete
 // 		{
 // 			log("Get results.");
@@ -559,6 +580,21 @@ void StereoDetector::processImage()
   }
 // 	else WriteVisualObjects();
   
+  
+  // Create object representations from new objects!
+  try 
+  {
+    objRep->Process(score);
+    DrawIntoTomGine();
+  }
+  catch (exception &e)
+  {
+    log("StereoDetector::processImage: Unknown exception during creation of object representations.\n");
+    cout << e.what() << endl;
+  }
+
+  
+  // Write visual objects to working memory and show images!
   WriteVisualObjects();
   ShowImages(false);
   
@@ -671,6 +707,45 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
   }
 }
 
+
+/**															/// TODO ARI: Die Object Representation in die TomGine zeichnen!
+ * @brief Draw into tomGine render machine via the wraper.
+ */
+void StereoDetector::DrawIntoTomGine()
+{
+  std::vector< std::vector<cv::Point3d> > first;
+  std::vector< std::vector<cv::Point3d> > second;
+  std::vector< std::vector<double> > probability;
+  std::vector< std::vector<std::string> > link;
+  std::vector< std::vector<std::string> > node_0;
+  std::vector< std::vector<std::string> > node_1;
+  
+  objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
+ 
+// printf("StereoDetector::DrawIntoTomGine: Got ObjectGraphModel!\n");
+  tgRenderer->Clear();
+
+// printf("StereoDetector::DrawIntoTomGine: Cleared!\n");
+  tgRenderer->AddLine3D(0, 0, 0, 0.1, 0, 0, 255, 0, 0, 0.4);   // coordinate frame
+  tgRenderer->AddLine3D(0, 0, 0, 0, 0.1, 0, 0, 255, 0, 0.4);
+  tgRenderer->AddLine3D(0, 0, 0, 0, 0, 0.1, 0, 0, 255, 0.4);
+
+// printf("StereoDetector::DrawIntoTomGine: next!\n");
+
+  for(unsigned i=0; i<first.size(); i++)
+  {
+// printf("StereoDetector::DrawIntoTomGine: first.size(): %u\n", first.size());
+
+//     for(unsigned j=0; j< first[i].size(); j++)
+//       printf("StereoDetector:DrawIntoTomGine: %s - %s - %s\n", link[i][j].c_str(), node_0[i][j].c_str(), node_1[i][j].c_str());
+
+    uint r = std::rand()%255;
+    uint g = std::rand()%255;
+    uint b = std::rand()%255;
+    tgRenderer->DrawGraphModel(first[i], second[i], probability[i], link[i], node_0[i], node_1[i], r, g, b);
+  }
+}
+
 /**
  * @brief Show both stereo images in the openCV windows.
  * @param convertNewIpl Convert image again into iplImage to delete overlays.
@@ -765,15 +840,15 @@ void StereoDetector::WriteVisualObjects()
     if(showStereoType != Z::StereoBase::UNDEF)
     {
       WriteToWM(showStereoType);
-//     WriteToWM(Z::StereoBase::STEREO_RECTANGLE);										// TODO hier händisch Rectangles eingefügt!
+//      WriteToWM(Z::StereoBase::STEREO_RECTANGLE);										// TODO hier händisch Rectangles eingefügt!
     }
   }
   
   if(showReasoner)
   {
-    Z::Array<VisionData::VisualObjectPtr> objects;
-    reasoner->GetResults(objects, showReasonerUnprojected);
-    WriteToWM(objects);
+//     Z::Array<VisionData::VisualObjectPtr> objects;
+//     reasoner->GetResults(objects, showReasonerUnprojected);
+//     WriteToWM(objects);
   }
 }
 
@@ -910,7 +985,7 @@ void StereoDetector::SingleShotMode()
 	mouseEvent = false;
 
 	int key = 0;
-	key = cvWaitKey(10);
+	key = cvWaitKey(10);			/// TODO Kurzes wait, damit eingelesen werden kann!
 
 // 	if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %c, %i", (char) key, key);
 	if (key == 65470 || key == 1114046)	// F1
