@@ -18,6 +18,7 @@
    (attached_to_room ?p - place ?r - room)
    (not_fully_explored ?r)
    (trans_related ?o - visualobject ?where - (either visualobject room))
+   (cones_exist  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
    ;; (cones-exist ?l - label ?r - room)
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
 
@@ -138,6 +139,12 @@
             (or (poss (related-to ?o) ?where)
                 (exists (?o2 - visualobject) (and (poss (related-to ?o) ?o2)
                                                  (trans_related ?o2 ?where)))))
+
+  (:derived (cones_exist ?l - label ?rel - spatial_relation ?where - (either visualobject room))
+            (exists (?c - conegroup) (and (= (cg-label ?c) ?l)
+                                          (= (cg-related-to ?c) ?where)
+                                          (= (cg-relation ?c) ?rel))))
+                                          
 
   ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
   ;;           (exists (?p - place) (and (= (in-room ?p) ?r)
@@ -292,7 +299,8 @@
                      :condition (and (at start (and (= (is-in ?a) ?p)
                                                     (poss (in-room ?p) ?r)
                                                     (= (label ?o) ?l)
-                                                    (cones_created ?l in ?r)
+                                                    (or (cones_created ?l in ?r)
+                                                        (cones_exist ?l in ?r))
                                                     (poss (related-to ?o) ?r)
                                                     (poss (relation ?o ?r) in)
                                                     (not (done))))
@@ -334,7 +342,8 @@
                                                     (poss (related-to ?o) ?r)
                                                     (kval ?a (related-to ?o))
                                                     (= (label ?o2) ?l)
-                                                    (cones_created ?l ?rel ?o)
+                                                    (or (cones_created ?l ?rel ?o)
+                                                        (cones_exist ?l ?rel ?o))
                                                     (poss (related-to ?o2) ?o)
                                                     (poss (relation ?o2 ?o) ?rel)
                                                     (not (done))))
