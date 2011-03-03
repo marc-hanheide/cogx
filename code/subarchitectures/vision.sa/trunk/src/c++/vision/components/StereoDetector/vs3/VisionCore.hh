@@ -51,27 +51,27 @@ private:
 
 public:
 
-  double p_e;					///< probability of an edgel 				TODO das sollte hier weg => für sig-Berechnung
-  double p_ee;					///< probability of an edgel given another edgel
+  double p_e;                                   ///< probability of an edgel 				TODO das sollte hier weg => für sig-Berechnung
+  double p_ee;                                  ///< probability of an edgel given another edgel
 
-  bool use_masking;				///< use masking of gestalts for stereo processing. 	TODO sollte für alle Gestalts eigens def. werden.
-  Vector2 roi_center;				///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
-  double roi_sigma;				///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
+  bool use_masking;                             ///< use masking of gestalts for stereo processing. 	TODO sollte für alle Gestalts eigens def. werden.
+  Vector2 roi_center;                           ///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
+  double roi_sigma;                             ///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
 
 
 public:
   VisionCore(const string &config_name = "");
   ~VisionCore();
   void Configure(const string &config_name);
-  Config& GetConfig() {return config;}							///< Return configuration
+  Config& GetConfig() {return config;}                                                  ///< Return configuration
   void NewImage(const IplImage *new_img);
-  bool HaveImage() {return img != 0;}														///< Return true, if have image.
-  const IplImage* GetImage() {return img;}											///< Returns image (openCV ipl-image)
-  int ImageArea() {return img->width*img->height;}							///< Return image area (width*height)
+  bool HaveImage() {return img != 0;}                                                   ///< Return true, if have image.
+  const IplImage* GetImage() {return img;}                                              ///< Returns image (openCV ipl-image)
+  int ImageArea() {return img->width*img->height;}                                      ///< Return image area (width*height)
   void EnableGestaltPrinciple(GestaltPrinciple::Type p);
   void DisableGestaltPrinciple(GestaltPrinciple::Type p);
   bool IsEnabledGestaltPrinciple(GestaltPrinciple::Type p);
-  RGBColor Pixel(int x, int y)																	/// TODO Sollte das hier nicht zu den Draw-Sachen? geht das?
+  RGBColor Pixel(int x, int y)                                                          /// TODO Sollte das hier nicht zu den Draw-Sachen? geht das?
   {
     char *p = &img->imageData[y*img->widthStep + x*img->nChannels];
     return RGBColor(p[0], p[1], p[2]);
@@ -97,15 +97,15 @@ public:
   void InformNewGestalt(Gestalt::Type type, unsigned id);
   void InformNewIntersection(unsigned sline, Array<VoteImage::Elem> iscts);
 
-  unsigned IW() {return img->width;}																															///< Returns the width of the image in pixel (unsigned).
-  unsigned IH() {return img->height;}																															///< Returns the height of the image in pixel (integer).
-  Array<Gestalt*>* Gestalts() {return gestalts;}																									///< Return Gestalt array
-  Array<Gestalt*>& Gestalts(Gestalt::Type type) {return gestalts[type];}													///< Returns Gestalt array of "type"
-  Gestalt* Gestalts(Gestalt::Type type, unsigned id) {return gestalts[type][id];}									///< Returns Gestalt of "type" and "id"
-  Array<Gestalt*>& RankedGestalts(Gestalt::Type type) {return ranked_gestalts[type];}							///< Returns ranked Gestalt array of "type"
-  Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}		///< Returns ranked Gestat of "type" and "id"
-  unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}												///< Ruturns number of Gestalts of "type"
-  GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}						///< Returns Gestalt principle of "type"
+  unsigned IW() {return img->width;}                                                                    ///< Returns the width of the image in pixel (unsigned).
+  unsigned IH() {return img->height;}                                                                   ///< Returns the height of the image in pixel (integer).
+  Array<Gestalt*>* Gestalts() {return gestalts;}                                                        ///< Return Gestalt array
+  Array<Gestalt*>& Gestalts(Gestalt::Type type) {return gestalts[type];}                                ///< Returns Gestalt array of "type"
+  Gestalt* Gestalts(Gestalt::Type type, unsigned id) {return gestalts[type][id];}                       ///< Returns Gestalt of "type" and "id"
+  Array<Gestalt*>& RankedGestalts(Gestalt::Type type) {return ranked_gestalts[type];}                   ///< Returns ranked Gestalt array of "type"
+  Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}          ///< Returns ranked Gestat of "type" and "id"
+  unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}                              ///< Ruturns number of Gestalts of "type"
+  GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}                  ///< Returns Gestalt principle of "type"
   VoteImage* VI() {return vote_img;}
 };
 
