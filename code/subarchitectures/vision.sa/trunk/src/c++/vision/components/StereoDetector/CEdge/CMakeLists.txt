@@ -8,7 +8,6 @@ SET(SOURCES
   betai.c
   nrutil.c
   SDraw.cc
-  Math.cc
   Vector2.cc
   Except.cc
   CEdge.cc
