@@ -85,7 +85,6 @@ VisionCore::~VisionCore()
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     delete principles[i];
   ClearGestalts();
-  ExitMath();
 }
 
 /**

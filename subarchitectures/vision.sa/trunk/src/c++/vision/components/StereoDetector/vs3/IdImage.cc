@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <algorithm>
-#include "Math.hh"
+#include "math/Math.hh"
 #include "IdImage.hh"
 
 namespace Z
@@ -50,8 +50,8 @@ void IdImage::DrawBresenhamLine(int x1, int y1, int x2, int y2, unsigned id)
   {
     if(dx < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -85,8 +85,8 @@ void IdImage::DrawBresenhamLine(int x1, int y1, int x2, int y2, unsigned id)
   {
     if(dy < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -135,8 +135,8 @@ bool IdImage::CheckBresenhamLine(int x1, int y1, int x2, int y2)
   {
     if(dx < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -169,8 +169,8 @@ bool IdImage::CheckBresenhamLine(int x1, int y1, int x2, int y2)
   {
     if(dy < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -232,8 +232,8 @@ bool IdImage::FindLineEnd(int x1, int y1, int x2, int y2, int *xend, int *yend)
   {
     if(dx < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -274,8 +274,8 @@ bool IdImage::FindLineEnd(int x1, int y1, int x2, int y2, int *xend, int *yend)
   {
     if(dy < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -327,8 +327,8 @@ void IdImage::FindIntersections(int x1, int y1, int x2, int y2, unsigned id)
   {
     if(dx < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -361,8 +361,8 @@ void IdImage::FindIntersections(int x1, int y1, int x2, int y2, unsigned id)
   {
     if(dy < 0)
     {
-      swap(x2, x1);
-      swap(y2, y1);
+      std::swap(x2, x1);
+      std::swap(y2, y1);
       dx = -dx;
       dy = -dy;
     }
@@ -542,8 +542,8 @@ void linev6(Screen &s,
 function line(x0, x1, y0, y1)
      boolean steep := abs(y1 - y0) > abs(x1 - x0)
      if steep then
-         swap(x0, y0)
-         swap(x1, y1)
+         std::swap(x0, y0)
+         std::swap(x1, y1)
      int deltax := abs(x1 - x0)
      int deltay := abs(y1 - y0)
      int error := 0
@@ -565,11 +565,11 @@ function line(x0, x1, y0, y1)
  function line(x0, x1, y0, y1)
      boolean steep := abs(y1 - y0) > abs(x1 - x0)
      if steep then
-         swap(x0, y0)
-         swap(x1, y1)
+         std::swap(x0, y0)
+         std::swap(x1, y1)
      if x0 > x1 then
-         swap(x0, x1)
-         swap(y0, y1)
+         std::swap(x0, x1)
+         std::swap(y0, y1)
      int deltax := x1 - x0
      int deltay := abs(y1 - y0)
      int error := 0
