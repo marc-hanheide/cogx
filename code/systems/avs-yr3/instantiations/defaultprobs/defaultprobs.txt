@@ -1,24 +1,121 @@
-INROOM mug kitchen 0.8 10
-INROOM mug office 0.6 7
-INROOM mug corridor 0.01 14
+INROOM mug kitchen 0.8
+INROOM mug office 0.6
+INROOM mug living_room 0.7
+INROOM mug corridor 0.01
 
-INROOM table kitchen 0.8 5
-INROOM table office 0.3 4
-INROOM table corridor 0.02 8
+INROOM table kitchen 0.8
+INROOM table office 0.3
+INROOM table living_room 0.7
+INROOM table corridor 0.02
 
-INROOM box kitchen 0.2 7
-INROOM box office 0.6 6
-INROOM box corridor 0.1 6
+INROOM dishwasher kitchen 0.7
 
+INROOM cupboard kitchen 0.9
+INROOM cupboard office 0.1
+INROOM cupboard living_room 0.1
+INROOM cupboard corridor 0.4
 
-ON mug table 0.6 2
-INOBJECT mug box 0.4 3
+INROOM bookcase kitchen 0.1
+INROOM bookcase office 0.7
+INROOM bookcase living_room 0.8
+INROOM bookcase corridor 0.5
 
+INROOM box kitchen 0.2
+INROOM box office 0.6
+INROOM box corridor 0.1
+
+INROOM cereal_box kitchen 0.1
+INROOM cereal_box office 0.1
+INROOM cereal_box living_room 0.2
+INROOM cereal_box corridor 0.1
+
+INROOM book office 0.8
+INROOM book living_room 0.5
+INROOM book corridor 0.2
 
 ON mug table kitchen 0.4
 ON mug table office 0.1
+ON mug table living_room 0.3
 ON mug table corridor 0.1
+
+INOBJ mug cupboard kitchen 0.9
+INOBJ mug cupboard office 0.9
+INOBJ mug cupboard living_room 0.9
+INOBJ mug cupboard corridor 0.9
+
+INOBJ mug dishwasher kitchen 0.7
+
+INOBJ mug bookcase office 0.2
+INOBJ mug bookcase living_room 0.2
+INOBJ mug bookcase corridor 0.05
 
 INOBJECT mug box kitchen 0.2
 INOBJECT mug box office 0.1
 INOBJECT mug box corridor 0.1
+
+ON cereal_box table kitchen 0.7
+ON cereal_box table office 0.1
+ON cereal_box table living_room 0.2
+ON cereal_box table corridor 0.1
+
+
+INOBJ cereal_box cupboard kitchen 0.7
+INOBJ cereal_box cupboard office 0.3
+INOBJ cereal_box cupboard living_room 0.3
+INOBJ cereal_box cupboard corridor 0.2
+
+INOBJ cereal_box bookcase kitchen 0.1
+INOBJ cereal_box bookcase office 0.05
+INOBJ cereal_box bookcase living_room 0.05
+
+
+ON book table kitchen 0.1
+ON book table office 0.6
+ON book table living_room 0.7
+ON book table corridor 0.5
+
+INOBJ book cupboard office 0.1
+
+INOBJ book bookcase kitchen 0.9
+INOBJ book bookcase office 0.9
+INOBJ book bookcase living_room 0.9
+INOBJ book bookcase corridor 0.9
+
+COST_INROOM mug 200
+
+COST_ON mug table 30
+COST_ON mug dishwasher 30
+
+COST_INOBJ mug dishwasher 50
+COST_INOBJ mug cupboard 40
+COST_INOBJ mug bookcase 40
+
+
+COST_INROOM table 50
+COST_INROOM cupboard 50
+COST_INROOM bookcase 50
+COST_INROOM dishwasher 50
+
+
+COST_INROOM cereal_box 200
+
+COST_ON cereal_box table 30
+COST_ON cereal_box dishwasher 30
+
+COST_INOBJ cereal_box dishwasher 50
+COST_INOBJ cereal_box cupboard 40
+COST_INOBJ cereal_box bookcase 40
+
+
+COST_INROOM book 200
+
+COST_ON book table 30
+COST_ON book dishwasher 30
+
+COST_INOBJ book dishwasher 50
+COST_INOBJ book cupboard 40
+COST_INOBJ book bookcase 40
+
+
+
+
