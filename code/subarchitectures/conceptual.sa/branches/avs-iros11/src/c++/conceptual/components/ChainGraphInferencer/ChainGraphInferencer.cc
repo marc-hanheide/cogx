@@ -820,7 +820,16 @@ void ChainGraphInferencer::addDaiFactors()
 
 
 		} // p
-	} // r
+
+		// Place independent Object properties
+		for (unsigned int o=0; o<cri.objectProperties.size(); ++o)
+		{
+			const ConceptualData::ObjectPlacePropertyInfo &oppi = cri.objectProperties[o];
+			createDaiObservedObjectPropertyFactor(cri.roomId,
+					"object_"+oppi.category+"_property", oppi.count>0);  // TODO!
+		} // o
+       
+        } // r
 }
 
 
