@@ -1,18 +1,18 @@
-INROOM mug kitchen 0.8
-INROOM mug office 0.6
-INROOM mug corridor 0.01
+INROOM mug kitchen 0.8 10
+INROOM mug office 0.6 7
+INROOM mug corridor 0.01 14
 
-INROOM table kitchen 0.8
-INROOM table office 0.3
-INROOM table corridor 0.02
+INROOM table kitchen 0.8 5
+INROOM table office 0.3 4
+INROOM table corridor 0.02 8
 
-INROOM box kitchen 0.2
-INROOM box office 0.6
-INROOM box corridor 0.1
+INROOM box kitchen 0.2 7
+INROOM box office 0.6 6
+INROOM box corridor 0.1 6
 
 
-ON mug table 0.6
-INOBJECT mug box 0.4
+ON mug table 0.6 2
+INOBJECT mug box 0.4 3
 
 
 ON mug table kitchen 0.4
