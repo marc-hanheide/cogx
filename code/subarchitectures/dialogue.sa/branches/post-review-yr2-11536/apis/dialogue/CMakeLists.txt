@@ -4,4 +4,4 @@ project (Dialogue-core)
 include(Slice2Cpp)
 
 # auto generated code
-#add_subdirectory (src/c++/autogen)
+add_subdirectory (src-generated/cpp)
