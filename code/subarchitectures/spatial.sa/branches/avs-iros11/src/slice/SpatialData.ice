@@ -333,20 +333,33 @@ module SpatialData {
     // World coordinates
   };
 
-
-  /*
-   * Command to generate AVS view points for a particular object
-   * @author Nick Hawes
-   */
-  class ViewPointGenerationCommand {
+  enum SpatialRelation{ ON,
+  						INOBJECT,
+  						INROOM
+  };
+  
+    class ViewPointGenerationCommand {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
      string label;
      PlaceIDSeq placestosearch; 
      AVSStatus status;
   };
+  
+  class RelationalViewPointGenerationCommand{
+  	string searchedObject;
+  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
+  	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
+  	string roomId; // always (and I mean always) fill this
+  };
 
-
-
+ class LocatedObject{
+  	string searchedObject;
+  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
+  	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
+  	string roomId; // always (and I mean always) fill this
+  	double beta; // the percentage of pdf for another of this object type in this location
+  };
+  
   /**
    * Class for exposing AVS plan to planner
    */
@@ -365,7 +378,11 @@ module SpatialData {
   class SearchPlan{
 	  ViewPointSeq plan;
   };
-
+  
+  class ConeGroup{
+  	ViewPointSeq group;
+  	string id;
+  };
 
   /**
    * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
