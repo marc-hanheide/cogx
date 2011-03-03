@@ -6,6 +6,9 @@ set(CMAKE_BUILD_TYPE Release)
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)
 
+# Remove warnings about deprecated libs.
+add_definitions(-Wno-deprecated)
+
 # -----------------------------------------------------------
 # Subdirs
 # -----------------------------------------------------------
