@@ -32,16 +32,16 @@
         (= (in-room p2c) rc)
         (= (in-room p3c) rb)
 
-        (poss (in-room p1a) ra)
-        (poss (in-room p2a) ra)
-        (poss (in-room p3a) ra)
-        (poss (in-room p4a) ra)
-        (poss (in-room p1b) rb)
-        (poss (in-room p2b) rb)
-        (poss (in-room p3b) rb)
-        (poss (in-room p1c) rc)
-        (poss (in-room p2c) rc)
-        (poss (in-room p3c) rb)
+        ;; (poss (in-room p1a) ra)
+        ;; (poss (in-room p2a) ra)
+        ;; (poss (in-room p3a) ra)
+        ;; (poss (in-room p4a) ra)
+        ;; (poss (in-room p1b) rb)
+        ;; (poss (in-room p2b) rb)
+        ;; (poss (in-room p3b) rb)
+        ;; (poss (in-room p1c) rc)
+        ;; (poss (in-room p2c) rc)
+        ;; (poss (in-room p3c) rb)
 
         (= (placestatus p1a) trueplace)
         (= (placestatus p2a) trueplace)
@@ -77,25 +77,24 @@
                               0.1 corridor
                               0.2 living_room)
 
-        (assign-probabilistic (category rb)
-                              ;; 0.6 kitchen
-                              0.2 office
-                              0.2 living_room)
-        ;; (= (category rb) kitchen)
+        ;; (assign-probabilistic (category rb)
+        ;;                       ;; 0.6 kitchen
+        ;;                       0.2 office
+        ;;                       0.2 living_room)
+        (= (category rb) kitchen)
         ;; (poss (category rb) kitchen)
 
-        (assign-probabilistic (category rc) 
+        (assign-probabilistic (category rc)
                               ;; 0.2 kitchen
                               0.3 office
                               0.5 living_room)
 
-        ;; (= (label table01) table)
-        ;; (= (related-to table01) rb)
-        ;; (= (relation table01 rb) in)
+        (= (label table01) table)
+        (= (related-to table01) rb)
+        (= (relation table01 rb) in)
         ;; (poss (related-to table01) rb)
         ;; (poss (relation table01 rb) in)
 
-        (cones_created cereal_box in rb)
         (= (cg-label cinrb1) cereal_box)
         (= (cg-label cinrb2) cereal_box)
         (= (cg-label cinrb3) cereal_box)
@@ -112,7 +111,6 @@
         (= (p-visible cinrb2) 0.3)
         (= (p-visible cinrb3) 0.2)
 
-        (cones_created table in rb)
         (= (cg-label tinrb1) table)
         (= (cg-label tinrb2) table)
         (= (cg-label tinrb3) table)
@@ -129,7 +127,6 @@
         (= (p-visible tinrb2) 0.3)
         (= (p-visible tinrb3) 0.2)
 
-        (cones_created cereal_box on table01)
         (= (cg-label cont1) cereal_box)
         (= (cg-label cont2) cereal_box)
         (= (cg-label cont3) cereal_box)
