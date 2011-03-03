@@ -15,6 +15,7 @@
 
 #include "TestLearner.h"
 #include "TestCases.h"
+#include "gy2article.h"
 
 using namespace std;
 using namespace cast;
@@ -125,6 +126,10 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
       else if (mode == "saved-example") {
          testmode = mode;
          m_pTestCase = new CTestCase_SavedExamples(mode, this);
+      }
+      else if (mode == "gy2article") {
+         testmode = mode;
+         m_pTestCase = new CGeorgeY2Article(mode, this);
       }
       log("TEST MODE: %s", testmode.c_str());
    }
