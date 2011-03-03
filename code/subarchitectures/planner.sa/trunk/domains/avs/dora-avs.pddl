@@ -40,9 +40,9 @@
    (default_search_cost ?l - label ?rel - spatial_relation ?where - (either label category)) - number
    (search_cost ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
    ;; default probabilities. These come from Coma.
-   (dora__in_room ?l - label ?c - category) - number
-   (dora__in_obj ?l1 ?l2 - label ?c - category) - number
-   (dora__on_obj ?l1 ?l2 - label ?c - category) - number
+   (dora__inroom ?l - label ?c - category) - number
+   (dora__inobj ?l1 ?l2 - label ?c - category) - number
+   (dora__on ?l1 ?l2 - label ?c - category) - number
 
    ;; === inferred knowledge ===
    ;; The result of applying the default knowledge.
@@ -169,7 +169,7 @@
   (:dtrule obj_in_room
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
-           :effect (probabilistic (dora__in_room ?l ?c) (assign (obj_exists ?l in ?r) true)))
+           :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_in_obj
@@ -178,7 +178,7 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o ?r) in))
-           :effect (probabilistic (dora__in_obj ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
+           :effect (probabilistic (dora__inobj ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
@@ -187,7 +187,7 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o ?r) in))
-           :effect (probabilistic (dora__on_obj ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
+           :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
 
   ;; probability of an object being at a specific location

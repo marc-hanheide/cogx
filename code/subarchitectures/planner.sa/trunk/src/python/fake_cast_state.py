@@ -1,3 +1,4 @@
+from itertools import chain
 from standalone import config
 from standalone.pddl import prob_state
 
@@ -27,12 +28,13 @@ class FakeCASTState(cast_state.CASTState):
 
         if component:
             coma_facts, coma_objects = self.get_coma_data(component)
-            for o in coma_objects:
+            default_facts, default_objects = self.get_default_data(component)
+            for o in chain(coma_objects, default_objects):
                 if o not in problem.objects:
                     self.objects.add(o)
                     problem.add_object(o)
                     
-            for f in coma_facts:
+            for f in chain(coma_facts, default_facts):
                 self.prob_state.set(f)
                 problem.init.append(f.as_literal(useEqual=True))
 
@@ -51,6 +53,10 @@ class FakeCASTState(cast_state.CASTState):
         self.state = self.prob_state.determinized_state(0.05, 0.95)
 
         self.generate_belief_state(self.prob_state, self.state)
+        
+        commit_facts = self.generate_committed_facts(self.state)
+        for f in commit_facts:
+            self.state.set(f)
         
     def convert_percepts(self, percepts):
         return []

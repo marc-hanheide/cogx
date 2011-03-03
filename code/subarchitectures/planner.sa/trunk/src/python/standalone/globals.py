@@ -21,3 +21,4 @@ CMAKE_CONFIG_FN = "config.auto"
 
 config_autogen = load_config_file(CMAKE_CONFIG_FN)
 config = load_config_file(CONFIG_FN, **config_autogen.__dict__)
+config.__dict__.update(config_autogen.__dict__)

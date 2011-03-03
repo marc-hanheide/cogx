@@ -40,6 +40,9 @@ class CASTState(object):
             self.coma_objects = oldstate.coma_objects
         elif component:
             self.coma_facts, self.coma_objects = self.get_coma_data(component)
+            default_facts, default_objects = self.get_default_data(component)
+            self.coma_facts += default_facts
+            self.coma_objects |= default_objects
             
         #TODO: make this less ugly
         tp.current_domain = self.domain
@@ -80,6 +83,11 @@ class CASTState(object):
         if oldstate:
             self.match_generated_objects(oldstate)
 
+        commit_facts = self.generate_committed_facts(self.state)
+        self.facts += commit_facts
+        for f in commit_facts:
+            self.state.set(f)
+
     def translate_domain(self, stat):
         if global_vars.config.base_planner.name == "TFD":
             dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
@@ -115,7 +123,27 @@ class CASTState(object):
         assert not det_lits, map(str, det_lits)
         # mapltask.init += det_lits
         self.pnodes = pnodes
-        
+
+    def generate_committed_facts(self, detstate):
+        @pddl.visitors.collect
+        def get_committed_functions(cond, result):
+            if isinstance(cond, pddl.LiteralCondition):
+                if cond.predicate == pddl.mapl.commit:
+                    return cond.args[0].function
+                
+        functions = set()
+        for r in self.domain.dt_rules:
+            functions |= r.deps
+
+        for a in self.domain.actions:
+            functions |= set(pddl.visitors.visit(a.precondition, get_committed_functions, []))
+
+        results = []
+        for svar, val in detstate.iteritems():
+            if svar.function in functions and not svar.modality:
+                cvar = svar.as_modality(pddl.mapl.commit, [val])
+                results.append(state.Fact(cvar, pddl.TRUE))
+        return results
             
     def generate_init_facts(self, problem, oldstate=None):
         cstate = self.prob_state.determinized_state(0.05, 0.95)
@@ -185,6 +213,47 @@ class CASTState(object):
                 logval = pddl.types.TypedNumber(max(-math.log(val.value, 2), 0.1))
                 facts.append((logvar, logval))
         return facts
+
+    def get_default_data(self, component):
+        objects = set()
+        facts = []
+        try:
+            for line in open(component.default_fn):
+                elems = line.split()
+                if len(elems) < 3:
+                    continue
+                func, args, value = elems[0].lower(), elems[1:-1], elems[-1]
+                pddlfunc = None
+                for f in self.domain.functions:
+                    if "dora__%s" % func == f.name and len(f.args) == len(args):
+                        pddlfunc = f
+                        break
+                if not pddlfunc:
+                    continue
+
+                pddlargs = [pddl.TypedObject(a, fa.type) for a,fa in zip(args, pddlfunc.args)]
+                for a in pddlargs:
+                    if a not in self.domain.constants:
+                        objects.add(a)
+
+                if pddlfunc.type.equal_or_subtype_of(pddl.t_number):
+                    val = pddl.types.TypedNumber(float(value))
+                elif pddlfunc.type == pddl.t_boolean:
+                    if val.lower() in ("true", "yes"):
+                        val = pddl.TRUE
+                    else:
+                        val = pddl.FALSE
+                else:
+                    val = pddl.TypedObject(val, pddlfunc.type)
+                    if val not in self.domain.constants:
+                        objects.add(val)
+
+                fact = state.Fact(state.StateVariable(pddlfunc, pddlargs), val)
+                facts.append(fact)
+        except:
+            log.warning("Failed to read default knowledge from %s", component.default_fn)
+            
+        return facts, objects
     
     def get_coma_data(self, component):
         coma_objects = set()
