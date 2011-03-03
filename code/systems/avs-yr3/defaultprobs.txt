@@ -1,0 +1,16 @@
+mug INROOM kitchen 0.8
+mug INROOM office 0.6
+mug INROOM corridor 0.01
+
+mug ON table 0.6
+mug INOBJECT box 0.4
+
+table INROOM kitchen 0.8
+table INROOM office 0.3
+table INROOM corridor 0.02
+
+box INROOM kitchen 0.2
+box INROOM office 0.6
+box INROOM corridor 0.1
+
+
