@@ -216,7 +216,7 @@ public class PlaceMonitor extends ManagedComponent {
 					if (_newPlaceNode.id%3==0) {
 						// log every third place creates a dummy object
 						createObject(new ObjectPlaceProperty(_newPlaceNode.id,
-								null, null, true, "dummyObject"));
+								null, null, true, false, "dummyObject"));
 					}
 				}
 
