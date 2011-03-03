@@ -133,6 +133,7 @@ public:
   virtual ~OpenCvImgSeqServer();
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
+  virtual void start();
   virtual void grabFrames();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
@@ -146,6 +147,7 @@ private:
   std::map<std::string, CSequenceInfo> leadOutMap;
   std::string m_currentSequenceName;
   std::string m_nextSequenceName;
+  bool m_bWmInterface;
   enum SequenceStage {
     stLeadIn, stLoop, stLeadOut
   };
@@ -153,9 +155,12 @@ private:
   void installSequence(const std::string& name);
   void tryNextSequence();
 
-#ifdef FEAT_VISUALIZATION
   std::string sequenceIniFile;
   int displayStage; // in/loop/out
+  bool parseSequenceIniFile(const std::string& fname);
+  void onAdd_VideoSequenceInfo(const cast::cdl::WorkingMemoryChange & _wmc);
+
+#ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient
   {
     OpenCvImgSeqServer* pComponent;
@@ -170,10 +175,8 @@ private:
     //  std::map<std::string, std::string>& fields); [>override<]
   };
   CDisplayClient m_display;
-
-  virtual void start();
-  bool parseSequenceIniFile(const std::string& fname);
 #endif
+
 };
 
 }

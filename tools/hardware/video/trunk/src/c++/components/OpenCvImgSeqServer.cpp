@@ -11,8 +11,8 @@
  */
 
 #include <highgui.h>
-//#include <opencv/highgui.h> -- this is incorrect according to the pkg-config flags
 #include <cast/core/CASTUtils.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
 #include "OpenCvImgSeqServer.h"
 
@@ -21,11 +21,9 @@
 #include <algorithm>
 #include <iterator>
 
-#ifdef FEAT_VISUALIZATION
 #include <fstream>
 #include <limits.h>
 #include <stdlib.h>
-#endif
 
 /**
  * The function called to create a new instance of our component.
@@ -187,9 +185,8 @@ OpenCvImgSeqServer::OpenCvImgSeqServer()
   width = height = 0;
   frameRepeatCnt = 1;
   loopSequence = true;
-#ifdef FEAT_VISUALIZATION
+  m_bWmInterface = false;
   sequenceIniFile = "";
-#endif
 }
 
 OpenCvImgSeqServer::~OpenCvImgSeqServer()
@@ -464,23 +461,23 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
     else leadInMap[firstSequence] = sequenceInfo;
   }
 
+  bool bNotifyNoUi = false;
   if((it = _config.find("--sequences")) != _config.end())
   {
 #ifndef FEAT_VISUALIZATION
-    println(" *** --sequences parameter requires BUILD_HAL_VIDEO_IMG_SEQ_UI=ON");
-#else
+    bNotifyNoUi = true;
+#endif
     sequenceIniFile = it->second;
     if (! parseSequenceIniFile(sequenceIniFile)) {
       sequenceIniFile = "";
     }
-#endif
   }
 
   if((it = _config.find("--show_sequence")) != _config.end())
   {
 #ifndef FEAT_VISUALIZATION
-    println(" *** --show_sequence parameter requires BUILD_HAL_VIDEO_IMG_SEQ_UI=ON");
-#else
+    bNotifyNoUi = true;
+#endif
     if (leadInMap.find(it->second) == leadInMap.end() && sequenceMap.find(it->second) == sequenceMap.end())
     {
         throw runtime_error(exceptionMessage(__HERE__,
@@ -495,17 +492,22 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
     // Choose a random sequence
     if (!leadInMap.empty()) firstSequence = leadInMap.begin()->first;
     else if (!sequenceMap.empty()) firstSequence = sequenceMap.begin()->first;
-#endif
   }
 
   if (firstSequence == "" && sequenceMap.empty() && leadInMap.empty()) {
-#ifdef FEAT_VISUALIZATION
     throw runtime_error(exceptionMessage(__HERE__,
           "No video sequence was configured. Use --files or --sequences/--show_sequence."));
-#else
-    throw runtime_error(exceptionMessage(__HERE__,
-          "No video sequence was configured. Use --files."));
-#endif
+  }
+
+  if (bNotifyNoUi) {
+    println(" *** No UI is available. To enable it, rebuild with BUILD_HAL_VIDEO_IMG_SEQ_UI=ON");
+  }
+
+  if((it = _config.find("--wminterface")) != _config.end())
+  {
+    if (it->second == "false" || it->second == "0" || it->second == "off")
+      m_bWmInterface = false;
+    else m_bWmInterface = true;
   }
 
   installSequence(firstSequence);
@@ -515,7 +517,6 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
 #endif
 }
 
-#ifdef FEAT_VISUALIZATION
 // Read definitions of image sequences from an INI file.
 //
 // INI example:
@@ -664,6 +665,7 @@ bool OpenCvImgSeqServer::parseSequenceIniFile(const std::string& fname)
 void OpenCvImgSeqServer::start()
 {
   // Enable Display only if configured with multiple sequences
+#ifdef FEAT_VISUALIZATION
   if (sequenceIniFile != "" && sequenceMap.size() > 1) {
     m_display.connectIceClient(*this);
     m_display.installEventReceiver();
@@ -677,10 +679,28 @@ void OpenCvImgSeqServer::start()
     }
     m_display.setActiveHtml(ID_V11N_OBJECT, IDCHUNK_SEQUENCES, ss.str());
   }
+#endif
+
+  if (m_bWmInterface) {
+    addChangeFilter(
+        createLocalTypeFilter<Video::VideoSequenceInfo>(cdl::ADD),
+        new MemberFunctionChangeReceiver<OpenCvImgSeqServer>(
+          this, &OpenCvImgSeqServer::onAdd_VideoSequenceInfo)
+        );
+  }
 
   VideoServer::start();
 }
 
+void OpenCvImgSeqServer::onAdd_VideoSequenceInfo(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  Video::VideoSequenceInfoPtr pSeq = getMemoryEntry<Video::VideoSequenceInfo>(_wmc.address);
+  CSequenceInfo seq;
+  seq.setInfo(*pSeq);
+  switchSequence(seq);
+}
+
+#ifdef FEAT_VISUALIZATION
 void OpenCvImgSeqServer::CDisplayClient::handleEvent(const Visualization::TEvent& event)
 {
   if (event.type == Visualization::evHtmlOnClick) {
