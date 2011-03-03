@@ -1,0 +1,20 @@
+
+
+# -------------------- GLWindow lib --------------------
+PROJECT(SDGLWindow)
+
+#FIND_PACKAGE( OpenCV REQUIRED )
+#INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+
+SET(SOURCES GLXWindow.cpp
+	GLXWindowGetEvent.cpp)
+LINK_LIBRARIES(GL GLU)
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+
+# -------------------- GLWindow executable --------------------
+#PROJECT(SDGLWindowTest)
+#SET(SOURCES example.cpp)
+#LINK_LIBRARIES(GLU SDGLWindow)
+#ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES})
+#INSTALL(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
