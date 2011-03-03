@@ -112,6 +112,9 @@ public:
   void SetInputImageSize(CvSize size);
   void SetMatchingAlgoritm(MatchingAlgorithm algo);
   void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
+  
+  cv::Mat GetIntrinsic(unsigned side);
+  
 };
 
 

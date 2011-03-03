@@ -386,5 +386,11 @@ void StereoCamera::SetMatchingAlgoritm(MatchingAlgorithm algo)
   matchAlgorithm = algo;
 }
 
+cv::Mat StereoCamera::GetIntrinsic(unsigned side)
+{
+  cv::Mat mat = (cv::Mat_<double>(3,3) << cam[side].fx,0,cam[side].cx, 0,cam[side].fy,cam[side].cy, 0,0,1);
+  return mat;
+}
+
 }
 

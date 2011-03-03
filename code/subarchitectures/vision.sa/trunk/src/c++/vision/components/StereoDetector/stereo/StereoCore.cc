@@ -63,7 +63,7 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
   stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (std::runtime_error("StereoCore::StereoCore: Cannot open calibration file for stereo camera."));
 
-  InitStereoGestalts();
+  InitStereoPrinciples();
 }
 
 /**
@@ -82,7 +82,7 @@ StereoCore::~StereoCore()
 /**
  * @brief Initialisation of the stereo Gestalt classes.
  */
-void StereoCore::InitStereoGestalts()
+void StereoCore::InitStereoPrinciples()
 {
   // Add all Gestalt principles we know
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
@@ -113,7 +113,8 @@ void StereoCore::InitStereoGestalts()
 
 
 /**
- * @brief Clear the vision cores and the used stereo Gestalts.
+ * @brief Create a new 3D Gestalt
+ * @param g New 3D Gestalt
  */
 void StereoCore::NewGestalt3D(Gestalt3D *g)
 {
@@ -129,8 +130,10 @@ void StereoCore::ClearResults()
   for(int side = LEFT; side <= RIGHT; side++)
     vcore[side]->ClearGestalts();
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
-  	if(stereoPrinciples[i]->IsEnabled())
-			stereoPrinciples[i]->ClearResults();
+    if(stereoPrinciples[i]->IsEnabled())
+      stereoPrinciples[i]->ClearResults();
+  for(int i = 0; i < Gestalt3D::MAX_TYPE; i++)
+    stereoGestalts[i].Clear();
 }
 
 
@@ -453,6 +456,7 @@ void StereoCore::PrintResults()
   printf("Stereo:CORNERS: corner-matches: %d\n", stereoPrinciples[StereoBase::STEREO_CORNER]->NumStereoMatches());
   printf("Stereo:LJUNCTIONS: ljct-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LJUNCTION]->NumStereoMatches());
   printf("Stereo:LINES: line-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LINE]->NumStereoMatches());
+  printf("Stereo:FLAPS_ARI: flap-matches: %d\n", stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->NumStereoMatches());
 
 //   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
 //   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());

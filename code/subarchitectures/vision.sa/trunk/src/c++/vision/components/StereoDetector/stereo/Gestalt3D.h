@@ -10,6 +10,7 @@
 #define Z_GESTALT3D_HH
 
 #include "StereoTypes.h"
+#include "GraphLink.h"
 
 namespace Z
 {
@@ -29,6 +30,7 @@ public:
     CLOSURE,
     RECTANGLE,
     FLAP,
+    ELLIPSE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };
@@ -52,6 +54,8 @@ public:
   Type GetType() const {return type;}
   double GetSignificance() {return sig;}
   unsigned GetVs3ID(unsigned side) {return vs3IDs[side];}
+  
+  virtual bool GetLinks(vector<GraphLink> &links) {return false;}
 };
 
 }

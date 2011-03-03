@@ -34,7 +34,7 @@ TmpLine::TmpLine(Line *line)
  */
 void TmpLine::Draw(int detail)
 {
-  DrawLine2D(point2D[0].p.x, point2D[0].p.y, point2D[1].p.x, point2D[1].p.y, RGBColor::green);
+  DrawLine2D(point2D[0].p.x, point2D[0].p.y, point2D[1].p.x, point2D[1].p.y, RGBColor::blue);
 }
 
 /**
@@ -349,7 +349,7 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
       {
         if (descr_right[j].size() == descr_left[i].size())
         {
-          dist = DistSqr(&descr_left[i][0], &descr_right[j][0], descr_left[i].size());
+          dist = ::DistSqr(&descr_left[i][0], &descr_right[j][0], descr_left[i].size());
 	  std::pair<float, unsigned> pair(dist, j);
 	  if(best_matches[i].find(dist) != best_matches[i].end())
 	    printf("StereoLines::MatchLines: Warning: same key found!\n");

@@ -580,11 +580,10 @@ printf("StereoCubes::Calculate3DCubes: matches: %u\n", matches);
  */
 void StereoCubes::ClearResults()
 {
-	cubes[LEFT].Clear();
-	cubes[RIGHT].Clear();
-	cube3ds.Clear();
-
-	cubeMatches = 0;
+  cubes[LEFT].Clear();
+  cubes[RIGHT].Clear();
+  cube3ds.Clear();
+  cubeMatches = 0;
 }
 
 /**

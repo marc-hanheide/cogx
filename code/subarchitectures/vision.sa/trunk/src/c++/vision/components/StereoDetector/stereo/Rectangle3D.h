@@ -27,6 +27,8 @@ public:
 public:
   Rectangle3D();
   void CalculateSignificance(double sigLeft, double sigRight);
+  unsigned GetSurfaceSize() {return surf.vertices.Size();}
+  bool GetLinks(vector<GraphLink> &links);
 };
 
 

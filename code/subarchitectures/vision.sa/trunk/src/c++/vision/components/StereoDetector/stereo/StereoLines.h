@@ -19,7 +19,7 @@
 #include "vs3/Line.hh"
 #include "Vector.hh"
 #include "Line3D.h"
-#include "Math.hh"
+#include "math/Math.hh"
 
 namespace Z
 {

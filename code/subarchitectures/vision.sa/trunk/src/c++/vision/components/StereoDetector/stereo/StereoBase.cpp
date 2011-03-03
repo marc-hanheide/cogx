@@ -121,7 +121,7 @@ double StereoBase::MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsi
   return sumv_min;
 }
 
-/**																																													/// TODO TODO gehört das hierher????
+/**										/// TODO TODO gehört das hierher? => Eigentlich eine Vertex2D Berechnung?
  * @brief Calculate Matching score of a point. Returns the vertical deviation \n
  * between the two points, if they are within defined boundaries.
  * @param left_point Left 2D point

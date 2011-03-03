@@ -27,7 +27,7 @@ static const bool SC_USE_LINE_THRESHOLDS = true;
 // Comparison between z-component and x+y-components (lines in z direction tending to be wrong)
 static const double SC_LINE_Z_TO_XY_LIMIT = 5.0;        // ~5
 // Limit of the significance value for beeing correct matched
-static const double SC_LINE_SIG_LIMIT = 0.01;          // ~0.01
+static const double SC_LINE_SIG_LIMIT = 0.02;          // ~0.01
 
 
 // Enable pruning thresholds for l-junctions

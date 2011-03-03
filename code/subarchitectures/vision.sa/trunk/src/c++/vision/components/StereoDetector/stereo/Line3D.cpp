@@ -32,17 +32,36 @@ Line3D::Line3D(unsigned vs3IDleft, unsigned vs3IDright) : Gestalt3D(Gestalt3D::L
  */
 void Line3D::CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz)
 {
-  // Significance is between 
+  // Significance is between 0 and 1
   double sig2Dleft = fabs(angle2Dleft/(M_PI/2.));
   double sig2Dright = fabs(angle2Dright/(M_PI/2.));
   double sig3D = 1- angle3Dz/(M_PI/2.);	
   
-  sig = sig2Dleft*sig2Dright*sig3D;	
-
-  //   printf("Line3D::CalculateSignificance: %4.3f / %4.3f => %4.3f / %4.3f\n", angle2Dleft, angle2Dright, sig2Dleft, sig2Dright);
-//   printf("Line3D::CalculateSignificance: %4.3f => %4.3f\n", angle3Dz, sig3D);
-//   printf("Line3D::CalculateSignificance: sig = %4.3f\n", sig);
+  sig = 1- (1-sig2Dleft) * (1-sig2Dright) * (1-sig3D);
 }
+
+/**
+ * @brief Get the nodes vector for this 3D Gestalt.
+ * @param nodes Vector with n nodes, consisting of 3 position values.
+ * @return Returns true, if nodes from this 3D Gestalt are available.
+ */
+bool Line3D::GetLinks(vector<GraphLink> &links)
+{
+// printf("Line3D::GetLinks: sig: %4.3f\n", sig);
+  GraphLink l;
+  l.node[0].x = isct3D[0].p.x;
+  l.node[0].y = isct3D[0].p.y;
+  l.node[0].z = isct3D[0].p.z;
+  l.node[1].x = isct3D[1].p.x;
+  l.node[1].y = isct3D[1].p.y;
+  l.node[1].z = isct3D[1].p.z;
+  l.probability = sig;
+  
+  links.push_back(l);
+  return true;
+}
+
+
 
 }
 
