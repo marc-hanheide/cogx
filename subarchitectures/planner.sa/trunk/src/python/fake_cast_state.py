@@ -22,7 +22,8 @@ class FakeCASTState(cast_state.CASTState):
         #obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(beliefs))))
   
         self.objects = set(problem.objects)
-        self.namedict = {}
+        self.castname_to_obj = {}
+        self.obj_to_castname = {}
 
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
 

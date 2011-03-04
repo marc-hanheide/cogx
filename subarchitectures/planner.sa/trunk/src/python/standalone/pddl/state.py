@@ -121,6 +121,9 @@ class StateVariable(object):
         modality -- The Predicate defining the new modality
         modal_args -- List of TypedObjects depending on the modality
         """
+        
+        function_args = [a for a in modality.args if isinstance(a.type, types.FunctionType)]
+        assert function_args and self.function.type.equal_or_subtype_of(function_args[0].type.type)
         return StateVariable(self.function, self.args, modality, modal_args)
 
     def nonmodal(self):
@@ -634,6 +637,11 @@ class State(dict):
                 svars.append(self.svar_from_term(arg, trace_vars))
             else:
                 values.append(self.evaluate_term(arg, trace_vars))
+
+        if any(v == UNKNOWN for v in values):
+            if literal.predicate in (equals, eq):
+                return (values[0] == values[1]) ^ literal.negated
+            return literal.negated
         
         pred = literal.predicate
         if pred in (equals, eq):

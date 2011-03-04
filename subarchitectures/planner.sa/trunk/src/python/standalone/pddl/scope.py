@@ -197,6 +197,7 @@ class Scope(dict):
         Arguments:
         parent -- Scope object."""
         self.parent = parent
+        self.termcache = {}
         if parent is not None:
             self.predicates = parent.predicates
             self.functions = parent.functions
@@ -311,13 +312,19 @@ class Scope(dict):
         mapping = {}
         stack = []
         remaining = set(args)
+        for a, val in partial_mapping.iteritems():
+            values[a] = [val]
+            mapping[a] = val
+            # stack.append((a,0))
+            a.instantiate(val)
+            remaining.discard(a)
+            
         for a, l in zip(args, arglists):
+            if a in partial_mapping:
+                continue
             if not l:
                 return
-            if a in partial_mapping:
-                l = [partial_mapping[a]]
-            else:
-                l = list(l)
+            l = list(l)
             values[a] = l
             if len(l) == 1:
                 mapping[a] = l[0]
@@ -334,6 +341,7 @@ class Scope(dict):
                 next = True
                 nextval = None
 
+            # print next, [str(v) for v,_ in stack], len(stack), len(args)
             if next == True and len(stack) == len(args):
 #                print ["%s=%s" % (s[0].name, mapping[s[0]]) for s in stack]
                 yield mapping

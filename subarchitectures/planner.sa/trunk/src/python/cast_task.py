@@ -81,13 +81,13 @@ class CASTTask(object):
         self.percepts = []
 
         cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
+        self.cp_task = task.Task(self.id, cp_problem)
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
                 self.update_status(TaskStateEnum.FAILED)
                 return
         
-        self.cp_task = task.Task(self.id, cp_problem)
         component.planner.register_task(self.cp_task)
 
         self.unary_ops = None
