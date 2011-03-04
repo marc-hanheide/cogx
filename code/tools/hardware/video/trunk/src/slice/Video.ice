@@ -159,7 +159,7 @@ module Video {
 
   // The structure contains parameters that describe the sequence of images
   // that should be loaded.
-  struct VideoSequenceInfo {
+  class VideoSequenceInfo {
     // List of filename templates, one for each camera.
     // The list is space-delimited to be compatible with --files in configure().
     string fileTemplates;
