@@ -8,12 +8,12 @@
 #
 # The parameters of a sequence are defined with the "sequence=" variable.
 # The parameters are in the format accepted by OpenCvImgSeqServer.
-# The variables "in" and "out" may some day be used to define transitions
-# between sequences. 
+# The variables "in" and "out" define transitions between sequences. 
 #
 # The special variable INI_DIR contains the directory where the video
-# sequence confiuguration file is stored and can be used to define sequences
-# with images that are stored in a path relative to the config file's path.
+# sequence confiuguration file (vseq) is stored and can be used to define
+# sequences with images that are stored in a path relative to the config
+# file's path.
 
 
 [:global:]
