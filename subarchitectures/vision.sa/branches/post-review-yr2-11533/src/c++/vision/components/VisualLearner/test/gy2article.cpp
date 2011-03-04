@@ -1,13 +1,37 @@
 #include "gy2article.h"
 
+#include "StringFmt.h"
 #include <VisionData.hpp>
 #include <dialogue.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <sys/time.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace cast;
 using namespace VisionData;
 using namespace de::dfki::lt::tr::dialogue::slice;
+
+#define MSSG(streamexpr)  (std::ostringstream&)(std::ostringstream() << flush << streamexpr)
+
+// Return time in milliseconds
+static double now()
+{
+   struct timeval tm;
+   gettimeofday(&tm, NULL);
+   double now = tm.tv_sec + tm.tv_usec * 1e-6;
+
+   static double start = 0;
+   if (start == 0) start = now;
+
+   return now - start;
+}
+
+#define STATE(name) m_stateNames[name] = #name;
 
 CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    : CTestCase(name, pOwner)
@@ -15,6 +39,124 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    m_State = stTableEmpty;
    m_ObjectCount = 0;
    m_RobotResponse = "";
+   m_imageDir = "";
+   m_currentTest = 0;
+   options["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
+   options["video.sa"] = pOwner->getSubarchitectureID(); // change with --video-sa
+   m_timeout = now();
+
+   STATE(stStart);
+   STATE(stTableEmpty);
+   STATE(stWaitToAppear);
+   STATE(stObjectOn);
+   STATE(stTeaching);
+   STATE(stWaitForResponse);
+   STATE(stEndOfTeaching);
+   STATE(stWaitToDisappear);
+   STATE(stFinished);
+   STATE(stTimedOut);
+}
+
+CGeorgeY2Article::~CGeorgeY2Article()
+{
+   m_testEntries.delete_all();
+}
+
+void CGeorgeY2Article::report(std::ostringstream& what)
+{
+   m_pOwner->println(" ******************************* ");
+   m_pOwner->println(what.str().c_str());
+}
+
+void CGeorgeY2Article::report(const std::string& what)
+{
+   m_pOwner->println(" ******************************* ");
+   m_pOwner->println(what.c_str());
+}
+
+static int _index(const vector<string>& vec, const string& val)
+{
+   for(size_t i = 0; i < vec.size(); i++) {
+      if (vec[i] == val) return i;
+   }
+   return -1;
+}
+
+void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _config)
+{
+   map<string,string>::const_iterator it;
+
+   // CONFIG: --index
+   // TYPE: filename, required
+   // Index file with attributes and filenames for the left and right video image.
+   // The first line of the index file contains the header with filed names.
+   // Fields are separated by a single tab character.
+   // The following fields will be used: left, right, shape1, color.
+   // The values for shape1 and color must be supported in Matlab code of the VisualLearner.
+   if((it = _config.find("--index")) != _config.end())
+   {
+      m_testEntries.delete_all();
+      ifstream f(it->second.c_str(), ifstream::in);
+      if (f.fail()) {
+         m_pOwner->error("Failed to open index file '%s'", it->second.c_str());
+         return;
+      }
+      string line;
+      getline(f, line);
+      vector<string> header = _s_::split(line, "\t");
+      int fiLeft = _index(header, "left");
+      int fiRight = _index(header, "right");
+      int fiShape = _index(header, "shape1");
+      int fiColor = _index(header, "color");
+      while(f.good()) {
+         getline(f, line);
+         vector<string> exmpl = _s_::split(line, "\t");
+         int nf = exmpl.size();
+         CTestEntry *pdata = new CTestEntry();
+         if (fiLeft >= 0 && fiLeft < nf) pdata->videoLeft = exmpl[fiLeft];
+         if (fiRight >= 0 && fiRight < nf) pdata->videoRight = exmpl[fiRight];
+         if (fiShape >= 0 && fiShape < nf) pdata->shape = exmpl[fiShape];
+         if (fiColor >= 0 && fiColor < nf) pdata->color = exmpl[fiColor];
+         if (pdata->isValid()) m_testEntries.push_back(pdata);
+         else delete pdata;
+      }
+      f.close();
+   }
+
+   if (m_testEntries.size() < 1) {
+      throw runtime_error(string("No valid tests were provided with --index"));
+   }
+
+   // CONFIG: --imagedir
+   // TYPE: directory
+   // DEFAULT: ""
+   // Directory with image files listed in --index.
+   if((it = _config.find("--imagedir")) != _config.end())
+   {
+      m_imageDir = it->second;
+   }
+
+   // CONFIG: --dialogue-sa
+   // TYPE: string (subarchitecture-id)
+   // DEFAULT: "dialogue"
+   // The subarchitecture id in which ASR is running
+   if((it = _config.find("--dialogue-sa")) != _config.end())
+   {
+      if (it->second == "") options["dialogue.sa"] = m_pOwner->getSubarchitectureID();
+      else options["dialogue.sa"] = it->second;
+   }
+
+   // CONFIG: --video-sa
+   // TYPE: string (subarchitecture-id)
+   // DEFAULT: ""
+   // The subarchitecture id in which the OpenCvImgSeqServer video server is running.
+   // The default is empty which means that the video server is running in the same
+   // SA as this component.
+   if((it = _config.find("--video-sa")) != _config.end())
+   {
+      if (it->second == "") options["video.sa"] = m_pOwner->getSubarchitectureID();
+      else options["video.sa"] = it->second;
+   }
 }
 
 void CGeorgeY2Article::onStart()
@@ -34,6 +176,8 @@ void CGeorgeY2Article::onStart()
       new MemberFunctionChangeReceiver<CGeorgeY2Article>(
          this, &CGeorgeY2Article::onAdd_SpokenItem)
       );
+
+   switchState(stStart);
 }
 
 void CGeorgeY2Article::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
@@ -57,10 +201,12 @@ void CGeorgeY2Article::onDel_VisualObject(const cast::cdl::WorkingMemoryChange &
 void CGeorgeY2Article::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    // TODO: read the response, verify that it's the robots response, notify
-   if (false)
+   if (true)
    {
+      synthesize::SpokenOutputItemPtr psaid = m_pOwner->getMemoryEntry<synthesize::SpokenOutputItem>(_wmc.address);
+
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_RobotResponse = "I see";
+      m_RobotResponse = psaid->phonString;
    }
    m_EventMonitor.notify();
 }
@@ -105,7 +251,26 @@ void CGeorgeY2Article::switchState(int newState)
       m_RobotResponse = "";
    }
 
+   if (newState == stTimedOut) {
+      report(MSSG("STATE " << m_stateNames[m_State] << " TIMED OUT"));
+   }
+
    m_State = newState;
+
+   double delta;
+   switch(m_State) {
+      default:
+         delta = 15;
+         break;
+      case stStart:
+      case stWaitToAppear:
+      case stWaitToDisappear:
+         delta = 30;
+         break;
+   }
+   m_timeout = now() + delta;
+
+   report(MSSG(now() << " NEW STATE " << m_stateNames[m_State]));
 }
 
 void CGeorgeY2Article::verifyCount(int count)
@@ -124,28 +289,101 @@ void CGeorgeY2Article::verifyCount(int count)
    }
 }
 
-void CGeorgeY2Article::loadNextObject()
+CTestEntry* CGeorgeY2Article::getCurrentTest()
 {
+   if (m_currentTest < 0 || m_currentTest >= m_testEntries.size())
+      return 0;
+   return m_testEntries[m_currentTest];
+}
+
+bool CGeorgeY2Article::nextTest()
+{
+   m_currentTest++;
+   return (m_currentTest >= 0 && m_currentTest < m_testEntries.size());
+}
+
+bool CGeorgeY2Article::isTimedOut()
+{
+   return now() > m_timeout;
+}
+
+void CGeorgeY2Article::loadScene()
+{
+   CTestEntry *pinfo = getCurrentTest();
+   if (! pinfo) return;
+
+   Video::VideoSequenceInfoPtr pseq = new Video::VideoSequenceInfo();
+
+   pseq->fileTemplates = m_imageDir + "/" + pinfo->videoLeft + " " + m_imageDir + "/" + pinfo->videoRight;
+   pseq->start = 0;
+   pseq->end = 0;
+   pseq->step = 0;
+   pseq->loop = true;
+   pseq->repeatFrame = 5;
+
+   cdl::WorkingMemoryAddress addr;
+   addr.subarchitecture = options["video.sa"];
+   addr.id = m_pOwner->newDataID();
+
+   m_pOwner->addToWorkingMemory(addr, pseq);
+   report(pseq->fileTemplates);
 }
 
 void CGeorgeY2Article::loadEmptyScene()
 {
+   Video::VideoSequenceInfoPtr pseq = new Video::VideoSequenceInfo();
+
+   pseq->fileTemplates = m_imageDir + "/empty-l.png" + " " + m_imageDir + "/empty-r.png";
+   pseq->start = 0;
+   pseq->end = 0;
+   pseq->step = 0;
+   pseq->loop = true;
+   pseq->repeatFrame = 5;
+
+   cdl::WorkingMemoryAddress addr;
+   addr.subarchitecture = options["video.sa"];
+   addr.id = m_pOwner->newDataID();
+
+   m_pOwner->addToWorkingMemory(addr, pseq);
+   report(pseq->fileTemplates);
 }
 
 bool CGeorgeY2Article::performNextTeachingStep()
 {
    m_TeachingStep++;
-   if (m_TeachingStep > 1) return false;
+   if (m_TeachingStep > 2) return false;
 
-   // TODO: retreive the learning step from script.
+   CTestEntry *pinfo = getCurrentTest();
 
    cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = string("dialogue"); // XXX: Hardcoded SA name, has to match SA in .cast file
+   addr.subarchitecture = options["dialogue.sa"];
    addr.id = m_pOwner->newDataID();
 
    asr::PhonStringPtr sayWhat = new asr::PhonString();
    sayWhat->id = addr.id;
-   sayWhat->wordSequence = "hello george";
+   if (! pinfo) sayWhat->wordSequence = "hi";
+   else {
+      // TODO: describe the object, or say hello if the attribute is not present.
+      switch(m_TeachingStep) {
+         case 1: 
+            if (pinfo->shape == "") sayWhat->wordSequence = "hello";
+            else {
+               sayWhat->wordSequence = "this is " + pinfo->shape;
+               report(MSSG("Tutor: this is " << pinfo->shape));
+            }
+            break;
+         case 2: 
+            if (pinfo->color == "") sayWhat->wordSequence = "hello";
+            else {
+               sayWhat->wordSequence = "this is " + pinfo->color;
+               report(MSSG("Tutor: this is " << pinfo->color));
+            }
+            break;
+         default:
+            sayWhat->wordSequence = "hello";
+            break;
+      }
+   }
 
    m_pOwner->addToWorkingMemory(addr, sayWhat);
 
@@ -158,6 +396,7 @@ void CGeorgeY2Article::runOneStep()
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
    bool mustWait = false;
    mustWait = mustWait
+      || (m_State == stStart)
       || (m_State == stTableEmpty && m_ObjectCount > 0) // ghosts
       || (m_State == stWaitToAppear && m_ObjectCount < 1)
       || (m_State == stTeaching && m_ObjectCount < 1)   // object unstable
@@ -171,18 +410,35 @@ void CGeorgeY2Article::runOneStep()
       m_EventMonitor.timedWait(IceUtil::Time::milliSeconds(2)); // give a chance to other thread, anyway
    // SYNC: Continue with a locked monitor
 
+   if (mustWait)
+      report(MSSG("STATE " << m_stateNames[m_State]));
+
    switch (m_State) {
+      case stStart:
+         if (isTimedOut()) {
+            switchState(stTableEmpty);
+         }
+         break;
+
       case stTableEmpty:
          verifyCount(0);
          if (m_ObjectCount < 1) {
-            loadNextObject();
-            switchState(stWaitToAppear);
+            if (! getCurrentTest()) {
+               switchState(stFinished);
+            }
+            else {
+               loadScene();
+               switchState(stWaitToAppear);
+            }
          }
          break;
 
       case stWaitToAppear:
          if (m_ObjectCount > 0) {
             switchState(stObjectOn);
+         }
+         else if (isTimedOut()) {
+            switchState(stTimedOut);
          }
          break;
 
@@ -204,9 +460,12 @@ void CGeorgeY2Article::runOneStep()
       case stWaitForResponse: // "I see" or "Thank you" or ...
          verifyCount(1);
          if (m_RobotResponse.length() > 0) {
+            report(MSSG("Robot says: " << m_RobotResponse));
             switchState(stTeaching);
          }
-         // TODO: what about some timeout?
+         else if (isTimedOut()) {
+            switchState(stTimedOut);
+         }
          break;
 
       case stEndOfTeaching:
@@ -216,8 +475,21 @@ void CGeorgeY2Article::runOneStep()
 
       case stWaitToDisappear:
          if (m_ObjectCount <= 0) {
+            nextTest();
             switchState(stTableEmpty);
          }
+         else if (isTimedOut()) {
+            switchState(stTimedOut);
+         }
+         break;
+
+      case stFinished:
+         m_pOwner->sleepComponent(100);
+         break;
+
+      case stTimedOut:
+         nextTest();
+         switchState(stTableEmpty);
          break;
    }
 }

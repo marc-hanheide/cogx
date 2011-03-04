@@ -18,6 +18,7 @@ public:
    CTestCase(std::string name, CTestRecognizer *pOwner) {
       m_pOwner = pOwner;
    }
+   virtual void configure(const std::map<std::string,std::string> & _config) {}
    virtual void runOneStep() { }
    virtual void onStart() { }
    virtual void onExitComponent() { }
@@ -34,7 +35,7 @@ private:
    std::vector<std::string> m_protoIDs;
 
 public:
-   // TODO Couters, should be RO for public!
+   // TODO Counters, should be RO for public!
    int m_ProtoObjects;
    int m_RecogTasks;
    int m_LearnTasks;
