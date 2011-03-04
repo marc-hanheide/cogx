@@ -54,19 +54,19 @@ module ConceptualData
 	/** Structure representing information about object place properties. */
 	struct ObjectPlacePropertyInfo
 	{
-                /** The category of the object. */
+		/** The category of the object. */
 		string category;
-                /** Category of the possible support object. If the relation does not require a support object, it's empty. */
-                string supportObjectCategory;
-                /** WM Id of the possible support object. If the relation does not require a support object, it's empty. */
-                string supportObjectId;
-                /** Spatial relation for this object. */
-                SpatialData::SpatialRelation relation;
-                /** Number of objects of this type found. */
-                int count;
-                /** The percentage of the relation probability mass that was already explored for this object category. */
-                int beta;
-        };
+        /** Category of the possible support object. If the relation does not require a support object, it's empty. */
+        string supportObjectCategory;
+        /** WM Id of the possible support object. If the relation does not require a support object, it's empty. */
+        string supportObjectId;
+        /** Spatial relation for this object. */
+        SpatialData::SpatialRelation relation;
+        /** Number of objects of this type found. */
+        int count;
+        /** The percentage of the relation probability mass that was already explored for this object category. */
+        int beta;
+    };
 
 	/** */
 	sequence<ObjectPlacePropertyInfo> ObjectPlacePropertyInfos;
@@ -97,7 +97,7 @@ module ConceptualData
 	/** Relevant information about a place. */
 	struct PlaceInfo
 	{
-                int placeId;
+        int placeId;
 		ObjectPlacePropertyInfos objectProperties;
 		ShapePlacePropertyInfos shapeProperties;
 		AppearancePlacePropertyInfos appearanceProperties;
@@ -109,7 +109,7 @@ module ConceptualData
 	/** Relevant information about a placeholder. Currently only id. */
 	struct PlaceholderInfo
 	{
-        	int placeholderId;
+        int placeholderId;
 	};
 
 	/** Sequence of placeholder infos. */
@@ -120,15 +120,15 @@ module ConceptualData
 	{
 		/** Address required by the ComaRoomUpdater. */
 		cast::cdl::WorkingMemoryAddress wmAddress; 
-        	int roomId;
+        int roomId;
 		
 		/** Places in that room. */
-                PlaceInfos places;
+        PlaceInfos places;
 
 		/** Placeholder infos. */
 		PlaceholderInfos placeholders;
 
-                /** Object properties not assigned to any places in this room. */
+        /** Object properties not assigned to any places in this room. */
 		ObjectPlacePropertyInfos objectProperties;
 	};
 

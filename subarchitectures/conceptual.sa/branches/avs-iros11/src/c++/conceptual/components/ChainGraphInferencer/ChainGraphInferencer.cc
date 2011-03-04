@@ -518,7 +518,7 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
-		string objectVariableName, bool objectExists)
+		std::string objectVariableName, bool objectExists)
 {
 	// Get the default object property factor
 	string factorName = string("f(room_category1,")+objectVariableName+")";
@@ -798,8 +798,13 @@ void ChainGraphInferencer::addDaiFactors()
 			for (unsigned int o=0; o<pi.objectProperties.size(); ++o)
 			{
 				const ConceptualData::ObjectPlacePropertyInfo &oppi = pi.objectProperties[o];
+//				createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
+//													  oppi.supportObjectCategory, oppi.supportObjectId,
+//													  oppi.count, oppi.beta);
 				createDaiObservedObjectPropertyFactor(cri.roomId,
 						"object_"+oppi.category+"_property", oppi.count>0);  // TODO!
+//				createDaiObjectUnexploredFactor(cri.roomId);
+
 			} // o
 
 			// Shape properties

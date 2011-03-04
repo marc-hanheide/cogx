@@ -14,9 +14,9 @@
 // LibDAI
 #define DAI_WITH_JTREE
 #define DAI_WITH_BP
-
 #include <dai/alldai.h>
 
+#include <string>
 
 namespace conceptual
 {
