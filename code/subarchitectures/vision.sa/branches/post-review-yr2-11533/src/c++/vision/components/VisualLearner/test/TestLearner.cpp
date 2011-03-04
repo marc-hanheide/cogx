@@ -106,6 +106,21 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
 {
    map<string,string>::const_iterator it;
 
+   // CONFIG: --testmode
+   // TYPE: string-item, required
+   // Select the test to run. The available tests are:
+   // VALUE: standalone
+   // VALUE: fake-proto
+   // VALUE: learning
+   // VALUE: saved-example
+   // VALUE: gy2article
+   //   Simulates robot learning.
+   //   The test will change input images and write object descriptions into WM.
+   //   The ASR (dialogue.sa) will pick the descriptions and create learning goals
+   //   which will be processed by motivation, planner and execution. Execution will
+   //   generate VisualLearner Learning Tasks that will update the robot's knowledge.
+   //   OpenCvImgSeqServer must be started with --wminterface.
+   //   SUBCONFIG: @include CGeorgeY2Article::configure
    if((it = _config.find("--testmode")) != _config.end())
    {
       string mode;
@@ -132,6 +147,13 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
          m_pTestCase = new CGeorgeY2Article(mode, this);
       }
       log("TEST MODE: %s", testmode.c_str());
+   }
+
+   if (m_pTestCase) {
+      m_pTestCase->configure(_config);
+   }
+   else {
+      throw runtime_error(string("Invalid test: --testmode ") + testmode);
    }
 
    if((it = _config.find("--delay")) != _config.end()) {
