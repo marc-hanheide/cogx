@@ -40,12 +40,12 @@
 
    ;; expected cost of searching for an object. Used by CP planner
    (dora__cost_inroom ?l - label) - number
-   (dora__cost_inobj ?l1 ?l2 - label) - number
+   (dora__cost_inobject ?l1 ?l2 - label) - number
    (dora__cost_on ?l1 ?l2 - label) - number
    (search_cost ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
    ;; default probabilities. These come from Coma.
    (dora__inroom ?l - label ?c - category) - number
-   (dora__inobj ?l1 ?l2 - label ?c - category) - number
+   (dora__inobject ?l1 ?l2 - label ?c - category) - number
    (dora__on ?l1 ?l2 - label ?c - category) - number
 
    ;; === inferred knowledge ===
@@ -127,7 +127,7 @@
   (:init-rule default_search_costs_for_object_in
               :parameters (?l - label ?o - visualobject)
               :precondition (= (search_cost ?l in ?o) unknown)
-              :effect (assign (search_cost ?l in ?o) (dora__cost_inobj ?l (label ?o)))
+              :effect (assign (search_cost ?l in ?o) (dora__cost_inobject ?l (label ?o)))
               )
 
   (:init-rule default_search_costs_for_object_on
@@ -195,8 +195,8 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o ?r) in)
-                              (defined (dora__inobj ?l1 ?l2 ?c)))
-           :effect (probabilistic (dora__inobj ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
+                              (defined (dora__inobject ?l1 ?l2 ?c)))
+           :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
