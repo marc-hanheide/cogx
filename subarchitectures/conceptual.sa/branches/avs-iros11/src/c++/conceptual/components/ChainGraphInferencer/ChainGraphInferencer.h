@@ -15,7 +15,9 @@
 #define DAI_WITH_JTREE
 #define DAI_WITH_BP
 #include <dai/alldai.h>
-
+// Boost&Std
+#include <boost/math/special_functions/factorials.hpp>
+#include <math.h>
 #include <string>
 
 namespace conceptual
@@ -71,9 +73,19 @@ private:
 
 	/** Creates a DAI connectivity factor for two rooms. */
 	void createDaiConnectivityFactor(int room1Id, int room2Id);
+	/**
+	 * Creates an uninformative DAI factor for the room to make each variable always
+	 * have at least one factor.
+	 */
 	void createDaiSingleRoomFactor(int room1Id);
-	void createDaiObservedObjectPropertyFactor(int room1Id,
-			std::string objectVariableName, bool objectExists);
+	/** Creates the factor for an observed object counter variable for the explored space. */
+	void createDaiObservedObjectPropertyFactor(int room1Id, const std::string &objectCategory,
+			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
+			const std::string &supportObjectId, unsigned int objectCount, double beta);
+	/** Creates the factor for the presence of the object in yet unexplored space. */
+	void createDaiObjectUnexploredFactor(int room1Id, const std::string &objectCategory,
+			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
+			const std::string &supportObjectId, double beta);
 	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
@@ -117,10 +129,26 @@ private:
 	/** Parses a query into a vector of variables. */
 	void parseQuery(std::string queryString, std::vector<std::string> &variables);
 
+	/** Retrieves the elements of the variable name. */
+	void parseVariable(std::string variableName, std::vector<std::string> &elements);
+
 	/** Adds room connectivity factor for 2 variables representing room categories. */
 	void createDaiConnectivityFactor(std::vector<dai::Factor> &factors, dai::Var &var1, dai::Var &var2);
 
 	void updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior);
+
+	/** Loads the AVS default knowledge file. */
+	void loadAvsDefaultKnowledge();
+
+	/** Returns the calculated Lambda of the poisson distrubution for the object, relation and room category. */
+	double getPoissonLambda(const std::string &roomCategory, const std::string &objectCategory,
+							SpatialData::SpatialRelation relation, const std::string &supportObjectCategory);
+
+	/** Calculates probability for the Poisson distribution. */
+	static double getPoissonProabability(double lambda, unsigned int k)
+	{
+		return (::pow(lambda, static_cast<double>(k)) * ::exp(-lambda)) / (boost::math::factorial<double>(k));
+	}
 
 
 private:
@@ -157,6 +185,9 @@ private:
 	/** Name of the file to which the info about variables and their values is saved.  */
 	std::string _saveGraphInfoFileName;
 
+	/** Name of the file with the default knowledge for the AVS system.  */
+	std::string _avsDefaultKnowledgeFileName;
+
 	/** If true, placeholder properties will be inferred. */
 	bool _inferPlaceholderProperties;
 
@@ -171,7 +202,8 @@ private:
 	/** Names of the object place property variables. */
 	DefaultData::StringSeq _objectPropertyVariables;
 
-	/** Names of all room categories. */
+	/** Names of all room categories. The string is the concatenation of all the parameters that
+	 *  lead to this lambda. */
 	DefaultData::StringSeq _roomCategories;
 
 	/** Names of all shapes. */
@@ -203,13 +235,19 @@ private:
 	/** Inferred probability of category existance for the room category placeholder property. */
 	std::map<std::string, double> _placeholderRoomCategoryExistance;
 
+	/** List of additional variables that were requested in the queries that should be created on request. */
+	std::list<std::string> _additionalVariables;
+
+	/** Cache for the lambda values. */
+	std::map<std::string, double> _poissonLambdaCache;
+
 	/** Junction tree. */
 //	dai::JTree _junctionTree;
 
 	dai::BP _bp;
 
-
     dai::PropertySet _daiOptions;
+
 
 }; // class ChainGraphInferencer
 } // namespace def

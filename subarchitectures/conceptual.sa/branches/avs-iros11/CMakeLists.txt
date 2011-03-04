@@ -21,8 +21,10 @@ include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
 include_directories(${ROCS_SRC_INCLUDES})
 add_subdirectory (src/c++/conceptual/autogen)
 include_directories(src/c++/conceptual/autogen)
+include_directories(src/c++/conceptual/shared)
 
 # Conceptual.SA Tools
+add_subdirectory (src/c++/conceptual/shared)
 add_subdirectory (src/c++/conceptual/tools/conceptualviewer)
 
 # Conceptual.SA C++ Components
