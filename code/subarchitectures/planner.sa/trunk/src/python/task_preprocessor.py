@@ -46,7 +46,8 @@ class AttributedSVarDistribution(SVarDistribution):
     return "(attributed %s (%s %s)) = [%s]" % (self.agent, self.feature, " ".join(a.name for a in self.args), valstr)
 
 def rename_objects(objects, existing=set(), add_renamings={}):
-  namedict = {}
+  castname_to_obj = {}
+  obj_to_castname = {}
   for obj in objects:
     if obj in existing:
       continue
@@ -60,10 +61,10 @@ def rename_objects(objects, existing=set(), add_renamings={}):
       new_name = re.sub(UCASE_REXP, r'_\1', new_name).lower()
     obj.rename(new_name)
   
-    namedict[oldname] = obj
-    namedict[obj.name] = oldname
+    castname_to_obj[oldname] = obj
+    obj_to_castname[obj] = oldname
     
-  return namedict
+  return castname_to_obj, obj_to_castname
 
 def transform_goal_string(goal, namedict):
   for name, obj in namedict.iteritems():

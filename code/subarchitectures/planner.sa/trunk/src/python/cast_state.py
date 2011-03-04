@@ -54,14 +54,14 @@ class CASTState(object):
         renamings = {}
         if oldstate:
             for gen in oldstate.generated_objects:
-                if gen.name in oldstate.namedict:
-                    belname = oldstate.namedict[gen.name]
+                if gen in oldstate.obj_to_castname:
+                    belname = oldstate.obj_to_castname[gen]
                     renamings[belname] = gen.name
                     #print "previous match:", belname, gen.name
 
         objects = tp.infer_types(obj_descriptions)
 
-        self.namedict = tp.rename_objects(objects, self.coma_objects|domain.constants, add_renamings=renamings )
+        self.castname_to_obj, self.obj_to_castname = tp.rename_objects(objects, self.coma_objects|domain.constants, add_renamings=renamings )
         self.objects = set(list(objects)) # force rehashing
         self.facts = list(tp.tuples2facts(obj_descriptions))
         self.objects |= self.coma_objects
@@ -133,7 +133,7 @@ class CASTState(object):
                 
         functions = set()
         for r in self.domain.dt_rules:
-            functions |= r.deps
+            functions |= set(f for f in r.deps if f.type != pddl.t_number)
 
         for a in self.domain.actions:
             functions |= set(pddl.visitors.visit(a.precondition, get_committed_functions, []))
@@ -155,7 +155,7 @@ class CASTState(object):
             current_objects = self.objects | oldstate.generated_objects | self.domain.constants
             
             for gen in oldstate.generated_objects:
-                if gen.name in oldstate.namedict and gen.name not in self.namedict:
+                if gen in oldstate.obj_to_castname and gen not in self.obj_to_castname:
                     log.debug("generated object %s is gone", gen.name)
                     current_objects.discard(gen) # remove matched generated objects that have vanished
                     
@@ -309,8 +309,8 @@ class CASTState(object):
         new_objects = self.objects - self.generated_objects - oldstate.objects
         matches = {}
         for gen in oldstate.generated_objects & self.objects:
-            if gen.name in oldstate.namedict:
-                log.debug("Keeping match from %s to %s.", gen.name, oldstate.namedict[gen.name])
+            if gen in oldstate.obj_to_castname:
+                log.debug("Keeping match from %s to %s.", gen.name, oldstate.obj_to_castname[gen])
                 continue
             
             facts = []
@@ -346,13 +346,13 @@ class CASTState(object):
             for obj, gen in matches.iteritems():
                 self.objects.discard(obj)
                 log.debug("Matching generated object %s to new object %s.", gen.name, obj.name)
-                belname = self.namedict[obj.name]
-                del self.namedict[obj.name]
-                del self.namedict[belname]
+                belname = self.obj_to_castname[obj]
+                del self.obj_to_castname[obj]
+                del self.castname_to_obj[belname]
                 
                 obj.rename(gen.name)
-                self.namedict[belname] = obj
-                self.namedict[obj.name] = belname
+                self.castname_to_obj[belname] = obj
+                self.obj_to_castname[obj] = belname
 
             for f in self.facts:
                 f.svar.rehash()
@@ -397,7 +397,7 @@ class CASTState(object):
         problem.goal = pddl.conditions.Conjunction([], problem)
         for goal in slice_goals:
             try:
-                goalstrings = tp.transform_goal_string(goal.goalString, self.namedict).split("\n")
+                goalstrings = tp.transform_goal_string(goal.goalString, self.castname_to_obj).split("\n")
                 pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
             except pddl.parser.ParseError,e:
                 log.warning("Could not parse goal: %s", goal.goalString)
@@ -437,11 +437,11 @@ class CASTState(object):
         def replace_object(obj):
             if obj.name in objdict:
                 return objdict[obj.name]
-            elif obj.name in self.namedict:
-                return self.namedict[obj.name]
+            elif obj.name in self.castname_to_obj:
+                return self.castname_to_obj[obj.name]
             elif obj.name in percept2bel:
                 bel = percept2bel[obj.name]
-                return self.namedict[bel.id]
+                return self.castname_to_obj[bel.id]
             else:
                 log.warning("Percept %s has no matching grounded belief.", obj.name)
                 return None 
@@ -472,9 +472,9 @@ class CASTState(object):
         return filtered_facts
 
     def featvalue_from_object(self, arg):
-        if arg.name in self.namedict:
+        if arg in self.obj_to_castname:
             #arg is provided by the binder
-            name = self.namedict[arg.name]
+            name = self.obj_to_castname[arg]
         else:
             #arg is a domain constant
             name = arg.name
@@ -563,7 +563,7 @@ class CASTState(object):
             if len(svar.args) == 1:
                 obj = svar.args[0]
                 try:
-                    bel = self.beliefdict[self.namedict[obj.name]]
+                    bel = self.beliefdict[self.obj_to_castname[obj]]
                 except:
                     log.warning("tried to find belief for %s, but failed", str(obj))
                     continue

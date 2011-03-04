@@ -25,6 +25,9 @@
    ;;virtual predicates
    (cones_created  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
 
+   ;;used to early prevent instantiation of operators with undefined probability/costs
+   (defined ?svar - (function number))
+
    (started)
    (done)
    )
@@ -133,6 +136,12 @@
               :effect (assign (search_cost ?l on ?o) (dora__cost_on ?l (label ?o)))
               )
 
+  (:init-rule defined_numbers
+              :parameters (?svar - (function number))
+              :precondition (> ?svar 0.0001)
+              :effect (defined ?svar))
+
+
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
                                        (connected ?p2 ?p))))
@@ -175,7 +184,8 @@
   ;; p(?label IN ?room | category(?room) = ?cat)
   (:dtrule obj_in_room
            :parameters (?l - label ?r - room ?c - category)
-           :precondition (= (category ?r) ?c)
+           :precondition (and (= (category ?r) ?c)
+                              (defined (dora__inroom ?l ?c)))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -184,7 +194,8 @@
            :precondition (and (= (category ?r) ?c)
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
-                              (= (relation ?o ?r) in))
+                              (= (relation ?o ?r) in)
+                              (defined (dora__inobj ?l1 ?l2 ?c)))
            :effect (probabilistic (dora__inobj ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -193,7 +204,8 @@
            :precondition (and (= (category ?r) ?c)
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
-                              (= (relation ?o ?r) in))
+                              (= (relation ?o ?r) in)
+                              (defined (dora__on ?l1 ?l2 ?c)))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
 
@@ -243,10 +255,10 @@
   (:durative-action report_position
            :agent (?a - robot)
            :parameters (?o - visualobject)
-           :variables (?p - place ?h - human)
+           :variables (?p - place); ?h - human)
            :duration (= ?duration 1.0)
            :condition (over all (and (kval ?a (related-to ?o))
-                                     (= (is-in ?h) ?p)
+                                     ;(= (is-in ?h) ?p)
                                      (= (is-in ?a) ?p)))
            :effect (at end (position-reported ?o))
            )
