@@ -38,16 +38,16 @@ ON mug table office 0.1
 ON mug table living_room 0.3
 ON mug table corridor 0.1
 
-INOBJ mug cupboard kitchen 0.9
-INOBJ mug cupboard office 0.9
-INOBJ mug cupboard living_room 0.9
-INOBJ mug cupboard corridor 0.9
+INOBJECT mug cupboard kitchen 0.9
+INOBJECT mug cupboard office 0.9
+INOBJECT mug cupboard living_room 0.9
+INOBJECT mug cupboard corridor 0.9
 
-INOBJ mug dishwasher kitchen 0.7
+INOBJECT mug dishwasher kitchen 0.7
 
-INOBJ mug bookcase office 0.2
-INOBJ mug bookcase living_room 0.2
-INOBJ mug bookcase corridor 0.05
+INOBJECT mug bookcase office 0.2
+INOBJECT mug bookcase living_room 0.2
+INOBJECT mug bookcase corridor 0.05
 
 INOBJECT mug box kitchen 0.2
 INOBJECT mug box office 0.1
@@ -59,14 +59,14 @@ ON cereal_box table living_room 0.2
 ON cereal_box table corridor 0.1
 
 
-INOBJ cereal_box cupboard kitchen 0.7
-INOBJ cereal_box cupboard office 0.3
-INOBJ cereal_box cupboard living_room 0.3
-INOBJ cereal_box cupboard corridor 0.2
+INOBJECT cereal_box cupboard kitchen 0.7
+INOBJECT cereal_box cupboard office 0.3
+INOBJECT cereal_box cupboard living_room 0.3
+INOBJECT cereal_box cupboard corridor 0.2
 
-INOBJ cereal_box bookcase kitchen 0.1
-INOBJ cereal_box bookcase office 0.05
-INOBJ cereal_box bookcase living_room 0.05
+INOBJECT cereal_box bookcase kitchen 0.1
+INOBJECT cereal_box bookcase office 0.05
+INOBJECT cereal_box bookcase living_room 0.05
 
 
 ON book table kitchen 0.1
@@ -74,21 +74,21 @@ ON book table office 0.6
 ON book table living_room 0.7
 ON book table corridor 0.5
 
-INOBJ book cupboard office 0.1
+INOBJECT book cupboard office 0.1
 
-INOBJ book bookcase kitchen 0.9
-INOBJ book bookcase office 0.9
-INOBJ book bookcase living_room 0.9
-INOBJ book bookcase corridor 0.9
+INOBJECT book bookcase kitchen 0.9
+INOBJECT book bookcase office 0.9
+INOBJECT book bookcase living_room 0.9
+INOBJECT book bookcase corridor 0.9
 
 COST_INROOM mug 200
 
 COST_ON mug table 30
 COST_ON mug dishwasher 30
 
-COST_INOBJ mug dishwasher 50
-COST_INOBJ mug cupboard 40
-COST_INOBJ mug bookcase 40
+COST_INOBJECT mug dishwasher 50
+COST_INOBJECT mug cupboard 40
+COST_INOBJECT mug bookcase 40
 
 
 COST_INROOM table 50
@@ -102,9 +102,9 @@ COST_INROOM cereal_box 200
 COST_ON cereal_box table 30
 COST_ON cereal_box dishwasher 30
 
-COST_INOBJ cereal_box dishwasher 50
-COST_INOBJ cereal_box cupboard 40
-COST_INOBJ cereal_box bookcase 40
+COST_INOBJECT cereal_box dishwasher 50
+COST_INOBJECT cereal_box cupboard 40
+COST_INOBJECT cereal_box bookcase 40
 
 
 COST_INROOM book 200
@@ -112,9 +112,9 @@ COST_INROOM book 200
 COST_ON book table 30
 COST_ON book dishwasher 30
 
-COST_INOBJ book dishwasher 50
-COST_INOBJ book cupboard 40
-COST_INOBJ book bookcase 40
+COST_INOBJECT book dishwasher 50
+COST_INOBJECT book cupboard 40
+COST_INOBJECT book bookcase 40
 
 
 
