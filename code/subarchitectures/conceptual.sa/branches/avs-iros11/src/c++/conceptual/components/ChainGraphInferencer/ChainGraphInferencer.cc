@@ -6,15 +6,18 @@
 
 // Conceptual.SA
 #include "ChainGraphInferencer.h"
+#include "VariableNameGenerator.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Boost
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/assign/list_of.hpp>
+// Std
 #include <fstream>
-
 
 /** The function called to create a new instance of our component. */
 extern "C"
@@ -25,6 +28,11 @@ extern "C"
 	}
 }
 
+
+#define EXISTS "exists"
+#define NOT_EXISTS "not-exists"
+
+
 namespace conceptual
 {
 
@@ -32,6 +40,7 @@ using namespace std;
 using namespace cast;
 using namespace boost;
 using namespace boost::assign;
+using namespace boost::algorithm;
 
 
 // -------------------------------------------------------
@@ -74,11 +83,19 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_saveGraphFileName = it->second;
 	if((it = _config.find("--save-graph-info")) != _config.end())
 		_saveGraphInfoFileName = it->second;
+	if((it = _config.find("--avs-default-knowledge")) != _config.end())
+		_avsDefaultKnowledgeFileName = it->second;
 	if((it = _config.find("--placeholder-in-current-room-prior")) != _config.end())
 		_placeholderInCurrentRoomPrior = atof(it->second.c_str());
 	else
 		_placeholderInCurrentRoomPrior = 0.5;
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
+
+	// Check parameters
+	if (_avsDefaultKnowledgeFileName.empty())
+	{
+		throw CASTException(exceptionMessage(__HERE__,"Provide the AVS default knowledge file!"));
+	}
 
 	log("Configuration parameters:");
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
@@ -206,6 +223,16 @@ void ChainGraphInferencer::runComponent()
 				parseQuery(q.queryPtr->queryString, queryVariables);
 				if (!queryVariables.empty())
 				{
+					// Get the "additional" variables that should be added from the query if missing
+					for(unsigned int i=0; i<queryVariables.size(); ++i)
+					{
+						if (queryVariables[i][0]=='+')
+						{
+							_additionalVariables.push_back(trim_left_copy_if(queryVariables[i],is_any_of("+")));
+							erase_first(queryVariables[i], "+");
+						}
+					}
+
 					// Is this a query about an imaginary world?
 					if (q.queryPtr->imaginary)
 					{
@@ -471,7 +498,8 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 			string var1ValueName = dv1.valueIdToName[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
 			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+				throw CASTException(exceptionMessage(__HERE__,
+						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -517,50 +545,93 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
-		std::string objectVariableName, bool objectExists)
+void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id, const std::string &objectCategory,
+		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory, const std::string &supportObjectId,
+		unsigned int objectCount, double beta)
 {
-	// Get the default object property factor
-	string factorName = string("f(room_category1,")+objectVariableName+")";
-	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
-			_defaultKnowledgeFactors.find(factorName);
-	if (dnfIt == _defaultKnowledgeFactors.end())
-	{
-		error ("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
-				factorName.c_str());
-		return;
-	}
-	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
-
 	// Create variables
 	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string objectVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(
+			objectCategory, relation, supportObjectCategory);
 
 	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", room1VarName.c_str(),
-			objectVariableName.c_str() );
+			objectVarName.c_str() );
 	createDaiVariable(room1VarName, _roomCategories);
 	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
-	// Note: first fariable changes faster
-	// Go over the second variable
+
+	// Go over room categories
 	int roomCatCount = _roomCategories.size();
 	int index=0;
 	for (int i1 = 0; i1<roomCatCount; ++i1)
 	{
-		string var1ValueName = dv1.valueIdToName[i1];
-		double potential = getProbabilityValue(factor, var1ValueName, objectExists);
-		if (potential<0)
-			throw CASTException("Potential not found for object '"+objectVariableName+
-					"'values '"+var1ValueName+"' and '"+((objectExists)?"true":"false")+"'");
-		daiFactor.set(index, potential);
+		string var1ValueName = dv1.valueIdToName[i1]; // Room category
+		// Get the lambda value for the poisson distribution
+		double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+		// Get the poisson prob distribution
+		double probability = getPoissonProabability(beta*lambda, objectCount);
+		daiFactor.set(index, probability);
 		++index;
 	}
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
-	_factorNames.push_back(factorName);
+	_factorNames.push_back("ObservedObjectPropertyFactor");
+}
 
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const std::string &objectCategory,
+		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
+		const std::string &supportObjectId, double beta)
+{
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string objectUnexploredVarName = VariableNameGenerator::getUnexploredObjectVarName(
+			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
+	string factorName = "f("+room1VarName+","+objectUnexploredVarName+")";
+
+	debug("Creating DAI factor for variables '%s' and '%s'", room1VarName.c_str(), objectUnexploredVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	vector<string> values(2);
+	values[0] = NOT_EXISTS;
+	values[1] = EXISTS;
+	createDaiVariable(objectUnexploredVarName, values);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[objectUnexploredVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Note: first variable changes faster
+	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int index=0;
+	for (int i2 = 0; i2<2; ++i2)
+	{
+		string var2ValueName = dv2.valueIdToName[i2];
+		// Go over the first variable
+		for (int i1 = 0; i1<roomCatCount; ++i1)
+		{
+			string var1ValueName = dv1.valueIdToName[i1];
+			// Get the lambda value for the poisson distribution
+			double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+			// Get the poisson prob distribution
+			double probability;
+			if (var2ValueName == EXISTS)
+				probability = 1.0 - getPoissonProabability((1.0-beta)*lambda, 0);
+			else
+				probability = getPoissonProabability((1.0-beta)*lambda, 0);
+
+			daiFactor.set(index, probability);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
 }
 
 
@@ -604,7 +675,8 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 			string var1ValueName = dv1.valueIdToName[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
 			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+				throw CASTException(exceptionMessage(__HERE__,
+						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -706,7 +778,8 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 			string var1ValueName = dv1.valueIdToName[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
 			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+				throw CASTException(exceptionMessage(__HERE__,
+						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -798,13 +871,12 @@ void ChainGraphInferencer::addDaiFactors()
 			for (unsigned int o=0; o<pi.objectProperties.size(); ++o)
 			{
 				const ConceptualData::ObjectPlacePropertyInfo &oppi = pi.objectProperties[o];
-//				createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
-//													  oppi.supportObjectCategory, oppi.supportObjectId,
-//													  oppi.count, oppi.beta);
-				createDaiObservedObjectPropertyFactor(cri.roomId,
-						"object_"+oppi.category+"_property", oppi.count>0);  // TODO!
-//				createDaiObjectUnexploredFactor(cri.roomId);
-
+				createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
+													  oppi.supportObjectCategory, oppi.supportObjectId,
+													  oppi.count, oppi.beta);
+				createDaiObjectUnexploredFactor(cri.roomId, oppi.category, oppi.relation,
+						  	  	  	  	  	    oppi.supportObjectCategory, oppi.supportObjectId,
+						  	  	  	  	  	    oppi.beta);
 			} // o
 
 			// Shape properties
@@ -830,11 +902,69 @@ void ChainGraphInferencer::addDaiFactors()
 		for (unsigned int o=0; o<cri.objectProperties.size(); ++o)
 		{
 			const ConceptualData::ObjectPlacePropertyInfo &oppi = cri.objectProperties[o];
-			createDaiObservedObjectPropertyFactor(cri.roomId,
-					"object_"+oppi.category+"_property", oppi.count>0);  // TODO!
+			createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
+												  oppi.supportObjectCategory, oppi.supportObjectId,
+												  oppi.count, oppi.beta);
+			createDaiObjectUnexploredFactor(cri.roomId, oppi.category, oppi.relation,
+					  	  	  	  	  	    oppi.supportObjectCategory, oppi.supportObjectId,
+					  	  	  	  	  	    oppi.beta);
 		} // o
-       
-        } // r
+	} // r
+
+	// Add factors for additional variables requested in the queries
+	for(list<string>::iterator it = _additionalVariables.begin(); it!=_additionalVariables.end(); ++it)
+	{
+		// Check if the variable was already added.
+		if (_variableNameToDai.find(*it) == _variableNameToDai.end())
+		{ // Nope, we have to add it now
+			// Check if this is one of the variables that we can reason about
+			vector<string> elements;
+			parseVariable(*it, elements);
+			if ((elements.size()==4) && (starts_with(elements[0], "room")) &&
+				(elements[1]=="object") && (elements[3]=="unexplored"))
+			{
+				int roomId = 0;
+				try
+				{
+					roomId = boost::lexical_cast<unsigned int>(erase_first_copy(elements[0], "room"));
+				}
+				catch(...)
+				{
+					error("Incorrect room ID in the variable name (%s)!", elements[0].c_str());
+				}
+
+				createDaiObjectUnexploredFactor(roomId, elements[2], SpatialData::INROOM, "", "", 0.0);
+			}
+			else if ((elements.size()==6) && (starts_with(elements[0], "room"))
+					&& (elements[1]=="object") && (elements[5]=="unexplored"))
+			{
+				int roomId = 0;
+				try
+				{
+					roomId = boost::lexical_cast<unsigned int>(erase_first_copy(elements[0], "room"));
+				}
+				catch(...)
+				{
+					error("Incorrect room ID in the variable name (%s)!", elements[0].c_str());
+				}
+
+				// Get object ID and category
+				vector<string> objElems;
+				split(objElems, elements[4], is_any_of("-") );
+				if (objElems.size()!=2)
+				{
+					error("Incorrect object category and/or id in the variable name (%s)!", elements[4].c_str());
+				}
+
+				createDaiObjectUnexploredFactor(roomId, elements[2], VariableNameGenerator::stringToRelation(elements[3]),
+						  	  	  	  	  	    objElems[0], objElems[1], 0.0);
+			}
+			else
+			{
+				error("Inference requested for incorrect variable name (%s)!", it->c_str());
+			}
+		} // if
+	} // for
 }
 
 
@@ -973,7 +1103,8 @@ void ChainGraphInferencer::updateOutputsUsingImaginaryVariables(dai::BP &bp, dai
 		}
 	}
 	else
-		throw CASTException("Incorrect number of variables in updateOutputsUsingImaginaryVariables");
+		throw CASTException(exceptionMessage(__HERE__,
+				"Incorrect number of variables in updateOutputsUsingImaginaryVariables"));
 }
 
 // -------------------------------------------------------
@@ -1005,7 +1136,8 @@ void ChainGraphInferencer::createDaiConnectivityFactor(vector<dai::Factor> &fact
 			string var1ValueName = _roomCategories[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
 			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+				throw CASTException(exceptionMessage(__HERE__,
+						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -1144,6 +1276,15 @@ void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryStri
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::parseVariable(string variableName, vector<string> &elements)
+{
+	// Extract variable names
+	trim(variableName);
+	split(elements, variableName, is_any_of("_") );
+}
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::parseQuery(string queryString, vector<string> &variables)
 {
 	// Check the query string
@@ -1180,7 +1321,8 @@ void ChainGraphInferencer::getDefaultKnowledge()
 
 	// Error checking
 	if ( (_objectPropertyVariables.empty()) || (_roomCategories.empty()) )
-		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+		throw CASTException(exceptionMessage(__HERE__,
+				"Did not receive information from Default.SA. Is everything started?"));
 
 	string factorStr;
 
@@ -1189,34 +1331,220 @@ void ChainGraphInferencer::getDefaultKnowledge()
 	_defaultKnowledgeFactors[factorStr] =
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
-		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+		throw CASTException(exceptionMessage(__HERE__,
+				"Did not receive information from Default.SA. Is everything started?"));
 
 
 	// Get the room1_category -> object_xxx_property factors
-	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
-	{
-		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
-		_defaultKnowledgeFactors[factorStr] =
-				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
-		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
-			throw CASTException("Did not receive information from Default.SA. Is everything started?");
-	}
+	// THIS CODE IS TEMPORARILY DISABLED AND PROBABILITIES ARE INSTEAD TAKEN FROM THE FLAT FILE
+	// THIS IS ONLY A HACK FOR THE AVS PAPER
+//	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
+//	{
+//		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
+//		_defaultKnowledgeFactors[factorStr] =
+//				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+//		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+//			throw CASTException("Did not receive information from Default.SA. Is everything started?");
+//	}
+	// Open the AVS default knowledge file
+	loadAvsDefaultKnowledge();
 
 	// Get the room1_category -> shape_property factor
 	factorStr = "f(room_category1,shape_property)";
 	_defaultKnowledgeFactors[factorStr] =
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
-		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+		throw CASTException(exceptionMessage(__HERE__,
+				"Did not receive information from Default.SA. Is everything started?"));
 
 	// Get the room1_category -> appearance_property factor
 	factorStr = "f(room_category1,appearance_property)";
 	_defaultKnowledgeFactors[factorStr] =
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
-		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+		throw CASTException(exceptionMessage(__HERE__, "Did not receive information from Default.SA. Is everything started?"));
 }
 
+
+// -------------------------------------------------------
+void ChainGraphInferencer::loadAvsDefaultKnowledge()
+{
+	map<string, map<string, double> > defKn;
+	ifstream avsFile(_avsDefaultKnowledgeFileName.c_str());
+	if (!avsFile.is_open())
+		throw CASTException(exceptionMessage(__HERE__, "Cannot open the AVS default knowledge file!"));
+
+	char *line = new char[256];
+	while (avsFile.good())
+	{
+		string targetObjectCategory;
+		string supportObjectCategory;
+		SpatialData::SpatialRelation relation;
+		string roomCategory;
+		double probability;
+
+		try
+		{
+			avsFile.getline(line, 256);
+			vector<string> splitLine;
+			split(splitLine, line, is_any_of(" ") );
+			if (splitLine.size()==4)
+			{
+				if (splitLine[0]=="INROOM")
+				{
+					targetObjectCategory = splitLine[1];
+					roomCategory = splitLine[2];
+					probability = boost::lexical_cast<double>(splitLine[3]);
+					relation = SpatialData::INROOM;
+				}
+				else continue;
+			}
+			else if (splitLine.size()==5)
+			{
+				if (splitLine[0]=="ON")
+				{
+					targetObjectCategory = splitLine[1];
+					supportObjectCategory = splitLine[2];
+					roomCategory = splitLine[3];
+					probability = boost::lexical_cast<double>(splitLine[4]);
+					relation = SpatialData::ON;
+				}
+				else if (splitLine[0]=="INOBJECT")
+				{
+					targetObjectCategory = splitLine[1];
+					supportObjectCategory = splitLine[2];
+					roomCategory = splitLine[3];
+					probability = boost::lexical_cast<double>(splitLine[4]);
+					relation = SpatialData::INOBJECT;
+				}
+				else continue;
+			}
+			else continue;
+		}
+		catch(...)
+		{
+			throw CASTException(exceptionMessage(__HERE__, "Incorrect AVS default knowledge file!"));
+		}
+
+		// For object property variable name
+		string objVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(targetObjectCategory,
+												relation, supportObjectCategory);
+
+		defKn[objVarName][roomCategory] = probability;
+	}
+	delete [] line;
+	avsFile.close();
+
+
+	// Form all the factors
+	for (map<string, map<string, double> >::iterator it = defKn.begin(); it != defKn.end(); ++it)
+	{
+		// Create a factor
+		string objVarName = it->first;
+		string factorStr = "f(room_category1," + objVarName + ")";
+		SpatialProbabilities::ProbabilityDistribution factor;
+		factor.description=factorStr;
+		factor.variableNameToPositionMap["room_category1"]=0;
+		factor.variableNameToPositionMap[objVarName]=1;
+
+		// Set of room categories that we need to add value for
+		set<string> roomCategories( _roomCategories.begin(), _roomCategories.end() );
+
+		// Let's iterate over the knowledge and fill values of what we know
+		for(map<string, double>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+		{
+			roomCategories.erase(it2->first); // Remove from the to-do list
+
+			// Existance of object
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it2->first);
+			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
+					new SpatialProbabilities::BoolRandomVariableValue(true);
+			SpatialProbabilities::JointProbabilityValue jpv1;
+			jpv1.probability=it2->second;
+			jpv1.variableValues.push_back(roomCategory1RVVPtr);
+			jpv1.variableValues.push_back(objectRVVPtr);
+			factor.massFunction.push_back(jpv1);
+
+			// Non-existance of object
+			roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it2->first);
+			objectRVVPtr =
+					new SpatialProbabilities::BoolRandomVariableValue(false);
+			SpatialProbabilities::JointProbabilityValue jpv2;
+			jpv2.probability = (1.0 - it2->second);
+			jpv2.variableValues.push_back(roomCategory1RVVPtr);
+			jpv2.variableValues.push_back(objectRVVPtr);
+			factor.massFunction.push_back(jpv2);
+		}
+
+		// Let's see which room categories we missed
+		for (set<string>::iterator it2=roomCategories.begin();
+				it2!=roomCategories.end(); ++it2)
+		{
+			// Existence of object
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(*it2);
+			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
+					new SpatialProbabilities::BoolRandomVariableValue(true);
+			SpatialProbabilities::JointProbabilityValue jpv1;
+			jpv1.probability=0; // TODO: SHOULD BE THE DEFAULT CHAIN GRAPH VALUE WHICH IS A PARAMETER THERE!
+			jpv1.variableValues.push_back(roomCategory1RVVPtr);
+			jpv1.variableValues.push_back(objectRVVPtr);
+			factor.massFunction.push_back(jpv1);
+
+			// Non-existence of object
+			roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(*it2);
+			objectRVVPtr =
+					new SpatialProbabilities::BoolRandomVariableValue(false);
+			SpatialProbabilities::JointProbabilityValue jpv2;
+			jpv2.probability = 1.0;  // TODO: SHOULD BE THE DEFAULT CHAIN GRAPH VALUE WHICH IS A PARAMETER THERE!
+			jpv2.variableValues.push_back(roomCategory1RVVPtr);
+			jpv2.variableValues.push_back(objectRVVPtr);
+			factor.massFunction.push_back(jpv2);
+		}
+
+		// Add the factor to the list
+		_defaultKnowledgeFactors[factorStr] = factor;
+	}
+}
+
+
+// -------------------------------------------------------
+double ChainGraphInferencer::getPoissonLambda(const std::string &roomCategory,
+		const std::string &objectCategory, SpatialData::SpatialRelation relation,
+		const std::string &supportObjectCategory)
+{
+	// Check if we have this value in cache
+	string cacheString = roomCategory + "_" + objectCategory + "_" + VariableNameGenerator::relationToString(relation) + "_"+
+						 supportObjectCategory;
+	if (_poissonLambdaCache.find(cacheString) != _poissonLambdaCache.end())
+		return _poissonLambdaCache[cacheString];
+
+	// Get the default object property factor
+	string objectVariableName = VariableNameGenerator::getDefaultObjectPropertyVarName(
+			objectCategory, relation, supportObjectCategory);
+	string factorName = string("f(room_category1,")+objectVariableName+")";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		throw CASTException(exceptionMessage(__HERE__,
+				"Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				factorName.c_str()));
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Get the probability & calculate lambda
+	double probability = getProbabilityValue(factor, roomCategory, true);
+	double lambda = -::log(1.0 - probability);
+
+	// Save to cache
+	_poissonLambdaCache[cacheString] = lambda;
+
+	return lambda;
+}
 
 
 

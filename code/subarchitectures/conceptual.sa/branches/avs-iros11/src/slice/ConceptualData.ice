@@ -58,7 +58,7 @@ module ConceptualData
 		string category;
         /** Category of the possible support object. If the relation does not require a support object, it's empty. */
         string supportObjectCategory;
-        /** WM Id of the possible support object. If the relation does not require a support object, it's empty. */
+        /** Id of the possible support object. If the relation does not require a support object, it's empty. */
         string supportObjectId;
         /** Spatial relation for this object. */
         SpatialData::SpatialRelation relation;
