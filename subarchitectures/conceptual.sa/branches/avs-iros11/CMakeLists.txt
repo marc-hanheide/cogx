@@ -9,6 +9,10 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 # Remove warnings about deprecated libs.
 add_definitions(-Wno-deprecated)
 
+# Find QT4 
+find_package( Qt4 REQUIRED )
+include(${QT_USE_FILE})
+
 # -----------------------------------------------------------
 # Subdirs
 # -----------------------------------------------------------

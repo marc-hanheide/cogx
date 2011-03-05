@@ -6,6 +6,12 @@
 
 // Conceptual.SA
 #include "Tester.h"
+#include "MainDialog.h"
+#include "SpatialProbabilities.hpp"
+// CAST
+#include <cast/architecture/ChangeFilterFactory.hpp>
+// Qt
+#include <QApplication>
 
 
 /** The function called to create a new instance of our component. */
@@ -44,21 +50,37 @@ void Tester::configure(const map<string,string> & _config)
 // -------------------------------------------------------
 void Tester::start()
 {
-	// Get the QueryHandler interface proxy
 	try
 	{
+		// Get the QueryHandler interface proxy
 		_queryHandlerServerInterfacePrx =
 				getIceServer<ConceptualData::QueryHandlerServerInterface>(_queryHandlerName);
 		_queryHandlerAvailable = true;
 	}
-	catch (...)
+	catch(...)
 	{}
+
+	// Change filters
+	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::worldStateChanged));
+	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::worldStateChanged));
 }
 
 
 // -------------------------------------------------------
 void Tester::runComponent()
 {
+	QCoreApplication *app = QApplication::instance();
+	if (!app)
+		app = new QApplication(0,0);
+	MainDialog *mainDialog = new MainDialog(this);
+	_mainDialog = mainDialog;
+	mainDialog->exec();
+	_mainDialog=0;
+	delete mainDialog;
 }
 
 
@@ -69,12 +91,28 @@ void Tester::stop()
 
 
 // -------------------------------------------------------
-SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query)
+SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query, bool imaginary)
 {
 	if (_queryHandlerAvailable)
-		return _queryHandlerServerInterfacePrx->query(query);
+	{
+		if (imaginary)
+			return _queryHandlerServerInterfacePrx->imaginaryQuery(query);
+		else
+			return _queryHandlerServerInterfacePrx->query(query);
+	}
 	else
 		return SpatialProbabilities::ProbabilityDistribution();
+}
+
+
+// -------------------------------------------------------
+void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
+{
+	if (!_mainDialog)
+		return;
+
+	_mainDialog->newWorldState();
+
 }
 
 
