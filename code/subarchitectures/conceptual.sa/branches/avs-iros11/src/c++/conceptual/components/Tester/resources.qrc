@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/nepomuk.png</file>
+    <file>icons/add.png</file>
+    <file>icons/run-build.png</file>
+    <file>icons/stock_mail-send-receive.png</file>
+    <file>icons/applications-engineering.png</file>
+    <file>icons/reload.png</file>
+  </qresource>
+</RCC>
