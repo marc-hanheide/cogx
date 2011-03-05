@@ -84,6 +84,8 @@ private:
 	/** Change event. */
 	void connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Change event. */
+	void objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 private:
 
@@ -101,6 +103,10 @@ private:
 
 	/** Returns all object properties of the place. */
 	void getObjectPlaceProperties(int placeId, std::vector<SpatialProperties::ObjectPlacePropertyPtr> &properties);
+
+	/** Returns all object search results for a room. */
+	void getObjectSearchResults(int roomId,
+			std::vector<SpatialData::ObjectSearchResultPtr> &results);
 
 	/** Returns all object properties of the place. */
 	void getShapePlaceProperties(int placeId, std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties);
@@ -136,6 +142,9 @@ private:
 	/** Map of place wmAddress -> ObjectPlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ObjectPlacePropertyPtr> _objectPlacePropertyWmAddressMap;
 
+	/** Map of place wmAddress -> ObjectSearchResult*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr> _objectSearchResultWmAddressMap;
+
 	/** Map of place wmAddress -> ShapePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _shapePlacePropertyWmAddressMap;
 
@@ -155,6 +164,7 @@ private:
 
 	double _shapeThreshold;
 	double _appearanceThreshold;
+	double _betaThreshold;
 	bool _includePlaceholderInfo;
 
 }; // class Observer
