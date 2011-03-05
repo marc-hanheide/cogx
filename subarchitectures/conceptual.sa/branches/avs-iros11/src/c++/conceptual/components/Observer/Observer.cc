@@ -48,6 +48,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	map<string,string>::const_iterator it;
 	_shapeThreshold = -1.0;
 	_appearanceThreshold = -1.0;
+	_betaThreshold = 0.01;
 
 	if((it = _config.find("--shape-threshold")) != _config.end())
 	{
@@ -56,6 +57,10 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	if((it = _config.find("--appearance-threshold")) != _config.end())
 	{
 		_appearanceThreshold = boost::lexical_cast<double>(it->second);
+	}
+	if((it = _config.find("--beta-threshold")) != _config.end())
+	{
+		_betaThreshold = boost::lexical_cast<double>(it->second);
 	}
 	_includePlaceholderInfo = (_config.find("--no-placeholders") == _config.end());
 
@@ -110,6 +115,12 @@ void Observer::start()
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::connectivityPathPropertyChanged));
 
+	// Global filter on SpatialProperties::ConnectivityPathProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialData::ObjectSearchResult>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::objectSearchResultChanged));
+
+
 }
 
 
@@ -162,6 +173,52 @@ void Observer::updateWorldState()
 		cri.wmAddress = comaRoomIt->first;
 		cri.roomId = comaRoomPtr->roomId;
 
+		// Get all the objectplaceproperties for this room
+		std::vector<SpatialProperties::ObjectPlacePropertyPtr> objectPlacePropertiesForRoom;
+		for(unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
+		{
+			int placeId = comaRoomPtr->containedPlaceIds[i];
+			getObjectPlaceProperties(placeId, objectPlacePropertiesForRoom);
+		}
+
+		// Analyse the results of AVS
+		std::vector<SpatialData::ObjectSearchResultPtr> objectSearchResults;
+		getObjectSearchResults(cri.roomId, objectSearchResults);
+		for(unsigned int s=0; s<objectSearchResults.size(); ++s)
+		{
+			// Single result for this room
+			SpatialData::ObjectSearchResultPtr objectSearchResultPtr = objectSearchResults[s];
+			// Let's see if it matches any of the actual object observations in this room
+			std::vector<SpatialProperties::ObjectPlacePropertyPtr>::iterator it = objectPlacePropertiesForRoom.begin();
+			unsigned int count = 0;
+			while (it!=objectPlacePropertiesForRoom.end())
+			{
+				// Check if this object matches the result
+				if ( (objectSearchResultPtr->searchedObjectCategory == (*it)->category) &&
+					 (objectSearchResultPtr->relation == (*it)->relation) &&
+					 (objectSearchResultPtr->supportObjectCategory == (*it)->supportObjectCategory) &&
+					 (objectSearchResultPtr->supportObjectId == (*it)->supportObjectId) )
+				{ // Yes, add it to our ObjectPlacePropertyInfo if it was found
+					SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+							SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast((*it)->distribution);
+					if ( ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[0].value)->value == true) &&
+						  (dpdPtr->data[0].probability>0.5)) ||
+						 ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[1].value)->value == true) &&
+												(dpdPtr->data[1].probability>0.5)) )
+						count++;
+				}
+			}
+			ConceptualData::ObjectPlacePropertyInfo oppi;
+			oppi.category = objectSearchResultPtr->searchedObjectCategory;
+			oppi.relation = objectSearchResultPtr->relation;
+			oppi.supportObjectCategory = objectSearchResultPtr->supportObjectCategory;
+			oppi.supportObjectId = objectSearchResultPtr->supportObjectId;
+			oppi.count = count;
+			oppi.beta = objectSearchResultPtr->beta;
+			cri.objectProperties.push_back(oppi);
+		}
+
+
 		// Places in a room
 		// Using the following structure of Place
 		//	  class Place {
@@ -185,22 +242,24 @@ void Observer::updateWorldState()
 				continue;
 
 			// Get properties of the place
-			std::vector<SpatialProperties::ObjectPlacePropertyPtr> objectPlaceProperties;
-			getObjectPlaceProperties(placeId, objectPlaceProperties);
-			for (unsigned int j=0; j<objectPlaceProperties.size(); ++j)
-			{
-				SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr =
-						objectPlaceProperties[j];
-				SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
-						SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(objectPlacePropertyPtr->distribution);
-
-				string objCategory = SpatialProperties::StringValuePtr::dynamicCast(dpdPtr->data[0].value)->value;
-				double objPresenceProbability = dpdPtr->data[0].probability;
-				ConceptualData::ObjectPlacePropertyInfo oppi;
-				oppi.category = objCategory;
-				oppi.count = (objPresenceProbability>0.5); // TODO
-				pi.objectProperties.push_back(oppi);
-			}
+			// Object properties
+			// Currently done on the room level ABOVE!
+//			std::vector<SpatialProperties::ObjectPlacePropertyPtr> objectPlaceProperties;
+//			getObjectPlaceProperties(placeId, objectPlaceProperties);
+//			for (unsigned int j=0; j<objectPlaceProperties.size(); ++j)
+//			{
+//				SpatialProperties::ObjectPlacePropertyPtr objectPlacePropertyPtr =
+//						objectPlaceProperties[j];
+//				SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+//						SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(objectPlacePropertyPtr->distribution);
+//
+//				string objCategory = SpatialProperties::StringValuePtr::dynamicCast(dpdPtr->data[0].value)->value;
+//				double objPresenceProbability = dpdPtr->data[0].probability;
+//				ConceptualData::ObjectPlacePropertyInfo oppi;
+//				oppi.category = objCategory;
+//				oppi.count = (objPresenceProbability>0.5);
+//				pi.objectProperties.push_back(oppi);
+//			}
 
 			// Shape properties
 			std::vector<SpatialProperties::RoomShapePlacePropertyPtr> shapePlaceProperties;
@@ -657,6 +716,69 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 
 
 // -------------------------------------------------------
+void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{
+		SpatialData::ObjectSearchResultPtr objectSearchResultPtr;
+		try
+		{
+			objectSearchResultPtr =
+					getMemoryEntry<SpatialData::ObjectSearchResult>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
+		updateWorldState();
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialData::ObjectSearchResultPtr objectSearchResultPtr;
+		try
+		{
+			objectSearchResultPtr =
+					getMemoryEntry<SpatialData::ObjectSearchResult>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
+		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->roomId != objectSearchResultPtr->roomId)
+			throw cast::CASTException("The mapping between ObjectSearchResult WMAddress and Room ID changed!");
+
+		updateWorldState();
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		_objectSearchResultWmAddressMap.erase(wmChange.address);
+		updateWorldState();
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+// -------------------------------------------------------
 void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
 	// Decide what change has been made
@@ -920,6 +1042,22 @@ void Observer::getObjectPlaceProperties(int placeId,
 		// Get only the observed properties
 		if ((objectPlacePropertyPtr->placeId == placeId) && (!objectPlacePropertyPtr->inferred))
 			properties.push_back(objectPlacePropertyPtr);
+	}
+}
+
+
+// -------------------------------------------------------
+void Observer::getObjectSearchResults(int roomId,
+		std::vector<SpatialData::ObjectSearchResultPtr> &results)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr>::iterator objectSearchResultIt;
+	for( objectSearchResultIt=_objectSearchResultWmAddressMap.begin();
+			objectSearchResultIt!=_objectSearchResultWmAddressMap.end(); ++objectSearchResultIt)
+	{
+		SpatialData::ObjectSearchResultPtr objectSearchResultPtr = objectSearchResultIt->second;
+		// Get only the observed properties
+		if (objectSearchResultPtr->roomId == roomId)
+			results.push_back(objectSearchResultPtr);
 	}
 }
 
