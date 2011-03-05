@@ -407,7 +407,9 @@ PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("newObject called");
+	// Commented out as for the AVS IROS paper, the AVS is creating the objectplaceproperties!
+
+/**  debug("newObject called");
   try {
     lockEntry(objID.address, cdl::LOCKEDODR);
     vector<NavData::FNodePtr> nodes;
@@ -511,7 +513,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException e) {
     log ("Object disappeared!");
   }
-  debug("newObject exited");
+  debug("newObject exited"); */
 }
 
 bool 
