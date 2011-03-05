@@ -1,6 +1,10 @@
 cmake_minimum_required (VERSION 2.6)
 project (SPATIALSA)
 
+# Remove warnings about deprecated libs.
+add_definitions(-Wno-deprecated)
+
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
