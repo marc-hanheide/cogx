@@ -349,7 +349,7 @@ module SpatialData {
   	string searchedObject;
   	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
   	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
-  	string roomId; // always (and I mean always) fill this
+  	int roomId; // always (and I mean always) fill this
   };
 
  class ObjectSearchResult{
