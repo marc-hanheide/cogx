@@ -111,6 +111,9 @@ module SpatialProperties
   class ObjectPlaceProperty extends PlaceProperty
   {
     string category;
+    string supportObjectCategory;
+    string supportObjectId;
+    SpatialData::SpatialRelation relation;
   };
   const bool ObjectPresent = true;
   const bool ObjectNotPresent = false;
