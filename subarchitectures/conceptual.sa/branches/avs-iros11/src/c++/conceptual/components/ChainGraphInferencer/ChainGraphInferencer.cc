@@ -29,10 +29,6 @@ extern "C"
 }
 
 
-#define EXISTS "exists"
-#define NOT_EXISTS "not-exists"
-
-
 namespace conceptual
 {
 
@@ -632,8 +628,8 @@ void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const st
 	debug("Creating DAI factor for variables '%s' and '%s'", room1VarName.c_str(), objectUnexploredVarName.c_str() );
 	createDaiVariable(room1VarName, _roomCategories);
 	vector<string> values(2);
-	values[0] = NOT_EXISTS;
-	values[1] = EXISTS;
+	values[0] = ConceptualData::NOTEXISTS;
+	values[1] = ConceptualData::EXISTS;
 	createDaiVariable(objectUnexploredVarName, values);
 	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 	DaiVariable &dv2 = _variableNameToDai[objectUnexploredVarName];
@@ -658,7 +654,7 @@ void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const st
 				return;
 			// Get the poisson prob distribution
 			double probability;
-			if (var2ValueName == EXISTS)
+			if (var2ValueName == ConceptualData::EXISTS)
 				probability = 1.0 - getPoissonProabability((1.0-beta)*lambda, 0);
 			else
 				probability = getPoissonProabability((1.0-beta)*lambda, 0);
