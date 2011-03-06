@@ -224,7 +224,7 @@ private:
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
   void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
-      const SpatialData::PlaceIDSeq &places);
+      const std::vector<NavData::FNodePtr> &nodes);
   Cure::Transformation3D getCameraToWorldTransform();
   void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
   void processConvexHull(const VisionData::ConvexHullPtr hull);

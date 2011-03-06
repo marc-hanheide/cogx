@@ -49,6 +49,11 @@ RelationEvaluator::evaluateOnness(const Object *objectS, const Object *objectO)
       (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX)) {
     witness = findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
 	&patch, &maxPatchClearance);
+    if (witness.paramOnA < -0.01 && witness.typeOnA == spatial::WITNESS_EDGE) {
+      witness = findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
+	  &patch, &maxPatchClearance);
+    }
+
   }
 
   else if (objectS->type == OBJECT_PLANE &&
@@ -359,7 +364,11 @@ RelationEvaluator::findContactPatch(const BoxObject &boxA, const BoxObject &boxB
       }
     }
     for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
-      if (edgeWitnesses[i].distance > bestWitness.distance) {
+      if (edgeWitnesses[i].distance > bestWitness.distance &&
+	  edgeWitnesses[i].paramOnA >= 0 &&
+	  edgeWitnesses[i].paramOnA <= 1 &&
+	  edgeWitnesses[i].paramOnB >= 0 &&
+	  edgeWitnesses[i].paramOnB <= 1) {
 	AisB = false;
 	bestWitness = edgeWitnesses[i];
 	bestWitness.point1 = transform(boxA.pose, bestWitness.point1);

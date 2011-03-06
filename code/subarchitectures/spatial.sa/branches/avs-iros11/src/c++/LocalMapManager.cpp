@@ -798,34 +798,41 @@ FrontierInterface::LocalGridMap
 LocalMapManager::LocalMapServer::getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
     const Ice::Current &_context)
 {
-  m_pOwner->lockComponent();
   FrontierInterface::LocalGridMap ret; 
-  m_pOwner->log("3");
-  m_pOwner->getCombinedGridMap(ret, places);
-  m_pOwner->log("4");
+
+  // Before locking this component, get all the node IDs from (possibly blocking)
+  // interface
+  vector<NavData::FNodePtr> nodes;
+  if (m_pOwner->m_placeInterface) {
+    for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
+
+      //NOTE: May block
+      NavData::FNodePtr node = m_pOwner->m_placeInterface->getNodeFromPlaceID(*it);
+      if (node != 0) {
+	nodes.push_back(node);
+      }
+    }
+  }
+
+  // Lock so that no one messes with the map set while we're grabbing the data
+  m_pOwner->lockComponent();
+  m_pOwner->getCombinedGridMap(ret, nodes);
   m_pOwner->unlockComponent();
   return ret;
 }
 
 void 
 LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
-    const SpatialData::PlaceIDSeq &places)
+    const vector<NavData::FNodePtr> &nodes)
 {
   vector<const CharMap *>maps;
-  if (m_placeInterface) {
-    for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
-      NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
-      if (node != 0) {
-	if (m_nodeGridMaps.find(node->nodeId) != m_nodeGridMaps.end()) {
-	  maps.push_back(m_nodeGridMaps[node->nodeId]);
-	}
-	else {
-	  log("Couldn't find grid map for node %d", node->nodeId);
-	}
-      }
-      else {
-	log ("No grid map for Place %d; not a node!", *it);
-      }
+
+  for (vector<NavData::FNodePtr>::const_iterator it = nodes.begin(); it != nodes.end(); it++) {
+    if (m_nodeGridMaps.find((*it)->nodeId) != m_nodeGridMaps.end()) {
+      maps.push_back(m_nodeGridMaps[(*it)->nodeId]);
+    }
+    else {
+      log("Couldn't find grid map for node %i", (*it)->nodeId);
     }
   }
 
@@ -1134,6 +1141,8 @@ Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
   //Get camera ptz from PTZServer
   Cure::Transformation3D cameraRotation;
   if (m_ptzInterface != 0) {
+
+    //NOTE: May block
     ptz::PTZReading reading = m_ptzInterface->getPose();
 
     double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
