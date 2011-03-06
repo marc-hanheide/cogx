@@ -42,8 +42,16 @@ void Tester::configure(const map<string,string> & _config)
 		_queryHandlerName = it->second;
 	}
 
+	// ChainGraphInferencer name
+	if((it = _config.find("--chaingraphinferencer")) != _config.end())
+	{
+		_chainGraphInferencerName = it->second;
+	}
+
+
 	log("Configuration parameters:");
 	log("-> QueryHandler name: %s", _queryHandlerName.c_str());
+	log("-> ChainGraphInferencer name: %s", _chainGraphInferencerName.c_str());
 }
 
 
@@ -59,6 +67,17 @@ void Tester::start()
 	}
 	catch(...)
 	{}
+
+	try
+	{
+		// Get the ChainGraphInferencer interface proxy
+		_chainGraphTestingServerInterfacePrx =
+				getIceServer<ConceptualData::ChainGraphTestingServerInterface>(_chainGraphInferencerName);
+		_chainGraphInferencerAvailable = true;
+	}
+	catch(...)
+	{}
+
 
 	// Change filters
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
@@ -115,6 +134,29 @@ void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 }
 
+
+// -------------------------------------------------------
+ConceptualData::VariableInfos Tester::getChainGraphVariables()
+{
+	if (_chainGraphInferencerAvailable)
+	{
+		return _chainGraphTestingServerInterfacePrx->getVariables();
+	}
+	else
+		return ConceptualData::VariableInfos();
+}
+
+
+// -------------------------------------------------------
+ConceptualData::FactorInfos Tester::getChainGraphFactors()
+{
+	if (_chainGraphInferencerAvailable)
+	{
+		return _chainGraphTestingServerInterfacePrx->getFactors();
+	}
+	else
+		return ConceptualData::FactorInfos();
+}
 
 
 } // namespace def

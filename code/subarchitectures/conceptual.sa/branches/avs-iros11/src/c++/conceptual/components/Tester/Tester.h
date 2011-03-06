@@ -28,13 +28,16 @@ class Tester: public cast::ManagedComponent
 
 public:
 	/** Constructor. */
-	Tester(): _queryHandlerAvailable(false) {}
+	Tester(): _queryHandlerAvailable(false), _chainGraphInferencerAvailable(false) {}
 
 	/** Destructor. */
 	virtual ~Tester() {}
 
 	/** Sends a new query to the QueryHandler. */
 	SpatialProbabilities::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query, bool imaginary);
+
+	ConceptualData::VariableInfos getChainGraphVariables();
+	ConceptualData::FactorInfos getChainGraphFactors();
 
 
 protected:
@@ -62,13 +65,22 @@ private:
 	/** Id of the QueryHandler component.  */
 	std::string _queryHandlerName;
 
+	/** Id of the ChainGraphInferencer component.  */
+	std::string _chainGraphInferencerName;
+
 	/** Set to true if the QueryHandler is available. */
 	bool _queryHandlerAvailable;
+
+	/** Set to true if the ChainGraphInferencer is available. */
+	bool _chainGraphInferencerAvailable;
 
 	MainDialog *_mainDialog;
 
 	/** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
+
+	/** ICE proxy to the ChainGraphTestingServerInterface. */
+	ConceptualData::ChainGraphTestingServerInterfacePrx _chainGraphTestingServerInterfacePrx;
 
 }; // class Tester
 } // namespace def

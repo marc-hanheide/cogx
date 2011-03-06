@@ -10,6 +10,8 @@
 #include <QtGui/QDialog>
 #include <queue>
 
+class QCompleter;
+class QStringListModel;
 
 #include "ui_MainDialog.h"
 
@@ -41,6 +43,10 @@ private slots:
 
 	void setWsFrequency(double freq);
 	void sendQueryButtonClicked();
+	void refreshVarsButtonClicked();
+	void refreshWsButtonClicked();
+	void showGraphButtonClicked();
+	void varListCurrentTextChanged(const QString &curText);
 
 private:
     Ui::MainDialogClass ui;

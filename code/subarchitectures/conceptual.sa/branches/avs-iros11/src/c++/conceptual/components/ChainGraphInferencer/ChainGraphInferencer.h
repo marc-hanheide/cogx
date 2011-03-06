@@ -32,6 +32,24 @@ namespace conceptual
 class ChainGraphInferencer: public cast::ManagedComponent
 {
 
+	class TestingServer: public ConceptualData::ChainGraphTestingServerInterface
+	{
+	public:
+
+		/** Constructor. */
+		TestingServer(ChainGraphInferencer *chainGraphInferencer) : _chainGraphInferencer(chainGraphInferencer)
+		{}
+
+		ConceptualData::VariableInfos getVariables(const Ice::Current &);
+		ConceptualData::FactorInfos getFactors(const Ice::Current &);
+
+	private:
+
+		/** Pointer to the owner of the server. */
+		ChainGraphInferencer *_chainGraphInferencer;
+    };
+
+
 public:
 
 	/** Constructor. */
@@ -167,6 +185,12 @@ private:
 
 	pthread_mutex_t _worldStateMutex;
 
+	/**
+	 * Mutex protecting the graph and all graph related variables. Used mostly
+	 *  to protect the graph while testing server interface is used.
+	 */
+	pthread_mutex_t _graphMutex;
+
 	/** True if the world state has changed since the last time we checked. */
 	bool _worldStateChanged;
 
@@ -236,7 +260,7 @@ private:
 	std::map<std::string, double> _placeholderRoomCategoryExistance;
 
 	/** List of additional variables that were requested in the queries that should be created on request. */
-	std::list<std::string> _additionalVariables;
+	std::set<std::string> _additionalVariables;
 
 	/** Cache for the lambda values. */
 	std::map<std::string, double> _poissonLambdaCache;
