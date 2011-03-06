@@ -127,11 +127,17 @@ SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(cons
 // -------------------------------------------------------
 void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 {
-	if (!_mainDialog)
-		return;
-
-	_mainDialog->newWorldState();
-
+	try
+	{
+		ConceptualData::WorldStatePtr worldStatePtr;
+		worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
+		if (_mainDialog)
+			_mainDialog->newWorldState(worldStatePtr);
+	}
+	catch(CASTException &e)
+	{
+		log("Exception while reading world state from the WM!");
+	}
 }
 
 
