@@ -6,6 +6,7 @@
 
 #include "MainDialog.h"
 #include "Tester.h"
+#include "GraphDialog.h"
 #include "ConceptualData.hpp"
 #include "SpatialProbabilities.hpp"
 
@@ -300,7 +301,11 @@ void MainDialog::refreshWsButtonClicked()
 // -------------------------------------------------------
 void MainDialog::showGraphButtonClicked()
 {
+	ConceptualData::VariableInfos vis = _component->getChainGraphVariables();
+	ConceptualData::FactorInfos fis = _component->getChainGraphFactors();
 
+	GraphDialog *gd = new GraphDialog(this);
+	gd->show();
 }
 
 

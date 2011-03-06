@@ -57,6 +57,7 @@ private:
 
 	pthread_mutex_t _worldStateMutex;
 	ConceptualData::WorldStatePtr _wsPtr;
+
 };
 
 
