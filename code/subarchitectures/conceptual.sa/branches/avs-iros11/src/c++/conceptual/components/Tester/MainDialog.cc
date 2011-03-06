@@ -47,7 +47,7 @@ MainDialog::~MainDialog()
 // -------------------------------------------------------
 void MainDialog::newWorldState()
 {
-	qint64 time = QDateTime::currentMSecsSinceEpoch();
+/*	qint64 time = QDateTime::currentMSecsSinceEpoch();
 	_wsUpdateTimes.push(time);
 	// Remove old entries
 	while ((time - _wsUpdateTimes.front()) > 1000)
@@ -56,7 +56,7 @@ void MainDialog::newWorldState()
 	// Get the average frequency
 	double freq = static_cast<double>(time - _wsUpdateTimes.front()) / static_cast<double>(1000*_wsUpdateTimes.size());
 
-	emit setWsFrequencySignal(freq);
+	emit setWsFrequencySignal(freq); */
 }
 
 
