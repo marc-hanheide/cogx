@@ -1,5 +1,13 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/appearance.png</file>
+    <file>icons/room.png</file>
+    <file>icons/place.png</file>
+    <file>icons/placeholder.png</file>
+    <file>icons/connectivity.png</file>
+    <file>icons/flag-green.png</file>
+    <file>icons/object.png</file>
+    <file>icons/shape.png</file>
     <file>icons/nepomuk.png</file>
     <file>icons/add.png</file>
     <file>icons/run-build.png</file>

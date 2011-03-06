@@ -7,13 +7,15 @@
 #ifndef MAINDIALOG_H
 #define MAINDIALOG_H
 
+// Conceptual.SA
+#include "ui_MainDialog.h"
+#include "ConceptualData.hpp"
+
+// Qt&Std
 #include <QtGui/QDialog>
 #include <queue>
 
-class QCompleter;
-class QStringListModel;
-
-#include "ui_MainDialog.h"
+class QTimer;
 
 namespace conceptual
 {
@@ -31,29 +33,30 @@ public:
 
 public:
 
-    void newWorldState();
-
-
-signals:
-
-	void setWsFrequencySignal(double freq);
+    void newWorldState(ConceptualData::WorldStatePtr wsPtr);
 
 
 private slots:
 
-	void setWsFrequency(double freq);
 	void sendQueryButtonClicked();
 	void refreshVarsButtonClicked();
 	void refreshWsButtonClicked();
 	void showGraphButtonClicked();
 	void varListCurrentTextChanged(const QString &curText);
+	void wsTimerTimeout();
+
 
 private:
     Ui::MainDialogClass ui;
     conceptual::Tester *_component;
 
+    QTimer *_wsTimer;
+    int _wsCount;
+
     std::queue<qint64> _wsUpdateTimes;
 
+	pthread_mutex_t _worldStateMutex;
+	ConceptualData::WorldStatePtr _wsPtr;
 };
 
 

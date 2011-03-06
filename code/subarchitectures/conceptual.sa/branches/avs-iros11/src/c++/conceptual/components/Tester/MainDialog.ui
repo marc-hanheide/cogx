@@ -293,7 +293,16 @@ update freq.</string>
            <number>2</number>
           </property>
           <item>
-           <widget class="QTreeView" name="treeView"/>
+           <widget class="QTreeWidget" name="wsTreeWidget">
+            <property name="headerHidden">
+             <bool>true</bool>
+            </property>
+            <column>
+             <property name="text">
+              <string notr="true">1</string>
+             </property>
+            </column>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
