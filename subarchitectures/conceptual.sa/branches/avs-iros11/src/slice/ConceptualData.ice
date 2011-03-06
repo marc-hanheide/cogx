@@ -15,6 +15,37 @@
 module ConceptualData 
 {
 	// ---------------------------------------------------
+	// Testing
+	// ---------------------------------------------------
+
+	sequence<string> VariableValues;
+	sequence<int> VariableIds;
+	
+	struct VariableInfo
+	{
+		string name;
+		VariableValues values;
+	};
+	
+	dictionary<int, VariableInfo> VariableInfos;
+
+	struct FactorInfo
+	{
+		string name;
+		VariableIds variables;		
+	};
+	
+	dictionary<int, FactorInfo> FactorInfos;
+	
+	/** Interface to the conceptual::ChainGraphInferencer::TestingServer. */
+	interface ChainGraphTestingServerInterface
+	{
+		VariableInfos getVariables();
+		FactorInfos getFactors();
+	};
+
+
+	// ---------------------------------------------------
 	// Query stuff	
 	// ---------------------------------------------------
 

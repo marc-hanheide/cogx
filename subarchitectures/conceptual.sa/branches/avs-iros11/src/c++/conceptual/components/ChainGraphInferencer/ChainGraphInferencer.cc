@@ -50,6 +50,7 @@ ChainGraphInferencer::ChainGraphInferencer() :
 	pthread_cond_init(&_inferenceQueryAddedSignalCond, 0);
 	pthread_mutex_init(&_inferenceQueryAddedSignalMutex, 0);
 	pthread_mutex_init(&_worldStateMutex, 0);
+	pthread_mutex_init(&_graphMutex, 0);
 
     // Store the constants in a PropertySet object
 	size_t maxiter = 10000;
@@ -69,6 +70,7 @@ ChainGraphInferencer::~ChainGraphInferencer()
 	pthread_cond_destroy(&_inferenceQueryAddedSignalCond);
 	pthread_mutex_destroy(&_inferenceQueryAddedSignalMutex);
 	pthread_mutex_destroy(&_worldStateMutex);
+	pthread_mutex_destroy(&_graphMutex);
 }
 
 
@@ -101,6 +103,13 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
 	log("-> Infer placeholder properties: %s", (_inferPlaceholderProperties)?"yes":"no");
 	log("-> Prior probability that placeholder is in the current room: %f", _placeholderInCurrentRoomPrior);
+
+	// Register the ICE Server
+	ConceptualData::ChainGraphTestingServerInterfacePtr chainGraphTestingServerInterfacePtr =
+			new TestingServer(this);
+	registerIceServer<ConceptualData::ChainGraphTestingServerInterface,
+			ConceptualData::ChainGraphTestingServerInterface>(chainGraphTestingServerInterfacePtr);
+
 }
 
 
@@ -193,45 +202,50 @@ void ChainGraphInferencer::runComponent()
 			debug("Processing inference query '%s' (imaginary = %s)",
 							q.queryPtr->queryString.c_str(), (q.queryPtr->imaginary)?"true":"false");
 
-			// Update the factor graph if necessary
-			bool factorGraphChanged;
-			bool worldStateValid = updateFactorGraph(factorGraphChanged);
-
 			// Prepare some parts of the result
 			ConceptualData::InferenceResultPtr inferenceResultPtr = new ConceptualData::InferenceResult();
 			inferenceResultPtr->queryId = q.wmAddress.id;
 			inferenceResultPtr->queryString = q.queryPtr->queryString;
 
-			// Check if the world state is valid, otherwise return empty result
-			if (worldStateValid)
+			// Parse the query string
+			vector<string> queryVariables;
+			parseQuery(q.queryPtr->queryString, queryVariables);
+			if (!queryVariables.empty())
 			{
-				// If the factor graph changed, re-run the inferences
-				if (factorGraphChanged)
-				{
-					runAllInferences();
-					_placeholderRoomCategoryExistance.clear(); // Clear also the placeholder stuff
-				}
+				// Lock the graph mutex
+				pthread_mutex_lock(&_graphMutex);
 
-				// If this is a query about imaginary worlds, run imaginary world generation if the cache is empty
-				if ((q.queryPtr->imaginary) && (_placeholderRoomCategoryExistance.empty()))
+				// Get the "additional" variables that should be added from the query if missing
+				for(unsigned int i=0; i<queryVariables.size(); ++i)
 				{
-					runImaginaryWorldsGeneration();
-				}
-
-				// Parse the query string
-				vector<string> queryVariables;
-				parseQuery(q.queryPtr->queryString, queryVariables);
-				if (!queryVariables.empty())
-				{
-					// Get the "additional" variables that should be added from the query if missing
-					for(unsigned int i=0; i<queryVariables.size(); ++i)
+					if (queryVariables[i][0]=='+')
 					{
-						if (queryVariables[i][0]=='+')
-						{
-							_additionalVariables.push_back(trim_left_copy_if(queryVariables[i],is_any_of("+")));
-							erase_first(queryVariables[i], "+");
-						}
+						_additionalVariables.insert(trim_left_copy_if(queryVariables[i],is_any_of("+")));
+						erase_first(queryVariables[i], "+");
+						// log("Adding additional variable %s.", queryVariables[i].c_str());
 					}
+				}
+
+				// Update the factor graph if necessary
+				bool factorGraphChanged;
+				bool worldStateValid = updateFactorGraph(factorGraphChanged);
+
+				// Check if the world state is valid, otherwise return empty result
+				if (worldStateValid)
+				{
+					// If the factor graph changed, re-run the inferences
+					if (factorGraphChanged)
+					{
+						runAllInferences();
+						_placeholderRoomCategoryExistance.clear(); // Clear also the placeholder stuff
+					}
+
+					// If this is a query about imaginary worlds, run imaginary world generation if the cache is empty
+					if ((q.queryPtr->imaginary) && (_placeholderRoomCategoryExistance.empty()))
+					{
+						runImaginaryWorldsGeneration();
+					}
+
 
 					// Is this a query about an imaginary world?
 					if (q.queryPtr->imaginary)
@@ -246,11 +260,14 @@ void ChainGraphInferencer::runComponent()
 						prepareInferenceResult(q.queryPtr->queryString,
 								queryVariables, &(inferenceResultPtr->result));
 					}
-				}
+				} // if (worldStateValid)
+				else
+					log("World state is invalid. We will not run inference. Returning empty result.");
 
-			}
-			else
-				log("World state is invalid. We will not run inference. Returning empty result.");
+				// No more operations on the graph
+				pthread_mutex_unlock(&_graphMutex);
+
+			} // if (!queryVariables.empty())
 
 			// Return result
 			debug("Sending out inference result for query '"+q.queryPtr->queryString+"'");
@@ -341,11 +358,28 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 	// Lock world state
 	pthread_mutex_lock(&_worldStateMutex);
 
-	// If world state changed, re-create the factor graph
 	if (_worldStateChanged)
 	{
+		factorGraphChanged=true;
 		log("Updating the graph since the world state has changed!");
+	}
+	else
+	{
+		// Check if we have new "additional variables"
+		for(set<string>::iterator it = _additionalVariables.begin(); it!=_additionalVariables.end(); ++it)
+		{
+			if (_variableNameToDai.find(*it) == _variableNameToDai.end())
+			{
+				factorGraphChanged = true;
+				log("Updating the graph since the new variables are requested.");
+				break;
+			}
+		}
+	}
 
+	// If world state changed, re-create the factor graph
+	if (factorGraphChanged)
+	{
 		// Check if the world state is actaully valid
 		if (_worldStateRooms.empty())
 		{ // World state invalid
@@ -354,7 +388,6 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 			return false;
 		}
 
-		factorGraphChanged = true;
 		_worldStateChanged = false;
 
 		// RECREATE THE FACTOR GRAPH FROM WORLD STATE AND DEFAULT KNOWLEDGE
@@ -570,6 +603,9 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id, co
 		string var1ValueName = dv1.valueIdToName[i1]; // Room category
 		// Get the lambda value for the poisson distribution
 		double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+		// Check for errors
+		if (lambda<0)
+			return;
 		// Get the poisson prob distribution
 		double probability = getPoissonProabability(beta*lambda, objectCount);
 		daiFactor.set(index, probability);
@@ -617,6 +653,9 @@ void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const st
 			string var1ValueName = dv1.valueIdToName[i1];
 			// Get the lambda value for the poisson distribution
 			double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+			// Check for errors
+			if (lambda<0)
+				return;
 			// Get the poisson prob distribution
 			double probability;
 			if (var2ValueName == EXISTS)
@@ -894,8 +933,6 @@ void ChainGraphInferencer::addDaiFactors()
 				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
 				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
 			} // a
-
-
 		} // p
 
 		// Place independent Object properties
@@ -912,11 +949,14 @@ void ChainGraphInferencer::addDaiFactors()
 	} // r
 
 	// Add factors for additional variables requested in the queries
-	for(list<string>::iterator it = _additionalVariables.begin(); it!=_additionalVariables.end(); ++it)
+	for(set<string>::iterator it = _additionalVariables.begin(); it!=_additionalVariables.end(); ++it)
 	{
+		log("Adding factors for additional variables requested in the queries.");
+
 		// Check if the variable was already added.
 		if (_variableNameToDai.find(*it) == _variableNameToDai.end())
 		{ // Nope, we have to add it now
+			log("Adding factors for additional variable requested in the queries: " + *it);
 			// Check if this is one of the variables that we can reason about
 			vector<string> elements;
 			parseVariable(*it, elements);
@@ -1488,7 +1528,7 @@ void ChainGraphInferencer::loadAvsDefaultKnowledge()
 			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
 					new SpatialProbabilities::BoolRandomVariableValue(true);
 			SpatialProbabilities::JointProbabilityValue jpv1;
-			jpv1.probability=0; // TODO: SHOULD BE THE DEFAULT CHAIN GRAPH VALUE WHICH IS A PARAMETER THERE!
+			jpv1.probability=0; // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
 			jpv1.variableValues.push_back(roomCategory1RVVPtr);
 			jpv1.variableValues.push_back(objectRVVPtr);
 			factor.massFunction.push_back(jpv1);
@@ -1499,7 +1539,7 @@ void ChainGraphInferencer::loadAvsDefaultKnowledge()
 			objectRVVPtr =
 					new SpatialProbabilities::BoolRandomVariableValue(false);
 			SpatialProbabilities::JointProbabilityValue jpv2;
-			jpv2.probability = 1.0;  // TODO: SHOULD BE THE DEFAULT CHAIN GRAPH VALUE WHICH IS A PARAMETER THERE!
+			jpv2.probability = 1.0;  // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
 			jpv2.variableValues.push_back(roomCategory1RVVPtr);
 			jpv2.variableValues.push_back(objectRVVPtr);
 			factor.massFunction.push_back(jpv2);
@@ -1530,9 +1570,9 @@ double ChainGraphInferencer::getPoissonLambda(const std::string &roomCategory,
 			_defaultKnowledgeFactors.find(factorName);
 	if (dnfIt == _defaultKnowledgeFactors.end())
 	{
-		throw CASTException(exceptionMessage(__HERE__,
-				"Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
-				factorName.c_str()));
+		error("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				factorName.c_str());
+		return -1;
 	}
 	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
 
@@ -1546,6 +1586,51 @@ double ChainGraphInferencer::getPoissonLambda(const std::string &roomCategory,
 	return lambda;
 }
 
+
+// -------------------------------------------------------
+ConceptualData::VariableInfos ChainGraphInferencer::TestingServer::getVariables(const Ice::Current &)
+{
+	pthread_mutex_lock(&_chainGraphInferencer->_graphMutex);
+
+	ConceptualData::VariableInfos vis;
+
+	for (std::map<std::string, DaiVariable>::iterator i = _chainGraphInferencer->_variableNameToDai.begin();
+			i!=_chainGraphInferencer->_variableNameToDai.end(); ++i)
+	{
+		ConceptualData::VariableInfo vi;
+		vi.name = i->first;
+		for (unsigned int j=0; j<i->second.valueIdToName.size(); ++j)
+			vi.values.push_back(i->second.valueIdToName[j]);
+		vis[i->second.var.label()] = vi;
+	}
+
+	pthread_mutex_unlock(&_chainGraphInferencer->_graphMutex);
+
+	return vis;
+}
+
+
+// -------------------------------------------------------
+ConceptualData::FactorInfos ChainGraphInferencer::TestingServer::getFactors(const Ice::Current &)
+{
+	pthread_mutex_lock(&_chainGraphInferencer->_graphMutex);
+
+	ConceptualData::FactorInfos fis;
+
+	for (unsigned int i = 0; i< _chainGraphInferencer->_factors.size(); ++i)
+	{
+		ConceptualData::FactorInfo fi;
+		fi.name = _chainGraphInferencer->_factorNames[i];
+		vector<dai::Var> vars = _chainGraphInferencer->_factors[i].vars().elements();
+		for(unsigned int j=0; j<vars.size(); j++)
+			fi.variables.push_back(vars[j].label());
+		fis[i] = fi;
+	}
+
+	pthread_mutex_unlock(&_chainGraphInferencer->_graphMutex);
+
+	return fis;
+}
 
 
 

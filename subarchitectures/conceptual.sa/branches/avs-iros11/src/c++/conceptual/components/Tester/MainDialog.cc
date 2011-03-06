@@ -11,6 +11,8 @@
 
 // Qt & std
 #include <QDateTime>
+#include <QCompleter>
+#include <QStringListModel>
 #include <queue>
 
 using namespace conceptual;
@@ -25,9 +27,13 @@ MainDialog::MainDialog(Tester *component)
 	queryResultTreeWidget->setHeaderLabel("");
 	queryResultTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
 
-
+	// Signals and slots
 	connect(this, SIGNAL(setWsFrequencySignal(double)), this, SLOT(setWsFrequency(double)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
+	connect(refreshVarsButton, SIGNAL(clicked()), this, SLOT(refreshVarsButtonClicked()));
+	connect(refreshWsButton, SIGNAL(clicked()), this, SLOT(refreshWsButtonClicked()));
+	connect(showGraphButton, SIGNAL(clicked()), this, SLOT(showGraphButtonClicked()));
+	connect(variablesListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(varListCurrentTextChanged(const QString &)));
 }
 
 
@@ -64,65 +70,115 @@ void MainDialog::setWsFrequency(double freq)
 // -------------------------------------------------------
 void MainDialog::sendQueryButtonClicked()
 {
+	_component->log("Sending query " + queryComboBox->currentText().toStdString() + ".");
+
 	queryResultTreeWidget->clear();
 
 	SpatialProbabilities::ProbabilityDistribution result =
-			_component->sendQueryHandlerQuery(queryLineEdit->text().toStdString(),
+			_component->sendQueryHandlerQuery(queryComboBox->currentText().toStdString(),
 					!standardQueryRadioButton->isChecked());
 
-	// Setup header
-	vector<int> varNos;
-	QStringList labels;
-	for (map<string, int>::iterator it = result.variableNameToPositionMap.begin();
-			it!=result.variableNameToPositionMap.end(); ++it)
+	if (result.massFunction.size()>0)
 	{
-		varNos.push_back(it->second);
-		labels.append(QString::fromStdString(it->first));
-	}
-	labels.append("p");
-
-	queryResultTreeWidget->setHeaderLabels(labels);
-
-	// Fill in values
-	QList<QTreeWidgetItem *> items;
-	for(unsigned int i=0; i<result.massFunction.size(); ++i)
-	{
-		double probability = result.massFunction[i].probability;
-
-		QStringList values;
-		for(unsigned int j=0; j<varNos.size(); ++j)
+		// Setup header
+		vector<int> varNos;
+		QStringList labels;
+		for (map<string, int>::iterator it = result.variableNameToPositionMap.begin();
+				it!=result.variableNameToPositionMap.end(); ++it)
 		{
-			QString valueStr;
-			if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::StringRandomVariableValue"))
-			{
-				string value =
-						SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-								result.massFunction[i].variableValues[j])->value;
-				valueStr = QString::fromStdString(value);
-			}
-			cout << (result.massFunction[i].variableValues[j]->ice_staticId()) << endl;
-			cout << (result.massFunction[i].variableValues[j]->ice_id()) << endl;
-			if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::IntRandomVariableValue"))
-			{
-				int value =
-						SpatialProbabilities::IntRandomVariableValuePtr::dynamicCast(
-								result.massFunction[i].variableValues[j])->value;
-				valueStr = QString::number(value);
-			}
-			if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::BoolRandomVariableValue"))
-			{
-				bool value =
-						SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
-								result.massFunction[i].variableValues[j])->value;
-				valueStr = (value)?"true":"false";
-			}
-			values.append(valueStr);
+			varNos.push_back(it->second);
+			labels.append(QString::fromStdString(it->first));
 		}
-		values.append(QString::number(probability));
-		items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
-	}
+		labels.append("p");
 
-	queryResultTreeWidget->insertTopLevelItems(0, items);
+		queryResultTreeWidget->setHeaderLabels(labels);
+
+		// Fill in values
+		QList<QTreeWidgetItem *> items;
+		for(unsigned int i=0; i<result.massFunction.size(); ++i)
+		{
+			double probability = result.massFunction[i].probability;
+
+			QStringList values;
+			for(unsigned int j=0; j<varNos.size(); ++j)
+			{
+				QString valueStr;
+				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::StringRandomVariableValue"))
+				{
+					string value =
+							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[j])->value;
+					valueStr = QString::fromStdString(value);
+				}
+				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::IntRandomVariableValue"))
+				{
+					int value =
+							SpatialProbabilities::IntRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[j])->value;
+					valueStr = QString::number(value);
+				}
+				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::BoolRandomVariableValue"))
+				{
+					bool value =
+							SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[j])->value;
+					valueStr = (value)?"true":"false";
+				}
+				values.append(valueStr);
+			}
+			values.append(QString::number(probability));
+			items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
+		}
+
+		queryResultTreeWidget->insertTopLevelItems(0, items);
+
+		// Add to combo
+		queryComboBox->insertItem(0, queryComboBox->currentText());
+	}
+	else
+	{
+		queryResultTreeWidget->setHeaderLabels(QStringList(" "));
+		queryResultTreeWidget->insertTopLevelItem(0,
+				new QTreeWidgetItem((QTreeWidget*)0, QStringList("Incorrect querry!")) );
+	}
 }
 
+
+// -------------------------------------------------------
+void MainDialog::refreshVarsButtonClicked()
+{
+	_component->log("Refreshing variable list");
+
+	variablesListWidget->clear();
+	ConceptualData::VariableInfos vis = _component->getChainGraphVariables();
+
+	for (map<int, ConceptualData::VariableInfo>::iterator i=vis.begin(); i!=vis.end(); ++i)
+	{
+		variablesListWidget->addItem(QString::fromStdString(i->second.name));
+	}
+}
+
+// -------------------------------------------------------
+void MainDialog::varListCurrentTextChanged(const QString &curText)
+{
+	if (!curText.isEmpty())
+	{
+		queryComboBox->setEditText("p("+curText+")");
+		sendQueryButtonClicked();
+	}
+}
+
+
+// -------------------------------------------------------
+void MainDialog::refreshWsButtonClicked()
+{
+
+}
+
+
+// -------------------------------------------------------
+void MainDialog::showGraphButtonClicked()
+{
+
+}
 
