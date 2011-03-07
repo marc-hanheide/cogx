@@ -45,9 +45,10 @@ class CGeorgeY2Article: public CTestCase
    void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
 
-   int m_ObjectCount;
-   int m_LearnTaskCount;
-   int m_TeachingStep;
+   int m_ObjectCount;        // objects on the scene
+   int m_TeachingStep;       // 1=shape, 2=color
+   bool m_bLearningExpected; // After a teaching step a learning task is expected
+   int m_LearnTaskCount;     // count learning tasks issued while waiting
    std::string m_RobotResponse;
    CPtrVector<CTestEntry> m_testEntries;
    int m_currentTest;
