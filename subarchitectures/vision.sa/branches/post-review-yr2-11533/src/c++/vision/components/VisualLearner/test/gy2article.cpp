@@ -271,17 +271,21 @@ void CGeorgeY2Article::switchState(int newState)
 
 void CGeorgeY2Article::verifyCount(int count)
 {
+   static int lastReport = 0;
+   int curReport = m_currentTest * 100 + m_ObjectCount;
    if (count == 0) {
       if (m_ObjectCount != 0) {
-         report(MSSG("The scene should be empty, but I see " << m_ObjectCount << " objects."));
+         if (lastReport != curReport)
+            report(MSSG("The scene should be empty, but I see " << m_ObjectCount << " objects."));
+         lastReport = curReport;
       }
-      return;
    }
-   if (count == 1) {
+   else if (count == 1) {
       if (m_ObjectCount != 1) {
-         report(MSSG("There should be one object on the scene, but I see " << m_ObjectCount << "."));
+         if (lastReport != curReport)
+            report(MSSG("There should be one object on the scene, but I see " << m_ObjectCount << "."));
+         lastReport = curReport;
       }
-      return;
    }
 }
 
@@ -357,6 +361,8 @@ bool CGeorgeY2Article::performNextTeachingStep()
 
    asr::PhonStringPtr sayWhat = new asr::PhonString();
    sayWhat->id = addr.id;
+   m_bLearningExpected = false;
+
    if (! pinfo)
       sayWhat->wordSequence = "hi";
    else {
@@ -367,6 +373,7 @@ bool CGeorgeY2Article::performNextTeachingStep()
             else {
                sayWhat->wordSequence = "this is " + pinfo->shape;
                report(MSSG("Tutor: this is " << pinfo->shape));
+               m_bLearningExpected = true;
             }
             break;
          case 2: 
@@ -374,6 +381,7 @@ bool CGeorgeY2Article::performNextTeachingStep()
             else {
                sayWhat->wordSequence = "this is " + pinfo->color;
                report(MSSG("Tutor: this is " << pinfo->color));
+               m_bLearningExpected = true;
             }
             break;
          default:
@@ -466,7 +474,10 @@ void CGeorgeY2Article::runOneStep()
          verifyCount(1);
          if (m_RobotResponse.length() > 0) {
             report(MSSG("Robot says: " << m_RobotResponse));
-            switchState(stWaitForLearningTask);
+            if (m_bLearningExpected)
+               switchState(stWaitForLearningTask);
+            else
+               switchState(stTeaching);
          }
          else if (isTimedOut()) {
             switchState(stTimedOut);
