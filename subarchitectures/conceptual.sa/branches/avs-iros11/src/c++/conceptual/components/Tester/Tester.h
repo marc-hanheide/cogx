@@ -9,6 +9,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
+#include <DefaultData.hpp>
 
 
 class MainDialog;
@@ -39,6 +40,12 @@ public:
 	ConceptualData::VariableInfos getChainGraphVariables();
 	ConceptualData::FactorInfos getChainGraphFactors();
 
+	const DefaultData::StringSeq &getObjectCategories()
+		{ return _objectCategories; }
+
+	const DefaultData::StringSeq &getRoomCategories()
+		{ return _roomCategories; }
+
 
 protected:
 	/** Called by the framework to configure the component. */
@@ -68,11 +75,17 @@ private:
 	/** Id of the ChainGraphInferencer component.  */
 	std::string _chainGraphInferencerName;
 
+	/** Name of the DefaultChainGraphInferencer component.  */
+	std::string _defaultChainGraphInferencerName;
+
 	/** Set to true if the QueryHandler is available. */
 	bool _queryHandlerAvailable;
 
 	/** Set to true if the ChainGraphInferencer is available. */
 	bool _chainGraphInferencerAvailable;
+
+	/** Set to true if the ChainGraphInferencer is available. */
+	bool _defaultChainGraphInferencerAvailable;
 
 	MainDialog *_mainDialog;
 
@@ -81,6 +94,25 @@ private:
 
 	/** ICE proxy to the ChainGraphTestingServerInterface. */
 	ConceptualData::ChainGraphTestingServerInterfacePrx _chainGraphTestingServerInterfacePrx;
+
+	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
+	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
+
+	/** Names of the object place property variables. */
+	DefaultData::StringSeq _objectPropertyVariables;
+
+	DefaultData::StringSeq _objectCategories;
+
+	/** Names of all room categories. */
+	DefaultData::StringSeq _roomCategories;
+
+	/** Names of all shapes. */
+	DefaultData::StringSeq _shapes;
+
+	/** Names of all appearances. */
+	DefaultData::StringSeq _appearances;
+
+
 
 }; // class Tester
 } // namespace def

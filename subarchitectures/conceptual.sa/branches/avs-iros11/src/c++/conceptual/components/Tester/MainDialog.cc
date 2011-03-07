@@ -9,14 +9,18 @@
 #include "GraphDialog.h"
 #include "ConceptualData.hpp"
 #include "SpatialProbabilities.hpp"
+#include "ObjectPlacePropertyDialog.h"
+#include "ObjectSearchResultDialog.h"
 
 // Qt & std
 #include <QDateTime>
 #include <QTimer>
 #include <queue>
+#include <boost/lexical_cast.hpp>
 
 using namespace conceptual;
 using namespace std;
+using namespace boost;
 using namespace ConceptualData;
 
 // -------------------------------------------------------
@@ -40,6 +44,8 @@ MainDialog::MainDialog(Tester *component)
 	connect(variablesListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(varListCurrentTextChanged(const QString &)));
 	connect(factorsListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(factorListCurrentTextChanged(const QString &)));
 	connect(_wsTimer, SIGNAL(timeout()), this, SLOT(wsTimerTimeout()));
+	connect(addObjectPlacePropertyButton, SIGNAL(clicked()), this, SLOT(addObjectPlacePropertyButtonClicked()));
+	connect(addObjectSearchResultButton, SIGNAL(clicked()), this, SLOT(addObjectSearchResultButtonClicked()));
 
 	_wsTimer->start(1000);
 }
@@ -244,7 +250,7 @@ void MainDialog::refreshWsButtonClicked()
 					objectItem->setIcon(0, QIcon(":/icons/icons/object.png"));
 					(new QTreeWidgetItem(objectItem, QStringList("Count: "+QString::number(oppi.count))))->
 							setIcon(0, QIcon(":/icons/icons/flag-green.png"));
-					(new QTreeWidgetItem(objectItem, QStringList("Beta: "+QString::number(oppi.beta))))->
+					(new QTreeWidgetItem(objectItem, QStringList("Beta: "+QString::fromStdString(lexical_cast<string>(oppi.beta)))))->
 							setIcon(0, QIcon(":/icons/icons/flag-green.png"));
 				}
 			}
@@ -333,6 +339,22 @@ void MainDialog::showGraphButtonClicked()
 	gd->show();
 	gd->refresh(vis, fis);
 
+}
+
+
+// -------------------------------------------------------
+void MainDialog::addObjectPlacePropertyButtonClicked()
+{
+	ObjectPlacePropertyDialog *d = new ObjectPlacePropertyDialog(this, _component);
+	d->show();
+}
+
+
+// -------------------------------------------------------
+void MainDialog::addObjectSearchResultButtonClicked()
+{
+	ObjectSearchResultDialog *d = new ObjectSearchResultDialog(this, _component);
+	d->show();
 }
 
 

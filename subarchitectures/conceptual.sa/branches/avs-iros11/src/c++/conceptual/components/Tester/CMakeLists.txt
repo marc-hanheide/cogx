@@ -7,7 +7,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/conceptual.sa/src/c++/conceptual/components/Tester )
 
     add_cast_component(ConceptualTester Tester.cc MainDialog.cc ObjectPlacePropertyDialog.cc ObjectSearchResultDialog.cc GraphDialog.cc ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS})
-    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared DefaultData SpatialData SpatialProperties SpatialProbabilities)
 
 endif(BUILD_SA_CONCEPTUAL_TESTER)
 

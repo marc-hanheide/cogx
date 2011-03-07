@@ -107,7 +107,7 @@ module ConceptualData
         /** Number of objects of this type found. */
         int count;
         /** The percentage of the relation probability mass that was already explored for this object category. */
-        int beta;
+        double beta;
     };
 
 	/** */

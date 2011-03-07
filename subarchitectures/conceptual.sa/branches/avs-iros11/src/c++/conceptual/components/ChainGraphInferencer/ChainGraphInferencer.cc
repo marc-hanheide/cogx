@@ -216,6 +216,7 @@ void ChainGraphInferencer::runComponent()
 				if (q.queryPtr->type == ConceptualData::STANDARDQUERY)
 				{
 					// Get the "additional" variables that should be added from the query if missing
+					_additionalVariables.clear();
 					for(unsigned int i=0; i<queryVariables.size(); ++i)
 					{
 						if (queryVariables[i][0]=='+')
@@ -524,15 +525,16 @@ void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// No need to check if the variables are in right order, the factor is symmetric
+
 	// Note: first fariable changes faster
 	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
 	int index=0;
-	for (int i2 = 0; i2<roomCatCount; ++i2)
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
 	{
 		string var2ValueName = dv2.valueIdToName[i2];
 		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 		{
 			string var1ValueName = dv1.valueIdToName[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
@@ -566,10 +568,9 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 	// Note: first fariable changes faster
 	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
 	int index=0;
 	// Go over the first variable
-	for (int i1 = 0; i1<roomCatCount; ++i1)
+	for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 	{
 		string var1ValueName = dv1.valueIdToName[i1];
 		double potential = 0.1;
@@ -602,9 +603,8 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id, co
 	dai::Factor daiFactor( dv1.var );
 
 	// Go over room categories
-	int roomCatCount = _roomCategories.size();
 	int index=0;
-	for (int i1 = 0; i1<roomCatCount; ++i1)
+	for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 	{
 		string var1ValueName = dv1.valueIdToName[i1]; // Room category
 		// Get the lambda value for the poisson distribution
@@ -629,6 +629,19 @@ void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const st
 		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
 		const std::string &supportObjectId, double beta)
 {
+	// Check if we have default knowledge for this factor, if not do nothing
+	string objectVariableName = VariableNameGenerator::getDefaultObjectPropertyVarName(
+			objectCategory, relation, supportObjectCategory);
+	string defFactorName = string("f(room_category1,")+objectVariableName+")";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(defFactorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				defFactorName.c_str());
+		return;
+	}
+
 	// Create variables
 	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
 	string objectUnexploredVarName = VariableNameGenerator::getUnexploredObjectVarName(
@@ -646,25 +659,45 @@ void ChainGraphInferencer::createDaiObjectUnexploredFactor(int room1Id, const st
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Check if the variables in the factor are order the way they should
+	bool switchVars=false;
+	if (daiFactor.vars().elements()[0].label() != dv1.var.label())
+	{
+		switchVars=true;
+		DaiVariable &tmp = dv1;
+		dv1=dv2;
+		dv2=tmp;
+	}
+
 	// Note: first variable changes faster
 	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
 	int index=0;
-	for (int i2 = 0; i2<2; ++i2)
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
 	{
-		string var2ValueName = dv2.valueIdToName[i2];
 		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 		{
-			string var1ValueName = dv1.valueIdToName[i1];
+			string roomCategory;
+			string exist;
+			if (switchVars)
+			{
+				roomCategory = dv2.valueIdToName[i2];
+				exist = dv1.valueIdToName[i1];
+			}
+			else
+			{
+				roomCategory = dv1.valueIdToName[i1];
+				exist = dv2.valueIdToName[i2];
+			}
+
 			// Get the lambda value for the poisson distribution
-			double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+			double lambda = getPoissonLambda(roomCategory, objectCategory, relation, supportObjectCategory);
 			// Check for errors
 			if (lambda<0)
 				return;
 			// Get the poisson prob distribution
 			double probability;
-			if (var2ValueName == ConceptualData::EXISTS)
+			if (exist == ConceptualData::EXISTS)
 				probability = 1.0 - getPoissonProabability((1.0-beta)*lambda, 0);
 			else
 				probability = getPoissonProabability((1.0-beta)*lambda, 0);
@@ -706,23 +739,41 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// log("FACTOR! %s %d %d %d %d", factorName.c_str(), dv1.var.label(), dv2.var.label(), daiFactor.vars().elements()[0].label(), daiFactor.vars().elements()[1].label());
+	// Check if the variables in the factor are order the way they should
+	bool switchVars=false;
+	if (daiFactor.vars().elements()[0].label() != dv1.var.label())
+	{
+		switchVars=true;
+		DaiVariable &tmp = dv1;
+		dv1=dv2;
+		dv2=tmp;
+	}
+
 	// Note: first variable changes faster
 	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
-	int shapeCount = _shapes.size();
 	int index=0;
-	for (int i2 = 0; i2<shapeCount; ++i2)
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
 	{
-		string var2ValueName = dv2.valueIdToName[i2];
 		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 		{
-			string var1ValueName = dv1.valueIdToName[i1];
-			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			string roomCategory;
+			string shape;
+			if (switchVars)
+			{
+				roomCategory = dv2.valueIdToName[i2];
+				shape = dv1.valueIdToName[i1];
+			}
+			else
+			{
+				roomCategory = dv1.valueIdToName[i1];
+				shape = dv2.valueIdToName[i2];
+			}
+
+			double potential = getProbabilityValue(factor, roomCategory, shape);
 			if (potential<0)
 				throw CASTException(exceptionMessage(__HERE__,
-						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
+						"Potential not found for values '%s' and '%s'", roomCategory.c_str(), shape.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -751,9 +802,8 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 	// Create factor
 	dai::Factor daiFactor( dv.var );
 
-	int shapeCount = _shapes.size();
 	int index=0;
-	for (int i = 0; i<shapeCount; ++i)
+	for (unsigned int i = 0; i<dv.var.states(); ++i)
 	{
 		// Find probability for the shape
 		string shape = _shapes[i];
@@ -810,22 +860,41 @@ void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(in
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// Note: first fariable changes faster
-	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
-	int appearanceCount = _appearances.size();
-	int index=0;
-	for (int i2 = 0; i2<appearanceCount; ++i2)
+	// Check if the variables in the factor are order the way they should
+	bool switchVars=false;
+	if (daiFactor.vars().elements()[0].label() != dv1.var.label())
 	{
-		string var2ValueName = dv2.valueIdToName[i2];
+		switchVars=true;
+		DaiVariable &tmp = dv1;
+		dv1=dv2;
+		dv2=tmp;
+	}
+
+	// Note: first variable changes faster
+	// Go over the second variable
+	int index=0;
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
+	{
 		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 		{
-			string var1ValueName = dv1.valueIdToName[i1];
-			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			string roomCategory;
+			string appearance;
+			if (switchVars)
+			{
+				roomCategory = dv2.valueIdToName[i2];
+				appearance = dv1.valueIdToName[i1];
+			}
+			else
+			{
+				roomCategory = dv1.valueIdToName[i1];
+				appearance = dv2.valueIdToName[i2];
+			}
+
+			double potential = getProbabilityValue(factor, roomCategory, appearance);
 			if (potential<0)
 				throw CASTException(exceptionMessage(__HERE__,
-						"Potential not found for values '%s' and '%s'", var1ValueName.c_str(), var2ValueName.c_str()));
+						"Potential not found for values '%s' and '%s'", roomCategory.c_str(), appearance.c_str()));
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -854,9 +923,8 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 	// Create factor
 	dai::Factor daiFactor( dv.var );
 
-	int appearanceCount = _appearances.size();
 	int index=0;
-	for (int i = 0; i<appearanceCount; ++i)
+	for (unsigned int i = 0; i<dv.var.states(); ++i)
 	{
 		// Find probability for the appearance
 		string appearance = _appearances[i];
@@ -1170,15 +1238,16 @@ void ChainGraphInferencer::createDaiConnectivityFactor(vector<dai::Factor> &fact
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( var1, var2 ) );
+	// No need to check if the variables are in the right order, the factor is symmetric
+
 	// Note: first fariable changes faster
 	// Go over the second variable
-	int roomCatCount = _roomCategories.size();
 	int index=0;
-	for (int i2 = 0; i2<roomCatCount; ++i2)
+	for (unsigned int i2 = 0; i2<var2.states(); ++i2)
 	{
 		string var2ValueName = _roomCategories[i2];
 		// Go over the first variable
-		for (int i1 = 0; i1<roomCatCount; ++i1)
+		for (unsigned int i1 = 0; i1<var1.states(); ++i1)
 		{
 			string var1ValueName = _roomCategories[i1];
 			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
