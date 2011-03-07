@@ -43,11 +43,11 @@ private slots:
 	void refreshWsButtonClicked();
 	void showGraphButtonClicked();
 	void varListCurrentTextChanged(const QString &curText);
+	void factorListCurrentTextChanged(const QString &curText);
 	void wsTimerTimeout();
 
 
 private:
-    Ui::MainDialogClass ui;
     conceptual::Tester *_component;
 
     QTimer *_wsTimer;

@@ -31,7 +31,6 @@ MainDialog::MainDialog(Tester *component)
 
 	_wsTimer = new QTimer(this);
 	_wsCount = 0;
-	_wsTimer->start(1000);
 
 	// Signals and slots
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
@@ -39,7 +38,10 @@ MainDialog::MainDialog(Tester *component)
 	connect(refreshWsButton, SIGNAL(clicked()), this, SLOT(refreshWsButtonClicked()));
 	connect(showGraphButton, SIGNAL(clicked()), this, SLOT(showGraphButtonClicked()));
 	connect(variablesListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(varListCurrentTextChanged(const QString &)));
+	connect(factorsListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(factorListCurrentTextChanged(const QString &)));
 	connect(_wsTimer, SIGNAL(timeout()), this, SLOT(wsTimerTimeout()));
+
+	_wsTimer->start(1000);
 }
 
 
@@ -69,18 +71,18 @@ void MainDialog::sendQueryButtonClicked()
 
 	SpatialProbabilities::ProbabilityDistribution result =
 			_component->sendQueryHandlerQuery(queryComboBox->currentText().toStdString(),
-					!standardQueryRadioButton->isChecked());
+					imaginaryQueryRadioButton->isChecked(), factorQueryRadioButton->isChecked());
 
 	if (result.massFunction.size()>0)
 	{
 		// Setup header
-		vector<int> varNos;
 		QStringList labels;
+		for (unsigned int i=0; i<result.variableNameToPositionMap.size(); ++i)
+			labels.append("");
 		for (map<string, int>::iterator it = result.variableNameToPositionMap.begin();
 				it!=result.variableNameToPositionMap.end(); ++it)
 		{
-			varNos.push_back(it->second);
-			labels.append(QString::fromStdString(it->first));
+			labels[it->second] = QString::fromStdString(it->first);
 		}
 		labels.append("p");
 
@@ -93,7 +95,7 @@ void MainDialog::sendQueryButtonClicked()
 			double probability = result.massFunction[i].probability;
 
 			QStringList values;
-			for(unsigned int j=0; j<varNos.size(); ++j)
+			for(unsigned int j=0; j<result.massFunction[i].variableValues.size(); ++j)
 			{
 				QString valueStr;
 				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::StringRandomVariableValue"))
@@ -140,15 +142,25 @@ void MainDialog::sendQueryButtonClicked()
 // -------------------------------------------------------
 void MainDialog::refreshVarsButtonClicked()
 {
-	_component->log("Refreshing variable list");
-
 	variablesListWidget->clear();
+	factorsListWidget->clear();
+
 	ConceptualData::VariableInfos vis = _component->getChainGraphVariables();
 
 	for (map<int, ConceptualData::VariableInfo>::iterator i=vis.begin(); i!=vis.end(); ++i)
 	{
 		variablesListWidget->addItem(QString::fromStdString(i->second.name));
 	}
+
+	ConceptualData::FactorInfos fis = _component->getChainGraphFactors();
+
+	for (map<int, ConceptualData::FactorInfo>::iterator i=fis.begin(); i!=fis.end(); ++i)
+	{
+		QString factorName = QString::fromStdString(i->second.name);
+		if (factorsListWidget->findItems(factorName, Qt::MatchFixedString | Qt::MatchCaseSensitive).count()==0)
+			factorsListWidget->addItem(factorName);
+	}
+
 }
 
 // -------------------------------------------------------
@@ -156,7 +168,20 @@ void MainDialog::varListCurrentTextChanged(const QString &curText)
 {
 	if (!curText.isEmpty())
 	{
+		standardQueryRadioButton->setChecked(true);
 		queryComboBox->setEditText("p("+curText+")");
+		sendQueryButtonClicked();
+	}
+}
+
+
+// -------------------------------------------------------
+void MainDialog::factorListCurrentTextChanged(const QString &curText)
+{
+	if (!curText.isEmpty())
+	{
+		factorQueryRadioButton->setChecked(true);
+		queryComboBox->setEditText(curText);
 		sendQueryButtonClicked();
 	}
 }
@@ -304,8 +329,10 @@ void MainDialog::showGraphButtonClicked()
 	ConceptualData::VariableInfos vis = _component->getChainGraphVariables();
 	ConceptualData::FactorInfos fis = _component->getChainGraphFactors();
 
-	GraphDialog *gd = new GraphDialog(this);
+	GraphDialog *gd = new GraphDialog(this, _component);
 	gd->show();
+	gd->refresh(vis, fis);
+
 }
 
 

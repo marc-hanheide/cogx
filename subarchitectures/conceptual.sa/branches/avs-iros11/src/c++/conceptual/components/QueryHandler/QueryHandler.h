@@ -38,6 +38,8 @@ class QueryHandler: public cast::ManagedComponent
 		virtual SpatialProbabilities::ProbabilityDistribution
 			imaginaryQuery(const std::string &queryStr, const Ice::Current &);
 
+		virtual SpatialProbabilities::ProbabilityDistribution
+			factorQuery(const std::string &factorStr, const Ice::Current &);
 
 	private:
 
@@ -75,7 +77,7 @@ private:
 	void inferenceResultAdded(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Adds new InferenceQuery to WM. Returns the WM ID of the query. */
-	std::string sendInferenceQuery(std::string queryString, bool imaginary);
+	std::string sendInferenceQuery(std::string queryString, ConceptualData::QueryType type);
 
 	/** Waits for the InferenceResult to a query with the given ID.
 	 * Retuns pointer to the distribution in the result. */

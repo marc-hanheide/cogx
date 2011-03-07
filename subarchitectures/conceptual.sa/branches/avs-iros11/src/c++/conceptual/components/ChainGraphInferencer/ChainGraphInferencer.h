@@ -133,6 +133,10 @@ private:
 	void prepareImaginaryInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
 			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
 
+	/** Prepares results of the factor query. */
+	void prepareFactorResult(std::string queryString, std::vector<std::string> queryVariables,
+			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+
 	/** Reads the default knowledge factors from the Default.SA */
 	void getDefaultKnowledge();
 
@@ -145,7 +149,7 @@ private:
 			std::string var1Value, bool var2value);
 
 	/** Parses a query into a vector of variables. */
-	void parseQuery(std::string queryString, std::vector<std::string> &variables);
+	void parseQuery(std::string queryString, ConceptualData::QueryType type, std::vector<std::string> &variables);
 
 	/** Retrieves the elements of the variable name. */
 	void parseVariable(std::string variableName, std::vector<std::string> &elements);

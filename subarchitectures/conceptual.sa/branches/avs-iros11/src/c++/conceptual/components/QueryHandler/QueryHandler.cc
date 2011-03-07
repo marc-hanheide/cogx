@@ -74,12 +74,12 @@ void QueryHandler::stop()
 }
 
 // -------------------------------------------------------
-string QueryHandler::sendInferenceQuery(std::string queryString, bool imaginary)
+string QueryHandler::sendInferenceQuery(std::string queryString, ConceptualData::QueryType type)
 {
 	string inferenceQueryId = newDataID();
 	ConceptualData::InferenceQueryPtr inferenceQueryPtr = new ConceptualData::InferenceQuery();
 	inferenceQueryPtr->queryString = queryString;
-	inferenceQueryPtr->imaginary = imaginary;
+	inferenceQueryPtr->type = type;
 
 	_sentQueryIds.insert(inferenceQueryId);
 	addToWorkingMemory<ConceptualData::InferenceQuery>(inferenceQueryId, inferenceQueryPtr);
@@ -182,7 +182,7 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
 	_queryHandler->debug("Received query: '"+queryStr+"'");
 
 	// Send a new InferenceQuery
-	string queryId = _queryHandler->sendInferenceQuery(queryStr, false);
+	string queryId = _queryHandler->sendInferenceQuery(queryStr, ConceptualData::STANDARDQUERY);
 
 	// Retrieve the inference result (blocking!)
 	SpatialProbabilities::ProbabilityDistribution d;
@@ -202,13 +202,33 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::imaginaryQue
 	_queryHandler->debug("Received imaginary query: '"+queryStr+"'");
 
 	// Send a new InferenceQuery
-	string queryId = _queryHandler->sendInferenceQuery(queryStr, true);
+	string queryId = _queryHandler->sendInferenceQuery(queryStr, ConceptualData::IMAGINARYQUERY);
 
 	// Retrieve the inference result (blocking!)
 	SpatialProbabilities::ProbabilityDistribution d;
 	_queryHandler->retrieveInferenceResult(queryId, &d);
 
 	_queryHandler->debug("Returning inference result for query: '"+queryStr+"'");
+
+	// Return the distribution
+	return d;
+}
+
+
+// -------------------------------------------------------
+SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::factorQuery(
+		const std::string &factorStr, const Ice::Current &)
+{
+	_queryHandler->debug("Received factor query: '"+factorStr+"'");
+
+	// Send a new InferenceQuery
+	string queryId = _queryHandler->sendInferenceQuery(factorStr, ConceptualData::FACTORQUERY);
+
+	// Retrieve the inference result (blocking!)
+	SpatialProbabilities::ProbabilityDistribution d;
+	_queryHandler->retrieveInferenceResult(queryId, &d);
+
+	_queryHandler->debug("Returning result for factor query: '"+factorStr+"'");
 
 	// Return the distribution
 	return d;
