@@ -297,6 +297,13 @@ void ChainGraphInferencer::start()
 		objectPropertyVariables.insert("object_"+it->object+"_property");
 	_objectPropertyVariables = vector<string>(objectPropertyVariables.begin(), objectPropertyVariables.end());
 
+	// Generate list of objects
+	set<string> objectCategories;
+	for(list<HFCItem>::iterator it = _hfcKnowledge.begin();
+			it!=_hfcKnowledge.end(); ++it)
+		objectCategories.insert(it->object);
+	_objectCategories = vector<string>(objectCategories.begin(), objectCategories.end());
+
 	// Generate list of room categories
 	set<string> roomCategories;
 	for(list<HFCItem>::iterator it = _hfcKnowledge.begin();
@@ -422,6 +429,14 @@ DefaultData::StringSeq
 	ChainGraphInferencer::Server::getRoomCategories(const Ice::Current &)
 {
 	return _chainGraphInferencer->_roomCategories;
+}
+
+
+// -------------------------------------------------------
+DefaultData::StringSeq
+	ChainGraphInferencer::Server::getObjectCategories(const Ice::Current &)
+{
+	return _chainGraphInferencer->_objectCategories;
 }
 
 

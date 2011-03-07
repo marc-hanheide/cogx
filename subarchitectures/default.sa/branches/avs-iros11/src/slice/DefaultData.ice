@@ -54,6 +54,9 @@ module DefaultData
 		/** Returns the names of the object-related variables. */
 		StringSeq getObjectPropertyVariables();
 
+		/** Returns the names of all the object categories. */
+		StringSeq getObjectCategories();
+
 		/** Returns the names of all the room categories. */
 		StringSeq getRoomCategories();
 

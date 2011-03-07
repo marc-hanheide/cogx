@@ -34,6 +34,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
 
 		virtual DefaultData::StringSeq getObjectPropertyVariables(const Ice::Current &);
 
+		virtual DefaultData::StringSeq getObjectCategories(const Ice::Current &);
+
 		virtual DefaultData::StringSeq getRoomCategories(const Ice::Current &);
 
 		virtual DefaultData::StringSeq getShapes(const Ice::Current &);
@@ -129,6 +131,9 @@ private:
 
 	/** Room connectivity information as read from the config file. */
 	std::list<RoomCategoryConnectivity> _roomCategoryConnectivity;
+
+	/** List of all object categories. */
+	std::vector<std::string> _objectCategories;
 
 	/** List of all object property variable names. */
 	std::vector<std::string> _objectPropertyVariables;
