@@ -11,6 +11,7 @@
 
 struct CTestEntry
 {
+   std::string name;
    std::string videoLeft;
    std::string videoRight;
    std::string shape;
@@ -18,6 +19,7 @@ struct CTestEntry
 
    CTestEntry()
    {
+      name = "";
       videoLeft = "";
       videoRight = "";
       color = "";

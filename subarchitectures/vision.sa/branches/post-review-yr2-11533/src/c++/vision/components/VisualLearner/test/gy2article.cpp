@@ -65,13 +65,13 @@ CGeorgeY2Article::~CGeorgeY2Article()
 void CGeorgeY2Article::report(std::ostringstream& what)
 {
    m_pOwner->println(" ******************************* ");
-   m_pOwner->println(what.str().c_str());
+   m_pOwner->println("%.2f %s", now(), what.str().c_str());
 }
 
 void CGeorgeY2Article::report(const std::string& what)
 {
    m_pOwner->println(" ******************************* ");
-   m_pOwner->println(what.c_str());
+   m_pOwner->println("%.2f %s", now(), what.c_str());
 }
 
 static int _index(const vector<string>& vec, const string& val)
@@ -117,7 +117,13 @@ void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _conf
          if (fiRight >= 0 && fiRight < nf) pdata->videoRight = exmpl[fiRight];
          if (fiShape >= 0 && fiShape < nf) pdata->shape = exmpl[fiShape];
          if (fiColor >= 0 && fiColor < nf) pdata->color = exmpl[fiColor];
-         if (pdata->isValid()) m_testEntries.push_back(pdata);
+         if (pdata->isValid()) {
+            // name = filename to first dot
+            vector<string> parts = _s_::split(pdata->videoLeft, "/");
+            parts = _s_::split(parts.back(), ".");
+            pdata->name = parts.front();
+            m_testEntries.push_back(pdata);
+         }
          else delete pdata;
       }
       f.close();
@@ -200,42 +206,13 @@ void CGeorgeY2Article::onDel_VisualObject(const cast::cdl::WorkingMemoryChange &
 
 void CGeorgeY2Article::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   // TODO: read the response, verify that it's the robots response, notify
-   if (true)
+   synthesize::SpokenOutputItemPtr psaid = m_pOwner->getMemoryEntry<synthesize::SpokenOutputItem>(_wmc.address);
    {
-      synthesize::SpokenOutputItemPtr psaid = m_pOwner->getMemoryEntry<synthesize::SpokenOutputItem>(_wmc.address);
-
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_RobotResponse = psaid->phonString;
    }
    m_EventMonitor.notify();
 }
-
-//void CGeorgeY2Article::issueRequest()
-//{
-//   // TODO: Create a new request for learning
-//   //    - load an empty sequence into the SequenceServer
-//   //    - wait till VO disappears
-//   //    - load next sequence
-//   //    - wait till VO appears
-//   //    - write utterance to WM
-//   //    -   wait until the robot responds
-//   //    -   repeat with next utterance
-//   //    - end-of-learning
-
-//   //ProtoObjectPtr pproto = m_pOwner->loadFakeProtoObject();
-//   //cdl::WorkingMemoryAddress addr;
-//   //addr.subarchitecture = string(m_pOwner->getSubarchitectureID());
-//   //addr.id = m_pOwner->newDataID();
-//   //m_pOwner->addToWorkingMemory(addr, pproto);
-
-//   //m_pOwner->println("Adding new VisualLearnerRecognitionTask");
-//   //VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-//   //ptask->protoObjectAddr = addr;
-
-//   //string reqId(m_pOwner->newDataID());
-//   //m_pOwner->addToWorkingMemory(reqId, ptask);
-//}
 
 void CGeorgeY2Article::switchState(int newState)
 {
@@ -270,20 +247,20 @@ void CGeorgeY2Article::switchState(int newState)
    }
    m_timeout = now() + delta;
 
-   report(MSSG(now() << " NEW STATE " << m_stateNames[m_State]));
+   report(MSSG(" NEW STATE " << m_stateNames[m_State]));
 }
 
 void CGeorgeY2Article::verifyCount(int count)
 {
    if (count == 0) {
       if (m_ObjectCount != 0) {
-         m_pOwner->println("The scene should be empty, but I see %d objects.", m_ObjectCount);
+         report(MSSG("The scene should be empty, but I see " << m_ObjectCount << " objects."));
       }
       return;
    }
    if (count == 1) {
       if (m_ObjectCount != 1) {
-         m_pOwner->println("There should be one object on the scene, but I see %d.", m_ObjectCount);
+         report(MSSG("There should be one object on the scene, but I see " << m_ObjectCount << "."));
       }
       return;
    }
@@ -311,6 +288,7 @@ void CGeorgeY2Article::loadScene()
 {
    CTestEntry *pinfo = getCurrentTest();
    if (! pinfo) return;
+   report(MSSG("SCENE: " << pinfo->name));
 
    Video::VideoSequenceInfoPtr pseq = new Video::VideoSequenceInfo();
 
@@ -326,7 +304,6 @@ void CGeorgeY2Article::loadScene()
    addr.id = m_pOwner->newDataID();
 
    m_pOwner->addToWorkingMemory(addr, pseq);
-   report(pseq->fileTemplates);
 }
 
 void CGeorgeY2Article::loadEmptyScene()
@@ -345,7 +322,7 @@ void CGeorgeY2Article::loadEmptyScene()
    addr.id = m_pOwner->newDataID();
 
    m_pOwner->addToWorkingMemory(addr, pseq);
-   report(pseq->fileTemplates);
+   report("SCENE: empty");
 }
 
 bool CGeorgeY2Article::performNextTeachingStep()
@@ -361,9 +338,10 @@ bool CGeorgeY2Article::performNextTeachingStep()
 
    asr::PhonStringPtr sayWhat = new asr::PhonString();
    sayWhat->id = addr.id;
-   if (! pinfo) sayWhat->wordSequence = "hi";
+   if (! pinfo)
+      sayWhat->wordSequence = "hi";
    else {
-      // TODO: describe the object, or say hello if the attribute is not present.
+      // describe the object, or say hello if the attribute is not present.
       switch(m_TeachingStep) {
          case 1: 
             if (pinfo->shape == "") sayWhat->wordSequence = "hello";
@@ -410,8 +388,16 @@ void CGeorgeY2Article::runOneStep()
       m_EventMonitor.timedWait(IceUtil::Time::milliSeconds(2)); // give a chance to other thread, anyway
    // SYNC: Continue with a locked monitor
 
-   if (mustWait)
-      report(MSSG("STATE " << m_stateNames[m_State]));
+   if (mustWait) {
+      static int reported = -1;
+      static int count = 0;
+      count++;
+      if (reported != m_State || count >= 10) {
+         report(MSSG("STATE " << m_stateNames[m_State]));
+         count = 0;
+         reported = m_State;
+      }
+   }
 
    switch (m_State) {
       case stStart:
@@ -452,12 +438,12 @@ void CGeorgeY2Article::runOneStep()
       case stTeaching:
          verifyCount(1);
          if (performNextTeachingStep())
-            switchState(stWaitForResponse); // TODO: subscribe to robot utterance (SpokenOutputItem WM entry)
+            switchState(stWaitForResponse);
          else
             switchState(stEndOfTeaching);
          break;
 
-      case stWaitForResponse: // "I see" or "Thank you" or ...
+      case stWaitForResponse:
          verifyCount(1);
          if (m_RobotResponse.length() > 0) {
             report(MSSG("Robot says: " << m_RobotResponse));
@@ -488,8 +474,8 @@ void CGeorgeY2Article::runOneStep()
          break;
 
       case stTimedOut:
-         nextTest();
-         switchState(stTableEmpty);
+         loadEmptyScene();
+         switchState(stWaitToDisappear);
          break;
    }
 }
