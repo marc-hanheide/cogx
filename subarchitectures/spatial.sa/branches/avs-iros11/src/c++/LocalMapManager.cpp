@@ -23,6 +23,7 @@
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <VisionData.hpp>
 #include <stdlib.h>
+#include "scanmap/HSS/HSSutils.hh"
 
 using namespace cast;
 using namespace std;
@@ -48,6 +49,7 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
   m_maxClusterDeviation = 0.1;
   m_RobotServerHost = "localhost";
   m_maxNumberOfClusters = 3;
+  m_doorwayWidth = 1.0;
 }
 
 LocalMapManager::~LocalMapManager() 
@@ -124,6 +126,11 @@ void LocalMapManager::configure(const map<string,string>& _config)
     m_bNoPlaces = true;
   }
 
+  m_bDetectDoors = false;
+  if (_config.find("--detect-doors") != _config.end()) {
+    m_bDetectDoors = true;
+  }
+
   m_bNoPlanes = true;
   m_bNoPTZ = true;
 
@@ -185,6 +192,12 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (it != _config.end()) {
     std::istringstream str(it->second);
     str >> m_standingStillThreshold;
+  }
+
+  it = _config.find("--doorway-width");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> m_doorwayWidth;
   }
 
   m_planeObjectFilename = "";
@@ -571,6 +584,36 @@ void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
   unlockComponent();
 }
 
+int g_NextScanId = 0;
+
+void laala(HSS::Scan2D &sink, const Cure::SICKScan &src)
+{
+  sink.m_Id = g_NextScanId++;
+
+  sink.range.resize(src.getNPts());
+  sink.valid.resize(src.getNPts());
+  sink.theta.resize(src.getNPts());
+  
+  double da = src.getAngleStep();
+  //double da = 1.0*M_PI/180;
+  
+  sink.min_theta = src.getStartAngle();
+  sink.max_theta = src.getStartAngle() + (src.getNPts()-1)*da;
+
+  sink.min_range = 0.1;
+  sink.max_range = 5.55;
+
+  sink.range_sigma = 0.05;
+
+  for (int i = 0; i < src.getNPts(); i++) {
+    sink.theta[i] = src.getStartAngle() + da * i;
+    sink.valid[i] = 1;
+    sink.range[i] = src.getRange(i);
+  }
+  sink.tv.tv_sec = src.getTime().Seconds;
+  sink.tv.tv_usec = src.getTime().Microsec;
+}
+
 void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 {
   lockComponent(); //Don't allow any interface calls while processing a callback
@@ -595,6 +638,36 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
       }
       m_firstScanReceived = true;
+
+      if (m_bDetectDoors) {
+	HSS::Scan2D scanNew;
+	Cure::SICKScan &tmp = cureScan;
+	laala(scanNew, tmp);
+//	scanNew << tmp;
+	m_doorExtractor.extract(scanNew);
+
+	list<HSS::RedundantLine2DRep> detDoors =
+	  m_doorExtractor.doors();
+
+	for (list<HSS::RedundantLine2DRep>::iterator it = detDoors.begin();
+	    it != detDoors.end(); it++) {
+	  bool found = false;
+	  for (vector<HSS::RedundantLine2DRep>::iterator it2 = m_detectedDoors.begin();
+	      it2 != m_detectedDoors.end(); it2++) {
+	    double dx = it2->xC() - it->xC();
+	    double dy = it2->yC() - it->yC();
+	    double dist = dx*dx+dy*dy;
+	    if (dist < 4.0) {
+	      found = true;
+	      break;
+	    }
+	  }
+	  if (!found) {
+	    m_detectedDoors.push_back(*it);
+	  }
+	}
+      }
+
       m_Mutex.unlock();
     }
   }
@@ -778,8 +851,24 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
       }
     }
     log("Total free cells: %i; total processed %i", totalFreeCells, totalProcessed);
+
+  if (m_bDetectDoors) {
+    double minDistSq = DBL_MAX;
+    for (vector<HSS::RedundantLine2DRep>::iterator it = m_detectedDoors.begin();
+	it != m_detectedDoors.end(); it++) {
+      double dx = relevantX - it->xC();
+      double dy = relevantY - it->yC();
+      double distSq = dx*dx+dy*dy;
+      if (distSq < minDistSq) {
+	minDistSq = distSq;
+      }
+    }
+    ret.gatewayValue = exp(-minDistSq/m_doorwayWidth);
+  }
+
     m_Mutex.unlock();
   }
+
   return ret;
 }
 
