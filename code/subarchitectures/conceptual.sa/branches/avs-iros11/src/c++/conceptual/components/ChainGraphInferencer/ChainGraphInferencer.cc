@@ -195,8 +195,10 @@ void ChainGraphInferencer::runComponent()
 
 			pthread_mutex_unlock(&_inferenceQueryAddedSignalMutex);
 
-			debug("Processing inference query '%s' (imaginary = %s)",
-							q.queryPtr->queryString.c_str(), (q.queryPtr->imaginary)?"true":"false");
+			debug("Processing inference query '%s' (type = %s)",
+							q.queryPtr->queryString.c_str(),
+							(q.queryPtr->type==ConceptualData::STANDARDQUERY)?"standard":
+							((q.queryPtr->type==ConceptualData::IMAGINARYQUERY)?"imaginary":"factor"));
 
 			// Prepare some parts of the result
 			ConceptualData::InferenceResultPtr inferenceResultPtr = new ConceptualData::InferenceResult();
@@ -205,20 +207,23 @@ void ChainGraphInferencer::runComponent()
 
 			// Parse the query string
 			vector<string> queryVariables;
-			parseQuery(q.queryPtr->queryString, queryVariables);
+			parseQuery(q.queryPtr->queryString, q.queryPtr->type, queryVariables);
 			if (!queryVariables.empty())
 			{
 				// Lock the graph mutex
 				pthread_mutex_lock(&_graphMutex);
 
-				// Get the "additional" variables that should be added from the query if missing
-				for(unsigned int i=0; i<queryVariables.size(); ++i)
+				if (q.queryPtr->type == ConceptualData::STANDARDQUERY)
 				{
-					if (queryVariables[i][0]=='+')
+					// Get the "additional" variables that should be added from the query if missing
+					for(unsigned int i=0; i<queryVariables.size(); ++i)
 					{
-						_additionalVariables.insert(trim_left_copy_if(queryVariables[i],is_any_of("+")));
-						erase_first(queryVariables[i], "+");
-						// log("Adding additional variable %s.", queryVariables[i].c_str());
+						if (queryVariables[i][0]=='+')
+						{
+							_additionalVariables.insert(trim_left_copy_if(queryVariables[i],is_any_of("+")));
+							erase_first(queryVariables[i], "+");
+							// log("Adding additional variable %s.", queryVariables[i].c_str());
+						}
 					}
 				}
 
@@ -237,17 +242,22 @@ void ChainGraphInferencer::runComponent()
 					}
 
 					// If this is a query about imaginary worlds, run imaginary world generation if the cache is empty
-					if ((q.queryPtr->imaginary) && (_placeholderRoomCategoryExistance.empty()))
+					if ((q.queryPtr->type==ConceptualData::IMAGINARYQUERY) && (_placeholderRoomCategoryExistance.empty()))
 					{
 						runImaginaryWorldsGeneration();
 					}
 
-
 					// Is this a query about an imaginary world?
-					if (q.queryPtr->imaginary)
+					if (q.queryPtr->type == ConceptualData::IMAGINARYQUERY)
 					{
 						// Prepare the result distribution
 						prepareImaginaryInferenceResult(q.queryPtr->queryString,
+								queryVariables, &(inferenceResultPtr->result));
+					}
+					else if (q.queryPtr->type == ConceptualData::FACTORQUERY)
+					{
+						// Prepare the result distribution
+						prepareFactorResult(q.queryPtr->queryString,
 								queryVariables, &(inferenceResultPtr->result));
 					}
 					else
@@ -696,7 +706,8 @@ void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int roo
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-	// Note: first fariable changes faster
+	// log("FACTOR! %s %d %d %d %d", factorName.c_str(), dv1.var.label(), dv2.var.label(), daiFactor.vars().elements()[0].label(), daiFactor.vars().elements()[1].label());
+	// Note: first variable changes faster
 	// Go over the second variable
 	int roomCatCount = _roomCategories.size();
 	int shapeCount = _shapes.size();
@@ -1268,6 +1279,85 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::prepareFactorResult(std::string queryString,
+		std::vector<std::string> queryVariables,
+		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+{
+	debug("Preparing results for factor query '"+queryString+"'");
+
+	// Prepare the resulting distribution
+	resultDistribution->description = queryString;
+	resultDistribution->massFunction.clear();
+
+	// Check
+	if (queryVariables.size()!=1)
+	{
+		error("Unhandled query \'%s\'.", queryString.c_str());
+		return;
+	}
+	string varName = queryVariables[0];
+
+	// Find the factor
+	const dai::Factor *factor = 0;
+	for(unsigned int i=0; i<_factorNames.size(); ++i)
+	{
+		if (_factorNames[i]==varName)
+		{
+			factor = &_factors[i];
+		}
+	}
+	if (!factor)
+	{
+		string msg;
+		msg = "Factor '" + varName + "' not found! Factors we know:";
+		for (unsigned int i=0; i <_factorNames.size(); i++)
+			msg += _factorNames[i] + " ";
+		log(msg.c_str());
+		return;
+	}
+
+	// Fill in variable names
+	const vector<dai::Var> &daiVars = factor->vars().elements();
+	vector<DaiVariable> vars;
+	for(unsigned int i=0; i<daiVars.size(); ++i)
+	{
+		string varName;
+		// Find the variable name
+		for(std::map<std::string, DaiVariable>::iterator it = _variableNameToDai.begin();
+				it!=_variableNameToDai.end(); ++it)
+		{
+			if (daiVars[i].label() == it->second.var.label())
+			{
+				varName = it->first;
+				vars.push_back(it->second);
+			}
+		}
+		resultDistribution->variableNameToPositionMap[varName]=i;
+	}
+
+	// Fill in the distribution
+	for (unsigned int i = 0; i < factor->nrStates(); ++i)
+	{
+		SpatialProbabilities::JointProbabilityValue jpv;
+		jpv.probability = factor->get(i);
+		// Get variable values for this probability
+		int modulo=1;
+		for (unsigned int j=0; j<vars.size(); ++j)
+		{
+			// Calculate value number for this variable
+			int valNo= (i % (modulo*daiVars[j].states()))/modulo;
+			modulo*=daiVars[j].states();
+			string valName = vars[j].valueIdToName[valNo];
+			SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+					new SpatialProbabilities::StringRandomVariableValue(valName);
+			jpv.variableValues.push_back(rvvPtr);
+		}
+		resultDistribution->massFunction.push_back(jpv);
+	}
+}
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryString,
 		std::vector<std::string> queryVariables,
 		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
@@ -1321,22 +1411,26 @@ void ChainGraphInferencer::parseVariable(string variableName, vector<string> &el
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::parseQuery(string queryString, vector<string> &variables)
+void ChainGraphInferencer::parseQuery(string queryString, ConceptualData::QueryType type, vector<string> &variables)
 {
 	// Check the query string
-	if ( (queryString.length()<4) || (queryString[0]!='p') ||
-		 (queryString[1]!='(') || (queryString[queryString.length()-1]!=')') )
+	if (type!=ConceptualData::FACTORQUERY)
 	{
-		error("Malformed ChainGraphInferencer query string \'%s\'! This indicates a serious implementation error!",
-				queryString.c_str());
-		return;
+		if ( (queryString.length()<4) || (queryString[0]!='p') ||
+			 (queryString[1]!='(') || (queryString[queryString.length()-1]!=')') )
+		{
+			error("Malformed ChainGraphInferencer query string \'%s\' of type %i! This indicates a serious implementation error!",
+					queryString.c_str(), type);
+			return;
+		}
+		erase_head(queryString, 2);
+		erase_tail(queryString, 1);
+		// Extract variable names
+		split( variables, queryString, is_any_of(", ") );
 	}
+	else
+		variables.push_back(queryString);
 
-	// Extract variable names
-	string variableString=queryString;
-	erase_head(variableString, 2);
-	erase_tail(variableString, 1);
-	split( variables, variableString, is_any_of(", ") );
 }
 
 

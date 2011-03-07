@@ -63,12 +63,16 @@ module ConceptualData
 		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
 		/** Query for a probability distribution extracted from the conceptual layer modeling imaginary worlds. */
 		SpatialProbabilities::ProbabilityDistribution imaginaryQuery(string queryStr);
+		/** Query for a probability distribution of a single factor. */
+		SpatialProbabilities::ProbabilityDistribution factorQuery(string factorStr);
 	};
+
+	enum QueryType {STANDARDQUERY, IMAGINARYQUERY, FACTORQUERY};
 
 	/** Query sent to the chain graph inferencer. */ 
 	class InferenceQuery
 	{
-		bool imaginary; // If true, the query will refer to imaginary worlds
+		QueryType type; 
 		string queryString;
 	};
 	
