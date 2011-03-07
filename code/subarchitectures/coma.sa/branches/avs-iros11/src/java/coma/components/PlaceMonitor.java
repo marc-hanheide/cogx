@@ -215,8 +215,8 @@ public class PlaceMonitor extends ManagedComponent {
 					log("going to add random objects");
 					if (_newPlaceNode.id%3==0) {
 						// log every third place creates a dummy object
-						createObject(new ObjectPlaceProperty(_newPlaceNode.id,
-								null, null, true, false, "dummyObject"));
+//						createObject(new ObjectPlaceProperty(_newPlaceNode.id,
+//								null, null, true, false, "dummyObject"));
 					}
 				}
 
@@ -371,45 +371,45 @@ public class PlaceMonitor extends ManagedComponent {
 		// get object from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
 		
-		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + " and mapValue " + ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
+//		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + " and mapValue " + ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
 		
 		// TODO handle probability distribution 
 //		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
 		
-		boolean _objectCreated = createObject(_objProp);
+//		boolean _objectCreated = createObject(_objProp);
 		// trigger room creation, splitting, merging, maintenance
 		// because their class might have changed
-		if (_objectCreated) maintainRooms();
+//		if (_objectCreated) maintainRooms();
 	}
 		
-	private boolean createObject(ObjectPlaceProperty _objProp) {
-		// establish the ontology member names
-		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
-		String placeIns = "dora:place"+_objProp.placeId;
-		String inRel = "dora:in";
-		String containsRel = "dora:contains";
-		
-		log("createObject of category " + category + " in place " + placeIns + " called.");
-		
-		// check whether the given place already contains an instance of the given category
-		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, containsRel);
-		for (String obj : objsInPlace) {
-			if (obj.startsWith(":")) obj = "dora" + obj;
-			if (m_comareasoner.isInstanceOf(obj, category)) {
-				log("object of the given category already exists in the given place - doing nothing else.");
-				return false;
-				// if such an object exists, don't create a new instance!
-			}
-		}
-		
-		String objIns = "dora:object" + m_objectIndexCounter++; 
-		
-		log("going to add new instance " + objIns + " of category " + category);
-		m_comareasoner.addInstance(objIns, category);
-		log("going to add new relation " + objIns + " " + inRel + " " + placeIns);
-		m_comareasoner.addRelation(objIns, inRel, placeIns);
-		return true;
-	}
+//	private boolean createObject(ObjectPlaceProperty _objProp) {
+//		// establish the ontology member names
+//		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
+//		String placeIns = "dora:place"+_objProp.placeId;
+//		String inRel = "dora:in";
+//		String containsRel = "dora:contains";
+//		
+//		log("createObject of category " + category + " in place " + placeIns + " called.");
+//		
+//		// check whether the given place already contains an instance of the given category
+//		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, containsRel);
+//		for (String obj : objsInPlace) {
+//			if (obj.startsWith(":")) obj = "dora" + obj;
+//			if (m_comareasoner.isInstanceOf(obj, category)) {
+//				log("object of the given category already exists in the given place - doing nothing else.");
+//				return false;
+//				// if such an object exists, don't create a new instance!
+//			}
+//		}
+//		
+//		String objIns = "dora:object" + m_objectIndexCounter++; 
+//		
+//		log("going to add new instance " + objIns + " of category " + category);
+//		m_comareasoner.addInstance(objIns, category);
+//		log("going to add new relation " + objIns + " " + inRel + " " + placeIns);
+//		m_comareasoner.addRelation(objIns, inRel, placeIns);
+//		return true;
+//	}
 
 	private boolean processOverwrittenPlace(WorkingMemoryChange _wmc) {
 		boolean _removeFilterAfterwards = false;
