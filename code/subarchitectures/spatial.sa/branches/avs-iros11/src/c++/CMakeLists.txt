@@ -4,6 +4,12 @@ Find_package(Player REQUIRED)
 Find_package(X11 REQUIRED)
 
 find_package(Peekabot REQUIRED)
+
+# Find QT4 
+find_package( Qt4 REQUIRED )
+include(${QT_USE_FILE})
+
+
 include_directories(${PEEKABOT_INSTALLROOT}/include)
 link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
@@ -26,6 +32,22 @@ include_directories(${COGX_ROOT}/tools/hardware/utils/src/c++/components/)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+
+
+include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/shared/)
+
+include_directories(${COGX_ROOT}/tools/cogxutils/src/autogen)
+
+include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++/)
+
+include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/autogen)
+
+include_directories(${COGX_ROOT}/tools/cogxutils/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/cpp/autogen)
+include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
+
+
+
 if(BUILD_SA_BINDING)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
@@ -181,3 +203,34 @@ link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 #link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank)
 
+add_cast_component(SpatialBeliefUpdater SpatialBeliefUpdater.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank ComaData)
+
+option(BUILD_SA_SPATIAL_TESTER YES)
+if(BUILD_SA_SPATIAL_TESTER)
+
+
+    qt4_wrap_ui( UI_HEADERS MainDialog.ui)
+    qt4_wrap_cpp( MOC_SOURCES MainDialog.h)
+      include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/spatial.sa/src/c++/)
+    
+    add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ViewPointGenerator.cpp MainDialog.cpp ${MOC_SOURCES} ${UI_HEADERS}) 
+    link_cast_component(${CAST_COMPONENT_NAME} QtGui)
+    link_cast_component(${CAST_COMPONENT_NAME} peekabot PTZ)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualShared NavData VisionData ConceptualData FrontierInterface SpatialProperties SpatialProbabilities SpatialData CureAddressBank ComaData BeliefsCogX )
+    link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+    link_cast_component(${CAST_COMPONENT_NAME} highgui cv ${OPENCV_LDFLAGS})
+else()
+	add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp ViewPointGenerator.cpp) 
+	link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+	#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+	link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank ComaData BeliefsCogX VisionData)
+
+endif(BUILD_SA_SPATIAL_TESTER)
+
+
+add_cast_component(ConceptualQueryMaker ConceptualQueryMaker.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} peekabot ConceptualShared)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank ComaData VisionData BeliefsCogX SpatialData ConceptualData )

@@ -1,3 +1,6 @@
+#ifndef PB_VISUALIZATION_H
+#define PB_VISUALIZATION_H
+
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
 #include <cstdlib>
@@ -7,12 +10,9 @@
 #include "GridMapData.hh"
 #include "GridMapWrapper.hh"
 #include <vector>
-#ifndef NO_COGX_DEPENDENCIES
-#include <Navigation/LocalGridMap.hh>
-#include <Math/BinaryMatrix.hh>
-#endif
 #include <iostream>
 #include <sstream>
+
 class VisualPB_Bloxel{
   public:
     VisualPB_Bloxel(std::string PB_Hostname, int PB_Port,int PB_xSize,int PB_ySize, double PB_CellSize, double PB_scale, bool replaceMap = false);
@@ -29,8 +29,8 @@ class VisualPB_Bloxel{
       void DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map,double cellsize);
 
     #ifndef NO_COGX_DEPENDENCIES
-    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
-    void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
+   // void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
+    //void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
     #endif
     void Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden = true, std::string name = "extrapoints");
     
@@ -62,6 +62,7 @@ class VisualPB_Bloxel{
     //peekabot::OccupancyGrid3DProxy OGProxy;
 };
 
+/*
 #ifndef NO_COGX_DEPENDENCIES
 void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancySet2D cells;
@@ -106,6 +107,7 @@ void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const
     client.sync();
 }
 #endif
+*/
 
 VisualPB_Bloxel::VisualPB_Bloxel(std::string PB_Hostname, int PB_Port,int PB_xSize
     ,int PB_ySize, double PB_CellSize, double PB_scale, bool replaceMap) 
@@ -464,3 +466,4 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
   }
 
 }
+#endif
