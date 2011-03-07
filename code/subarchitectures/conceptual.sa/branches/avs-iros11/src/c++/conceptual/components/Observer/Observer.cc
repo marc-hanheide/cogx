@@ -180,7 +180,6 @@ void Observer::updateWorldState()
 			int placeId = comaRoomPtr->containedPlaceIds[i];
 			getObjectPlaceProperties(placeId, objectPlacePropertiesForRoom);
 		}
-
 		// Analyse the results of AVS
 		std::vector<SpatialData::ObjectSearchResultPtr> objectSearchResults;
 		getObjectSearchResults(cri.roomId, objectSearchResults);
@@ -188,26 +187,30 @@ void Observer::updateWorldState()
 		{
 			// Single result for this room
 			SpatialData::ObjectSearchResultPtr objectSearchResultPtr = objectSearchResults[s];
-			// Let's see if it matches any of the actual object observations in this room
-			std::vector<SpatialProperties::ObjectPlacePropertyPtr>::iterator it = objectPlacePropertiesForRoom.begin();
 			unsigned int count = 0;
-			while (it!=objectPlacePropertiesForRoom.end())
+			if (objectSearchResultPtr->beta>0.0) // Only if beta > 0
 			{
-				// Check if this object matches the result
-				if ( (objectSearchResultPtr->searchedObjectCategory == (*it)->category) &&
-					 (objectSearchResultPtr->relation == (*it)->relation) &&
-					 (objectSearchResultPtr->supportObjectCategory == (*it)->supportObjectCategory) &&
-					 (objectSearchResultPtr->supportObjectId == (*it)->supportObjectId) )
-				{ // Yes, add it to our ObjectPlacePropertyInfo if it was found
-					SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
-							SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast((*it)->distribution);
-					if ( ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[0].value)->value == true) &&
-						  (dpdPtr->data[0].probability>0.5)) ||
-						 ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[1].value)->value == true) &&
-												(dpdPtr->data[1].probability>0.5)) )
-						count++;
-				}
-			}
+				// Let's see if it matches any of the actual object observations in this room
+				std::vector<SpatialProperties::ObjectPlacePropertyPtr>::iterator it = objectPlacePropertiesForRoom.begin();
+				while (it!=objectPlacePropertiesForRoom.end())
+				{
+					// Check if this object matches the result
+					if ( (objectSearchResultPtr->searchedObjectCategory == (*it)->category) &&
+						 (objectSearchResultPtr->relation == (*it)->relation) &&
+						 (objectSearchResultPtr->supportObjectCategory == (*it)->supportObjectCategory) &&
+						 (objectSearchResultPtr->supportObjectId == (*it)->supportObjectId) )
+					{ // Yes, add it to our ObjectPlacePropertyInfo if it was found
+						SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+								SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast((*it)->distribution);
+						if ( ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[0].value)->value == true) &&
+							  (dpdPtr->data[0].probability>0.5)) ||
+							 ((SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[1].value)->value == true) &&
+													(dpdPtr->data[1].probability>0.5)) )
+							count++;
+					}
+					it++;
+				} // while
+			} // if
 			ConceptualData::ObjectPlacePropertyInfo oppi;
 			oppi.category = objectSearchResultPtr->searchedObjectCategory;
 			oppi.relation = objectSearchResultPtr->relation;
@@ -401,6 +404,22 @@ bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, Concep
 			return true;
 		if (cri1.roomId != cri2.roomId)
 			return true;
+		// Compare object properties
+		if (cri1.objectProperties.size()!=cri2.objectProperties.size())
+			return true;
+		for (unsigned int j=0; j<cri1.objectProperties.size(); ++j)
+		{
+			ConceptualData::ObjectPlacePropertyInfo oppi1 = cri1.objectProperties[j];
+			ConceptualData::ObjectPlacePropertyInfo oppi2 = cri2.objectProperties[j];
+			if ( (oppi1.category!=oppi2.category) ||
+				 (oppi1.count!=oppi2.count) ||
+				 (oppi1.relation!=oppi2.relation) ||
+				 (oppi1.supportObjectCategory!=oppi2.supportObjectCategory) ||
+				 (oppi1.supportObjectId != oppi2.supportObjectId) ||
+				 (fabs(oppi1.beta-oppi2.beta)> _betaThreshold) )
+				return true;
+		}
+		// Compare places
 		if (cri1.places.size() != cri2.places.size())
 			return true;
 		for (unsigned int j=0; j<cri1.places.size(); ++j)
@@ -409,8 +428,8 @@ bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, Concep
 			ConceptualData::PlaceInfo pi2 = cri2.places[j];
 			if (pi1.placeId != pi2.placeId)
 				return true;
-			if (pi1.objectProperties!=pi2.objectProperties)
-				return true;
+//			if (pi1.objectProperties!=pi2.objectProperties)
+//				return true;
 			// Check how different shapes are
 			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
 				return true;

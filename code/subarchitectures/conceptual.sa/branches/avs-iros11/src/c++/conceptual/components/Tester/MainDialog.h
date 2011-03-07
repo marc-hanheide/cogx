@@ -22,10 +22,15 @@ namespace conceptual
 	class Tester;
 }
 
+class ObjectPlacePropertyDialog;
+class ObjectSearchResultDialog;
 
 class MainDialog : public QDialog, public Ui::MainDialogClass
 {
     Q_OBJECT
+
+    friend class ObjectPlacePropertyDialog;
+    friend class ObjectSearchResultDialog;
 
 public:
     MainDialog(conceptual::Tester *component);
@@ -45,6 +50,8 @@ private slots:
 	void varListCurrentTextChanged(const QString &curText);
 	void factorListCurrentTextChanged(const QString &curText);
 	void wsTimerTimeout();
+	void addObjectPlacePropertyButtonClicked();
+	void addObjectSearchResultButtonClicked();
 
 
 private:

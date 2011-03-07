@@ -42,16 +42,16 @@ void Tester::configure(const map<string,string> & _config)
 		_queryHandlerName = it->second;
 	}
 
-	// ChainGraphInferencer name
 	if((it = _config.find("--chaingraphinferencer")) != _config.end())
-	{
 		_chainGraphInferencerName = it->second;
-	}
+	if((it = _config.find("--defaultchaingraphinferencer")) != _config.end())
+		_defaultChainGraphInferencerName = it->second;
 
 
 	log("Configuration parameters:");
 	log("-> QueryHandler name: %s", _queryHandlerName.c_str());
 	log("-> ChainGraphInferencer name: %s", _chainGraphInferencerName.c_str());
+	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
 }
 
 
@@ -78,6 +78,16 @@ void Tester::start()
 	catch(...)
 	{}
 
+	try
+	{
+		// Get the DefaultChainGraphInferencer interface proxy
+		_defaultChainGraphInferencerServerInterfacePrx =
+				getIceServer<DefaultData::ChainGraphInferencerServerInterface>(_defaultChainGraphInferencerName);
+		_defaultChainGraphInferencerAvailable = true;
+	}
+	catch(...)
+	{}
+
 
 	// Change filters
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
@@ -92,6 +102,18 @@ void Tester::start()
 // -------------------------------------------------------
 void Tester::runComponent()
 {
+	// Get default knowledge
+	_objectPropertyVariables =
+		_defaultChainGraphInferencerServerInterfacePrx->getObjectPropertyVariables();
+	_objectCategories =
+		_defaultChainGraphInferencerServerInterfacePrx->getObjectCategories();
+	_roomCategories =
+		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
+	_shapes =
+		_defaultChainGraphInferencerServerInterfacePrx->getShapes();
+	_appearances =
+		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
+
 	QCoreApplication *app = QApplication::instance();
 	if (!app)
 		app = new QApplication(0,0);
@@ -165,6 +187,8 @@ ConceptualData::FactorInfos Tester::getChainGraphFactors()
 	else
 		return ConceptualData::FactorInfos();
 }
+
+
 
 
 } // namespace def

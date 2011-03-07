@@ -3,17 +3,31 @@
 
 #include <QtGui/QDialog>
 #include "ui_ObjectSearchResultDialog.h"
+#include "DefaultData.hpp"
+
+
+namespace conceptual
+{
+	class Tester;
+}
+class MainDialog;
 
 class ObjectSearchResultDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ObjectSearchResultDialog(QWidget *parent = 0);
+    ObjectSearchResultDialog(MainDialog *parent, conceptual::Tester *component);
     ~ObjectSearchResultDialog();
+
+private slots:
+    void on_ObjectSearchResultDialogClass_accepted();
 
 private:
     Ui::ObjectSearchResultDialogClass ui;
+    conceptual::Tester *_component;
+    DefaultData::StringSeq _objectCategories;
+
 };
 
 #endif // OBJECTSEARCHRESULTDIALOG_H
