@@ -42,9 +42,11 @@ class CGeorgeY2Article: public CTestCase
 {
    void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
 
    int m_ObjectCount;
+   int m_LearnTaskCount;
    int m_TeachingStep;
    std::string m_RobotResponse;
    CPtrVector<CTestEntry> m_testEntries;
@@ -55,7 +57,7 @@ class CGeorgeY2Article: public CTestCase
 
    enum _state_ {
       stStart, stTableEmpty, stWaitToAppear, stObjectOn, stTeaching, stWaitForResponse,
-      stEndOfTeaching, stWaitToDisappear, stFinished, stTimedOut
+      stWaitForLearningTask, stEndOfTeaching, stWaitToDisappear, stFinished, stTimedOut
    };
    std::map<int, std::string> m_stateNames;
    int m_State;

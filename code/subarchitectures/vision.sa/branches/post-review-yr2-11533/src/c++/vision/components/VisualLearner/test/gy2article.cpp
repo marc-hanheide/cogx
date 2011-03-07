@@ -38,6 +38,7 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
 {
    m_State = stTableEmpty;
    m_ObjectCount = 0;
+   m_LearnTaskCount = 0;
    m_RobotResponse = "";
    m_imageDir = "";
    m_currentTest = 0;
@@ -51,6 +52,7 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    STATE(stObjectOn);
    STATE(stTeaching);
    STATE(stWaitForResponse);
+   STATE(stWaitForLearningTask);
    STATE(stEndOfTeaching);
    STATE(stWaitToDisappear);
    STATE(stFinished);
@@ -178,6 +180,11 @@ void CGeorgeY2Article::onStart()
          this, &CGeorgeY2Article::onDel_VisualObject)
       );
    m_pOwner->addChangeFilter(
+      createLocalTypeFilter<VisualLearningTask>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CGeorgeY2Article>(
+         this, &CGeorgeY2Article::onAdd_LearningTask)
+      );
+   m_pOwner->addChangeFilter(
       createGlobalTypeFilter<synthesize::SpokenOutputItem>(cdl::ADD),
       new MemberFunctionChangeReceiver<CGeorgeY2Article>(
          this, &CGeorgeY2Article::onAdd_SpokenItem)
@@ -191,6 +198,15 @@ void CGeorgeY2Article::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange &
    {
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_ObjectCount++;
+   }
+   m_EventMonitor.notify();
+}
+
+void CGeorgeY2Article::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+      m_LearnTaskCount++;
    }
    m_EventMonitor.notify();
 }
@@ -224,8 +240,11 @@ void CGeorgeY2Article::switchState(int newState)
       }
    }
 
+   // from stTeaching
    if (newState == stWaitForResponse) {
       m_RobotResponse = "";
+      // if all is well, next will be stWaitForLearnInstruction
+      m_LearnTaskCount = 0;
    }
 
    if (newState == stTimedOut) {
@@ -288,7 +307,7 @@ void CGeorgeY2Article::loadScene()
 {
    CTestEntry *pinfo = getCurrentTest();
    if (! pinfo) return;
-   report(MSSG("SCENE: " << pinfo->name));
+   report(MSSG("SCENE " << m_currentTest << ": " << pinfo->name));
 
    Video::VideoSequenceInfoPtr pseq = new Video::VideoSequenceInfo();
 
@@ -447,6 +466,17 @@ void CGeorgeY2Article::runOneStep()
          verifyCount(1);
          if (m_RobotResponse.length() > 0) {
             report(MSSG("Robot says: " << m_RobotResponse));
+            switchState(stWaitForLearningTask);
+         }
+         else if (isTimedOut()) {
+            switchState(stTimedOut);
+         }
+         break;
+
+      case stWaitForLearningTask:
+         verifyCount(1);
+         if (m_LearnTaskCount > 0) {
+            report("A Learning Instruction was detected.");
             switchState(stTeaching);
          }
          else if (isTimedOut()) {
