@@ -122,6 +122,7 @@ class CProcess(CProcessBase):
         self.allowTerminate = False # CAST apps should not autoTerm; others may
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
+        self.messageProcessor = None  # Some servers (log4j) could do additional message processing
         self.errors = legacy.deque(maxlen=200)
         self.lastLinesEmpty = 0 # suppress consecutive empty lines
         self.msgOrder = 0
@@ -281,6 +282,8 @@ class CProcess(CProcessBase):
                     else: self.lastLinesEmpty = 0
                     if self.lastLinesEmpty > maxempty: continue
                     typ = fnType(msg)
+                    if self.messageProcessor:
+                        (msg, typ) = self.messageProcessor.process(msg, typ)
                     self.msgOrder += 1
                     msg = msg.decode("utf-8", "replace")
                     targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
