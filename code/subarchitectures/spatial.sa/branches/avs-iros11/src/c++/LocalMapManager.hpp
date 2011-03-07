@@ -33,6 +33,9 @@
 #include <VisionData.hpp>
 #include "GridObjectFinder.hpp"
 #include <cast/core/CASTTimer.hpp>
+#include "scanmap/HSS/HSSScan2D.hh"
+#include "scanmap/HSS/HSSDoorExtractor.hh"
+#include "scanmap/HSS/HSSRedundantLine2DRep.hh"
 
 namespace spatial {
   typedef std::vector<std::pair<double, double> > PlaneList;
@@ -148,6 +151,7 @@ protected:
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
+  bool m_bDetectDoors;
   std::string m_planeObjectFilename;
   std::string m_planeModelFilename;
 
@@ -209,6 +213,13 @@ protected:
   std::string m_RobotServerHost;
   Robotbase::RobotbaseServerPrx m_RobotServer;
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
+
+  //Remote door extractor
+  HSS::DoorExtractor m_doorExtractor;
+  //Detected doors
+  std::vector<HSS::RedundantLine2DRep> m_detectedDoors;
+  //Falloff for gateway property value with distance to nearest detected door
+  double m_doorwayWidth;
 
   //For keeping track of when the robot is moving (to filter planes)
   double m_standingStillThreshold;
