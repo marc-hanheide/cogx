@@ -1,0 +1,140 @@
+/*
+ * AVS_ContinualPlanner.h
+ *
+ *  Created on: Mar 1, 2011
+ *      Author: alper
+ */
+
+#ifndef AVS_CONTINUALPLANNER_H_
+#define AVS_CONTINUALPLANNER_H_
+
+#include <cast/architecture/ManagedComponent.hpp>
+#include <NavData.hpp>
+#include "SpatialGridMap.hh"
+#include "GridMapData.hh"
+#include "BloxelFunctors.hh"
+#include "FrontierInterface.hpp"
+#include "VisionData.hpp"
+#include "SpatialData.hpp"
+#include "SpatialProperties.hpp"
+#include <map>
+#include <SensorData/SensorPose.hh>
+#include "ConceptualData.hpp"
+#include "SpatialProbabilities.hpp"
+#include <Navigation/LocalGridMap.hh>
+#include "DensitySampling.hpp"
+#include "RelationEvaluation.hpp"
+#include "XVector3D.h"
+#include "Math/BinaryMatrix.hh"
+
+#include "beliefs_cogx.hpp"
+#include "beliefs.hpp"
+
+#include "ViewPointGenerator.h"
+#include <PTZ.hpp>
+#include "VariableNameGenerator.h"
+
+//#include "PBVisualization.hh"
+
+class MainDialog;
+
+namespace spatial {
+class AVS_ContinualPlanner : public ManagedComponent {
+public:
+	typedef Cure::LocalGridMap<unsigned char> CureObstMap;
+	typedef SpatialGridMap::GridMap<SpatialGridMap::GridMapData> BloxelMap;
+
+	struct ConeGroup{
+		std::vector<ViewPointGenerator::SensingAction> viewcones;
+		SpatialData::SpatialRelation relation;
+		std::string supportObjectId;
+		std::string supportObjectCategory;
+		std::string searchedObjectCategory;
+	};
+
+	AVS_ContinualPlanner();
+	virtual ~AVS_ContinualPlanner();
+
+	void start();
+	void runComponent();
+	void generateViewCones(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
+	void processConeGroup(std::string id);
+	std::string convertLocation2Id(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
+	void configure(const std::map<std::string, std::string>& _config);
+	void newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID);
+	void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  );
+	void receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
+	 void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
+	 void newRobotPose(const cdl::WorkingMemoryChange &objID);
+	 void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
+	 void MovePanTilt(double pan, double tilt, double tolerance);
+	 void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
+	 void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label,
+		std::string visualObjectID);
+	 void modifyPDFAfterRecognition();
+	 void Recognize();
+	 void addARTagCommand();
+
+private:
+		NavData::RobotPose2dPtr lastRobotPose;
+
+	// this holds bloxel maps for each room and each bloxel has multiple pdf values for the occurrence of objects. i.e. "cupONtable", cupINroom1
+	std::map<std::string, BloxelMap* > m_objectBloxelMaps;
+	std::map<int, BloxelMap* > m_templateRoomBloxelMaps;
+	std::map<int, CureObstMap*> m_templateRoomGridMaps;
+	std::vector<std::string> generatedLocations;
+	ptz::PTZInterfacePrx m_ptzInterface;
+
+	bool m_usePTZ;
+	bool m_ignoreTilt;
+	bool m_usePeekabot;
+	//VisualPB_Bloxel* pbVis;
+	VariableNameGenerator m_namegenerator;
+	int m_gridsize;
+	double m_samplesize;
+	double m_cellsize, m_sampleawayfromobs;
+	double m_minbloxel;
+	double m_conedepth;
+	double m_horizangle;
+	double m_minDistance;
+	double m_vertangle;
+	SpatialGridMap::GridMapData m_defaultBloxelCell;
+	Cure::SensorPose m_LaserPoseR;
+	std::string m_queryHandlerName;
+	 double m_mapceiling;
+	 bool gotPC;
+	 std::string m_PbHost;
+
+	 // labels of tagged objects
+	 std::vector<std::string> m_siftObjects;
+	 std::vector<std::string> m_ARtaggedObjects;
+
+
+	 /** ICE proxy to the QueryHandlerInterface. */
+	ConceptualData::QueryHandlerServerInterfacePrx m_queryHandlerServerInterfacePrx;
+	FrontierInterface::WeightedPointCloudPtr m_cloud;
+	 DensitySampler m_sampler;
+	 RelationEvaluator m_relationEvaluator;
+	 std::map<int, ConeGroup> m_beliefConeGroups; // int is Id
+
+	 ConeGroup m_currentConeGroup;
+	 ViewPointGenerator::SensingAction m_currentViewCone;
+	 int m_coneGroupId; // Unique Id for each cone group
+
+	MainDialog *_mainDialog;
+
+     class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {
+	      public:
+
+		      NavCommandReceiver(AVS_ContinualPlanner & _component, SpatialData::NavCommandPtr _cmd);
+
+		      void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
+	      private:
+		      AVS_ContinualPlanner & m_component;
+		      SpatialData::NavCommandPtr m_cmd;
+     };
+
+};
+};
+
+#endif /* AVS_CONTINUALPLANNER_H_ */

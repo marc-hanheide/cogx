@@ -47,6 +47,7 @@ namespace SpatialGridMap{ //temporary namespace for now
             gridMapOutOfBounds(int x, int y){
                 stringstream ss;
                 ss << "Tried to access GridMap column (" << x << "," << y << ") out of bounds";
+           //     ss << " MapSize: " << xGrid << " , " << yGrid << ",";
                 desc = ss.str();
             }
             ~gridMapOutOfBounds() throw() {} 
