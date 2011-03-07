@@ -4,6 +4,7 @@
 import os, sys, time
 import stat
 import options, logger
+import re, messages
 
 log4jlevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
 
@@ -169,3 +170,25 @@ class CLog4Config:
         except Exception as e:
             logger.get().error("%s" % e)
 
+class CLog4MessageProcessor:
+    reMsg = re.compile("^\s*\[[A-Z]+\s+([^:]+):")
+    def __init__(self):
+        self.colors = {}
+        self.nextColor = 0
+
+    def paint(self, message, id):
+        co = self.colors[id] % 10
+        return "\x1b[%dm%s\x1b[0m" % (co + 30, message)
+
+    def process(self, message, mtype):
+        if mtype == messages.CMessage.MESSAGE:
+            mo = CLog4MessageProcessor.reMsg.match(message)
+            if mo != None: # re.match
+                mtype = messages.CMessage.CASTLOG
+                id = mo.group(1)
+                if not id in self.colors:
+                    self.colors[id] = self.nextColor
+                    self.nextColor += 1
+                message = self.paint(message, id)
+
+        return (message, mtype)

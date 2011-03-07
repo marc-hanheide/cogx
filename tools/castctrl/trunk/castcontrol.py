@@ -392,7 +392,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
-        self._manager.addProcess(procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}")))
+
+        p = procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}"))
+        p.messageProcessor = log4util.CLog4MessageProcessor()
+        self._manager.addProcess(p)
 
         self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
 
