@@ -147,7 +147,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			// the generate new ones
 			RelationalViewPointGenerationCommand cmd = new RelationalViewPointGenerationCommand(
-                getAction().model, rel, getAction().supportObject, getAction().roomID,
+                getAction().model, rel, getAction().supportObject, "", getAction().roomID,
 					AVSStatus.INPROGRESS);
 			addThenCompleteOnOverwrite(cmd);
 		}
