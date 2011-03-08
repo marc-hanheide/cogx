@@ -7,6 +7,7 @@
 // Conceptual.SA
 #include "Tester.h"
 #include "MainDialog.h"
+#include "ConceptualWidget.h"
 #include "SpatialProbabilities.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -156,7 +157,7 @@ void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		ConceptualData::WorldStatePtr worldStatePtr;
 		worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
 		if (_mainDialog)
-			_mainDialog->newWorldState(worldStatePtr);
+			_mainDialog->getConceptualWidget()->newWorldState(worldStatePtr);
 	}
 	catch(CASTException &e)
 	{

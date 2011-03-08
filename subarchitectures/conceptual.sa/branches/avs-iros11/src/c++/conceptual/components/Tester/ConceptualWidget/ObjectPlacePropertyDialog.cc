@@ -1,11 +1,11 @@
 #include "ObjectPlacePropertyDialog.h"
 #include "Tester.h"
-#include "MainDialog.h"
+#include "ConceptualWidget.h"
 #include "SpatialProperties.hpp"
 #include "SpatialData.hpp"
 
 
-ObjectPlacePropertyDialog::ObjectPlacePropertyDialog(MainDialog *parent, conceptual::Tester *component)
+ObjectPlacePropertyDialog::ObjectPlacePropertyDialog(ConceptualWidget *parent, conceptual::Tester *component)
     : QDialog(parent), _component(component)
 {
 	ui.setupUi(this);

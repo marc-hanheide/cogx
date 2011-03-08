@@ -4,7 +4,7 @@
  * Main dialog.
  */
 
-#include "MainDialog.h"
+#include "ConceptualWidget.h"
 #include "Tester.h"
 #include "GraphDialog.h"
 #include "ConceptualData.hpp"
@@ -24,8 +24,8 @@ using namespace boost;
 using namespace ConceptualData;
 
 // -------------------------------------------------------
-MainDialog::MainDialog(Tester *component)
-    : QDialog(0), _component(component)
+ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
+    : QWidget(parent), _component(component)
 {
 	pthread_mutex_init(&_worldStateMutex, 0);
 
@@ -52,14 +52,14 @@ MainDialog::MainDialog(Tester *component)
 
 
 // -------------------------------------------------------
-MainDialog::~MainDialog()
+ConceptualWidget::~ConceptualWidget()
 {
 	pthread_mutex_destroy(&_worldStateMutex);
 }
 
 
 // -------------------------------------------------------
-void MainDialog::newWorldState(ConceptualData::WorldStatePtr wsPtr)
+void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 {
 	pthread_mutex_lock(&_worldStateMutex);
 	_wsCount++;
@@ -69,7 +69,7 @@ void MainDialog::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 
 
 // -------------------------------------------------------
-void MainDialog::sendQueryButtonClicked()
+void ConceptualWidget::sendQueryButtonClicked()
 {
 	_component->log("Sending query " + queryComboBox->currentText().toStdString() + ".");
 
@@ -146,7 +146,7 @@ void MainDialog::sendQueryButtonClicked()
 
 
 // -------------------------------------------------------
-void MainDialog::refreshVarsButtonClicked()
+void ConceptualWidget::refreshVarsButtonClicked()
 {
 	variablesListWidget->clear();
 	factorsListWidget->clear();
@@ -170,7 +170,7 @@ void MainDialog::refreshVarsButtonClicked()
 }
 
 // -------------------------------------------------------
-void MainDialog::varListCurrentTextChanged(const QString &curText)
+void ConceptualWidget::varListCurrentTextChanged(const QString &curText)
 {
 	if (!curText.isEmpty())
 	{
@@ -182,7 +182,7 @@ void MainDialog::varListCurrentTextChanged(const QString &curText)
 
 
 // -------------------------------------------------------
-void MainDialog::factorListCurrentTextChanged(const QString &curText)
+void ConceptualWidget::factorListCurrentTextChanged(const QString &curText)
 {
 	if (!curText.isEmpty())
 	{
@@ -194,7 +194,7 @@ void MainDialog::factorListCurrentTextChanged(const QString &curText)
 
 
 // -------------------------------------------------------
-void MainDialog::refreshWsButtonClicked()
+void ConceptualWidget::refreshWsButtonClicked()
 {
 	if (!_wsPtr)
 		return;
@@ -330,7 +330,7 @@ void MainDialog::refreshWsButtonClicked()
 
 
 // -------------------------------------------------------
-void MainDialog::showGraphButtonClicked()
+void ConceptualWidget::showGraphButtonClicked()
 {
 	ConceptualData::VariableInfos vis = _component->getChainGraphVariables();
 	ConceptualData::FactorInfos fis = _component->getChainGraphFactors();
@@ -343,7 +343,7 @@ void MainDialog::showGraphButtonClicked()
 
 
 // -------------------------------------------------------
-void MainDialog::addObjectPlacePropertyButtonClicked()
+void ConceptualWidget::addObjectPlacePropertyButtonClicked()
 {
 	ObjectPlacePropertyDialog *d = new ObjectPlacePropertyDialog(this, _component);
 	d->show();
@@ -351,7 +351,7 @@ void MainDialog::addObjectPlacePropertyButtonClicked()
 
 
 // -------------------------------------------------------
-void MainDialog::addObjectSearchResultButtonClicked()
+void ConceptualWidget::addObjectSearchResultButtonClicked()
 {
 	ObjectSearchResultDialog *d = new ObjectSearchResultDialog(this, _component);
 	d->show();
@@ -359,7 +359,7 @@ void MainDialog::addObjectSearchResultButtonClicked()
 
 
 // -------------------------------------------------------
-void MainDialog::wsTimerTimeout()
+void ConceptualWidget::wsTimerTimeout()
 {
 	pthread_mutex_lock(&_worldStateMutex);
 

@@ -10,14 +10,14 @@ namespace conceptual
 {
 	class Tester;
 }
-class MainDialog;
+class ConceptualWidget;
 
 class ObjectPlacePropertyDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ObjectPlacePropertyDialog(MainDialog *parent, conceptual::Tester *component);
+    ObjectPlacePropertyDialog(ConceptualWidget *parent, conceptual::Tester *component);
     ~ObjectPlacePropertyDialog();
 
 private slots:

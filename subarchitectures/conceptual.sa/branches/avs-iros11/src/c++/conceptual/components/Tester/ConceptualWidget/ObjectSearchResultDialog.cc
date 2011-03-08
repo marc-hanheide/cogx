@@ -1,5 +1,5 @@
 #include "ObjectSearchResultDialog.h"
-#include "MainDialog.h"
+#include "ConceptualWidget.h"
 #include "Tester.h"
 #include "SpatialData.hpp"
 #include <cast/core/CASTData.hpp>
@@ -11,7 +11,7 @@ using namespace boost;
 using namespace std;
 
 
-ObjectSearchResultDialog::ObjectSearchResultDialog(MainDialog *parent, conceptual::Tester *component)
+ObjectSearchResultDialog::ObjectSearchResultDialog(ConceptualWidget *parent, conceptual::Tester *component)
     : QDialog(parent), _component(component)
 {
 	ui.setupUi(this);
