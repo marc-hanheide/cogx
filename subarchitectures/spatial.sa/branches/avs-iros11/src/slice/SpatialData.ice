@@ -345,20 +345,25 @@ module SpatialData {
      AVSStatus status;
   };
   
-  class RelationalViewPointGenerationCommand{
-  	string searchedObject;
+  class RelationalViewPointGenerationCommand {
+  	string searchedObjectCategory;
   	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
   	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
+  	string supportObjectCategory;
   	int roomId; // always (and I mean always) fill this
   };
 
  class ObjectSearchResult{
-  	string searchedObjectCategory;
-  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
-  	string supportObjectCategory; // this is "" if we're looking directly, i.e. "mug in room1"
+  	string searchedObjectCategory; // this is really "mug", "table" etc.
+  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see enum:SpatialRelation
+  	string supportObjectCategory; // this is "" if we're looking directly, i.e. "mug in sroom1"
   	string supportObjectId; // this is "" if we're looking directly, i.e. "mug in room1"
   	int roomId; // always (and I mean always) fill this
   	double beta; // The percentage of the relation probability mass that was already explored.
+  };
+  
+  class ProcessConeGroup {
+	int coneId;
   };
   
   /**
@@ -380,11 +385,6 @@ module SpatialData {
 	  ViewPointSeq plan;
   };
   
-  class ConeGroup{
-  	ViewPointSeq group;
-  	string id;
-  };
-
   /**
    * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
    * @author Nick Hawes
