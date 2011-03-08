@@ -2,7 +2,7 @@
 #define AVSMainWidget_H
 
 #include <QtGui/QDialog>
-#include "ui_MainDialog.h"
+#include "ui_AVSMainWidget.h"
 #include "SpatialData.hpp"
 #include "ConceptualData.hpp"
 #include "Tester.h"
@@ -18,7 +18,7 @@ class AVSMainWidget : public QDialog
     Q_OBJECT
 
 public:
-    AVSMainWidget(conceptual::Tester * component);
+    AVSMainWidget(QWidget *parent, conceptual::Tester * component);
     ~AVSMainWidget();
 public slots:
     void generateViewConesButtonClicked();
@@ -26,7 +26,7 @@ public slots:
     bool parseQuery(std::string queryString, std::vector<std::string> &variables);
 
 private:
-    Ui::MainAVSWidget ui;
+    Ui::AVSMainWidget ui;
     conceptual::Tester* m_component;
 };
 
