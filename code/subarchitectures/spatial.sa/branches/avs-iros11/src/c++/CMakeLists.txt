@@ -9,7 +9,9 @@ find_package(Peekabot REQUIRED)
 find_package( Qt4 REQUIRED )
 include(${QT_USE_FILE})
 
-
+find_package(Eigen)
+include_directories(${EIGEN_INCLUDE_DIRS})
+include_directories(/usr/include/eigen2)
 include_directories(${PEEKABOT_INSTALLROOT}/include)
 link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
@@ -113,6 +115,7 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
+include_directories(./scanmap/HSS)
 add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
@@ -223,11 +226,11 @@ if(BUILD_SA_SPATIAL_TESTER)
     link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
     link_cast_component(${CAST_COMPONENT_NAME} highgui cv ${OPENCV_LDFLAGS})
 else()
-	add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp ViewPointGenerator.cpp) 
-	link_cast_component(${CAST_COMPONENT_NAME} peekabot)
-	#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
-	link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank ComaData BeliefsCogX VisionData)
-
+    add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ViewPointGenerator.cpp) 
+    link_cast_component(${CAST_COMPONENT_NAME} peekabot PTZ)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualShared NavData VisionData ConceptualData FrontierInterface SpatialProperties SpatialProbabilities SpatialData CureAddressBank ComaData BeliefsCogX )
+    link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+    link_cast_component(${CAST_COMPONENT_NAME} highgui cv ${OPENCV_LDFLAGS})
 endif(BUILD_SA_SPATIAL_TESTER)
 
 

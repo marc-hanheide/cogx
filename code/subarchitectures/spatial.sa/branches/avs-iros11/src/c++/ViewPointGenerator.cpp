@@ -15,13 +15,13 @@ ViewPointGenerator::~ViewPointGenerator() {
 }
 
 
-ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* bloxelmap, int samplesize,
+ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* pbloxelmap, int samplesize,
 		double sampleawayfromobs, double conedepth, double horizangle, double vertangle, double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty)
 {
 	// TODO Auto-generated destructor stub
 	m_component = component;
 	lgm = plgm;
-	bloxelmap= bloxelmap;
+	bloxelmap= pbloxelmap;
 	m_samplesize = samplesize;
 	m_sampleawayfromobs = sampleawayfromobs;
 	m_conedepth = conedepth;
@@ -100,15 +100,21 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 				}
 			}
 		}
-		m_component->log("Ordered 3D view cones");
+		m_component->log("Ordered 3D %d view cones", ordered3DVCList.size() );
+		for (unsigned int i=0; i < ordered3DVCList.size(); i++){
+			m_component->log("3DCone #%d, sum: %f", i, ordered3DVCList[i].totalprob);
+		}
 		//Loop over the ordered list and return cones that covers up to a threshold
 		vector<SensingAction> result3DVCList;
 
 		double pdfsumsofar =0;
 		for (unsigned int i =0; i < ordered3DVCList.size(); i++){
-			double tmp = pdfsumsofar;
-			if ( ((tmp + ordered3DVCList[i].totalprob)*100) / m_bloxelmapPDFsum < m_pdfthreshold){
-				result3DVCList.push_back(ordered3DVCList[i]);
+			result3DVCList.push_back(ordered3DVCList[i]);
+			pdfsumsofar += ordered3DVCList[i].totalprob;
+			m_component->log("Added new 3DCone to final result");
+			m_component->log("PDFSum so far %f", pdfsumsofar);
+			if (pdfsumsofar > m_bloxelmapPDFsum * m_pdfthreshold){
+				break;
 			}
 		}
 		m_component->log("Returning %d 3D viewcones", result3DVCList.size());
@@ -131,7 +137,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 					samplepoints[i].tilt, m_horizangle, m_vertangle,
 					m_conedepth, 10, 10, isobstacle, sumcells, sumcells,
 					m_minDistance);
-			m_component->log("cone query done.");
+			m_component->log("PDFSum of cone: %f.", sumcells.getResult());
+
 			cout << "cone #" << i << " " << viewpoint.pos[0] << " "
 					<< viewpoint.pos[1] << " " << viewpoint.pos[2] << " "
 					<< viewpoint.pan << " " << viewpoint.tilt
@@ -140,6 +147,12 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 			//    /* Show view cone on a temporary map, display the map and wipe it*/
 
 			samplepoints[i].totalprob = sumcells.getResult();
+			samplepoints[i].conedepth = m_conedepth;
+			samplepoints[i].vertangle = m_vertangle;
+			samplepoints[i].horizangle = m_horizangle;
+			samplepoints[i].minDistance = m_minDistance;
+
+
 			sumcells.reset();
 		}
 	} catch (std::exception &e) {
@@ -156,6 +169,7 @@ vector<pair<unsigned int, double> > ViewPointGenerator::get2DCandidateViewCones(
 	m_samples2D = sample2DGrid();
 	VCones = calculate3DViewConesFrom2D();
 	CurePDFMap* lgmpdf  = new CurePDFMap(lgm->getSize(),lgm->getCellSize() ,0, CureObstMap::MAP1,lgm->getCentXW(), lgm->getCentYW());
+    m_component->log("BloxelMap size: %d, %d LGMPDF size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgmpdf->getSize());
 
 	for (int x = -lgmpdf->getSize(); x <= lgmpdf->getSize(); x++) {
 	  for (int y = -lgmpdf->getSize(); y <= lgmpdf->getSize(); y++) {
@@ -182,8 +196,10 @@ vector<pair<unsigned int, double> > ViewPointGenerator::get2DCandidateViewCones(
 				x = VCones[i][j].first;
 				y = VCones[i][j].second;
 				if ((x > -lgmpdf->getSize() && x < lgmpdf->getSize()) && (y
-						> -lgmpdf->getSize() && y < lgmpdf->getSize()))
+						> -lgmpdf->getSize() && y < lgmpdf->getSize())){
 					sum += (*lgmpdf)(x, y);
+
+				}
 
 			}
 			if (orderedVClist.size() == 0) {
@@ -207,7 +223,7 @@ vector<pair<unsigned int, double> > ViewPointGenerator::get2DCandidateViewCones(
 		}
 		m_component->log("Ordered 2D VC list has %d cones", orderedVClist.size());
 		for(unsigned int i=0; i < orderedVClist.size(); i++){
-			m_component->log("Sum of VC #%d is %d", i, orderedVClist[i].second);
+			m_component->log("Sum of VC #%d is %f", i, orderedVClist[i].second);
 		}
 		return orderedVClist;
 }
@@ -256,7 +272,7 @@ double ViewPointGenerator::getPathLength(Cure::Pose3D start,
 	// uses paths that it knowns to be free. Note that we perfom this
 	// operation directly on the m_PathGrid, i.e. the grid with the
 	// expanded obstacle. The reasoning behind this is that we do not
-	// want the unknown cells to be expanded as well as we would have
+	// want the unknown cells to be expanded a"s well as we would have
 	// to recalculate the position of the frontiers otherwise, else
 	// they might end up inside an obstacle (could happen now as well
 	// from expanding the occupied cell but then it is known not to be
@@ -324,14 +340,14 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 		int the = (int) (rand() % angles.size());
 		angle = angles[the];
 		//if we have that point already, skip.
-		/* for (int j = 0; j < i; j++) {
-		 if (samples[2 * j] == randx && m_samples[2 * j + 1] == randy
-		 && m_samplestheta[j] == angle) {
+		 for (int j = 0; j < i; j++) {
+		 if (samples[2 * j].getX() == randx && samples[j].getY() == randy
+		 && samples[j].getTheta() == angle) {
 		 //log("we already have this point.");
 		 haspoint = true;
 		 break;
 		 }
-		 }*/
+		 }
 		lgm->index2WorldCoords(randx, randy, xW, yW);
 		std::pair<int, int> sample;
 		sample.first = randx;
@@ -346,7 +362,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			dest.setX(yW);
 
 			double d = getPathLength(start, dest, lgm);
-			m_component->log("path to here: %3.2f", d);
+			//m_component->log("path to here: %3.2f", d);
 			// There is a path to this destination
 			//	    log("there's a path to this destination");
 			if (d > 0 || true) {

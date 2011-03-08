@@ -831,7 +831,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 
 		peekabot::GroupProxy proxyCone;	
 		proxyCone.add(proxy, path, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-		proxyCone.hide();
+		//proxyCone.hide();
   const double coneLen = viewpoint.length;
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;

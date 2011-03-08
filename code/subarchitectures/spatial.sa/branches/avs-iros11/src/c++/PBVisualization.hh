@@ -412,7 +412,7 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
   try{
      for (int x  = 0 ; x < pairs.first; x++){
         for (int y = 0; y < pairs.second; y++){
-           if(map.isDirty(x,y)){
+           //if(map.isDirty(x,y)){
 
               // Remove all old values
               // THIS IS A HACK!
@@ -455,7 +455,7 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
               obsCount[x*ySize + y] = number;
            }
         }
-     }
+     //}
      client.sync();
      client.flush();
   }
