@@ -67,7 +67,7 @@ public:
 
 	void start();
 	void runComponent();
-	void generateViewCones(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
+	void generateViewCones(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand, std::string WMAddress);
 	void processConeGroup(std::string id);
 	std::string convertLocation2Id(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
 	void configure(const std::map<std::string, std::string>& _config);
