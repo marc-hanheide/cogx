@@ -15,6 +15,8 @@ include_directories(/usr/include/eigen2)
 include_directories(${PEEKABOT_INSTALLROOT}/include)
 link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
+find_package(Eigen REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIRS})
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
@@ -34,6 +36,7 @@ include_directories(${COGX_ROOT}/tools/hardware/utils/src/c++/components/)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+include_directories(scanmap/HSS)
 
 
 include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/shared/)
@@ -115,10 +118,11 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
-include_directories(./scanmap/HSS)
-add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
+add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp scanmap/HSS/HSSDoorExtractor.cc scanmap/HSS/HSSDisplayFunctions.cc scanmap/HSS/HSSLsqLineExtractor.cc scanmap/HSS/HSSRedundantLine2DRep.cc) 
+
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 #link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
