@@ -372,7 +372,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			if (newVPCommand->roomId == roomid){
 				log("Got room belief from roomid: %d", newVPCommand->roomId);
 				WMaddress.id = comaRoomBeliefs[i]->getID();
-				WMaddress.subarchitecture = "binder";
+				WMaddress.subarchitecture = "coma";
 			}
 		}
 		}
