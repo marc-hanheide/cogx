@@ -394,7 +394,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		BasicProbDistributionPtr supportObjectLabelProbDist = new BasicProbDistribution;
 		BasicProbDistributionPtr coneProbabilityProbDist = new BasicProbDistribution;
 
-		FormulaValuesPtr formulaValues = new FormulaValues;
+
 		FormulaProbPairs pairs;
 		FormulaProbPair searchedObjectFormulaPair, coneGroupIDLabelFormulaPair,
 		relationLabelFormulaPair,supportObjectLabelFormulaPair, coneProbabilityFormulaPair ;
@@ -428,35 +428,45 @@ void AVS_ContinualPlanner::generateViewCones(
 
 
 		pairs.push_back(coneGroupIDLabelFormulaPair);
-		formulaValues->values = pairs;
-		coneGroupIDProbDist->values = formulaValues;
+		FormulaValuesPtr formulaValues1 = new FormulaValues;
+		formulaValues1->values = pairs;
+		coneGroupIDProbDist->values = formulaValues1;
 		pairs.clear();
 
 		pairs.push_back(searchedObjectFormulaPair);
-		formulaValues->values = pairs;
-		searchedObjectLabelProbDist->values = formulaValues;
+		FormulaValuesPtr formulaValues2 = new FormulaValues;
+		formulaValues2->values = pairs;
+		searchedObjectLabelProbDist->values = formulaValues2;
 		pairs.clear();
 
 		pairs.push_back(coneProbabilityFormulaPair);
-		formulaValues->values = pairs;
-		relationLabelProbDist->values = formulaValues;
+		FormulaValuesPtr formulaValues3 = new FormulaValues;
+		formulaValues3->values = pairs;
+		relationLabelProbDist->values = formulaValues3;
 		pairs.clear();
 
 
 		pairs.push_back(relationLabelFormulaPair);
-		formulaValues->values = pairs;
-		relationLabelProbDist->values = formulaValues;
+		FormulaValuesPtr formulaValues4 = new FormulaValues;
+		formulaValues4->values = pairs;
+		relationLabelProbDist->values = formulaValues4;
 		pairs.clear();
 
 		pairs.push_back(coneProbabilityFormulaPair);
-		formulaValues->values = pairs;
-		supportObjectLabelProbDist->values = formulaValues;
+		FormulaValuesPtr formulaValues5 = new FormulaValues;
+		formulaValues5->values = pairs;
+		supportObjectLabelProbDist->values = formulaValues5;
 		pairs.clear();
 
+		coneGroupIDProbDist->key = "id";
 		CondIndProbDist->distribs["id"] = coneGroupIDProbDist;
+		searchedObjectLabelProbDist->key = "searchedobject";
 		CondIndProbDist->distribs["searchedobject"] = searchedObjectLabelProbDist;
+		relationLabelProbDist->key = "relation";
 		CondIndProbDist->distribs["relation"] = relationLabelProbDist;
+		supportObjectLabelProbDist->key = "supportobject";
 		CondIndProbDist->distribs["supportobject"] = supportObjectLabelProbDist;
+		coneProbabilityProbDist->key = "prob";
 		CondIndProbDist->distribs["prob"] = coneProbabilityProbDist;
 
 		b->content = CondIndProbDist;
