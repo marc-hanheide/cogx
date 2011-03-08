@@ -1,4 +1,6 @@
 #include "AVSMainWidget.h"
+#include <cast/core/CASTUtils.hpp>
+
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/erase.hpp>
@@ -31,7 +33,8 @@ AVSMainWidget::~AVSMainWidget()
 void AVSMainWidget::processConeGroup(){
 	m_component->log("processConeGroup");
 	QString coneGroupId = ui.coneGroupId->text();
-//	m_component->processConeGroup(coneGroupId.toStdString()); // TODO
+	SpatialData::ProcessConeGroupPtr cmd = new SpatialData::ProcessConeGroup;
+	m_component->addToWorkingMemory(m_component->newDataID(), "spatial.sa", cmd); // TODO
 }
 void AVSMainWidget::generateViewConesButtonClicked(){
 	m_component->log("generateViewConesButtonClicked");
@@ -47,18 +50,18 @@ void AVSMainWidget::generateViewConesButtonClicked(){
 	}
 	if (variables.size() == 4){
 	newVPCommand->roomId = lexical_cast<int>(variables[1]);
-	// newVPCommand->searchedObjectCategory = variables[3];// TODO
+	 newVPCommand->searchedObjectCategory = variables[3];// TODO
 	newVPCommand->supportObject = "";
 	newVPCommand->relation = SpatialData::INROOM;
 	}
 	else if (variables.size() == 6){
 		newVPCommand->roomId = lexical_cast<int>(variables[1]);
-		//newVPCommand->searchedObjectCategory = variables[3];// TODO
-		//newVPCommand->supportObjectCategory = variables[5];// TODO
+		newVPCommand->searchedObjectCategory = variables[3];// TODO
+		newVPCommand->supportObjectCategory = variables[5];// TODO
 		newVPCommand->supportObject = variables[6]; // supportObjectid
 		newVPCommand->relation = (variables[4] == "on" ? SpatialData::ON : SpatialData::INOBJECT);
 	}
-	//m_component->generateViewCones(newVPCommand); // TODO
+	m_component->addToWorkingMemory(m_component->newDataID(), "spatial.sa", newVPCommand); // TODO
 	}
 
 }
