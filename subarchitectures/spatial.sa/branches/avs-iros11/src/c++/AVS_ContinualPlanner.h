@@ -54,7 +54,7 @@ public:
 		std::string searchedObjectCategory;
 		double getTotalProb(){
 			double tmp = 0;
-			for (unsigned int i =0; viewcones.size(); i++){
+			for (unsigned int i =0; i < viewcones.size(); i++){
 				tmp += viewcones[i].totalprob;
 			}
 			return tmp;
