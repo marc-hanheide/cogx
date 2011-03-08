@@ -1303,13 +1303,6 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 {
 	debug("Preparing inference results for inference query '"+queryString+"'");
 
-	// Prepare the resulting distribution
-	SpatialProbabilities::ProbabilityDistribution resultDistribution;
-	resultDistribution.description = queryString;
-	for(unsigned int i=0; i<queryVariables.size(); ++i)
-		resultDistribution.variableNameToPositionMap[queryVariables[i]]=i;
-	resultDistribution.massFunction.clear();
-
 	// Check
 	if (queryVariables.size()!=1)
 	{
@@ -1318,36 +1311,65 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 	}
 	string varName = queryVariables[0];
 
-	// Find the variable
-	map<string, DaiVariable>::iterator varIter = _variableNameToDai.find(
-			varName);
-	if (varIter == _variableNameToDai.end())
+	// Check if there is '=' in the name and if yes, extract the components.
+	vector<string> elems;
+	split(elems, varName, is_any_of("=") );
+	varName=elems[0];
+	string valueName;
+	if (elems.size()>1)
+		valueName=elems[1];
+
+	// Find all variables that match
+	vector< map<string, DaiVariable>::iterator > varIters;
+	for (map<string, DaiVariable>::iterator it = _variableNameToDai.begin();
+			it != _variableNameToDai.end(); ++it)
+	{
+		if ( wildcmp(varName.c_str(), it->first.c_str()))
+				varIters.push_back(it);
+	}
+	if (varIters.empty())
 	{
 		string msg;
 		msg = "Variable '" + varName + "' not found! Variables we know:";
-		for (varIter = _variableNameToDai.begin(); varIter
+		for (map<string, DaiVariable>::iterator varIter = _variableNameToDai.begin(); varIter
 				!= _variableNameToDai.end(); ++varIter)
 			msg += varIter->first + " ";
 		log(msg.c_str());
 		return;
 	}
-	// Retrieve marginal
-	//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
-	dai::Factor marginal = _bp.belief(varIter->second.var);
-	// Convert to probability distribution
-	for (unsigned int i = 0; i < marginal.nrStates(); ++i)
-	{
-		double marginalProb = marginal.get(i);
-		SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
-				new SpatialProbabilities::StringRandomVariableValue(
-						varIter->second.valueIdToName[i]);
-		SpatialProbabilities::JointProbabilityValue jpv;
-		jpv.probability = marginalProb;
-		jpv.variableValues.push_back(rvvPtr);
-		resultDistribution.massFunction.push_back(jpv);
-	}
 
-	resultDistributions.push_back(resultDistribution);
+	for (unsigned int v=0; v<varIters.size(); ++v)
+	{
+		map<string, DaiVariable>::iterator varIter = varIters[v];
+
+		// Prepare the resulting distribution
+		SpatialProbabilities::ProbabilityDistribution resultDistribution;
+		resultDistribution.description = queryString;
+		resultDistribution.variableNameToPositionMap[varIter->first]=0;
+		resultDistribution.massFunction.clear();
+
+		// Retrieve marginal
+		//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+		dai::Factor marginal = _bp.belief(varIter->second.var);
+		// Convert to probability distribution
+		for (unsigned int i = 0; i < marginal.nrStates(); ++i)
+		{
+			double marginalProb = marginal.get(i);
+			string vn = varIter->second.valueIdToName[i];
+			if ((valueName.empty()) || (vn==valueName))
+			{
+				SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+						new SpatialProbabilities::StringRandomVariableValue(
+								vn);
+				SpatialProbabilities::JointProbabilityValue jpv;
+				jpv.probability = marginalProb;
+				jpv.variableValues.push_back(rvvPtr);
+				resultDistribution.massFunction.push_back(jpv);
+			}
+		}
+
+		resultDistributions.push_back(resultDistribution);
+	}
 }
 
 
@@ -1801,6 +1823,43 @@ ConceptualData::FactorInfos ChainGraphInferencer::TestingServer::getFactors(cons
 	return fis;
 }
 
+
+// -------------------------------------------------------
+int ChainGraphInferencer::wildcmp(const char *wild, const char *string)
+{
+  // Written by Jack Handy - jakkhandy@hotmail.com
+
+  const char *cp = NULL, *mp = NULL;
+
+  while ((*string) && (*wild != '*')) {
+    if ((*wild != *string) && (*wild != '?')) {
+      return 0;
+    }
+    wild++;
+    string++;
+  }
+
+  while (*string) {
+    if (*wild == '*') {
+      if (!*++wild) {
+        return 1;
+      }
+      mp = wild;
+      cp = string+1;
+    } else if ((*wild == *string) || (*wild == '?')) {
+      wild++;
+      string++;
+    } else {
+      wild = mp;
+      string = cp++;
+    }
+  }
+
+  while (*wild == '*') {
+    wild++;
+  }
+  return !*wild;
+}
 
 
 } // namespace def
