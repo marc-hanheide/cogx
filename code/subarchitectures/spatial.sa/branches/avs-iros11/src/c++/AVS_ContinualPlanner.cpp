@@ -459,7 +459,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		CondIndProbDist->distribs["supportobject"] = supportObjectLabelProbDist;
 		CondIndProbDist->distribs["prob"] = coneProbabilityProbDist;
 
-		b->content = coneGroupIDProbDist;
+		b->content = CondIndProbDist;
 		log("writing belief to WM..");
 		addToWorkingMemory(newDataID(), "binder", b);
 		log("wrote belief to WM..");
