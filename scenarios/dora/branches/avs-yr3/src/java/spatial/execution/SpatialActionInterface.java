@@ -20,8 +20,10 @@ import SpatialData.Place;
 import SpatialData.Priority;
 import SpatialData.ProcessViewPointCommand;
 import SpatialData.StatusError;
+import SpatialData.SpatialRelation;
 import SpatialData.ViewPoint;
 import SpatialData.ViewPointGenerationCommand;
+import SpatialData.RelationalViewPointGenerationCommand;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -37,6 +39,7 @@ import cast.cdl.WorkingMemoryPermissions;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.CreateConesForModel;
+import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
@@ -106,6 +109,45 @@ public class SpatialActionInterface extends ManagedComponent {
 			// the generate new ones
 			ViewPointGenerationCommand cmd = new ViewPointGenerationCommand(
 					getAction().model, getAction().placeIDs,
+					AVSStatus.INPROGRESS);
+			addThenCompleteOnOverwrite(cmd);
+		}
+	}
+
+	public static class RelationalViewConeGenerationExecutor extends
+			NonBlockingCompleteOnOperationExecutor<CreateRelationalConesForModel> {
+
+		public RelationalViewConeGenerationExecutor(ManagedComponent _component) {
+			super(_component, CreateRelationalConesForModel.class);
+		}
+
+		@Override
+		protected boolean acceptAction(CreateRelationalConesForModel _action) {
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			// first delete all cones from previous object call
+			// ((SpatialActionInterface) getComponent())
+			// 		.removeObjectViewPoints(getAction().model);
+            SpatialRelation rel = null;
+            if ("inroom".equals(getAction().relation)) {
+                rel = SpatialRelation.INROOM;
+            }
+            else if ("in".equals(getAction().relation)) {
+                rel = SpatialRelation.INOBJECT;
+            }
+            else if ("on".equals(getAction().relation)) {
+                rel = SpatialRelation.ON;
+            }
+            else {
+                assert false : "unknown relation: " + getAction().relation;
+            }
+
+			// the generate new ones
+			RelationalViewPointGenerationCommand cmd = new RelationalViewPointGenerationCommand(
+                getAction().model, rel, getAction().supportObject, getAction().roomID,
 					AVSStatus.INPROGRESS);
 			addThenCompleteOnOverwrite(cmd);
 		}
@@ -586,6 +628,10 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(CreateConesForModel.class,
 				new ComponentActionFactory<ViewConeGenerationExecutor>(this,
 						ViewConeGenerationExecutor.class));
+
+		m_actionStateManager.registerActionType(CreateRelationalConesForModel.class,
+				new ComponentActionFactory<RelationalViewConeGenerationExecutor>(this,
+						RelationalViewConeGenerationExecutor.class));
 
 		m_actionStateManager.registerActionType(ProcessCone.class,
 				new ComponentActionFactory<ViewConeProcessExecutor>(this,
