@@ -5,7 +5,7 @@
 #include "ui_MainDialog.h"
 #include "SpatialData.hpp"
 #include "ConceptualData.hpp"
-#include "Tester"
+#include "Tester.h"
 
 namespace conceptual
 {
