@@ -4,11 +4,11 @@
  * Main dialog.
  */
 
-#ifndef MAINDIALOG_H
-#define MAINDIALOG_H
+#ifndef CONCEPTUALWIDGET_H
+#define CONCEPTUALWIDGET_H
 
 // Conceptual.SA
-#include "ui_MainDialog.h"
+#include "ui_ConceptualWidget.h"
 #include "ConceptualData.hpp"
 
 // Qt&Std
@@ -25,7 +25,7 @@ namespace conceptual
 class ObjectPlacePropertyDialog;
 class ObjectSearchResultDialog;
 
-class MainDialog : public QDialog, public Ui::MainDialogClass
+class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 {
     Q_OBJECT
 
@@ -33,8 +33,8 @@ class MainDialog : public QDialog, public Ui::MainDialogClass
     friend class ObjectSearchResultDialog;
 
 public:
-    MainDialog(conceptual::Tester *component);
-    ~MainDialog();
+    ConceptualWidget(QWidget *parent, conceptual::Tester *component);
+    ~ConceptualWidget();
 
 public:
 
@@ -69,4 +69,4 @@ private:
 
 
 
-#endif // MAINDIALOG_H
+#endif // ConceptualWidget_H

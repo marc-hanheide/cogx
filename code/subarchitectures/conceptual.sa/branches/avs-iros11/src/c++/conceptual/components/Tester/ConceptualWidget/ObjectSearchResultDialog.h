@@ -10,14 +10,14 @@ namespace conceptual
 {
 	class Tester;
 }
-class MainDialog;
+class ConceptualWidget;
 
 class ObjectSearchResultDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ObjectSearchResultDialog(MainDialog *parent, conceptual::Tester *component);
+    ObjectSearchResultDialog(ConceptualWidget *parent, conceptual::Tester *component);
     ~ObjectSearchResultDialog();
 
 private slots:
