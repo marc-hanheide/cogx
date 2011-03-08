@@ -183,13 +183,15 @@ void AVS_ContinualPlanner::generateViewCones(
 		// Todo: We already have a map for this configuration
 	}
 
-	if(m_usePeekabot)
-		//pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+	if(m_usePeekabot){
+		pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+	}
 
 	// now we have our room map let's fill it
 	//Query Conceptual to learn the initial pdf values
-	SpatialProbabilities::ProbabilityDistribution probDist =
-			m_queryHandlerServerInterfacePrx->query(id);
+
+	ConceptualData::ProbabilityDistributions conceptualProbdist = m_queryHandlerServerInterfacePrx->query(id);
+	SpatialProbabilities::ProbabilityDistribution probdist = conceptualProbdist[0];
 
 	//Todo: Somehow get the probability from probDist
 	double pdfmass = 0.5;
@@ -330,6 +332,7 @@ void AVS_ContinualPlanner::generateViewCones(
 					c.supportObjectCategory = "";
 					c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
 		}
+
 
 
 		m_beliefConeGroups[m_coneGroupId++] = c;
