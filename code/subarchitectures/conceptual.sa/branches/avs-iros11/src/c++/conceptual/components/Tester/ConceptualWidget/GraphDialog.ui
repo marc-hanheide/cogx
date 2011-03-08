@@ -101,6 +101,33 @@
       <number>2</number>
      </property>
      <item>
+      <widget class="QRadioButton" name="fullRadioButton">
+       <property name="text">
+        <string>Full</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="compressedeRadioButton">
+       <property name="text">
+        <string>Compressed</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showAllCheckBox">
+       <property name="text">
+        <string>Show All</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -114,6 +141,17 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Save Graph</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/icons/filesave.png</normaloff>:/icons/icons/filesave.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string>Refresh</string>
@@ -121,6 +159,17 @@
        <property name="icon">
         <iconset resource="../resources.qrc">
          <normaloff>:/icons/icons/reload.png</normaloff>:/icons/icons/reload.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/icons/dialog-close.png</normaloff>:/icons/icons/dialog-close.png</iconset>
        </property>
       </widget>
      </item>
@@ -132,5 +181,70 @@
  <resources>
   <include location="../resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>fullRadioButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>refreshButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>31</x>
+     <y>438</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>697</x>
+     <y>437</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>compressedeRadioButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>refreshButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>438</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>697</x>
+     <y>437</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showAllCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>refreshButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>437</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>697</x>
+     <y>437</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>GraphDialogClass</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>697</x>
+     <y>438</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>371</x>
+     <y>285</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
