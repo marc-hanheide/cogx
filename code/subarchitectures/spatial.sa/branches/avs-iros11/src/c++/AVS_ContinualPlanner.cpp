@@ -103,6 +103,18 @@ void AVS_ContinualPlanner::start() {
 			ConceptualData::QueryHandlerServerInterface> (m_queryHandlerName);
 }
 
+void AVS_ContinualPlanner::newViewPointGenerationCommand(
+		const cast::cdl::WorkingMemoryChange &objID) {
+	log("got new GenerateViewPointCommand");
+	SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand = getMemoryEntry<SpatialData::RelationalViewPointGenerationCommand> (
+					objID.address);
+	SpatialData::RelationalViewPointGenerationCommandPtr cmd = new SpatialData::RelationalViewPointGenerationCommand(*newVPCommand);
+
+	generateViewCones(cmd);
+
+}
+
+
 /* Generate view cones for <object,relation , object/room, room> */
 void AVS_ContinualPlanner::generateViewCones(
 		SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
@@ -310,8 +322,9 @@ void AVS_ContinualPlanner::generateViewCones(
 	// 3. Create beliefs about them
 
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		if(m_usePeekabot)
+		if(m_usePeekabot){
 			PostViewCone(viewcones[i]);
+		}
 		// FIXME ASSUMPTION: One cone per conegroup
 		ConeGroup c;	c.relation = SpatialData::INROOM;
 		c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
@@ -333,24 +346,38 @@ void AVS_ContinualPlanner::generateViewCones(
 		}
 
 
-		GroundedBeliefPtr foundRoomBelief;
-	//	vector<GroundedBeliefPtr> comaRoomBeliefs;
-		vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > comaRoomBeliefs;
-		getWorkingMemoryEntries<GroundedBelief> ("binder", 0, comaRoomBeliefs);
+		log("Looking for Coma room beliefs...");
 		 cast::cdl::WorkingMemoryAddress WMaddress;
-		for(unsigned int i=0; i < comaRoomBeliefs.size(); i++){
+		if (newVPCommand->relation == SpatialData::INROOM){
+			//get the roomid belief WMaddress
+			vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > comaRoomBeliefs;
+			getWorkingMemoryEntries<GroundedBelief> ("coma", 0, comaRoomBeliefs);
+
+			if (comaRoomBeliefs.size() ==0){
+				log("Could not get any room beliefs returning without doing anything...");
+				return;
+			}
+			else{
+				log("Go %d ComaRoom beliefs", comaRoomBeliefs.size());
+			}
+
+			for(unsigned int i=0; i < comaRoomBeliefs.size(); i++){
 			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(comaRoomBeliefs[i]->getData()->content));
 			BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["RoomId"]));
 			FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
 
 			IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(formulaValues->values[0].val));
 			int roomid = intformula->val;
+			log("ComaRoom Id for this belief: %d", roomid);
 			if (newVPCommand->roomId == roomid){
+				log("Got room belief from roomid: %d", newVPCommand->roomId);
 				WMaddress.id = comaRoomBeliefs[i]->getID();
 				WMaddress.subarchitecture = "binder";
 			}
 		}
+		}
 
+		log("Creating ConeGroup belief");
 		m_beliefConeGroups[m_coneGroupId++] = c;
 		eu::cogx::beliefs::slice::GroundedBeliefPtr b = new eu::cogx::beliefs::slice::GroundedBelief;
 		b->type = "conegroup";
@@ -423,7 +450,9 @@ void AVS_ContinualPlanner::generateViewCones(
 		CondIndProbDist->distribs["prob"] = coneProbabilityProbDist;
 
 		b->content = coneGroupIDProbDist;
+		log("writing belief to WM..");
 		addToWorkingMemory(newDataID(), "binder", b);
+		log("wrote belief to WM..");
 	}
 
 }
@@ -516,15 +545,6 @@ void AVS_ContinualPlanner::Recognize(){
 	}
 }
 
-void AVS_ContinualPlanner::newViewPointGenerationCommand(
-		const cast::cdl::WorkingMemoryChange &objID) {
-	log("got new GenerateViewPointCommand");
-
-	SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand =
-			getMemoryEntry<SpatialData::RelationalViewPointGenerationCommand> (
-					objID.address);
-	generateViewCones(newVPCommand);
-}
 
 std::string AVS_ContinualPlanner::convertLocation2Id(
 		SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
