@@ -110,14 +110,14 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
 					objID.address);
 	SpatialData::RelationalViewPointGenerationCommandPtr cmd = new SpatialData::RelationalViewPointGenerationCommand(*newVPCommand);
 
-	generateViewCones(cmd);
+	generateViewCones(cmd, objID.address.id);
 
 }
 
 
 /* Generate view cones for <object,relation , object/room, room> */
 void AVS_ContinualPlanner::generateViewCones(
-		SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
+		SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand, std::string WMAddress) {
 	log("Generating View Cones!");
 	// if we already don't have a room map for this then get the combined map
 	if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
@@ -463,6 +463,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		log("writing belief to WM..");
 		addToWorkingMemory(newDataID(), "binder", b);
 		log("wrote belief to WM..");
+		newVPCommand->status = SpatialData::SUCCESS;
+		 overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
 	}
 
 }
