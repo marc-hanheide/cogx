@@ -43,6 +43,9 @@ class CASTState(object):
             default_facts, default_objects = self.get_default_data(component)
             self.coma_facts += default_facts
             self.coma_objects |= default_objects
+
+        if component:
+            self.get_conceptual_data(component)
             
         #TODO: make this less ugly
         tp.current_domain = self.domain
@@ -254,6 +257,16 @@ class CASTState(object):
             log.warning("Failed to read default knowledge from %s", component.default_fn)
             
         return facts, objects
+
+    def get_conceptual_data(self, component):
+        log.debug("querying conceptual.sa")
+        try:
+            results = component.getConceptual().query("p(room*_object_*_unexplored=exists)")
+            print results
+        except Exception, e:
+            log.warning("Error when calling the conceptual query server: %s", str(e))
+            return 
+        
     
     def get_coma_data(self, component):
         coma_objects = set()

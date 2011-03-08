@@ -295,8 +295,8 @@
    ;; precondition: robot is in the same room as the specified object
    (:durative-action create_cones_at_object
                      :agent (?a - robot)
-                     :parameters (?l - label ?rel - spatial_relation ?o - visualobject)
-                     :variables (?r - room ?p - place)
+                     :parameters (?l - label ?rel - spatial_relation ?o - visualobject ?r - room)
+                     :variables (?p - place)
                      :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (poss (in-room ?p) ?r)
