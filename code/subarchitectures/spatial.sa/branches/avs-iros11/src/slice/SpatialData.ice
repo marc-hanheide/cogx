@@ -351,6 +351,7 @@ module SpatialData {
   	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
   	string supportObjectCategory;
   	int roomId; // always (and I mean always) fill this
+    AVSStatus status;
   };
 
  class ObjectSearchResult{
