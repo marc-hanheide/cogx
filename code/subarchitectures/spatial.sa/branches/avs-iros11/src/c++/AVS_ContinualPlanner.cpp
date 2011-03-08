@@ -114,7 +114,6 @@ void AVS_ContinualPlanner::generateViewCones(
 		FrontierInterface::LocalGridMap combined_lgm;
 
 		vector<comadata::ComaRoomPtr> comarooms;
-
 		getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
 
 		log("Got %d rooms", comarooms.size());
@@ -135,7 +134,7 @@ void AVS_ContinualPlanner::generateViewCones(
 				FrontierInterface::LocalMapInterface> ("map.manager"));
 		combined_lgm = agg2->getCombinedGridMap(comarooms[i]->containedPlaceIds);
 
-		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); i=j++){
+		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); j++){
 			log("getting room which contains, placeid: %d", comarooms[i]->containedPlaceIds[j]);
 		}
 
@@ -334,6 +333,23 @@ void AVS_ContinualPlanner::generateViewCones(
 		}
 
 
+		GroundedBeliefPtr foundRoomBelief;
+	//	vector<GroundedBeliefPtr> comaRoomBeliefs;
+		vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > comaRoomBeliefs;
+		getWorkingMemoryEntries<GroundedBelief> ("binder", 0, comaRoomBeliefs);
+		 cast::cdl::WorkingMemoryAddress WMaddress;
+		for(unsigned int i=0; i < comaRoomBeliefs.size(); i++){
+			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(comaRoomBeliefs[i]->getData()->content));
+			BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["RoomId"]));
+			FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
+
+			IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(formulaValues->values[0].val));
+			int roomid = intformula->val;
+			if (newVPCommand->roomId == roomid){
+				WMaddress.id = comaRoomBeliefs[i]->getID();
+				WMaddress.subarchitecture = "binder";
+			}
+		}
 
 		m_beliefConeGroups[m_coneGroupId++] = c;
 		eu::cogx::beliefs::slice::GroundedBeliefPtr b = new eu::cogx::beliefs::slice::GroundedBelief;
@@ -355,13 +371,15 @@ void AVS_ContinualPlanner::generateViewCones(
 		IntegerFormulaPtr coneGroupIDLabelFormula = new IntegerFormula;
 		ElementaryFormulaPtr searchedObjectLabelFormula = new ElementaryFormula;
 		ElementaryFormulaPtr relationLabelFormula = new ElementaryFormula;
-		ElementaryFormulaPtr supportObjectLabelFormula = new ElementaryFormula;
+		PointerFormulaPtr supportObjectLabelFormula = new PointerFormula;
 		FloatFormulaPtr coneProbabilityFormula = new FloatFormula;
 
 		coneGroupIDLabelFormula->val = m_coneGroupId;
 		searchedObjectLabelFormula->prop =c.searchedObjectCategory;
 		relationLabelFormula->prop = (newVPCommand->relation == SpatialData::INOBJECT ? "in" : "on");
-		supportObjectLabelFormula->prop = c.supportObjectId; // this should be a pointer ideally
+
+		supportObjectLabelFormula->pointer =  WMaddress; //c.supportObjectId; // this should be a pointer ideally
+
 		coneProbabilityFormula->val = c.getTotalProb();
 
 		searchedObjectFormulaPair.val = coneGroupIDLabelFormula;

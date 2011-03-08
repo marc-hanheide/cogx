@@ -29,6 +29,7 @@
 
 #include "beliefs_cogx.hpp"
 #include "beliefs.hpp"
+#include "beliefs_cast.hpp"
 
 #include "ViewPointGenerator.h"
 #include <PTZ.hpp>
