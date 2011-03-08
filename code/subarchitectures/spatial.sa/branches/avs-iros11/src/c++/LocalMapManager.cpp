@@ -49,7 +49,7 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
   m_maxClusterDeviation = 0.1;
   m_RobotServerHost = "localhost";
   m_maxNumberOfClusters = 3;
-  m_doorwayWidth = 1.0;
+  m_doorwayWidth = 4.0;
 }
 
 LocalMapManager::~LocalMapManager() 
