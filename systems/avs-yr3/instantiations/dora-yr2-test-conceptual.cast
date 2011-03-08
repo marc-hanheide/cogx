@@ -40,7 +40,7 @@ CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
+#JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
@@ -48,8 +48,8 @@ INCLUDE includes/planner.sa/planner-base.cast
 #INCLUDE includes/motivation.sa/motivation.cast
 
 # exection ####################################################################
-JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cereal_box,filing_box,matchbox,table_for_meal
-JAVA MG executor dora.execution.components.DoraExecutionMediator
+#JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels cereal_box,filing_box,matchbox,table_for_meal
+#JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
 INCLUDE includes/planner.sa/viz-plan.cast
@@ -64,6 +64,7 @@ INCLUDE includes/planner.sa/viz-plan.cast
 
 JAVA MG pathpropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PathProperty" --generic-col
 JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
+JAVA MG objectsearchresultdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.ObjectSearchResult" --generic-col
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
 JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
