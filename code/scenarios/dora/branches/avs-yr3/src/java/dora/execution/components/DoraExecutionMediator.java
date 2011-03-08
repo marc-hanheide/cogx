@@ -22,6 +22,7 @@ import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
+import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
@@ -139,6 +140,49 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			return act;
 
+		} else if (_plannedAction.name.equals("create_cones_in_room")) {
+			assert _plannedAction.arguments.length == 3 : "create_cones action arity is expected to be 3";
+
+			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[2]);
+
+			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class,
+							getMemoryEntry(roomBeliefAddress,
+									GroundedBelief.class));
+
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
+					ComaRoom.class);
+
+			CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
+			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
+            act.relation = "inroom";
+            act.roomID = room.roomId;
+
+			return act;
+
+		} else if (_plannedAction.name.equals("create_cones_at_object")) {
+            //args: agent, label, relation, object, room
+			assert _plannedAction.arguments.length == 5 : "create_cones action arity is expected to be 3";
+
+			WorkingMemoryAddress objectBeliefAddress = addressFromFormula(_plannedAction.arguments[3]);
+			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[4]);
+
+			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class,
+							getMemoryEntry(roomBeliefAddress,
+									GroundedBelief.class));
+
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
+					ComaRoom.class);
+
+			CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
+			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
+            act.relation = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
+            act.supportObject = objectBeliefAddress.id; //FIXME: check if this works
+            act.roomID = room.roomId;
+
+			return act;
+
 		} else if (_plannedAction.name.equals("process_all_cones_at_place")) {
 			assert _plannedAction.arguments.length == 3 : "process_all_cones_at_place action arity is expected to be 3";
 
@@ -165,6 +209,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createSingleBeliefAction(ReportPosition.class,
 					_plannedAction.arguments[1]);
 		}
+        System.out.println(_plannedAction.name);
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
 
