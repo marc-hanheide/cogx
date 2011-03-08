@@ -6,6 +6,7 @@
 
 // Conceptual.SA
 #include "QueryHandler.h"
+#include "ConceptualData.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
