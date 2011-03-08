@@ -172,6 +172,8 @@ private:
 		return (::pow(lambda, static_cast<double>(k)) * ::exp(-lambda)) / (boost::math::factorial<double>(k));
 	}
 
+	int wildcmp(const char *wild, const char *string);
+
 
 private:
 
