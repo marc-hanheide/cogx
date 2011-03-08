@@ -380,6 +380,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		log("Creating ConeGroup belief");
 		m_beliefConeGroups[m_coneGroupId++] = c;
 		eu::cogx::beliefs::slice::GroundedBeliefPtr b = new eu::cogx::beliefs::slice::GroundedBelief;
+		epstatus::PrivateEpistemicStatusPtr beliefEpStatus= new epstatus::PrivateEpistemicStatus;
+		beliefEpStatus->agent = "self";
+
+		b->estatus = beliefEpStatus;
 		b->type = "conegroup";
 		b->id = id;
 		CondIndependentDistribsPtr CondIndProbDist = new  CondIndependentDistribs;
@@ -404,17 +408,23 @@ void AVS_ContinualPlanner::generateViewCones(
 		coneGroupIDLabelFormula->val = m_coneGroupId;
 		searchedObjectLabelFormula->prop =c.searchedObjectCategory;
 		relationLabelFormula->prop = (newVPCommand->relation == SpatialData::INOBJECT ? "in" : "on");
-
 		supportObjectLabelFormula->pointer =  WMaddress; //c.supportObjectId; // this should be a pointer ideally
-
 		coneProbabilityFormula->val = c.getTotalProb();
 
 		searchedObjectFormulaPair.val = coneGroupIDLabelFormula;
-		coneGroupIDLabelFormulaPair.val = searchedObjectLabelFormula;
-		relationLabelFormulaPair.val = relationLabelFormula;
-		supportObjectLabelFormulaPair.val = supportObjectLabelFormula;
-		coneProbabilityFormulaPair.val = coneProbabilityFormula;
+		searchedObjectFormulaPair.prob = 1;
 
+		coneGroupIDLabelFormulaPair.val = searchedObjectLabelFormula;
+		coneGroupIDLabelFormulaPair.prob = 1;
+
+		relationLabelFormulaPair.val = relationLabelFormula;
+		relationLabelFormulaPair.prob = 1;
+
+		supportObjectLabelFormulaPair.val = supportObjectLabelFormula;
+		supportObjectLabelFormulaPair.prob = 1;
+
+		coneProbabilityFormulaPair.val = coneProbabilityFormula;
+		coneProbabilityFormulaPair.prob = 1;
 
 
 		pairs.push_back(coneGroupIDLabelFormulaPair);
