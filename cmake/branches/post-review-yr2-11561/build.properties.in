@@ -9,6 +9,7 @@ plannerslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/planner.sa/src/slice
 binderslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/binder/src/slice
 beliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs/src/slice
 castbeliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs+cast/src/slice
+executionslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/execution.sa/src/slice
 output.dir=${CMAKE_SOURCE_DIR}/output/classes
 
 build_sa_binding=${BUILD_SA_BINDING}
