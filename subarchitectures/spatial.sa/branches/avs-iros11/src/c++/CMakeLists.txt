@@ -232,8 +232,3 @@ else()
     link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
     link_cast_component(${CAST_COMPONENT_NAME} highgui cv ${OPENCV_LDFLAGS})
 endif(BUILD_SA_SPATIAL_TESTER)
-
-
-add_cast_component(ConceptualQueryMaker ConceptualQueryMaker.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} peekabot ConceptualShared)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank ComaData VisionData BeliefsCogX SpatialData ConceptualData )
