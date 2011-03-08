@@ -142,13 +142,14 @@ void PlaceholderPropertyUpdater::runComponent()
 							roomCategory.c_str(), placeholderId);
 					stringstream varName;
 					varName<<"placeholder"<<placeholderId<<"_"<<roomCategory<<"_existance";
-					SpatialProbabilities::ProbabilityDistribution probDist =
+					ConceptualData::ProbabilityDistributions probDists =
 							_queryHandlerServerInterfacePrx->imaginaryQuery("p("+varName.str()+")");
 
 					sched_yield();
 
 					// Update the property on Spatial WM
-					updateRoomCategoryPlaceholderProperty(placeholderId, roomCategory, probDist);
+					if (probDists.size())
+						updateRoomCategoryPlaceholderProperty(placeholderId, roomCategory, probDists[0]);
 				}
 			}
 

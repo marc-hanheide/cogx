@@ -133,7 +133,7 @@ void Tester::stop()
 
 
 // -------------------------------------------------------
-SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(const std::string &query, bool imaginary, bool factor)
+ConceptualData::ProbabilityDistributions Tester::sendQueryHandlerQuery(const std::string &query, bool imaginary, bool factor)
 {
 	if (_queryHandlerAvailable)
 	{
@@ -145,7 +145,7 @@ SpatialProbabilities::ProbabilityDistribution Tester::sendQueryHandlerQuery(cons
 			return _queryHandlerServerInterfacePrx->query(query);
 	}
 	else
-		return SpatialProbabilities::ProbabilityDistribution();
+		return ConceptualData::ProbabilityDistributions();
 }
 
 

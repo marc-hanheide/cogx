@@ -75,63 +75,68 @@ void ConceptualWidget::sendQueryButtonClicked()
 
 	queryResultTreeWidget->clear();
 
-	SpatialProbabilities::ProbabilityDistribution result =
+	ConceptualData::ProbabilityDistributions results =
 			_component->sendQueryHandlerQuery(queryComboBox->currentText().toStdString(),
 					imaginaryQueryRadioButton->isChecked(), factorQueryRadioButton->isChecked());
 
-	if (result.massFunction.size()>0)
+	if (results.size()>0)
 	{
 		// Setup header
 		QStringList labels;
-		for (unsigned int i=0; i<result.variableNameToPositionMap.size(); ++i)
-			labels.append("");
-		for (map<string, int>::iterator it = result.variableNameToPositionMap.begin();
-				it!=result.variableNameToPositionMap.end(); ++it)
-		{
-			labels[it->second] = QString::fromStdString(it->first);
-		}
+		for (unsigned int i=0; i<results[0].variableNameToPositionMap.size(); ++i)
+			labels.append("Var "+QString::number(i));
 		labels.append("p");
-
 		queryResultTreeWidget->setHeaderLabels(labels);
 
-		// Fill in values
 		QList<QTreeWidgetItem *> items;
-		for(unsigned int i=0; i<result.massFunction.size(); ++i)
+		for (unsigned int r=0; r<results.size(); ++r)
 		{
-			double probability = result.massFunction[i].probability;
+			// Setup main item
+			for (map<string, int>::iterator it = results[r].variableNameToPositionMap.begin();
+					it!=results[r].variableNameToPositionMap.end(); ++it)
+				labels[it->second] = QString::fromStdString(it->first);
+			QTreeWidgetItem *parentItem = new QTreeWidgetItem((QTreeWidget*)0, labels);
 
-			QStringList values;
-			for(unsigned int j=0; j<result.massFunction[i].variableValues.size(); ++j)
+			// Fill in values
+			for(unsigned int i=0; i<results[r].massFunction.size(); ++i)
 			{
-				QString valueStr;
-				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::StringRandomVariableValue"))
-				{
-					string value =
-							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-									result.massFunction[i].variableValues[j])->value;
-					valueStr = QString::fromStdString(value);
-				}
-				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::IntRandomVariableValue"))
-				{
-					int value =
-							SpatialProbabilities::IntRandomVariableValuePtr::dynamicCast(
-									result.massFunction[i].variableValues[j])->value;
-					valueStr = QString::number(value);
-				}
-				if (result.massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::BoolRandomVariableValue"))
-				{
-					bool value =
-							SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
-									result.massFunction[i].variableValues[j])->value;
-					valueStr = (value)?"true":"false";
-				}
-				values.append(valueStr);
-			}
-			values.append(QString::number(probability));
-			items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
-		}
+				double probability = results[r].massFunction[i].probability;
 
+				QStringList values;
+				for(unsigned int j=0; j<results[r].massFunction[i].variableValues.size(); ++j)
+				{
+					QString valueStr;
+					if (results[r].massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::StringRandomVariableValue"))
+					{
+						string value =
+								SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+										results[r].massFunction[i].variableValues[j])->value;
+						valueStr = QString::fromStdString(value);
+					}
+					if (results[r].massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::IntRandomVariableValue"))
+					{
+						int value =
+								SpatialProbabilities::IntRandomVariableValuePtr::dynamicCast(
+										results[r].massFunction[i].variableValues[j])->value;
+						valueStr = QString::number(value);
+					}
+					if (results[r].massFunction[i].variableValues[j]->ice_isA("::SpatialProbabilities::BoolRandomVariableValue"))
+					{
+						bool value =
+								SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
+										results[r].massFunction[i].variableValues[j])->value;
+						valueStr = (value)?"true":"false";
+					}
+					values.append(valueStr);
+				}
+				values.append(QString::number(probability));
+				new QTreeWidgetItem(parentItem, values);
+
+			} //for
+			items.append(parentItem);
+		} // for
 		queryResultTreeWidget->insertTopLevelItems(0, items);
+		queryResultTreeWidget->expandAll();
 
 		// Add to combo
 		queryComboBox->insertItem(0, queryComboBox->currentText());
@@ -140,7 +145,7 @@ void ConceptualWidget::sendQueryButtonClicked()
 	{
 		queryResultTreeWidget->setHeaderLabels(QStringList(" "));
 		queryResultTreeWidget->insertTopLevelItem(0,
-				new QTreeWidgetItem((QTreeWidget*)0, QStringList("Incorrect querry!")) );
+				new QTreeWidgetItem((QTreeWidget*)0, QStringList("Incorrect query!")) );
 	}
 }
 

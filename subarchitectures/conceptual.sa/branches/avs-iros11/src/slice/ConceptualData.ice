@@ -55,16 +55,17 @@ module ConceptualData
 	// ---------------------------------------------------
 	// Query stuff	
 	// ---------------------------------------------------
+	sequence<SpatialProbabilities::ProbabilityDistribution> ProbabilityDistributions;
 
 	/** Interface to the conceptual::QueryHandler::Server. */
 	interface QueryHandlerServerInterface
 	{
 		/** Query for a probability distribution extracted from the conceptual layer modeling real world. */
-		SpatialProbabilities::ProbabilityDistribution query(string queryStr);
+		ProbabilityDistributions query(string queryStr);
 		/** Query for a probability distribution extracted from the conceptual layer modeling imaginary worlds. */
-		SpatialProbabilities::ProbabilityDistribution imaginaryQuery(string queryStr);
+		ProbabilityDistributions imaginaryQuery(string queryStr);
 		/** Query for a probability distribution of a single factor. */
-		SpatialProbabilities::ProbabilityDistribution factorQuery(string factorStr);
+		ProbabilityDistributions factorQuery(string factorStr);
 	};
 
 	enum QueryType {STANDARDQUERY, IMAGINARYQUERY, FACTORQUERY};
@@ -75,6 +76,7 @@ module ConceptualData
 		QueryType type; 
 		string queryString;
 	};
+
 	
 	/** Result of a single inference. */
 	class InferenceResult
@@ -86,7 +88,7 @@ module ConceptualData
 		string queryId;
 		
 		/** Result of the inference. */
-		SpatialProbabilities::ProbabilityDistribution result;
+		ProbabilityDistributions results;
 	};
 
 	// ---------------------------------------------------
