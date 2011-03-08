@@ -34,9 +34,11 @@ public:
 			double pan;
 			double tilt;
 			double totalprob;
-		};
+			double conedepth;
+			double horizangle, vertangle, minDistance;
+	};
 
-	ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* bloxelmap, int samplesize,
+	ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* pbloxelmap, int samplesize,
 			double sampleawayfromobs, double conedepth, double horizangle, double vertangle,
 			double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty);
 	virtual ~ViewPointGenerator();

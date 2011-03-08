@@ -37,6 +37,7 @@
 //#include "PBVisualization.hh"
 
 class MainDialog;
+class VisualPB_Bloxel;
 
 namespace spatial {
 class AVS_ContinualPlanner : public ManagedComponent {
@@ -46,10 +47,18 @@ public:
 
 	struct ConeGroup{
 		std::vector<ViewPointGenerator::SensingAction> viewcones;
+		std::string bloxelMapId;
 		SpatialData::SpatialRelation relation;
 		std::string supportObjectId;
 		std::string supportObjectCategory;
 		std::string searchedObjectCategory;
+		double getTotalProb(){
+			double tmp = 0;
+			for (unsigned int i =0; viewcones.size(); i++){
+				tmp += viewcones[i].totalprob;
+			}
+			return tmp;
+		}
 	};
 
 	AVS_ContinualPlanner();
@@ -74,6 +83,8 @@ public:
 	 void modifyPDFAfterRecognition();
 	 void Recognize();
 	 void addARTagCommand();
+	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv);
+	 void ViewConeUpdate(ViewPointGenerator::SensingAction viewcone, BloxelMap* map);
 
 private:
 		NavData::RobotPose2dPtr lastRobotPose;
@@ -88,7 +99,6 @@ private:
 	bool m_usePTZ;
 	bool m_ignoreTilt;
 	bool m_usePeekabot;
-	//VisualPB_Bloxel* pbVis;
 	VariableNameGenerator m_namegenerator;
 	int m_gridsize;
 	double m_samplesize;
@@ -104,6 +114,7 @@ private:
 	 double m_mapceiling;
 	 bool gotPC;
 	 std::string m_PbHost;
+	 VisualPB_Bloxel* pbVis;
 
 	 // labels of tagged objects
 	 std::vector<std::string> m_siftObjects;
