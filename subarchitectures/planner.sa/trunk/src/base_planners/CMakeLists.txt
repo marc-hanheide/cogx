@@ -55,7 +55,7 @@ add_custom_target(pdownward_preprocess
                    WORKING_DIRECTORY ${PDOWNWARD_DIR}/preprocess/
                    COMMENT "Building ${PDOWNWARD_DIR}/preprocess/preprocess")
 add_custom_target(pdownward_search
-                   COMMAND make
+                   COMMAND make release
                    WORKING_DIRECTORY ${PDOWNWARD_DIR}/search/
                    COMMENT "Building ${PDOWNWARD_DIR}/search/search")
 

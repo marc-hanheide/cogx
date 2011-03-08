@@ -134,6 +134,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.client = None
     self.dt = None
     self.hfc = None
+    self.conceptual = None
     self.planner = StandalonePlanner()
     self.tasks = {}
     self.dt_tasks = {}
@@ -161,6 +162,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.client_name = config.get("--wm", "Planner")
     self.dt_name = config.get("--dt", "PlannerDTServer")
     self.coma_name = config.get("--coma", "hfcserver")
+    self.conceptual_name = config.get("--conceptual", "conceptual.queryhandler")
     self.show_dot = "--nodot" not in config
     self.start_pdb = "--pdb" in config
 
@@ -203,6 +205,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.hfc = self.getIceServer(self.coma_name, comadata.HFCInterface, comadata.HFCInterfacePrx)
       log.info("Connected to Comaserver %s", self.coma_name)
     return self.hfc
+
+  def getConceptual(self):
+    import ConceptualData
+    if not self.conceptual:
+      self.conceptual = self.getIceServer(self.conceptual_name, ConceptualData.QueryHandlerServerInterface, ConceptualData.QueryHandlerServerInterfacePrx)
+      log.info("Connected to conceptual.sa query server %s", self.coma_name)
+    return self.conceptual
 
   def get_path(self):
       return this_path
