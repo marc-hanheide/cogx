@@ -11,6 +11,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/conceptual.sa/src/c++/conceptual/components/Tester )
     include_directories(.)
     include_directories(./ConceptualWidget)
+    include_directories(./AVSMainWidget)
 
     add_cast_component(ConceptualTester Tester.cc MainDialog.cc ConceptualWidget/ConceptualWidget.cc ConceptualWidget/ObjectPlacePropertyDialog.cc 
                                         ConceptualWidget/ObjectSearchResultDialog.cc ConceptualWidget/GraphDialog.cc 

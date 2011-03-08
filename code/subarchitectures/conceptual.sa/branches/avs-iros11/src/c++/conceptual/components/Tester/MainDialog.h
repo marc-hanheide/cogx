@@ -5,6 +5,7 @@
 #include "ui_MainDialog.h"
 
 class ConceptualWidget;
+class AVSMainWidget;
 
 namespace conceptual
 {
@@ -30,6 +31,7 @@ private:
     conceptual::Tester *_component;
 
     ConceptualWidget *_conceptualWidget;
+    AVSMainWidget *_avsMainWidget;
 };
 
 #endif // MAINDIALOG_H
