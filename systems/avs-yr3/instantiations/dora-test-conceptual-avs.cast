@@ -12,7 +12,6 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 INCLUDE includes/spatial.sa/spatial-avs-cpplanner.cast
-#CPP MG ConceptualQueryMaker ConceptualQueryMaker --queryhandler conceptual.queryhandler
 
 
 # coma ######################################################################
