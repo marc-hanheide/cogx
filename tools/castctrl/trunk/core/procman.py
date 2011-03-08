@@ -219,7 +219,7 @@ class CProcess(CProcessBase):
         if self.pipeReader != None:
             self.pipeReader.stop()
             self.pipeReader.join(0.2)
-            if self.pipeReader.isAlive():
+            if self.pipeReader and self.pipeReader.isAlive():
                 error("Failed to join thread (Reader, %s)" % self.name)
             self.pipeReader = None
 
