@@ -1,0 +1,2 @@
+CPP MG AVS_ContinualPlanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 20 --tiltinterval 15 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.15 --publishsimcones --usepeekabot --log --queryhandler conceptual.queryhandler
+
