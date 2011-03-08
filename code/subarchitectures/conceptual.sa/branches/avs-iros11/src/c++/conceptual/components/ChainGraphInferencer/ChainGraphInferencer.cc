@@ -7,6 +7,7 @@
 // Conceptual.SA
 #include "ChainGraphInferencer.h"
 #include "VariableNameGenerator.h"
+#include "SpatialProbabilities.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Boost
@@ -253,19 +254,19 @@ void ChainGraphInferencer::runComponent()
 					{
 						// Prepare the result distribution
 						prepareImaginaryInferenceResult(q.queryPtr->queryString,
-								queryVariables, &(inferenceResultPtr->result));
+								queryVariables, inferenceResultPtr->results);
 					}
 					else if (q.queryPtr->type == ConceptualData::FACTORQUERY)
 					{
 						// Prepare the result distribution
 						prepareFactorResult(q.queryPtr->queryString,
-								queryVariables, &(inferenceResultPtr->result));
+								queryVariables, inferenceResultPtr->results);
 					}
 					else
 					{
 						// Prepare the result distribution
 						prepareInferenceResult(q.queryPtr->queryString,
-								queryVariables, &(inferenceResultPtr->result));
+								queryVariables, inferenceResultPtr->results);
 					}
 				} // if (worldStateValid)
 				else
@@ -1298,15 +1299,16 @@ void ChainGraphInferencer::evaluateCurrentRoomImaginaryWorld(int roomId, std::ve
 // -------------------------------------------------------
 void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 		std::vector<std::string> queryVariables,
-		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+		ConceptualData::ProbabilityDistributions &resultDistributions)
 {
 	debug("Preparing inference results for inference query '"+queryString+"'");
 
 	// Prepare the resulting distribution
-	resultDistribution->description = queryString;
+	SpatialProbabilities::ProbabilityDistribution resultDistribution;
+	resultDistribution.description = queryString;
 	for(unsigned int i=0; i<queryVariables.size(); ++i)
-		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
-	resultDistribution->massFunction.clear();
+		resultDistribution.variableNameToPositionMap[queryVariables[i]]=i;
+	resultDistribution.massFunction.clear();
 
 	// Check
 	if (queryVariables.size()!=1)
@@ -1342,21 +1344,24 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 		SpatialProbabilities::JointProbabilityValue jpv;
 		jpv.probability = marginalProb;
 		jpv.variableValues.push_back(rvvPtr);
-		resultDistribution->massFunction.push_back(jpv);
+		resultDistribution.massFunction.push_back(jpv);
 	}
+
+	resultDistributions.push_back(resultDistribution);
 }
 
 
 // -------------------------------------------------------
 void ChainGraphInferencer::prepareFactorResult(std::string queryString,
 		std::vector<std::string> queryVariables,
-		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+		ConceptualData::ProbabilityDistributions &resultDistributions)
 {
 	debug("Preparing results for factor query '"+queryString+"'");
 
 	// Prepare the resulting distribution
-	resultDistribution->description = queryString;
-	resultDistribution->massFunction.clear();
+	SpatialProbabilities::ProbabilityDistribution resultDistribution;
+	resultDistribution.description = queryString;
+	resultDistribution.massFunction.clear();
 
 	// Check
 	if (queryVariables.size()!=1)
@@ -1401,7 +1406,7 @@ void ChainGraphInferencer::prepareFactorResult(std::string queryString,
 				vars.push_back(it->second);
 			}
 		}
-		resultDistribution->variableNameToPositionMap[varName]=i;
+		resultDistribution.variableNameToPositionMap[varName]=i;
 	}
 
 	// Fill in the distribution
@@ -1421,23 +1426,26 @@ void ChainGraphInferencer::prepareFactorResult(std::string queryString,
 					new SpatialProbabilities::StringRandomVariableValue(valName);
 			jpv.variableValues.push_back(rvvPtr);
 		}
-		resultDistribution->massFunction.push_back(jpv);
+		resultDistribution.massFunction.push_back(jpv);
 	}
+
+	resultDistributions.push_back(resultDistribution);
 }
 
 
 // -------------------------------------------------------
 void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryString,
 		std::vector<std::string> queryVariables,
-		SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+		ConceptualData::ProbabilityDistributions &resultDistributions)
 {
 	debug("Preparing imaginary inference results for inference query '"+queryString+"'");
 
 	// Prepare the resulting distribution
-	resultDistribution->description = queryString;
+	SpatialProbabilities::ProbabilityDistribution resultDistribution;
+	resultDistribution.description = queryString;
 	for(unsigned int i=0; i<queryVariables.size(); ++i)
-		resultDistribution->variableNameToPositionMap[queryVariables[i]]=i;
-	resultDistribution->massFunction.clear();
+		resultDistribution.variableNameToPositionMap[queryVariables[i]]=i;
+	resultDistribution.massFunction.clear();
 
 	// Check
 	if (queryVariables.size()!=1)
@@ -1459,14 +1467,16 @@ void ChainGraphInferencer::prepareImaginaryInferenceResult(std::string queryStri
 	SpatialProbabilities::JointProbabilityValue jpv1;
 	jpv1.probability=prob;
 	jpv1.variableValues.push_back(rvv1Ptr);
-	resultDistribution->massFunction.push_back(jpv1);
+	resultDistribution.massFunction.push_back(jpv1);
 
 	SpatialProbabilities::IntRandomVariableValuePtr rvv2Ptr =
 			new SpatialProbabilities::IntRandomVariableValue(0);
 	SpatialProbabilities::JointProbabilityValue jpv2;
 	jpv2.probability=1.0 - prob;
 	jpv2.variableValues.push_back(rvv2Ptr);
-	resultDistribution->massFunction.push_back(jpv2);
+	resultDistribution.massFunction.push_back(jpv2);
+
+	resultDistributions.push_back(resultDistribution);
 }
 
 

@@ -6,7 +6,6 @@
 
 // Conceptual.SA
 #include "QueryHandler.h"
-#include "ConceptualData.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
@@ -90,7 +89,7 @@ string QueryHandler::sendInferenceQuery(std::string queryString, ConceptualData:
 
 // -------------------------------------------------------
 void QueryHandler::retrieveInferenceResult(std::string queryId,
-		 SpatialProbabilities::ProbabilityDistribution *resultDistribution)
+		 ConceptualData::ProbabilityDistributions &resultDistributions)
 {
 	bool found = false;
 
@@ -118,7 +117,7 @@ void QueryHandler::retrieveInferenceResult(std::string queryId,
 			if (inferenceResultPtr->queryId == queryId)
 			{ // Yes, we found what we want
 				found = true;
-				(*resultDistribution) = inferenceResultPtr->result;
+				resultDistributions = inferenceResultPtr->results;
 				_receivedResults.erase(rrIt);
 				break;
 			}
@@ -177,7 +176,7 @@ void QueryHandler::inferenceResultAdded(const cast::cdl::WorkingMemoryChange &wm
 
 
 // -------------------------------------------------------
-SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
+ConceptualData::ProbabilityDistributions QueryHandler::Server::query(
 		const std::string &queryStr, const Ice::Current &)
 {
 	_queryHandler->debug("Received query: '"+queryStr+"'");
@@ -186,8 +185,8 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
 	string queryId = _queryHandler->sendInferenceQuery(queryStr, ConceptualData::STANDARDQUERY);
 
 	// Retrieve the inference result (blocking!)
-	SpatialProbabilities::ProbabilityDistribution d;
-	_queryHandler->retrieveInferenceResult(queryId, &d);
+	ConceptualData::ProbabilityDistributions d;
+	_queryHandler->retrieveInferenceResult(queryId, d);
 
 	_queryHandler->debug("Returning inference result for query: '"+queryStr+"'");
 
@@ -197,7 +196,7 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::query(
 
 
 // -------------------------------------------------------
-SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::imaginaryQuery(
+ConceptualData::ProbabilityDistributions QueryHandler::Server::imaginaryQuery(
 		const std::string &queryStr, const Ice::Current &)
 {
 	_queryHandler->debug("Received imaginary query: '"+queryStr+"'");
@@ -206,8 +205,8 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::imaginaryQue
 	string queryId = _queryHandler->sendInferenceQuery(queryStr, ConceptualData::IMAGINARYQUERY);
 
 	// Retrieve the inference result (blocking!)
-	SpatialProbabilities::ProbabilityDistribution d;
-	_queryHandler->retrieveInferenceResult(queryId, &d);
+	ConceptualData::ProbabilityDistributions d;
+	_queryHandler->retrieveInferenceResult(queryId, d);
 
 	_queryHandler->debug("Returning inference result for query: '"+queryStr+"'");
 
@@ -217,7 +216,7 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::imaginaryQue
 
 
 // -------------------------------------------------------
-SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::factorQuery(
+ConceptualData::ProbabilityDistributions QueryHandler::Server::factorQuery(
 		const std::string &factorStr, const Ice::Current &)
 {
 	_queryHandler->debug("Received factor query: '"+factorStr+"'");
@@ -226,8 +225,8 @@ SpatialProbabilities::ProbabilityDistribution QueryHandler::Server::factorQuery(
 	string queryId = _queryHandler->sendInferenceQuery(factorStr, ConceptualData::FACTORQUERY);
 
 	// Retrieve the inference result (blocking!)
-	SpatialProbabilities::ProbabilityDistribution d;
-	_queryHandler->retrieveInferenceResult(queryId, &d);
+	ConceptualData::ProbabilityDistributions d;
+	_queryHandler->retrieveInferenceResult(queryId, d);
 
 	_queryHandler->debug("Returning result for factor query: '"+factorStr+"'");
 

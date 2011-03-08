@@ -32,13 +32,13 @@ class QueryHandler: public cast::ManagedComponent
 		Server(QueryHandler *queryHandler) : _queryHandler(queryHandler)
 		{}
 
-		virtual SpatialProbabilities::ProbabilityDistribution
+		virtual ConceptualData::ProbabilityDistributions
 			query(const std::string &queryStr, const Ice::Current &);
 
-		virtual SpatialProbabilities::ProbabilityDistribution
+		virtual ConceptualData::ProbabilityDistributions
 			imaginaryQuery(const std::string &queryStr, const Ice::Current &);
 
-		virtual SpatialProbabilities::ProbabilityDistribution
+		virtual ConceptualData::ProbabilityDistributions
 			factorQuery(const std::string &factorStr, const Ice::Current &);
 
 	private:
@@ -82,7 +82,7 @@ private:
 	/** Waits for the InferenceResult to a query with the given ID.
 	 * Retuns pointer to the distribution in the result. */
 	void retrieveInferenceResult(std::string queryId,
-			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+			ConceptualData::ProbabilityDistributions &resultDistributions);
 
 
 	pthread_cond_t _queryAddedSignalCond;

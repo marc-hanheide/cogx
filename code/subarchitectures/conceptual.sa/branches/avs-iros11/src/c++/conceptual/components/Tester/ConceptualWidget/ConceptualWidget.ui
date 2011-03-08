@@ -14,7 +14,7 @@
    <string>Conceptual.SA Tester</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/icons/icons/applications-engineering.png</normaloff>:/icons/icons/applications-engineering.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -119,7 +119,7 @@
                <string>Send</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset resource="../resources.qrc">
                 <normaloff>:/icons/icons/stock_mail-send-receive.png</normaloff>:/icons/icons/stock_mail-send-receive.png</iconset>
               </property>
              </widget>
@@ -147,7 +147,7 @@
              <bool>false</bool>
             </property>
             <property name="itemsExpandable">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="sortingEnabled">
              <bool>true</bool>
@@ -281,7 +281,7 @@ update freq.</string>
             <string>Show Graph</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset resource="../resources.qrc">
              <normaloff>:/icons/icons/nepomuk.png</normaloff>:/icons/icons/nepomuk.png</iconset>
            </property>
           </widget>
@@ -292,7 +292,7 @@ update freq.</string>
             <string>Refresh</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset resource="../resources.qrc">
              <normaloff>:/icons/icons/reload.png</normaloff>:/icons/icons/reload.png</iconset>
            </property>
           </widget>
@@ -364,7 +364,7 @@ update freq.</string>
                <string>Refresh</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset resource="../resources.qrc">
                 <normaloff>:/icons/icons/reload.png</normaloff>:/icons/icons/reload.png</iconset>
               </property>
              </widget>
@@ -389,7 +389,7 @@ update freq.</string>
              <string>Add ObjectSearchResult</string>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources.qrc">
               <normaloff>:/icons/icons/add.png</normaloff>:/icons/icons/add.png</iconset>
             </property>
            </widget>
@@ -400,7 +400,7 @@ update freq.</string>
              <string>Add ObjectPlaceProperty</string>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources.qrc">
               <normaloff>:/icons/icons/add.png</normaloff>:/icons/icons/add.png</iconset>
             </property>
            </widget>
@@ -416,7 +416,7 @@ update freq.</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

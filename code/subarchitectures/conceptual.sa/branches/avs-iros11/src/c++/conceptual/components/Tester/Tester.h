@@ -35,7 +35,7 @@ public:
 	virtual ~Tester() {}
 
 	/** Sends a new query to the QueryHandler. */
-	SpatialProbabilities::ProbabilityDistribution sendQueryHandlerQuery(const std::string &query, bool imaginary, bool factor);
+	ConceptualData::ProbabilityDistributions sendQueryHandlerQuery(const std::string &query, bool imaginary, bool factor);
 
 	ConceptualData::VariableInfos getChainGraphVariables();
 	ConceptualData::FactorInfos getChainGraphFactors();

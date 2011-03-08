@@ -127,15 +127,15 @@ private:
 
 	/** Prepares inference results based on the graph in which inference was performed. */
 	void prepareInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
-			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+			ConceptualData::ProbabilityDistributions &resultDistribution);
 
 	/** Prepares inference results based on the graph and imaginary worlds. */
 	void prepareImaginaryInferenceResult(std::string queryString, std::vector<std::string> queryVariables,
-			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+			ConceptualData::ProbabilityDistributions &resultDistribution);
 
 	/** Prepares results of the factor query. */
 	void prepareFactorResult(std::string queryString, std::vector<std::string> queryVariables,
-			SpatialProbabilities::ProbabilityDistribution *resultDistribution);
+			ConceptualData::ProbabilityDistributions &resultDistribution);
 
 	/** Reads the default knowledge factors from the Default.SA */
 	void getDefaultKnowledge();
