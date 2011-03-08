@@ -71,7 +71,10 @@ public class V11WMViewerComponent extends ManagedComponent {
 					if (addGenericCol) {
 						String genericText = (String) genericPlugin.toVector(
 								newEntry).get(0);
-						logString += "<td>" + genericText + "</td>";
+						if (genericText.length() > 500)
+						  logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
+						else
+						  logString += "<td>" + genericText + "</td>";
 //						getLogger().info(CASTUtils.toString(wmc) + genericText);
 					}
 					rows.put(wmc.address, "<tr>" + logString + "</tr>");
@@ -91,14 +94,12 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 
 		public void updateView() {
-			String tableHtml = "<table frame=\"border\" border=\"1\" rules=\"all\">"
-					+ "<tr><th>NEW?</th><th>address</th><th>type</th><th>info1</th><th>info2</th><th>info3</th><th>info4</th></th>";
+			String tableHtml = "";
 			for (String r : rows.values()) {
 				tableHtml += r;
 			}
-			tableHtml += "</table>";
 
-			displayClient.setHtml(getComponentID() + ".view", "1", tableHtml);
+			displayClient.setHtml(getComponentID() + ".view", "001", tableHtml);
 		}
 
 		private String addrToString(WorkingMemoryAddress wma) {
@@ -181,6 +182,19 @@ public class V11WMViewerComponent extends ManagedComponent {
 		entrySet.start();
 		displayClient.connectIceClient(this);
 		displayClient.installEventReceiver();
+
+		String tableHdr = "<table frame=\"border\" border=\"1\" rules=\"all\">"
+			+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
+			+ "<th>info1</th><th>info2</th><th>info3</th><th>info4</th></tr>";
+
+		displayClient.setHtml(getComponentID() + ".view", "000", tableHdr);
+		displayClient.setHtml(getComponentID() + ".view", "009", "</table>");
+
+		String style = "<style>"
+		  + "td.largeinfo { height: 20em; }"
+		  + "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
+			+ "</style>";
+		displayClient.setHtmlHead(getComponentID() + ".view", "000", style);
 	}
 
 }
