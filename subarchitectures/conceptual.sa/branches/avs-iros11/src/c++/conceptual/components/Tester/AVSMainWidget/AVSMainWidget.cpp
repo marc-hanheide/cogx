@@ -1,5 +1,6 @@
 #include "AVSMainWidget.h"
 #include <cast/core/CASTUtils.hpp>
+#include <VisionData.hpp>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -23,6 +24,7 @@ AVSMainWidget::AVSMainWidget(QWidget *parent, conceptual::Tester *component)
 	ui.setupUi(this);
 	connect(ui.generateViewCones, SIGNAL(clicked()), this, SLOT(generateViewConesButtonClicked()));
 	connect(ui.processConeGroup, SIGNAL(clicked()), this, SLOT(processConeGroup()));
+	connect(ui.postVisualObject, SIGNAL(clicked()), this, SLOT(postVisualObjectClicked()));
 }
 
 AVSMainWidget::~AVSMainWidget()
@@ -30,11 +32,37 @@ AVSMainWidget::~AVSMainWidget()
 
 }
 
-void AVSMainWidget::processConeGroup(){
+void 
+AVSMainWidget::processConeGroup()
+{
 	m_component->log("processConeGroup");
 	QString coneGroupId = ui.coneGroupId->text();
 	SpatialData::ProcessConeGroupPtr cmd = new SpatialData::ProcessConeGroup;
 	m_component->addToWorkingMemory(m_component->newDataID(), "spatial.sa", cmd); // TODO
+}
+
+void AVSMainWidget::postVisualObjectClicked(){
+	m_component->log("postVisualObjectClicked");
+//	QString coneGroupId = ui.coneGroupId->text();
+	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+  // create a very simple distribution: label and unknown
+  obj->identLabels.push_back("mug");
+  obj->identLabels.push_back("unknown");
+  // note: distribution must of course sum to 1
+  obj->identDistrib.push_back(0.);
+  obj->identDistrib.push_back(1.);
+  // the information gain if we know the label, just set to 1, cause we don't
+  // have any alternative thing to do
+  obj->identGain = 1.;
+  // ambiguity in the distribution: we use the distribution's entropy
+  obj->identAmbiguity = 0.;
+//  for(size_t i = 0; i < obj->identDistrib.size(); i++)
+//    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
+//      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
+//  setIdentity(obj->pose);
+  obj->componentID = m_component->getComponentID();
+
+	m_component->addToWorkingMemory(m_component->newDataID(), "vision.sa", obj); // TODO
 }
 void AVSMainWidget::generateViewConesButtonClicked(){
 	m_component->log("generateViewConesButtonClicked");
