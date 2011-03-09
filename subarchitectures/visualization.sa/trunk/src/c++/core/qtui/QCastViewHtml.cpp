@@ -22,6 +22,8 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QToolButton>
+#include <QAction>
 
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
@@ -39,6 +41,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    pView = NULL;
    m_bModified = false;
    m_bHasForms = false;
+   m_bBlockUpdates = false;
    jsObjectName = QString::fromStdString(cxd::CHtmlChunk::JavascriptObjectName);
 
    // The signal is queued an processed when Qt is idle.
@@ -203,7 +206,7 @@ void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 
 void QCastViewHtml::paintEvent(QPaintEvent* event)
 {
-   if (m_bModified) {
+   if (m_bModified && !m_bBlockUpdates) {
       m_bModified = false;
       emit updateContent(); // Queued update
       return;
@@ -214,6 +217,10 @@ void QCastViewHtml::paintEvent(QPaintEvent* event)
 void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
+   if (m_bBlockUpdates) {
+      DTRACE("blocked");
+      return;
+   }
    m_Chunks.clear();
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
@@ -278,5 +285,29 @@ void QCastViewHtml::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::di
    if (pView == this->pView) {
       m_bModified = true;
       update();
+   }
+}
+
+void QCastViewHtml::onToggleBlockUpdates(bool checked)
+{
+   m_bBlockUpdates = checked;
+   if (! m_bBlockUpdates) update();
+}
+
+void QCastViewHtml::getToolbars(CPtrVector<QToolBar>& toolbars)
+{
+   if (! pView) return;
+   QToolBar *pBar = new QToolBar(this); // parent will be reset in QViewContainer
+   if (pBar) {
+      QToolButton *pBut = new QToolButton(pBar);
+      QString text = "Block updates";
+      QAction* pAct = new QAction(QIcon(":/toolButton/camera-photo.png"), text, pBut);
+      pAct->setCheckable(true);
+      pAct->setChecked(m_bBlockUpdates);
+      pBut->setDefaultAction(pAct);
+      pBar->addWidget(pBut);
+      pBar->connect(pAct, SIGNAL(toggled(bool)), this, SLOT(onToggleBlockUpdates(bool)));
+
+      toolbars.push_back(pBar);
    }
 }

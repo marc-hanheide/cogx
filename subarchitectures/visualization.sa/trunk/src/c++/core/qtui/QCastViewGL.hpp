@@ -101,9 +101,9 @@ public:
    void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
    cogx::display::CDisplayView* getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
+   void getToolbars(CPtrVector<QToolBar>& toolbars); /*override*/
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
-   void getToolbars(CPtrVector<QToolBar>& toolbars); /*override*/
 
 public slots:
    void setCameraEye(const Vector3 &e);
