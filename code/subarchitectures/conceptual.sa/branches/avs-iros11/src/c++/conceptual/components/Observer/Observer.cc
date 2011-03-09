@@ -992,7 +992,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
 		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventShapePlacePropertyChanged;
+		ei.type = ConceptualData::EventShapePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = shapePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
@@ -1039,7 +1039,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 	{
 		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventShapePlacePropertyChanged;
+		ei.type = ConceptualData::EventShapePlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
@@ -1077,7 +1077,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
+		ei.type = ConceptualData::EventAppearancePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = appearancePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
@@ -1125,7 +1125,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 	{
 		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
+		ei.type = ConceptualData::EventAppearancePlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;

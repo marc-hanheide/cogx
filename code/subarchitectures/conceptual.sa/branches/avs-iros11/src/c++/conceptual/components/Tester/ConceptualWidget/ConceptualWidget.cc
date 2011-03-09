@@ -115,8 +115,20 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
 					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
 		break;
+	case ConceptualData::EventShapePlacePropertyAdded:
+		event+="ShapePlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventShapePlacePropertyDeleted:
+		event+="ShapePlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
 	case ConceptualData::EventShapePlacePropertyChanged:
 		event+="ShapePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyAdded:
+		event+="AppearancePlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyDeleted:
+		event+="AppearancePlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
 		break;
 	case ConceptualData::EventAppearancePlacePropertyChanged:
 		event+="AppearancePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
@@ -135,6 +147,17 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	pthread_mutex_unlock(&_worldStateMutex);
 
 	emit addEventToHistorySignal(event);
+
+	// Auto refreshing
+	if (autoRefreshQueryCheckBox->isChecked())
+	{
+		QMetaObject::invokeMethod(sendQueryButton, "click", Qt::QueuedConnection);
+	}
+	if (autoRefreshWsCheckBox->isChecked())
+	{
+		QMetaObject::invokeMethod(refreshWsButton, "click", Qt::QueuedConnection);
+	}
+
 
 /*	if (_collect)
 	{

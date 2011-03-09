@@ -199,8 +199,8 @@ module ConceptualData
 		EventPlaceStatusChanged, // Info placeId
 		EventGatewayPlacePropertyChanged, // Info placeId
 		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, // placeId, propertyNo
-		EventShapePlacePropertyChanged, // placeid
-		EventAppearancePlacePropertyChanged, // placeid
+		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
+		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
 		EventRoomConnectivityChanged // place1id, place2id
 	};
 	

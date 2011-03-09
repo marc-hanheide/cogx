@@ -162,6 +162,13 @@
             </column>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="autoRefreshQueryCheckBox">
+            <property name="text">
+             <string>Auto Refresh</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -410,6 +417,13 @@
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QCheckBox" name="autoRefreshWsCheckBox">
+              <property name="text">
+               <string>Auto Refresh</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <spacer name="horizontalSpacer_5">
               <property name="orientation">
