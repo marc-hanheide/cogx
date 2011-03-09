@@ -20,10 +20,11 @@ class AVSMainWidget : public QDialog
 public:
     AVSMainWidget(QWidget *parent, conceptual::Tester * component);
     ~AVSMainWidget();
+    bool parseQuery(std::string queryString, std::vector<std::string> &variables);
 public slots:
     void generateViewConesButtonClicked();
     void processConeGroup();
-    bool parseQuery(std::string queryString, std::vector<std::string> &variables);
+    void postVisualObjectClicked();
 
 private:
     Ui::AVSMainWidget ui;
