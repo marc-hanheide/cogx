@@ -45,6 +45,7 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    options["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
    options["video.sa"] = pOwner->getSubarchitectureID(); // change with --video-sa
    m_timeout = now();
+   m_waitOnEnter = now();
 
    STATE(stStart);
    STATE(stTableEmpty);
@@ -57,6 +58,7 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    STATE(stWaitToDisappear);
    STATE(stFinished);
    STATE(stTimedOut);
+   STATE(stUnloadScene);
 }
 
 CGeorgeY2Article::~CGeorgeY2Article()
@@ -66,14 +68,22 @@ CGeorgeY2Article::~CGeorgeY2Article()
 
 void CGeorgeY2Article::report(std::ostringstream& what)
 {
-   m_pOwner->println(" ******************************* ");
    m_pOwner->println("%.2f %s", now(), what.str().c_str());
 }
 
 void CGeorgeY2Article::report(const std::string& what)
 {
-   m_pOwner->println(" ******************************* ");
    m_pOwner->println("%.2f %s", now(), what.c_str());
+}
+
+void CGeorgeY2Article::error(std::ostringstream& what)
+{
+   m_pOwner->error("%.2f %s", now(), what.str().c_str());
+}
+
+void CGeorgeY2Article::error(const std::string& what)
+{
+   m_pOwner->error("%.2f %s", now(), what.c_str());
 }
 
 static int _index(const vector<string>& vec, const string& val)
@@ -185,6 +195,11 @@ void CGeorgeY2Article::onStart()
          this, &CGeorgeY2Article::onAdd_LearningTask)
       );
    m_pOwner->addChangeFilter(
+      createLocalTypeFilter<VisualLearningTask>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<CGeorgeY2Article>(
+         this, &CGeorgeY2Article::onChange_LearningTask)
+      );
+   m_pOwner->addChangeFilter(
       createGlobalTypeFilter<synthesize::SpokenOutputItem>(cdl::ADD),
       new MemberFunctionChangeReceiver<CGeorgeY2Article>(
          this, &CGeorgeY2Article::onAdd_SpokenItem)
@@ -204,6 +219,17 @@ void CGeorgeY2Article::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange &
 
 void CGeorgeY2Article::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
+   report(MSSG("Learnig task added: " << _wmc.address));
+   //{
+   //   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+   //   m_LearnTaskCount++;
+   //}
+   //m_EventMonitor.notify();
+}
+
+void CGeorgeY2Article::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+   report(MSSG("Learnig task changed: " << _wmc.address));
    {
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_LearnTaskCount++;
@@ -243,30 +269,45 @@ void CGeorgeY2Article::switchState(int newState)
    // from stTeaching
    if (newState == stWaitForResponse) {
       m_RobotResponse = "";
-      // if all is well, next will be stWaitForLearnInstruction
+      // if all is well, next will be stWaitForLearningTask
       m_LearnTaskCount = 0;
    }
 
    if (newState == stTimedOut) {
-      report(MSSG("STATE " << m_stateNames[m_State] << " TIMED OUT"));
+      error(MSSG("STATE " << m_stateNames[m_State] << " TIMED OUT"));
    }
 
    m_State = newState;
 
-   double delta;
+   double timeout = 0;
+   double enterWait = 0;
    switch(m_State) {
       default:
-         delta = 15;
+         timeout = 15;
          break;
-      case stStart:
-      case stWaitToAppear:
-      case stWaitToDisappear:
-         delta = 30;
+      case stStart:            // Matlab starting
+         timeout = 30;
+         break;
+      case stWaitToAppear:     // PPO
+      case stWaitToDisappear:  // PPO
+         timeout = 30;
+         break;
+      case stUnloadScene:
+         if (m_ObjectCount) enterWait = 3; // Something may still be using the VO
+         break;
+      case stTableEmpty:
+      case stObjectOn:
+         enterWait = 3;
+         break;
+      case stWaitForLearningTask: // Motivation/Planner/Execution
+         timeout = 30;
          break;
    }
-   m_timeout = now() + delta;
+   m_waitOnEnter = now() + enterWait;
+   m_timeout = m_waitOnEnter + timeout;
 
-   report(MSSG(" NEW STATE " << m_stateNames[m_State]));
+   report("**********");
+   report(MSSG("NEW STATE " << m_stateNames[m_State] << " (to=" << timeout << "s)"));
 }
 
 void CGeorgeY2Article::verifyCount(int count)
@@ -415,6 +456,9 @@ void CGeorgeY2Article::runOneStep()
       m_EventMonitor.timedWait(IceUtil::Time::milliSeconds(2)); // give a chance to other thread, anyway
    // SYNC: Continue with a locked monitor
 
+   if (now() < m_waitOnEnter)
+      return; // return to unlock the monitor
+
    if (mustWait) {
       static int reported = -1;
       static int count = 0;
@@ -429,6 +473,7 @@ void CGeorgeY2Article::runOneStep()
    switch (m_State) {
       case stStart:
          if (isTimedOut()) {
+            m_currentTest = 110; // XXX DEBUGGING
             switchState(stTableEmpty);
          }
          break;
@@ -487,7 +532,7 @@ void CGeorgeY2Article::runOneStep()
       case stWaitForLearningTask:
          verifyCount(1);
          if (m_LearnTaskCount > 0) {
-            report("A Learning Instruction was detected.");
+            report("A Learning Task was detected.");
             switchState(stTeaching);
          }
          else if (isTimedOut()) {
@@ -496,6 +541,10 @@ void CGeorgeY2Article::runOneStep()
          break;
 
       case stEndOfTeaching:
+         switchState(stUnloadScene);
+         break;
+
+      case stUnloadScene:
          loadEmptyScene();
          switchState(stWaitToDisappear);
          break;
@@ -515,8 +564,7 @@ void CGeorgeY2Article::runOneStep()
          break;
 
       case stTimedOut:
-         loadEmptyScene();
-         switchState(stWaitToDisappear);
+         switchState(stUnloadScene);
          break;
    }
 }
