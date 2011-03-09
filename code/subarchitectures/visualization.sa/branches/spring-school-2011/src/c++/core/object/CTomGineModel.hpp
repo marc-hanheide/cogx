@@ -38,12 +38,16 @@ public:
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
          const std::vector<double>& rotation); /*override*/
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
+   {
+      return false;
+   }
 };
 
 class CTomGineModel_RenderGL: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 

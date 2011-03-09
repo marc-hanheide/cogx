@@ -8,12 +8,12 @@
 
 module Visualization
 {
-
    const int V11NSTANDALONEPORT = 10511;
    const string V11NSTANDALONENAME = "StandaloneDisplayServer";
 
    sequence<byte> ByteSeq;
    sequence<double> FloatSeq;
+   sequence<string> StringSeq;
 
    struct Quaternion {
       double x;
@@ -39,11 +39,18 @@ module Visualization
 
    dictionary<string, string> TFormFieldMap;
 
+   enum ViewType { VtGraphics, VtOpenGl, VtHtml };
+
    interface DisplayInterface
    {
       // Get the parameters to connect to a remote Display Server
       void getStandaloneHost(out string hostname);
 
+      // Create views to show objects
+      void createView(string viewId, ViewType type, StringSeq objects);
+      void enableDefaultView(string objectId, bool enable);
+
+      // Create objects in the display server
       void setObject(string id, string partId, string svgObject);
       void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
 
@@ -55,14 +62,14 @@ module Visualization
       // Formats supported by Qt
       void setCompressedImage(string id, ByteSeq data, string format);
 
-      // Pass a serialized tgRenderModel
+      // Set a serialized tgRenderModel
       void setTomGineObject(string id, string partId, ByteSeq data);
       void setObjectPose3D(string id, string partId, cogx::Math::Vector3 position, Quaternion rotation);
 
-      // Pass a Lua script
+      // Set a LuaGL script
       void setLuaGlObject(string id, string partId, string script);
 
-      // Pass an HTML chunk
+      // Set an HTML chunk
       void setHtml(string id, string partId, string htmlData);
       void setHtmlHead(string id, string partId, string htmlData);
 
@@ -81,6 +88,10 @@ module Visualization
       // If the application needs to reload the data while the form is being edited
       // (eg. after a CogxJsSendValue event) this method can be used.
       void setHtmlFormData(string id, string partId, TFormFieldMap fields);
+
+      // Remove objects and object parts
+      void removeObject(string id);
+      void removePart(string id, string partId);
 
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch

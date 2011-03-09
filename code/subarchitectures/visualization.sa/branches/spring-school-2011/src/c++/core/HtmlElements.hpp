@@ -19,6 +19,7 @@
 #include <string>
 #include <Ice/Ice.h>
 #include "observer.hpp"
+#include "Model.hpp"
 
 // Using QString to store HTML to reduce the amount of conversions from std::string.
 #include <QtCore>
@@ -49,7 +50,7 @@ public:
    virtual void onOwnerDataChanged(CHtmlChunk *pForm, const TFormValues& newValues) {}
 };
 
-class CHtmlChunk
+class CHtmlChunk: public CDisplayObjectPart
 {
 public:
    enum EChunkType { head = 0x01, html = 0x02, activehtml = 0x04, form = 0x08 };
@@ -58,8 +59,8 @@ public:
 
 private:
    EChunkType m_type;
-   std::string m_id;     // Id of the owner CDisplayObject
-   std::string m_partId;
+   std::string m_parentId;     // Id of the owner CDisplayObject
+   //std::string m_partId;
    std::string m_htmlId; // a valid hmtl id generated from type, m_id and m_partId
 
 public:
@@ -78,8 +79,8 @@ public:
    void setContent(const std::string& content);
    EChunkType type() { return m_type; }
    const std::string& htmlid() { return m_htmlId; }
-   const std::string& id() { return m_id; }
-   const std::string& partId() { return m_partId; }
+   const std::string& id() { return m_parentId; }
+   const std::string& partId() { return m_id; }
 
    // (normally) called after a submit subscribed observes.
    void notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource);

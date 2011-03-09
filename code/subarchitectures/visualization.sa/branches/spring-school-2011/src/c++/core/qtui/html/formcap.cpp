@@ -7,7 +7,7 @@
 #include "../QCastMainFrame.hpp"
 
 #ifdef DEBUG_TRACE
-// #undef DEBUG_TRACE
+#undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 

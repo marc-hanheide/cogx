@@ -18,7 +18,9 @@
 
 #include "ui_castor.h"
 #include <QMainWindow>
+#include <QSettings>
 #include <QMutex>
+#include <QTreeWidgetItem>
 #include "../Model.hpp"
 
 class QCastMainFrame;
@@ -87,6 +89,7 @@ public slots:
 
 private slots:
    void onShowViewListChanged();
+   void onShowCustomControls();
    void onRefreshViewList();
    void onNewWindow();
    void onSaveWindowList();
@@ -94,25 +97,34 @@ private slots:
    void onRestoreWindowLayout();
 
 private:
+   cogx::display::CDisplayView* getView();
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();
    void updateViewMenu();
    void syncViewListItem();
+   void updateObjectList(cogx::display::CDisplayView *pView);
    QWidgetList getCastFrames();
 
    // CDisplayModelObserver notifications
 private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void setView(cogx::display::CDisplayView *pView);
    void setChildMode();
    void closeEvent(QCloseEvent *event);
    QCastMainFrame* createChildWindow();
 
+   // QTreeWidget events
+private slots:
+   void onTreeItemChanged(QTreeWidgetItem* pItem, int column);
+
 // signals/slots for interthread communication
 signals: 
    void signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*);
+   void signalViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*);
 private slots:
    void doViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   void doViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
 };
 
 

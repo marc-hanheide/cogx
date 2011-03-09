@@ -32,33 +32,46 @@ class CLuaGlScript: public CDisplayObject
    {
    private:
       lua_State* luaS;
+      CLuaGlScript* pOwner;
    private:
       void initLuaState();
    public:
-      CScript();
+      CScript(CLuaGlScript* pOwner_);
       ~CScript();
       int loadScript(const char* pscript); 
       int exec();
    };
 
 public:
-   std::map<std::string, CScript*> m_Models;
+   std::map<std::string, CScript*> m_Scripts;
+   CPtrVector<CDisplayCamera> m_Cameras;
 
 public:
    CLuaGlScript();
    ~CLuaGlScript();
    void loadScript(const std::string& partId, const std::string& script);
-   void removePart(const std::string& partId);
+   bool removePart(const std::string& partId);
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
          const std::vector<double>& rotation); /*override*/
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
+   {
+      return false;
+   }
+
+public:
+   virtual int getCameras(CPtrVector<CDisplayCamera>& cameras); /*override*/
+   void setCamera(char* name, 
+         double xEye, double yEye, double zEye,    // camera positon
+         double xView, double yView, double zView, // camera direction
+         double xUp, double yUp, double zUp);      // camera orientation
 };
 
 class CLuaGlScript_RenderGL: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 
