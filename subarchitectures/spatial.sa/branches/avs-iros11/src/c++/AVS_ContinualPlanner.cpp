@@ -126,7 +126,7 @@ log("Got Process Cone Group Command");
 	m_processConeGroupCommandWMAddress = objID.address.id;
 
 	m_currentProcessConeGroup = cmd;
-	processConeGroup(cmd->coneGroupId);
+	processConeGroup(cmd->coneId);
 }
 
 void AVS_ContinualPlanner::newGroundedBelief(
