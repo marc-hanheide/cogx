@@ -540,12 +540,12 @@ void AVS_ContinualPlanner::generateViewCones(
 		BasicProbDistributionPtr supportObjectLabelProbDist = new BasicProbDistribution;
 		BasicProbDistributionPtr coneProbabilityProbDist = new BasicProbDistribution;
 		BasicProbDistributionPtr placeFromWhichObjectCanBeSeenProbDist = new BasicProbDistribution;
-
+		BasicProbDistributionPtr isVisitedProbDist = new BasicProbDistribution;
 
 		FormulaProbPairs pairs;
 		FormulaProbPair searchedObjectFormulaPair, coneGroupIDLabelFormulaPair,
 		relationLabelFormulaPair,supportObjectLabelFormulaPair, coneProbabilityFormulaPair,
-		placeFromWhichObjectCanBeSeenFormulaPair;
+		placeFromWhichObjectCanBeSeenFormulaPair, isVisitedFormulaPair ;
 
 		IntegerFormulaPtr coneGroupIDLabelFormula = new IntegerFormula;
 		ElementaryFormulaPtr searchedObjectLabelFormula = new ElementaryFormula;
@@ -553,6 +553,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		PointerFormulaPtr supportObjectLabelFormula = new PointerFormula;
 		PointerFormulaPtr placeFromWhichObjectCanBeSeenFormula = new PointerFormula;
 		FloatFormulaPtr coneProbabilityFormula = new FloatFormula;
+		BooleanFormulaPtr isVisitedFormula = new BooleanFormula;
 
 		coneGroupIDLabelFormula->val = m_coneGroupId;
 		searchedObjectLabelFormula->prop =c.searchedObjectCategory;
@@ -560,6 +561,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		supportObjectLabelFormula->pointer =  WMaddress; //c.supportObjectId; // this should be a pointer ideally
 		placeFromWhichObjectCanBeSeenFormula->pointer = placeWMaddress;
 		coneProbabilityFormula->val = c.getTotalProb();
+		isVisitedFormula->val = false;
 
 		searchedObjectFormulaPair.val = searchedObjectLabelFormula;
 		searchedObjectFormulaPair.prob = 1;
@@ -579,7 +581,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		placeFromWhichObjectCanBeSeenFormulaPair.val = placeFromWhichObjectCanBeSeenFormula;
 		placeFromWhichObjectCanBeSeenFormulaPair.prob = 1;
 
-
+		isVisitedFormulaPair.val = isVisitedFormula;
+		isVisitedFormulaPair.prob=1;
 
 		pairs.push_back(coneGroupIDLabelFormulaPair);
 		FormulaValuesPtr formulaValues1 = new FormulaValues;
@@ -618,6 +621,11 @@ void AVS_ContinualPlanner::generateViewCones(
 		placeFromWhichObjectCanBeSeenProbDist->values = formulaValues6;
 		pairs.clear();
 
+		pairs.push_back(isVisitedFormulaPair);
+		FormulaValuesPtr formulaValues7 = new FormulaValues;
+		formulaValues7->values = pairs;
+		isVisitedProbDist->values = formulaValues7;
+		pairs.clear();
 
 		coneGroupIDProbDist->key = "id";
 		CondIndProbDist->distribs["id"] = coneGroupIDProbDist;
@@ -631,6 +639,9 @@ void AVS_ContinualPlanner::generateViewCones(
 		CondIndProbDist->distribs["p-visible"] = coneProbabilityProbDist;
 		placeFromWhichObjectCanBeSeenProbDist->key = "cg-place";
 		CondIndProbDist->distribs["cg-place"] = placeFromWhichObjectCanBeSeenProbDist;
+
+		isVisitedProbDist->key = "is-visited";
+		CondIndProbDist->distribs["is-visited"] = isVisitedProbDist;
 
 		b->content = CondIndProbDist;
 		log("writing belief to WM..");
