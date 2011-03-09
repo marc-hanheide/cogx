@@ -53,6 +53,7 @@ public:
 		std::string supportObjectId;
 		std::string supportObjectCategory;
 		std::string searchedObjectCategory;
+		int roomId;
 		double getTotalProb(){
 			double tmp = 0;
 			for (unsigned int i =0; i < viewcones.size(); i++){
@@ -81,12 +82,15 @@ public:
 	 void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
 	 void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label,
 		std::string visualObjectID);
-	 void modifyPDFAfterRecognition();
+
 	 void Recognize();
 	 void addARTagCommand();
 	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv);
 	 void ViewConeUpdate(ViewPointGenerator::SensingAction viewcone, BloxelMap* map);
-
+	 void newGroundedBelief(const cast::cdl::WorkingMemoryChange &objID);
+	 std::string relationToString(SpatialData::SpatialRelation rel);
+	 int GetPlaceIdFromNodeId(int nodeId);
+	 int GetClosestNodeId(double x, double y, double a);
 private:
 		NavData::RobotPose2dPtr lastRobotPose;
 
@@ -120,7 +124,7 @@ private:
 	 // labels of tagged objects
 	 std::vector<std::string> m_siftObjects;
 	 std::vector<std::string> m_ARtaggedObjects;
-
+	 std::vector<std::string> m_allObjects;
 
 	 /** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx m_queryHandlerServerInterfacePrx;
