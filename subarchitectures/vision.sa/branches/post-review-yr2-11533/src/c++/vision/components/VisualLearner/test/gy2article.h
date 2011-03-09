@@ -43,6 +43,7 @@ class CGeorgeY2Article: public CTestCase
    void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
 
    int m_ObjectCount;        // objects on the scene
@@ -54,11 +55,13 @@ class CGeorgeY2Article: public CTestCase
    int m_currentTest;
    std::string m_imageDir;
    std::map<std::string, std::string> options;
-   double m_timeout; // absolute time of next timeout (in seconds)
+   double m_timeout;      // absolute time of next timeout (in seconds)
+   double m_waitOnEnter;  // absolute time when the processing can start after entering a state
 
    enum _state_ {
       stStart, stTableEmpty, stWaitToAppear, stObjectOn, stTeaching, stWaitForResponse,
-      stWaitForLearningTask, stEndOfTeaching, stWaitToDisappear, stFinished, stTimedOut
+      stWaitForLearningTask, stEndOfTeaching, stWaitToDisappear, stFinished, stTimedOut,
+      stUnloadScene
    };
    std::map<int, std::string> m_stateNames;
    int m_State;
@@ -73,6 +76,8 @@ class CGeorgeY2Article: public CTestCase
    bool performNextTeachingStep();
    void report(std::ostringstream& what);
    void report(const std::string& what);
+   void error(std::ostringstream& what);
+   void error(const std::string& what);
 
 public:
    CGeorgeY2Article(std::string name, CTestRecognizer *pOwner);
