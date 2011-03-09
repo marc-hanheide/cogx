@@ -148,7 +148,7 @@ void Observer::initializeWorldState()
 
 
 // -------------------------------------------------------
-void Observer::updateWorldState()
+void Observer::updateWorldState(const ConceptualData::EventInfo &ei)
 {
 	// Create a new worldstate
 	ConceptualData::WorldStatePtr newWorldStatePtr = new ConceptualData::WorldState();
@@ -362,122 +362,126 @@ void Observer::updateWorldState()
 	removeDuplicates(newWorldStatePtr->roomConnections);
 
 	// -----------------------------------
-	// Update on working memory if the new world
-	// state is different than the previous one.
+	// Update on working memory
 	// -----------------------------------
-	if ( areWorldStatesDifferent(_worldStatePtr, newWorldStatePtr ) )
-	{
-		// Remember the new world state
-		_worldStatePtr=newWorldStatePtr;
+	newWorldStatePtr->lastEvent = ei;
+	// Remember the new world state
+	_worldStatePtr=newWorldStatePtr;
 
-		if (_worldStateId.empty())
-		{ // Publish the initial world state on the working memory
-			log("Adding WorldState to the working memory.");
-			_worldStateId = newDataID();
-			addToWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
-		}
-		else
-		{ // Overwrite the world state on the WM
-			log("Updating WorldState in the working memory. Something relevant must have changed.");
-			lockEntry(_worldStateId, cdl::LOCKEDODR);
-			overwriteWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
-			unlockEntry(_worldStateId);
-		}
+	if (_worldStateId.empty())
+	{ // Publish the initial world state on the working memory
+		log("Adding WorldState to the working memory.");
+		_worldStateId = newDataID();
+		addToWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
+	}
+	else
+	{ // Overwrite the world state on the WM
+		log("Updating WorldState in the working memory. Something relevant must have changed.");
+		lockEntry(_worldStateId, cdl::LOCKEDODR);
+		overwriteWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
+		unlockEntry(_worldStateId);
 	}
 }
 
 
 // -------------------------------------------------------
-bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2)
-{
-	if (ws1->roomConnections != ws2->roomConnections)
-		return true;
-
-	// Analyse the room structure
-	if (ws1->rooms.size() != ws2->rooms.size())
-		return true;
-	for (unsigned int i=0; i<ws1->rooms.size(); ++i)
-	{
-		ConceptualData::ComaRoomInfo &cri1 = ws1->rooms[i];
-		ConceptualData::ComaRoomInfo &cri2 = ws2->rooms[i];
-		if (cri1.wmAddress != cri2.wmAddress)
-			return true;
-		if (cri1.roomId != cri2.roomId)
-			return true;
-		// Compare object properties
-		if (cri1.objectProperties.size()!=cri2.objectProperties.size())
-			return true;
-		for (unsigned int j=0; j<cri1.objectProperties.size(); ++j)
-		{
-			ConceptualData::ObjectPlacePropertyInfo oppi1 = cri1.objectProperties[j];
-			ConceptualData::ObjectPlacePropertyInfo oppi2 = cri2.objectProperties[j];
-			if ( (oppi1.category!=oppi2.category) ||
-				 (oppi1.count!=oppi2.count) ||
-				 (oppi1.relation!=oppi2.relation) ||
-				 (oppi1.supportObjectCategory!=oppi2.supportObjectCategory) ||
-				 (oppi1.supportObjectId != oppi2.supportObjectId) ||
-				 (fabs(oppi1.beta-oppi2.beta)> _betaThreshold) )
-				return true;
-		}
-		// Compare places
-		if (cri1.places.size() != cri2.places.size())
-			return true;
-		for (unsigned int j=0; j<cri1.places.size(); ++j)
-		{
-			ConceptualData::PlaceInfo pi1 = cri1.places[j];
-			ConceptualData::PlaceInfo pi2 = cri2.places[j];
-			if (pi1.placeId != pi2.placeId)
-				return true;
-//			if (pi1.objectProperties!=pi2.objectProperties)
+//bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2)
+//{
+//	if (ws1->roomConnections != ws2->roomConnections)
+//		return true;
+//
+//	// Analyse the room structure
+//	if (ws1->rooms.size() != ws2->rooms.size())
+//		return true;
+//	for (unsigned int i=0; i<ws1->rooms.size(); ++i)
+//	{
+//		ConceptualData::ComaRoomInfo &cri1 = ws1->rooms[i];
+//		ConceptualData::ComaRoomInfo &cri2 = ws2->rooms[i];
+//		if (cri1.wmAddress != cri2.wmAddress)
+//			return true;
+//		if (cri1.roomId != cri2.roomId)
+//			return true;
+//		// Compare object properties
+//		if (cri1.objectProperties.size()!=cri2.objectProperties.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.objectProperties.size(); ++j)
+//		{
+//			ConceptualData::ObjectPlacePropertyInfo oppi1 = cri1.objectProperties[j];
+//			ConceptualData::ObjectPlacePropertyInfo oppi2 = cri2.objectProperties[j];
+//			if ( (oppi1.category!=oppi2.category) ||
+//				 (oppi1.count!=oppi2.count) ||
+//				 (oppi1.relation!=oppi2.relation) ||
+//				 (oppi1.supportObjectCategory!=oppi2.supportObjectCategory) ||
+//				 (oppi1.supportObjectId != oppi2.supportObjectId) ||
+//				 (fabs(oppi1.beta-oppi2.beta)> _betaThreshold) )
 //				return true;
-			// Check how different shapes are
-			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
-				return true;
-			for (unsigned int k=0; k<pi1.shapeProperties.size(); ++k)
-			{
-				if ( calculateDistributionDifference(pi1.shapeProperties[k].distribution,
-						pi2.shapeProperties[k].distribution) > _shapeThreshold )
-					return true;
-			}
-			// Check how different appearances are
-			if (pi1.appearanceProperties.size() != pi2.appearanceProperties.size())
-				return true;
-			for (unsigned int k=0; k<pi1.appearanceProperties.size(); ++k)
-			{
-				if ( calculateDistributionDifference(pi1.appearanceProperties[k].distribution,
-						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
-					return true;
-			}
-		}
-		// Check placeholders
-		if (cri1.placeholders.size() != cri2.placeholders.size())
-			return true;
-		for (unsigned int j=0; j<cri1.placeholders.size(); ++j)
-		{
-			ConceptualData::PlaceholderInfo phi1 = cri1.placeholders[j];
-			ConceptualData::PlaceholderInfo phi2 = cri2.placeholders[j];
-			if (phi1.placeholderId != phi2.placeholderId)
-				return true;
-		}
-	}
-
-	return false;
-}
+//		}
+//		// Compare places
+//		if (cri1.places.size() != cri2.places.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.places.size(); ++j)
+//		{
+//			ConceptualData::PlaceInfo pi1 = cri1.places[j];
+//			ConceptualData::PlaceInfo pi2 = cri2.places[j];
+//			if (pi1.placeId != pi2.placeId)
+//				return true;
+////			if (pi1.objectProperties!=pi2.objectProperties)
+////				return true;
+//			// Check how different shapes are
+//			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
+//				return true;
+//			for (unsigned int k=0; k<pi1.shapeProperties.size(); ++k)
+//			{
+//				if ( calculateDistributionDifference(pi1.shapeProperties[k].distribution,
+//						pi2.shapeProperties[k].distribution) > _shapeThreshold )
+//					return true;
+//			}
+//			// Check how different appearances are
+//			if (pi1.appearanceProperties.size() != pi2.appearanceProperties.size())
+//				return true;
+//			for (unsigned int k=0; k<pi1.appearanceProperties.size(); ++k)
+//			{
+//				if ( calculateDistributionDifference(pi1.appearanceProperties[k].distribution,
+//						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
+//					return true;
+//			}
+//		}
+//		// Check placeholders
+//		if (cri1.placeholders.size() != cri2.placeholders.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.placeholders.size(); ++j)
+//		{
+//			ConceptualData::PlaceholderInfo phi1 = cri1.placeholders[j];
+//			ConceptualData::PlaceholderInfo phi2 = cri2.placeholders[j];
+//			if (phi1.placeholderId != phi2.placeholderId)
+//				return true;
+//		}
+//	}
+//
+//	return false;
+//}
 
 
 // -------------------------------------------------------
-double Observer::calculateDistributionDifference(const ConceptualData::ValuePotentialPairs &dist1,
-		const ConceptualData::ValuePotentialPairs &dist2)
+double Observer::calculateDistributionDifference(const SpatialProperties::ProbabilityDistributionPtr dist1,
+		const SpatialProperties::ProbabilityDistributionPtr dist2)
 {
-	if (dist1.size() != dist2.size())
+	const SpatialProperties::ValueProbabilityPairs &d1 =
+			SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(dist1)->data;
+	const SpatialProperties::ValueProbabilityPairs &d2 =
+			SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(dist2)->data;
+
+	if (d1.size() != d2.size())
 		return 1e6;
 
 	double difference = 0.0;
-	for (unsigned int i=0; i< dist1.size(); ++i)
+	for (unsigned int i=0; i< d1.size(); ++i)
 	{
-		if (dist1[i].value != dist2[i].value)
+		string v1 = SpatialProperties::StringValuePtr::dynamicCast(d1[i].value)->value;
+		string v2 = SpatialProperties::StringValuePtr::dynamicCast(d2[i].value)->value;
+		if (v1 != v2)
 			return 1e6;
-		double tmp = fabs(dist1[i].potential - dist2[i].potential);
+		double tmp = fabs(d1[i].probability - d2[i].probability);
 		if (difference<tmp)
 			difference = tmp;
 	}
@@ -505,7 +509,12 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		}
 
 		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventRoomAdded;
+		ei.roomId = comaRoomPtr->roomId;
+		ei.place1Id = -1;
+		ei.place2Id = -1;
+		updateWorldState(ei);
 		break;
 	}
 
@@ -530,14 +539,51 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		if (old->roomId != comaRoomPtr->roomId)
 			throw cast::CASTException("The mapping between ComaRoom WMAddress and ID changed!");
 
-		updateWorldState();
+		// Check what has changed
+		ConceptualData::EventInfo ei;
+		ei.roomId = comaRoomPtr->roomId;
+		ei.place2Id = -1;
+
+		if (old->containedPlaceIds.size()<comaRoomPtr->containedPlaceIds.size())
+		{
+			ei.type = ConceptualData::EventRoomPlaceAdded;
+			ei.place1Id = -1;
+			for (unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
+			{
+				if (comaRoomPtr->containedPlaceIds[i]!=old->containedPlaceIds[i])
+				{
+					ei.place1Id = comaRoomPtr->containedPlaceIds[i];
+					break;
+				}
+			}
+			updateWorldState(ei);
+		}
+		else if (old->containedPlaceIds.size()>comaRoomPtr->containedPlaceIds.size())
+		{
+			ei.type = ConceptualData::EventRoomPlaceDeleted;
+			ei.place1Id = -1;
+			for (unsigned int i=0; i<old->containedPlaceIds.size(); ++i)
+			{
+				if (comaRoomPtr->containedPlaceIds[i]!=old->containedPlaceIds[i])
+				{
+					ei.place1Id = old->containedPlaceIds[i];
+					break;
+				}
+			}
+			updateWorldState(ei);
+		}
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventRoomDeleted;
+		ei.roomId = _comaRoomWmAddressMap[wmChange.address]->roomId;
+		ei.place1Id = -1;
+		ei.place2Id = -1;
 		_comaRoomWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -567,7 +613,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 
 		_placeWmAddressMap[wmChange.address] = placePtr;
-		updateWorldState();
+		// updateWorldState(); // We will get that when coma room changes
 		break;
 	}
 
@@ -591,14 +637,24 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (old->id != placePtr->id)
 			throw cast::CASTException("The mapping between Place WMAddress and ID changed!");
 
-		updateWorldState();
+		// Check what has changed
+		if (old->status != placePtr->status)
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventPlaceStatusChanged;
+			ei.roomId = -1;
+			ei.place1Id = placePtr->id;
+			ei.place2Id = -1;
+
+			updateWorldState(ei);
+		}
 		break;
 	}
 
 	case cdl::DELETE:
 	{
 		_placeWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		// updateWorldState(); // We will get that when coma room changes
 		break;
 	}
 
@@ -629,7 +685,12 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		}
 
 		_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = gatewayPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		updateWorldState(ei);
 		break;
 	}
 
@@ -654,14 +715,24 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		if (old->placeId != gatewayPlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between GatewayPlaceProperty WMAddress and Place ID changed!");
 
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = gatewayPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		updateWorldState(ei);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = _gatewayPlacePropertyWmAddressMap[wmChange.address]->placeId;
+		ei.place2Id = -1;
 		_gatewayPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -692,7 +763,23 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 
 		_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventObjectPlacePropertyAdded;
+		ei.roomId = -1;
+		ei.place1Id = objectPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		if (objectPlacePropertyPtr->relation==SpatialData::INROOM)
+		{
+			ei.propertyInfo = objectPlacePropertyPtr->category;
+		}
+		else
+		{
+			ei.propertyInfo = objectPlacePropertyPtr->category +
+					((objectPlacePropertyPtr->relation==SpatialData::ON)?" on ":" in ") +
+					objectPlacePropertyPtr->supportObjectCategory + "-" +
+					objectPlacePropertyPtr->supportObjectId;
+		}
+		updateWorldState(ei);
 		break;
 	}
 
@@ -717,14 +804,47 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		if (old->placeId != objectPlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between ObjectPlaceProperty WMAddress and Place ID changed!");
 
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventObjectPlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = objectPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		if (objectPlacePropertyPtr->relation==SpatialData::INROOM)
+		{
+			ei.propertyInfo = objectPlacePropertyPtr->category;
+		}
+		else
+		{
+			ei.propertyInfo = objectPlacePropertyPtr->category +
+					((objectPlacePropertyPtr->relation==SpatialData::ON)?" on ":" in ") +
+					objectPlacePropertyPtr->supportObjectCategory + "-" +
+					objectPlacePropertyPtr->supportObjectId;
+		}
+		updateWorldState(ei);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
+		if (old->relation==SpatialData::INROOM)
+		{
+			ei.propertyInfo = old->category;
+		}
+		else
+		{
+			ei.propertyInfo = old->category +
+					((old->relation==SpatialData::ON)?" on ":" in ") +
+					old->supportObjectCategory + "-" +
+					old->supportObjectId;
+		}
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -755,7 +875,23 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventObjectPlacePropertyAdded;
+		ei.roomId = objectSearchResultPtr->roomId;
+		ei.place1Id = -1;
+		ei.place2Id = -1;
+		if (objectSearchResultPtr->relation==SpatialData::INROOM)
+		{
+			ei.propertyInfo = objectSearchResultPtr->searchedObjectCategory;
+		}
+		else
+		{
+			ei.propertyInfo = objectSearchResultPtr->searchedObjectCategory +
+					((objectSearchResultPtr->relation==SpatialData::ON)?" on ":" in ") +
+					objectSearchResultPtr->supportObjectCategory + "-" +
+					objectSearchResultPtr->supportObjectId;
+		}
+		updateWorldState(ei);
 		break;
 	}
 
@@ -780,14 +916,51 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		if (old->roomId != objectSearchResultPtr->roomId)
 			throw cast::CASTException("The mapping between ObjectSearchResult WMAddress and Room ID changed!");
 
-		updateWorldState();
+		// Check if something substantial changed
+		if (fabs(old->beta-objectSearchResultPtr->beta)> _betaThreshold)
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventObjectPlacePropertyChanged;
+			ei.roomId = objectSearchResultPtr->roomId;
+			ei.place1Id = -1;
+			ei.place2Id = -1;
+			if (objectSearchResultPtr->relation==SpatialData::INROOM)
+			{
+				ei.propertyInfo = objectSearchResultPtr->searchedObjectCategory;
+			}
+			else
+			{
+				ei.propertyInfo = objectSearchResultPtr->searchedObjectCategory +
+						((objectSearchResultPtr->relation==SpatialData::ON)?" on ":" in ") +
+						objectSearchResultPtr->supportObjectCategory + "-" +
+						objectSearchResultPtr->supportObjectId;
+			}
+			updateWorldState(ei);
+		}
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
+		ei.roomId = old->roomId;
+		ei.place1Id = -1;
+		ei.place2Id = -1;
+		if (old->relation==SpatialData::INROOM)
+		{
+			ei.propertyInfo = old->searchedObjectCategory;
+		}
+		else
+		{
+			ei.propertyInfo = old->searchedObjectCategory +
+					((old->relation==SpatialData::ON)?" on ":" in ") +
+					old->supportObjectCategory + "-" +
+					old->supportObjectId;
+		}
 		_objectSearchResultWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -818,7 +991,12 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 
 		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventShapePlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = shapePlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		updateWorldState(ei);
 		break;
 	}
 
@@ -843,14 +1021,30 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		if (old->placeId != shapePlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between RoomShapePlaceProperty WMAddress and Place ID changed!");
 
-		updateWorldState();
+		// Check if something substantial changed
+		if ( calculateDistributionDifference(old->distribution,
+								shapePlacePropertyPtr->distribution) > _shapeThreshold )
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventShapePlacePropertyChanged;
+			ei.roomId = -1;
+			ei.place1Id = shapePlacePropertyPtr->placeId;
+			ei.place2Id = -1;
+			updateWorldState(ei);
+		}
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventShapePlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -880,9 +1074,15 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
-
 		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
-		updateWorldState();
+
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = appearancePlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+
+		updateWorldState(ei);
 		break;
 	}
 
@@ -907,14 +1107,30 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		if (old->placeId != appearancePlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between RoomAppearancePlaceProperty WMAddress and Place ID changed!");
 
-		updateWorldState();
+		// Check if something substantial changed
+		if ( calculateDistributionDifference(old->distribution,
+								appearancePlacePropertyPtr->distribution) > _appearanceThreshold )
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
+			ei.roomId = -1;
+			ei.place1Id = appearancePlacePropertyPtr->placeId;
+			ei.place2Id = -1;
+			updateWorldState(ei);
+		}
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 
@@ -947,7 +1163,12 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		}
 
 		_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventRoomConnectivityChanged;
+		ei.roomId = -1;
+		ei.place1Id = connectivityPathPropertyPtr->place1Id;
+		ei.place2Id = connectivityPathPropertyPtr->place2Id;
+		updateWorldState(ei);
 		break;
 	}
 
@@ -973,14 +1194,25 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 				(old->place2Id != connectivityPathPropertyPtr->place2Id) )
 			throw cast::CASTException("The mapping between ConnectivityPathProperty WMAddress and Place ID changed!");
 
-		updateWorldState();
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventRoomConnectivityChanged;
+		ei.roomId = -1;
+		ei.place1Id = connectivityPathPropertyPtr->place1Id;
+		ei.place2Id = connectivityPathPropertyPtr->place2Id;
+		updateWorldState(ei);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		SpatialProperties::ConnectivityPathPropertyPtr old = _connectivityPathPropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventRoomConnectivityChanged;
+		ei.roomId = -1;
+		ei.place1Id = old->place1Id;
+		ei.place2Id = old->place2Id;
 		_connectivityPathPropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState();
+		updateWorldState(ei);
 		break;
 	}
 

@@ -12,6 +12,7 @@
 #include "ComaData.hpp"
 #include "SpatialData.hpp"
 #include "SpatialProperties.hpp"
+#include "SpatialProbabilities.hpp"
 
 namespace conceptual
 {
@@ -61,7 +62,7 @@ private:
 	void addInitialWorldState();
 
 	/** Updates the world state on the WM. */
-	void updateWorldState();
+	void updateWorldState(const ConceptualData::EventInfo &ei);
 
 	/** Change event. */
 	void comaRoomChanged(const cast::cdl::WorkingMemoryChange &wmChange);
@@ -124,8 +125,9 @@ private:
 
 	bool areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2);
 
-	double calculateDistributionDifference(const ConceptualData::ValuePotentialPairs &dist1,
-			const ConceptualData::ValuePotentialPairs &dist2);
+	double calculateDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
+			SpatialProperties::ProbabilityDistributionPtr dist2);
+
 
 private:
 
