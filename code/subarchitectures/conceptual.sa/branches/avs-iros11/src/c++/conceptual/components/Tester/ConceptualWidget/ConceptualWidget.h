@@ -24,6 +24,7 @@ namespace conceptual
 
 class ObjectPlacePropertyDialog;
 class ObjectSearchResultDialog;
+class RCVisualizer;
 
 class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 {
@@ -31,6 +32,7 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 
     friend class ObjectPlacePropertyDialog;
     friend class ObjectSearchResultDialog;
+    friend class RCVisualizer;
 
 public:
     ConceptualWidget(QWidget *parent, conceptual::Tester *component);
@@ -43,15 +45,22 @@ public:
 
 private slots:
 
+	void collectButtonToggled(bool state);
 	void sendQueryButtonClicked();
 	void refreshVarsButtonClicked();
 	void refreshWsButtonClicked();
 	void showGraphButtonClicked();
+	void visualizeButtonClicked();
 	void varListCurrentTextChanged(const QString &curText);
 	void factorListCurrentTextChanged(const QString &curText);
 	void wsTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
+
+
+private:
+
+	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
 
 
 private:
@@ -63,7 +72,20 @@ private:
     std::queue<qint64> _wsUpdateTimes;
 
 	pthread_mutex_t _worldStateMutex;
+	pthread_mutex_t _eventsMutex;
 	ConceptualData::WorldStatePtr _wsPtr;
+
+	bool _collect;
+
+	struct EventInfo
+	{
+		int curRoomId;
+		int curPlaceId;
+		std::map<std::string,double> curRoomCategories;
+	};
+
+	std::vector<EventInfo> _events;
+
 
 };
 

@@ -11,6 +11,7 @@
 #include "SpatialProbabilities.hpp"
 #include "ObjectPlacePropertyDialog.h"
 #include "ObjectSearchResultDialog.h"
+#include "RCVisualizer.h"
 
 // Qt & std
 #include <QDateTime>
@@ -28,6 +29,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
     : QWidget(parent), _component(component)
 {
 	pthread_mutex_init(&_worldStateMutex, 0);
+	pthread_mutex_init(&_eventsMutex, 0);
 
 	setupUi(this);
 	queryResultTreeWidget->setHeaderLabel("");
@@ -36,11 +38,15 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	_wsTimer = new QTimer(this);
 	_wsCount = 0;
 
+	_collect=false;
+
 	// Signals and slots
+	connect(collectButton, SIGNAL(toggled(bool)), this, SLOT(collectButtonToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(refreshVarsButton, SIGNAL(clicked()), this, SLOT(refreshVarsButtonClicked()));
 	connect(refreshWsButton, SIGNAL(clicked()), this, SLOT(refreshWsButtonClicked()));
 	connect(showGraphButton, SIGNAL(clicked()), this, SLOT(showGraphButtonClicked()));
+	connect(visualizeButton, SIGNAL(clicked()), this, SLOT(visualizeButtonClicked()));
 	connect(variablesListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(varListCurrentTextChanged(const QString &)));
 	connect(factorsListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(factorListCurrentTextChanged(const QString &)));
 	connect(_wsTimer, SIGNAL(timeout()), this, SLOT(wsTimerTimeout()));
@@ -55,6 +61,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 ConceptualWidget::~ConceptualWidget()
 {
 	pthread_mutex_destroy(&_worldStateMutex);
+	pthread_mutex_destroy(&_eventsMutex);
 }
 
 
@@ -65,6 +72,34 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	_wsCount++;
 	_wsPtr = wsPtr;
 	pthread_mutex_unlock(&_worldStateMutex);
+
+	if (_collect)
+	{
+		EventInfo event;
+		// Get current place
+		event.curPlaceId = _component->getCurrentPlace();
+		// Get current room
+		event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
+		// Get categories for the current room
+		ConceptualData::ProbabilityDistributions results =
+				_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_categorical)", false, false);
+		if (results.size()>0)
+		{
+			SpatialProbabilities::ProbabilityDistribution result = results[0];
+			for(unsigned int i=0; i<result.massFunction.size(); ++i)
+			{
+				double probability = result.massFunction[i].probability;
+				string value =
+						SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+								result.massFunction[i].variableValues[0])->value;
+				event.curRoomCategories[value]=probability;
+			} //for
+			pthread_mutex_lock(&_eventsMutex);
+			_events.push_back(event);
+			pthread_mutex_unlock(&_eventsMutex);
+		} // if
+	} // if
+
 }
 
 
@@ -372,4 +407,37 @@ void ConceptualWidget::wsTimerTimeout()
 	_wsCount = 0;
 
 	pthread_mutex_unlock(&_worldStateMutex);
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::visualizeButtonClicked()
+{
+	RCVisualizer *rcv = new RCVisualizer(this, _component);
+	rcv->show();
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::collectButtonToggled(bool state)
+{
+	_collect=state;
+}
+
+
+// -------------------------------------------------------
+int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId)
+{
+	for (unsigned int i=0; i<wsPtr->rooms.size(); ++i)
+	{
+		ComaRoomInfo &cri = wsPtr->rooms[i];
+		for(unsigned int j=0; j<cri.places.size(); j++)
+		{
+			PlaceInfo &pi = cri.places[j];
+			if (pi.placeId == placeId)
+				return cri.roomId;
+		}
+	}
+
+	return -1;
 }

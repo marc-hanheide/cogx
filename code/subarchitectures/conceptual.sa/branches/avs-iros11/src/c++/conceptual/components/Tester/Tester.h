@@ -10,7 +10,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 #include <DefaultData.hpp>
-
+#include <FrontierInterface.hpp>
 
 class MainDialog;
 
@@ -29,7 +29,11 @@ class Tester: public cast::ManagedComponent
 
 public:
 	/** Constructor. */
-	Tester(): _queryHandlerAvailable(false), _chainGraphInferencerAvailable(false) {}
+	Tester(): _queryHandlerAvailable(false),
+	_placeManagerAvailable(false),
+	_chainGraphInferencerAvailable(false),
+	_defaultChainGraphInferencerAvailable(false)
+	 {}
 
 	/** Destructor. */
 	virtual ~Tester() {}
@@ -45,6 +49,8 @@ public:
 
 	const DefaultData::StringSeq &getRoomCategories()
 		{ return _roomCategories; }
+
+	int getCurrentPlace();
 
 
 protected:
@@ -72,6 +78,8 @@ private:
 	/** Id of the QueryHandler component.  */
 	std::string _queryHandlerName;
 
+	std::string _placeManagerName;
+
 	/** Id of the ChainGraphInferencer component.  */
 	std::string _chainGraphInferencerName;
 
@@ -80,6 +88,8 @@ private:
 
 	/** Set to true if the QueryHandler is available. */
 	bool _queryHandlerAvailable;
+
+	bool _placeManagerAvailable;
 
 	/** Set to true if the ChainGraphInferencer is available. */
 	bool _chainGraphInferencerAvailable;
@@ -97,6 +107,9 @@ private:
 
 	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
+
+	FrontierInterface::PlaceInterfacePrx _placeInterfacePrx;
+
 
 	/** Names of the object place property variables. */
 	DefaultData::StringSeq _objectPropertyVariables;
