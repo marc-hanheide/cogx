@@ -407,7 +407,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		coneGroupIDLabelFormula->val = m_coneGroupId;
 		searchedObjectLabelFormula->prop =c.searchedObjectCategory;
-		relationLabelFormula->prop = (newVPCommand->relation == SpatialData::INOBJECT ? "in" : "on");
+		relationLabelFormula->prop = (newVPCommand->relation == SpatialData::ON ? "on" : "in");
 		supportObjectLabelFormula->pointer =  WMaddress; //c.supportObjectId; // this should be a pointer ideally
 		coneProbabilityFormula->val = c.getTotalProb();
 
