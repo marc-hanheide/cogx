@@ -331,6 +331,8 @@ class Scope(dict):
                 stack.append((a,0))
                 a.instantiate(l[0])
                 remaining.discard(a)
+
+        args = [a for a in args if a not in partial_mapping]
         
         curr_arg = None
         curr_index = -1

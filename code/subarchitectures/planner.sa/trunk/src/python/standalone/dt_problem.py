@@ -328,7 +328,7 @@ class DTProblem(object):
                 log.debug("Goal not yet supported: %s", str(fact))
                 continue
 
-            assert svar in self.global_relevant
+            #assert svar in self.global_relevant
             mult = dt_conf.failure_multiplier**fail_counts[fact]
 
             term = pddl.Term(svar.function, svar.get_args())
@@ -337,8 +337,8 @@ class DTProblem(object):
 
             rel_facts = [f for f in selected if f.svar == svar]
             for f in rel_facts:
-                if f.value not in self.global_relevant[f.svar]:
-                    continue
+                #if f.value not in self.global_relevant[f.svar]:
+                #    continue
                 if isinstance(self.abstract_state[svar], pddl.TypedObject):
                     p = 1.0 if self.abstract_state[svar] == f.value else 0.0
                 p = self.abstract_state[svar][f.value]
@@ -370,6 +370,7 @@ class DTProblem(object):
 
         max_level = 0
         disconfirm = []
+        levels = {}
         for pnode, level in self.assumptions:
             for svar, val in pnode.effects:
                 if svar.modality == mapl.commit:
@@ -377,6 +378,7 @@ class DTProblem(object):
                     nmvar = svar.nonmodal()
                     #if nmvar not in goals:
                     disconfirm.append((nmvar, svar.modal_args[0], level))
+                    levels[(nmvar, svar.modal_args[0])] = max(levels.get((nmvar, svar.modal_args[0]), -1), level)
                     break # only one disconfirm per node
 
         if not disconfirm:
@@ -388,18 +390,19 @@ class DTProblem(object):
         disconfirm_actions = []
         for svar, val in disconfirm:
             dis_fact = state.Fact(svar, val)
-            dH = 0
-            count = 0
-            for goalvar in set(g.svar.nonmodal() for g in goals):
-                if goalvar in self.global_relevant:
-                    dH +=  self.calc_disconfirm_gain(dis_fact, goalvar)
-                    count += 1
+            # dH = 0
+            # count = 0
+            # for goalvar in set(g.svar.nonmodal() for g in goals):
+            #     if goalvar in self.global_relevant:
+            #         dH +=  self.calc_disconfirm_gain(dis_fact, goalvar)
+            #         count += 1
 
-            if dH == 0:
-                continue
-            dH = dH/count
+            # if dH == 0:
+            #     continue
+            # dH = dH/count
                 
-            dis_reward = float(dt_conf.confirm_score) * dH #/(2**(max_level-level))
+            # dis_reward = float(dt_conf.confirm_score) * dH #/(2**(max_level-level))
+            dis_reward = float(dt_conf.confirm_score) /(2**(max_level-levels[(svar,val)]))
             if isinstance(self.abstract_state[svar], pddl.TypedObject):
                 continue # no use in disconfirming known facts
             p = self.abstract_state[svar][val]
