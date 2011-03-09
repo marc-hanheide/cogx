@@ -42,7 +42,6 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 
 	// Signals and slots
 	connect(this, SIGNAL(addEventToHistorySignal(QString)), this, SLOT(addEventToHistory(QString)));
-	connect(collectInfoCheckBox, SIGNAL(toggled(bool)), this, SLOT(collectInfoCheckBoxToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
 	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
@@ -71,6 +70,7 @@ ConceptualWidget::~ConceptualWidget()
 // -------------------------------------------------------
 void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 {
+	_eventNo++;
 	QString event = QString::number(_eventNo)+": ";
 	switch(wsPtr->lastEvent.type)
 	{
@@ -143,11 +143,6 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 		break;
 	}
 
-	pthread_mutex_lock(&_worldStateMutex);
-	_wsCount++;
-	_wsPtr = wsPtr;
-	pthread_mutex_unlock(&_worldStateMutex);
-
 	emit addEventToHistorySignal(event);
 
 	// Auto refreshing
@@ -159,34 +154,15 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	{
 		QMetaObject::invokeMethod(refreshWsButton, "click", Qt::QueuedConnection);
 	}
-
-
-/*	if (_collect)
+	if (collectInfoCheckBox->isChecked())
 	{
-		EventInfo event;
-		// Get current place
-		event.curPlaceId = _component->getCurrentPlace();
-		// Get current room
-		event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
-		// Get categories for the current room
-		ConceptualData::ProbabilityDistributions results =
-				_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_categorical)", false, false);
-		if (results.size()>0)
-		{
-			SpatialProbabilities::ProbabilityDistribution result = results[0];
-			for(unsigned int i=0; i<result.massFunction.size(); ++i)
-			{
-				double probability = result.massFunction[i].probability;
-				string value =
-						SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-								result.massFunction[i].variableValues[0])->value;
-				event.curRoomCategories[value]=probability;
-			} //for
-			pthread_mutex_lock(&_eventsMutex);
-			_events.push_back(event);
-			pthread_mutex_unlock(&_eventsMutex);
-		} // if
-	} // if*/
+		QMetaObject::invokeMethod(this, "collectEventInfo", Qt::QueuedConnection);
+	}
+
+	pthread_mutex_lock(&_worldStateMutex);
+	_wsCount++;
+	_wsPtr = wsPtr;
+	pthread_mutex_unlock(&_worldStateMutex);
 
 }
 
@@ -194,6 +170,9 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 // -------------------------------------------------------
 void ConceptualWidget::sendQueryButtonClicked()
 {
+	if (queryComboBox->currentText().isEmpty())
+		return;
+
 	_component->log("Sending query " + queryComboBox->currentText().toStdString() + ".");
 
 	queryResultTreeWidget->clear();
@@ -507,13 +486,6 @@ void ConceptualWidget::visualizeButtonClicked()
 
 
 // -------------------------------------------------------
-void ConceptualWidget::collectInfoCheckBoxToggled(bool state)
-{
-	_collect=state;
-}
-
-
-// -------------------------------------------------------
 int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId)
 {
 	for (unsigned int i=0; i<wsPtr->rooms.size(); ++i)
@@ -553,5 +525,44 @@ void ConceptualWidget::objectsButtonClicked()
 	standardQueryRadioButton->setChecked(true);
 	queryComboBox->setEditText("p(room*_object_*_unexplored)");
 	sendQueryButtonClicked();
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::collectEventInfo()
+{
+	pthread_mutex_lock(&_worldStateMutex);
+	Event event;
+	event.info = _wsPtr->lastEvent;
+	// Get current place
+	event.curPlaceId = _component->getCurrentPlace();
+	// Get current room
+	event.curRoomId = getRoomForPlace(_wsPtr, event.curPlaceId);
+	pthread_mutex_unlock(&_worldStateMutex);
+
+	pthread_mutex_lock(&_eventsMutex);
+	_events.push_back(event);
+	pthread_mutex_unlock(&_eventsMutex);
+
+/*
+	// Get categories for the current room
+			ConceptualData::ProbabilityDistributions results =
+					_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_categorical)", false, false);
+			if (results.size()>0)
+			{
+				SpatialProbabilities::ProbabilityDistribution result = results[0];
+				for(unsigned int i=0; i<result.massFunction.size(); ++i)
+				{
+					double probability = result.massFunction[i].probability;
+					string value =
+							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[0])->value;
+					event.curRoomCategories[value]=probability;
+				} //for
+				pthread_mutex_lock(&_eventsMutex);
+				_events.push_back(event);
+				pthread_mutex_unlock(&_eventsMutex);
+			} // if
+		} // if*/
 }
 

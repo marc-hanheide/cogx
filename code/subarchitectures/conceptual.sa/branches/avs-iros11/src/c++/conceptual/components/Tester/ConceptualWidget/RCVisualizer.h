@@ -10,13 +10,14 @@ namespace conceptual
 {
 	class Tester;
 }
+class ConceptualWidget;
 
 class RCVisualizer : public QDialog
 {
     Q_OBJECT
 
 public:
-    RCVisualizer(QWidget *parent, conceptual::Tester *component);
+    RCVisualizer(ConceptualWidget *parent, conceptual::Tester *component);
     ~RCVisualizer();
 
 public slots:
@@ -27,6 +28,7 @@ private:
 
 private:
     Ui::RCVisualizerClass ui;
+    ConceptualWidget *_parent;
     conceptual::Tester *_component;
 };
 
