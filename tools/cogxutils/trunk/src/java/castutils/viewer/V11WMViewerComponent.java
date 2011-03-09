@@ -37,14 +37,15 @@ public class V11WMViewerComponent extends ManagedComponent {
 
 	private class MyDisplayClient extends DisplayClient implements
 			ChangeHandler {
-		final Map<WorkingMemoryAddress, String> rows = Collections
-				.synchronizedMap(new LinkedHashMap<WorkingMemoryAddress, String>());
+
+		private String v11nObject;
 
 		@Override
 		public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 				WorkingMemoryChange wmc, ObjectImpl newEntry,
 				ObjectImpl oldEntry) throws CASTException {
 			try {
+				String v11part = "020_" + addrToString(wmc.address);
 				switch (wmc.operation) {
 				case ADD:
 				case OVERWRITE:
@@ -77,14 +78,13 @@ public class V11WMViewerComponent extends ManagedComponent {
 						  logString += "<td>" + genericText + "</td>";
 //						getLogger().info(CASTUtils.toString(wmc) + genericText);
 					}
-					rows.put(wmc.address, "<tr>" + logString + "</tr>");
+					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
 					break;
 				case DELETE:
-					rows.remove(wmc.address);
+					removePart(v11nObject, v11part);
 					break;
 				}
 
-				updateView();
 			} catch (Exception e) {
 				getLogger()
 						.warn(
@@ -93,19 +93,26 @@ public class V11WMViewerComponent extends ManagedComponent {
 			}
 		}
 
-		public void updateView() {
-			String tableHtml = "";
-			for (String r : rows.values()) {
-				tableHtml += r;
-			}
-
-			displayClient.setHtml(getComponentID() + ".view", "001", tableHtml);
-		}
-
 		private String addrToString(WorkingMemoryAddress wma) {
 			return wma.id + "@" + wma.subarchitecture;
 		}
 
+		private void initDisplay() {
+ 			v11nObject = "wm." + getComponentID();
+
+			String style = "<style>"
+				+ "td.largeinfo { height: 20em; }"
+				+ "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
+				+ "</style>";
+			setHtmlHead(v11nObject, "000_table-style", style);
+
+			String tableHdr = "<table frame=\"border\" border=\"1\" rules=\"all\">"
+				+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
+				+ "<th>info1</th><th>info2</th><th>info3</th><th>info4</th></tr>";
+
+			setHtml(v11nObject, "010_table-header", tableHdr);
+			setHtml(v11nObject, "100_table-end", "</table>");
+		}
 	}
 
 	/**
@@ -181,20 +188,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 	protected void start() {
 		entrySet.start();
 		displayClient.connectIceClient(this);
-		displayClient.installEventReceiver();
-
-		String tableHdr = "<table frame=\"border\" border=\"1\" rules=\"all\">"
-			+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
-			+ "<th>info1</th><th>info2</th><th>info3</th><th>info4</th></tr>";
-
-		displayClient.setHtml(getComponentID() + ".view", "000", tableHdr);
-		displayClient.setHtml(getComponentID() + ".view", "009", "</table>");
-
-		String style = "<style>"
-		  + "td.largeinfo { height: 20em; }"
-		  + "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
-			+ "</style>";
-		displayClient.setHtmlHead(getComponentID() + ".view", "000", style);
+		//displayClient.installEventReceiver(); // no callbacks => receiver not needed
+		displayClient.initDisplay();
 	}
 
 }
