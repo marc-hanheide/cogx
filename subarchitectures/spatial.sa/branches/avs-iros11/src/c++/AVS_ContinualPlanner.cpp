@@ -611,7 +611,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		CondIndProbDist->distribs["cg-related-to"] = supportObjectLabelProbDist;
 		coneProbabilityProbDist->key = "p-visible";
 		CondIndProbDist->distribs["p-visible"] = coneProbabilityProbDist;
-		coneProbabilityProbDist->key = "cg-place";
+		placeFromWhichObjectCanBeSeenProbDist->key = "cg-place";
 		CondIndProbDist->distribs["cg-place"] = placeFromWhichObjectCanBeSeenProbDist;
 
 		b->content = CondIndProbDist;
