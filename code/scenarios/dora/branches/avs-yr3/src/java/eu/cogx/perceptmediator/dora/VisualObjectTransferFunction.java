@@ -32,7 +32,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import execution.slice.TriBool;
-import execution.slice.actions.ProcessConeGroup;
+import execution.slice.actions.ProcessConeGroupAction;
 
 /**
  * @author marc
@@ -89,10 +89,10 @@ public class VisualObjectTransferFunction
 			log("check if we have pending cone actions");
 //			Formula place = null;
 //			long placeID;
-			List<ProcessConeGroup> coneActions = new ArrayList<ProcessConeGroup>();
-			component.getMemoryEntries(ProcessConeGroup.class, coneActions,
+			List<ProcessConeGroupAction> coneActions = new ArrayList<ProcessConeGroupAction>();
+			component.getMemoryEntries(ProcessConeGroupAction.class, coneActions,
 					PLANNER_SA);
-			for (ProcessConeGroup pca : coneActions) {
+			for (ProcessConeGroupAction pca : coneActions) {
 				if (pca.success == TriBool.TRIINDETERMINATE) { // this guy is
 					// currently
 					// executed
