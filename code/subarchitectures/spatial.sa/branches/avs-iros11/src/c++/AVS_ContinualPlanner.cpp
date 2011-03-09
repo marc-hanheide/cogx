@@ -520,8 +520,11 @@ void AVS_ContinualPlanner::generateViewCones(
 						}
 					}
 		}
+
+
 		log("Creating ConeGroup belief");
-		m_beliefConeGroups[m_coneGroupId++] = c;
+		m_coneGroupId++;
+		m_beliefConeGroups[m_coneGroupId] = c;
 		eu::cogx::beliefs::slice::GroundedBeliefPtr b = new eu::cogx::beliefs::slice::GroundedBelief;
 		epstatus::PrivateEpistemicStatusPtr beliefEpStatus= new epstatus::PrivateEpistemicStatus;
 		beliefEpStatus->agent = "self";
@@ -637,6 +640,13 @@ void AVS_ContinualPlanner::generateViewCones(
     newVPCommand->status = SpatialData::SUCCESS;
     log("Overwriting command to change status to: SUCCESS");
     overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
+
+    MapConeType::const_iterator end = m_beliefConeGroups.end();
+    	    for (MapConeType::const_iterator it = m_beliefConeGroups.begin(); it != end; ++it)
+    	    {
+    	        log("key: %d",it->first);
+    	    }
+
 }
 
 void AVS_ContinualPlanner::IcetoCureLGM(FrontierInterface::LocalGridMap icemap,
@@ -665,7 +675,14 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 	// Get ConeGroup
 	log("Processing Cone Group");
 	if (m_beliefConeGroups.count(id) == 0 ){
-		log("No bloxelmap with id: %d, this is an indication of id mismatch!", id);
+		log("No Cone Groups with id: %d, this is an indication of id mismatch!", id);
+		log("We have %d cone groups", m_beliefConeGroups.size());
+
+		MapConeType::const_iterator end = m_beliefConeGroups.end();
+	    for (MapConeType::const_iterator it = m_beliefConeGroups.begin(); it != end; ++it)
+	    {
+	        log("key: %d", it->first);
+	    }
 		return;
 	}
 
@@ -944,7 +961,7 @@ void AVS_ContinualPlanner::configure(
 		m_allObjects.insert(m_allObjects.end(), m_ARtaggedObjects.begin(), m_ARtaggedObjects.end());
 
 		m_currentProcessConeGroup = new SpatialData::ProcessConeGroup;
-		m_coneGroupId = -1;
+		m_coneGroupId = 0;
 }
 
 void AVS_ContinualPlanner::newRobotPose(const cdl::WorkingMemoryChange &objID) {
