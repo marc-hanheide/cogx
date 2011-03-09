@@ -26,7 +26,7 @@ using namespace ConceptualData;
 
 // -------------------------------------------------------
 ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
-    : QWidget(parent), _component(component)
+    : QWidget(parent), _component(component), _eventNo(0)
 {
 	pthread_mutex_init(&_worldStateMutex, 0);
 	pthread_mutex_init(&_eventsMutex, 0);
@@ -41,6 +41,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	_collect=false;
 
 	// Signals and slots
+	connect(this, SIGNAL(addEventToHistorySignal(QString)), this, SLOT(addEventToHistory(QString)));
 	connect(collectButton, SIGNAL(toggled(bool)), this, SLOT(collectButtonToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(refreshVarsButton, SIGNAL(clicked()), this, SLOT(refreshVarsButtonClicked()));
@@ -68,12 +69,74 @@ ConceptualWidget::~ConceptualWidget()
 // -------------------------------------------------------
 void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 {
+	QString event = QString::number(_eventNo)+": ";
+	switch(wsPtr->lastEvent.type)
+	{
+	case ConceptualData::EventRoomAdded:
+		event+="RoomAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+")";
+		break;
+	case ConceptualData::EventRoomDeleted:
+		event+="RoomDeleted (rid="+QString::number(wsPtr->lastEvent.roomId)+")";
+		break;
+	case ConceptualData::EventRoomPlaceAdded:
+		event+="RoomPlaceAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+", pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventRoomPlaceDeleted:
+		event+="RoomPlaceDeleted (rid="+QString::number(wsPtr->lastEvent.roomId)+", pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventPlaceStatusChanged:
+		event+="PlaceStatusChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventGatewayPlacePropertyChanged:
+		event+="GatewayPlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventObjectPlacePropertyAdded:
+		if (wsPtr->lastEvent.place1Id>0)
+			event+="ObjectPlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+		else
+			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+
+		break;
+	case ConceptualData::EventObjectPlacePropertyDeleted:
+		if (wsPtr->lastEvent.place1Id>0)
+			event+="ObjectPlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+		else
+			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+		break;
+	case ConceptualData::EventObjectPlacePropertyChanged:
+		if (wsPtr->lastEvent.place1Id>0)
+			event+="ObjectPlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+		else
+			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
+					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+		break;
+	case ConceptualData::EventShapePlacePropertyChanged:
+		event+="ShapePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyChanged:
+		event+="AppearancePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
+		break;
+	case ConceptualData::EventRoomConnectivityChanged:
+		event+="RoomConnectivityChanged (pid1="+QString::number(wsPtr->lastEvent.place1Id)+", pid2="+QString::number(wsPtr->lastEvent.place2Id)+")";
+		break;
+	default:
+		event+="-- Nothing --";
+		break;
+	}
+
 	pthread_mutex_lock(&_worldStateMutex);
 	_wsCount++;
 	_wsPtr = wsPtr;
 	pthread_mutex_unlock(&_worldStateMutex);
 
-	if (_collect)
+	emit addEventToHistorySignal(event);
+
+/*	if (_collect)
 	{
 		EventInfo event;
 		// Get current place
@@ -98,7 +161,7 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 			_events.push_back(event);
 			pthread_mutex_unlock(&_eventsMutex);
 		} // if
-	} // if
+	} // if*/
 
 }
 
@@ -441,3 +504,12 @@ int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int p
 
 	return -1;
 }
+
+
+// -------------------------------------------------------
+void ConceptualWidget::addEventToHistory(QString str)
+{
+	eventHistoryListWidget->insertItem(0, str);
+}
+
+

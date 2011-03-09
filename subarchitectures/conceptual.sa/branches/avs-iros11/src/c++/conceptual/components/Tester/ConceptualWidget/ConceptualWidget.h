@@ -43,6 +43,10 @@ public:
     void newWorldState(ConceptualData::WorldStatePtr wsPtr);
 
 
+signals:
+	void addEventToHistorySignal(QString str);
+
+
 private slots:
 
 	void collectButtonToggled(bool state);
@@ -56,6 +60,7 @@ private slots:
 	void wsTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
+	void addEventToHistory(QString str);
 
 
 private:
@@ -77,15 +82,16 @@ private:
 
 	bool _collect;
 
+	int _eventNo;
 	struct EventInfo
 	{
 		int curRoomId;
 		int curPlaceId;
-		std::map<std::string,double> curRoomCategories;
+		ConceptualData::EventInfo info;
+		//std::map<std::string,double> curRoomCategories;
 	};
 
 	std::vector<EventInfo> _events;
-
 
 };
 
