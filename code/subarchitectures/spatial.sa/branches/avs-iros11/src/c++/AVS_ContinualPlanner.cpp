@@ -385,7 +385,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		b->estatus = beliefEpStatus;
 		b->type = "conegroup";
-		b->id = id;
+		b->id = newDataID();
 		CondIndependentDistribsPtr CondIndProbDist = new  CondIndependentDistribs;
 
 		BasicProbDistributionPtr coneGroupIDProbDist = new BasicProbDistribution;
@@ -411,10 +411,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		supportObjectLabelFormula->pointer =  WMaddress; //c.supportObjectId; // this should be a pointer ideally
 		coneProbabilityFormula->val = c.getTotalProb();
 
-		searchedObjectFormulaPair.val = coneGroupIDLabelFormula;
+		searchedObjectFormulaPair.val = searchedObjectLabelFormula;
 		searchedObjectFormulaPair.prob = 1;
 
-		coneGroupIDLabelFormulaPair.val = searchedObjectLabelFormula;
+		coneGroupIDLabelFormulaPair.val = coneGroupIDLabelFormula;
 		coneGroupIDLabelFormulaPair.prob = 1;
 
 		relationLabelFormulaPair.val = relationLabelFormula;
@@ -442,7 +442,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		pairs.push_back(coneProbabilityFormulaPair);
 		FormulaValuesPtr formulaValues3 = new FormulaValues;
 		formulaValues3->values = pairs;
-		relationLabelProbDist->values = formulaValues3;
+		coneProbabilityProbDist->values = formulaValues3;
 		pairs.clear();
 
 
@@ -452,7 +452,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		relationLabelProbDist->values = formulaValues4;
 		pairs.clear();
 
-		pairs.push_back(coneProbabilityFormulaPair);
+		pairs.push_back(supportObjectLabelFormulaPair);
 		FormulaValuesPtr formulaValues5 = new FormulaValues;
 		formulaValues5->values = pairs;
 		supportObjectLabelProbDist->values = formulaValues5;
@@ -460,22 +460,22 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		coneGroupIDProbDist->key = "id";
 		CondIndProbDist->distribs["id"] = coneGroupIDProbDist;
-		searchedObjectLabelProbDist->key = "searchedobject";
-		CondIndProbDist->distribs["searchedobject"] = searchedObjectLabelProbDist;
-		relationLabelProbDist->key = "relation";
-		CondIndProbDist->distribs["relation"] = relationLabelProbDist;
-		supportObjectLabelProbDist->key = "supportobject";
-		CondIndProbDist->distribs["supportobject"] = supportObjectLabelProbDist;
-		coneProbabilityProbDist->key = "prob";
-		CondIndProbDist->distribs["prob"] = coneProbabilityProbDist;
+		searchedObjectLabelProbDist->key = "cg-label";
+		CondIndProbDist->distribs["cg-label"] = searchedObjectLabelProbDist;
+		relationLabelProbDist->key = "cg-relation";
+		CondIndProbDist->distribs["cg-relation"] = relationLabelProbDist;
+		supportObjectLabelProbDist->key = "cg-related-to";
+		CondIndProbDist->distribs["cg-related-to"] = supportObjectLabelProbDist;
+		coneProbabilityProbDist->key = "p-visible";
+		CondIndProbDist->distribs["p-visible"] = coneProbabilityProbDist;
 
 		b->content = CondIndProbDist;
 		log("writing belief to WM..");
-		addToWorkingMemory(newDataID(), "binder", b);
+		addToWorkingMemory(b->id, "binder", b);
 		log("wrote belief to WM..");
-		newVPCommand->status = SpatialData::SUCCESS;
-		 overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
 	}
+    newVPCommand->status = SpatialData::SUCCESS;
+    overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
 
 }
 
