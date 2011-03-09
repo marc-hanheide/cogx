@@ -6,7 +6,7 @@
 function  [H_opt, F_opt, h_amise, dim_subspace] = leastSquaresCrossValidation( varargin )
 % global pdf_lscv ;
 
-minValAllowed = 1e-10 ;
+minValAllowed = 1e-5 ; % was 1e-10
 use_removeNullspace = 0 ;
 likth = 1e-5 ;
 % ikdeParams = [] ;
@@ -34,34 +34,45 @@ if ~isempty(model)
     end
 end
  
-if use_removeNullspace == 1
-    derivativeModel = augmentMixtureModelByThis( model, obs,...
-        0, ikdeParams.obs_mixing_weights,...
-                        ikdeParams.mix_weights ) ;  
-    [derivativeModel, H_o ]= readjustKernels( derivativeModel, 0 ) ;
-
-    minEigenEnergy = 1e-5 ;
-    output = subspacePrewhitenTransform( 'pdf', derivativeModel, 'globalCov',...
-        ikdeParams.scale.Cov, 'minEigenEnergy', minEigenEnergy, ...
-        'transDirection', 'forward',...
-        'allLayers', 0 ) ;
-    pdft = output.pdf ;
-    obs = pdft.Mu ;
-    globalCov = output.globalCov ;% eye(size(output.globalCov)) ;%output.globalCov ;
-    % warning('Prewhiten using moments!! not sample cov!!')
-    invF_trns = output.svdRes.V*sqrt(abs(output.svdRes.S)) ;
-    d = size(pdft.Mu,1) ;
-    dim_subspace = d ;
-    C0 = globalCov ;
-else
+% if use_removeNullspace == 1
+%     derivativeModel = augmentMixtureModelByThis( model, obs,...
+%         0, ikdeParams.obs_mixing_weights,...
+%                         ikdeParams.mix_weights ) ;  
+%     [derivativeModel, H_o ]= readjustKernels( derivativeModel, 0 ) ;
+% 
+%     minEigenEnergy = 1e-5 ;
+%     output = subspacePrewhitenTransform( 'pdf', derivativeModel, 'globalCov',...
+%         ikdeParams.scale.Cov, 'minEigenEnergy', minEigenEnergy, ...
+%         'transDirection', 'forward',...
+%         'allLayers', 0 ) ;
+%     pdft = output.pdf ;
+%     obs = pdft.Mu ;
+%     globalCov = output.globalCov ;% eye(size(output.globalCov)) ;%output.globalCov ;
+%     % warning('Prewhiten using moments!! not sample cov!!')
+%     invF_trns = output.svdRes.V*sqrt(abs(output.svdRes.S)) ;
+%     d = size(pdft.Mu,1) ;
+%     dim_subspace = d ;
+%     C0 = globalCov ;
+% else
     C0 = cov(obs') ;
-end
+% end
+
+[U,S,V] = svd(C0) ;
+% s = diag(S) ; s(s<minValAllowed) = min(s(s>=minValAllowed)) ;
+% S = diag(s) ;
+% 
+ min_s = 1e-4 ; 
+    s = diag(S) ; ss = s/max(s) ; s(ss<min_s) = min(s(ss>min_s)); 
+    S = diag(s) ; minValAllowed = 0;   
+
+
+C0 = U*S*U' ;
 
 N = size(obs,2) ;
 % Ct_1 = C0 *((4/(3*N))^(1/5))^2 * 0.8^2 ; %0.85^2 ;
  d = size(obs,1);  Ct_1 = C0 *(4/((d+2)*N))^(2/(d+4)) * 0.8^2 ;
 dim_subspace = size(Ct_1,1)  ;
-
+min_err = 1e-30 ;
 loglik_prev = [] ;
 switch kernelType
     case 'general'        
@@ -76,7 +87,11 @@ switch kernelType
                 s_idx = idx ~= i ;
 %                 Gij = normpdf(obs(:,s_idx), obs(:,i), [], Ct_1) ;
                 Gij = normpdf(obs(:,s_idx), obs(:,i), [], Ct_1) ;
-
+ 
+                if isnan(sum(sum(Gij)) )
+                    sdg
+                end
+                
                 S = 0 ;
                 i_cnt = 1 ;
                 for j = 1 : N
@@ -89,14 +104,29 @@ switch kernelType
                     i_cnt = i_cnt + 1 ;
                      Num_sumterms = Num_sumterms + 1 ; 
                 end
+                if isnan(sum(sum(S)) )
+                    sdg
+                end
 %                 I = I + S/(sum(Gij)/(N-1)) ;
-                I = I + S / (mean(Gij)) ;
-                loglik = loglik + -log(mean(Gij)) ;
+                I = I + S / max([mean(Gij),min_err]) ;
+                if isnan(sum(sum(I)) )
+                    sdg
+                end
+                loglik = loglik + -log(max([mean(Gij),min_err])) ;
             end
             Ct = I / Num_sumterms ; %( N*(N-1) ) ;
             loglik = loglik / Num_sumterms ;
             [Uct,Sct,Vct] = svd(Ct) ;
-            id_critical = sum(diag(Sct) < minValAllowed) ;
+            
+              s = diag(Sct) ; ss = s/max(s) ; s(ss<min_s) = min(s(ss>min_s)); 
+              Sct = diag(s) ; 
+            
+            dSct = diag(Sct) ;    
+            id_critical = sum(dSct < minValAllowed) ;
+            dSct(dSct < minValAllowed) = min(dSct(dSct >= minValAllowed)) ;  
+            Sct = diag(dSct) ;
+            
+ 
             
             Ct = Uct*Sct*Uct' ;
 %             v = abs(Ct - Ct_1) ; v = v(:)' ;
