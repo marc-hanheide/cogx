@@ -206,7 +206,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return act;
 
 		} else if (_plannedAction.name.equals("process_conegroup")) {
-			assert _plannedAction.arguments.length == 3 : "process_conegroup action arity is expected to be 3";
+			assert _plannedAction.arguments.length == 2 : "process_conegroup action arity is expected to be 2";
 			// cone group, place
 
 			ProcessConeGroupAction act = newActionInstance(ProcessConeGroupAction.class);
@@ -226,8 +226,9 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 					.firstValue();
 			act.coneGroupID = coneGroupIDProperty.getInteger();
 
-			act.coneGroupBeliefID.id = stringFromElementaryFormula((ElementaryFormula)_plannedAction.arguments[2]);
-			act.coneGroupBeliefID.subarchitecture = "binder";
+            act.coneGroupBeliefID = beliefPtr.getVal();
+			// act.coneGroupBeliefID.id = stringFromElementaryFormula((ElementaryFormula)_plannedAction.arguments[2]);
+			// act.coneGroupBeliefID.subarchitecture = "binder";
 
 			return act;
 
