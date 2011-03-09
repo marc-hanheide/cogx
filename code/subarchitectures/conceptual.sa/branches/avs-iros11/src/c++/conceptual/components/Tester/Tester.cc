@@ -206,7 +206,7 @@ int Tester::getCurrentPlace()
 {
 	if (_placeManagerAvailable)
 	{
-		return _placeInterfacePrx->getCurrentPlace();
+		return _placeInterfacePrx->getCurrentPlace()->id;
 	}
 	else
 		return -1;
