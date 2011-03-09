@@ -86,9 +86,9 @@ void VisualLearner::CMyDisplayClient::createViews()
    std::ostringstream ss;
    const int nModels = 3;
    const string models[nModels] = {
-      string("mC1"),
-      string("mC2"),
-      string("mC3") };
+      string("model0001"),
+      string("model0050"),
+      string("model0100") };
 
    for (int i=0; i<nModels; i++) {
       ss << "<input type='button' value='Load model " << models[i] << "' "
