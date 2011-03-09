@@ -69,7 +69,7 @@ public:
 	void start();
 	void runComponent();
 	void generateViewCones(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand, std::string WMAddress);
-	void processConeGroup(std::string id);
+	void processConeGroup(int id);
 	std::string convertLocation2Id(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
 	void configure(const std::map<std::string, std::string>& _config);
 	void newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID);
@@ -91,6 +91,7 @@ public:
 	 std::string relationToString(SpatialData::SpatialRelation rel);
 	 int GetPlaceIdFromNodeId(int nodeId);
 	 int GetClosestNodeId(double x, double y, double a);
+	 void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
 private:
 		NavData::RobotPose2dPtr lastRobotPose;
 
@@ -125,7 +126,8 @@ private:
 	 std::vector<std::string> m_siftObjects;
 	 std::vector<std::string> m_ARtaggedObjects;
 	 std::vector<std::string> m_allObjects;
-
+	 SpatialData::ProcessConeGroupPtr m_currentProcessConeGroup;
+	 std::string m_processConeGroupCommandWMAddress;
 	 /** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx m_queryHandlerServerInterfacePrx;
 	FrontierInterface::WeightedPointCloudPtr m_cloud;
