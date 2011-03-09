@@ -59,22 +59,29 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange event)
 			throws CASTException {
+			  log("1");
 		PerceptBelief from = getMemoryEntry(event.address, PerceptBelief.class);
+			  log("2");
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
+			  log("3");
 		String perceptLabel = pb.getContent().get(
 				VisualObjectTransferFunction.LABEL_ID).getDistribution()
 				.getMostLikely().getProposition();
+			  log("4");
 
 		WorkingMemoryAddress perceptPointer = ((PointerFormula) pb.getContent()
 				.get(VisualObjectTransferFunction.IS_IN).getDistribution()
 				.get().values.get(0).val).pointer;
+			  log("5");
 		double perceptIsInProb = pb.getContent().get(
 				VisualObjectTransferFunction.IS_IN).getDistribution().get().values
 				.get(0).prob;
+			  log("6");
 
 		Set<WorkingMemoryAddress> wmaGroundedSet = label2AddrMap
 				.get(perceptLabel);
+			  log("7");
 		if (wmaGroundedSet == null) {
 			label2AddrMap
 					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
