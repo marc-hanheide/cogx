@@ -20,11 +20,16 @@ public:
     RCVisualizer(ConceptualWidget *parent, conceptual::Tester *component);
     ~RCVisualizer();
 
-public slots:
+
+private slots:
 	void saveImageButtonClicked();
+	void generate();
+
 
 private:
-    void generate();
+    QBrush getBrushForProbability(double prob);
+
+
 
 private:
     Ui::RCVisualizerClass ui;
