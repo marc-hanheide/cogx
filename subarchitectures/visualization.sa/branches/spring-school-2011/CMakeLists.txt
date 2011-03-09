@@ -28,9 +28,6 @@ else(BUILD_SA_V11N_AUTOGEN_ONLY)
 
   add_subdirectory(src/c++/autogen)
   add_subdirectory(src/c++/core)
-
-
-
   add_subdirectory(src/c++/clients)
 
   if(BUILD_PYTHON_COMPONENTS)

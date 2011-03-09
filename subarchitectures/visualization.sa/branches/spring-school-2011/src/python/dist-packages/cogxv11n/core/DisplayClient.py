@@ -166,6 +166,14 @@ class CDisplayClient:
         if self.m_Server == None: return
         self.m_Server.setHtmlFormData(id, partId, fieldDict)
 
+    def removeObject(self, id):
+        if self.m_Server == None: return
+        self.m_Server.removeObject(id)
+
+    def removePart(self, id, partId):
+        if self.m_Server == None: return
+        self.m_Server.removePart(id, partId)
+
     def setObject(self, id, partId, svgObject):
         if self.m_Server == None: return
         self.m_Server.setObject(id, partId, svgObject)
