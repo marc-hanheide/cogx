@@ -206,7 +206,11 @@ int Tester::getCurrentPlace()
 {
 	if (_placeManagerAvailable)
 	{
-		return _placeInterfacePrx->getCurrentPlace()->id;
+		SpatialData::PlacePtr pl= _placeInterfacePrx->getCurrentPlace();
+		if (pl)
+			return pl->id;
+		else
+			return -1;
 	}
 	else
 		return -1;

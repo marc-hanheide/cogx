@@ -41,7 +41,16 @@ void RCVisualizer::generate()
 	pthread_mutex_lock(&_parent->_eventsMutex);
 
 	// Initialization
-	unsigned long eventCount = _parent->_events.size();
+	bool locationOnly = ui.locationEventsCheckBox->isChecked();
+	unsigned long eventCount=0;
+	if (locationOnly)
+	{
+		for (unsigned long e=0; e<eventCount; ++e)
+			if (_parent->_events[e].info.type == ConceptualData::EventNothig)
+				eventCount++;
+	}
+	else
+		eventCount = _parent->_events.size();
 	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
 	int roomCatCount = roomCats.size();
 	QFont defaultFont("Ubuntu", 12);
@@ -64,25 +73,28 @@ void RCVisualizer::generate()
 	for (unsigned long e=0; e<eventCount; ++e)
 	{
 		const ConceptualWidget::Event &event = _parent->_events[e];
-		for(unsigned int i=0; i<event.curRoomCategories.size(); ++i)
+		if ((!locationOnly) || (event.info.type == ConceptualData::EventNothig))
 		{
-			double prob = event.curRoomCategories[i];
-			scene->addRect(e*resultWidth, i*rowHeight, resultWidth, rowHeight, QPen(), getBrushForProbability(prob));
-		}
+			for(unsigned int i=0; i<event.curRoomCategories.size(); ++i)
+			{
+				double prob = event.curRoomCategories[i];
+				scene->addRect(e*resultWidth, i*rowHeight, resultWidth, rowHeight, QPen(), getBrushForProbability(prob));
+			}
 
-		bool eventSep =  ((e+1)%eventSeparatorCount) == 0;
+			bool eventSep =  ((e+1)%eventSeparatorCount) == 0;
 
-		if (event.curPlaceId!=curPlace)
-		{
-			if (event.curRoomId!=curRoom)
-				scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0,(e+1)*resultWidth,roomCatCount*rowHeight+roomSeparator);
+			if (event.curPlaceId!=curPlace)
+			{
+				if (event.curRoomId!=curRoom)
+					scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0,(e+1)*resultWidth,roomCatCount*rowHeight+roomSeparator);
+				else
+					scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight+placeSeparator);
+			}
 			else
-				scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight+placeSeparator);
+				scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight);
+			curPlace=event.curPlaceId;
+			curRoom=event.curRoomId;
 		}
-		else
-			scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight);
-		curPlace=event.curPlaceId;
-		curRoom=event.curRoomId;
 	}
 
 	pthread_mutex_unlock(&_parent->_eventsMutex);
