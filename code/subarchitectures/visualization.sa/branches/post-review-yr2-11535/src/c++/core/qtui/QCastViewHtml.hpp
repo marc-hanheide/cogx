@@ -17,6 +17,7 @@
 #define QCASTVIEWHTML_X94VTZ5D
 
 #include "QCastViewBase.hpp"
+#include "HtmlElements.hpp"
 #include <QWebView>
 #include <iostream>
 
@@ -28,6 +29,7 @@ private:
    cogx::display::CDisplayView* pView;
    bool m_bModified;
    bool m_bHasForms;
+   bool m_bBlockUpdates;
    QString m_jsFormCap;
    static QString m_jQuery;
    QString jsObjectName;
@@ -44,6 +46,7 @@ public:
    void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
    cogx::display::CDisplayView* getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
+   void getToolbars(CPtrVector<QToolBar>& toolbars);
  
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
@@ -60,6 +63,7 @@ private slots:
    void finishLoading(bool);
    void onFindOnPage();
    void onFindAgainOnPage();
+   void onToggleBlockUpdates(bool);
 private slots:
    // see: <url:html/formcap.hpp#tn=signalOwnerDataChanged>
    void doFillHtmlFrom(const QString& formid);

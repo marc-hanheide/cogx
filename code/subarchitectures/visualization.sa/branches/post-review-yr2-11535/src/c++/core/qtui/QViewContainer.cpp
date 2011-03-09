@@ -16,6 +16,7 @@
 
 #include "QViewContainer.hpp"
 #include "QCastView.hpp"
+#include "QCastViewScene.hpp"
 #ifdef V11N_VIEW_GL
 #include "QCastViewGL.hpp"
 #endif
@@ -26,6 +27,8 @@
 #include "QCastPlugins.hpp"
 #endif
 #include <QVBoxLayout>
+#include <QToolBar>
+#include <QToolButton>
 
 #include "../convenience.hpp"
 
@@ -59,6 +62,10 @@ void QViewContainer::removeUi()
         cogx::display::CDisplayView* pView = pViewWin->getView();
         if (pView) {
            pView->viewObservers.removeObserver(pViewWin);
+           std::vector<double>data;
+           pViewWin->getViewPosition(data);
+           if (data.size() > 0)
+              m_viewPosMap[QString::fromStdString(pView->m_id)] = data;
         }
      }
      pobj->deleteLater();
@@ -78,13 +85,16 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    // TODO: check if the current widget supports view's m_preferredContext
    // otherwise delete the view
    removeUi();
-   QLayout *pLayout = new QVBoxLayout();
+   QVBoxLayout *pLayout = new QVBoxLayout();
    setLayout(pLayout);
 
    // TODO: Also create toolbars for active views!
    if (! m_pDisplay) {
       if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
+      }
+      else if (pView->m_preferredContext == cogx::display::ContextGraphics) {
+         m_pDisplay = new QCastViewScene(this);
       }
 #ifdef V11N_VIEW_GL
       else if (pView->m_preferredContext == cogx::display::ContextGL) {
@@ -117,6 +127,21 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    if (m_pDisplay) {
       m_pDisplay->setModel(pModel);
       m_pDisplay->setView(pView);
+      QHash<QString, std::vector<double> >::const_iterator ivp =
+         m_viewPosMap.find(QString::fromStdString(pView->m_id));
+      if (ivp != m_viewPosMap.end()) 
+         m_pDisplay->setViewPosition(ivp.value());
+
+      // Toolbars are created after setModel and setView
+      CPtrVector<QToolBar> bars;
+      m_pDisplay->getToolbars(bars);
+      QToolBar *pBar;
+      FOR_EACH(pBar, bars) {
+         if (pBar) {
+            pBar->setParent(this);
+            pLayout->insertWidget(0, pBar);
+         }
+      }
    }
 }
 

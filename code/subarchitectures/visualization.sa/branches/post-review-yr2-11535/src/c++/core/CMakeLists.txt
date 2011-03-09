@@ -118,6 +118,7 @@ set(SERVER_CPP
    convenience.cpp
    CDisplayServer.cpp
    Model.cpp
+   View.cpp
    GuiElements.cpp
    HtmlElements.cpp
    object/CSvgImage.cpp
@@ -130,6 +131,7 @@ set(GUI_CPP
    qtui/QCastApplication.cpp
    qtui/QCastMainFrame.cpp
    qtui/QCastView.cpp
+   qtui/QCastViewScene.cpp
    qtui/QCustomGuiPanel.cpp
    qtui/QViewContainer.cpp
    qtui/ChangeSlot.cpp
@@ -138,6 +140,7 @@ set(SERVER_MOC_HEADERS
    qtui/QCastApplication.hpp
    qtui/QCastMainFrame.hpp
    qtui/QCastView.hpp
+   qtui/QCastViewScene.hpp
    qtui/ChangeSlot.hpp
    qtui/QCustomGuiPanel.hpp
    qtui/QViewContainer.hpp
@@ -148,6 +151,7 @@ set(SERVER_UI_FILES
    )
 set(SERVER_RESOURCE_FILES
    qtui/design/jquery.qrc
+   qtui/design/images.qrc
    )
 if(QT_USE_OPENGL)
    add_definitions(-DV11N_VIEW_GL)
@@ -192,22 +196,25 @@ endif(BUILD_SA_V11N_SERVER)
 
 option(BUILD_SA_V11N_CLIENT "Build the visualisation display client library" YES)
 if(BUILD_SA_V11N_CLIENT)
-
    find_package(OpenCV REQUIRED)
    include_directories(${OPENCV_INCLUDE_DIRS})
+   include_directories(client)
    link_directories(${OPENCV_LIBRARY_DIRS})
    add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-   add_cast_component(DisplayClient CDisplayClient.cpp CFormValues.cpp)
+   add_cast_component(DisplayClient
+      client/CDisplayClient.cpp
+      client/CFormValues.cpp
+      client/CMilliTimer.cpp
+      )
    link_cast_component(${CAST_COMPONENT_NAME}
       VisualizationData Math Video VideoUtils
       # CogxIceAutogen
       ${OPENCV_LDFLAGS}
       )
-
 endif(BUILD_SA_V11N_CLIENT)
 
-option(BUILD_SA_V11N_TESTS "Build the test component for V11N" OFF)
+option(BUILD_SA_V11N_TESTS "Build the test component for V11N (requires the client library)" OFF)
 if(BUILD_SA_V11N_TESTS)
    add_subdirectory(test)
 endif(BUILD_SA_V11N_TESTS)

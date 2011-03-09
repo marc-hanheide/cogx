@@ -203,3 +203,14 @@ const char luacode_models_lua[] =
    "end\n"
    ; // luacode_models_lua
 
+// Generated from camera.lua
+const char luacode_camera_lua[] =
+   "\n"
+   "\n"
+   "\n"
+   "\n"
+   "function setCamera(name, xEye, yEye, zEye, xView, yView, zView, xUp, yUp, zUp)\n"
+   "   v11nCamera_SetPosition(_v11n_script_object_, name, xEye, yEye, zEye, xView, yView, zView, xUp, yUp, zUp)\n"
+   "end\n"
+   ; // luacode_camera_lua
+

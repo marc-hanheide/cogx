@@ -25,6 +25,8 @@ class CRasterImage: public CDisplayObject
 {
    friend class CRasterImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
+   friend class CRasterImage_RenderScene;
+   static std::auto_ptr<CRenderer> renderScene;
 
 public:
    QImage* m_pImage;
@@ -34,12 +36,26 @@ public:
    ~CRasterImage();
    bool isBitmap(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
+   virtual ERenderContext getPreferredContext()
+   {
+      return ContextGraphics;
+   }
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) /*override*/
+   {
+      return false;
+   }
 };
 
 class CRasterImage_Render2D: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
+};
+
+class CRasterImage_RenderScene: public CRenderer
+{
+public:
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 }} // namespace
