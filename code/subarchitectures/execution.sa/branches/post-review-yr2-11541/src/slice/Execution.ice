@@ -192,7 +192,6 @@ module execution {
       };
 
 
-
       class SingleBeliefAction extends Action {
 	cast::cdl::WorkingMemoryAddress beliefAddress;	
       };
