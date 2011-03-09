@@ -26,11 +26,14 @@ dim = rows( f.Mu ) ;
 n = dim ;
 k = MaxV - n ;
 
+
 % prevent negative weights
 if prev_neg_k == 1 & k < 0 
     k = 0 ; 
     MaxV = k + n ;
 end
+
+% k=1 ;
 
 numSigPoints = numSigmaPoints( dim, k ) ;
 X = zeros( dim, numSigPoints*num_components ) ;
