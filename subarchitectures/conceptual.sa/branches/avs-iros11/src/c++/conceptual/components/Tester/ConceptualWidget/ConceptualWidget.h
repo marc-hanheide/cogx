@@ -46,7 +46,6 @@ public:
 signals:
 	void addEventToHistorySignal(QString str);
 
-
 private slots:
 
 	void collectButtonToggled(bool state);
