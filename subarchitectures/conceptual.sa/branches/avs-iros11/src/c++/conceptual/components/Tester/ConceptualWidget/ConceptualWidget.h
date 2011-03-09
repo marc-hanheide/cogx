@@ -46,9 +46,9 @@ public:
 signals:
 	void addEventToHistorySignal(QString str);
 
+
 private slots:
 
-	void collectInfoCheckBoxToggled(bool state);
 	void categoriesButtonClicked();
 	void objectsButtonClicked();
 	void sendQueryButtonClicked();
@@ -62,6 +62,7 @@ private slots:
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
 	void addEventToHistory(QString str);
+	void collectEventInfo();
 
 
 private:
@@ -83,16 +84,16 @@ private:
 
 	bool _collect;
 
-	int _eventNo;
-	struct EventInfo
+	long _eventNo;
+	struct Event
 	{
 		int curRoomId;
 		int curPlaceId;
 		ConceptualData::EventInfo info;
-		//std::map<std::string,double> curRoomCategories;
+		std::vector<double> curRoomCategories;
 	};
 
-	std::vector<EventInfo> _events;
+	std::vector<Event> _events;
 
 };
 
