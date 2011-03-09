@@ -46,6 +46,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="placesCheckBox">
+       <property name="text">
+        <string>Show place IDs</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -113,6 +120,38 @@
     <hint type="destinationlabel">
      <x>396</x>
      <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>locationEventsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>refreshButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>132</x>
+     <y>328</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>placesCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>refreshButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>263</x>
+     <y>328</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>328</y>
     </hint>
    </hints>
   </connection>

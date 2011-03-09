@@ -591,8 +591,6 @@ void ConceptualWidget::posTimerTimeout()
 {
 	int curPlaceId = _component->getCurrentPlace();
 
-	_component->error("%d", curPlaceId);
-
 	// Did we change place?
 	if (_prevPlace!=curPlaceId)
 	{
