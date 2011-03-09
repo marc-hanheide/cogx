@@ -982,10 +982,10 @@ class ModalPredicateCompiler(Translator):
         a2 = action.copy_skeleton(domain) # TODO: new_args is being ignored, which is a bug
         
         if action.precondition:
-            a2.precondition = action.precondition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
+            a2.precondition = action.precondition.copy(copy_instance=True).visit(cond_visitor)
             a2.precondition.set_scope(a2)
         if action.replan:
-            a2.replan = action.replan.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
+            a2.replan = action.replan.copy(copy_instance=True).visit(cond_visitor)
             a2.replan.set_scope(a2)
         a2.effect = visitors.visit(action.effect, eff_visitor)
         
@@ -1240,6 +1240,8 @@ class MAPLCompiler(Translator):
         dom.clear_actions()
         cond_keffs = Translator.get_annotations(_domain).get('has_commit_actions', False)
         for a in _domain.get_action_like():
+            if a in _domain.init_rules:
+                continue
             dom.add_action(self.translate_action(a, dom, cond_keffs=cond_keffs))
 
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
