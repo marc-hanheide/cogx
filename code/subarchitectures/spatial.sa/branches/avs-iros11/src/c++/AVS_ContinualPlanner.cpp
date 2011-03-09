@@ -87,6 +87,11 @@ void AVS_ContinualPlanner::start() {
 					&AVS_ContinualPlanner::newViewPointGenerationCommand));
 
 	addChangeFilter(createGlobalTypeFilter<
+			SpatialData::ProcessConeGroup> (cdl::ADD),
+			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
+					&AVS_ContinualPlanner::newProcessConeCommand));
+
+	addChangeFilter(createGlobalTypeFilter<
 			FrontierInterface::ObjectPriorRequest> (cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
 					&AVS_ContinualPlanner::owtWeightedPointCloud));
@@ -112,6 +117,16 @@ void AVS_ContinualPlanner::start() {
 	log("getting ice queryHandlerServer");
 	m_queryHandlerServerInterfacePrx = getIceServer<
 			ConceptualData::QueryHandlerServerInterface> (m_queryHandlerName);
+}
+void AVS_ContinualPlanner::newProcessConeCommand(
+		const cast::cdl::WorkingMemoryChange &objID) {
+log("Got Process Cone Group Command");
+	SpatialData::ProcessConeGroupPtr cmd = getMemoryEntry<SpatialData::ProcessConeGroup> (
+						objID.address);
+	m_processConeGroupCommandWMAddress = objID.address.id;
+
+	m_currentProcessConeGroup = cmd;
+	processConeGroup(cmd->coneGroupId);
 }
 
 void AVS_ContinualPlanner::newGroundedBelief(
@@ -641,31 +656,34 @@ void AVS_ContinualPlanner::IcetoCureLGM(FrontierInterface::LocalGridMap icemap,
 }
 
 /* Process ConeGroup with id */
-void AVS_ContinualPlanner::processConeGroup(string id) {
+void AVS_ContinualPlanner::processConeGroup(int id) {
 	// Todo: Loop over cones in conegroup
 	// FIXME ASSUMPTION ConeGroup contains one cone
 	// FIXME ASSUMPTION Always observe one object at a time
 
 	// Todo: Once we get a response from vision, calculate the remaining prob. value
 	// Get ConeGroup
-
-	if (m_beliefConeGroups.count(atoi(id.c_str())) == 0 ){
-		log("No bloxelmap with id: %s, this is an indication of id mismatch!", id.c_str());
+	log("Processing Cone Group");
+	if (m_beliefConeGroups.count(id) == 0 ){
+		log("No bloxelmap with id: %d, this is an indication of id mismatch!", id);
 		return;
 	}
 
-	m_currentConeGroup = m_beliefConeGroups[atoi(id.c_str())];
+	m_currentConeGroup = m_beliefConeGroups[id];
 	m_currentViewCone = m_currentConeGroup.viewcones[0];
+	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
+			m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+			log("Overwriting command to change status to: SUCCESS");
+			overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 
-	// FIXME post a nav command
+			// FIXME post a nav command
+	log("Posting a nav command");
 
 	/* Cure::Pose3D pos;
 	pos.setX(m_currentViewCone.pos[0]);
 	pos.setY(m_currentViewCone.pos[1]);
 	pos.setTheta(m_currentViewCone.pan);
-	PostNavCommand(pos, SpatialData::GOTOPOSITION); */
-
-	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
+	PostNavCommand(pos, SpatialData::GOTOPOSITION);*/
 }
 
 
@@ -721,7 +739,6 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
   	addToWorkingMemory(newDataID(), result);
-
 }
 
 
@@ -926,6 +943,7 @@ void AVS_ContinualPlanner::configure(
 		m_allObjects.insert(m_allObjects.end(), m_siftObjects.begin(), m_siftObjects.end());
 		m_allObjects.insert(m_allObjects.end(), m_ARtaggedObjects.begin(), m_ARtaggedObjects.end());
 
+		m_currentProcessConeGroup = new SpatialData::ProcessConeGroup;
 		m_coneGroupId = -1;
 }
 
@@ -969,9 +987,13 @@ void AVS_ContinualPlanner::owtNavCommand(
 	try {
 	if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
 		// it means we've reached viewcone position
-		MovePanTilt(0.0, m_currentViewCone.tilt, 0.08);
-		Recognize();
-
+	//	MovePanTilt(0.0, m_currentViewCone.tilt, 0.08);
+	//	Recognize();
+		log("Nav Command succeeded");
+		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
+		m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+		log("Overwriting command to change status to: SUCCESS");
+		overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
 	if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
