@@ -91,7 +91,7 @@ void Tester::start()
 
 	try
 	{
-		// Get the DefaultChainGraphInferencer interface proxy
+		// Get the PlaceInterface interface proxy
 		_placeInterfacePrx =
 				getIceServer<FrontierInterface::PlaceInterface>(_placeManagerName);
 		_placeManagerAvailable = true;
@@ -119,6 +119,8 @@ void Tester::runComponent()
 		_defaultChainGraphInferencerServerInterfacePrx->getObjectCategories();
 	_roomCategories =
 		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
+	// Sort room categories for nice display
+	sort (_roomCategories.begin(), _roomCategories.end());
 	_shapes =
 		_defaultChainGraphInferencerServerInterfacePrx->getShapes();
 	_appearances =

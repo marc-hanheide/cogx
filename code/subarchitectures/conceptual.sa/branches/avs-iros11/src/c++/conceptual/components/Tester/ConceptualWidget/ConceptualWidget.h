@@ -34,6 +34,15 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
     friend class ObjectSearchResultDialog;
     friend class RCVisualizer;
 
+	struct Event
+	{
+		int curRoomId;
+		int curPlaceId;
+		ConceptualData::EventInfo info;
+		std::vector<double> curRoomCategories;
+	};
+
+
 public:
     ConceptualWidget(QWidget *parent, conceptual::Tester *component);
     ~ConceptualWidget();
@@ -41,10 +50,6 @@ public:
 public:
 
     void newWorldState(ConceptualData::WorldStatePtr wsPtr);
-
-
-signals:
-	void addEventToHistorySignal(QString str);
 
 
 private slots:
@@ -59,21 +64,23 @@ private slots:
 	void varListCurrentTextChanged(const QString &curText);
 	void factorListCurrentTextChanged(const QString &curText);
 	void wsTimerTimeout();
+	void posTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
-	void addEventToHistory(QString str);
-	void collectEventInfo();
+	void addEvent(Event event);
 
 
 private:
 
 	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
+	void collectEventInfo(Event event);
 
 
 private:
     conceptual::Tester *_component;
 
     QTimer *_wsTimer;
+    QTimer *_posTimer;
     int _wsCount;
 
     std::queue<qint64> _wsUpdateTimes;
@@ -83,15 +90,8 @@ private:
 	ConceptualData::WorldStatePtr _wsPtr;
 
 	bool _collect;
-
+	int _prevPlace;
 	long _eventNo;
-	struct Event
-	{
-		int curRoomId;
-		int curPlaceId;
-		ConceptualData::EventInfo info;
-		std::vector<double> curRoomCategories;
-	};
 
 	std::vector<Event> _events;
 

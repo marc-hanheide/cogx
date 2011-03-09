@@ -26,7 +26,7 @@ using namespace ConceptualData;
 
 // -------------------------------------------------------
 ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
-    : QWidget(parent), _component(component), _eventNo(0)
+    : QWidget(parent), _component(component), _prevPlace(-1), _eventNo(0)
 {
 	pthread_mutex_init(&_worldStateMutex, 0);
 	pthread_mutex_init(&_eventsMutex, 0);
@@ -37,11 +37,12 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 
 	_wsTimer = new QTimer(this);
 	_wsCount = 0;
+	_posTimer = new QTimer(this);
 
 	_collect=false;
 
 	// Signals and slots
-	connect(this, SIGNAL(addEventToHistorySignal(QString)), this, SLOT(addEventToHistory(QString)));
+	qRegisterMetaType<Event>("Event");
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
 	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
@@ -52,10 +53,12 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	connect(variablesListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(varListCurrentTextChanged(const QString &)));
 	connect(factorsListWidget, SIGNAL(currentTextChanged(const QString &)), this, SLOT(factorListCurrentTextChanged(const QString &)));
 	connect(_wsTimer, SIGNAL(timeout()), this, SLOT(wsTimerTimeout()));
+	connect(_posTimer, SIGNAL(timeout()), this, SLOT(posTimerTimeout()));
 	connect(addObjectPlacePropertyButton, SIGNAL(clicked()), this, SLOT(addObjectPlacePropertyButtonClicked()));
 	connect(addObjectSearchResultButton, SIGNAL(clicked()), this, SLOT(addObjectSearchResultButtonClicked()));
 
 	_wsTimer->start(1000);
+	_posTimer->start(100);
 }
 
 
@@ -70,80 +73,20 @@ ConceptualWidget::~ConceptualWidget()
 // -------------------------------------------------------
 void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 {
-	_eventNo++;
-	QString event = QString::number(_eventNo)+": ";
-	switch(wsPtr->lastEvent.type)
-	{
-	case ConceptualData::EventRoomAdded:
-		event+="RoomAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+")";
-		break;
-	case ConceptualData::EventRoomDeleted:
-		event+="RoomDeleted (rid="+QString::number(wsPtr->lastEvent.roomId)+")";
-		break;
-	case ConceptualData::EventRoomPlaceAdded:
-		event+="RoomPlaceAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+", pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventRoomPlaceDeleted:
-		event+="RoomPlaceDeleted (rid="+QString::number(wsPtr->lastEvent.roomId)+", pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventPlaceStatusChanged:
-		event+="PlaceStatusChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventGatewayPlacePropertyChanged:
-		event+="GatewayPlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventObjectPlacePropertyAdded:
-		if (wsPtr->lastEvent.place1Id>0)
-			event+="ObjectPlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
-		else
-			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
+	pthread_mutex_lock(&_worldStateMutex);
+	_wsCount++;
+	_wsPtr = wsPtr;
+	Event event;
+	event.info = wsPtr->lastEvent;
 
-		break;
-	case ConceptualData::EventObjectPlacePropertyDeleted:
-		if (wsPtr->lastEvent.place1Id>0)
-			event+="ObjectPlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
-		else
-			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
-		break;
-	case ConceptualData::EventObjectPlacePropertyChanged:
-		if (wsPtr->lastEvent.place1Id>0)
-			event+="ObjectPlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
-		else
-			event+="ObjectPlacePropertyAdded (rid="+QString::number(wsPtr->lastEvent.roomId)+
-					", obj="+QString::fromStdString(wsPtr->lastEvent.propertyInfo)+")";
-		break;
-	case ConceptualData::EventShapePlacePropertyAdded:
-		event+="ShapePlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventShapePlacePropertyDeleted:
-		event+="ShapePlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventShapePlacePropertyChanged:
-		event+="ShapePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventAppearancePlacePropertyAdded:
-		event+="AppearancePlacePropertyAdded (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventAppearancePlacePropertyDeleted:
-		event+="AppearancePlacePropertyDeleted (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventAppearancePlacePropertyChanged:
-		event+="AppearancePlacePropertyChanged (pid="+QString::number(wsPtr->lastEvent.place1Id)+")";
-		break;
-	case ConceptualData::EventRoomConnectivityChanged:
-		event+="RoomConnectivityChanged (pid1="+QString::number(wsPtr->lastEvent.place1Id)+", pid2="+QString::number(wsPtr->lastEvent.place2Id)+")";
-		break;
-	default:
-		event+="-- Nothing --";
-		break;
-	}
+	// Get current place and room for the event
+	event.curPlaceId = _component->getCurrentPlace();
+	event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
+	pthread_mutex_unlock(&_worldStateMutex);
 
-	emit addEventToHistorySignal(event);
+	// Take care of the event
+	QMetaObject::invokeMethod(this, "addEvent", Qt::QueuedConnection,
+	                           Q_ARG(Event, event));
 
 	// Auto refreshing
 	if (autoRefreshQueryCheckBox->isChecked())
@@ -154,15 +97,6 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	{
 		QMetaObject::invokeMethod(refreshWsButton, "click", Qt::QueuedConnection);
 	}
-	if (collectInfoCheckBox->isChecked())
-	{
-		QMetaObject::invokeMethod(this, "collectEventInfo", Qt::QueuedConnection);
-	}
-
-	pthread_mutex_lock(&_worldStateMutex);
-	_wsCount++;
-	_wsPtr = wsPtr;
-	pthread_mutex_unlock(&_worldStateMutex);
 
 }
 
@@ -303,13 +237,14 @@ void ConceptualWidget::factorListCurrentTextChanged(const QString &curText)
 // -------------------------------------------------------
 void ConceptualWidget::refreshWsButtonClicked()
 {
-	if (!_wsPtr)
-		return;
-
+	wsTreeWidget->clear();
 
 	pthread_mutex_lock(&_worldStateMutex);
-
-	wsTreeWidget->clear();
+	if (!_wsPtr)
+	{
+		pthread_mutex_unlock(&_worldStateMutex);
+		return;
+	}
 
 	// Rooms
 	QTreeWidgetItem *roomsItem = new QTreeWidgetItem(QStringList("Rooms"));
@@ -503,12 +438,6 @@ int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int p
 }
 
 
-// -------------------------------------------------------
-void ConceptualWidget::addEventToHistory(QString str)
-{
-	eventHistoryListWidget->insertItem(0, str);
-}
-
 
 // -------------------------------------------------------
 void ConceptualWidget::categoriesButtonClicked()
@@ -529,40 +458,159 @@ void ConceptualWidget::objectsButtonClicked()
 
 
 // -------------------------------------------------------
-void ConceptualWidget::collectEventInfo()
+void ConceptualWidget::addEvent(Event event)
 {
-	pthread_mutex_lock(&_worldStateMutex);
-	Event event;
-	event.info = _wsPtr->lastEvent;
-	// Get current place
-	event.curPlaceId = _component->getCurrentPlace();
-	// Get current room
-	event.curRoomId = getRoomForPlace(_wsPtr, event.curPlaceId);
-	pthread_mutex_unlock(&_worldStateMutex);
-
+	// Increment the overall event number
 	pthread_mutex_lock(&_eventsMutex);
-	_events.push_back(event);
+	int eventNo=++_eventNo;
 	pthread_mutex_unlock(&_eventsMutex);
 
-/*
-	// Get categories for the current room
-			ConceptualData::ProbabilityDistributions results =
-					_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_categorical)", false, false);
-			if (results.size()>0)
-			{
-				SpatialProbabilities::ProbabilityDistribution result = results[0];
-				for(unsigned int i=0; i<result.massFunction.size(); ++i)
-				{
-					double probability = result.massFunction[i].probability;
-					string value =
-							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-									result.massFunction[i].variableValues[0])->value;
-					event.curRoomCategories[value]=probability;
-				} //for
-				pthread_mutex_lock(&_eventsMutex);
-				_events.push_back(event);
-				pthread_mutex_unlock(&_eventsMutex);
-			} // if
-		} // if*/
+	// Generate
+	QString eventStr = QString::number(eventNo)+": ";
+	switch(event.info.type)
+	{
+	case ConceptualData::EventRoomAdded:
+		eventStr+="RoomAdded (rid="+QString::number(event.info.roomId)+")";
+		break;
+	case ConceptualData::EventRoomDeleted:
+		eventStr+="RoomDeleted (rid="+QString::number(event.info.roomId)+")";
+		break;
+	case ConceptualData::EventRoomPlaceAdded:
+		eventStr+="RoomPlaceAdded (rid="+QString::number(event.info.roomId)+", pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventRoomPlaceDeleted:
+		eventStr+="RoomPlaceDeleted (rid="+QString::number(event.info.roomId)+", pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventPlaceStatusChanged:
+		eventStr+="PlaceStatusChanged (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventGatewayPlacePropertyChanged:
+		eventStr+="GatewayPlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventObjectPlacePropertyAdded:
+		if (event.info.place1Id>0)
+			eventStr+="ObjectPlacePropertyAdded (pid="+QString::number(event.info.place1Id)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+		else
+			eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+
+		break;
+	case ConceptualData::EventObjectPlacePropertyDeleted:
+		if (event.info.place1Id>0)
+			eventStr+="ObjectPlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+		else
+			eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+		break;
+	case ConceptualData::EventObjectPlacePropertyChanged:
+		if (event.info.place1Id>0)
+			eventStr+="ObjectPlacePropertyChanged (pid="+QString::number(event.info.place1Id)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+		else
+			eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
+					", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+		break;
+	case ConceptualData::EventShapePlacePropertyAdded:
+		eventStr+="ShapePlacePropertyAdded (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventShapePlacePropertyDeleted:
+		eventStr+="ShapePlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventShapePlacePropertyChanged:
+		eventStr+="ShapePlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyAdded:
+		eventStr+="AppearancePlacePropertyAdded (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyDeleted:
+		eventStr+="AppearancePlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventAppearancePlacePropertyChanged:
+		eventStr+="AppearancePlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+		break;
+	case ConceptualData::EventRoomConnectivityChanged:
+		eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.info.place1Id)+", pid2="+QString::number(event.info.place2Id)+")";
+		break;
+	default: // Location event?
+		eventStr+=": Changed place (pid="+
+				QString::number(event.curPlaceId)+", rid="+QString::number(event.curRoomId)+")";
+		break;
+	}
+
+	eventHistoryListWidget->insertItem(0, eventStr);
+
+	if (collectInfoCheckBox->isChecked())
+	{
+		collectEventInfo(event);
+	}
+
 }
 
+
+// -------------------------------------------------------
+void ConceptualWidget::collectEventInfo(Event event)
+{
+	// Get categories for the current room
+	ConceptualData::ProbabilityDistributions results =
+			_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_category)", false, false);
+	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
+	if (results.size()>0)
+	{
+		SpatialProbabilities::ProbabilityDistribution result = results[0];
+		event.curRoomCategories.resize(result.massFunction.size());
+		for(unsigned int i=0; i<result.massFunction.size(); ++i)
+		{
+			double probability = result.massFunction[i].probability;
+			string value =
+					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+							result.massFunction[i].variableValues[0])->value;
+			int roomIndex=-1;
+			for(unsigned int j=0; j<roomCats.size(); ++j)
+			{
+				if (roomCats[j]==value)
+				{
+					roomIndex=j;
+					break;
+				}
+			}
+			event.curRoomCategories[roomIndex]=probability;
+		} //for
+
+		pthread_mutex_lock(&_eventsMutex);
+		_events.push_back(event);
+		pthread_mutex_unlock(&_eventsMutex);
+	} // if
+
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::posTimerTimeout()
+{
+	int curPlaceId = _component->getCurrentPlace();
+
+	_component->error("%d", curPlaceId);
+
+	// Did we change place?
+	if (_prevPlace!=curPlaceId)
+	{
+		_prevPlace = curPlaceId;
+
+		// Get room Id
+		pthread_mutex_lock(&_worldStateMutex);
+		int curRoomId = getRoomForPlace(_wsPtr, curPlaceId);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		// Prepare event
+		Event event;
+		event.info.type = ConceptualData::EventNothig;
+		// Get current place
+		event.curPlaceId = curPlaceId;
+		// Get current room
+		event.curRoomId = curRoomId;
+
+		addEvent(event);
+	}
+}
