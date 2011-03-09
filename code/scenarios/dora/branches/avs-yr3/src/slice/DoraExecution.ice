@@ -29,6 +29,21 @@ module execution {
     int roomID;
       };
 
+      /**
+       * Process all cones at a given cone group
+       */
+      class ProcessConeGroupAction extends Action {
+	/**
+	 * Cone group ID 
+	 */
+	long coneGroupID;
+
+	/**
+	 * Cone group Belief ID on the Binder
+	 */
+	cast::cdl::WorkingMemoryAddress coneGroupBeliefID;
+      };
+
     };
   };
 };

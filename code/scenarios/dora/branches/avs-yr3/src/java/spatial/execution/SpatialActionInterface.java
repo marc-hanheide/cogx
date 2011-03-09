@@ -19,6 +19,7 @@ import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.Priority;
 import SpatialData.ProcessViewPointCommand;
+import SpatialData.ProcessConeGroup;
 import SpatialData.StatusError;
 import SpatialData.SpatialRelation;
 import SpatialData.ViewPoint;
@@ -46,6 +47,7 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessCone;
 import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.ProcessConeGroupAction;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.ComponentActionFactory;
@@ -178,6 +180,34 @@ public class SpatialActionInterface extends ManagedComponent {
 		public void executeAction() {
 			ProcessViewPointCommand cmd = new ProcessViewPointCommand(
 					AVSStatus.INPROGRESS, m_vp, new String[] { m_vp.label });
+			addThenCompleteOnOverwrite(cmd);
+		}
+	}
+
+	public static class ConeGroupProcessExecutor extends
+			NonBlockingCompleteOnOperationExecutor<ProcessConeGroupAction> {
+
+		private long coneId;
+
+		public ConeGroupProcessExecutor(ManagedComponent _component) {
+			super(_component, ProcessConeGroupAction.class);
+		}
+
+		@Override
+		protected boolean acceptAction(ProcessConeGroupAction _action) {
+//			try {
+				coneId = _action.coneGroupID;
+//			} catch (CASTException e) {
+//				logException(e);
+//				return false;
+//			}
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			ProcessConeGroup cmd = new ProcessConeGroup(
+					AVSStatus.INPROGRESS, coneId);
 			addThenCompleteOnOverwrite(cmd);
 		}
 	}
@@ -632,6 +662,10 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(CreateRelationalConesForModel.class,
 				new ComponentActionFactory<RelationalViewConeGenerationExecutor>(this,
 						RelationalViewConeGenerationExecutor.class));
+
+		m_actionStateManager.registerActionType(ProcessConeGroupAction.class,
+				new ComponentActionFactory<ConeGroupProcessExecutor>(this,
+						ConeGroupProcessExecutor.class));
 
 		m_actionStateManager.registerActionType(ProcessCone.class,
 				new ComponentActionFactory<ViewConeProcessExecutor>(this,

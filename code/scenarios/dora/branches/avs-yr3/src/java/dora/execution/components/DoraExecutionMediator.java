@@ -28,6 +28,7 @@ import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.ProcessConeGroupAction;
 import execution.slice.actions.ReportPosition;
 import execution.util.ActionConverter;
 
@@ -203,6 +204,33 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
 
 			return act;
+
+		} else if (_plannedAction.name.equals("process_conegroup")) {
+			assert _plannedAction.arguments.length == 3 : "process_conegroup action arity is expected to be 3";
+			// cone group, place
+
+			ProcessConeGroupAction act = newActionInstance(ProcessConeGroupAction.class);
+
+			// Belief of cone group
+			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
+
+			
+			// read the belief from WM
+			IndependentFormulaDistributionsBelief<dBelief> coneGroupUnion = IndependentFormulaDistributionsBelief
+					.create(dBelief.class,
+							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+
+			// Get the ID 
+			Formula coneGroupIDProperty = coneGroupUnion.getContent()
+					.get("id").getDistribution()
+					.firstValue();
+			act.coneGroupID = coneGroupIDProperty.getInteger();
+
+			act.coneGroupBeliefID.id = stringFromElementaryFormula((ElementaryFormula)_plannedAction.arguments[2]);
+			act.coneGroupBeliefID.subarchitecture = "binder";
+
+			return act;
+
 		} else if (_plannedAction.name
 				.equals("report_position")) {
 			assert _plannedAction.arguments.length == 2 : "report_position is expected to be of arity 2";
