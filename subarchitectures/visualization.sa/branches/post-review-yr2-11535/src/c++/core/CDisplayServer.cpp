@@ -40,7 +40,7 @@ extern "C"
 #endif
 
 #ifdef DEBUG_TRACE
-// #undef DEBUG_TRACE
+#undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -65,6 +65,7 @@ CDisplayServer::CDisplayServer()
 CDisplayServer::~CDisplayServer()
 {
    pMainFrame = NULL; // don't delete
+   printf("Destroying CDisplayServer\n");
 }
 
 void CDisplayServer::startIceServer()
@@ -173,6 +174,31 @@ void CDisplayServer::runComponent()
    debug("CDisplayServer Server: Done.");
 }
 
+void CDisplayServer::createView(const std::string& id, Visualization::ViewType type,
+      const std::vector<std::string>& objects)
+{
+   ERenderContext ctx;
+   switch (type) {
+      case Visualization::VtGraphics:
+         ctx = ContextGraphics;
+         break;
+      case Visualization::VtOpenGl:
+         ctx = ContextGL;
+         break;
+      case Visualization::VtHtml:
+         ctx = ContextHtml;
+         break;
+      default:
+         ctx = ContextGraphics;
+   }
+   m_Model.createView(id, ctx, objects);
+}
+
+void CDisplayServer::enableDefaultView(const std::string& objectId, bool enable)
+{
+   m_Model.enableDefaultView(objectId, enable);
+}
+
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       int channels, const std::vector<unsigned char>& data)
 {
@@ -214,7 +240,7 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       }
    }
    else if (channels == 3) {
-      bool bgr = true;
+      bool bgr = true; // reverse channels by default; TODO: parameter in setRawImage
       if (bgr) {
          int r, g, b;
          for (int i = 0; i < npix; i++) {
@@ -240,13 +266,6 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
 
    if (pImage != pExisting) m_Model.setObject(pImage);
    else m_Model.refreshObject(id);
-
-   if (pMainFrame) {
-      // TODO: pMainFrame->notifyObjectAdded(pImage);
-      //    Is this ok? some objects may be associated with views, but not all!
-      //    The application/component should register it's basic views!
-      //    registerObjectView("object_id");
-   }
 }
 
 void CDisplayServer::setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
@@ -290,8 +309,8 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
    }
 
    if (pImage) {
-      pImage->setPart(partId, xmlData);
-      m_Model.refreshObject(id);
+      bool bNotifyNew = pImage->setPart(partId, xmlData);
+      m_Model.refreshObject(id, bNotifyNew);
    }
    else {
       pImage = new CSvgImage();
@@ -299,6 +318,16 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       pImage->setPart(partId, xmlData);
       m_Model.setObject(pImage);
    }
+}
+
+void CDisplayServer::removeObject(const std::string& id)
+{
+   m_Model.removeObject(id);
+}
+
+void CDisplayServer::removePart(const std::string& id, const std::string& partId)
+{
+   m_Model.removePart(id, partId);
 }
 
 void CDisplayServer::setTomGineObject(const std::string& id, const std::string& partId, 
@@ -367,27 +396,26 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtml");
 
-   CHtmlObject *pModel = NULL;
+   CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CHtmlObject*>(pExisting);
-      if (! pModel) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
          DMESSAGE("setHtml: Replacing an exisiting object of different type.");
       }
    }
 
-   if (pModel) {
-      if (htmlData.size() < 1) pModel->removePart(partId);
-      else pModel->setHtml(partId, htmlData);
+   if (pObject) {
+      pObject->setHtml(partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {
-      pModel = new CHtmlObject();
-      pModel->m_id = id;
-      pModel->setHtml(partId, htmlData);
-      m_Model.setObject(pModel);
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      pObject->setHtml(partId, htmlData);
+      m_Model.setObject(pObject);
    }
 #endif
 }
@@ -397,27 +425,26 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlHead");
 
-   CHtmlObject *pModel = NULL;
+   CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pModel = dynamic_cast<CHtmlObject*>(pExisting);
-      if (! pModel) {
+      pObject = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pObject) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
          DMESSAGE("setHtmlHead: Replacing an exisiting object of different type.");
       }
    }
 
-   if (pModel) {
-      if (htmlData.size() < 1) pModel->removePart(partId);
-      else pModel->setHead(partId, htmlData);
+   if (pObject) {
+      pObject->setHead(partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {
-      pModel = new CHtmlObject();
-      pModel->m_id = id;
-      pModel->setHead(partId, htmlData);
-      m_Model.setObject(pModel);
+      pObject = new CHtmlObject();
+      pObject->m_id = id;
+      pObject->setHead(partId, htmlData);
+      m_Model.setObject(pObject);
    }
 #endif
 }
@@ -441,8 +468,7 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 
    if (pObject) {
       CHtmlChunk* pForm = NULL;
-      if (htmlData.size() < 1) pObject->removePart(partId);
-      else pForm = pObject->setForm(ident, partId, htmlData);
+      pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }
@@ -474,8 +500,8 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
    }
 
    if (pObject) {
-      if (htmlData.size() < 1) pObject->removePart(partId);
-      else pObject->setActiveHtml(ident, partId, htmlData);
+      //if (htmlData.size() < 1) pObject->removePart(partId); --> use RemovePart for this
+      pObject->setActiveHtml(ident, partId, htmlData);
       m_Model.refreshObject(id);
    }
    else {

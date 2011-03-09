@@ -19,9 +19,9 @@
 #include "ptrvector.hpp"
 #include "observer.hpp"
 #include "GuiElements.hpp"
-#include "HtmlElements.hpp"
 
 #include <QPainter>
+#include <QGraphicsScene>
 #include <QStringList>
 #include <string>
 #include <map>
@@ -29,13 +29,20 @@
 
 namespace cogx { namespace display {
 
+class CDisplayObjectPart;
 class CDisplayObject;
 class CDisplayView;
 class CDisplayModel;
+class CDisplayCamera;
 class CRasterImage;
 class CRenderer;
+class CGarbage;
 
-typedef enum { Context2D=1, ContextGL=2, ContextHtml=3 } ERenderContext;
+// CHtmlChunk is a CDisplayObjectPart; defined in "HtmlElements.hpp"
+// Used in some functions instead of CDisplayObjectPart for convenience.
+class CHtmlChunk;
+
+typedef enum { Context2D=1, ContextGL=2, ContextHtml=3, ContextGraphics=4 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
 typedef TObjectMap::iterator TObjectMapIterator;
@@ -74,12 +81,49 @@ public:
    virtual std::string getPersistentStorageName() = 0;
 };
 
+// A temporary fix for crashes when objects are deleted during redraw.
+class CGarbage
+{
+   CPtrVector<CDisplayObject> m_objects;
+   CPtrVector<CDisplayObjectPart> m_parts;
+   public:
+   ~CGarbage()
+   {
+      m_objects.delete_all();
+      m_parts.delete_all();
+   }
+   void add(CPtrVector<CDisplayObject>& objects)
+   {
+      CDisplayObject* pObject;
+      FOR_EACH(pObject, objects) {
+         if (pObject) m_objects.push_back(pObject);
+      }
+   }
+   void add(CDisplayObject* pObject)
+   {
+      if (pObject) m_objects.push_back(pObject);
+   }
+   void add(CPtrVector<CDisplayObjectPart>& parts)
+   {
+      CDisplayObjectPart* pPart;
+      FOR_EACH(pPart, parts) {
+         if (pPart) m_parts.push_back(pPart);
+      }
+   }
+   void add(CDisplayObjectPart* pPart)
+   {
+      if (pPart) m_parts.push_back(pPart);
+   }
+};
+
 // Holder for all data that can be displayed.
 class CDisplayModel
 {
 private:
+   CGarbage m_garbage;
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
+   std::map<std::string, bool> m_DisabledDefaultViews;
    // TODO: locking for m_Objects, m_Views, m_GuiElements
 
 public: // XXX Qt needs to know about the views.
@@ -89,12 +133,19 @@ public:
    CDisplayModel();
    virtual ~CDisplayModel();
    void setObject(CDisplayObject *pObject);
-   void refreshObject(const std::string &id);
+   void refreshObject(const std::string &id, bool bNotifyChanged=false);
    void removeObject(const std::string &id);
+   void removePart(const std::string &id, const std::string& partId);
    CDisplayObject* getObject(const std::string &id);
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
    bool isValidView(CDisplayView *pView);
+   void createView(const std::string& id, ERenderContext context, const std::vector<std::string>& objects);
+
+   // Default views are created for objects that don't exist in any other
+   // views. They are enabled by default. This function can be used to remove a
+   // default view that was (or would be) created for an object.
+   void enableDefaultView(const std::string& objectId, bool enable=true);
 
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
@@ -108,11 +159,38 @@ private:
    CPtrVector<CDisplayView> findViewsWaitingFor(const std::string &objectId);
 };
 
+class CDisplayObjectPart
+{
+public:
+   std::string m_id;
+
+public:
+   virtual ~CDisplayObjectPart() {}
+};
+
 // The base class for an object to be displayed.
 class CDisplayObject
 {
 public:
+   class ReadLock
+   {
+      CDisplayObject* pOwner;
+   public:
+      ReadLock(CDisplayObject& owner) { pOwner = &owner; pOwner->_objectMutex.readLock(); }
+      ~ReadLock() { pOwner->_objectMutex.unlock(); }
+   };
+   class WriteLock
+   {
+      CDisplayObject* pOwner;
+   public:
+      WriteLock(CDisplayObject& owner) { pOwner = &owner; pOwner->_objectMutex.writeLock(); }
+      ~WriteLock() { pOwner->_objectMutex.unlock(); }
+   };
+
+private:
    IceUtil::RWRecMutex _objectMutex;
+   friend class CDisplayObject::ReadLock;
+   friend class CDisplayObject::WriteLock;
 
 public:
    std::string m_id;
@@ -128,8 +206,28 @@ public:
          const std::vector<double>& rotationQaternionXYZW);
 
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
+   virtual void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false);
+   virtual int getCameras(CPtrVector<CDisplayCamera>& cameras)
+   {
+      return 0;
+   }
+
+   // Returns true if the part existed and was successfully removed.
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts) = 0;
 };
 
+// The state can't be stored with CDisplayObject because an object may be
+// displayed in multiple views.
+// Note: CViewedObjectState is a nested map.
+class CViewedObjectState
+{
+public:
+   bool m_bVisible;
+   std::map<std::string, CViewedObjectState> m_childState;
+   CViewedObjectState() {
+      m_bVisible = true;
+   }
+};
 
 // An abstract class that renders an object into a context.
 // Each object returns an instance of a renderer to render it in
@@ -137,44 +235,104 @@ public:
 //
 // A renderer should not have any member variables so that a single
 // static instance can be used for all drawing -- the renderer can
-// be safely shared between multiple threads.
+// be safely shared between multiple threads (although it will allways
+// be executed in the GUI thread).
 class CRenderer
 {
 public:
    // Draws the object into the specified context. The function casts
    // the pointers to the desired types draws the object.
-   virtual void draw(CDisplayObject *pObject, void *pContext) = 0;
+   virtual void draw(CDisplayView* pView, CDisplayObject *pObject, void *pContext) = 0;
 
-   // Some contexts require extra drawing info
-   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext) {}
+   // Some contexts require extra drawing info (eg. htlm: head & body rendered separately)
+   virtual void draw(CDisplayView* pView, const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 
+// Objects may define positions from which they are best visible.
+class CDisplayCamera
+{
+public:
+   std::string name;
+   double xEye, yEye, zEye;    // Camera position
+   double xView, yView, zView; // Viewing direction
+   double xUp, yUp, zUp;       // Up vector
+   double viewAngle;           // Camera 'zoom', in degrees
+
+public:
+   CDisplayCamera()
+   {
+      xEye = yEye = zEye = 0;
+      xView = yView = 0; zView = 1;
+      xUp = zUp = 0; yUp = 1;
+      viewAngle = 45;
+   }
+   void setEye(double x, double y, double z)
+   {
+      xEye = x;
+      yEye = y;
+      zEye = z;
+   }
+   void setViewVector(double x, double y, double z)
+   {
+      xView = x;
+      yView = y;
+      zView = z;
+   }
+   void setUpVector(double x, double y, double z)
+   {
+      xUp = x;
+      yUp = y;
+      zUp = z;
+   }
+};
 
 // A view defines a set of objects to be displayed side by side.
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
 {
+   CDisplayModel *m_pModel;
    TObjectMap m_Objects;
+   std::vector<std::string> m_ObjectOrder;
+
+   // Each object may have its own transformation in the view. XXX NOT YET
    std::map<std::string, std::vector<double> > m_Trafos;
+
+   // The view may know about objects even before they exist. When objects
+   // are created, they are added to the subscribed views.
    std::map<std::string, bool> m_SubscribedObjects;
+
+   // Display properties of objects and parts.
+   // We keep state information even after an object/part is removed from
+   // the view just in case if an object with the same id is recreated.
+   CViewedObjectState m_ObjectState;
 
 public:
    std::string m_id;
+   bool m_bDefaultView;
    ERenderContext m_preferredContext;
-   CDisplayView();
+   CDisplayView(CDisplayModel *pModel);
    virtual ~CDisplayView();
    void addObject(CDisplayObject *pObject);
+   void setSubscription(const std::string& id, bool active=true);
    void replaceObject(const std::string& id, CDisplayObject *pNew);
-   void removeObject(const std::string& id);
    void refreshObject(const std::string& id);
+   void removeObject(const std::string& id);
+   void removeAllObjects();
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
+   void getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered=false);
+   CViewedObjectState* getObjectState(const std::string& id);
 
    virtual void drawGL();
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
+   virtual void drawScene(QGraphicsScene &scene);
    virtual void drawHtml(QStringList &head, QStringList &body);
+
+   // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    virtual int getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask);
+   
+   int getCameras(CPtrVector<CDisplayCamera>& cameras);
 
 public:
    // CGuiElementObserver

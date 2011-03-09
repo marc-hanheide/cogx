@@ -21,12 +21,15 @@ extern "C"
   }
 }
 
-// Convenience
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
 #include <ctime>
+#ifdef HAS_LIBPLOT
+//#include <plotter.h> // libplot-dev
+#include <CSvgPlotter.hpp>
+#endif
 
 namespace cogx { namespace test {
 
@@ -215,6 +218,7 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
     mdata[6] = 100;            mdata[7] = 100;           mdata[8] = 1;
     CvMat mat = cvMat(3, 3, CV_64FC1, mdata);
     m_display.setObjectTransform2D("Visualization.test.SVG", "little-lion", &mat);
+    m_display.setObjectTransform2D("Visualization.test.SVGPlotter-online", "little-shapes", &mat);
   }
   {
     std::stringstream str;
@@ -252,6 +256,97 @@ void VideoViewer::runComponent()
     m_display.setObject("Visualization.test.SVG", "lion", str.str());
     m_display.setObject("Visualization.test.SVG", "little-lion", str.str());
   }
+  {
+    std::ifstream infile;
+    infile.open("subarchitectures/visualization.sa/config/test/images/shapes.svg", std::ifstream::in);
+    std::stringstream str;
+    str << infile.rdbuf();
+    infile.close();
+    m_display.setObject("Visualization.test.SVG-Ani", "shapes", str.str());
+  }
+#if HAS_LIBPLOT
+#define YY(y) -(y)
+  {
+    if (1) {
+      std::ostringstream ssvg;
+      cogx::display::CSvgStringPlotter p(ssvg);
+
+      p.openpl();
+      p.flinewidth (2.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+      int a = 160;
+      int b = 240;
+      p.line(a, YY(a), b, YY(b));
+      p.line(0, YY(b), 4*a, YY(b));
+      p.line(2*a, YY(0), 2*a, YY(2*b));
+      p.line(a, YY(a), -a, YY(a));
+      p.line(-a, YY(a), b, YY(b));
+      p.fontsize(20);
+      p.fontname("serif");
+      p.framecolor("yellow");
+      p.fframewidth(3);
+      p.textangle(30);
+      p.fframedtext(a, YY(a), "Coordinate test");
+      p.closepl();
+
+      string s = p.getScreenSvg();
+
+      m_display.setObject("Visualization.test.SVGPlotter", "simple", s);
+      m_display.setObject("Visualization.test.SVGPlotter-online", "little-shapes", s);
+    }
+    else {
+      std::ostringstream svg;
+      SVGPlotter p(std::cin, svg, std::cerr);
+      p.openpl();
+      // p.parampl("PAGESIZE", (char*)"a4"); // doesn't work for SVG
+      if (0) {
+        p.fspace (0.0, 0.0, 640.0, 480.0); // specify user coor system
+        // flip the Y coordinate
+        p.fscale (1.0, -1.0);
+        p.ftranslate(0.0, -480.0);
+      }
+      else {
+        // flip the Y coordinate (default viewport is 0,0 1,1)
+        p.fscale (1.0, -1.0);
+        p.ftranslate(0.0, -1.0);
+      }
+
+      p.bgcolorname("none");
+      p.erase();
+      p.flinewidth (1.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+      int a = 160;
+      int b = 240;
+      p.line(a, a, b, b);
+      p.line(0, b, 2*a, b);
+      p.line(2*a, 0, 2*a, b);
+      p.line(a, a, -a, a);
+      p.line(-a, a, b, b);
+      p.closepl();
+
+      // Replace line 3 (<svg tag>) to remove size and viewport information
+      string str = svg.str();
+      ostringstream svgfix;
+      size_t pos, ppos = 0;
+      for (int i = 0; i < 3; i++) {
+        pos = str.find("\n", ppos+1);
+        if (pos == str.npos) break; // error
+        if (i == 1)
+          svgfix << str.substr(0, pos+1);
+        ppos = pos;
+      }
+      svgfix << "<svg version=\"1.1\" baseProfile=\"full\" id=\"body\" preserveAspectRatio=\"none\" "
+        "xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+        "xmlns:ev=\"http://www.w3.org/2001/xml-events\">\n";
+      svgfix << str.substr(ppos+1);
+
+      m_display.setObject("Visualization.test.SVGPlotter", "simple", svgfix.str());
+      m_display.setObject("Visualization.test.SVGPlotter-online", "little-shapes", svgfix.str());
+      //println(svg.str());
+    }
+  }
+#endif
+
   {
     std::stringstream str;
     str << "function initlists()\n";
@@ -292,6 +387,7 @@ void VideoViewer::runComponent()
            "DispList:draw('myobject')\n"
          "glPopMatrix()\n"
       "end\n";
+    str << "setCamera('LuaGL.default', 0, 0, 5, 0, 0, -1, 0, 1, 0)\n";
     m_display.setLuaGlObject("Visualization.sa.LuaGL", "Points", str.str());
   }
   {
@@ -307,6 +403,12 @@ void VideoViewer::runComponent()
     strA << "This is the TestComponent for the Display Server<br>";
     m_display.setHtml("@info.TestComponent", "text", strA.str());
   }
+  {
+    std::stringstream strA;
+    strA << "This is the HIDDEN TestComponent for the Display Server<br>";
+    m_display.setHtml("@info.HiddenComponent", "text", strA.str());
+    m_display.enableDefaultView("@info.HiddenComponent", false);
+  }
   if (1) {
     std::stringstream strB;
     clock_t a, b;
@@ -320,8 +422,55 @@ void VideoViewer::runComponent()
     sleepComponent(1000);
     fb = fclocks();
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
-    strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" />" << endl;
+    strB << "<input type='button' value='onclick' onclick=\"CastQFormProxy.onClick('id.something')\" /><br>" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
+    m_display.setHtml("@info.HiddenComponent", "zclock_test", strB.str());
+  }
+  // Composed views
+  {
+    std::vector<std::string> views;
+    views.push_back("@htmlhead.TestComponent");
+    views.push_back("@info.TestComponent");
+    views.push_back("@info.HiddenComponent");
+    views.push_back("Visualization.test.SVG");
+    views.push_back("Visualization.test.SVGPlotter");
+    m_display.createView("Composite.HTML", Visualization::VtHtml, views);
+
+    m_display.setHtmlHead("@htmlhead.TestComponent", "svgstyle",
+        "<style>div.svgpart{background:yellow;margin-top:4px;height:120px;}</style>");
+    m_display.enableDefaultView("@htmlhead.TestComponent", false);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back(getComponentID());
+    views.push_back("Visualization.test.SVG");
+    views.push_back("Visualization.test.SVGPlotter");
+    views.push_back("Visualization.test.SVGPlotter-online");
+    m_display.createView("Composite.Image+Svg", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back("Visualization.test.SVG");
+    views.push_back(getComponentID());
+    m_display.createView("Composite.Svg+Image", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back(getComponentID());
+    views.push_back("Visualization.test.SVG-Ani");
+    m_display.createView("Composite.Image+Svg-Ani", Visualization::VtGraphics, views);
+  }
+  {
+    std::vector<std::string> views;
+    views.push_back("Visualization.sa.LuaGL");
+    views.push_back("Visualization.test.Pusher");
+    m_display.createView("Composite.Spiral+Pusher", Visualization::VtOpenGl, views);
+  }
+  {
+    // The default view won't be created if the object is already in another view. Create manually.
+    std::vector<std::string> views;
+    views.push_back(getComponentID());
+    m_display.createView(getComponentID(), Visualization::VtGraphics, views);
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
   {

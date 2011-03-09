@@ -284,6 +284,19 @@ public class DisplayClient {
 		m_Server.setHtmlFormData(id, partId, fields);
 	}
 
+    public final void removeObject(String id)
+	{
+		if (m_Server == null)
+			return;
+		m_Server.removeObject(id);
+	}
+    public final void removePart(String id, String partId)
+	{
+		if (m_Server == null)
+			return;
+		m_Server.removePart(id, partId);
+	}
+
 	public final void addButton(String viewId, String ctrlId, String label) {
 		if (m_Server == null)
 			return;

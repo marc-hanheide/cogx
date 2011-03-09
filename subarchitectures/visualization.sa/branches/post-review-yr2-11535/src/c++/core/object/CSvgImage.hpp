@@ -26,21 +26,24 @@ class CSvgImage: public CDisplayObject
 private:
    friend class CSvgImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
+   friend class CSvgImage_RenderScene;
+   static std::auto_ptr<CRenderer> renderScene;
+   friend class CSvgImage_RenderHtml;
+   static std::auto_ptr<CRenderer> renderHtml;
 // public:
    // A SVG image may have multiple parts: data + transformation
-   class SPart
+   class SPart: public CDisplayObjectPart
    {
       QSvgRenderer* _psvgdoc;
    public:
-      std::string id;
       std::string data;
       std::vector<double> trmatrix;
       SPart(const std::string& partId) {
-         id = partId;
+         m_id = partId;
          _psvgdoc = NULL;
       }
       ~SPart() {
-         if (_psvgdoc) delete _psvgdoc;
+         if (_psvgdoc) _psvgdoc->deleteLater();
          _psvgdoc = NULL;
       }
       void setIdentity() {
@@ -65,8 +68,19 @@ public:
    CSvgImage();
    ~CSvgImage();
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
-   void setPart(const std::string& partId, const std::string& xmlData);
+
+   // Returns true if this is a new part;
+   bool setPart(const std::string& partId, const std::string& xmlData);
+
+   virtual bool removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts); /*override*/
    virtual void setTransform2D(const std::string& partId, const std::vector<double> &transform); /*override*/
+
+   virtual ERenderContext getPreferredContext()
+   {
+      return ContextGraphics;
+   }
+
+   virtual void getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered=false); /*override*/
 
 private:
    SPart* findPart(const std::string& partId);
@@ -75,9 +89,21 @@ private:
 class CSvgImage_Render2D: public CRenderer
 {
 public:
-   virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
+class CSvgImage_RenderScene: public CRenderer
+{
+public:
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
+};
+
+class CSvgImage_RenderHtml: public CRenderer
+{
+public:
+   virtual void draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(CDisplayView *pView, const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
+};
 
 }} // namespace
 #endif /* end of include guard: CSVGIMAGE_IRJTSHTI */

@@ -27,12 +27,18 @@ private:
    cogx::display::CDisplayView* m_pView;
 
 private:
+   int m_controlCount;
    void removeUi();
 
 public:
    QCustomGuiPanel( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
    ~QCustomGuiPanel();
-   void updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+
+   // @returns the nubmer of created custom UI elements.
+   int updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   int controlCount() {
+      return m_controlCount;
+   }
    bool hasView(cogx::display::CDisplayView *pView) {
       return pView == m_pView;
    }

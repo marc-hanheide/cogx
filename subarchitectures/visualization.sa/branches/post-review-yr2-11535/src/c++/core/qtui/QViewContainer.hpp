@@ -20,6 +20,9 @@
 #include "QCastViewBase.hpp"
 #include <QWidget>
 #include <QFrame>
+#include <QHash>
+#include <QString>
+#include <vector>
 
 class QViewContainer: public QFrame
 {
@@ -27,6 +30,7 @@ class QViewContainer: public QFrame
 private:
    // TODO: array of displays when grid of views is supported
    QCastViewBase *m_pDisplay; // Currently active QCastViewXX
+   QHash<QString, std::vector<double> > m_viewPosMap;
 
 public:
    QViewContainer( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
