@@ -62,7 +62,7 @@ public:
 			return tmp;
 		}
 	};
-
+	typedef std::map <int, ConeGroup> MapConeType;
 	AVS_ContinualPlanner();
 	virtual ~AVS_ContinualPlanner();
 
