@@ -17,7 +17,7 @@ fluent and predicate symbols. For example, a simple {\em object search}
 domain would have:
 
 \vspace{-1ex}
-\small
+\tiny
 \begin{tabtt}
 (\=:functions\\
   \> (is-in ?v - visual-object) - location )\\
@@ -39,7 +39,7 @@ object detection algorithm at a specific place, an {\em
 object search} task will have:
 
 \vspace{-1ex}
-\small
+\tiny
 \begin{tabtt}
 (\= :sense vision  :parameters \+ \\
   (?r -robot ?v -visual-object ?l -location) \\
@@ -73,7 +73,7 @@ $(\pp{and}~\prop)$, for conjunctive terms that contain a single atomic
 subterm.}
 
 \vspace{-1ex}
-\small
+\tiny
 \begin{tabtt}
 (\=:init (= (is-in R2D2) kitchen) \+ \\
        (probabilistic \=.8 (= (is-in box) office)  \\
@@ -99,7 +99,7 @@ elements. Making this concrete, the above example yields the
 following flat distribution:
 
 
-\small
+\tiny
 \begin{tabular}{cccc}
 \hline
 Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
@@ -142,7 +142,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 %% the $\pp{office}$, and otherwise a $0.1$ chance of perceiving it.
 
 
-%% \small
+%% \tiny
 %% \begin{tabtt}
 %% (\= :sense vision \+\\
 %%  :parameters \= (\= ?r - robot ?v - visual-object\\
@@ -175,7 +175,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 %% using the following operator schema:
 
 
-%% \small
+%% \tiny
 %% \begin{tabtt}
 %% (\=:action look-for-object \+ \\
 %%    :parameters (\=?r - robot ?v - visual-object\\
@@ -231,7 +231,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 
 
-% \small
+% \tiny
 % \begin{tabtt}
 % (\=:init (= (is-in DORA) kitchen) \+ \\
 %        (probabilistic \=.8 (= (is-in box) office)  \\
@@ -241,7 +241,7 @@ Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 
 % \noindent and therefore, the belief-state $\bstate_0$ is:
 
-% \small
+% \tiny
 % \begin{tabular}{cccc}
 % \hline
 % Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\

@@ -49,21 +49,18 @@ goals set by the user, and acquire knowledge about its surroundings.
 %%
 Our planner takes problem and domain descriptions expressed in a novel
 extension of PPDDL~\cite{younes:etal:2005}, called {\em
-Decision-Theoretic DTPDDL}, for modelling stochastic decision
-problems that feature partial observability.  In this paper we
-restrict our attention to problem models that correspond to
-deterministic-action multi-goal-oriented POMDPs 
-% \footnote{We note that
-% POMDPs with stochastic actions can be compiled into equivalent
-% deterministic-action POMDPs, where all the original action uncertainty
-% is expressed in the starting-state
-% distribution~\cite{ng:Jordan:2000}.}
-in which all actions have
-non-zero cost---i.e., an optimal policy can be formatted as a finite
-horizon contingent plan. Moreover, we target problems of a size and
-complexity that is challenging to state-of-the-art sequential
-satisficing planners, and which are too large to be solved directly by
-decision-theoretic (DT) systems.
+Decision-Theoretic DTPDDL}, for modelling stochastic decision problems
+that feature partial observability.  In this paper we restrict our
+attention to problem models that correspond to deterministic-action
+multi-goal-oriented POMDPs in which all actions have non-zero
+cost\footnote{We note that POMDPs with stochastic actions can be
+compiled into equivalent deterministic-action POMDPs, where all the
+original action uncertainty is expressed in the starting-state
+distribution~\cite{ng:Jordan:2000}.} -- i.e., an optimal policy can be
+formatted as a finite horizon contingent plan. Moreover, we target
+problems of a size and complexity that is challenging to
+state-of-the-art sequential satisficing planners, and which are too
+large to be solved directly by decision-theoretic (DT) systems.
 
 Our planner {\em switches}, in the sense that the base planning
 procedure changes depending on our robot's subjective degrees of

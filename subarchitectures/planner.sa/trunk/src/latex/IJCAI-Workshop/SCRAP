@@ -1,0 +1,83 @@
+
+according to the process
+
+ assumptions
+about the outcomes of their execution.
+
+A trace is computed by our sequential planner, which trades off action costs, goal
+rewards and determinacy.
+
+
+A trace specifies
+a reward giving sequence of actions, and is formatted as a classical
+sequential plan, a trace is a sequence of process actions and
+assumptions about the outcomes .
+
+
+Starting in a sequential session, a
+cost-based satisficing planner which trades off action costs, goal
+rewards and determinacy. This planner generates a reward-giving
+sequence of ground actions from the DTPDDL domain which may also
+include {\em assumptions}: actions that assume the truth of some fact
+that is unknown at plan time (e.g. that a box of cornflakes is located
+on the corner bench in the kitchen). We call this sequence a {\em
+trace}. Execution of the trace proceeds by applying the actions until
+the probability of the next action being applicable falls below some
+threshold (here 95\%), at which point the planner switches to a DT
+session.
+
+
+%% We now describe our {\em switching} planning system that operates
+%% according to the continual planning paradigm, given a description of
+%% the current problem and domain in DTPDDL. The system {\em
+%% switches}, in the sense that planning proceeds in interleaved
+%% sessions, in which the base planner is either {\em sequential}/linear
+%% or {\em decision-theoretic}.
+%% %%
+%% During a sequential session, a rewarding {\em trace} of a possible
+%% execution is computed using a cost-optimising satisficing planner
+%% which trades action costs, goal rewards, and determinacy.
+%% %%
+%% Formatted as a linear plan, the trace specifies a sequence of actions
+%% that achieves some reachable goals following a deterministic
+%% approximation of the problem at hand.
+%% %%
+%% Structurally, a trace is a sequence of elements that are either: (i) ground
+%% actions from the DTPDDL description of the world, or (ii) atomic {\em
+%% assumptions}, modelled as deterministic actions, made about the truth
+%% value of facts that can only be determined at runtime (e.g., that a
+%% box of cornflakes is located on the corner bench in the kitchen).
+%% %%
+%% The system always begins in a sequential session, so that plan
+%% execution proceeds by applying DTPDDL actions from the trace, in
+%% sequence, until the outcome of executing the next scheduled action is
+%% too uncertain according to a threshold parameter~(here, 95\%). In that
+%% eventuality a DT session commences, which tailors sensory processing
+%% to determine whether the assumptions made in the trace hold, or which
+%% otherwise acts to achieve the goals.
+
+
+%% Because online DT planning in large problems is impractical (we seek
+%% response times in seconds), a DT session plans for an abstract process
+%% determined by the current trace and underlying belief-state. That
+%% abstract problem is characterised by a limited number of propositions,
+%% chosen due to their {\em relevance} to the action whose scheduled
+%% execution triggered the switch to the DT session.
+%% %%the subproblem the DT session is asked tosolve.
+%% % MOG: Describe this in detail in the appropriate subsection
+%% %  This
+%% % abstraction is constructed by first excluding all propositions (and
+%% % related actions) that are not true, or {\em assumed } true, of states
+%% % in the trace, then adding them back, using as an heuristic the entropy
+%% % of the trace assumptions conditional on a candidate
+%% % proposition. Propositions are added, one at a time, until the number
+%% % of states in the initial belief-state reaches a given
+%% % threshold.\footnote{Our experiments are performed using a number of
+%% % different threshold parameters.} 
+%% To that abstract model we also add {\em disconfirm} and {\em confirm}
+%% actions that the DT session can schedule in order to judge an atomic
+%% assumption in the trace. Those actions yield a relatively small reward
+%% if the corresponding judgement is true (or small penalty
+%% otherwise). If a judgement action is scheduled for execution the DT
+%% session is terminated, and control is returned to a new sequential
+%% session.
