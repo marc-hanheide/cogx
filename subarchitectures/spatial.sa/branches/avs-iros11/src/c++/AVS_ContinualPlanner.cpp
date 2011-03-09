@@ -288,7 +288,7 @@ void AVS_ContinualPlanner::generateViewCones(
 				new FrontierInterface::ObjectPriorRequest;
 		objreq->relationTypes = relation; // ON or IN or whatnot
 		objreq->objects = labels; // Names of objects, starting with the query object
-		objreq->cellSize = m_cellsize; // Cell size of map (affects spacing of samples)
+		objreq->cellSize = m_cellsize; // CelGOTONODEll size of map (affects spacing of samples)
 		objreq->outCloud = queryCloud; // Data struct to receive output
 		objreq->totalMass = 1.0;
 		//wait until we get the cloud back
@@ -688,19 +688,15 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 
 	m_currentConeGroup = m_beliefConeGroups[id];
 	m_currentViewCone = m_currentConeGroup.viewcones[0];
-	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
-			m_currentProcessConeGroup->status = SpatialData::SUCCESS;
-			log("Overwriting command to change status to: SUCCESS");
-			overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 
 			// FIXME post a nav command
 	log("Posting a nav command");
 
-	/* Cure::Pose3D pos;
+	Cure::Pose3D pos;
 	pos.setX(m_currentViewCone.pos[0]);
 	pos.setY(m_currentViewCone.pos[1]);
 	pos.setTheta(m_currentViewCone.pan);
-	PostNavCommand(pos, SpatialData::GOTOPOSITION);*/
+	PostNavCommand(pos, SpatialData::GOTOPOSITION);
 }
 
 
