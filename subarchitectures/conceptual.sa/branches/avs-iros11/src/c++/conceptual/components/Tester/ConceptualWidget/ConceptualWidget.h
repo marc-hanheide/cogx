@@ -48,7 +48,9 @@ signals:
 
 private slots:
 
-	void collectButtonToggled(bool state);
+	void collectInfoCheckBoxToggled(bool state);
+	void categoriesButtonClicked();
+	void objectsButtonClicked();
 	void sendQueryButtonClicked();
 	void refreshVarsButtonClicked();
 	void refreshWsButtonClicked();

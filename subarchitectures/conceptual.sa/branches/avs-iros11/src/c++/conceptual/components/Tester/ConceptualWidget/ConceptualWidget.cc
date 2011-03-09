@@ -42,8 +42,10 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 
 	// Signals and slots
 	connect(this, SIGNAL(addEventToHistorySignal(QString)), this, SLOT(addEventToHistory(QString)));
-	connect(collectButton, SIGNAL(toggled(bool)), this, SLOT(collectButtonToggled(bool)));
+	connect(collectInfoCheckBox, SIGNAL(toggled(bool)), this, SLOT(collectInfoCheckBoxToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
+	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
+	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
 	connect(refreshVarsButton, SIGNAL(clicked()), this, SLOT(refreshVarsButtonClicked()));
 	connect(refreshWsButton, SIGNAL(clicked()), this, SLOT(refreshWsButtonClicked()));
 	connect(showGraphButton, SIGNAL(clicked()), this, SLOT(showGraphButtonClicked()));
@@ -505,7 +507,7 @@ void ConceptualWidget::visualizeButtonClicked()
 
 
 // -------------------------------------------------------
-void ConceptualWidget::collectButtonToggled(bool state)
+void ConceptualWidget::collectInfoCheckBoxToggled(bool state)
 {
 	_collect=state;
 }
@@ -535,4 +537,21 @@ void ConceptualWidget::addEventToHistory(QString str)
 	eventHistoryListWidget->insertItem(0, str);
 }
 
+
+// -------------------------------------------------------
+void ConceptualWidget::categoriesButtonClicked()
+{
+	standardQueryRadioButton->setChecked(true);
+	queryComboBox->setEditText("p(room*_category)");
+	sendQueryButtonClicked();
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::objectsButtonClicked()
+{
+	standardQueryRadioButton->setChecked(true);
+	queryComboBox->setEditText("p(room*_object_*_unexplored)");
+	sendQueryButtonClicked();
+}
 
