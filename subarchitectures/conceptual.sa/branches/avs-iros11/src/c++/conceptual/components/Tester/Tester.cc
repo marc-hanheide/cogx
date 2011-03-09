@@ -39,20 +39,20 @@ void Tester::configure(const map<string,string> & _config)
 
 	// QueryHandler name
 	if((it = _config.find("--queryhandler")) != _config.end())
-	{
 		_queryHandlerName = it->second;
-	}
-
 	if((it = _config.find("--chaingraphinferencer")) != _config.end())
 		_chainGraphInferencerName = it->second;
 	if((it = _config.find("--defaultchaingraphinferencer")) != _config.end())
 		_defaultChainGraphInferencerName = it->second;
+	if((it = _config.find("--placemanager")) != _config.end())
+		_placeManagerName = it->second;
 
 
 	log("Configuration parameters:");
 	log("-> QueryHandler name: %s", _queryHandlerName.c_str());
 	log("-> ChainGraphInferencer name: %s", _chainGraphInferencerName.c_str());
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
+	log("-> PlaceManager name: %s", _placeManagerName.c_str());
 }
 
 
@@ -89,6 +89,15 @@ void Tester::start()
 	catch(...)
 	{}
 
+	try
+	{
+		// Get the DefaultChainGraphInferencer interface proxy
+		_placeInterfacePrx =
+				getIceServer<FrontierInterface::PlaceInterface>(_placeManagerName);
+		_placeManagerAvailable = true;
+	}
+	catch(...)
+	{}
 
 	// Change filters
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::OVERWRITE),
@@ -190,6 +199,16 @@ ConceptualData::FactorInfos Tester::getChainGraphFactors()
 }
 
 
+// -------------------------------------------------------
+int Tester::getCurrentPlace()
+{
+	if (_placeManagerAvailable)
+	{
+		return _placeInterfacePrx->getCurrentPlace();
+	}
+	else
+		return -1;
+}
 
 
 } // namespace def

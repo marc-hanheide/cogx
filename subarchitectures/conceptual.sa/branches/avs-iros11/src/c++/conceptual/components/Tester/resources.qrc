@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/repoadd.png</file>
     <file>icons/dialog-close.png</file>
     <file>icons/filesave.png</file>
     <file>icons/application-exit.png</file>

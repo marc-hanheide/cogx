@@ -66,15 +66,15 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_8">
-              <item>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
                <widget class="QLabel" name="label">
                 <property name="text">
                  <string>Query type:</string>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="1" column="0">
                <widget class="QRadioButton" name="standardQueryRadioButton">
                 <property name="text">
                  <string>Standard</string>
@@ -84,17 +84,17 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QRadioButton" name="imaginaryQueryRadioButton">
-                <property name="text">
-                 <string>Imaginary</string>
-                </property>
-               </widget>
-              </item>
-              <item>
+              <item row="2" column="0">
                <widget class="QRadioButton" name="factorQueryRadioButton">
                 <property name="text">
                  <string>Factor</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QRadioButton" name="imaginaryQueryRadioButton">
+                <property name="text">
+                 <string>Imaginary</string>
                 </property>
                </widget>
               </item>
@@ -155,7 +155,54 @@
             <property name="allColumnsShowFocus">
              <bool>true</bool>
             </property>
+            <column>
+             <property name="text">
+              <string notr="true">1</string>
+             </property>
+            </column>
            </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="collectButton">
+              <property name="text">
+               <string>Collect Events</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/icons/repoadd.png</normaloff>:/icons/icons/repoadd.png</iconset>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="visualizeButton">
+              <property name="text">
+               <string>Visualize Events</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/icons/nepomuk.png</normaloff>:/icons/icons/nepomuk.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
