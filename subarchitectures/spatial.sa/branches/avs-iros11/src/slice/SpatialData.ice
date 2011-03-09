@@ -364,7 +364,9 @@ module SpatialData {
   };
   
   class ProcessConeGroup {
-	int coneId;
+	AVSStatus status;     
+
+	long coneId;
   };
   
   /**
