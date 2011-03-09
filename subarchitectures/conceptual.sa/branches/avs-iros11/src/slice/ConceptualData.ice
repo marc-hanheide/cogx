@@ -191,11 +191,34 @@ module ConceptualData
 	/** List of room id pairs. */
 	sequence<RoomConnectivityInfo> RoomConnectivityInfos;
 
+	enum EventType 
+	{
+		EventNothig, 
+		EventRoomAdded, EventRoomDeleted, // Info: room id 
+		EventRoomPlaceAdded, EventRoomPlaceDeleted, // Info roomId, placeId
+		EventPlaceStatusChanged, // Info placeId
+		EventGatewayPlacePropertyChanged, // Info placeId
+		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, // placeId, propertyNo
+		EventShapePlacePropertyChanged, // placeid
+		EventAppearancePlacePropertyChanged, // placeid
+		EventRoomConnectivityChanged // place1id, place2id
+	};
+	
+	struct EventInfo
+	{
+		EventType type;	
+		int roomId;
+		int place1Id;
+		int place2Id;
+		string propertyInfo;
+	};
+	
 	/** State of the world obtained from other SAs. */
 	class WorldState
 	{
 		ComaRoomInfos rooms;
 		RoomConnectivityInfos roomConnections;
+		EventInfo lastEvent;
 	};
 
 };
