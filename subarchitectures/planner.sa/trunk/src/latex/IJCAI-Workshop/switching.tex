@@ -1,106 +1,128 @@
 
-
-We describe our approach that switches between sequential and
-contingent sessions. As a continual planning approach, it proceeds by
-interleaving planning and execution in a deterministic-action POMDP
-described in DTPDDL. During a sequential session, planning is
-performed by a ``classical'' system,\footnote{That is, a planner
-designed to solve fully observable deterministic tasks.}  and
-execution proceeds according to the {\em trace} computed by that
-system. Taking the form of a classical plan, the trace specifies a
-sequence of POMDP actions that achieve the agent's objectives in a
-deterministic approximation, i.e., {\em determinisation}, of the
-problem at hand. More precisely, the trace is an interleaved sequence
-of POMDP actions and {\em assumptive} actions. The latter correspond
-to assumptions the planner makes about the truth value of propositions
--- e.g. that a box of cornflakes is located in the kitchen at the
-third plan step. They are called {\em applicability} assumptions if
-the trace includes an action $\action$ that is not applicable with
-probability $1$ at the belief-state
-\bstate\ that the system is projected to be in when \action\ is
-scheduled for execution, i.e., $\exists\state\in\states\;
-\bstate(\state) > 0$ and $\poss(\action)\not\subseteq\state$. By
-scheduling
-\action,  the serial planner makes an assumption about the
-observability of the precondition $\poss(\action)$.
-
-Our approach always begins with a sequential session. Non-assumptive
-actions from the trace are executed in sequence until the
-applicability of the next scheduled action is uncertain. We denote
-that action by \switchAction.  A contingent session then begins that
-tailors sensory processing by the agent to determine whether the
-assumptions made in the trace hold. 
+We now describe our {\em switching} planning system that operates
+according to the continual planning paradigm given a description of
+the current problem and domain in DTPDDL. The system {\em
+switches} in the sense that planning proceeds in interleaved
+sessions in which the base planner is either {\em sequential}/linear
+or {\em decision-theoretic}.
 %%
-We add {\em disconfirm} and {\em confirm} actions to the model, so
-the session is encouraged to judge the assumptions made in the
-trace. On execution of one of those actions, control is returned to
-the sequential session that continues at the current%%{\em underlying}
-belief-state.
-%%
-%% For each assumption we add a {\em
-%% disconfirm} action to the POMDP whose execution is rewarding
-%% (resp. costly) if the assumption is false (resp. true). We also add
-%% one {\em confirm} action that is rewarding (resp. costly) to execute
-%% if $\poss(\switchAction)$ is true (resp. false). If execution of the
-%% contingent plan applies a disconfirm action, then a new sequential
-%% session begins at the {\em underlying} belief-state. If the confirm
-%% action is executed, the sequential session is resumed, and
-%% \switchAction\ is executed. Otherwise, control rests in the continual
+The system begins in a sequential session during which it runs a
+cost-based satisficing planner which trades off action costs, goal
+rewards and determinacy. This planner generates a reward-giving
+sequence of ground actions from the DTPDDL domain which may also
+include {\em assumptions}: actions that assume the truth of some fact
+that is unknown at plan time (e.g. that a box of cornflakes is located
+on the corner bench in the kitchen). We call this sequence a {\em
+trace}. Execution of the trace proceeds by applying the actions until
+the probability of the next action being applicable falls below some
+threshold (here 95\%), at which point the planner switches to a DT session. 
+
+Because online DT planning is impractical for the size of problem we
+are interested in, when a DT session begins we use the trace from the
+preceeding sequential session to restrict the state space. The state space is characterised by a limited number of propositions,
+chosen due to their {\em relevance} to the action whose scheduled
+execution triggered the switch to the DT session.
+%The state
+%space is constructed by first removing all propositions (and related
+%actions) that are not true or assumed true of states in the trace,
+%then adding them back as long as the number of states does not exceed
+%a size threshold\footnote{Our experiments are performed using a number
+%of different threshold parameters.}  Propositions to add back are
+%chosen using as a heuristic the entropy of the trace assumptions
+%conditional on the candidate proposition. 
+To allow the DT planner to
+determine the truth of the assumptions in the trace, we add {\em
+disconfirm} and {\em confirm} actions to the problem for each of
+them. These actions yield a relatively small reward/penalty if the
+corresponding judgement is true/false. If a judgement action is
+scheduled for execution the DT session is terminated, and control is
+returned to a sequential session.
+
+%% We now describe our {\em switching} planning system that operates
+%% according to the continual planning paradigm, given a description of
+%% the current problem and domain in DTPDDL. The system {\em
+%% switches}, in the sense that planning proceeds in interleaved
+%% sessions, in which the base planner is either {\em sequential}/linear
+%% or {\em decision-theoretic}.
+%% %%
+%% During a sequential session, a rewarding {\em trace} of a possible
+%% execution is computed using a cost-optimising satisficing planner
+%% which trades action costs, goal rewards, and determinacy.
+%% %%
+%% Formatted as a linear plan, the trace specifies a sequence of actions
+%% that achieves some reachable goals following a deterministic
+%% approximation of the problem at hand.
+%% %%
+%% Structurally, a trace is a sequence of elements that are either: (i) ground
+%% actions from the DTPDDL description of the world, or (ii) atomic {\em
+%% assumptions}, modelled as deterministic actions, made about the truth
+%% value of facts that can only be determined at runtime (e.g., that a
+%% box of cornflakes is located on the corner bench in the kitchen).
+%% %%
+%% The system always begins in a sequential session, so that plan
+%% execution proceeds by applying DTPDDL actions from the trace, in
+%% sequence, until the outcome of executing the next scheduled action is
+%% too uncertain according to a threshold parameter~(here, 95\%). In that
+%% eventuality a DT session commences, which tailors sensory processing
+%% to determine whether the assumptions made in the trace hold, or which
+%% otherwise acts to achieve the goals.
+
+
+%% Because online DT planning in large problems is impractical (we seek
+%% response times in seconds), a DT session plans for an abstract process
+%% determined by the current trace and underlying belief-state. That
+%% abstract problem is characterised by a limited number of propositions,
+%% chosen due to their {\em relevance} to the action whose scheduled
+%% execution triggered the switch to the DT session.
+%% %%the subproblem the DT session is asked tosolve.
+%% % MOG: Describe this in detail in the appropriate subsection
+%% %  This
+%% % abstraction is constructed by first excluding all propositions (and
+%% % related actions) that are not true, or {\em assumed } true, of states
+%% % in the trace, then adding them back, using as an heuristic the entropy
+%% % of the trace assumptions conditional on a candidate
+%% % proposition. Propositions are added, one at a time, until the number
+%% % of states in the initial belief-state reaches a given
+%% % threshold.\footnote{Our experiments are performed using a number of
+%% % different threshold parameters.} 
+%% To that abstract model we also add {\em disconfirm} and {\em confirm}
+%% actions that the DT session can schedule in order to judge an atomic
+%% assumption in the trace. Those actions yield a relatively small reward
+%% if the corresponding judgement is true (or small penalty
+%% otherwise). If a judgement action is scheduled for execution the DT
+%% session is terminated, and control is returned to a new sequential
 %% session.
-%%
-Because contingent planning is only practical in relatively small
-POMDPs, contingent sessions plan in an abstract decision process
-determined by the current trace. This abstraction is constructed by
-first omitting all propositions that do not feature in the trace, and
-by then iteratively refining the model while the result is of a
-practicable size.
 
-Finally, whether proceeding in a sequential or contingent session, our
-continual planner maintains a factored representation of successive
-belief-states by performing belief revision according to
-Eq~\ref{eq:revision}. Moreover, our internal representation of the
-underlying belief-state corresponds more-or-less directly to an
-$(\pp{:init})$ declaration. Our approach uses that distribution: (1)
-as the source of candidate determinisations for sequential planning,
-(2) to determine when to switch, and (3) as a mechanism to guide
-construction of an abstract process for contingent sessions.
+Whatever the session type, our continual planner maintains a factored
+representation of successive belief-states.
+% by performing belief revision. 
+As an internal representation of the $(\pp{:init})$
+declaration, we keep a tree-shaped Bayesian network which gets updated
+whenever an action is performed, or an observation received. That
+belief-state representation is used: (1) as the source of candidate
+determinisations for sequential planning, (2) in determining when to
+switch to a DT session, and (3) as a mechanism to guide construction
+of an abstract process for DT sessions.
 
-%% PLEASE STICK A PARAGRAPH HERE, (SENSIBLY) REQUESTED BY MORITZ, ABOUT
-%% HOW WE DO BELIEF REVISION ACROSS SWITCHING.
+\subsection{Sequential Sessions}
 
-%% \Omit{
-%%   Therefore, although our current implementation does not
-%%   explicitly support it, our approach generalises to POMDPs with
-%%   stochastic action models.
-%% }
-
-\subsection{Sequential Planning in POMDPs}
-
-A sequential session uses a classical planner to compute a trace. The
-latter encapsulates assumptions about: (1) the true underlying state,
-(2) how execution will progress, and (3) the possibility of the agent
-eventually holding strong beliefs about the truth values of specific
-state propositions. Here we describe the deterministic planning
-problem, derived from the DTPDDL model, that admits plans which
-correspond to traces.
-
-In a deterministic-action POMDP all the uncertainty in state and
-action is expressed in the $(\pp{:init})$ declaration. Our approach
-uses the structure of that, as it occurs in the problem description,
-to define a set of state-assumptions available to sequential planning.
-%%
-Writing \#\ if the value of a proposition is unspecified, for
-$\pp{DORA}$ we have the following assumptions:
+As we only consider deterministic-action POMDPs, all state
+uncertainty is expressed in the $(\pp{:init})$ declaration. This
+declaration is used by our approach to define the starting state for
+sequential sessions, and the set of state-assumptions available to
+sequential planning.  Writing \#\ if the value of a proposition is
+unspecified, taking the $(\pp{:init})$ example from the previous
+section, we have the following assumptions:
 
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \hline
-.24 & kitchen & office & office \\
-.06 & kitchen & kitchen & office \\
-.56 & kitchen & office & kitchen \\
-.14 & kitchen & kitchen & kitchen \\
+%% .24 & kitchen & office & office \\
+%% .06 & kitchen & kitchen & office \\
+%% .56 & kitchen & office & kitchen \\
+%% .14 & kitchen & kitchen & kitchen \\
 .7 & kitchen & \# &  kitchen\\
 .3 & kitchen & \# & office \\
 .8 & kitchen & office & \# \\
@@ -110,177 +132,143 @@ Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
 \end{tabular}
 \normalsize
 
-\noindent An assumption corresponds to a {\em
-relaxed} visitation of the root term of $(\pp{:init})$. In this
-relaxed case, a conjunctive term is visited iff its atomic subterms
-are visited, and zero or more of its immediate probabilistic subterms
-are visited. The starting state, $\state_0$, for sequential planning
-is an {\em abstract} state that captures the unique assumption which
-has probability $1$. In $\pp{DORA}$, that is:
+\noindent Each assumption corresponds to one distinct {\em
+relaxed} visitation of the root term. Here, a conjunctive term is
+visited iff its atomic subterms are visited, and zero or one of its
+immediate probabilistic subterms are visited. For a sequential
+session, the starting state corresponds to an assumption (usually
+unique) with probability $1$.\footnote{Without a loss of generality,
+we assume conjunctive terms list atoms that are true with
+probability 1 according to a visitation, and that actions do not
+have negative preconditions.}  In our example, that starting state is:
 
+\vspace{-1ex}
+
+\small
 \[
 \begin{array}{l}
-\state_0 \equiv \{(=(\pp{is-in}~\pp{DORA})~\pp{kitchen}),\\
+\state_0 \equiv \{(=(\pp{is-in}~\pp{R2D2})~\pp{kitchen}),\\
 \;\;(=(\pp{is-in}~\pp{box})~\#), (=(\pp{is-in}~\pp{cup})~\#)\}.
 \end{array}
 \]
+\normalsize
 
-In order to make assumptions available to the sequential planner, we
-add one {\em assumptive} action $\assumptiveS{i}$ to the problem for
-each element, $\prob_i (T_i)$, of each probabilistic term from
-$(\pp{:init})$. The physics of these actions is as
-follows: $\assumptiveS{i}$ can be executed if no $\assumptiveS{j}$,
-$j \neq i$, has been executed from the same probabilistic term, and,
-either $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root
-conjunct, or it occurs in $T_k$ for some executed
-$\assumptiveS{k}$. Also, an assumption about a proposition
-$\prop$ can only be made once, and must be sequenced before any POMDP
-actions that have $\prop$ in their precondition or effect.
+\vspace{-1ex}
+
+To represent state assumptions we augment the problem posed during
+a sequential session with an \emph{assumptive action} $\assumptiveS{i}$ for
+each element $\prob_i (T_i)$, of each probabilistic term from
+$(\pp{:init})$. Here, $\assumptiveS{i}$ can be executed if no
+$\assumptiveS{j}$, $j \neq i$, has been executed from the same
+probabilistic term, and, either
+$(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct, or
+it occurs in $T_k$ for some executed $\assumptiveS{k}$.
 %%
-In other words, an assumptive action
-must be applied to make a truth assignment to \prop, and then that
-truth assignment can be modified by the DTPDDL domain operators.
+We also add constraints that forbid scheduling of
+assumptions about facts after actions with preconditions or effects
+that mention those facts. For example, the robot cannot assume it is
+plugged into a power source immediately after it unplugs itself.
 %%
-%%
-Executing $\assumptiveS{i}$ in $\state$ effects a transition to a
-successor state $\state^{T_i}$ with probability $\prob_i$, and
+Executing $\assumptiveS{i}$ in a state $\state$ effects a transition
+to a successor state $\state^{T_i}$ with probability $\prob_i$, and
 $\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
-the union of $\state$ with atomic terms from $T_i$ with the
-proposition denoting the undefined fact is deleted. For example, if
-the action adds $(=(\pp{is-in}~\pp{box})~\pp{office})$, then it must
-delete $(=(\pp{is-in}~\pp{box})~\#)$. State $\state^\bot$ is an added
-sink, where $\forall\action$ $\reward(\state^\bot, \action) = 0$ and
-$\transProb(\state^\bot, \action, \state^\bot) = 1$.
-%%
-Lastly, we have that if $\action$ has a precondition that is not true
-with probability $\theta$, a given threshold, in the underlying belief
-$\bstate$, then immediately before it is executed blindly the system
-switches to a contingent session (described below).
+the union of $\state$ with atomic terms from $T_i$. State
+$\state^\bot$ is an added sink.
 
 
-%% For sequential planning the operators from the POMDP model are
-%% available with semantics that accommodate the above abstraction as
-%% follows: In the deterministic model a proposition $\prop$ can be
-%% thought to have a ternary interpretation at a state \state, as either
-%% {\em true}, written $\prop\in\state$, {\em false}, written
-%% $\prop\not\in\state$, or {\em unspecified}, with a slight abuse of
-%% notation written $\prop\#\in\state$. For example, in $\pp{DORA}$
-%% $(=(\pp{is-in}~\pp{box})\pp{office})\#\in\state_0$. For POMDP actions
-%% $\action\in\actions$ in the deterministic model, if
-%% $\prop \in \poss(\action)$, or if $\prop$ is the subject of a positive
-%% or negative effect of $\action$, then $\action$ is not applicable
-%% in \state\ if $\prop\#\in\state$. 
+We now describe the optimisation criteria used during sequential
+sessions. Let $\prob_i$ be the probability that the $i^{th}$ sequenced
+action, $\action_i$, from a trace of state-action pairs
+$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
+does not transition to $\state^\bot$, and
+$\reward(\state_i, \action_i)$ be the instantaneous reward received
+for executing action $\action_i$ in state $\state_i$. The optimal
+trace has value:
 
+%We now describe the optimisation criteria used during sequential
+%sessions. Where $\prob_i$ is the probability that the $i^{th}$
+%sequenced action, $\action_i$, from a trace of state-action pairs
+%$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
+%does not transition to $\state^\bot$, we have that the optimal trace
+%has value:
 
-
-
-
-%% Addressing now the switching semantics of action execution. I
-%% %% In detail, we halt the sequential
-%% session at \action\ if $\exists
-%% \state$ s.t. $\bstate(\state)>0$, 
-%% $\prop\in\poss(\action)$ , and $\prop\not\in\state$. According to the
-%% semantics of action execution there must be a $\state'$ s.t.
-%% $\bstate(\state')>0$ and $\prop\in\state'$. Otherwise, \action\ must
-%% not have been scheduled at \bstate.
-
-
-%% then $\reward(\state,\action)=10$, and
-%% otherwise if $\prop\not\in\state'$ then
-%% $\reward(\state',\action)=-10$.
-
-
-We now describe the optimisation criteria given to the classical
-planner. Where $\prob_i$ is the probability that the $i^{th}$
-sequenced action $\action_i$ does not transition to $\state^\bot$, we
-define the value of a trace
-$\state_0, \action_0, \state_1, \action_1,.., \state_N$ from the
-deterministic model to equal:
-
-\begin{equation}\label{eq:tracevalue}
-V(\state_0, \action_0, \state_1, \action_1,.., \state_N) =  \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1} \reward(\state_i, \action_i)
-\end{equation}
-
-\noindent The optimal trace given a plan, i.e., the sequence of non-assumptive
-actions from the trace, therefore has value:
-
+\small
 \[
-V^* = \max_{\prob_1, .., \prob_n} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
+V^* = \max_N \max_{\state_0, \action_0,.., \state_N} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
+\normalsize
 
-\noindent which is equal to the maximal 
-additive contribution a trace of the plan can make to
-Eq~\ref{eq:expectedvalue}.  In goal directed problems, where the only
-non-zero reward is received at the first transition to a goal state,
-the Eq~\ref{eq:tracevalue} criteria gives us the behaviour sought
-by \system{FFR$_a$}~\cite{yoon:etal:2007}. From the perspective of
-gradient-based reinforcement learning systems, such as William's
-REINFORCE and GPOMDP variants for planning~\cite{olivier:doug:2009},
-under reasonable assumptions the optimal trace identifies a maximal
-gradient step from a uniformly random soft-max policy. Finally, it is
-worth clarifying that although the above discussion has been in terms
-of a trace of length $N$, there is nothing in our approach that
-artificially limits the length of candidate sequential plans.
+%\noindent  Here,  $\reward(\state_i, \action_i)$ is the instantaneous
+%reward ---i.e., can be negative for action costs, or positive for goal
+%achievement--- received for executing action $\action_i$ in state
+%$\state_i$. Finally, it is worth clarifying that in practise we do not
+%artificially limit the length of traces that the sequential planner
+%can consider. Moreover, for problems we consider there is always a
+%finite optimal trace.
 
+\subsection{DT Sessions}
 
-\subsection{Decision-Theoretic Planning in Abstractions}
+When an action is scheduled whose outcome is uncertain according to
+the underlying belief-state, the planner switches to a DT
+session. That plans for {\em small} abstract processes defined
+according to the action that triggered the DT session, the assumptive
+actions in the proceeding trace, and the current
+belief-state. Targeted sensing is encouraged by augmenting the reward
+model to reflect a heuristic value of knowing the truth about
+assumptions. In detail, all rewards from the underlying problem are
+retained. Additionally, for each relevant assumptive action
+$\assumptiveS{i}$ in the current trace, we have a {\em disconfirm
+action} $\assumptiveDT{i}$ so that for all states $\state$:
 
-In a contingent session our switching planner solves a sensing problem
-in an abstract processes defined in terms of the assumptive actions in
-the current trace, and the $(\pp{:init})$ declaration that models the
-underlying belief-state.
-
-The focus for contingent planning is on sensing, we therefore give the
-process in this session an augmented reward model.  This reflects the
-value of performing sensing actions in the context of the trace
-proposed by the preceding sequential deliberation. First, all rewards
-from the original POMDP are retained. Then, for each $\assumptiveS{i}$
-action scheduled by the current trace, we have a {\em dual}
-$\assumptiveDT{i}$ so that $\forall\state\in\states$:
-
+\vspace{-1ex}
+\small
 \[
 \reward(\state, \assumptiveDT{i}) = \bigg\{ \begin{array}{ll}
 \$(T_i) & \pp{if}~\;\;T_i \not\subseteq \state \\
 \hat\$(T_i) & \pp{otherwise} \\
 \end{array}
 \]
+\normalsize
 
-\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a positive
-(negative) numeric quantity which captures the utility the agent
-receives for correctly (incorrectly) rejecting an assumption. The
-added dual actions are propositionally trivial -- i.e.,
-$\forall\state\in\states$ $\poss(\assumptiveDT{i})
-\subseteq \state$ and $\assumptiveDT{i}(\state) \equiv \state$.  
+\vspace{-1ex}
+
+\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a
+small positive (negative) numeric quantity which captures
+the utility the agent receives for correctly (incorrectly) rejecting
+an assumption.
 %%
-In order to reduce the number of possible rejections we omit
-assumptions that are not {\em active} with respect to the action,
-\switchAction, whose scheduled execution switched the system into
-the contingent session. An assumption $\assumptiveS{i}$ is active if
-\switchAction\ is not applicable in the sequential model unless
-$\assumptiveS{i}$ is scheduled in the trace prefix
-to \switchAction. For example, if $\pp{DORA}$'s trace is:
+In terms of action physics, a disconfirm action can only be executed
+once, and otherwise is modelled as a self-transformation.
+%%
+We only consider {\em relevant} assumptions when constructing the
+abstract model.  If \switchAction\ is the action that switched the
+system to a DT session, then an assumption $\assumptiveS{i}$ is {\em
+relevant} if it is necessary for the outcome of \switchAction\ to be
+determined.  Continuing our simplified example, if the trace is:
 
+\small
 \[
 \begin{array}{l}
 \actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
 \actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}));\\
-(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office});\\
-(\pp{look-for-object}~\pp{DORA}~\pp{cup}~\pp{kitchen});\\
-(\pp{report-is-in}~\pp{box}~\pp{office}); \\
-(\pp{report-is-in}~\pp{cup}~\pp{kitchen})
+(\pp{look}~\pp{box}~\pp{office});
+(\pp{look}~\pp{cup}~\pp{kitchen});\\
+(\pp{report}~\pp{box}~\pp{office}); 
+(\pp{report}~\pp{cup}~\pp{kitchen})
 \end{array}
 \]
+\normalsize
 
 \noindent Taking the switching action \switchAction\ to be
-$(\pp{look-for-object}~\pp{DORA}~\pp{box}~\pp{office})$, we have that
+$(\pp{look}~\pp{box}~\pp{office})$, we have that
 $\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
-active, and therefore exclude
-$\actions^{\bullet}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ from the
-POMDP posed to the contingent session. 
+relevant for this session, and therefore we exclude the corresponding
+disconfirm action from the abstract decision process.
 
-We also include another propositionally trivial action
-$\actions.\poss(\switchAction)$ with the reward property:
+Given \switchAction, we also include another once-only self-transition
+action $\actions.\poss(\switchAction)$, a \emph{confirmation action}
+with the reward property:
 
 \[
 \reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
@@ -289,35 +277,71 @@ $\actions.\poss(\switchAction)$ with the reward property:
 \end{array}
 \]
 
-For the purposes of successive switching, execution of either a dual
-action of the form $\assumptiveDT{i}$, or the
-$\actions.\poss(\switchAction)$, returns control to a sequential
-session. If a dual is executed, then the sequential planner must
-replan with $\bstate_0$ equal to the underlying
-belief-state. Otherwise, if $\actions.\poss(\switchAction)$ is
-executed, then the current sequential plan is executed until further
-sensing is scheduled, or to completion. Lastly, we note that in our
-project the rewards, i.e., functions
-$\$,\hat\$:2^\propositions\to\Re$, for the POMDP posed to the
-contingent session are sourced from a motivational component of our
-robotic architecture. In this paper, for $\assumptiveDT{i}$ actions we
-set $\$(x)$ to be a positive constant, and have $\hat\$(x)= - \$(x)(1
-- \prob) / \prob$ where $\prob$ is the probability that $x$ is true. For
+Execution of either a disconfirmation or the confirmation action
+returns control to a sequential session, which then continues from the
+underlying belief-state.
+
+Turning to the detail of (dis-)confirmation rewards, in our integrated
+system these are sourced from a motivational subsystem. In this paper,
+for $\assumptiveDT{i}$ actions we set $\$(x)$ to be a small positive
+constant, and have $\hat\$(x)= - \$(x)(1 - \prob) /
+\prob$ where $\prob$ is the probability that $x$ is true. For
 $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
-\$(x)\prob/(1-\prob)$.\footnote{These values were chosen to encourage
-  sensing.}
+\$(x)\prob/(1-\prob)$.
 
-%%  We make no assumptions here about how they are
-%% derived.
 
-The starting belief-state for the abstract process is given in terms
-of a {\em relaxed} $(\pp{:init})$ declaration. We first construct a
-tree which only includes terms from the {\em relaxed} visitation
-characterised by the active {\em assumptive} actions in the current
-sequential plan. Figure \ref{fig:abstraction} shows the belief-state
-of a more detailed version of our previous example. The diamonds
-represent probabilistic terms of the state description while circles
-represent conjunctive or atomic terms. 
+
+\Omit{
+%%
+Finally, 
+If an
+assumption was rejected, we prohibit that sequential session from
+making it again.
+}
+
+
+%%  the size of the state space
+%% is determined by two factors: the number of non-zero states in the
+%% initial belief-state, and the number of actions. Determining
+%% action reachability is intractable, as is determining their relevance
+%% to goal achievement.
+
+%% As we are aiming to keep the decision theoretic session fast, we try
+%% to keep the state space of the abstract problem as small as
+%% possible. In a deterministic-action POMDP, the state space size is
+%% determined by two factors: the number of non-zero states in the
+%% initial belief-state and the number of executable actions. As
+%% determining the relevance of an action for a given goal in in general
+%% a hard problem, we concentrate on keeping the number of uncertain
+%% facts as low as possible without losing important information about
+%% the sensing goal.
+
+In order to guarantee fast DT sessions, planning occurs for a small
+abstract problem. In our setting, where the underlying decision
+process has a deterministic action model, a significant cause of
+problem largeness is due to the number of states that occur with
+non-zero probability in the underlying belief-state. In posing a small
+abstract process for a DT session, we construct an abstract
+belief-state that is chiefly characterised by facts related to the
+current trace. In that abstraction, instances of operator or sense
+declarations whose specification mentions an excluded fact are not
+available.
+%%
+In detail, we first construct an $(\pp{:init})$ declaration which
+contains the root term, and relevant assumptions from the trace---e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
+diamonds are probabilistic terms, and circles are atomic and/or
+conjunctive.
+%%
+For each excluded atom, we compute the {\em entropy} of the {\em
+relevant}
+assumptions, {\em conditional} on that atom. Intuitively, lower
+entropy indicates an atom gives better information about
+assumptions. Facts are iteratively added to the belief-state in
+increasing order according to that measure until the belief space size
+reaches a predefined limit (Fig.\ref{fig:abstraction-c}).
+
+%%  or no more atoms that reduce the entropy
+%% can be added 
 
 \begin{figure}[h!]
   \centering
@@ -329,44 +353,44 @@ represent conjunctive or atomic terms.
   \tikzstyle{assumption} = [solid, very thick, draw=black]
   \tikzstyle{selected} = [solid, draw=black]
   \tikzstyle{unused} = [densely dashed, draw=black!40]
-  \subfloat[The initial belief-state with the assumptions made by the continual
-    planner in bold.]{
-      \label{fig:abstraction-a}
-      \begin{tikzpicture}[
-    level 3/.style={tree}]
-    \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
-      child[seclevel] {node[cnode, assumption] (office) {}
-        child {node [pnode, assumption] (box) {}
-          child {node [cnode] (boxp1) {}}
-          child {node [cnode, assumption] (boxp2) {}}
-        }
-        child {node [pnode] (cup) {} 
-          child {node [cnode] (cupp1) {}}
-          child {node [cnode] (cupp2) {}}
-        }
-      }
-      child {node[cnode] (kitchen) {}
-        child {node [pnode] (box2) {} 
-          child {node [cnode] (box2p1) {}}
-          child {node [cnode] (box2p2) {}}
-        }
-      };
-   \tiny
-   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-   \node[above=0 of cat] {$\pp{(category room1)}$};
-   \node[below=0 of kitchen] {$\pp{kitchen}$};
-   \node[below=0 of office] {$\pp{office}$};
-   \node[below=0 of box] {$\pp{(is-in box)}$};
-   \node[below=0 of box2] {$\pp{(is-in box)}$};
-   \node[below=0 of cup] {$\pp{(is-in cup)}$};
-   \node[right=0 of boxp1] {$\pp{place1}$};
-   \node[right=0 of boxp2] {$\pp{place2}$};
-   \node[right=0 of box2p1] {$\pp{place1}$};
-   \node[right=0 of box2p2] {$\pp{place2}$};
-   \node[right=0 of cupp1] {$\pp{place1}$};
-   \node[right=0 of cupp2] {$\pp{place2}$};
-    % \node[node] (kitchen) right of (cat) {};
-  \end{tikzpicture}}
+  %% \subfloat[The initial belief-state with the assumptions made by the continual
+  %%   planner in bold.]{
+  %%     \label{fig:abstraction-a}
+  %%     \begin{tikzpicture}[
+  %%   level 3/.style={tree}]
+  %%   \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
+  %%     child[seclevel] {node[cnode, assumption] (office) {}
+  %%       child {node [pnode, assumption] (box) {}
+  %%         child {node [cnode] (boxp1) {}}
+  %%         child {node [cnode, assumption] (boxp2) {}}
+  %%       }
+  %%       child {node [pnode] (cup) {} 
+  %%         child {node [cnode] (cupp1) {}}
+  %%         child {node [cnode] (cupp2) {}}
+  %%       }
+  %%     }
+  %%     child {node[cnode] (kitchen) {}
+  %%       child {node [pnode] (box2) {} 
+  %%         child {node [cnode] (box2p1) {}}
+  %%         child {node [cnode] (box2p2) {}}
+  %%       }
+  %%     };
+  %%  \tiny
+  %%  \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
+  %%  \node[above=0 of cat] {$\pp{(category room1)}$};
+  %%  \node[below=0 of kitchen] {$\pp{kitchen}$};
+  %%  \node[below=0 of office] {$\pp{office}$};
+  %%  \node[below=0 of box] {$\pp{(is-in box)}$};
+  %%  \node[below=0 of box2] {$\pp{(is-in box)}$};
+  %%  \node[below=0 of cup] {$\pp{(is-in cup)}$};
+  %%  \node[right=0 of boxp1] {$\pp{place1}$};
+  %%  \node[right=0 of boxp2] {$\pp{place2}$};
+  %%  \node[right=0 of box2p1] {$\pp{place1}$};
+  %%  \node[right=0 of box2p2] {$\pp{place2}$};
+  %%  \node[right=0 of cupp1] {$\pp{place1}$};
+  %%  \node[right=0 of cupp2] {$\pp{place2}$};
+  %%   % \node[node] (kitchen) right of (cat) {};
+  %% \end{tikzpicture}}
 \qquad
   \subfloat[Removing facts that are not part of an assumption.]{
     \label{fig:abstraction-b}
@@ -401,7 +425,7 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
 \vspace{2mm}
-  \subfloat[Refinement, by adding relevant facts until the $\bstate_0$ size limit is reached.]{
+  \subfloat[Refinement, by adding relevant facts.]{
     \label{fig:abstraction-c}
     \begin{tikzpicture}[
     level 3/.style={tree}]
@@ -438,82 +462,36 @@ represent conjunctive or atomic terms.
     % \node[node] (kitchen) right of (cat) {};
   \end{tikzpicture}}
   
-  \caption{Generating the abstract belief space.}
+  \caption{Abstract belief-state, and refinement.}
 \label{fig:abstraction}
 \end{figure}
 
-% \small
-% \begin{tabtt}
-% (\=:init (= (is-in DORA) kitchen) \+ \\
-%        (probabilistic \=.8 (= (is-in box) office)  \\
-% 		      \>.2 (= (is-in box) kitchen))) \\
-% \end{tabtt}
-% \normalsize
+% When limiting the number of actions, we aim to include those that are
+% possibly required to a) reach the goal or b) to directly observe an
+% atom that is part of the abstract belief state. In general, checking
+% this for an action is \textsc{PSPACE} complete for \textsc{STRIPS}
+% planning. 
 
-% \noindent and therefore, the belief-state $\bstate_0$ is:
-
-% \small
-% \begin{tabular}{cccc}
-% \hline
-% Probability & (is-in DORA)  & (is-in box)  & (is-in cup) \\
-% \hline
-% .8 & kitchen & office & \# \\
-% .2 & kitchen & kitchen & \# \\
-% \hline
-% \end{tabular}
-% \normalsize
-
- % With
-% regards to abstraction, the contingent and serial sessions apply the
-% same applicability conditions ---i.e., that each effect and condition
-% $\prop$ is specified, $\prop\in\state$--- to actions from the DTPDDL
-% problem description.
-
-In the first step, we remove all facts that are not part of an
-assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
-would proceed in an abstraction of the environment that does not
-contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
-%%
-In a second step, we iteratively refine the relaxed declaration by
-adding terms from the original statement of $(\pp{:init})$ while the
-number of abstract states in $\bstate_0$ that occur with non-zero
-probability according to that refined declaration remains of a
-practicable size. In detail, for each excluded atomic term, we compute
-the {\em entropy} of the active assumptions, {\em conditional} on the
-corresponding proposition.  Loosely speaking, the lower the {\em
-  conditional entropy} of an atom, the more information about the
-assumptions the contingent planner expect to derive from it. Thus,
-propositions that in the first place were excluded are iteratively
-added to the problem posed to the conditional session in increasing
-order according to that measure (Fig. \ref{fig:abstraction-c}).
+% We approximate the set of relevant actions as follows: Let
+% \relevantAtoms\ be the set of atoms that either occur in the goal
+% condition \poss(\switchAction) or in a precondition \poss($a$) of an
+% action $a$ that can directly sense any atom in the abstract belief
+% state. We construct a \emph{relaxed planning graph} with
+% \relevantAtoms\ as goal atoms from which we extract a relaxed
+% plan. 
 
 
-%% In detail, for each excluded atomic term, we compute the {\em
-%% entropy} of the corresponding proposition, {\em conditional} on the
-%% active assumptions. The {\em conditional entropy} measure
-%% is higher the more uncertain that proposition is given truth
-%% assignments to propositions that are the subject of active
-%% assumptions. Propositions that in the first place were excluded are
-%% iteratively added to the problem posed to the conditional session in
-%% increasing order according to that measure.
 
-
-%% In particular, we compute the {\em conditional entropy} of
-%% each excluded proposition given the active assumptions. Propositions
-%% are candidates for addition in increasing order according to that
-%% measure.
-
-%% Of course, it is expensive to measure size exactly,
-%% and in practise we estimate this to be $2^{|\propositions^\#|}$, where
-%% $\propositions^\#$ is the set of propositions in the abstraction that
-%% were not assigned the {\em unknown} value \#. Terms are proposed for
-%% addition because they are probabilistic, and because they were omitted
-%% in the {\em relaxed} visitation characterised by {\em assumptive}
-%% actions in the sequential plan. In each iteration, we add one
-%% candidate term with the largest number of parent terms already in the
-%% candidate tree.
-
-
+%% In the first step, we remove all facts that are not part of an
+%% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
+%% would proceed in an abstraction of the environment that does not
+%% contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
+%% %%
+%% In a second step, we iteratively refine the relaxed declaration by
+%% adding terms from the original statement of $(\pp{:init})$ while the
+%% number of abstract states in $\bstate_0$ that occur with non-zero
+%% probability according to that refined declaration remains of a
+%% practicable size. In detail, 
 
 
 
@@ -523,5 +501,5 @@ order according to that measure (Fig. \ref{fig:abstraction-c}).
 
 %%% Local Variables: 
 %%% mode: latex
-%%% TeX-master: "moritz_2011"
+%%% TeX-master: "aaai11"
 %%% End: 
