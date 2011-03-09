@@ -42,10 +42,11 @@ void RCVisualizer::generate()
 
 	// Initialization
 	bool locationOnly = ui.locationEventsCheckBox->isChecked();
+	bool placeIds = ui.placesCheckBox->isChecked();
 	unsigned long eventCount=0;
 	if (locationOnly)
 	{
-		for (unsigned long e=0; e<eventCount; ++e)
+		for (unsigned long e=0; e<_parent->_events.size(); ++e)
 			if (_parent->_events[e].info.type == ConceptualData::EventNothig)
 				eventCount++;
 	}
@@ -68,11 +69,17 @@ void RCVisualizer::generate()
 	scene->addLine(0,-eventSeparator,0,rowHeight*roomCatCount+roomSeparator);
 
 	// Draw results
-	int curPlace=-1;
-	int curRoom=-1;
-	for (unsigned long e=0; e<eventCount; ++e)
+	int curPlace=0;
+	int curRoom=0;
+	if (eventCount)
 	{
-		const ConceptualWidget::Event &event = _parent->_events[e];
+		curPlace=_parent->_events[0].curPlaceId;
+		curRoom=_parent->_events[0].curRoomId;
+	}
+	unsigned long e=0;
+	for (unsigned long _e=0; _e<_parent->_events.size(); ++_e)
+	{
+		const ConceptualWidget::Event &event = _parent->_events[_e];
 		if ((!locationOnly) || (event.info.type == ConceptualData::EventNothig))
 		{
 			for(unsigned int i=0; i<event.curRoomCategories.size(); ++i)
@@ -81,19 +88,21 @@ void RCVisualizer::generate()
 				scene->addRect(e*resultWidth, i*rowHeight, resultWidth, rowHeight, QPen(), getBrushForProbability(prob));
 			}
 
-			bool eventSep =  ((e+1)%eventSeparatorCount) == 0;
-
+			if (((e+1)%eventSeparatorCount) == 0)
+			{
+				scene->addLine((e+1)*resultWidth, -eventSeparator ,(e+1)*resultWidth, 0);
+			}
 			if (event.curPlaceId!=curPlace)
 			{
 				if (event.curRoomId!=curRoom)
-					scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0,(e+1)*resultWidth,roomCatCount*rowHeight+roomSeparator);
+					scene->addLine(e*resultWidth, roomCatCount*rowHeight,e*resultWidth,roomCatCount*rowHeight+roomSeparator);
 				else
-					scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight+placeSeparator);
+					scene->addLine(e*resultWidth, roomCatCount*rowHeight,e*resultWidth,roomCatCount*rowHeight+placeSeparator);
 			}
-			else
-				scene->addLine((e+1)*resultWidth, eventSep?eventSeparator:0 ,(e+1)*resultWidth,roomCatCount*rowHeight);
+
 			curPlace=event.curPlaceId;
 			curRoom=event.curRoomId;
+			e++;
 		}
 	}
 
