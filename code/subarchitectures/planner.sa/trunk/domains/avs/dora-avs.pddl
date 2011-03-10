@@ -68,7 +68,7 @@
    ;; === object properties ===
    (label ?o - visualobject) - label
    (related-to ?o - visualobject) - (either visualobject room)
-   (relation ?o - visualobject ?what - (either visualobject room)) -  spatial_relation
+   (relation ?o - visualobject) -  spatial_relation
 
    ;; === conegroup properties ===
    ;; basic properties that determine what the conegroup was generated for 
@@ -195,7 +195,7 @@
            :precondition (and (= (category ?r) ?c)
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
-                              (= (relation ?o ?r) in)
+                              (= (relation ?o) in)
                               (defined (dora__inobject ?l1 ?l2 ?c)))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
@@ -205,7 +205,7 @@
            :precondition (and (= (category ?r) ?c)
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
-                              (= (relation ?o ?r) in)
+                              (= (relation ?o) in)
                               (defined (dora__on ?l1 ?l2 ?c)))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
@@ -218,7 +218,7 @@
                               (is-virtual ?o)
                               (= (obj_exists ?l ?rel ?where) true))
            :effect (probabilistic 1.0 (and (assign (related-to ?o) ?where)
-                                           (assign (relation ?o ?where) ?rel)))
+                                           (assign (relation ?o) ?rel)))
            )
 
   ;; probability of finding a specific object in a conegroup
@@ -227,7 +227,7 @@
            :parameters (?o - visualobject ?c - conegroup ?l - label ?rel - spatial_relation ?where - (either visualobject room))
            :precondition (and (= (cg-relation ?c) ?rel)
                               (= (cg-related-to ?c) ?where)
-                              (= (relation ?o ?where) ?rel)
+                              (= (relation ?o) ?rel)
                               (= (related-to ?o) ?where)
                               (= (cg-label ?c) ?l)
                               (= (label ?o) ?l)
@@ -323,7 +323,7 @@
                                                     (or (cones_created ?l in ?r)
                                                         (cones_exist ?l in ?r))
                                                     (poss (related-to ?o) ?r)
-                                                    (poss (relation ?o ?r) in)
+                                                    (poss (relation ?o) in)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o))
@@ -366,7 +366,7 @@
                                                     (or (cones_created ?l ?rel ?o)
                                                         (cones_exist ?l ?rel ?o))
                                                     (poss (related-to ?o2) ?o)
-                                                    (poss (relation ?o2 ?o) ?rel)
+                                                    (poss (relation ?o2) ?rel)
                                                     (not (done))))
                                      )
                      :effect (kval ?a (related-to ?o2))
