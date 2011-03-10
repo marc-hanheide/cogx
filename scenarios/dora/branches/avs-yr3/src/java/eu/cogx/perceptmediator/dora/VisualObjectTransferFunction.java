@@ -44,7 +44,7 @@ public class VisualObjectTransferFunction
 
 	private static final String PLANNER_SA = "planner.sa";
 	public static final String LABEL_ID = "label";
-	public static final String IS_IN = "is-in";
+	public static final String IS_IN = "related-to";
 	private static final double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
 
 	public VisualObjectTransferFunction(ManagedComponent component,
@@ -82,9 +82,9 @@ public class VisualObjectTransferFunction
 	protected void fillBelief(
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
 			WorkingMemoryChange wmc, VisualObject from) {
-		FormulaDistribution fd1 = FormulaDistribution.create();
-		FormulaDistribution fd2 = FormulaDistribution.create();
-		FormulaDistribution fd3 = FormulaDistribution.create();
+		FormulaDistribution fd1 = null;
+		FormulaDistribution fd2 = null;
+		FormulaDistribution fd3 = null;
 		try {
 			log("check if we have pending cone actions");
 //			Formula place = null;
@@ -122,6 +122,9 @@ public class VisualObjectTransferFunction
 					break;
 				}
 			}
+            if (fd1 == null) {
+                throw new BeliefException();
+            }
 
 //			if (place == null) { // if we haven't found that object through a
 //				// cone action, find it by looking where we are now
@@ -178,8 +181,8 @@ public class VisualObjectTransferFunction
 			// component.logException(e);
 //		} catch (InterruptedException e) {
 //			component.logException(e);
-		} catch (BeliefException e) {
-			component.logException(e);
+		// } catch (BeliefException e) {
+		// 	component.logException(e);
 		} catch (UnknownSubarchitectureException e) {
 			component.logException(e);
 		}
