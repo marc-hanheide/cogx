@@ -13,6 +13,13 @@
 #include <VideoClient.h>
 
 #include <AR/ar.h>
+#include <AR/gsub.h>
+#include <AR/video.h>
+#include <AR/param.h>
+#include <AR/ar.h>
+#include <AR/arMulti.h>
+
+
 #include <Matrix33.h>
 #include "ModelLoader.h"
 namespace cast
@@ -26,15 +33,15 @@ private:
   /**
    * Which camera to get images from
    */
-  int camId;
+  int m_camId;
   /**
    * component ID of the video server to connect to
    */
-  std::string videoServerName;
+  std::string m_videoServerName;
   /**
    * our ICE proxy to the video server
    */
-  Video::VideoInterfacePrx videoServer;
+  Video::VideoInterfacePrx mvideoServer;
   /**
    * wether we are currently receiving images from the server
    */
@@ -49,15 +56,9 @@ private:
     int id;
     std::string wmid;
   };
-  std::vector<object> taggedObjects;
 
-  int             marker_width;
-  double*          marker_center;                                                                        
+  std::vector<object> m_taggedObjects;
 
-  int             xsize, ysize;                                                                                         
-  int             thresh;                                                                         
-  int             count;
-  ARParam         cparam;                    
 
   bool dummy;
   std::string tagpath;
