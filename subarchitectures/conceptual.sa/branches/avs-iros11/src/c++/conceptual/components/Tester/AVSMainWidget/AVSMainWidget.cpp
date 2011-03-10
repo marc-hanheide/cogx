@@ -25,6 +25,7 @@ AVSMainWidget::AVSMainWidget(QWidget *parent, conceptual::Tester *component)
 	connect(ui.generateViewCones, SIGNAL(clicked()), this, SLOT(generateViewConesButtonClicked()));
 	connect(ui.processConeGroup, SIGNAL(clicked()), this, SLOT(processConeGroup()));
 	connect(ui.postVisualObject, SIGNAL(clicked()), this, SLOT(postVisualObjectClicked()));
+	//ui.lineEdit_3->setText()
 }
 
 AVSMainWidget::~AVSMainWidget()
@@ -43,10 +44,10 @@ AVSMainWidget::processConeGroup()
 
 void AVSMainWidget::postVisualObjectClicked(){
 	m_component->log("postVisualObjectClicked");
-//	QString coneGroupId = ui.coneGroupId->text();
+	QString objectlabel = ui.lineEdit_3->text();
 	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   // create a very simple distribution: label and unknown
-  obj->identLabels.push_back("mug");
+  obj->identLabels.push_back(objectlabel.toStdString());
   obj->identLabels.push_back("unknown");
   // note: distribution must of course sum to 1
   obj->identDistrib.push_back(0.);
@@ -68,6 +69,7 @@ void AVSMainWidget::generateViewConesButtonClicked(){
 	m_component->log("generateViewConesButtonClicked");
 
 	SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand = new SpatialData::RelationalViewPointGenerationCommand;
+
 	QString queryString = ui.locationgenerateViewCones->text();
 	std::vector<string> variables;
 	//parse string:
@@ -78,7 +80,7 @@ void AVSMainWidget::generateViewConesButtonClicked(){
 	}
 	if (variables.size() == 4){
 	newVPCommand->roomId = lexical_cast<int>(variables[1]);
-	 newVPCommand->searchedObjectCategory = variables[3];// TODO
+	newVPCommand->searchedObjectCategory = variables[3];// TODO
 	newVPCommand->supportObject = "";
 	newVPCommand->relation = SpatialData::INROOM;
 	}
@@ -89,7 +91,10 @@ void AVSMainWidget::generateViewConesButtonClicked(){
 		newVPCommand->supportObject = variables[6]; // supportObjectid
 		newVPCommand->relation = (variables[4] == "on" ? SpatialData::ON : SpatialData::INOBJECT);
 	}
-	m_component->addToWorkingMemory(m_component->newDataID(), "spatial.sa", newVPCommand); // TODO
+	 SpatialData::AVSInterfacePrx agg2(m_component->getIceServer<SpatialData::AVSInterface> ("avs.cpplanner"));
+	 agg2->simulateViewCones(newVPCommand);
+
+
 	}
 
 }
