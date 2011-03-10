@@ -1,4 +1,5 @@
 from itertools import chain
+from collections import defaultdict
 
 import pddl
 from pddl import state, effects, dtpddl, mapl
@@ -94,6 +95,42 @@ class PNode(object):
         for val, (p, nodes, facts) in self.children.iteritems():
             hashes.append(hash((p, frozenset([n.hash() for n in nodes]), frozenset(facts.iteritems()))))
         return hash(frozenset(hashes))
+
+    def unify_branches(self):
+        """if a node contains several children with the same svar,
+        join those into one node. This changes the semantics of the
+        node, but is usually the right thing to do, because unifying
+        nodes during rule expansion is harder to do."""
+
+        def join_nodes(svar, nodes):
+            children = {}
+            for n in nodes:
+                for val, (p, nds, facts) in n.children.iteritems():
+                    if val in children:
+                        p2, nds2, facts2 = children[val]
+                        facts = facts.copy()
+                        facts.update(facts2)
+                        children[val] = (p+p2, nds+nds2, facts)
+                    else:
+                        children[val]= (p, nds, facts)
+            return PNode(svar, children)
+
+        # print "unify:", self
+
+        for p, nodes, facts in self.children.itervalues():
+            nodedict = defaultdict(list)
+            for n in nodes:
+                nodedict[n.svar].append(n)
+
+            nodes[:] = []
+            for svar, nds in nodedict.iteritems():
+                # print svar, len(nds)
+                if len(nds) == 1:
+                    nodes += nds
+                else:
+                    newnode = join_nodes(svar, nds)
+                    newnode.parent = self
+                    nodes.append(newnode)
 
     def consolidate(self, nodedict):
         for val, (p, nodes, facts) in self.children.iteritems():
@@ -450,7 +487,7 @@ class PNode(object):
         return None
 
     def __str__(self):
-        return "PNode: %s" % str(self.svar)
+        return "PNode: %s (%d)" % (str(self.svar), len(self.children))
 
         
 class LazyPNode(PNode):
@@ -526,6 +563,8 @@ class LazyPNode(PNode):
                 nodeval = facts[self.svar]
 
                 self._children[nodeval] = (p.value, nodes, facts)
+
+        self.unify_branches()
         return self._children
             
     children = property(get_children)
@@ -536,7 +575,7 @@ class LazyPNode(PNode):
         for svar, val in fixed_facts.iteritems():
             stat[svar] = val
 
-        # print "\nfrom rule:", rule
+        #print "\nfrom rule:", rule
             
         pre_mapping = rule.match_args(state.Fact(svar,val) for svar, val in fixed_facts.iteritems())
         # print "mapping", ["%s = %s" % (str(k),str(v)) for k,v in pre_mapping.iteritems() ]

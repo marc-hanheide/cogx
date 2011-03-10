@@ -11,6 +11,7 @@
   (:predicates
    (connected ?p1 ?p2 - place)
    (position-reported ?o - visualobject)
+   (is-visited ?c - conegroup)
 
    (is-virtual ?o - object)
 
@@ -80,9 +81,9 @@
    (p-visible ?c - conegroup) - number
    ;; the ground truth. Distribution should conform to the probability above.
    ;; Assumes that an object can be viewed from more than one conegroup
-   (visible_from ?o - visualobject ?c - conegroup) - boolean
+   ;; (visible_from ?o - visualobject ?c - conegroup) - boolean
    ;; If an object can only be seen from one CG, the following would be possible:
-   ;;(visible_from ?o - visualobject) - conegroup
+   (visible_from ?o - visualobject) - conegroup
 
    )
 
@@ -229,8 +230,9 @@
                               (= (relation ?o ?where) ?rel)
                               (= (related-to ?o) ?where)
                               (= (cg-label ?c) ?l)
-                              (= (label ?o) ?l))
-           :effect (probabilistic (p-visible ?c) (assign (visible_from ?o ?c) true))
+                              (= (label ?o) ?l)
+                              (not (is-visited ?c)))
+           :effect (probabilistic (p-visible ?c) (assign (visible_from ?o) ?c))
            )
 
 
@@ -397,9 +399,9 @@
                                 (= (cg-label ?c) ?l)
                                 (= (cg-related-to ?c) ?where))
                                 
-             :effect (and (when (= (visible_from ?o ?c) true)
+             :effect (and (when (= (visible_from ?o) ?c)
                             (probabilistic 0.8 (observed (related-to ?o) ?where)))
-                          (when (not (= (visible_from ?o ?c) true))
+                          (when (not (= (visible_from ?o) ?c))
                             (probabilistic 0.1 (observed (related-to ?o) ?where)))
                           )
              )
