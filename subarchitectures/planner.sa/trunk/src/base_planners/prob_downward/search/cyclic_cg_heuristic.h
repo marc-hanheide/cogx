@@ -2,6 +2,7 @@
 #define CYCLIC_CG_HEURISTIC_H
 
 #include <vector>
+#include <set>
 
 #include "heuristic.h"
 
@@ -80,6 +81,7 @@ class LocalProblemNode {
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
     void mark_helpful_transitions(const State &state);
+    void compute_probability(const State &state, std::set<const Operator *>& ops);
 };
 
 

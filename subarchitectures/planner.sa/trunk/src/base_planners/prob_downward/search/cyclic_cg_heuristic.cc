@@ -23,10 +23,15 @@ TODO: The responsibilities between the different classes need to be
 
 CyclicCGHeuristic *g_HACK = 0;
 
+bool debug = false;
+
 inline void CyclicCGHeuristic::add_to_heap(LocalProblemNode *node) {
     int bucket_no = node->priority();
-    if(bucket_no >= buckets.size())
+    if(bucket_no >= buckets.size()) {
         buckets.resize(max<size_t>(bucket_no + 1, 2 * buckets.size()));
+        std::cout << "resize: " << buckets.size() << std::endl;
+    }
+    // std::cout << "push: " << bucket_no << " - " << heap_size+1  << std::endl;
     buckets[bucket_no].push_back(node);
     ++heap_size;
 }
@@ -57,7 +62,7 @@ inline void LocalTransition::try_to_fire() {
     if(!unreached_conditions && target_cost < target->cost) {
         target->action_cost = target_action_costs;
         target->prob = target_prob;
-        target->cost = target->action_cost + (1-target->prob) * g_reward;
+        target->cost = target->action_cost + (1-target->prob) * g_reward + 0.5;
         target->reached_by = this;
         g_HACK->add_to_heap(target);
     }
@@ -76,7 +81,7 @@ void LocalTransition::on_source_expanded(const State &state) {
 
     target_action_costs = source->action_cost + action_cost;
     target_prob = source->prob * action_prob;
-    target_cost = target_action_costs + (1-target_prob) * g_reward;
+    target_cost = target_action_costs + (1-target_prob) * g_reward + 0.5;
     // target_cost = source->cost + action_cost + (1-action_prob) * g_reward * g_multiplier;
 
     if(target->cost <= target_cost) {
@@ -86,8 +91,13 @@ void LocalTransition::on_source_expanded(const State &state) {
 
     unreached_conditions = 0;
     const vector<LocalAssignment> &precond = label->precond;
-    // if (label->op)
-    //     std::cout << label->op->get_name()  << " - " << target_cost << " / " << target_prob << std::endl;
+    if (debug && label->op) {
+        std::cout << "open:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << std::endl;
+        if (source->reached_by) {
+            const ValueTransitionLabel* l = source->reached_by->label;
+            std::cout << "reached by:" << l->op->get_name()  << " - " << source->cost << " / " << source->prob << std::endl;
+        }
+    }
 
     vector<LocalAssignment>::const_iterator
         curr_precond = precond.begin(),
@@ -119,9 +129,17 @@ void LocalTransition::on_source_expanded(const State &state) {
         LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
         if(cond_node->expanded) {
             // target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_multiplier * g_reward);
-            target_prob *= cond_node->prob;
             target_action_costs += cond_node->action_cost;
-            target_cost = target_action_costs + (1-target_prob) * g_reward;
+            if (debug && label->op) {
+                double new_target_prob = target_prob * cond_node->prob;
+                int new_target_cost = target_action_costs + (1-target_prob) * g_reward +0.5;
+                const ValueTransitionLabel* l = cond_node->reached_by->label;
+                std::cout << "already expanded:" << l->op->get_name()  << " - " << cond_node->cost << " / " << cond_node->prob << std::endl;
+                std::cout << "now:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << " ---> " << new_target_prob << " / " << new_target_cost  << std::endl;
+            }
+            target_prob *= cond_node->prob;
+            target_cost = target_action_costs + (1-target_prob) * g_reward + 0.5;
+
             if(target->cost <= target_cost) {
                 // Transition cannot find a shorter path to target.
                 return;
@@ -139,9 +157,16 @@ void LocalTransition::on_condition_reached(int cost, double prob) {
     --unreached_conditions;
     target_action_costs += cost;
     // target_cost = target_cost + target_prob * (cost + (1-prob) * g_multiplier * g_reward);
+    if (debug && label->op) {
+        double new_target_prob = target_prob * prob;
+        int new_target_cost = target_action_costs + (1-new_target_prob) * g_reward + 0.5;
+        std::cout << "condition reached: " << label->op->get_name() << " - " << cost << " / " << prob << std::endl;
+        std::cout << target_action_costs << " - " << new_target_prob << std::endl;
+        std::cout << "update: " << target_cost << " / " << target_prob << " ---> " << new_target_cost << " / " << new_target_prob  << std::endl;
+    }
     target_prob *= prob;
-    target_cost = target_action_costs + (1-target_prob) * g_reward;
-
+    target_cost = target_action_costs + (1-target_prob) * g_reward + 0.5;
+    // std::cout << "target " << std::endl;
     try_to_fire();
 }
 
@@ -271,11 +296,12 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
             const Operator *op = reached_by->label->op;
             assert(!op->is_axiom());
             assert(op->is_applicable(state));
-            // std::cout << "helpful: " << op->get_name() << std::endl;
+            if (debug)
+                std::cout << "helpful: " << op->get_name() << std::endl;
             g_HACK->set_preferred(op);
         } else {
-            // if (reached_by->label->op)
-            //     std::cout << "indirectly helpful: " << reached_by->label->op->get_name() << std::endl;
+            if (debug && reached_by->label->op)
+                std::cout << "indirectly helpful: " << reached_by->label->op->get_name() << std::endl;
 
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = reached_by->label->precond;
@@ -289,6 +315,33 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
                 LocalProblemNode *child_node = &g_HACK->get_local_problem(
                     precond_var_no, state[precond_var_no])->nodes[precond_value];
                 child_node->mark_helpful_transitions(state);
+            }
+        }
+    }
+}
+
+void LocalProblemNode::compute_probability(const State &state, std::set<const Operator *>& ops) {
+    assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
+    if(reached_by) {
+        const Operator *op = reached_by->label->op;
+        if (op && ops.find(op) == ops.end())
+            ops.insert(op);
+
+        if(reached_by->target_cost == reached_by->action_cost) {
+            // Transition applicable, all preconditions achieved.
+        } else {
+            // Recursively compute helpful transitions for precondition variables.
+            const vector<LocalAssignment> &precond = reached_by->label->precond;
+            int *parent_vars = &*owner->causal_graph_parents->begin();
+            for(int i = 0; i < precond.size(); i++) {
+                int precond_value = precond[i].value;
+                int local_var = precond[i].local_var;
+                int precond_var_no = parent_vars[local_var];
+                if(state[precond_var_no] == precond_value)
+                    continue;
+                LocalProblemNode *child_node = &g_HACK->get_local_problem(
+                    precond_var_no, state[precond_var_no])->nodes[precond_value];
+                child_node->compute_probability(state, ops);
             }
         }
     }
@@ -334,8 +387,26 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
 
     int heuristic = compute_costs(state);
 
-    if(heuristic != DEAD_END && heuristic != 0)
+    if(heuristic != DEAD_END && heuristic != 0) {
+        double p_init = 1.0;
+        if (einfo != NULL) {
+            p_init = einfo->get_p();
+        }
         goal_node->mark_helpful_transitions(state);
+        std::set<const Operator *> ops;
+        goal_node->compute_probability(state, ops);
+        double p = 1.0;
+        std::set<const Operator *>::const_iterator i = ops.begin();
+        for(; i != ops.end(); i++) {
+            p *= (*i)->get_prob();
+        }
+        heuristic += p_init * (1-p) * g_reward;
+    }
+
+    if (debug) {
+        cout << "h = " << heuristic << endl;
+        exit(0);
+    }
 
     return heuristic;
 }
@@ -359,16 +430,25 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
     for(int curr_priority = 0; heap_size != 0; curr_priority++) {
         assert(curr_priority < buckets.size());
         for(int pos = 0; pos < buckets[curr_priority].size(); pos++) {
+            // std::cout << curr_priority  << " - " << pos << " - " << heap_size << std::endl;
             LocalProblemNode *node = buckets[curr_priority][pos];
+            if (debug) {
+                if (node->reached_by && node->reached_by->label->op )
+                    std::cout << node->reached_by->label->op->get_name()  << " - " << node->cost << " / " << node->prob << std::endl;
+                else
+                    std::cout << " - " << node->cost << " / " << node->prob << std::endl;
+            }
             assert(node->owner->is_initialized());
             if(node->priority() < curr_priority)
                 continue;
             if(node == goal_node) {
-                // cout << "cea:" << node->prob << "    " << node->cost << endl;
+                if (debug) {
+                    cout << "cea:" << node->prob << "    " << node->cost << endl;
+                }
                 if (node->cost == 0)
                     return 0;
                 
-                return node->action_cost + p_init * (1-node->prob) * g_reward;
+                return node->action_cost;// + p_init * (1-node->prob) * g_reward;
                 // return 1 + (1-node->prob) * g_reward;
             }
 
