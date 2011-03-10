@@ -7,11 +7,6 @@
 #include "ConceptualData.hpp"
 #include "Tester.h"
 
-namespace conceptual
-{
-	class Tester;
-}
-
 
 class AVSMainWidget : public QDialog
 {
