@@ -164,7 +164,7 @@ private:
 
 	pthread_mutex_t _worldStateMutex;
 
-	std::list<ConceptualData::EventInfo> _accumulatedEvents;
+	std::vector<ConceptualData::EventInfo> _accumulatedEvents;
 	double _lastWsUpdateTime;
 
 	double _shapeThreshold;
