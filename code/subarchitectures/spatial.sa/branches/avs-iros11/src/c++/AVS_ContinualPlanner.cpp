@@ -650,13 +650,15 @@ void AVS_ContinualPlanner::generateViewCones(
 	}
     newVPCommand->status = SpatialData::SUCCESS;
     log("Overwriting command to change status to: SUCCESS");
-    overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
-
     MapConeType::const_iterator end = m_beliefConeGroups.end();
-    	    for (MapConeType::const_iterator it = m_beliefConeGroups.begin(); it != end; ++it)
-    	    {
-    	        log("key: %d",it->first);
-    	    }
+        	    for (MapConeType::const_iterator it = m_beliefConeGroups.begin(); it != end; ++it)
+        	    {
+        	        log("key: %d",it->first);
+        	    }
+
+if (WMAddress != ""){
+    overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
+}
 
 }
 
@@ -794,6 +796,8 @@ std::string AVS_ContinualPlanner::convertLocation2Id(
 				newVPCommand->roomId);
 	return id;
 }
+
+
 
 void AVS_ContinualPlanner::configure(
 		const std::map<std::string, std::string>& _config) {
@@ -969,7 +973,17 @@ void AVS_ContinualPlanner::configure(
 
 		m_currentProcessConeGroup = new SpatialData::ProcessConeGroup;
 		m_coneGroupId = 0;
+
+		  SpatialData::AVSInterfacePtr servant = new AVSServer(this);
+		  registerIceServer<SpatialData::AVSInterface, SpatialData::AVSInterface>(servant);
+
 }
+
+void AVS_ContinualPlanner::AVSServer::simulateViewCones(const SpatialData::RelationalViewPointGenerationCommandPtr &cmd ,
+	    const Ice::Current &){
+	m_pOwner->generateViewCones(cmd, "");
+}
+
 
 void AVS_ContinualPlanner::newRobotPose(const cdl::WorkingMemoryChange &objID) {
 	try {
@@ -1161,5 +1175,7 @@ addToWorkingMemory(newDataID(), obs);
 
 //cout << "selected cone " << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << " " << viewpoint.pan << " " << viewpoint.tilt << endl;
 }
+
+
 
 } //namespace
