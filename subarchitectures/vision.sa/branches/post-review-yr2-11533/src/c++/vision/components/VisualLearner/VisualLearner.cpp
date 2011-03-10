@@ -43,6 +43,10 @@ void VisualLearner::configure(const map<string, string>& _config)
    log("configure");
 
    map<string,string>::const_iterator it;
+
+   // CONFIG: --clfconfig
+   // TYPE: filename
+   // The path to the Matlab configuration script for Visual Learner and Affordance Recognizer.
    if((it = _config.find("--clfconfig")) != _config.end()) {
       string s = it->second;
       // trim
