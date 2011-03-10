@@ -202,14 +202,14 @@ namespace cast
 
     VisionData::ARTagCommandPtr obj =
       getMemoryEntry<VisionData::ARTagCommand>(objID.address);
-   log("got new ARTagCommand"); 
+   log("got new ARTagCommand");
     //TODO find the object id with corresponding label
     // call getMarker if it exists write to WM with the same address
     // if it doesn't same thing.
 
     std::string label = obj->label;
     Pose3 p = getMarkerPosition(label);
-    
+
     if (p.pos.x != 1E40){
       //load fake visual object
       Post3DObjectPtr obj3D = new VisionData::Post3DObject;
