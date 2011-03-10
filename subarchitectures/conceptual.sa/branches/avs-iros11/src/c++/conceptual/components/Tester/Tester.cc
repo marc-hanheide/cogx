@@ -170,7 +170,7 @@ void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		ConceptualData::WorldStatePtr worldStatePtr;
 		worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
 
-		log("New worldstate for event %d", worldStatePtr->lastEvent.type);
+		log("New worldstate for event %d", worldStatePtr->lastEvents.back().type);
 		if (_mainDialog)
 			_mainDialog->getConceptualWidget()->newWorldState(worldStatePtr);
 	}

@@ -165,7 +165,7 @@ void Observer::initializeWorldState()
 // -------------------------------------------------------
 void Observer::updateWorldState()
 {
-	std::list<ConceptualData::EventInfo> accumulatedEvents;
+	std::vector<ConceptualData::EventInfo> accumulatedEvents;
 
 	// Check if we've had an update within one second. If so, do nothing
 	pthread_mutex_lock(&_worldStateMutex);
@@ -398,7 +398,7 @@ void Observer::updateWorldState()
 	// -----------------------------------
 	// Update on working memory
 	// -----------------------------------
-	newWorldStatePtr->lastEvent = accumulatedEvents.back();
+	newWorldStatePtr->lastEvents = accumulatedEvents;
 
 	// Remember the new world state
 	_worldStatePtr=newWorldStatePtr;

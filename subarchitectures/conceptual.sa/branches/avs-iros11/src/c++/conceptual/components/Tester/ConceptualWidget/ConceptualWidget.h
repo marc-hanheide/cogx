@@ -69,13 +69,13 @@ private slots:
 	void posTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
-	void addEvent(Event event);
+	void addEvent(QList<Event> events);
 
 
 private:
 
 	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
-	void collectEventInfo(Event event);
+	void collectEventInfo(QList<Event> events);
 
 
 private:

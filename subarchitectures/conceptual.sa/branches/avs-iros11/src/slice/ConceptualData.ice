@@ -213,12 +213,14 @@ module ConceptualData
 		string propertyInfo;
 	};
 	
+	sequence<EventInfo> EventInfos;
+	
 	/** State of the world obtained from other SAs. */
 	class WorldState
 	{
 		ComaRoomInfos rooms;
 		RoomConnectivityInfos roomConnections;
-		EventInfo lastEvent;
+		EventInfos lastEvents;
 	};
 
 };
