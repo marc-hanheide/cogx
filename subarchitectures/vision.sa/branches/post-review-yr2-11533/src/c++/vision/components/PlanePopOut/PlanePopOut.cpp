@@ -102,7 +102,8 @@ vector <std::string> vSOIid;
 int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
 int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 		//this makes stable obj
-
+int LeastPointsInOneObj;
+int totalPoints;
 
 
 double A, B, C, D;
@@ -402,6 +403,8 @@ void PlanePopOut::configure(const map<string,string> & _config)
   doDisplay = false;
   AgonalTime = 30;
   StableTime = 5;
+  LeastPointsInOneObj= 20;
+  totalPoints= 8000;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
@@ -426,6 +429,17 @@ void PlanePopOut::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> StableTime;
   }
+  if((it = _config.find("--LeastPointsInOneObj")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> LeastPointsInOneObj;
+  }
+  if((it = _config.find("--totalPoints")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> totalPoints;
+  }
+  
   println("use global points: %d", (int)useGlobalPoints);
   mConvexHullDensity = 0.0;
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
@@ -716,8 +730,9 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = (int)points.size()/5000;
-		if (N < 1) N = 1; // if ponits.size() < 5000, the loop will never end!
+		if (points.size()>= totalPoints)	N = (int)points.size()/totalPoints;
+		else 
+		    N = 1;
 		random_shuffle ( points.begin(), points.end() );
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<3)
@@ -879,7 +894,7 @@ int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
 
 void PlanePopOut::SOIManagement()
 {
-//     log("There are %d SOI in the Current scene", CurrentObjList.size());
+     log("There are %d SOI in the Current scene", CurrentObjList.size());
     Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
@@ -1902,7 +1917,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	obj_number_threshold = 100;
+	obj_number_threshold = 25;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
