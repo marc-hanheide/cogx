@@ -62,6 +62,10 @@ public:
 			return tmp;
 		}
 	};
+
+
+
+
 	typedef std::map <int, ConeGroup> MapConeType;
 	AVS_ContinualPlanner();
 	virtual ~AVS_ContinualPlanner();
@@ -92,7 +96,18 @@ public:
 	 int GetPlaceIdFromNodeId(int nodeId);
 	 int GetClosestNodeId(double x, double y, double a);
 	 void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
+
 private:
+
+	 class AVSServer: public SpatialData::AVSInterface {
+	 public:
+	      virtual void simulateViewCones(const SpatialData::RelationalViewPointGenerationCommandPtr &cmd ,
+	    		    const Ice::Current &);
+	      AVS_ContinualPlanner *m_pOwner;
+	      AVSServer(AVS_ContinualPlanner *owner) : m_pOwner(owner)
+	      {}
+	    };
+
 		NavData::RobotPose2dPtr lastRobotPose;
 
 	// this holds bloxel maps for each room and each bloxel has multiple pdf values for the occurrence of objects. i.e. "cupONtable", cupINroom1
