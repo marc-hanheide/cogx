@@ -400,6 +400,12 @@ class ProcessViewPointCommand {
 	cast::cdl::StringSeq objectModels;
 
   };
+  
+  interface AVSInterface
+  {
+  	void simulateViewCones(RelationalViewPointGenerationCommand cmd);
+  };
+  
 
 };
 
