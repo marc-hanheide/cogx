@@ -34,6 +34,20 @@ using namespace cast;
 
 
 // -------------------------------------------------------
+Observer::Observer() : _lastWsUpdateTime(0.0)
+{
+	pthread_mutex_init(&_worldStateMutex, 0);
+}
+
+
+// -------------------------------------------------------
+Observer::~Observer()
+{
+	pthread_mutex_destroy(&_worldStateMutex);
+}
+
+
+// -------------------------------------------------------
 template<typename T>
 static void removeDuplicates(std::vector<T>& vec)
 {
@@ -127,10 +141,11 @@ void Observer::start()
 // -------------------------------------------------------
 void Observer::runComponent()
 {
-//    while (isRunning())
-//    {
-//    	sleepComponent(1000);
-//    }
+    while (isRunning())
+    {
+    	sleepComponent(100);
+    	updateWorldState();
+    }
 }
 
 
@@ -148,8 +163,27 @@ void Observer::initializeWorldState()
 
 
 // -------------------------------------------------------
-void Observer::updateWorldState(const ConceptualData::EventInfo &ei)
+void Observer::updateWorldState()
 {
+	std::list<ConceptualData::EventInfo> accumulatedEvents;
+
+	// Check if we've had an update within one second. If so, do nothing
+	pthread_mutex_lock(&_worldStateMutex);
+	// Get current time
+	timeval now;
+	gettimeofday(&now, 0);
+	double curTime = now.tv_sec+ now.tv_usec/1000000.0;
+	// If nothing there or not yet time, do nothing
+	if ((_accumulatedEvents.empty()) || ((curTime-_lastWsUpdateTime)<1.0))
+	{
+		pthread_mutex_unlock(&_worldStateMutex);
+		return;
+	}
+	accumulatedEvents = _accumulatedEvents;
+	_accumulatedEvents.clear();
+	_lastWsUpdateTime = curTime;
+	pthread_mutex_unlock(&_worldStateMutex);
+
 	// Create a new worldstate
 	ConceptualData::WorldStatePtr newWorldStatePtr = new ConceptualData::WorldState();
 
@@ -364,7 +398,8 @@ void Observer::updateWorldState(const ConceptualData::EventInfo &ei)
 	// -----------------------------------
 	// Update on working memory
 	// -----------------------------------
-	newWorldStatePtr->lastEvent = ei;
+	newWorldStatePtr->lastEvent = accumulatedEvents.back();
+
 	// Remember the new world state
 	_worldStatePtr=newWorldStatePtr;
 
@@ -376,7 +411,7 @@ void Observer::updateWorldState(const ConceptualData::EventInfo &ei)
 	}
 	else
 	{ // Overwrite the world state on the WM
-		log("Updating WorldState in the working memory. Something relevant must have changed.");
+		log("Updating WorldState in the working memory.");
 		lockEntry(_worldStateId, cdl::LOCKEDODR);
 		overwriteWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
 		unlockEntry(_worldStateId);
@@ -514,7 +549,11 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		ei.roomId = comaRoomPtr->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -556,7 +595,11 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 					break;
 				}
 			}
-			updateWorldState(ei);
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
 		}
 		else if (old->containedPlaceIds.size()>comaRoomPtr->containedPlaceIds.size())
 		{
@@ -570,7 +613,11 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 					break;
 				}
 			}
-			updateWorldState(ei);
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
 		}
 		break;
 	}
@@ -583,7 +630,11 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		ei.place1Id = -1;
 		ei.place2Id = -1;
 		_comaRoomWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -645,8 +696,11 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			ei.roomId = -1;
 			ei.place1Id = placePtr->id;
 			ei.place2Id = -1;
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
 
-			updateWorldState(ei);
+			updateWorldState();
 		}
 		break;
 	}
@@ -690,7 +744,11 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -720,7 +778,11 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -732,7 +794,11 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		ei.place1Id = _gatewayPlacePropertyWmAddressMap[wmChange.address]->placeId;
 		ei.place2Id = -1;
 		_gatewayPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -779,7 +845,11 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					objectPlacePropertyPtr->supportObjectCategory + "-" +
 					objectPlacePropertyPtr->supportObjectId;
 		}
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -820,7 +890,11 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					objectPlacePropertyPtr->supportObjectCategory + "-" +
 					objectPlacePropertyPtr->supportObjectId;
 		}
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -844,7 +918,11 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					old->supportObjectId;
 		}
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -891,7 +969,11 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 					objectSearchResultPtr->supportObjectCategory + "-" +
 					objectSearchResultPtr->supportObjectId;
 		}
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -935,7 +1017,11 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 						objectSearchResultPtr->supportObjectCategory + "-" +
 						objectSearchResultPtr->supportObjectId;
 			}
-			updateWorldState(ei);
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
 		}
 		break;
 	}
@@ -960,7 +1046,11 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 					old->supportObjectId;
 		}
 		_objectSearchResultWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -996,7 +1086,11 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		ei.roomId = -1;
 		ei.place1Id = shapePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -1030,7 +1124,11 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			ei.roomId = -1;
 			ei.place1Id = shapePlacePropertyPtr->placeId;
 			ei.place2Id = -1;
-			updateWorldState(ei);
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
 		}
 		break;
 	}
@@ -1044,7 +1142,11 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -1081,8 +1183,11 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		ei.roomId = -1;
 		ei.place1Id = appearancePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
 
-		updateWorldState(ei);
+		updateWorldState();
 		break;
 	}
 
@@ -1116,7 +1221,11 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			ei.roomId = -1;
 			ei.place1Id = appearancePlacePropertyPtr->placeId;
 			ei.place2Id = -1;
-			updateWorldState(ei);
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
 		}
 		break;
 	}
@@ -1130,7 +1239,11 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -1168,7 +1281,11 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
 		ei.place2Id = connectivityPathPropertyPtr->place2Id;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -1199,7 +1316,11 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
 		ei.place2Id = connectivityPathPropertyPtr->place2Id;
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 
@@ -1212,7 +1333,11 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.place1Id = old->place1Id;
 		ei.place2Id = old->place2Id;
 		_connectivityPathPropertyWmAddressMap.erase(wmChange.address);
-		updateWorldState(ei);
+		pthread_mutex_lock(&_worldStateMutex);
+		_accumulatedEvents.push_back(ei);
+		pthread_mutex_unlock(&_worldStateMutex);
+
+		updateWorldState();
 		break;
 	}
 

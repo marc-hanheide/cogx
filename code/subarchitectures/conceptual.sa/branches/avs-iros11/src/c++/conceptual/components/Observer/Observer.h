@@ -30,12 +30,10 @@ class Observer: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	Observer()
-	{}
+	Observer();
 
 	/** Destructor. */
-	virtual ~Observer()
-	{}
+	virtual ~Observer();
 
 
 protected:
@@ -62,7 +60,7 @@ private:
 	void addInitialWorldState();
 
 	/** Updates the world state on the WM. */
-	void updateWorldState(const ConceptualData::EventInfo &ei);
+	void updateWorldState();
 
 	/** Change event. */
 	void comaRoomChanged(const cast::cdl::WorkingMemoryChange &wmChange);
@@ -163,6 +161,11 @@ private:
 
 	/** Working memory ID of the world state struct. */
 	std::string _worldStateId;
+
+	pthread_mutex_t _worldStateMutex;
+
+	std::list<ConceptualData::EventInfo> _accumulatedEvents;
+	double _lastWsUpdateTime;
 
 	double _shapeThreshold;
 	double _appearanceThreshold;

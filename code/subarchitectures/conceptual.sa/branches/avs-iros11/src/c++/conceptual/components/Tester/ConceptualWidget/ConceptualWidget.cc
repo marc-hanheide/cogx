@@ -82,6 +82,9 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	// Get current place and room for the event
 	event.curPlaceId = _component->getCurrentPlace();
 	event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
+
+	_component->error("%d %d", event.curPlaceId, event.curRoomId );
+
 	pthread_mutex_unlock(&_worldStateMutex);
 
 	// Take care of the event
@@ -534,7 +537,7 @@ void ConceptualWidget::addEvent(Event event)
 		eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.info.place1Id)+", pid2="+QString::number(event.info.place2Id)+")";
 		break;
 	default: // Location event?
-		eventStr+=": Changed place (pid="+
+		eventStr+="Changed place (pid="+
 				QString::number(event.curPlaceId)+", rid="+QString::number(event.curRoomId)+")";
 		break;
 	}
@@ -552,6 +555,7 @@ void ConceptualWidget::addEvent(Event event)
 // -------------------------------------------------------
 void ConceptualWidget::collectEventInfo(Event event)
 {
+
 	// Get categories for the current room
 	ConceptualData::ProbabilityDistributions results =
 			_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_category)", false, false);
@@ -577,12 +581,71 @@ void ConceptualWidget::collectEventInfo(Event event)
 			}
 			event.curRoomCategories[roomIndex]=probability;
 		} //for
+	} // if
 
+
+	// Get shape and appearance for the current place
+	results =
+			_component->sendQueryHandlerQuery("p(place"+lexical_cast<string>(event.curPlaceId)+"_shape_property)", false, false);
+	const DefaultData::StringSeq &shapes = _component->getShapes();
+	if (results.size()>0)
+	{
+		SpatialProbabilities::ProbabilityDistribution result = results[0];
+		event.curShapes.resize(result.massFunction.size());
+		for(unsigned int i=0; i<result.massFunction.size(); ++i)
+		{
+			double probability = result.massFunction[i].probability;
+			string value =
+					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+							result.massFunction[i].variableValues[0])->value;
+			int shapeIndex=-1;
+			for(unsigned int j=0; j<shapes.size(); ++j)
+			{
+				if (shapes[j]==value)
+				{
+					shapeIndex=j;
+					break;
+				}
+			}
+			event.curShapes[shapeIndex]=probability;
+		} //for
+	} // if
+
+
+	// Get shape and appearance for the current place
+	results =
+			_component->sendQueryHandlerQuery("p(place"+lexical_cast<string>(event.curPlaceId)+"_appearance_property)", false, false);
+	const DefaultData::StringSeq &appearances = _component->getAppearances();
+	if (results.size()>0)
+	{
+		SpatialProbabilities::ProbabilityDistribution result = results[0];
+		event.curAppearances.resize(result.massFunction.size());
+		for(unsigned int i=0; i<result.massFunction.size(); ++i)
+		{
+			double probability = result.massFunction[i].probability;
+			string value =
+					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+							result.massFunction[i].variableValues[0])->value;
+			int appearanceIndex=-1;
+			for(unsigned int j=0; j<appearances.size(); ++j)
+			{
+				if (appearances[j]==value)
+				{
+					appearanceIndex=j;
+					break;
+				}
+			}
+			event.curAppearances[appearanceIndex]=probability;
+		} //for
+	} // if
+
+	if (event.curRoomId >=0)
+	{
 		pthread_mutex_lock(&_eventsMutex);
 		_events.push_back(event);
 		pthread_mutex_unlock(&_eventsMutex);
-	} // if
 
+	}
 }
 
 

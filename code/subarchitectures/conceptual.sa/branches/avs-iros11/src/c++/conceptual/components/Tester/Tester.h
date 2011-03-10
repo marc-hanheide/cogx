@@ -50,6 +50,13 @@ public:
 	const DefaultData::StringSeq &getRoomCategories()
 		{ return _roomCategories; }
 
+	const DefaultData::StringSeq &getShapes()
+		{ return _shapes; }
+
+	const DefaultData::StringSeq &getAppearances()
+		{ return _appearances; }
+
+
 	int getCurrentPlace();
 
 

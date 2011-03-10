@@ -40,6 +40,8 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 		int curPlaceId;
 		ConceptualData::EventInfo info;
 		std::vector<double> curRoomCategories;
+		std::vector<double> curShapes;
+		std::vector<double> curAppearances;
 	};
 
 
