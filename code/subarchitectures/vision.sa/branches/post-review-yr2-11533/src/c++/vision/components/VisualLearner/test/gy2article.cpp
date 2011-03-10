@@ -175,6 +175,16 @@ void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _conf
       if (it->second == "") options["video.sa"] = m_pOwner->getSubarchitectureID();
       else options["video.sa"] = it->second;
    }
+
+   // CONFIG: --start-number
+   // TYPE: integer
+   // The number of the test to start with. The number of the first test is 0.
+   if((it = _config.find("--start-number")) != _config.end())
+   {
+      istringstream ss(it->second);
+      ss >> m_currentTest;
+      if (m_currentTest < 0) m_currentTest = 0;
+   }
 }
 
 void CGeorgeY2Article::onStart()
@@ -293,11 +303,11 @@ void CGeorgeY2Article::switchState(int newState)
          timeout = 30;
          break;
       case stUnloadScene:
-         if (m_ObjectCount) enterWait = 3; // Something may still be using the VO
+         if (m_ObjectCount) enterWait = 5; // Something may still be using the VO
          break;
       case stTableEmpty:
       case stObjectOn:
-         enterWait = 3;
+         enterWait = 2;
          break;
       case stWaitForLearningTask: // Motivation/Planner/Execution
          timeout = 30;
@@ -473,7 +483,6 @@ void CGeorgeY2Article::runOneStep()
    switch (m_State) {
       case stStart:
          if (isTimedOut()) {
-            m_currentTest = 110; // XXX DEBUGGING
             switchState(stTableEmpty);
          }
          break;
