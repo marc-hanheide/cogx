@@ -27,14 +27,16 @@ RCVisualizer::~RCVisualizer()
 
 void RCVisualizer::generate()
 {
-	int resultWidth= ui.widthSpinBox->value();
+	// Settings
 	const int categoriesDist = 5;
 	const int rowHeight = 22;
-	const int placeSeparator = 10;
-	const int roomSeparator = 20;
 	const int categorySeparator = 10;
 	const int eventSeparator = 10;
 	const int eventSeparatorCount = 10;
+	const int horizSeparator = 30;
+	const int horizSepWidth = 2;
+	QFont defaultFont("Ubuntu", 12);
+	QFont smallFont("Ubuntu", 6);
 
 	// Create scene
 	QGraphicsScene *scene = new QGraphicsScene(this);
@@ -43,6 +45,12 @@ void RCVisualizer::generate()
 	// Initialization
 	bool locationOnly = ui.locationEventsCheckBox->isChecked();
 	bool placeIds = ui.placesCheckBox->isChecked();
+	bool verticalLines = ui.verticalLinesCheckBox->isChecked();
+	bool verticalIndicators = ui.verticalIndicatorsCheckBox->isChecked();
+	int resultWidth= ui.widthSpinBox->value();
+	QGraphicsSimpleTextItem *text;
+
+	// Get displayed event count
 	unsigned long eventCount=0;
 	if (locationOnly)
 	{
@@ -52,52 +60,109 @@ void RCVisualizer::generate()
 	}
 	else
 		eventCount = _parent->_events.size();
+
+	// Get data info
 	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
-	int roomCatCount = roomCats.size();
-	QFont defaultFont("Ubuntu", 12);
+	const DefaultData::StringSeq &shapes = _component->getShapes();
+	const DefaultData::StringSeq &appearances = _component->getAppearances();
+	unsigned int roomCatCount = roomCats.size();
+	unsigned int shapeCount = shapes.size();
+	unsigned int appearanceCount = appearances.size();
+	unsigned int rowCount = roomCatCount+shapeCount+appearanceCount;
+	unsigned int roomCatCountReal = 0;
+	unsigned int shapeCountReal = 0;
+	unsigned int appearanceCountReal = 0;
 
-	// Start
-	for(unsigned int i=0; i<roomCats.size(); ++i)
-	{
-		QGraphicsSimpleTextItem *text = scene->addSimpleText(QString::fromStdString(roomCats[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
-		scene->addLine(-categorySeparator,i*rowHeight,resultWidth*eventCount,i*rowHeight);
-	}
-	scene->addLine(-categorySeparator,roomCatCount*rowHeight,resultWidth*eventCount,roomCatCount*rowHeight);
-
-	// Starting vertical line
-	scene->addLine(0,-eventSeparator,0,rowHeight*roomCatCount+roomSeparator);
 
 	// Draw results
 	int curPlace=0;
 	int curRoom=0;
-	if (eventCount)
+	if (_parent->_events.size()>0)
 	{
 		curPlace=_parent->_events[0].curPlaceId;
 		curRoom=_parent->_events[0].curRoomId;
 	}
 	unsigned long e=0;
+	unsigned int lastPlaceChange=0;
+	unsigned int lastRoomChange=0;
 	for (unsigned long _e=0; _e<_parent->_events.size(); ++_e)
 	{
 		const ConceptualWidget::Event &event = _parent->_events[_e];
 		if ((!locationOnly) || (event.info.type == ConceptualData::EventNothig))
 		{
-			for(unsigned int i=0; i<event.curRoomCategories.size(); ++i)
+			roomCatCountReal = event.curRoomCategories.size();
+			shapeCountReal = event.curShapes.size();
+			appearanceCountReal = event.curAppearances.size();
+
+			// Categories
+			unsigned int row=0;
+			for(unsigned int i=0; i<roomCatCountReal; ++i)
 			{
 				double prob = event.curRoomCategories[i];
-				scene->addRect(e*resultWidth, i*rowHeight, resultWidth, rowHeight, QPen(), getBrushForProbability(prob));
+				scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+						(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+				row++;
 			}
 
-			if (((e+1)%eventSeparatorCount) == 0)
+			// Draw shapes
+			if ( (event.info.type == ConceptualData::EventShapePlacePropertyAdded) ||
+				 (event.info.type == ConceptualData::EventShapePlacePropertyChanged) )
 			{
-				scene->addLine((e+1)*resultWidth, -eventSeparator ,(e+1)*resultWidth, 0);
+				row = roomCatCount;
+				for(unsigned int i=0; i<shapeCountReal; ++i)
+				{
+					double prob = event.curShapes[i];
+					scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+							(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+					row++;
+				}
+			}
+
+			// Draw appearances
+			if ( (event.info.type == ConceptualData::EventAppearancePlacePropertyAdded) ||
+				 (event.info.type == ConceptualData::EventAppearancePlacePropertyChanged) )
+			{
+				row = roomCatCount + shapeCount;
+				for(unsigned int i=0; i<appearanceCountReal; ++i)
+				{
+					double prob = event.curAppearances[i];
+					scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+							(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+					row++;
+				}
+			}
+
+			if ((e%eventSeparatorCount) == 0)
+			{
+				scene->addLine(e*resultWidth, -eventSeparator ,e*resultWidth, 0);
+				QGraphicsSimpleTextItem *text = scene->addSimpleText(QString::number(e), defaultFont);
+				text->setPos(e*resultWidth-text->boundingRect().width()/2, -eventSeparator-text->boundingRect().height());
+				if (verticalIndicators)
+					scene->addLine(e*resultWidth, 0 ,e*resultWidth, rowCount*rowHeight, QPen(Qt::DotLine));
+
 			}
 			if (event.curPlaceId!=curPlace)
 			{
+				if (placeIds)
+				{
+					text = scene->addSimpleText(QString::number(curPlace), smallFont);
+					text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, rowCount*rowHeight);
+					lastPlaceChange=e*resultWidth;
+				}
+
 				if (event.curRoomId!=curRoom)
-					scene->addLine(e*resultWidth, roomCatCount*rowHeight,e*resultWidth,roomCatCount*rowHeight+roomSeparator);
+				{
+					text = scene->addSimpleText(QString::number(curRoom), defaultFont);
+					text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+1)*rowHeight);
+					scene->addLine(e*resultWidth, rowCount*rowHeight,e*resultWidth,(rowCount+2)*rowHeight);
+					lastRoomChange=e*resultWidth;
+					if (verticalIndicators)
+						scene->addLine(e*resultWidth, 0 ,e*resultWidth, rowCount*rowHeight, QPen(Qt::DashLine));
+				}
 				else
-					scene->addLine(e*resultWidth, roomCatCount*rowHeight,e*resultWidth,roomCatCount*rowHeight+placeSeparator);
+				{
+					scene->addLine(e*resultWidth, rowCount*rowHeight,e*resultWidth,(rowCount+1)*rowHeight, QPen(Qt::DotLine));
+				}
 			}
 
 			curPlace=event.curPlaceId;
@@ -105,6 +170,49 @@ void RCVisualizer::generate()
 			e++;
 		}
 	}
+
+	// Start
+	for(unsigned int i=0; i<roomCatCount; ++i)
+	{
+		if (i==0)
+			scene->addLine(-horizSeparator,i*rowHeight,resultWidth*eventCount,i*rowHeight,
+					QPen(QBrush("black"), horizSepWidth, Qt::SolidLine)); // Horizontal line
+		else
+			scene->addLine(-categorySeparator,i*rowHeight,resultWidth*eventCount,i*rowHeight); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString(roomCats[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
+	}
+	scene->addLine(-horizSeparator,roomCatCount*rowHeight,resultWidth*eventCount,roomCatCount*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<shapeCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*eventCount,(i+roomCatCount)*rowHeight); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString(shapes[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
+	}
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*eventCount,(roomCatCount+shapeCount)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<appearanceCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,
+				resultWidth*eventCount,(i+roomCatCount+shapeCount)*rowHeight); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString(appearances[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
+	}
+	scene->addLine(-horizSeparator,rowCount*rowHeight,resultWidth*eventCount,rowCount*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	text = scene->addSimpleText("Place", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, rowCount*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight,resultWidth*eventCount,(rowCount+1)*rowHeight);
+	text = scene->addSimpleText("Room", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+1)*rowHeight);
+	scene->addLine(-horizSeparator,(rowCount+2)*rowHeight,resultWidth*eventCount,(rowCount+2)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+
+	// Starting and ending vertical line
+	scene->addLine(0,-eventSeparator,0,rowHeight*(rowCount+2), QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	scene->addLine((e)*resultWidth,-eventSeparator,(e)*resultWidth,rowHeight*(rowCount+2),
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	pthread_mutex_unlock(&_parent->_eventsMutex);
 	ui.graphicsView->setScene(scene);
@@ -133,8 +241,9 @@ void RCVisualizer::saveImageButtonClicked()
 
 QBrush RCVisualizer::getBrushForProbability(double prob)
 {
-	double step1 = 0.333333;
-	double step2 = 0.666666;
+	prob=1-prob;
+	double step1 = 0.5;
+	double step2 = 0.75;
 
 	double r = (prob<=step1)? prob/step1: 1.0;
 	double g = ((prob>step1) && (prob<=step2))? (prob-step1)/(step2-step1): ((prob>step1)?1.0:0.0);

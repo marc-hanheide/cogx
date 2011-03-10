@@ -119,12 +119,14 @@ void Tester::runComponent()
 		_defaultChainGraphInferencerServerInterfacePrx->getObjectCategories();
 	_roomCategories =
 		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
-	// Sort room categories for nice display
-	sort (_roomCategories.begin(), _roomCategories.end());
 	_shapes =
 		_defaultChainGraphInferencerServerInterfacePrx->getShapes();
 	_appearances =
 		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
+	// Sort room categories for nice display
+	sort (_roomCategories.begin(), _roomCategories.end());
+	sort (_shapes.begin(), _shapes.end());
+	sort (_appearances.begin(), _appearances.end());
 
 	QCoreApplication *app = QApplication::instance();
 	if (!app)
@@ -167,6 +169,8 @@ void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 	{
 		ConceptualData::WorldStatePtr worldStatePtr;
 		worldStatePtr = getMemoryEntry<ConceptualData::WorldState>(wmChange.address);
+
+		log("New worldstate for event %d", worldStatePtr->lastEvent.type);
 		if (_mainDialog)
 			_mainDialog->getConceptualWidget()->newWorldState(worldStatePtr);
 	}
