@@ -337,7 +337,7 @@ class Fact(tuple):
         if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
             l = self.svar.as_literal()
             if self.value == FALSE:
-                l = lit.negate()
+                l = l.negate()
         else:
             if _class == conditions.LiteralCondition:
                 if self.value.is_instance_of(t_number):
