@@ -60,9 +60,19 @@ else
       V=V0(idxs,:);
 
       %get median
-      medHSV=median(V)';
       
-% %       idx = randperm(size(V,1)) ;
+      if 1==1
+          medHSV=median(V)';
+      else
+          id=randperm(size(V,1));
+          V=V(id(1:min(100,length(id))),:);
+          medHSV=findModeInData(V');
+%           medHSV(1)=findModeInData(V(:,1)');
+%           medHSV(2)=findModeInData(V(:,2)');
+%           medHSV(3)=findModeInData(V(:,3)');
+      end
+      
+      % %       idx = randperm(size(V,1)) ;
 % %       num_sel = min([100, length(idx) ]) ; 
 % %       data = V(idx(1:num_sel),:) ; 
 % % %       N_max = min([size(V,1),100]) ;
