@@ -104,9 +104,9 @@ public class VisualObjectTransferFunction
 
 //					WorkingMemoryAddress coneGroupBelief = getReferredBelief(new PlaceMatchingFunction(
 //							pca.placeID));
-					fd1 = coneGroupBelief.getContent().get("location");
-					fd2 = coneGroupBelief.getContent().get("relation");
-					fd3 = coneGroupBelief.getContent().get("target");
+					fd1 = coneGroupBelief.getContent().get("cg-related-to");
+					fd2 = coneGroupBelief.getContent().get("cg-relation");
+					fd3 = coneGroupBelief.getContent().get("cg-label");
 
 					log("we found the cone group that belongs to this cone: "
 							+ CASTUtils.toString(coneGroupAddress));
