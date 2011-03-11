@@ -1030,7 +1030,14 @@ void AVS_ContinualPlanner::configure(
 
 void AVS_ContinualPlanner::AVSServer::simulateViewCones(const SpatialData::RelationalViewPointGenerationCommandPtr &cmd ,
 	    const Ice::Current &){
-	m_pOwner->generateViewCones(cmd, "");
+	SpatialData::RelationalViewPointGenerationCommandPtr cmd2 = new SpatialData::RelationalViewPointGenerationCommand;
+	cmd2->searchedObjectCategory = cmd->searchedObjectCategory;
+	cmd2->relation = cmd->relation;
+	cmd2->supportObject = cmd->supportObject;
+	cmd2->roomId = cmd->roomId;
+	cmd2->supportObjectCategory = cmd->supportObjectCategory;
+
+	m_pOwner->generateViewCones(cmd2, "");
 }
 
 
