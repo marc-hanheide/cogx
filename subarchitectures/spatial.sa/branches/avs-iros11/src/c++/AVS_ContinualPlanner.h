@@ -54,6 +54,7 @@ public:
 		std::string supportObjectCategory;
 		std::string searchedObjectCategory;
 		int roomId;
+		int placeId;
 		double getTotalProb(){
 			double tmp = 0;
 			for (unsigned int i =0; i < viewcones.size(); i++){

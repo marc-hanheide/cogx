@@ -151,6 +151,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		result->relation = m_currentConeGroup.relation;
 		result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
 		result->supportObjectId = m_currentConeGroup.supportObjectId;
+		result->placeId = m_currentConeGroup.placeId;
 	  	log("Publishing ObjectPlaceProperty with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
 	  			result->category.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 	  	addToWorkingMemory(newDataID(), result);
@@ -263,8 +264,12 @@ void AVS_ContinualPlanner::generateViewCones(
 	ConceptualData::ProbabilityDistributions conceptualProbdist = m_queryHandlerServerInterfacePrx->query(id);
 	SpatialProbabilities::ProbabilityDistribution probdist = conceptualProbdist[0];
 
+
+	double pdfmass = probdist.massFunction[0].probability;
+	log("Got probability for %s Conceptual %f",id.c_str(),pdfmass);
+
 	//Todo: Somehow get the probability from probDist
-	double pdfmass = 0.5;
+	//double pdfmass = 0.5;
 
 	//Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
 	if (newVPCommand->relation != SpatialData::INROOM && !alreadyGenerated) {
@@ -392,6 +397,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		int closestnode = GetClosestNodeId(viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
 		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
+
 		cast::cdl::WorkingMemoryAddress placeWMaddress;
 		// Get the place id for this cone
 		vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > placeBeliefs;
@@ -434,6 +440,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		c.bloxelMapId = id;
 		c.viewcones.push_back(viewcones[i]);
 		c.roomId = newVPCommand->roomId;
+		c.placeId = conePlaceId;
+
 		if (newVPCommand->supportObject == ""){
 			c.relation = SpatialData::INROOM;
 			c.supportObjectId = "";
@@ -648,15 +656,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		addToWorkingMemory(b->id, "binder", b);
 		log("wrote belief to WM..");
 	}
-    newVPCommand->status = SpatialData::SUCCESS;
-    log("Overwriting command to change status to: SUCCESS");
-    MapConeType::const_iterator end = m_beliefConeGroups.end();
-        	    for (MapConeType::const_iterator it = m_beliefConeGroups.begin(); it != end; ++it)
-        	    {
-        	        log("key: %d",it->first);
-        	    }
 
 if (WMAddress != ""){
+    newVPCommand->status = SpatialData::SUCCESS;
+    log("Overwriting command to change status to: SUCCESS");
     overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand>(WMAddress , newVPCommand);
 }
 
