@@ -1,121 +1,232 @@
-INROOM mug kitchen 0.8
-INROOM mug office 0.6
-INROOM mug living_room 0.7
-INROOM mug corridor 0.01
+INROOM counter kitchen 0.33616346
+INROOM counter meetingroom 0.03347149
+INROOM counter office 0.27807754
+INROOM counter corridor 0.0587
 
-INROOM table kitchen 0.8
-INROOM table office 0.3
-INROOM table living_room 0.7
-INROOM table corridor 0.02
+INROOM table kitchen 0.55362135
+INROOM table meetingroom 0.10420009
+INROOM table office 0.51997805
+INROOM table corridor 0.0594
 
-INROOM dishwasher kitchen 0.7
+INROOM box kitchen 0.15457517
+INROOM box meetingroom 0.011069357
+INROOM box office 0.19933626
+INROOM box corridor 0
 
-INROOM cupboard kitchen 0.9
-INROOM cupboard office 0.1
-INROOM cupboard living_room 0.1
-INROOM cupboard corridor 0.4
+INROOM bookcase kitchen 0.35544333
+INROOM bookcase meetingroom 0.015040721
+INROOM bookcase office 0.5326703
+INROOM bookcase corridor 0.0878
 
-INROOM bookcase kitchen 0.1
-INROOM bookcase office 0.7
-INROOM bookcase living_room 0.8
-INROOM bookcase corridor 0.5
+INROOM cerealbox kitchen 0.0381
+INROOM cerealbox meetingroom 0.006
+INROOM cerealbox office 0.0529
+INROOM cerealbox corridor 0.0219
 
-INROOM box kitchen 0.2
-INROOM box office 0.6
-INROOM box corridor 0.1
+INROOM holepuncher kitchen 0.0726
+INROOM holepuncher meetingroom 0.0
+INROOM holepuncher office 0.2399
+INROOM holepuncher corridor 0.0060
 
-INROOM cereal_box kitchen 0.1
-INROOM cereal_box office 0.1
-INROOM cereal_box living_room 0.2
-INROOM cereal_box corridor 0.1
+INROOM stapler kitchen 0.1750
+INROOM stapler meetingroom 0.0110
+INROOM stapler office 0.7025
+INROOM stapler corridor 0.0035
 
-INROOM book office 0.8
-INROOM book living_room 0.5
-INROOM book corridor 0.2
+INROOM mug kitchen 0.0402
+INROOM mug meetingroom 0.0019
+INROOM mug office 0.1429
+INROOM mug corridor 0.0
 
-ON mug table kitchen 0.4
-ON mug table office 0.1
-ON mug table living_room 0.3
-ON mug table corridor 0.1
+INROOM whiteboardmarker kitchen 0.0282
+INROOM whiteboardmarker meetingroom 0.7770
+INROOM whiteboardmarker office 0.0259
+INROOM whiteboardmarker corridor 0.0070
 
-INOBJECT mug cupboard kitchen 0.9
-INOBJECT mug cupboard office 0.9
-INOBJECT mug cupboard living_room 0.9
-INOBJECT mug cupboard corridor 0.9
+INROOM book kitchen 0.0366
+INROOM book meetingroom 0.0154
+INROOM book office 0.1285
+INROOM book corridor 0.0025
 
-INOBJECT mug dishwasher kitchen 0.7
+ON mug table kitchen 0.3
+ON mug table meetingroom 0.02
+ON mug table office 0.3
+ON mug table corridor 0.0
 
-INOBJECT mug bookcase office 0.2
-INOBJECT mug bookcase living_room 0.2
-INOBJECT mug bookcase corridor 0.05
+ON mug counter kitchen 0.4
+ON mug counter meetingroom 0.01
+ON mug counter office 0.3
+ON mug counter corridor 0.0
 
-INOBJECT mug box kitchen 0.2
-INOBJECT mug box office 0.1
-INOBJECT mug box corridor 0.1
+INOBJECT mug bookcase kitchen 0.03
+INOBJECT mug bookcase meetingroom 0.01
+INOBJECT mug bookcase office 0.1
+INOBJECT mug bookcase corridor 0.0
 
-ON cereal_box table kitchen 0.7
-ON cereal_box table office 0.1
-ON cereal_box table living_room 0.2
-ON cereal_box table corridor 0.1
+INOBJECT mug box kitchen 0.03
+INOBJECT mug box meetingroom 0.01
+INOBJECT mug box office 0.03
+INOBJECT mug box corridor 0.0
 
+ON cerealbox table kitchen 0.3
+ON cerealbox table meetingroom 0.03
+ON cerealbox table office 0.03
+ON cerealbox table corridor 0.03
 
-INOBJECT cereal_box cupboard kitchen 0.7
-INOBJECT cereal_box cupboard office 0.3
-INOBJECT cereal_box cupboard living_room 0.3
-INOBJECT cereal_box cupboard corridor 0.2
+ON cerealbox counter kitchen 0.2
+ON cerealbox counter meetingroom 0.03
+ON cerealbox counter office 0.03
+ON cerealbox counter corridor 0.03
 
-INOBJECT cereal_box bookcase kitchen 0.1
-INOBJECT cereal_box bookcase office 0.05
-INOBJECT cereal_box bookcase living_room 0.05
+INOBJECT cerealbox bookcase kitchen 0.03
+INOBJECT cerealbox bookcase meetingroom 0.03
+INOBJECT cerealbox bookcase office 0.03
+INOBJECT cerealbox bookcase corridor 0.03
 
+INOBJECT cerealbox box kitchen 0.2
+INOBJECT cerealbox box meetingroom 0.03
+INOBJECT cerealbox box office 0.03
+INOBJECT cerealbox box corridor 0.03
 
-ON book table kitchen 0.1
-ON book table office 0.6
-ON book table living_room 0.7
-ON book table corridor 0.5
+ON holepuncher table kitchen 0.03
+ON holepuncher table meetingroom 0.0
+ON holepuncher table office 0.3
+ON holepuncher table corridor 0.1
 
-INOBJECT book cupboard office 0.1
+ON holepuncher counter kitchen 0.03
+ON holepuncher counter meetingroom 0.0
+ON holepuncher counter office 0.3
+ON holepuncher counter corridor 0.2
 
-INOBJECT book bookcase kitchen 0.9
-INOBJECT book bookcase office 0.9
-INOBJECT book bookcase living_room 0.9
-INOBJECT book bookcase corridor 0.9
+INOBJECT holepuncher bookcase kitchen 0.03
+INOBJECT holepuncher bookcase meetingroom 0.0
+INOBJECT holepuncher bookcase office 0.1
+INOBJECT holepuncher bookcase corridor 0.03
+
+INOBJECT holepuncher box kitchen 0.03
+INOBJECT holepuncher box meetingroom 0.0
+INOBJECT holepuncher box office 0.1
+INOBJECT holepuncher box corridor 0.03
+
+ON stapler table kitchen 0.03
+ON stapler table meetingroom 0.03
+ON stapler table office 0.3
+ON stapler table corridor 0.05
+
+ON stapler counter kitchen 0.03
+ON stapler counter meetingroom 0.03
+ON stapler counter office 0.3
+ON stapler counter corridor 0.15
+
+INOBJECT stapler bookcase kitchen 0.03
+INOBJECT stapler bookcase meetingroom 0.01
+INOBJECT stapler bookcase office 0.1
+INOBJECT stapler bookcase corridor 0.03
+
+INOBJECT stapler box kitchen 0.03
+INOBJECT stapler box meetingroom 0.01
+INOBJECT stapler box office 0.01
+INOBJECT stapler box corridor 0.03
+
+ON marker table kitchen 0.03
+ON marker table meetingroom 0.7
+ON marker table office 0.3
+ON marker table corridor 0.03
+
+ON marker counter kitchen 0.03
+ON marker counter meetingroom 0.7
+ON marker counter office 0.2
+ON marker counter corridor 0.03
+
+INOBJECT marker bookcase kitchen 0.03
+INOBJECT marker bookcase meetingroom 0.3
+INOBJECT marker bookcase office 0.03
+INOBJECT marker bookcase corridor 0.03
+
+INOBJECT marker box kitchen 0.03
+INOBJECT marker box meetingroom 0.3
+INOBJECT marker box office 0.1
+INOBJECT marker box corridor 0.1
+
+ON book table kitchen 0.03
+ON book table meetingroom 0.3
+ON book table office 0.1
+ON book table corridor 0.03
+
+ON book counter kitchen 0.03
+ON book counter meetingroom 0.1
+ON book counter office 0.1
+ON book counter corridor 0.1
+
+INOBJECT book bookcase kitchen 0.2
+INOBJECT book bookcase meetingroom 0.5
+INOBJECT book bookcase office 0.4
+INOBJECT book bookcase corridor 0.2
+
+INOBJECT book box kitchen 0.01
+INOBJECT book box meetingroom 0.3
+INOBJECT book box office 0.05
+INOBJECT book box corridor 0.1
 
 COST_INROOM mug 200
 
 COST_ON mug table 30
-COST_ON mug dishwasher 30
+COST_ON mug counter 30
 
-COST_INOBJECT mug dishwasher 50
-COST_INOBJECT mug cupboard 40
+COST_INOBJECT mug box 50
 COST_INOBJECT mug bookcase 40
 
 
 COST_INROOM table 50
-COST_INROOM cupboard 50
+COST_INROOM box 50
 COST_INROOM bookcase 50
-COST_INROOM dishwasher 50
+COST_INROOM counter 50
 
 
-COST_INROOM cereal_box 200
+COST_INROOM cerealbox 200
 
-COST_ON cereal_box table 30
-COST_ON cereal_box dishwasher 30
+COST_ON cerealbox table 30
+COST_ON cerealbox counter 30
 
-COST_INOBJECT cereal_box dishwasher 50
-COST_INOBJECT cereal_box cupboard 40
-COST_INOBJECT cereal_box bookcase 40
+COST_INOBJECT cerealbox box 50
+COST_INOBJECT cerealbox bookcase 40
+
+
+COST_INROOM holepuncher 200
+
+COST_ON holepuncher table 30
+COST_ON holepuncher counter 30
+
+COST_INOBJECT holepuncher box 50
+COST_INOBJECT holepuncher bookcase 40
+
+
+COST_INROOM stapler 200
+
+COST_ON stapler table 30
+COST_ON stapler counter 30
+
+COST_INOBJECT stapler box 50
+COST_INOBJECT stapler bookcase 40
+
+
+
+COST_INROOM marker 200
+
+COST_ON marker table 30
+COST_ON marker counter 30
+
+COST_INOBJECT marker box 50
+COST_INOBJECT marker bookcase 40
+
 
 
 COST_INROOM book 200
 
 COST_ON book table 30
-COST_ON book dishwasher 30
+COST_ON book counter 30
 
-COST_INOBJECT book dishwasher 50
-COST_INOBJECT book cupboard 40
+COST_INOBJECT book box 50
 COST_INOBJECT book bookcase 40
-
-
 
 
