@@ -440,6 +440,15 @@ sequence<OneObj> ObjSeq;
     string label;
     cogx::Math::Pose3 pose;
   };
+  
+  /**
+  *
+  * Command for AR tag recognizer
+  * @author Alper Aydemir
+  */
+  class ARTagCommand{
+  	string label;
+  };
 };
 
 #endif
