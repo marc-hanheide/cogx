@@ -74,6 +74,8 @@ private:
   float bgDistTolerance;
   int lblFixCost;
   int smoothCost;
+  bool m_bBlockingEnabled; // Blocking is enabled
+  bool m_bBlocked;         // Updates are currently blocked
   
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
@@ -145,6 +147,8 @@ private:
   bool hasSnapFlag(char ch);
 
 private:
+  void onAdd_WmRpc(const cdl::WorkingMemoryChange & _wmc);
+
   /**
    * callback function called whenever a new SOI appears
    */
