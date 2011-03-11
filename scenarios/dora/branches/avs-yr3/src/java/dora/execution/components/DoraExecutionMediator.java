@@ -162,11 +162,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return act;
 
 		} else if (_plannedAction.name.equals("create_cones_at_object")) {
-            //args: agent, label, relation, object, room
-			assert _plannedAction.arguments.length == 5 : "create_cones action arity is expected to be 3";
+            //args: agent, label, support label, relation, object, room
+			assert _plannedAction.arguments.length == 6 : "create_cones action arity is expected to be 3";
 
-			WorkingMemoryAddress objectBeliefAddress = addressFromFormula(_plannedAction.arguments[3]);
-			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[4]);
+			WorkingMemoryAddress objectBeliefAddress = addressFromFormula(_plannedAction.arguments[4]);
+			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[5]);
 
 			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
 					.create(GroundedBelief.class,
@@ -178,7 +178,8 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
-            act.relation = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
+            act.supportObjectCategory = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
+            act.relation = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[3]);
             act.supportObject = objectBeliefAddress.id; //FIXME: check if this works
             act.roomID = room.roomId;
 
