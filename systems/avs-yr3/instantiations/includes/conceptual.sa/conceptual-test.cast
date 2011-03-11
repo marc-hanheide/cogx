@@ -1,2 +1,2 @@
-CPP GD conceptual.tester ConceptualTester --queryhandler conceptual.queryhandler --chaingraphinferencer conceptual.chaingraphinferencer --defaultchaingraphinferencer default.chaingraphinferencer --placemanager place.manager
+CPP GD conceptual.tester ConceptualTester --queryhandler conceptual.queryhandler --chaingraphinferencer conceptual.chaingraphinferencer --defaultchaingraphinferencer default.chaingraphinferencer --placemanager place.manager --visualized-objects book,mug
 
