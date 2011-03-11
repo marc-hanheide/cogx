@@ -43,9 +43,6 @@ class CASTState(object):
             default_facts, default_objects = self.get_default_data(component)
             self.coma_facts += default_facts
             self.coma_objects |= default_objects
-
-        if component:
-            self.get_conceptual_data(component)
             
         #TODO: make this less ugly
         tp.current_domain = self.domain
@@ -69,6 +66,10 @@ class CASTState(object):
         self.facts = list(tp.tuples2facts(obj_descriptions))
         self.objects |= self.coma_objects
         self.facts += self.coma_facts
+        if component:
+            cfacts, cobjects = self.get_conceptual_data(component, self.facts)
+            self.facts += cfacts
+            self.objects |= cobjects
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
@@ -80,7 +81,7 @@ class CASTState(object):
         self.objects |= self.generated_objects
         
         self.state = self.prob_state.determinized_state(0.05, 0.95)
-        
+                    
         self.generate_belief_state(self.prob_state, self.state)
 
         if oldstate:
@@ -258,14 +259,51 @@ class CASTState(object):
             
         return facts, objects
 
-    def get_conceptual_data(self, component):
+    def get_conceptual_data(self, component, bel_facts):
         log.debug("querying conceptual.sa")
+
+        roomdict = {}
+        if not "roomid" in self.domain.functions or not "obj_exists" in self.domain.functions:
+            return
+        
+        roomid_func = self.domain.functions["roomid"][0]
+        exists_func = self.domain.functions["p-obj_exists"][0]
+        label_t = exists_func.args[0].type
+        in_rel = self.domain["in"]
+        
+        for svar, val in bel_facts:
+            if svar.function == roomid_func and not svar.modality:
+                roomdict[int(val.value)] = svar.args[0]
+
+        extract_obj_in_room = re.compile("room([0-9]+)_object_([-_a-zA-Z]+)_unexplored")
+        results = []
+                
+        facts = []
+        objects = set([])
+        
         try:
             results = component.getConceptual().query("p(room*_object_*_unexplored=exists)")
-            print results
         except Exception, e:
             log.warning("Error when calling the conceptual query server: %s", str(e))
-            return 
+            return facts, objects
+        
+        for entry in results:
+            for key, pos in entry.variableNameToPositionMap.iteritems():
+                match = extract_obj_in_room.search(key)
+                if not match:
+                    continue
+                room_id = int(match.group(1))
+                label = match.group(2)
+                p = entry.massFunction[pos].probability
+                room_obj = roomdict.get(room_id, None)
+                label_obj = pddl.TypedObject(label, label_t)
+                svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
+                fact = state.Fact(svar, pddl.types.TypedNumber(p))
+                facts.append(fact)
+                objects.add(label_obj)
+                print room_id, label, p, room_obj, fact
+
+        return facts, objects
         
     
     def get_coma_data(self, component):
@@ -336,7 +374,7 @@ class CASTState(object):
                     continue
                 match = True
                 for svar, val in facts:
-                    if svar.function.name in ("is-virtual", ) or svar.modality in (pddl.mapl.indomain, pddl.mapl.i_indomain, pddl.mapl.knowledge, pddl.mapl.direct_knowledge):
+                    if svar.function.name in ("is-virtual", ) or svar.modality is not None:
                         continue # HACK: don't match on modal/virtual predicates
                     newvar = pddl.state.StateVariable(svar.function, [repl(a) for a in svar.args], svar.modality,  [repl(a) for a in svar.modal_args])
                     if self.state[newvar] == pddl.UNKNOWN and val == pddl.UNKNOWN:
