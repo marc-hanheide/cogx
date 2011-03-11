@@ -1,2 +1,4 @@
-CPP MG avs.cpplanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 20 --tiltinterval 15 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.15 --publishsimcones --log --queryhandler conceptual.queryhandler
+CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --debug
+
+CPP MG avs.cpplanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 20 --tiltinterval 15 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.15 --publishsimcones --log --queryhandler conceptual.queryhandler #--usepeekabot
 
