@@ -89,6 +89,9 @@ private:
 	/** Create DAI Variable if not yet created. */
 	void createDaiVariable(std::string name, const std::vector<std::string> &values);
 
+	/** Creates and/or sets the value of an observed variable. */
+	void createAndSetObservedVariable(std::string name, const std::vector<std::string> &values, int observedValue);
+
 	/** Creates a DAI connectivity factor for two rooms. */
 	void createDaiConnectivityFactor(int room1Id, int room2Id);
 	/**
@@ -223,6 +226,12 @@ private:
 
 	double _placeholderInCurrentRoomPrior;
 
+	bool _addUnobservedShape;
+	bool _addUnobservedAppearance;
+	std::vector<std::string> _addUnobservedObjects;
+
+
+
 	/** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
 
@@ -252,6 +261,16 @@ private:
 
 	/** Map from variable names to DAI variables. */
 	std::map<std::string, DaiVariable> _variableNameToDai;
+
+	struct ObservedVariable
+	{
+		int id;
+		int observedValue;
+		std::map<int, std::string> valueIdToName;
+	};
+
+	/** Observed variable names to variable info map. */
+	std::map<std::string, ObservedVariable> _observedVariableNameToInfo;
 
 	/** List of all factors in the graph. */
 	std::vector<dai::Factor> _factors;

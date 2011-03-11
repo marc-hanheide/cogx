@@ -40,6 +40,22 @@ std::string VariableNameGenerator::getUnexploredObjectVarName(int roomId, std::s
 
 
 // -------------------------------------------------------
+std::string VariableNameGenerator::getExploredObjectVarName(int roomId, std::string objectCategory,
+		SpatialData::SpatialRelation relation, std::string supportObjectCategory, std::string supportObjectId)
+{
+	string objVarName;
+	if (relation==SpatialData::INROOM)
+		objVarName = "room"+lexical_cast<string>(roomId)+"_object_"+objectCategory+"_explored";
+	else
+		objVarName = "room"+lexical_cast<string>(roomId)+"_object_"+objectCategory+
+		            "_"+relationToString(relation)+"_"+supportObjectCategory+"-"+
+		            supportObjectId+"_explored";
+
+	return objVarName;
+}
+
+
+// -------------------------------------------------------
 std::string VariableNameGenerator::relationToString(SpatialData::SpatialRelation relation)
 {
 	switch(relation)

@@ -31,6 +31,7 @@ module ConceptualData
 	struct VariableInfo
 	{
 		string name;
+		bool observed;
 		VariableValues values;
 	};
 	

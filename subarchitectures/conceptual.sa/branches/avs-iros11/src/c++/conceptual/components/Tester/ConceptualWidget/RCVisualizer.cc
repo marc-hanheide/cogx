@@ -1,6 +1,7 @@
 #include "RCVisualizer.h"
 #include "ConceptualWidget.h"
 #include "DefaultData.hpp"
+#include "AddGroundtruthDialog.h"
 #include "Tester.h"
 
 #include <QFileDialog>
@@ -14,6 +15,7 @@ RCVisualizer::RCVisualizer(ConceptualWidget *parent, conceptual::Tester *compone
 	ui.setupUi(this);
 	connect(ui.saveImageButton, SIGNAL(clicked()), this, SLOT(saveImageButtonClicked()));
 	connect(ui.refreshButton, SIGNAL(clicked()), this, SLOT(generate()));
+	connect(ui.addGroundtruthButton, SIGNAL(clicked()), this, SLOT(addGroundtruthButtonClicked()));
 
 	generate();
 }
@@ -25,6 +27,11 @@ RCVisualizer::~RCVisualizer()
 }
 
 
+void prepareLocalEvents()
+{
+}
+
+
 void RCVisualizer::generate()
 {
 	// Settings
@@ -33,8 +40,10 @@ void RCVisualizer::generate()
 	const int categorySeparator = 10;
 	const int eventSeparator = 10;
 	const int eventSeparatorCount = 10;
-	const int horizSeparator = 30;
+	const int horizSeparator = 50;
 	const int horizSepWidth = 2;
+	const double markDotSize=4;
+	const double markPlusSize=6;
 	QFont defaultFont("Ubuntu", 12);
 	QFont smallFont("Ubuntu", 6);
 
@@ -49,17 +58,6 @@ void RCVisualizer::generate()
 	bool verticalIndicators = ui.verticalIndicatorsCheckBox->isChecked();
 	int resultWidth= ui.widthSpinBox->value();
 	QGraphicsSimpleTextItem *text;
-
-	// Get displayed event count
-	unsigned long eventCount=0;
-	if (locationOnly)
-	{
-		for (unsigned long e=0; e<_parent->_events.size(); ++e)
-			if (_parent->_events[e].info.type == ConceptualData::EventNothig)
-				eventCount++;
-	}
-	else
-		eventCount = _parent->_events.size();
 
 	// Get data info
 	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
@@ -85,134 +83,187 @@ void RCVisualizer::generate()
 	unsigned long e=0;
 	unsigned int lastPlaceChange=0;
 	unsigned int lastRoomChange=0;
+	std::vector<int> groundTruthRows;
+	std::vector<ConceptualData::EventInfo> accumulatedInfos;
 	for (unsigned long _e=0; _e<_parent->_events.size(); ++_e)
 	{
 		const ConceptualWidget::Event &event = _parent->_events[_e];
-		if ((!locationOnly) || (event.info.type == ConceptualData::EventNothig))
+		for (unsigned int i=0; i<event.infos.size(); ++i)
 		{
-			roomCatCountReal = event.curRoomCategories.size();
-			shapeCountReal = event.curShapes.size();
-			appearanceCountReal = event.curAppearances.size();
-
-			// Categories
-			unsigned int row=0;
-			for(unsigned int i=0; i<roomCatCountReal; ++i)
+			if (locationOnly)
 			{
-				double prob = event.curRoomCategories[i];
-				scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
-						(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
-				row++;
+				if (event.infos[i].type == ConceptualData::EventNothig)
+					accumulatedInfos.push_back(event.infos[i]);
+			}
+			else
+			{
+				accumulatedInfos.push_back(event.infos[i]);
+			}
+		}
+		if ((event.curRoomId<0) || (accumulatedInfos.empty()))
+			continue;
+
+		// Events
+		roomCatCountReal = event.curRoomCategories.size();
+		shapeCountReal = event.curShapes.size();
+		appearanceCountReal = event.curAppearances.size();
+
+		// Categories
+		unsigned int row=0;
+		for(unsigned int i=0; i<roomCatCountReal; ++i)
+		{
+			double prob = event.curRoomCategories[i];
+			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+			row++;
+		}
+
+		// Add groundtruth for this room
+		if (_groundTruth.find(event.curRoomId) != _groundTruth.end())
+			groundTruthRows.push_back(_groundTruth[event.curRoomId]);
+		else
+			groundTruthRows.push_back(-1);
+
+		// Draw shapes
+		row = roomCatCount;
+		for(unsigned int i=0; i<shapeCountReal; ++i)
+		{
+			double prob = event.curShapes[i];
+			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+			row++;
+		}
+		// Draw appearances
+		row = roomCatCount + shapeCount;
+		for(unsigned int i=0; i<appearanceCountReal; ++i)
+		{
+			double prob = event.curAppearances[i];
+			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+			row++;
+		}
+
+		if ((e%eventSeparatorCount) == 0)
+		{
+			scene->addLine(e*resultWidth, -eventSeparator ,e*resultWidth, 0);
+			QGraphicsSimpleTextItem *text = scene->addSimpleText(QString::number(e), defaultFont);
+			text->setPos(e*resultWidth-text->boundingRect().width()/2, -eventSeparator-text->boundingRect().height());
+			if (verticalIndicators)
+				scene->addLine(e*resultWidth, 0 ,e*resultWidth, rowCount*rowHeight,
+						QPen(QBrush(qRgb(150,150,150)),1, Qt::DotLine));
+		}
+		if (event.curPlaceId!=curPlace)
+		{
+			// Are we adding or changing place to already known?
+			bool addingPlace = false;
+			for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
+				if (accumulatedInfos[i].type==ConceptualData::EventRoomPlaceAdded)
+					addingPlace = true;
+
+			if (placeIds)
+			{
+				text = scene->addSimpleText(QString::number(curPlace), smallFont);
+				text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, rowCount*rowHeight);
+				lastPlaceChange=e*resultWidth;
 			}
 
-			// Draw shapes
-			if ( (event.info.type == ConceptualData::EventShapePlacePropertyAdded) ||
-				 (event.info.type == ConceptualData::EventShapePlacePropertyChanged) )
+			if (event.curRoomId!=curRoom)
 			{
-				row = roomCatCount;
-				for(unsigned int i=0; i<shapeCountReal; ++i)
-				{
-					double prob = event.curShapes[i];
-					scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
-							(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
-					row++;
-				}
-			}
-
-			// Draw appearances
-			if ( (event.info.type == ConceptualData::EventAppearancePlacePropertyAdded) ||
-				 (event.info.type == ConceptualData::EventAppearancePlacePropertyChanged) )
-			{
-				row = roomCatCount + shapeCount;
-				for(unsigned int i=0; i<appearanceCountReal; ++i)
-				{
-					double prob = event.curAppearances[i];
-					scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
-							(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
-					row++;
-				}
-			}
-
-			if ((e%eventSeparatorCount) == 0)
-			{
-				scene->addLine(e*resultWidth, -eventSeparator ,e*resultWidth, 0);
-				QGraphicsSimpleTextItem *text = scene->addSimpleText(QString::number(e), defaultFont);
-				text->setPos(e*resultWidth-text->boundingRect().width()/2, -eventSeparator-text->boundingRect().height());
+				text = scene->addSimpleText(QString::number(curRoom), defaultFont);
+				text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+1)*rowHeight);
+				lastRoomChange=e*resultWidth;
 				if (verticalIndicators)
-					scene->addLine(e*resultWidth, 0 ,e*resultWidth, rowCount*rowHeight, QPen(Qt::DotLine));
+					scene->addLine(e*resultWidth, 0 ,e*resultWidth, (rowCount+2)*rowHeight,
+							QPen(Qt::DashLine));
 
-			}
-			if (event.curPlaceId!=curPlace)
-			{
-				if (placeIds)
+				if (addingPlace)
 				{
-					text = scene->addSimpleText(QString::number(curPlace), smallFont);
-					text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, rowCount*rowHeight);
-					lastPlaceChange=e*resultWidth;
-				}
-
-				if (event.curRoomId!=curRoom)
-				{
-					text = scene->addSimpleText(QString::number(curRoom), defaultFont);
-					text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+1)*rowHeight);
-					scene->addLine(e*resultWidth, rowCount*rowHeight,e*resultWidth,(rowCount+2)*rowHeight);
-					lastRoomChange=e*resultWidth;
-					if (verticalIndicators)
-						scene->addLine(e*resultWidth, 0 ,e*resultWidth, rowCount*rowHeight, QPen(Qt::DashLine));
+					scene->addLine(e*resultWidth, (rowCount+1.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+1.5)*rowHeight+markPlusSize/2.0,
+							QPen(QBrush("black"), 2, Qt::SolidLine));
+					scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+1.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+1.5)*rowHeight,
+							QPen(QBrush("black"), 2, Qt::SolidLine));
 				}
 				else
 				{
-					scene->addLine(e*resultWidth, rowCount*rowHeight,e*resultWidth,(rowCount+1)*rowHeight, QPen(Qt::DotLine));
+					scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+1.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+							QPen(), QBrush(qRgb(0,0,0)));
 				}
 			}
-
-			curPlace=event.curPlaceId;
-			curRoom=event.curRoomId;
-			e++;
+			if (addingPlace)
+			{
+				scene->addLine(e*resultWidth, (rowCount+0.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+0.5)*rowHeight+markPlusSize/2.0,
+						QPen(QBrush("black"), 2, Qt::SolidLine));
+				scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+0.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+0.5)*rowHeight,
+						QPen(QBrush("black"), 2, Qt::SolidLine));
+			}
+			else
+			{
+				scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+0.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+						QPen(), QBrush(qRgb(0,0,0)));
+			}
 		}
+
+		curPlace=event.curPlaceId;
+		curRoom=event.curRoomId;
+		e++;
+		accumulatedInfos.clear();
 	}
 
 	// Start
 	for(unsigned int i=0; i<roomCatCount; ++i)
 	{
 		if (i==0)
-			scene->addLine(-horizSeparator,i*rowHeight,resultWidth*eventCount,i*rowHeight,
+			scene->addLine(-horizSeparator,i*rowHeight,resultWidth*e,i*rowHeight,
 					QPen(QBrush("black"), horizSepWidth, Qt::SolidLine)); // Horizontal line
 		else
-			scene->addLine(-categorySeparator,i*rowHeight,resultWidth*eventCount,i*rowHeight); // Horizontal line
+			scene->addLine(-categorySeparator,i*rowHeight,resultWidth*e,i*rowHeight); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(roomCats[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
 	}
-	scene->addLine(-horizSeparator,roomCatCount*rowHeight,resultWidth*eventCount,roomCatCount*rowHeight,
+	scene->addLine(-horizSeparator,roomCatCount*rowHeight,resultWidth*e,roomCatCount*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<shapeCount; ++i)
 	{
-		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*eventCount,(i+roomCatCount)*rowHeight); // Horizontal line
+		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(shapes[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
 	}
-	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*eventCount,(roomCatCount+shapeCount)*rowHeight,
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<appearanceCount; ++i)
 	{
 		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,
-				resultWidth*eventCount,(i+roomCatCount+shapeCount)*rowHeight); // Horizontal line
+				resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(appearances[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
 	}
-	scene->addLine(-horizSeparator,rowCount*rowHeight,resultWidth*eventCount,rowCount*rowHeight,
+	scene->addLine(-horizSeparator,rowCount*rowHeight,resultWidth*e,rowCount*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
-	text = scene->addSimpleText("Place", defaultFont);
+	text = scene->addSimpleText("Place Change", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, rowCount*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight,resultWidth*eventCount,(rowCount+1)*rowHeight);
-	text = scene->addSimpleText("Room", defaultFont);
+	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight,resultWidth*e,(rowCount+1)*rowHeight);
+	text = scene->addSimpleText("Room Change", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+1)*rowHeight);
-	scene->addLine(-horizSeparator,(rowCount+2)*rowHeight,resultWidth*eventCount,(rowCount+2)*rowHeight,
+	scene->addLine(-horizSeparator,(rowCount+2)*rowHeight,resultWidth*e,(rowCount+2)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	// Starting and ending vertical line
 	scene->addLine(0,-eventSeparator,0,rowHeight*(rowCount+2), QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	scene->addLine((e)*resultWidth,-eventSeparator,(e)*resultWidth,rowHeight*(rowCount+2),
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+
+	// Groundtruth
+	for (unsigned int i=0; i<groundTruthRows.size(); ++i)
+	{
+		if (groundTruthRows[i]>=0)
+		{
+			scene->addLine(i*resultWidth, groundTruthRows[i]*rowHeight, (i+1)*resultWidth, groundTruthRows[i]*rowHeight,
+					QPen(QBrush(qRgb(0,0,150)),3, Qt::DashLine));
+			scene->addLine(i*resultWidth, (groundTruthRows[i]+1)*rowHeight, (i+1)*resultWidth, (groundTruthRows[i]+1)*rowHeight,
+					QPen(QBrush(qRgb(0,0,150)),3, Qt::DashLine));
+		}
+	}
+
 
 	pthread_mutex_unlock(&_parent->_eventsMutex);
 	ui.graphicsView->setScene(scene);
@@ -235,6 +286,31 @@ void RCVisualizer::saveImageButtonClicked()
 		painter.begin(&generator);
 		ui.graphicsView->scene()->render(&painter);
 		painter.end();
+	}
+}
+
+
+void RCVisualizer::addGroundtruthButtonClicked()
+{
+	QList<int> roomIds;
+	pthread_mutex_lock(&_parent->_worldStateMutex);
+	for (unsigned int i=0; i<_parent->_wsPtr->rooms.size(); ++i)
+		roomIds.append(_parent->_wsPtr->rooms[i].roomId);
+	int curPlaceId = _component->getCurrentPlace();
+	int curRoomId = _parent->getRoomForPlace(_parent->_wsPtr, curPlaceId);
+	pthread_mutex_unlock(&_parent->_worldStateMutex);
+	DefaultData::StringSeq roomCategories = _component->getRoomCategories();
+	QStringList categories;
+	for (unsigned int i=0 ; i<roomCategories.size(); ++i)
+		categories.append(QString::fromStdString(roomCategories[i]));
+
+	AddGroundtruthDialog *d = new AddGroundtruthDialog(this, roomIds, categories, curRoomId);
+	d->exec();
+	if (d->result() == QDialog::Accepted)
+	{
+		int roomId = d->getRoomId();
+		int categoryIndex = d->getCategoryIndex();
+		_groundTruth[roomId] = categoryIndex;
 	}
 }
 

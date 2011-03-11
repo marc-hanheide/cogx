@@ -25,6 +25,13 @@ public:
 			SpatialData::SpatialRelation relation, std::string supportObjectCategory,
 			std::string supportObjectId);
 
+	/**
+	 * Generates name of the variable for the event of the number of objects being present in
+	 * the explored part of space.
+	 */
+	static std::string getExploredObjectVarName(int roomId, std::string objectCategory,
+			SpatialData::SpatialRelation relation, std::string supportObjectCategory,
+			std::string supportObjectId);
 
 	/** Converts relation type to string. */
 	static std::string relationToString(SpatialData::SpatialRelation relation);

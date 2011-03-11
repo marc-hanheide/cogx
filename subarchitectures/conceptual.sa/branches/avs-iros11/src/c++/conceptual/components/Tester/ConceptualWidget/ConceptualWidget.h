@@ -38,7 +38,8 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 	{
 		int curRoomId;
 		int curPlaceId;
-		ConceptualData::EventInfo info;
+		std::vector<int> curRoomPlaces;
+		std::vector<ConceptualData::EventInfo> infos;
 		std::vector<double> curRoomCategories;
 		std::vector<double> curShapes;
 		std::vector<double> curAppearances;
@@ -69,13 +70,14 @@ private slots:
 	void posTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
-	void addEvent(QList<Event> events);
+	void addEvent(Event event);
 
 
 private:
 
 	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
-	void collectEventInfo(QList<Event> events);
+	void collectEventInfo(Event event);
+	void getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, std::vector<int> &places);
 
 
 private:

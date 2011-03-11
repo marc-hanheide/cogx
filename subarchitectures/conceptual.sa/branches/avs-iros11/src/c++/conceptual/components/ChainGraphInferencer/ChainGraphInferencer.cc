@@ -89,6 +89,10 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	else
 		_placeholderInCurrentRoomPrior = 0.5;
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
+	_addUnobservedShape = (_config.find("--add-unobserved-shape") != _config.end());
+	_addUnobservedAppearance = (_config.find("--add-unobserved-appearance") != _config.end());
+	if((it = _config.find("--addUnobservedObjects")) != _config.end())
+		boost::split(_addUnobservedObjects, it->second, is_any_of(", "));
 
 	// Check parameters
 	if (_avsDefaultKnowledgeFileName.empty())
@@ -454,6 +458,26 @@ void ChainGraphInferencer::createDaiVariable(string name, const vector<string> &
 	}
 }
 
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createAndSetObservedVariable(string name, const vector<string> &values,
+		int observedValue)
+{
+	if (_observedVariableNameToInfo.find(name) == _observedVariableNameToInfo.end())
+	{
+		ObservedVariable &ov = _observedVariableNameToInfo[name];
+		ov.id = _observedVariableNameToInfo.size() + 65535;
+		for (unsigned int i=0; i<values.size(); ++i)
+		{
+			ov.valueIdToName[i] = values[i];
+		}
+	}
+
+	_observedVariableNameToInfo[name].observedValue=observedValue;
+}
+
+
+
 // -------------------------------------------------------
 double ChainGraphInferencer::getProbabilityValue(
 		const SpatialProbabilities::ProbabilityDistribution &pd,
@@ -594,9 +618,16 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id, co
 	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
 	string objectVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(
 			objectCategory, relation, supportObjectCategory);
+	string observedObjectVarName = VariableNameGenerator::getExploredObjectVarName(
+			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
 
 	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", room1VarName.c_str(),
 			objectVarName.c_str() );
+
+	vector<string> values(2);
+	values[0] = ConceptualData::NOTEXISTS;
+	values[1] = ConceptualData::EXISTS;
+	createAndSetObservedVariable(observedObjectVarName, values, (objectCount>0)?1:0);
 	createDaiVariable(room1VarName, _roomCategories);
 	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 
@@ -1001,6 +1032,10 @@ void ChainGraphInferencer::addDaiFactors()
 				createDaiShapePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
 				createDaiObservedShapePropertyFactor(pi.placeId, sppi.distribution);
 			} // s
+			if ( (pi.shapeProperties.empty()) && (_addUnobservedShape) )
+			{
+				createDaiShapePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+			}
 
 			// Appearance properties
 			for (unsigned int a=0; a<pi.appearanceProperties.size(); ++a)
@@ -1009,6 +1044,10 @@ void ChainGraphInferencer::addDaiFactors()
 				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
 				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
 			} // a
+			if ( (pi.appearanceProperties.empty()) && (_addUnobservedAppearance) )
+			{
+				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+			}
 		} // p
 
 		// Place independent Object properties
@@ -1319,7 +1358,7 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 	if (elems.size()>1)
 		valueName=elems[1];
 
-	// Find all variables that match
+	// Find all unobserved variables that match
 	vector< map<string, DaiVariable>::iterator > varIters;
 	for (map<string, DaiVariable>::iterator it = _variableNameToDai.begin();
 			it != _variableNameToDai.end(); ++it)
@@ -1327,17 +1366,29 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 		if ( wildcmp(varName.c_str(), it->first.c_str()))
 				varIters.push_back(it);
 	}
-	if (varIters.empty())
+	// Find all observed variables that match
+	vector< map<string, ObservedVariable>::iterator > observedVarIters;
+	for (map<string, ObservedVariable>::iterator it = _observedVariableNameToInfo.begin();
+			it != _observedVariableNameToInfo.end(); ++it)
+	{
+		if ( wildcmp(varName.c_str(), it->first.c_str()))
+				observedVarIters.push_back(it);
+	}
+	if ((varIters.empty()) && (observedVarIters.empty()))
 	{
 		string msg;
 		msg = "Variable '" + varName + "' not found! Variables we know:";
 		for (map<string, DaiVariable>::iterator varIter = _variableNameToDai.begin(); varIter
 				!= _variableNameToDai.end(); ++varIter)
 			msg += varIter->first + " ";
+		for (map<string, ObservedVariable>::iterator varIter = _observedVariableNameToInfo.begin(); varIter
+				!= _observedVariableNameToInfo.end(); ++varIter)
+			msg += varIter->first + " ";
 		log(msg.c_str());
 		return;
 	}
 
+	// Unobserved
 	for (unsigned int v=0; v<varIters.size(); ++v)
 	{
 		map<string, DaiVariable>::iterator varIter = varIters[v];
@@ -1370,6 +1421,37 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 
 		resultDistributions.push_back(resultDistribution);
 	}
+
+	// Observed
+	for (unsigned int v=0; v<observedVarIters.size(); ++v)
+	{
+		map<string, ObservedVariable>::iterator varIter = observedVarIters[v];
+
+		// Prepare the resulting distribution
+		SpatialProbabilities::ProbabilityDistribution resultDistribution;
+		resultDistribution.description = queryString;
+		resultDistribution.variableNameToPositionMap[varIter->first]=0;
+		resultDistribution.massFunction.clear();
+
+		// Fill in "distribution"
+		for (unsigned int i = 0; i < varIter->second.valueIdToName.size(); ++i)
+		{
+			string vn = varIter->second.valueIdToName[i];
+			if ((valueName.empty()) || (vn==valueName))
+			{
+				SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+						new SpatialProbabilities::StringRandomVariableValue(
+								vn);
+				SpatialProbabilities::JointProbabilityValue jpv;
+				jpv.probability = (i == varIter->second.observedValue)?1.0:0.0;
+				jpv.variableValues.push_back(rvvPtr);
+				resultDistribution.massFunction.push_back(jpv);
+			}
+		}
+
+		resultDistributions.push_back(resultDistribution);
+	}
+
 }
 
 
@@ -1790,9 +1872,22 @@ ConceptualData::VariableInfos ChainGraphInferencer::TestingServer::getVariables(
 	{
 		ConceptualData::VariableInfo vi;
 		vi.name = i->first;
+		vi.observed=false;
 		for (unsigned int j=0; j<i->second.valueIdToName.size(); ++j)
 			vi.values.push_back(i->second.valueIdToName[j]);
 		vis[i->second.var.label()] = vi;
+	}
+
+	for (std::map<std::string, ObservedVariable>::iterator i =
+			_chainGraphInferencer->_observedVariableNameToInfo.begin();
+			i!=_chainGraphInferencer->_observedVariableNameToInfo.end(); ++i)
+	{
+		ConceptualData::VariableInfo vi;
+		vi.name = i->first;
+		vi.observed=true;
+		for (unsigned int j=0; j<i->second.valueIdToName.size(); ++j)
+			vi.values.push_back(i->second.valueIdToName[j]);
+		vis[i->second.id] = vi;
 	}
 
 	pthread_mutex_unlock(&_chainGraphInferencer->_graphMutex);
