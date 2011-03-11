@@ -65,18 +65,57 @@ void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
 }
 
-void AVS_ContinualPlanner::owtWeightedPointCloud(
-		const cast::cdl::WorkingMemoryChange &objID) {
-	log("got weighted PC");
-	FrontierInterface::ObjectPriorRequestPtr req = getMemoryEntry<
-			FrontierInterface::ObjectPriorRequest> (objID.address);
-	m_cloud = req->outCloud;
+
+void
+AVS_ContinualPlanner::owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+try {
+  log("got weighted PC");
+  FrontierInterface::ObjectPriorRequestPtr req =
+    getMemoryEntry<FrontierInterface::ObjectPriorRequest>(objID.address);
+  FrontierInterface::WeightedPointCloudPtr cloud =
+    req->outCloud;
+
+  m_cloud = req->outCloud;
+  receivePointCloud(cloud, req->totalMass);
+}
+catch (DoesNotExistOnWMException excp) {
+  log("Error!  WeightedPointCloud does not exist on WM!");
+  return;
+}
 }
 
-void AVS_ContinualPlanner::receivePointCloud(
-		FrontierInterface::WeightedPointCloudPtr cloud, double totalMass) {
 
-}
+void
+AVS_ContinualPlanner::receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass)
+	{
+	  log("KDEing cloud read from file");
+	    vector<Vector3> centers;
+	    centers.push_back(cloud->center);
+
+	    if(cloud->isBaseObjectKnown) {
+	      log("Got distribution around known object pose");
+	      m_sampler.kernelDensityEstimation3D(*m_currentBloxelMap,
+		  centers,
+		  cloud->interval,
+		  cloud->xExtent,
+		  cloud->yExtent,
+		  cloud->zExtent,
+		  cloud->values,
+		  1.0,
+		  totalMass,
+		  m_currentCureObstMap
+		  );
+	      normalizePDF(*m_currentBloxelMap,totalMass);
+	    }
+	    else {
+	    	log("Base object is not known! This means support object is not known to ObjectRelationManager. Something is very wrong!");
+	    }
+
+	    if(m_usePeekabot)
+	      pbVis->AddPDF(*m_currentBloxelMap);
+	    m_currentBloxelMap->clearDirty();
+	    gotPC = true;
+	}
 
 void AVS_ContinualPlanner::start() {
 	//Todo subscribe to View Cone Generation
@@ -118,6 +157,7 @@ void AVS_ContinualPlanner::start() {
 	m_queryHandlerServerInterfacePrx = getIceServer<
 			ConceptualData::QueryHandlerServerInterface> (m_queryHandlerName);
 }
+
 void AVS_ContinualPlanner::newProcessConeCommand(
 		const cast::cdl::WorkingMemoryChange &objID) {
 log("Got Process Cone Group Command");
@@ -258,13 +298,19 @@ void AVS_ContinualPlanner::generateViewCones(
 
 
 
+	m_currentBloxelMap = m_objectBloxelMaps[id];
+	m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
+
 	// now we have our room map let's fill it
 	//Query Conceptual to learn the initial pdf values
-
+	log("Querying for %s", id.c_str());
 	ConceptualData::ProbabilityDistributions conceptualProbdist = m_queryHandlerServerInterfacePrx->query(id);
 	SpatialProbabilities::ProbabilityDistribution probdist = conceptualProbdist[0];
 
 
+	if(probdist.massFunction.size() == 0){
+		log("Got an empty distribution!");
+	}
 	double pdfmass = probdist.massFunction[0].probability;
 	log("Got probability for %s Conceptual %f",id.c_str(),pdfmass);
 
@@ -273,7 +319,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 	//Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
 	if (newVPCommand->relation != SpatialData::INROOM && !alreadyGenerated) {
-		log("Searching with a support object, making a distribution query");
+		log("Searching with a support object");
 		// indirect search this must be known object
 		// Ask for the cloud
 
@@ -435,15 +481,15 @@ void AVS_ContinualPlanner::generateViewCones(
 
 
 		// FIXME ASSUMPTION: One cone per conegroup
-		ConeGroup c;	c.relation = SpatialData::INROOM;
+		ConeGroup c;
 		c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
 		c.bloxelMapId = id;
 		c.viewcones.push_back(viewcones[i]);
 		c.roomId = newVPCommand->roomId;
 		c.placeId = conePlaceId;
+		c.relation = newVPCommand->relation;
 
-		if (newVPCommand->supportObject == ""){
-			c.relation = SpatialData::INROOM;
+		if (newVPCommand->relation == SpatialData::INROOM){
 			c.supportObjectId = "";
 			c.supportObjectCategory = "";
 			c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
@@ -764,7 +810,7 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 
 	log("The observed ratio of location: %f", result->beta);
 
-	log("Publishing ObjectPlaceProperty with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
+	log("Publishing ObjectSearchResult with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
   	addToWorkingMemory(newDataID(), result);
