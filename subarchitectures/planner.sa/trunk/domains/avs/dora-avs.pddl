@@ -54,9 +54,11 @@
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
+   (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - number
 
    ;; === room properties ===
    (category ?r - room) - category
+   (roomid ?r - room) - number
 
    ;; === place properties ===
    (placestatus ?n - place) - place_status
@@ -186,7 +188,8 @@
   (:dtrule obj_in_room
            :parameters (?l - label ?r - room ?c - category)
            :precondition (and (= (category ?r) ?c)
-                              (defined (dora__inroom ?l ?c)))
+                              (defined (dora__inroom ?l ?c))
+                              (not (defined (p-obj_exists ?l in ?r))))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -196,7 +199,8 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o) in)
-                              (defined (dora__inobject ?l1 ?l2 ?c)))
+                              (defined (dora__inobject ?l1 ?l2 ?c))
+                              (not (defined (p-obj_exists ?l1 in ?o))))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -206,9 +210,17 @@
                               (= (label ?o) ?l2)
                               (= (related-to ?o) ?r)
                               (= (relation ?o) in)
-                              (defined (dora__on ?l1 ?l2 ?c)))
+                              (defined (dora__on ?l1 ?l2 ?c))
+                              (not (defined (p-obj_exists ?l1 on ?o))))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
+
+  ;; use posterior information from conceptual.sa
+  (:dtrule object_existence
+           :parameters (?l - label ?rel - spatial_relation ?where - (either visualobject room))
+           :precondition (and (defined (p-obj_exists ?l ?rel ?where)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where) (and (assign (obj_exists ?l ?rel ?where) true)))
+           )
 
   ;; probability of an object being at a specific location
   ;;used only by DT (?)
@@ -297,10 +309,11 @@
    ;; precondition: robot is in the same room as the specified object
    (:durative-action create_cones_at_object
                      :agent (?a - robot)
-                     :parameters (?l - label ?rel - spatial_relation ?o - visualobject ?r - room)
+                     :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
                      :variables (?p - place)
                      :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
+                                                    (= (label ?o) ?lsupp)
                                                     (poss (in-room ?p) ?r)
                                                     (poss (related-to ?o) ?r)
                                                     (kval ?a (related-to ?o))
@@ -402,7 +415,7 @@
              :effect (and (when (= (visible_from ?o) ?c)
                             (probabilistic 0.8 (observed (related-to ?o) ?where)))
                           (when (not (= (visible_from ?o) ?c))
-                            (probabilistic 0.1 (observed (related-to ?o) ?where)))
+                            (probabilistic 0.05 (observed (related-to ?o) ?where)))
                           )
              )
              
