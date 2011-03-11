@@ -107,7 +107,7 @@ public:
 		/** 2D motion constraint */
 		bool motion2D;
 
-		LearningData::CoordinateLimits coordLimits;
+		LearningData::FeaturesLimits featLimits;
 		
 		/** minimal duration of a movement (by normal speed) */
 		SecTmReal minDuration;
@@ -166,14 +166,16 @@ public:
 			speriod = 1.0;
 
 
-			coordLimits.maxX = 0.4;
-			coordLimits.maxY = 0.4;
-			coordLimits.maxZ = 0.4;
-			coordLimits.minX = 0.0;
-			coordLimits.minY = 0.0;
-			coordLimits.minZ = -0.01;
-			coordLimits.minDuration = 3.0;
-			coordLimits.maxDuration = 5.0;
+			featLimits.maxX = 0.4;
+			featLimits.maxY = 0.4;
+			featLimits.maxZ = 0.4;
+			featLimits.minX = 0.0;
+			featLimits.minY = 0.0;
+			featLimits.minZ = -0.01;
+			featLimits.minDuration = 3.0;
+			featLimits.maxDuration = 5.0;
+			featLimits.minValLabel = -1.0;
+			featLimits.maxValLabel = 1.0;
 
 			minDuration = 5.0;
 

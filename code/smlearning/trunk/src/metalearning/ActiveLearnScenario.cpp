@@ -80,7 +80,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		write_chunk (chunk);
 
 // 		learningData.data.push_back(chunk);
-		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits, _end_effector_pos | _effector_pos | _object );
+		LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.featLimits, _end_effector_pos | _effector_pos | _object );
 		
 		learningData.currentChunkSeq.push_back (chunk);
 
@@ -88,7 +88,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentPfY = chunk.object.objectPose.p.v2;
 
 		if (learningData.currentChunkSeq.size() > 1) {
-			trainSeq = LearningData::load_NNtrainSeq (learningData.currentChunkSeq, featureSelectionMethod, normalize<float>, learningData.coordLimits);
+			trainSeq = LearningData::load_NNtrainSeq (learningData.currentChunkSeq, featureSelectionMethod, normalize<float>, learningData.featLimits);
 				
 			currentRegion->learner.feed_forward (*trainSeq);
 		
@@ -175,7 +175,7 @@ void ActiveLearnScenario::choose_action () {
 				set_movement_angle(chunk_cand.action.horizontalAngle, chunk_cand.action.endEffectorPose, desc.distance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 				chunk_cand.action.endEffectorPose.R.toEuler (chunk_cand.action.endEfRoll, chunk_cand.action.endEfPitch, chunk_cand.action.endEfYaw);
 
-				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.coordLimits, _end_effector_pos | _effector_pos /*| _action_params*/ );
+				LearningData::write_chunk_to_featvector (chunk_cand.action.featureVector, chunk_cand, normalize<Real>, learningData.featLimits, _end_effector_pos | _effector_pos /*| _action_params*/ );
 				candidateActions.push_back (chunk_cand.action);
 			}
 
@@ -201,7 +201,7 @@ void ActiveLearnScenario::write_data (bool final){
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
 	if (final) {
-		LearningData::write_dataset (dataFileName, data, learningData.coordLimits);
+		LearningData::write_dataset (dataFileName, data, learningData.featLimits);
 		string stpFileName = dataFileName + ".stp";
 		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
 		write_vector<double>(writeToFile, usedStartingPositions);
@@ -373,9 +373,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	assert (startIndex < outputsize);
 
 	//extract effector Pose
-	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
-	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
-	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxZ);
+	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minX, desc.featLimits.maxX);
+	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minY, desc.featLimits.maxY);
+	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minZ, desc.featLimits.maxZ);
 	Real efRoll, efPitch, efYaw;
 	efRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	efPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -383,9 +383,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	predictedEfPose.R.fromEuler (efRoll, efPitch, efYaw);
 
 	//extract polyflap Pose
-	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
-	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
-	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxY);
+	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minX, desc.featLimits.maxX);
+	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minY, desc.featLimits.maxY);
+	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.featLimits.minZ, desc.featLimits.maxY);
 	Real pfRoll, pfPitch, pfYaw;
 	pfRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	pfPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);

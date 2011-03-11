@@ -47,7 +47,7 @@ int main(int argc, char * argv[]) {
 	}
 	//DataSetStruct savedData;
 	LearningData::DataSet savedData;
-	LearningData::CoordinateLimits limits;
+	LearningData::FeaturesLimits limits;
 
 	string seqFile = string (argv[1]);
 	if (!LearningData::read_dataset (seqFile, savedData, limits)) {

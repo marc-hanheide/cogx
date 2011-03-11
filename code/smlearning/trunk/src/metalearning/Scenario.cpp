@@ -90,21 +90,25 @@ bool XMLData(Scenario::Desc &val, XMLContext* xmlcontext, Context *context) {
 	//maxRange = 0.4;
 	//XMLData(val.maxRange, xmlcontext->getContextFirst("polyflapInteraction maxRange"));
 	//maximum X value for polyflap position
-	XMLData(val.coordLimits.maxX, xmlcontext->getContextFirst("polyflapInteraction maxX"));
+	XMLData(val.featLimits.maxX, xmlcontext->getContextFirst("polyflapInteraction maxX"));
 	//maximum Y value for polyflap position
-	XMLData(val.coordLimits.maxY, xmlcontext->getContextFirst("polyflapInteraction maxY"));
+	XMLData(val.featLimits.maxY, xmlcontext->getContextFirst("polyflapInteraction maxY"));
 	//maximum Z value for polyflap position
-	XMLData(val.coordLimits.maxZ, xmlcontext->getContextFirst("polyflapInteraction maxZ"));
+	XMLData(val.featLimits.maxZ, xmlcontext->getContextFirst("polyflapInteraction maxZ"));
 	//minimum X value for polyflap position
-	XMLData(val.coordLimits.minX, xmlcontext->getContextFirst("polyflapInteraction minX"));
+	XMLData(val.featLimits.minX, xmlcontext->getContextFirst("polyflapInteraction minX"));
 	//minimum Y value for polyflap position
-	XMLData(val.coordLimits.minY, xmlcontext->getContextFirst("polyflapInteraction minY"));
+	XMLData(val.featLimits.minY, xmlcontext->getContextFirst("polyflapInteraction minY"));
 	//minimum Z value for polyflap position
-	XMLData(val.coordLimits.minZ, xmlcontext->getContextFirst("polyflapInteraction minZ"));
+	XMLData(val.featLimits.minZ, xmlcontext->getContextFirst("polyflapInteraction minZ"));
 	//minimum duration value for pushing action
-	XMLData(val.coordLimits.minDuration, xmlcontext->getContextFirst("polyflapInteraction minPushDuration"));
+	XMLData(val.featLimits.minDuration, xmlcontext->getContextFirst("polyflapInteraction minPushDuration"));
 	//maximum duration value for pushing action
-	XMLData(val.coordLimits.maxDuration, xmlcontext->getContextFirst("polyflapInteraction maxPushDuration"));
+	XMLData(val.featLimits.maxDuration, xmlcontext->getContextFirst("polyflapInteraction maxPushDuration"));
+	//minimum value for a label
+	XMLData(val.featLimits.minValLabel, xmlcontext->getContextFirst("polyflapInteraction minValLabel"));
+	//maximum value for a label
+	XMLData(val.featLimits.maxValLabel, xmlcontext->getContextFirst("polyflapInteraction maxValLabel"));
 
 	//minimal duration of a movement (by normal speed)
 	XMLData(val.minDuration, xmlcontext->getContextFirst("polyflapInteraction minDuration"));
@@ -552,7 +556,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		LearningData::Chunk chunk;
 		write_chunk (chunk);
 
-		//LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.coordLimits);
+		//LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.featLimits);
 
 // 		learningData.data.push_back(chunk);
 
@@ -580,7 +584,7 @@ void Scenario::first_init(){
 	//arm->getArm().lookupInp(initial, context.getTimer().elapsed()); //not present anymore
 	arm->getArm().lookupState(initial, context.getTimer().elapsed()); //other possibility: lookupCommand
 
-	learningData.setToDefault(desc.coordLimits);
+	learningData.setToDefault(desc.featLimits);
 
 }
 
@@ -784,7 +788,7 @@ void Scenario::write_data (){
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	LearningData::write_dataset (dataFileName, data, learningData.coordLimits);
+	LearningData::write_dataset (dataFileName, data, learningData.featLimits);
 	/////////////////////////////////////////////////
 
 	string stpFileName = dataFileName + ".stp";

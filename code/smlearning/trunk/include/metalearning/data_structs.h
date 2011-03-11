@@ -53,7 +53,8 @@ enum chunk_flags {
 	_effector_orient = 1L << 2, /**< For storing effector orientation. */
 	_end_effector_pos = 1L << 3, /**< For storing end effector position. */
 	_end_effector_orient = 1L << 4, /**< For storing end effector orientation. */
-        _action_params = 1L << 5 /**< For storing other motor action features. */
+        _action_params = 1L << 5, /**< For storing other motor action features. */
+	_label = 1L << 6 /**< For storing labels (classifications). */
 };
 
 inline chunk_flags
@@ -92,7 +93,9 @@ enum feature_selection {
 	_basis, /**< First vector stores motor command information */
 	_markov, /**< Each vector stores motor command information */
 	_obpose, /**< For automata generation: input are action related features, states are object f., output is object next time f. */
-	_efobpose /**< For automata generation: input are action related features, states are object and effector f., output is object next time f. */
+	_efobpose, /**< For automata generation: input are action related features, states are object and effector f., output is object next time f. */
+	_obpose_label, /**< For automata generation: input are action related features, states are object f., output is label */
+	_efobpose_label /**< For automata generation: input are action related features, states are object and effector f., output is label */
 };
 
 
@@ -172,7 +175,7 @@ struct LearningData {
 	static const int pfVectorSize = 6;
 	/** size of effector pose vector for NN training */
 	static const int efVectorSize = 6;
-	struct CoordinateLimits {
+	struct FeaturesLimits {
 		/** assumed minimum value for polyflap Z-coordinate location during experiment (in xml file should have value of -0.01... bug in PhysX?) */
 		Real minZ;
 		/** assumed minimum value for polyflap X-coordinate location during experiment */
@@ -189,9 +192,13 @@ struct LearningData {
 		Real minDuration;
 		/** assumed maximum value for duration of trajectory when pushing */
 		Real maxDuration;
+		/** assumed minimum value for a label */
+		Real minValLabel;
+		/** assumed maximum value for a label */
+		Real maxValLabel;
 		
 	};
-	CoordinateLimits coordLimits;
+	FeaturesLimits featLimits;
 	
 	/** Record validity */
 	//bool bArmState;
@@ -206,18 +213,20 @@ struct LearningData {
 
 	
 	/** Reset to default (empty)*/
-	void setToDefault(CoordinateLimits limits) {
+	void setToDefault(FeaturesLimits limits) {
 		effector.clear();
 		object.clear();
 		obstacles.clear();
-		coordLimits.minX = limits.minX;
-		coordLimits.minY = limits.minY;
-		coordLimits.minZ = limits.minZ;
-		coordLimits.maxX = limits.maxX;
-		coordLimits.maxY = limits.maxY;
-		coordLimits.maxZ = limits.maxZ;
-		coordLimits.minDuration = limits.minDuration;
-		coordLimits.maxDuration = limits.maxDuration;
+		featLimits.minX = limits.minX;
+		featLimits.minY = limits.minY;
+		featLimits.minZ = limits.minZ;
+		featLimits.maxX = limits.maxX;
+		featLimits.maxY = limits.maxY;
+		featLimits.maxZ = limits.maxZ;
+		featLimits.minDuration = limits.minDuration;
+		featLimits.maxDuration = limits.maxDuration;
+		featLimits.minValLabel = limits.minValLabel;
+		featLimits.maxValLabel = limits.maxValLabel;
 		//data.clear();
 		//bArmState = false;
 		//bEffectorPose = false;
@@ -245,11 +254,11 @@ struct LearningData {
 	///
 	///Write DataSet vector to a file
 	///
-	static bool write_dataset (string fileName, const DataSet& data, const CoordinateLimits& limits);
+	static bool write_dataset (string fileName, const DataSet& data, const FeaturesLimits& limits);
 	///
 	///Read DataSet vector from a file
 	///
-	static bool read_dataset (string fileName, DataSet& data, CoordinateLimits& limits);
+	static bool read_dataset (string fileName, DataSet& data, FeaturesLimits& limits);
 
 	///
 	///print a DataSet vector
@@ -259,7 +268,7 @@ struct LearningData {
 	///
 	///print coordinate limits for a dataset
 	///
-	static void print_dataset_limits (const CoordinateLimits limits);
+	static void print_dataset_limits (const FeaturesLimits limits);
 
 	///
 	///print a chunk (features)
@@ -269,7 +278,7 @@ struct LearningData {
 	///
 	///check limit parameters correspondence
 	///
-	static bool check_limits (CoordinateLimits params1, CoordinateLimits params2);
+	static bool check_limits (FeaturesLimits params1, FeaturesLimits params2);
 
 	///
 	///Concatenate data sequences
@@ -280,7 +289,7 @@ struct LearningData {
 	///write a netcdf nc file format for feature vectors using basis representation
 	///
 	template<class Normalization>
-	static bool write_nc_file_NNbasis (string fileName, const DataSet& data, Normalization normalize, CoordinateLimits limits) {
+	static bool write_nc_file_NNbasis (string fileName, const DataSet& data, Normalization normalize, FeaturesLimits limits) {
 
 		fileName += ".nc";
 
@@ -347,7 +356,7 @@ struct LearningData {
 	///write a netcdf nc file format for feature vectors using basis representation
 	///
 	template<class Normalization>
-	static bool write_nc_file_NNmarkov (string fileName, const DataSet& data, Normalization normalize, CoordinateLimits limits) {
+	static bool write_nc_file_NNmarkov (string fileName, const DataSet& data, Normalization normalize, FeaturesLimits limits) {
 		fileName += ".nc";
 
 		FeatureVector inputVector;
@@ -400,16 +409,16 @@ struct LearningData {
 	///write a chunk to feature vector
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
 		try { 
 			if ( flags & _action_params ) {
-				featVector.push_back (normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration));
+				featVector.push_back (normalize(chunk.action.pushDuration, featLimits.minDuration, featLimits.maxDuration));
 				featVector.push_back (normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI));
 			}
 			if ( flags & _end_effector_pos ) {
-				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
-				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
-				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v1, featLimits.minX, featLimits.maxX));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v2, featLimits.minY, featLimits.maxY));
+				featVector.push_back (normalize(chunk.action.endEffectorPose.p.v3, featLimits.minZ, featLimits.maxZ));
 			}
 			if ( flags & _end_effector_orient ) {
 				featVector.push_back (normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI));
@@ -419,9 +428,9 @@ struct LearningData {
 		
 			if ( flags & _effector_pos ) {
 			
-				featVector.push_back (normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX));
-				featVector.push_back (normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY));
-				featVector.push_back (normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v1, featLimits.minX, featLimits.maxX));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v2, featLimits.minY, featLimits.maxY));
+				featVector.push_back (normalize(chunk.action.effectorPose.p.v3, featLimits.minZ, featLimits.maxZ));
 			}
 			if ( flags & _effector_orient ) {
 				featVector.push_back (normalize(chunk.action.efRoll, -REAL_PI, REAL_PI));
@@ -429,12 +438,15 @@ struct LearningData {
 				featVector.push_back (normalize(chunk.action.efYaw, -REAL_PI, REAL_PI));
 			}
 			if ( flags & _object ) {
-				featVector.push_back (normalize(chunk.object.objectPose.p.v1, coordLimits.minX, coordLimits.maxX));
-				featVector.push_back (normalize(chunk.object.objectPose.p.v2, coordLimits.minY, coordLimits.maxY));
-				featVector.push_back (normalize(chunk.object.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ));
+				featVector.push_back (normalize(chunk.object.objectPose.p.v1, featLimits.minX, featLimits.maxX));
+				featVector.push_back (normalize(chunk.object.objectPose.p.v2, featLimits.minY, featLimits.maxY));
+				featVector.push_back (normalize(chunk.object.objectPose.p.v3, featLimits.minZ, featLimits.maxZ));
 				featVector.push_back (normalize(chunk.object.obRoll, -REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.object.obPitch, -REAL_PI, REAL_PI));
 				featVector.push_back (normalize(chunk.object.obYaw, -REAL_PI, REAL_PI));
+			}
+			if ( flags & _label ) {
+				featVector.push_back (normalize(chunk.label, featLimits.minValLabel, featLimits.maxValLabel));
 			}
 		} catch ( ... ) {
 			cerr << "Error normalizing effector feature vector " << endl;
@@ -445,16 +457,16 @@ struct LearningData {
 	///write a chunk to feature vector with memory assigned
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, CoordinateLimits coordLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params ) {
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
 		try { 
 			if ( flags & _action_params ) {
-				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, coordLimits.minDuration, coordLimits.maxDuration);
+				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, featLimits.minDuration, featLimits.maxDuration);
 				featVector[vectorIndex++] = normalize(chunk.action.horizontalAngle/180.0*REAL_PI, -REAL_PI, REAL_PI);
 			}
 			if ( flags & _end_effector_pos ) {
-				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
-				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
-				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v1, featLimits.minX, featLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v2, featLimits.minY, featLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.action.endEffectorPose.p.v3, featLimits.minZ, featLimits.maxZ);
 			}
 			if ( flags & _end_effector_orient ) {
 				featVector[vectorIndex++] = normalize(chunk.action.endEfRoll, -REAL_PI, REAL_PI);
@@ -463,9 +475,9 @@ struct LearningData {
 			}
 			if ( flags & _effector_pos ) {
 
-				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v1, coordLimits.minX, coordLimits.maxX);
-				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v2, coordLimits.minY, coordLimits.maxY);
-				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v1, featLimits.minX, featLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v2, featLimits.minY, featLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.action.effectorPose.p.v3, featLimits.minZ, featLimits.maxZ);
 			}
 			if ( flags & _effector_orient ) {
 				featVector[vectorIndex++] = normalize(chunk.action.efRoll, -REAL_PI, REAL_PI);
@@ -473,12 +485,15 @@ struct LearningData {
 				featVector[vectorIndex++] = normalize(chunk.action.efYaw, -REAL_PI, REAL_PI);
 			}
 			if ( flags & _object ) {
-				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v1, coordLimits.minX, coordLimits.maxX);
-				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v2, coordLimits.minY, coordLimits.maxY);
-				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v3, coordLimits.minZ, coordLimits.maxZ);
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v1, featLimits.minX, featLimits.maxX);
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v2, featLimits.minY, featLimits.maxY);
+				featVector[vectorIndex++] = normalize(chunk.object.objectPose.p.v3, featLimits.minZ, featLimits.maxZ);
 				featVector[vectorIndex++] = normalize(chunk.object.obRoll, -REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.object.obPitch, -REAL_PI, REAL_PI);
 				featVector[vectorIndex++] = normalize(chunk.object.obYaw, -REAL_PI, REAL_PI);
+			}
+			if ( flags & _label ) {
+				featVector[vectorIndex++] = normalize(chunk.label, featLimits.minValLabel, featLimits.maxValLabel);
 			}
 		} catch ( ... ) {
 			cerr << "Error normalizing effector feature vector " << endl;
@@ -499,7 +514,7 @@ struct LearningData {
 	///and using a certain write_netcdf_file function
 	///
 	template<class Function, class Normalization>
-	static bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, Normalization normalize, CoordinateLimits limits, string target_dir, bool print_data = false) {
+	static bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, Normalization normalize, FeaturesLimits limits, string target_dir, bool print_data = false) {
 		
 		DataSet data;
 		if (n < 2) {
@@ -602,7 +617,7 @@ struct LearningData {
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, CoordinateLimits limits) {
+	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
 		const int motorVectorSize = motorVectorSizeBasis;
@@ -641,7 +656,7 @@ struct LearningData {
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_markov (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, CoordinateLimits limits) {
+	static void load_NNsequence_markov (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
 
@@ -664,7 +679,7 @@ struct LearningData {
 	///load training data in RNNLIB format
 	///
 	template<class Normalization >
-	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, CoordinateLimits limits) {
+	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 		int motorVectorSize;
 		if (featureSelectionMethod == _basis)
 			motorVectorSize = motorVectorSizeBasis;
@@ -701,7 +716,7 @@ struct LearningData {
 	///All data are vectorial.
 	///\param featureSelectionMethod allows different feature selection methods and state spaces.
 	template<class Normalization>
-	static void write_cryssmexdataset_regression (string writeFileName, DataSet& data, Normalization normalize, CoordinateLimits limits, int featureSelectionMethod) {
+	static void write_cryssmexdataset (string writeFileName, DataSet& data, Normalization normalize, FeaturesLimits limits, int featureSelectionMethod) {
 		writeFileName += ".cry";
 
 		assert (data.size() >= 1);
@@ -716,6 +731,16 @@ struct LearningData {
 			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
 			outputVectorSize = pfVectorSize;
+		}
+		else if (featureSelectionMethod == _obpose_label) {
+			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
+			stateVectorSize = pfVectorSize;
+			outputVectorSize = 1;
+		}
+		else if (featureSelectionMethod == _efobpose_label) {
+			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
+			stateVectorSize = efVectorSize + pfVectorSize;
+			outputVectorSize = 1;
 		}
 		ofstream writeFile(writeFileName.c_str(), ios::out);
 
@@ -751,6 +776,17 @@ struct LearningData {
 						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
 						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
 						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
+					}
+					else if (featureSelectionMethod == _obpose_label) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
+						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
+					}
+					else if (featureSelectionMethod == _efobpose_label) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
+						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
+
 					}
 					if (s_iter == seq.begin() ) {
 						assert (inputVector.size() == inputVectorSize);

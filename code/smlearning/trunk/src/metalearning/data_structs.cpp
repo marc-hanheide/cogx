@@ -32,7 +32,7 @@ namespace smlearning {
 ///
 ///Write DataSet vector to a file
 ///
-bool LearningData::write_dataset (string fileName, const DataSet& data, const CoordinateLimits& limits) {
+bool LearningData::write_dataset (string fileName, const DataSet& data, const FeaturesLimits& limits) {
 	fileName += ".seq";
 	ofstream writeFile(fileName.c_str(), ios::out | ios::binary);
 	if (!writeFile)
@@ -47,6 +47,8 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 	writeFile.write((const char*)&limits.maxZ, sizeof(Real));
 	writeFile.write((const char*)&limits.minDuration, sizeof(Real));
 	writeFile.write((const char*)&limits.maxDuration, sizeof(Real));
+	writeFile.write((const char*)&limits.minValLabel, sizeof(Real));
+	writeFile.write((const char*)&limits.maxValLabel, sizeof(Real));
 
 	long numSeqs = data.size();
 	writeFile.write ((const char*)&numSeqs, sizeof(numSeqs));
@@ -62,6 +64,7 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 			Chunk currentChunk = *s_iter;
 			writeFile.write ((const char*)&(currentChunk.object), sizeof(currentChunk.object));
 			writeFile.write ((const char*)&(currentChunk.action), sizeof(currentChunk.action));
+			writeFile.write ((const char*)&(currentChunk.label), sizeof(currentChunk.label));
 			
 		}
 
@@ -74,7 +77,7 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Co
 ///
 ///Read DataSet vector from a file
 ///
-bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimits& limits) {
+bool LearningData::read_dataset (string fileName, DataSet& data, FeaturesLimits& limits) {
 	fileName  += ".seq";
 	ifstream readFile(fileName.c_str(), ios::in | ios::binary);
 	if (!readFile)
@@ -89,6 +92,8 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 	readFile.read((char*)&limits.maxZ, sizeof(Real));
 	readFile.read((char*)&limits.minDuration, sizeof(Real));
 	readFile.read((char*)&limits.maxDuration, sizeof(Real));
+	readFile.read((char*)&limits.minValLabel, sizeof(Real));
+	readFile.read((char*)&limits.maxValLabel, sizeof(Real));
 	
 	long numSeq;
 	readFile.read ((char*)&numSeq, sizeof(numSeq));
@@ -104,6 +109,7 @@ bool LearningData::read_dataset (string fileName, DataSet& data, CoordinateLimit
 			Chunk currentChunk;
 			readFile.read((char *)&currentChunk.object, sizeof(currentChunk.object));
 			readFile.read((char *)&currentChunk.action, sizeof(currentChunk.action));
+			readFile.read((char *)&currentChunk.label, sizeof(currentChunk.label));
 // 			print_Chunk (currentChunk);
 			currentChunkSeq.push_back (currentChunk);
 		}
@@ -129,13 +135,14 @@ void LearningData::print_Chunk (const Chunk& c) {
 	cout << " eeO=" << c.action.endEfRoll << " " << c.action.endEfPitch << " " << c.action.endEfYaw << ",";
 	cout << " oP=" << c.object.objectPose.p.v1 << " "
 	     << c.object.objectPose.p.v2 << " " << c.object.objectPose.p.v3 << ",";
-	cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << " ]" << endl;
+	cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << ", ";
+	cout << " l=" << c.label << " ]" << endl;
 }
 
 ///
 ///print coordinate limits for a dataset
 ///
-void LearningData::print_dataset_limits (const CoordinateLimits limits) {
+void LearningData::print_dataset_limits (const FeaturesLimits limits) {
 	cout << "Dataset limits: " << endl;
 	cout << "min X = " << limits.minX << endl;
 	cout << "min Y = " << limits.minY << endl;
@@ -145,6 +152,8 @@ void LearningData::print_dataset_limits (const CoordinateLimits limits) {
 	cout << "max Z = " << limits.maxZ << endl;
 	cout << "min Push Duration = " << limits.minDuration << endl;
 	cout << "max Push Duration = " << limits.maxDuration << endl;
+	cout << "min Label Value = " << limits.minValLabel << endl;
+	cout << "max Label Value = " << limits.maxValLabel << endl;
 }
 
 
@@ -297,7 +306,7 @@ bool LearningData::write_nc_data (string fileName, size_t numSeqs_len, int input
 ///
 ///check limit parameters correspondence
 ///
-bool LearningData::check_limits (CoordinateLimits params1, CoordinateLimits params2) {
+bool LearningData::check_limits (FeaturesLimits params1, FeaturesLimits params2) {
 	if (params1.minX != params2.minX)
 		return false;
 	if (params1.minY != params2.minY)
@@ -313,6 +322,10 @@ bool LearningData::check_limits (CoordinateLimits params1, CoordinateLimits para
 	if (params1.minDuration != params2.minDuration)
 		return false;
 	if (params1.maxDuration != params2.maxDuration)
+		return false;
+	if (params1.minValLabel != params2.minValLabel)
+		return false;
+	if (params1.maxValLabel != params2.maxValLabel)
 		return false;
 	return true;
 }
@@ -332,7 +345,7 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 
 	directory_iterator dir_iter(p), dir_end;
 	DataSet data;
-	CoordinateLimits coordLimits;
+	FeaturesLimits featLimits;
 	bool checkFlag = false;
 	for(;dir_iter != dir_end; ++dir_iter) {
 		string dirstring (dir_iter->leaf().c_str());
@@ -340,17 +353,17 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 
 		if (boost::regex_match((const char*)dirchar, matches, seqfile_re)) {
 			DataSet currentData;
-			CoordinateLimits currentCoordLimits;
+			FeaturesLimits currentFeatLimits;
 			string dataBaseName (matches[1].first, matches[1].second);
 			cout << dir_iter->leaf() << endl;
 			cout << dataBaseName << endl;
-			read_dataset (dataBaseName, currentData, currentCoordLimits);
+			read_dataset (dataBaseName, currentData, currentFeatLimits);
 			if (!checkFlag) {
-				coordLimits = currentCoordLimits;
+				featLimits = currentFeatLimits;
 				checkFlag = true;
 			}
 			else {
-				assert (check_limits (coordLimits, currentCoordLimits));
+				assert (check_limits (featLimits, currentFeatLimits));
 			}
 
 			cout << "size current data: " << currentData.size() << endl;
@@ -359,7 +372,7 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 		}
 	}
 	cout << "size data: " << data.size() << endl;
-	if (!write_dataset (writeFileName, data, coordLimits) ) {
+	if (!write_dataset (writeFileName, data, featLimits) ) {
 		cerr << "Error writing dataset file!" << endl;
 		return false;
 	}

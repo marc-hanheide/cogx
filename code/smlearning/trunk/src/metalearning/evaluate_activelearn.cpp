@@ -6,7 +6,7 @@ using namespace smlearning;
 bool evaluate_activelearn (string seqFile, string dir, unsigned int featureSelectionMethod) {
 
 	LearningData::DataSet data;
-	LearningData:: CoordinateLimits limits;
+	LearningData::FeaturesLimits limits;
 
 	if (!LearningData::read_dataset (seqFile, data, limits)) {
 		cerr << "error reading data" << endl;

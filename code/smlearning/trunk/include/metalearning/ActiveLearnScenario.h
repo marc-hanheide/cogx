@@ -142,9 +142,9 @@ protected:
 			// currentPredictedEfSeq.push_back (currentPredictedEfPose);
 		
 			//extract polyflap Pose
-			currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minX, desc.coordLimits.maxX);
-			currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minY, desc.coordLimits.maxY);
-			currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], desc.coordLimits.minZ, desc.coordLimits.maxZ);
+			currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], desc.featLimits.minX, desc.featLimits.maxX);
+			currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], desc.featLimits.minY, desc.featLimits.maxY);
+			currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], desc.featLimits.minZ, desc.featLimits.maxZ);
 			Real pfRoll, pfPitch, pfYaw;
 			pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
 			pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
