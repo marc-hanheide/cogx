@@ -61,7 +61,7 @@ void AVSMainWidget::postVisualObjectClicked(){
 //  for(size_t i = 0; i < obj->identDistrib.size(); i++)
 //    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
 //      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
-  obj->pose.pos.x = 0;
+  obj->pose.pos.x = 0.1;
   obj->pose.pos.y = 0;
   obj->pose.pos.z = 0;
 
