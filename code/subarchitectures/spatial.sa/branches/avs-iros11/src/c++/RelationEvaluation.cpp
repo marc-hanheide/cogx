@@ -1648,32 +1648,32 @@ generateNewObjectModel(const std::string &label) {
   else {
     BoxObject *newBoxObject = new BoxObject;
     newBoxObject->type = OBJECT_BOX;
-    if (label == "corn_flakes") {
-      newBoxObject->radius1 = 0.095;
-      newBoxObject->radius2 = 0.045;
-      newBoxObject->radius3 = 0.145;
+    if (label == "cornflakes") {
+      newBoxObject->radius1 = 0.097;
+      newBoxObject->radius2 = 0.064;
+      newBoxObject->radius3 = 0.146;
     }
-    else if (label == "joystick") {
-      newBoxObject->radius1 = 0.115;
-      newBoxObject->radius2 = 0.105;
-      newBoxObject->radius3 = 0.13;
+    else if (label == "mug") {
+      newBoxObject->radius1 = 0.1;
+      newBoxObject->radius2 = 0.1;
+      newBoxObject->radius3 = 0.1;
     }
-    else if (label == "rice") {
-      newBoxObject->radius1 = 0.075;
-      newBoxObject->radius2 = 0.023;
-      newBoxObject->radius3 = 0.095;
+    else if (label == "paperclip") {
+      newBoxObject->radius1 = 0.05;
+      newBoxObject->radius2 = 0.085;
+      newBoxObject->radius3 = 0.05;
     }
-    else if (label == "printer") {
-      newBoxObject->radius1 = 0.300;
-      newBoxObject->radius2 = 0.160;
-      newBoxObject->radius3 = 0.260;
+    else if (label == "stapler") {
+      newBoxObject->radius1 = 0.029;
+      newBoxObject->radius2 = 0.019;
+      newBoxObject->radius3 = 0.077;
+    }
+    else if (label == "marker") {
+      newBoxObject->radius1 = 0.019;
+      newBoxObject->radius2 = 0.07;
+      newBoxObject->radius3 = 0.048;
     }
     else if (label == "book") {
-      newBoxObject->radius1 = 0.0275;
-      newBoxObject->radius2 = 0.095;
-      newBoxObject->radius3 = 0.12;
-    }
-    else if (label == "table1") {
       newBoxObject->radius1 = 0.55;
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
@@ -1683,10 +1683,10 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
     }
-    else if (label == "table2") {
-      newBoxObject->radius1 = 0.30;
-      newBoxObject->radius2 = 0.50;
-      newBoxObject->radius3 = 0.36;
+    else if (label == "counter") {
+      newBoxObject->radius1 = 1.70;
+      newBoxObject->radius2 = 0.45;
+      newBoxObject->radius3 = 0.275;
     }
     else  {
       newBoxObject->radius1 = 0.1;
