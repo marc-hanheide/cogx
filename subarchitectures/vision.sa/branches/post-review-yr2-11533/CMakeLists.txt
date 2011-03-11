@@ -199,3 +199,8 @@ if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
 
+option(BUILD_SA_VISION_ARTagRecognizer "build ARTagRecognizer" NO)
+if(BUILD_SA_VISION_ARTagRecognizer)
+add_subdirectory (src/c++/vision/components/ARTagRecognizer)
+endif(BUILD_SA_VISION_ARTagRecognizer)
+
