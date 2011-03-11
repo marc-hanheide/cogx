@@ -72,7 +72,7 @@ private slots:
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
 	void addEvent(Event event);
-
+	void collectInfoCheckBoxToggled(bool);
 
 private:
 
@@ -95,7 +95,6 @@ private:
 	pthread_mutex_t _eventsMutex;
 	ConceptualData::WorldStatePtr _wsPtr;
 
-	bool _collect;
 	int _prevPlace;
 	long _eventNo;
 

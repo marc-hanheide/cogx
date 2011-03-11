@@ -40,10 +40,9 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	_wsCount = 0;
 	_posTimer = new QTimer(this);
 
-	_collect=false;
-
 	// Signals and slots
 	qRegisterMetaType<Event>("Event");
+	connect(collectInfoCheckBox, SIGNAL(toggled(bool)), this, SLOT(collectInfoCheckBoxToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
 	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
@@ -780,4 +779,12 @@ void ConceptualWidget::posTimerTimeout()
 
 		addEvent(event);
 	}
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::collectInfoCheckBoxToggled(bool state)
+{
+	if (state)
+		_events.clear();
 }
