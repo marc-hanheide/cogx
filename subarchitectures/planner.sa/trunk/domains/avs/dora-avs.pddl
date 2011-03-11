@@ -139,6 +139,11 @@
               :effect (assign (search_cost ?l on ?o) (dora__cost_on ?l (label ?o)))
               )
 
+  (:init-rule reset_defined_numbers
+              :parameters (?svar - (function number))
+              :precondition (defined ?svar)
+              :effect (not (defined ?svar)))
+
   (:init-rule defined_numbers
               :parameters (?svar - (function number))
               :precondition (> ?svar 0.0001)
