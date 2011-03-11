@@ -156,7 +156,7 @@ private:
 	 DensitySampler m_sampler;
 	 RelationEvaluator m_relationEvaluator;
 	 std::map<int, ConeGroup> m_beliefConeGroups; // int is Id
-
+	 std::map<std::string, std::string> m_fromBeliefIdtoVisualLabel;
 	 ConeGroup m_currentConeGroup;
 	 ViewPointGenerator::SensingAction m_currentViewCone;
 	 int m_coneGroupId; // Unique Id for each cone group
