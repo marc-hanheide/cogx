@@ -74,6 +74,7 @@ class LocalProblemNode {
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
     void mark_helpful_transitions(const State &state);
+    void compute_probability(const State &state, std::vector<const Operator *>& ops);
 };
 
 
