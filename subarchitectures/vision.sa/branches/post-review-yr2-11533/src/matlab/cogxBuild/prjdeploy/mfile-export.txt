@@ -9,6 +9,7 @@ KDBFrec
 qnt2ql
 lf2sfa
 LRloadAVmodels
+LRsaveAVmodels
 LRvisUpdate
 KDBFupdate
 KDBFunlearn

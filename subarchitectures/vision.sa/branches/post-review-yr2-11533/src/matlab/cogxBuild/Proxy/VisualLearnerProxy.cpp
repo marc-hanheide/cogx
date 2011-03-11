@@ -57,6 +57,13 @@ void VL_LoadAvModels(const char* filename)
    LRloadAVmodels(fname);
 }
 
+void VL_SaveAvModels(const char* filename)
+{
+   CheckInit();
+   mwArray fname (filename);
+   LRsaveAVmodels(fname);
+}
+
 void VL_LoadAvModels_from_configured_dir(const char* filename)
 {
    CheckInit();

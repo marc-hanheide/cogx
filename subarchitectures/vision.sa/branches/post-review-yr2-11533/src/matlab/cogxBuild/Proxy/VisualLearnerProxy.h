@@ -37,6 +37,7 @@ void VL_introspect(
 
 // Load predefined AV Models from a file (Matlab mat file)
 extern void VL_LoadAvModels(const char* filename);
+extern void VL_SaveAvModels(const char* filename);
 
 // Load another model from the directory configured in CLFStart
 extern void VL_LoadAvModels_from_configured_dir(const char* filename);
