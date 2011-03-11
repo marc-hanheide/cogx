@@ -1070,7 +1070,6 @@ void ChainGraphInferencer::addDaiFactors()
 		for (unsigned int o=0; o<_addUnobservedObjects.size(); ++o)
 		{
 			string obj = _addUnobservedObjects[o];
-			error("%s", obj.c_str());
 			string objectUnexploredVarName = VariableNameGenerator::getUnexploredObjectVarName(
 					cri.roomId, obj, SpatialData::INROOM,"", "");
 			if (_variableNameToDai.find(objectUnexploredVarName) == _variableNameToDai.end())

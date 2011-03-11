@@ -43,6 +43,7 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 		std::vector<double> curRoomCategories;
 		std::vector<double> curShapes;
 		std::vector<double> curAppearances;
+		std::vector<double> curObjects;
 	};
 
 
@@ -78,6 +79,7 @@ private:
 	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
 	void collectEventInfo(Event event);
 	void getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, std::vector<int> &places);
+	double getExistsProbability(SpatialProbabilities::ProbabilityDistribution &probDist);
 
 
 private:

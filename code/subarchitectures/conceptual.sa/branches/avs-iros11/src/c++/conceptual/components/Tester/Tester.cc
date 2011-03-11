@@ -11,9 +11,10 @@
 #include "SpatialProbabilities.hpp"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
-// Qt
+// Qt, std
 #include <QApplication>
-
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 /** The function called to create a new instance of our component. */
 extern "C"
@@ -30,6 +31,7 @@ namespace conceptual
 using namespace std;
 using namespace cast;
 using namespace ConceptualData;
+using namespace boost;
 
 
 // -------------------------------------------------------
@@ -46,7 +48,9 @@ void Tester::configure(const map<string,string> & _config)
 		_defaultChainGraphInferencerName = it->second;
 	if((it = _config.find("--placemanager")) != _config.end())
 		_placeManagerName = it->second;
-
+	if((it = _config.find("--visualized-objects")) != _config.end())
+		boost::split(_visualizedObjects, it->second, is_any_of(", "));
+	sort (_visualizedObjects.begin(), _visualizedObjects.end());
 
 	log("Configuration parameters:");
 	log("-> QueryHandler name: %s", _queryHandlerName.c_str());

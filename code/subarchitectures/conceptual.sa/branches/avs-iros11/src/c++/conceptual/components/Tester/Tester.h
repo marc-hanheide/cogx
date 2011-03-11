@@ -56,6 +56,8 @@ public:
 	const DefaultData::StringSeq &getAppearances()
 		{ return _appearances; }
 
+	const std::vector<std::string> &getVisualizedObjects()
+		{ return _visualizedObjects; }
 
 	int getCurrentPlace();
 
@@ -132,7 +134,8 @@ private:
 	/** Names of all appearances. */
 	DefaultData::StringSeq _appearances;
 
-
+	/** List of objects to be shown in the visualizations. */
+	std::vector<std::string> _visualizedObjects;
 
 }; // class Tester
 } // namespace def
