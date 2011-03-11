@@ -579,7 +579,11 @@ void AVS_ContinualPlanner::generateViewCones(
 		else if (newVPCommand->relation == SpatialData::INOBJECT || newVPCommand->relation == SpatialData::ON) {
 			//else get the visualobject belief pointer instead
 			log("Getting VisualObject beliefs");
-			vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > visualObjectBeliefs;
+
+			WMaddress.id = newVPCommand->supportObject;
+			WMaddress.subarchitecture = "vision.sa";
+
+			/*vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > visualObjectBeliefs;
 						getWorkingMemoryEntries<GroundedBelief> ("vision.sa", 0, visualObjectBeliefs);
 
 						if (visualObjectBeliefs.size() ==0){
@@ -605,10 +609,10 @@ void AVS_ContinualPlanner::generateViewCones(
 						if (newVPCommand->supportObject == objectId){
 							log("Got the right object belief: %s", newVPCommand->supportObject.c_str());
 							WMaddress.id = visualObjectBeliefs[j]->getID();
-							WMaddress.subarchitecture = "binder";
+							WMaddress.subarchitecture = "vision.sa";
 							break;
 						}
-					}
+					}*/
 		}
 
 
