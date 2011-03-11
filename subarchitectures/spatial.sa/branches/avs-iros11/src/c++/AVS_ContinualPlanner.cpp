@@ -341,8 +341,10 @@ void AVS_ContinualPlanner::generateViewCones(
 				    }
 			return;
 		}
-		labels.push_back(m_fromBeliefIdtoVisualLabel[newVPCommand->supportObject]);
+
 		labels.push_back(newVPCommand->searchedObjectCategory);
+		labels.push_back(m_fromBeliefIdtoVisualLabel[newVPCommand->supportObject]);
+
 
 		for (unsigned int j=0; j < labels.size(); j++){
 			log("ObjectPriorRequest for: %s", labels[j].c_str());
