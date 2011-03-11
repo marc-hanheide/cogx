@@ -23,10 +23,10 @@ INROOM cerealbox meetingroom 0.006
 INROOM cerealbox office 0.0529
 INROOM cerealbox corridor 0.0219
 
-INROOM holepuncher kitchen 0.0726
-INROOM holepuncher meetingroom 0.0
-INROOM holepuncher office 0.2399
-INROOM holepuncher corridor 0.0060
+INROOM paperclip kitchen 0.0726
+INROOM paperclip meetingroom 0.0
+INROOM paperclip office 0.2399
+INROOM paperclip corridor 0.0060
 
 INROOM stapler kitchen 0.1750
 INROOM stapler meetingroom 0.0110
@@ -88,25 +88,25 @@ INOBJECT cerealbox box meetingroom 0.03
 INOBJECT cerealbox box office 0.03
 INOBJECT cerealbox box corridor 0.03
 
-ON holepuncher table kitchen 0.03
-ON holepuncher table meetingroom 0.0
-ON holepuncher table office 0.3
-ON holepuncher table corridor 0.1
+ON paperclip table kitchen 0.03
+ON paperclip table meetingroom 0.0
+ON paperclip table office 0.3
+ON paperclip table corridor 0.1
 
-ON holepuncher counter kitchen 0.03
-ON holepuncher counter meetingroom 0.0
-ON holepuncher counter office 0.3
-ON holepuncher counter corridor 0.2
+ON paperclip counter kitchen 0.03
+ON paperclip counter meetingroom 0.0
+ON paperclip counter office 0.3
+ON paperclip counter corridor 0.2
 
-INOBJECT holepuncher bookcase kitchen 0.03
-INOBJECT holepuncher bookcase meetingroom 0.0
-INOBJECT holepuncher bookcase office 0.1
-INOBJECT holepuncher bookcase corridor 0.03
+INOBJECT paperclip bookcase kitchen 0.03
+INOBJECT paperclip bookcase meetingroom 0.0
+INOBJECT paperclip bookcase office 0.1
+INOBJECT paperclip bookcase corridor 0.03
 
-INOBJECT holepuncher box kitchen 0.03
-INOBJECT holepuncher box meetingroom 0.0
-INOBJECT holepuncher box office 0.1
-INOBJECT holepuncher box corridor 0.03
+INOBJECT paperclip box kitchen 0.03
+INOBJECT paperclip box meetingroom 0.0
+INOBJECT paperclip box office 0.1
+INOBJECT paperclip box corridor 0.03
 
 ON stapler table kitchen 0.03
 ON stapler table meetingroom 0.03
@@ -192,13 +192,13 @@ COST_INOBJECT cerealbox box 50
 COST_INOBJECT cerealbox bookcase 40
 
 
-COST_INROOM holepuncher 200
+COST_INROOM paperclip 200
 
-COST_ON holepuncher table 30
-COST_ON holepuncher counter 30
+COST_ON paperclip table 30
+COST_ON paperclip counter 30
 
-COST_INOBJECT holepuncher box 50
-COST_INOBJECT holepuncher bookcase 40
+COST_INOBJECT paperclip box 50
+COST_INOBJECT paperclip bookcase 40
 
 
 COST_INROOM stapler 200
