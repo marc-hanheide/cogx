@@ -45,6 +45,8 @@ class ObjectAnalyzer : public ManagedComponent
 	 */
 	int updateThr;
 	bool doDisplay;
+	bool m_bBlockingEnabled; // Blocking is enabled
+	bool m_bBlocked;         // Updates are currently blocked
 
 	/**
 	 * status of ProtoObject persistency
@@ -111,6 +113,8 @@ class ObjectAnalyzer : public ManagedComponent
 
 	void start_AL_AffordanceTask(const cdl::WorkingMemoryAddress &visualObjectAddr);
 	void onChange_AL_AffordanceTask(const cdl::WorkingMemoryChange & _wmc);
+
+	void onAdd_WmRpc(const cdl::WorkingMemoryChange & _wmc);
   protected:
 	/**
 	 * called by the framework to configure our component
@@ -126,6 +130,7 @@ class ObjectAnalyzer : public ManagedComponent
 	virtual void runComponent();
 
   public:
+	ObjectAnalyzer();
 	virtual ~ObjectAnalyzer() {}
 };
 

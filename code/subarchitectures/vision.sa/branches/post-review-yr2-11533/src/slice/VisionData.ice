@@ -440,6 +440,16 @@ sequence<OneObj> ObjSeq;
     string label;
     cogx::Math::Pose3 pose;
   };
+
+  // A gerenic RPC call that uses WM filters.
+  // The receiver responds and deletes the entry after it has been read.
+  // Created for the purpose of VisualLearner/test/gy2article, used in Analyzer.
+  dictionary<string, string> TStringMap;
+  class WMRemoteProcedureCall {
+     // TODO: component id: only this component will react to the call.
+     string method;
+     TStringMap argmap;
+  };
   
   /**
   *

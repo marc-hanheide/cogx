@@ -215,6 +215,7 @@ void CGeorgeY2Article::onStart()
          this, &CGeorgeY2Article::onAdd_SpokenItem)
       );
 
+   loadEmptyScene();
    switchState(stStart);
 }
 
@@ -300,24 +301,33 @@ void CGeorgeY2Article::switchState(int newState)
          break;
       case stWaitToAppear:     // PPO
       case stWaitToDisappear:  // PPO
-         timeout = 30;
+         timeout = 20;
          break;
       case stUnloadScene:
          if (m_ObjectCount) enterWait = 5; // Something may still be using the VO
          break;
       case stTableEmpty:
-      case stObjectOn:
          enterWait = 2;
          break;
+      case stObjectOn:
+         enterWait = 5;  // maybe something else will appear
+         break;
+      case stTeaching:
+         enterWait = 1;  // wait a little between consecutive teaching statemetns
+         timeout = 10;   // If the number of objects isn't 1, we don't teach and wait
+         break;
       case stWaitForLearningTask: // Motivation/Planner/Execution
-         timeout = 30;
+         timeout = 20;
          break;
    }
    m_waitOnEnter = now() + enterWait;
    m_timeout = m_waitOnEnter + timeout;
 
    report("**********");
-   report(MSSG("NEW STATE " << m_stateNames[m_State] << " (to=" << timeout << "s)"));
+   if (timeout > 0)
+      report(MSSG("NEW STATE " << m_stateNames[m_State] << " (to=" << timeout << "s)"));
+   else
+      report(MSSG("NEW STATE " << m_stateNames[m_State]));
 }
 
 void CGeorgeY2Article::verifyCount(int count)
@@ -356,6 +366,23 @@ bool CGeorgeY2Article::nextTest()
 bool CGeorgeY2Article::isTimedOut()
 {
    return now() > m_timeout;
+}
+
+void CGeorgeY2Article::blockVisualObjectUpdates(bool enable)
+{
+   WMRemoteProcedureCallPtr pRpc = new WMRemoteProcedureCall();
+   pRpc->method = "blockVisualObjectUpdates";
+   pRpc->argmap["enable"] = enable ? "true" : "false";
+
+   cdl::WorkingMemoryAddress addr;
+   addr.subarchitecture = options["video.sa"];
+   addr.id = m_pOwner->newDataID();
+   m_pOwner->addToWorkingMemory(addr, pRpc);
+
+   // XXX: do I have to create a new pRpc object? Analyzer crashed while deleting it.
+   pRpc->method = "blockProtoObjectUpdates";
+   addr.id = m_pOwner->newDataID();
+   m_pOwner->addToWorkingMemory(addr, pRpc);
 }
 
 void CGeorgeY2Article::loadScene()
@@ -511,6 +538,7 @@ void CGeorgeY2Article::runOneStep()
 
       case stObjectOn:
          verifyCount(1);
+         blockVisualObjectUpdates(true);
          switchState(stTeaching);
          break;
 
@@ -518,10 +546,15 @@ void CGeorgeY2Article::runOneStep()
       // After last step, (remove the object video sequence and) change to stEndOfTeaching
       case stTeaching:
          verifyCount(1);
-         if (performNextTeachingStep())
-            switchState(stWaitForResponse);
-         else
-            switchState(stEndOfTeaching);
+         if (m_ObjectCount == 1) {
+            if (performNextTeachingStep())
+               switchState(stWaitForResponse);
+            else
+               switchState(stEndOfTeaching);
+         }
+         else if (isTimedOut()) {
+            switchState(stTimedOut);
+         }
          break;
 
       case stWaitForResponse:
@@ -554,6 +587,7 @@ void CGeorgeY2Article::runOneStep()
          break;
 
       case stUnloadScene:
+         blockVisualObjectUpdates(false);
          loadEmptyScene();
          switchState(stWaitToDisappear);
          break;

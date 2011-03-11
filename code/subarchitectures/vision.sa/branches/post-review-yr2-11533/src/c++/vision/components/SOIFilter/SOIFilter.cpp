@@ -88,6 +88,8 @@
 	m_idLeftImage = 0;
 	m_idRightImage = 1;
 	m_bAutoSnapshot = false;
+	m_bBlocked = false;
+	m_bBlockingEnabled = false;
   }
 
   void SOIFilter::configure(const map<string,string> & _config)
@@ -194,6 +196,23 @@
 	  str >> val;
 	  m_bAutoSnapshot = (val == "" || val == "true");
 	}
+  
+	// CONFIG: --blocking
+	// TYPE: boolean
+	// When --blocking is true, the SOIFilter will monitor the WM entry WMRemoteProcedureCall and
+	// read the 'enable: bool' parameter of the method 'blockProtoObjectUpdates'.
+	// When 'blockProtoObjectUpdates(enable=true)' is received, no new ProtoObjects will be updated.
+	//
+	// NOTE: This is used only for the automated test VisualLearner/test/gy2article to
+	// circumvent a bug that locks the system when objects appear/disappear while learning.
+	if((it = _config.find("--blocking")) != _config.end())
+	{
+	  istringstream str(it->second);
+	  string val;
+	  str >> val;
+	  m_bBlockingEnabled = (val == "" || val == "true");
+	}
+
 
 
 #ifdef FEAT_VISUALIZATION
@@ -244,6 +263,12 @@
 	  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<SOIFilter>(this,
 			&SOIFilter::updatedProtoObject));
+	}
+
+	if (m_bBlockingEnabled) {
+	  addChangeFilter(createLocalTypeFilter<VisionData::WMRemoteProcedureCall>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<SOIFilter>(this,
+			&SOIFilter::onAdd_WmRpc));
 	}
   }
 
@@ -395,13 +420,21 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
+	bool bHaveRequests = !objToDelete.empty() || !objToAdd.empty();
+	bool bMustWait = !bHaveRequests || (m_bBlocked && m_bBlockingEnabled);
+
 	ptime t(second_clock::universal_time() + seconds(2));
-
-	if (queuesNotEmpty->timed_wait(t))
+	if (!bMustWait || queuesNotEmpty->timed_wait(t))
 	{
-	  log("Got something in my queues");
+	  bHaveRequests = !objToDelete.empty() || !objToAdd.empty();
+	  if (bHaveRequests)
+		log("Got something in my queues");
 
-	  if(!objToAdd.empty())
+	  if (m_bBlockingEnabled && m_bBlocked) {
+		if (!bHaveRequests)
+		  println("Updates are blocked.");
+	  }
+	  else if(!objToAdd.empty())
 	  { 
 
 		log("An add proto-object instruction");
@@ -494,7 +527,7 @@ void SOIFilter::runComponent()
 		
 		objToDelete.pop(); 
 	  }
-	  else
+	  else if (! m_bBlocked && ! m_bBlockingEnabled)
 		log("Timeout"); 
 	}
 	//      
@@ -513,6 +546,32 @@ void SOIFilter::runComponent()
 	cvDestroyWindow("Color Filtering");
   }
 #endif
+}
+
+void SOIFilter::onAdd_WmRpc(const cdl::WorkingMemoryChange & _wmc)
+{
+  WMRemoteProcedureCallPtr pRpc = getMemoryEntry<WMRemoteProcedureCall>(_wmc.address);
+
+  // Used with --blocking
+  if (pRpc->method == "blockProtoObjectUpdates") {
+	std::map<string,string>::iterator it;
+	it = pRpc->argmap.find("enable");
+	if (it != pRpc->argmap.end()) {
+	  if (it->second == "true" || it->second == "1" || it->second == "yes")
+		m_bBlocked = true;
+	  else m_bBlocked = false;
+	  println("blockProtoObjectUpdates enable=%s", it->second.c_str());
+	  if (!m_bBlocked)
+		queuesNotEmpty->post();
+	}
+
+	try {
+	  // just let them pile up...
+	  // deleteFromWorkingMemory(_wmc.address);
+	}
+	catch(...) {
+	}
+  }
 }
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)

@@ -29,7 +29,14 @@ using namespace ObjectRecognizerIce;
 
 using namespace boost::interprocess;
 using namespace boost::posix_time;
-
+ 
+ObjectAnalyzer::ObjectAnalyzer()
+{
+  updateThr = UPD_THR_DEFAULT;
+  doDisplay = false;
+  m_bBlockingEnabled = false;
+  m_bBlocked = 0;
+}
 
 void ObjectAnalyzer::configure(const map<string,string> & _config)
 {
@@ -46,6 +53,22 @@ void ObjectAnalyzer::configure(const map<string,string> & _config)
   if((it = _config.find("--display")) != _config.end())
   {
 	doDisplay = true;
+  }
+
+  // CONFIG: --blocking
+  // TYPE: boolean
+  // When --blocking is true, the analyzer will monitor the WM entry WMRemoteProcedureCall and
+  // read the 'enable: bool' parameter of the method 'blockVisualObjectUpdates'.
+  // When 'blockVisualObjectUpdates(enable=true)' is received, no new VisualObjects will be updated.
+  //
+  // NOTE: This is used only for the automated test VisualLearner/test/gy2article to
+  // circumvent a bug that locks the system when objects appear/disappear while learning.
+  if((it = _config.find("--blocking")) != _config.end())
+  {
+	istringstream str(it->second);
+	string val;
+	str >> val;
+	m_bBlockingEnabled = (val == "" || val == "true");
   }
 
   m_TypeMapper.configure(_config);
@@ -89,8 +112,40 @@ void ObjectAnalyzer::start()
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::onChange_OR_RecognitionTask));
 
+  if (m_bBlockingEnabled) {
+	addChangeFilter(createLocalTypeFilter<VisionData::WMRemoteProcedureCall>(cdl::ADD),
+		new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
+		  &ObjectAnalyzer::onAdd_WmRpc));
+  }
+
 }
 
+void ObjectAnalyzer::onAdd_WmRpc(const cdl::WorkingMemoryChange & _wmc)
+{
+  WMRemoteProcedureCallPtr pRpc = getMemoryEntry<WMRemoteProcedureCall>(_wmc.address);
+
+  // Used with --blocking
+  if (pRpc->method == "blockVisualObjectUpdates") {
+	std::map<string,string>::iterator it;
+	it = pRpc->argmap.find("enable");
+	if (it != pRpc->argmap.end()) {
+	  if (it->second == "true" || it->second == "1" || it->second == "yes")
+		m_bBlocked = true;
+	  else m_bBlocked = false;
+	  println("blockVisualObjectUpdates enable=%s", it->second.c_str());
+	  if (!m_bBlocked)
+		queuesNotEmpty->post();
+	}
+
+	try {
+	  // just let them pile up...
+	  // deleteFromWorkingMemory(_wmc.address);
+	}
+	catch(...) {
+	}
+  }
+}
+	
 void ObjectAnalyzer::start_VL_RecognitionTask(const WorkingMemoryAddress &protoObjectAddr)
 {
    log("Adding new VisualLearnerRecognitionTask");
@@ -283,13 +338,21 @@ void ObjectAnalyzer::runComponent()
 {
   while(isRunning())
   {
+	bool bHaveRequests = !objToDelete.empty() || !objToAdd.empty();
+	bool bMustWait = !bHaveRequests || (m_bBlocked && m_bBlockingEnabled);
+
 	ptime t(second_clock::universal_time() + seconds(2));
-
-	if (queuesNotEmpty->timed_wait(t))
+	if (!bMustWait || queuesNotEmpty->timed_wait(t))
 	{
-	  log("Got something in my queues");
+	  bHaveRequests = !objToDelete.empty() || !objToAdd.empty();
+	  if (bHaveRequests)
+		log("Got something in my queues");
 
-	  if(!objToAdd.empty())
+	  if (m_bBlockingEnabled && m_bBlocked) {
+		if (!bHaveRequests)
+		  println("Updates are blocked.");
+	  }
+	  else if(!objToAdd.empty())
 	  {
 
 		log("An add object instruction");

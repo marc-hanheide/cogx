@@ -74,6 +74,7 @@ class CGeorgeY2Article: public CTestCase
    void loadEmptyScene();
    bool isTimedOut();
    bool performNextTeachingStep();
+   void blockVisualObjectUpdates(bool enable);
    void report(std::ostringstream& what);
    void report(const std::string& what);
    void error(std::ostringstream& what);
