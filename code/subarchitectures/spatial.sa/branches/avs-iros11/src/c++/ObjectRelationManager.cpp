@@ -516,8 +516,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       }
       transform(robotTransform, pose, pose);
 
-      //FIXME: if tag objects don't do this
-      if(obsLabel == "metalbox" || obsLabel == "table1" || obsLabel == "table2" 
+      //FIXME: ARTag objects already get their coords in the world frame
+      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
 	  || obsLabel == "shelves" || obsLabel == "table"){
 	pose = observedObject->pose;
       }
@@ -539,12 +539,6 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[obsLabel] = new SpatialData::SpatialObject;
 	m_objects[obsLabel]->label = obsLabel;
 	m_objects[obsLabel]->pose = pose;
-//	//FIXME: This is a pure, unadulterated hack
-//	if (obsLabel == "bookcase_lg") {
-//	  Matrix33 flip;
-//	  fromRotZ(flip, M_PI);
-//	  m_objects[obsLabel]->pose.rot = flip*pose.rot;
-//	}
       }
 
       if (m_objectModels.find(obsLabel) == m_objectModels.end()) {
@@ -561,23 +555,23 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
 	      log("3");
-	if (obsObject->type == OBJECT_PLANE ||
-	    //FIXME
-	    obsLabel == "table" || 
-	    obsLabel == "table1" ||
-	      obsLabel == "table2" ||
-	      obsLabel == "bookcase_sm" ||
-	      obsLabel == "bookcase_lg" ||
-	      obsLabel == "shelves" ||
-	      obsLabel == "desk"){
-	  // Flatten pose for plane objects
-	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
-	    setIdentity(pose.rot);
-	  }
-	  else {
-	    fromRotZ(pose.rot, atan2(pose.rot.m01, pose.rot.m00));
-	  }
-	}
+//	if (obsObject->type == OBJECT_PLANE ||
+//	    //FIXME
+//	    obsLabel == "table" || 
+//	    obsLabel == "table1" ||
+//	      obsLabel == "table2" ||
+//	      obsLabel == "bookcase_sm" ||
+//	      obsLabel == "bookcase_lg" ||
+//	      obsLabel == "shelves" ||
+//	      obsLabel == "desk"){
+//	  // Flatten pose for plane objects
+//	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
+//	    setIdentity(pose.rot);
+//	  }
+//	  else {
+//	    fromRotZ(pose.rot, atan2(pose.rot.m01, pose.rot.m00));
+//	  }
+//	}
 
 
 	m_objects[obsLabel]->pose = pose;

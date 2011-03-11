@@ -1621,40 +1621,19 @@ RelationEvaluator::computeAttentionVectorSumForSolid(const Object *obj,
 spatial::Object *
 generateNewObjectModel(const std::string &label) {
 //  log("generateNewObjectModel %s", label.c_str());
-  if (label == "rovio" || label == "bookcase_sm" || label == "bookcase_lg"
-      || label == "dell" || label == "shelves" || label == "metalbox") {
+  if (label == "bookcase" || label == "box") {
     HollowBoxObject *newBoxObject = new HollowBoxObject;
     newBoxObject->type = OBJECT_HOLLOW_BOX;
     newBoxObject->thickness = 0.051;
-    if (label == "rovio") {
-      newBoxObject->radius1 = 0.17;
-      newBoxObject->radius2 = 0.155;
-      newBoxObject->radius3 = 0.175;
-    }
-    else if (label == "bookcase_sm") {
+    if (label == "bookcase") {
       newBoxObject->radius1 = 0.155;
       newBoxObject->radius2 = 0.40;
       newBoxObject->radius3 = 0.75;
     }
-    else if (label == "bookcase_lg") {
-      newBoxObject->radius1 = 0.14;
-      newBoxObject->radius2 = 0.80;
-      newBoxObject->radius3 = 0.965;
-    }
-    else if (label == "shelves") {
-      newBoxObject->radius1 = 0.25;
-      newBoxObject->radius2 = 0.89;
-      newBoxObject->radius3 = 1.075;
-    }
-    else if (label == "dell") {
-      newBoxObject->radius1 = 0.11;
-      newBoxObject->radius2 = 0.245;
-      newBoxObject->radius3 = 0.200;
-    }
-    else if (label == "metalbox") {
-      newBoxObject->radius1 = 0.2;
-      newBoxObject->radius2 = 0.38;
-      newBoxObject->radius3 = 0.275;
+    else if (label == "box") {
+      newBoxObject->radius1 = 0.13;
+      newBoxObject->radius2 = 0.27;
+      newBoxObject->radius3 = 0.165;
     }
     else {
       newBoxObject->radius1 = 0.1;
@@ -1669,7 +1648,7 @@ generateNewObjectModel(const std::string &label) {
   else {
     BoxObject *newBoxObject = new BoxObject;
     newBoxObject->type = OBJECT_BOX;
-    if (label == "krispies") {
+    if (label == "corn_flakes") {
       newBoxObject->radius1 = 0.095;
       newBoxObject->radius2 = 0.045;
       newBoxObject->radius3 = 0.145;
