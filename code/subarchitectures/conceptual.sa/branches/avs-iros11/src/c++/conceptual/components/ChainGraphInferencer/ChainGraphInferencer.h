@@ -265,7 +265,7 @@ private:
 	struct ObservedVariable
 	{
 		int id;
-		int observedValue;
+		unsigned int observedValue;
 		std::map<int, std::string> valueIdToName;
 	};
 

@@ -91,8 +91,9 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
 	_addUnobservedShape = (_config.find("--add-unobserved-shape") != _config.end());
 	_addUnobservedAppearance = (_config.find("--add-unobserved-appearance") != _config.end());
-	if((it = _config.find("--addUnobservedObjects")) != _config.end())
+	if((it = _config.find("--add-unobserved-objects")) != _config.end())
 		boost::split(_addUnobservedObjects, it->second, is_any_of(", "));
+
 
 	// Check parameters
 	if (_avsDefaultKnowledgeFileName.empty())
@@ -100,10 +101,14 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		throw CASTException(exceptionMessage(__HERE__,"Provide the AVS default knowledge file!"));
 	}
 
+	string unobservedObjectsStr;
+	for (unsigned int i=0; i<_addUnobservedObjects.size(); ++i)
+		unobservedObjectsStr+=_addUnobservedObjects[i]+" ";
 	log("Configuration parameters:");
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
 	log("-> Infer placeholder properties: %s", (_inferPlaceholderProperties)?"yes":"no");
 	log("-> Prior probability that placeholder is in the current room: %f", _placeholderInCurrentRoomPrior);
+	log("-> Add unobserved objects: %s", unobservedObjectsStr.c_str());
 
 	// Register the ICE Server
 	ConceptualData::ChainGraphTestingServerInterfacePtr chainGraphTestingServerInterfacePtr =
@@ -1061,6 +1066,19 @@ void ChainGraphInferencer::addDaiFactors()
 					  	  	  	  	  	    oppi.supportObjectCategory, oppi.supportObjectId,
 					  	  	  	  	  	    oppi.beta);
 		} // o
+		// For all objects requested in the command line add unobserved node if not yet added
+		for (unsigned int o=0; o<_addUnobservedObjects.size(); ++o)
+		{
+			string obj = _addUnobservedObjects[o];
+			error("%s", obj.c_str());
+			string objectUnexploredVarName = VariableNameGenerator::getUnexploredObjectVarName(
+					cri.roomId, obj, SpatialData::INROOM,"", "");
+			if (_variableNameToDai.find(objectUnexploredVarName) == _variableNameToDai.end())
+			{
+				createDaiObjectUnexploredFactor(cri.roomId, obj, SpatialData::INROOM,
+						  	  	  	  	  	    "", "", 0.0);
+			}
+		}
 	} // r
 
 	// Add factors for additional variables requested in the queries
