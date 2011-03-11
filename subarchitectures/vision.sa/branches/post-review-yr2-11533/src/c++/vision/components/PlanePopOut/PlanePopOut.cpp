@@ -483,7 +483,10 @@ void PlanePopOut::start()
 
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
-  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", "function render()\nend\n");
+  ostringstream ss;
+  ss <<  "function render()\nend\n"
+     << "setCamera('points.top', 0, 0, -0.1, 0, 0, 1, 0, -1, 0)\n";
+  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", ss.str());
   //Video::Image image;
   //m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
@@ -583,11 +586,11 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 	str << "glEnd()\nend\n";
 	long long t1 = gethrtime();
 	double dt = (t1 - t0) * 1e-6;
-// 	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
+        // powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
 	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", str.str());
 	t1 = gethrtime();
 	dt = (t1 - t0) * 1e-6;
-// 	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
+ 	// powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
 }
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
@@ -629,13 +632,15 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
   std::ostringstream str;
   str << "function render()\n";
-  str << "glColor(1.0,1.0,0.0)\n";
   str << "glBegin(GL_LINES)\n";
-  str << "glVertex(-1000., 0., 0.)\n";
+  str << "glColor(1.0,0.0,0.0)\n";
+  str << "glVertex(0000., 0., 0.)\n";
   str << "glVertex(1000., 0., 0.)\n";
-  str << "glVertex(0., -1000., 0.)\n";
+  str << "glColor(0.0,1.0,0.0)\n";
+  str << "glVertex(0., 0000., 0.)\n";
   str << "glVertex(0., 1000., 0.)\n";
-  str << "glVertex(0., 0., -1000.)\n";
+  str << "glColor(0.0,0.0,1.0)\n";
+  str << "glVertex(0., 0., 0000.)\n";
   str << "glVertex(0., 0., 1000.)\n";
   str << "glEnd()\n";
   //str << "DrawText3D(\"x\", 0.1, 0.02, 0.)\n";
@@ -690,7 +695,7 @@ void PlanePopOut::runComponent()
       glutDisplayFunc(DisplayWin);
   }
 #ifdef FEAT_VISUALIZATION
-  //SendOverlays(m_display, this);
+   SendOverlays(m_display, this);
 #endif
   while(isRunning())
   {
