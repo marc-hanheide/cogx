@@ -34,7 +34,7 @@ void AR_Pose::runComponent() {
 	log("I am running.");
 while(isRunning()){
 	detectMarkers();
-	sleepComponent(500);
+	sleepComponent(10);
 }
 }
 
@@ -67,8 +67,13 @@ void AR_Pose::detectMarkers() {
 	 * build with V4L, dataPtr format change according to the
 	 * ARToolKit configure option (see config.h).*/
 	m_videoServer->getImage(m_camId, m_image);
+
 	log("Image received .");
 	IplImage *iplImage = convertImageToIpl(m_image);
+
+	cvShowImage ( "ObjectRecognizer3D", iplImage );
+	cvWaitKey(50);
+
 	ARUint8 *dataPtr = (unsigned char*) iplImage->imageData;
 	// detect the markers in the video frame
 	if (arDetectMarker(dataPtr, m_threshold, &marker_info, &m_objectnum) < 0) {
