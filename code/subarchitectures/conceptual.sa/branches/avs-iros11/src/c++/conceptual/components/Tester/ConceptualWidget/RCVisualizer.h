@@ -24,17 +24,21 @@ public:
 private slots:
 	void saveImageButtonClicked();
 	void generate();
+	void addGroundtruthButtonClicked();
 
 
 private:
     QBrush getBrushForProbability(double prob);
 
 
-
 private:
     Ui::RCVisualizerClass ui;
     ConceptualWidget *_parent;
     conceptual::Tester *_component;
+
+    /** Map roomId -> roomCateogory index. */
+    std::map<int, int> _groundTruth;
+
 };
 
 #endif // RCVISUALIZER_H

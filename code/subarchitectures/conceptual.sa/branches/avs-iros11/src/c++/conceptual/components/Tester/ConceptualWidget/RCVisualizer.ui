@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>794</width>
+    <width>875</width>
     <height>571</height>
    </rect>
   </property>
@@ -40,12 +40,26 @@
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="placesCheckBox">
            <property name="text">
             <string>Show place IDs</string>
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -81,6 +95,13 @@
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="verticalIndicatorsCheckBox">
            <property name="text">
             <string>Vertical Indicators</string>
@@ -106,6 +127,17 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="addGroundtruthButton">
+       <property name="text">
+        <string>Add Groundtruth</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/icons/add.png</normaloff>:/icons/icons/add.png</iconset>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="refreshButton">

@@ -18,6 +18,7 @@
 #include <QTimer>
 #include <queue>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/erase.hpp>
 
 using namespace conceptual;
 using namespace std;
@@ -43,7 +44,6 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 
 	// Signals and slots
 	qRegisterMetaType<Event>("Event");
-	qRegisterMetaType< QList<Event> >("QList<Event>");
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
 	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
@@ -79,24 +79,16 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	_wsPtr = wsPtr;
 
 	// Get current place and room for the event
-	int curPlaceId = _component->getCurrentPlace();
-	int curRoomId = getRoomForPlace(wsPtr, curPlaceId);
-
-	QList<Event> events;
-
-	for (unsigned int i=0; i<wsPtr->lastEvents.size(); ++i)
-	{
-		Event event;
-		event.info = wsPtr->lastEvents[i];
-		event.curPlaceId = curPlaceId;
-		event.curRoomId = curRoomId;
-		events.append(event);
-	}
+	Event event;
+	event.curPlaceId = _component->getCurrentPlace();
+	event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
+	getPlacesForRoom(wsPtr, event.curRoomId, event.curRoomPlaces);
+	event.infos = wsPtr->lastEvents;
 	pthread_mutex_unlock(&_worldStateMutex);
 
 	// Take care of the event
 	QMetaObject::invokeMethod(this, "addEvent", Qt::QueuedConnection,
-	                           Q_ARG(QList<Event>, events));
+	                           Q_ARG(Event, event));
 
 	// Auto refreshing
 	if (autoRefreshQueryCheckBox->isChecked())
@@ -448,6 +440,22 @@ int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int p
 }
 
 
+// -------------------------------------------------------
+void ConceptualWidget::getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, std::vector<int> &places)
+{
+	for (unsigned int i=0; i<wsPtr->rooms.size(); ++i)
+	{
+		if (wsPtr->rooms[i].roomId == roomId)
+		{
+			for (unsigned int j=0; j<wsPtr->rooms[i].places.size();++j)
+			{
+				places.push_back(wsPtr->rooms[i].places[j].placeId);
+			}
+			break;
+		}
+	}
+}
+
 
 // -------------------------------------------------------
 void ConceptualWidget::categoriesButtonClicked()
@@ -468,12 +476,10 @@ void ConceptualWidget::objectsButtonClicked()
 
 
 // -------------------------------------------------------
-void ConceptualWidget::addEvent(QList<Event> events)
+void ConceptualWidget::addEvent(Event event)
 {
-	for (int i=0; i<events.size(); ++i)
+	for (unsigned int i=0; i<event.infos.size(); ++i)
 	{
-		Event &event = events[i];
-
 		// Increment the overall event number
 		pthread_mutex_lock(&_eventsMutex);
 		int eventNo=++_eventNo;
@@ -481,71 +487,71 @@ void ConceptualWidget::addEvent(QList<Event> events)
 
 		// Generate
 		QString eventStr = QString::number(eventNo)+": ";
-		switch(event.info.type)
+		switch(event.infos[i].type)
 		{
 		case ConceptualData::EventRoomAdded:
-			eventStr+="RoomAdded (rid="+QString::number(event.info.roomId)+")";
+			eventStr+="RoomAdded (rid="+QString::number(event.infos[i].roomId)+")";
 			break;
 		case ConceptualData::EventRoomDeleted:
-			eventStr+="RoomDeleted (rid="+QString::number(event.info.roomId)+")";
+			eventStr+="RoomDeleted (rid="+QString::number(event.infos[i].roomId)+")";
 			break;
 		case ConceptualData::EventRoomPlaceAdded:
-			eventStr+="RoomPlaceAdded (rid="+QString::number(event.info.roomId)+", pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="RoomPlaceAdded (rid="+QString::number(event.infos[i].roomId)+", pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventRoomPlaceDeleted:
-			eventStr+="RoomPlaceDeleted (rid="+QString::number(event.info.roomId)+", pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="RoomPlaceDeleted (rid="+QString::number(event.infos[i].roomId)+", pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventPlaceStatusChanged:
-			eventStr+="PlaceStatusChanged (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="PlaceStatusChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventGatewayPlacePropertyChanged:
-			eventStr+="GatewayPlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="GatewayPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventObjectPlacePropertyAdded:
-			if (event.info.place1Id>0)
-				eventStr+="ObjectPlacePropertyAdded (pid="+QString::number(event.info.place1Id)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+			if (event.infos[i].place1Id>0)
+				eventStr+="ObjectPlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 
 			break;
 		case ConceptualData::EventObjectPlacePropertyDeleted:
-			if (event.info.place1Id>0)
-				eventStr+="ObjectPlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+			if (event.infos[i].place1Id>0)
+				eventStr+="ObjectPlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			break;
 		case ConceptualData::EventObjectPlacePropertyChanged:
-			if (event.info.place1Id>0)
-				eventStr+="ObjectPlacePropertyChanged (pid="+QString::number(event.info.place1Id)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+			if (event.infos[i].place1Id>0)
+				eventStr+="ObjectPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.info.roomId)+
-						", obj="+QString::fromStdString(event.info.propertyInfo)+")";
+				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			break;
 		case ConceptualData::EventShapePlacePropertyAdded:
-			eventStr+="ShapePlacePropertyAdded (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="ShapePlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventShapePlacePropertyDeleted:
-			eventStr+="ShapePlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="ShapePlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventShapePlacePropertyChanged:
-			eventStr+="ShapePlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="ShapePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventAppearancePlacePropertyAdded:
-			eventStr+="AppearancePlacePropertyAdded (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="AppearancePlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventAppearancePlacePropertyDeleted:
-			eventStr+="AppearancePlacePropertyDeleted (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="AppearancePlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventAppearancePlacePropertyChanged:
-			eventStr+="AppearancePlacePropertyChanged (pid="+QString::number(event.info.place1Id)+")";
+			eventStr+="AppearancePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventRoomConnectivityChanged:
-			eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.info.place1Id)+", pid2="+QString::number(event.info.place2Id)+")";
+			eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.infos[i].place1Id)+", pid2="+QString::number(event.infos[i].place2Id)+")";
 			break;
 		default: // Location event?
 			eventStr+="Changed place (pid="+
@@ -558,108 +564,160 @@ void ConceptualWidget::addEvent(QList<Event> events)
 
 	if (collectInfoCheckBox->isChecked())
 	{
-		collectEventInfo(events);
+		collectEventInfo(event);
 	}
 
 }
 
 
 // -------------------------------------------------------
-void ConceptualWidget::collectEventInfo(QList<Event> events)
+void ConceptualWidget::collectEventInfo(Event event)
 {
-	Event event = events[0];
-
-
-	// Get categories for the current room
-	ConceptualData::ProbabilityDistributions results =
-			_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_category)", false, false);
-	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
-	if (results.size()>0)
-	{
-		SpatialProbabilities::ProbabilityDistribution result = results[0];
-		event.curRoomCategories.resize(result.massFunction.size());
-		for(unsigned int i=0; i<result.massFunction.size(); ++i)
-		{
-			double probability = result.massFunction[i].probability;
-			string value =
-					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-							result.massFunction[i].variableValues[0])->value;
-			int roomIndex=-1;
-			for(unsigned int j=0; j<roomCats.size(); ++j)
-			{
-				if (roomCats[j]==value)
-				{
-					roomIndex=j;
-					break;
-				}
-			}
-			event.curRoomCategories[roomIndex]=probability;
-		} //for
-	} // if
-
-
-	// Get shape and appearance for the current place
-	results =
-			_component->sendQueryHandlerQuery("p(place"+lexical_cast<string>(event.curPlaceId)+"_shape_property)", false, false);
-	const DefaultData::StringSeq &shapes = _component->getShapes();
-	if (results.size()>0)
-	{
-		SpatialProbabilities::ProbabilityDistribution result = results[0];
-		event.curShapes.resize(result.massFunction.size());
-		for(unsigned int i=0; i<result.massFunction.size(); ++i)
-		{
-			double probability = result.massFunction[i].probability;
-			string value =
-					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-							result.massFunction[i].variableValues[0])->value;
-			int shapeIndex=-1;
-			for(unsigned int j=0; j<shapes.size(); ++j)
-			{
-				if (shapes[j]==value)
-				{
-					shapeIndex=j;
-					break;
-				}
-			}
-			event.curShapes[shapeIndex]=probability;
-		} //for
-	} // if
-
-
-	// Get shape and appearance for the current place
-	results =
-			_component->sendQueryHandlerQuery("p(place"+lexical_cast<string>(event.curPlaceId)+"_appearance_property)", false, false);
-	const DefaultData::StringSeq &appearances = _component->getAppearances();
-	if (results.size()>0)
-	{
-		SpatialProbabilities::ProbabilityDistribution result = results[0];
-		event.curAppearances.resize(result.massFunction.size());
-		for(unsigned int i=0; i<result.massFunction.size(); ++i)
-		{
-			double probability = result.massFunction[i].probability;
-			string value =
-					SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
-							result.massFunction[i].variableValues[0])->value;
-			int appearanceIndex=-1;
-			for(unsigned int j=0; j<appearances.size(); ++j)
-			{
-				if (appearances[j]==value)
-				{
-					appearanceIndex=j;
-					break;
-				}
-			}
-			event.curAppearances[appearanceIndex]=probability;
-		} //for
-	} // if
-
 	if (event.curRoomId >=0)
 	{
-		pthread_mutex_lock(&_eventsMutex);
-		_events.push_back(event);
-		pthread_mutex_unlock(&_eventsMutex);
+		// Get categories for the current room
+		ConceptualData::ProbabilityDistributions results =
+				_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_category)", false, false);
+		const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
+		if (results.size()>0)
+		{
+			SpatialProbabilities::ProbabilityDistribution result = results[0];
+			event.curRoomCategories.resize(result.massFunction.size());
+			for(unsigned int i=0; i<result.massFunction.size(); ++i)
+			{
+				double probability = result.massFunction[i].probability;
+				string value =
+						SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+								result.massFunction[i].variableValues[0])->value;
+				int roomIndex=-1;
+				for(unsigned int j=0; j<roomCats.size(); ++j)
+				{
+					if (roomCats[j]==value)
+					{
+						roomIndex=j;
+						break;
+					}
+				}
+				event.curRoomCategories[roomIndex]=probability;
+			} //for
+		} // if
+
+		// Get shape for the current room
+		results =
+				_component->sendQueryHandlerQuery("p(place*_shape_property)", false, false);
+
+		const DefaultData::StringSeq &shapes = _component->getShapes();
+		for (unsigned int i=0; i<shapes.size(); ++i)
+			event.curShapes.push_back(1.0);
+		for (unsigned int r=0; r<results.size(); ++r)
+		{
+			SpatialProbabilities::ProbabilityDistribution result = results[r];
+			string varName = result.variableNameToPositionMap.begin()->first;
+			erase_first(varName, "place");
+			erase_last(varName, "_shape_property");
+			int placeId = lexical_cast<int>(varName);
+
+			bool found = false;
+			for (unsigned int i=0; i<event.curRoomPlaces.size(); ++i)
+			{
+				if (event.curRoomPlaces[i]==placeId)
+				{
+					found=true;
+					break;
+				}
+			}
+			if (found)
+			{
+				for(unsigned int i=0; i<result.massFunction.size(); ++i)
+				{
+					double probability = result.massFunction[i].probability;
+					string value =
+							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[0])->value;
+					int shapeIndex=-1;
+					for(unsigned int j=0; j<shapes.size(); ++j)
+					{
+						if (shapes[j]==value)
+						{
+							shapeIndex=j;
+							break;
+						}
+					}
+					event.curShapes[shapeIndex]*=probability;
+				} //for
+			}
+		}
+		// Normalize
+		double sum = 0.0;
+		for (unsigned int i=0; i<shapes.size(); ++i)
+			sum+=event.curShapes[i];
+		for (unsigned int i=0; i<shapes.size(); ++i)
+			event.curShapes[i]/=sum;
+
+
+		// Get appearance for the current room
+		results =
+				_component->sendQueryHandlerQuery("p(place*_appearance_property)", false, false);
+
+		const DefaultData::StringSeq &appearances = _component->getAppearances();
+		for (unsigned int i=0; i<appearances.size(); ++i)
+			event.curAppearances.push_back(1.0);
+		for (unsigned int r=0; r<results.size(); ++r)
+		{
+			SpatialProbabilities::ProbabilityDistribution result = results[r];
+			string varName = result.variableNameToPositionMap.begin()->first;
+			erase_first(varName, "place");
+			erase_last(varName, "_appearance_property");
+			int placeId = lexical_cast<int>(varName);
+
+			bool found = false;
+			for (unsigned int i=0; i<event.curRoomPlaces.size(); ++i)
+			{
+				if (event.curRoomPlaces[i]==placeId)
+				{
+					found=true;
+					break;
+				}
+			}
+			if (found)
+			{
+				for(unsigned int i=0; i<result.massFunction.size(); ++i)
+				{
+					double probability = result.massFunction[i].probability;
+					string value =
+							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[0])->value;
+					int appearanceIndex=-1;
+					for(unsigned int j=0; j<appearances.size(); ++j)
+					{
+						if (appearances[j]==value)
+						{
+							appearanceIndex=j;
+							break;
+						}
+					}
+					event.curAppearances[appearanceIndex]*=probability;
+				} //for
+			}
+		}
+		// Normalize
+		sum = 0.0;
+		for (unsigned int i=0; i<appearances.size(); ++i)
+			sum+=event.curAppearances[i];
+		for (unsigned int i=0; i<appearances.size(); ++i)
+			event.curAppearances[i]/=sum;
+
+		// Get object info
+//		results =
+//				_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_obect_*_unexplored)", false, false);
+		// TODO: NOW TAKE CARE OF THOSE OBJECTS AND TEST OBSERVED VARIABLES!!!
 
 	}
+
+
+	pthread_mutex_lock(&_eventsMutex);
+	_events.push_back(event);
+	pthread_mutex_unlock(&_eventsMutex);
 }
 
 
@@ -673,24 +731,24 @@ void ConceptualWidget::posTimerTimeout()
 	{
 		_prevPlace = curPlaceId;
 
+		Event event;
+
 		// Get room Id
 		pthread_mutex_lock(&_worldStateMutex);
-		int curRoomId = -1;
+		event.curPlaceId = curPlaceId;
+		event.curRoomId = -1;
 		if (_wsPtr)
-			curRoomId = getRoomForPlace(_wsPtr, curPlaceId);
+		{
+			event.curRoomId = getRoomForPlace(_wsPtr, curPlaceId);
+			getPlacesForRoom(_wsPtr, event.curRoomId, event.curRoomPlaces);
+		}
 		pthread_mutex_unlock(&_worldStateMutex);
 
 		// Prepare event
-		Event event;
-		event.info.type = ConceptualData::EventNothig;
-		// Get current place
-		event.curPlaceId = curPlaceId;
-		// Get current room
-		event.curRoomId = curRoomId;
+		ConceptualData::EventInfo info;
+		info.type = ConceptualData::EventNothig;
+		event.infos.push_back(info);
 
-		QList<Event> events;
-		events.append(event);
-
-		addEvent(events);
+		addEvent(event);
 	}
 }
