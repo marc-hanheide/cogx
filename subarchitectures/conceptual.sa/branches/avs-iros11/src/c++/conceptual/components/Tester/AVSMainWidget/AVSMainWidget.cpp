@@ -25,7 +25,7 @@ AVSMainWidget::AVSMainWidget(QWidget *parent, conceptual::Tester *component)
 	connect(ui.generateViewCones, SIGNAL(clicked()), this, SLOT(generateViewConesButtonClicked()));
 	connect(ui.processConeGroup, SIGNAL(clicked()), this, SLOT(processConeGroup()));
 	connect(ui.postVisualObject, SIGNAL(clicked()), this, SLOT(postVisualObjectClicked()));
-	//ui.lineEdit_3->setText()
+	ui.lineEdit_3->setText("table");
 }
 
 AVSMainWidget::~AVSMainWidget()
@@ -79,17 +79,23 @@ void AVSMainWidget::generateViewConesButtonClicked(){
 		m_component->log(" %s ", variables[i].c_str());
 	}
 	if (variables.size() == 4){
+		m_component->log("Posting fake VPCommand without supportObject");
 	newVPCommand->roomId = lexical_cast<int>(variables[1]);
 	newVPCommand->searchedObjectCategory = variables[3];// TODO
 	newVPCommand->supportObject = "";
 	newVPCommand->relation = SpatialData::INROOM;
 	}
-	else if (variables.size() == 6){
+	else if (variables.size() == 7){
+		m_component->log("Posting fake VPCommand with supportObject");
 		newVPCommand->roomId = lexical_cast<int>(variables[1]);
 		newVPCommand->searchedObjectCategory = variables[3];// TODO
 		newVPCommand->supportObjectCategory = variables[5];// TODO
 		newVPCommand->supportObject = variables[6]; // supportObjectid
 		newVPCommand->relation = (variables[4] == "on" ? SpatialData::ON : SpatialData::INOBJECT);
+	}
+	else{
+		m_component->log("Not a correct query");
+		return;
 	}
 	 SpatialData::AVSInterfacePrx agg2(m_component->getIceServer<SpatialData::AVSInterface> ("avs.cpplanner"));
 	 agg2->simulateViewCones(newVPCommand);

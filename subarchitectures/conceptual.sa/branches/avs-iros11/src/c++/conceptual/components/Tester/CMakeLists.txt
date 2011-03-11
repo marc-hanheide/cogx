@@ -15,6 +15,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     include_directories(./AVSMainWidget)
     include_directories(../../../../../../vision.sa/src/c++/vision/autogen)
     include_directories(../../../../../../../tools/hardware/video/src/c++/autogen/)
+    include_directories(../../../../../../spatial.sa/src/c++/)
 
     add_cast_component(ConceptualTester Tester.cc MainDialog.cc ConceptualWidget/ConceptualWidget.cc ConceptualWidget/ObjectPlacePropertyDialog.cc 
                                         ConceptualWidget/ObjectSearchResultDialog.cc ConceptualWidget/GraphDialog.cc ConceptualWidget/AddGroundtruthDialog.cc
