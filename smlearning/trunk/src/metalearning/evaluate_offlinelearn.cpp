@@ -23,7 +23,7 @@ int main (int argc, char* argv[]) {
 	}
 
 	LearningData::DataSet data;
-	LearningData::CoordinateLimits limits;
+	LearningData::FeaturesLimits limits;
 	
 
 	if (!LearningData::read_dataset (seqFile, data, limits )) {

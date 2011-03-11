@@ -57,6 +57,8 @@
 	<minPushDuration>3.0</minPushDuration>
 	<maxPushDuration>5.0</maxPushDuration>
 	<minDuration>5.0</minDuration>
+	<minValLabel>-1.0</minValLabel>
+	<maxValLabel>1.0</maxValLabel>
 	<startPolyflapPosition>
 		<x>0.2</x>
 		<y>0.2</y>

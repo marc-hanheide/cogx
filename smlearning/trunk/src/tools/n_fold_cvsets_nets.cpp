@@ -10,7 +10,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	LearningData::DataSet savedData;
-	LearningData::CoordinateLimits limits;
+	LearningData::FeaturesLimits limits;
 	string seqFile = string (argv[1]);
 	string target_dir = string (argv[2]);
 	string featureselection = string (argv[3]);
