@@ -1,6 +1,7 @@
 #include "AVSMainWidget.h"
 #include <cast/core/CASTUtils.hpp>
 #include <VisionData.hpp>
+#include <Pose3.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -60,7 +61,11 @@ void AVSMainWidget::postVisualObjectClicked(){
 //  for(size_t i = 0; i < obj->identDistrib.size(); i++)
 //    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
 //      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
-//  setIdentity(obj->pose);
+  obj->pose.pos.x = 0;
+  obj->pose.pos.y = 0;
+  obj->pose.pos.z = 0;
+
+
   obj->componentID = m_component->getComponentID();
 
 	m_component->addToWorkingMemory(m_component->newDataID(), "vision.sa", obj); // TODO
