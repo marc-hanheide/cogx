@@ -3,7 +3,7 @@
 #include "AVSMainWidget.h"
 
 MainDialog::MainDialog(conceptual::Tester *component)
-    : QDialog(0), _component(component)
+    : QDialog(0, Qt::WindowMinMaxButtonsHint), _component(component)
 {
 	ui.setupUi(this);
 	_conceptualWidget = new ConceptualWidget(this, component);
