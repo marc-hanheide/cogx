@@ -336,8 +336,8 @@ void AVS_ContinualPlanner::generateViewCones(
 			map<string,string>::const_iterator end = m_fromBeliefIdtoVisualLabel.end();
 				    for (map<string,string>::const_iterator it = m_fromBeliefIdtoVisualLabel.begin(); it != end; ++it)
 				    {
-				        log("beliefid: %d", it->first);
-				        log("visualid: %d", it->second);
+				        log("beliefid: %s", it->first.c_str());
+				        log("visualid: %s", it->second.c_str());
 				    }
 			return;
 		}
