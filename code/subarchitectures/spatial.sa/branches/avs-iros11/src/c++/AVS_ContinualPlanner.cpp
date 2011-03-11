@@ -186,6 +186,8 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
 		log("Visual Object Id: %s", elformula->prop.c_str());
 
+		m_fromBeliefIdtoVisualLabel[objID.address.id] = elformula->prop.c_str();
+
 		SpatialProperties::ObjectPlacePropertyPtr result = new SpatialProperties::ObjectPlaceProperty;
 		result->category = m_currentConeGroup.searchedObjectCategory;
 		result->relation = m_currentConeGroup.relation;
@@ -238,6 +240,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		if (comarooms.size() == 0){
 			log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
+
 			return;
 		}
 		unsigned int i = 0;
@@ -327,8 +330,23 @@ void AVS_ContinualPlanner::generateViewCones(
 		std::vector<std::string> labels;
 		vector<Vector3> centers;
 		std::vector<FrontierInterface::ObjectRelation> relation;
-		labels.push_back(newVPCommand->supportObject);
+		if (m_fromBeliefIdtoVisualLabel.count(newVPCommand->supportObject) == 0){
+			log("No such visual object! I am not going to do anything!");
+			log("The ones we know are:");
+			map<string,string>::const_iterator end = m_fromBeliefIdtoVisualLabel.end();
+				    for (map<string,string>::const_iterator it = m_fromBeliefIdtoVisualLabel.begin(); it != end; ++it)
+				    {
+				        log("beliefid: %d", it->first);
+				        log("visualid: %d", it->second);
+				    }
+			return;
+		}
+		labels.push_back(m_fromBeliefIdtoVisualLabel[newVPCommand->supportObject]);
 		labels.push_back(newVPCommand->searchedObjectCategory);
+
+		for (unsigned int j=0; j < labels.size(); j++){
+			log("ObjectPriorRequest for: %s", labels[j].c_str());
+		}
 		relation.push_back(
 				(newVPCommand->relation == SpatialData::INOBJECT ? FrontierInterface::IN
 						: FrontierInterface::ON));
@@ -344,14 +362,22 @@ void AVS_ContinualPlanner::generateViewCones(
 		objreq->totalMass = 1.0;
 		//wait until we get the cloud back
 		{
+			log("Asking for ObjectPriorRequest");
+
+			if (WMAddress != ""){
 			unlockComponent();
+			}
 			addToWorkingMemory(newDataID(), objreq);
+			log("ObjectPriorRequest added to WM");
 			gotPC = false;
 			while (!gotPC)
 				usleep(2500);
 			log("got PC for direct search");
 		}
+		if (WMAddress != ""){
 		lockComponent();
+		}
+
 		if (m_cloud->isBaseObjectKnown) {
 			log("Got distribution around known object pose");
 			m_sampler.kernelDensityEstimation3D(*m_objectBloxelMaps[id],
@@ -794,7 +820,7 @@ if (differenceMapPDFSum < 0){
 	log("We managed to observe negative probability, something is very wrong!");
 }
 
-log("ViewConeUpdate: Map sums to: %f", sumcells.getResult());
+log("ViewConeUpdate: After cone update map sums to: %f", sumcells.getResult());
 
 
 if(m_usePeekabot){
