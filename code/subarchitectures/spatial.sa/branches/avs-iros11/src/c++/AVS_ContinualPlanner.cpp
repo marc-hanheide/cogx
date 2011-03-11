@@ -494,7 +494,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			}
 
 			for(unsigned int j=0; j < placeBeliefs.size(); j++){
-				if (placeBeliefs[j]->getData()->type != "PlgenerateViewace"){
+				if (placeBeliefs[j]->getData()->type != "Place"){
 					log("Not a place belief, but a %s belief", placeBeliefs[j]->getData()->type.c_str());
 					continue;
 				}
