@@ -1185,6 +1185,9 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		}
 		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 
+		if (isGatewayPlace(appearancePlacePropertyPtr->placeId))
+			return;
+
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventAppearancePlacePropertyAdded;
 		ei.roomId = -1;
@@ -1218,6 +1221,9 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 	  	// Check wmAddresss and ID
 		if (old->placeId != appearancePlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between RoomAppearancePlaceProperty WMAddress and Place ID changed!");
+
+		if (isGatewayPlace(appearancePlacePropertyPtr->placeId))
+			return;
 
 		// Check if something substantial changed
 		if ( calculateDistributionDifference(old->distribution,
