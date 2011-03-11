@@ -98,6 +98,8 @@ public:
 	 int GetClosestNodeId(double x, double y, double a);
 	 void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
 
+	 void receivePointCloud(BloxelMap *map, FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
+
 private:
 
 	 class AVSServer: public SpatialData::AVSInterface {
@@ -115,6 +117,10 @@ private:
 	std::map<std::string, BloxelMap* > m_objectBloxelMaps;
 	std::map<int, BloxelMap* > m_templateRoomBloxelMaps;
 	std::map<int, CureObstMap*> m_templateRoomGridMaps;
+
+	BloxelMap* m_currentBloxelMap;
+	CureObstMap* m_currentCureObstMap;
+
 	std::vector<std::string> generatedLocations;
 	ptz::PTZInterfacePrx m_ptzInterface;
 
