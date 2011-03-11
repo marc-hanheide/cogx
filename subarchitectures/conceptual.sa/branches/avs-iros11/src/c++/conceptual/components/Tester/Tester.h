@@ -29,11 +29,13 @@ class Tester: public cast::ManagedComponent
 
 public:
 	/** Constructor. */
-	Tester(): _queryHandlerAvailable(false),
+	Tester():
+	_queryHandlerAvailable(false),
 	_placeManagerAvailable(false),
 	_chainGraphInferencerAvailable(false),
-	_defaultChainGraphInferencerAvailable(false)
-	 {}
+	_defaultChainGraphInferencerAvailable(false),
+	_mainDialog(0)
+	{}
 
 	/** Destructor. */
 	virtual ~Tester() {}
