@@ -53,7 +53,9 @@ AVS_ContinualPlanner::AVS_ContinualPlanner() :
 	// TODO Auto-generated constructor stub
 	m_defaultBloxelCell.pdf = 0;
 	m_defaultBloxelCell.occupancy = SpatialGridMap::UNKNOWN;
-	gotPC = false;
+	m_gotPC = false;
+	m_gotNewGenerateViewCone = false;
+	m_currentVPGenerationCommand = new SpatialData::RelationalViewPointGenerationCommand;
 
 }
 
@@ -63,6 +65,14 @@ AVS_ContinualPlanner::~AVS_ContinualPlanner() {
 
 void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
+
+	while(isRunning()){
+		if(m_gotNewGenerateViewCone){
+			generateViewCones(m_currentVPGenerationCommand, m_generateViewConesCommandWMAddress);
+
+		}
+		sleepComponent(500);
+	}
 }
 
 
@@ -114,7 +124,7 @@ AVS_ContinualPlanner::receivePointCloud(FrontierInterface::WeightedPointCloudPtr
 	    if(m_usePeekabot)
 	      pbVis->AddPDF(*m_currentBloxelMap);
 	    m_currentBloxelMap->clearDirty();
-	    gotPC = true;
+	    m_gotPC = true;
 	}
 
 void AVS_ContinualPlanner::start() {
@@ -164,7 +174,6 @@ log("Got Process Cone Group Command");
 	SpatialData::ProcessConeGroupPtr cmd = getMemoryEntry<SpatialData::ProcessConeGroup> (
 						objID.address);
 	m_processConeGroupCommandWMAddress = objID.address.id;
-
 	m_currentProcessConeGroup = cmd;
 	processConeGroup(cmd->coneId);
 }
@@ -208,7 +217,11 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
 					objID.address);
 	SpatialData::RelationalViewPointGenerationCommandPtr cmd = new SpatialData::RelationalViewPointGenerationCommand(*newVPCommand);
 
-	generateViewCones(cmd, objID.address.id);
+	m_currentVPGenerationCommand = cmd;
+	m_gotNewGenerateViewCone = true;
+	m_generateViewConesCommandWMAddress= objID.address.id;
+
+	//
 	 }
 	 catch (const CASTException &e) {
 	 	    log("owtRecognizer3DCommand disappeared from WM: %s", e.message.c_str());
@@ -220,6 +233,8 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
 /* Generate view cones for <object,relation , object/room, room> */
 void AVS_ContinualPlanner::generateViewCones(
 		SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand, std::string WMAddress) {
+
+	m_gotNewGenerateViewCone = false;
 
 	string plus = "p(+";
 			string closebracket = ")";
@@ -361,20 +376,18 @@ void AVS_ContinualPlanner::generateViewCones(
 		objreq->objects = labels; // Names of objects, starting with the query object
 		objreq->cellSize = m_cellsize; // CelGOTONODEll size of map (affects spacing of samples)
 		objreq->outCloud = queryCloud; // Data struct to receive output
-		objreq->totalMass = 1.0;
+		objreq->totalMass = 1.0; // we will normalize anyways
 		//wait until we get the cloud back
 		{
 			log("Asking for ObjectPriorRequest");
-
-			unlockComponent();
+			m_gotPC = false;
 			addToWorkingMemory(newDataID(), objreq);
 			log("ObjectPriorRequest added to WM");
-			gotPC = false;
-			while (!gotPC)
+			while (!m_gotPC)
 				usleep(2500);
 			log("got PC for direct search");
 		}
-		lockComponent();
+
 		if (m_cloud->isBaseObjectKnown) {
 			log("Got distribution around known object pose");
 			m_sampler.kernelDensityEstimation3D(*m_objectBloxelMaps[id],
@@ -537,7 +550,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 			if (comaRoomBeliefs.size() ==0){
 				log("Could not get any grounded beliefs returning without doing anything...");
-				return;generateView
+				return;
 			}
 			else{
 				log("Go %d Grounded beliefs", comaRoomBeliefs.size());
@@ -1048,6 +1061,7 @@ void AVS_ContinualPlanner::configure(
 
 		  SpatialData::AVSInterfacePtr servant = new AVSServer(this);
 		  registerIceServer<SpatialData::AVSInterface, SpatialData::AVSInterface>(servant);
+
 
 }
 

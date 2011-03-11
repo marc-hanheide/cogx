@@ -140,7 +140,9 @@ private:
 	Cure::SensorPose m_LaserPoseR;
 	std::string m_queryHandlerName;
 	 double m_mapceiling;
-	 bool gotPC;
+	 bool m_gotPC;
+	 bool  m_gotNewGenerateViewCone;
+
 	 std::string m_PbHost;
 	 VisualPB_Bloxel* pbVis;
 
@@ -150,6 +152,8 @@ private:
 	 std::vector<std::string> m_allObjects;
 	 SpatialData::ProcessConeGroupPtr m_currentProcessConeGroup;
 	 std::string m_processConeGroupCommandWMAddress;
+	 std::string m_generateViewConesCommandWMAddress;
+	 SpatialData::RelationalViewPointGenerationCommandPtr m_currentVPGenerationCommand;
 	 /** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx m_queryHandlerServerInterfacePrx;
 	FrontierInterface::WeightedPointCloudPtr m_cloud;
