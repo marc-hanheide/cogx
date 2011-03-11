@@ -366,9 +366,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		{
 			log("Asking for ObjectPriorRequest");
 
-			if (WMAddress != ""){
 			unlockComponent();
-			}
 			addToWorkingMemory(newDataID(), objreq);
 			log("ObjectPriorRequest added to WM");
 			gotPC = false;
@@ -376,10 +374,7 @@ void AVS_ContinualPlanner::generateViewCones(
 				usleep(2500);
 			log("got PC for direct search");
 		}
-		if (WMAddress != ""){
 		lockComponent();
-		}
-
 		if (m_cloud->isBaseObjectKnown) {
 			log("Got distribution around known object pose");
 			m_sampler.kernelDensityEstimation3D(*m_objectBloxelMaps[id],
@@ -486,7 +481,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			}
 
 			for(unsigned int j=0; j < placeBeliefs.size(); j++){
-				if (placeBeliefs[j]->getData()->type != "Place"){
+				if (placeBeliefs[j]->getData()->type != "PlgenerateViewace"){
 					log("Not a place belief, but a %s belief", placeBeliefs[j]->getData()->type.c_str());
 					continue;
 				}
@@ -542,7 +537,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 			if (comaRoomBeliefs.size() ==0){
 				log("Could not get any grounded beliefs returning without doing anything...");
-				return;
+				return;generateView
 			}
 			else{
 				log("Go %d Grounded beliefs", comaRoomBeliefs.size());
