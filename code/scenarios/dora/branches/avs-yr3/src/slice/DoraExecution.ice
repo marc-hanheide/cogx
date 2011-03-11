@@ -26,6 +26,7 @@ module execution {
 	string model;
     string relation;
     string supportObject;
+    string supportObjectCategory;
     int roomID;
       };
 
