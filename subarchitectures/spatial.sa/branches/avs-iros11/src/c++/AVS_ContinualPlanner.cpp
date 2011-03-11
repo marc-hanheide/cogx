@@ -580,7 +580,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			//else get the visualobject belief pointer instead
 			log("Getting VisualObject beliefs");
 			vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > visualObjectBeliefs;
-						getWorkingMemoryEntries<GroundedBelief> ("binder", 0, visualObjectBeliefs);
+						getWorkingMemoryEntries<GroundedBelief> ("vision.sa", 0, visualObjectBeliefs);
 
 						if (visualObjectBeliefs.size() ==0){
 							log("Could not get any visual objects returning without doing anything...");
