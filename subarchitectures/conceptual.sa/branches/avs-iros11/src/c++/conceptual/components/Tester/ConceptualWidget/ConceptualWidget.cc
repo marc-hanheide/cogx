@@ -707,17 +707,46 @@ void ConceptualWidget::collectEventInfo(Event event)
 		for (unsigned int i=0; i<appearances.size(); ++i)
 			event.curAppearances[i]/=sum;
 
-		// Get object info
-//		results =
-//				_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+"_obect_*_unexplored)", false, false);
-		// TODO: NOW TAKE CARE OF THOSE OBJECTS AND TEST OBSERVED VARIABLES!!!
+		// Get object info for the current room
+		vector<string> visualizedObjects = _component->getVisualizedObjects();
+		for (unsigned int o=0; o<visualizedObjects.size(); ++o)
+		{
+			ConceptualData::ProbabilityDistributions resultsUnexplored =
+					_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+
+							"_object_"+ visualizedObjects[o] +"_unexplored)", false, false);
+			ConceptualData::ProbabilityDistributions resultsExplored =
+					_component->sendQueryHandlerQuery("p(room"+lexical_cast<string>(event.curRoomId)+
+							"_object_"+ visualizedObjects[o] +"_explored)", false, false);
 
+			// Check if we have an explored and unexplored variable for this object
+			double probability = 0.5;
+			if ((!resultsExplored.empty()) && (getExistsProbability(resultsExplored[0]) > 0.99))
+				probability = 1.0;
+			else if (!resultsUnexplored.empty())
+				probability = getExistsProbability(resultsUnexplored[0]);
+
+			event.curObjects.push_back(probability);
+		}
 	}
 
 
 	pthread_mutex_lock(&_eventsMutex);
 	_events.push_back(event);
 	pthread_mutex_unlock(&_eventsMutex);
+}
+
+
+// -------------------------------------------------------
+double ConceptualWidget::getExistsProbability(SpatialProbabilities::ProbabilityDistribution &probDist)
+{
+	for(unsigned int i=0; i<probDist.massFunction.size(); ++i)
+	{
+		if (SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probDist.massFunction[i].variableValues[0])->
+			value == ConceptualData::EXISTS)
+			return probDist.massFunction[i].probability;
+	}
+
+	return 0.5;
 }
 
 

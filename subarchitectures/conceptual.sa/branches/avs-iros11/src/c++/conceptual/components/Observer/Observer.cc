@@ -1081,6 +1081,10 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 
 		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
+
+		if (isGatewayPlace(shapePlacePropertyPtr->placeId))
+			return;
+
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventShapePlacePropertyAdded;
 		ei.roomId = -1;
@@ -1114,6 +1118,9 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 	  	// Check wmAddresss and ID
 		if (old->placeId != shapePlacePropertyPtr->placeId)
 			throw cast::CASTException("The mapping between RoomShapePlaceProperty WMAddress and Place ID changed!");
+
+		if (isGatewayPlace(shapePlacePropertyPtr->placeId))
+			return;
 
 		// Check if something substantial changed
 		if ( calculateDistributionDifference(old->distribution,

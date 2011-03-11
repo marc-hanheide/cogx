@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>875</width>
+    <width>959</width>
     <height>571</height>
    </rect>
   </property>
@@ -151,9 +151,20 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="saveImageButton">
+      <widget class="QPushButton" name="saveSvgButton">
        <property name="text">
-        <string>Save Image</string>
+        <string>Save SVG</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/icons/filesave.png</normaloff>:/icons/icons/filesave.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="savePngButton">
+       <property name="text">
+        <string>Save PNG</string>
        </property>
        <property name="icon">
         <iconset resource="../resources.qrc">
