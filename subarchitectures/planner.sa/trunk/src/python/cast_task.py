@@ -119,7 +119,6 @@ class CASTTask(object):
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
         self.wait_timeout_callback = timeout_callback
-        self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
         self.component.getClient().waitForChanges(self.id, timeout)
 
     def wait_update(self):
@@ -319,6 +318,7 @@ class CASTTask(object):
                 break
         if sat:
             self.dt_done()
+            return
 
         dt_pnode = self.dt_task.dt_plan[-1]
 
@@ -360,6 +360,7 @@ class CASTTask(object):
             observations.append(Planner.Observation("null", []))
         elif not observations:
             log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
+            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
             self.wait(WAIT_FOR_ACTION_TIMEOUT/2, wait_for_observation, wait_timeout)
             return
 
@@ -404,6 +405,7 @@ class CASTTask(object):
             
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
             log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
+            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
             self.wait(WAIT_FOR_ACTION_TIMEOUT, wait_for_effect, wait_timeout)
             return
         
@@ -421,7 +423,6 @@ class CASTTask(object):
                 break
 
         log.info("dt planning cancelled.")
-        self.component.cancel_dt_session(self)
             
         self.get_plan().execution_position = last_dt_action
         self.update_status(TaskStateEnum.PROCESSING)
@@ -431,7 +432,15 @@ class CASTTask(object):
         # debug.set_trace()
 
         self.cp_task.mark_changed()
-        self.monitor_cp()
+
+        # use the timeout mechanism to escape the DT thread
+        log.debug("returning to main loop...")
+        def callback():
+            self.component.cancel_dt_session(self)
+            log.debug("Continuing sequential session")
+            self.monitor_cp()
+        self.wait(0, callback, callback)
+        
 
     def action_delivered(self, action):
         assert self.internal_state == TaskStateEnum.WAITING_FOR_DT
