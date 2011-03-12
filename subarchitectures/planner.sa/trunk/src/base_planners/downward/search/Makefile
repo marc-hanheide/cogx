@@ -47,8 +47,8 @@ RELEASE_OBJECTS = $(SOURCES:%.cc=obj/%.release.o)
 
 CC = g++
 DEPEND = g++ -MM
-CCOPT         = -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
-LINKOPT = -m32
+CCOPT         = -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+LINKOPT = 
 RELEASEOPT = $(CCOPT)
 RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 

@@ -10,12 +10,12 @@ PROFILE_OBJECTS = $(OBJECTS:%.o=%.profile.o)
 PROFILE_TARGET = profile-$(TARGET)
 PROFILE_PARAMETERS =
 
-CC_OPTIONS = -ansi -Wall -O2 -Wno-sign-compare -pedantic -Werror -DNDEBUG -m32
+CC_OPTIONS = -ansi -Wall -O2 -Wno-sign-compare -pedantic -Werror -DNDEBUG
 #CC_OPTIONS = -ansi -Wall -g3 -Wno-sign-compare -pedantic -Werror -m32
 
 # CC_OPTIONS += -march=pentium3
 PROFILE_OPTIONS = -pg -O2
-LINK_OPTIONS = -m32
+LINK_OPTIONS =
 
 CC = g++
 DEPEND = g++ -MM
