@@ -46,6 +46,9 @@ public:
 	ConceptualData::VariableInfos getChainGraphVariables();
 	ConceptualData::FactorInfos getChainGraphFactors();
 
+	const DefaultData::StringSeq &getObjectPropertyVariables()
+		{ return _objectPropertyVariables; }
+
 	const DefaultData::StringSeq &getObjectCategories()
 		{ return _objectCategories; }
 
