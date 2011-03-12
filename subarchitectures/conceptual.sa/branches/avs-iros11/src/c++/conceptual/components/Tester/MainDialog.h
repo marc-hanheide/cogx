@@ -6,6 +6,7 @@
 
 class ConceptualWidget;
 class AVSMainWidget;
+class DefaultWidget;
 
 namespace conceptual
 {
@@ -32,6 +33,7 @@ private:
 
     ConceptualWidget *_conceptualWidget;
     AVSMainWidget *_avsMainWidget;
+    DefaultWidget *_defaultWidget;
 };
 
 #endif // MAINDIALOG_H
