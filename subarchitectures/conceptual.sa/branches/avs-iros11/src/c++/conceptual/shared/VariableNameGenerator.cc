@@ -4,6 +4,9 @@
 
 #include "VariableNameGenerator.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/find.hpp>
 
 using namespace std;
 using namespace boost;
@@ -84,3 +87,52 @@ SpatialData::SpatialRelation VariableNameGenerator::stringToRelation(std::string
 	else
 		return SpatialData::INROOM;
 }
+
+
+// -------------------------------------------------------
+bool VariableNameGenerator::parseDefaultObjectPropertyVar(std::string varName,
+		std::string &objectCategory, SpatialData::SpatialRelation &relation,
+		std::string &supportObjectCategory)
+{
+	// Header and footer
+	trim(varName);
+	if (!starts_with(varName, "object_"))
+		return false;
+	if (!ends_with(varName, "_property"))
+		return false;
+
+	replace_first(varName, "object_", "");
+	replace_last(varName, "_property", "");
+
+	// Detect relation
+	string relationOnStr=relationToString(SpatialData::ON);
+	string relationInRoomStr = relationToString(SpatialData::INROOM);
+	string relationInObjectStr = relationToString(SpatialData::INOBJECT);
+	string relationStr;
+	if (contains(varName, "_"+ relationInObjectStr+"_"))
+	{
+		relation = SpatialData::INOBJECT;
+		relationStr = relationInObjectStr;
+	}
+	else if (contains(varName, "_"+relationOnStr+"_"))
+	{
+		relation = SpatialData::ON;
+		relationStr = relationOnStr;
+	}
+	else
+	{
+		relation = SpatialData::INROOM;
+		objectCategory = varName;
+		supportObjectCategory = "";
+		return true;
+	}
+
+	// Split object with relation
+	relationStr = "_"+relationStr+"_";
+	int relPos=varName.find(relationStr);
+	objectCategory = varName.substr(0, relPos);
+	supportObjectCategory = varName.substr(relPos+relationStr.size(), varName.size()-relPos-relationStr.size());
+
+	return true;
+}
+
