@@ -8,8 +8,10 @@
 #define DEFAULT_CHAINGRAPHINFERENCER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include "VariableNameGenerator.h"
 #include <DefaultData.hpp>
 #include <ComaData.hpp>
+#include <SpatialData.hpp>
 
 
 namespace def
@@ -52,6 +54,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
     };
 
 
+	enum LoadObjectsFrom
+		{LOF_HFC, LOF_DEFAULTPROB};
 
 
 public:
@@ -82,6 +86,8 @@ private:
 	/** Change event. */
 	void inferenceQueryAdded(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Loads the avs default knowledge file (defaultprob.txt) */
+	void loadAvsDefaultKnowledge();
 
 
 private:
@@ -108,15 +114,17 @@ private:
 	/** Results of the query for the default knowledge sent to HFC. */
 	comadata::QueryResults _hfcQueryResults;
 
-	struct HFCItem
+	struct ObjectPropertyGivenRoomCategory
 	{
-		std::string room;
-		std::string object;
+		std::string roomCategory;
+		std::string objectCategory;
+		std::string supportObjectCategory;
+		SpatialData::SpatialRelation relation;
 		double probability;
 	};
 
 	/** Converted knowledge from the HFC. */
-	std::list<HFCItem> _hfcKnowledge;
+	std::list<ObjectPropertyGivenRoomCategory> _objectPropertyGivenRoomCategory;
 
 	double _defaultRoomCategoryConnectivityPotential;
 	double _defaultObjectExistenceProbability;
@@ -180,6 +188,13 @@ private:
 	};
 
 	std::list<DefaultAppearancePropertyGivenRoomCategory> _defaultAppearancePropertyGivenRoomCategory;
+
+	/** Determines from where the object information should be loaded. */
+	LoadObjectsFrom _loadObjectsFrom;
+
+	/** Path to the file with object info. */
+	std::string _objectsFileName;
+
 
 }; // class ChainGraphInferencer
 } // namespace def
