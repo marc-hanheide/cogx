@@ -96,11 +96,15 @@ class DTProblem(object):
         init = [f.to_init() for f in self.state.deterministic() if not f.value.is_instance_of(pddl.t_number) and (objects(*f) < used_objects)]
         # for f in self.state.deterministic():
         #     print f.to_init(),  (objects(*f) < used_objects)
+
+        observable_facts = set(f for f, _, _ in self.get_observations(self.selected_facts))
+        print "observable:", map(str, observable_facts)
         
         for n in self.pnodes:
-            peff = n.to_init(self.selected_facts)
-            used_objects |= set(visitors.visit(peff, pddl.visitors.collect_constants, [])) - self.domain.constants
-            if peff:
+            peff, obs = n.to_init(self.selected_facts, observable_facts)
+            if obs and peff:
+                print obs , peff.pddl_str()
+                used_objects |= set(visitors.visit(peff, pddl.visitors.collect_constants, [])) - self.domain.constants
                 init.append(peff)
                 
         self.problem = pddl.Problem("cogxtask", used_objects - self.domain.constants, init, None, self.dtdomain, opt, opt_func)
@@ -145,7 +149,7 @@ class DTProblem(object):
 
 
     def get_observe_actions(self, relevant_facts):
-        for o, mapping in self.get_observations(relevant_facts):
+        for _, o, mapping in self.get_observations(relevant_facts):
             for e in o.execution:
                 action = e.action
                 o_a_mapping = dict(zip(e.args, action.args))
@@ -177,7 +181,7 @@ class DTProblem(object):
                 for fact in relevant_facts:
                     mapping = fact.match_literal(lit)
                     if mapping:
-                        yield o, mapping
+                        yield fact, o, mapping
             
         
     def observation_expected(self, action):
