@@ -162,9 +162,6 @@ private:
 
 	void updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior);
 
-	/** Loads the AVS default knowledge file. */
-	void loadAvsDefaultKnowledge();
-
 	/** Returns the calculated Lambda of the poisson distrubution for the object, relation and room category. */
 	double getPoissonLambda(const std::string &roomCategory, const std::string &objectCategory,
 							SpatialData::SpatialRelation relation, const std::string &supportObjectCategory);
@@ -217,9 +214,6 @@ private:
 
 	/** Name of the file to which the info about variables and their values is saved.  */
 	std::string _saveGraphInfoFileName;
-
-	/** Name of the file with the default knowledge for the AVS system.  */
-	std::string _avsDefaultKnowledgeFileName;
 
 	/** If true, placeholder properties will be inferred. */
 	bool _inferPlaceholderProperties;

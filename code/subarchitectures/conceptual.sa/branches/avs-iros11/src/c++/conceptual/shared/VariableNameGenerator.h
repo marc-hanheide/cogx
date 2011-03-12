@@ -17,6 +17,11 @@ public:
 	static std::string getDefaultObjectPropertyVarName(std::string objectCategory,
 			SpatialData::SpatialRelation relation, std::string supportObjectCategory);
 
+	/** Parses name of the object property variable for default SA. */
+	static bool parseDefaultObjectPropertyVar(std::string varName,
+			std::string &objectCategory, SpatialData::SpatialRelation &relation,
+			std::string &supportObjectCategory);
+
 	/**
 	 * Generates name of the variable for the event of the object being present in
 	 * the unexplored part of space.

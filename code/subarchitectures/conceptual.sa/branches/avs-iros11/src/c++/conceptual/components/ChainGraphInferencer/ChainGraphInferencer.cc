@@ -82,8 +82,6 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_saveGraphFileName = it->second;
 	if((it = _config.find("--save-graph-info")) != _config.end())
 		_saveGraphInfoFileName = it->second;
-	if((it = _config.find("--avs-default-knowledge")) != _config.end())
-		_avsDefaultKnowledgeFileName = it->second;
 	if((it = _config.find("--placeholder-in-current-room-prior")) != _config.end())
 		_placeholderInCurrentRoomPrior = atof(it->second.c_str());
 	else
@@ -93,13 +91,6 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	_addUnobservedAppearance = (_config.find("--add-unobserved-appearance") != _config.end());
 	if((it = _config.find("--add-unobserved-objects")) != _config.end())
 		boost::split(_addUnobservedObjects, it->second, is_any_of(", "));
-
-
-	// Check parameters
-	if (_avsDefaultKnowledgeFileName.empty())
-	{
-		throw CASTException(exceptionMessage(__HERE__,"Provide the AVS default knowledge file!"));
-	}
 
 	string unobservedObjectsStr;
 	for (unsigned int i=0; i<_addUnobservedObjects.size(); ++i)
@@ -1666,18 +1657,14 @@ void ChainGraphInferencer::getDefaultKnowledge()
 
 
 	// Get the room1_category -> object_xxx_property factors
-	// THIS CODE IS TEMPORARILY DISABLED AND PROBABILITIES ARE INSTEAD TAKEN FROM THE FLAT FILE
-	// THIS IS ONLY A HACK FOR THE AVS PAPER
-//	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
-//	{
-//		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
-//		_defaultKnowledgeFactors[factorStr] =
-//				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
-//		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
-//			throw CASTException("Did not receive information from Default.SA. Is everything started?");
-//	}
-	// Open the AVS default knowledge file
-	loadAvsDefaultKnowledge();
+	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
+	{
+		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
+		_defaultKnowledgeFactors[factorStr] =
+				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+			throw CASTException("Did not receive information from Default.SA. Is everything started?");
+	}
 
 	// Get the room1_category -> shape_property factor
 	factorStr = "f(room_category1,shape_property)";
@@ -1695,150 +1682,6 @@ void ChainGraphInferencer::getDefaultKnowledge()
 		throw CASTException(exceptionMessage(__HERE__, "Did not receive information from Default.SA. Is everything started?"));
 }
 
-
-// -------------------------------------------------------
-void ChainGraphInferencer::loadAvsDefaultKnowledge()
-{
-	map<string, map<string, double> > defKn;
-	ifstream avsFile(_avsDefaultKnowledgeFileName.c_str());
-	if (!avsFile.is_open())
-		throw CASTException(exceptionMessage(__HERE__, "Cannot open the AVS default knowledge file!"));
-
-	char *line = new char[256];
-	while (avsFile.good())
-	{
-		string targetObjectCategory;
-		string supportObjectCategory;
-		SpatialData::SpatialRelation relation;
-		string roomCategory;
-		double probability;
-
-		try
-		{
-			avsFile.getline(line, 256);
-			vector<string> splitLine;
-			split(splitLine, line, is_any_of(" ") );
-			if (splitLine.size()==4)
-			{
-				if (splitLine[0]=="INROOM")
-				{
-					targetObjectCategory = splitLine[1];
-					roomCategory = splitLine[2];
-					probability = boost::lexical_cast<double>(splitLine[3]);
-					relation = SpatialData::INROOM;
-				}
-				else continue;
-			}
-			else if (splitLine.size()==5)
-			{
-				if (splitLine[0]=="ON")
-				{
-					targetObjectCategory = splitLine[1];
-					supportObjectCategory = splitLine[2];
-					roomCategory = splitLine[3];
-					probability = boost::lexical_cast<double>(splitLine[4]);
-					relation = SpatialData::ON;
-				}
-				else if (splitLine[0]=="INOBJECT")
-				{
-					targetObjectCategory = splitLine[1];
-					supportObjectCategory = splitLine[2];
-					roomCategory = splitLine[3];
-					probability = boost::lexical_cast<double>(splitLine[4]);
-					relation = SpatialData::INOBJECT;
-				}
-				else continue;
-			}
-			else continue;
-		}
-		catch(...)
-		{
-			throw CASTException(exceptionMessage(__HERE__, "Incorrect AVS default knowledge file!"));
-		}
-
-		// For object property variable name
-		string objVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(targetObjectCategory,
-												relation, supportObjectCategory);
-
-		defKn[objVarName][roomCategory] = probability;
-	}
-	delete [] line;
-	avsFile.close();
-
-
-	// Form all the factors
-	for (map<string, map<string, double> >::iterator it = defKn.begin(); it != defKn.end(); ++it)
-	{
-		// Create a factor
-		string objVarName = it->first;
-		string factorStr = "f(room_category1," + objVarName + ")";
-		SpatialProbabilities::ProbabilityDistribution factor;
-		factor.description=factorStr;
-		factor.variableNameToPositionMap["room_category1"]=0;
-		factor.variableNameToPositionMap[objVarName]=1;
-
-		// Set of room categories that we need to add value for
-		set<string> roomCategories( _roomCategories.begin(), _roomCategories.end() );
-
-		// Let's iterate over the knowledge and fill values of what we know
-		for(map<string, double>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
-		{
-			roomCategories.erase(it2->first); // Remove from the to-do list
-
-			// Existance of object
-			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
-					new SpatialProbabilities::StringRandomVariableValue(it2->first);
-			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
-					new SpatialProbabilities::BoolRandomVariableValue(true);
-			SpatialProbabilities::JointProbabilityValue jpv1;
-			jpv1.probability=it2->second;
-			jpv1.variableValues.push_back(roomCategory1RVVPtr);
-			jpv1.variableValues.push_back(objectRVVPtr);
-			factor.massFunction.push_back(jpv1);
-
-			// Non-existance of object
-			roomCategory1RVVPtr =
-					new SpatialProbabilities::StringRandomVariableValue(it2->first);
-			objectRVVPtr =
-					new SpatialProbabilities::BoolRandomVariableValue(false);
-			SpatialProbabilities::JointProbabilityValue jpv2;
-			jpv2.probability = (1.0 - it2->second);
-			jpv2.variableValues.push_back(roomCategory1RVVPtr);
-			jpv2.variableValues.push_back(objectRVVPtr);
-			factor.massFunction.push_back(jpv2);
-		}
-
-		// Let's see which room categories we missed
-		for (set<string>::iterator it2=roomCategories.begin();
-				it2!=roomCategories.end(); ++it2)
-		{
-			// Existence of object
-			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
-					new SpatialProbabilities::StringRandomVariableValue(*it2);
-			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
-					new SpatialProbabilities::BoolRandomVariableValue(true);
-			SpatialProbabilities::JointProbabilityValue jpv1;
-			jpv1.probability=0; // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
-			jpv1.variableValues.push_back(roomCategory1RVVPtr);
-			jpv1.variableValues.push_back(objectRVVPtr);
-			factor.massFunction.push_back(jpv1);
-
-			// Non-existence of object
-			roomCategory1RVVPtr =
-					new SpatialProbabilities::StringRandomVariableValue(*it2);
-			objectRVVPtr =
-					new SpatialProbabilities::BoolRandomVariableValue(false);
-			SpatialProbabilities::JointProbabilityValue jpv2;
-			jpv2.probability = 1.0;  // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
-			jpv2.variableValues.push_back(roomCategory1RVVPtr);
-			jpv2.variableValues.push_back(objectRVVPtr);
-			factor.massFunction.push_back(jpv2);
-		}
-
-		// Add the factor to the list
-		_defaultKnowledgeFactors[factorStr] = factor;
-	}
-}
 
 
 // -------------------------------------------------------
@@ -1975,3 +1818,152 @@ int ChainGraphInferencer::wildcmp(const char *wild, const char *string)
 
 
 } // namespace def
+
+
+
+
+
+// Now moved to default.sa
+//// -------------------------------------------------------
+//void ChainGraphInferencer::loadAvsDefaultKnowledge()
+//{
+//	map<string, map<string, double> > defKn;
+//	ifstream avsFile(_avsDefaultKnowledgeFileName.c_str());
+//	if (!avsFile.is_open())
+//		throw CASTException(exceptionMessage(__HERE__, "Cannot open the AVS default knowledge file!"));
+//
+//	char *line = new char[256];
+//	while (avsFile.good())
+//	{
+//		string targetObjectCategory;
+//		string supportObjectCategory;
+//		SpatialData::SpatialRelation relation;
+//		string roomCategory;
+//		double probability;
+//
+//		try
+//		{
+//			avsFile.getline(line, 256);
+//			vector<string> splitLine;
+//			split(splitLine, line, is_any_of(" ") );
+//			if (splitLine.size()==4)
+//			{
+//				if (splitLine[0]=="INROOM")
+//				{
+//					targetObjectCategory = splitLine[1];
+//					roomCategory = splitLine[2];
+//					probability = boost::lexical_cast<double>(splitLine[3]);
+//					relation = SpatialData::INROOM;
+//				}
+//				else continue;
+//			}
+//			else if (splitLine.size()==5)
+//			{
+//				if (splitLine[0]=="ON")
+//				{
+//					targetObjectCategory = splitLine[1];
+//					supportObjectCategory = splitLine[2];
+//					roomCategory = splitLine[3];
+//					probability = boost::lexical_cast<double>(splitLine[4]);
+//					relation = SpatialData::ON;
+//				}
+//				else if (splitLine[0]=="INOBJECT")
+//				{
+//					targetObjectCategory = splitLine[1];
+//					supportObjectCategory = splitLine[2];
+//					roomCategory = splitLine[3];
+//					probability = boost::lexical_cast<double>(splitLine[4]);
+//					relation = SpatialData::INOBJECT;
+//				}
+//				else continue;
+//			}
+//			else continue;
+//		}
+//		catch(...)
+//		{
+//			throw CASTException(exceptionMessage(__HERE__, "Incorrect AVS default knowledge file!"));
+//		}
+//
+//		// For object property variable name
+//		string objVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(targetObjectCategory,
+//												relation, supportObjectCategory);
+//
+//		defKn[objVarName][roomCategory] = probability;
+//	}
+//	delete [] line;
+//	avsFile.close();
+//
+//
+//	// Form all the factors
+//	for (map<string, map<string, double> >::iterator it = defKn.begin(); it != defKn.end(); ++it)
+//	{
+//		// Create a factor
+//		string objVarName = it->first;
+//		string factorStr = "f(room_category1," + objVarName + ")";
+//		SpatialProbabilities::ProbabilityDistribution factor;
+//		factor.description=factorStr;
+//		factor.variableNameToPositionMap["room_category1"]=0;
+//		factor.variableNameToPositionMap[objVarName]=1;
+//
+//		// Set of room categories that we need to add value for
+//		set<string> roomCategories( _roomCategories.begin(), _roomCategories.end() );
+//
+//		// Let's iterate over the knowledge and fill values of what we know
+//		for(map<string, double>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+//		{
+//			roomCategories.erase(it2->first); // Remove from the to-do list
+//
+//			// Existance of object
+//			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+//					new SpatialProbabilities::StringRandomVariableValue(it2->first);
+//			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
+//					new SpatialProbabilities::BoolRandomVariableValue(true);
+//			SpatialProbabilities::JointProbabilityValue jpv1;
+//			jpv1.probability=it2->second;
+//			jpv1.variableValues.push_back(roomCategory1RVVPtr);
+//			jpv1.variableValues.push_back(objectRVVPtr);
+//			factor.massFunction.push_back(jpv1);
+//
+//			// Non-existance of object
+//			roomCategory1RVVPtr =
+//					new SpatialProbabilities::StringRandomVariableValue(it2->first);
+//			objectRVVPtr =
+//					new SpatialProbabilities::BoolRandomVariableValue(false);
+//			SpatialProbabilities::JointProbabilityValue jpv2;
+//			jpv2.probability = (1.0 - it2->second);
+//			jpv2.variableValues.push_back(roomCategory1RVVPtr);
+//			jpv2.variableValues.push_back(objectRVVPtr);
+//			factor.massFunction.push_back(jpv2);
+//		}
+//
+//		// Let's see which room categories we missed
+//		for (set<string>::iterator it2=roomCategories.begin();
+//				it2!=roomCategories.end(); ++it2)
+//		{
+//			// Existence of object
+//			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+//					new SpatialProbabilities::StringRandomVariableValue(*it2);
+//			SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
+//					new SpatialProbabilities::BoolRandomVariableValue(true);
+//			SpatialProbabilities::JointProbabilityValue jpv1;
+//			jpv1.probability=0; // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
+//			jpv1.variableValues.push_back(roomCategory1RVVPtr);
+//			jpv1.variableValues.push_back(objectRVVPtr);
+//			factor.massFunction.push_back(jpv1);
+//
+//			// Non-existence of object
+//			roomCategory1RVVPtr =
+//					new SpatialProbabilities::StringRandomVariableValue(*it2);
+//			objectRVVPtr =
+//					new SpatialProbabilities::BoolRandomVariableValue(false);
+//			SpatialProbabilities::JointProbabilityValue jpv2;
+//			jpv2.probability = 1.0;  // TODO: SHOULD BE THE DEFAULT.SA VALUE WHICH IS A PARAMETER THERE!
+//			jpv2.variableValues.push_back(roomCategory1RVVPtr);
+//			jpv2.variableValues.push_back(objectRVVPtr);
+//			factor.massFunction.push_back(jpv2);
+//		}
+//
+//		// Add the factor to the list
+//		_defaultKnowledgeFactors[factorStr] = factor;
+//	}
+//}
