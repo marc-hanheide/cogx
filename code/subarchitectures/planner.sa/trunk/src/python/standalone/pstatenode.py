@@ -455,11 +455,12 @@ class PNode(object):
 
         return actions
 
-    def to_init(self, selected_facts=None):
+    def to_init(self, selected_facts=None, observable_facts=None):
         def make_unknown(val):
             return pddl.TypedObject("other-%s" % val.type.name, val.type)
         
         selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
+        observable = False if observable_facts is not None else True
         effs = []
         for val, (p, nodes, facts) in self.children.iteritems():
             if p < 0.0001:
@@ -474,17 +475,22 @@ class PNode(object):
                     #     f = state.Fact(svar, make_unknown(val))
                     # else:
                     continue
+                if observable_facts is not None and f in observable_facts:
+                    observable = True
+                    
                 eff = f.as_literal(_class=pddl.SimpleEffect)
                 ceff.parts.append(eff)
             for n in nodes:
-                eff = n.to_init(selected_facts)
+                eff, obs = n.to_init(selected_facts, observable_facts)
                 if eff:
                     ceff.parts.append(eff)
+                if obs:
+                    observable = True
             if ceff.parts:
                 effs.append((pddl.Term(p), ceff))
-        if effs:
-            return effects.ProbabilisticEffect(effs)
-        return None
+        if effs and observable:
+            return effects.ProbabilisticEffect(effs), observable
+        return None, False
 
     def __str__(self):
         return "PNode: %s (%d)" % (str(self.svar), len(self.children))

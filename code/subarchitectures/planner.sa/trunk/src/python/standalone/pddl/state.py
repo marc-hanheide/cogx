@@ -503,7 +503,7 @@ class State(dict):
         try:
             return dict.__getitem__(self, key)
         except:
-            if isinstance(key.function, Predicate):
+            if isinstance(key.function, Predicate) or isinstance(key.modality, Predicate):
                 return FALSE
             return UNKNOWN
             
