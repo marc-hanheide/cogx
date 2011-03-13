@@ -152,6 +152,10 @@ module SpatialProperties
     float value;
   };
 
+  /** Represents the gateway property of a placeholder. */
+  class GatewayPlaceholderProperty extends PlaceProperty
+  {
+  };
 
   /** Property of a placeholder describing the likelihood of 
       existance of a room of specific category at or behind
