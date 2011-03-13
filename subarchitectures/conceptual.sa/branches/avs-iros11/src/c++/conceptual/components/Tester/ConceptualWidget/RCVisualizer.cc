@@ -1,25 +1,25 @@
 #include "RCVisualizer.h"
 #include "ConceptualWidget.h"
-#include "DefaultData.hpp"
 #include "AddGroundtruthDialog.h"
-#include "Tester.h"
 
 #include <QFileDialog>
 #include <QtSvg/QSvgGenerator>
 #include <QGraphicsSimpleTextItem>
 
 using namespace std;
+using namespace conceptual;
 
-RCVisualizer::RCVisualizer(ConceptualWidget *parent, conceptual::Tester *component)
-    : QDialog(parent), _parent(parent), _component(component)
+
+RCVisualizer::RCVisualizer(QWidget *parent,
+		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
+		const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects)
+    : QDialog(parent), _roomCats(roomCats), _shapes(shapes),
+      _appearances(appearances), _visualizedObjects(visualizedObjects), _curPlaceId(0)
 {
 	ui.setupUi(this);
 	connect(ui.saveSvgButton, SIGNAL(clicked()), this, SLOT(saveSvgButtonClicked()));
 	connect(ui.savePngButton, SIGNAL(clicked()), this, SLOT(savePngButtonClicked()));
-	connect(ui.refreshButton, SIGNAL(clicked()), this, SLOT(generate()));
 	connect(ui.addGroundtruthButton, SIGNAL(clicked()), this, SLOT(addGroundtruthButtonClicked()));
-
-	generate();
 }
 
 
@@ -29,8 +29,14 @@ RCVisualizer::~RCVisualizer()
 }
 
 
-void RCVisualizer::generate()
+void RCVisualizer::generate(const QList<ConceptualEvent> &events)
 {
+	_lastEvents = events;
+	_curPlaceId = events.last().curPlaceId;
+	_curRoomId = events.last().curRoomId;
+
+	_roomIds.clear();
+
 	// Settings
 	const int categoriesDist = 5;
 	const int rowHeight = 22;
@@ -48,7 +54,6 @@ void RCVisualizer::generate()
 	// Create scene
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setBackgroundBrush(Qt::white);
-	pthread_mutex_lock(&_parent->_eventsMutex);
 
 	// Initialization
 	bool locationOnly = ui.locationEventsCheckBox->isChecked();
@@ -59,14 +64,11 @@ void RCVisualizer::generate()
 	QGraphicsSimpleTextItem *text;
 
 	// Get data info
-	const DefaultData::StringSeq &roomCats = _component->getRoomCategories();
-	const DefaultData::StringSeq &shapes = _component->getShapes();
-	const DefaultData::StringSeq &appearances = _component->getAppearances();
-	const vector<string> &visualizedObjects = _component->getVisualizedObjects();
-	unsigned int objectCount = visualizedObjects.size();
-	unsigned int roomCatCount = roomCats.size();
-	unsigned int shapeCount = shapes.size();
-	unsigned int appearanceCount = appearances.size();
+
+	unsigned int objectCount = _visualizedObjects.size();
+	unsigned int roomCatCount = _roomCats.size();
+	unsigned int shapeCount = _shapes.size();
+	unsigned int appearanceCount = _appearances.size();
 	unsigned int rowCount = roomCatCount+shapeCount+appearanceCount+objectCount;
 	unsigned int roomCatCountReal = 0;
 	unsigned int shapeCountReal = 0;
@@ -77,20 +79,23 @@ void RCVisualizer::generate()
 	// Draw results
 	int curPlace=0;
 	int curRoom=0;
-	if (_parent->_events.size()>0)
+	if (events.size()>0)
 	{
-		curPlace=_parent->_events[0].curPlaceId;
-		curRoom=_parent->_events[0].curRoomId;
+		curPlace=events[0].curPlaceId;
+		curRoom=events[0].curRoomId;
 	}
-	unsigned long e=0;
+	long e=0;
 	unsigned int lastPlaceChange=0;
 	unsigned int lastRoomChange=0;
 	std::vector<int> groundTruthRows;
 	std::vector<ConceptualData::EventInfo> accumulatedInfos;
-	for (unsigned long _e=0; _e<_parent->_events.size(); ++_e)
+	for (long _e=0; _e<events.size(); ++_e)
 	{
-		const ConceptualWidget::Event &event = _parent->_events[_e];
-		for (unsigned int i=0; i<event.infos.size(); ++i)
+		const conceptual::ConceptualEvent &event = events[_e];
+		if (event.curRoomId>=0)
+			_roomIds.insert(event.curRoomId);
+
+		for (int i=0; i<event.infos.size(); ++i)
 		{
 			if (locationOnly)
 			{
@@ -306,7 +311,7 @@ void RCVisualizer::generate()
 					QPen(QBrush("black"), horizSepWidth, Qt::SolidLine)); // Horizontal line
 		else
 			scene->addLine(-categorySeparator,i*rowHeight,resultWidth*e,i*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString(roomCats[i]), defaultFont);
+		text = scene->addSimpleText(QString::fromStdString(_roomCats[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
 	}
 	scene->addLine(-horizSeparator,roomCatCount*rowHeight,resultWidth*e,roomCatCount*rowHeight,
@@ -314,7 +319,7 @@ void RCVisualizer::generate()
 	for(unsigned int i=0; i<shapeCount; ++i)
 	{
 		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString(shapes[i]), defaultFont);
+		text = scene->addSimpleText(QString::fromStdString(_shapes[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
 	}
 	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount)*rowHeight,
@@ -323,7 +328,7 @@ void RCVisualizer::generate()
 	{
 		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,
 				resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString(appearances[i]), defaultFont);
+		text = scene->addSimpleText(QString::fromStdString(_appearances[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
 	}
 	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+appearanceCount)*rowHeight,resultWidth*e,
@@ -333,7 +338,7 @@ void RCVisualizer::generate()
 	{
 		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+appearanceCount)*rowHeight,
 				resultWidth*e,(i+roomCatCount+shapeCount+appearanceCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString(visualizedObjects[i]), defaultFont);
+		text = scene->addSimpleText(QString::fromStdString(_visualizedObjects[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+appearanceCount)*rowHeight);
 	}
 	// Events
@@ -388,8 +393,6 @@ void RCVisualizer::generate()
 		}
 	}
 
-
-	pthread_mutex_unlock(&_parent->_eventsMutex);
 	ui.graphicsView->setScene(scene);
 }
 
@@ -430,23 +433,16 @@ void RCVisualizer::savePngButtonClicked()
 }
 
 
-
-
 void RCVisualizer::addGroundtruthButtonClicked()
 {
-	QList<int> roomIds;
-	pthread_mutex_lock(&_parent->_worldStateMutex);
-	for (unsigned int i=0; i<_parent->_wsPtr->rooms.size(); ++i)
-		roomIds.append(_parent->_wsPtr->rooms[i].roomId);
-	int curPlaceId = _component->getCurrentPlace();
-	int curRoomId = _parent->getRoomForPlace(_parent->_wsPtr, curPlaceId);
-	pthread_mutex_unlock(&_parent->_worldStateMutex);
-	DefaultData::StringSeq roomCategories = _component->getRoomCategories();
 	QStringList categories;
-	for (unsigned int i=0 ; i<roomCategories.size(); ++i)
-		categories.append(QString::fromStdString(roomCategories[i]));
+	for (unsigned int i=0 ; i<_roomCats.size(); ++i)
+		categories.append(QString::fromStdString(_roomCats[i]));
+	QList<int> roomIds;
+	for (std::set<int>::iterator it = _roomIds.begin(); it!=_roomIds.end(); ++it)
+		roomIds.append(*it);
 
-	AddGroundtruthDialog *d = new AddGroundtruthDialog(this, roomIds, categories, curRoomId);
+	AddGroundtruthDialog *d = new AddGroundtruthDialog(this, roomIds, categories, _curRoomId);
 	d->exec();
 	if (d->result() == QDialog::Accepted)
 	{
@@ -454,6 +450,8 @@ void RCVisualizer::addGroundtruthButtonClicked()
 		int categoryIndex = d->getCategoryIndex();
 		_groundTruth[roomId] = categoryIndex;
 	}
+
+	generate(_lastEvents);
 }
 
 
