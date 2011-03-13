@@ -11,6 +11,20 @@
 #include <QList>
 #include <ConceptualData.hpp>
 
+class QDataStream;
+
+namespace ConceptualData
+{
+	QDataStream &operator<<(QDataStream &, const EventInfo &);
+	QDataStream &operator>>(QDataStream &, EventInfo &);
+}
+
+namespace std
+{
+	QDataStream &operator<<(QDataStream &, const vector<string> &);
+	QDataStream &operator>>(QDataStream &, vector<string> &);
+}
+
 
 namespace conceptual
 {
@@ -37,6 +51,12 @@ public:
 
 
 };
+
+
+QDataStream &operator<<(QDataStream &, const ConceptualEvent &);
+QDataStream &operator>>(QDataStream &, ConceptualEvent &);
+
+
 
 }
 
