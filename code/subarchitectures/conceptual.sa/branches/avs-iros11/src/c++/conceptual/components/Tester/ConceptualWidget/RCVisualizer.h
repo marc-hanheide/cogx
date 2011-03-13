@@ -1,15 +1,13 @@
 #ifndef RCVISUALIZER_H
 #define RCVISUALIZER_H
 
-#include <QtGui/QDialog>
 #include "ui_RCVisualizer.h"
+#include "ConceptualEvent.h"
+
+#include <QtGui/QDialog>
+#include <set>
 
 class QGraphicsScene;
-
-namespace conceptual
-{
-	class Tester;
-}
 class ConceptualWidget;
 
 class RCVisualizer : public QDialog
@@ -17,28 +15,45 @@ class RCVisualizer : public QDialog
     Q_OBJECT
 
 public:
-    RCVisualizer(ConceptualWidget *parent, conceptual::Tester *component);
+    RCVisualizer(QWidget *parent,
+    		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
+			const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects);
     ~RCVisualizer();
+
+public slots:
+
+	void generate(const QList<conceptual::ConceptualEvent> &events);
 
 
 private slots:
+
 	void saveSvgButtonClicked();
 	void savePngButtonClicked();
-	void generate();
 	void addGroundtruthButtonClicked();
 
 
 private:
-    QBrush getBrushForProbability(double prob);
+
+	QBrush getBrushForProbability(double prob);
 
 
 private:
     Ui::RCVisualizerClass ui;
-    ConceptualWidget *_parent;
-    conceptual::Tester *_component;
 
     /** Map roomId -> roomCateogory index. */
     std::map<int, int> _groundTruth;
+
+	const std::vector<std::string> &_roomCats;
+	const std::vector<std::string> &_shapes;
+	const std::vector<std::string> &_appearances;
+	const std::vector<std::string> &_visualizedObjects;
+
+	int _curPlaceId;
+	int _curRoomId;
+
+	std::set<int> _roomIds;
+
+	QList<conceptual::ConceptualEvent> _lastEvents;
 
 };
 

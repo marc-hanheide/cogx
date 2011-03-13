@@ -10,6 +10,7 @@
 // Conceptual.SA
 #include "ui_ConceptualWidget.h"
 #include "ConceptualData.hpp"
+#include "ConceptualEvent.h"
 
 // Qt&Std
 #include <QtGui/QDialog>
@@ -24,7 +25,6 @@ namespace conceptual
 
 class ObjectPlacePropertyDialog;
 class ObjectSearchResultDialog;
-class RCVisualizer;
 
 class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 {
@@ -32,19 +32,6 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 
     friend class ObjectPlacePropertyDialog;
     friend class ObjectSearchResultDialog;
-    friend class RCVisualizer;
-
-	struct Event
-	{
-		int curRoomId;
-		int curPlaceId;
-		std::vector<int> curRoomPlaces;
-		std::vector<ConceptualData::EventInfo> infos;
-		std::vector<double> curRoomCategories;
-		std::vector<double> curShapes;
-		std::vector<double> curAppearances;
-		std::vector<double> curObjects;
-	};
 
 
 public:
@@ -54,6 +41,10 @@ public:
 public:
 
     void newWorldState(ConceptualData::WorldStatePtr wsPtr);
+
+signals:
+
+	void newEventInfo(const QList<conceptual::ConceptualEvent> &events);
 
 
 private slots:
@@ -71,14 +62,14 @@ private slots:
 	void posTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
-	void addEvent(Event event);
+	void addEvent(conceptual::ConceptualEvent event);
 	void collectInfoCheckBoxToggled(bool);
 
 private:
 
 	int getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int placeId);
-	void collectEventInfo(Event event);
-	void getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, std::vector<int> &places);
+	void collectEventInfo(conceptual::ConceptualEvent event);
+	void getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, QList<int> &places);
 	double getExistsProbability(SpatialProbabilities::ProbabilityDistribution &probDist);
 
 
@@ -92,13 +83,12 @@ private:
     std::queue<qint64> _wsUpdateTimes;
 
 	pthread_mutex_t _worldStateMutex;
-	pthread_mutex_t _eventsMutex;
 	ConceptualData::WorldStatePtr _wsPtr;
 
 	int _prevPlace;
 	long _eventNo;
 
-	std::vector<Event> _events;
+	QList<conceptual::ConceptualEvent> _events;
 
 };
 

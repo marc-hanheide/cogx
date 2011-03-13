@@ -30,7 +30,6 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
     : QWidget(parent), _component(component), _prevPlace(-1), _eventNo(0)
 {
 	pthread_mutex_init(&_worldStateMutex, 0);
-	pthread_mutex_init(&_eventsMutex, 0);
 
 	setupUi(this);
 	queryResultTreeWidget->setHeaderLabel("");
@@ -41,7 +40,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	_posTimer = new QTimer(this);
 
 	// Signals and slots
-	qRegisterMetaType<Event>("Event");
+	qRegisterMetaType<conceptual::ConceptualEvent>("conceptual::ConceptualEvent");
 	connect(collectInfoCheckBox, SIGNAL(toggled(bool)), this, SLOT(collectInfoCheckBoxToggled(bool)));
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
@@ -66,7 +65,6 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 ConceptualWidget::~ConceptualWidget()
 {
 	pthread_mutex_destroy(&_worldStateMutex);
-	pthread_mutex_destroy(&_eventsMutex);
 }
 
 
@@ -78,16 +76,16 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 	_wsPtr = wsPtr;
 
 	// Get current place and room for the event
-	Event event;
+	conceptual::ConceptualEvent event;
 	event.curPlaceId = _component->getCurrentPlace();
 	event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
 	getPlacesForRoom(wsPtr, event.curRoomId, event.curRoomPlaces);
-	event.infos = wsPtr->lastEvents;
+	event.setInfos(wsPtr->lastEvents);
 	pthread_mutex_unlock(&_worldStateMutex);
 
 	// Take care of the event
 	QMetaObject::invokeMethod(this, "addEvent", Qt::QueuedConnection,
-	                           Q_ARG(Event, event));
+	                           Q_ARG(conceptual::ConceptualEvent, event));
 
 	// Auto refreshing
 	if (autoRefreshQueryCheckBox->isChecked())
@@ -416,8 +414,13 @@ void ConceptualWidget::wsTimerTimeout()
 // -------------------------------------------------------
 void ConceptualWidget::visualizeButtonClicked()
 {
-	RCVisualizer *rcv = new RCVisualizer(this, _component);
+	RCVisualizer *rcv = new RCVisualizer(this, _component->getRoomCategories(),
+			_component->getShapes(), _component->getAppearances(),
+			_component->getVisualizedObjects());
+	connect(this, SIGNAL(newEventInfo(const QList<conceptual::ConceptualEvent>&)), rcv, SLOT(generate(const QList<conceptual::ConceptualEvent>&)));
 	rcv->show();
+
+	rcv->generate(_events);
 }
 
 
@@ -440,7 +443,7 @@ int ConceptualWidget::getRoomForPlace(ConceptualData::WorldStatePtr wsPtr, int p
 
 
 // -------------------------------------------------------
-void ConceptualWidget::getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, std::vector<int> &places)
+void ConceptualWidget::getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, QList<int> &places)
 {
 	for (unsigned int i=0; i<wsPtr->rooms.size(); ++i)
 	{
@@ -475,14 +478,12 @@ void ConceptualWidget::objectsButtonClicked()
 
 
 // -------------------------------------------------------
-void ConceptualWidget::addEvent(Event event)
+void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 {
-	for (unsigned int i=0; i<event.infos.size(); ++i)
+	for (int i=0; i<event.infos.size(); ++i)
 	{
 		// Increment the overall event number
-		pthread_mutex_lock(&_eventsMutex);
 		int eventNo=++_eventNo;
-		pthread_mutex_unlock(&_eventsMutex);
 
 		// Generate
 		QString eventStr = QString::number(eventNo)+": ";
@@ -570,7 +571,7 @@ void ConceptualWidget::addEvent(Event event)
 
 
 // -------------------------------------------------------
-void ConceptualWidget::collectEventInfo(Event event)
+void ConceptualWidget::collectEventInfo(conceptual::ConceptualEvent event)
 {
 	if (event.curRoomId >=0)
 	{
@@ -581,7 +582,9 @@ void ConceptualWidget::collectEventInfo(Event event)
 		if (results.size()>0)
 		{
 			SpatialProbabilities::ProbabilityDistribution result = results[0];
-			event.curRoomCategories.resize(result.massFunction.size());
+			event.curRoomCategories.clear();
+			for(unsigned int i=0; i<result.massFunction.size(); ++i)
+				event.curRoomCategories.append(0.0);
 			for(unsigned int i=0; i<result.massFunction.size(); ++i)
 			{
 				double probability = result.massFunction[i].probability;
@@ -617,7 +620,7 @@ void ConceptualWidget::collectEventInfo(Event event)
 			int placeId = lexical_cast<int>(varName);
 
 			bool found = false;
-			for (unsigned int i=0; i<event.curRoomPlaces.size(); ++i)
+			for (int i=0; i<event.curRoomPlaces.size(); ++i)
 			{
 				if (event.curRoomPlaces[i]==placeId)
 				{
@@ -670,7 +673,7 @@ void ConceptualWidget::collectEventInfo(Event event)
 			int placeId = lexical_cast<int>(varName);
 
 			bool found = false;
-			for (unsigned int i=0; i<event.curRoomPlaces.size(); ++i)
+			for (int i=0; i<event.curRoomPlaces.size(); ++i)
 			{
 				if (event.curRoomPlaces[i]==placeId)
 				{
@@ -728,10 +731,9 @@ void ConceptualWidget::collectEventInfo(Event event)
 		}
 	}
 
-
-	pthread_mutex_lock(&_eventsMutex);
 	_events.push_back(event);
-	pthread_mutex_unlock(&_eventsMutex);
+
+	emit newEventInfo(_events);
 }
 
 
@@ -759,7 +761,7 @@ void ConceptualWidget::posTimerTimeout()
 	{
 		_prevPlace = curPlaceId;
 
-		Event event;
+		conceptual::ConceptualEvent event;
 
 		// Get room Id
 		pthread_mutex_lock(&_worldStateMutex);
