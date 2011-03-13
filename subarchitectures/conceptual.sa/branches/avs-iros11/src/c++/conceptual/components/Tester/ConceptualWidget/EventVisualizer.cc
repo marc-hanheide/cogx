@@ -1,4 +1,4 @@
-#include "RCVisualizer.h"
+#include "EventVisualizer.h"
 #include "ConceptualWidget.h"
 #include "AddGroundtruthDialog.h"
 

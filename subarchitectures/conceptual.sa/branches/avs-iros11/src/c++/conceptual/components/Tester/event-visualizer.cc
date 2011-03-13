@@ -1,4 +1,4 @@
-#include "RCVisualizer.h"
+#include "EventVisualizer.h"
 
 #include <QApplication>
 #include <QFileDialog>

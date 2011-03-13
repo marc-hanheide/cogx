@@ -2,15 +2,15 @@ option(BUILD_SA_CONCEPTUAL_TESTER "Build Conceptual.SA Tester component" YES)
 if(BUILD_SA_CONCEPTUAL_TESTER)
 
     qt4_add_resources( RC_SOURCES resources.qrc )
-    qt4_wrap_ui( UI_HEADERS_EVENT_VISUALIZER ConceptualWidget/RCVisualizer.ui ConceptualWidget/AddGroundtruthDialog.ui)
-    qt4_wrap_cpp( MOC_SOURCES_EVENT_VISUALIZER ConceptualWidget/RCVisualizer.h ConceptualWidget/AddGroundtruthDialog.h)
+    qt4_wrap_ui( UI_HEADERS_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.ui ConceptualWidget/AddGroundtruthDialog.ui)
+    qt4_wrap_cpp( MOC_SOURCES_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.h ConceptualWidget/AddGroundtruthDialog.h)
     qt4_wrap_ui( UI_HEADERS MainDialog.ui ConceptualWidget/ConceptualWidget.ui ConceptualWidget/ObjectPlacePropertyDialog.ui 
                             ConceptualWidget/ObjectSearchResultDialog.ui ConceptualWidget/GraphDialog.ui 
-                            ConceptualWidget/RCVisualizer.ui AVSMainWidget/AVSMainWidget.ui 
+                            ConceptualWidget/EventVisualizer.ui AVSMainWidget/AVSMainWidget.ui 
                              DefaultWidget/DefaultWidget.ui)
     qt4_wrap_cpp( MOC_SOURCES MainDialog.h ConceptualWidget/ConceptualWidget.h ConceptualWidget/ObjectPlacePropertyDialog.h 
                               ConceptualWidget/ObjectSearchResultDialog.h ConceptualWidget/GraphDialog.h 
-                              ConceptualWidget/RCVisualizer.h 
+                              ConceptualWidget/EventVisualizer.h 
                               AVSMainWidget/AVSMainWidget.h DefaultWidget/DefaultWidget.h)
     include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/conceptual.sa/src/c++/conceptual/components/Tester )
     include_directories(.)
@@ -24,12 +24,12 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
 
     add_cast_component(ConceptualTester Tester.cc MainDialog.cc ConceptualWidget/ConceptualWidget.cc ConceptualWidget/ObjectPlacePropertyDialog.cc 
                                         ConceptualWidget/ObjectSearchResultDialog.cc ConceptualWidget/GraphDialog.cc ConceptualWidget/AddGroundtruthDialog.cc
-                                        AVSMainWidget/AVSMainWidget.cpp ConceptualWidget/RCVisualizer.cc ConceptualWidget/ConceptualEvent.cc
+                                        AVSMainWidget/AVSMainWidget.cpp ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                          DefaultWidget/DefaultWidget.cc ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} )
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared DefaultData SpatialData 
                                                SpatialProperties SpatialProbabilities FrontierInterface VisionData)
 
-    add_executable(event-visualizer event-visualizer.cc ConceptualWidget/RCVisualizer.cc ConceptualWidget/ConceptualEvent.cc
+    add_executable(event-visualizer event-visualizer.cc ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                     ConceptualWidget/AddGroundtruthDialog.cc
                                     ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} ${RC_SOURCES})
     link_cast_component(event-visualizer ConceptualData QtGui QtSvg)
