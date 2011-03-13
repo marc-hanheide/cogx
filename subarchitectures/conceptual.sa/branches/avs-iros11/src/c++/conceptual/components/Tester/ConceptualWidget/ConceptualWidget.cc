@@ -414,7 +414,7 @@ void ConceptualWidget::wsTimerTimeout()
 // -------------------------------------------------------
 void ConceptualWidget::visualizeButtonClicked()
 {
-	RCVisualizer *rcv = new RCVisualizer(this, _component->getRoomCategories(),
+	EventVisualizer *rcv = new EventVisualizer(this, _component->getRoomCategories(),
 			_component->getShapes(), _component->getAppearances(),
 			_component->getVisualizedObjects());
 	connect(this, SIGNAL(newEventInfo(const QList<conceptual::ConceptualEvent>&)), rcv, SLOT(generate(const QList<conceptual::ConceptualEvent>&)));

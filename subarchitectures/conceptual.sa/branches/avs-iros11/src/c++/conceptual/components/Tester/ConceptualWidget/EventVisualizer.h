@@ -10,15 +10,15 @@
 class QGraphicsScene;
 class ConceptualWidget;
 
-class RCVisualizer : public QDialog
+class EventVisualizer : public QDialog
 {
     Q_OBJECT
 
 public:
-    RCVisualizer(QWidget *parent,
+    EventVisualizer(QWidget *parent,
     		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
 			const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects);
-    ~RCVisualizer();
+    ~EventVisualizer();
 
 public slots:
 

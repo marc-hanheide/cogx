@@ -17,6 +17,6 @@ int main(int argc, char **argv)
 	vector<string> appearances;
 	vector<string> visualizedObjects;
 
-	RCVisualizer visualizer(0, roomCats, shapes, appearances, visualizedObjects);
+	EventVisualizer visualizer(0, roomCats, shapes, appearances, visualizedObjects);
 	visualizer.exec();
 }

@@ -10,7 +10,7 @@ using namespace std;
 using namespace conceptual;
 
 
-RCVisualizer::RCVisualizer(QWidget *parent,
+EventVisualizer::EventVisualizer(QWidget *parent,
 		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
 		const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects)
     : QDialog(parent), _roomCats(roomCats), _shapes(shapes),
@@ -23,13 +23,13 @@ RCVisualizer::RCVisualizer(QWidget *parent,
 }
 
 
-RCVisualizer::~RCVisualizer()
+EventVisualizer::~EventVisualizer()
 {
 
 }
 
 
-void RCVisualizer::generate(const QList<ConceptualEvent> &events)
+void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 {
 	_lastEvents = events;
 	_curPlaceId = events.last().curPlaceId;
@@ -398,7 +398,7 @@ void RCVisualizer::generate(const QList<ConceptualEvent> &events)
 
 
 
-void RCVisualizer::saveSvgButtonClicked()
+void EventVisualizer::saveSvgButtonClicked()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
 	                            "", tr("SVG Images (*.svg)"));
@@ -417,7 +417,7 @@ void RCVisualizer::saveSvgButtonClicked()
 }
 
 
-void RCVisualizer::savePngButtonClicked()
+void EventVisualizer::savePngButtonClicked()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
 	                            "", tr("PNG Images (*.png)"));
@@ -433,7 +433,7 @@ void RCVisualizer::savePngButtonClicked()
 }
 
 
-void RCVisualizer::addGroundtruthButtonClicked()
+void EventVisualizer::addGroundtruthButtonClicked()
 {
 	QStringList categories;
 	for (unsigned int i=0 ; i<_roomCats.size(); ++i)
@@ -455,7 +455,7 @@ void RCVisualizer::addGroundtruthButtonClicked()
 }
 
 
-QBrush RCVisualizer::getBrushForProbability(double prob)
+QBrush EventVisualizer::getBrushForProbability(double prob)
 {
 	prob=1-prob;
 	double step1 = 0.5;
