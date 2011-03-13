@@ -11,7 +11,7 @@
 #include "SpatialProbabilities.hpp"
 #include "ObjectPlacePropertyDialog.h"
 #include "ObjectSearchResultDialog.h"
-#include "RCVisualizer.h"
+#include "EventVisualizer.h"
 
 // Qt & std
 #include <QDateTime>
