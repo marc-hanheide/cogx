@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>888</width>
-    <height>543</height>
+    <width>991</width>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -379,6 +379,17 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="saveEventsButton">
+           <property name="text">
+            <string>Save</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/icons/filesave.png</normaloff>:/icons/icons/filesave.png</iconset>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="visualizeButton">

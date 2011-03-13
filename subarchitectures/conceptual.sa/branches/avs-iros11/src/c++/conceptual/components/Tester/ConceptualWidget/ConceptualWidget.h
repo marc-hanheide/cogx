@@ -53,6 +53,7 @@ private slots:
 	void objectsButtonClicked();
 	void sendQueryButtonClicked();
 	void refreshVarsButtonClicked();
+	void saveEventsButtonClicked();
 	void refreshWsButtonClicked();
 	void showGraphButtonClicked();
 	void visualizeButtonClicked();

@@ -16,9 +16,11 @@
 // Qt & std
 #include <QDateTime>
 #include <QTimer>
-#include <queue>
+#include <QFileDialog>
+#include <QDataStream>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/erase.hpp>
+#include <queue>
 
 using namespace conceptual;
 using namespace std;
@@ -45,6 +47,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	connect(sendQueryButton, SIGNAL(clicked()), this, SLOT(sendQueryButtonClicked()));
 	connect(categoriesButton, SIGNAL(clicked()), this, SLOT(categoriesButtonClicked()));
 	connect(objectsButton, SIGNAL(clicked()), this, SLOT(objectsButtonClicked()));
+	connect(saveEventsButton, SIGNAL(clicked()), this, SLOT(saveEventsButtonClicked()));
 	connect(refreshVarsButton, SIGNAL(clicked()), this, SLOT(refreshVarsButtonClicked()));
 	connect(refreshWsButton, SIGNAL(clicked()), this, SLOT(refreshWsButtonClicked()));
 	connect(showGraphButton, SIGNAL(clicked()), this, SLOT(showGraphButtonClicked()));
@@ -790,3 +793,26 @@ void ConceptualWidget::collectInfoCheckBoxToggled(bool state)
 	if (state)
 		_events.clear();
 }
+
+
+// -------------------------------------------------------
+void ConceptualWidget::saveEventsButtonClicked()
+{
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Conceptual.SA Events"),
+	                            "", tr("Conceptual Events (*.cevents)"));
+	if (!fileName.isEmpty())
+	{
+		 QFile file(fileName);
+		 if (file.open(QIODevice::WriteOnly))
+		 {
+			 QDataStream out(&file);
+			 out << _component->getRoomCategories();
+			 out << _component->getShapes();
+			 out << _component->getAppearances();
+			 out << _component->getVisualizedObjects();
+			 out << _events;
+			 file.close();
+		 }
+	}
+}
+
