@@ -180,8 +180,10 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   try {
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
+    debug("newNavNode called");
+
     if (m_firstMovementRegistered) {
-      debug("newNavNode called");
+    	debug("");
       
       if (oobj != 0) {
 	processPlaceArrival(false);
@@ -815,6 +817,7 @@ PlaceManager::evaluateUnexploredPaths()
 		    freeProp->placeId = placeholder->id;
 		    freeProp->mapValue = freespacevalue;
 		    freeProp->mapValueReliable = 1;
+
 		    debug("overwrite 2: %s", foundFSIt->second.c_str());
 		    bool done = false;
 		    while (!done) {
@@ -848,6 +851,97 @@ PlaceManager::evaluateUnexploredPaths()
 		  m_freeSpaceProperties[hypID] = newID;
 		}
 	      }
+
+
+
+	      /* Gatewayness Property */
+
+	      {
+
+	    		SpatialProperties::BinaryValuePtr gatewaynessValue =
+	    		  new SpatialProperties::BinaryValue;
+	    		gatewaynessValue->value = true;
+	    		SpatialProperties::ValueProbabilityPair pair =
+	    		{ gatewaynessValue, eval.gatewayValue};
+	    		SpatialProperties::ValueProbabilityPairs pairs;
+	    		pairs.push_back(pair);
+
+	    		SpatialProperties::BinaryValuePtr noGatewaynessValue =
+	    			    		  new SpatialProperties::BinaryValue;
+	    		noGatewaynessValue->value = false;
+	    		SpatialProperties::ValueProbabilityPair pair2 =
+	    		{ noGatewaynessValue, (1 - eval.gatewayValue)};
+	    		pairs.push_back(pair2);
+
+
+	    		SpatialProperties::BinaryValuePtr gatewaynessMapValue =
+	    			    		  new SpatialProperties::BinaryValue;
+
+	    		gatewaynessMapValue->value = (eval.gatewayValue > 0.5);
+
+	    		SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	    		  new SpatialProperties::DiscreteProbabilityDistribution;
+	    		discDistr->data = pairs;
+
+	    		map<int, string>::iterator
+	    		  foundFSIt = m_placeHolderGatewayProperties.find(hypID);
+	    		if (foundFSIt != m_placeHolderGatewayProperties.end()) {
+	    		  try {
+	    		    debug("lock 6");
+	    		    lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+	    		    debug("evaluateUnexploredPaths:3");
+	    		    SpatialProperties::GatewayPlaceholderPropertyPtr
+	    		      gwProp = getMemoryEntry
+	    		      <SpatialProperties::GatewayPlaceholderProperty>
+	    		      (foundFSIt->second);
+	    		    debug("evaluateUnexploredPaths:4");
+
+	    		    // Property exists; change it
+	    		    gwProp->distribution = discDistr;
+	    		    gwProp->placeId = placeholder->id;
+	    		    gwProp->mapValue = gatewaynessMapValue;
+	    		    gwProp->mapValueReliable = 1;
+
+	    		    debug("overwrite 2: %s", foundFSIt->second.c_str());
+	    		    bool done = false;
+	    		    while (!done) {
+	    		      try {
+	    			overwriteWorkingMemory
+	    			  <SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
+	    			done=true;
+	    		      }
+	    		      catch(PermissionException e) {
+	    			log("Error! permissionException! Trying again...");
+	    		      }
+	    		    }
+	    		    unlockEntry(foundFSIt->second);
+	    		    debug("unlock 6");
+	    		  }
+	    		  catch(DoesNotExistOnWMException e) {
+	    		    log("Property missing!");
+	    		  }
+	    		}
+	    		else {
+	    		  SpatialProperties::GatewayPlaceholderPropertyPtr gwProp =
+	    		    new SpatialProperties::GatewayPlaceholderProperty;
+	    		  gwProp->distribution = discDistr;
+	    		  gwProp->placeId = placeholder->id;
+	    		  gwProp->mapValue = gatewaynessMapValue;
+	    		  gwProp->mapValueReliable = 1;
+
+	    		  string newID = newDataID();
+	    		  addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
+	    		    (newID, gwProp);
+	    		  m_freeSpaceProperties[hypID] = newID;
+	    		}
+	    	      }
+
+	      /* Gatewayness Property */
+
+
+
+
+
 
 	      {
 		//Frontier length property
@@ -1481,7 +1575,10 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
       }
     }
   }
-  m_firstMovementRegistered = true;
+  if (!m_firstMovementRegistered){
+	  m_firstMovementRegistered = true;
+	  processPlaceArrival(false);
+  }
   //log("robotMoved exited");
 }
 
