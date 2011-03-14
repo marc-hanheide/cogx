@@ -36,8 +36,7 @@ for i = 1 : length(pdf.w)
         % by default, do not split
         eq = 0 ;
     end
-    
-     
+  
     if eq == 1               
         % generate two subcomponents from the subLayer
         pdfX = pdf.smod.q(i) ;
@@ -53,7 +52,7 @@ for i = 1 : length(pdf.w)
             % if resulting points are singletons
             if ( abs(det(pdfX.Cov{1})) < TolSing ) 
                 q.Mu = pdfX.Mu(:,j) ;
-                q.Cov = pdfX.Cov{j} ;
+                q.Cov = pdfX.Cov(j) ;
                 q.w = 1 ;                               
             else
                 q = splitGaussianInTwoWider( pdfX.Mu(:,j), pdfX.smod.ps.Cov{j}, 1, 2 ) ;                

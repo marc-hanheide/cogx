@@ -51,7 +51,7 @@ MaxV = 3 ;
 p_sigmas = zeros(1, size(sigmapoints,2)) ;
 p = zeros(length(pdf_neg.w),size(sigmapoints,2)) ;
 for j = 1 : length(pdf_neg.w)          
-       p(j,:) = normpdfmy( pdf_neg.Mu(:,j), pdf_neg.Cov{j}, sigmapoints, 1e-3 ) ;
+       p(j,:) = normpdfmy( pdf_neg.Mu(:,j), pdf_neg.Cov{j}, sigmapoints, 0 ) ;
 end 
  
 C_sig = {} ;
@@ -282,13 +282,15 @@ end
 % --------------------------------------------------------------------- %
 function [ requireCrumbling, outC ] = isCrumblingRequired( C_neg, C_pos, scale )
 
-pdf1.Mu = zeros(size(C_neg,1),1) ; pdf1.Cov = {C_neg} ; pdf1.w = [1] ;
-pdf0.Mu = zeros(size(C_neg,1),1) ; pdf0.Cov = {C_pos} ; pdf0.w = [1] ;
+pdf1.Mu = zeros(size(C_neg,1),1) ; pdf1.Cov = {C_neg+eye(size(C_neg))*1e-6} ; pdf1.w = [1] ;
+pdf0.Mu = zeros(size(C_neg,1),1) ; pdf0.Cov = {C_pos+eye(size(C_neg))*1e-6} ; pdf0.w = [1] ;
  
 MaxV = 3 ; 
+ 
 [sigmapoints, sigPointsPerComponent, w, k ] = getAllSigmaPointsOnMixture( pdf0, MaxV ) ; 
 p0 = normmixpdf( pdf0, sigmapoints ) ;
 p1 = normmixpdf( pdf1, sigmapoints ) ;
+ 
 pk = p0-p1 ; 
 pk = pk - min(pk) ;  pk = pk + max(pk)*1e-2 ; pk = pk / sum(pk) ;
 w = repmat(pk,size(sigmapoints,1),1) ; d = (sigmapoints - repmat(mean(sigmapoints')', 1, size(sigmapoints,2))).*sqrt(w) ;

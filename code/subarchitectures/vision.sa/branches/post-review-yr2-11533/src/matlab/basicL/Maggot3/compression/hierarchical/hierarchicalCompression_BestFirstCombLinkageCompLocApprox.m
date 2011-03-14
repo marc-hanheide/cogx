@@ -23,17 +23,17 @@ useSMOprunning = 0 ;
 % threshOnSplitMethods = inf ;
 costFunction = 'hellinger'; %'hellinger, numberOfComponents, alpha_MDL'
 costThreshold = 0.01^rows(pdf.Cov{1}) ;
-numberOfSamples = [] ; 
+numberOfSamples = [] ;
 % process arguments
 args = varargin;
 nargs = length(args);
 for i = 1:2:nargs
-    switch args{i}        
+    switch args{i}
         case 'costFunction', costFunction = args{i+1} ;
-        case 'costThreshold', costThreshold = args{i+1} ;          
-        case 'useSMOprunning', useSMOprunning = args{i+1} ;       
+        case 'costThreshold', costThreshold = args{i+1} ;
+        case 'useSMOprunning', useSMOprunning = args{i+1} ;
         case 'useMargHellingerCompression', useMargHellingerCompression = args{i+1} ;
-        case 'useLocalDistanceEvaluation', useLocalDistanceEvaluation = args{i+1} ; 
+        case 'useLocalDistanceEvaluation', useLocalDistanceEvaluation = args{i+1} ;
         case 'useWeightedHellinger', useWeightedHellinger = args{i+1} ;
         case 'memoryLimit', memoryLimit = args{i+1} ;
         case 'memorylimitUseNumComps', memorylimitUseNumComps = args{i+1} ;
@@ -46,7 +46,7 @@ for i = 1:2:nargs
 end
 
 % verify if compression is allowed at all
-if length(pdf.w) <= minNumberOfComponentsThreshold  
+if length(pdf.w) <= minNumberOfComponentsThreshold
     pdf_cmprs = pdf ;
     augmented_pdf = pdf ;
     return ;
@@ -55,25 +55,18 @@ end
 useVbw_tmp = pdf.smod.useVbw ;
 
 % are we using discriminative compression?
-if ~isempty(otherClasses)  
+if ~isempty(otherClasses)
     % precalculate statistics for compression
-
-    if use_mean_estimate == 0
-%         try
-
-[new_mu, new_Cov, w_out] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;
-
-pdf_cmprs.Mu = new_mu ;
-pdf_cmprs.Cov = {new_Cov} ;
-pdf_cmprs.w = w_out ;
-
-        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs ) ;
-%         catch
-%             sdfg =4
-%         end
+    
+    if use_mean_estimate == 0 
+        [new_mu, new_Cov, w_out] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;        
+        pdf_cmprs.Mu = new_mu ;
+        pdf_cmprs.Cov = {new_Cov} ;
+        pdf_cmprs.w = w_out ;        
+        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs ) ; 
     end
-
-    hellCostThreshold_for_split = costThreshold.thReconstructive;   
+    
+    hellCostThreshold_for_split = costThreshold.thReconstructive;
     
     % override the costThreshod with reconstructive
     costThreshold = costThreshold.thDiscriminative ;
@@ -81,7 +74,7 @@ else
     costThreshold = costThreshold.thReconstructive ;
     hellCostThreshold_for_split = costThreshold.thReconstructive ;
 end
- 
+
 % costThreshold = 0.001
 
 % if 1==1 %isempty(memoryLimit) %|| getHell ~= 0
@@ -101,9 +94,9 @@ end
         w1 = length(pdf.w) ;
         pdf = executeSplitComponents( pdf, inPars, otherClasses, use_mean_estimate ) ;       
 %         disp('Split analyzed!')
-            if w1- length(pdf.w) ~= 0
-                warning('Splitting!! This is not a problem, just a report') ;
-            end
+%             if w1- length(pdf.w) ~= 0                
+%                 warning('Splitting!! This is not a problem, just a report') ;
+%             end
     else
      
 %         ignoreSublayer = 1 ;
@@ -116,12 +109,18 @@ end
 
 
 if  ~isempty(otherClasses) && (abs(beforeSplits - length(pdf.w)) > 0)
-    otherClasses.pdf.precalcStat = [] ;
+%     otherClasses.pdf.precalcStat = [] ;
     % precalculate statistics for compression
-    otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, type_cost ) ;
+%     otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, type_cost ) ;
+    
+    [new_mu, new_Cov, w_out] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;
+    pdf_cmprs.Mu = new_mu ;
+    pdf_cmprs.Cov = {new_Cov} ;
+    pdf_cmprs.w = w_out ;
+    otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs ) ;
 end
 
-assign_clust_type = 'centroid' ;% centroid, single, weighted, average, ward ;
+assign_clust_type = 'complete'; %'complete' ;% centroid, single, weighted, average, ward ;
 type_dist_calculation = 'eucledian' ; %'eucledian' ; 'mahalanobis'
 % calculate linkage and clustering
 switch type_dist_calculation

@@ -11,8 +11,11 @@ type_cost=[] ;
 % H = uCostModel_pristopX( negModel, posModel, posModel_r, negModelPrior, use_approximate_calc, pdf_for_sigmas, type_cost ) ;
 
 % joint negativna
+try
 H = uCostModel_X4( negModel, posModel, posModel_r, negModelPrior, use_approximate_calc, pdf_for_sigmas, type_cost ) ;
-
+catch
+   sfg =0 
+end
 
 % H = uCostModel_MojaNovaPartial( negModel, posModel, posModel_r, negModelPrior, use_approximate_calc, pdf_for_sigmas, type_cost ) ;
 

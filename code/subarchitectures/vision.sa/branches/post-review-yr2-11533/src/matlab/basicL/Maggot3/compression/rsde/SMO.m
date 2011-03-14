@@ -65,8 +65,7 @@ while (~stop)
         
         E=[E2,E1];
         if E1>E2
-            alpha=alpha_bk;
-            alpha'
+            alpha=alpha_bk;     
             stop=1;
         else if (abs(E1-E2)<error_tolerance)
                 stop=1;
