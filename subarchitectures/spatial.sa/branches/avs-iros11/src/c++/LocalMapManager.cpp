@@ -816,6 +816,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     double minDistSq = DBL_MAX;
     for (vector<HSS::RedundantLine2DRep>::iterator it = m_detectedDoors.begin();
 	it != m_detectedDoors.end(); it++) {
+    	log("Doorway at %f %f", it->xC(), it->yC());
       double dx = relevantX - it->xC();
       double dy = relevantY - it->yC();
       double distSq = dx*dx+dy*dy;
