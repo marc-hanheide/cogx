@@ -3,7 +3,7 @@
 
 #include <QtGui/QWidget>
 #include "ui_NavWidget.h"
-
+#include "SpatialData.hpp"
 
 namespace conceptual
 {
@@ -18,6 +18,18 @@ class NavWidget : public QWidget
 public:
     NavWidget(QWidget *parent, conceptual::Tester *component);
     ~NavWidget();
+
+public slots:
+
+	void newNavCommand(SpatialData::NavCommandPtr navCommandPtr);
+
+	void newNavCommand(QString str);
+
+
+private slots:
+
+	void gotoxyButtonClicked();
+
 
 private:
     Ui::NavWidgetClass ui;

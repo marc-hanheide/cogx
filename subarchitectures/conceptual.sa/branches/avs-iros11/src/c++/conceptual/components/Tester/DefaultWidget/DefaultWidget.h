@@ -21,6 +21,8 @@ public:
 
 private:
     Ui::DefaultWidgetClass ui;
+    conceptual::Tester *_component;
+
 };
 
 #endif // DEFAULTWIDGET_H

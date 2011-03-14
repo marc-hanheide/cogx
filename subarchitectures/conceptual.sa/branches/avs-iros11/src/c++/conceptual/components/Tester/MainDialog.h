@@ -7,6 +7,7 @@
 class ConceptualWidget;
 class AVSMainWidget;
 class DefaultWidget;
+class NavWidget;
 
 namespace conceptual
 {
@@ -26,6 +27,8 @@ public:
     ConceptualWidget *getConceptualWidget()
     {return _conceptualWidget;}
 
+    NavWidget *getNavWidget()
+    {return _navWidget;}
 
 private:
     Ui::MainDialogClass ui;
@@ -34,6 +37,7 @@ private:
     ConceptualWidget *_conceptualWidget;
     AVSMainWidget *_avsMainWidget;
     DefaultWidget *_defaultWidget;
+    NavWidget *_navWidget;
 };
 
 #endif // MAINDIALOG_H
