@@ -86,6 +86,10 @@ private:
 	/** Change event. */
 	void objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Change event. */
+	void gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+
 private:
 
 	/** Checks if the place is a true place based on the _placeWmAddressMap */
@@ -109,6 +113,9 @@ private:
 
 	/** Returns all object properties of the place. */
 	void getShapePlaceProperties(int placeId, std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties);
+
+	/** Returns all gateway properties of the placeholder. */
+	void getGatewayPlaceholderProperties(int placeId, std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> &properties);
 
 	/** Returns all object properties of the place. */
 	void getAppearancePlaceProperties(int placeId, std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties);
@@ -154,6 +161,9 @@ private:
 	/** Map of place wmAddress -> ConnectivityPathProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;
 
+	/** Map of place wmAddress -> GatewayPlaceholderProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _gatewayPlaceholderPropertyWmAddressMap;
+
 
 	/** Current state of the world as much as
 	 * the conceptual.sa is concerned. */
@@ -169,6 +179,7 @@ private:
 
 	double _shapeThreshold;
 	double _appearanceThreshold;
+	double _gatewayThreshold;
 	double _betaThreshold;
 	bool _includePlaceholderInfo;
 

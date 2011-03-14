@@ -151,10 +151,19 @@ module ConceptualData
 	/** Sequence of PlaceInfos. */
 	sequence <PlaceInfo> PlaceInfos;
 
+	struct GatewayPlaceholderPropertyInfo
+	{
+		double gatewayProbability;
+	};
+	
+	sequence<GatewayPlaceholderPropertyInfo> GatewayPlaceholderPropertyInfos;
+
+
 	/** Relevant information about a placeholder. Currently only id. */
 	struct PlaceholderInfo
 	{
         int placeholderId;
+        GatewayPlaceholderPropertyInfos gatewayProperties;
 	};
 
 	/** Sequence of placeholder infos. */
