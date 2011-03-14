@@ -384,38 +384,61 @@ void Observer::updateWorldState()
 				}
 				else
 				{
-					// If we include placeholders and it's a new placeholder, add it to the room info
+					// If we include placeholders and it's a new placeholder in this room, add it to the room info
 					if ( (_includePlaceholderInfo) && (isPlaceholder(connectedPlaces[j]))
 							&& (!isPlaceholderPresent(cri, connectedPlaces[j])) )
 					{
-						ConceptualData::PlaceholderInfo pli;
-						pli.placeholderId = connectedPlaces[j];
+						// First check if there is a placeholder in the other rooms already
+						// If a placeholder exists in two rooms, remove it from the room with
+						// higher ID (the one created later)
+						int placeholderRoomIndex = isPlaceholderInRooms(newWorldStatePtr->rooms, connectedPlaces[j]);
+						if ( ((placeholderRoomIndex>=0) &&
+							 (newWorldStatePtr->rooms[placeholderRoomIndex].roomId > room1Id)) ||
+							 (placeholderRoomIndex<0) )
+						 {
+							// Create this placeholder in this room
+							ConceptualData::PlaceholderInfo pli;
+							pli.placeholderId = connectedPlaces[j];
 
-						// Gateway placeholder properties
-						std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> gatewayPlaceholderProperties;
-						getGatewayPlaceholderProperties(pli.placeholderId, gatewayPlaceholderProperties);
-						for (unsigned int j=0; j<gatewayPlaceholderProperties.size(); ++j)
-						{
-							SpatialProperties::GatewayPlaceholderPropertyPtr gatewayPlaceholderPropertyPtr =
-									gatewayPlaceholderProperties[j];
-							SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
-									SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
-											gatewayPlaceholderPropertyPtr->distribution);
-
-							ConceptualData::GatewayPlaceholderPropertyInfo gppi;
-							for (unsigned int k=0; k<dpdPtr->data.size(); ++k)
+							// Gateway placeholder properties
+							std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> gatewayPlaceholderProperties;
+							getGatewayPlaceholderProperties(pli.placeholderId, gatewayPlaceholderProperties);
+							for (unsigned int l=0; l<gatewayPlaceholderProperties.size(); ++l)
 							{
-								if (SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[k].value)->value == true)
-									gppi.gatewayProbability = dpdPtr->data[k].probability;
+								SpatialProperties::GatewayPlaceholderPropertyPtr gatewayPlaceholderPropertyPtr =
+										gatewayPlaceholderProperties[l];
+								SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+										SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
+												gatewayPlaceholderPropertyPtr->distribution);
+
+								ConceptualData::GatewayPlaceholderPropertyInfo gppi;
+								for (unsigned int k=0; k<dpdPtr->data.size(); ++k)
+								{
+									if (SpatialProperties::BinaryValuePtr::dynamicCast(dpdPtr->data[k].value)->value == true)
+										gppi.gatewayProbability = dpdPtr->data[k].probability;
+								}
+								pli.gatewayProperties.push_back(gppi);
 							}
-							pli.gatewayProperties.push_back(gppi);
-						}
 
-						// Add the place info
-						cri.placeholders.push_back(pli);
+							// Add the place info
+							cri.placeholders.push_back(pli);
 
-					}
-				}
+							// If there was a placeholder in another room, remove that one
+							if (placeholderRoomIndex>=0)
+							{
+								vector<ConceptualData::PlaceholderInfo> & placeholderInfos =
+										newWorldStatePtr->rooms[placeholderRoomIndex].placeholders;
+								for (unsigned int x=0; x<placeholderInfos.size(); ++x)
+									if (placeholderInfos[x].placeholderId == connectedPlaces[j])
+									{
+										placeholderInfos.erase(placeholderInfos.begin()+x);
+										break;
+									}
+							}
+
+						 }
+					} // if
+				} // if placeholder
 			} // for(unsigned int j=0; j<connectedPlaces.size(); ++j)
 		} // for(unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
 
@@ -466,6 +489,33 @@ double Observer::calculateDistributionDifference(const SpatialProperties::Probab
 	{
 		string v1 = SpatialProperties::StringValuePtr::dynamicCast(d1[i].value)->value;
 		string v2 = SpatialProperties::StringValuePtr::dynamicCast(d2[i].value)->value;
+		if (v1 != v2)
+			return 1e6;
+		double tmp = fabs(d1[i].probability - d2[i].probability);
+		if (difference<tmp)
+			difference = tmp;
+	}
+	return difference;
+}
+
+
+// -------------------------------------------------------
+double Observer::calculateBinaryDistributionDifference(const SpatialProperties::ProbabilityDistributionPtr dist1,
+		const SpatialProperties::ProbabilityDistributionPtr dist2)
+{
+	const SpatialProperties::ValueProbabilityPairs &d1 =
+			SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(dist1)->data;
+	const SpatialProperties::ValueProbabilityPairs &d2 =
+			SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(dist2)->data;
+
+	if (d1.size() != d2.size())
+		return 1e6;
+
+	double difference = 0.0;
+	for (unsigned int i=0; i< d1.size(); ++i)
+	{
+		bool v1 = SpatialProperties::BinaryValuePtr::dynamicCast(d1[i].value)->value;
+		bool v2 = SpatialProperties::BinaryValuePtr::dynamicCast(d2[i].value)->value;
 		if (v1 != v2)
 			return 1e6;
 		double tmp = fabs(d1[i].probability - d2[i].probability);
@@ -1304,7 +1354,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			throw cast::CASTException("The mapping between GatewayPlacholderProperty WMAddress and Place ID changed!");
 
 		// Check if something substantial changed
-		if ( calculateDistributionDifference(old->distribution,
+		if ( calculateBinaryDistributionDifference(old->distribution,
 				gatewayPlaceholderPropertyPtr->distribution) > _gatewayThreshold )
 		{
 			ConceptualData::EventInfo ei;
@@ -1477,6 +1527,22 @@ bool Observer::isPlaceholderPresent(const ConceptualData::ComaRoomInfo &cri, int
 
 
 // -------------------------------------------------------
+int Observer::isPlaceholderInRooms(const vector<ConceptualData::ComaRoomInfo> &cris, int placeholderId)
+{
+	for (unsigned int r=0; r<cris.size(); ++r)
+	{
+		const ConceptualData::ComaRoomInfo &cri = cris[r];
+		for (unsigned int i=0; i<cri.placeholders.size(); ++i)
+		{
+			if (cri.placeholders[i].placeholderId == placeholderId)
+				return r;
+		}
+	}
+	return -1;
+}
+
+
+// -------------------------------------------------------
 bool Observer::isGatewayPlace(int placeId)
 {
 	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlacePropertyPtr>::iterator gatewayPlacePropertyIt;
@@ -1597,7 +1663,7 @@ int Observer::getRoomForPlace(int placeId)
 void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		set<int> *traversedPlaces)
 {
-//	debug("getConnectedPlaces(placeId=%d)", placeId);
+	debug("getConnectedPlaces(placeId=%d)", placeId);
 
 	boost::scoped_ptr<set<int> > alloc_traversedPlaces;
 	if (!traversedPlaces)
@@ -1616,7 +1682,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		if (connectivityPathPropertyPtr->place1Id == placeId)
 		{
 			int p = connectivityPathPropertyPtr->place2Id;
-//			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
 
 			if (traversedPlaces->find(p)==traversedPlaces->end())
 			{
@@ -1633,7 +1699,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		if (connectivityPathPropertyPtr->place2Id == placeId)
 		{
 			int p = connectivityPathPropertyPtr->place1Id;
-//			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
+			debug("getConnectedPlaces(placeId=%d): found connection to place %d", placeId, p);
 
 			if (traversedPlaces->find(p)==traversedPlaces->end())
 			{
@@ -1649,7 +1715,7 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 		}
 	}
 
-//	debug("getConnectedPlaces(placeId=%d): Finished searching for connected places", placeId);
+	debug("getConnectedPlaces(placeId=%d): Finished searching for connected places", placeId);
 
 	// Remove duplicates and the placeId itself.
 	removeDuplicates(*connectedPlaces);

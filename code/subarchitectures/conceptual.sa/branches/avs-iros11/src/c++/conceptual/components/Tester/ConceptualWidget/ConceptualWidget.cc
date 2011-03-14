@@ -316,6 +316,15 @@ void ConceptualWidget::refreshWsButtonClicked()
 			PlaceholderInfo phi = cri.placeholders[p];
 			QTreeWidgetItem *placeholderItem = new QTreeWidgetItem(placeholdersItem, QStringList("placeholder-"+QString::number(phi.placeholderId)));
 			placeholderItem->setIcon(0, QIcon(":/icons/icons/placeholder.png"));
+
+			if (phi.gatewayProperties.size())
+			{
+				QTreeWidgetItem *gatewayItem = new QTreeWidgetItem(placeholderItem, QStringList("Gateway Placeholder Property"));
+				gatewayItem->setIcon(0, QIcon(":/icons/icons/doorway.png"));
+				(new QTreeWidgetItem(gatewayItem, QStringList("Probability: "+QString::fromStdString(
+						lexical_cast<string>(phi.gatewayProperties[0].gatewayProbability)))))->
+						setIcon(0, QIcon(":/icons/icons/flag-green.png"));
+			}
 		}
 		if (cri.objectProperties.size())
 		{
