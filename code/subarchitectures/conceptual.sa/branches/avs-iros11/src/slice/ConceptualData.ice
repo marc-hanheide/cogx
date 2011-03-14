@@ -197,12 +197,13 @@ module ConceptualData
 		EventNothig, 
 		EventRoomAdded, EventRoomDeleted, // Info: room id 
 		EventRoomPlaceAdded, EventRoomPlaceDeleted, // Info roomId, placeId
-		EventPlaceStatusChanged, // Info placeId
+		EventPlaceholderAdded, EventPlaceholderDeleted,
 		EventGatewayPlacePropertyChanged, // Info placeId
 		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, // placeId, propertyNo
 		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
 		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
-		EventRoomConnectivityChanged // place1id, place2id
+		EventRoomConnectivityChanged, // place1id, place2id
+		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted 
 	};
 	
 	struct EventInfo
