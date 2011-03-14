@@ -69,10 +69,10 @@ void NavWidget::newNavCommand(SpatialData::NavCommandPtr navCommandPtr)
 
 	str+=" Pose:";
 	str+=QString::number(navCommandPtr->pose[0]);
+	str+=",";
 	str+=QString::number(navCommandPtr->pose[1]);
-	str+=" Status:";
-
-	switch(navCommandPtr->status)
+	str+=" Completion:";
+	switch(navCommandPtr->comp)
 	{
 		case SpatialData::COMMANDPENDING:
 			str+="COMMANDPENDING";
@@ -88,6 +88,29 @@ void NavWidget::newNavCommand(SpatialData::NavCommandPtr navCommandPtr)
 			break;
 		case SpatialData::COMMANDSUCCEEDED:
 			str+="COMMANDSUCCEEDED";
+			break;
+		case SpatialData::UNKNOWN:
+			str+="UNKNOWN";
+			break;
+	}
+
+	str+=" Status:";
+	switch(navCommandPtr->status)
+	{
+		case SpatialData::PERSONNOTFOUND:
+			str+="PERSONNOTFOUND";
+			break;
+		case SpatialData::TARGETUNREACHABLE:
+			str+="TARGETUNREACHABLE";
+			break;
+		case SpatialData::REPLACEDBYNEWCMD:
+			str+="REPLACEDBYNEWCMD";
+			break;
+		case SpatialData::CMDMALFORMATTED:
+			str+="CMDMALFORMATTED";
+			break;
+		case SpatialData::NONE:
+			str+="NONE";
 			break;
 		case SpatialData::UNKNOWN:
 			str+="UNKNOWN";
