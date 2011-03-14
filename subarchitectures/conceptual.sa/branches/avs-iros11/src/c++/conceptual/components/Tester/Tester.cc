@@ -269,9 +269,9 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 				_mainDialog->getNavWidget()->newNavCommand(navCommandPtr);
 		}
 	}
-	catch(CASTException &e)
+	catch(...)
 	{
-		log("Exception while reading world state from the WM!");
+		log("Exception while reading nav command from the WM!");
 	}
 
 }
