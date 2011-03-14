@@ -101,6 +101,9 @@ private:
 	/** Returns true if the placeholder is already added to the ComaRoomInfo. */
 	bool isPlaceholderPresent(const ConceptualData::ComaRoomInfo &cri, int placeholderId);
 
+	/** Returns room index (in the list) of the room to which a placeholder is already added. */
+	int isPlaceholderInRooms(const std::vector<ConceptualData::ComaRoomInfo> &cris, int placeholderId);
+
 	/** Returns true if the place has a gateway property set. */
 	bool isGatewayPlace(int placeId);
 
@@ -133,6 +136,8 @@ private:
 	double calculateDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
 			SpatialProperties::ProbabilityDistributionPtr dist2);
 
+	double calculateBinaryDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
+			SpatialProperties::ProbabilityDistributionPtr dist2);
 
 private:
 
