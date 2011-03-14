@@ -812,22 +812,24 @@ PlaceManager::evaluateUnexploredPaths()
 		      (foundFSIt->second);
 		    debug("evaluateUnexploredPaths:4");
 
-		    // Property exists; change it
-		    freeProp->distribution = discDistr;
-		    freeProp->placeId = placeholder->id;
-		    freeProp->mapValue = freespacevalue;
-		    freeProp->mapValueReliable = 1;
+		    if (freeProp != 0) {
+		      // Property exists; change it
+		      freeProp->distribution = discDistr;
+		      freeProp->placeId = placeholder->id;
+		      freeProp->mapValue = freespacevalue;
+		      freeProp->mapValueReliable = 1;
 
-		    debug("overwrite 2: %s", foundFSIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
-			done=true;
-		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
+		      debug("overwrite 2: %s", foundFSIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
 		      }
 		    }
 		    unlockEntry(foundFSIt->second);
@@ -896,24 +898,26 @@ PlaceManager::evaluateUnexploredPaths()
 	    		      (foundFSIt->second);
 	    		    debug("evaluateUnexploredPaths:4");
 
-	    		    // Property exists; change it
-	    		    gwProp->distribution = discDistr;
-	    		    gwProp->placeId = placeholder->id;
-	    		    gwProp->mapValue = gatewaynessMapValue;
-	    		    gwProp->mapValueReliable = 1;
+			    if (gwProp != 0) {
+			      // Property exists; change it
+			      gwProp->distribution = discDistr;
+			      gwProp->placeId = placeholder->id;
+			      gwProp->mapValue = gatewaynessMapValue;
+			      gwProp->mapValueReliable = 1;
 
-	    		    debug("overwrite 2: %s", foundFSIt->second.c_str());
-	    		    bool done = false;
-	    		    while (!done) {
-	    		      try {
-	    			overwriteWorkingMemory
-	    			  <SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
-	    			done=true;
-	    		      }
-	    		      catch(PermissionException e) {
-	    			log("Error! permissionException! Trying again...");
-	    		      }
-	    		    }
+			      debug("overwrite 2: %s", foundFSIt->second.c_str());
+			      bool done = false;
+			      while (!done) {
+				try {
+				  overwriteWorkingMemory
+				    <SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
+				  done=true;
+				}
+				catch(PermissionException e) {
+				  log("Error! permissionException! Trying again...");
+				}
+			      }
+			    }
 	    		    unlockEntry(foundFSIt->second);
 	    		    debug("unlock 6");
 	    		  }
@@ -969,21 +973,23 @@ PlaceManager::evaluateUnexploredPaths()
 		      (foundUnexpIt->second);
 		    debug("evaluateUnexploredPaths:6");
 
-		    // Property exists; change it
-		    borderProp->distribution = discDistr;
-		    borderProp->placeId = placeholder->id;
-		    borderProp->mapValue = bordervalue;
-		    borderProp->mapValueReliable = 1;
-		    debug("overwrite 3: %s", foundUnexpIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
-			done=true;
-		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
+		    if (borderProp != 0) {
+		      // Property exists; change it
+		      borderProp->distribution = discDistr;
+		      borderProp->placeId = placeholder->id;
+		      borderProp->mapValue = bordervalue;
+		      borderProp->mapValueReliable = 1;
+		      debug("overwrite 3: %s", foundUnexpIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
 		      }
 		    }
 
