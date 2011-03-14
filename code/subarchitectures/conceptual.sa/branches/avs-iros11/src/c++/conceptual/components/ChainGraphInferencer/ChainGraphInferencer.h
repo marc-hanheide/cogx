@@ -123,7 +123,7 @@ private:
 
 	/** Performs imaginary world generation for a single placeholder in a single room. */
 	void runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
-			std::vector<double> &outputs);
+			std::vector< std::vector<double> > &allOutputs);
 
 	void evaluateCurrentRoomImaginaryWorld(int roomId, std::vector<double> &outputs, double prior);
 	void evaluateImaginaryWorld(int roomId, int worldId, std::vector<double> &outputs, double prior);
@@ -160,7 +160,11 @@ private:
 	/** Adds room connectivity factor for 2 variables representing room categories. */
 	void createDaiConnectivityFactor(std::vector<dai::Factor> &factors, dai::Var &var1, dai::Var &var2);
 
-	void updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior);
+	void generateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs);
+
+	void integrateImaginaryWorldsOutputs(
+			const std::vector< std::vector<double> > &allOutputs,
+			std::vector<double> &outputs, double prior);
 
 	/** Returns the calculated Lambda of the poisson distrubution for the object, relation and room category. */
 	double getPoissonLambda(const std::string &roomCategory, const std::string &objectCategory,
