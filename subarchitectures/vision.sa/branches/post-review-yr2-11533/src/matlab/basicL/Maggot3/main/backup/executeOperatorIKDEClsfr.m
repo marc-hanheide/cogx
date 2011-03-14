@@ -15,12 +15,7 @@ function hyper_output_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, var
 %  hyper_input_kde_cl.class_labels = class_labels ;
 %
 
-Cdescribe = 1 ;
-Cran = 0.25 ;
-Cans = 0.25 ; 
-Clist = 0.25 ;
 
-turn_off_splitting = [] ;
 type_update = 'partial' ; % 'partial', 'joint'
 % useSomeOtherKindOfEstimator = [] ; % empty means default, 'adaptiveMixtures' uses adaptive mixtures
 use_equalimportance =  0 ;
@@ -113,11 +108,6 @@ while i <= nargs
             vforwvargin = horzcat(vforwvargin, args{i} ) ;
             vforwvargin = horzcat(vforwvargin, args{i+1} ) ;
             i = i + 2 ; 
-        case 'showkdecolor'
-             vforwvargin = horzcat(vforwvargin, args{i} ) ;
-            vforwvargin = horzcat(vforwvargin, args{i+1} ) ;
-            i = i + 2 ; 
-        case 'turn_off_splitting', turn_off_splitting = args{i+1} ; i = i + 2 ;
         otherwise
              vforwvargin = horzcat(vforwvargin, args{i} ) ;
              i = i + 1 ; 
@@ -148,18 +138,14 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.random_fselect_threshold = 1 ;
     
     pair_dist_struct.dist = [] ;
-    pair_dist_struct.dist_th = 4^2 ; %2.0^2 ;
+    pair_dist_struct.dist_th = 4.0 ;
     pair_dist_struct.use_approx = 0 ;
     hyper_input_kde_cl.pair_dist_struct = pair_dist_struct ;
     hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = -1 ;
-    hyper_input_kde_cl.turn_off_splitting = 0 ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
 end
 
-if ~isempty(turn_off_splitting)
-    hyper_input_kde_cl.turn_off_splitting = turn_off_splitting ;
-end
- 
+
 if ~isempty(force_value_init_of_maxNumCompsBeforeCompression)
     hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = force_value_init_of_maxNumCompsBeforeCompression ;
 end
@@ -346,7 +332,6 @@ switch operator_data
 %         max_v = (rslt(id_cost,size(rslt,2))) ;
 %         
 %         
-
         indic = rslt(id_cost,:) > hyper_input_kde_cl.min_th_feat_sel ; %max_v*hyper_input_kde_cl.min_th_feat_sel ;
         frst = 1 ; 
         for i = length(indic) :-1: 1
@@ -357,8 +342,7 @@ switch operator_data
         end
         indic = indic*0 ;
         indic(frst:length(indic)) = 1 ;
-        sel_feats = sort(rslt(1, find(indic)))  ;
- 
+        sel_feats = sort(rslt(1, find(indic))) ;
         hyper_input_kde_cl.sub_selected_features = sel_feats ;      
         hyper_output_kde_cl = hyper_input_kde_cl ;
         
@@ -386,9 +370,10 @@ switch operator_data
         % create distribution
 %         C_m = rslt.Con_matrix(1:size(rslt.Con_matrix(:,1),1),1:size(rslt.Con_matrix(:,1))) ;
 %         P = (1 - diag(C_m))+1e-20 ;          
-%         P = exp((1 - rslt.Conf_array).^2) ;
+        P = rslt.Conf_array ;
  
-        P = rslt.Conf_array.^4 ;
+        P = 1-exp(-P.^2) ;
+        
         for i = 1 : length(exclude_model)
             P(str2double(exclude_model{i})) = 0 ;
         end
@@ -407,20 +392,19 @@ switch operator_data
         answers = [] ;
  
         for i = 1 : length(input_data) 
-            Ccost = 0 ;
             rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data{i}.data, 'classifyData',...
                                              'use_unknown_model',1, 'extensive_answer', 1  ) ;
             if isequal( autonomous_update, 'oracle_verified' )
                 % check if the label already exists and check for errors
                 [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
-                answers = horzcat(answers, 0) ;
+                answers = horzcat(answers, 1) ;
                 if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C ~= class                    
                     hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
                 end
             elseif isequal( autonomous_update, 'self_verified' )
                 if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
                     hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
-                    answers = horzcat(answers, Cdescribe) ;
+                    answers = horzcat(answers, 1) ;
                 else
                     %Certain Classification 
                     if rslt.H < hyper_input_kde_cl.autoUpdateThres.lower
@@ -432,46 +416,6 @@ switch operator_data
                         answers = horzcat(answers, 0) ;
                     end
                 end
-            elseif isequal( autonomous_update, 'situated_verified' )
-                if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
-                    Ccost = Ccost + Clist ;
-                    if rslt.C == -1 %|| max(rslt.P) < 0.3/length(rslt.P) % ask open question
-%                         hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
-                        hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt,...
-                                                                         input_data(i), 0.05, vforwvargin) ;    
-       
-                        Ccost = Ccost + Cdescribe ;
-                    else % ask polar question 
-                        % is this class rslt.C?
-                        Ccost = Ccost + Cans ;
-                        Cl_name = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_name_at_index', rslt.C) ;
-                        if isequal(input_data{i}.class_name, Cl_name) % yes
-%                             hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;                            
-                                hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt,...
-                                                                         input_data(i), 0.05, vforwvargin) ;
-                        else % no           
-                              hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt,...
-                                                                         input_data(i), 0.05, vforwvargin) ; 
-%                             cls_tmp = input_data{i}.class_name ;
-%                             input_data{i}.class_name = Cl_name ; 
-%                             hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'unlearn_with_input', vforwvargin{:} ) ;
-%                             input_data{i}.class_name = cls_tmp ;
-%                             hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
-                            Ccost = Ccost + Cdescribe ;
-                        end                        
-                    end
-%                     Ccost = 1 ;
-                    answers = horzcat(answers, Ccost) ;
-                else % Certain Classification so no questions
-                   if rslt.H <= hyper_input_kde_cl.autoUpdateThres.lower
-                        answers = horzcat(answers, 0) ;
-                        input_data{i}.class_name = [] ;
-                        input_data{i}.class = rslt.C ; 
-                        hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
-                   else
-                       answers = horzcat(answers, 0) ;
-                   end
-                end
             else
                 error('Unknown "autonomous_update" type!') ;
             end
@@ -482,33 +426,12 @@ switch operator_data
         % determine if the class already exists, and initialize it if it
         % does not exist
 
-% % % % %          
-% % % % % if length(hyper_input_kde_cl.kde_cl) > 0
-% % % % %             pdf.Mu = [] ;
-% % % % %             pdf.Cov = {} ;
-% % % % %             pdf.w = [] ;
-% % % % %             N_eff = 0 ;
-% % % % %             for i = 1 : length(hyper_input_kde_cl.kde_cl) 
-% % % % %                pdf.Mu = horzcat(pdf.Mu, hyper_input_kde_cl.kde_cl{i}.pdf.Mu) ;
-% % % % %                pdf.Cov = horzcat(pdf.Cov, hyper_input_kde_cl.kde_cl{i}.pdf.smod.ps.Cov) ; 
-% % % % %                pdf.w = horzcat(pdf.w, hyper_input_kde_cl.kde_cl{i}.pdf.w) ;  
-% % % % %                N_eff = N_eff + hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff ;
-% % % % %             end
-% % % % %             [new_mu, new_Cov, new_w] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;
-% % % % %             
-% % % % %             H = ndDirectPlugin_JointClean( pdf.Mu, pdf.Cov, pdf.w, new_Cov, N_eff ) ;
-% % % % %             hyper_input_kde_cl.kde_cl{i}.pdf.smod.H = H ;
-% % % % % end
-        
-        
         answers = [] ;
         for i = 1 : length(input_data)  
             if isempty(input_data{i}.data)
                 continue ; 
             end
-            Ccost = 0 ; 
-            % Ccost = 1 ; 
-            answers = horzcat(answers, Ccost*ones(1,size(input_data{i}.data,2))) ;
+            answers = horzcat(answers, ones(1,size(input_data{i}.data,2))) ;
             % check if the label already exists and check for errors
             [data, class, class_name, class_exists] = parseClassData(hyper_input_kde_cl, input_data{i} ) ;
             
@@ -527,12 +450,11 @@ switch operator_data
             kde_w_attenuation = 1 ;
  
             if class_exists == 0                                        
-                % initialize new class    
-                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...                                           
+                % initialize new class   
+                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...
+                                           vforwvargin{:}, ...
                                            'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh,...
-                                           'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression,...
-                                           'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting,...
-                                           vforwvargin{:}) ; 
+                                           'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression) ; 
   
                 hyper_input_kde_cl.kde_cl = horzcat(hyper_input_kde_cl.kde_cl, kde) ;                
                 hyper_input_kde_cl.class_labels = horzcat(hyper_input_kde_cl.class_labels, class) ;
@@ -573,16 +495,13 @@ switch operator_data
 %                          hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
                     sub_feats = hyper_input_kde_cl.sub_selected_features ;
                 end
-  
 %  try
-%                 msg = sprintf('Processing kde no: %d', class) ; disp(msg)
                 % update the kde
                 hyper_input_kde_cl.kde_cl{class} = ...
                                   executeOperatorIKDE( hyper_input_kde_cl.kde_cl{class}, 'input_data', ...
                                                        data, 'add_input', 'otherClasses', otherClasses,...
                                                        'selectSubDimensions', sub_feats,...
                                                        'kde_w_attenuation', kde_w_attenuation, ...
-                                                       'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting,...
                                                        vforwvargin{:},...
                                                        'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh ) ;      
                                                    
@@ -595,34 +514,11 @@ switch operator_data
         % search for degenerate kdes and reapproximate their bandwidths
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ; 
-           if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE           
-               if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE') || isequal(hyper_input_kde_cl.typeRecDescr,'oKDE')
+           if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
                     otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
-               else
-                   otherClasses = {} ;
-               end
-               
-               if isequal(hyper_input_kde_cl.typeRecDescr,'AM') 
-                   sz = size(hyper_input_kde_cl.kde_cl{i}.pdf.Cov{1}) ;
-                   for kk = 1 : length(hyper_input_kde_cl.kde_cl{i}.pdf.w)
-                       hyper_input_kde_cl.kde_cl{i}.pdf.Cov{kk} = hyper_input_kde_cl.kde_cl{i}.pdf.Cov{kk} + eye(sz)*(1e-10) ;
-                   end
-               
-               else
-               
-               if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE') || isequal(hyper_input_kde_cl.typeRecDescr,'oKDE')               
                     hyper_input_kde_cl.kde_cl{i} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'set_auxiliary_bandwidth' ,...
-                                     'otherClasses', otherClasses, ...
-                                     'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting) ;
-%                else
-%                    deltaH = eye(size(hyper_input_kde_cl.kde_cl{i}.pdf.Cov{1}))*(1e-5) ;
-%                    for k = 1 : length(hyper_input_kde_cl.kde_cl{i}.pdf.w)
-%                       hyper_input_kde_cl.kde_cl{i}.pdf.Cov{k} = hyper_input_kde_cl.kde_cl{i}.pdf.Cov{k} + deltaH ;
-%                    end
-               end
-
-               end
+                                     'otherClasses', otherClasses) ;
            end
             
         end
@@ -740,35 +636,27 @@ switch operator_data
             if hyper_input_kde_cl.react_compression_to_feature_selection == 1
                 sub_feats = hyper_input_kde_cl.sub_selected_features ;
             end 
-            sub_feats = hyper_input_kde_cl.sub_selected_features ;
+            
             
             if isequal(hyper_input_kde_cl.typeRecDescr,'AM') || isequal(hyper_input_kde_cl.typeRecDescr,'dAM')
                 pdf_t = input_kde_cl{i}.pdf ;
-%                 dd = size(pdf_t.Cov{1},1) ;
 %                 for ik = 1 : length(pdf_t.Cov)
-%                     pdf_t.Cov{ik} = pdf_t.Cov{ik}+eye(dd)*(1e-3)^2 ;                           
+%                     pdf_t.Cov{ik} = pdf_t.Cov{ik}+1e-2 ;                           
 %                 end
-
-
-%                 [pdf_in, data, svdRes] = regulrMixtureIntoSubspace(pdf_t, input_data) ;
-%                 [pdf_in, data, svdRes] = projectMixtureIntoSubspace(pdf_t, input_data ) ;
-%                 if ~isempty(svdRes)
-%                     reslt.evalpdf = evaluatePointsUnderPdf(pdf_in, data) ;        
-%                 else
-                    reslt.evalpdf = evaluatePointsUnderPdf(pdf_t, input_data) ;
-%                 end
+                 reslt.evalpdf = evaluatePointsUnderPdf(pdf_t, input_data) ;        
             else    
                 
                 % search for degenerate kdes and reapproximate their bandwidths
-                is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
-                tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
-                tmp_pd_Struct.use_approx = 0 ;
-                if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE
-                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ;
+            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
+            tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
+            tmp_pd_Struct.use_approx = 0 ;
+            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ; 
                     input_kde_cl{i} = executeOperatorIKDE( input_kde_cl{i}, 'set_auxiliary_bandwidth' ,  'otherClasses', otherClasses) ;
-                end
-                reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
-                    'selectSubDimensions', sub_feats) ;                
+            end
+            reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
+                                             'selectSubDimensions', sub_feats) ;                
+    
             end
             P(i,:) = reslt.evalpdf ; %p ;
         end
@@ -804,7 +692,6 @@ switch operator_data
         end
         
         hyper_output_kde_cl.P = P ;
-        hyper_output_kde_cl.sP = sP ;
         [vals, i_max] = max(P) ;        
         hyper_output_kde_cl.C = class_labels(i_max) ;
         
@@ -978,14 +865,11 @@ switch operator_data
         tmp_pd_Struct.use_approx = 0 ;
         for val_get = 1 : length(hyper_input_kde_cl.kde_cl)
             is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;            
-            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE     
-         
+            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
                     otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, tmp_pd_Struct ) ; 
                     hyper_input_kde_cl.kde_cl{val_get} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
- 
-                    
             end
         end
         hyper_output_kde_cl = hyper_input_kde_cl ;
@@ -994,27 +878,6 @@ switch operator_data
 end
 
 % -------------------------------------------------------------------- %
-function hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt, input_data, scaleth, vforwvargin)
-  
-[f g]=max(rslt.P) ;
-dp = (rslt.P - f*scaleth) > 0 ; 
-dp(end) = 0  ;
-dp(g) = 0 ;
-
-cls_tmp = input_data{1}.class_name ;
-
-dp = find(dp) ;
- 
-
-for i = 1 : length(dp)
-    input_data{1}.class_name = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_name_at_index', dp(i)) ; 
-    hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data, 'unlearn_with_input', vforwvargin{:} ) ;    
-end
-
-input_data{1}.class_name = cls_tmp ;
-hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data, 'add_input', vforwvargin{:} ) ;
- 
-% ------------------------------------------------------------------ %
 function otherClasses = makeOtherClasses( input_kde_cl, i_exclude, newadds, use_equalimportance, pair_dist_struct )
  
 otherClasses.pdfs = {} ; 
@@ -1023,15 +886,11 @@ w_other = ones(1,length(input_kde_cl)-1) ;
 w_other = w_other / sum(w_other) ;
 % otherClasses.priors = []; %(length(input_kde_cl)-1) / length(input_kde_cl) ;  
 otherClasses.inner_priors = [] ; %w_other ;
-N_eff_all = 0 ;
-N_eff_neg = 0 ;
 for i = 1 : length(input_kde_cl) 
-    N_eff_all = N_eff_all + input_kde_cl{i}.ikdeParams.N_eff ;
     if i ~= i_exclude
-        N_eff_neg = N_eff_neg + input_kde_cl{i}.ikdeParams.N_eff ;
         if pair_dist_struct.use_approx ~= 0 
-            t = test_for_overlap(input_kde_cl{i_exclude}.ikdeParams.scale.Mu, input_kde_cl{i_exclude}.ikdeParams.scale.Cov+input_kde_cl{i_exclude}.pdf.smod.H, ...
-                                 input_kde_cl{i}.ikdeParams.scale.Mu, input_kde_cl{i}.ikdeParams.scale.Cov+input_kde_cl{i}.pdf.smod.H,...
+            t = test_for_overlap(input_kde_cl{i_exclude}.ikdeParams.scale.Mu, input_kde_cl{i_exclude}.ikdeParams.scale.Cov, ...
+                                 input_kde_cl{i}.ikdeParams.scale.Mu, input_kde_cl{i}.ikdeParams.scale.Cov,...
                                  pair_dist_struct.dist_th) ;                             
             if t == 0
                continue ; 
@@ -1044,12 +903,9 @@ for i = 1 : length(input_kde_cl)
     end
 end
  
-otherClasses.inner_priors = otherClasses.inner_priors / N_eff_neg ; %sum([otherClasses.inner_priors,input_kde_cl{i_exclude}.ikdeParams.N_eff + newadds ]) ;
+otherClasses.inner_priors = otherClasses.inner_priors / sum([otherClasses.inner_priors,input_kde_cl{i_exclude}.ikdeParams.N_eff + newadds ]) ;
  
-otherClasses.N_all_classes = length(input_kde_cl) ;
-% otherClasses.priors = sum(otherClasses.inner_priors) ;
-% otherClasses.priors = 1 / length(input_kde_cl) ;
-otherClasses.priors = (input_kde_cl{i_exclude}.ikdeParams.N_eff+newadds) / (N_eff_all + newadds) ;
+otherClasses.priors = sum(otherClasses.inner_priors) ;
 if use_equalimportance == 1 
     otherClasses.inner_priors = w_other ;
     otherClasses.priors = (length(input_kde_cl)-1) / length(input_kde_cl) ;     
@@ -1132,102 +988,3 @@ if isempty(class)
     class = length(hyper_input_kde_cl.class_labels ) + 1  ;
 end
  
-
-% ---------------------------------------------------------------------- %
-function [pdf_in, data, svdRes] = projectMixtureIntoSubspace(pdf_in, data )
-minVals = 0.001 ;
-
-% I = eye(size(pdf_in.Cov{1})) ;
-% for i = 1 : length(pdf_in.w)
-%     pdf_in.Cov{i} = pdf_in.Cov{i} + I*minVals ;    
-% end
-% svdRes = [] ;
-% return ;
- 
-[new_mu, new_Cov, w_out] = momentMatchPdf(pdf_in.Mu, pdf_in.Cov, pdf_in.w) ;
-[U,S,V] = svd(new_Cov) ;
-V = U ;
-s = diag(S) ;
- ss = s / sum(s) ;
-
-id_valid = find(ss > minVals) ;
-id_null = find(ss <= minVals) ;
-
-if isempty(id_null)
-    svdRes = [] ;
-    return ;
-end
-
-id_nullVals = s(id_null) ;
-d = size(new_Cov,1) ;
-S_inv = eye(d,d)*0 ;
-S_inv(id_valid,id_valid) = diag(diag(S(id_valid,id_valid).^(-1))) ;
-for i = 1 : length(id_nullVals)
-    try
-        tmp_val = 1 / id_nullVals(i) ;
-    catch
-        tmp_val = 1 ; %1/practicallyZero ; % doesn't matter
-    end
-    S_inv(id_null(i),id_null(i)) = tmp_val ;
-end
-F_trns = sqrt(abs(S_inv))* inv(V) ;
-
-pdf_in.Mu = F_trns*( pdf_in.Mu - repmat(new_mu,1,length(pdf_in.w))) ;
-pdf_in.Mu = pdf_in.Mu(id_valid,:) ;
-
-
-for i = 1 : length(pdf_in.w)
-    pdf_in.Cov{i} = F_trns*pdf_in.Cov{i}*F_trns' ;
-    pdf_in.Cov{i} = pdf_in.Cov{i}(id_valid,id_valid) ;
-end
-
-% forward transform the additional_data if it exists
-if ~isempty(data)
-    data = F_trns*(data - repmat(new_mu,1,size(data,2))) ;
-    data = data(id_valid,:) ;
-end
-
-svdRes.V = V ;
-svdRes.S = S ;
-svdRes.id_valid = id_valid ;
-svdRes.new_mu = new_mu ;
-svdRes.nullspace.id_null = id_null ;
-svdRes.nullspace.id_nullVals = id_nullVals ;
-svdRes.nullspace.id_valid = id_valid ;
- 
-
-% ---------------------------------------------------------------------- %
-function [pdf_in, data, svdRes] = regulrMixtureIntoSubspace(pdf_in, data )
-minVals = 0.001 ;
-
-% I = eye(size(pdf_in.Cov{1})) ;
-% for i = 1 : length(pdf_in.w)
-%     pdf_in.Cov{i} = pdf_in.Cov{i} + I*minVals ;    
-% end
-% svdRes = [] ;
-% return ;
- 
-[new_mu, new_Cov, w_out] = momentMatchPdf(pdf_in.Mu, pdf_in.Cov, pdf_in.w) ;
-[U,S,V] = svd(new_Cov) ;
-V = U ;
-s = diag(S) ;
-ss = s / sum(s) ;
-
-id_valid = find(ss > minVals) ;
-id_null = find(ss <= minVals) ;
-
-if isempty(id_null)
-    svdRes = [] ;
-    return ;
-end
-
-z = zeros(1, size(S,1)) ; 
-z(id_null) = (1e-3)^2 ;
-Z = U*diag(z)*V' ;
-
- 
-for i = 1 : length(pdf_in.w)
-    pdf_in.Cov{i} =  pdf_in.Cov{i} + Z ;
-end
- 
-svdRes.V = [] ; 

@@ -1,5 +1,6 @@
 function I = sampleDiscrete( P )
 
+P = P + 1e-50 ; P = P/ sum(P) ;
 c = cumsum(P) ;
 
 I = -1 ;

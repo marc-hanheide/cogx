@@ -160,8 +160,8 @@ if isempty(svdRes)
   
 
     min_s = 1e-4 ; %;minVals ; %0.01 ;
-    s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = min(s(ss>min_s)); mean(s(s>min_s)) ;
-    S = diag(s) ; %minVals = 0 ;
+    s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = min(s(ss>min_s)) ;% mean(s(s>min_s)) ;
+    S = diag(s) ;  %minVals = min_s  ;
     globalCov = U*S*U' ; C = globalCov ;
 
     s = diag(S) ; s = s /max(s) ;
