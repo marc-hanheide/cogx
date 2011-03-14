@@ -72,9 +72,23 @@ void NavWidget::newNavCommand(SpatialData::NavCommandPtr navCommandPtr)
 	}
 
 	str+=" Pose:";
-	str+=QString::number(navCommandPtr->pose[0]);
+
+	if (navCommandPtr->pose.size()>0)  {
+	  str+=QString::number(navCommandPtr->pose[0]);
+	}
+	else {
+	  str+="N/A";
+	}
+
 	str+=",";
-	str+=QString::number(navCommandPtr->pose[1]);
+
+	if (navCommandPtr->pose.size()>1) {
+	  str+=QString::number(navCommandPtr->pose[1]);
+	}
+	else {
+	  str+="N/A";
+	}
+
 	str+=" Completion:";
 	switch(navCommandPtr->comp)
 	{
