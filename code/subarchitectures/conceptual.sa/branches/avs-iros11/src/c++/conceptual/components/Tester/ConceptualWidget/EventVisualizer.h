@@ -27,6 +27,7 @@ public slots:
 
 private slots:
 
+	void generate();
 	void saveSvgButtonClicked();
 	void savePngButtonClicked();
 	void addGroundtruthButtonClicked();

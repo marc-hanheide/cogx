@@ -20,12 +20,22 @@ EventVisualizer::EventVisualizer(QWidget *parent,
 	connect(ui.saveSvgButton, SIGNAL(clicked()), this, SLOT(saveSvgButtonClicked()));
 	connect(ui.savePngButton, SIGNAL(clicked()), this, SLOT(savePngButtonClicked()));
 	connect(ui.addGroundtruthButton, SIGNAL(clicked()), this, SLOT(addGroundtruthButtonClicked()));
+	connect(ui.placesCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
+	connect(ui.widthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(generate()));
+	connect(ui.verticalIndicatorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
+	connect(ui.locationEventsCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
+	connect(ui.verticalLinesCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
 }
-
 
 EventVisualizer::~EventVisualizer()
 {
 
+}
+
+
+void EventVisualizer::generate()
+{
+	generate(_lastEvents);
 }
 
 
@@ -49,7 +59,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	const double markPlusSize=6;
 	QFont defaultFont("Ubuntu", 12);
 	QFont smallFont("Ubuntu", 6);
-	QPen stdPen(QBrush(Qt::black), 1, Qt::SolidLine);
+	QPen stdPen(Qt::black, 1, Qt::SolidLine);
+	QPen gtPen(Qt::black, 5, Qt::DotLine);
+	QPen gtPenBg(Qt::white, 5, Qt::SolidLine);
 
 	// Create scene
 	QGraphicsScene *scene = new QGraphicsScene(this);
@@ -88,6 +100,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	unsigned int lastPlaceChange=0;
 	unsigned int lastRoomChange=0;
 	std::vector<int> groundTruthRows;
+	std::vector<int> mapRows;
+	std::vector<int> mapShapeRows;
+	std::vector<int> mapAppearanceRows;
 	std::vector<ConceptualData::EventInfo> accumulatedInfos;
 	for (long _e=0; _e<events.size(); ++_e)
 	{
@@ -118,9 +133,16 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 
 		// Categories
 		unsigned int row=0;
+		unsigned int mapIndex = -1;
+		double mapValue = -1;
 		for(unsigned int i=0; i<roomCatCountReal; ++i)
 		{
 			double prob = event.curRoomCategories[i];
+			if (prob>mapValue)
+			{
+				mapValue = prob;
+				mapIndex = i;
+			}
 			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
 					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
 			row++;
@@ -132,24 +154,48 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		else
 			groundTruthRows.push_back(-1);
 
+		// Add map for this room
+		mapRows.push_back(mapIndex);
+
 		// Draw shapes
 		row = roomCatCount;
+		mapIndex = -1;
+		mapValue = -1;
 		for(unsigned int i=0; i<shapeCountReal; ++i)
 		{
 			double prob = event.curShapes[i];
+			if (prob>mapValue)
+			{
+				mapValue = prob;
+				mapIndex = i;
+			}
 			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
 					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
 			row++;
 		}
+		// Add map
+		mapShapeRows.push_back(mapIndex);
+
+
 		// Draw appearances
 		row = roomCatCount + shapeCount;
+		mapIndex = -1;
+		mapValue = -1;
 		for(unsigned int i=0; i<appearanceCountReal; ++i)
 		{
 			double prob = event.curAppearances[i];
+			if (prob>mapValue)
+			{
+				mapValue = prob;
+				mapIndex = i;
+			}
 			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
 					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
 			row++;
 		}
+		// Add map
+		mapAppearanceRows.push_back(mapIndex);
+
 		// Draw objects
 		row = roomCatCount + shapeCount + appearanceCount;
 		for(unsigned int i=0; i<objectsCountReal; ++i)
@@ -367,30 +413,38 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	// Groundtruth
-	int lastGt = -1;
+	int lastG = -1;
+	int lastI = 0;
+	int lastLastI = 0;
 	for (unsigned int i=0; i<groundTruthRows.size(); ++i)
 	{
-		if (groundTruthRows[i]>=0)
+		if (( lastG != groundTruthRows[i] ) || (i==groundTruthRows.size()-1))
 		{
-			scene->addLine(i*resultWidth, groundTruthRows[i]*rowHeight, (i+1)*resultWidth, groundTruthRows[i]*rowHeight,
-					QPen(QBrush(qRgb(100,100,100)), 5, Qt::SolidLine));
-			scene->addLine(i*resultWidth, (groundTruthRows[i]+1)*rowHeight, (i+1)*resultWidth, (groundTruthRows[i]+1)*rowHeight,
-					QPen(QBrush(qRgb(100,100,100)), 5, Qt::SolidLine));
-			if (lastGt!=groundTruthRows[i])
+			if (lastG>=0)
 			{
-				scene->addLine(i*resultWidth, (groundTruthRows[i])*rowHeight, i*resultWidth, (groundTruthRows[i]+1)*rowHeight,
-						QPen(QBrush(qRgb(100,100,100)), 5, Qt::SolidLine));
-
-				if (lastGt>=0)
-				{
-					scene->addLine(i*resultWidth, lastGt*rowHeight, i*resultWidth, (groundTruthRows[i]+1)*rowHeight,
-							QPen(QBrush(qRgb(100,100,100)), 5, Qt::SolidLine));
-					scene->addLine(i*resultWidth, (lastGt)*rowHeight, i*resultWidth, (lastGt+1)*rowHeight,
-							QPen(QBrush(qRgb(100,100,100)), 5, Qt::SolidLine));
-				}
+				if (i==groundTruthRows.size()-1)
+					i++;
+				scene->addRect(lastLastI*resultWidth, lastG*rowHeight, (i-lastLastI)*resultWidth, rowHeight, gtPenBg);
+				scene->addRect(lastLastI*resultWidth, lastG*rowHeight, (i-lastLastI)*resultWidth, rowHeight, gtPen);
 			}
-			lastGt=groundTruthRows[i];
+			lastLastI=i;
 		}
+		lastG = groundTruthRows[i];
+		lastI = i;
+	}
+
+	// MAP
+	for (unsigned int i=0; i<mapRows.size(); ++i)
+	{
+		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), mapRows[i]*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
+	}
+	for (unsigned int i=0; i<mapShapeRows.size(); ++i)
+	{
+		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+mapShapeRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
+	}
+	for (unsigned int i=0; i<mapAppearanceRows.size(); ++i)
+	{
+		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+shapeCount+mapAppearanceRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
 	}
 
 	ui.graphicsView->setScene(scene);
@@ -423,7 +477,7 @@ void EventVisualizer::savePngButtonClicked()
 	                            "", tr("PNG Images (*.png)"));
 	if (!fileName.isEmpty())
 	{
-		QImage image(QSize(ui.graphicsView->scene()->width()*5,ui.graphicsView->scene()->height())*5, QImage::Format_RGB32);
+		QImage image(QSize(ui.graphicsView->scene()->width(),ui.graphicsView->scene()->height())*5, QImage::Format_RGB32);
 		QPainter painter;
 		painter.begin(&image);
 		ui.graphicsView->scene()->render(&painter);
