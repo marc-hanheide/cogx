@@ -11,7 +11,7 @@ database = load(dbname) ;
 database = database.database ;
  
 just_show_results = 0  ;
-sel_mode_of_operations = 3 ;% : 3 ;
+sel_mode_of_operations = 1:3 ;% : 3 ;
 
 for sel_mode_now = 1 : length(sel_mode_of_operations )
     
@@ -78,7 +78,7 @@ switch(mode_of_operation)
          c = 'g' ;
          labl = 'nonsituated tutor asisted' ;
     case 'STA'
-        c = 'c:' ;
+        c = 'b' ;
          labl = 'situated tutor asisted' ;
 end
 delta_cost = 0.25 ;
@@ -138,7 +138,7 @@ function [R_results, kde_cl, C_result, C_reference] = classifier_test( database,
 
 Cshowselected = 1 ;
 Cdescribe = 1 ;
-Clisten = 0.25 ;
+Clisten = 0.1 ;
 C_showrand = 0.25 ;
 % 'self_verified', 'oracle_verified', 'pure_oracle' type_update
 % perform_feature_selection = fsel ;
@@ -162,7 +162,7 @@ min_samps_per_model_feat_sel = (dim^2-dim)/2+dim+dim ; % (int) minimum number of
 min_th_feat_sel = 0.1 ;                       % (double) threshold on importance below which a feature is removed
 costThreshold.thReconstructive = 0.1 ;         % thresholds on reconstructive and discriminative compression
 costThreshold.thDiscriminative = 0.1;
-probability_of_feature_selection = 0.1 ;
+probability_of_feature_selection = 0.01 ;
 % - end of parameters
 N_init = 20 ;  
 
@@ -188,16 +188,16 @@ Num_questions = N_init ;
 input_data = {} ;
 for i_c = 1 : N_init
     cls_pref = [] ;
-%     if proactive_mode == 1
-%         cls_pref = i_c ;
-%         if cls_pref > length(database.index_classes)
-%            cls_pref = [] ; 
-%         end
-%     end
-    
-    if i_c < length(database.current_pos_classes)
+    if proactive_mode == 1
         cls_pref = i_c ;
+        if cls_pref > length(database.index_classes)
+           cls_pref = [] ; 
+        end
     end
+    
+%     if i_c < length(database.current_pos_classes)
+%         cls_pref = i_c ;
+%     end
     
     [ret, database] = get_new_datapoint_from_database( database , cls_pref ) ;
     indat.data = ret.data ; 
