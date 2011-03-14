@@ -261,7 +261,9 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 	try
 	{
 		SpatialData::NavCommandPtr navCommandPtr;
+		lockEntry(wmChange.address, cdl::LOCKEDODR);
 		navCommandPtr = getMemoryEntry<SpatialData::NavCommand>(wmChange.address);
+		unlockEntry(wmChange.address);
 
 		if (navCommandPtr)
 		{
