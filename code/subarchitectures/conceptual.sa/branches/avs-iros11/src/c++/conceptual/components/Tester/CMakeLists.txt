@@ -1,6 +1,11 @@
 option(BUILD_SA_CONCEPTUAL_TESTER "Build Conceptual.SA Tester component" YES)
 if(BUILD_SA_CONCEPTUAL_TESTER)
 
+    Find_package(Cure REQUIRED)
+    include_directories(${CURE_INSTALLROOT}/include/cure)
+    link_directories(${CURE_INSTALLROOT}/lib/cure)
+    include_directories(${COGX_ROOT}/tools/hardware/utils/src/c++/components/)
+
     qt4_add_resources( RC_SOURCES resources.qrc )
     qt4_wrap_ui( UI_HEADERS_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.ui ConceptualWidget/AddGroundtruthDialog.ui)
     qt4_wrap_cpp( MOC_SOURCES_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.h ConceptualWidget/AddGroundtruthDialog.h)
@@ -30,6 +35,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                                          DefaultWidget/DefaultWidget.cc ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} )
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared DefaultData SpatialData 
                                                SpatialProperties SpatialProbabilities FrontierInterface VisionData)
+    link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 
     add_executable(event-visualizer event-visualizer.cc ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                     ConceptualWidget/AddGroundtruthDialog.cc

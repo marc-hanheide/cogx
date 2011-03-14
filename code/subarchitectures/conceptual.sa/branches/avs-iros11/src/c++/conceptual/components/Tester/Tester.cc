@@ -9,6 +9,7 @@
 #include "MainDialog.h"
 #include "ConceptualWidget.h"
 #include "SpatialProbabilities.hpp"
+#include "NavWidget.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Qt, std
@@ -110,6 +111,12 @@ void Tester::start()
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::ADD),
 			new MemberFunctionChangeReceiver<Tester>(this,
 					&Tester::worldStateChanged));
+	addChangeFilter(createGlobalTypeFilter<SpatialData::NavCommand>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newNavCommand));
+	addChangeFilter(createGlobalTypeFilter<SpatialData::NavCommand>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newNavCommand));
 }
 
 
@@ -225,6 +232,48 @@ int Tester::getCurrentPlace()
 	}
 	else
 		return -1;
+}
+
+
+// -------------------------------------------------------
+void Tester::postNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype)
+{
+	SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
+	cmd->prio = SpatialData::URGENT;
+	cmd->cmd = cmdtype;
+	cmd->pose.resize(3);
+	cmd->pose[0] = position.getX();
+	cmd->pose[1] = position.getY();
+	cmd->pose[2] = position.getTheta();
+	cmd->tolerance.resize(1);
+	cmd->tolerance[0] = 0.1;
+	cmd->status = SpatialData::NONE;
+	cmd->comp = SpatialData::COMMANDPENDING;
+
+	string id(newDataID());
+	addToWorkingMemory<SpatialData::NavCommand> (id, cmd);
+}
+
+
+// -------------------------------------------------------
+void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		SpatialData::NavCommandPtr navCommandPtr;
+		navCommandPtr = getMemoryEntry<SpatialData::NavCommand>(wmChange.address);
+
+		if (navCommandPtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getNavWidget()->newNavCommand(navCommandPtr);
+		}
+	}
+	catch(CASTException &e)
+	{
+		log("Exception while reading world state from the WM!");
+	}
+
 }
 
 

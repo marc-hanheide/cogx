@@ -3,7 +3,7 @@
 
 
 DefaultWidget::DefaultWidget(QWidget *parent, conceptual::Tester *component)
-    : QWidget(parent)
+    : QWidget(parent), _component(component)
 {
 	ui.setupUi(this);
 

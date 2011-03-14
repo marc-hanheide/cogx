@@ -25,6 +25,8 @@ EventVisualizer::EventVisualizer(QWidget *parent,
 	connect(ui.verticalIndicatorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
 	connect(ui.locationEventsCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
 	connect(ui.verticalLinesCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
+
+	ui.graphicsView->setRenderHints(QPainter::Antialiasing);
 }
 
 EventVisualizer::~EventVisualizer()
@@ -479,6 +481,7 @@ void EventVisualizer::savePngButtonClicked()
 	{
 		QImage image(QSize(ui.graphicsView->scene()->width(),ui.graphicsView->scene()->height())*5, QImage::Format_RGB32);
 		QPainter painter;
+		painter.setRenderHints(QPainter::Antialiasing);
 		painter.begin(&image);
 		ui.graphicsView->scene()->render(&painter);
 		painter.end();

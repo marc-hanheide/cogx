@@ -11,6 +11,7 @@
 #include <ConceptualData.hpp>
 #include <DefaultData.hpp>
 #include <FrontierInterface.hpp>
+#include <Transformation/Pose3D.hh>
 
 class MainDialog;
 
@@ -66,6 +67,8 @@ public:
 
 	int getCurrentPlace();
 
+	void postNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
+
 
 protected:
 	/** Called by the framework to configure the component. */
@@ -85,6 +88,8 @@ private:
 
 	/** World state changed, infer and then update the coma room structs. */
 	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	void newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
 private:
