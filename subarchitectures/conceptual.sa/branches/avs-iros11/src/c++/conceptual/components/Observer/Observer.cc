@@ -420,84 +420,6 @@ void Observer::updateWorldState()
 
 
 // -------------------------------------------------------
-//bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2)
-//{
-//	if (ws1->roomConnections != ws2->roomConnections)
-//		return true;
-//
-//	// Analyse the room structure
-//	if (ws1->rooms.size() != ws2->rooms.size())
-//		return true;
-//	for (unsigned int i=0; i<ws1->rooms.size(); ++i)
-//	{
-//		ConceptualData::ComaRoomInfo &cri1 = ws1->rooms[i];
-//		ConceptualData::ComaRoomInfo &cri2 = ws2->rooms[i];
-//		if (cri1.wmAddress != cri2.wmAddress)
-//			return true;
-//		if (cri1.roomId != cri2.roomId)
-//			return true;
-//		// Compare object properties
-//		if (cri1.objectProperties.size()!=cri2.objectProperties.size())
-//			return true;
-//		for (unsigned int j=0; j<cri1.objectProperties.size(); ++j)
-//		{
-//			ConceptualData::ObjectPlacePropertyInfo oppi1 = cri1.objectProperties[j];
-//			ConceptualData::ObjectPlacePropertyInfo oppi2 = cri2.objectProperties[j];
-//			if ( (oppi1.category!=oppi2.category) ||
-//				 (oppi1.count!=oppi2.count) ||
-//				 (oppi1.relation!=oppi2.relation) ||
-//				 (oppi1.supportObjectCategory!=oppi2.supportObjectCategory) ||
-//				 (oppi1.supportObjectId != oppi2.supportObjectId) ||
-//				 (fabs(oppi1.beta-oppi2.beta)> _betaThreshold) )
-//				return true;
-//		}
-//		// Compare places
-//		if (cri1.places.size() != cri2.places.size())
-//			return true;
-//		for (unsigned int j=0; j<cri1.places.size(); ++j)
-//		{
-//			ConceptualData::PlaceInfo pi1 = cri1.places[j];
-//			ConceptualData::PlaceInfo pi2 = cri2.places[j];
-//			if (pi1.placeId != pi2.placeId)
-//				return true;
-////			if (pi1.objectProperties!=pi2.objectProperties)
-////				return true;
-//			// Check how different shapes are
-//			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
-//				return true;
-//			for (unsigned int k=0; k<pi1.shapeProperties.size(); ++k)
-//			{
-//				if ( calculateDistributionDifference(pi1.shapeProperties[k].distribution,
-//						pi2.shapeProperties[k].distribution) > _shapeThreshold )
-//					return true;
-//			}
-//			// Check how different appearances are
-//			if (pi1.appearanceProperties.size() != pi2.appearanceProperties.size())
-//				return true;
-//			for (unsigned int k=0; k<pi1.appearanceProperties.size(); ++k)
-//			{
-//				if ( calculateDistributionDifference(pi1.appearanceProperties[k].distribution,
-//						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
-//					return true;
-//			}
-//		}
-//		// Check placeholders
-//		if (cri1.placeholders.size() != cri2.placeholders.size())
-//			return true;
-//		for (unsigned int j=0; j<cri1.placeholders.size(); ++j)
-//		{
-//			ConceptualData::PlaceholderInfo phi1 = cri1.placeholders[j];
-//			ConceptualData::PlaceholderInfo phi2 = cri2.placeholders[j];
-//			if (phi1.placeholderId != phi2.placeholderId)
-//				return true;
-//		}
-//	}
-//
-//	return false;
-//}
-
-
-// -------------------------------------------------------
 double Observer::calculateDistributionDifference(const SpatialProperties::ProbabilityDistributionPtr dist1,
 		const SpatialProperties::ProbabilityDistributionPtr dist2)
 {
@@ -664,6 +586,20 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 
 		_placeWmAddressMap[wmChange.address] = placePtr;
+
+		if (placePtr->status == SpatialData::PLACEHOLDER)
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventPlaceholderAdded;
+			ei.roomId = -1;
+			ei.place1Id = placePtr->id;
+			ei.place2Id = -1;
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			updateWorldState();
+		}
 		// updateWorldState(); // We will get that when coma room changes
 		break;
 	}
@@ -689,10 +625,11 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			throw cast::CASTException("The mapping between Place WMAddress and ID changed!");
 
 		// Check what has changed
-		if (old->status != placePtr->status)
+		if ((old->status != placePtr->status) )
 		{
 			ConceptualData::EventInfo ei;
-			ei.type = ConceptualData::EventPlaceStatusChanged;
+			ei.type = (placePtr->status == SpatialData::PLACEHOLDER)?
+					ConceptualData::EventPlaceholderAdded:ConceptualData::EventPlaceholderDeleted;
 			ei.roomId = -1;
 			ei.place1Id = placePtr->id;
 			ei.place2Id = -1;
@@ -707,7 +644,22 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 
 	case cdl::DELETE:
 	{
-		_placeWmAddressMap.erase(wmChange.address);
+		SpatialData::PlacePtr old = _placeWmAddressMap[wmChange.address];
+
+		if (old->status == SpatialData::PLACEHOLDER)
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventPlaceholderDeleted;
+			ei.roomId = -1;
+			ei.place1Id = old->id;
+			ei.place2Id = -1;
+			pthread_mutex_lock(&_worldStateMutex);
+			_accumulatedEvents.push_back(ei);
+			pthread_mutex_unlock(&_worldStateMutex);
+
+			_placeWmAddressMap.erase(wmChange.address);
+			updateWorldState();
+		}
 		// updateWorldState(); // We will get that when coma room changes
 		break;
 	}
@@ -1566,3 +1518,83 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 
 
 } // namespace def
+
+
+
+// Not used anymore
+// -------------------------------------------------------
+//bool Observer::areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2)
+//{
+//	if (ws1->roomConnections != ws2->roomConnections)
+//		return true;
+//
+//	// Analyse the room structure
+//	if (ws1->rooms.size() != ws2->rooms.size())
+//		return true;
+//	for (unsigned int i=0; i<ws1->rooms.size(); ++i)
+//	{
+//		ConceptualData::ComaRoomInfo &cri1 = ws1->rooms[i];
+//		ConceptualData::ComaRoomInfo &cri2 = ws2->rooms[i];
+//		if (cri1.wmAddress != cri2.wmAddress)
+//			return true;
+//		if (cri1.roomId != cri2.roomId)
+//			return true;
+//		// Compare object properties
+//		if (cri1.objectProperties.size()!=cri2.objectProperties.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.objectProperties.size(); ++j)
+//		{
+//			ConceptualData::ObjectPlacePropertyInfo oppi1 = cri1.objectProperties[j];
+//			ConceptualData::ObjectPlacePropertyInfo oppi2 = cri2.objectProperties[j];
+//			if ( (oppi1.category!=oppi2.category) ||
+//				 (oppi1.count!=oppi2.count) ||
+//				 (oppi1.relation!=oppi2.relation) ||
+//				 (oppi1.supportObjectCategory!=oppi2.supportObjectCategory) ||
+//				 (oppi1.supportObjectId != oppi2.supportObjectId) ||
+//				 (fabs(oppi1.beta-oppi2.beta)> _betaThreshold) )
+//				return true;
+//		}
+//		// Compare places
+//		if (cri1.places.size() != cri2.places.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.places.size(); ++j)
+//		{
+//			ConceptualData::PlaceInfo pi1 = cri1.places[j];
+//			ConceptualData::PlaceInfo pi2 = cri2.places[j];
+//			if (pi1.placeId != pi2.placeId)
+//				return true;
+////			if (pi1.objectProperties!=pi2.objectProperties)
+////				return true;
+//			// Check how different shapes are
+//			if (pi1.shapeProperties.size() != pi2.shapeProperties.size())
+//				return true;
+//			for (unsigned int k=0; k<pi1.shapeProperties.size(); ++k)
+//			{
+//				if ( calculateDistributionDifference(pi1.shapeProperties[k].distribution,
+//						pi2.shapeProperties[k].distribution) > _shapeThreshold )
+//					return true;
+//			}
+//			// Check how different appearances are
+//			if (pi1.appearanceProperties.size() != pi2.appearanceProperties.size())
+//				return true;
+//			for (unsigned int k=0; k<pi1.appearanceProperties.size(); ++k)
+//			{
+//				if ( calculateDistributionDifference(pi1.appearanceProperties[k].distribution,
+//						pi2.appearanceProperties[k].distribution) > _appearanceThreshold )
+//					return true;
+//			}
+//		}
+//		// Check placeholders
+//		if (cri1.placeholders.size() != cri2.placeholders.size())
+//			return true;
+//		for (unsigned int j=0; j<cri1.placeholders.size(); ++j)
+//		{
+//			ConceptualData::PlaceholderInfo phi1 = cri1.placeholders[j];
+//			ConceptualData::PlaceholderInfo phi2 = cri2.placeholders[j];
+//			if (phi1.placeholderId != phi2.placeholderId)
+//				return true;
+//		}
+//	}
+//
+//	return false;
+//}
