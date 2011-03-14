@@ -32,12 +32,15 @@ if ( abs(sum(model.w)-1) > 1e-5 )
 end
 model.w = model.w / sum(model.w) ;
 
+Z = 0 ;
+% min_en = (1e-5)^2 ;
+% Z = eye(d,d)*min_en ;
 for i = 1 : N
     model.Cov = {} ;    
-    model.smod.ps.Cov = horzcat(model.smod.ps.Cov, 0) ;
+    model.smod.ps.Cov = horzcat(model.smod.ps.Cov, Z) ;
     q.Mu = obs(:,i) ;
     q.w = 1 ;
-    q.Cov = {0} ;
+    q.Cov = {Z} ;
     model.smod.q = horzcat(model.smod.q, q)  ;
 end
 
