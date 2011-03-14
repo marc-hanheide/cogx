@@ -16,9 +16,8 @@ function hyper_output_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, var
 %
 
 Cdescribe = 1 ;
-Cran = 0.25 ;
-Cans = 0.25 ; 
-Clist = 0.25 ;
+Cans = 0.1 ; 
+Clist = 0.1 ;
 
 turn_off_splitting = [] ;
 type_update = 'partial' ; % 'partial', 'joint'
@@ -397,8 +396,8 @@ switch operator_data
                 
         
         % sample class from the distribution
-        cls = sampleDiscrete( P ) ;
-%         [valp,cls] = max(P) ;
+%         cls = sampleDiscrete( P ) ;
+        [valp,cls] = max(P) ;
         rslt = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_name_at_index', cls ) ;
         hyper_output_kde_cl = [] ;
         hyper_output_kde_cl.class = cls ;
@@ -433,9 +432,9 @@ switch operator_data
                     end
                 end
             elseif isequal( autonomous_update, 'situated_verified' )
-                if rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
+                if rslt.H > 1e-6 || rslt.C == -1 %rslt.H >  hyper_input_kde_cl.autoUpdateThres.upper || rslt.C == -1 % uncertain classification 
                     Ccost = Ccost + Clist ;
-                    if rslt.C == -1 %|| max(rslt.P) < 0.3/length(rslt.P) % ask open question
+                    if rslt.C == -1  || max(rslt.P) < 0.2  % ask open question
 %                         hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
                         hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt,...
                                                                          input_data(i), 0.05, vforwvargin) ;    
@@ -463,14 +462,14 @@ switch operator_data
 %                     Ccost = 1 ;
                     answers = horzcat(answers, Ccost) ;
                 else % Certain Classification so no questions
-                   if rslt.H <= hyper_input_kde_cl.autoUpdateThres.lower
-                        answers = horzcat(answers, 0) ;
-                        input_data{i}.class_name = [] ;
-                        input_data{i}.class = rslt.C ; 
-                        hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
-                   else
+%                    if rslt.H <= hyper_input_kde_cl.autoUpdateThres.lower
+%                         answers = horzcat(answers, 0) ;
+%                         input_data{i}.class_name = [] ;
+%                         input_data{i}.class = rslt.C ; 
+%                         hyper_input_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'input_data', input_data(i), 'add_input', vforwvargin{:} ) ;
+%                    else
                        answers = horzcat(answers, 0) ;
-                   end
+%                    end
                 end
             else
                 error('Unknown "autonomous_update" type!') ;
@@ -995,16 +994,20 @@ end
 
 % -------------------------------------------------------------------- %
 function hyper_input_kde_cl = unlearn_few_update_correct(hyper_input_kde_cl, rslt, input_data, scaleth, vforwvargin)
-  
-[f g]=max(rslt.P) ;
+ 
+Cl_index = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_index_at_name', input_data{1}.class_name) ;
+cls_tmp = input_data{1}.class_name ;
+ 
+f = rslt.P(Cl_index) ;
+try
 dp = (rslt.P - f*scaleth) > 0 ; 
 dp(end) = 0  ;
-dp(g) = 0 ;
-
-cls_tmp = input_data{1}.class_name ;
-
-dp = find(dp) ;
+dp(Cl_index) = 0 ;
  
+dp = find(dp) ;
+catch
+    dp = [] ;
+end
 
 for i = 1 : length(dp)
     input_data{1}.class_name = executeOperatorIKDEClsfr( hyper_input_kde_cl, 'get_name_at_index', dp(i)) ; 
