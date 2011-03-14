@@ -55,9 +55,14 @@ pdf.Mu = [ pdf.Mu; zeros(num_nullDir,length(pdf.w)) ] ;
 F_trns = svdRes.V*sqrt(svdRes.S) ;
 C_prot = zeros(size(svdRes.S)) ;
 
+
+ps_exists = 0 ;
 subexists = 0 ;
 if isfield(pdf,'smod')
     subexists = 1 ;
+    if isfield(pdf.smod,'ps')
+        ps_exists = 1 ;
+    end
 end
 % forward transform the pdf and remove nonvalid eigendirections
 if ( subexists == 1) && ~isempty(pdf.smod.H)
@@ -66,12 +71,12 @@ if ( subexists == 1) && ~isempty(pdf.smod.H)
      pdf.smod.H  = F_trns * C_prot * F_trns' ; 
 end
 for j = 1 : length(pdf.w)
-    if subexists == 1
-        try
+    if subexists == 1 && ps_exists == 1
+%         try
         buff_m = zeros(num_nullDir,length(pdf.smod.q(j).w)) ;
-        catch
-           sdsg = 9 
-        end
+%         catch
+%            sdsg = 9 
+%         end
         pdf.smod.q(j).Mu = [ pdf.smod.q(j).Mu; buff_m ] ;
         
         pdf.smod.q(j).Mu = F_trns*pdf.smod.q(j).Mu + repmat(svdRes.new_mu,1,length(pdf.smod.q(j).w)) ;
@@ -153,8 +158,15 @@ if isempty(svdRes)
 % % %         id_valid = find(e > minEigenEnergy) ;
 % % %         id_null = find(e <= minEigenEnergy) ;
   
-    s = diag(S) ;    
-    if max(s) < minVals
+
+    min_s = 1e-4 ; %;minVals ; %0.01 ;
+    s = diag(S) ; ss = s/max(s) ; s(ss<=min_s) = min(s(ss>min_s)); mean(s(s>min_s)) ;
+    S = diag(s) ; %minVals = 0 ;
+    globalCov = U*S*U' ; C = globalCov ;
+
+    s = diag(S) ; s = s /max(s) ;
+    if max(s) < minVals || isnan(sum(s)) ;
+        S = eye(size(S,1)) ;
         S_inv = eye(d,d)*(2/minVals) ;
         id_valid = 1:d ;
         isCompletelySingular = 1 ;
@@ -216,7 +228,8 @@ else
     if regularize == 1        
         % extract and analyze the bandwidth subspace
         H_internal = pdf.smod.H ;
-        H_trn = F_trns*H_internal*F_trns' ;
+%         H_trn = F_trns*H_internal*F_trns' ;
+        H_trn = H_internal ;
         [Ut,St,Vt] = svd(H_trn) ;
   
         E = diag(St) ; 
@@ -230,14 +243,16 @@ else
             St = diag(E) ;
             H_trn_r = Vt*St*Vt' ;
 
-            H_internal_r = invF_trns*H_trn_r*invF_trns' ;
+%             H_internal_r = invF_trns*H_trn_r*invF_trns' ;
+            H_internal_r = H_trn_r ;
             pdf = readjustKernels( pdf, H_internal_r ) ;
+            pdf.smod.H = H_internal_r ;
         end
     end
 end
  
 % forward transform the pdf and remove nonvalid eigendirections
-if ~isempty(pdf.smod.H)
+if isfield(pdf,'smod') && ~isempty(pdf.smod.H)
     pdf.smod.H = F_trns*pdf.smod.H*F_trns' ;
     pdf.smod.H = pdf.smod.H(id_valid, id_valid) ;
 end
@@ -265,7 +280,7 @@ if ~isempty(additional_data)
    additional_data = additional_data(id_valid,:) ;
 end
 
- 
+
 
 % if variable bandwidths activated
 if pdf.smod.useVbw == 1

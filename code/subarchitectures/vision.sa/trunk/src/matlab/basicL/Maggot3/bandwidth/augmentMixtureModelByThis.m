@@ -32,14 +32,15 @@ if ( abs(sum(model.w)-1) > 1e-5 )
 end
 model.w = model.w / sum(model.w) ;
 
-
-for i = 1 : N
-    model.Cov = horzcat(model.Cov, H) ;    
-    model.smod.ps.Cov = horzcat(model.smod.ps.Cov, H*0) ;
-    q.Mu = obs(:,i) ;
-    q.w = model.w(i) ;
-    q.Cov = {H*0} ;
-    mode.smod.q = horzcat(model.smod.q, q)  ;
+if isfield(model,'smod')
+    for i = 1 : N
+        model.Cov = horzcat(model.Cov, H) ;
+        model.smod.ps.Cov = horzcat(model.smod.ps.Cov, H*0) ;
+        q.Mu = obs(:,i) ;
+        q.w = model.w(i) ;
+        q.Cov = {H*0} ;
+        mode.smod.q = horzcat(model.smod.q, q)  ;
+    end
 end
 
 % --------------------------------------------------------------------- %

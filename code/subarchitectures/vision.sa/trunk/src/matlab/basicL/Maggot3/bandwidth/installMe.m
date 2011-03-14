@@ -17,7 +17,7 @@ end
 
 
 % install paths for tools
-dirNames = { } ;
+dirNames = {'./pluginEqEstimator1D', './kde2dByDiffusion' } ;
 
 % install local path
 newPath = [pwd] ;
