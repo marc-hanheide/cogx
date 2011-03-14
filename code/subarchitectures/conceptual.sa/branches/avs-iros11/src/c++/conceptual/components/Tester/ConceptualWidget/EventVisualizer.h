@@ -1,7 +1,7 @@
 #ifndef RCVISUALIZER_H
 #define RCVISUALIZER_H
 
-#include "ui_RCVisualizer.h"
+#include "ui_EventVisualizer.h"
 #include "ConceptualEvent.h"
 
 #include <QtGui/QDialog>
