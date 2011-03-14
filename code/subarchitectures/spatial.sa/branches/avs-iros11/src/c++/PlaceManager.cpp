@@ -881,21 +881,21 @@ PlaceManager::evaluateUnexploredPaths()
 
 	    		gatewaynessMapValue->value = (eval.gatewayValue > 0.5);
 
-	    		SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-	    		  new SpatialProperties::DiscreteProbabilityDistribution;
+			SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+			  new SpatialProperties::DiscreteProbabilityDistribution;
 	    		discDistr->data = pairs;
 
 	    		map<int, string>::iterator
-	    		  foundFSIt = m_placeHolderGatewayProperties.find(hypID);
-	    		if (foundFSIt != m_placeHolderGatewayProperties.end()) {
+	    		  foundFSIt = m_placeholderGatewayProperties.find(hypID);
+	    		if (foundFSIt != m_placeholderGatewayProperties.end()) {
 	    		  try {
 	    		    debug("lock 6");
 	    		    lockEntry(foundFSIt->second, cdl::LOCKEDODR);
 	    		    debug("evaluateUnexploredPaths:3");
 	    		    SpatialProperties::GatewayPlaceholderPropertyPtr
-	    		      gwProp = getMemoryEntry
-	    		      <SpatialProperties::GatewayPlaceholderProperty>
-	    		      (foundFSIt->second);
+			      gwProp = getMemoryEntry
+			      <SpatialProperties::GatewayPlaceholderProperty>
+			      (foundFSIt->second);
 	    		    debug("evaluateUnexploredPaths:4");
 
 			    if (gwProp != 0) {
@@ -936,7 +936,7 @@ PlaceManager::evaluateUnexploredPaths()
 	    		  string newID = newDataID();
 	    		  addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
 	    		    (newID, gwProp);
-	    		  m_freeSpaceProperties[hypID] = newID;
+	    		  m_placeholderGatewayProperties[hypID] = newID;
 	    		}
 	    	      }
 
