@@ -7,6 +7,8 @@ NavWidget::NavWidget(QWidget *parent, conceptual::Tester *component)
     : QWidget(parent), _component(component)
 {
 	ui.setupUi(this);
+
+	connect(ui.gotoxyButton, SIGNAL(clicked()), this, SLOT(gotoxyButtonClicked()));
 }
 
 NavWidget::~NavWidget()
