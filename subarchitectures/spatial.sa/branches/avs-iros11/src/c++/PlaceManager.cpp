@@ -655,8 +655,8 @@ PlaceManager::evaluateUnexploredPaths()
       double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
       log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, frontierPt->mWidth);
 
-      double newX = nodeX;// + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
-      double newY = nodeY;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
+      double newX = x;// + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
+      double newY = y;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 
       // Consider only frontiers with an open path to them
       if (frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
