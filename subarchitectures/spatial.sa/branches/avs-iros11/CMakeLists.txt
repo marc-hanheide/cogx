@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 project (SPATIALSA)
 
+# Set build type
+set(CMAKE_BUILD_TYPE Debug)
+
 # Remove warnings about deprecated libs.
 add_definitions(-Wno-deprecated)
 
