@@ -251,7 +251,7 @@ void Tester::postNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdt
 	cmd->comp = SpatialData::COMMANDPENDING;
 
 	string id(newDataID());
-	addToWorkingMemory<SpatialData::NavCommand> (id, cmd);
+	addToWorkingMemory<SpatialData::NavCommand> (id, "spatial.sa", cmd);
 }
 
 
