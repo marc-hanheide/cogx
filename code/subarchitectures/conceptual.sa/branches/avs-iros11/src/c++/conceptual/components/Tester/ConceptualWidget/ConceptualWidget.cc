@@ -505,10 +505,10 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			eventStr+="RoomPlaceDeleted (rid="+QString::number(event.infos[i].roomId)+", pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventPlaceholderAdded:
-			eventStr+="EventPlaceholderAdded (pid="+QString::number(event.infos[i].place1Id)+")";
+			eventStr+="PlaceholderAdded (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventPlaceholderDeleted:
-			eventStr+="EventPlaceholderAdded (pid="+QString::number(event.infos[i].place1Id)+")";
+			eventStr+="PlaceholderDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventGatewayPlacePropertyChanged:
 			eventStr+="GatewayPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
@@ -557,13 +557,13 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			eventStr+="AppearancePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventGatewayPlaceholderPropertyAdded:
-			eventStr+="EventGatewayPlaceholderPropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
+			eventStr+="GatewayPlaceholderPropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventGatewayPlaceholderPropertyDeleted:
-			eventStr+="EventGatewayPlaceholderPropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
+			eventStr+="GatewayPlaceholderPropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventGatewayPlaceholderPropertyChanged:
-			eventStr+="EventGatewayPlaceholderPropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
+			eventStr+="GatewayPlaceholderPropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventRoomConnectivityChanged:
 			eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.infos[i].place1Id)+", pid2="+QString::number(event.infos[i].place2Id)+")";

@@ -93,9 +93,6 @@ void NavWidget::newNavCommand(SpatialData::NavCommandPtr navCommandPtr)
 		case SpatialData::COMMANDSUCCEEDED:
 			str+="COMMANDSUCCEEDED";
 			break;
-		case SpatialData::UNKNOWN:
-			str+="UNKNOWN";
-			break;
 	}
 
 	str+=" Status:";
