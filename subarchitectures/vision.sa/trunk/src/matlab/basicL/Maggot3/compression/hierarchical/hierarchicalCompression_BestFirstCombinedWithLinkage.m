@@ -1,4 +1,7 @@
 function [pdf_cmprs , idxToref_out, augmented_pdf ]= hierarchicalCompression_BestFirstCombinedWithLinkage( pdf, varargin )
+% tale je delal kar okej pri H=0.05 / Nlocal, ampak je nekaj èudnega pri dendrogramih!! tudi
+% ocenjevanje cene kompresije je samo za vsak lokalni klaster, ne pa vse
+% skupaj -- ni isto kot je napisano v èlanku!
 
 type_cost = 1 ; % 1 means mean hellinger (th opt= 0.001, or 0.02), 2 means max dif in apost (th opt= 0.001 or 0.002)
 use_mean_estimate = 0 ;
@@ -56,7 +59,18 @@ if ~isempty(otherClasses)
     % precalculate statistics for compression
 
     if use_mean_estimate == 0
-        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, pdf.Mu(:,1) ) ;
+%         try
+
+[new_mu, new_Cov, w_out] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;
+
+pdf_cmprs.Mu = new_mu ;
+pdf_cmprs.Cov = {new_Cov} ;
+pdf_cmprs.w = w_out ;
+
+        otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs ) ;
+%         catch
+%             sdfg =4
+%         end
     end
 
     hellCostThreshold_for_split = costThreshold.thReconstructive;   
@@ -84,7 +98,12 @@ end
     beforeSplits = length(pdf.w) ; 
     inPars.type_cost = type_cost ;
     if turn_off_splitting == 0
+        w1 = length(pdf.w) ;
         pdf = executeSplitComponents( pdf, inPars, otherClasses, use_mean_estimate ) ;       
+%         disp('Split analyzed!')
+            if w1- length(pdf.w) ~= 0
+                warning('Splitting!! This is not a problem, just a report') ;
+            end
     else
      
 %         ignoreSublayer = 1 ;
@@ -102,17 +121,18 @@ if  ~isempty(otherClasses) && (abs(beforeSplits - length(pdf.w)) > 0)
     otherClasses.pdf.precalcStat = uCostModel( otherClasses.pdf, pdf, [], otherClasses.priors, approximateCost, type_cost ) ;
 end
 
-assign_clust_type = 'average' ;% single, weighted, average, ward ;
+assign_clust_type = 'centroid' ;% centroid, single, weighted, average, ward ;
 type_dist_calculation = 'eucledian' ; %'eucledian' ; 'mahalanobis'
 % calculate linkage and clustering
 switch type_dist_calculation
     case 'eucledian'
-        Y = pdist(pdf.Mu','seuclidean') ;  
+        Y = pdist(pdf.Mu','euclidean') ;  % was 'seuclidean'  
     case 'mahalanobis'
         Y = pdistMahalanobis(pdf) ;
 end
-clustering = generateClusterAssignments( Y, size(pdf.Mu,2), assign_clust_type ) ;
-
+ 
+clustering = generateClusterAssignments( Y, size(pdf.Mu,2), assign_clust_type, pdf ) ;
+ 
 
 % initialize compressed
 % approximate using a single pdf
@@ -121,51 +141,94 @@ clustering = generateClusterAssignments( Y, size(pdf.Mu,2), assign_clust_type ) 
 pdf_cmprs.Mu = new_mu ;
 pdf_cmprs.Cov = {new_Cov} ;
 pdf_cmprs.w = w_out ;
-Hell = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_cmprs.Mu, type_cost ) ;
+
+pdf_prop.Mu = [pdf.Mu, new_mu] ; pdf_prop.w = [pdf.w*0.5, w_out*0.5] ;  
+pdf_prop.w = pdf_prop.w/sum(pdf_prop.w) ;
+
+Hell = uCostModel( otherClasses.pdf, pdf, pdf_cmprs, otherClasses.priors, approximateCost, pdf_prop, type_cost ) ;
  
 % initialize selected clustering
 cmp_data.idxToref = (clustering.num_nodes+clustering.len_data) ;
 cmp_data.hells = [Hell] ;
 cmp_data.cantbrake = [0] ;
+cmp_data.w = [1] ;
 
 len_of_ref_pdf = length(pdf.w) ;
 % loop while optimal clustering not reached
 while length(pdf.w) >= minNumberOfComponentsThreshold  && isempty(debugForceCompress)
     % get index to cluster in cmp_data.idxToref with maximal error
     [val, i_sel] = max(cmp_data.hells) ;
-    if val <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
-       break ; 
+%     if sum(cmp_data.hells ) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+
+%     if max(cmp_data.hells) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+
+%    if sqrt(sum((cmp_data.hells.^2).*cmp_data.w)) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+%     
+%    if (sum((cmp_data.hells).*cmp_data.w))  <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+
+%     if (sum((cmp_data.hells).*cmp_data.w))*length(otherClasses.pdf.pdfs) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; %*length(otherClasses.pdf.pdfs)
+%     end
+
+    if sqrt(sum(cmp_data.hells.*cmp_data.w))*length(otherClasses.pdf.pdfs) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+       break ; %*length(otherClasses.pdf.pdfs)
     end
+
+
+%     if sum((cmp_data.hells.^2).*cmp_data.w)*length(otherClasses.pdf.pdfs) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+
+
+%     if sqrt(sum(cmp_data.hells.^2))*length(otherClasses.pdf.pdfs) <= costThreshold && minNumberOfComponentsThreshold <= length(cmp_data.idxToref)
+%        break ; 
+%     end
+%  
     
     % split selected component
     [nodes, ref_idx] = getSubclustersOfNodeIndex( clustering, cmp_data.idxToref(i_sel) ) ;
-    H_tmp = zeros(1,2) ;
+    H_tmp = zeros(1,2) ; ww = zeros(1,2) ;
     for i = 1 : length(nodes)
+       ww(i) = sum(pdf.w(ref_idx{i})) ;
        if length(ref_idx{i}) == 1
-           H_tmp(i) = 0 ;
+           H_tmp(i) = 0 ; 
        else
             % approximate the cluster
             pdf_indexes = ref_idx{i} ;
             [new_mu, new_Cov, new_w] = momentMatchPdf(pdf.Mu(:,pdf_indexes), pdf.Cov(pdf_indexes), pdf.w(pdf_indexes)) ;
-            app_pdf.Mu = new_mu ; app_pdf.Cov = {new_Cov} ; app_pdf.w = new_w ;            
+            cls_pdf.Mu = new_mu ; cls_pdf.Cov = {new_Cov} ; cls_pdf.w = new_w ;  
+            fll_pdf = extractSubMixture( pdf, pdf_indexes ) ;
+            pdf_prop = mergeDistributions( fll_pdf, cls_pdf, [0.5 0.5], 0 ) ; 
+%             pdf_prop.w = pdf_prop.w/sum(pdf_prop.w) ;
             
             % extract noncompressed mixture components
             I = ones( 1, len_of_ref_pdf ) ; I(pdf_indexes) = 0 ; I = (I == 1) ;
             remaining_pdf = extractSubMixture( pdf, I ) ;
             
             % merge distributions
-            pdf_compr = mergeDistributions( remaining_pdf, app_pdf, [1 1], 1 ) ;
+            pdf_compr = mergeDistributions( remaining_pdf, cls_pdf, [1 1], 1 ) ;
             
-            H_tmp(i) = uCostModel( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, app_pdf.Mu, type_cost ) ;             
+            H_tmp(i) = uCostModel( otherClasses.pdf, pdf, pdf_compr,  otherClasses.priors, approximateCost, pdf_prop, type_cost ) ;   
+           
        end
     end
     
     % store cluster results
     cmp_data.idxToref(i_sel) = nodes(1) ;
     cmp_data.hells(i_sel) = H_tmp(1) ;
+    cmp_data.w(i_sel) = ww(1) ;
     
     cmp_data.idxToref = horzcat(cmp_data.idxToref, nodes(2) ) ;
     cmp_data.hells = horzcat(cmp_data.hells, H_tmp(2) ) ;   
+    cmp_data.w  = horzcat(cmp_data.w, ww(2)) ;
 end
   
 num_of_comps = length(cmp_data.idxToref) ;
@@ -267,9 +330,11 @@ for i = 1 : length(nodes)
 end
 
 % ----------------------------------------------------------------------- %
-function clustering = generateClusterAssignments( Y, len_data, assign_clust_type )
+function clustering = generateClusterAssignments( Y, len_data, assign_clust_type, pfdin )
 
 Z = linkage(Y,assign_clust_type) ; % single, weighted, average, ward
+% cluster_tree = generate_cluster_tree( pfdin ) ;Z = cluster_tree.Z ;
+
 num_nodes = size(Z,1) ;
 
 clustering.len_data = len_data ;
