@@ -36,7 +36,6 @@ void NavWidget::newNavCommand(QString str)
 
 void NavWidget::newNavCommand(SpatialData::NavCommandPtr navCommandPtr)
 {
-
 	if(!navCommandPtr)
 		return;
 
