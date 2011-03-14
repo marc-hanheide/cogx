@@ -1154,13 +1154,22 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 	{
 		const ConceptualData::ComaRoomInfo &cri =_worldStateRooms[r];
 		// Run imaginary world generation for that room
-		vector<double> outputs;
-		runImaginaryWorldsGenerationForPlaceholderInRoom(cri.roomId, outputs);
+		vector< vector<double> > allOutputs;
+		runImaginaryWorldsGenerationForPlaceholderInRoom(cri.roomId, allOutputs);
 
 		// No through all the placeholders in the room and apply the results
 		for (unsigned int p=0; p<cri.placeholders.size(); ++p)
 		{
 			const ConceptualData::PlaceholderInfo &phi = cri.placeholders[p];
+			double prior = (1.0-_placeholderInCurrentRoomPrior);
+			if (phi.gatewayProperties.size())
+			{
+				prior = phi.gatewayProperties[0].gatewayProbability;
+			}
+
+			vector<double> outputs;
+			integrateImaginaryWorldsOutputs(allOutputs, outputs, prior);
+
 			for (unsigned int i=0; i<_roomCategories.size(); ++i)
 			{
 				stringstream varName;
@@ -1172,15 +1181,28 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 }
 
 
-// -------------------------------------------------------
-void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
-		std::vector<double> &outputs)
+void ChainGraphInferencer::integrateImaginaryWorldsOutputs(
+		const std::vector< std::vector<double> > &allOutputs,
+		std::vector<double> &outputs, double prior)
 {
 	outputs.clear();
 	outputs.resize(_roomCategories.size());
 	for (unsigned int i=0; i<outputs.size(); ++i)
+	{
 		outputs[i] = 0.0;
+		for (unsigned int j=0; j<allOutputs.size(); ++j)
+		{
+			outputs[i]+=allOutputs[j][i] / static_cast<double>(allOutputs.size()); // Each world is equally possible
+		}
+		outputs[i]*=prior;
+	}
+}
 
+
+// -------------------------------------------------------
+void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int roomId,
+		std::vector< std::vector<double> > &allOutputs)
+{
 	// World in which there are no other rooms
 	// This one is not included as the properties contain only the probability of
 	// categories of NEW rooms.
@@ -1206,8 +1228,10 @@ void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int 
 	dai::BP bp = dai::BP(factorGraph, _daiOptions("updates",string("SEQRND"))("logdomain",false));
 	bp.init();
 	bp.run();
-	// Update outputs using marginals
-	updateOutputsUsingImaginaryVariables(bp, newVars, outputs, (1.0-_placeholderInCurrentRoomPrior)/2.0);
+	// Generate outputs using marginals
+	std::vector<double> outputs1;
+	generateOutputsUsingImaginaryVariables(bp, newVars, outputs1);
+	allOutputs.push_back(outputs1);
 
 	// World in which there are 2 additional rooms
 	// -------------------------------------------
@@ -1224,15 +1248,21 @@ void ChainGraphInferencer::runImaginaryWorldsGenerationForPlaceholderInRoom(int 
 	bp = dai::BP(factorGraph, _daiOptions("updates",string("SEQRND"))("logdomain",false));
 	bp.init();
 	bp.run();
-	// Update outputs using marginals
-	updateOutputsUsingImaginaryVariables(bp, newVars, outputs, (1.0-_placeholderInCurrentRoomPrior)/2.0);
-
+	// Generate outputs using marginals
+	std::vector<double> outputs2;
+	generateOutputsUsingImaginaryVariables(bp, newVars, outputs2);
+	allOutputs.push_back(outputs2);
 }
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::updateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs, double prior)
+void ChainGraphInferencer::generateOutputsUsingImaginaryVariables(dai::BP &bp, dai::VarSet &vars, std::vector<double> &outputs)
 {
+	outputs.clear();
+	outputs.resize(_roomCategories.size());
+	for (unsigned int i=0; i<outputs.size(); ++i)
+		outputs[i] = 0.0;
+
 	// Retrieve marginal
 	//        dai::Factor marginal = _junctionTree.belief(vars);
 	dai::Factor marginal = bp.belief(vars);
@@ -1243,7 +1273,7 @@ void ChainGraphInferencer::updateOutputsUsingImaginaryVariables(dai::BP &bp, dai
 		for (unsigned int i = 0; i < marginal.nrStates(); ++i)
 		{
 			double marginalProb = marginal.get(i);
-			outputs[i]+=prior * marginalProb;
+			outputs[i]+=marginalProb;
 		}
 	}
 	else if (vars.size() == 2)
@@ -1255,11 +1285,11 @@ void ChainGraphInferencer::updateOutputsUsingImaginaryVariables(dai::BP &bp, dai
 			{
 				double marginalProb = marginal.get(i);
 				if (v1==v2)
-					outputs[v1]+=prior * marginalProb;
+					outputs[v1]+=marginalProb;
 				else
 				{
-					outputs[v1]+=prior * marginalProb;
-					outputs[v2]+=prior * marginalProb;
+					outputs[v1]+=marginalProb;
+					outputs[v2]+=marginalProb;
 				}
 				i++;
 			}
