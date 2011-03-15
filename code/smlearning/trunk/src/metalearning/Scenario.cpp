@@ -480,10 +480,9 @@ void Scenario::set_up_movement(){
 
 
 ///
-///storing a label (in this case polyflap status)
-///(TO DO: to be deprecated)
+///storing a label (in this case polyflap abstract behavior)
 ///
-void Scenario::add_label (LearningData::Chunk& chunk) {
+void Scenario::add_label_object_behavior (LearningData::Chunk& chunk) {
 	Real polStateOutput = 0; //polyflap moves with the same Y angle
 	Real epsilonAngle = 0.005;
 	// Real pfFlipThreshold = REAL_PI / 4.0;
@@ -540,7 +539,7 @@ void Scenario::write_chunk (LearningData::Chunk& chunk) {
 
 	// cout << p.p.v1 << " " << p.p.v2 << " " << p.p.v3 << " " << chunk.action.endEfRoll << " " << chunk.action.endEfPitch << " " << chunk.action.endEfYaw << endl;
 
-	if (storeLabels) add_label (chunk);
+	if (storeLabels) add_label_object_behavior (chunk);
 	// trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 
 }
