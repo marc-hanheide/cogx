@@ -187,6 +187,7 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
              line->isct3D[1].p.z);
   p2 = inv.Transform(p2);
   
+  // calculate normal direction of the line
   Vector3 tmpV;
   tmpV = Normalise(p2-p);
 
@@ -229,6 +230,18 @@ bool StereoLines::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 
   obj->detectionConfidence = line->GetSignificance();
 
+  
+  /// HACK HACK HACK: Add 2D information of left image to the visual object!
+  double x1, y1 ,x2, y2;
+  x1 = ((Z::Line*) vcore[LEFT]->Gestalts(Gestalt::LINE, line->GetVs3ID(LEFT)))->point[0].x;
+  y1 = ((Z::Line*) vcore[LEFT]->Gestalts(Gestalt::LINE, line->GetVs3ID(LEFT)))->point[0].y;
+  x2 = ((Z::Line*) vcore[LEFT]->Gestalts(Gestalt::LINE, line->GetVs3ID(LEFT)))->point[1].x;
+  y2 = ((Z::Line*) vcore[LEFT]->Gestalts(Gestalt::LINE, line->GetVs3ID(LEFT)))->point[1].y;
+  obj->points2D.push_back(x1);
+  obj->points2D.push_back(y1);
+  obj->points2D.push_back(x2);
+  obj->points2D.push_back(y2);
+  
   return true;
 }
 #endif
@@ -383,7 +396,7 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
 //     }
 //   }
   
-  // Each line (left or right) can have only one match.
+  // Each line (left or right) can have only one match.										/// TODO TODO Eigene Funktion schreiben
   bool solved = false;
   while(!solved)
   {
@@ -613,7 +626,7 @@ bool StereoLines::Prune3DLines(Line3D *line3d)
   double zRelation = fabs(zL/(fabs(xL)+fabs(yL)));
 // printf("Verhältnis: %4.2f / %4.2f / %4.2f => %4.2f\n", xL, yL, zL, zRelation);
   
-  /// Wenn die Linie länger als 30cm in z-Richtung geht, dann wird sie aussortiert!
+  // Wenn die Linie länger als 30cm in z-Richtung geht, dann wird sie aussortiert!
 //  if(fabs(line3d->isct3D[0].p.z - line3d->isct3D[1].p.z) > 0.3) return true;
 
   if(SC_USE_LINE_THRESHOLDS)
