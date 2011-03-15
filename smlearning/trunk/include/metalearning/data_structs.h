@@ -145,9 +145,8 @@ struct LearningData {
 		Action action;
 		/** feature vector corresponding to the whole chunk (any vectorial representation is possible) */
 		FeatureVector featureVector;
-		/** a label for this chunk */
-		Real label;
-			
+		/** a label for this chunk, as a real nr. */
+		Real label;			
 		
 	};
 
@@ -212,7 +211,7 @@ struct LearningData {
 
 
 	
-	/** Reset to default (empty)*/
+	/** Reset to default */
 	void setToDefault(FeaturesLimits limits) {
 		effector.clear();
 		object.clear();
@@ -712,9 +711,14 @@ struct LearningData {
 
 
 	///
-	///Writing a dataset in CrySSMEx format. It works as a regression method.
-	///All data are vectorial.
-	///\param featureSelectionMethod allows different feature selection methods and state spaces.
+	///Writing a dataset in CrySSMEx format.
+	///If output is continuos CrySSMEx acts as a regression method
+	///If output is discrete labels are discretized as symbols
+	///\param writeFileName name of CrySSMex format file
+	///\param data data set
+	///\param normalize normalization function
+	///\param limits feature limits for normalization
+	///\param featureSelectionMethod allows different feature selection methods and state space configuration.
 	template<class Normalization>
 	static void write_cryssmexdataset (string writeFileName, DataSet& data, Normalization normalize, FeaturesLimits limits, int featureSelectionMethod) {
 		writeFileName += ".cry";
@@ -722,25 +726,25 @@ struct LearningData {
 		assert (data.size() >= 1);
 		int inputVectorSize, stateVectorSize, outputVectorSize;
 
-		if (featureSelectionMethod == _obpose) {
+		if (featureSelectionMethod == _obpose) { //suitable for Mealy machines
 			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
 			stateVectorSize = pfVectorSize;
 			outputVectorSize = pfVectorSize;
 		}
-		else if (featureSelectionMethod == _efobpose) {
+		else if (featureSelectionMethod == _efobpose) { //suitable for Moore machines
 			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
 			outputVectorSize = pfVectorSize;
 		}
-		else if (featureSelectionMethod == _obpose_label) {
+		else if (featureSelectionMethod == _obpose_label) { //suitable for Mealy machines
 			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
 			stateVectorSize = pfVectorSize;
-			outputVectorSize = 1;
+			outputVectorSize = 0;
 		}
-		else if (featureSelectionMethod == _efobpose_label) {
+		else if (featureSelectionMethod == _efobpose_label) { //suitable for Moore machines
 			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
-			outputVectorSize = 1;
+			outputVectorSize = 0;
 		}
 		ofstream writeFile(writeFileName.c_str(), ios::out);
 
@@ -752,7 +756,18 @@ struct LearningData {
 		writeFile << outputVectorSize << endl;
 		
 		writeFile << "# nr input symbols" << endl << "0.0" << endl;
-		writeFile << "# output examples" << endl << "0.0" << endl;
+		if (outputVectorSize != 0)
+			writeFile << "# output examples" << endl << "0.0" << endl;
+		else {
+			set<string> labelsSet = labels_enumerator (data);
+			writeFile << "# nr output symbols" << endl;
+			writeFile << labelsSet.size() << endl;
+			writeFile << "# examples" << endl;
+			set<string>::iterator it;
+			for (it=labelsSet.begin(); it!=labelsSet.end(); it++)
+				writeFile << *it << " ";
+			writeFile << endl;
+		}
 		// writeFile.precision(20);
 
 		DataSet::const_iterator d_iter;
@@ -791,7 +806,8 @@ struct LearningData {
 					if (s_iter == seq.begin() ) {
 						assert (inputVector.size() == inputVectorSize);
 						assert (stateVector.size() == stateVectorSize);
-						assert (outputVector.size() == outputVectorSize);
+						if (outputVectorSize != 0)
+							assert (outputVector.size() == outputVectorSize);
 					}
 					write_vector (writeFile, inputVector, _text);
 					write_vector (writeFile, stateVector, _text);
@@ -804,6 +820,30 @@ struct LearningData {
 	
 	}
 
+	///
+	///Returns the labels in a dataset in a container as string values
+	///\param data data set
+	static set<string> labels_enumerator (const DataSet& data)
+	{
+		set<string> labelsSet;
+		DataSet::const_iterator d_iter;
+		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
+			Chunk::Seq seq = *d_iter;
+			
+			Chunk::Seq::const_iterator s_iter;
+			
+			for (s_iter = seq.begin(); s_iter != seq.end(); s_iter++) {
+				stringstream labelStr;
+				labelStr << s_iter->label;
+				string label = labelStr.str();
+				if (labelsSet.find (label) == labelsSet.end())
+					labelsSet.insert (label);
+
+			}
+		}
+
+		return labelsSet;
+	}
 	
 
 };

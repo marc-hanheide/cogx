@@ -409,9 +409,9 @@ protected:
 	void write_chunk (LearningData::Chunk& chunk);
 	
 	///
-	///storing a label (in this case polyflap status)
+	///storing a label (in this case polyflap abstract behavior)
 	///
-	void add_label (LearningData::Chunk& chunk);
+	void add_label_object_behavior (LearningData::Chunk& chunk);
 
 	///
 	///turn the finger collision detection on (true) or off (false)
