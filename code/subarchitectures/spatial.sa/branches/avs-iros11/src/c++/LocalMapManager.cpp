@@ -17,6 +17,9 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "GridObjectFinder.hpp"
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
 #include <float.h>
@@ -24,6 +27,8 @@
 #include <VisionData.hpp>
 #include <stdlib.h>
 #include "scanmap/HSS/HSSutils.hh"
+#include "scanmap/HSS/HSSDisplayFunctions.hh"
+
 
 using namespace cast;
 using namespace std;
@@ -97,6 +102,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
     std::abort();
   }
   std::string configfile = it->second;
+
+  m_PbPort = 5050;
+  m_PbHost = "localhost";
 
   Cure::ConfigFileReader cfg;
   if (cfg.init(configfile)) {
@@ -282,6 +290,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
 
   FrontierInterface::LocalMapInterfacePtr mapservant = new LocalMapServer(this);
   registerIceServer<FrontierInterface::LocalMapInterface, FrontierInterface::LocalMapInterface>(mapservant);
+
+  m_peekabotClient.connect(m_PbHost, m_PbPort);
+  m_HSSGroupProxy.add(m_peekabotClient, "HSS", peekabot::REPLACE_ON_CONFLICT);
 } 
 
 void LocalMapManager::start() 
@@ -609,21 +620,44 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	list<HSS::RedundantLine2DRep> detDoors =
 	  m_doorExtractor.doors();
 
+	Eigen::Vector3d xsR;
+	xsR[0] = m_LaserPoseR.getX();
+	xsR[1] = m_LaserPoseR.getY();
+	xsR[2] = m_LaserPoseR.getTheta();
+
+	Eigen::Vector3d odomNew;
+	odomNew[0] = lastRobotPose->x;
+	odomNew[1] = lastRobotPose->y;
+	odomNew[2] = lastRobotPose->theta;
+
+	HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
+
 	for (list<HSS::RedundantLine2DRep>::iterator it = detDoors.begin();
 	    it != detDoors.end(); it++) {
 	  bool found = false;
-	  for (vector<HSS::RedundantLine2DRep>::iterator it2 = m_detectedDoors.begin();
+	  double doorX = odomNew[0] + cos(odomNew[2])*it->xC() - sin(odomNew[2])*it->yC();
+	  double doorY = odomNew[1] + sin(odomNew[2])*it->xC() + cos(odomNew[2])*it->yC();
+	  debug("Door detected at (%f,%f)", doorX, doorY);
+	  for (vector<Eigen::Vector3d>::iterator it2 = m_detectedDoors.begin();
 	      it2 != m_detectedDoors.end(); it2++) {
-	    double dx = it2->xC() - it->xC();
-	    double dy = it2->yC() - it->yC();
+	    double dx = (*it2)[0] - doorX;
+	    double dy = (*it2)[1] - doorY;
 	    double dist = dx*dx+dy*dy;
-	    if (dist < 4.0) {
+	    if (dist < 1.0) {
 	      found = true;
 	      break;
 	    }
 	  }
 	  if (!found) {
-	    m_detectedDoors.push_back(*it);
+	    Eigen::Vector3d newDoor;
+	    newDoor[0] = doorX;
+	    newDoor[1] = doorY;
+	    newDoor[2] = 0;
+	    m_detectedDoors.push_back(newDoor);
+	    peekabot::SphereProxy sph;
+	    sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	    sph.set_scale(0.1, 0.1, 0.1);
+	    sph.translate(doorX, doorY, 2.0);
 	  }
 	}
       }
@@ -814,11 +848,11 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 
   if (m_bDetectDoors) {
     double minDistSq = DBL_MAX;
-    for (vector<HSS::RedundantLine2DRep>::iterator it = m_detectedDoors.begin();
+    for (vector<Eigen::Vector3d>::iterator it = m_detectedDoors.begin();
 	it != m_detectedDoors.end(); it++) {
-    	log("Doorway at %f %f", it->xC(), it->yC());
-      double dx = relevantX - it->xC();
-      double dy = relevantY - it->yC();
+    	log("Doorway at %f %f", (*it)[0], (*it)[1]);
+      double dx = relevantX - (*it)[0];
+      double dy = relevantY - (*it)[1];
       double distSq = dx*dx+dy*dy;
       if (distSq < minDistSq) {
 	minDistSq = distSq;

@@ -14,6 +14,8 @@
 
 #ifndef LocalMapManager_hpp
 #define LocalMapManager_hpp
+#include <peekabot.hh>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
@@ -36,6 +38,7 @@
 #include "scanmap/HSS/HSSScan2D.hh"
 #include "scanmap/HSS/HSSDoorExtractor.hh"
 #include "scanmap/HSS/HSSRedundantLine2DRep.hh"
+
 
 namespace spatial {
   typedef std::vector<std::pair<double, double> > PlaneList;
@@ -217,9 +220,16 @@ protected:
   //Remote door extractor
   HSS::DoorExtractor m_doorExtractor;
   //Detected doors
-  std::vector<HSS::RedundantLine2DRep> m_detectedDoors;
+  std::vector<Eigen::Vector3d> m_detectedDoors;
   //Falloff for gateway property value with distance to nearest detected door
   double m_doorwayWidth;
+
+  //Peekabot
+  std::string m_PbHost;
+  int m_PbPort;
+
+  peekabot::PeekabotClient m_peekabotClient;
+  peekabot::GroupProxy m_HSSGroupProxy;
 
   //For keeping track of when the robot is moving (to filter planes)
   double m_standingStillThreshold;
