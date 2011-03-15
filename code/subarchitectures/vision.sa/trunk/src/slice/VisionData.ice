@@ -21,8 +21,7 @@ module VisionData {
     Vector3Seq pTop;
 	// 3D vector sequence, describing the object top surface ???
   };
-
-sequence<OneObj> ObjSeq;
+  sequence<OneObj> ObjSeq;
 
   /**
    * @brief A convex hull describes ...???
@@ -69,7 +68,6 @@ sequence<OneObj> ObjSeq;
     cogx::Math::Vector3 p;
     VisionData::ColorRGB c;
   };
-
   sequence<SurfacePoint> SurfacePointSeq;
 
   /**
@@ -192,6 +190,9 @@ sequence<OneObj> ObjSeq;
 
     // Source proto object
     string protoObjectID;
+
+    // HACK: Points in 2D
+    DoubleSeq points2D;
   };
 
   class DetectionCommand {
