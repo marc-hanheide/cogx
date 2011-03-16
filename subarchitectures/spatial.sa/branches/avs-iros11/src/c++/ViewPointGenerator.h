@@ -28,6 +28,7 @@ public:
 	typedef Cure::LocalGridMap<unsigned char> CureObstMap;
 	typedef SpatialGridMap::GridMap<SpatialGridMap::GridMapData> BloxelMap;
 	typedef Cure::LocalGridMap<double> CurePDFMap;
+	typedef std::vector< std::pair< std::vector<double>, double > > posPDF; // <position,pdf>
 
 	struct SensingAction {
 			std::vector<double> pos;
@@ -36,14 +37,16 @@ public:
 			double totalprob;
 			double conedepth;
 			double horizangle, vertangle, minDistance;
+			posPDF pdfcache;
 	};
 
+
 	ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* pbloxelmap, int samplesize,
-			double sampleawayfromobs, double conedepth, double horizangle, double vertangle,
+			double sampleawayfromobs, double conedepth,  double tiltstep, double panstep, double horizangle, double vertangle,
 			double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty);
 	virtual ~ViewPointGenerator();
 
-	vector<pair<unsigned int, double> > get2DCandidateViewCones();
+	vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones();
 
 	bool isPointSameSide(XVector3D p1, XVector3D p2, XVector3D a, XVector3D b);
 	void findBoundingRectangle(XVector3D a, XVector3D b, XVector3D c,
@@ -52,7 +55,7 @@ public:
 			double fov, XVector3D &b, XVector3D &c);
 	std::vector<pair<int, int> > getInside2DViewCone(CureObstMap* lgm,
 			XVector3D &a, bool addall);
-	std::vector<std::vector<pair<int, int> > > calculate3DViewConesFrom2D();
+	std::vector<std::vector<pair<int, int> > > calculate2DConesRegion();
 	std::vector<Cure::Pose3D> sample2DGrid();
 	double getPathLength(Cure::Pose3D start, Cure::Pose3D destination,
 			CureObstMap* lgm);
@@ -75,9 +78,11 @@ public:
 	double m_horizangle, m_vertangle, m_minDistance;
 	double m_robotx, m_roboty, m_robottheta;
     double m_best3DConeRatio;
-    double m_tiltinterval;
+    double m_tiltstep;
     double m_bloxelmapPDFsum;
     double m_pdfthreshold;
+    double m_sensingProb;
+    double m_panstep;
 
 };
 }

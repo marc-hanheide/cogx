@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <boost/lexical_cast.hpp>
 #include "GridDataFunctors.hh"
-#include "GridDataFunctors.hh"
 
 #include "PBVisualization.hh"
 
@@ -455,12 +454,30 @@ void AVS_ContinualPlanner::generateViewCones(
 	ViewPointGenerator coneGenerator(this,
 			m_templateRoomGridMaps[newVPCommand->roomId],
 			m_objectBloxelMaps[id], m_samplesize, m_sampleawayfromobs,
-			m_conedepth, m_horizangle, m_vertangle, m_minDistance, pdfmass,
+			m_conedepth, m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance, pdfmass,
 			0.7, 0, 0);
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones();
 
 	log("got %d cones..", viewcones.size());
+
+	/* Display Samples in PB BEGIN */
+	vector < vector<double> > sampled2Dpoints;
+	if(m_usePeekabot){
+		vector<Cure::Pose3D> samples2DWC;
+		for (unsigned int i=0; i < coneGenerator.m_samples2D.size(); i++){
+			double xW, yW;
+			m_currentCureObstMap->index2WorldCoords(coneGenerator.m_samples2D[i].getX(), coneGenerator.m_samples2D[i].getY(), xW, yW);
+			Cure::Pose3D pos;
+			pos.setX(xW);
+			pos.setY(yW);
+			pos.setZ(0);
+			samples2DWC.push_back(pos);
+		}
+		pbVis->Add3DPointCloud(samples2DWC, true, "sample_points");
+
+	}
+	/* Display Samples in PB END */
 
 	//Getting the place belief pointer
 
@@ -775,7 +792,7 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 
 	// Todo: Once we get a response from vision, calculate the remaining prob. value
 	// Get ConeGroup
-	log("Processing Cone Group");
+
 	if (m_beliefConeGroups.count(id) == 0 ){
 		log("No Cone Groups with id: %d, this is an indication of id mismatch!", id);
 		log("We have %d cone groups", m_beliefConeGroups.size());
@@ -787,11 +804,11 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 	    }
 		return;
 	}
+	log("Processing Cone Group with id %d, totalprob %f", id, m_beliefConeGroups[id].getTotalProb());
 
 	m_currentConeGroup = m_beliefConeGroups[id];
-	m_currentViewCone = m_currentConeGroup.viewcones[0];
+	m_currentViewCone = m_currentConeGroup.viewcones[0]; // FIXME one cone per conegroup!
 
-			// FIXME post a nav command
 	log("Posting a nav command");
 
 	Cure::Pose3D pos;
@@ -846,6 +863,7 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	result->relation = m_currentConeGroup.relation;
 	result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
 	result->supportObjectId = m_currentConeGroup.supportObjectId;
+	result->roomId = m_currentConeGroup.roomId;
 	result->beta =differenceMapPDFSum/initialMapPDFSum;
 
 	log("The observed ratio of location: %f", result->beta);
@@ -983,6 +1001,20 @@ void AVS_ContinualPlanner::configure(
 		m_conedepth = (atof(it->second.c_str()));
 		log("Camera view cone depth set to: %f", m_conedepth);
 	}
+
+	m_panstep = 30.0;
+		it = _config.find("--panstep");
+		if (it != _config.end()) {
+			m_panstep = (atof(it->second.c_str()));
+			log("panstep set to: %f", m_panstep);
+		}
+
+		m_tiltstep = 30.0;
+			it = _config.find("--tiltstep");
+			if (it != _config.end()) {
+				m_tiltstep = (atof(it->second.c_str()));
+				log("tiltstep set to: %f", m_tiltstep);
+			}
 
 	m_sampleawayfromobs= 0.2;
 	    it = _config.find("--sampleawayfromobs");
@@ -1125,6 +1157,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 	//	MovePanTilt(0.0, m_currentViewCone.tilt, 0.08);
 	//	Recognize();
 		log("Nav Command succeeded");
+		log("Updating the %s bloxel map", m_currentConeGroup.bloxelMapId.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
 		m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 		log("Overwriting command to change status to: SUCCESS");
@@ -1132,6 +1165,9 @@ void AVS_ContinualPlanner::owtNavCommand(
 	}
 	if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
+				m_currentProcessConeGroup->status = SpatialData::FAILED;
+				log("Overwriting command to change status to: FAILED");
+				overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 			}
 	} catch (const CASTException &e) {
 			//      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
