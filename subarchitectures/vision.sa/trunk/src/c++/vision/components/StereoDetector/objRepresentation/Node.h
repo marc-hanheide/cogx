@@ -27,6 +27,7 @@ private:
 
   std::vector<cv::Point3d> allPos;   /// 3D position of the node
   std::vector<double> allPosSig;     /// Significance value for each 3D position of the node (from the link)
+
   cv::Point3d pos;                   /// 3D position of the node
   
   bool flag_delete;                  /// True, if no link for this node is available.

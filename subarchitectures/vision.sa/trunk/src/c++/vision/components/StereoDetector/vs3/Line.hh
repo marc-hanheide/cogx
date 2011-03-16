@@ -61,13 +61,13 @@ public:
   int label;                            ///< label LEFT/RIGHT
   double energy;                        ///< energy for global conistency
   double stability;                     ///< stability for global consistency
-  set<Line*> neighbors;                 ///< neighbors for global consistency
+  std::set<Line*> neighbors;            ///< neighbors for global consistency
   Line* next;                           ///< next line if split
   Line* defer_vote;                     ///< lines created by splitting don't vote themselves
                                         /// but defer votes to original line
 
-  unsigned idx[2];                      ///< index of start and end point 	HACK ARI: moved from VisibleLine
-  Segment* seg;                         ///< the originating segment		HACK ARI: moved from VisibleLine
+  unsigned idx[2];                      ///< index of start and end point
+  Segment* seg;                         ///< the originating segment
 
 protected:
   Line(VisionCore *vc);
@@ -77,7 +77,7 @@ public:
   void DrawVotes();
   virtual void DrawInfo();
   virtual const char* GetInfo();
-  double Length() {return len;}                                 ///< Return length of line TODO stimmt?
+  double Length() {return len;}                                 ///< Return length of line
   double MinEndpointDistance(const Line* l);
   double DistanceToPoint(const Vector2 &q);
   void AddLJunction(int end, int side, LJunction* jct);
@@ -100,9 +100,8 @@ private:
   unsigned FindSplitIdx(const Vector2 &p);
 
 public:
-
   VisibleLine(VisionCore *c, Segment* s, unsigned i, unsigned j);
-  unsigned NumEdgels() {return idx[END] - idx[START] + 1;}				///< Return the number of edgels
+  unsigned NumEdgels() {return idx[END] - idx[START] + 1;}       ///< Return the number of edgels
   void Recalc();
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();

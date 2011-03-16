@@ -21,12 +21,15 @@ namespace Z
  */
 class LJunction3D : public Gestalt3D
 {
+private:
+  
+  
 public:
   Vertex3D isct3D;                     ///< 3D intersection point
-  Vertex3D armPoints3D[2];             ///< 3D arm points
-  Vector3 armDir3D[2];                 ///< 3D direction of the 3 arms of the L-Junction
+//  Vertex3D armPoints3D[2];             ///< 3D arm (end?) points				/// TODO What points???
+//  Vector3 armDir3D[2];                 ///< 3D direction of the arms of the L-Junction
 
-  LJunction3D();
+  LJunction3D(Vertex3D i);
 };
 
 

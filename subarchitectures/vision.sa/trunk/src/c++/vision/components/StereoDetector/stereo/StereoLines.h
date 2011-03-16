@@ -13,13 +13,16 @@
 #include <vector>
 #include <list>
 #include <map>
+
 #include "CreateMSLD.hh"
+#include "vs3/Line.hh"
+#include "math/Vector.hh"
+#include "math/Math.hh"
+
 #include "StereoBase.h"
 #include "StereoCamera.hh"
-#include "vs3/Line.hh"
-#include "Vector.hh"
 #include "Line3D.h"
-#include "math/Math.hh"
+
 
 namespace Z
 {
@@ -33,8 +36,8 @@ private:
   bool rectified;
   
 public:
- Vertex2D point2D[2];              ///< Start/End point of the 2D line.
- unsigned vs3ID;                   ///< ID of the vs3 line
+  Vertex2D point2D[2];              ///< Start/End point of the 2D line.
+  unsigned vs3ID;                   ///< ID of the vs3 line
 //  Vector2 dir[2];                ///< Angles of the two arms
 
   TmpLine() {}

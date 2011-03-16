@@ -84,6 +84,15 @@ void StereoDetector::configure(const map<string,string> & _config)
   showROIs = false;
   showReasoner = false;
   showReasonerUnprojected = false;
+  
+  write_stereo_lines = false;
+  write_stereo_ellipses = false;
+  write_stereo_ljcts = false;
+  write_stereo_closures = false;
+  write_stereo_rectangles = false;
+  write_stereo_flaps = false;
+  write_stereo_corners = false;
+
 
   map<string,string>::const_iterator it;
   if((it = _config.find("--videoname")) != _config.end())
@@ -707,8 +716,7 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
   }
 }
 
-
-/**															/// TODO ARI: Die Object Representation in die TomGine zeichnen!
+/**
  * @brief Draw into tomGine render machine via the wraper.
  */
 void StereoDetector::DrawIntoTomGine()
@@ -722,23 +730,13 @@ void StereoDetector::DrawIntoTomGine()
   
   objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
  
-// printf("StereoDetector::DrawIntoTomGine: Got ObjectGraphModel!\n");
   tgRenderer->Clear();
-
-// printf("StereoDetector::DrawIntoTomGine: Cleared!\n");
   tgRenderer->AddLine3D(0, 0, 0, 0.1, 0, 0, 255, 0, 0, 0.4);   // coordinate frame
   tgRenderer->AddLine3D(0, 0, 0, 0, 0.1, 0, 0, 255, 0, 0.4);
   tgRenderer->AddLine3D(0, 0, 0, 0, 0, 0.1, 0, 0, 255, 0.4);
 
-// printf("StereoDetector::DrawIntoTomGine: next!\n");
-
   for(unsigned i=0; i<first.size(); i++)
   {
-// printf("StereoDetector::DrawIntoTomGine: first.size(): %u\n", first.size());
-
-//     for(unsigned j=0; j< first[i].size(); j++)
-//       printf("StereoDetector:DrawIntoTomGine: %s - %s - %s\n", link[i][j].c_str(), node_0[i][j].c_str(), node_1[i][j].c_str());
-
     uint r = std::rand()%255;
     uint g = std::rand()%255;
     uint b = std::rand()%255;
@@ -837,11 +835,20 @@ void StereoDetector::WriteVisualObjects()
   }
   else
   {
-    if(showStereoType != Z::StereoBase::UNDEF)
-    {
-      WriteToWM(showStereoType);
+//     if(showStereoType != Z::StereoBase::UNDEF)
+//     {
+//       WriteToWM(showStereoType);
 //      WriteToWM(Z::StereoBase::STEREO_RECTANGLE);										// TODO hier händisch Rectangles eingefügt!
-    }
+//     }
+    
+    if(write_stereo_lines) WriteToWM(Z::StereoBase::STEREO_LINE);
+    if(write_stereo_ljcts) WriteToWM(Z::StereoBase::STEREO_LJUNCTION);
+    if(write_stereo_ellipses) WriteToWM(Z::StereoBase::STEREO_ELLIPSE);
+    if(write_stereo_closures) WriteToWM(Z::StereoBase::STEREO_CLOSURE);
+    if(write_stereo_rectangles) WriteToWM(Z::StereoBase::STEREO_RECTANGLE);
+    if(write_stereo_flaps) WriteToWM(Z::StereoBase::STEREO_FLAP_ARI);
+    if(write_stereo_corners) WriteToWM(Z::StereoBase::STEREO_CORNER);
+    
   }
   
   if(showReasoner)
@@ -923,9 +930,9 @@ void StereoDetector::WriteToWM(Z::Array<VisionData::VisualObjectPtr> objects)
  */
 void StereoDetector::DeleteVisualObjectsFromWM()
 {
-	for(unsigned i=0; i<objectIDs.size(); i++)
-		deleteFromWorkingMemory(objectIDs[i]);
-	objectIDs.clear();
+  for(unsigned i=0; i<objectIDs.size(); i++)
+    deleteFromWorkingMemory(objectIDs[i]);
+  objectIDs.clear();
 }
 
 /**
@@ -1042,7 +1049,6 @@ void StereoDetector::SingleShotMode()
 	if (key == 65471 || key == 1114047)	// F2
 	{
 		const char* text = score->GetGestaltListInfo();
-		printf("StereoDetector: got text!\n");
 		log("\n%s\n", text);
 	}
 
@@ -1251,6 +1257,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::LINE;
 			showStereoType = Z::StereoBase::STEREO_LINE;
 			ShowImages(true);
+			write_stereo_lines = !write_stereo_lines;
 			WriteVisualObjects();
 			break;
 		case 'e':
@@ -1265,6 +1272,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::L_JUNCTION;
 			showStereoType = Z::StereoBase::STEREO_LJUNCTION;
 			ShowImages(true);
+			write_stereo_ljcts = !write_stereo_ljcts;
 			WriteVisualObjects();
 			break;
 		case 't':
@@ -1272,6 +1280,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::CLOSURE;
 			showStereoType = Z::StereoBase::STEREO_CLOSURE;
 			ShowImages(true);
+			write_stereo_closures = !write_stereo_closures;
 			WriteVisualObjects();
 			break;
 		case 'z':
@@ -1279,6 +1288,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::RECTANGLE;
 			showStereoType = Z::StereoBase::STEREO_RECTANGLE;
 			ShowImages(true);
+			write_stereo_rectangles = !write_stereo_rectangles;
 			WriteVisualObjects();
 			break;
 		case 'u':
@@ -1293,6 +1303,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::FLAP_ARI;
 			showStereoType = Z::StereoBase::STEREO_FLAP_ARI;
 			ShowImages(true);
+			write_stereo_flaps = !write_stereo_flaps;
 			WriteVisualObjects();
 			break;
 		case 'o':
@@ -1307,6 +1318,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::CORNER;
 			showStereoType = Z::StereoBase::STEREO_CORNER;
 			ShowImages(true);
+			write_stereo_corners = !write_stereo_corners;
 			WriteVisualObjects();
 			break;
 
@@ -1336,6 +1348,7 @@ void StereoDetector::SingleShotMode()
 			showType = Z::Gestalt::ELLIPSE;
 			showStereoType = Z::StereoBase::STEREO_ELLIPSE;
 			ShowImages(true);
+			write_stereo_ellipses = !write_stereo_ellipses;
 			WriteVisualObjects();
 			break;
 			

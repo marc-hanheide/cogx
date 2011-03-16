@@ -11,19 +11,20 @@
 
 #include <stdexcept>
 
-#include "Vector.hh"
-#include "Draw.hh"
-
 #include "StereoCamera.hh"
 #include "StereoBase.h"
 #include "Gestalt3D.h"
 
-#include "VisionCore.hh"
-#include "Gestalt.hh"
-#include "Math.hh"
-#include "Closure.hh"
-#include "Flap.hh"
-#include "Corner.hh"
+#include "math/Math.hh"
+#include "math/Vector.hh"
+#include "utils/Draw.hh"
+
+#include "vs3/VisionCore.hh"
+#include "vs3/Gestalt.hh"
+#include "vs3/Closure.hh"
+#include "vs3/Flap.hh"
+#include "vs3/Corner.hh"
+#include "vs3/Line.hh"
 
 namespace Z
 {
@@ -76,8 +77,10 @@ public:
 #ifdef HAVE_CAST
   bool GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
 #endif
+  
+  const char* GetStereoTypeName(StereoBase::Type type);
   const char* GetGestaltListInfo();
-
+   
   int NumMonoGestalts(Gestalt::Type type, int side) {return vcore[side]->Gestalts(type).Size();}
   bool DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide = 0, int id = 0, int detail = 0);
   int NumStereoMatches(StereoBase::Type type) {return stereoPrinciples[type]->NumStereoMatches();}
@@ -92,6 +95,7 @@ public:
   void PrintResults();
   void PrintJunctions2File();
   void PrintCorners2File();
+  void Print3DLines2File();
 };
 
 }

@@ -36,7 +36,7 @@ public:
   };
 
 protected:
-//  StereoCore *score;
+
   Type type;            // Type of stereo Gestalt
   unsigned id;          // Unique ID of the stereo Gestalt
   unsigned vs3IDs[2];   // IDs of the left and right vs3 Gestalts				/// TODO für alle 3D Gestalts nachziehen
@@ -50,7 +50,7 @@ private:
 
 
 public:
-  Gestalt3D(/*StereoCore *sc, */Type t);
+  Gestalt3D(Type t);
   Type GetType() const {return type;}
   double GetSignificance() {return sig;}
   unsigned GetVs3ID(unsigned side) {return vs3IDs[side];}

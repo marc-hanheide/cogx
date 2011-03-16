@@ -64,6 +64,7 @@ private:
 
   bool drawImage, draw3D, drawPointCloud;        // draw image, 3D and point clouds
   bool drawLabels;                               // draw labels
+  bool useProbLevel;                             // use a probability level for pruning
   
   cv::Mat img;                                   // image
   cv::Mat intrinsic;                             // intrinsic parameters of the camera

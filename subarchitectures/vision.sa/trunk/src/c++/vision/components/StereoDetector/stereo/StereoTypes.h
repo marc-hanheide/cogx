@@ -45,11 +45,10 @@ const double SC_MAX_LENGTH = 0.5;  // in [m]
 static const double SC_MAX_DELTA_V_SURF = 10.;
 
 // maximum allowed vertical deviation of line based stereo for points
-static const double SC_MAX_DELTA_V_POINT = 10.;
+static const double SC_MAX_DELTA_V_POINT = 5.;
 
 // minimum disparity (distance to point must be higher than this value)
 static const double SC_MIN_DISPARITY = 0.2;
-
 
 // Space of interest (SOI) check.
 // Sanity check for points: max. and min. distances in x,y,z-direction, relative to
@@ -59,7 +58,7 @@ static const double SC_MAX_DIST_X =  2.;	// 3m to the right			/// TODO TODO TODO
 static const double SC_MIN_DIST_Y = -2.;	// 3m up
 static const double SC_MAX_DIST_Y =  2.;	// 3m down
 static const double SC_MIN_DIST_Z =  0.;	// 0m away
-static const double SC_MAX_DIST_Z =  2.;	// 3m away !!! (do not consider points farer than 4m away!
+static const double SC_MAX_DIST_Z =  3.;	// 3m away !!! (do not consider points farer than 4m away!
 
 
 //----------------------------------------------------------------//

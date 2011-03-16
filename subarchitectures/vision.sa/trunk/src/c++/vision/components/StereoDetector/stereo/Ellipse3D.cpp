@@ -14,10 +14,19 @@ namespace Z
 
 /**
  * @brief Constructor of class Line3D.
+ * @param vs3ID_l ID of the left vs3 ellipse.
+ * @param vs3ID_r ID of the right vs3 ellipse.
+ * @param c Center point with position and normal
+ * @param r radius
+ * @param s significance
  */
-Ellipse3D::Ellipse3D() : Gestalt3D(Gestalt3D::ELLIPSE)
+Ellipse3D::Ellipse3D(unsigned vs3ID_l, unsigned vs3ID_r, Vertex3D c, double r, double s) : Gestalt3D(Gestalt3D::ELLIPSE)
 {
-
+  vs3IDs[LEFT] = vs3ID_l; 
+  vs3IDs[RIGHT] = vs3ID_r;
+  center = c;
+  radius = r;
+  sig = s;
 }
 
 

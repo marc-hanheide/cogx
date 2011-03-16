@@ -15,8 +15,10 @@ namespace Z
 /**
  * @brief Constructor of class LJunction3D.
  */
-LJunction3D::LJunction3D() : Gestalt3D(Gestalt3D::LJUNCTION)
-{}
+LJunction3D::LJunction3D(Vertex3D i) : Gestalt3D(Gestalt3D::LJUNCTION)
+{
+  isct3D = i;
+}
 
 }
 

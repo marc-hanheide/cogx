@@ -17,14 +17,14 @@
 
 namespace Z
 {
-
+  
 /**
  * @brief Class TmpEllipse
  */
 class TmpEllipse
 {
 private:
-
+  bool valid;
   
 public:
   unsigned vs3ID;                                       ///< ID from the vision core							/// TODO Werte private machen!
@@ -33,12 +33,11 @@ public:
   Vertex2D hullPoint[6];                                ///< Points on the ellipse (for rectifying and refitting an ellipse)
   bool isLeftOfCenter[6];                               ///< True, if hullPoint is left of center
 
-  TmpEllipse() {}
+  TmpEllipse() {valid = false;}
   TmpEllipse(Ellipse *ellipse);
   void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
-  void Refine();
-  bool IsValid() {return true;}        /// TODO Wenn nach initialisieren valid, dann wird zu ellipses[2] hinzugefügt
+  bool IsValid() {return valid;}        /// TODO Wenn nach initialisieren valid, dann wird zu ellipses[2] hinzugefügt
 };
 
 /**
@@ -47,52 +46,60 @@ public:
  */
 class TmpEllipse3D
 {
-public:
+private:
+  
   unsigned vs3ID[2];                                     ///< The vs3 IDs of the left and right ellipse
-  
-  double x_e, y_e, a_e, b_e, phi_e;                      ///< New rectified ellipse parameters from left image ellipse
-  
+  unsigned tmpEllID[2];                                  ///< The originally ID in the ellipses[] Array
+  double y_dist;                                         ///< Deviation of the matched center point from y-coordinate
+  bool valid;                                            ///< Valid 3D ellipse
+
   // values for right 3D matches
   double k, d[6];                                        ///< gradient and offest of turned straigt line
+  
+  double distance[6];                                    ///< Distance between center and cPoints
+
+  double constructionSignificance;                       ///< Significance value, derived during construction of 3D circle
+  double significance;                                   ///< Significance value of the estimated circle
+
+  Vertex3D center3D;                                     ///< 3D center point of the circle with the normal
+  double radius3D;                                       ///< Radius of the circle
+
+public:																			/// TODO Privatisieren
   double y_g[6];                                         ///< y value of the lines from the right ellipse hull points (is also y of solution)
   double x[6][2];                                        ///< Solutions of ellipse-line intersection (6 points: x1,2) (2 solutions)
 
+  double x_r, y_e, a_e, b_e, phi_e;                      ///< New rectified ellipse parameters from image ellipse
+
+  Vertex2D leftHullPoint[6];                             ///< The solutions (x[i][j], y_g[i]) (i=0,..,6 / j=0,1)
   unsigned nrReliableCPoints;                            ///< Number of reliable circle points
   bool reliableCPoint[6];                                ///< Which circle points are reliable
+  Vertex3D cPoints[6];                                   ///< Calculated points
 
-  Vertex3D center;                                       ///< 3D center point of the circle with the normal
-  Vertex2D leftHullPoint[6];                             ///< The solutions (x[i][j], y_g[i]) (i=0,..,6 / j=0,1)
-  Vertex3D cPoints[6];                                   ///< Real circle points in 3D
-
-  double distance[6];                                    ///< Distance between center and cPoints
-  double deviation[6];                                   ///< Deviation between distance and mean (radius)
-
-  double radius;                                         ///< Radius of the circle
-  unsigned nrCPointsCalc;                                ///< Number of calculated circle points (cPointsCalc)
-  Vertex3D cPointsCalc[20];                              ///< Calculated points on a "real" circle.
-
-  double significance;                                   ///< Significance value of the estimated circle
-
-public:
-  unsigned tmpEllID[2];                                  ///< The originally ID in the ellipses[] Array
-  double y_dist;                                         ///< Deviation of the matched center point
-  bool valid;
-
-public:
-  TmpEllipse3D() {}
+private:
   void FitRectifiedEllipse(TmpEllipse &tmpEllLeft, unsigned numPoints);
   void SolveEllipseLineIntersection(TmpEllipse &right);
   bool CheckReliabilityOfResults();
   void CalculateCirclePoints(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right);
-  bool CheckGeometry();
+  bool CheckCircleGeometry();
   void RefineVertices();
   void CalculateCircleProperties();
   bool SanityOK();
-  void CalculateSignificance();
-  bool Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right);
+  void CalculateSignificance(double significance2D);
+  
+public:
+  TmpEllipse3D() {significance = 0.0; valid = false;}
+  
+  bool Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D);
   
   double GetSignificance(){return significance;}
   unsigned GetVs3ID(unsigned side){return vs3ID[side];}
+  void SetValidation(bool v) {valid = v;}
+  bool IsValid() {return valid;}
+  void SetParameter(unsigned el, unsigned er, double yd) {tmpEllID[LEFT] = el; tmpEllID[RIGHT] = er; y_dist = yd;}
+  unsigned GetTmpEllID(unsigned side) {return tmpEllID[side];}
+  
+  Vertex3D GetCenter(){return center3D;}
+  double GetRadius(){return radius3D;}
 };
 
 
@@ -102,17 +109,17 @@ public:
 class StereoEllipses : public StereoBase
 {
 private:
-
   Array<TmpEllipse> ellipses[2];                           ///< 2D ellipses (tmp.) from mono image (left/right)
-  Array<TmpEllipse3D> ellipses3D;                          ///< Calculated tmp. 3D ellipses						/// TODO für jede linke ellipse eine?
-//  int candMatches;                                         ///< Number of matched ellipse candidates from left/right image
+  Array<TmpEllipse3D> ellipses3D;                          ///< Calculated tmp. 3D ellipses						/// TODO für jede linke ellipse eine? Braucht man die danach noch mal?
   int ellMatches;                                          ///< Number of stereo matched ellipses (== ellipse3ds.Size())
 
 #ifdef HAVE_CAST
   bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
 
+  double Calculate2DSignificance(double match_distance, TmpEllipse &left_ell,  TmpEllipse &right_ell);
   void MatchEllipses(Array<TmpEllipse> &left_ell, Array<TmpEllipse> &right_ell, std::map<double, unsigned> *match_map);
+  void BackCheck(std::map<double, unsigned> *match_map, unsigned map_size);
   unsigned Calculate3DEllipses(Array<TmpEllipse3D> &ellipses3D, Array<TmpEllipse> &left_ell, 
 			       Array<TmpEllipse> &right_ell, std::map<double, unsigned> *match_map);
   void DrawSingleMatched(int side, int id, int detail);

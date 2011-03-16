@@ -22,24 +22,34 @@
 namespace Z
 {
 
-// Enable pruning thresholds for lines
+/// Enable pruning thresholds for lines
 static const bool SC_USE_LINE_THRESHOLDS = true;
 // Comparison between z-component and x+y-components (lines in z direction tending to be wrong)
-static const double SC_LINE_Z_TO_XY_LIMIT = 5.0;        // ~5
-// Limit of the significance value for beeing correct matched
-static const double SC_LINE_SIG_LIMIT = 0.02;          // ~0.01
+static const double SC_LINE_Z_TO_XY_LIMIT = 5.0;             // ~5
+// Limit of the significance value for correct matches
+static const double SC_LINE_SIG_LIMIT = 0.01;                // ~0.01
 
 
-// Enable pruning thresholds for l-junctions
+/// Enable pruning thresholds for l-junctions
 static const bool SC_USE_LJCT_THRESHOLDS = true;
 // matching limit for deviations of L-Junctions (StereoLJunctions.cpp)
-static const double SC_LJCTS_MATCH_LIMIT = 0.2;         // ~0.2
+static const double SC_MIN_2D_LJCT_SIGNIFICANCE = 0.90;      // ~0.9
 
 
-// Enable pruning thresholds for corners
+/// Enable pruning thresholds for ellipses
+static const bool SC_USE_ELL_THRESHOLDS = true;
+// The minimum 2D significance to use it still as a match
+static const double SC_MIN_2D_ELL_SIGNIFICANCE = 0.5;        // ~0.5
+// The minimum axis size to use it still as a match
+static const unsigned SC_MIN_AXIS_SIZE = 10;                 // ~10
+
+
+/// Enable pruning thresholds for corners
 static const bool SC_USE_CORNER_THRESHOLDS = true;
-// matching limit for corners
-static const double SC_CORNER_MATCH_LIMIT = 1.0;        // ~1.0
+// matching limit for 2D significance of corners
+static const double SC_MIN_2D_CORNER_SIGNIFICANCE = 0.7;   // ~0.5
+
+
 
 
 class StereoCore;  // forward declaration necessary
@@ -82,6 +92,7 @@ protected:
   StereoCore *score;				///< Stereo core
   Type type;					///< StereoBase Type
 
+
 private:
   bool enabled;					///< Enabled / disabled Stereo-Gestalt
   bool masking;					///< TODO 
@@ -91,12 +102,12 @@ public:
   void EnablePrinciple(bool status);
   bool IsEnabled() {return enabled;}
 
-  static const char* TypeName(Type t);
   static Type EnumType(const char *type_name);
+  static const char* TypeName(Type t);
+  static const int StereoTypeNameLength(Type t);
 
   double MatchingScoreSurf(Surf2D &left_surf, Surf2D &right_surf, unsigned &match_offs);			/// TODO Gehört eigentlich zu den StereoTypes?
   double MatchingScorePoint(Vertex2D &left_point, Vertex2D &right_point);					/// TODO Gehört eigentlich zu den StereoTypes?
-	
 
   // virtual functions for the stereo classes.
   virtual int NumStereoMatches() = 0;
