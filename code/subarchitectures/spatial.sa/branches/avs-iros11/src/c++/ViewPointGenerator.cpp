@@ -8,6 +8,7 @@
 #include "ViewPointGenerator.h"
 #include "AVS_ContinualPlanner.h"
 
+using namespace SpatialGridMap;
 namespace spatial {
 ViewPointGenerator::~ViewPointGenerator() {
 	// TODO Auto-generated constructor stub
@@ -16,12 +17,13 @@ ViewPointGenerator::~ViewPointGenerator() {
 
 
 ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm, BloxelMap* pbloxelmap, int samplesize,
-		double sampleawayfromobs, double conedepth, double horizangle, double vertangle, double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty)
+		double sampleawayfromobs, double conedepth, double tiltstep, double panstep, double horizangle, double vertangle, double minDistance, double pdfsum,
+		double pdfthreshold, double robotx, double roboty)
 {
 	// TODO Auto-generated destructor stub
 	m_component = component;
-	lgm = plgm;
-	bloxelmap= pbloxelmap;
+	lgm = new CureObstMap(*plgm);
+	bloxelmap= new BloxelMap(*pbloxelmap);
 	m_samplesize = samplesize;
 	m_sampleawayfromobs = sampleawayfromobs;
 	m_conedepth = conedepth;
@@ -33,26 +35,28 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
 	m_robotx = robotx;
 	  m_roboty= roboty;
 	m_best3DConeRatio = 0.1;
-    m_tiltinterval = 0.1;
+    m_tiltstep = 0.1;
     m_component->log("ViewPointGenerator parameters: m_samplesize: %d, m_sampleawayfromobs: %f, m_conedepth: %f, m_horizangle: %f, m_vertangle: %f, m_minDistance: %f, m_bloxelmapPDFsum: %f , m_pdfthreshold: %f",
     		m_samplesize, m_sampleawayfromobs, m_conedepth,m_horizangle,m_vertangle,m_minDistance, m_bloxelmapPDFsum, m_pdfthreshold);
     m_component->log("BloxelMap size: %d, %d CureMap size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgm->getSize());
+    m_sensingProb = 1.0;
+    m_panstep = panstep*M_PI/180;
+    m_tiltstep = tiltstep*M_PI/180;
 }
-
 
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones(){
 
 	m_component->log("ViewPointGenerator::GetBest3DViewCones");
 
-	vector<pair<unsigned int, double> > ordered2DVClist = get2DCandidateViewCones();
-	vector<SensingAction> unordered3DVCList, ordered3DVCList, tmp;
+	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones();
+	vector<SensingAction> unordered3DVCList, ordered3DVCList, result3DVCList, tmp;
 
 	SensingAction sample;
 		std::vector<SensingAction> samplepoints;
 
 		std::vector<double> angles;
 		for (double rad = -30 * M_PI / 180; rad < 30 * M_PI / 180; rad = rad
-				+ m_tiltinterval) {
+				+ m_tiltstep) {
 			angles.push_back(rad);
 		}
 
@@ -79,51 +83,61 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 			}
 		}
 
-		// turn
-		unordered3DVCList = getViewConeSums(samplepoints);
-		for (unsigned int i =0; i< unordered3DVCList.size(); i++){
-			if (ordered3DVCList.size() == 0) {
-				ordered3DVCList.push_back(unordered3DVCList[i]);
-			} else {
-				bool inserted = false;
-				tmp = ordered3DVCList;
-				for (unsigned int j = 0; j < tmp.size(); j++) {
-					if (unordered3DVCList[i].totalprob >= ordered3DVCList[j].totalprob) {
-						inserted = true;
-						ordered3DVCList.insert(ordered3DVCList.begin() + j, unordered3DVCList[i]);
-						break;
-					}
-				}
-				if (!inserted) {
-					//	  log("pushing back");
-					ordered3DVCList.push_back(unordered3DVCList[i]);
-				}
-			}
-		}
-		m_component->log("Ordered 3D %d view cones", ordered3DVCList.size() );
-		for (unsigned int i=0; i < ordered3DVCList.size(); i++){
-			m_component->log("3DCone #%d, sum: %f", i, ordered3DVCList[i].totalprob);
-		}
-		//Loop over the ordered list and return cones that covers up to a threshold
-		vector<SensingAction> result3DVCList;
+		double totalprobsum = 0;
+		double lastConePDFSum = 1;
 
-		double pdfsumsofar =0;
-		for (unsigned int i =0; i < ordered3DVCList.size(); i++){
-			result3DVCList.push_back(ordered3DVCList[i]);
-			pdfsumsofar += ordered3DVCList[i].totalprob;
-			m_component->log("Added new 3DCone to final result");
-			m_component->log("PDFSum so far %f", pdfsumsofar);
-			if (pdfsumsofar > m_bloxelmapPDFsum * m_pdfthreshold){
-				break;
+
+		unordered3DVCList = samplepoints;
+		while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold) && lastConePDFSum > 0.03 ){
+			// turn
+			unordered3DVCList = getViewConeSums(samplepoints);
+			double maxpdf = -1;
+			int bestindex = -1;
+			GDIsObstacle isobstacle;
+			GDProbScale scalefunctor(1-m_sensingProb);
+
+		for (unsigned int i=0; i < unordered3DVCList.size(); i++) {
+			if (unordered3DVCList[i].totalprob > maxpdf){
+				maxpdf = unordered3DVCList[i].totalprob;
+				bestindex = i;
 			}
+		}
+
+
+		m_component->log("Best index %d", bestindex);
+		lastConePDFSum = unordered3DVCList[bestindex].totalprob;
+		totalprobsum += lastConePDFSum;
+		result3DVCList.push_back(unordered3DVCList[bestindex]);
+		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
+
+		GDProbSum sumcells;
+
+		bloxelmap->universalQuery(sumcells);
+		double initialMapPDFSum = sumcells.getResult();
+		m_component->log("getBest3DViewCones: Before whole map PDF sums to: %f", initialMapPDFSum);
+		sumcells.reset();
+		// Got the best cone for this map, now change the map and get a new sum of remaining 3D cones
+		bloxelmap->coneModifier(unordered3DVCList[bestindex].pos[0], unordered3DVCList[bestindex].pos[1],
+				unordered3DVCList[bestindex].pos[2], unordered3DVCList[bestindex].pan,
+				unordered3DVCList[bestindex].tilt, m_horizangle, m_vertangle,
+				m_conedepth, 5, 5, isobstacle, scalefunctor, scalefunctor,
+				m_minDistance);
+
+		bloxelmap->universalQuery(sumcells);
+		initialMapPDFSum = sumcells.getResult();
+		m_component->log("getBest3DViewCones: After whole map PDF sums to: %f", initialMapPDFSum);
+
 		}
 		m_component->log("Returning %d 3D viewcones", result3DVCList.size());
+				for (unsigned int i=0; i < result3DVCList.size(); i++){
+					m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);
+				}
 		return result3DVCList;
 }
 
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(std::vector<SensingAction> &samplepoints) {
 
-	SpatialGridMap::GDProbSum sumcells;
+	SpatialGridMap::GDProbSumAndCache sumcells;
 	SpatialGridMap::GDIsObstacle isobstacle;
 	m_component->log("ViewPointGenerator::getViewConeSums");
 	m_component->log("Got %d 3D ViewCones", samplepoints.size());
@@ -135,7 +149,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 			bloxelmap->coneQuery(samplepoints[i].pos[0], samplepoints[i].pos[1],
 					samplepoints[i].pos[2], samplepoints[i].pan,
 					samplepoints[i].tilt, m_horizangle, m_vertangle,
-					m_conedepth, 10, 10, isobstacle, sumcells, sumcells,
+					m_conedepth, 5, 5, isobstacle, sumcells, sumcells,
 					m_minDistance);
 			m_component->log("PDFSum of cone: %f.", sumcells.getResult());
 
@@ -145,14 +159,11 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 					<< " pdfsum of cone: " << sumcells.getResult() << endl;
 
 			//    /* Show view cone on a temporary map, display the map and wipe it*/
-
 			samplepoints[i].totalprob = sumcells.getResult();
 			samplepoints[i].conedepth = m_conedepth;
 			samplepoints[i].vertangle = m_vertangle;
 			samplepoints[i].horizangle = m_horizangle;
 			samplepoints[i].minDistance = m_minDistance;
-
-
 			sumcells.reset();
 		}
 	} catch (std::exception &e) {
@@ -162,14 +173,17 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 	return samplepoints;
 }
 
-vector<pair<unsigned int, double> > ViewPointGenerator::get2DCandidateViewCones(){
+vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateViewCones(){
 
-	m_component->log("ViewPointGenerator::get2DCandidateViewCones");
+	m_component->log("ViewPointGenerator::getOrdered3DCandidateViewCones");
 	std::vector<std::vector<pair<int, int> > > VCones;
 	m_samples2D = sample2DGrid();
-	VCones = calculate3DViewConesFrom2D();
+	VCones = calculate2DConesRegion();
 	CurePDFMap* lgmpdf  = new CurePDFMap(lgm->getSize(),lgm->getCellSize() ,0, CureObstMap::MAP1,lgm->getCentXW(), lgm->getCentYW());
     m_component->log("BloxelMap size: %d, %d LGMPDF size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgmpdf->getSize());
+
+
+    // project 3D PDF map to 2D
 
 	for (int x = -lgmpdf->getSize(); x <= lgmpdf->getSize(); x++) {
 	  for (int y = -lgmpdf->getSize(); y <= lgmpdf->getSize(); y++) {
@@ -185,6 +199,8 @@ vector<pair<unsigned int, double> > ViewPointGenerator::get2DCandidateViewCones(
 	    }
 	  }
 	}
+
+	// get sums for each 2D cone
 
 	double sum;
 		int x, y;
@@ -322,7 +338,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 	std::vector<Cure::Pose3D> samples;
 	/*Sampling free space BEGIN*/
 	m_component->log("ViewPointGenerator::sample2DGrid");
-	for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 18) {
+	for (double rad = 0; rad < M_PI * 2; rad = rad + m_panstep) {
 		angles.push_back(rad);
 	}
 	int i = 0;
@@ -346,6 +362,10 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 		 //log("we already have this point.");
 		 haspoint = true;
 		 break;
+		 }
+		 else if ( ( pow((randx - samples[2 * j].getX()),2) + (pow((randy - samples[2 * j].getY()),2) ) ) < 0.4 ){
+			 haspoint = true;
+			 break;
 		 }
 		 }
 		lgm->index2WorldCoords(randx, randy, xW, yW);
@@ -385,7 +405,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 
 	return samples;
 }
-std::vector<std::vector<pair<int, int> > > ViewPointGenerator::calculate3DViewConesFrom2D() {
+std::vector<std::vector<pair<int, int> > > ViewPointGenerator::calculate2DConesRegion() {
 	m_component->log("Calculating 3D view cones for generated 2D samples");
 	Cure::Pose3D candidatePose;
 	XVector3D a;
@@ -479,7 +499,6 @@ bool ViewPointGenerator::isPointInsideTriangle(XVector3D p, XVector3D a,
 	} else {
 		return false;
 	}
-
 }
 bool ViewPointGenerator::isPointSameSide(XVector3D p1, XVector3D p2,
 		XVector3D a, XVector3D b) {

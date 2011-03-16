@@ -136,6 +136,9 @@ private:
 	double m_horizangle;
 	double m_minDistance;
 	double m_vertangle;
+	double m_tiltstep;
+	double m_panstep;
+
 	SpatialGridMap::GridMapData m_defaultBloxelCell;
 	Cure::SensorPose m_LaserPoseR;
 	std::string m_queryHandlerName;
