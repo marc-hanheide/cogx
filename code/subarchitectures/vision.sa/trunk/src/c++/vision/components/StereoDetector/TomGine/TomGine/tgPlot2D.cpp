@@ -113,7 +113,7 @@ void tgPlot2D::axis(float x_min, float x_max, float y_min, float y_max)
 }
 
 
-void tgPlot2D::draw() const
+void tgPlot2D::draw()
 {
 	float fx = float(x);
 	float fy = float(y);

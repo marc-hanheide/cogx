@@ -23,13 +23,12 @@ private:
 #ifdef USE_FTGL_FONT
 	FTFont* m_font;
 #endif
-
 public:
 	tgFont(const char* ttf_filename);
 	~tgFont();
 	
-	void Print(const char* text, int size, int pos_x, int pos_y) const;
-	void Print(const char* text, int size, int pos_x, int pos_y, float x, float y, float z, float a=1) const;
+	void Print(const char* text, int size, int pos_x, int pos_y);
+	void Print(const char* text, int size, int pos_x, int pos_y, float x, float y, float z, float a=1);
 
 };
 

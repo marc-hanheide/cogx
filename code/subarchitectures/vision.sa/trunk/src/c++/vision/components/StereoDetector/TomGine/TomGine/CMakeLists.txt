@@ -7,7 +7,8 @@ FIND_PACKAGE( OpenCV REQUIRED )
 
 ADD_DEFINITIONS(-DGL_GLEXT_PROTOTYPES)
 ADD_DEFINITIONS(-DUSE_FTGL_FONT)
-SET(TRUETYPE_FONT "/usr/share/fonts/truetype/freefont/FreeSans.ttf")
+#SET(TRUETYPE_FONT "/usr/share/fonts/truetype/freefont/FreeSans.ttf")
+SET(TRUETYPE_FONT "./comic.ttf")
 ADD_DEFINITIONS(-DTTF_FONT="${TRUETYPE_FONT}")
 
 INCLUDE_DIRECTORIES(/usr/include/freetype2)
