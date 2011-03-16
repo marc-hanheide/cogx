@@ -213,11 +213,19 @@ class Domain(Scope):
             self._stratification, self._nonrecursive = axioms.stratify(self.axioms)
         return self._nonrecursive
 
+    def get_derived(self):
+        if self._derived is None:
+            self._derived = set(ax.predicate for ax in self.axioms)
+        print map(str, self._derived)
+        return self._derived
+    
     stratification = property(get_stratification)
     nonrecursive = property(get_nonrecursive)
+    derived = property(get_derived)
 
     def stratify_axioms(self):
         """Compute lazily stratification layers for the axioms in this domain."""
+        self._derived = None
         self._stratification = None
         self._nonrecursive = None
 
