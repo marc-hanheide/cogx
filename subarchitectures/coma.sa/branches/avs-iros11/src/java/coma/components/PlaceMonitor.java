@@ -128,13 +128,13 @@ public class PlaceMonitor extends ManagedComponent {
 		});
 
 		// track objects found by AVS
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
+/*		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
 			throws CASTException {
 				processAddedObjectProperty(_wmc);
 			}
-		});
+		}); */
 
 		
 		// initiate ice server connections
