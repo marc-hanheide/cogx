@@ -112,4 +112,58 @@ XX:goal.scheduler:data:planner.sa.  Local version: 5.  WM version: 6''.
 Some of the image pairs (less than 10 out of $1200$ in the database) cause the
 components {\em PlanePopout} or {\em SOIFilter} to crash.
 
+\subsection{Example log}
+
+This is a part of the log file that shows the state transitions while the robot
+is learning one object (approximately $50s$).
+
+\begin{verbatim}
+[INFO gy2article: 4218.43 NEW STATE stTableEmpty]
+[INFO gy2article: 4220.43 SCENE 357: 1081vl]
+[INFO gy2article: 4220.44 **********]
+[INFO gy2article: 4220.44 NEW STATE stWaitToAppear (to=20s)]
+[INFO gy2article: 4222.45 STATE stWaitToAppear]
+[INFO gy2article: 4226.47 **********]
+[INFO gy2article: 4226.47 NEW STATE stObjectOn]
+[INFO analyzer: blockVisualObjectUpdates enable=true]
+[INFO gy2article: 4231.47 **********]
+[INFO gy2article: 4231.47 NEW STATE stTeaching (to=10s)]
+[INFO SOI.filter: blockProtoObjectUpdates enable=true]
+[INFO gy2article: 4232.47 Tutor: this is elongated]
+[INFO gy2article: 4232.47 **********]
+[INFO gy2article: 4232.47 NEW STATE stWaitForResponse (to=15s)]
+[INFO gy2article: 4234.48 STATE stWaitForResponse]
+[INFO gy2article: 4234.48 Robot says: thank you]
+[INFO gy2article: 4234.48 **********]
+[INFO gy2article: 4234.48 NEW STATE stWaitForLearningTask (to=120s)]
+[INFO gy2article: 4237.06 Learnig task added: [WMA: vision.sa:o2:J]]
+[INFO gy2article: 4240.21 Learnig task changed: [WMA: vision.sa:o2:J]]
+[INFO gy2article: 4240.21 A Learning Task was detected.]
+[INFO gy2article: 4240.21 **********]
+[INFO gy2article: 4240.21 NEW STATE stTeaching (to=10s)]
+[INFO gy2article: 4241.22 Tutor: this is black]
+[INFO gy2article: 4241.22 **********]
+[INFO gy2article: 4241.22 NEW STATE stWaitForResponse (to=15s)]
+[INFO gy2article: 4243.23 Robot says: thank you]
+[INFO gy2article: 4243.23 **********]
+[INFO gy2article: 4243.23 NEW STATE stWaitForLearningTask (to=120s)]
+[INFO gy2article: 4249.55 Learnig task added: [WMA: vision.sa:p2:J]]
+[INFO gy2article: 4256.04 Learnig task changed: [WMA: vision.sa:p2:J]]
+[INFO gy2article: 4256.05 A Learning Task was detected.]
+[INFO gy2article: 4256.05 **********]
+[INFO gy2article: 4256.05 NEW STATE stTeaching (to=10s)]
+[INFO gy2article: 4257.06 **********]
+[INFO gy2article: 4257.06 NEW STATE stEndOfTeaching (to=15s)]
+[INFO gy2article: 4257.08 **********]
+[INFO gy2article: 4257.08 NEW STATE stUnloadScene]
+[INFO analyzer: blockVisualObjectUpdates enable=false]
+[INFO gy2article: 4262.10 SCENE: empty]
+[INFO SOI.filter: blockProtoObjectUpdates enable=false]
+[INFO gy2article: 4262.10 **********]
+[INFO gy2article: 4262.10 NEW STATE stWaitToDisappear (to=20s)]
+[INFO gy2article: 4264.11 STATE stWaitToDisappear]
+[INFO gy2article: 4268.13 **********]
+[INFO gy2article: 4268.13 NEW STATE stTableEmpty]
+\end{verbatim}
+
 \end{document}
