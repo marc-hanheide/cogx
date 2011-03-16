@@ -345,7 +345,9 @@ class DTProblem(object):
                 #    continue
                 if isinstance(self.abstract_state[svar], pddl.TypedObject):
                     p = 1.0 if self.abstract_state[svar] == f.value else 0.0
-                p = self.abstract_state[svar][f.value]
+                else:
+                    p = self.abstract_state[svar][f.value]
+                    
                 if p == 0.0:
                     continue
 
