@@ -214,11 +214,11 @@ printf("StereoCore::ProcessStereoImage: monocular image processed.\n");
 
 printf("StereoCore::ProcessStereoImage: stereo images processed.\n");
 
-  /// HACK Print results
-  PrintResults();
+//   PrintResults();			/// HACK Print results
 
-//	PrintJunctions2File();																				/// TODO Print junctions to file => For Odense project.
-//	PrintCorners2File();																					/// TODO Print corners to file => For Odense project.
+//  PrintJunctions2File();		/// TODO Print junctions to file => For Odense project.
+//  PrintCorners2File();		/// TODO Print corners to file => For Odense project.
+//   Print3DLines2File();
 
 // printf("StereoCore::ProcessStereoImage end\n");
 }
@@ -260,25 +260,50 @@ bool StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
 }
 #endif
 
+
+/**
+ * @brief Get the name of a stereo type with a fixed character length.  
+ * @param type Stereo type
+ * @return Returns the information as string.
+ */
+const char* StereoCore::GetStereoTypeName(StereoBase::Type type)
+{
+  const unsigned info_size = 1000;
+  static char name_text[info_size] = "";
+  int n = 0;
+
+  n += snprintf(name_text + n, info_size - n, "%s: ", StereoBase::TypeName(type));
+
+  for(int i=0; i< (20 - StereoBase::StereoTypeNameLength(type)); i++)
+    n += snprintf(name_text + n, info_size -n, " ");
+  
+  return name_text;
+}
+
 /**
  * @brief Get the Gestalt list with the number of all found mono and stereo Gestalts.
  * @return Returns the information as character array.
  */
 const char* StereoCore::GetGestaltListInfo()
 {
-  const unsigned info_size = 10000;
+  const unsigned info_size = 50000;
   static char info_text[info_size] = "";
   int n = 0;
 
   n += snprintf(info_text + n, info_size - n, 
-    "  GESTALT LIST		LEFT	RIGHT	STEREO\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    "  GESTALT LIST		LEFT	RIGHT\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
   for(int i=0; i < Gestalt::MAX_TYPE; i++)
   {
     n += snprintf(info_text + n, info_size - n, "  %s", vcore[0]->GetGestaltTypeName((Gestalt::Type) i));
-    n += snprintf(info_text + n, info_size - n, "	%i", NumMonoGestalts((Gestalt::Type) i, LEFT) /*vcore[0]->GetNrOfGestaltTypeFeatures(i)*/);
-    n += snprintf(info_text + n, info_size - n, "	%i\n", NumMonoGestalts((Gestalt::Type) i, RIGHT) /*vcore[1]->GetNrOfGestaltTypeFeatures(i)*/);
+    n += snprintf(info_text + n, info_size - n, "	%i", NumMonoGestalts((Gestalt::Type) i, LEFT));
+    n += snprintf(info_text + n, info_size - n, "	%i\n", NumMonoGestalts((Gestalt::Type) i, RIGHT));
   }
-  
+  n += snprintf(info_text + n, info_size - n, "\n  STEREO LIST		STEREO\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+  for(unsigned i=0; i< StereoBase::MAX_TYPE; i++)
+  {
+    n += snprintf(info_text + n, info_size - n, "\n  %s", GetStereoTypeName((StereoBase::Type) i));
+    n += snprintf(info_text + n, info_size - n, "%i", NumStereoMatches((StereoBase::Type) i));
+  }
   return info_text;
 }
 
@@ -442,7 +467,7 @@ unsigned StereoCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, u
  */
 void StereoCore::PrintResults()
 {
-	/// print results of vision core
+  /// print results of vision core
 //   printf("Arc: 2D arcs left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::ARC),
 // 			vcore[RIGHT]->NumGestalts(Gestalt::ARC));
 //   printf("ArcGroup: 2D arc_groups left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CONVEX_ARC_GROUP),
@@ -451,23 +476,12 @@ void StereoCore::PrintResults()
 // 			vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE));
 // //   printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
 
-	/// print results of stereo core
-  printf("Corners: 2D corners left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CORNER), vcore[RIGHT]->NumGestalts(Gestalt::CORNER));
-  printf("Stereo:CORNERS: corner-matches: %d\n", stereoPrinciples[StereoBase::STEREO_CORNER]->NumStereoMatches());
-  printf("Stereo:LJUNCTIONS: ljct-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LJUNCTION]->NumStereoMatches());
-  printf("Stereo:LINES: line-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LINE]->NumStereoMatches());
-  printf("Stereo:FLAPS_ARI: flap-matches: %d\n", stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->NumStereoMatches());
-
-//   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
-//   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());
-
-//   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
-//   printf("Stereo:FLAPS: matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
-
-//  	printf("Stereo:L_JUNCTIONS: matches: %d\n", stereoGestalts[StereoBase::STEREO_LJUNCTION]->NumStereoMatches()); 
-//   printf("Stereo:ELLIPSES: matches: %d\n", stereoGestalts[StereoBase::STEREO_ELLIPSE]->NumStereoMatches()); 
-
-// printf("StereoCore: cube matches: %d\n", stereoPrinciples[StereoBase::STEREO_CUBE]->NumStereoMatches()); 
+  /// print results of stereo core
+//   printf("Corners: 2D corners left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CORNER), vcore[RIGHT]->NumGestalts(Gestalt::CORNER));
+//   printf("Stereo:CORNERS: corner-matches: %d\n", stereoPrinciples[StereoBase::STEREO_CORNER]->NumStereoMatches());
+//   printf("Stereo:LJUNCTIONS: ljct-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LJUNCTION]->NumStereoMatches());
+//   printf("Stereo:LINES: line-matches: %d\n", stereoPrinciples[StereoBase::STEREO_LINE]->NumStereoMatches());
+//   printf("Stereo:FLAPS_ARI: flap-matches: %d\n", stereoPrinciples[StereoBase::STEREO_FLAP_ARI]->NumStereoMatches());
 }
 
 /**
@@ -578,6 +592,30 @@ void StereoCore::PrintCorners2File()
 
   fprintf(file, "\n");
   std::fclose(file);
+}
+
+
+/**
+ * @brief Print the junctions into a file, for reading in the Odense project.
+ */
+void StereoCore::Print3DLines2File()
+{
+printf("StereoCore::Print3DLines2File()\n");
+
+  FILE *file = fopen("3Dlines.txt", "w");
+  for(unsigned i=0; i < stereoGestalts[Gestalt3D::LINE].Size(); i++)
+  {
+    Line3D *line = (Line3D*) stereoGestalts[Gestalt3D::LINE][i];
+
+    Line *ll = (Line*) vcore[LEFT]->Gestalts(Gestalt::LINE, line->GetVs3ID(0));
+
+    fprintf(file,"%6.3f - %6.3f - %6.3f - %6.3f - %6.3f - %6.3f - %6.3f - %6.3f - %6.3f - %6.3f\n", 
+      line->isct3D[0].p.x, line->isct3D[0].p.y, line->isct3D[0].p.z, line->isct3D[1].p.x, line->isct3D[1].p.y, line->isct3D[1].p.z,
+      ll->point[0].x, ll->point[0].y, ll->point[1].x, ll->point[1].y 
+    );					// image width and height
+  }
+  fprintf(file, "\n");
+  fclose(file);
 }
 
 } 

@@ -8,6 +8,7 @@
  */
 
 #include "StereoCorners.h"
+#include "../utils/Color.hh"
 
 namespace Z
 {
@@ -21,23 +22,57 @@ namespace Z
  */
 TmpCorner::TmpCorner(Corner *corner)
 {
-  id = corner->ID();
+  vs3ID = corner->ID();
   
   isct2D.p.x = corner->isct.x;
   isct2D.p.y = corner->isct.y;
   
-  if(corner->lines.Size() == 3)
+  if(corner->lines.Size() == 3)						/// TODO TODO TODO TODO TODO TODO TODO Wie geht man mit allgmeinen corners mit mehr als nur 3 Richtungen um?
   {
-    armDir[0] = corner->lines[0]->dir;
-    armDir[1] = corner->lines[1]->dir;
-    armDir[2] = corner->lines[2]->dir;
+    if(corner->near_points[0] == 0) armDir[0] = -corner->lines[0]->dir;
+    else  armDir[0] = corner->lines[0]->dir;
+    if(corner->near_points[1] == 0) armDir[1] = -corner->lines[1]->dir;
+    else  armDir[1] = corner->lines[1]->dir;
+    if(corner->near_points[2] == 0) armDir[2] = -corner->lines[2]->dir;
+    else  armDir[2] = corner->lines[2]->dir;
     
-    armPoint[0].p = isct2D.p + 10*armDir[0];			/// TODO Theoretische Punkte 10 px entfernt von der Intersection!
-    armPoint[1].p = isct2D.p + 10*armDir[1];
-    armPoint[2].p = isct2D.p + 10*armDir[2];
+    armPoint[0].p = isct2D.p - 10*armDir[0];			/// TODO Theoretische Punkte 10 px entfernt von der Intersection!
+    armPoint[1].p = isct2D.p - 10*armDir[1];
+    armPoint[2].p = isct2D.p - 10*armDir[2];
 
+    armColor[0][0] = corner->lines[0]->MeanCol(0);
+    armColor[0][1] = corner->lines[0]->MeanCol(1);
+    armColor[1][0] = corner->lines[1]->MeanCol(0);
+    armColor[1][1] = corner->lines[1]->MeanCol(1);
+    armColor[2][0] = corner->lines[2]->MeanCol(0);
+    armColor[2][1] = corner->lines[2]->MeanCol(1);
+    
     isValid = true;
   }
+  else if(corner->lines.Size() == 4)						/// TODO TODO TODO TODO TODO TODO TODO Wie kann man diese aufsplitten in 3er Corners? DAS IST HIER FALSCH: HACK!!!
+  {
+    if(corner->near_points[0] == 0) armDir[0] = -corner->lines[0]->dir;
+    else  armDir[0] = corner->lines[0]->dir;
+    if(corner->near_points[1] == 0) armDir[1] = -corner->lines[1]->dir;
+    else  armDir[1] = corner->lines[1]->dir;
+    if(corner->near_points[2] == 0) armDir[2] = -corner->lines[2]->dir;
+    else  armDir[2] = corner->lines[2]->dir;
+//     armDir[1] = corner->lines[1]->dir;
+//     armDir[2] = corner->lines[2]->dir;
+    
+    armPoint[0].p = isct2D.p - 10*armDir[0];			/// TODO Theoretische Punkte 10 px entfernt von der Intersection!
+    armPoint[1].p = isct2D.p - 10*armDir[1];
+    armPoint[2].p = isct2D.p - 10*armDir[2];
+
+    armColor[0][0] = corner->lines[0]->MeanCol(0);
+    armColor[0][1] = corner->lines[0]->MeanCol(1);
+    armColor[1][0] = corner->lines[1]->MeanCol(0);
+    armColor[1][1] = corner->lines[1]->MeanCol(1);
+    armColor[2][0] = corner->lines[2]->MeanCol(0);
+    armColor[2][1] = corner->lines[2]->MeanCol(1);
+    
+    isValid = true;
+  }  
   else
   {
     isValid = false;
@@ -64,23 +99,22 @@ void TmpCorner::RePrune(int oX, int oY, int sc)
 void TmpCorner::Rectify(StereoCamera *stereo_cam, int side)
 {
   isct2D.Rectify(stereo_cam, side);
- 
-//   printf("TmpCorner::Rectify: %u before rectify: armDir[0]: %4.2f / %4.2f\n", id, armDir[0].x, armDir[0].y);
-//   printf("TmpCorner::Rectify: %u before rectify: armDir[1]: %4.2f / %4.2f\n", id, armDir[1].x, armDir[1].y);
-//   printf("TmpCorner::Rectify: %u before rectify: armDir[2]: %4.2f / %4.2f\n", id, armDir[2].x, armDir[2].y);
-  
   armPoint[0].Rectify(stereo_cam, side);
   armPoint[1].Rectify(stereo_cam, side);
   armPoint[2].Rectify(stereo_cam, side);
+
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[0]: %4.2f / %4.2f\n", id, armDir[0].x, armDir[0].y);
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[1]: %4.2f / %4.2f\n", id, armDir[1].x, armDir[1].y);
+//   printf("TmpCorner::Rectify: %u before rectify: armDir[2]: %4.2f / %4.2f\n", id, armDir[2].x, armDir[2].y);
+ 
+  armDir[0] = Normalise(armPoint[0].pr - isct2D.pr);
+  armDir[1] = Normalise(armPoint[1].pr - isct2D.pr);
+  armDir[2] = Normalise(armPoint[2].pr - isct2D.pr); 
   
-  armDir[0] = Normalise(armPoint[0].p - isct2D.p);
-  armDir[1] = Normalise(armPoint[1].p - isct2D.p);
-  armDir[2] = Normalise(armPoint[2].p - isct2D.p); 
-  
-  // Recalculate arm points (10px away from center) after rectification
-  armPoint[0].p = isct2D.p + 10 * armDir[0];
-  armPoint[1].p = isct2D.p + 10 * armDir[1];
-  armPoint[2].p = isct2D.p + 10 * armDir[2];
+// //   Recalculate arm points (10px away from center) after rectification
+//   armPoint[0].pr = isct2D.pr + 10 * armDir[0];
+//   armPoint[1].pr = isct2D.pr + 10 * armDir[1];
+//   armPoint[2].pr = isct2D.pr + 10 * armDir[2];
   
 //   printf("TmpCorner::Rectify: %u => armPoint[0]-isct2D: %4.2f / %4.2f\n", id, armPoint[0].p.x - isct2D.p.x, armPoint[0].p.y - isct2D.p.y);
 //   printf("TmpCorner::Rectify: %u => armPoint[1]-isct2D: %4.2f / %4.2f\n", id, armPoint[1].p.x - isct2D.p.x, armPoint[1].p.y - isct2D.p.y);
@@ -112,6 +146,37 @@ bool TmpCorner::IsAtPosition(int x, int y) const
 }
 
 
+//-------------------------------------------------------------------//
+//-------------------------- TmpCorners3D ---------------------------//
+//-------------------------------------------------------------------//
+/**
+ * @brief Constructor of class TmpLJunction3D
+ */
+TmpCorner3D::TmpCorner3D()
+{}
+
+/**
+ * @brief Fit a ellipse into some rectified points of the ellipse, \n
+ * to get the rectified ellipse parameters.
+ * @param stereo_cam Stereo camera parameters
+ * @param left Tmp. corner from the left image
+ * @param right Tmp. corner from the right image
+ * @param significance2D Calculated 2D significance
+ */
+bool TmpCorner3D::Reconstruct(StereoCamera *stereo_cam, TmpCorner &left, TmpCorner &right, double significance2D)
+{
+  vs3ID[LEFT] = left.GetVs3ID();
+  vs3ID[RIGHT] = right.GetVs3ID();
+  if(!isct3D.Reconstruct(stereo_cam, left.isct2D, right.isct2D)) return false;
+  
+  // now calculate significance values to get "good" (or correct) matches:
+  
+  // What can we calculate?
+  // 
+  sig = significance2D;
+  return true;
+}
+
 //----------------------------------------------------------------//
 //------------------------- StereoCorners ------------------------//
 //----------------------------------------------------------------//
@@ -137,7 +202,6 @@ StereoCorners::StereoCorners(StereoCore *sco, VisionCore *vc[2], StereoCamera *s
  */
 void StereoCorners::DrawMatched(int side, bool single, int id, int detail)
 {
-// printf("StereoLJunctions::DrawMatched!\n");
   if(single)
   {
     if(id < 0 || id >= cornerMatches)
@@ -160,7 +224,15 @@ void StereoCorners::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoCorners::DrawSingleMatched(int side, int id, int detail)
 {
-  corners[side][id].isct2D.Draw();
+  if(detail == 0) corners[side][id].isct2D.Draw();
+  
+  if(detail == 1)
+  {
+    DrawLine2D(corners[side][id].isct2D.p.x, corners[side][id].isct2D.p.y, corners[side][id].armPoint[0].p.x, corners[side][id].armPoint[0].p.y, RGBColor::magenta);
+    DrawLine2D(corners[side][id].isct2D.p.x, corners[side][id].isct2D.p.y, corners[side][id].armPoint[1].p.x, corners[side][id].armPoint[1].p.y, RGBColor::magenta);
+    DrawLine2D(corners[side][id].isct2D.p.x, corners[side][id].isct2D.p.y, corners[side][id].armPoint[2].p.x, corners[side][id].armPoint[2].p.y, RGBColor::magenta);
+    corners[side][id].isct2D.Draw();
+  }
 }
 
 /**
@@ -178,7 +250,7 @@ bool StereoCorners::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj,
   // Recalculate pose of vertices (relative to the pose of the flap == cog)
   Pose3 pose;
   Vector3 c(0., 0., 0.);
-  c = corner->isct3D.p;
+  c = corner->GetIsct3D().p;
 
   pose.pos.x = c.x;
   pose.pos.y = c.y;
@@ -191,7 +263,7 @@ bool StereoCorners::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj,
   Pose3 inv = pose.Inverse();
 
   // recalculate the vectors to the vertices from new center point
-  Vector3 p(corner->isct3D.p.x, corner->isct3D.p.y, corner->isct3D.p.z);
+  Vector3 p((corner->GetIsct3D()).p.x, (corner->GetIsct3D()).p.y, (corner->GetIsct3D()).p.z);
   p = inv.Transform(p);
   
   // add center point to the model
@@ -235,98 +307,15 @@ bool StereoCorners::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj,
 
 
 /**
- * @brief Find right best matching corner for given left corner, begining at position l of right corner array.
- * @param left_rect Tmp. rectangle of left stereo image.
- * @param right_rects Array of all rectangles from right stereo image.
- * @param l Begin at position l of right rectangle array
- * @return Returns position of best matching right rectangle from the right_rects array.
- */
-unsigned StereoCorners::FindMatchingCorner(TmpCorner &left_corner, Array<TmpCorner> &right_corners, unsigned l)
-{
-  double match, best_match = HUGE;
-  unsigned j, j_best = UNDEF_ID;				// we start at j and try to find j_best (!=UNDEF_ID)
-
-  for(j = l; j < right_corners.Size(); j++)
-  {
-    match = MatchingScorePoint(left_corner.isct2D, right_corners[j].isct2D);
-
-    unsigned k=0,l=0,m=0,n=0,o=0,p=0;
-    double angleSum = CalculateBestArmMatches(left_corner, right_corners[j], k, l, m, n, o, p);
-    
-    if(match < HUGE && SC_USE_CORNER_THRESHOLDS)					/// TODO TODO
-    {
-// printf(" %u match = %6.5f\n", j, match);
-// printf(" StereoCorners::FindMatchingCorner: %u/%u/%u bzw. %u/%u/%u\n", k, m, o, l, n, p);
-// printf("  angles: %4.2f - %4.2f\n", PolarAngle(left_corner.armDir), PolarAngle(right_corners[j].dir[1]));
-
-      // The angle difference is between 0 and 3*2*PI = 18,85 rad
-      match = match * angleSum;
-// printf(" %u new match = %6.5f\n\n", j, match);
-
-// printf("    min Angle: %4.3f\n", minAngle);
-// printf(" new match = %6.5f\n", match);
-    }
-
-    if(match < best_match)
-    {
-      left_corner.armMatch[0] = k;
-      right_corners[j].armMatch[0] = l;
-      left_corner.armMatch[1] = m;
-      right_corners[j].armMatch[1] = n;
-      left_corner.armMatch[2] = o;
-      right_corners[j].armMatch[2] = p;
-      best_match = match;
-      j_best = j;
-    }
-  }
-  
-  if(best_match > SC_CORNER_MATCH_LIMIT && SC_USE_CORNER_THRESHOLDS)
-    return UNDEF_ID;
-  return j_best;
-}
-
-
-/**
- * @brief Match left and right corner from an stereo image pair and get it sorted to the beginning of the array.
- * @param left_corners Array of all corners from left stereo image (matching flaps get sorted to the beginning of the array.)
- * @param right_corners Array of all corners from right stereo image.
- * @param matches Number of matched corners (sorted to the beginning of the arrays).
- */
-void StereoCorners::MatchCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, int &matches)
-{
-  unsigned j, l = 0, u = left_corners.Size();
-  for(; l < u && l < right_corners.Size();)
-  {
-    j = FindMatchingCorner(left_corners[l], right_corners, l);
-
-    // found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
-    {
-      right_corners.Swap(l, j);           // change found right_ljcts[j] at same position than left_ljcts ==> l
-      l++;
-    }
-    // found no right, move left to end and decrease end
-    else
-    {
-      left_corners.Swap(l, u-1);          // change found left_ljcts[l] to last position
-      u--;
-    }
-  }
-  u = std::min(u, right_corners.Size());
-  matches = u;
-}
-
-
-/**
- * @brief Calculate the best matching corner arms
+ * @brief Calculate the opening angles of the best matching corner arms.
  * @param corner 3D corner
  * @param left_corner Corner from the left image
  * @param right_corner Corner from the right image
- * @param k Best match to right corner with number k
+ * @param k Best match left_corner[k] to right_corner[l]
  * @param l
- * @param m
+ * @param m 2nd best match left_corner[m] to right_corner[n]
  * @param n
- * @param o
+ * @param o 3rd best match left_corner[o] to right_corner[p]
  * @param p
  * @return Returns the sum of the deviation of the three angles
  */
@@ -402,15 +391,93 @@ double StereoCorners::CalculateBestArmMatches(TmpCorner &left_corner, TmpCorner 
   return angleSum;
 }
 
-/**	TODO Besser und vor allem genauer formulieren!
- *	TODO Das is eigentlich formal nicht richtig, denn die Punkte (10px vom intersection point) müssen ja nicht matchen!!!
- *      TODO Wie kann man Winkel in 2D auf Winkel in 3D berechnen (jeweils aus dem linken und rechten Bild)
+/**
+ * @brief Calculate a significance value for a matching corner pair.
+ * @param match Match value on the epipolar line
+ * @param left_ljct Left corner
+ * @param right_ljct Right corner
+ * @return Returns the significance value.
+ */
+double StereoCorners::Calculate2DSignificance(double match, TmpCorner left_corner, TmpCorner right_corner)
+{
+  double match_sig = 1 - (match/SC_MAX_DELTA_V_POINT);  // normalisation of the matching significance (y_dist)
+
+  // use angles
+  unsigned k=0,l=0,m=0,n=0,o=0,p=0;
+  double angleSum = CalculateBestArmMatches(left_corner, right_corner, k, l, m, n, o, p);
+  angleSum = 1-(angleSum/(3*M_PI));		// Maximum deviation is 3*PI
+
+  /// TODO use line length???
+  
+  // Use line colors
+  double d0 = Dist(left_corner.GetArmColor(k, 0), right_corner.GetArmColor(l, 0));
+  double d1 = Dist(left_corner.GetArmColor(k, 1), right_corner.GetArmColor(l, 1));
+  double d2 = Dist(left_corner.GetArmColor(m, 0), right_corner.GetArmColor(n, 0));
+  double d3 = Dist(left_corner.GetArmColor(m, 1), right_corner.GetArmColor(n, 1));
+  double d4 = Dist(left_corner.GetArmColor(o, 0), right_corner.GetArmColor(p, 0));
+  double d5 = Dist(left_corner.GetArmColor(o, 1), right_corner.GetArmColor(p, 1));
+  double col_dist = 1 - (d0 + d1 + d2 + d3 + d4 + d5)/(2650.02);	// max = 6* sqrt(x² + y² + z²) = 2650.02
+
+  double sigsum = angleSum*col_dist;
+  
+//   printf("2DSig: match: %4.3f / angle: %4.3f / col: %4.3f  => sum: %4.3f of corners  %u - %u\n", match_sig, angleSum, col_dist, sigsum, left_corner.GetVs3ID(), right_corner.GetVs3ID());
+
+  return sigsum;
+}
+
+/**
+ * @brief Match left and right corner from an stereo image pair and get it sorted to the beginning of the array.
+ * @param left_corners Array of all corners from left stereo image (matching flaps get sorted to the beginning of the array.)
+ * @param right_corners Array of all corners from right stereo image.
+ * @param matches Number of matched corners (sorted to the beginning of the arrays).
+ */
+void StereoCorners::MatchCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, std::map<double, unsigned> *match_map)
+{
+  for(unsigned i=0; i < left_corners.Size(); i++)
+  {
+    for(unsigned j=0; j < right_corners.Size(); j++)
+    {
+      double match = MatchingScorePoint(left_corners[i].isct2D, right_corners[j].isct2D);
+      
+      if(match < HUGE)
+      {
+	
+	double sig = Calculate2DSignificance(match, left_corners[i], right_corners[j]);
+	if(sig > SC_MIN_2D_CORNER_SIGNIFICANCE  || !SC_USE_CORNER_THRESHOLDS)  // delete the really bad 2D results
+	{
+	  std::pair<double, unsigned> pair(sig, j /*right_corners[j].GetVs3ID()*/);
+	  match_map[i].insert(pair);
+	}
+      }
+    }    
+  }
+  
+  /// print match map
+//   for (unsigned i=0; i<left_corners.Size(); i++)
+//   {
+//     std::map<double, unsigned>::iterator it;
+//     it = match_map[i].end();
+//     unsigned nrMatches = match_map[i].size();
+//     unsigned max=5;
+//     if(nrMatches<5) max=nrMatches;
+//     for(unsigned j=0; j<max; j++)
+//     {
+//       it--;
+//       printf("   Corner: match: %4.3f of corner: %u-%u\n", (*it).first, corners[LEFT][i].GetVs3ID(), corners[RIGHT][(*it).second].GetVs3ID());
+//     }
+//   }
+}
+
+
+/** TODO Besser und vor allem genauer formulieren!
+ * TODO Das is eigentlich formal nicht richtig, denn die Punkte (10px vom intersection point) müssen ja nicht matchen!!!
+ * TODO Wie kann man Winkel in 2D auf Winkel in 3D berechnen (jeweils aus dem linken und rechten Bild)
  * @brief Calculate 3D points of the corner arms and calculate the direction. 
  * @param corner 3D corner
  * @param left_corner Corner from the left image
  * @param right_corner Corner from the right image
  */
-void StereoCorners::Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corner, TmpCorner &right_corner)
+void StereoCorners::Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corner, TmpCorner &right_corner)								/// TODO TODO TODO Wird nicht verwendet!
 {
   // 3D Triangulieren der abgeschätzten ArmPunkte
   corner->armPoints3D[0].Reconstruct(stereo_cam, left_corner.armPoint[left_corner.armMatch[0]], right_corner.armPoint[right_corner.armMatch[0]]);
@@ -418,11 +485,70 @@ void StereoCorners::Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corn
   corner->armPoints3D[2].Reconstruct(stereo_cam, left_corner.armPoint[left_corner.armMatch[2]], right_corner.armPoint[right_corner.armMatch[2]]);
 
   // Calculate the direction in 3D
-  corner->armDir3D[0] = Normalise(corner->armPoints3D[0].p - corner->isct3D.p);
-  corner->armDir3D[1] = Normalise(corner->armPoints3D[1].p - corner->isct3D.p);
-  corner->armDir3D[2] = Normalise(corner->armPoints3D[2].p - corner->isct3D.p);
+  corner->armDir3D[0] = Normalise(corner->armPoints3D[0].p - corner->GetIsct3D().p);
+  corner->armDir3D[1] = Normalise(corner->armPoints3D[1].p - corner->GetIsct3D().p);
+  corner->armDir3D[2] = Normalise(corner->armPoints3D[2].p - corner->GetIsct3D().p);
 }
 
+/**
+ * @brief Each right corner can have only one best matching left corner.
+ * Delete double assigned ones.
+ * @param match_map Match map
+ * @param map_size Size of the match_map
+ */
+void StereoCorners::BackCheck(std::map<double, unsigned> *match_map, unsigned map_size)
+{
+  unsigned nrMatches[map_size];
+  for(unsigned i=0; i< map_size; i++)
+    nrMatches[i] = match_map[i].size();
+
+  bool solved = false;
+  while(!solved)
+  {
+    solved = true;
+    std::map<double, unsigned>::iterator it_i;
+    std::map<double, unsigned>::iterator it_j;
+
+    for (unsigned i=0; i<map_size; i++)
+    {    
+      for(unsigned j=0; j<map_size; j++)
+      {
+	if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+	{
+	  it_i = match_map[i].end(); it_i--;
+	  it_j = match_map[j].end(); it_j--;
+	  
+	  if((*it_i).second == (*it_j).second)
+	  {
+	    solved = false;
+	    if((*it_i).first > (*it_j).first)  // delete smaller value
+	    {
+	      match_map[j].erase(it_j);
+	      nrMatches[j]--;
+	    }
+	    else
+	    {
+	      match_map[i].erase(it_i);
+	      nrMatches[i]--;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
+  /// PRINT match map
+//   for(unsigned i=0; i<map_size; i++)
+//   {
+//     std::map<double, unsigned>::iterator it;
+//     if(match_map[i].size() > 0)
+//     {
+//       it = match_map[i].end(); it--;
+// //       printf("MatchMap after back check: %4.3f with %u / %u\n", (*it).first, corners[LEFT][i].GetVs3ID(), corners[RIGHT][(*it).second].GetVs3ID());
+//       printf("MatchMap after back check: corners[i][sec]: %4.3f with %u / %u\n", (*it).first, i, (*it).second);
+//     }
+//   }
+}
 
 /**
  * @brief Calculate 3D corners from matched 2D Gestalts.
@@ -431,30 +557,75 @@ void StereoCorners::Calculate3DCornerArms(Corner3D *corner, TmpCorner &left_corn
  * @param matches Number of matched points.
  * @param corner3ds Array of calculated 3d corners.
  */
-void StereoCorners::Calculate3DCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, int &matches)
+unsigned StereoCorners::Calculate3DCorners(Array<TmpCorner> &left_corners, Array<TmpCorner> &right_corners, std::map<double, unsigned> *match_map)
 {
-  unsigned u = matches;
-  for(unsigned i = 0; i < u;)
+printf("Calculate3DCorners: start: xxx_corners.size(): %u - %u\n", left_corners.Size(), right_corners.Size());
+  Array<TmpCorner> left, right;
+  unsigned maxSize = 5;    // maximum size of match_map results
+  unsigned nrMatches = 0;
+  std::map<double, unsigned>::iterator it;
+  TmpCorner3D tmpCorner3D[left_corners.Size()][maxSize];
+  std::map<double, unsigned> new_match_map[left_corners.Size()]; 
+
+  for(unsigned i=0; i<left_corners.Size(); i++)
   {
-    Corner3D *corner3d = new Corner3D();
-    if (corner3d->isct3D.Reconstruct(stereo_cam, left_corners[i].isct2D, right_corners[i].isct2D))
+    unsigned nrResults = match_map[i].size();
+    if(nrResults > maxSize) nrResults = maxSize;
+    if(nrResults > 0)
     {
-      // calculate direction of arms if we have 3 arms per corner
-      if(left_corners[i].IsValid() && right_corners[i].IsValid())
+      it = match_map[i].end();
+      for(unsigned j=0; j<nrResults; j++)
       {
-	Calculate3DCornerArms(corner3d, left_corners[i], right_corners[i]);
-        score->NewGestalt3D(corner3d);
-        i++;
+	it--;
+	bool reconstruct = tmpCorner3D[i][j].Reconstruct(stereo_cam, left_corners[i], right_corners[(*it).second], (*it).first);
+	if(reconstruct)
+	{ 
+	  std::pair<double, unsigned> pair(tmpCorner3D[i][j].GetSignificance(), (*it).second);
+	  new_match_map[i].insert(pair);
+	  tmpCorner3D[i][j].SetTmpID(i, (*it).second);
+	} 
+	tmpCorner3D[i][j].SetValidation(reconstruct);
       }
     }
-    else    // move unacceptable points to the end
+  }
+
+  // only one to one assignments between left and right l-junctions
+  BackCheck(new_match_map, left_corners.Size());
+  
+  // Create new stereo corners and store in the arrays
+  for(unsigned i=0; i<left_corners.Size(); i++)
+  {
+    if(new_match_map[i].size() > 0)
     {
-      left_corners.Swap(i, u-1);
-      right_corners.Swap(i, u-1);
-      u--;
+      it = new_match_map[i].end(); it--;
+      for(unsigned k=0; k<maxSize; k++)
+      {
+	if(tmpCorner3D[i][k].IsValid())
+	{
+	  if(tmpCorner3D[i][k].GetVs3ID(RIGHT) == right_corners[(*it).second].GetVs3ID())
+	  {
+	    corners3D.PushBack(tmpCorner3D[i][k]);
+	    Corner3D *corner3D = new Corner3D(tmpCorner3D[i][k].GetIsct3D());
+	      //tmpLJct3D[i][k].GetVs3ID(LEFT), (*it).second, tmpLJct3D[i][k].GetCenter(), 
+		//			     tmpLJct3D[i][k].GetRadius(), tmpLJct3D[i][k].GetSignificance());
+	    score->NewGestalt3D(corner3D);    
+	  
+// printf("Calculate3DCorners: 3Dsig: %4.3f and ids: %u, %u\n", tmpCorner3D[i][k].GetSignificance(), tmpCorner3D[i][k].GetTmpID(LEFT), tmpCorner3D[i][k].GetTmpID(RIGHT));
+	    
+	    left.PushBack(left_corners[tmpCorner3D[i][k].GetTmpID(LEFT)]);
+	    right.PushBack(right_corners[tmpCorner3D[i][k].GetTmpID(RIGHT)]);
+	    nrMatches++;
+	  }
+	}
+      }
     }
   }
-  matches = u;
+
+  left_corners = left;
+  right_corners = right;
+printf("Calculate3DCorners: end\n");
+    
+  return nrMatches;
 }
 
 
@@ -465,17 +636,16 @@ void StereoCorners::ClearResults()
 {
   corners[LEFT].Clear();
   corners[RIGHT].Clear();
+  corners3D.Clear();
   cornerMatches = 0;
 }
 
 
 /**
  * @brief Match and calculate 3D corners from 2D corners.
- * @param side LEFT/RIGHT image of stereo.images.
  */
 void StereoCorners::Process()
 {
-// printf("StereoLJunctions::Process: implemented!\n");
   for(int side = LEFT; side <= RIGHT; side++)
   {
     for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::CORNER); i++)
@@ -497,12 +667,34 @@ void StereoCorners::Process()
 	corners[side][i].Refine();
   }
 
-  // do stereo matching and depth calculation
-  cornerMatches = 0;
-// printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
-  MatchCorners(corners[LEFT], corners[RIGHT], cornerMatches);
-// printf("MatchedLJunctions: %u\n", ljctMatches);
-  Calculate3DCorners(corners[LEFT], corners[RIGHT], cornerMatches);
+//   // do stereo matching and depth calculation
+//   cornerMatches = 0;
+// // printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
+//   MatchCorners(corners[LEFT], corners[RIGHT], cornerMatches);
+// // printf("MatchedLJunctions: %u\n", ljctMatches);
+//   Calculate3DCorners(corners[LEFT], corners[RIGHT], cornerMatches);
+  
+  
+  
+  struct timespec start, end;
+clock_gettime(CLOCK_REALTIME, &start);
+  
+  // define match map with significance value as key and right ellipse id (== corners[RIGHT][id])
+  std::map<double, unsigned> match_map[corners[LEFT].Size()];
+  MatchCorners(corners[LEFT], corners[RIGHT], match_map);
+
+clock_gettime(CLOCK_REALTIME, &end);
+cout<<"StereoCorners::Process: Time to match [s]: " << timespec_diff(&end, &start) << endl;
+
+struct timespec cstart, cend;
+clock_gettime(CLOCK_REALTIME, &cstart);
+  
+    cornerMatches = Calculate3DCorners(corners[LEFT], corners[RIGHT], match_map);
+  
+clock_gettime(CLOCK_REALTIME, &cend);
+cout<<"StereoLJunctions::Process: Time to calculate 3D corners [s]: " << timespec_diff(&cend, &cstart) << endl;
+
+
 }
 
 

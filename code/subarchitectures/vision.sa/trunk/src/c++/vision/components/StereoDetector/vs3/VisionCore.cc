@@ -377,15 +377,15 @@ const char* VisionCore::GetInfo(Gestalt::Type type, int id)
 const char* VisionCore::GetGestaltTypeName(Gestalt::Type type)
 {
   const unsigned info_size = 10000;
-  static char info_text[info_size] = "";
+  static char name_text[info_size] = "";
   int n = 0;
 
-  n += snprintf(info_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
+  n += snprintf(name_text + n, info_size - n, "%s: ", Gestalt::TypeName(type));
 
   for(int i=0; i< (18 - Gestalt::TypeNameLength(type)); i++)
-    n += snprintf(info_text + n, info_size -n, " ");
+    n += snprintf(name_text + n, info_size -n, " ");
   
-  return info_text;
+  return name_text;
 }
 
 /**

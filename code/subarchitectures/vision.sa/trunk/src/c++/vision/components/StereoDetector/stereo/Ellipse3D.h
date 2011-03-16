@@ -22,26 +22,19 @@ namespace Z
 class Ellipse3D : public Gestalt3D
 {
 private:
-//  int tmpID;                                             ///< Position of the 2D features in ellipses[2]				// TODO TODO überall integrieren, zum nachverfolgen?
-//  Vertex3D center;                                       ///< 3D center point of the circle with the normal
-//  double radius;                                         ///< Radius of the circle
-//  double significance;                                   ///< Significance value of the estimated circle
-//  Vertex2D leftHullPoint[6];                             ///< The solutions (x[i][j], y_g[i]) (i=0,..,6 / j=0,1)
-//  bool reliableCPoint[6];                                ///< Which circle points are reliable
-//  Vertex3D cPoints[6];                                   ///< Real circle points in 3D
-//  double distance[6];                                    ///< Distance between center and cPoints
-//  double deviation[6];                                   ///< Deviation between distance and mean (radius)
-//  unsigned nrCPointsCalc;                                ///< Number of calculated circle points (cPointsCalc)
-//  Vertex3D cPointsCalc[20];                              ///< Calculated points on a "real" circle.
+ Vertex3D center;                                       ///< 3D center point of the circle with the normal
+ double radius;                                         ///< Radius of the circle
 
 public:
-  unsigned vs3ID[2];                      ///< The vs3-IDs of the Gestalts
   
-private:	
-
+private:
+  
 public:
-  Ellipse3D();
+  Ellipse3D(unsigned vs3ID_l, unsigned vs3ID_r, Vertex3D c, double r, double s);
   double Compare(Ellipse3D &ell);
+  
+  Vertex3D GetCenter() {return center;}
+  double GetRadius() {return radius;}
 };
 
 

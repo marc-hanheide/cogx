@@ -21,11 +21,18 @@ namespace Z
  */
 TmpLJunction::TmpLJunction(LJunction *ljct)
 {
-  point2D.p.x = ljct->isct.x;
-  point2D.p.y = ljct->isct.y;
+  isct2D.p.x = ljct->isct.x;
+  isct2D.p.y = ljct->isct.y;
   
   dir[0] = ljct->dir[0];
   dir[1] = ljct->dir[1];
+  
+  vs3ID = ljct->ID();
+  
+  color[0][0] = ljct->line[0]->MeanCol(0);
+  color[0][1] = ljct->line[0]->MeanCol(1);
+  color[1][0] = ljct->line[1]->MeanCol(0);
+  color[1][1] = ljct->line[1]->MeanCol(1);
 }
 
 
@@ -37,7 +44,7 @@ TmpLJunction::TmpLJunction(LJunction *ljct)
  */
 void TmpLJunction::RePrune(int oX, int oY, int sc)
 {
-  point2D.RePrune(oX, oY, sc);
+  isct2D.RePrune(oX, oY, sc);
 }
 
 /**
@@ -47,7 +54,7 @@ void TmpLJunction::RePrune(int oX, int oY, int sc)
  */
 void TmpLJunction::Rectify(StereoCamera *stereo_cam, int side)
 {
-  point2D.Rectify(stereo_cam, side);
+  isct2D.Rectify(stereo_cam, side);
 }
 
 
@@ -56,7 +63,7 @@ void TmpLJunction::Rectify(StereoCamera *stereo_cam, int side)
  */
 void TmpLJunction::Refine()
 {
-  point2D.Refine();
+  isct2D.Refine();
 }
 
 /**
@@ -67,7 +74,38 @@ void TmpLJunction::Refine()
  */
 bool TmpLJunction::IsAtPosition(int x, int y) const
 {
-  return point2D.IsAtPosition(x, y);
+  return isct2D.IsAtPosition(x, y);
+}
+
+//-------------------------------------------------------------------//
+//-------------------------- TmpLjunctions3D ---------------------------//
+//-------------------------------------------------------------------//
+/**
+ * @brief Constructor of class TmpLJunction3D
+ */
+TmpLJunction3D::TmpLJunction3D()
+{}
+
+/**
+ * @brief Fit a ellipse into some rectified points of the ellipse, \n
+ * to get the rectified ellipse parameters.
+ * @param left Tmp. ellipse from the left image
+ * @param numPoints Defines the number of hull points for later 3D matching
+ */
+bool TmpLJunction3D::Reconstruct(StereoCamera *stereo_cam, TmpLJunction &left, TmpLJunction &right, double significance2D)
+{
+  vs3ID[LEFT] = left.vs3ID;
+  vs3ID[RIGHT] = right.vs3ID;
+  if(!isct3D.Reconstruct(stereo_cam, left.isct2D, right.isct2D)) return false;
+  
+  // now calculate significance values to get "good" (or correct) matches:
+  
+  // What can we calculate?
+  // 
+  sig = significance2D;
+  
+  
+  return true;
 }
 
 
@@ -119,7 +157,7 @@ void StereoLJunctions::DrawMatched(int side, bool single, int id, int detail)
  */
 void StereoLJunctions::DrawSingleMatched(int side, int id, int detail)
 {
-  ljcts[side][id].point2D.Draw();
+  ljcts[side][id].isct2D.Draw();
 }
 
 /**
@@ -194,84 +232,139 @@ bool StereoLJunctions::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &o
 
 
 /**
- * @brief Find right best matching l-junction for given left l-junction, begining at position l of right l-junction array.
- * @param left_rect Tmp. l-junction of left stereo image.
- * @param right_rects Array of all l-junctions from right stereo image.
- * @param l Begin at position l of right ljct array
- * @return Returns position of best matching right l-junction from the right_ljcts array.
+ * @brief Calculate a significance value of L-Junctions.
+ * @param match Match value on the epipolar line
+ * @param left_ljct Left L-junction
+ * @param right_ljct Right L-junction
+ * @return Returns the significance value.
  */
-unsigned StereoLJunctions::FindMatchingLJunction(TmpLJunction &left_ljct, Array<TmpLJunction> &right_ljcts, unsigned l)
+double StereoLJunctions::Calculate2DSignificance(double match, TmpLJunction left_ljct, TmpLJunction right_ljct)
 {
-// printf("\nStereoLJunctions: Find best match:\n");
-// printf("  angles: %4.2f - %4.2f\n", PolarAngle(left_ljct.dir[0]), PolarAngle(left_ljct.dir[1]));
-  double match, best_match = HUGE;
-  unsigned j, j_best = UNDEF_ID;				// we start at j and try to find j_best (!=UNDEF_ID)
+  double match_sig = 1 - (match/SC_MAX_DELTA_V_POINT);  // normalisation of the matching significance (y_dist)
+  
+  // Winkelabweichung berechnen (ist im Bereich 0 bis 2*2*PI = 12,5
+  double oa0 = OpeningAngle(left_ljct.dir[0], right_ljct.dir[0]) + OpeningAngle(left_ljct.dir[1], right_ljct.dir[1]);;
+  double oa1 = OpeningAngle(left_ljct.dir[0], right_ljct.dir[1]) + OpeningAngle(left_ljct.dir[1], right_ljct.dir[0]);
+  double angleDiff_sig = 1 - (min(oa0, oa1)/(2*M_PI)); // normalised
 
-  for(j = l; j < right_ljcts.Size(); j++)
+  double d0 = Dist(left_ljct.color[0][0], right_ljct.color[0][0]);
+  double d1 = Dist(left_ljct.color[0][1], right_ljct.color[0][1]);
+  double d2 = Dist(left_ljct.color[1][0], right_ljct.color[1][0]);
+  double d3 = Dist(left_ljct.color[1][1], right_ljct.color[1][1]);
+  double col_dist = 1 - (d0 + d1 + d2 + d3)/(1766.6918);	// max = 4* sqrt(x² + y² + z²) = 1766,69
+  
+  double sigsum = match_sig*angleDiff_sig*col_dist;
+// printf("dist: %4.2f - %4.2f - %4.2f - %4.2f of lines: %u - %u\n", d0, d1, d2, d3, left_ljct.vs3ID, right_ljct.vs3ID);
+  
+// printf("2DSig: match: %4.3f / angle: %4.3f / col: %4.3f  => sum: %4.3f of ljcts  %u - %u\n", match_sig, angleDiff_sig, col_dist, sigsum, left_ljct.vs3ID, right_ljct.vs3ID);
+// printf("                        : sig: %4.3f\n", match_sig*angleDiff_sig);
+
+  /// TODO use line length???
+  
+  return col_dist; //match_sig * angleDiff_sig;		/// TODO TODO TODO significance, calculated only from color distance of the arms!!!
+}
+
+/**
+ * @brief Match left and right l-junctions from an stereo image pair and get it sorted to the beginning of the array.
+ * @param left_ljcts Array of all rectangles from left stereo image (matching flaps get sorted to the beginning of the array.)
+ * @param right_ljcts Array of all rectangles from right stereo image.
+ * @param matches Number of matched rectangles (sorted to the beginning of the arrays).
+ */
+void StereoLJunctions::MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, std::map<double, unsigned> *match_map)
+{
+  for(unsigned i=0; i < left_ljcts.Size(); i++)
   {
-    match = MatchingScorePoint(left_ljct.point2D, right_ljcts[j].point2D);
-
-    if(match < HUGE && SC_USE_LJCT_THRESHOLDS)
+    for(unsigned j=0; j < right_ljcts.Size(); j++)
     {
-// printf(" %u match = %6.5f\n", j, match);
-// printf("  angles: %4.2f - %4.2f\n", PolarAngle(right_ljcts[j].dir[0]), PolarAngle(right_ljcts[j].dir[1]));
+      double match = MatchingScorePoint(left_ljcts[i].isct2D, right_ljcts[j].isct2D);
+      if(match != HUGE)
+      {
+	double sig = Calculate2DSignificance(match, left_ljcts[i], right_ljcts[j]);
+// 	double size = (left_ell[i].a + right_ell[j].a)/2.;
+// printf("MatchEllipses: size: %4.3f\n", size);
+// 	if(sig > SC_MIN_2D_SIGNIFICANCE && size > SC_MIN_AXIS_SIZE)  // delete the really bad 2D results
+	if(sig > SC_MIN_2D_LJCT_SIGNIFICANCE  || !SC_USE_LJCT_THRESHOLDS)  // delete the really bad 2D results
+	{
+	  std::pair<double, unsigned> pair(sig, /*right_ljcts[j].vs3ID*/j);
+	  match_map[i].insert(pair);
+	}
+      }
+    }    
+  }
+  
+  /// print match map
+//   for (unsigned i=0; i<left_ljcts.Size(); i++)
+//   {
+//     std::map<double, unsigned>::iterator it;
+//     it = match_map[i].end();
+//     unsigned nrMatches = match_map[i].size();
+//     unsigned max=5;
+//     if(nrMatches<5) max=nrMatches;
+//     for(unsigned j=0; j<max; j++)
+//     {
+//       it--;
+//       printf("   LJcts: match after: %4.5f of jcts: %u-%u\n", (*it).first, i, (*it).second);
+//     }
+//   }
+}
 
-      // Winkelabweichung berechnen (ist im Bereich 0 bis 2*2*PI = 12,5
-      double oa0 = OpeningAngle(left_ljct.dir[0], right_ljcts[j].dir[0]) + OpeningAngle(left_ljct.dir[1], right_ljcts[j].dir[1]);;
-      double oa1 = OpeningAngle(left_ljct.dir[0], right_ljcts[j].dir[1]) + OpeningAngle(left_ljct.dir[1], right_ljcts[j].dir[0]);
+/**
+ * @brief Each right l-jct can have only one best matching left l-jct.
+ * Delete double assigned ones.
+ * @param match_map Match map for ellipses
+ * @param map_size Size of the match_map
+ */
+void StereoLJunctions::BackCheck(std::map<double, unsigned> *match_map, unsigned map_size)
+{
+  unsigned nrMatches[map_size];
+  for(unsigned i=0; i< map_size; i++)
+    nrMatches[i] = match_map[i].size();
 
-      double minAngle = min(oa0, oa1);
-// printf("    min Angle: %4.3f\n", minAngle);
-      match = match * minAngle;
-// printf(" new match = %6.5f\n", match);
-    }
+  bool solved = false;
+  while(!solved)
+  {
+    solved = true;
+    std::map<double, unsigned>::iterator it_i;
+    std::map<double, unsigned>::iterator it_j;
 
-    /// TODO Auch die Richtungen der Arme mit in das Matchen einbeziehen!
-
-    if(match < best_match)
-    {
-      best_match = match;
-      j_best = j;
+    for (unsigned i=0; i<map_size; i++)
+    {    
+      for(unsigned j=0; j<map_size; j++)
+      {
+	if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+	{
+	  it_i = match_map[i].end(); it_i--;
+	  it_j = match_map[j].end(); it_j--;
+	  
+	  if((*it_i).second == (*it_j).second)
+	  {
+	    solved = false;
+	    if((*it_i).first > (*it_j).first)  // delete smaller value
+	    {
+	      match_map[j].erase(it_j);
+	      nrMatches[j]--;
+	    }
+	    else
+	    {
+	      match_map[i].erase(it_i);
+	      nrMatches[i]--;
+	    }
+	  }
+	}
+      }
     }
   }
   
-  if(best_match > SC_LJCTS_MATCH_LIMIT && SC_USE_LJCT_THRESHOLDS)
-    return UNDEF_ID;
-// printf("BEST MATCH: %4.3f\n", best_match);
-  return j_best;
-}
-
-
-/**
- * @brief Match left and right rectangles from an stereo image pair and get it sorted to the beginning of the array.
- * @param left_rects Array of all rectangles from left stereo image (matching flaps get sorted to the beginning of the array.)
- * @param right_rects Array of all rectangles from right stereo image.
- * @param matches Number of matched rectangles (sorted to the beginning of the arrays).
- */
-void StereoLJunctions::MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches)
-{
-// printf("StereoLJunctions::MatchLJunctions: start:\n");
-
-  unsigned j, l = 0, u = left_ljcts.Size();
-  for(; l < u && l < right_ljcts.Size();)
-  {
-    j = FindMatchingLJunction(left_ljcts[l], right_ljcts, l);
-
-    // found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
-    {
-      right_ljcts.Swap(l, j);				// change found right_ljcts[j] at same position than left_ljcts ==> l
-      l++;
-    }
-    // found no right, move left to end and decrease end
-    else
-    {
-      left_ljcts.Swap(l, u-1);			// change found left_ljcts[l] to last position
-      u--;
-    }
-  }
-  u = min(u, right_ljcts.Size());
-  matches = u;
+  /// PRINT match map
+//   for(unsigned i=0; i<map_size; i++)
+//   {
+//     std::map<double, unsigned>::iterator it;
+//     if(match_map[i].size() > 0)
+//     {
+//       it = match_map[i].end(); it--;
+//       printf("MatchMap after: %4.3f with %u / %u\n", (*it).first, i, (*it).second);
+//     }
+//   }
 }
 
 
@@ -281,26 +374,78 @@ void StereoLJunctions::MatchLJunctions(Array<TmpLJunction> &left_ljcts, Array<Tm
  * @param right_rects Array of all l-junctions from right stereo image.
  * @param matches Number of matched points.
  * @param ljct3ds Array of calculated 3d l-junctions.
+ * @return Returns the number of matches.
  */
-void StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, int &matches/*, Array<LJunction3D> &ljct3ds*/)
+unsigned StereoLJunctions::Calculate3DLJunctions(Array<TmpLJunction> &left_ljcts, Array<TmpLJunction> &right_ljcts, std::map<double, unsigned> *match_map)
 {
-  unsigned u = matches;
-  for(unsigned i = 0; i < u;)
+printf("Calculate3DLJunctions: start\n");
+  Array<TmpLJunction> left, right;
+  unsigned maxSize = 5;    // maximum size of match_map results
+  unsigned nrMatches = 0;
+  std::map<double, unsigned>::iterator it;
+  TmpLJunction3D tmpLJct3D[left_ljcts.Size()][maxSize];
+  std::map<double, unsigned> new_match_map[left_ljcts.Size()]; 
+
+  for(unsigned i=0; i<left_ljcts.Size(); i++)
   {
-    LJunction3D *ljct3d = new LJunction3D();
-    if (ljct3d->isct3D.Reconstruct(stereo_cam, left_ljcts[i].point2D, right_ljcts[i].point2D))
+    unsigned nrResults = match_map[i].size();
+    if(nrResults > maxSize) nrResults = maxSize;
+    if(nrResults > 0)
     {
-      score->NewGestalt3D(ljct3d);
-      i++;
-    }
-    else    // move unacceptable points to the end
-    {
-      left_ljcts.Swap(i, u-1);
-      right_ljcts.Swap(i, u-1);
-      u--;
+      it = match_map[i].end();
+      for(unsigned j=0; j<nrResults; j++)
+      {
+	it--;
+	unsigned rightID = (*it).second;
+	bool reconstruct = tmpLJct3D[i][j].Reconstruct(stereo_cam, left_ljcts[i], right_ljcts[rightID], (*it).first);
+	if(reconstruct)
+	{ 
+	  std::pair<double, unsigned> pair(tmpLJct3D[i][j].GetSignificance(), (*it).second);
+	  new_match_map[i].insert(pair);
+	  tmpLJct3D[i][j].SetTmpID(i, (*it).second);
+	} 
+	tmpLJct3D[i][j].SetValidation(reconstruct);
+      }
     }
   }
-  matches = u;
+  
+  // only one to one assignments between left and right l-junctions
+  BackCheck(new_match_map, left_ljcts.Size());
+  
+  // Create new stereo l-junctions and store in the arrays
+  for(unsigned i=0; i<left_ljcts.Size(); i++)
+  {
+    if(new_match_map[i].size() > 0)
+    {
+      it = new_match_map[i].end(); it--;
+      for(unsigned k=0; k<maxSize; k++)
+      {
+	if(tmpLJct3D[i][k].IsValid())
+	{
+	  if(tmpLJct3D[i][k].GetVs3ID(RIGHT) == (*it).second)
+	  {
+	    ljcts3D.PushBack(tmpLJct3D[i][k]);
+	    LJunction3D *ljct3D = new LJunction3D(tmpLJct3D[i][k].GetIsct3D());
+	      //tmpLJct3D[i][k].GetVs3ID(LEFT), (*it).second, tmpLJct3D[i][k].GetCenter(), 
+		//			     tmpLJct3D[i][k].GetRadius(), tmpLJct3D[i][k].GetSignificance());
+	    score->NewGestalt3D(ljct3D);    
+	  
+// printf("Calculate3DJcts: 3Dsig: %4.3f and ids: %u, %u\n", tmpEll3D[i][k].GetSignificance(), tmpEll3D[i][k].GetTmpEllID(LEFT), tmpEll3D[i][k].GetTmpEllID(RIGHT));
+	    
+	    left.PushBack(left_ljcts[tmpLJct3D[i][k].GetTmpID(LEFT)]);
+	    right.PushBack(right_ljcts[tmpLJct3D[i][k].GetTmpID(RIGHT)]);
+	    nrMatches++;
+	  }
+	}
+      }
+    }
+  }
+
+  left_ljcts = left;
+  right_ljcts = right;
+printf("Calculate3DLJunctions: end\n");
+    
+  return nrMatches;
 }
 
 
@@ -311,6 +456,7 @@ void StereoLJunctions::ClearResults()
 {
   ljcts[LEFT].Clear();
   ljcts[RIGHT].Clear();
+  ljcts3D.Clear();
   ljctMatches = 0;
 }
 
@@ -345,10 +491,26 @@ void StereoLJunctions::Process()
 
   // do stereo matching and depth calculation
   ljctMatches = 0;
-// printf("StereoLJunctions::Process: left: %u - right: %u\n", ljcts[LEFT].Size(), ljcts[RIGHT].Size());
-  MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
-// printf("MatchedLJunctions: %u\n", ljctMatches);
-  Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], ljctMatches);
+  
+struct timespec start, end;
+clock_gettime(CLOCK_REALTIME, &start);
+  
+  // define match map with significance value as key and right ellipse id
+  std::map<double, unsigned> match_map[ljcts[LEFT].Size()];
+//   MatchEllipses(ellipses[LEFT], ellipses[RIGHT], match_map);
+  MatchLJunctions(ljcts[LEFT], ljcts[RIGHT], match_map);
+
+clock_gettime(CLOCK_REALTIME, &end);
+cout<<"StereoLJunctions::Process: Time to match [s]: " << timespec_diff(&end, &start) << endl;
+
+struct timespec cstart, cend;
+clock_gettime(CLOCK_REALTIME, &cstart);
+  
+   ljctMatches = Calculate3DLJunctions(ljcts[LEFT], ljcts[RIGHT], match_map);							/// TODO 
+  
+clock_gettime(CLOCK_REALTIME, &cend);
+cout<<"StereoLJunctions::Process: Time to calculate 3D ljcts [s]: " << timespec_diff(&cend, &cstart) << endl;
+
 }
 
 

@@ -34,7 +34,7 @@ private:
   void PrintSig();
 
 public:
-  Line *line[2];     ///< left and right arm
+  Line *line[2];     ///< left and right arm					/// TODO TODO ordered? left/right?
   double sense[2];   ///< whether line dirs point to or from junction
   int near_point[2]; ///< which point of each line is nearer to the jct
   Vector2 dir[2];    ///< directions of arms, pointing outwards

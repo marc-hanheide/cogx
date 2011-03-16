@@ -55,7 +55,7 @@ void* ThreadDrawing(void* c)
  */
 TomGineThread::TomGineThread(int w, int h)
   : width(w), height(h), mode(1), stopTomGineThread(false), 
-    drawImage(false), draw3D(true), drawPointCloud(true), drawLabels(false)
+    drawImage(false), draw3D(true), drawPointCloud(true), drawLabels(false), useProbLevel(false)
 {
   pthread_mutex_init(&dataMutex,NULL);
   pthread_create(&thread, NULL, ThreadDrawing, this);
@@ -115,6 +115,8 @@ bool TomGineThread::KeyHandler(std::vector<blortGLWindow::Event> &events)
         drawPointCloud = !drawPointCloud;
       else if (events[i].input == blortGLWindow::TMGL_l)
         drawLabels = !drawLabels;
+      else if (events[i].input == blortGLWindow::TMGL_u)
+        useProbLevel = !useProbLevel;
       else if (events[i].input == blortGLWindow::TMGL_q)
         return true;
     }
@@ -240,9 +242,9 @@ void TomGineThread::DrawLines3D()
 
   for (unsigned i=0; i<lines3D.size(); i++)
   {
-    if(drawLabels)
+    if(useProbLevel)
     {
-      if(lineProbs3D[i] > 0.9)
+      if(lineProbs3D[i] > 0.95)
       {
 	glLineWidth(lineProbs3D[i]*5.0f);
 	glBegin(GL_LINES);
@@ -274,6 +276,7 @@ void TomGineThread::DrawLabels3D(TomGine::tgEngine &render)
 //   {
 //     if(vLabel[i].render)
 //     {
+//       printf("Render vLabel!\n");
 //       vLabel[i].lLabel.SetFont("./comic.ttf");
 //       vLabel[i].lLabel.AddText(vLabel[i].lL.c_str());
 //       TomGine::tgPose p;
@@ -310,7 +313,7 @@ void TomGineThread::DrawLabels3D(TomGine::tgEngine &render)
 //     p.t.x = 0.0;
 //     p.t.y = 0.0;
 //     p.t.z = 0.0;
-//     render.PrintText3D("Logitech", vec3(1., 1., 1.));
+    render.PrintText2D("Andison", vec2(10, 10));
 //   }
 }
   

@@ -26,6 +26,18 @@ static const char type_names[][NAME_LENGTH] = {
   "UNDEF"
   };
 
+static const int stereo_type_names_length[] = {16, 13, 14, 11, 14, 16, 11, 15, 11, 5};
+
+/**
+ * @brief Returns the length of the name of a given stereo type.
+ * @param t Stereo type
+ * @return Lenght of Gestalt type name.
+ */
+const int StereoBase::StereoTypeNameLength(Type t)
+{
+  return stereo_type_names_length[t];
+}
+
 /**
  * @brief Returns the name of a given gestalt type.
  * @param t Type of the stereo principle

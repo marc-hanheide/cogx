@@ -45,7 +45,7 @@ void ObjRep::Process(Z::StereoCore *sc)
   }
 
   DeleteUnusedNodes();
-  PrintGraph();
+//   PrintGraph();
 }
 
 /**

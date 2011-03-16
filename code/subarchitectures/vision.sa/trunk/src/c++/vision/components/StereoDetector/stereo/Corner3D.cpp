@@ -15,8 +15,10 @@ namespace Z
 /**
  * @brief Constructor of class Corner3D.
  */
-Corner3D::Corner3D() : Gestalt3D(Gestalt3D::CORNER)
-{}
+Corner3D::Corner3D(Vertex3D is) : Gestalt3D(Gestalt3D::CORNER)
+{
+  isct3D = is;
+}
 
 }
 
