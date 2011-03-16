@@ -19,6 +19,9 @@ tgEngine::tgEngine(	unsigned width,
 					float near,
 					const char* name,
 					bool bfc)
+#ifdef USE_FTGL_FONT
+: m_font(TTF_FONT)
+#endif
 {
 	m_window = new blortGLWindow::GLWindow(width, height, name);
 	
@@ -73,14 +76,14 @@ tgEngine::tgEngine(	unsigned width,
 	m_lighting.ApplyLight(m_light0,0);
 	
 #ifdef USE_FTGL_FONT
-	m_font = new FTTextureFont(TTF_FONT);
-	if(m_font->Error()){
-		printf("[tgEngine::tgEngine] Warning Font not correct '%s'\n", TTF_FONT);
-		m_font = 0;
-	}else{
-		m_font->FaceSize(18);
-		printf("[tgEngine::tgEngine] Font used: '%s'\n", TTF_FONT);
-	}
+//  	m_font_tf = new FTTextureFont(TTF_FONT);
+// 	if(m_font_tf->Error()){
+// 		printf("[tgEngine::tgEngine] Warning Font not correct '%s'\n", TTF_FONT);
+// 		m_font_tf = 0;
+// 	}else{
+// 		m_font_tf->FaceSize(18);
+// 		printf("[tgEngine::tgEngine] Font used: '%s'\n", TTF_FONT);
+// 	}
 #endif
 	
 	m_background_image = 0;
@@ -396,24 +399,27 @@ void tgEngine::UnloadBackgroundImage(){
 	m_background_image = 0;
 }
 
-void tgEngine::PrintText3D(std::string text, vec3 pos){
+void tgEngine::PrintText3D(std::string text, vec3 pos, int size){
 #ifdef USE_FTGL_FONT
 	vec2 vPos = m_camera.ToImageSpace(pos);
-	PrintText2D(text, vPos);
+	PrintText2D(text, vPos, size);
 #else
 	printf("[tgEngine::PrintText3D] Warning: ftgl fonts disabled. USE_FTGL_FONT not defined\n");
 #endif
 }
-void tgEngine::PrintText2D(std::string text, vec2 pos){
+void tgEngine::PrintText2D(std::string text, vec2 pos, int size){
 #ifdef USE_FTGL_FONT
-	if(!m_font)
-		return;
-	Activate2D();
-	glPushMatrix();
-		glTranslatef(pos.x, pos.y, 0.0f);
-		m_font->Render("Hallo");
-	glPopMatrix();
-	Activate3D();
+// 	if(!m_font_tf)
+// 		return;
+// 	Activate2D();
+// 	glPushMatrix();
+// 		glTranslatef(pos.x, pos.y, 0.0f);
+// 		m_font_tf->Render(text.c_str());
+// 	glPopMatrix();
+// 	Activate3D();
+printf("tgEngine::PrintText2D %s, %d, %f %f, %s\n", text.c_str(), size, pos.x, pos.y, TTF_FONT);
+	m_font.Print("Hallo", 20, 5, 5);
+printf("tgEngine::PrintText2D B\n");
 #else
 	printf("[tgEngine::PrintText2D] Warning: ftgl fonts disabled. USE_FTGL_FONT not defined\n");
 #endif

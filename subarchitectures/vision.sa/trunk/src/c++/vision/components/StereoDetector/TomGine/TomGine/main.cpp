@@ -13,13 +13,9 @@
 #include "TomGine/tgModelLoader.h"
 #include "TomGine/tgShapeCreator.h"
 #include "TomGine/tgCollission.h"
+#include "TomGine/tgFont.h"
 
 #include <time.h>
-
-#ifdef USE_FTGL_FONT
-#include <FTGL/ftgl.h>
-#include <FTGL/FTGLTextureFont.h>
-#endif
 
 using namespace TomGine;
 using namespace std;
@@ -124,6 +120,8 @@ int main(int argc, char *argv[])
 // 	tgTexture tex;
 // 	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 // 	tex.Load("../Resources/img/smiley.jpg");
+
+	tgFont m_font(TTF_FONT);
 	
 	// Rendering loop
 	while(render.Update(fTime=timer.Update())){
@@ -153,7 +151,6 @@ int main(int argc, char *argv[])
 		glColor3f(1,1,1);
 		if(tgCollission::IntersectModels(camera, camera2))
 			render.PrintText2D("collission", vec2(50,50));
-
 		
 		camera.DrawFaces();
 		camera2.DrawFaces();
@@ -180,7 +177,7 @@ int main(int argc, char *argv[])
 // 		m_font.Print(avg_time, 18, width - 200, 7);	
  		
  		glColor3f(1,1,1);
- 		render.PrintText2D("TomGine Render Engine", vec2(7,7));
+ 		render.PrintText2D("TomGine Render Engine", vec2(7,7), 12);
  		
 #ifdef LINUX
 			usleep(5000);		// not to overload GPU

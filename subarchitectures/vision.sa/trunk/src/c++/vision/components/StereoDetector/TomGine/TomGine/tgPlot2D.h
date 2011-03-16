@@ -53,7 +53,7 @@ public:
 	void setBufferSize(unsigned size){ m_buffer_size = size; }
 	
 	
-	virtual void draw() const;
+	virtual void draw();
 	
 	void plot(const std::vector<float> &x, const std::vector<float> &y) const;
 	

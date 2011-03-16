@@ -65,7 +65,8 @@ private:
 	bool m_flip_background_image;
 	
 #ifdef USE_FTGL_FONT
-	FTTextureFont* m_font;
+// 	FTTextureFont* m_font_tf;
+	tgFont m_font;
 #endif
 	
 	void DrawBackgroundImage();
@@ -133,8 +134,8 @@ public:
 	/** @brief get state of wireframe drawing mode (wireframe mode on/off) */
 	bool GetWireframeMode(){ return m_wireframe; }
 	
-	void PrintText3D(std::string text, vec3 pos);
-	void PrintText2D(std::string text, vec2 pos);
+	void PrintText3D(std::string text, vec3 pos, int size=16);
+	void PrintText2D(std::string text, vec2 pos, int size=16);
 	
 	/** Set input speed for mouse control (rotating, zooming and translating)*/
 	void SetInputRotationSpeed(float v){ m_input_rotation_speed = v; }
