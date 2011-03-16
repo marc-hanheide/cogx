@@ -1,0 +1,34 @@
+digraph G {
+	graph [layout=dot rankdir=TB]
+		// George Year 2 Automated Tutor, simplified version
+
+		// stStart
+		stTableEmpty
+		opLoadScene [ shape="box" ]
+		//stWaitToAppear
+		//stObjectOn
+		stTeaching
+		opDescribe [ shape="box" ]
+		//opSayHi    [ shape="box" ]
+		stWaitForResponse
+		stWaitForLearningTask
+		//stEndOfTeaching
+		//stWaitToDisappear
+		//stTimedOut
+		//stUnloadScene
+		opUnloadScene [ shape="box" ]
+		// stFinished
+
+
+		// { stStart } -> { stTableEmpty }
+		{ stTableEmpty } -> { opLoadScene }
+		{ opLoadScene } -> { stTeaching }
+		{ stTeaching } -> { opDescribe } [ label="Exactly 1 object,\nKnown attribute" ]
+		{ opDescribe } -> { stWaitForResponse } 
+		{ stTeaching } -> { opUnloadScene } [ label="No more attrs" ]
+		{ stWaitForResponse } -> { stWaitForLearningTask } [ label="Got Response" ]
+		{ stWaitForLearningTask } -> { stTeaching } [ label="Got LearningTask" ]
+		{ opUnloadScene } -> { stTableEmpty }
+
+
+}

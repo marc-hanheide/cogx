@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+% \usepackage{amsmath}
+
+\begin{document}
+
+\section{Automated testing}
+
+In this test we are teaching the robot about shapes and colours. The automated
+tutor places objects on the table one by one. When an object is on the table
+the tutor first describes the shape and then the color of the object. The tutor
+waits until the learning task for each description is completed. If the tutor
+doesn't know an attribute, he says "hi" and waits until the robot responds.
+The automated tutor is implemented with a state machine. 
+
+\subsection{The first automated tutor}
+
+The basic state machine is shown in figure \ref{fig:simpleStates}. There are
+several problems related to this state machine. They are mostly related to the
+presence of entries in various working memories.
+
+\begin{figure}
+\includegraphics[width=0.8\textwidth]{xdata/simple_states.pdf}
+\label{fig:simpleStates}
+\caption{Basic state machine for the automated tutor}
+\end{figure}
+
+\subsubsection*{\em opDescribe, stWaitForResponse }
+
+The tutor describes the object that is currently in the scene and waits for the
+robot to respond. Because of a too short timeout in the {\em Abducer} component
+the response may never come. When the {\em Abducer} fails this way, it never
+works again and the system has to be restarted. We solved this by increasing
+the timeouts from $250ms$ to $5s$ in the following dialogue components:
+refresolve, cint-recognizer, cint-realizer.
+
+\subsubsection*{\em stTeaching, stWaitForResponse, stWaitForLearningTask}
+
+VisualObjects appear and disappear while the robot is processing tutor's
+instructions. When a VisualObjects disappears from the WM, the planner usually
+creates a plan that references an invalid belief. Such a plan remains in a {\tt
+PENDING} state. The valid new plans that are created afterwards are in {\tt
+SURFACED} state but are never {\tt ACTIVATED}.
+
+The VisualObjects appear and disappear even though the visual subsystem is
+looking at a constant image pair. The effect is most likely related to the
+RANSAC algorithm in the {\em PlanePopout} component.
+
+\subsubsection*{\em opUnloadScene, opLoadScene}
+
+After an object has been learned, the VisualLearningTask is overwritten. This
+is a signal to the tutor that he can continue with the next object. The system
+presents an empty scene, waits that all VisualObjects disappear. Then it
+presents a scene with the next object.
+
+Although the previous learning task has been completed, the change in the
+contents of the set of VisualObjects in the WM locks the planner as in the
+previous case.
+
+\subsection{The improved tutor}
+
+To improve the automated tutor we added some more states to the state machine
+and most importantly we added some timeouts and pauses. The complete state
+machine is shown in figure \ref{fig:allStates}. We also extended the system so
+that it doesn't change the set of VisualObjects in the WM while the object
+descriptions are being processed. In the state machine this is the part between
+the states {\em stObjectOn} and {\em stUnloadScene}.
+
+\begin{figure}
+\includegraphics[width=1.0\textwidth]{xdata/states.pdf}
+\label{fig:allStates}
+\caption{Complete state machine for the automated tutor}
+\end{figure}
+
+With this improved state machine we can run the system for about 2 hours while
+we present approximately 200 objects to the robot. After two hours the robot
+just stops responding although all the components are still running. Most often
+the system gets stuck in the {\em stWaitForLearningTask} state or presents new
+objects without ever receiving a LearningTask.  We suspect that this might be
+linked to the increasing memory requirements of the system which eventually
+runs out of it.
+
+We have 1200 image pairs in the database. Some (less than 10) of the image
+pairs cause the components {\em PlanePopout} or {\em SOIFilter} to crash. In
+average we can run the system for about 100 objects before we have to restart
+it.
+
+We also made an interesting observation in the {\em stWaitForLearningTask}
+state. This state is reached $2$ times while the object is on the scene. After
+the tutor describes the shape, the first learning task is created after $3-5$
+seconds. When the learning is complete the tutor then waits for $2s$ and
+describes the color of the object.  The interesting thing about the second
+LearningTask task is that it's time to appear increases with the system's
+running time. Initially it is the same as for the first LearningTask. After
+$4000s$ it increases to $7s$ and after $7000s$ it takes $12s$ for it to appear.
+Finally the system stops resonding as described above.
+
+
+\end{document}
