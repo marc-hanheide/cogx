@@ -40,8 +40,8 @@ refresolve, cint-recognizer, cint-realizer.
 VisualObjects appear and disappear while the robot is processing tutor's
 instructions. When a VisualObjects disappears from the WM, the planner usually
 creates a plan that references an invalid belief. Such a plan remains in a {\tt
-PENDING} state. The valid new plans that are created afterwards are in {\tt
-SURFACED} state but are never {\tt ACTIVATED}.
+PENDING} state. The new goals that are created afterwards are in {\tt SURFACED}
+state but are never {\tt ACTIVATED}. No new plans are created.
 
 The VisualObjects appear and disappear even though the visual subsystem is
 looking at a constant image pair. The effect is most likely related to the
