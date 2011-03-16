@@ -151,6 +151,7 @@ protected:
   double m_MaxLaserRangeForPlaceholders; 
   double m_MaxLaserRangeForCombinedMaps;
 
+  bool m_bShowDoorsInPB;
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
