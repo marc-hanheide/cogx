@@ -139,6 +139,11 @@ void LocalMapManager::configure(const map<string,string>& _config)
     m_bDetectDoors = true;
   }
 
+  m_bShowDoorsInPB = false;
+  if (_config.find("--display-doors") != _config.end()) {
+    m_bShowDoorsInPB = true;
+  }
+
   m_bNoPlanes = true;
   m_bNoPTZ = true;
 
@@ -291,8 +296,10 @@ void LocalMapManager::configure(const map<string,string>& _config)
   FrontierInterface::LocalMapInterfacePtr mapservant = new LocalMapServer(this);
   registerIceServer<FrontierInterface::LocalMapInterface, FrontierInterface::LocalMapInterface>(mapservant);
 
-  m_peekabotClient.connect(m_PbHost, m_PbPort);
-  m_HSSGroupProxy.add(m_peekabotClient, "HSS", peekabot::REPLACE_ON_CONFLICT);
+  if (m_bShowDoorsInPB) {
+    m_peekabotClient.connect(m_PbHost, m_PbPort);
+    m_HSSGroupProxy.add(m_peekabotClient, "HSS", peekabot::REPLACE_ON_CONFLICT);
+  }
 } 
 
 void LocalMapManager::start() 
@@ -630,7 +637,9 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	odomNew[1] = lastRobotPose->y;
 	odomNew[2] = lastRobotPose->theta;
 
-	HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
+	if (m_bShowDoorsInPB) {
+	  HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
+	}
 
 	for (list<HSS::RedundantLine2DRep>::iterator it = detDoors.begin();
 	    it != detDoors.end(); it++) {
@@ -667,10 +676,12 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 		newDoor);
 	    m_detectedDoors[newID] = newDoor;
 
-	    peekabot::SphereProxy sph;
-	    sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-	    sph.set_scale(0.1, 0.1, 0.1);
-	    sph.translate(doorX, doorY, 2.0);
+	    if (m_bShowDoorsInPB) {
+	      peekabot::SphereProxy sph;
+	      sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	      sph.set_scale(0.1, 0.1, 0.1);
+	      sph.translate(doorX, doorY, 2.0);
+	    }
 
 //	    updatePlaceholderGatewayProperties(doorX, doorY);
 	  }
