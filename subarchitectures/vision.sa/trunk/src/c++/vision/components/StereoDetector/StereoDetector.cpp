@@ -134,23 +134,24 @@ void StereoDetector::configure(const map<string,string> & _config)
   
 //   reasoner = new Z::Reasoner();
 
-  // initialize tgRenderer
-  Z::StereoCamera *stereo_cam = new Z::StereoCamera();
-  if(!stereo_cam->ReadSVSCalib(camconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
-  cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
-  
-  cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
-  cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
-  cv::Vec3d rotCenter(0,0,0.4);
-  
-  // Initialize 3D render engine 
-  tgRenderer = new P::TomGineThread(1024, 768);
-  tgRenderer->SetParameter(intrinsic);
-  tgRenderer->SetCamera(R, t, rotCenter);			/// TODO funktioniert nicht => Wieso?
-//   tgRenderer->SetRotationCenter(rotCenter);			/// TODO funktioniert nicht => Wieso?
-  
-  // initialize object representation
-  objRep = new Z::ObjRep();
+
+//   // initialize tgRenderer
+//   Z::StereoCamera *stereo_cam = new Z::StereoCamera();
+//   if(!stereo_cam->ReadSVSCalib(camconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
+//   cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
+//   
+//   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+//   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+//   cv::Vec3d rotCenter(0,0,0.4);
+//   
+//   // Initialize 3D render engine 
+//   tgRenderer = new P::TomGineThread(1024, 768);
+//   tgRenderer->SetParameter(intrinsic);
+//   tgRenderer->SetCamera(R, t, rotCenter);			/// TODO funktioniert nicht => Wieso?
+// //   tgRenderer->SetRotationCenter(rotCenter);			/// TODO funktioniert nicht => Wieso?
+//   
+//   // initialize object representation
+//   objRep = new Z::ObjRep();
 }
 
 /**
@@ -591,16 +592,16 @@ void StereoDetector::processImage()
   
   
   // Create object representations from new objects!
-  try 
-  {
-    objRep->Process(score);
-    DrawIntoTomGine();
-  }
-  catch (exception &e)
-  {
-    log("StereoDetector::processImage: Unknown exception during creation of object representations.\n");
-    cout << e.what() << endl;
-  }
+//   try 
+//   {
+//     objRep->Process(score);
+//     DrawIntoTomGine();
+//   }
+//   catch (exception &e)
+//   {
+//     log("StereoDetector::processImage: Unknown exception during creation of object representations.\n");
+//     cout << e.what() << endl;
+//   }
 
   
   // Write visual objects to working memory and show images!
@@ -721,27 +722,27 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
  */
 void StereoDetector::DrawIntoTomGine()
 {
-  std::vector< std::vector<cv::Point3d> > first;
-  std::vector< std::vector<cv::Point3d> > second;
-  std::vector< std::vector<double> > probability;
-  std::vector< std::vector<std::string> > link;
-  std::vector< std::vector<std::string> > node_0;
-  std::vector< std::vector<std::string> > node_1;
-  
-  objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
- 
-  tgRenderer->Clear();
-  tgRenderer->AddLine3D(0, 0, 0, 0.1, 0, 0, 255, 0, 0, 0.4);   // coordinate frame
-  tgRenderer->AddLine3D(0, 0, 0, 0, 0.1, 0, 0, 255, 0, 0.4);
-  tgRenderer->AddLine3D(0, 0, 0, 0, 0, 0.1, 0, 0, 255, 0.4);
-
-  for(unsigned i=0; i<first.size(); i++)
-  {
-    uint r = std::rand()%255;
-    uint g = std::rand()%255;
-    uint b = std::rand()%255;
-    tgRenderer->DrawGraphModel(first[i], second[i], probability[i], link[i], node_0[i], node_1[i], r, g, b);
-  }
+//   std::vector< std::vector<cv::Point3d> > first;
+//   std::vector< std::vector<cv::Point3d> > second;
+//   std::vector< std::vector<double> > probability;
+//   std::vector< std::vector<std::string> > link;
+//   std::vector< std::vector<std::string> > node_0;
+//   std::vector< std::vector<std::string> > node_1;
+//   
+//   objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
+//  
+//   tgRenderer->Clear();
+//   tgRenderer->AddLine3D(0, 0, 0, 0.1, 0, 0, 255, 0, 0, 0.4);   // coordinate frame
+//   tgRenderer->AddLine3D(0, 0, 0, 0, 0.1, 0, 0, 255, 0, 0.4);
+//   tgRenderer->AddLine3D(0, 0, 0, 0, 0, 0.1, 0, 0, 255, 0.4);
+// 
+//   for(unsigned i=0; i<first.size(); i++)
+//   {
+//     uint r = std::rand()%255;
+//     uint g = std::rand()%255;
+//     uint b = std::rand()%255;
+//     tgRenderer->DrawGraphModel(first[i], second[i], probability[i], link[i], node_0[i], node_1[i], r, g, b);
+//   }
 }
 
 /**

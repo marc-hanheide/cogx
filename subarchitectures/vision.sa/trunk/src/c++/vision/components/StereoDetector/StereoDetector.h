@@ -45,7 +45,7 @@ class StereoDetector : public ManagedComponent,
                        public StereoClient
 {
 private:
-  P::TomGineThread *tgRenderer;                   ///< 3D render engine
+//  P::TomGineThread *tgRenderer;                   ///< 3D render engine
 
   int runtime;                                    ///< Overall processing runtime for one image (pair)
   Z::StereoCore *score;                           ///< Stereo core
@@ -53,7 +53,7 @@ private:
   int nr_p_score;                                 ///< Actual number of processing score
   int showFrame;                                  ///< Show another frame (p_score[showFrame])
 //	Z::Reasoner *reasoner;                          ///< Reasoner (and Filter)
-  Z::ObjRep *objRep;                              ///< Object representation as graph
+//  Z::ObjRep *objRep;                              ///< Object representation as graph
   
   float cannyAlpha, cannyOmega;                   ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::vector<int> camIds;                        ///< Which cameras to get images from
