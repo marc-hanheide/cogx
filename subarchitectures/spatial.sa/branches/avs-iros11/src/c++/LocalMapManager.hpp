@@ -220,7 +220,7 @@ protected:
   //Remote door extractor
   HSS::DoorExtractor m_doorExtractor;
   //Detected doors
-  std::vector<Eigen::Vector3d> m_detectedDoors;
+  std::map<std::string, FrontierInterface::DoorHypothesisPtr> m_detectedDoors;
   //Falloff for gateway property value with distance to nearest detected door
   double m_doorwayWidth;
 

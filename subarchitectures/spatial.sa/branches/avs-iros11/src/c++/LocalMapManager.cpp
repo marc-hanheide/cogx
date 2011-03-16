@@ -637,11 +637,12 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	  bool found = false;
 	  double doorX = odomNew[0] + cos(odomNew[2])*it->xC() - sin(odomNew[2])*it->yC();
 	  double doorY = odomNew[1] + sin(odomNew[2])*it->xC() + cos(odomNew[2])*it->yC();
+
 	  debug("Door detected at (%f,%f)", doorX, doorY);
-	  for (vector<Eigen::Vector3d>::iterator it2 = m_detectedDoors.begin();
-	      it2 != m_detectedDoors.end(); it2++) {
-	    double dx = (*it2)[0] - doorX;
-	    double dy = (*it2)[1] - doorY;
+	  for (map<string, FrontierInterface::DoorHypothesisPtr>::iterator it2 =
+	      m_detectedDoors.begin(); it2 != m_detectedDoors.end(); it2++) {
+	    double dx = it2->second->x - doorX;
+	    double dy = it2->second->y - doorY;
 	    double dist = dx*dx+dy*dy;
 	    if (dist < 1.0) {
 	      found = true;
@@ -649,15 +650,29 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	    }
 	  }
 	  if (!found) {
-	    Eigen::Vector3d newDoor;
-	    newDoor[0] = doorX;
-	    newDoor[1] = doorY;
-	    newDoor[2] = 0;
-	    m_detectedDoors.push_back(newDoor);
+	    double doorTheta = odomNew[2] + it->theta();
+	    if (doorTheta < -M_PI) doorTheta += 2*M_PI;
+	    if (doorTheta > M_PI) doorTheta -= 2*M_PI;
+	    double doorWidth = it->length();
+
+	    FrontierInterface::DoorHypothesisPtr newDoor =
+	      new FrontierInterface::DoorHypothesis;
+	    newDoor->x = doorX;
+	    newDoor->y = doorY;
+	    newDoor->theta = doorTheta;
+	    newDoor->width = doorWidth;
+
+	    string newID = newDataID();
+	    addToWorkingMemory<FrontierInterface::DoorHypothesis>(newID,
+		newDoor);
+	    m_detectedDoors[newID] = newDoor;
+
 	    peekabot::SphereProxy sph;
 	    sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
 	    sph.set_scale(0.1, 0.1, 0.1);
 	    sph.translate(doorX, doorY, 2.0);
+
+//	    updatePlaceholderGatewayProperties(doorX, doorY);
 	  }
 	}
       }
@@ -667,6 +682,66 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
   }
   unlockComponent();
 }
+
+//void
+//LocalMapManager::updatePlaceholderGatewayProperties(double doorX, double doorY)
+//{
+//  if (m_placeInterface) {
+//    //Check all gateway placeholder properties on WM; see if they should be upgraded
+//    //based on the new doorway
+//
+//    vector<SpatialProperties::GatewayPlaceholderPropertyPtr> gwProps;
+//
+//    getMemoryEntries<SpatialProperties::GatewayPlaceholderProperty>(gwProps);
+//
+//    vector< boost::shared_ptr< cast::CASTData<SpatialProperties::GatewayPlaceholderProperty> > > gwProps;
+//    getWorkingMemoryEntries<SpatialProperties::GatewayPlaceholderProperty> ("coma", 0, comaRoomBeliefs);
+//
+//    for (unsigned int i = 0; i < gwProps.size(); i++) {
+//      GatewayPlaceholderPropertyPtr gw = gwProps[i]->getData();
+//
+//      if (gw == 0) {
+//	log("Unexpected null pointer at LocalMapManager::%i", __LINE__);
+//	continue;
+//      }
+//
+//      try {
+//	double currentProb = ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[0]->probability;
+//
+//	FrontierInterface::NodeHypothesisPtr hyp =
+//	  m_placeInterface->getHypFromPlaceID(it->placeID);
+//
+//	bool update = false;
+//	for (vector<Eigen::Vector3d>::iterator it2 = m_detectedDoors.begin(); it2 != 
+//	    m_detectedDoors.end(); it2++) {
+//	  double dx = (*it2)[0] - hyp->x;
+//	  double dy = (*it2)[1] - hyp->y;
+//
+//	  double distsq = dx*dx+dy*dy;
+//	  double value = exp(-distsq/m_doorwayWidth);
+//	  if (value < currentProb) {
+//	    currentProb = value;
+//	    update = true;
+//	  }
+//	}
+//	if (update) {
+//	  cast::cdl::WorkingMemoryAddress owtAddr;
+//	  owtAddr.subarchitecture = "spatial.sa";
+//	  owtAddr.id = gwProps[i]->getID();
+//
+//	  ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[0]->probability =
+//	    currentProb;
+//	  ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[1]->probability =
+//	    1-currentProb;
+//	  overwriteWorkingMemory(owtAddr, gw);
+//	}
+//      }
+//      catch (DoesNotExistOnWMException) {
+//	log("Error at LocalMapManager::%i - DoesNotExistOnWMException", __LINE__);
+//      }
+//    }
+//  }
+//}
 
 NavData::FNodePtr
 LocalMapManager::getCurrentNavNode()
@@ -846,20 +921,20 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     }
     log("Total free cells: %i; total processed %i", totalFreeCells, totalProcessed);
 
-  if (m_bDetectDoors) {
-    double minDistSq = DBL_MAX;
-    for (vector<Eigen::Vector3d>::iterator it = m_detectedDoors.begin();
-	it != m_detectedDoors.end(); it++) {
-    	log("Doorway at %f %f", (*it)[0], (*it)[1]);
-      double dx = relevantX - (*it)[0];
-      double dy = relevantY - (*it)[1];
-      double distSq = dx*dx+dy*dy;
-      if (distSq < minDistSq) {
-	minDistSq = distSq;
-      }
-    }
-    ret.gatewayValue = exp(-minDistSq/m_doorwayWidth);
-  }
+//  if (m_bDetectDoors) {
+//    double minDistSq = DBL_MAX;
+//    for (vector<Eigen::Vector3d>::iterator it = m_detectedDoors.begin();
+//	it != m_detectedDoors.end(); it++) {
+//    	log("Doorway at %f %f", (*it)[0], (*it)[1]);
+//      double dx = relevantX - (*it)[0];
+//      double dy = relevantY - (*it)[1];
+//      double distSq = dx*dx+dy*dy;
+//      if (distSq < minDistSq) {
+//	minDistSq = distSq;
+//      }
+//    }
+//    ret.gatewayValue = exp(-minDistSq/m_doorwayWidth);
+//  }
 
     m_Mutex.unlock();
   }

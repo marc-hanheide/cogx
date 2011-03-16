@@ -135,6 +135,14 @@ module FrontierInterface {
     double angle;
   };
 
+  class DoorHypothesis
+  {
+    double x;
+    double y;
+    double theta; //Direction of door's line
+    double width; //End-to-end width
+  };
+
   struct PlaceMembership
   {
     int placeID;
