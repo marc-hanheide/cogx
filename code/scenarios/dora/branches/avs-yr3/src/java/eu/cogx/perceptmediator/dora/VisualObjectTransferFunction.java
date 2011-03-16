@@ -11,11 +11,16 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
+import cast.architecture.ChangeFilterFactory;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import cast.core.CASTData;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -46,6 +51,8 @@ public class VisualObjectTransferFunction
 	public static final String LABEL_ID = "label";
 	public static final String IS_IN = "related-to";
 	private static final double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
+    
+    private WorkingMemoryAddress lastViewconeAddress = null;
 
 	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
@@ -53,6 +60,31 @@ public class VisualObjectTransferFunction
 				.getLogger(VisualObjectTransferFunction.class),
 				PerceptBelief.class);
 	}
+
+    public void start() {
+		WorkingMemoryChangeReceiver receiver = new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				processConeActionAdded(_wmc);
+			}
+		};
+		component.addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(ProcessConeGroupAction.class,
+						WorkingMemoryOperation.ADD), receiver);
+    }
+
+    private void processConeActionAdded(WorkingMemoryChange _wmc) {
+		try {
+			CASTData<ProcessConeGroupAction> actionData = component.getMemoryEntryWithData(_wmc.address,
+					ProcessConeGroupAction.class);
+			ProcessConeGroupAction action = actionData.getData();
+            lastViewconeAddress = action.coneGroupBeliefID;
+		} catch (DoesNotExistOnWMException e) {
+			component.logException(e);
+		} catch (UnknownSubarchitectureException e) {
+			component.logException(e);
+		}
+
+    }
 
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
@@ -92,15 +124,16 @@ public class VisualObjectTransferFunction
 			List<ProcessConeGroupAction> coneActions = new ArrayList<ProcessConeGroupAction>();
 			component.getMemoryEntries(ProcessConeGroupAction.class, coneActions,
 					PLANNER_SA);
-			for (ProcessConeGroupAction pca : coneActions) {
-				if (pca.success == TriBool.TRIINDETERMINATE) { // this guy is
+			// for (ProcessConeGroupAction pca : coneActions) {
+				// if (pca.success == TriBool.TRIINDETERMINATE) { // this guy is
+            if (lastViewconeAddress != null) {
 					// currently
 					// executed
-				  	WorkingMemoryAddress coneGroupAddress = pca.coneGroupBeliefID;
+				  	//WorkingMemoryAddress coneGroupAddress = pca.coneGroupBeliefID;
 
 //					CASTIndependentFormulaDistributionsBelief<GroundedBelief> coneGroupBelief = getMemoryEntry(coneGroupAddress, "binder.sa");
 					CASTIndependentFormulaDistributionsBelief<GroundedBelief> coneGroupBelief = CASTIndependentFormulaDistributionsBelief
-					  .create(GroundedBelief.class, allBeliefs.get(coneGroupAddress));
+					  .create(GroundedBelief.class, allBeliefs.get(lastViewconeAddress));
 
 //					WorkingMemoryAddress coneGroupBelief = getReferredBelief(new PlaceMatchingFunction(
 //							pca.placeID));
@@ -109,7 +142,7 @@ public class VisualObjectTransferFunction
 					fd3 = coneGroupBelief.getContent().get("cg-label");
 
 					log("we found the cone group that belongs to this cone: "
-							+ CASTUtils.toString(coneGroupAddress));
+							+ CASTUtils.toString(lastViewconeAddress));
 //					placeID = pca.placeID;
 //					place = WMPointer
 //							.create(
@@ -119,8 +152,8 @@ public class VisualObjectTransferFunction
 //							.getAsFormula();
 //					log("we found the WMPointer that belongs to this cone: "
 //							+ place.toString());
-					break;
-				}
+				// 	break;
+				// }
 			}
             if (fd1 == null) {
                 throw new BeliefException();
