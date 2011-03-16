@@ -137,7 +137,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(std::vector<SensingAction> &samplepoints) {
 
-	SpatialGridMap::GDProbSumAndCache sumcells;
+	SpatialGridMap::GDProbSum sumcells;
 	SpatialGridMap::GDIsObstacle isobstacle;
 	m_component->log("ViewPointGenerator::getViewConeSums");
 	m_component->log("Got %d 3D ViewCones", samplepoints.size());
