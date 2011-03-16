@@ -117,7 +117,9 @@ class Planner(object):
             else:
                 cond = pnode.action.precondition
 
-        if not universal:
+        negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived)
+
+        if not universal and not negated_axioms:
             #no universal preconditions => quickcheck
             if all(f in state for f in read):
                 return True

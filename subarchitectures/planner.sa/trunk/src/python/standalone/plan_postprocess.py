@@ -95,8 +95,11 @@ def getRWDescription(action, args, _state, time):
         read_vars = []
         universal_args = []
         rel = _state.get_relevant_vars(action.precondition)
+        # print map(str, rel)
         _state.clear_axiom_cache()
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
+        # print [(str(k), map(str,v)) for k,v in reasons.iteritems()]
+        # print [(str(k), str(v)) for k,v in universalReasons.iteritems()]
         sat = extstate.is_satisfied(action.precondition, read_vars, universal_args)
         assert sat,  "%s: %s" % (str(pnode), action.precondition.pddl_str())
 
