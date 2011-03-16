@@ -12,6 +12,9 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <Navigation/LocalGridMap.hh>
+#include "Math/BinaryMatrix.hh"
+#include <Navigation/LocalGridMap.hh>
 
 class VisualPB_Bloxel{
   public:
@@ -28,11 +31,9 @@ class VisualPB_Bloxel{
     template<class MapData>
       void DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map,double cellsize);
 
-    #ifndef NO_COGX_DEPENDENCIES
-   // void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
-    //void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
-    #endif
-    void Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden = true, std::string name = "extrapoints");
+    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
+    void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
+    void Add3DPointCloud(std::vector< Cure::Pose3D > point, bool ishidden = true, std::string name = "extrapoints");
     
     template<class MapData>
     void AddPDF (SpatialGridMap::GridMap<MapData> &map);
@@ -62,8 +63,6 @@ class VisualPB_Bloxel{
     //peekabot::OccupancyGrid3DProxy OGProxy;
 };
 
-/*
-#ifndef NO_COGX_DEPENDENCIES
 void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancySet2D cells;
   peekabot::OccupancyGrid2DProxy og2d;
@@ -106,8 +105,7 @@ void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const
    og2d.set_cells(cells);
     client.sync();
 }
-#endif
-*/
+
 
 VisualPB_Bloxel::VisualPB_Bloxel(std::string PB_Hostname, int PB_Port,int PB_xSize
     ,int PB_ySize, double PB_CellSize, double PB_scale, bool replaceMap) 
@@ -221,13 +219,13 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 }
 */
 
-void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden, std::string name){
+void VisualPB_Bloxel::Add3DPointCloud(std::vector< Cure::Pose3D > point, bool ishidden, std::string name){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
     ogproxy.add(client, name, 0.05, 0.05, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet3D cells;
     for (unsigned int i = 0; i < point.size(); i++){
-      cells.set_cell(point[i][0],point[i][1], point[i][2],1);
+      cells.set_cell(point[i].getX(),point[i].getY(), point[i].getZ(),1);
     }
 
     ogproxy.set_cells(cells);
