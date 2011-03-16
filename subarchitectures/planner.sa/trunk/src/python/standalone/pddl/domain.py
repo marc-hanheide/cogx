@@ -216,7 +216,6 @@ class Domain(Scope):
     def get_derived(self):
         if self._derived is None:
             self._derived = set(ax.predicate for ax in self.axioms)
-        print map(str, self._derived)
         return self._derived
     
     stratification = property(get_stratification)
