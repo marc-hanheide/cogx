@@ -25,8 +25,8 @@ digraph G {
 		{ opLoadScene } -> {stWaitToAppear }
 		{ stTableEmpty } -> { stFinished } [ label="No more tests" ]
 		{ stWaitToAppear } -> { stObjectOn }
-		{ stWaitToAppear } -> { stTimedOut } [ taillabel="to=20" labelfontcolor="red"]
-		{ stObjectOn } -> { stTeaching }
+		{ stWaitToAppear } -> { stTimedOut } [ taillabel="to=20" labelfontcolor="red" ]
+		{ stObjectOn } -> { stTeaching } [ taillabel="wait=5" label="lock-VO" labelfontcolor="blue" ]
 		{ stTeaching } -> { opDescribe } [ label="Exactly 1 object,\nKnown attribute" ]
 		{ stTeaching } -> { opSayHi } [ label="No Attribute" ]
 		{ opDescribe } -> { stWaitForResponse } 
@@ -40,7 +40,7 @@ digraph G {
 		{ stWaitForLearningTask } -> { stTeaching } [ label="Got LearningTask" ]
 		{ stWaitForLearningTask } -> { stTimedOut } [ taillabel="to=120"  labelfontcolor="red"]
 		{ stEndOfTeaching } -> { stUnloadScene }
-		{ stUnloadScene } -> { opUnloadScene }
+		{ stUnloadScene } -> { opUnloadScene } [ taillabel="wait=5" label="unlock-VO" labelfontcolor="blue" ]
 		{ opUnloadScene } -> { stWaitToDisappear }
 		{ stWaitToDisappear } -> { stTableEmpty }
 		{ stWaitToDisappear } -> { stTimedOut } [taillabel="to=20" labelfontcolor="red"]

@@ -67,6 +67,16 @@ that it doesn't change the set of VisualObjects in the WM while the object
 descriptions are being processed. In the state machine this is the part between
 the states {\em stObjectOn} and {\em stUnloadScene}.
 
+When the state machine comes into the state {\em stObjectOn} we wait for $5s$
+so that the scene can become stable. Sometimes more than one VisualObject is
+created for a presented object. In some other cases the object is not well
+defined and can disappear. We want to make sure the scene is stable before we
+prevent the changes of the set of VisualObjects in the WM.
+
+In the state {\em stUnloadScene} the system waits for another $5s$ before it
+replaces the scene with an empty one. Without this timeout, the planner would
+lock again.
+
 \begin{figure}
 \includegraphics[width=1.0\textwidth]{xdata/states.pdf}
 \label{fig:allStates}
@@ -81,11 +91,6 @@ objects without ever receiving a LearningTask.  We suspect that this might be
 linked to the increasing memory requirements of the system which eventually
 runs out of it.
 
-We have 1200 image pairs in the database. Some (less than 10) of the image
-pairs cause the components {\em PlanePopout} or {\em SOIFilter} to crash. In
-average we can run the system for about 100 objects before we have to restart
-it.
-
 We also made an interesting observation in the {\em stWaitForLearningTask}
 state. This state is reached $2$ times while the object is on the scene. After
 the tutor describes the shape, the first learning task is created after $3-5$
@@ -94,7 +99,17 @@ describes the color of the object.  The interesting thing about the second
 LearningTask task is that it's time to appear increases with the system's
 running time. Initially it is the same as for the first LearningTask. After
 $4000s$ it increases to $7s$ and after $7000s$ it takes $12s$ for it to appear.
-Finally the system stops resonding as described above.
+Finally the system stops resonding as described above.  The increasing time
+could be related to the increasing number of messages from the planner:
+``Pointer to belief xxx cannot be resolved''.
 
+\subsection{Other crashes}
+
+The c++ server sometimes crashes right after the message ``Planner has
+attempted to overwrite an outdated WM entry. WMA:
+XX:goal.scheduler:data:planner.sa.  Local version: 5.  WM version: 6''.
+
+Some of the image pairs (less than 10 out of $1200$ in the database) cause the
+components {\em PlanePopout} or {\em SOIFilter} to crash.
 
 \end{document}
