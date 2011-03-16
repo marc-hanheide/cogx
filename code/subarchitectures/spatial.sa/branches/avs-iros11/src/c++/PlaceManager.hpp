@@ -87,6 +87,9 @@ class PlaceManager : public cast::ManagedComponent
     // Callback function for detected objects
     void newObject(const cast::cdl::WorkingMemoryChange &objID);
 
+    // Callback function for new door hypothesis
+    void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+
     // Call back functions for edges 
     void newEdge(const cast::cdl::WorkingMemoryChange &objID);
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
@@ -122,6 +125,10 @@ class PlaceManager : public cast::ManagedComponent
 	NavData::FNodePtr newNode, int hypothesisID);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
+
+    double getGatewayness(double x, double y);
+    void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
+	int placeholderID, double value);
 
     void createConnectivityProperty(double cost, int place1ID, int place2ID);
     // Helper function to create Gateway properties

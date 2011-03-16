@@ -143,6 +143,9 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newObject));
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::DoorHypothesis>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PlaceManager>(this,
+	&PlaceManager::newDoorHypothesis));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   if (m_useLocalMaps) {
@@ -565,6 +568,42 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
   debug("newObject exited"); */
 }
 
+void 
+PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
+{
+  try {
+    FrontierInterface::DoorHypothesisPtr doorHyp =
+      getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
+
+    if (doorHyp != 0) {
+      double doorX = doorHyp->x;
+      double doorY = doorHyp->x;
+
+      for (map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
+	  m_PlaceIDToHypMap.begin(); it != m_PlaceIDToHypMap.end(); it++) {
+	FrontierInterface::NodeHypothesisPtr nodeHyp = it->second;
+	if (nodeHyp != 0) {
+	  int hypID = nodeHyp->hypID;
+
+	  SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
+
+	  if (placeholder != 0) {
+	    // Check extant placeholder, add/modify gateway placeholder prop. accordingly
+	    double dx = doorX - nodeHyp->x;
+	    double dy = doorY - nodeHyp->y;
+	    double distSq = dx*dx+dy*dy;
+	    double gatewayness = exp(-distSq/1.0);
+	    debug("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
+	    setOrUpgradePlaceholderGatewayProperty(hypID, placeholder->id, gatewayness);
+	  }
+	}
+      }
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+  }
+}
+
 bool 
 FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInterface::FrontierPtPtr &b)
 {
@@ -771,7 +810,8 @@ PlaceManager::evaluateUnexploredPaths()
 	for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypothesisIt =
 	    relevantHyps.begin(); hypothesisIt != relevantHyps.end(); hypothesisIt++) {
 	  try {
-	    int hypID = (*hypothesisIt)->hypID;
+	    FrontierInterface::NodeHypothesisPtr hyp = *hypothesisIt;
+	    int hypID = hyp->hypID;
 
 	    SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
 
@@ -858,87 +898,12 @@ PlaceManager::evaluateUnexploredPaths()
 
 	      /* Gatewayness Property */
 
+	      double gatewayness = getGatewayness(hyp->x, hyp->y);
+
 	      {
-
-	    		SpatialProperties::BinaryValuePtr gatewaynessValue =
-	    		  new SpatialProperties::BinaryValue;
-	    		gatewaynessValue->value = true;
-	    		SpatialProperties::ValueProbabilityPair pair =
-	    		{ gatewaynessValue, eval.gatewayValue};
-	    		SpatialProperties::ValueProbabilityPairs pairs;
-	    		pairs.push_back(pair);
-
-	    		SpatialProperties::BinaryValuePtr noGatewaynessValue =
-	    			    		  new SpatialProperties::BinaryValue;
-	    		noGatewaynessValue->value = false;
-	    		SpatialProperties::ValueProbabilityPair pair2 =
-	    		{ noGatewaynessValue, (1 - eval.gatewayValue)};
-	    		pairs.push_back(pair2);
-
-
-	    		SpatialProperties::BinaryValuePtr gatewaynessMapValue =
-	    			    		  new SpatialProperties::BinaryValue;
-
-	    		gatewaynessMapValue->value = (eval.gatewayValue > 0.5);
-
-			SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-			  new SpatialProperties::DiscreteProbabilityDistribution;
-	    		discDistr->data = pairs;
-
-	    		map<int, string>::iterator
-	    		  foundFSIt = m_placeholderGatewayProperties.find(hypID);
-	    		if (foundFSIt != m_placeholderGatewayProperties.end()) {
-	    		  try {
-	    		    debug("lock 6");
-	    		    lockEntry(foundFSIt->second, cdl::LOCKEDODR);
-	    		    debug("evaluateUnexploredPaths:3");
-	    		    SpatialProperties::GatewayPlaceholderPropertyPtr
-			      gwProp = getMemoryEntry
-			      <SpatialProperties::GatewayPlaceholderProperty>
-			      (foundFSIt->second);
-	    		    debug("evaluateUnexploredPaths:4");
-
-			    if (gwProp != 0) {
-			      // Property exists; change it
-			      gwProp->distribution = discDistr;
-			      gwProp->placeId = placeholder->id;
-			      gwProp->mapValue = gatewaynessMapValue;
-			      gwProp->mapValueReliable = 1;
-
-			      debug("overwrite 2: %s", foundFSIt->second.c_str());
-			      bool done = false;
-			      while (!done) {
-				try {
-				  overwriteWorkingMemory
-				    <SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
-				  done=true;
-				}
-				catch(PermissionException e) {
-				  log("Error! permissionException! Trying again...");
-				}
-			      }
-			    }
-	    		    unlockEntry(foundFSIt->second);
-	    		    debug("unlock 6");
-	    		  }
-	    		  catch(DoesNotExistOnWMException e) {
-	    		    log("Property missing!");
-	    		  }
-	    		}
-	    		else {
-	    		  SpatialProperties::GatewayPlaceholderPropertyPtr gwProp =
-	    		    new SpatialProperties::GatewayPlaceholderProperty;
-	    		  gwProp->distribution = discDistr;
-	    		  gwProp->placeId = placeholder->id;
-	    		  gwProp->mapValue = gatewaynessMapValue;
-	    		  gwProp->mapValueReliable = 1;
-
-	    		  string newID = newDataID();
-	    		  addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
-	    		    (newID, gwProp);
-	    		  m_placeholderGatewayProperties[hypID] = newID;
-	    		}
-	    	      }
+		setOrUpgradePlaceholderGatewayProperty(hypID, 
+		    placeholder->id, gatewayness);
+	      }
 
 	      /* Gatewayness Property */
 
@@ -1032,6 +997,112 @@ PlaceManager::evaluateUnexploredPaths()
   //
   //  }
   }
+}
+
+void
+PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
+    int placeholderID, double value)
+{
+  debug("setOrUpgradePlaceholderGatewayProperty(%i,%i,%f) called", hypothesisID, placeholderID, value);
+  SpatialProperties::BinaryValuePtr gatewaynessValue =
+    new SpatialProperties::BinaryValue;
+  gatewaynessValue->value = true;
+  SpatialProperties::ValueProbabilityPair pair =
+  { gatewaynessValue, value};
+  SpatialProperties::ValueProbabilityPairs pairs;
+  pairs.push_back(pair);
+
+  SpatialProperties::BinaryValuePtr noGatewaynessValue =
+    new SpatialProperties::BinaryValue;
+  noGatewaynessValue->value = false;
+  SpatialProperties::ValueProbabilityPair pair2 =
+  { noGatewaynessValue, (1 - value)};
+  pairs.push_back(pair2);
+
+
+  SpatialProperties::BinaryValuePtr gatewaynessMapValue =
+    new SpatialProperties::BinaryValue;
+
+  gatewaynessMapValue->value = (value > 0.5);
+
+  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+    new SpatialProperties::DiscreteProbabilityDistribution;
+  discDistr->data = pairs;
+
+  map<int, string>::iterator
+    foundFSIt = m_placeholderGatewayProperties.find(hypothesisID);
+  if (foundFSIt != m_placeholderGatewayProperties.end()) {
+    try {
+      lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+      SpatialProperties::GatewayPlaceholderPropertyPtr
+	gwProp = getMemoryEntry
+	<SpatialProperties::GatewayPlaceholderProperty>
+	(foundFSIt->second);
+
+      if (gwProp != 0) {
+	// Property exists; change it if value is higher
+	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	  SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(gwProp->distribution);
+	double currentProb = discDistr->data[0].probability;
+	if (currentProb < value) {
+	  gwProp->distribution = discDistr;
+	  gwProp->placeId = placeholderID;
+	  gwProp->mapValue = gatewaynessMapValue;
+	  gwProp->mapValueReliable = 1;
+
+	  debug("overwrite: %s", foundFSIt->second.c_str());
+	  bool done = false;
+	  while (!done) {
+	    try {
+	      overwriteWorkingMemory
+		<SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
+	      done=true;
+	    }
+	    catch(PermissionException e) {
+	      log("Error! permissionException! Trying again...");
+	    }
+	  }
+	}
+      }
+      unlockEntry(foundFSIt->second);
+    }
+    catch(DoesNotExistOnWMException e) {
+      log("Property missing!");
+    }
+  }
+  else {
+    SpatialProperties::GatewayPlaceholderPropertyPtr gwProp =
+      new SpatialProperties::GatewayPlaceholderProperty;
+    gwProp->distribution = discDistr;
+    gwProp->placeId = placeholderID;
+    gwProp->mapValue = gatewaynessMapValue;
+    gwProp->mapValueReliable = 1;
+
+    string newID = newDataID();
+    debug("Adding new GWPlaceholderProperty");
+    addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
+      (newID, gwProp);
+    m_placeholderGatewayProperties[hypothesisID] = newID;
+  }
+}
+
+double
+PlaceManager::getGatewayness(double x, double y) 
+{
+  vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
+  getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
+
+  double minDistSq = DBL_MAX;
+  for (vector<FrontierInterface::DoorHypothesisPtr>::iterator it = 
+      doorHyps.begin(); it != doorHyps.end(); it++) {
+    double dx = x - (*it)->x;
+    double dy = y - (*it)->y;
+    double distSq = dx*dx+dy*dy;
+    if (distSq < minDistSq) {
+      minDistSq = distSq;
+    }
+  }
+  return exp(-minDistSq/1.0);
 }
 
 NavData::FNodePtr
