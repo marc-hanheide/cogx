@@ -154,7 +154,9 @@ void Observer::runComponent()
     while (isRunning())
     {
     	sleepComponent(100);
+    	pthread_mutex_lock(&_worldStateMutex);
     	updateWorldState();
+    	pthread_mutex_unlock(&_worldStateMutex);
     }
 }
 
@@ -178,21 +180,16 @@ void Observer::updateWorldState()
 	std::vector<ConceptualData::EventInfo> accumulatedEvents;
 
 	// Check if we've had an update within one second. If so, do nothing
-	pthread_mutex_lock(&_worldStateMutex);
 	// Get current time
 	timeval now;
 	gettimeofday(&now, 0);
 	double curTime = now.tv_sec+ now.tv_usec/1000000.0;
 	// If nothing there or not yet time, do nothing
 	if ((_accumulatedEvents.empty()) || ((curTime-_lastWsUpdateTime)<1.0))
-	{
-		pthread_mutex_unlock(&_worldStateMutex);
 		return;
-	}
 	accumulatedEvents = _accumulatedEvents;
 	_accumulatedEvents.clear();
 	_lastWsUpdateTime = curTime;
-	pthread_mutex_unlock(&_worldStateMutex);
 
 	// Create a new worldstate
 	ConceptualData::WorldStatePtr newWorldStatePtr = new ConceptualData::WorldState();
@@ -545,17 +542,19 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 			return;
 		}
 
+		pthread_mutex_lock(&_worldStateMutex);
+
 		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventRoomAdded;
 		ei.roomId = comaRoomPtr->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -572,6 +571,8 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+
+		pthread_mutex_lock(&_worldStateMutex);
 
 		comadata::ComaRoomPtr old = _comaRoomWmAddressMap[wmChange.address];
 		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
@@ -597,9 +598,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 					break;
 				}
 			}
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
@@ -615,28 +614,30 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 					break;
 				}
 			}
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventRoomDeleted;
 		ei.roomId = _comaRoomWmAddressMap[wmChange.address]->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;
 		_comaRoomWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -665,6 +666,8 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			return;
 		}
 
+		pthread_mutex_lock(&_worldStateMutex);
+
 		_placeWmAddressMap[wmChange.address] = placePtr;
 
 		if (placePtr->status == SpatialData::PLACEHOLDER)
@@ -674,13 +677,13 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			ei.roomId = -1;
 			ei.place1Id = placePtr->id;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
 		// updateWorldState(); // We will get that when coma room changes
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -696,6 +699,8 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialData::PlacePtr old = _placeWmAddressMap[wmChange.address];
 	  	_placeWmAddressMap[wmChange.address] = placePtr;
@@ -713,17 +718,19 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			ei.roomId = -1;
 			ei.place1Id = placePtr->id;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialData::PlacePtr old = _placeWmAddressMap[wmChange.address];
 
 		if (old->status == SpatialData::PLACEHOLDER)
@@ -733,14 +740,14 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 			ei.roomId = -1;
 			ei.place1Id = old->id;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			_placeWmAddressMap.erase(wmChange.address);
 			updateWorldState();
 		}
 		// updateWorldState(); // We will get that when coma room changes
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -769,6 +776,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
 		ConceptualData::EventInfo ei;
@@ -776,11 +784,11 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -798,6 +806,8 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 			return;
 		}
 
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::GatewayPlacePropertyPtr old = _gatewayPlacePropertyWmAddressMap[wmChange.address];
 	  	_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
 
@@ -810,27 +820,29 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
 		ei.roomId = -1;
 		ei.place1Id = _gatewayPlacePropertyWmAddressMap[wmChange.address]->placeId;
 		ei.place2Id = -1;
 		_gatewayPlacePropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -859,6 +871,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
 		ConceptualData::EventInfo ei;
@@ -877,11 +890,11 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					objectPlacePropertyPtr->supportObjectCategory + "-" +
 					objectPlacePropertyPtr->supportObjectId;
 		}
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -898,6 +911,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
 	  	_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
@@ -922,16 +936,18 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					objectPlacePropertyPtr->supportObjectCategory + "-" +
 					objectPlacePropertyPtr->supportObjectId;
 		}
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
@@ -950,11 +966,11 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 					old->supportObjectId;
 		}
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -983,6 +999,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 		ConceptualData::EventInfo ei;
@@ -1001,11 +1018,11 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 					objectSearchResultPtr->supportObjectCategory + "-" +
 					objectSearchResultPtr->supportObjectId;
 		}
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1022,6 +1039,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
@@ -1049,17 +1067,19 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 						objectSearchResultPtr->supportObjectCategory + "-" +
 						objectSearchResultPtr->supportObjectId;
 			}
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
@@ -1078,11 +1098,11 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 					old->supportObjectId;
 		}
 		_objectSearchResultWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1111,22 +1131,26 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
 
 		if (isGatewayPlace(shapePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
 			return;
+		}
 
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventShapePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = shapePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1143,6 +1167,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
 	  	_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
@@ -1152,7 +1177,10 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			throw cast::CASTException("The mapping between RoomShapePlaceProperty WMAddress and Place ID changed!");
 
 		if (isGatewayPlace(shapePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
 			return;
+		}
 
 		// Check if something substantial changed
 		if ( calculateDistributionDifference(old->distribution,
@@ -1163,17 +1191,19 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			ei.roomId = -1;
 			ei.place1Id = shapePlacePropertyPtr->placeId;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventShapePlacePropertyDeleted;
@@ -1181,11 +1211,11 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1215,21 +1245,26 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
+
 		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 
 		if (isGatewayPlace(appearancePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
 			return;
+		}
 
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventAppearancePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = appearancePlacePropertyPtr->placeId;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1246,6 +1281,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
 	  	_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
@@ -1255,7 +1291,10 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			throw cast::CASTException("The mapping between RoomAppearancePlaceProperty WMAddress and Place ID changed!");
 
 		if (isGatewayPlace(appearancePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
 			return;
+		}
 
 		// Check if something substantial changed
 		if ( calculateDistributionDifference(old->distribution,
@@ -1266,17 +1305,19 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			ei.roomId = -1;
 			ei.place1Id = appearancePlacePropertyPtr->placeId;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventAppearancePlacePropertyDeleted;
@@ -1284,11 +1325,11 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1316,6 +1357,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_gatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
 
@@ -1324,11 +1366,11 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlaceholderPropertyPtr->placeId;
 		ei.place2Id = -1;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1345,6 +1387,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::GatewayPlaceholderPropertyPtr old = _gatewayPlaceholderPropertyWmAddressMap[wmChange.address];
 		_gatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
@@ -1362,17 +1405,19 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			ei.roomId = -1;
 			ei.place1Id = gatewayPlaceholderPropertyPtr->placeId;
 			ei.place2Id = -1;
-			pthread_mutex_lock(&_worldStateMutex);
 			_accumulatedEvents.push_back(ei);
-			pthread_mutex_unlock(&_worldStateMutex);
 
 			updateWorldState();
 		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::GatewayPlaceholderPropertyPtr old = _gatewayPlaceholderPropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventGatewayPlaceholderPropertyDeleted;
@@ -1380,11 +1425,11 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_gatewayPlaceholderPropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1413,6 +1458,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
 		ConceptualData::EventInfo ei;
@@ -1420,11 +1466,11 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
 		ei.place2Id = connectivityPathPropertyPtr->place2Id;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
@@ -1441,6 +1487,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
+		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::ConnectivityPathPropertyPtr old = _connectivityPathPropertyWmAddressMap[wmChange.address];
 	  	_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
@@ -1455,16 +1502,18 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
 		ei.place2Id = connectivityPathPropertyPtr->place2Id;
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
 	case cdl::DELETE:
 	{
+		pthread_mutex_lock(&_worldStateMutex);
+
 		SpatialProperties::ConnectivityPathPropertyPtr old = _connectivityPathPropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventRoomConnectivityChanged;
@@ -1472,11 +1521,11 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		ei.place1Id = old->place1Id;
 		ei.place2Id = old->place2Id;
 		_connectivityPathPropertyWmAddressMap.erase(wmChange.address);
-		pthread_mutex_lock(&_worldStateMutex);
 		_accumulatedEvents.push_back(ei);
-		pthread_mutex_unlock(&_worldStateMutex);
 
 		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
 		break;
 	}
 
