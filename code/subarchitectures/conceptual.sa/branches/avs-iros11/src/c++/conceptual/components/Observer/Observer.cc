@@ -1003,7 +1003,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventObjectPlacePropertyAdded;
+		ei.type = ConceptualData::EventObjectSearchResultAdded;
 		ei.roomId = objectSearchResultPtr->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;
@@ -1052,7 +1052,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		if (fabs(old->beta-objectSearchResultPtr->beta)> _betaThreshold)
 		{
 			ConceptualData::EventInfo ei;
-			ei.type = ConceptualData::EventObjectPlacePropertyChanged;
+			ei.type = ConceptualData::EventObjectSearchResultChanged;
 			ei.roomId = objectSearchResultPtr->roomId;
 			ei.place1Id = -1;
 			ei.place2Id = -1;
@@ -1082,7 +1082,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
-		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
+		ei.type = ConceptualData::EventObjectSearchResultDeleted;
 		ei.roomId = old->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;

@@ -523,28 +523,27 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			eventStr+="GatewayPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventObjectPlacePropertyAdded:
-			if (event.infos[i].place1Id>0)
 				eventStr+="ObjectPlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+
 						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
-			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
-						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
-
 			break;
 		case ConceptualData::EventObjectPlacePropertyDeleted:
-			if (event.infos[i].place1Id>0)
 				eventStr+="ObjectPlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+
-						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
-			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
 						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			break;
 		case ConceptualData::EventObjectPlacePropertyChanged:
-			if (event.infos[i].place1Id>0)
 				eventStr+="ObjectPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+
 						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
-			else
-				eventStr+="ObjectPlacePropertyAdded (rid="+QString::number(event.infos[i].roomId)+
+			break;
+		case ConceptualData::EventObjectSearchResultAdded:
+				eventStr+="ObjectSearchResultAdded (rid="+QString::number(event.infos[i].roomId)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
+			break;
+		case ConceptualData::EventObjectSearchResultDeleted:
+				eventStr+="ObjectSearchResultDeleted (rid="+QString::number(event.infos[i].roomId)+
+						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
+			break;
+		case ConceptualData::EventObjectSearchResultChanged:
+				eventStr+="ObjectSearchResultChanged (rid="+QString::number(event.infos[i].roomId)+
 						", obj="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			break;
 		case ConceptualData::EventShapePlacePropertyAdded:

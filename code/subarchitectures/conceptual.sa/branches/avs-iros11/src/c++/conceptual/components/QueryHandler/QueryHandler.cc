@@ -81,7 +81,10 @@ string QueryHandler::sendInferenceQuery(std::string queryString, ConceptualData:
 	inferenceQueryPtr->queryString = queryString;
 	inferenceQueryPtr->type = type;
 
+	pthread_mutex_lock(&_queryAddedSignalMutex);
 	_sentQueryIds.insert(inferenceQueryId);
+	pthread_mutex_unlock(&_queryAddedSignalMutex);
+
 	addToWorkingMemory<ConceptualData::InferenceQuery>(inferenceQueryId, inferenceQueryPtr);
 	return inferenceQueryId;
 }

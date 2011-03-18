@@ -22,6 +22,7 @@ ObjectPlacePropertyDialog::ObjectPlacePropertyDialog(ConceptualWidget *parent, c
 	pthread_mutex_unlock(&parent->_worldStateMutex);
 
 	// Fill in the default values
+	ui.supportObjectCategoryComboBox->addItem("");
 	for (unsigned int i=0; i<_objectCategories.size(); ++i)
 	{
 		ui.supportObjectCategoryComboBox->addItem(QString::fromStdString(_objectCategories[i]));
@@ -46,10 +47,13 @@ void ObjectPlacePropertyDialog::on_ObjectPlacePropertyDialogClass_accepted()
 	{
 	case 1:
 		opp->relation = SpatialData::INOBJECT;
+		break;
 	case 2:
 		opp->relation = SpatialData::ON;
+		break;
 	default:
 		opp->relation = SpatialData::INROOM;
+		break;
 	}
 	opp->supportObjectCategory = ui.supportObjectCategoryComboBox->currentText().toStdString();
 	opp->supportObjectId = ui.supportObjectIdLineEdit->text().toStdString();

@@ -316,7 +316,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		// Object events
 		bool objectAdded = false;
 		for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
-			if (accumulatedInfos[i].type==ConceptualData::EventObjectPlacePropertyAdded)
+			if (accumulatedInfos[i].type==ConceptualData::EventObjectSearchResultAdded)
 				objectAdded = true;
 		if (objectAdded)
 		{
@@ -327,7 +327,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		}
 		bool objectChanged = false;
 		for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
-			if (accumulatedInfos[i].type==ConceptualData::EventObjectPlacePropertyChanged)
+			if (accumulatedInfos[i].type==ConceptualData::EventObjectSearchResultChanged)
 				objectChanged = true;
 		if (objectChanged)
 		{
