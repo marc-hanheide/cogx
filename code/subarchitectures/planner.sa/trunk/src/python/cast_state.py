@@ -295,7 +295,10 @@ class CASTState(object):
                 room_id = int(match.group(1))
                 label = match.group(2)
                 p = entry.massFunction[pos].probability
-                room_obj = roomdict.get(room_id, None)
+
+                if room_id not in roomdict:
+                    continue
+                room_obj = roomdict[room_id]
                 label_obj = pddl.TypedObject(label, label_t)
                 svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
                 fact = state.Fact(svar, pddl.types.TypedNumber(p))
