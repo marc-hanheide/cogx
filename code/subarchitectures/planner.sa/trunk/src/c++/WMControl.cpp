@@ -134,12 +134,13 @@ void WMControl::runComponent() {
                 lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
                 unlockComponent();
+                log("sending task update...");
                 pyServer->updateTask(task);
-                log("returning..:");
             }
             for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
                 lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                log("task timeout reached.");
                 unlockComponent();
                 pyServer->taskTimedOut(task);
             }
