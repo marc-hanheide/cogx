@@ -314,7 +314,10 @@ void AVS_ContinualPlanner::generateViewCones(
 	}
 
 
-
+    if(m_usePeekabot){
+    	log("Displaying Map in PB.");
+    	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+    }
 	m_currentBloxelMap = m_objectBloxelMaps[id];
 	m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
 
@@ -445,8 +448,7 @@ void AVS_ContinualPlanner::generateViewCones(
 	//Now that we've got our map generate cones for this
 	//Todo: and generateViewCones based on this
     if(m_usePeekabot){
-    	log("Displaying Map in PB.");
-    	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+    	log("Displaying PDF Map in PB.");
       pbVis->AddPDF(*m_objectBloxelMaps[id]);
 
     }
@@ -871,7 +873,7 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	log("Publishing ObjectSearchResult with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
-  	addToWorkingMemory(newDataID(), result);
+  	//addToWorkingMemory(newDataID(), result);
 }
 
 
