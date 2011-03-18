@@ -325,7 +325,7 @@ class VariableState
   /**
    * State is re-initialized with all new clauses and atoms.
    */
-// HACK:uncommented
+
   void reinit()
   {
     clause_.clearAndCompress();
@@ -355,7 +355,7 @@ class VariableState
     baseNumAtoms_ = gndPredHashArray_.size();
     init();    
   }
- 
+
   /**
    * Makes a random truth assigment to all (active) atoms. Blocks are
    * taken into account: exactly one atom in the block is set to true
@@ -1386,10 +1386,7 @@ class VariableState
       //gndClauses_->append(clauses);
     for (int i = 0; i < clauses.size(); i++)
     {
-      int id = gndClauses_->append(clauses[i]);
-cout << "appending clause " << id << ":";
-clauses[i]->print(cout, domain_, &gndPredHashArray_); cout << " " << gndClauses_->find(clauses[i]) << " " ;
-(*gndClauses_)[id]->print(cout, domain_, &gndPredHashArray_); cout << endl;
+      gndClauses_->append(clauses[i]);
       clauses[i]->appendToGndPreds(&gndPredHashArray_);
     }
 
@@ -2810,9 +2807,8 @@ clauses[i]->print(cout, domain_, &gndPredHashArray_); cout << " " << gndClauses_
     }
     Database* db = domain_->getDB();
     int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
-cout << "atomIdx : " << atomIdx << endl;
       // If already evidence, then check its truth value
-    if (atomIdx == -1) //HACK <=
+    if (atomIdx <= 0) // ? (atomIdx == -1)
     {
         // If predicate already evidence with same truth value, then do nothing
       if (db->getValue(predicate) == trueEvidence)
@@ -2828,8 +2824,8 @@ cout << "atomIdx : " << atomIdx << endl;
     {
       Array<int> gndClauseIndexes;      
       int deleted;
-      gndClauseIndexes = getNegOccurenceArray(atomIdx+1); //old:atomIdx + 1
-      gndClauseIndexes.bubbleSort(); cout << "Negative occurences: " << gndClauseIndexes.size() << endl;
+      gndClauseIndexes = getNegOccurenceArray(atomIdx + 1);
+      gndClauseIndexes.bubbleSort();
         // Keep track of how many clauses deleted, because the indices are
         // are adjusted when we remove an element from HashArray
       deleted = 0;
@@ -2845,41 +2841,35 @@ cout << "atomIdx : " << atomIdx << endl;
           {
             cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
             cout << endl;
-          }cout << "Deleting ground clause "<< gndClauseIndexes[i] << " - " << deleted << " = " << gndClauseIndexes[i] -deleted << " : "; (*gndClauses_)[gndClauseIndexes[i]-deleted]->print(cout, domain_, &gndPredHashArray_) << endl;
+          }
             // Real index is old index adjusted one lower for every element
             // deleted up until now
           delete (*gndClauses_)[gndClauseIndexes[i] - deleted];
           gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
           deleted++;
-          
-          cout << "Done deleting:"<< endl;
-//          printNetwork(cout);
         }
         else
         {
           if (vsdebug)
           {
-            cout << "Removing gnd pred " << -(atomIdx+1) //atomIdx + 1
+            cout << "Removing gnd pred " << -(atomIdx + 1)
                  << " from ground clause " << gndClauseIndexes[i] << endl;
           }
-cout << "removing predicate " << -(atomIdx+1) << " from ground clause " << gndClauseIndexes[i] -deleted << " : "; (*gndClauses_)[gndClauseIndexes[i] - deleted]->print(cout, domain_, &gndPredHashArray_); cout << endl;
-          //(*gndClauses_)[gndClauseIndexes[i]]->removeGndPred(-(atomIdx+1));
+          //(*gndClauses_)[gndClauseIndexes[i]]->removeGndPred(-(atomIdx + 1));
           
-         GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
-         gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
-         gc->removeGndPred(-(atomIdx+1));
-         gndClauses_->append(gc);
-         deleted++;
-		
-		 cout << "Done replacing:"<< endl;
-//         printNetwork(cout); 
+          GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
+          gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
+          gc->removeGndPred(-(atomIdx + 1));
+          gndClauses_->append(gc);
+          deleted++;
         }
       }
-      
+     
       reinit();
-    
-      gndClauseIndexes = getPosOccurenceArray(atomIdx+1); //old:atomIdx + 1
-      gndClauseIndexes.bubbleSort();  cout << "Positive occurences: " << gndClauseIndexes.size() << endl;
+       
+      gndClauseIndexes = getPosOccurenceArray(atomIdx + 1);
+      gndClauseIndexes.bubbleSort();
+
         // Keep track of how many clauses deleted, because the indices are
         // are adjusted when we remove an element from HashArray
       deleted = 0;
@@ -2895,38 +2885,33 @@ cout << "removing predicate " << -(atomIdx+1) << " from ground clause " << gndCl
           {
             cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
             cout << endl;
-          }cout << "Deleting ground clause "<< gndClauseIndexes[i] << " - " << deleted << " = " << gndClauseIndexes[i] -deleted << " : "; (*gndClauses_)[gndClauseIndexes[i]-deleted]->print(cout, domain_, &gndPredHashArray_) << endl;
+          }
             // Real index is old index adjusted one lower for every element
             // deleted up until now
           delete (*gndClauses_)[gndClauseIndexes[i] - deleted];
           gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
           deleted++;
-          
-          cout << "Done deleting:"<< endl;
-//          printNetwork(cout);         
         }
         else
         {
           if (vsdebug)
           {
-            cout << "Removing gnd pred " << -(atomIdx+1) // atomIdx + 1
+            cout << "Removing gnd pred " << -(atomIdx + 1)
                  << " from ground clause " << gndClauseIndexes[i] << endl;
           }
-cout << "removing predicate " << (atomIdx+1) << " from ground clause " << gndClauseIndexes[i] - deleted << " : "; (*gndClauses_)[gndClauseIndexes[i] - deleted]->print(cout, domain_, &gndPredHashArray_); cout << endl;
-          //(*gndClauses_)[gndClauseIndexes[i]]->removeGndPred(atomIdx+1); //atomIdx + 1
-         GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
-         gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
-         gc->removeGndPred(atomIdx+1);
-         gndClauses_->append(gc);
-         deleted++;
-         
-         cout << "Done replacing:"<< endl;
-//         printNetwork(cout);
+          //(*gndClauses_)[gndClauseIndexes[i]]->removeGndPred(atomIdx + 1);
+          
+          GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
+          gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
+          gc->removeGndPred(atomIdx + 1);
+          gndClauses_->append(gc);
+          deleted++;
+
         }
-      }      
- 
- 	  reinit();
-     
+      }
+      
+  	  reinit();     
+      
       gndPredHashArray_.removeItemFastDisorder(atomIdx);
       gndPredHashArray_.compress();
       gndPreds_->removeItemFastDisorder(atomIdx);
@@ -2935,13 +2920,9 @@ cout << "removing predicate " << (atomIdx+1) << " from ground clause " << gndCla
         // index of the pred deleted, so we have to update to the new index
         // in all clauses
       int oldIdx = gndPredHashArray_.size();
-      replaceAtomIndexInAllClauses(oldIdx, atomIdx);
-
-      reinit();
-
-      cout << "DONE PROCESSING PREDICATE " << endl;
-      printNetwork(cout);
-      cout << "EXIT CALL" << endl;   
+      replaceAtomIndexInAllClauses(oldIdx, atomIdx); 
+      
+      reinit();     
     }
   }
 
@@ -2981,7 +2962,6 @@ cout << "removing predicate " << (atomIdx+1) << " from ground clause " << gndCla
   {
     for (int i = 0; i < gndClauses_->size(); i++)
     {
-      cout << i << ": " <<  gndClauses_->find((*gndClauses_)[i]) << " : ";
       (*gndClauses_)[i]->print(out, domain_, &gndPredHashArray_);
       out << endl;
     }
