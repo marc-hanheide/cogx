@@ -202,6 +202,23 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
 		result->supportObjectId = m_currentConeGroup.supportObjectId;
 		result->placeId = m_currentConeGroup.placeId;
+
+		SpatialProperties::DiscreteProbabilityDistributionPtr spadist = new SpatialProperties::DiscreteProbabilityDistribution;
+		SpatialProperties::ValueProbabilityPair pair1,pair2;
+		SpatialProperties::BinaryValuePtr binval1 = new SpatialProperties::BinaryValue;
+		SpatialProperties::BinaryValuePtr binval2 = new SpatialProperties::BinaryValue;
+		binval1->value = true;
+		binval2->value= false;
+		pair1.value = binval1;
+		pair1.probability = 1.0;
+		pair2.value = binval2;
+		pair2.probability = 0;
+
+		spadist->data.push_back(pair1);
+		spadist->data.push_back(pair2);
+		result->distribution = spadist;
+
+		//result->distribution
 	  	log("Publishing ObjectPlaceProperty with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
 	  			result->category.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 	  	addToWorkingMemory(newDataID(), result);
