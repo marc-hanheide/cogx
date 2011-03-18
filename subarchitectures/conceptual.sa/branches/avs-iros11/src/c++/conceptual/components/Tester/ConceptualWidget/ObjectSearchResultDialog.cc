@@ -25,6 +25,7 @@ ObjectSearchResultDialog::ObjectSearchResultDialog(ConceptualWidget *parent, con
 	pthread_mutex_unlock(&parent->_worldStateMutex);
 
 	// Fill in the default values
+	ui.supportObjectCategoryComboBox->addItem("");
 	for (unsigned int i=0; i<_objectCategories.size(); ++i)
 	{
 		ui.supportObjectCategoryComboBox->addItem(QString::fromStdString(_objectCategories[i]));
@@ -54,10 +55,13 @@ void ObjectSearchResultDialog::on_ObjectSearchResultDialogClass_accepted()
 	{
 	case 1:
 		sr = SpatialData::INOBJECT;
+		break;
 	case 2:
 		sr = SpatialData::ON;
+		break;
 	default:
 		sr = SpatialData::INROOM;
+		break;
 	}
 	double beta = static_cast<double>(ui.betaSpinBox->value())/100.0;
 	for (unsigned int i=0; i<results.size(); ++i)
