@@ -873,7 +873,8 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 		pthread_mutex_lock(&_worldStateMutex);
 
-		_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
+		_objectPlacePropertyWmAddressMap[wmChange.address] =
+				SpatialProperties::ObjectPlacePropertyPtr::dynamicCast(objectPlacePropertyPtr->ice_clone());
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventObjectPlacePropertyAdded;
 		ei.roomId = -1;
@@ -914,7 +915,8 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
-	  	_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
+	  	_objectPlacePropertyWmAddressMap[wmChange.address] =
+	  			SpatialProperties::ObjectPlacePropertyPtr::dynamicCast(objectPlacePropertyPtr->ice_clone());
 
 	  	// Check wmAddresss and ID
 		if (old->placeId != objectPlacePropertyPtr->placeId)
@@ -1001,7 +1003,8 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 		pthread_mutex_lock(&_worldStateMutex);
 
-		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
+		_objectSearchResultWmAddressMap[wmChange.address] =
+				SpatialData::ObjectSearchResultPtr::dynamicCast(objectSearchResultPtr->ice_clone());
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventObjectSearchResultAdded;
 		ei.roomId = objectSearchResultPtr->roomId;
@@ -1042,7 +1045,8 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
-		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
+		_objectSearchResultWmAddressMap[wmChange.address] =
+				SpatialData::ObjectSearchResultPtr::dynamicCast(objectSearchResultPtr->ice_clone());
 
 	  	// Check wmAddresss and ID
 		if (old->roomId != objectSearchResultPtr->roomId)
@@ -1210,7 +1214,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
-		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
+		_shapePlacePropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1324,7 +1328,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
-		_objectPlacePropertyWmAddressMap.erase(wmChange.address);
+		_appearancePlacePropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
