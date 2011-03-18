@@ -589,8 +589,8 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		if (old->containedPlaceIds.size()<comaRoomPtr->containedPlaceIds.size())
 		{
 			ei.type = ConceptualData::EventRoomPlaceAdded;
-			ei.place1Id = -1;
-			for (unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
+			ei.place1Id = comaRoomPtr->containedPlaceIds[old->containedPlaceIds.size()];
+			for (unsigned int i=0; i<old->containedPlaceIds.size(); ++i)
 			{
 				if (comaRoomPtr->containedPlaceIds[i]!=old->containedPlaceIds[i])
 				{
@@ -605,8 +605,8 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		else if (old->containedPlaceIds.size()>comaRoomPtr->containedPlaceIds.size())
 		{
 			ei.type = ConceptualData::EventRoomPlaceDeleted;
-			ei.place1Id = -1;
-			for (unsigned int i=0; i<old->containedPlaceIds.size(); ++i)
+			ei.place1Id = old->containedPlaceIds[comaRoomPtr->containedPlaceIds.size()];
+			for (unsigned int i=0; i<comaRoomPtr->containedPlaceIds.size(); ++i)
 			{
 				if (comaRoomPtr->containedPlaceIds[i]!=old->containedPlaceIds[i])
 				{
