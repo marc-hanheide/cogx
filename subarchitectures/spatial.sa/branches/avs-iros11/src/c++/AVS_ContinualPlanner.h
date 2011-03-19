@@ -97,8 +97,9 @@ public:
 	 int GetPlaceIdFromNodeId(int nodeId);
 	 int GetClosestNodeId(double x, double y, double a);
 	 void newProcessConeCommand(const cast::cdl::WorkingMemoryChange &objID);
-
+	 void putObjectInMap(BloxelMap &map, spatial::Object *object);
 	 void receivePointCloud(BloxelMap *map, FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
+	 void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
 
 private:
 
