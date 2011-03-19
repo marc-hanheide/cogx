@@ -11,7 +11,6 @@
 //    Kristoffer Sjöö
 //
 // = COPYRIGHT
-//    Copyright (c) 2007 Chandana Paul
 //                  2007 Dorian Galvez Lopez
 //                  2009 Patric Jensfelt
 //                  2009 Kristoffer Sjöö
@@ -913,6 +912,8 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 void 
 SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd) 
 {
+  debug("execCtrl(type=%d, dir=%fdeg, v=%fm/s, w=%frad/s) called", cureCmd.type, cureCmd.dir, cureCmd.v, cureCmd.w);
+
   Robotbase::MotionCommand cmd;
 
   if (m_NumInhibitors > 0) {    
@@ -960,6 +961,8 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
     cmd.rotspeed = 0;
 
   }   
+
+  debug("execCtrl sending (v=%fm/s,w=%frad/s) to RobotServer", cmd.speed, cmd.rotspeed);
   
   m_RobotServer->execMotionCommand(cmd);
 }
