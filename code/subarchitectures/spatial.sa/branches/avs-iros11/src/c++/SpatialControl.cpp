@@ -912,7 +912,8 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 void 
 SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd) 
 {
-  debug("execCtrl(type=%d, dir=%fdeg, v=%fm/s, w=%frad/s) called", cureCmd.type, cureCmd.dir, cureCmd.v, cureCmd.w);
+  debug("execCtrl(type=%d, dir=%fdeg, v=%fm/s, w=%frad/s) called", 
+        cureCmd.type, 180.0/M_PI*cureCmd.dir, cureCmd.v, cureCmd.w);
 
   Robotbase::MotionCommand cmd;
 
