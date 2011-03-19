@@ -282,9 +282,11 @@ RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd,
       Cure::HelpFunctions::limitAndSetValueSymm(v, m_MaxV);
       Cure::HelpFunctions::limitAndSetValueSymm(w, m_MaxW);
 
-      debug("execMotionCommand v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s",v,w,cmd.speed,cmd.rotspeed);
       if (!m_Joydrive) {
+        debug("execMotionCommand sending command v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s",v,w,cmd.speed,cmd.rotspeed);
         m_Position->SetSpeed(v,w);
+      } else {
+	debug("execMotionCommand NOT sending command v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s since we are in joydrive mode",v,w,cmd.speed,cmd.rotspeed);
       }
     } else  {
       debug("execMotionCommand (DISABLED MOTORS) v=%.2fm/s w=%.3frad/s",
