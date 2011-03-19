@@ -112,10 +112,10 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
   m_OverRideJoystickEnable = false;
   if ((it = config.find("--no-joystick")) != config.end()) {
     m_OverRideJoystickEnable = true;
+  } else {
+    JoystickDrivable::configure(config);
   }
   log("Using m_RandData=%d", (int)m_RandData);
-
-  JoystickDrivable::configure(config);
 
   // Start the interface that allows clients to connect to this server
   // the Ice way
