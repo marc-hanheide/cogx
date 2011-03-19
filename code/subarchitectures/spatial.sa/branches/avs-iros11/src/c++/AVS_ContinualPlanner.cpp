@@ -221,6 +221,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		//result->distribution
 	  	log("Publishing ObjectPlaceProperty with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
 	  			result->category.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
+
 	  	addToWorkingMemory(newDataID(), result);
 	}
 
@@ -328,6 +329,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		//Since we don't have this location currently, first initialize a bloxel map for it from the template room map
 		m_objectBloxelMaps[id] = new SpatialGridMap::GridMap<GridMapData>(
 				*m_templateRoomBloxelMaps[newVPCommand->roomId]);
+		// set so far explored bit to zero;
+		m_locationToBeta[id] = 0;
 	}
 
 
@@ -775,6 +778,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		b->content = CondIndProbDist;
 		log("writing belief to WM..");
+		m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
 		addToWorkingMemory(b->id, "binder", b);
 		log("wrote belief to WM..");
 	}
@@ -826,27 +830,27 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 	log("Processing Cone Group with id %d, totalprob %f", id, m_beliefConeGroups[id].getTotalProb());
 
 	m_currentConeGroup = m_beliefConeGroups[id];
-	m_currentViewCone = m_currentConeGroup.viewcones[0]; // FIXME one cone per conegroup!
-
+	m_currentViewCone.first = 0;
+	m_currentViewCone.second = m_currentConeGroup.viewcones[m_currentViewCone.first]; // FIXME one cone per conegroup!
 	log("Posting a nav command");
 
 	Cure::Pose3D pos;
-	pos.setX(m_currentViewCone.pos[0]);
-	pos.setY(m_currentViewCone.pos[1]);
-	pos.setTheta(m_currentViewCone.pan);
+	pos.setX(m_currentViewCone.second.pos[0]);
+	pos.setY(m_currentViewCone.second.pos[1]);
+	pos.setTheta(m_currentViewCone.second.pan);
 	PostNavCommand(pos, SpatialData::GOTOPOSITION);
 }
 
 
-void AVS_ContinualPlanner::ViewConeUpdate(ViewPointGenerator::SensingAction viewcone, BloxelMap* map){
+void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
 
 double sensingProb = 0.8;
 GDProbSum sumcells;
 GDIsObstacle isobstacle;
 /* DEBUG */
 GDProbSum conesum;
-map->coneQuery(viewcone.pos[0],viewcone.pos[1],
-    viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, conesum, conesum, m_minDistance);
+map->coneQuery(viewcone.second.pos[0],viewcone.second.pos[1],
+    viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, conesum, conesum, m_minDistance);
 	log("ViewConeUpdate: Cone sums to %f",conesum.getResult());
 
 /* DEBUG */
@@ -858,8 +862,8 @@ log("ViewConeUpdate: Whole map PDF sums to: %f", initialMapPDFSum);
 // then deal with those bloxels that belongs to this cone
 
 GDProbScale scalefunctor(1-sensingProb);
-map->coneModifier(viewcone.pos[0],viewcone.pos[1],
-    viewcone.pos[2], viewcone.pan, viewcone.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, scalefunctor,scalefunctor, m_minDistance);
+map->coneModifier(viewcone.second.pos[0],viewcone.second.pos[1],
+    viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, scalefunctor,scalefunctor, m_minDistance);
 sumcells.reset();
 map->universalQuery(sumcells);
 
@@ -883,14 +887,50 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
 	result->supportObjectId = m_currentConeGroup.supportObjectId;
 	result->roomId = m_currentConeGroup.roomId;
-	result->beta =differenceMapPDFSum/initialMapPDFSum;
+
+	// ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
+	result->beta = m_locationToBeta[m_currentConeGroup.bloxelMapId] + differenceMapPDFSum/initialMapPDFSum;
 
 	log("The observed ratio of location: %f", result->beta);
 
 	log("Publishing ObjectSearchResult with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
-  	//addToWorkingMemory(newDataID(), result);
+	log("Updating conegroup probability");
+	//get the belief id
+	try{
+		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[viewcone.first], "binder");
+		CondIndependentDistribsPtr dist = CondIndependentDistribsPtr::dynamicCast(belief->content);
+		BasicProbDistributionPtr  basicdist = BasicProbDistributionPtr::dynamicCast(dist->distribs["p-visible"]);
+		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
+		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
+		log("Got conegroup probability %f", floatformula->val);
+		floatformula->val -= differenceMapPDFSum; // remove current conesum's result
+		log("Changing conegroup probability to %f", floatformula->val);
+		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], belief);
+
+	} catch (DoesNotExistOnWMException e) {
+		log("Error! ConeGroup belief missing on WM!");
+		return;
+	}
+
+	// this means it's the first time we're reporting search result
+	if (m_locationToBeta.count(m_currentConeGroup.bloxelMapId) == 0){
+		log("this is the first time we're adding a ObjectSearchResult for this id: %s", m_currentConeGroup.bloxelMapId.c_str());
+		string wmid = newDataID();
+		m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId] = wmid;
+		addToWorkingMemory(wmid, result);
+	}
+	else{
+		try{
+		log("overwriting object search result");
+		overwriteWorkingMemory(m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId], result);
+		} catch (DoesNotExistOnWMException e) {
+			log("Error! ObjectSearchResult missing on WM!");
+			return;
+		}
+	}
+
 }
 
 
