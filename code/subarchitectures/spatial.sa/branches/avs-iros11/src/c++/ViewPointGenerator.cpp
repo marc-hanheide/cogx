@@ -357,13 +357,13 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 		angle = angles[the];
 		//if we have that point already, skip.
 		 for (int j = 0; j < i; j++) {
-		 if (samples[2 * j].getX() == randx && samples[j].getY() == randy
+		 if (samples[j].getX() == randx && samples[j].getY() == randy
 		 && samples[j].getTheta() == angle) {
 		 //log("we already have this point.");
 		 haspoint = true;
 		 break;
 		 }
-		 else if ( ( pow((randx - samples[2 * j].getX()),2) + (pow((randy - samples[2 * j].getY()),2) ) ) < 0.4 ){
+		 else if ( ( pow((randx - samples[j].getX()),2) + (pow((randy - samples[j].getY()),2) ) ) < 0.4 ){
 			 haspoint = true;
 			 break;
 		 }
@@ -381,25 +381,25 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			dest.setX(xW);
 			dest.setX(yW);
 
-			double d = getPathLength(start, dest, lgm);
+		//	double d = getPathLength(start, dest, lgm);
 			//m_component->log("path to here: %3.2f", d);
 			// There is a path to this destination
 			//	    log("there's a path to this destination");
-			if (d > 0 || true) {
+	//		if (d > 0 || true) {
 				singlesample.setX(randx);
 				singlesample.setY(randy);
 				singlesample.setTheta(angle);
 				samples.push_back(singlesample);
 				i++;
-			}
+		//	}
 
-		} else {
+	//	} else {
 			//m_component->log("point either non free space or seen.");
-		}
+		//}
 		//if (giveup > m_samplesize*5){
 			//m_component->log("Tried to much giving up, anything can happen after this.");
 			//break;
-		//}
+		}
 	}
 	m_component->log("Got %d 2D samples", samples.size());
 

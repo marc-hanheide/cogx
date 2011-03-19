@@ -120,8 +120,6 @@ AVS_ContinualPlanner::receivePointCloud(FrontierInterface::WeightedPointCloudPtr
 	    	log("Base object is not known! This means support object is not known to ObjectRelationManager. Something is very wrong!");
 	    }
 
-	    if(m_usePeekabot)
-	      pbVis->AddPDF(*m_currentBloxelMap);
 	    m_currentBloxelMap->clearDirty();
 	    m_gotPC = true;
 	}
@@ -148,11 +146,9 @@ void AVS_ContinualPlanner::start() {
 			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
 					&AVS_ContinualPlanner::newRobotPose));
 
-	// TODO: add code to take in spatial objects
-	/*	addChangeFilter(
-	 createLocalTypeFilter<SpatialData::SpatialObject> (cdl::ADD),
-	 new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
-	 &AVS_ContinualPlanner::newSpatialObject));*/
+	addChangeFilter(createLocalTypeFilter<SpatialData::SpatialObject>(cdl::ADD),
+		new MemberFunctionChangeReceiver<AVS_ContinualPlanner>(this,
+		  &AVS_ContinualPlanner::newSpatialObject));
 
 	 addChangeFilter(cast::createGlobalTypeFilter<GroundedBelief>(cast::cdl::ADD),
 			            new cast::MemberFunctionChangeReceiver<AVS_ContinualPlanner>(this, &AVS_ContinualPlanner::newGroundedBelief));
@@ -165,6 +161,25 @@ void AVS_ContinualPlanner::start() {
 	log("getting ice queryHandlerServer");
 	m_queryHandlerServerInterfacePrx = getIceServer<
 			ConceptualData::QueryHandlerServerInterface> (m_queryHandlerName);
+}
+
+
+void
+AVS_ContinualPlanner::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
+{
+try {
+  SpatialData::SpatialObjectPtr newObj =
+    getMemoryEntry<SpatialData::SpatialObject>(objID.address);
+
+  spatial::Object *model = generateNewObjectModel(newObj->label);
+  log("Got Spatial Object: %s", newObj->label.c_str());
+  model->pose = newObj->pose;
+
+  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup.bloxelMapId], model);
+} catch (DoesNotExistOnWMException e) {
+    log("Error! SpatialObject disappeared from WM!");
+  }
+
 }
 
 void AVS_ContinualPlanner::newProcessConeCommand(
@@ -830,8 +845,8 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 	log("Processing Cone Group with id %d, totalprob %f", id, m_beliefConeGroups[id].getTotalProb());
 
 	m_currentConeGroup = m_beliefConeGroups[id];
-	m_currentViewCone.first = 0;
-	m_currentViewCone.second = m_currentConeGroup.viewcones[m_currentViewCone.first]; // FIXME one cone per conegroup!
+	m_currentViewCone.first = id;
+	m_currentViewCone.second = m_currentConeGroup.viewcones[0]; // FIXME one cone per conegroup!
 	log("Posting a nav command");
 
 	Cure::Pose3D pos;
@@ -876,11 +891,6 @@ if (differenceMapPDFSum < 0){
 
 log("ViewConeUpdate: After cone update map sums to: %f", sumcells.getResult());
 
-
-if(m_usePeekabot){
-	  pbVis->AddPDF(*map);
-	}
-
 SpatialData::ObjectSearchResultPtr result = new SpatialData::ObjectSearchResult;
 result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	result->relation = m_currentConeGroup.relation;
@@ -890,6 +900,7 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 
 	// ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
 	result->beta = m_locationToBeta[m_currentConeGroup.bloxelMapId] + differenceMapPDFSum/initialMapPDFSum;
+	m_locationToBeta[m_currentConeGroup.bloxelMapId] = result->beta;
 
 	log("The observed ratio of location: %f", result->beta);
 
@@ -899,7 +910,9 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	log("Updating conegroup probability");
 	//get the belief id
 	try{
-		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[viewcone.first], "binder");
+		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[viewcone.first].c_str());
+		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[viewcone.first],"binder");
+
 		CondIndependentDistribsPtr dist = CondIndependentDistribsPtr::dynamicCast(belief->content);
 		BasicProbDistributionPtr  basicdist = BasicProbDistributionPtr::dynamicCast(dist->distribs["p-visible"]);
 		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
@@ -907,15 +920,14 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 		log("Got conegroup probability %f", floatformula->val);
 		floatformula->val -= differenceMapPDFSum; // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
-		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], belief);
+		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], "binder", belief);
 
 	} catch (DoesNotExistOnWMException e) {
 		log("Error! ConeGroup belief missing on WM!");
-		return;
 	}
 
 	// this means it's the first time we're reporting search result
-	if (m_locationToBeta.count(m_currentConeGroup.bloxelMapId) == 0){
+	if (m_locationToBetaWMAddress.count(m_currentConeGroup.bloxelMapId) == 0){
 		log("this is the first time we're adding a ObjectSearchResult for this id: %s", m_currentConeGroup.bloxelMapId.c_str());
 		string wmid = newDataID();
 		m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId] = wmid;
@@ -923,11 +935,10 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	}
 	else{
 		try{
-		log("overwriting object search result");
+		log("overwriting object search result at WMAdress %s", m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId].c_str());
 		overwriteWorkingMemory(m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId], result);
 		} catch (DoesNotExistOnWMException e) {
 			log("Error! ObjectSearchResult missing on WM!");
-			return;
 		}
 	}
 
@@ -1367,7 +1378,168 @@ addToWorkingMemory(newDataID(), obs);
 
 //cout << "selected cone " << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << " " << viewpoint.pan << " " << viewpoint.tilt << endl;
 }
+void
+AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object *object)
+	{
+	  cogx::Math::Pose3 &pose = object->pose;
+	  switch (object->type) {
+	    case OBJECT_BOX:
+	      {
+		BoxObject &box = *(BoxObject*)object;
+		double radius1, radius2, radius3;
+		//Flatten pose to xy-orientation
 
+		double maxAxis = pose.rot.m20;
+		Vector3 fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+		radius1 = box.radius2;
+		radius2 = box.radius3;
+		radius3 = box.radius1;
+
+
+		if (-pose.rot.m20 > maxAxis) {
+		  maxAxis = -pose.rot.m20;
+		  fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+		  radius1 = box.radius2;
+		  radius2 = box.radius3;
+		  radius3 = box.radius1;
+		}
+		if (pose.rot.m21 > maxAxis) {
+		  maxAxis = pose.rot.m21;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  radius1 = box.radius1;
+		  radius2 = box.radius3;
+		  radius3 = box.radius2;
+		}
+		if (-pose.rot.m21 > maxAxis) {
+		  maxAxis = -pose.rot.m21;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  radius1 = box.radius1;
+		  radius2 = box.radius3;
+		  radius3 = box.radius2;
+		}
+		if (pose.rot.m22 > maxAxis) {
+		  maxAxis = pose.rot.m22;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  radius1 = box.radius1;
+		  radius2 = box.radius2;
+		  radius3 = box.radius3;
+		}
+		if (-pose.rot.m22 > maxAxis) {
+		  maxAxis = -pose.rot.m22;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  radius1 = box.radius1;
+		  radius2 = box.radius2;
+		  radius3 = box.radius3;
+		}
+
+		double direction = atan2(fakeXDirection.y, fakeXDirection.x);
+		if (direction < 0) direction += 2*M_PI;
+		GDMakeObstacle makeObstacle;
+		map.boxModifier(box.pose.pos.x, box.pose.pos.y, box.pose.pos.z, 2*radius1, 2*radius2, 2*radius3,
+		    direction, makeObstacle);
+	      }
+	      break;
+	    case OBJECT_HOLLOW_BOX:
+	      {
+		log("drawing hollow box");
+		HollowBoxObject &box = *(HollowBoxObject*)object;
+		double radius1, radius2, radius3;
+		//Flatten pose to xy-orientation
+
+		double maxAxis = pose.rot.m20;
+		Vector3 fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+		int openSide = 0;
+		radius1 = box.radius2;
+		radius2 = box.radius3;
+		radius3 = box.radius1;
+
+
+		if (-pose.rot.m20 > maxAxis) {
+		  maxAxis = -pose.rot.m20;
+		  fakeXDirection = vector3(pose.rot.m01, pose.rot.m11, pose.rot.m21);
+		  openSide = 5;
+		  radius1 = box.radius2;
+		  radius2 = box.radius3;
+		  radius3 = box.radius1;
+		}
+		if (pose.rot.m21 > maxAxis) {
+		  maxAxis = pose.rot.m21;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  openSide = 1;
+		  radius1 = box.radius1;
+		  radius2 = box.radius3;
+		  radius3 = box.radius2;
+		}
+		if (-pose.rot.m21 > maxAxis) {
+		  maxAxis = -pose.rot.m21;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  openSide = 1;
+		  radius1 = box.radius1;
+		  radius2 = box.radius3;
+		  radius3 = box.radius2;
+		}
+		if (pose.rot.m22 > maxAxis) {
+		  maxAxis = pose.rot.m22;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  openSide = 1;
+		  radius1 = box.radius1;
+		  radius2 = box.radius2;
+		  radius3 = box.radius3;
+		}
+		if (-pose.rot.m22 > maxAxis) {
+		  maxAxis = -pose.rot.m22;
+		  fakeXDirection = vector3(pose.rot.m00, pose.rot.m10, pose.rot.m20);
+		  openSide = 1;
+		  radius1 = box.radius1;
+		  radius2 = box.radius2;
+		  radius3 = box.radius3;
+		}
+
+		double direction = atan2(fakeXDirection.y, fakeXDirection.x);
+		if (direction < 0) direction += 2*M_PI;
+		GDMakeObstacle makeObstacle;
+		double h = box.thickness/2;
+		double cd = cos(direction);
+		double sd = sin(direction);
+
+		if (openSide != 0)
+		  map.boxModifier(box.pose.pos.x, box.pose.pos.y,
+		      box.pose.pos.z + radius3-h, radius1*2, radius2*2, 2*h,
+		      direction, makeObstacle);
+
+		if (openSide != 1)
+		  map.boxModifier(box.pose.pos.x+cd*(radius1-h),
+		      box.pose.pos.y+sd*(radius1-h),
+		      box.pose.pos.z, 2*h, radius2*2, radius3*2,
+		      direction, makeObstacle);
+
+		map.boxModifier(box.pose.pos.x-cd*(radius1-h),
+		    box.pose.pos.y-sd*(radius1-h),
+		    box.pose.pos.z, 2*h, radius2*2, radius3*2,
+		    direction, makeObstacle);
+
+		map.boxModifier(box.pose.pos.x-sd*(radius2-h),
+		    box.pose.pos.y+cd*(radius2-h),
+		    box.pose.pos.z, radius1*2, 2*h, radius3*2,
+		    direction, makeObstacle);
+
+		map.boxModifier(box.pose.pos.x+sd*(radius2-h),
+		    box.pose.pos.y-cd*(radius2-h),
+		    box.pose.pos.z, radius1*2, 2*h, radius3*2,
+		    direction, makeObstacle);
+
+		if (openSide != 5)
+		  map.boxModifier(box.pose.pos.x, box.pose.pos.y,
+		      box.pose.pos.z - radius3+h, radius1*2, radius2*2, 2*h,
+		      direction, makeObstacle);
+	      }
+	      break;
+	    default:
+	      log("Error! Unsupported object type in puObjectInMap!");
+	      return;
+	  }
+	  log("returning");
+	}
 
 
 } //namespace
