@@ -109,10 +109,7 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
     m_RandData = true;
   }
 
-  m_OverRideJoystickEnable = false;
-  if ((it = config.find("--no-joystick")) != config.end()) {
-    m_OverRideJoystickEnable = true;
-  } else {
+  if ((it = config.find("--no-joystick")) == config.end()) {
     JoystickDrivable::configure(config);
   }
   log("Using m_RandData=%d", (int)m_RandData);
@@ -221,10 +218,7 @@ RobotbaseServerPlayer::runComponent()
 	m_Odom.time = getCASTTime(); //m_TimeOffset - timeNow;
       }
 
-
-      // alper: to disable Joystick, in some laptops with internal accelerometer
-      // causes to be seen as joystick and produces weird results.
-      if (m_Joydrive && !m_OverRideJoystickEnable) {
+      if (m_Joydrive) {
         if (m_JoydriveRotOnly) {
           m_Position->SetSpeed(0, m_JoyW);
         } else if (m_JoydriveTransOnly) {
@@ -233,7 +227,7 @@ RobotbaseServerPlayer::runComponent()
           m_Position->SetSpeed(m_JoyV, m_JoyW);
         }
         
-      } else if (joyDriveState && !m_OverRideJoystickEnable) {
+      } else if (joyDriveState) {
         // Was in joydrive state last iteration, should send stop
         m_Position->SetSpeed(0,0);
       }

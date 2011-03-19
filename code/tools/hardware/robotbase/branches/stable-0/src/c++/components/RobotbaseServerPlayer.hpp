@@ -103,7 +103,6 @@ protected:
   int m_PlayerPosDeviceId;
 
   bool m_EnableMotors;
-  bool m_OverRideJoystickEnable;
   // The name of the Ice server
   std::string m_IceServerName;
 
