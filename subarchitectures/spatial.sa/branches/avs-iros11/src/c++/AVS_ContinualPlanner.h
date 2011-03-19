@@ -91,7 +91,7 @@ public:
 	 void Recognize();
 	 void addARTagCommand();
 	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv);
-	 void ViewConeUpdate(ViewPointGenerator::SensingAction viewcone, BloxelMap* map);
+	 void ViewConeUpdate( std::pair<int,ViewPointGenerator::SensingAction>  viewcone, BloxelMap* map);
 	 void newGroundedBelief(const cast::cdl::WorkingMemoryChange &objID);
 	 std::string relationToString(SpatialData::SpatialRelation rel);
 	 int GetPlaceIdFromNodeId(int nodeId);
@@ -164,8 +164,12 @@ private:
 	 RelationEvaluator m_relationEvaluator;
 	 std::map<int, ConeGroup> m_beliefConeGroups; // int is Id
 	 std::map<std::string, std::string> m_fromBeliefIdtoVisualLabel;
+	 std::map<int, std::string> m_coneGroupIdToBeliefId;
+	 std::map<std::string, double> m_locationToBeta; // search location's so far explored region
+	 std::map<std::string, std::string> m_locationToBetaWMAddress; //search location's ObjectSearchResult WMAddress
+
 	 ConeGroup m_currentConeGroup;
-	 ViewPointGenerator::SensingAction m_currentViewCone;
+	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // index of SensingAction in ConeGroup and the SensingAction itself
 	 int m_coneGroupId; // Unique Id for each cone group
 
 	MainDialog *_mainDialog;
