@@ -37,7 +37,7 @@ size [ 9 9 ]
 # load an environment bitmap
 map
 (
-  bitmap "ALU-map.png"
+  bitmap "ALU-map_thickdoors.png"
   #bitmap_resolution 0.142
   size [8.193 7.32]
   boundary 1
