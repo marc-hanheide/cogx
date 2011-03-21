@@ -59,6 +59,7 @@
    ;; === room properties ===
    (category ?r - room) - category
    (roomid ?r - room) - number
+   (virtual-category ?r - room) - category
 
    ;; === place properties ===
    (placestatus ?n - place) - place_status
@@ -112,12 +113,11 @@
   (:init-rule rooms
               :parameters(?c - category)
               :precondition (not (exists (?r - room)
-                                         (and (= (category ?r) ?c)
+                                         (and (= (virtual-category ?r) ?c)
                                               (is-virtual ?r))))
               :effect (create (?r - room) (and
                                            (is-virtual ?r)
-                                           (poss (category ?r) ?c)
-                                           (assign (category ?r) ?c))
+                                           (assign (virtual-category ?r) ?c))
                               )
               )
 
@@ -257,10 +257,11 @@
   (:dtrule room_from_placeholder
            :parameters (?p - place ?r - room ?c - category)
            :precondition (and (= (placestatus ?p) placeholder)
-                              (= (category ?r) ?c)
+                              (= (virtual-category ?r) ?c)
                               (= (leads_to_room ?p ?c) true)
                               (is-virtual ?r))
-           :effect (probabilistic 1.0 (assign (in-room ?p) ?r)))
+           :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
+                                           (assign (category ?r) ?c))))
 
   (:durative-action explore_place
            :agent (?a - robot)
