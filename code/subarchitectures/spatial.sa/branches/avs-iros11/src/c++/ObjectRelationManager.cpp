@@ -29,6 +29,11 @@
 #include "GridMapData.hh"
 #include <sstream>
 
+
+bool
+inferRelationsThreeObjects(vector<double> &ret, double BOnA, double AOnB, double BOnT,
+    double AOnT, double BInA, double AInB, double BInT, double AInT);
+
 #define USE_KDE
 
 #define ASSERT_TYPE(x) {if (x->type != OBJECT_PLANE && x->type != OBJECT_BOX && x->type != OBJECT_HOLLOW_BOX) {cerr << "Type assert on " << __LINE__ << endl;}}
@@ -457,7 +462,7 @@ void ObjectRelationManager::runComponent()
     // Dispatch recognition commands if the robot has been standing still
     // long enough
 
-    if (!m_bDetectObjects) {
+    if (m_bDetectObjects) {
       lockComponent();
 
       if (!m_bRecognitionIssuedThisStop &&
@@ -648,6 +653,38 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 	// Check degree of onness
 	recomputeOnnessForObject(obsLabel);
 	recomputeInnessForObject(obsLabel);
+
+	//FIXME: 3-object scene hack
+	if (m_objectOnnessValues.size() == 6 &&
+	    m_objectInnessValues.size() == 6) {
+	  double BOnA = m_objectOnnessValues[StrPair("paperclip","stapler")];
+	  double AOnB = m_objectOnnessValues[StrPair("stapler","paperclip")];
+	  double AOnT = m_objectOnnessValues[StrPair("box","paperclip")];
+	  double BOnT = m_objectOnnessValues[StrPair("box","stapler")];
+	  double BInA = m_objectInnessValues[StrPair("paperclip","stapler")];
+	  double AInB = m_objectInnessValues[StrPair("stapler","paperclip")];
+	  double AInT = m_objectInnessValues[StrPair("box","paperclip")];
+	  double BInT = m_objectInnessValues[StrPair("box","stapler")];
+	  vector<double> inferred;
+	  if (inferRelationsThreeObjects(inferred,
+		BOnA, AOnB, BOnT, AOnT, BInA, AInB, BInT, AInT)) {
+	    log("stapler on paperclip: %f", inferred[11]);
+	    log("stapler on box: %f", inferred[5]);
+	    log("stapler on_t paperclip: %f", inferred[10]);
+	    log("stapler on_t box: %f", inferred[4]);
+	    log("stapler in paperclip: %f", inferred[9]);
+	    log("stapler in box: %f", inferred[3]);
+	    log("paperclip on stapler: %f", inferred[8]);
+	    log("paperclip on box: %f", inferred[2]);
+	    log("paperclip on_t stapler: %f", inferred[7]);
+	    log("paperclip on_t box: %f", inferred[1]);
+	    log("paperclip in stapler: %f", inferred[6]);
+	    log("paperclip in box: %f", inferred[0]);
+	  }
+	  else {
+	    log("Error! inferRelationsThreeObjects failed!");
+	  }
+	}
 
 	if (m_placeInterface != 0) {
 	  // Check degree of containment in Places
