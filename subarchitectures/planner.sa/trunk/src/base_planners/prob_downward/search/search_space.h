@@ -16,10 +16,11 @@ class StateProxy;
 
 class EvalInfo {
     friend class SearchNode;
+public:
     int g;
     int c;
-public:
     double p;
+    const Operator* op;
     EvalInfo succ(const Operator *op) const;
 
     int get_g() const { return g; } ;

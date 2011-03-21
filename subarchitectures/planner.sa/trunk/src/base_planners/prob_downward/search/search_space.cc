@@ -15,6 +15,7 @@ using namespace __gnu_cxx;
 
 EvalInfo EvalInfo::succ(const Operator *op) const {
     EvalInfo info;
+    info.op = op;
     info.c = c + op->get_cost();
     info.p = p * op->get_prob();
     info.g = g_multiplier * info.c + g_multiplier * (1-info.p) * g_reward;
@@ -23,6 +24,7 @@ EvalInfo EvalInfo::succ(const Operator *op) const {
 
 SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
     : state_buffer(state_buffer_), info(info_) {
+    einfo.op = info.creating_operator;
     einfo.c = info.c;
     einfo.p = info.p;
     einfo.g = g_multiplier * einfo.c + g_multiplier * (1-einfo.p) * g_reward;
@@ -183,6 +185,11 @@ void SearchSpace::trace_path(const State &goal_state,
 	assert(iter != nodes->end());
 	const SearchNodeInfo &info = iter->second;
         const Operator *op = info.creating_operator;
+        // if (op)
+        //     cout << op->get_name() << ": " << info.c << ", " << info.p << ", " << info.h << endl;
+        // else
+        //     cout << "--- " << info.c << ", " << info.p << ", " << info.h << endl;
+
 	if(op == 0)
 	    break;
 	path.push_back(op);

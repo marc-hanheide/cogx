@@ -54,6 +54,8 @@ extern int g_abstraction_nr;
 extern int g_reward;
 extern int g_multiplier;
 
+extern bool g_debug;
+
 extern Timer g_timer;
 
 enum {

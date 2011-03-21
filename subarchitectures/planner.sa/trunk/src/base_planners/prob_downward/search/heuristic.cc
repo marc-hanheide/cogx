@@ -1,3 +1,4 @@
+#include "search_space.h"
 #include "heuristic.h"
 #include "operator.h"
 

@@ -103,7 +103,7 @@ int GeneralEagerBestFirstSearch::step() {
             preferred_ops.insert(pref[i]);
         }
     }
-    // cout << "node: " << node.get_g() << "    " << node.get_p() << endl;
+    // cout << "pop: " << node.get_g() << "    " << node.get_p() << endl;
 
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -119,9 +119,11 @@ int GeneralEagerBestFirstSearch::step() {
         } else if(succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
+            // cout << "?" << node.get_g() << " - " << node.get_p() << endl;
+            EvalInfo succ_info = node.get_info()->succ(op);
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
-                heuristics[i]->evaluate(node.get_info(), succ_state);
+                heuristics[i]->evaluate(&succ_info, succ_state);
             }
             search_progress.inc_evaluated();
 
@@ -138,10 +140,12 @@ int GeneralEagerBestFirstSearch::step() {
                 continue;
             }
 
+            // cout << "!" << node.get_g() << " - " << node.get_p() << endl;
+            // cout << "?" << succ_node.get_g() << " - " << succ_node.get_p() << endl;
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
-            // cout << succ_node.get_g() << "    " << succ_node.get_p() << endl;
+            // cout << succ_node.get_g() << "    " << succ_node.get_p() <<  "   " << succ_h <<  endl;
 
             open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g(), succ_node.get_p());

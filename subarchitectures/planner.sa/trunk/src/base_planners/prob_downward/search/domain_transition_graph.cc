@@ -1,11 +1,14 @@
+#include <algorithm>
 #include <iostream>
 #include <map>
+#include <set>
 #include <cassert>
 #include <ext/hash_map>
 using namespace std;
 using namespace __gnu_cxx;
 
 #include "domain_transition_graph.h"
+#include "causal_graph.h"
 #include "globals.h"
 #include "operator.h"
 
@@ -34,7 +37,7 @@ void DomainTransitionGraph::read_all(istream &in) {
     vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
     for(int value = 0; value < nodes.size(); value++)
       for(int i = 0; i < nodes[value].transitions.size(); i++)
-	nodes[value].transitions[i].simplify();
+        nodes[value].transitions[i].simplify();
   }
   cout << " done!" << endl;
 
@@ -69,11 +72,11 @@ void DomainTransitionGraph::read_data(istream &in) {
 
       Operator *the_operator;
       if(is_axiom) {
-	assert(operator_index >= 0 && operator_index < g_axioms.size());
-	the_operator = &g_axioms[operator_index];
+        assert(operator_index >= 0 && operator_index < g_axioms.size());
+        the_operator = &g_axioms[operator_index];
       } else {
-	assert(operator_index >= 0 && operator_index < g_operators.size());
-	the_operator = &g_operators[operator_index];
+        assert(operator_index >= 0 && operator_index < g_operators.size());
+        the_operator = &g_operators[operator_index];
         if (the_operator->is_assertion() && the_operator->is_expandable(*g_initial_state)) {
             // skip the rest of this transition
             int precond_count;
@@ -88,8 +91,8 @@ void DomainTransitionGraph::read_data(istream &in) {
 
       pair<int, int> arc = make_pair(origin, target);
       if(!transition_index.count(arc)) {
-	transition_index[arc] = nodes[origin].transitions.size();
-	nodes[origin].transitions.push_back(ValueTransition(&nodes[target]));
+        transition_index[arc] = nodes[origin].transitions.size();
+        nodes[origin].transitions.push_back(ValueTransition(&nodes[target]));
       }
 
       assert(transition_index.count(arc));
@@ -104,19 +107,19 @@ void DomainTransitionGraph::read_data(istream &in) {
 
       vector<pair<int, int> > precond_pairs; // Needed to build up cyclic_effect.
       for(int j = 0; j < precond_count; j++) {
-	int global_var, val;
-	in >> global_var >> val;
+        int global_var, val;
+        in >> global_var >> val;
         precond_pairs.push_back(make_pair(global_var, val));
 
         // Processing for pruned DTG.
-	if(global_var < var) { // [ignore cycles]
-	  if(!global_to_local_child.count(global_var)) {
-	    global_to_local_child[global_var] = local_to_global_child.size();
-	    local_to_global_child.push_back(global_var);
-	  }
-	  int local_var = global_to_local_child[global_var];
-	  precond.push_back(LocalAssignment(local_var, val));
-	}
+        if(global_var < var) { // [ignore cycles]
+          if(!global_to_local_child.count(global_var)) {
+            global_to_local_child[global_var] = local_to_global_child.size();
+            local_to_global_child.push_back(global_var);
+          }
+          int local_var = global_to_local_child[global_var];
+          precond.push_back(LocalAssignment(local_var, val));
+        }
 
         // Processing for full DTG (cyclic CG).
         if(!global_to_ccg_parent.count(global_var)) {
@@ -174,6 +177,7 @@ void DomainTransitionGraph::read_data(istream &in) {
     }
   }
   check_magic(in, "end_DTG");
+  calc_connectivity();
 }
 
 void DomainTransitionGraph::dump() const {
@@ -188,6 +192,70 @@ void DomainTransitionGraph::get_successors(int value, vector<int> &result) const
   result.reserve(transitions.size());
   for(int i = 0; i < transitions.size(); i++)
     result.push_back(transitions[i].target->value);
+}
+
+void DomainTransitionGraph::calc_connectivity() {
+    int init_val = (*g_initial_state)[var];
+    if (nodes.size() <= 2) {
+        is_oneshot = false;
+        return;
+    }
+    for(int i = 0; i < nodes.size(); i++) {
+        if (nodes[i].value != init_val && !nodes[i].transitions.empty()) {
+            is_oneshot = false;
+            return;
+        }
+    }
+    is_oneshot = true;
+    cout << g_variable_name[var] << " is star-shaped" << endl;
+}
+
+void DomainTransitionGraph::calc_oneshot_parents() {
+    cout << "oneshot parents of " << g_variable_name[var] << endl;
+    const vector<int>& parents = g_causal_graph->get_pred_closure(var);
+    for (int i = 0; i < parents.size(); i++) {
+        if (g_transition_graphs[parents[i]]->is_oneshot) {
+            oneshot_parents.push_back(parents[i]);
+            if (find(ccg_parents.begin(), ccg_parents.end(), parents[i]) == ccg_parents.end()) {
+                ccg_parents.push_back(parents[i]);
+            }
+            cout << "    " << g_variable_name[parents[i]] << endl;
+        }
+    }
+    ccg_to_oneshot.resize(g_variable_domain.size());
+    fill(ccg_to_oneshot.begin(), ccg_to_oneshot.end(), -1);
+    for (int i = 0; i < oneshot_parents.size(); i++) {
+        ccg_to_oneshot[oneshot_parents[i]] = i;
+    }
+    ccg_to_local.resize(g_variable_domain.size());
+    fill(ccg_to_local.begin(), ccg_to_local.end(), -1);
+    for (int i = 0; i < ccg_parents.size(); i++) {
+        ccg_to_local[ccg_parents[i]] = i;
+    }
+    for (vector<ValueNode>::iterator node_it = nodes.begin(); node_it != nodes.end(); node_it++) {
+        for (vector<ValueTransition>::iterator trans_it = node_it->transitions.begin(); trans_it != node_it->transitions.end(); trans_it++) {
+            for (vector<ValueTransitionLabel>::iterator labels = trans_it->ccg_labels.begin(); labels != trans_it->ccg_labels.end(); labels++) {
+                for (vector<LocalAssignment>::iterator la = labels->precond.begin(); la != labels->precond.end(); la++) {
+                    int global_var = ccg_parents[la->local_var];
+                    if (ccg_to_oneshot[global_var] != -1) {
+                        labels->new_context.push_back(*la);
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+bool ValueTransitionLabel::is_applicable(const vector<LocalAssignment>& context) const {
+    for (int i = 0; i < context.size(); i++) {
+        for (int j = 0; j < precond.size(); j++) {
+            if (context[i].local_var == precond[j].local_var && context[i].value != precond[j].value) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 class hash_pair_vector {
@@ -246,17 +314,17 @@ void ValueTransition::simplify_labels(
     bool match = false;
     if(powerset_size <= 31) { // HACK! Don't spend too much time here...
       for(int mask = 0; mask < powerset_size; mask++) {
-	HashKey subset;
-	for(int i = 0; i < key.size(); i++)
-	  if(mask & (1 << i))
-	    subset.push_back(key[i]);
+        HashKey subset;
+        for(int i = 0; i < key.size(); i++)
+          if(mask & (1 << i))
+            subset.push_back(key[i]);
     HashMap::iterator found = label_index.find(subset);
-	if(found != label_index.end()) {
+        if(found != label_index.end()) {
       if (old_labels[label_no].op->get_cost() + old_labels[label_no].op->get_p_cost() >= old_labels[found->second].op->get_cost() + old_labels[found->second].op->get_p_cost()) {
         match = true;
         break;
       }
-	}
+        }
       }
     }
     if(!match)

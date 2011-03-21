@@ -119,11 +119,14 @@ class VarValueRenaming(object):
     def apply_to_variables(self, variables):
         variables.ranges = self.new_sizes
         new_axiom_layers = [None] * self.new_var_count
+        new_names = [None] * self.new_var_count
         for old_no, new_no in enumerate(self.new_var_nos):
             if new_no is not None:
                 new_axiom_layers[new_no] = variables.axiom_layers[old_no]
+                new_names[new_no] = variables.names[old_no]
         assert None not in new_axiom_layers
         variables.axiom_layers = new_axiom_layers
+        variables.names = new_names
 
     def apply_to_init(self, init):
         init_pairs = list(enumerate(init.values))
