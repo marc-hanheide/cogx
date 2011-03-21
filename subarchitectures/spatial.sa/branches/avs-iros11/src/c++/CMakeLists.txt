@@ -200,15 +200,23 @@ ENDIF(APPLE)
 
 endif(BUILD_AVS)
 
-add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+option(BUILD_SA_SPATIAL_RELATIONMANAGER "Build spatial.SA ObjectRelationManager component" NO)
+if(BUILD_SA_SPATIAL_RELATIONMANAGER)
+  include_directories(${COGX_ROOT}/tools/rocs/thirdparty/libdai/include)
+  add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp InferRelations.cpp) 
 
-add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+  set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
+  link_cast_component(${CAST_COMPONENT_NAME} dai)
+
+  link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
+  link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
+  link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+
+  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
+  link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 #link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank)
+  link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank)
+endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
 
 
     add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ViewPointGenerator.cpp) 

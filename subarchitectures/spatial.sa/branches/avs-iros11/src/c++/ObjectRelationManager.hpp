@@ -36,6 +36,7 @@ namespace Cure {
 template <class T>
 class LocalGridMap;
 }
+typedef std::pair<std::string, std::string> StrPair;
 
 namespace spatial {
 
@@ -84,8 +85,8 @@ protected:
   bool m_bRecognitionIssuedThisStop;
 
   //Pair order: (landmark, trajector)
-  std::map<std::pair<std::string, std::string>, double> m_objectOnnessValues;
-  std::map<std::pair<std::string, std::string>, double> m_objectInnessValues;
+  std::map<StrPair, double> m_objectOnnessValues;
+  std::map<StrPair, double> m_objectInnessValues;
 
   std::map<std::string, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
   std::map<std::string, std::string> m_containmentPropWMIDs; 
