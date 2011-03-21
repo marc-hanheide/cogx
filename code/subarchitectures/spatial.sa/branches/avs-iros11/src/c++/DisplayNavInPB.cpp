@@ -799,8 +799,6 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
 
 void DisplayNavInPB::createRobotFOV() 
 {
-return;
-
   if (!m_ShowRobotViewCone) return;
 
   std::string path = "peoplebot_base/ptu.pan/tilt/stereo_cam/cam_right";
