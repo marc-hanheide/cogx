@@ -799,9 +799,11 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
 
 void DisplayNavInPB::createRobotFOV() 
 {
+return;
+
   if (!m_ShowRobotViewCone) return;
 
-  std::string path = "peoplebot_base.ptu.pan.tilt.stereo_cam.cam_right";
+  std::string path = "peoplebot_base/ptu.pan/tilt/stereo_cam/cam_right";
 
   double color[3];
   color[0] = 0.9;
@@ -809,9 +811,9 @@ void DisplayNavInPB::createRobotFOV()
   color[2] = 0.9;
 
   if (m_PbRobotFile == "Robone.xml") {
-    path = "peoplebot_base.ptu.pan.tilt.stereo_cam";
+    path = "peoplebot_base/ptu/pan.tilt/stereo_cam";
   } else {
-    path = "model.camera";
+    path = "model/camera";
   }
 
   peekabot::GroupProxy cam;
@@ -821,7 +823,7 @@ void DisplayNavInPB::createRobotFOV()
   vp.pan = 0;
   vp.tilt = 0;
   vp.length = 1.0;
-  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.3, vp);
+  createFOV(cam, "cam_right/cone", m_FovH, m_FovV, color, 0.3, vp);
 }
 
 void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
