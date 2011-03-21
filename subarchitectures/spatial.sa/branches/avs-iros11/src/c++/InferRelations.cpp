@@ -4,10 +4,12 @@
 #include <dai/jtree.h>  // Include main libDAI header file
 #include <dai/bp.h>  // Include main libDAI header file
 #include <dai/decmap.h>  // Include main libDAI header file
+#include "RelationEvaluation.hpp"
   
 using namespace dai;
 using namespace std;
 
+namespace spatial {
 bool
 inferRelationsThreeObjects(vector<double> &ret, double BOnA, double AOnB, double BOnT,
     double AOnT, double BInA, double AInB, double BInT, double AInT)
@@ -232,3 +234,4 @@ inferRelationsThreeObjects(vector<double> &ret, double BOnA, double AOnB, double
 //    cout << fg.var(i) << ": " << decmapstate[i] << endl;
   return true;
 }
+};

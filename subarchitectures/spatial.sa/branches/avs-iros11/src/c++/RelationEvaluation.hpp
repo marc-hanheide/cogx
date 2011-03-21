@@ -182,6 +182,10 @@ class RelationEvaluator {
 void
 randomizeOrientation(Pose3 &pose);
 
+bool
+inferRelationsThreeObjects(std::vector<double> &ret, double BOnA, double AOnB, double BOnT,
+   double AOnT, double BInA, double AInB, double BInT, double AInT);
+
 void
 getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
 
