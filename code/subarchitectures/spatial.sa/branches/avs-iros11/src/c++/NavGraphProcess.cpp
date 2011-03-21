@@ -1447,7 +1447,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
                                        m_MinDoorWidth, 
                                        m_MaxDoorWidth)) {
 
-        debug("\n\nDoor is detected angR=%.2fdeg angL=%.2fdeg\n\n",
+        log("Door is detected angR=%.2fdeg angL=%.2fdeg",
             m_DoorDetector.m_AngleR*180/M_PI,
             m_DoorDetector.m_AngleL*180/M_PI);
 
@@ -1466,6 +1466,10 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
         double y = 0.5 * (yR + yL);
         double dir = atan2(yR - yL, xR - xL);
 
+        log("Estimated door pose to x=%.2f y=%.2f theta=%fdeg lpW.x=%.2f lpW.y=%.2f lpW.theta=%.2fdeg rR=%.2f rL=%.2f",
+            x,y,dir*180/M_PI,lpW.getX(),lpW.getY(),lpW.getTheta()*180.0/M_PI,m_DoorDetector.m_RangeR,m_DoorDetector.m_RangeL);
+
+
         m_Mutex.lock();
         //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
 	unsigned long lastsize = m_cureNavGraph.m_Nodes.size();
@@ -1476,7 +1480,8 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
           checkForNodeChanges();
 	} else {
           addFreeNode(m_cureNavGraph.m_Nodes.back()->getId(), 
-                      lpW.getX(), lpW.getY(), 0.0, cp.getTheta()-M_PI_2,
+                      //lpW.getX(), lpW.getY(), 0.0, cp.getTheta()-M_PI_2,
+		      x, y, 0.0, dir,
                       m_cureNavGraph.m_Nodes.back()->getAreaId(), 
                       "Area", 0,
                       1, 
