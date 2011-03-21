@@ -55,6 +55,7 @@ Operator::Operator(istream &in, bool axiom) {
   } else {
     name = "<axiom>";
     cost = 0;
+    probability = 1.0;
     check_magic(in, "begin_rule");
     pre_post.push_back(PrePost(in));
     check_magic(in, "end_rule");

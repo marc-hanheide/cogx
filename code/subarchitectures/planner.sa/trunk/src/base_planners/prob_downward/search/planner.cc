@@ -129,6 +129,8 @@ int main(int argc, const char **argv) {
                 additive_preferred_operators = true;
             } else if (*c == 'g') {
                 goal_count_heuristic = true;
+            } else if (*c == 'G') {
+                g_debug = true;
             } else if (*c == 'b') {
                 blind_search_heuristic = true;
             } else if (*c == 'u') {

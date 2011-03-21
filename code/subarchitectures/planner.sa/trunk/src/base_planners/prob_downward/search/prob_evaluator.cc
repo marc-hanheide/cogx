@@ -1,5 +1,6 @@
 #include "prob_evaluator.h"
 #include "search_space.h"
+#include "operator.h"
 
 #include <limits>
 
@@ -21,6 +22,10 @@ void ProbEvaluator::evaluate(EvalInfo const* info, bool preferred) {
     h_eval->evaluate(info, preferred);
     // value = g_eval->get_value() + g_multiplier *  info->get_p() * h_eval->get_value();
     value = g_eval->get_value() + g_multiplier * h_eval->get_value();
+    // if (info->op)
+    //     cout << "f: " << value <<  ", g: " << info->g << " (" << info->c << ", " << info->p << ")  h:" << h_eval->get_value() << "  by " << info->op->get_name() << endl;
+    // else
+    //     cout << "f: " << value <<  ", g: " << info->g << " (" << info->c << ", " << info->p << ")  h:" << h_eval->get_value() << endl;
     // cout << g_eval->get_value() <<" + "<<g_multiplier<<" * "<<h_eval->get_value() << " = " <<value << endl;
     // if (info->get_p() <= 0.01) {
     //     // cerr << "dead"<<endl;

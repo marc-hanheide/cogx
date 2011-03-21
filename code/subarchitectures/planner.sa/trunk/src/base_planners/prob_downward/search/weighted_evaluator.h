@@ -6,7 +6,7 @@
 class WeightedEvaluator : public ScalarEvaluator {
 private:
     ScalarEvaluator* evaluator;
-    int w;
+    double w;
     int value;
 
 public:

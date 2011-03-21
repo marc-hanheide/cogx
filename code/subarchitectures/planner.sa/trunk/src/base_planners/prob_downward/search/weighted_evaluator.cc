@@ -9,7 +9,7 @@ WeightedEvaluator::~WeightedEvaluator(){
 
 void WeightedEvaluator::evaluate(EvalInfo const* info, bool preferred) {
     evaluator->evaluate(info, preferred);
-    value = w * evaluator->get_value();
+    value = (1.0 + w/100.0) * evaluator->get_value();
     // TODO: catch overflow?
 }
 

@@ -129,6 +129,9 @@ void read_everything(istream &in) {
   DomainTransitionGraph::read_all(in);
   g_causal_graph = new CausalGraph(in);
   g_cache = new Cache;
+  for (int i = 0; i < g_transition_graphs.size(); i++) {
+      //g_transition_graphs[i]->calc_oneshot_parents();
+  }
 }
 
 
@@ -174,6 +177,8 @@ int g_abstraction_nr = 1;
 int g_compose_strategy = COMPOSE_LINEAR_CG_GOAL_LEVEL;
 int g_collapse_strategy = COLLAPSE_HIGH_F_LOW_H;
 bool g_merge_and_shrink_bound_is_for_product = true;
+
+bool g_debug = false;
 
 int g_reward = 1000;
 int g_multiplier = 100;

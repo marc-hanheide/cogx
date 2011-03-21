@@ -4,7 +4,9 @@
 #include <vector>
 #include <set>
 
+#include "globals.h"
 #include "heuristic.h"
+#include "domain_transition_graph.h"
 
 class ValueTransitionLabel;
 class State;
@@ -29,11 +31,14 @@ class LocalTransition {
     int target_cost;
     int target_action_costs;
     double target_prob;
+    double min_prob;
     int unreached_conditions;
 
     LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
                     const ValueTransitionLabel *label_, int action_cost_,
                     double action_prob_);
+
+    // inline void get_context(std::vector<std::pair<int, int> >& result) const;
 
     void on_source_expanded(const State &state);
     void on_condition_reached(int cost, double prob);
@@ -65,6 +70,8 @@ class LocalProblemNode {
 
     bool expanded;
     std::vector<short> children_state;
+    int var;
+    int value;
 
     LocalTransition *reached_by;
     // Before a node is expanded, reached_by is the "current best"
@@ -80,13 +87,25 @@ class LocalProblemNode {
     LocalProblemNode(LocalProblem *owner, int children_state_size);
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
-    void mark_helpful_transitions(const State &state);
-    void compute_probability(const State &state, std::set<const Operator *>& ops);
+    void mark_helpful_transitions(const State &state, int level=0);
+    double compute_probability(const State &state, std::set<const Operator *>& ops);
 };
 
+// class LocalProblemTable {
+//     friend class CyclicCGHeuristic;
+//     int var;
+//     int gvar;
+//     vector<LocalProblemTable> children;
+//     LocalProblem* problem;
+// public:
+//     LocalProblemTable() : var(-1), problem(0) {};
+//     void add(LocalProblem* _problem, int var_no = 0);
+//     LocalProblem* get(const std::vector<int>& context, int var_no = 0);
+// };
 
 class LocalProblem {
     friend class CyclicCGHeuristic;
+    friend class LocalProblemTable;
     friend class LocalProblemNode;
     friend class LocalTransition;
     enum {QUITE_A_LOT = 1000000};
@@ -96,13 +115,20 @@ class LocalProblem {
     std::vector<LocalProblemNode> nodes;
 
     std::vector<int> *causal_graph_parents;
+    // std::vector<int> *poss_add_context;
+    // std::vector<LocalAssignment> add_context;
+    // std::vector<int> context_values;
 
+    // void build_nodes_for_variable(int var_no, const std::vector<std::pair<int, int> >& context);
     void build_nodes_for_variable(int var_no);
     void build_nodes_for_goal();
     inline bool is_initialized() const;
 public:
     LocalProblem(int var_no = -1);
+    LocalProblem(int var_no, const std::vector<std::pair<int, int> >& context );
     void initialize(int base_priority, int start_value, const State &state);
+
+    static void context_key(int var_no, const std::vector<std::pair<int, int> >& context, std::vector<int>& result);
 };
 
 
@@ -113,6 +139,7 @@ class CyclicCGHeuristic : public Heuristic {
 
     std::vector<LocalProblem *> local_problems;
     std::vector<std::vector<LocalProblem *> > local_problem_index;
+    /* std::vector<std::vector<LocalProblemTable *> > local_problem_index; */
     LocalProblem *goal_problem;
     LocalProblemNode *goal_node;
 
@@ -122,6 +149,7 @@ class CyclicCGHeuristic : public Heuristic {
     int compute_costs(const State &state);
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
+    /* inline LocalProblem *get_local_problem(int var_no, int value, const std::vector<std::pair<int, int> >& context); */
     inline LocalProblem *get_local_problem(int var_no, int value);
 protected:
     virtual void initialize();
@@ -132,6 +160,24 @@ public:
     virtual bool dead_ends_are_reliable() {return false;}
 };
 
+
+// inline void LocalTransition::get_context(std::vector<std::pair<int, int> >& result) const {
+//     int *parent_vars = &*source->owner->causal_graph_parents->begin();
+
+//     for (int i = 0; i < label->new_context.size(); i++) {
+//         int global_var_no = parent_vars[label->new_context[i].local_var];
+//         result.push_back(pair<int, int>(global_var_no, label->new_context[i].value));
+//         cout << "new context: " << label->new_context[i].local_var << "/"<< g_variable_name[global_var_no] << " = " << label->new_context[i].value << endl;
+//     }
+//     vector<LocalAssignment>::const_iterator c_it = source->owner->add_context.begin();
+//     vector<LocalAssignment>::const_iterator c_end = source->owner->add_context.end();
+//     for (; c_it != c_end; c_it++) {
+//         int global_var_no = parent_vars[c_it->local_var];
+//         result.push_back(pair<int, int>(global_var_no, c_it->value));
+//         cout << "old context: " << c_it->local_var << "/" << g_variable_name[global_var_no] << " = " << c_it->value << endl;
+//     }
+
+// }
 
 inline int LocalProblemNode::priority() const {
     return cost + owner->base_priority;
@@ -150,5 +196,25 @@ inline LocalProblem *CyclicCGHeuristic::get_local_problem(int var_no, int value)
     }
     return result;
 }
+
+// inline LocalProblem *CyclicCGHeuristic::get_local_problem(int var_no, int value, const std::vector<std::pair<int, int> >& context) {
+//     LocalProblemTable *table = local_problem_index[var_no][value];
+//     if (!table) {
+//         table = new LocalProblemTable();
+//         local_problem_index[var_no][value] = table;
+//     }
+    
+//     std::vector<int> key;
+//     LocalProblem::context_key(var_no, context, key);
+//     LocalProblem *result = table->get(key);
+//     if(!result) {
+//         result = new LocalProblem(var_no, context);
+//         table->add(result);
+//         local_problems.push_back(result);
+//     }
+//     return result;
+// }
+
+
 
 #endif

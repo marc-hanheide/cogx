@@ -37,11 +37,13 @@ struct ValueTransitionLabel {
   Operator *op;
   vector<LocalAssignment> precond;
   vector<LocalAssignment> effect;
+  vector<LocalAssignment> new_context;
 
   ValueTransitionLabel(Operator *theOp, const vector<LocalAssignment> &precond_,
                        const vector<LocalAssignment> &effect_)
       : op(theOp), precond(precond_), effect(effect_) {}
   void dump() const;
+    bool is_applicable(const vector<LocalAssignment>& context) const;
 };
 
 struct ValueTransition {
@@ -87,6 +89,7 @@ class DomainTransitionGraph {
 
   int var;
   bool is_axiom;
+  bool is_oneshot;
   vector<ValueNode> nodes;
 
   int last_helpful_transition_extraction_time; // cg heuristic; "dirty bit"
@@ -95,7 +98,10 @@ class DomainTransitionGraph {
   // used for mapping variables in conditions to their global index 
   // (only needed for initializing child_state for the start node?)
   vector<int> ccg_parents;
+  vector<int> ccg_to_local;
+  vector<int> ccg_to_oneshot;
   // Same as local_to_global_child, but for cyclic CG heuristic.
+  vector<int> oneshot_parents;
 
   DomainTransitionGraph(const DomainTransitionGraph &other); // copying forbidden
 public:
@@ -106,6 +112,8 @@ public:
 
   void get_successors(int value, vector<int> &result) const;
   // Build vector of values v' such that there is a transition from value to v'.
+  void calc_connectivity();
+  void calc_oneshot_parents();
 
   static void read_all(istream &in);
 };

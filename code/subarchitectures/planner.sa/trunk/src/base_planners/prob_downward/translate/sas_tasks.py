@@ -21,7 +21,12 @@ class SASTask:
       axiom.output(stream)
 
 class SASVariables:
-  def __init__(self, ranges, axiom_layers):
+  def __init__(self, ranges, axiom_layers, names = None):
+    if not names:
+      self.names = ["var%d" % i for i, _ in enumerate(ranges)]
+    else:
+      self.names = names
+      
     self.ranges = ranges
     self.axiom_layers = axiom_layers
   def dump(self):
@@ -34,8 +39,8 @@ class SASVariables:
   def output(self, stream):
     print >> stream, "begin_variables"
     print >> stream, len(self.ranges)
-    for var, (rang, axiom_layer) in enumerate(zip(self.ranges, self.axiom_layers)):
-      print >> stream, "var%d %d %d" % (var, rang, axiom_layer)
+    for rang, axiom_layer, name in zip(self.ranges, self.axiom_layers, self.names):
+      print >> stream, "%s %d %d" % (name, rang, axiom_layer)
     print >> stream, "end_variables"
 
 class SASInit:
