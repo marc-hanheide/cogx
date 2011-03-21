@@ -1625,15 +1625,16 @@ generateNewObjectModel(const std::string &label) {
     HollowBoxObject *newBoxObject = new HollowBoxObject;
     newBoxObject->type = OBJECT_HOLLOW_BOX;
     newBoxObject->thickness = 0.051;
+    newBoxObject->sideOpen = 5; //Positive z
     if (label == "bookcase") {
       newBoxObject->radius1 = 0.155;
       newBoxObject->radius2 = 0.40;
       newBoxObject->radius3 = 0.75;
     }
     else if (label == "box") {
-      newBoxObject->radius1 = 0.13;
-      newBoxObject->radius2 = 0.27;
-      newBoxObject->radius3 = 0.165;
+      newBoxObject->radius1 = 0.27;
+      newBoxObject->radius2 = 0.165;
+      newBoxObject->radius3 = 0.135;
     }
     else {
       newBoxObject->radius1 = 0.1;
