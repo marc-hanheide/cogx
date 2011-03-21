@@ -27,12 +27,10 @@
 #include "SpatialGridMap.hh"
 #include "PBVisualization.hh"
 #include "GridMapData.hh"
+#include <vector>
 #include <sstream>
 
 
-bool
-inferRelationsThreeObjects(vector<double> &ret, double BOnA, double AOnB, double BOnT,
-    double AOnT, double BInA, double AInB, double BInT, double AInT);
 
 #define USE_KDE
 
