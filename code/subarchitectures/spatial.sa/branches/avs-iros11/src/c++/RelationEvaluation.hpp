@@ -46,6 +46,7 @@ struct SphereObject : public Object {
 //Box with the top (Z+) side open
 struct HollowBoxObject : public BoxObject {
   double thickness;
+  int sideOpen;
 };
 
 enum WitnessType {WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE};

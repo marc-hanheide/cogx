@@ -58,7 +58,7 @@ ObjectRelationManager::ObjectRelationManager() : m_sampler(&m_evaluator)
   m_bRecognitionIssuedThisStop = false;
   m_maxObjectCounter = 0;
   m_standingStillThreshold = 0.2;
-  m_recognitionTimeThreshold = DBL_MAX;
+  m_recognitionTimeThreshold = 5.0;
   m_trackerTimeThreshold = 1.0;
   m_timeSinceLastMoved = 0.0;
 }
@@ -94,12 +94,6 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_bNoPTZ = true;
   }
 
-  m_bNoVision = false;
-  it = _config.find("--no-vision");
-  if (it != _config.end()) {
-    m_bNoVision = true;
-  }
-
   m_planeModelFilename = "";
   it = _config.find("--plane-model-file");
   if (it != _config.end()) {
@@ -122,13 +116,15 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
   }
 
   istringstream labeliss;
+  m_bDetectObjects = false;
   if((it = _config.find("--look-for-objects")) != _config.end()){
-		labeliss.str(it->second);
-	std::string label, plystr, siftstr;
-	
-	while(labeliss >> label){
-	  m_lookForObjects.insert(label);
-	}
+    m_bDetectObjects = true;
+    labeliss.str(it->second);
+    std::string label, plystr, siftstr;
+
+    while(labeliss >> label){
+      m_lookForObjects.insert(label);
+    }
   }
 
   m_RetryDelay = 10;
@@ -284,7 +280,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   double deltaT = lastRobotPose->time.s +
     lastRobotPose->time.us*0.000001 - oldTime;
   double momVel = deltaT > 0 ? distMoved/deltaT : 0.0;
-  //  log("momVel = %f, deltaT = %f", momVel, deltaT);
+//  log("momVel = %f, deltaT = %f", momVel, deltaT);
 
   if (momVel > m_standingStillThreshold) {
     m_timeSinceLastMoved = 0.0;
@@ -299,7 +295,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   else if (deltaT > 0.0) {
     double diff = lastRobotPose->time.s + lastRobotPose->time.us*0.000001 - oldTime;
     m_timeSinceLastMoved += diff;
-    //    log("time %f %f %f", diff, oldTime, m_timeSinceLastMoved);
+//    log("time %f %f %f", diff, oldTime, m_timeSinceLastMoved);
   }
 }
 
@@ -461,7 +457,7 @@ void ObjectRelationManager::runComponent()
     // Dispatch recognition commands if the robot has been standing still
     // long enough
 
-    if (!m_bNoVision) {
+    if (!m_bDetectObjects) {
       lockComponent();
 
       if (!m_bRecognitionIssuedThisStop &&
@@ -483,14 +479,20 @@ void ObjectRelationManager::runComponent()
 void
 ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 {
-  log("newObject called");
+  debug("newObject called");
   try {
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
       string obsLabel = observedObject->identLabels[0];
 
+      debug("Confidence %f", observedObject->detectionConfidence);
+      if(observedObject->detectionConfidence == 0) {
+	return;
+      }
+
+
    // if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-      log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
+      debug("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
 	  observedObject->pose.pos.x,
 	  observedObject->pose.pos.y,
 	  observedObject->pose.pos.z);
@@ -501,26 +503,36 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     	  return;
       }
       Pose3 pose = observedObject->pose;
+
+      if (pose.pos.x > 100 || pose.pos.x < -100 ||
+pose.pos.y > 100 || pose.pos.y < -100 ||
+pose.pos.z > 100 || pose.pos.z < -100) {
+	log("Warning! Junk coordinates in visual object %s! (%f, %f, %f); Ignoring", 
+	    observedObject->identLabels[0].c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
+	return;
+      }
       //Get robot pose
-      Pose3 robotTransform;
-      if (lastRobotPose != 0) {
-	fromRotZ(robotTransform.rot, lastRobotPose->theta);
+//      Pose3 robotTransform;
+//      if (lastRobotPose != 0) {
+//	fromRotZ(robotTransform.rot, lastRobotPose->theta);
+//
+//	robotTransform.pos.x = lastRobotPose->x;
+//	robotTransform.pos.y = lastRobotPose->y;
+//      }
+//      else {
+//	fromRotZ(robotTransform.rot, 0);
+//	robotTransform.pos.x = 0.0;
+//	robotTransform.pos.y = 0.0;
+//      }
+//      transform(robotTransform, pose, pose);
+      Pose3 cameraToWorldTransform = getCameraToWorldTransform();
+      transform(cameraToWorldTransform, pose, pose);
 
-	robotTransform.pos.x = lastRobotPose->x;
-	robotTransform.pos.y = lastRobotPose->y;
-      }
-      else {
-	fromRotZ(robotTransform.rot, 0);
-	robotTransform.pos.x = 0.0;
-	robotTransform.pos.y = 0.0;
-      }
-      transform(robotTransform, pose, pose);
-
-      //FIXME: ARTag objects already get their coords in the world frame
-      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
-	  || obsLabel == "shelves" || obsLabel == "table"){
-	pose = observedObject->pose;
-      }
+//      //FIXME: ARTag objects already get their coords in the world frame
+//      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
+//	  || obsLabel == "shelves" || obsLabel == "table"){
+//	pose = observedObject->pose;
+//      }
 
 
       // For now, assume each label represents a unique object
@@ -548,13 +560,13 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
       spatial::Object *obsObject = m_objectModels[obsLabel];
 
-          log("2");
+//          log("2");
 
       double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 1));
       diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
-	      log("3");
+//	      log("3");
 //	if (obsObject->type == OBJECT_PLANE ||
 //	    //FIXME
 //	    obsLabel == "table" || 
@@ -594,7 +606,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	    return;
 	  }
 	}
-	    log("4");
+//	    log("4");
 
 	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
 	  log("5");
@@ -634,11 +646,9 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//    log("5");
 
 	// Check degree of onness
-/* HACK HACK Marc (15/01/2011) disabled for IJCAI eval and Dora yr2 stable
 	recomputeOnnessForObject(obsLabel);
 	recomputeInnessForObject(obsLabel);
 
-*/
 	if (m_placeInterface != 0) {
 	  // Check degree of containment in Places
 	  FrontierInterface::PlaceMembership membership = 
@@ -805,7 +815,7 @@ ObjectRelationManager::connectPeekabot()
 Pose3 ObjectRelationManager::getCameraToWorldTransform()
 {
   //Get camera ptz from PTZServer
-  Pose3 cameraRotation;
+  Pose3 cameraRotation; //Transform from unrotated to rotated camera
   if (m_ptzInterface != 0) {
     ptz::PTZReading reading = m_ptzInterface->getPose();
 
@@ -813,18 +823,33 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
     fromRotZ(pan, reading.pose.pan);
 
     Matrix33 tilt;
-    fromRotX(tilt, -reading.pose.tilt);
+    fromRotY(tilt, -reading.pose.tilt);
 
     cameraRotation.rot = pan*tilt;
   }
+  cameraRotation.pos = vector3(0,0,0);
+
+  //Transform from normal reasonable coordinates to weird visual coordinates
+  Pose3 visualInReal; 
 
   //Additional transform of ptz base frame
-  Matrix33 tmp;
-  fromRotZ(tmp, -M_PI/2);
-  cameraRotation.rot = cameraRotation.rot * tmp;
+//  Matrix33 tmp;
+//  fromRotZ(tmp, -M_PI/2); //Rotate around Z, making X into -Y and Y into X
+//
+//  Matrix33 tmp2;
+//  fromRotY(tmp2, M_PI/2); //Rotate around (old) Y, making Z into X and
+//			    //Y into -Z
+  visualInReal.rot.m00 = 0;
+  visualInReal.rot.m01 = 0;
+  visualInReal.rot.m02 = 1;
+  visualInReal.rot.m10 = -1;
+  visualInReal.rot.m11 = 0;
+  visualInReal.rot.m12 = 0;
+  visualInReal.rot.m20 = 0;
+  visualInReal.rot.m21 = -1;
+  visualInReal.rot.m22 = 0;
+  visualInReal.pos = vector3(0,0,0);
 
-  fromRotY(tmp, -M_PI/2);
-  cameraRotation.rot = cameraRotation.rot * tmp;
 
   //Get robot pose
   Pose3 robotTransform;
@@ -833,10 +858,13 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
 
     robotTransform.pos.x = lastRobotPose->x;
     robotTransform.pos.y = lastRobotPose->y;
+    robotTransform.pos.z = 0;
   }
+  Pose3 visualInCamera;
+  transform(cameraRotation, visualInReal, visualInCamera);
 
   Pose3 cameraOnRobot;
-  transform(m_CameraPoseR, cameraRotation, cameraOnRobot);
+  transform(m_CameraPoseR, visualInCamera, cameraOnRobot);
 
   Pose3 cameraInWorld;
   transform(robotTransform, cameraOnRobot, cameraInWorld);
@@ -903,6 +931,8 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
 
       log("Object %s on object %s is %f", label.c_str(), 
 	  it->second->label.c_str(), onness);
+      pair<string, string> pairName(supportObjectLabel, label);
+      m_objectOnnessValues[pairName] = onness;
     }
   }
 }
@@ -942,6 +972,8 @@ ObjectRelationManager::recomputeInnessForObject(const string &label)
 
       log("Object %s in object %s is %f", label.c_str(),
 	  it->second->label.c_str(), inness);
+      pair<string, string> pairName(containerObjectLabel, label);
+      m_objectInnessValues[pairName] = inness;
     }
   }
 }
@@ -1102,7 +1134,7 @@ ObjectRelationManager::addRecognizer3DCommand(VisionData::Recognizer3DCommandTyp
 void 
 ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string label){
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-  log("addTrackerCommand");
+  log("addTrackerCommand: %s", label.c_str());
   track_cmd->cmd = cmd;
   if (m_objects.find(label) == m_objects.end()) {
     log("Error! Can't issue tracking command; object unknown!");
@@ -1113,7 +1145,7 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
     log ("Error! Visual object WM ID was unknown!");
     return;
   }
-  track_cmd->visualObjectID = m_visualObjectIDs[label];;
+  track_cmd->visualObjectID = m_visualObjectIDs[label];
 
   addToWorkingMemory(newDataID(), "vision.sa", track_cmd);
 }
@@ -1416,487 +1448,4 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
   catch (DoesNotExistOnWMException) {
     log("Error! Height request disappeared from WM!");
   }
-}
-
-struct Precursor 
-{
-  int object; // -1 means there isn't one
-  int state; // 0 means on, 1 means in
-};
-
-bool
-updateHierarchy(Precursor precursors[], int current)
-{
-  int &currentPrecursor = precursors[current].object;
-  if (currentPrecursor == -1) {
-    return true;
-  }
-
-  bool precursorDone = updateHierarchy(precursors, currentPrecursor);
-  if (precursorDone) {
-    precursors[current].state++;
-    if (precursors[current].state == 2) {
-      currentPrecursor--;
-      precursors[current].state = 0;
-    }
-
-    precursors[currentPrecursor].object = currentPrecursor - 1;
-    precursors[currentPrecursor].state = 0;
-  }
-  return false;
-}
-
-// Enumerate all non-forbidden relations
-// Store them in an array each
-// each contains a small struct describing the involved objects
-// and 
-
-vector<string>
-ObjectRelationManager::computeMarginalDistribution(string objName)
-{
-  unsigned int object;
-  for (object = 0; object < hierarchyObjects.size(); object++) {
-    if (hierarchyObjects[object] == objName)
-      break;
-  }
-  if (object == hierarchyObjects.size()) {
-    log("Error! Asked to compute distributions for unknown object!");
-  }
-
-  vector<string> ret;
-  vector<double> probs;
-  // Get all relational chains pertaining to this object,
-
-  int roomTypeVal[nRooms];
-  int objectInRoomVal[nObjects];
-  int objectInObjectVal[nObjects*nObjects];
-  int objectOnObjectVal[nObjects*nObjects];
-  int objectDirectlyOnObjectVal[nObjects];
-  if (nRooms*nRoomCategories != (int)roomCategoryDefault.size()) {
-    log ("Error! roomCategoryDefault inconsistency!");
-  }
-  if (nObjects*nRoomCategories != (int)objectInRoomDefault.size()) {
-    log ("Error! objectInRoomDefault inconsistency!");
-  }
-  if (nObjects*nObjects != (int)objectInObjectDefault.size()) {
-    log ("Error! objectInObjectDefault inconsistency!");
-  }
-  if (nObjects*nObjects != (int)objectOnObjectDefault.size()) {
-    log ("Error! objectOnObjectDefault inconsistency!");
-  }
-
-  for (int i = 0; i < nRooms; i++) {
-    roomTypeVal[i] = 0;
-  }
-  for (int j = 0; j < nObjects; j++) {
-    objectInRoomVal[j] = 0;
-  }
-
-  for (int i = 0; i < nObjects; i++) {
-    for (int j = 0; j < nObjects; j++) {
-      objectInObjectVal[i * nObjects + j] = 0;
-      objectOnObjectVal[i * nObjects + j] = 0;
-    }
-    objectDirectlyOnObjectVal[i] = -1;
-  }
-
-  double totalOverallMass = 0.0;
-  
-  // Loop over rooms
-  // Loop over all objects higher in the ordering than the query object.
-  // Each object can appear in the chain as "ON_d" or "IN", or not at all.
-
-  for (int fixedRoom = 0; fixedRoom < nRooms; fixedRoom++) {
-
-
-    // Fix all object relations involving query object as trajector, AND
-    // all relations involving those landmarks as trajectors, recursively.
-
-    Precursor precursors[nObjects];
-    for (int id = object; id >= 0; id--) {
-      precursors[id].object = id-1;
-      precursors[id].state = 0;
-    }
-
-    // Loop over possible immediate precursors to query object (including "no precursors")
-    while (true) {
-      ostringstream s("");
-      s << hierarchyObjects[object];
-      int i = object;
-      while (precursors[i].object != -1) {
-	s << (precursors[i].state == 0 ? " on " : " in ") << 
-	  hierarchyObjects[precursors[i].object];
-	i = precursors[i].object;
-      }
-      s << " in room " << fixedRoom << ": ";
-      log("%s", s.str().c_str());
-      string tmp = s.str();
-
-      int combinations = 0;
-      double totalProbMass = 0.0;
-
-      bool fixedRoomTypeVals[nRooms]; // Not currently used
-      bool fixedObjectInRoomVals[nObjects];
-      bool fixedObjectInObjectVals[nObjects*nObjects];
-      bool fixedObjectOnObjectVals[nObjects*nObjects];
-      bool fixedObjectDirectlyOnObjectVals[nObjects];
-      for (int j = 0; j < nObjects; j++) {
-	fixedObjectInRoomVals[j] = false;
-	objectInRoomVal[j] = 0;
-	fixedObjectDirectlyOnObjectVals[j] = false;
-	objectDirectlyOnObjectVal[j] = -1;
-	for (int k = 0; k < nObjects; k++) {
-	  fixedObjectInObjectVals[j * nObjects + k] = false;
-	  fixedObjectOnObjectVals[j * nObjects + k] = false;
-	  objectOnObjectVal[j * nObjects + k] = 0;
-	  objectInObjectVal[j * nObjects + k] = 0;
-	}
-      }
-      for (int j = 0; j < nRooms; j++) {
-	fixedRoomTypeVals[j] = false;
-      }
-
-      bool skipThis = false;
-
-      // Fix query object to be in fixedRoom
-      fixedObjectInRoomVals[object] = true;
-      objectInRoomVal[object] = fixedRoom;
-      if (objectInRoomDefault[object * nRoomCategories + roomTypeVal[fixedRoom]] == 0.0)
-	skipThis = true;
-
-      i = object;
-      while (precursors[i].object != -1) {
-	fixedObjectInObjectVals[i * nObjects + precursors[i].object] = true;
-	fixedObjectDirectlyOnObjectVals[i] = true;
-	if (precursors[i].state == 0) {
-	  fixedObjectOnObjectVals[i * nObjects + precursors[i].object] = true;
-	  objectDirectlyOnObjectVal[i] = precursors[i].object;
-	  objectOnObjectVal[i * nObjects + precursors[i].object] = 1;
-	  objectInObjectVal[i * nObjects + precursors[i].object] = 0;
-	  if (objectOnObjectDefault[i * nObjects + precursors[i].object] == 0.0 ||
-objectInObjectDefault[i * nObjects + precursors[i].object] == 1.0) {
-	    skipThis = true;
-	  }
-	}
-	else {
-	  objectDirectlyOnObjectVal[i] = -1;
-	  objectInObjectVal[i * nObjects + precursors[i].object] = 1;
-	  if (objectInObjectDefault[i * nObjects + precursors[i].object] == 0.0) {
-	    skipThis = true;
-	  }
-	}
-	i = precursors[i].object;
-      }
-
-      if (!skipThis) {
-	//      // Fixes all relations involving the unrelated trajector to 0
-	//      for (int j = i-1; j >= 0; j--) {
-	//	fixedObjectInObjectVals[i * nObjects + j] = true;
-	//	fixedObjectOnObjectVals[i * nObjects + j] = true;
-	//      }
-
-
-	while (true) {
-	  bool skipThis = false;
-
-	  double prob = probabilityOfConfig(roomTypeVal, objectInRoomVal,
-	      objectInObjectVal, objectOnObjectVal, objectDirectlyOnObjectVal);
-	  if (prob > 0.0)
-	    combinations++;
-
-	  totalProbMass += prob;
-
-	  int index = 0;
-
-	  while (index < nRooms) {
-	    if (fixedRoomTypeVals[index]) {
-	      index++;
-	    }
-	    else {
-	      roomTypeVal[index]++;
-	      if (roomTypeVal[index] == nRoomCategories) {
-		roomTypeVal[index] = 0;
-		index++;
-	      }
-	      else {
-		break;
-	      }
-	    }
-	  }
-
-	  if (index < nRooms) 
-	    continue;
-
-	  index = 0;
-	  int index2 = 1;
-	  while (index < nObjects) {
-	    if (index2 >= nObjects) {
-	      index++;
-	      index2 = index+1;
-	    }
-	    else {
-	      if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		  fixedObjectInObjectVals[index2 * nObjects + index]) {
-		index2++;
-	      }
-	      else {
-		objectInObjectVal[index2 * nObjects + index]++;
-
-		if (objectInObjectVal[index2 * nObjects + index] == 2) {
-		  objectInObjectVal[index2 * nObjects + index] = 0;
-		  index2++;
-		}
-		else {
-		  break;
-		}
-	      }
-	    }
-	  }
-
-
-	  if (index < nObjects) 
-	    continue;
-
-//	  	for (int i = 0; i < nRooms; i++) 
-//	  	  cout <<roomTypeVal[i];
-//	  	cout << " ";
-//	  	for (int i = 0; i < nObjects; i++) 
-//	  	  cout <<objectInRoomVal[i];
-//	  	cout << " ";
-//	  	for (int i = 0; i < nObjects*nObjects; i++) 
-//	  	  cout <<objectInObjectVal[i];
-//	  	cout << " ";
-//	  	for (int i = 0; i < nObjects*nObjects; i++) 
-//	  	  cout <<objectOnObjectVal[i];
-//	  	cout << " ";
-//	  	for (int i = 0; i < nObjects; i++) 
-//	  	  cout <<objectDirectlyOnObjectVal[i];
-//	  	cout << "\n";
-
-	  index = 0;
-	  index2 = 1;
-	  while (index < nObjects) {
-	    if (index2 >= nObjects) {
-	      index++;
-	      index2 = index+1;
-	    }
-	    else {
-	      if (objectInRoomVal[index] != objectInRoomVal[index2] ||
-		  fixedObjectOnObjectVals[index2 * nObjects + index]) {
-		index2++;
-	      }
-	      else {
-		objectOnObjectVal[index2 * nObjects + index]++;
-
-		if (objectOnObjectVal[index2 * nObjects + index] == 2) {
-		  objectOnObjectVal[index2 * nObjects + index] = 0;
-		  index2++;
-		}
-		else {
-		  break;
-		}
-	      }
-	    }
-	  }
-
-	  if (index < nObjects) 
-	    continue;
-
-	  index = 0;
-	  while (index < nObjects) {
-	    if (fixedObjectInRoomVals[index]) {
-	      index++;
-	    }
-	    else {
-	      objectInRoomVal[index]++;
-
-	      if (objectInRoomVal[index] == nRooms) {
-		objectInRoomVal[index] = 0;
-		index++;
-	      }
-	      else {
-		break;
-	      }
-	    }
-	  }
-
-	  if (index < nObjects) 
-	    continue;
-
-	  index = 0;
-	  while (index < nObjects) {
-	    if (fixedObjectDirectlyOnObjectVals[index]) {
-	      index++;
-	    }
-	    else {
-	      // Skip past values of objectDirectlyOnObjectVal
-	      // that violate objectOnObjectVal
-	      do {
-		objectDirectlyOnObjectVal[index]++;
-		if (objectDirectlyOnObjectVal[index] >= index)
-		  break;
-	      } while (objectOnObjectVal[index * nObjects + 
-		  objectDirectlyOnObjectVal[index]] == 0 ||
-		  objectOnObjectDefault[index * nObjects +
-		  objectDirectlyOnObjectVal[index]] == 0);
-
-	      //	      if (objectDirectlyOnObjectVal[index] == nObjects) 
-	      if (objectDirectlyOnObjectVal[index] >= index) 
-	      { 
-		// We don't need to go farther; no object is allowed
-		//to be on an object with a larger id than itself
-		objectDirectlyOnObjectVal[index] = -1;
-		index++;
-	      }
-	      else {
-		break;
-	      }
-	    }
-	  }
-
-	  if (index == nObjects) 
-	    break;
-	};
-
-	ret.push_back(s.str());
-	probs.push_back(totalProbMass);
-	totalOverallMass += totalProbMass;
-
-	s << totalProbMass << ", " << combinations << " combinations\n";
-	//      log("%s", s.str().c_str());
-      }
-      else {
-	log("Skipped");
-      }
-
-      // Recursively find the precursor that should be incremented
-      bool done = updateHierarchy(precursors, object);
-      if (done)  {
-	break;
-      }
-    }
-  }
-
-  for (unsigned int i = 0; i < ret.size(); i++) {
-    probs[i] /= totalOverallMass;
-    ostringstream s;
-    s << ret[i] << probs[i];
-    ret[i] = s.str();
-  }
-
-  return ret;
-}
-
-double 
-ObjectRelationManager::probabilityOfConfig(int *roomTypeVal, int *objectInRoomVal, 
-    int *objectInObjectVal, int *objectOnObjectVal, int *objectDirectlyOnObjectVal)
-{
-  double prob = 1.0;
-  //First, check functions that represent 1/0 values.
-  for (int o1 = nObjects-1; o1 >= 0; o1--) {
-    //Object-in-room exclusivity
-
-    int inRoom = objectInRoomVal[o1];
-    if (inRoom < 0) {
-      // Must be in exactly 1 room
-      return 0;
-    }
-
-    int category = roomTypeVal[inRoom];
-
-    prob *= objectInRoomDefault[o1 * nRoomCategories + category];
-
-    for (int o2 = o1-1; o2 >= 0; o2--) {
-      //Object onness basic check
-      if (objectOnObjectVal[o1 * nObjects + o2] == 0 &&
-	  objectDirectlyOnObjectVal[o1] == o2) {
-	return 0;
-      }
-
-      bool o1Ino2 = (objectInObjectVal[o1 * nObjects + o2] != 0);
-      bool o1Ono2 = (objectOnObjectVal[o1 * nObjects + o2] != 0);
-
-      if ( o1Ino2 != 0 ||
-	   o1Ono2 != 0) {
-
-	//Object inness transitivity/exchangeability
-	for (int o3 = o2-1; o3 >= 0; o3--) {
-	  // If A in/on B, then A in C iff B in C
-	  if (objectInObjectVal[o1 * nObjects + o3] !=
-	      objectInObjectVal[o2 * nObjects + o3]) {
-	    return 0;
-	  }
-
-	  // If A in/on B, then A on C iff B on C
-	  if (objectOnObjectVal[o1 * nObjects + o3] !=
-	      objectOnObjectVal[o2 * nObjects + o3]) {
-	    return 0;
-	  }
-	}
-
-	// If A in/on B, then A in R iff B in R
-	if (objectInRoomVal[o1] != objectInRoomVal[o2]) {
-	    return 0;
-	}
-      }
-
-      if (o1Ino2) {
-	prob *= objectInObjectDefault[o1 * nObjects + o2];
-      }
-      else {
-	prob *= (1-objectInObjectDefault[o1 * nObjects + o2]);
-      }
-      if (o1Ono2) {
-	prob *= objectOnObjectDefault[o1 * nObjects + o2];
-      }
-      else {
-	prob *= (1-objectOnObjectDefault[o1 * nObjects + o2]);
-      }
-
-      // Direct support requirement check
-      if (objectOnObjectVal[o1 * nObjects + o2] != 0) {
-	bool found = false;
-	int supports = 0;
-
-	// Check that there is *at least one* object that o1
-	// object is on or in, and that that object is in turn
-	// on o2
-	for (int o3 = o1-1; o3 > o2; o3--) {
-	  if ((objectDirectlyOnObjectVal[o1] == o3 ||
-	      objectInObjectVal[o1 * nObjects + o3] != 0) &&
-	    objectOnObjectVal[o3 * nObjects + o2]) {
-	    found = true;
-	  }
-	}
-	// Unique direct support check
-	for (int o3 = o1-1; o3 >= 0; o3--) {
-	  if (objectDirectlyOnObjectVal[o1] == o3) {
-	    supports++;
-	    found = true;
-	  }
-	}
-	if (!found) {
-	  return 0;
-	}
-	if (supports > 1) {
-	  return 0;
-	}
-      }
-    }
-  }
-
-  for (int r1 = 0; r1 < nRooms; r1++) {
-    prob *= roomCategoryDefault[r1 * nRoomCategories + roomTypeVal[r1]];
-  }
-
-  return prob;
-}
-
-FrontierInterface::StringSeq
-ObjectRelationManager::RelationServer::getObjectRelationProbabilities(const string &object)
-{
-  m_pOwner->lockComponent();
-  vector<string> ret = m_pOwner->computeMarginalDistribution(object);
-  m_pOwner->unlockComponent();
-  return ret;
 }

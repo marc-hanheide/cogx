@@ -55,6 +55,7 @@ copyObject(const spatial::Object *o)
 	HollowBoxObject *hb = new HollowBoxObject;
 	ret = hb;
 	hb->thickness = o1hb->thickness;
+	hb->sideOpen = o1hb->sideOpen;
 	hb->radius1 = o1hb->radius1;
 	hb->radius2 = o1hb->radius2;
 	hb->radius3 = o1hb->radius3;

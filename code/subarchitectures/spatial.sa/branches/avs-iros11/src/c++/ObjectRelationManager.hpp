@@ -48,17 +48,6 @@ namespace spatial {
  */
 class ObjectRelationManager : public cast::ManagedComponent
 {
-  private:
-    class RelationServer: public FrontierInterface::RelationInterface {
-      virtual FrontierInterface::StringSeq 
-	getObjectRelationProbabilities(const string &object);
-
-      ObjectRelationManager *m_pOwner;
-      RelationServer(ObjectRelationManager *owner) : m_pOwner(owner)
-      {}
-      friend class ObjectRelationManager;
-    };
-    friend class RelationServer;
 public:
 
   ObjectRelationManager ();
@@ -94,6 +83,9 @@ protected:
   double m_recognitionTimeThreshold;
   bool m_bRecognitionIssuedThisStop;
 
+  //Pair order: (landmark, trajector)
+  std::map<std::pair<std::string, std::string>, double> m_objectOnnessValues;
+  std::map<std::pair<std::string, std::string>, double> m_objectInnessValues;
 
   std::map<std::string, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
   std::map<std::string, std::string> m_containmentPropWMIDs; 
@@ -101,7 +93,7 @@ protected:
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
   bool m_bNoPTZ;
-  bool m_bNoVision;
+  bool m_bDetectObjects;
 
   bool m_bDisplayPlaneObjectsInPB;
   bool m_bDisplayVisualObjectsInPB;
