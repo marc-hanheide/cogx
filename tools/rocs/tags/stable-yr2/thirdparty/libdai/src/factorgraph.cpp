@@ -107,15 +107,19 @@ std::istream& operator>> ( std::istream& is, FactorGraph &fg ) {
     size_t nr_Factors;
     string line;
 
-    while( (is.peek()) == '#' )
+    while( (is.peek()) == '#')
         getline(is,line);
-    is >> nr_Factors;
+    getline(is,line);
+    istringstream istr(line);
+    istr >> nr_Factors;
     if( is.fail() )
         DAI_THROWE(INVALID_FACTORGRAPH_FILE,"Cannot read number of factors");
     if( verbose >= 2 )
         cerr << "Reading " << nr_Factors << " factors..." << endl;
 
-    getline (is,line);
+    while( (is.peek()) == ' ' || (is.peek()) == '\n' )
+      getline (is,line);
+
     if( is.fail() || line.size() > 0 )
         DAI_THROWE(INVALID_FACTORGRAPH_FILE,"Expecting empty line");
 
@@ -126,31 +130,41 @@ std::istream& operator>> ( std::istream& is, FactorGraph &fg ) {
         size_t nr_members;
         while( (is.peek()) == '#' )
             getline(is,line);
-        is >> nr_members;
+	getline(is,line);
+	istr.str(line);
+	istr.clear();
+
+        istr >> nr_members;
         if( verbose >= 3 )
             cerr << "  nr_members: " << nr_members << endl;
 
         vector<long> labels;
-        for( size_t mi = 0; mi < nr_members; mi++ ) {
-            long mi_label;
-            while( (is.peek()) == '#' )
-                getline(is,line);
-            is >> mi_label;
-            labels.push_back(mi_label);
-        }
-        if( verbose >= 3 )
-            cerr << "  labels: " << labels << endl;
+	while( (is.peek()) == '#' )
+	  getline(is,line);
+	getline(is,line);
+	istr.str(line);
+	istr.clear();
+	for( size_t mi = 0; mi < nr_members; mi++ ) {
+	  long mi_label;
+	  istr >> mi_label;
+	  labels.push_back(mi_label);
+	}
+	if( verbose >= 3 )
+	  cerr << "  labels: " << labels << endl;
 
         vector<size_t> dims;
-        for( size_t mi = 0; mi < nr_members; mi++ ) {
-            size_t mi_dim;
-            while( (is.peek()) == '#' )
-                getline(is,line);
-            is >> mi_dim;
-            dims.push_back(mi_dim);
-        }
-        if( verbose >= 3 )
-            cerr << "  dimensions: " << dims << endl;
+	while( (is.peek()) == '#' )
+	  getline(is,line);
+	getline(is,line);
+	istr.str(line);
+	istr.clear();
+	for( size_t mi = 0; mi < nr_members; mi++ ) {
+	  size_t mi_dim;
+	  istr >> mi_dim;
+	  dims.push_back(mi_dim);
+	}
+	if( verbose >= 3 )
+	  cerr << "  dimensions: " << dims << endl;
 
         // add the Factor
         vector<Var> Ivars;
@@ -173,8 +187,11 @@ std::istream& operator>> ( std::istream& is, FactorGraph &fg ) {
         // read values
         size_t nr_nonzeros;
         while( (is.peek()) == '#' )
-            getline(is,line);
-        is >> nr_nonzeros;
+	  getline(is,line);
+	getline(is,line);
+	istr.str(line);
+	istr.clear();
+        istr >> nr_nonzeros;
         if( verbose >= 3 )
             cerr << "  nonzeroes: " << nr_nonzeros << endl;
         for( size_t k = 0; k < nr_nonzeros; k++ ) {
@@ -182,14 +199,25 @@ std::istream& operator>> ( std::istream& is, FactorGraph &fg ) {
             Real val;
             while( (is.peek()) == '#' )
                 getline(is,line);
-            is >> li;
-            while( (is.peek()) == '#' )
-                getline(is,line);
-            is >> val;
+	    getline(is,line);
+	    istr.str(line);
+	    istr.clear();
+            istr >> li;
+            istr >> val;
 
             // store value, but permute indices first according to internal representation
             facs.back().set( permindex.convertLinearIndex( li ), val );
         }
+
+	if (I < nr_Factors-1) {
+	  while( (is.peek()) == '#' )
+	    getline(is,line);
+	  while( (is.peek()) == ' ' || (is.peek()) == '\n' )
+	    getline (is,line);
+
+	  if( is.fail() || line.size() > 0 )
+	    DAI_THROWE(INVALID_FACTORGRAPH_FILE,"Expecting empty line");
+	}
     }
 
     if( verbose >= 3 )
