@@ -159,7 +159,11 @@ class Action(object):
                 p_expr = self.probability.instantiate(var_mapping, init_facts)
                 if not p_expr:
                     return None
-                probability = float(p_expr.expression.value)
+                try:
+                    probability = float(p_expr.expression.value)
+                except:
+                    return None
+                
             return PropositionalAction(name, precondition, replan, effects, cost, probability)
         else:
             return None
