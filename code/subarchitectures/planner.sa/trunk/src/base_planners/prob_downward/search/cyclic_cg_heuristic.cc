@@ -54,12 +54,13 @@ LocalTransition::LocalTransition(
     target_action_costs = -1;
     target_prob = -1;
     min_prob = 1.0;
+    max_cost = 0;
     unreached_conditions = -1;
 }
 
 inline void LocalTransition::try_to_fire() {
     if(!unreached_conditions && target_cost < target->cost) {
-        target->action_cost = target_action_costs;
+        target->action_cost = target_action_costs + max_cost;
         target->prob = target_prob * min_prob;
         target->cost = target->action_cost + (1-target->prob) * g_reward + 0.5;
         target->reached_by = this;
@@ -83,6 +84,8 @@ void LocalTransition::on_source_expanded(const State &state) {
     target_action_costs = source->action_cost + action_cost;
     target_prob = source->prob * action_prob;
     target_cost = target_action_costs + (1-target_prob) * g_reward + 0.5;
+    min_prob = 1.0;
+    max_cost = 0;
     // target_cost = source->cost + action_cost + (1-action_prob) * g_reward * g_multiplier;
 
     if(target->cost <= target_cost) {
@@ -102,7 +105,7 @@ void LocalTransition::on_source_expanded(const State &state) {
     unreached_conditions = 0;
     const vector<LocalAssignment> &precond = label->precond;
     if (g_debug && label->op) {
-        std::cout << "open:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << std::endl;
+        std::cout << "open:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << " / " << min_prob << std::endl;
         if (source->reached_by) {
             const ValueTransitionLabel* l = source->reached_by->label;
             std::cout << "    reached by:" << l->op->get_name()  << " - " << source->cost << " / " << source->prob << std::endl;
@@ -151,24 +154,31 @@ void LocalTransition::on_source_expanded(const State &state) {
         if(!child_problem) {
             child_problem = new LocalProblem(precond_var_no);
             g_HACK->local_problems.push_back(child_problem);
+            if (g_debug)
+                cout << "    new subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << "(now: " << current_val << ")" << endl;
         }
+        else if (g_debug)
+            cout << "    old subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << "(now: " << current_val << ")" << endl;
+
 
         if(!child_problem->is_initialized())
             child_problem->initialize(source->priority(), current_val, state);
         LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
         if(cond_node->expanded) {
             // target_cost = target_cost + target_prob * (cond_node->cost + (1-cond_node->prob) * g_multiplier * g_reward);
-            target_action_costs += cond_node->action_cost;
+            // target_action_costs += cond_node->action_cost;
             if (g_debug && label->op) {
                 double new_target_prob = target_prob * cond_node->prob;
                 int new_target_cost = target_action_costs + (1-target_prob) * g_reward +0.5;
                 const ValueTransitionLabel* l = cond_node->reached_by->label;
-                std::cout << "already expanded:" << l->op->get_name()  << " - " << cond_node->cost << " / " << cond_node->prob << std::endl;
-                std::cout << "now:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << " ---> " << new_target_prob << " / " << new_target_cost  << std::endl;
+                std::cout << "    already expanded:" << l->op->get_name()  << " - " << cond_node->cost << " / " << cond_node->prob << std::endl;
+                std::cout << "    now:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << " ---> " << new_target_prob << " / " << new_target_cost  << std::endl;
             }
             min_prob = min(min_prob, cond_node->prob);
+            max_cost = max(max_cost, cond_node->action_cost);
+            // max_cost += cond_node->action_cost;
             // target_prob *= cond_node->prob;
-            target_cost = target_action_costs + (1-target_prob*min_prob) * g_reward + 0.5;
+            target_cost = target_action_costs + max_cost + (1-target_prob*min_prob) * g_reward + 0.5;
 
             if(target->cost <= target_cost) {
                 // Transition cannot find a shorter path to target.
@@ -185,11 +195,13 @@ void LocalTransition::on_source_expanded(const State &state) {
 void LocalTransition::on_condition_reached(int cost, double prob) {
     assert(unreached_conditions);
     --unreached_conditions;
-    target_action_costs += cost;
+    // target_action_costs += cost;
     // target_cost = target_cost + target_prob * (cost + (1-prob) * g_multiplier * g_reward);
     if (g_debug && label->op) {
         double new_min_prob = min(min_prob, prob);
-        int new_target_cost = target_action_costs + (1-target_prob*new_min_prob) * g_reward + 0.5;
+        // double new_max_cost = max(max_cost, cost);
+        double new_max_cost = max_cost + cost;
+        int new_target_cost = target_action_costs + new_max_cost + (1-target_prob*new_min_prob) * g_reward + 0.5;
         std::cout << "    condition reached: " << label->op->get_name() << " - " << cost << " / " << prob << "  remaining: " << unreached_conditions << std::endl;
         //std::cout << "    " << target_action_costs << " - " << new_target_prob << std::endl;
         std::cout << "    update: " << target_cost << " / " << (target_action_costs - cost) << " / " << target_prob*min_prob << " ---> " << new_target_cost << " / " << target_action_costs << " / " << target_prob * new_min_prob  << std::endl;
@@ -197,7 +209,9 @@ void LocalTransition::on_condition_reached(int cost, double prob) {
     }
     // target_prob *= prob;
     min_prob = min(min_prob, prob);
-    target_cost = target_action_costs + (1-target_prob*min_prob) * g_reward + 0.5;
+    max_cost = max(max_cost, cost);
+    // max_cost += cost;
+    target_cost = target_action_costs + max_cost + (1-target_prob*min_prob) * g_reward + 0.5;
     // std::cout << "target " << std::endl;
     try_to_fire();
 }
@@ -405,7 +419,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state, int level) {
     indent.resize(level*2, ' ');
     assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
     if(reached_by) {
-        if(reached_by->target_action_costs == reached_by->action_cost) {
+        if(reached_by->target_action_costs + reached_by->max_cost == reached_by->action_cost) {
             // Transition applicable, all preconditions achieved.
             const Operator *op = reached_by->label->op;
             assert(!op->is_axiom());
@@ -438,15 +452,16 @@ void LocalProblemNode::mark_helpful_transitions(const State &state, int level) {
     }
 }
 
-double LocalProblemNode::compute_probability(const State &state, std::set<const Operator *>& ops) {
+std::pair<int, double> LocalProblemNode::compute_probability(const State &state, std::set<const Operator *>& ops) {
     assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
     double p_min = 1.0;
+    int c_max = 0;
     if(reached_by) {
         const Operator *op = reached_by->label->op;
         if (op && ops.find(op) == ops.end())
             ops.insert(op);
 
-        if(reached_by->target_action_costs == reached_by->action_cost) {
+        if(reached_by->target_action_costs + reached_by->max_cost == reached_by->action_cost) {
         // if (op && ops.find(op) == ops.end())
         //     ops.insert(op);
             // Transition applicable, all preconditions achieved.
@@ -467,19 +482,18 @@ double LocalProblemNode::compute_probability(const State &state, std::set<const 
                     precond_var_no, state[precond_var_no])->nodes[precond_value];
                 // LocalProblemNode *child_node = &g_HACK->get_local_problem(
                 //     precond_var_no, state[precond_var_no], context)->nodes[precond_value];
-                double p_child = child_node->compute_probability(state, ops);
+                pair<int, double> r = child_node->compute_probability(state, ops);
                 //cout << "    " << p_child << endl;
-                if (p_child < p_min) {
-                    p_min = p_child;
-                }
+                c_max = max(c_max, r.first);
+                p_min = min(p_min, r.second);
             }
         }
         if (op) {
             //cout << op->get_prob() << " / " << op->get_prob() * p_min << endl;
-            return op->get_prob() * p_min;
+            return pair<int, double>(op->get_cost() + c_max, op->get_prob() * p_min);
         }
     }
-    return p_min;
+    return pair<int, double>(c_max, p_min);
 }
 
 CyclicCGHeuristic::CyclicCGHeuristic() {
@@ -529,19 +543,20 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
         }
         goal_node->mark_helpful_transitions(state);
         std::set<const Operator *> ops;
-        double p = goal_node->compute_probability(state, ops);
-        int cost = 0;
+        pair<int, double> r = goal_node->compute_probability(state, ops);
+        int cost = r.first;
+        double p = r.second;
         // double p = 1.0;
-        std::set<const Operator *>::const_iterator i = ops.begin();
-        for(; i != ops.end(); i++) {
-            cost += (*i)->get_cost();
-            // p *= (*i)->get_prob();
-            // if (g_debug)
-            //     cout << (*i)->get_name() << ": " << (*i)->get_prob() << " -> " << p << endl;
-        }
+        // std::set<const Operator *>::const_iterator i = ops.begin();
+        // for(; i != ops.end(); i++) {
+        //     cost += (*i)->get_cost();
+        //     // p *= (*i)->get_prob();
+        //     // if (g_debug)
+        //     //     cout << (*i)->get_name() << ": " << (*i)->get_prob() << " -> " << p << endl;
+        // }
         if (g_debug)
             cout << "p: " << p << ", c: " << cost << endl;
-        //cout << p << " - " << p_init * p << endl;
+        // cout << cost << " / "  << p << " - " << p_init * p <<  " // " << cost + (1-p) * g_reward << endl;
         heuristic = cost + p_init * (1-p) * g_reward;
         // cout << p_init << " - " << heuristic << endl;
         // if ( p_init * p < 0.02) {
