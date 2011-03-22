@@ -32,6 +32,7 @@ class LocalTransition {
     int target_action_costs;
     double target_prob;
     double min_prob;
+    int max_cost;
     int unreached_conditions;
 
     LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
@@ -88,7 +89,7 @@ class LocalProblemNode {
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
     void mark_helpful_transitions(const State &state, int level=0);
-    double compute_probability(const State &state, std::set<const Operator *>& ops);
+    std::pair<int, double> compute_probability(const State &state, std::set<const Operator *>& ops);
 };
 
 // class LocalProblemTable {

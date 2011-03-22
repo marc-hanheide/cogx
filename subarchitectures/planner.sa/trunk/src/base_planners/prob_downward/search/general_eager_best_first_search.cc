@@ -103,7 +103,10 @@ int GeneralEagerBestFirstSearch::step() {
             preferred_ops.insert(pref[i]);
         }
     }
-    // cout << "pop: " << node.get_g() << "    " << node.get_p() << endl;
+    // if (node.get_info()->op)
+    //     cout << "pop: " << node.get_g() << "    " << node.get_p() << " by " << node.get_info()->op->get_name() << endl;
+    // else
+    //     cout << "pop: " << node.get_g() << "    " << node.get_p() << endl;
 
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -123,8 +126,10 @@ int GeneralEagerBestFirstSearch::step() {
             EvalInfo succ_info = node.get_info()->succ(op);
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
-                heuristics[i]->evaluate(&succ_info, succ_state);
+                heuristics[i]->evaluate(node.get_info(), succ_state);
+                //heuristics[i]->evaluate(&succ_info, succ_state);
             }
+            // cout << "---------" << endl;
             search_progress.inc_evaluated();
 
             // Note that we cannot use succ_node.get_g() here as the
@@ -134,6 +139,7 @@ int GeneralEagerBestFirstSearch::step() {
             // may want to refactor this later.
             // TODO: open_list->evaluate(node.succ_g(op), is_preferred);
             open_list->evaluate(node.get_info(), is_preferred);
+            //open_list->evaluate(&succ_info, is_preferred);
             bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
