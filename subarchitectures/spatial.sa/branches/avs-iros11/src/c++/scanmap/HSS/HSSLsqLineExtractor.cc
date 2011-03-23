@@ -274,20 +274,24 @@ LsqLineExtractor::extract(double *x, double *y, int nData, double *r)
 	  }
 	}
 
-	fillInLine(nUsed, used, line);
-        if (line.h() >= 0.5 * minLength_) {
-          startIndex = used[nUsed - 1];
+	if (nUsed >= 2) {
+	  fillInLine(nUsed, used, line);
+          if (line.h() >= 0.5 * minLength_) {
+            startIndex = used[nUsed - 1];
           
-          line.setWeight(nUsed);
-          lines_.push_back(line);
+            line.setWeight(nUsed);
+            lines_.push_back(line);
 #ifdef PRINTLSQSTUFF
-          for (int i = 0; i < nUsed; i++)
-            fs_lsqPts << x[used[i]] << " " << y[used[i]] << " ";
-          fs_lsqPts << std::endl;
+            for (int i = 0; i < nUsed; i++)
+              fs_lsqPts << x[used[i]] << " " << y[used[i]] << " ";
+            fs_lsqPts << std::endl;
           
-          fs_lsqLines << line.xS() << " " << line.yS() << " "
-                      << line.xE() << " " << line.yE() << std::endl;
+            fs_lsqLines << line.xS() << " " << line.yS() << " "
+                        << line.xE() << " " << line.yE() << std::endl;
 #endif
+          } else {
+            startIndex++;
+          }
         } else {
           startIndex++;
         }
