@@ -1467,11 +1467,13 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 
 void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
+	log("associatedSpacePlaceholderPropertyChanged entered");
 	// Decide what change has been made
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
 	{
+		log("associatedSpacePlaceholderPropertyChanged ADD");
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
 		try
 		{
@@ -1502,6 +1504,8 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 	case cdl::OVERWRITE:
 	{
+		log("associatedSpacePlaceholderPropertyChanged OVERWRITE");
+
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
 		try
 		{
@@ -1547,6 +1551,8 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 	case cdl::DELETE:
 	{
+		log("associatedSpacePlaceholderPropertyChanged DELETE");
+
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
@@ -1567,6 +1573,9 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 	default:
 		break;
 	} // switch*/
+
+	log("associatedSpacePlaceholderPropertyChanged exited");
+
 }
 
 
