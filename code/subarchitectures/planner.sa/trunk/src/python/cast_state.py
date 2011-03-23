@@ -678,14 +678,14 @@ class CASTState(object):
                 removed.append(o)
 
         if new:
-            print_fn("\nNew objects:")
+            print_fn("New objects:")
             for o in new:
-                print " %s:" % o.name
+                print_fn( " %s:", o.name )
                 for svar, val in f2[o]:
                     print_fn( "    %s = %s", str(svar), str(val))
 
         if changed:
-            print_fn("\nChanged objects:")
+            print_fn("Changed objects:")
             for o in changed:
                 fnew = []
                 fchanged = []

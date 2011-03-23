@@ -117,7 +117,9 @@ class Planner(object):
             else:
                 cond = pnode.action.precondition
 
-        negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived)
+        negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived or svar.modality in state.problem.domain.derived)
+        # print map(str, state.problem.domain.derived)
+        # print negated_axioms
 
         if not universal and not negated_axioms:
             #no universal preconditions => quickcheck
@@ -137,6 +139,7 @@ class Planner(object):
         if cond:
             try:
                 action.instantiate(pnode.full_args, state.problem)
+                state.clear_axiom_cache()
                 extstate = state.get_extended_state(state.get_relevant_vars(cond))
                 result = extstate.is_satisfied(cond)
             except:
@@ -166,7 +169,7 @@ class Planner(object):
         #log.debug("current state is: %s", map(str, state.iterfacts()))
         #check for plan validity: test all preconditions and apply effects
         state = init_state.copy()
-        
+
         skipped_actions = -1
         first_invalid_action = None
         for i,pnode in enumerate(plan):
@@ -177,7 +180,7 @@ class Planner(object):
             t1 = time.time()
             action = pnode.action
             #don't check preconditions of actions in progress
-            if (not pnode.is_inprogress() and not pnode.is_virtual()) and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
+            if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
                 log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))
