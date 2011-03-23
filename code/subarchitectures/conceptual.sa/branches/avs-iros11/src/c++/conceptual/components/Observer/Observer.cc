@@ -436,7 +436,9 @@ void Observer::updateWorldState()
 										associatedSpacePlaceholderProperties[l];
 
 								ConceptualData::AssociatedSpacePlaceholderPropertyInfo appi;
-								appi.associatedSpace = associatedSpacePlaceholderPropertyPtr->value;
+								appi.associatedSpace = SpatialProperties::FloatValuePtr::dynamicCast(
+												SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
+														associatedSpacePlaceholderPropertyPtr->distribution)->data[0].value)->value;
 								pli.associatedSpaceProperties.push_back(appi);
 							}
 
@@ -1521,7 +1523,13 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 			throw cast::CASTException("The mapping between AssociatedSpacePlacholderProperty WMAddress and Place ID changed!");
 
 		// Check if something substantial changed
-		if ( fabs(old->value-associatedSpacePlaceholderPropertyPtr->value) > _associatedSpaceThreshold )
+		double oldVal = SpatialProperties::FloatValuePtr::dynamicCast(
+				SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(old->distribution)->data[0].value)->value;
+		double newVal = SpatialProperties::FloatValuePtr::dynamicCast(
+				SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
+						associatedSpacePlaceholderPropertyPtr->distribution)->data[0].value)->value;
+
+		if ( fabs(oldVal-newVal) > _associatedSpaceThreshold )
 		{
 			ConceptualData::EventInfo ei;
 			ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyChanged;

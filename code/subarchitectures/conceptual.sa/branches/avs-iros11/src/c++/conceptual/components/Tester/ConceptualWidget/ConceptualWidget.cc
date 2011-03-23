@@ -325,6 +325,14 @@ void ConceptualWidget::refreshWsButtonClicked()
 						lexical_cast<string>(phi.gatewayProperties[0].gatewayProbability)))))->
 						setIcon(0, QIcon(":/icons/icons/flag-green.png"));
 			}
+			if (phi.associatedSpaceProperties.size())
+			{
+				QTreeWidgetItem *associatedSpaceItem = new QTreeWidgetItem(placeholderItem, QStringList("Associated Space Placeholder Property"));
+				associatedSpaceItem->setIcon(0, QIcon(":/icons/icons/associatedspace.png"));
+				(new QTreeWidgetItem(associatedSpaceItem, QStringList("Value: "+QString::fromStdString(
+						lexical_cast<string>(phi.associatedSpaceProperties[0].associatedSpace)))))->
+						setIcon(0, QIcon(":/icons/icons/flag-green.png"));
+			}
 		}
 		if (cri.objectProperties.size())
 		{
@@ -572,6 +580,15 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			break;
 		case ConceptualData::EventGatewayPlaceholderPropertyChanged:
 			eventStr+="GatewayPlaceholderPropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventAssociatedSpacePlaceholderPropertyAdded:
+			eventStr+="AssociatedSpacePlaceholderPropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventAssociatedSpacePlaceholderPropertyDeleted:
+			eventStr+="AssociatedSpacePlaceholderPropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventAssociatedSpacePlaceholderPropertyChanged:
+			eventStr+="AssociatedSpacePlaceholderPropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventRoomConnectivityChanged:
 			eventStr+="RoomConnectivityChanged (pid1="+QString::number(event.infos[i].place1Id)+", pid2="+QString::number(event.infos[i].place2Id)+")";

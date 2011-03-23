@@ -158,12 +158,19 @@ module ConceptualData
 	
 	sequence<GatewayPlaceholderPropertyInfo> GatewayPlaceholderPropertyInfos;
 
+	struct AssociatedSpacePlaceholderPropertyInfo
+	{
+		double associatedSpace;
+	};
+	
+	sequence<AssociatedSpacePlaceholderPropertyInfo> AssociatedSpacePlaceholderPropertyInfos;
 
 	/** Relevant information about a placeholder. Currently only id. */
 	struct PlaceholderInfo
 	{
         int placeholderId;
         GatewayPlaceholderPropertyInfos gatewayProperties;
+        AssociatedSpacePlaceholderPropertyInfos associatedSpaceProperties;
 	};
 
 	/** Sequence of placeholder infos. */
@@ -213,7 +220,8 @@ module ConceptualData
 		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
 		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
 		EventRoomConnectivityChanged, // place1id, place2id
-		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted 
+		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
+		EventAssociatedSpacePlaceholderPropertyAdded, EventAssociatedSpacePlaceholderPropertyChanged, EventAssociatedSpacePlaceholderPropertyDeleted 
 	};
 	
 	struct EventInfo
