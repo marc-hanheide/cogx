@@ -182,6 +182,11 @@ def gen_fact_tuples(beliefs):
         elems.append(el_vals[0][0])
         i += 1
 
+      if any(val == pddl.UNKNOWN for val in elems):
+        continue
+
+      # print map(str, elems)
+        
       for feat,vals in factdict.iteritems():
         if feat.startswith("val"):
           continue
@@ -193,10 +198,10 @@ def filter_unknown_preds(fact_tuples):
     if ft.feature not in current_domain.functions and \
           ft.feature not in current_domain.predicates:
       pass
-      #log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
-      #              str(ft), str(ft.feature))
+      log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
+                   str(ft), str(ft.feature))
     else:
-      #print "using", map(str, ft)
+      # print "using", map(str, ft)
       yield ft
 
 def tuples2facts(fact_tuples):
