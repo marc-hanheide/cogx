@@ -74,7 +74,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 	 */
 	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
-		if (_plannedAction.name.equals("move")) {
+		if (_plannedAction.name.equals("move") || _plannedAction.name.equals("move_direct")) {
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);

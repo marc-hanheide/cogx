@@ -114,6 +114,10 @@ public class VisualObjectTransferFunction
 	protected void fillBelief(
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
 			WorkingMemoryChange wmc, VisualObject from) {
+
+        Formula related_to = null;
+        Formula relation = null;
+        Formula label = null;
 		FormulaDistribution fd1 = null;
 		FormulaDistribution fd2 = null;
 		FormulaDistribution fd3 = null;
@@ -140,6 +144,9 @@ public class VisualObjectTransferFunction
 					fd1 = coneGroupBelief.getContent().get("cg-related-to");
 					fd2 = coneGroupBelief.getContent().get("cg-relation");
 					fd3 = coneGroupBelief.getContent().get("cg-label");
+					related_to = coneGroupBelief.getContent().get("cg-related-to").getDistribution().getMostLikely();
+					relation = coneGroupBelief.getContent().get("cg-relation").getDistribution().getMostLikely();
+					label = coneGroupBelief.getContent().get("cg-label").getDistribution().getMostLikely();
 
 					log("we found the cone group that belongs to this cone: "
 							+ CASTUtils.toString(lastViewconeAddress));
@@ -155,7 +162,7 @@ public class VisualObjectTransferFunction
 				// 	break;
 				// }
 			}
-            if (fd1 == null) {
+            if (related_to == null) {
                 throw new BeliefException();
             }
 
@@ -207,9 +214,16 @@ public class VisualObjectTransferFunction
 //							from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI ? 1.0
 //									: 0.0);
 //			belief.getContent().put(IS_IN, fd);
+            fd1 = FormulaDistribution.create();
+            fd1.add(related_to.get(), 1.0);
+            fd2 = FormulaDistribution.create();
+            fd2.add(relation.get(), 1.0);
+            fd3 = FormulaDistribution.create();
+            fd3.add(label.get(), 1.0);
+                
 			belief.getContent().put(IS_IN, fd1);
 			belief.getContent().put("relation", fd2);
-			belief.getContent().put(LABEL_ID, fd3);
+			// belief.getContent().put(LABEL_ID, fd3);
 			// } catch (CASTException e) {
 			// component.logException(e);
 //		} catch (InterruptedException e) {
