@@ -89,6 +89,9 @@ private:
 	/** Change event. */
 	void gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Change event. */
+	void associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
 
 private:
 
@@ -119,6 +122,8 @@ private:
 
 	/** Returns all gateway properties of the placeholder. */
 	void getGatewayPlaceholderProperties(int placeId, std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> &properties);
+
+	void getAssociatedSpacePlaceholderProperties(int placeId, std::vector<SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> &properties);
 
 	/** Returns all object properties of the place. */
 	void getAppearancePlaceProperties(int placeId, std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties);
@@ -169,6 +174,8 @@ private:
 	/** Map of place wmAddress -> GatewayPlaceholderProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _gatewayPlaceholderPropertyWmAddressMap;
 
+	/** Map of place wmAddress -> AssociatedSpacePlaceholderProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> _associatedSpacePlaceholderPropertyWmAddressMap;
 
 	/** Current state of the world as much as
 	 * the conceptual.sa is concerned. */
@@ -185,6 +192,7 @@ private:
 	double _shapeThreshold;
 	double _appearanceThreshold;
 	double _gatewayThreshold;
+	double _associatedSpaceThreshold;
 	double _betaThreshold;
 	bool _includePlaceholderInfo;
 
