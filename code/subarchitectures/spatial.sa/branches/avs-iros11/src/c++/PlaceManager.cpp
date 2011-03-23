@@ -22,6 +22,9 @@
 #include <float.h>
 #include <limits>
 
+//HACK: Constant value even w/o nearby gateways
+#define GATEWAY_FUNCTION(x) (exp(-distSq/1.0)*0.7 + 0.3)
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -591,8 +594,9 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 	    // Check extant placeholder, add/modify gateway placeholder prop. accordingly
 	    double dx = doorX - nodeHyp->x;
 	    double dy = doorY - nodeHyp->y;
+	    double gatewayness = 
 	    double distSq = dx*dx+dy*dy;
-	    double gatewayness = exp(-distSq/1.0);
+	    double gatewayness = GATEWAY_FUNCTION(distSq);
 	    debug("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
 	    setOrUpgradePlaceholderGatewayProperty(hypID, placeholder->id, gatewayness);
 	  }
@@ -1102,7 +1106,7 @@ PlaceManager::getGatewayness(double x, double y)
       minDistSq = distSq;
     }
   }
-  return exp(-minDistSq/1.0);
+  return GATEWAY_FUNCTION(minDistSq);
 }
 
 NavData::FNodePtr
