@@ -679,9 +679,9 @@ PlaceManager::evaluateUnexploredPaths()
     for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
 	hypotheses.begin(); hypIt != hypotheses.end(); hypIt++) {
       try {
-	//if ((*hypIt)->originPlaceID == currentPlaceID) {
+	if ((*hypIt)->originPlaceID == currentPlaceID) {
 	  relevantHyps.push_back(*hypIt);
-	//}
+	}
       }
       catch (IceUtil::NullHandleException e) {
 	log("Error: hypothesis suddenly disappeared!");
@@ -725,7 +725,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      }
 	      // Compare distance to all other hypotheses created for this node
 	      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
-		  relevantHyps.begin(); extantHypIt != relevantHyps.end(); extantHypIt++) {
+	      	hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
 		FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
 		try {
 		 // if (extantHyp->originPlaceID == currentPlaceID) {
