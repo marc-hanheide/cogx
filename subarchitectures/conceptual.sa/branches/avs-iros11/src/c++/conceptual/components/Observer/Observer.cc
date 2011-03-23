@@ -63,6 +63,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	_shapeThreshold = -1.0;
 	_appearanceThreshold = -1.0;
 	_gatewayThreshold = -1.0;
+	_associatedSpaceThreshold = -1.0;
 	_betaThreshold = 0.01;
 
 	if((it = _config.find("--shape-threshold")) != _config.end())
@@ -77,19 +78,24 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	{
 		_gatewayThreshold = boost::lexical_cast<double>(it->second);
 	}
+	if((it = _config.find("--associatedspace-placeholder-threshold")) != _config.end())
+	{
+		_associatedSpaceThreshold = boost::lexical_cast<double>(it->second);
+	}
 	if((it = _config.find("--beta-threshold")) != _config.end())
 	{
 		_betaThreshold = boost::lexical_cast<double>(it->second);
 	}
 	_includePlaceholderInfo = (_config.find("--no-placeholders") == _config.end());
 
-	if ((_shapeThreshold<0.0) || (_appearanceThreshold<0.0) || (_gatewayThreshold<0.0))
-		throw CASTException(exceptionMessage(__HERE__, "Please set shape-threshold, appearance-threshold and gateway-placeholder-threshold!"));
+	if ((_shapeThreshold<0.0) || (_appearanceThreshold<0.0) || (_gatewayThreshold<0.0) || (_associatedSpaceThreshold<0.0))
+		throw CASTException(exceptionMessage(__HERE__, "Please set shape-threshold, appearance-threshold, associatedspace-placeholder-threshold and gateway-placeholder-threshold!"));
 
 	log("Configuration parameters:");
 	log("-> Shape threshold: %f", _shapeThreshold);
 	log("-> Appearances threshold: %f", _appearanceThreshold);
 	log("-> Gateway placeholder threshold: %f", _gatewayThreshold);
+	log("-> Associated space placeholder threshold: %f", _associatedSpaceThreshold);
 	log("-> Include placeholder information: %s", (_includePlaceholderInfo)?"yes":"no");
 
 	/** Set the initial world state */
@@ -145,6 +151,10 @@ void Observer::start()
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::gatewayPlaceholderPropertyChanged));
 
+	// Global filter on SpatialProperties::AssociatedSpacePlaceholderProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialProperties::AssociatedSpacePlaceholderProperty>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::associatedSpacePlaceholderPropertyChanged));
 }
 
 
@@ -415,6 +425,19 @@ void Observer::updateWorldState()
 										gppi.gatewayProbability = dpdPtr->data[k].probability;
 								}
 								pli.gatewayProperties.push_back(gppi);
+							}
+
+							// Associatedspace placeholder properties
+							std::vector<SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> associatedSpacePlaceholderProperties;
+							getAssociatedSpacePlaceholderProperties(pli.placeholderId, associatedSpacePlaceholderProperties);
+							for (unsigned int l=0; l<associatedSpacePlaceholderProperties.size(); ++l)
+							{
+								SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr =
+										associatedSpacePlaceholderProperties[l];
+
+								ConceptualData::AssociatedSpacePlaceholderPropertyInfo appi;
+								appi.associatedSpace = associatedSpacePlaceholderPropertyPtr->value;
+								pli.associatedSpaceProperties.push_back(appi);
 							}
 
 							// Add the place info
@@ -1439,6 +1462,106 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 }
 
 
+
+void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
+		try
+		{
+			associatedSpacePlaceholderPropertyPtr =
+					getMemoryEntry<SpatialProperties::AssociatedSpacePlaceholderProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
+
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyAdded;
+		ei.roomId = -1;
+		ei.place1Id = associatedSpacePlaceholderPropertyPtr->placeId;
+		ei.place2Id = -1;
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
+		try
+		{
+			associatedSpacePlaceholderPropertyPtr =
+					getMemoryEntry<SpatialProperties::AssociatedSpacePlaceholderProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
+		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->placeId != associatedSpacePlaceholderPropertyPtr->placeId)
+			throw cast::CASTException("The mapping between AssociatedSpacePlacholderProperty WMAddress and Place ID changed!");
+
+		// Check if something substantial changed
+		if ( fabs(old->value-associatedSpacePlaceholderPropertyPtr->value) > _associatedSpaceThreshold )
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyChanged;
+			ei.roomId = -1;
+			ei.place1Id = associatedSpacePlaceholderPropertyPtr->placeId;
+			ei.place2Id = -1;
+			_accumulatedEvents.push_back(ei);
+
+			updateWorldState();
+		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyDeleted;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
+		_associatedSpacePlaceholderPropertyWmAddressMap.erase(wmChange.address);
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	default:
+		break;
+	} // switch*/
+}
+
+
 // -------------------------------------------------------
 void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
@@ -1689,6 +1812,22 @@ void Observer::getGatewayPlaceholderProperties(int placeId,
 	}
 }
 
+
+// -------------------------------------------------------
+void Observer::getAssociatedSpacePlaceholderProperties(int placeId,
+		std::vector<SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> &properties)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr>::iterator associatedSpacePlaceholderPropertyIt;
+	for( associatedSpacePlaceholderPropertyIt=_associatedSpacePlaceholderPropertyWmAddressMap.begin();
+			associatedSpacePlaceholderPropertyIt!=_associatedSpacePlaceholderPropertyWmAddressMap.end(); ++associatedSpacePlaceholderPropertyIt)
+	{
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr =
+				associatedSpacePlaceholderPropertyIt->second;
+		// Get only the observed properties
+		if ((associatedSpacePlaceholderPropertyPtr->placeId == placeId) && (!associatedSpacePlaceholderPropertyPtr->inferred))
+			properties.push_back(associatedSpacePlaceholderPropertyPtr);
+	}
+}
 
 
 // -------------------------------------------------------
