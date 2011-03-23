@@ -220,9 +220,18 @@
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
 
+  ;; use posterior information from conceptual.sa 
+  ;; force commitment to a room category to help the heuristic
+  (:dtrule object_existence_room
+           :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
+           :precondition (and (= (category ?where) ?c)
+                              (defined (p-obj_exists ?l ?rel ?where)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where) (and (assign (obj_exists ?l ?rel ?where) true)))
+           )
+
   ;; use posterior information from conceptual.sa
-  (:dtrule object_existence
-           :parameters (?l - label ?rel - spatial_relation ?where - (either visualobject room))
+  (:dtrule object_existence_object
+           :parameters (?l - label ?rel - spatial_relation ?where - visualobject)
            :precondition (and (defined (p-obj_exists ?l ?rel ?where)))
            :effect (probabilistic (p-obj_exists ?l ?rel ?where) (and (assign (obj_exists ?l ?rel ?where) true)))
            )
@@ -263,14 +272,14 @@
            :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                            (assign (category ?r) ?c))))
 
-  (:durative-action explore_place
-           :agent (?a - robot)
-           :parameters (?loc - place)
-           :duration (= ?duration 0.1)
-           :condition (and (over all (= (is-in ?a) ?loc))
-                           (at start (= (placestatus ?loc) placeholder)))
-           :effect (change (placestatus ?loc) trueplace)
-           )
+  ;; (:durative-action explore_place
+  ;;          :agent (?a - robot)
+  ;;          :parameters (?loc - place)
+  ;;          :duration (= ?duration 0.1)
+  ;;          :condition (and (over all (= (is-in ?a) ?loc))
+  ;;                          (at start (= (placestatus ?loc) placeholder)))
+  ;;          :effect (change (placestatus ?loc) trueplace)
+  ;;          )
 
   (:durative-action report_position
            :agent (?a - robot)
@@ -293,8 +302,23 @@
                                                    ))
                                      (over all (not (done)))
                                      (at start (= (is-in ?a) ?from)))
-                     :effect (and (change (is-in ?a) ?to))
+                     :effect (and (change (is-in ?a) ?to)
+                                  (change (placestatus ?to) trueplace))
                      )
+
+   ;; (:durative-action move_direct
+   ;;                   :agent (?a - robot)
+   ;;                   :parameters (?to - place)
+   ;;                   :variables (?from - place ?r - room)
+   ;;                   :duration (= ?duration 8)
+   ;;                   :condition (and 
+   ;;                                   (over all (and (= (in-room ?from) ?r)
+   ;;                                                  (or (= (in-room ?to) ?r)
+   ;;                                                      (attached_to_room ?to ?r))))
+   ;;                                   (over all (not (done)))
+   ;;                                   (at start (= (is-in ?a) ?from)))
+   ;;                   :effect (and (change (is-in ?a) ?to))
+   ;;                   )
 
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
@@ -400,7 +424,7 @@
                      :agent (?a - robot)
                      :parameters (?c - conegroup)
                      :variables (?p - place)
-                     :duration (= ?duration 4)
+                     :duration (= ?duration 15)
                      :condition (over all (and (not (done))
                                                (= (cg-place ?c) ?p)
                                                (= (is-in ?a) ?p)))
