@@ -317,7 +317,7 @@ void CGeorgeY2Article::switchState(int newState)
          timeout = 10;   // If the number of objects isn't 1, we don't teach and wait
          break;
       case stWaitForLearningTask: // Motivation/Planner/Execution
-         timeout = 20;
+         timeout = 120;  // time-to-appear increases with running time :(
          break;
    }
    m_waitOnEnter = now() + enterWait;
