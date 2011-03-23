@@ -1047,6 +1047,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
 	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
 	  SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(gwProp->distribution);
 	double currentProb = discDistr->data[0].probability;
+	debug("Comparing with existing probability: %f", currentProb);
 	if (currentProb < value) {
 	  gwProp->distribution = discDistr;
 	  gwProp->placeId = placeholderID;
@@ -1714,6 +1715,19 @@ PlaceManager::deletePlaceholderProperties(int placeID)
 	log("Border property could not be deleted; already missing!");
       }
       m_borderProperties.erase(it);
+    }
+  }
+  {
+    //Delete gateway property
+    map<int, string>::iterator it = m_placeholderGatewayProperties.find(placeID);
+    if (it != m_placeholderGatewayProperties.end()) {
+      try {
+	deleteFromWorkingMemory (it->second);
+      }
+      catch (Exception e) {
+	log("Gateway placeholder property could not be deleted; already missing!");
+      }
+      m_placeholderGatewayProperties.erase(it);
     }
   }
   log("deletePlaceholderProperties exited");
