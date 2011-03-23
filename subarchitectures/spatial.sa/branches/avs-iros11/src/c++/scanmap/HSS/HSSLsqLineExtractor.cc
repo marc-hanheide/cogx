@@ -316,6 +316,11 @@ void
 LsqLineExtractor::fillInLine(int nUsed, int* used, 
                              RedundantLine2DRep& line)
 {
+  if (nUsed < 2) {
+    std::cerr << "HSS::LsqLineExtractor::fillInLine(" << nUsed << ",...): Cannot create line with less than 2 points\n";
+    return;
+  }
+
   const double PiFourth = 0.25 * M_PI;
   const double PiHalf = 0.5 * M_PI;  
 
