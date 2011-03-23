@@ -321,7 +321,7 @@ void ConceptualWidget::refreshWsButtonClicked()
 			{
 				QTreeWidgetItem *gatewayItem = new QTreeWidgetItem(placeholderItem, QStringList("Gateway Placeholder Property"));
 				gatewayItem->setIcon(0, QIcon(":/icons/icons/doorway.png"));
-				(new QTreeWidgetItem(gatewayItem, QStringList("Probability: "+QString::number(phi.gatewayProperties[0].gatewayProbability ))))->
+				(new QTreeWidgetItem(gatewayItem, QStringList("Probability: "+QString::number(phi.gatewayProperties[0].gatewayProbability,'g',2 ))))->
 						setIcon(0, QIcon(":/icons/icons/flag-green.png"));
 			}
 			if (phi.associatedSpaceProperties.size())
