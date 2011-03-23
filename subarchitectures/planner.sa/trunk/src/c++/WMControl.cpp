@@ -23,6 +23,7 @@ static const int MAX_PLANNING_RETRIES = 1;
 static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
 static const int PLANNER_UPDATE_DELAY = 200;
+static int BELIEF_TIMEOUT = 500;
 
 static const string BINDER_SA = "binder";
 
@@ -30,6 +31,8 @@ void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Curren
     m_lastUpdate = getCASTTime();
     m_new_updates = false;
     m_active_task_id = -1;
+    gettimeofday(&m_belief_activity_timeout, NULL);
+
     cast::ManagedComponent::configure(_config, _current);
 
     cast::cdl::StringMap::const_iterator it = _config.begin();
@@ -41,6 +44,11 @@ void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Curren
         m_python_server = "PlannerPythonServer";
     }
     m_continual_state_updates = (_config.find("--continual_updates") != _config.end());
+
+    it = _config.find("--belief-timeout");
+    if (it != _config.end()) {
+        BELIEF_TIMEOUT = atoi(it->second.c_str());
+    }
 }
 
 void WMControl::start() {
@@ -95,26 +103,24 @@ void WMControl::runComponent() {
             log("planning is scheduled");
             timeval tval;
             gettimeofday(&tval, NULL);
-            
-            for(std::map<int, timeval>::iterator it=m_runqueue.begin(); it != m_runqueue.end(); ++it) {
-                if ((it->second.tv_sec < tval.tv_sec) 
-                    || ((it->second.tv_sec == tval.tv_sec) 
-                        && (it->second.tv_usec < tval.tv_usec))) {
-                    execute.push_back(it->first);
+
+            if (later_than(tval, m_belief_activity_timeout)) {
+                for(std::map<int, timeval>::iterator it=m_runqueue.begin(); it != m_runqueue.end(); ++it) {
+                    if (later_than(tval, it->second)) {
+                        execute.push_back(it->first);
+                    }
                 }
-            }
-            for(std::map<int, timeval>::iterator it=m_waiting_tasks.begin(); it != m_waiting_tasks.end(); ++it) {
-                if ((it->second.tv_sec < tval.tv_sec) 
-                    || ((it->second.tv_sec == tval.tv_sec) 
-                        && (it->second.tv_usec < tval.tv_usec))) {
-                    timed_out.push_back(it->first);
+                for(std::map<int, timeval>::iterator it=m_waiting_tasks.begin(); it != m_waiting_tasks.end(); ++it) {
+                    if (later_than(tval, it->second)) {
+                        timed_out.push_back(it->first);
+                    }
                 }
-            }
-            for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
-                m_runqueue.erase(*it);
-            }
-            for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
-                m_waiting_tasks.erase(*it);
+                for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
+                    m_runqueue.erase(*it);
+                }
+                for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
+                    m_waiting_tasks.erase(*it);
+                }
             }
         }
         m_queue_mutex.unlock();
@@ -323,6 +329,12 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     }
     m_new_updates = true;
 
+    timeval tval;
+    gettimeofday(&tval, NULL);
+    tval.tv_sec += BELIEF_TIMEOUT / 1000;
+    tval.tv_usec += 1000 * (BELIEF_TIMEOUT % 1000);
+    m_belief_activity_timeout = tval;
+
     // log("Recevied state change...");
 
     // CASTTime timestamp;
@@ -393,9 +405,7 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
     tval.tv_usec += 1000 * (msecs % 1000);
     m_queue_mutex.lock();
     if (m_runqueue.find(task->id) != m_runqueue.end()) {
-        if ((m_runqueue[task->id].tv_sec > tval.tv_sec) 
-            || ((m_runqueue[task->id].tv_sec == tval.tv_sec) 
-                && (m_runqueue[task->id].tv_usec > tval.tv_usec))) {
+        if (later_than(m_runqueue[task->id], tval)) {
             //Task already in queue for a later time
             m_queue_mutex.unlock();
             return;
@@ -585,7 +595,6 @@ void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
         overwriteWorkingMemory(id, action);
     }
 }
-
 
 WMControl::InternalCppServer::InternalCppServer(WMControl* Parent) {
     parent = Parent;

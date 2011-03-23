@@ -60,6 +60,8 @@ private:
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
+    inline bool later_than(const timeval& t1, const timeval& t2);
+
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
     taskMap activeTasks;
 
@@ -70,6 +72,7 @@ private:
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
     bool m_new_updates;
+    timeval m_belief_activity_timeout;
 
     std::map<int, timeval> m_runqueue;
     std::map<int, timeval> m_waiting_tasks;
@@ -80,5 +83,10 @@ private:
     int m_active_task_id;
 
 };
+
+bool WMControl::later_than(const timeval& t1, const timeval& t2) {
+    return ((t2.tv_sec < t1.tv_sec) 
+            || ((t2.tv_sec == t1.tv_sec) && (t2.tv_usec < t1.tv_usec)));
+}
 
 #endif
