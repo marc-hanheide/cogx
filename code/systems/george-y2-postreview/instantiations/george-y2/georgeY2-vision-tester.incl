@@ -1,0 +1,4 @@
+# Automatic testing of the system
+#
+SETVAR database_dir=/home/mmarko/tmp/cogx2
+CPP MG vis.gy2article TestVisualLearner --testmode "gy2article" --index "%(database_dir)/gy2article.test.06.dat" --imagedir "%(database_dir)/database" # --start-number 410
