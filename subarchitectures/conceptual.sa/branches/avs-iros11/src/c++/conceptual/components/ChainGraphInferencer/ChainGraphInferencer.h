@@ -222,7 +222,7 @@ private:
 	/** If true, placeholder properties will be inferred. */
 	bool _inferPlaceholderProperties;
 
-	double _placeholderInCurrentRoomPrior;
+	double _transitiveGatewayProbability;
 
 	bool _addUnobservedShape;
 	bool _addUnobservedAppearance;

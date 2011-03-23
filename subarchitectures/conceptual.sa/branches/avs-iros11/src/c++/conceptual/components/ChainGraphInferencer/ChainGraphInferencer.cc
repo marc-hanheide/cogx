@@ -82,10 +82,12 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_saveGraphFileName = it->second;
 	if((it = _config.find("--save-graph-info")) != _config.end())
 		_saveGraphInfoFileName = it->second;
-	if((it = _config.find("--placeholder-in-current-room-prior")) != _config.end())
-		_placeholderInCurrentRoomPrior = atof(it->second.c_str());
+	// Probability that a placeholder leads to another place which leads to a new room | the
+	// polaceholder does not lead directly to a gateway.
+	if((it = _config.find("--transitive-gateway-probability")) != _config.end())
+		_transitiveGatewayProbability = atof(it->second.c_str());
 	else
-		_placeholderInCurrentRoomPrior = 0.5;
+		_transitiveGatewayProbability = 0.5;
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
 	_addUnobservedShape = (_config.find("--add-unobserved-shape") != _config.end());
 	_addUnobservedAppearance = (_config.find("--add-unobserved-appearance") != _config.end());
@@ -98,7 +100,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	log("Configuration parameters:");
 	log("-> DefaultChainGraphInferencer name: %s", _defaultChainGraphInferencerName.c_str());
 	log("-> Infer placeholder properties: %s", (_inferPlaceholderProperties)?"yes":"no");
-	log("-> Prior probability that placeholder is in the current room: %f", _placeholderInCurrentRoomPrior);
+	log("-> Transitive gateway probability: %f", _transitiveGatewayProbability);
 	log("-> Add unobserved objects: %s", unobservedObjectsStr.c_str());
 
 	// Register the ICE Server
@@ -1161,11 +1163,12 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 		for (unsigned int p=0; p<cri.placeholders.size(); ++p)
 		{
 			const ConceptualData::PlaceholderInfo &phi = cri.placeholders[p];
-			double prior = (1.0-_placeholderInCurrentRoomPrior);
+			double gatewayness = 0.5;
 			if (phi.gatewayProperties.size())
 			{
-				prior = phi.gatewayProperties[0].gatewayProbability;
+				gatewayness = phi.gatewayProperties[0].gatewayProbability;
 			}
+			double prior = _transitiveGatewayProbability * (1.0-gatewayness) + gatewayness;
 
 			vector<double> outputs;
 			integrateImaginaryWorldsOutputs(allOutputs, outputs, prior);
