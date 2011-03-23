@@ -23,7 +23,7 @@
 #include <limits>
 
 //HACK: Constant value even w/o nearby gateways
-#define GATEWAY_FUNCTION(x) (exp(-distSq/1.0)*0.7 + 0.3)
+#define GATEWAY_FUNCTION(x) (exp(-x/1.0)*0.7 + 0.3)
 
 using namespace cast;
 using namespace std;
@@ -594,7 +594,6 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 	    // Check extant placeholder, add/modify gateway placeholder prop. accordingly
 	    double dx = doorX - nodeHyp->x;
 	    double dy = doorY - nodeHyp->y;
-	    double gatewayness = 
 	    double distSq = dx*dx+dy*dy;
 	    double gatewayness = GATEWAY_FUNCTION(distSq);
 	    debug("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
