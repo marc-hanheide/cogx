@@ -1172,7 +1172,7 @@ void ChainGraphInferencer::runImaginaryWorldsGeneration()
 			if (phi.associatedSpaceProperties.size())
 			{
 				double associatedSpace = phi.associatedSpaceProperties[0].associatedSpace;
-				transitiveGatewayProbability = 1-exp(-associatedSpace*_freespacePlaceholderRate);
+				transitiveGatewayProbability = 1-exp(-associatedSpace/_freespacePlaceholderRate);
 			}
 
 			double prior = transitiveGatewayProbability * (1.0-gatewayness) + gatewayness;
