@@ -1569,6 +1569,24 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			mp.set_position(0, 0, 0.20);
 			mp.set_color(0.2, 0.2, 0.2);
 
+			// Origin
+			if (nodeHypPtr) {
+			  int originPlaceID = nodeHypPtr->originPlaceID;
+
+			  NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(originPlaceID);
+			  if (fnodePtr) {
+//			    int parentNodeID= fnodePtr->nodeId;
+			    peekabot::PolylineProxy lcp;
+			    peekabot::VertexSet points;
+			    points.add(0, 0, 0);
+			    points.add(fnodePtr->x-nodeHypPtr->x, 
+				fnodePtr->y-nodeHypPtr->y, 0);
+			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
+			    lcp.set_line_style("dotted",0.5);
+			    lcp.add_vertices(points);
+			  }
+			}
+
 			// Draw placeholder properties
 			addRoomCategoryPlaceholderProperties(sp, placeId);
 		}
