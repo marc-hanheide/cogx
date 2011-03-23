@@ -23,7 +23,7 @@
 #include <limits>
 
 //HACK: Constant value even w/o nearby gateways
-#define GATEWAY_FUNCTION(x) (exp(-x/1.0)*0.7 + 0.3)
+#define GATEWAY_FUNCTION(x) (exp(-x/1.0))
 
 using namespace cast;
 using namespace std;
@@ -679,9 +679,9 @@ PlaceManager::evaluateUnexploredPaths()
     for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
 	hypotheses.begin(); hypIt != hypotheses.end(); hypIt++) {
       try {
-	if ((*hypIt)->originPlaceID == currentPlaceID) {
+	//if ((*hypIt)->originPlaceID == currentPlaceID) {
 	  relevantHyps.push_back(*hypIt);
-	}
+	//}
       }
       catch (IceUtil::NullHandleException e) {
 	log("Error: hypothesis suddenly disappeared!");
@@ -728,14 +728,14 @@ PlaceManager::evaluateUnexploredPaths()
 		  relevantHyps.begin(); extantHypIt != relevantHyps.end(); extantHypIt++) {
 		FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
 		try {
-		  if (extantHyp->originPlaceID == currentPlaceID) {
+		 // if (extantHyp->originPlaceID == currentPlaceID) {
 		    double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
 		    debug("2distanceSq = %f", distanceSq);
 		    if (distanceSq < minDistanceSq) {
 		      minDistanceSq = distanceSq;
 		      minDistID = extantHyp->hypID;
 		    }
-		  }
+		  //}
 		}
 		catch (IceUtil::NullHandleException e) {
 		  log("Error: hypothesis suddenly disappeared!");
