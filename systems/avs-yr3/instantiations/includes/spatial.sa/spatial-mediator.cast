@@ -12,4 +12,5 @@ JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMe
 
 # relation mediators:
 JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator 
+JAVA MG pm-placeholder-cat 	eu.cogx.perceptmediator.components.PlaceholderCategoryMediator 
 #JAVA MG pm-agent-rel 	eu.cogx.perceptmediator.components.PlaceContainmentAgentMediator 
