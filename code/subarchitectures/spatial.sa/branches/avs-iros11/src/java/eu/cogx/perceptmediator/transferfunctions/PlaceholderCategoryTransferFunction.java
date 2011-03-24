@@ -60,12 +60,18 @@ public class PlaceholderCategoryTransferFunction extends
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
+        log("getting belief for: " + from.placeId);
 		WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 				from.placeId));
-        String category = from.category;
+
+        if (wmaPlace != null) {
+            log("got referred belief: " + wmaPlace.id);
+            String category = from.category;
         
-		result.put("val0", WMPointer.create(wmaPlace, CASTUtils.typeName(this.beliefClass)).getAsFormula());
-		result.put("val1", PropositionFormula.create(category).getAsFormula());
+            result.put("val0", WMPointer.create(wmaPlace, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+            result.put("val1", PropositionFormula.create(category).getAsFormula());
+        }
+
 		return result;
 	}
 
