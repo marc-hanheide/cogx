@@ -26,6 +26,9 @@ import castutils.castextensions.WMView.ChangeHandler;
  */
 public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		ChangeHandler<T> {
+
+    static final int BELIEF_TIMEOUT = 5000;
+
 	/**
 	 * an interface realizing a matching function used for the
 	 * {@link WMContentWaiter} to match the content in a view with the content
@@ -85,9 +88,11 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 			}
 			logger
 					.trace("the content we are looking for is not yet in the view... have to wait now.");
+
+            long startTime = System.currentTimeMillis();
 			// if we come here, we haven't found the data in the current view so
 			// we have to be until it appears
-			while (true) {
+			while (System.currentTimeMillis() - startTime < BELIEF_TIMEOUT) {
 				Entry<WorkingMemoryAddress, T> entry = eventQueue.take();
 
 				if (cmf.matches(entry.getValue())) {
@@ -97,6 +102,8 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 				}
 
 			}
+
+            return null;
 
 		} finally {
 			view.unregisterHandler(this);
