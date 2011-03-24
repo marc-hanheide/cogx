@@ -1033,7 +1033,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
   discDistr->data = pairs;
 
   map<int, string>::iterator
-    foundFSIt = m_placeholderGatewayProperties.find(hypothesisID);
+    foundFSIt = m_placeholderGatewayProperties.find(placeholderID);
   if (foundFSIt != m_placeholderGatewayProperties.end()) {
     try {
       lockEntry(foundFSIt->second, cdl::LOCKEDODR);
@@ -1086,7 +1086,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
     debug("Adding new GWPlaceholderProperty");
     addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
       (newID, gwProp);
-    m_placeholderGatewayProperties[hypothesisID] = newID;
+    m_placeholderGatewayProperties[placeholderID] = newID;
   }
 }
 
