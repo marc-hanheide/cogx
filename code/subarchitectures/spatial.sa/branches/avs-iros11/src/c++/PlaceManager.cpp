@@ -843,7 +843,7 @@ PlaceManager::evaluateUnexploredPaths()
 		discDistr->data = pairs;
 
 		map<int, string>::iterator
-		  foundFSIt = m_freeSpaceProperties.find(hypID);
+		  foundFSIt = m_freeSpaceProperties.find(placeholder->id);
 		if (foundFSIt != m_freeSpaceProperties.end()) {
 		  try {
 		    debug("lock 6");
@@ -893,7 +893,7 @@ PlaceManager::evaluateUnexploredPaths()
 		  string newID = newDataID();
 		  addToWorkingMemory<SpatialProperties::AssociatedSpacePlaceholderProperty>
 		    (newID, freeProp);
-		  m_freeSpaceProperties[hypID] = newID;
+		  m_freeSpaceProperties[placeholder->id] = newID;
 		}
 	      }
 
@@ -929,7 +929,7 @@ PlaceManager::evaluateUnexploredPaths()
 		discDistr->data = pairs;
 
 		map<int, string>::iterator
-		  foundUnexpIt = m_borderProperties.find(hypID);
+		  foundUnexpIt = m_borderProperties.find(placeholder->id);
 		if (foundUnexpIt != m_borderProperties.end()) {
 		  try {
 		    debug("lock 7");
@@ -980,7 +980,7 @@ PlaceManager::evaluateUnexploredPaths()
 		  string newID = newDataID();
 		  addToWorkingMemory<SpatialProperties::AssociatedBorderPlaceholderProperty>
 		    (newID, borderProp);
-		  m_borderProperties[hypID] = newID;
+		  m_borderProperties[placeholder->id] = newID;
 		}
 	      }
 	    }
@@ -1819,30 +1819,31 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
   m_PlaceIDToHypMap.erase(placeID);
 
   // Delete placeholder properties for the Place in question
+  deletePlaceholderProperties(placeID);
 
-  // 1: Free space properties
-  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
-    try {
-      lockEntry(m_freeSpaceProperties[placeID], cdl::LOCKEDOD);
-      deleteFromWorkingMemory(m_freeSpaceProperties[placeID]);
-    }
-    catch (DoesNotExistOnWMException) {
-      log("Error! gateway property was already missing!");
-    }
-    m_freeSpaceProperties.erase(placeID);
-  }
-
-  // 2: Border properties
-  if (m_borderProperties.find(placeID) != m_borderProperties.end()) {
-    try {
-      lockEntry(m_borderProperties[placeID], cdl::LOCKEDOD);
-      deleteFromWorkingMemory(m_borderProperties[placeID]);
-    }
-    catch (DoesNotExistOnWMException) {
-      log("Error! gateway property was already missing!");
-    }
-    m_borderProperties.erase(placeID);
-  }
+//  // 1: Free space properties
+//  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
+//    try {
+//      lockEntry(m_freeSpaceProperties[placeID], cdl::LOCKEDOD);
+//      deleteFromWorkingMemory(m_freeSpaceProperties[placeID]);
+//    }
+//    catch (DoesNotExistOnWMException) {
+//      log("Error! gateway property was already missing!");
+//    }
+//    m_freeSpaceProperties.erase(placeID);
+//  }
+//
+//  // 2: Border properties
+//  if (m_borderProperties.find(placeID) != m_borderProperties.end()) {
+//    try {
+//      lockEntry(m_borderProperties[placeID], cdl::LOCKEDOD);
+//      deleteFromWorkingMemory(m_borderProperties[placeID]);
+//    }
+//    catch (DoesNotExistOnWMException) {
+//      log("Error! gateway property was already missing!");
+//    }
+//    m_borderProperties.erase(placeID);
+//  }
 }
 
 void
