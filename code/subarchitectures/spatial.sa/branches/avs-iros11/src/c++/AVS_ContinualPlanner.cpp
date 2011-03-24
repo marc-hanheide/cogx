@@ -204,7 +204,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 
 		log("Got a new Visual Object!");
 		CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(belief->content));
-		BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["cg-label"]));
+		BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["label"]));
 		FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
 		ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
 		log("Visual Object Id: %s", elformula->prop.c_str());
