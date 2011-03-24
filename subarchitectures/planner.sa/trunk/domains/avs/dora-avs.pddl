@@ -306,6 +306,22 @@
                                   (change (placestatus ?to) trueplace))
                      )
 
+   (:durative-action move_direct
+                     :agent (?a - robot)
+                     :parameters (?to - place)
+                     :variables (?from - place ?via - place)
+                     :duration (= ?duration 3)
+                     :condition (and (over all (and (or (connected ?from ?via)
+                                                        (connected ?via ?from))
+                                                    (or (connected ?via ?to)
+                                                        (connected ?to ?via))
+                                                   ))
+                                     (over all (not (done)))
+                                     (at start (= (is-in ?a) ?from)))
+                     :effect (and (change (is-in ?a) ?to)
+                                  (change (placestatus ?to) trueplace))
+                     )
+
    ;; (:durative-action move_direct
    ;;                   :agent (?a - robot)
    ;;                   :parameters (?to - place)
@@ -317,7 +333,8 @@
    ;;                                                      (attached_to_room ?to ?r))))
    ;;                                   (over all (not (done)))
    ;;                                   (at start (= (is-in ?a) ?from)))
-   ;;                   :effect (and (change (is-in ?a) ?to))
+   ;;                   :effect (and (change (is-in ?a) ?to)
+   ;;                                (change (placestatus ?to) trueplace))
    ;;                   )
 
    ;; create cones for search in a room
