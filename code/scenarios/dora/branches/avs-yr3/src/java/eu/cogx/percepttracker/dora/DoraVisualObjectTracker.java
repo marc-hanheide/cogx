@@ -73,6 +73,9 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		WorkingMemoryAddress perceptPointer = ((PointerFormula) pb.getContent()
 				.get(VisualObjectTransferFunction.IS_IN).getDistribution()
 				.get().values.get(0).val).pointer;
+		WorkingMemoryAddress conePointer = ((PointerFormula) pb.getContent()
+				.get(VisualObjectTransferFunction.CONE).getDistribution()
+				.get().values.get(0).val).pointer;
 			  log("5");
 		double perceptIsInProb = pb.getContent().get(
 				VisualObjectTransferFunction.IS_IN).getDistribution().get().values
@@ -97,29 +100,42 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
 						.create(GroundedBelief.class, getMemoryEntry(
 								wmaGrounded, GroundedBelief.class));
-				float existingProb = sumProb(gb.getContent().get(
-						VisualObjectTransferFunction.IS_IN));
-				log("the current existingProb of the GroundedBelief is "
-						+ existingProb + ", the perceptIsInProb is "
-						+ perceptIsInProb);
-				if (perceptIsInProb < 0.5) {
-					log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-					setIsInProb(gb.getContent().get(
-							VisualObjectTransferFunction.IS_IN),
-							perceptPointer, (float) perceptIsInProb);
+
+                WorkingMemoryAddress gbConePointer = ((PointerFormula) gb.getContent()
+                                                      .get(VisualObjectTransferFunction.CONE).getDistribution()
+                                                      .get().values.get(0).val).pointer;
+
+                if (conePointer.equals(gbConePointer)) {
+                    log("we have found an object in the same viewcone, " + conePointer.id);
+                    newNeeded = false;
 					manageHistory(event, from, gb.get());
 					overwriteWorkingMemory(wmaGrounded, gb.get());
-					newNeeded = false;
-				} else if (existingProb < 0.5) {
-					log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-					setIsInProb(gb.getContent().get(
-							VisualObjectTransferFunction.IS_IN),
-							perceptPointer, (float) perceptIsInProb);
-					manageHistory(event, from, gb.get());
-					overwriteWorkingMemory(wmaGrounded, gb.get());
-					newNeeded = false;
-					break;
-				}
+                    break;
+                }
+
+				// float existingProb = sumProb(gb.getContent().get(
+				// 		VisualObjectTransferFunction.IS_IN));
+				// log("the current existingProb of the GroundedBelief is "
+				// 		+ existingProb + ", the perceptIsInProb is "
+				// 		+ perceptIsInProb);
+				// if (perceptIsInProb < 0.5) {
+				// 	log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// 	setIsInProb(gb.getContent().get(
+				// 			VisualObjectTransferFunction.IS_IN),
+				// 			perceptPointer, (float) perceptIsInProb);
+				// 	manageHistory(event, from, gb.get());
+				// 	overwriteWorkingMemory(wmaGrounded, gb.get());
+				// 	newNeeded = false;
+				// } else if (existingProb < 0.5) {
+				// 	log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// 	setIsInProb(gb.getContent().get(
+				// 			VisualObjectTransferFunction.IS_IN),
+				// 			perceptPointer, (float) perceptIsInProb);
+				// 	manageHistory(event, from, gb.get());
+				// 	overwriteWorkingMemory(wmaGrounded, gb.get());
+				// 	newNeeded = false;
+				// 	break;
+				// }
 
 			}
 			// we found no belief that we can assign to, so we need a new one
