@@ -210,17 +210,29 @@ module ConceptualData
 
 	enum EventType 
 	{
+		// 0
 		EventNothig, 
+		// 1 2
 		EventRoomAdded, EventRoomDeleted, // Info: room id 
+		// 3 4
 		EventRoomPlaceAdded, EventRoomPlaceDeleted, // Info roomId, placeId
+		// 5 6
 		EventPlaceholderAdded, EventPlaceholderDeleted,
+		// 7 
 		EventGatewayPlacePropertyChanged, // Info placeId
+		// 8 9 10
 		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, // placeId, propertyNo
+		// 11 12 13
 		EventObjectSearchResultAdded, EventObjectSearchResultDeleted, EventObjectSearchResultChanged, // placeId, propertyNo
+		// 14 15 16
 		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
+		// 17 18 19
 		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
+		// 20
 		EventRoomConnectivityChanged, // place1id, place2id
+		// 21 22 23
 		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
+		// 24 25 26
 		EventAssociatedSpacePlaceholderPropertyAdded, EventAssociatedSpacePlaceholderPropertyChanged, EventAssociatedSpacePlaceholderPropertyDeleted 
 	};
 	
