@@ -53,6 +53,8 @@ private:
 	/** World state changed, infer and then update the coma room structs. */
 	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	void placeChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
 	/** Updates or creates the property on Spatial.SA working memory. */
 	void updateRoomCategoryPlaceholderProperty(int placeholderId,
 			std::string category, const SpatialProbabilities::ProbabilityDistribution &pd);
@@ -65,6 +67,9 @@ private:
 	void setRoomCategoryPlaceholderPropertyDistribution(
 			SpatialProperties::RoomCategoryPlaceholderPropertyPtr propertyPtr,
 			const SpatialProbabilities::ProbabilityDistribution &pd);
+
+	bool placeholderExists(int id);
+
 
 private:
 
@@ -91,6 +96,10 @@ private:
 
 	  /** ICE proxy to the DefaultData::ChainGraphInferencerInterface. */
 	  DefaultData::ChainGraphInferencerServerInterfacePrx _defaultChainGraphInferencerServerInterfacePrx;
+
+	  /** Map of place wmAddress -> place id */
+	  std::map<cast::cdl::WorkingMemoryAddress, int> _placeWmAddressMap;
+
 
 
 private:

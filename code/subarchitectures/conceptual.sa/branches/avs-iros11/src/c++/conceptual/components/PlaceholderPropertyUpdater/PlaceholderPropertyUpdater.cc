@@ -80,6 +80,11 @@ void PlaceholderPropertyUpdater::start()
 	addChangeFilter(createLocalTypeFilter<ConceptualData::WorldState>(cdl::ADD),
 			new MemberFunctionChangeReceiver<PlaceholderPropertyUpdater>(this,
 					&PlaceholderPropertyUpdater::worldStateChanged));
+	// Global filter on SpatialData::Place
+	addChangeFilter(createGlobalTypeFilter<SpatialData::Place>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<PlaceholderPropertyUpdater>(this,
+					&PlaceholderPropertyUpdater::placeChanged));
+
 }
 
 
@@ -185,7 +190,7 @@ void PlaceholderPropertyUpdater::worldStateChanged(const cast::cdl::WorkingMemor
 	}
 	unlockEntry(wmChange.address);
 
-	// Signal to make an inference and update coma room structs.
+	// Signal to make an inference and update placeholder properties.
 	pthread_cond_signal(&_worldStateChangedSignalCond);
 	pthread_mutex_unlock(&_worldStateChangedSignalMutex);
 
@@ -217,22 +222,41 @@ void PlaceholderPropertyUpdater::updateRoomCategoryPlaceholderProperty(int place
 		propertyInfo.wmAddress.subarchitecture = "spatial.sa";
 		propertyInfo.wmAddress.id = newDataID();
 
-		addToWorkingMemory(propertyInfo.wmAddress, propertyPtr);
-		_placeholderProperties.push_back(propertyInfo);
+		// Just before sending out the property, check if the placeholder still exists.
+		// If it does not, then do not update the property
+		if (placeholderExists(placeholderId))
+		{
+			addToWorkingMemory(propertyInfo.wmAddress, propertyPtr);
+			_placeholderProperties.push_back(propertyInfo);
+			debug("Room category placeholder property for placeholder ID:%d and category %s added",
+					placeholderId, category.c_str());
+		}
+		else
+			debug("Room category placeholder property for placeholder ID:%d and category %s was NOT added since the placeholder disappeared!",
+					placeholderId, category.c_str());
 	}
 	else
 	{ // Property exists already, overwrite
 		try
 		{
-			lockEntry(wmAddress, cdl::LOCKEDODR);
-			SpatialProperties::RoomCategoryPlaceholderPropertyPtr propertyPtr =
-					getMemoryEntry<SpatialProperties::RoomCategoryPlaceholderProperty>(wmAddress);
-			setRoomCategoryPlaceholderPropertyDistribution(propertyPtr, pd);
-			overwriteWorkingMemory(wmAddress, propertyPtr);
-			unlockEntry(wmAddress);
+			// Just before sending out the property, check if the placeholder still exists.
+			// If it does not, then do not update the property
+			if (placeholderExists(placeholderId))
+			{
 
-			debug("Room category placeholder property for placeholder ID:%d and category %s updated",
-					placeholderId, category.c_str());
+				lockEntry(wmAddress, cdl::LOCKEDODR);
+				SpatialProperties::RoomCategoryPlaceholderPropertyPtr propertyPtr =
+						getMemoryEntry<SpatialProperties::RoomCategoryPlaceholderProperty>(wmAddress);
+				setRoomCategoryPlaceholderPropertyDistribution(propertyPtr, pd);
+				overwriteWorkingMemory(wmAddress, propertyPtr);
+				unlockEntry(wmAddress);
+				debug("Room category placeholder property for placeholder ID:%d and category %s updated",
+						placeholderId, category.c_str());
+			}
+			else
+				debug("Room category placeholder property for placeholder ID:%d and category %s was NOT updated since the placeholder disappeared!",
+						placeholderId, category.c_str());
+
 		}
 		catch(DoesNotExistOnWMException)
 		{
@@ -242,6 +266,25 @@ void PlaceholderPropertyUpdater::updateRoomCategoryPlaceholderProperty(int place
 		}
 
 	}
+}
+
+
+// -------------------------------------------------------
+bool PlaceholderPropertyUpdater::placeholderExists(int id)
+{
+	pthread_mutex_lock(&_worldStateChangedSignalMutex);
+	bool found = false;
+	for (std::map<cast::cdl::WorkingMemoryAddress, int>::iterator it = _placeWmAddressMap.begin();
+			it!=_placeWmAddressMap.end(); ++it)
+	{
+		if (it->second==id)
+		{
+			found = true;
+			break;
+		}
+	}
+	pthread_mutex_unlock(&_worldStateChangedSignalMutex);
+	return found;
 }
 
 
@@ -297,4 +340,91 @@ void PlaceholderPropertyUpdater::setRoomCategoryPlaceholderPropertyDistribution(
 
 }
 
+
+void PlaceholderPropertyUpdater::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{
+		SpatialData::PlacePtr placePtr;
+		try
+		{
+			placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		if (placePtr->status == SpatialData::PLACEHOLDER)
+		{
+			pthread_mutex_lock(&_worldStateChangedSignalMutex);
+			_placeWmAddressMap[wmChange.address] = placePtr->id;
+			pthread_mutex_unlock(&_worldStateChangedSignalMutex);
+		}
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialData::PlacePtr placePtr;
+		try
+		{
+			placePtr = getMemoryEntry<SpatialData::Place>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+
+		pthread_mutex_lock(&_worldStateChangedSignalMutex);
+
+		bool wasPlaceholder = _placeWmAddressMap.find(wmChange.address)!=_placeWmAddressMap.end();
+		if (wasPlaceholder)
+		{
+			if (_placeWmAddressMap[wmChange.address] != placePtr->id)
+				throw cast::CASTException("The mapping between Place WMAddress and ID changed!");
+
+			if (placePtr->status != SpatialData::PLACEHOLDER)
+			{ // Place stopped being a placeholder
+				_placeWmAddressMap.erase(wmChange.address);
+			}
+		}
+		else
+		{
+			if (placePtr->status == SpatialData::PLACEHOLDER)
+			{ // Place is a placeholder now
+				_placeWmAddressMap[wmChange.address] = placePtr->id;
+			}
+		}
+
+		pthread_mutex_unlock(&_worldStateChangedSignalMutex);
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		pthread_mutex_lock(&_worldStateChangedSignalMutex);
+
+		if (_placeWmAddressMap.find(wmChange.address)!=_placeWmAddressMap.end())
+			_placeWmAddressMap.erase(wmChange.address);
+
+		pthread_mutex_unlock(&_worldStateChangedSignalMutex);
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+
+
+
 } // namespace def
+
