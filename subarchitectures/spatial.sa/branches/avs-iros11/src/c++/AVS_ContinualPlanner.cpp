@@ -175,7 +175,7 @@ try {
   log("Got Spatial Object: %s", newObj->label.c_str());
   model->pose = newObj->pose;
 
-  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup.bloxelMapId], model);
+  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup->bloxelMapId], model);
 } catch (DoesNotExistOnWMException e) {
     log("Error! SpatialObject disappeared from WM!");
   }
@@ -204,7 +204,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 
 		log("Got a new Visual Object!");
 		CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(belief->content));
-		BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["label"]));
+		BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["cg-label"]));
 		FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
 		ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
 		log("Visual Object Id: %s", elformula->prop.c_str());
@@ -212,11 +212,11 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		m_fromBeliefIdtoVisualLabel[objID.address.id] = elformula->prop.c_str();
 
 		SpatialProperties::ObjectPlacePropertyPtr result = new SpatialProperties::ObjectPlaceProperty;
-		result->category = m_currentConeGroup.searchedObjectCategory;
-		result->relation = m_currentConeGroup.relation;
-		result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
-		result->supportObjectId = m_currentConeGroup.supportObjectId;
-		result->placeId = m_currentConeGroup.placeId;
+		result->category = m_currentConeGroup->searchedObjectCategory;
+		result->relation = m_currentConeGroup->relation;
+		result->supportObjectCategory = m_currentConeGroup->supportObjectCategory;
+		result->supportObjectId = m_currentConeGroup->supportObjectId;
+		result->placeId = m_currentConeGroup->placeId;
 
 		SpatialProperties::DiscreteProbabilityDistributionPtr spadist = new SpatialProperties::DiscreteProbabilityDistribution;
 		SpatialProperties::ValueProbabilityPair pair1,pair2;
@@ -287,7 +287,6 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		if (comarooms.size() == 0){
 			log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
-
 			return;
 		}
 		unsigned int i = 0;
@@ -297,14 +296,14 @@ void AVS_ContinualPlanner::generateViewCones(
 				break;
 			}
 		}
-
+		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); j++){
+					log("getting room which contains, placeid: %d", comarooms[i]->containedPlaceIds[j]);
+				}
 		FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
 				FrontierInterface::LocalMapInterface> ("map.manager"));
 		combined_lgm = agg2->getCombinedGridMap(comarooms[i]->containedPlaceIds);
 
-		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); j++){
-			log("getting room which contains, placeid: %d", comarooms[i]->containedPlaceIds[j]);
-		}
+
 
 		m_templateRoomBloxelMaps[newVPCommand->roomId]
 				= new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 + 1,
@@ -316,6 +315,32 @@ void AVS_ContinualPlanner::generateViewCones(
 		CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
 				CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
 		IcetoCureLGM(combined_lgm, lgm);
+
+		/* Remove all free space and obstacle which does not belong to this room
+		 * This is to avoid spillage of metric space from other rooms
+		 * */
+		std::set<int> currentRoomPlaceIds;
+		double xW,yW;
+		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
+			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
+		}
+		log("Throwing away all known space in LGMap of this room belonging to another room");
+		FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface> ("place.manager"));
+		log("got interface");
+		FrontierInterface::PlaceMembership placemem;
+				for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
+			for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
+				if ((*lgm)(x,y) != '2'){
+					lgm->index2WorldCoords(x,y,xW,yW);
+					placemem = agg->getPlaceMembership(xW,yW);
+					if(currentRoomPlaceIds.find(placemem.placeID) == currentRoomPlaceIds.end()){
+						(*lgm)(x,y) = '2';
+					}
+				}
+			}
+		}
+		log("removed");
+
 		m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
 		GDMakeObstacle makeobstacle;
 		for (int x = -combined_lgm.size; x < combined_lgm.size; x++) {
@@ -323,10 +348,14 @@ void AVS_ContinualPlanner::generateViewCones(
 				if ((*lgm)(x, y) == '1') {
 					m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
 							x + combined_lgm.size, y + combined_lgm.size,
-							m_LaserPoseR.getZ(), m_minbloxel * 2, makeobstacle);
+							m_LaserPoseR.getZ(),  m_minbloxel, makeobstacle);
+					//m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
 				}
 			}
 		}
+	}
+	else{
+		log("Already have this bloxel map");
 	}
 
 
@@ -336,11 +365,13 @@ void AVS_ContinualPlanner::generateViewCones(
 	bool alreadyGenerated = false;
 
 	if (m_objectBloxelMaps.count(id) > 0) {
+		log("A bloxel map for this location is already generated.");
 		alreadyGenerated = true;
 	}
 	// if we already have a bloxel map for configuration
 	// else create a new one
 	if (!alreadyGenerated) {
+		log("A new bloxelmap for this location is being created.");
 		//Since we don't have this location currently, first initialize a bloxel map for it from the template room map
 		m_objectBloxelMaps[id] = new SpatialGridMap::GridMap<GridMapData>(
 				*m_templateRoomBloxelMaps[newVPCommand->roomId]);
@@ -350,8 +381,8 @@ void AVS_ContinualPlanner::generateViewCones(
 
 
     if(m_usePeekabot){
-    	log("Displaying Map in PB.");
-    	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+    	//log("Displaying Map in PB.");
+    //	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
     }
 	m_currentBloxelMap = m_objectBloxelMaps[id];
 	m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
@@ -443,19 +474,23 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		GDProbInit initfunctor(fixedpdfvalue);
 		log("Setting each bloxel near an obstacle to a fixed value of %f, in total: %f", fixedpdfvalue, pdfmass);
+		pair<double,double> insideroom;
+		insideroom.first =0;
+		insideroom.second=0;
 
 		CureObstMap* lgm = m_templateRoomGridMaps[newVPCommand->roomId];
 		for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
 			for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
 				int bloxelX = x + lgm->getSize();
 				int bloxelY = y + lgm->getSize();
-				if ((*lgm)(x, y) == '3' || (*lgm)(x, y) == '1') {
+				if ((*lgm)(x, y) == '1') {
 					// For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
 					// (Only neighbors which are not unknown in the Cure map. Unknown 3D
 					// space is still assigned, though)
 
 					for (int i = -1; i <= 1; i++) {
 						for (int j = -1; j <= 1; j++) {
+
 							if ((*lgm)(x + i, y + j) == '0'
 									&& (bloxelX + i
 											<= m_objectBloxelMaps[id]->getMapSize().first
@@ -465,8 +500,7 @@ void AVS_ContinualPlanner::generateViewCones(
 											&& bloxelY + i > 0)) {
 //								/log("modifying bloxelmap pdf");
 								m_objectBloxelMaps[id]->boxSubColumnModifier(
-										bloxelX + i, bloxelY + j, m_mapceiling
-												/ 2, m_mapceiling, initfunctor);
+										bloxelX + i, bloxelY + j, 1.5, m_mapceiling-1, initfunctor);
 							}
 						}
 					}
@@ -478,16 +512,20 @@ void AVS_ContinualPlanner::generateViewCones(
 			//    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
 		normalizePDF(*m_objectBloxelMaps[id], pdfmass, massAfterInit);
 		log("Done setting.");
+	}else if (!alreadyGenerated){
+		log("Something weird happened!");
 	}
 
 	//Now that we've got our map generate cones for this
 	//Todo: and generateViewCones based on this
     if(m_usePeekabot){
-    	log("Displaying PDF Map in PB.");
-      pbVis->AddPDF(*m_objectBloxelMaps[id]);
-
+    //	log("Displaying PDF Map in PB.");
+     // pbVis->AddPDF(*m_objectBloxelMaps[id]);
+      pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
     }
 	log("getting cones..");
+
+
 	ViewPointGenerator coneGenerator(this,
 			m_templateRoomGridMaps[newVPCommand->roomId],
 			m_objectBloxelMaps[id], m_samplesize, m_sampleawayfromobs,
@@ -498,23 +536,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 	log("got %d cones..", viewcones.size());
 
-	/* Display Samples in PB BEGIN */
-	vector < vector<double> > sampled2Dpoints;
-	if(m_usePeekabot){
-		vector<Cure::Pose3D> samples2DWC;
-		for (unsigned int i=0; i < coneGenerator.m_samples2D.size(); i++){
-			double xW, yW;
-			m_currentCureObstMap->index2WorldCoords(coneGenerator.m_samples2D[i].getX(), coneGenerator.m_samples2D[i].getY(), xW, yW);
-			Cure::Pose3D pos;
-			pos.setX(xW);
-			pos.setY(yW);
-			pos.setZ(0);
-			samples2DWC.push_back(pos);
-		}
-		pbVis->Add3DPointCloud(samples2DWC, true, "sample_points");
 
-	}
-	/* Display Samples in PB END */
 
 	//Getting the place belief pointer
 
@@ -524,21 +546,19 @@ void AVS_ContinualPlanner::generateViewCones(
 	// 3. Create beliefs about them
 
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		if(m_usePeekabot){
-			PostViewCone(viewcones[i]);
-		}
-
+		log("1");
 
 		/* GETTING PLACE BELIEFS */
 
 		int closestnode = GetClosestNodeId(viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
+		log("2");
 		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
-
+		log("3");
 		cast::cdl::WorkingMemoryAddress placeWMaddress;
 		// Get the place id for this cone
 		vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > placeBeliefs;
 			getWorkingMemoryEntries<GroundedBelief> ("spatial.sa", 0, placeBeliefs);
-
+			log("4");
 			if (placeBeliefs.size() ==0){
 				log("Could not get any  GroundedBeliefs from spatial.sa returning without doing anything...");
 				return;
@@ -823,7 +843,7 @@ void AVS_ContinualPlanner::IcetoCureLGM(FrontierInterface::LocalGridMap icemap,
 }
 
 /* Process ConeGroup with id */
-void AVS_ContinualPlanner::processConeGroup(int id) {
+void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 	// Todo: Loop over cones in conegroup
 	// FIXME ASSUMPTION ConeGroup contains one cone
 	// FIXME ASSUMPTION Always observe one object at a time
@@ -843,21 +863,51 @@ void AVS_ContinualPlanner::processConeGroup(int id) {
 		return;
 	}
 	log("Processing Cone Group with id %d, totalprob %f", id, m_beliefConeGroups[id].getTotalProb());
-
-	m_currentConeGroup = m_beliefConeGroups[id];
+	m_currentConeGroup = &m_beliefConeGroups[id];
 	m_currentViewCone.first = id;
-	m_currentViewCone.second = m_currentConeGroup.viewcones[0]; // FIXME one cone per conegroup!
-	log("Posting a nav command");
+	m_currentViewCone.second = m_currentConeGroup->viewcones[0]; // FIXME one cone per conegroup!
 
-	Cure::Pose3D pos;
-	pos.setX(m_currentViewCone.second.pos[0]);
-	pos.setY(m_currentViewCone.second.pos[1]);
-	pos.setTheta(m_currentViewCone.second.pan);
-	PostNavCommand(pos, SpatialData::GOTOPOSITION);
+	if(skipNav){
+		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
+	}else{
+		Cure::Pose3D pos;
+			pos.setX(m_currentViewCone.second.pos[0]);
+			pos.setY(m_currentViewCone.second.pos[1]);
+			pos.setTheta(m_currentViewCone.second.pan);
+			PostNavCommand(pos, SpatialData::GOTOPOSITION);
+			log("Posting a nav command");
+	}
+
+
+
+
+
+
 }
 
 
 void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
+
+m_currentConeGroup->isprocessed = true;
+bool isAllConeGroupsProcessed = true;
+
+/* FIXME
+ *  !!! HACK !!!
+ *  Since creating cones to cover !%100 is intractable with planner
+ *  We actually create cones to cover a certain percentage of initial PDB
+ *  But if the last cone is being processed return %100 as beta to Conceptual
+ *  So the CP planner won't ask for this again
+ *  Otherwise CP-DT enters a loop
+ */
+// If there's one conegroup which is not yet processed then it means this is not the last ConeGroup for this location
+for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!= m_beliefConeGroups.end(); ++it){
+	if (it->second.bloxelMapId == m_currentConeGroup->bloxelMapId){
+		if (!it->second.isprocessed){
+			log("Not all cone groups for this location are processed yet");
+			isAllConeGroupsProcessed = false;
+		}
+	}
+}
 
 double sensingProb = 0.8;
 GDProbSum sumcells;
@@ -885,6 +935,9 @@ map->universalQuery(sumcells);
 double finalMapPDFSum = sumcells.getResult();
 double differenceMapPDFSum = initialMapPDFSum - finalMapPDFSum;
 
+// Removing prob. from internal ConeGroup representation
+m_currentConeGroup->viewcones[0].totalprob -= differenceMapPDFSum;
+
 if (differenceMapPDFSum < 0){
 	log("We managed to observe negative probability, something is very wrong!");
 }
@@ -892,15 +945,23 @@ if (differenceMapPDFSum < 0){
 log("ViewConeUpdate: After cone update map sums to: %f", sumcells.getResult());
 
 SpatialData::ObjectSearchResultPtr result = new SpatialData::ObjectSearchResult;
-result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
-	result->relation = m_currentConeGroup.relation;
-	result->supportObjectCategory = m_currentConeGroup.supportObjectCategory;
-	result->supportObjectId = m_currentConeGroup.supportObjectId;
-	result->roomId = m_currentConeGroup.roomId;
+result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
+	result->relation = m_currentConeGroup->relation;
+	result->supportObjectCategory = m_currentConeGroup->supportObjectCategory;
+	result->supportObjectId = m_currentConeGroup->supportObjectId;
+	result->roomId = m_currentConeGroup->roomId;
 
 	// ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
-	result->beta = m_locationToBeta[m_currentConeGroup.bloxelMapId] + differenceMapPDFSum/initialMapPDFSum;
-	m_locationToBeta[m_currentConeGroup.bloxelMapId] = result->beta;
+	if (isAllConeGroupsProcessed){
+		log("All cone groups for this location are processed return very high beta to Conceptual!");
+
+		result->beta = 0.99;
+	}else{
+		result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId] + differenceMapPDFSum/initialMapPDFSum;
+	}
+	m_locationToBeta[m_currentConeGroup->bloxelMapId] = result->beta;
+
+
 
 	log("The observed ratio of location: %f", result->beta);
 
@@ -908,6 +969,7 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
 	log("Updating conegroup probability");
+
 	//get the belief id
 	try{
 		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[viewcone.first].c_str());
@@ -927,16 +989,16 @@ result->searchedObjectCategory = m_currentConeGroup.searchedObjectCategory;
 	}
 
 	// this means it's the first time we're reporting search result
-	if (m_locationToBetaWMAddress.count(m_currentConeGroup.bloxelMapId) == 0){
-		log("this is the first time we're adding a ObjectSearchResult for this id: %s", m_currentConeGroup.bloxelMapId.c_str());
+	if (m_locationToBetaWMAddress.count(m_currentConeGroup->bloxelMapId) == 0){
+		log("this is the first time we're adding a ObjectSearchResult for this id: %s", m_currentConeGroup->bloxelMapId.c_str());
 		string wmid = newDataID();
-		m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId] = wmid;
+		m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId] = wmid;
 		addToWorkingMemory(wmid, result);
 	}
 	else{
 		try{
-		log("overwriting object search result at WMAdress %s", m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId].c_str());
-		overwriteWorkingMemory(m_locationToBetaWMAddress[m_currentConeGroup.bloxelMapId], result);
+		log("overwriting object search result at WMAdress %s", m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId].c_str());
+		overwriteWorkingMemory(m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId], result);
 		} catch (DoesNotExistOnWMException e) {
 			log("Error! ObjectSearchResult missing on WM!");
 		}
@@ -1183,6 +1245,9 @@ void AVS_ContinualPlanner::AVSServer::simulateViewCones(const SpatialData::Relat
 	m_pOwner->generateViewCones(cmd2, "");
 }
 
+void  AVS_ContinualPlanner::AVSServer::processViewCones(const int id ,const Ice::Current &){
+	m_pOwner->processConeGroup(id,true);
+}
 
 void AVS_ContinualPlanner::newRobotPose(const cdl::WorkingMemoryChange &objID) {
 	try {
@@ -1227,8 +1292,8 @@ void AVS_ContinualPlanner::owtNavCommand(
 	//	MovePanTilt(0.0, m_currentViewCone.tilt, 0.08);
 	//	Recognize();
 		log("Nav Command succeeded");
-		log("Updating the %s bloxel map", m_currentConeGroup.bloxelMapId.c_str());
-		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup.bloxelMapId]);
+		log("Updating the %s bloxel map", m_currentConeGroup->bloxelMapId.c_str());
+		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 		m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 		log("Overwriting command to change status to: SUCCESS");
 		overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
@@ -1499,7 +1564,7 @@ AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object 
 		if (direction < 0) direction += 2*M_PI;
 		GDMakeObstacle makeObstacle;
 		double h = box.thickness/2;
-		double cd = cos(direction);
+		double cd = cos(direction);log("Posting a nav command");
 		double sd = sin(direction);
 
 		if (openSide != 0)
@@ -1541,5 +1606,8 @@ AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object 
 	  log("returning");
 	}
 
+void AVS_ContinualPlanner::displayPDF(BloxelMap map){
+	pbVis->AddPDF(map);
+}
 
 } //namespace

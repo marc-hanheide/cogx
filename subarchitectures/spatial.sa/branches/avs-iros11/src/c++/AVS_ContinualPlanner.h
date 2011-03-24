@@ -62,6 +62,10 @@ public:
 			}
 			return tmp;
 		}
+
+		bool isprocessed;
+
+		ConeGroup(){ isprocessed=false; };
 	};
 
 
@@ -74,7 +78,7 @@ public:
 	void start();
 	void runComponent();
 	void generateViewCones(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand, std::string WMAddress);
-	void processConeGroup(int id);
+	void processConeGroup(int id, bool skipNav = false);
 	std::string convertLocation2Id(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
 	void configure(const std::map<std::string, std::string>& _config);
 	void newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID);
@@ -100,6 +104,11 @@ public:
 	 void putObjectInMap(BloxelMap &map, spatial::Object *object);
 	 void receivePointCloud(BloxelMap *map, FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
 	 void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
+	 void displayPDF(BloxelMap map);
+
+public:
+	 bool m_usePeekabot;
+	 VisualPB_Bloxel* pbVis;
 
 private:
 
@@ -107,6 +116,7 @@ private:
 	 public:
 	      virtual void simulateViewCones(const SpatialData::RelationalViewPointGenerationCommandPtr &cmd ,
 	    		    const Ice::Current &);
+	      virtual void processViewCones(const int id ,const Ice::Current &);
 	      AVS_ContinualPlanner *m_pOwner;
 	      AVSServer(AVS_ContinualPlanner *owner) : m_pOwner(owner)
 	      {}
@@ -127,7 +137,7 @@ private:
 
 	bool m_usePTZ;
 	bool m_ignoreTilt;
-	bool m_usePeekabot;
+
 	VariableNameGenerator m_namegenerator;
 	int m_gridsize;
 	double m_samplesize;
@@ -148,7 +158,6 @@ private:
 	 bool  m_gotNewGenerateViewCone;
 
 	 std::string m_PbHost;
-	 VisualPB_Bloxel* pbVis;
 
 	 // labels of tagged objects
 	 std::vector<std::string> m_siftObjects;
@@ -169,8 +178,8 @@ private:
 	 std::map<std::string, double> m_locationToBeta; // search location's so far explored region
 	 std::map<std::string, std::string> m_locationToBetaWMAddress; //search location's ObjectSearchResult WMAddress
 
-	 ConeGroup m_currentConeGroup;
-	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // index of SensingAction in ConeGroup and the SensingAction itself
+	 ConeGroup* m_currentConeGroup;
+	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // Id of this SensingAction's ConeGroup and the SensingAction itself
 	 int m_coneGroupId; // Unique Id for each cone group
 
 	MainDialog *_mainDialog;
