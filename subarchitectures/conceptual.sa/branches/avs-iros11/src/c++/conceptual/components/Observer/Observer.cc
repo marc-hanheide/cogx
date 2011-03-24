@@ -201,6 +201,18 @@ void Observer::updateWorldState()
 	_accumulatedEvents.clear();
 	_lastWsUpdateTime = curTime;
 
+
+	stringstream eventStr;
+	for (size_t i=0; i<accumulatedEvents.size(); ++i)
+	{
+		eventStr<<"type:"<<accumulatedEvents[i].type << " place1Id:" << accumulatedEvents[i].place1Id;
+		eventStr<<" place2Id:" << accumulatedEvents[i].place2Id;
+		eventStr<<" roomId:" << accumulatedEvents[i].roomId;
+		eventStr<<" propertyInfo:" << accumulatedEvents[i].propertyInfo <<endl;
+	}
+
+	log("Updating worldstate for events: %s", eventStr.str().c_str());
+
 	// Create a new worldstate
 	ConceptualData::WorldStatePtr newWorldStatePtr = new ConceptualData::WorldState();
 
@@ -1467,13 +1479,11 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 
 void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
-	log("associatedSpacePlaceholderPropertyChanged entered");
 	// Decide what change has been made
 	switch (wmChange.operation)
 	{
 	case cdl::ADD:
 	{
-		log("associatedSpacePlaceholderPropertyChanged ADD");
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
 		try
 		{
@@ -1488,6 +1498,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
+		log("associatedSpacePlaceholderPropertyChanged ADD %d", associatedSpacePlaceholderPropertyPtr->placeId);
 
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyAdded;
@@ -1504,7 +1515,6 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 	case cdl::OVERWRITE:
 	{
-		log("associatedSpacePlaceholderPropertyChanged OVERWRITE");
 
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr associatedSpacePlaceholderPropertyPtr;
 		try
@@ -1521,6 +1531,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
 		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
+		log("associatedSpacePlaceholderPropertyChanged OVERWRITE %d", associatedSpacePlaceholderPropertyPtr->placeId);
 
 	  	// Check wmAddresss and ID
 		if (old->placeId != associatedSpacePlaceholderPropertyPtr->placeId)
@@ -1551,11 +1562,12 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 	case cdl::DELETE:
 	{
-		log("associatedSpacePlaceholderPropertyChanged DELETE");
 
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
+		log("associatedSpacePlaceholderPropertyChanged DELETE %d", old->placeId);
+
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyDeleted;
 		ei.roomId = -1;
@@ -1573,8 +1585,6 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 	default:
 		break;
 	} // switch*/
-
-	log("associatedSpacePlaceholderPropertyChanged exited");
 
 }
 
