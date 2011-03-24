@@ -123,6 +123,10 @@ public abstract class AugmentDiscreteTransferFunction<From extends Ice.ObjectImp
 		logger.debug("trying to find referred belief");
 		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
+        if (entry == null) {
+            logger.debug("timed out");
+            return null;
+        }
 		logger.debug("got it: " + entry.getKey().id);
 		return entry.getKey();
 	}
