@@ -266,7 +266,7 @@ class CASTTask(object):
             self.action_feedback(finished_actions, failed_actions)
 
         if failed_actions:
-            self.monitor_cp()
+            self.dt_done()
             return
         self.monitor_dt()
             
