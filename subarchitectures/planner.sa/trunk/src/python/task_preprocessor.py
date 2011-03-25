@@ -198,7 +198,7 @@ def filter_unknown_preds(fact_tuples):
     if ft.feature not in current_domain.functions and \
           ft.feature not in current_domain.predicates:
       pass
-      log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
+      log.trace("filtering feature assignment %s, because '%s' is not part of the planning domain", \
                    str(ft), str(ft.feature))
     else:
       # print "using", map(str, ft)
