@@ -183,16 +183,16 @@ class Planner(object):
             if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
-                log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))
+                log.debug("    not executable, trying to skip it.")
                 # if an action is not executable, maybe it has already been executed
                 # so we're trying if the rest of the plan is executable in the initial state
                 skipped_actions = i
                 state = init_state.copy()
             else:
-                log.debug("Action (%s %s) ok.", action.name, " ".join(a.name for a in pnode.full_args))
+                log.debug("    ok.")
                 for f in pnode.effects:
                     state.set(f)
-            log.debug("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
+            log.trace("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
 
         t2 = time.time()
         #Now check if the goal is satisfied

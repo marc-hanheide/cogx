@@ -34,6 +34,15 @@ class CASTLoggerProxy(object):
             
         self.log.info(msg)
 
+    def trace(self, msg, *args):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+           args = args[0]
+        if args:
+           msg = msg % args
+            
+        self.log.trace(msg)
+
     def debug(self, msg, *args):
         self.connect()
         if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):

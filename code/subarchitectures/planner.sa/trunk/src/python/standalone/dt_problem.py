@@ -51,7 +51,7 @@ class DTProblem(object):
                     return True
             return False
 
-        self.pnodes = filter(node_filter, self.pnodes)
+        #self.pnodes = filter(node_filter, self.pnodes)
             
         facts = self.reduce_state(global_vars.config.dt.max_state_size)
         self.selected_facts = set()
@@ -75,7 +75,7 @@ class DTProblem(object):
 
         t0 = time.time()
         actions, explored_facts = relaxed_exploration.explore(self.domain.actions, set(), self.detstate, self.domain, o_actions)
-        print "total time for exploration: %.2f" % (time.time()-t0)
+        log.trace("total time for exploration: %.2f", time.time()-t0)
 
         for a, args in actions:
             used_objects |= set(args)
@@ -98,12 +98,12 @@ class DTProblem(object):
         #     print f.to_init(),  (objects(*f) < used_objects)
 
         observable_facts = set(f for f, _, _ in self.get_observations(self.selected_facts))
-        print "observable:", map(str, observable_facts)
+        # print "observable:", map(str, observable_facts)
         
         for n in self.pnodes:
             peff, obs = n.to_init(self.selected_facts, observable_facts)
             if obs and peff:
-                print obs , peff.pddl_str()
+                # print obs , peff.pddl_str()
                 used_objects |= set(visitors.visit(peff, pddl.visitors.collect_constants, [])) - self.domain.constants
                 init.append(peff)
                 
@@ -244,9 +244,9 @@ class DTProblem(object):
                     if fact.svar.function not in (pddl.builtin.total_cost, ):
                         goal_facts.add(fact)
                 self.subplan_actions.append(pnode)
-                print pnode
+                # print pnode
                 assumptions += [(pnode,0)] + [(pn, l) for pn, l in find_restrictions(pnode,0).iteritems()]
-                print "assumptions:", ["%s/%d" % (str(a),l) for a,l in assumptions]
+                log.debug("assumptions: %s", ", ".join("%s/%d" % (str(a),l) for a,l in assumptions))
                 break
             
             if pnode.action.name not in observe_actions and self.subplan_actions:
@@ -265,8 +265,8 @@ class DTProblem(object):
             return True # Don't handle those
         ground_fact = pddl.state.Fact(svar.nonmodal(), svar.modal_args[0])
         if ground_fact not in self.selected_facts:
-            print ground_fact
-            print map(str, self.selected_facts)
+            # print ground_fact
+            # print map(str, self.selected_facts)
             return False
         return True
 
@@ -297,7 +297,7 @@ class DTProblem(object):
         relevant_facts = {dep_var : self.global_relevant[dep_var]}
         H = -sum(p*math.log(p,2) for p in self.state[dep_var].itervalues() if p > 0)
         cH = self.entropy(relevant_facts, {}, 100, node_filter)
-        print "H(%s) - H(.|!%s) = %.2f - %.2f =  %.2f" % (str(dep_var), str(dis_fact), H, cH, H - cH)
+        # print "H(%s) - H(.|!%s) = %.2f - %.2f =  %.2f" % (str(dep_var), str(dis_fact), H, cH, H - cH)
         return max(H - cH, 0)
             
     def create_goal_actions(self, goals, fail_counts, selected, changed_facts, domain):
@@ -545,7 +545,7 @@ class DTProblem(object):
         levels = defaultdict(lambda: -1)
         def get_level(node, level):
             cval, clevel = choices.get(node.svar, (None, -1))
-            log.debug("get level: %s, %s", str(node), str(cval))
+            log.trace("get level: %s, %s", str(node), str(cval))
             if cval and levels[node] < level and cval in node.children:
                 levels[node] = level
                 p, nodes, facts = node.children[cval]
@@ -620,7 +620,10 @@ class DTProblem(object):
             all_facts_with_entropy = [(f, self.entropy(init, update({}, [f]), limit)) for f in all_facts]
             for fact, H in sorted(all_facts_with_entropy, key=lambda (f,H): H):
                 next = update(selected, [fact])
-                tsize = len(self.compute_states(next, limit))
+                def fact_filter(svar, val=None):
+                    return svar in next
+                    
+                tsize = len(self.compute_states(next, limit, filter_func=fact_filter))
                 if tsize <= limit and H < H_init - 0.0001:
                     log.debug("added: %s (%d, %.3f)", str(fact), tsize, H)
                     selected = next
@@ -713,11 +716,14 @@ class DTProblem(object):
         def build_state(node):
             result = defaultdict(lambda: 0.0)
             p_total = 0.0
-            if not node.is_expanded():
-                return result
-            # print node
+            if filter_func and not filter_func(node.svar):
+                # print len(result), "(break)"
+                return {undef : 1.0}
+            # print "n:", node
             for val, (p, nodes, facts) in node.children.iteritems():
-                if filter_func and not filter_func(node, val, p, facts):
+                # print val
+                # if filter_func and not filter_func(node, val, p, facts):
+                if filter_func and not filter_func(node.svar, val):
                     continue
                 p_total += p
                 sfacts = [pddl.UNKNOWN]*len(selected_facts)
@@ -731,6 +737,7 @@ class DTProblem(object):
                 for n in nodes:
                     branch_states = multiply_states(branch_states, build_state(n))
                     if len(branch_states) > limit:
+                        # print len(branch_states)
                         return branch_states
 
                 # print node, val, len(branch_states)
@@ -739,10 +746,12 @@ class DTProblem(object):
                     result[bs] += p*bp
 
                 if len(result) > limit:
+                    # print len(result)
                     return result
             if p_total < 1.0:
                 result[undef] += 1.0 - p_total
                 
+            # print len(result)
             return result
 
         states = {undef : 1.0}
@@ -769,6 +778,13 @@ class DTProblem(object):
                 
         # if any(svar in condfacts for svar in facts.iterkeys()) or not condfacts:
         #     return 0
+
+        def fact_filter(svar, val=None):
+            # print "filter:", svar, val, " = ", svar in facts or svar in condfacts
+            return svar in facts or svar in condfacts
+
+        if filter_func is None:
+            filter_func = fact_filter
         
         order = list(svar for svar in facts.iterkeys() if svar not in condfacts) + list(condfacts.iterkeys())
         svar_order = dict((var, i) for i, var in enumerate(order))
@@ -787,6 +803,12 @@ class DTProblem(object):
             for s, p in states.iteritems():
                 cf = s[-len(condfacts):]
                 cfdict[cf] += p
+        # for f, p in cfdict.iteritems():
+        #     print "P(%s) = %.2f" % (map(str, f), p)
+        # print "\n"
+        # for f, p in states.iteritems():
+        #     print "P(%s) = %.2f" % (map(str, f), p)
+            
         H = 0
         for s, p in states.iteritems():
             cf = s[-len(condfacts):]
