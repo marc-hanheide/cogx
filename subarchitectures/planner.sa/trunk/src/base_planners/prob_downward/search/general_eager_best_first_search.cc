@@ -104,9 +104,9 @@ int GeneralEagerBestFirstSearch::step() {
         }
     }
     // if (node.get_info()->op)
-    //     cout << "pop: " << node.get_g() << "    " << node.get_p() << " by " << node.get_info()->op->get_name() << endl;
+    //     cout << "pop: " << node.get_g() + g_multiplier * node.get_h() << "    " << node.get_p() << " by " << node.get_info()->op->get_name() << endl;
     // else
-    //     cout << "pop: " << node.get_g() << "    " << node.get_p() << endl;
+    //     cout << "pop: " << node.get_g() + g_multiplier * node.get_g() << "    " << node.get_p() << endl;
 
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -126,8 +126,8 @@ int GeneralEagerBestFirstSearch::step() {
             EvalInfo succ_info = node.get_info()->succ(op);
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
-                heuristics[i]->evaluate(node.get_info(), succ_state);
-                //heuristics[i]->evaluate(&succ_info, succ_state);
+                // heuristics[i]->evaluate(node.get_info(), succ_state);
+                heuristics[i]->evaluate(&succ_info, succ_state);
             }
             // cout << "---------" << endl;
             search_progress.inc_evaluated();
@@ -138,20 +138,21 @@ int GeneralEagerBestFirstSearch::step() {
             // division of responsibilities is a bit tricky here -- we
             // may want to refactor this later.
             // TODO: open_list->evaluate(node.succ_g(op), is_preferred);
-            open_list->evaluate(node.get_info(), is_preferred);
-            //open_list->evaluate(&succ_info, is_preferred);
+            // open_list->evaluate(node.get_info(), is_preferred);
+            open_list->evaluate(&succ_info, is_preferred);
             bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
                 continue;
             }
 
-            // cout << "!" << node.get_g() << " - " << node.get_p() << endl;
-            // cout << "?" << succ_node.get_g() << " - " << succ_node.get_p() << endl;
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
-            // cout << succ_node.get_g() << "    " << succ_node.get_p() <<  "   " << succ_h <<  endl;
+
+            // int c = succ_node.get_info()->c;
+            // int f = succ_node.get_g() + g_multiplier * succ_h;
+            // cout << "    f: " << f <<  ", g: " << succ_node.get_g() << " (" << c  << ", " << succ_node.get_p() << ")  h:" << succ_h << "  by " << op->get_name() << endl;
 
             open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g(), succ_node.get_p());
