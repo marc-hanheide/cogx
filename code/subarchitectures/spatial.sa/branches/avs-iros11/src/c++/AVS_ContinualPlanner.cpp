@@ -319,7 +319,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		/* Remove all free space and obstacle which does not belong to this room
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
-		std::set<int> currentRoomPlaceIds;
+	/*	std::set<int> currentRoomPlaceIds;
 		double xW,yW;
 		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
 			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
@@ -338,7 +338,7 @@ void AVS_ContinualPlanner::generateViewCones(
 					}
 				}
 			}
-		}
+		}*/
 		log("removed");
 
 		m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
@@ -536,7 +536,18 @@ void AVS_ContinualPlanner::generateViewCones(
 
 	log("got %d cones..", viewcones.size());
 
+	// normalizing cone probabilities
+	log("normalizing viewcone probabilities");
+	double tmp = 0;
+	for (unsigned int i=0; i < viewcones.size(); i++){
+		tmp += viewcones[i].totalprob;
+	}
 
+	log("Total prob %f, normalizing constant %f", tmp, 1/tmp);
+
+	for (unsigned int i=0; i < viewcones.size(); i++){
+		viewcones[i].totalprob = viewcones[i].totalprob * (1/tmp);
+	}
 
 	//Getting the place belief pointer
 
@@ -575,11 +586,15 @@ void AVS_ContinualPlanner::generateViewCones(
 			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(placeBeliefs[j]->getData()->content));
 			BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["PlaceId"]));
 			FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
+			BasicProbDistributionPtr  basicdist1(BasicProbDistributionPtr::dynamicCast(dist->distribs["placestatus"]));
+			FormulaValuesPtr formulaValues1(FormulaValuesPtr::dynamicCast(basicdist1->values));
 
 			IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(formulaValues->values[0].val));
+			ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues1->values[0].val));
+
 			int placeid = intformula->val;
 			log("Place Id for this belief: %d", placeid);
-			if (conePlaceId == placeid){
+			if (conePlaceId == placeid && elformula->prop == "TRUEPLACE"){
 				log("Got  place belief from roomid: %d", conePlaceId);
 				placeWMaddress.id = placeBeliefs[j]->getID();
 				placeWMaddress.subarchitecture = "spatial";
@@ -893,13 +908,13 @@ bool isAllConeGroupsProcessed = true;
 
 /* FIXME
  *  !!! HACK !!!
- *  Since creating cones to cover !%100 is intractable with planner
- *  We actually create cones to cover a certain percentage of initial PDB
+ *  Since creating cones to cover %100 of the space is intractable with planner
+ *  We actually create cones to cover a certain percentage of initial PDF
  *  But if the last cone is being processed return %100 as beta to Conceptual
  *  So the CP planner won't ask for this again
  *  Otherwise CP-DT enters a loop
  */
-// If there's one conegroup which is not yet processed then it means this is not the last ConeGroup for this location
+// If there's even one conegroup which is not yet processed then it means this is not the last ConeGroup for this location
 for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!= m_beliefConeGroups.end(); ++it){
 	if (it->second.bloxelMapId == m_currentConeGroup->bloxelMapId){
 		if (!it->second.isprocessed){
