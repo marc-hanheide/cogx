@@ -27,6 +27,7 @@ AVSMainWidget::AVSMainWidget(QWidget *parent, conceptual::Tester *component)
 	connect(ui.processConeGroup, SIGNAL(clicked()), this, SLOT(processConeGroup()));
 	connect(ui.postVisualObject, SIGNAL(clicked()), this, SLOT(postVisualObjectClicked()));
 	ui.lineEdit_3->setText("table");
+	ui.locationgenerateViewCones->setText("room_0_object_table");
 }
 
 AVSMainWidget::~AVSMainWidget()
@@ -51,8 +52,9 @@ void AVSMainWidget::postVisualObjectClicked(){
   obj->identLabels.push_back(objectlabel.toStdString());
   obj->identLabels.push_back("unknown");
   // note: distribution must of course sum to 1
-  obj->identDistrib.push_back(0.);
   obj->identDistrib.push_back(1.);
+  obj->identDistrib.push_back(0.);
+  obj->detectionConfidence = 1.0;
   // the information gain if we know the label, just set to 1, cause we don't
   // have any alternative thing to do
   obj->identGain = 1.;
