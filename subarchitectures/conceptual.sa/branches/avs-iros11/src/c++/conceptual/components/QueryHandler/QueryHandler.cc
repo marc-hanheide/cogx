@@ -76,13 +76,14 @@ void QueryHandler::stop()
 // -------------------------------------------------------
 string QueryHandler::sendInferenceQuery(std::string queryString, ConceptualData::QueryType type)
 {
-	string inferenceQueryId = newDataID();
+	pthread_mutex_lock(&_queryAddedSignalMutex);
+
+	string inferenceQueryId = newDataID(); // Apparently is not thread safe!!
 	ConceptualData::InferenceQueryPtr inferenceQueryPtr = new ConceptualData::InferenceQuery();
 	inferenceQueryPtr->queryString = queryString;
 	inferenceQueryPtr->type = type;
-
-	pthread_mutex_lock(&_queryAddedSignalMutex);
 	_sentQueryIds.insert(inferenceQueryId);
+
 	pthread_mutex_unlock(&_queryAddedSignalMutex);
 
 	addToWorkingMemory<ConceptualData::InferenceQuery>(inferenceQueryId, inferenceQueryPtr);
