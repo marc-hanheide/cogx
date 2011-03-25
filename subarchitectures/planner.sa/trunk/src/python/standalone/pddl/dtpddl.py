@@ -934,7 +934,7 @@ class DT2MAPLCompiler(translators.Translator):
             if isinstance(cond, conditions.LiteralCondition):
                 if translators.get_function(cond) in prob_functions:
                     return translators.set_modality(cond, mapl.committed) 
-
+                
         # dep_conditions = set()
         # @visitors.replace
         # def ceff_condition_visitor(cond, results):
@@ -958,7 +958,10 @@ class DT2MAPLCompiler(translators.Translator):
         # if dep_conditions:
         #     action.effect = effects.ConjunctiveEffect.join([action.effect] + list(dep_conditions))
 
-        # action.effect = effects.ConjunctiveEffect.join([action.effect, effects.SimpleEffect(started,[])])
+        started_pred = domain.predicates.get("started", [])
+            
+        if started_pred:
+            action.effect = effects.ConjunctiveEffect.join([action.effect, effects.SimpleEffect(started_pred,[])])
             
         # if action.sensors:
         #     commit_cond = action.commit_condition()
@@ -988,7 +991,7 @@ class DT2MAPLCompiler(translators.Translator):
 
         actions = []
         for a in dom.actions:
-            actions.append(self.translate_action(a, prob_functions))
+            actions.append(self.translate_action(a, prob_functions, dom))
                 
         # for f in dom.functions:
         #     if "p-%s" % f.name not in dom.functions:
@@ -1079,6 +1082,8 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         actions = []
         action_count = defaultdict(lambda: 0)
         
+        started_pred = domain.predicates.get("started", [])
+        
         for r in domain.dt_rules:
             for p, values in r.values:
                 agent = predicates.Parameter("?a", mapl.t_agent)
@@ -1087,6 +1092,9 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                 a = mapl.MAPLAction("__commit-%s-%d" % (r.name,i), [agent], r.args, [], None, None, None, [], domain)
                 b = Builder(a)
                 cparts = []
+                if started_pred:
+                    cparts.append(b.cond('not', (started_pred,)));
+                    
                 for lit in r.conditions:
                     if lit.predicate == builtin.equals and lit.args[0].function in prob_functions:
                         cparts.append(b.cond(mapl.commit, lit.args[0], lit.args[1]))
@@ -1127,7 +1135,7 @@ class DTPDDLCompiler(translators.Translator):
         cost_term = action.get_total_cost()
         if cost_term is None:
             return action.copy(newdomain=domain)
-
+            
         a2 = action.copy(newdomain=domain)
         a2.set_total_cost(None)
         b = Builder(a2)
