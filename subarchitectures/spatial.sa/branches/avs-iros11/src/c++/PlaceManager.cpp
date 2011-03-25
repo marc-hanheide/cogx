@@ -105,6 +105,59 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_bNoPlaceholders = true;
   }
 
+  if(_config.find("--exclude-from-exploration") != _config.end()) {
+    std::istringstream str(_config.find("--exclude-from-exploration")->second);
+
+    ForbiddenZone newZone;
+    newZone.minX = -DBL_MAX;
+    newZone.maxX = DBL_MAX;
+    newZone.minY = -DBL_MAX;
+    newZone.maxY = DBL_MAX;
+    while (!str.eof()) {
+      string buf;
+      str >> buf;
+
+      if (buf == "or") {
+	m_forbiddenZones.push_back(newZone);
+	newZone.minX = -DBL_MAX;
+	newZone.maxX = DBL_MAX;
+	newZone.minY = -DBL_MAX;
+	newZone.maxY = DBL_MAX;
+      }
+      else if (buf == "x") {
+	str >> buf;
+	if (buf == "<") {
+	  str >> newZone.maxX;
+	}
+	else if (buf == ">") {
+	  str >> newZone.minX;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else if (buf == "y") {
+	str >> buf;
+	if (buf == "<") {
+	  str >> newZone.maxY;
+	}
+	else if (buf == ">") {
+	  str >> newZone.minY;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else {
+	log("Warning: Malformed --exclude-from-exploration string");
+	break;
+      }
+    }
+    m_forbiddenZones.push_back(newZone);
+  }
+
   if(_config.find("--hyp-path-length") != _config.end()) {
     std::istringstream str(_config.find("--hyp-path-length")->second);
     str >> m_hypPathLength;
@@ -700,8 +753,18 @@ PlaceManager::evaluateUnexploredPaths()
       double newX = x;// + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
       double newY = y;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 
+      bool excluded = false;
+      for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+	  fbIt != m_forbiddenZones.end(); fbIt++) {
+	if (newX <= fbIt->maxX && newX >= fbIt->minX &&
+	    newY <= fbIt->maxY && newY >= fbIt->minY) {
+	  log("Placeholder in forbidden zone excluded");
+	  excluded = true;
+	  break;
+	}
+      }
       // Consider only frontiers with an open path to them
-      if (frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
+      if (!excluded && frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
 	// Consider only frontiers within a certain maximum distance of the current
 	// Nav node
 	if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
