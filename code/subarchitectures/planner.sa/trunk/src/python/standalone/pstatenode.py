@@ -407,6 +407,8 @@ class PNode(object):
         for o in self.svar.args:
             domain.add_constant(o)
             
+        started_pred = domain.predicates.get("started", [])
+            
         for val, (p, nodes, facts) in self.children.iteritems():
             if p * parent_p <= 0.001:
                 # print "pruned due to likelihood"
@@ -427,6 +429,10 @@ class PNode(object):
             if use_this:
                 actions.append(a)
             b = pddl.Builder(a)
+            
+            if started_pred:
+                a.precondition.parts.append(b.cond("not", (started_pred, )))
+                
             a.precondition.parts.append(b.cond("not", ("committed", self.svar.as_term())))
             # a.precondition.parts.append(b.cond("not", ("started",)))
             if parent_conds:
