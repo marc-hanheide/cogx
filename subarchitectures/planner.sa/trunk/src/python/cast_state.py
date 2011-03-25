@@ -270,12 +270,14 @@ class CASTState(object):
         exists_func = self.domain.functions["p-obj_exists"][0]
         label_t = exists_func.args[0].type
         in_rel = self.domain["in"]
+        on_rel = self.domain["on"]
         
         for svar, val in bel_facts:
             if svar.function == roomid_func and not svar.modality:
                 roomdict[int(val.value)] = svar.args[0]
 
-        extract_obj_in_room = re.compile("room([0-9]+)_object_([-_a-zA-Z]+)_unexplored")
+        extract_obj_at_object = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_([a-zA-Z]+)_([a-zA-Z]+)-([0-9a-zA-Z:]+)_unexplored")
+        extract_obj_in_room = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_unexplored")
         results = []
                 
         facts = []
@@ -286,24 +288,55 @@ class CASTState(object):
         except Exception, e:
             log.warning("Error when calling the conceptual query server: %s", str(e))
             return facts, objects
-        
-        for entry in results:
-            for key, pos in entry.variableNameToPositionMap.iteritems():
-                match = extract_obj_in_room.search(key)
-                if not match:
-                    continue
+
+        def match_obj_in_room(key):
+            match = extract_obj_in_room.search(key)
+            if match:
                 room_id = int(match.group(1))
                 label = match.group(2)
-                p = entry.massFunction[pos].probability
 
                 if room_id not in roomdict:
-                    continue
+                    return
+                
                 room_obj = roomdict[room_id]
                 label_obj = pddl.TypedObject(label, label_t)
                 svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
+                return svar, [label_obj]
+
+        def match_obj_at_obj(key):
+            match = extract_obj_at_object.search(key)
+            if match:
+                label = match.group(2)
+                rel = match.group(3)
+                supp_label = match.group(4)
+                bel_id = match.group(5)
+
+                if bel_id not in self.castname_to_obj:
+                    return
+                supp_obj = self.castname_to_obj[bel_id]
+                label_obj = pddl.TypedObject(label, label_t)
+                rel_obj = on_rel if rel == "on" else in_rel
+                
+                svar = state.StateVariable(exists_func, [label_obj, rel_obj, supp_obj])
+                return svar, [label_obj]
+
+        def first_match(key, functions):
+            for f in functions:
+                ret = f(key)
+                if ret:
+                    return ret
+            return None, None
+        
+        for entry in results:
+            for key, pos in entry.variableNameToPositionMap.iteritems():
+                svar, new_objs = first_match(key, [match_obj_in_room, match_obj_at_obj])
+                if not svar:
+                    continue
+                p = entry.massFunction[pos].probability
+                
                 fact = state.Fact(svar, pddl.types.TypedNumber(p))
                 facts.append(fact)
-                objects.add(label_obj)
+                objects |= set(new_objs)
                 log.debug("conceptual data: %s ", str(fact))
 
         return facts, objects
