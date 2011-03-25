@@ -1,20 +1,30 @@
 import castinit    # this will add stuff to sys.path
 import cogxv11n.core.DisplayClient as DisplayClient
 
+from itertools import chain
+
 import standalone
+from standalone import pddl
 from standalone.task import PlanningStatusEnum
 from autogen import Planner
 
 
 TASKS_ID = "planner.tasks"
+STATE_ID = "planner.state"
 
 STYLE = """
 tr.sat {background-color: #88FF88}
 tr.unsat {background-color: #FF6666}
 
+tr.det td:nth-child(3) {visibility:hidden;}
+tr.prob td:nth-child(1) {visibility:hidden;}
+tr.sep {visibility:hidden; height:5px}
+tr.sep td {display:none;}
+
 tr.executed {background-color: #CCCCCC}
 tr.failed {background-color: #FF6666}
 tr.in_progress {background-color: #88FF88}
+tr.summary {font-weight: bold; font-size: 110%}
 tr.dt {background-color: #8888ff}
 tr.dt.in_progress {background-color: #88ffff}
 tr.dt.executed {background-color: #6666dd}
@@ -67,7 +77,44 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
     def init_html(self):
         head = "<style type=\"text/css\">%s</style>" % STYLE
         self.setHtmlHead(TASKS_ID, "head", head);
+        self.setHtmlHead(STATE_ID, "head", head);
 
+    def update_state(self, task):
+        state = task.state.prob_state
+
+        ignore = ("i_in-domain", "defined", "poss", "search_cost")
+
+        html = "<h2>Planning state of task %d</h2>" % (task.id)
+
+        def var_row(svar, dist):
+            if dist.value is not None:
+                yield ("det", str(svar), str(dist.value.name), 1.0)
+                return
+            
+            first = True
+            for val, p in sorted(dist.iteritems(), key=lambda (v,_p): -_p):
+                if val == pddl.UNKNOWN:
+                    continue
+                
+                if first:
+                    yield ("prob-first", str(svar), str(val.name), p)
+                    first = False
+                else:
+                    yield ("prob", str(svar), str(val.name), p)
+
+        rows = []
+        prev_function = None
+        for svar, dist in sorted(state.iterdists(), key=lambda (v,p): str(v)):
+            if svar.function.name in ignore or (svar.modality and svar.modality.name in ignore):
+                continue
+            if (svar.function, svar.modality) != prev_function:
+                rows.append(("sep", "", "", 0.0))
+                prev_function = (svar.function, svar.modality)
+            rows += list(var_row(svar, dist))
+        
+        html += make_html_table(["Variable", "Value", "p"], rows, ["class", "%s", "%s", "%.3f"])
+
+        self.setHtml(STATE_ID, "state", html);
         
     def update_task(self, task):
         id = "%04d" % task.id
@@ -95,21 +142,26 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             _class = str(pnode.status).lower()
             if task.dt_task and pnode in task.dt_task.subplan_actions:
                 _class += ' dt'
-            return (_class, name, float(pnode.cost), pnode.status)
+            return (_class, name, float(pnode.cost), float(pnode.prob), pnode.status)
 
         if task.cp_task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             html += "<p>No plan found</p>"
         elif task.cp_task.get_plan():
             ordered_plan = task.cp_task.get_plan().topological_sort()
-            html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
+            c_total = sum(a.cost for a in ordered_plan)
+            p_total = reduce(lambda x,y: x*y, (a.prob for a in ordered_plan), 1.0)
+            summary = ("summary", "Total:", c_total, p_total, "")
+            rows = chain((action_row(a) for a in ordered_plan), [summary])
+            
+            html += make_html_table(["Action", "Cost", "p", "State"], rows , ["class", "%s", "%.2f", "%.3f", "%s"])
         else:
             html += "<p>Planning (Continual)...</p>"
             
         if task.dt_planning_active():
             dt_plan = task.dt_task.dt_plan
             if dt_plan:
-                html += "DT plan:"
-                html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%s"])
+                html += "<h3>DT plan:</h3>"
+                html += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
             else:
                 html += "<p>Planning (DT)...</p>"
 
@@ -123,7 +175,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
                         ordered_plan = elem.topological_sort()
                     else:
                         ordered_plan = elem.dt_plan
-                    html += make_html_table(["Action", "Cost", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%s"])
+                    html += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
                 
         
         # A multi-part HTML document.

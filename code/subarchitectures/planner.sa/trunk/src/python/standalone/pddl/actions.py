@@ -153,19 +153,22 @@ class Action(Scope):
             #print self, [a.get_instance().name for a in  args]
             return True, None
         return inst_func
-    
-    def get_total_cost(self):
-        self.totalCostTerm = None
-        tct = predicates.Term(builtin.total_cost,[])
 
+    def get_effects(self, term):
+        @visitors.collect
         def visitor(eff, parts):
             if isinstance(eff, effects.SimpleEffect):
-                if eff.predicate == builtin.increase:
-                    if eff.args[0] == tct:
-                        self.totalCostTerm = eff.args[1]
+                if eff.predicate in builtin.numeric_ops + builtin.assignment_ops:
+                    if eff.args[0] == term:
+                        return eff.args[1]
+        return visitors.visit(self.effect, visitor, [])
+        
+    
+    def get_total_cost(self):
+        tct = predicates.Term(builtin.total_cost,[])
 
-        visitors.visit(self.effect, visitor)
-        return self.totalCostTerm
+        res = self.get_effects(tct)
+        return res[0] if res else None
 
     def set_total_cost(self, new_total_cost):
         self.totalCostFound = False

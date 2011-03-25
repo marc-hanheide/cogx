@@ -108,6 +108,7 @@ class CASTTask(object):
         self.status = status_dict[status]
         self.component.getClient().updateStatus(self.id, self.status)
         self.component.m_display.update_task(self)
+        self.component.m_display.update_state(self)
 
     def load_domain(self, domain_fn):
         log.info("Loading domain %s.", domain_fn)
@@ -181,12 +182,19 @@ class CASTTask(object):
 
     def process_cp_plan(self):
         plan = self.get_plan()
-
+        
         if plan is None:
             self.plan_history.append(plan)
             self.update_status(TaskStateEnum.FAILED)
             return
 
+        total_prob = reduce(lambda x,y: x*y, (n.prob for n in plan.nodes_iter()), 1.0)
+        if total_prob < self.component.min_p:
+            log.warning("total probability %.4f below threshold %.4f. Task failed", total_prob, self.component.min_p)
+            self.plan_history.append(plan)
+            self.update_status(TaskStateEnum.FAILED)
+            return
+        
         for sg in plan.goal_node.satisfied_softgoals:
             if sg in self.goaldict:
                 slice_goal = self.goaldict[sg]
