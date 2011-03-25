@@ -169,6 +169,14 @@ class PlaceManager : public cast::ManagedComponent
     					// connectivity properties maintained
     std::map<int, std::string> m_gatewayProperties;
 
+    struct ForbiddenZone {
+      double minX;
+      double maxX;
+      double minY;
+      double maxY;
+    };
+    std::vector<ForbiddenZone> m_forbiddenZones;
+
     //Maps from placeID 
     std::map<int, std::string> m_placeholderGatewayProperties;
     std::map<int, std::string> m_freeSpaceProperties; // Keeps track of the
