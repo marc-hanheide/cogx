@@ -46,6 +46,7 @@ class PlanNode(object):
         self.time = time
         self.status = status
         self.cost = 1
+        self.prob = 1.0
 
         self.preconds = set()
         self.replanconds = set()
@@ -111,6 +112,7 @@ class DummyNode(PlanNode):
         PlanNode.__init__(self, action, args, time, status)
         
         self.cost = 0
+        self.prob = 1.0
         
     def __str__(self):
         return str(self.action)

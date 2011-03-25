@@ -133,16 +133,22 @@ def getRWDescription(action, args, _state, time):
         
     #print "write:", time.time()-t0
 
+    pterm = pddl.Term(pddl.dtpddl.probability, [])
+    prob_terms = action.get_effects(pterm)
+    if prob_terms:
+        pnode.prob = _state.evaluate_term(prob_terms[0]).value
+
     cost_term = action.get_total_cost()
     if cost_term:
-        if isinstance(cost_term, pddl.ConstantTerm):
-            pnode.cost = cost_term.object.value
-        elif isinstance(cost_term, pddl.VariableTerm):
-            pnode.cost = cost_term.get_instance().value
-        else:
-            assert isinstance(cost_term, pddl.FunctionTerm)
-            val = _state.evaluate_term(cost_term)
-            pnode.cost = val.value
+        pnode.cost = _state.evaluate_term(cost_term).value
+        # if isinstance(cost_term, pddl.ConstantTerm):
+        #     pnode.cost = cost_term.object.value
+        # elif isinstance(cost_term, pddl.VariableTerm):
+        #     pnode.cost = cost_term.get_instance().value
+        # else:
+        #     assert isinstance(cost_term, pddl.FunctionTerm)
+        #     val = _state.evaluate_term(cost_term)
+        #     pnode.cost = val.value
             
         
     #t0 = time.time()

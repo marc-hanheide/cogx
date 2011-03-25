@@ -174,6 +174,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.conceptual_name = config.get("--conceptual", "conceptual.queryhandler")
     self.show_dot = "--nodot" not in config
     self.start_pdb = "--pdb" in config
+    self.min_p = float(config.get("--low-p-threshold", 0.01))
 
     if "--dtdomain" in config:
         self.dtdomain_fn = join(standalone.globals.config.domain_dir, config["--dtdomain"])
