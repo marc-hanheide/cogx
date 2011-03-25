@@ -210,6 +210,30 @@ public class SpatialActionInterface extends ManagedComponent {
 					AVSStatus.INPROGRESS, coneId);
 			addThenCompleteOnOverwrite(cmd);
 		}
+
+
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+
+			// read in the nav cmd
+            getComponent().lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+			ProcessConeGroup cmd = getComponent().getMemoryEntry(_wmc.address, ProcessConeGroup.class);
+			if (cmd.status == AVSStatus.FAILED) {
+				log("command failed by the looks of this: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+                actionComplete();
+                executionComplete(TriBool.TRIFALSE);
+			} else if (cmd.status == AVSStatus.SUCCESS) {
+				log("command completed by the looks of this: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+                actionComplete();
+                executionComplete(TriBool.TRITRUE);
+			} else {
+				log("command in progress: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+			}
+		}
+
 	}
 
 	public static class ProcessAllViewConesAtPlaceExecutor extends
