@@ -38,8 +38,8 @@ def getGoalDescription(goal, gnode, _state):
         if v in universalReasons:
             universal |= set(a.type for a in universalReasons[v])
 
-    log.debug("variables from goal:")
-    log.debug("read: %s", " ".join(map(str, read)))
+    log.trace("variables from goal:")
+    log.trace("read: %s", " ".join(map(str, read)))
 
     gnode.preconds = set(state.Fact(var, _state[var]) for var in read)
     gnode.preconds_universal = universal
@@ -62,7 +62,7 @@ def getRWDescription(action, args, _state, time):
     cond_keffs = pddl.translators.Translator.get_annotations(_state.problem.domain).get('has_commit_actions', False)
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
 
-    log.debug("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
+    log.trace("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
 
     action.instantiate(args, _state.problem)
 
@@ -150,12 +150,12 @@ def getRWDescription(action, args, _state, time):
     pnode.preconds = set(state.Fact(var, _state[var]) for var in pnode.preconds)
     #print "stuff:", time.time()-t0
 
-    log.debug("variables from %s:", action.name)
-    log.debug("read: %s", " ".join(map(str, pnode.preconds)))
-    log.debug("original read: %s", " ".join(map(str, pnode.original_preconds)))
-    log.debug("replan: %s", " ".join(map(str, pnode.replanconds)))
-    log.debug("original replan: %s", " ".join(map(str, pnode.original_replan)))
-    log.debug("write: %s", " ".join(map(str, pnode.effects)))
+    log.trace("variables from %s:", action.name)
+    log.trace("read: %s", " ".join(map(str, pnode.preconds)))
+    log.trace("original read: %s", " ".join(map(str, pnode.original_preconds)))
+    log.trace("replan: %s", " ".join(map(str, pnode.replanconds)))
+    log.trace("original replan: %s", " ".join(map(str, pnode.original_replan)))
+    log.trace("write: %s", " ".join(map(str, pnode.effects)))
     
     action.uninstantiate()
     return pnode
@@ -196,14 +196,14 @@ def make_po_plan(actions, task):
 
         if not pnode.replanconds and not pnode.preconds:
             plan.add_link(plan.init_node, pnode, "started", pddl.TRUE)
-            log.debug("%s depends artificially on init", pnode)
+            log.trace("%s depends artificially on init", pnode)
                          
         for svar, val in itertools.chain(pnode.replanconds, pnode.preconds):
             if svar not in frontier:
                 relevant_init_vars.add(svar)
             readers[svar].add(pnode)
             plan.add_link(frontier[svar], pnode, svar, val)
-            log.debug("%s depends on %s", pnode, frontier[svar])
+            log.trace("%s depends on %s", pnode, frontier[svar])
 
         for svar, val in pnode.effects:
             if svar.function in (pddl.builtin.total_cost,):
@@ -213,21 +213,21 @@ def make_po_plan(actions, task):
                     for node in readers[svar]:
                         if node != pnode and not node in plan.predecessors(pnode):
                             plan.add_link(node, pnode, svar, val, conflict=True)
-                            log.debug("%s must preceed %s (read conflict)", node, pnode)
+                            log.trace("%s must preceed %s (read conflict)", node, pnode)
                     del readers[svar]
 
                 if svar in writers:
                     for node in writers[svar]:
                         if node != pnode and not node in plan.predecessors(pnode):
                             plan.add_link(node, pnode, svar, val, conflict=True)
-                            log.debug("%s must preceed %s (write conflict)", node, pnode)
+                            log.trace("%s must preceed %s (write conflict)", node, pnode)
                     del writers[svar]
                     
                 state[svar] = val
             frontier[svar] = pnode
             writers[svar].add(pnode)
 
-        log.debug("total time for action: %f", time.time()-t1)
+        log.trace("total time for action: %f", time.time()-t1)
 
     gnode = getGoalDescription(task.get_goal(), plan.goal_node, state)
     

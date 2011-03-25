@@ -499,7 +499,7 @@ class PNode(object):
         return None, False
 
     def __str__(self):
-        return "PNode: %s (%d)" % (str(self.svar), len(self.children))
+        return "PNode: %s (%d: %s)" % (str(self.svar), len(self.children), ", ".join(v.name for v in self.children.iterkeys()) )
 
         
 class LazyPNode(PNode):

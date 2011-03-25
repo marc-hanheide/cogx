@@ -2,9 +2,10 @@ import sys, time, random
 from itertools import chain, product, izip
 
 from collections import defaultdict
-from standalone import pddl
+from standalone import config, pddl
 from standalone.pddl import state, conditions, dtpddl, mapl, translators, visitors, effects
 
+log = config.logger("plangraph")
 
 def instantiation_function(action, problem, check_callback, force_callback, clear_callback):
     def args_visitor(term, results):
@@ -587,7 +588,7 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
 
             succ.unsat_preconds -= 1
             if succ.unsat_preconds == 0 and succ.effect not in forward_closed:
-                print " *", succ, next.effect
+                # print " *", succ, next.effect
                 forward_open.append(succ)
                 forward_closed.add(succ)
 
@@ -600,9 +601,10 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
         actions.add((next.action, next.args))
         goal |= (next.preconds - facts)
         facts |= next.all_preconds
-        
+
+    log.debug("relaxed plan:")
     for a, args in actions:
-        print "(%s %s)" % (a.name, " ".join(str(ar) for ar in args))
+        log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
 
     return [a for a in actions if not a[0].name.startswith("axiom_")], facts
         

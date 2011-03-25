@@ -176,7 +176,7 @@ class CASTState(object):
         # import debug
         # debug.set_trace()
         for rule in self.domain.init_rules:
-            print "rule: ", rule.name
+            # print "rule: ", rule.name
             def inst_func(mapping, args):
                 if len(args) != len(rule.args):
                     return True, None
@@ -304,7 +304,7 @@ class CASTState(object):
                 fact = state.Fact(svar, pddl.types.TypedNumber(p))
                 facts.append(fact)
                 objects.add(label_obj)
-                print room_id, label, p, room_obj, fact
+                log.debug("conceptual data: %s ", str(fact))
 
         return facts, objects
         
