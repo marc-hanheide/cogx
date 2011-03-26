@@ -88,6 +88,12 @@ namespace cast
     dummy = true;
     log("Path to tag cfg file %s", (tagpath + cfg).c_str());
     LoadPatterns(tagpath + cfg);
+
+    it = _config.find("--pre-known-object-file");
+    if (it != _config.end()) {
+      cfg = it->second;
+      LoadPreKnown(tagpath + cfg);
+    }
   }
 
   void ARTagRecognizer::LoadPatterns(std::string filename){
@@ -153,17 +159,55 @@ namespace cast
       O.pos.z = atof(number.c_str());
       temp.trans = O;
 
-      taggedObjects.push_back(temp); 
+      temp.wmid = 0;
+
+      m_taggedObjects.push_back(temp); 
 
     }
 
-    for (unsigned int i = 0; i < taggedObjects.size(); i++){
-      log("loaded %s at %s", taggedObjects[i].label.c_str(), taggedObjects[i].filename.c_str());
-      printPose(taggedObjects[i].trans);
+    for (unsigned int i = 0; i < m_taggedObjects.size(); i++){
+      log("loaded %s at %s", m_taggedObjects[i].label.c_str(), m_taggedObjects[i].filename.c_str());
+      printPose(m_taggedObjects[i].trans);
     }
 
 
   }
+
+  void ARTagRecognizer::LoadPreKnown(std::string filename){
+    string line;  
+    //open file
+    ifstream file(filename.c_str());
+    if (!file.good()){
+      log("Could not open file, returning without doing anything.");
+      return;
+    }
+    objectInfo temp;
+    std::string number;
+    temp.id = -1;
+    while(getline(file,line)){
+      //first line is label
+      string label = line;
+
+      getline(file,line);
+      istringstream istr(line);
+      istr >> temp.fixedPosition.x;
+      istr >> temp.fixedPosition.y;
+      istr >> temp.fixedPosition.z;
+
+      getline(file,line);
+      istringstream istr2(line);
+      istr2 >> temp.boxDimensions.x;
+      istr2 >> temp.boxDimensions.y;
+      istr2 >> temp.boxDimensions.z;
+
+      for (int i = 0; i < m_taggedObjects; i++) {
+	if (m_taggedObjects[i].label == label) {
+	  m_preKnownObjects[i] = temp;
+	}
+      }
+    }
+  }
+
   void ARTagRecognizer::start()
   {
     log("starting...");
@@ -202,69 +246,105 @@ namespace cast
 
     VisionData::ARTagCommandPtr obj =
       getMemoryEntry<VisionData::ARTagCommand>(objID.address);
-   log("got new ARTagCommand");
+    log("got new ARTagCommand");
     //TODO find the object id with corresponding label
     // call getMarker if it exists write to WM with the same address
     // if it doesn't same thing.
 
     std::string label = obj->label;
-    Pose3 p = getMarkerPosition(label);
 
-    if (p.pos.x != 1E40){
-      //load fake visual object
-      Post3DObjectPtr obj3D = new VisionData::Post3DObject;
-      log("adding fake visual object command: %s",label.c_str());
-      printPose(p);
-      obj3D->label = label;
-      if(dummy){
-	if(label == "metalbox"){
-	  p.pos.x = -1.19;
-	  p.pos.y = -5.32;
-	  p.pos.z = 0.90;
-	  setRot(0,0,-1.1,
-	         0,1.4,0,
-		 1,0,0,p);
-	  obj3D->pose = p;
+    //Try detection for all ARTags belonging to this object
+    for(unsigned int targetId =0; targetId < m_taggedObjects.size(); targetId++){
+      if (m_taggedObjects[targetId].label == label) 
+      {
+	if (m_preKnownObjects.count(targetId) == 0) {
+	  log("Warning: nothing preloaded for %i(%s)", targetId, label.c_str());
 	}
-	else if(label == "table1" || label == "table12"){
-	  p.pos.x = 1.36;
-	  p.pos.y = 0.39;
-	  p.pos.z = 0.20;
-	  setRot(1,0,0,
-	      0,1,0,
-	      0,0,1,p);
-	  obj3D->pose = p;
-	  obj3D->label = "table1";
+	else if (m_taggedObjects[targedId].wmid != 0) {
+	  log("ARTag already detected, skipping...");
 	}
-	else if(label == "table2"){
-	  p.pos.x = -1.23;
-	  p.pos.y = -4.39;
-	  p.pos.z = 0.25;
-	  setRot(1,0,0,
-	      0,1,0,
-	      0,0,1,p);
-	  obj3D->pose = p;
+	else {
+	  Pose3 p = getMarkerPosition(targetId);
+
+	  if (p.pos.x != 1E40){
+	    VisionData::VisualObjectPtr newVisualObject = 
+	      new VisionData::VisualObject;
+
+	    newVisualObject->pose = p;
+	    newVisualObject->pose.pos = m_preKnownObjects[targetId].fixedPosition;
+	    newVisualObject->detectionConfidence = 1.0;
+
+	    newVisualObject->model = new VisionData::GeometryModel;
+	    VisionData::Vertex vert;
+	    vert.pos = m_preKnownObjects[targetId].fixedPosition;
+	    newVisualObject->vertices.push_back(vert);
+
+	    newVisualObject->identLabels.push_back(label);
+	    newVisualObject->identLabels.push_back("unknown");
+	    newVisualObject->identDistrib.push_back(1.0);
+	    newVisualObject->identDistrib.push_back(0.0);
+
+	    string dataID = newDataID();
+	    addToWorkingMemory(dataID,newVisualObject);
+	    m_taggedObjects[targetId].wmid = dataID;
+
+	    //      //load fake visual object
+	    //      Post3DObjectPtr obj3D = new VisionData::Post3DObject;
+	    //      log("adding fake visual object command: %s",label.c_str());
+	    //      printPose(p);
+	    //      obj3D->label = label;
+	    //      if(dummy){
+	    //	if(label == "metalbox"){
+	    //	  p.pos.x = -1.19;
+	    //	  p.pos.y = -5.32;
+	    //	  p.pos.z = 0.90;
+	    //	  setRot(0,0,-1.1,
+	    //	         0,1.4,0,
+	    //		 1,0,0,p);
+	    //	  obj3D->pose = p;
+	    //	}
+	    //	else if(label == "table1" || label == "table12"){
+	    //	  p.pos.x = 1.36;
+	    //	  p.pos.y = 0.39;
+	    //	  p.pos.z = 0.20;
+	    //	  setRot(1,0,0,
+	    //	      0,1,0,
+	    //	      0,0,1,p);
+	    //	  obj3D->pose = p;
+	    //	  obj3D->label = "table1";
+	    //	}
+	    //	else if(label == "table2"){
+	    //	  p.pos.x = -1.23;
+	    //	  p.pos.y = -4.39;
+	    //	  p.pos.z = 0.25;
+	    //	  setRot(1,0,0,
+	    //	      0,1,0,
+	    //	      0,0,1,p);
+	    //	  obj3D->pose = p;
+	    //	}
+	    //	else if(label == "shelves"){
+	    //	  p.pos.x = 0.42;
+	    //	  p.pos.y = -2.79;
+	    //	  p.pos.z = 1.3;
+	    //	  setRot(0,-1,0,
+	    //	      1,0,0,
+	    //	      0,0,1,p);
+	    //	  obj3D->pose = p;	}
+	    //      }
+	    //      else{
+	    //	obj3D->pose = p;
+	    //      }
+	    //      addToWorkingMemory(newDataID(),obj3D);
+	    //      sleep(1);
+	    //      log("overwriting request.");
+	    //      overwriteWorkingMemory(objID.address,obj);
+	  }
+	  else{
+	    log("object %s not detected overwriting request.",label.c_str());
+	    overwriteWorkingMemory(objID.address,obj);
+	  }
 	}
-	else if(label == "shelves"){
-	  p.pos.x = 0.42;
-	  p.pos.y = -2.79;
-	  p.pos.z = 1.3;
-	  setRot(0,-1,0,
-	      1,0,0,
-	      0,0,1,p);
-	  obj3D->pose = p;	}
       }
-      else{
-	obj3D->pose = p;
-      }
-      addToWorkingMemory(newDataID(),obj3D);
-      sleep(1);
-      log("overwriting request.");
-      overwriteWorkingMemory(objID.address,obj);
-    }
-    else{
-      log("object %s not detected overwriting request.",label.c_str());
-      overwriteWorkingMemory(objID.address,obj);
     }
   }
   /*
@@ -297,14 +377,14 @@ namespace cast
     printf("*** Camera Parameter ***\n");
     arParamDisp( &cparam );
     log("lala");
-    for (unsigned int i = 0; i < taggedObjects.size(); i++){
+    for (unsigned int i = 0; i < m_taggedObjects.size(); i++){
       /* load pattern file */
-      if( (taggedObjects[i].id =arLoadPatt(taggedObjects[i].filename.c_str())) < 0)
+      if( (m_taggedObjects[i].id =arLoadPatt(m_taggedObjects[i].filename.c_str())) < 0)
       {
 	printf ("Pattern file load error !! \n");
 	exit(0);
       }
-      log("loaded pattern for: %s, id: %d",taggedObjects[i].label.c_str(), taggedObjects[i].id);
+      log("loaded pattern for: %s, id: %d",m_taggedObjects[i].label.c_str(), m_taggedObjects[i].id);
 
     }
   }
@@ -317,13 +397,13 @@ namespace cast
     printf("pos: %3.2f , %3.2f, %3.2f \n", pose.pos.x, pose.pos.y, pose.pos.z);
 
   }
-  Pose3 ARTagRecognizer::getMarkerPosition(std::string label)
+  Pose3 ARTagRecognizer::getMarkerPosition(int targetId)
   {
-    int targetId = -1;
-    for(unsigned int i =0; i < taggedObjects.size(); i++){
-      if (taggedObjects[i].label == label)
-	targetId = i;
-    }
+//    int targetId = -1;
+//    for(unsigned int i =0; i < taggedObjects.size(); i++){
+//      if (taggedObjects[i].label == label)
+//	targetId = i;
+//    }
     log("requested object %s had id: %d", label.c_str(), targetId);
     if(targetId == -1){
       log("this object does not exists! ignoring..");
@@ -347,10 +427,10 @@ namespace cast
     k = -1;
     for( i = 0; i < marker_num; i++ ) {
       log("Found A pattern with id: %d",marker_info[i]);
-      for (unsigned int j = 0; j < taggedObjects.size(); j++){
+      for (unsigned int j = 0; j < m_taggedObjects.size(); j++){
 	if( marker_info[i].id  == targetId) {
 	  //  you've found a pattern 
-	  printf("Found pattern with id: %d \n",taggedObjects[j].id);
+	  printf("Found pattern with id: %d \n",m_taggedObjects[j].id);
 	  double inv_trans[3][4];
 
 	  if( arGetTransMat(&marker_info[i], marker_center, marker_width, marker_trans) < 0 ){
@@ -380,15 +460,15 @@ namespace cast
 	  A.pos.y = marker_trans[1][3]/1000.0;
 	  A.pos.z = marker_trans[2][3]/1000.0;
 
-	  A.pos.x += taggedObjects[i].trans.pos.x;
-	  A.pos.y += taggedObjects[i].trans.pos.y;
-	  A.pos.z += taggedObjects[i].trans.pos.z;
+	  A.pos.x += m_taggedObjects[i].trans.pos.x;
+	  A.pos.y += m_taggedObjects[i].trans.pos.y;
+	  A.pos.z += m_taggedObjects[i].trans.pos.z;
 
 	  printf("object pose A: %3.2f, %3.2f, %3.2f \n", A.pos.x,A.pos.y,A.pos.z);
 
 	  Math::transform(P,A,B);
 
-	  mult(B.rot,taggedObjects[j].trans.rot,B.rot);
+	  mult(B.rot,m_taggedObjects[j].trans.rot,B.rot);
 	  printf("object pose B: %3.2f, %3.2f, %3.2f \n", B.pos.x,B.pos.y,B.pos.z);
 	  ret = B;
 	  cvReleaseImage(&iplImage);
