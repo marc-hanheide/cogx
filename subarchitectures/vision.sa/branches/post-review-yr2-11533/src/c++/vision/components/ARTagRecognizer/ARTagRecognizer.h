@@ -59,10 +59,18 @@ private:
 
   std::vector<object> m_taggedObjects;
 
+  struct objectInfo {
+    cogx::Math::Vector3 fixedPosition;
+    cogx::Math::Vector3 boxDimensions;
+  };
+
+  std::map<int, objectInfo> m_preKnownObjects;
+
 
   bool dummy;
   std::string tagpath;
   void LoadPatterns(std::string filename);
+  void LoadPreKnown(std::string filename);
   void printPose(cogx::Math::Pose3 pose);
 protected:
   /**
