@@ -130,7 +130,7 @@ void read_everything(istream &in) {
   g_causal_graph = new CausalGraph(in);
   g_cache = new Cache;
   for (int i = 0; i < g_transition_graphs.size(); i++) {
-      //g_transition_graphs[i]->calc_oneshot_parents();
+      // g_transition_graphs[i]->calc_oneshot_parents();
   }
 }
 
@@ -180,6 +180,7 @@ bool g_merge_and_shrink_bound_is_for_product = true;
 
 bool g_debug = false;
 
+double g_min_p = 0.001;
 int g_reward = 1000;
 int g_multiplier = 100;
 

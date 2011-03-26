@@ -124,6 +124,10 @@ int GeneralEagerBestFirstSearch::step() {
             // Evaluate and create a new node.
             // cout << "?" << node.get_g() << " - " << node.get_p() << endl;
             EvalInfo succ_info = node.get_info()->succ(op);
+            // if (succ_info.get_g() > g_reward * g_multiplier) {
+            if (succ_info.get_p() < g_min_p) {
+                continue;
+            }
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
                 // heuristics[i]->evaluate(node.get_info(), succ_state);
