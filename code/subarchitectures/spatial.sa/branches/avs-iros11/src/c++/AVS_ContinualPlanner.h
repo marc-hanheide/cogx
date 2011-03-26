@@ -55,6 +55,7 @@ public:
 		std::string searchedObjectCategory;
 		int roomId;
 		int placeId;
+
 		double getTotalProb(){
 			double tmp = 0;
 			for (unsigned int i =0; i < viewcones.size(); i++){
@@ -105,6 +106,8 @@ public:
 	 void receivePointCloud(BloxelMap *map, FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
 	 void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
 	 void displayPDF(BloxelMap map);
+	 void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
+	 void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
 
 public:
 	 bool m_usePeekabot;
@@ -124,10 +127,10 @@ private:
 
 		NavData::RobotPose2dPtr lastRobotPose;
 
-	// this holds bloxel maps for each room and each bloxel has multiple pdf values for the occurrence of objects. i.e. "cupONtable", cupINroom1
-	std::map<std::string, BloxelMap* > m_objectBloxelMaps;
-	std::map<int, BloxelMap* > m_templateRoomBloxelMaps;
-	std::map<int, CureObstMap*> m_templateRoomGridMaps;
+
+	std::map<std::string, BloxelMap* > m_objectBloxelMaps; // this holds bloxel maps for each location i.e. <object,rel,(object2),room>
+	std::map<int, BloxelMap* > m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
+	std::map<int, CureObstMap*> m_templateRoomGridMaps; // template room 2D grid maps
 
 	BloxelMap* m_currentBloxelMap;
 	CureObstMap* m_currentCureObstMap;
@@ -137,7 +140,7 @@ private:
 
 	bool m_usePTZ;
 	bool m_ignoreTilt;
-
+	bool m_runInSimulation;
 	VariableNameGenerator m_namegenerator;
 	int m_gridsize;
 	double m_samplesize;

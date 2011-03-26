@@ -158,11 +158,49 @@ void AVS_ContinualPlanner::start() {
 			createLocalTypeFilter<NavData::RobotPose2d> (cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
 					&AVS_ContinualPlanner::newRobotPose));
+
+
+      addChangeFilter(createGlobalTypeFilter<
+	VisionData::ARTagCommand> (cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
+	&AVS_ContinualPlanner::owtARTagCommand));
+
+      addChangeFilter(createGlobalTypeFilter<
+  	VisionData::Recognizer3DCommand> (cdl::OVERWRITE),
+  	new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
+  	  &AVS_ContinualPlanner::owtRecognizer3DCommand));
 	log("getting ice queryHandlerServer");
 	m_queryHandlerServerInterfacePrx = getIceServer<
 			ConceptualData::QueryHandlerServerInterface> (m_queryHandlerName);
 }
 
+void
+AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
+{
+	  VisionData::ARTagCommandPtr newObj =
+	    getMemoryEntry<VisionData::ARTagCommand>(objID.address);
+	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
+	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
+	MovePanTilt(0.0,0.0,0.08);
+	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+	log("Overwriting command to change status to: SUCCESS");
+	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+}
+
+
+void
+AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID)
+{
+	  VisionData::Recognizer3DCommandPtr newObj =
+	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
+	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
+		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
+
+	MovePanTilt(0.0,0.0,0.08);
+	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+	log("Overwriting command to change status to: SUCCESS");
+	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+}
 
 void
 AVS_ContinualPlanner::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
@@ -673,37 +711,6 @@ void AVS_ContinualPlanner::generateViewCones(
 
 			WMaddress.id = newVPCommand->supportObject;
 			WMaddress.subarchitecture = "vision.sa";
-
-			/*vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > visualObjectBeliefs;
-						getWorkingMemoryEntries<GroundedBelief> ("vision.sa", 0, visualObjectBeliefs);
-
-						if (visualObjectBeliefs.size() ==0){
-							log("Could not get any visual objects returning without doing anything...");
-							return;
-						}
-						else{
-							log("Got %d Grounded beliefs", visualObjectBeliefs.size());
-						}
-
-						for(unsigned int j=0; j < visualObjectBeliefs.size(); j++){
-							if (visualObjectBeliefs[j]->getData()->type != "VisualObject"){
-												log("Not a visual object belief, but a %s belief", visualObjectBeliefs[j]->getData()->type.c_str());
-												continue;
-								}
-						CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(visualObjectBeliefs[j]->getData()->content));
-						BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["label"]));
-						FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
-
-						ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
-						string objectId = elformula->prop;
-						log("ObjectId for this belief: %s", objectId.c_str());
-						if (newVPCommand->supportObject == objectId){
-							log("Got the right object belief: %s", newVPCommand->supportObject.c_str());
-							WMaddress.id = visualObjectBeliefs[j]->getID();
-							WMaddress.subarchitecture = "vision.sa";
-							break;
-						}
-					}*/
 		}
 
 
@@ -1025,13 +1032,26 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 
 
-void AVS_ContinualPlanner::Recognize(){
-	// we always ask for all the objects to be recognized
-	for (unsigned int i=0; i< m_siftObjects.size(); i++){
+void AVS_ContinualPlanner::Recognize() {
+	for (unsigned int i = 0; i < m_siftObjects.size(); i++) {
 		//todo: ask for visual object recognition
+		if (m_siftObjects[i] == m_currentConeGroup->searchedObjectCategory) {
+			log("This is a sift object posting a 3DRecognizer command");
+			addRecognizer3DCommand(VisionData::RECOGNIZE, m_currentConeGroup->searchedObjectCategory, "");
+			break;
+		}
+
 	}
-	for (unsigned int i=0; i<m_ARtaggedObjects.size(); i++){
+
+	for (unsigned int i = 0; i < m_ARtaggedObjects.size(); i++) {
 		//todo: ask for tagged objects
+		if (m_ARtaggedObjects[i] == m_currentConeGroup->searchedObjectCategory) {
+			log("This is an ARTag object posting an ARTagcommand");
+			VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;
+			cmd->label = m_currentConeGroup->searchedObjectCategory;
+			addToWorkingMemory(newDataID(),"vision.sa", cmd);
+			break;
+		}
 	}
 }
 
@@ -1189,6 +1209,14 @@ void AVS_ContinualPlanner::configure(
 		log("will use ptu");
 	}
 
+	m_runInSimulation = false;
+	if (_config.find("--simulation") != _config.end()) {
+			m_runInSimulation = true;
+			log("will run in simulation");
+		}
+
+
+
 	m_ignoreTilt = false;
 		if (_config.find("--ignore-tilt") != _config.end())
 			m_ignoreTilt = true;
@@ -1305,15 +1333,19 @@ void AVS_ContinualPlanner::owtNavCommand(
 	SpatialData::NavCommandPtr cmd(getMemoryEntry<SpatialData::NavCommand> (objID.address));
 	try {
 	if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
-		// it means we've reached viewcone position
-	//	MovePanTilt(0.0, m_currentViewCone.tilt, 0.08);
-	//	Recognize();
 		log("Nav Command succeeded");
+		// it means we've reached viewcone position
+		if(!m_runInSimulation){
+			MovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
+			Recognize();
+		}
+		if(m_runInSimulation){
 		log("Updating the %s bloxel map", m_currentConeGroup->bloxelMapId.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 		m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 		log("Overwriting command to change status to: SUCCESS");
 		overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+		}
 	}
 	if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
