@@ -55,6 +55,7 @@ AVS_ContinualPlanner::AVS_ContinualPlanner() :
 	m_gotPC = false;
 	m_gotNewGenerateViewCone = false;
 	m_currentVPGenerationCommand = new SpatialData::RelationalViewPointGenerationCommand;
+	m_currentConeGroup = 0;
 
 }
 
@@ -177,6 +178,7 @@ void AVS_ContinualPlanner::start() {
 void
 AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+	if (m_currentConeGroup){
 	  VisionData::ARTagCommandPtr newObj =
 	    getMemoryEntry<VisionData::ARTagCommand>(objID.address);
 	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
@@ -185,12 +187,14 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 	log("Overwriting command to change status to: SUCCESS");
 	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
-}
+	}
+	}
 
 
 void
 AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+	if(m_currentConeGroup){
 	  VisionData::Recognizer3DCommandPtr newObj =
 	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
@@ -200,7 +204,9 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 	log("Overwriting command to change status to: SUCCESS");
 	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
-}
+	}
+
+	}
 
 void
 AVS_ContinualPlanner::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
