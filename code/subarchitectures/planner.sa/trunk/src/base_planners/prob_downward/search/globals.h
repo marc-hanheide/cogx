@@ -51,6 +51,7 @@ extern int g_abstraction_peak_memory;
 
 extern int g_abstraction_nr;
 
+extern double g_min_p;
 extern int g_reward;
 extern int g_multiplier;
 

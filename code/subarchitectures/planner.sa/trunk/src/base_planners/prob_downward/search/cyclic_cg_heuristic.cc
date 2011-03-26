@@ -95,12 +95,15 @@ void LocalTransition::on_source_expanded(const State &state) {
 
 
     short *children_state = &source->children_state.front();
-    vector<vector<LocalProblem *> > &problem_index = g_HACK->local_problem_index;
-    // vector<vector<LocalProblemTable *> > &problem_index = g_HACK->local_problem_index;
     int *parent_vars = &*source->owner->causal_graph_parents->begin();
 
-    // vector<pair<int, int> > context;
-    // get_context(context);
+#ifdef USE_CONTEXT
+    vector<vector<LocalProblemTable *> > &problem_index = g_HACK->local_problem_index;
+    vector<pair<int, int> > context;
+    get_context(context);
+#else
+    vector<vector<LocalProblem *> > &problem_index = g_HACK->local_problem_index;
+#endif
 
     unreached_conditions = 0;
     const vector<LocalAssignment> &precond = label->precond;
@@ -127,29 +130,31 @@ void LocalTransition::on_source_expanded(const State &state) {
             continue;
         }
 
-        // LocalProblemTable *&table = problem_index[precond_var_no][current_val];
-        // LocalProblem* child_problem = 0;
-        // // cout << "table is: " << g_variable_name[precond_var_no] << "  " << precond_var_no << " = " << current_val << endl ;
-        // if (!table) {
-        //     table = new LocalProblemTable();
-        // }
-        // else {
-        //     std::vector<int> key;
-        //     LocalProblem::context_key(precond_var_no, context, key);
-        //     child_problem = table->get(key);
-        // }
+#ifdef USE_CONTEXT
+        LocalProblemTable *&table = problem_index[precond_var_no][current_val];
+        LocalProblem* child_problem = 0;
+        // cout << "table is: " << g_variable_name[precond_var_no] << "  " << precond_var_no << " = " << current_val << endl ;
+        if (!table) {
+            table = new LocalProblemTable();
+        }
+        else {
+            std::vector<int> key;
+            LocalProblem::context_key(precond_var_no, context, key);
+            child_problem = table->get(key);
+        }
         
-        // if(!child_problem) {
-        //     child_problem = new LocalProblem(precond_var_no, context);
-        //     table->add(child_problem);
-        //     g_HACK->local_problems.push_back(child_problem);
-        //     if (g_debug)
-        //         cout << "    new subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << endl;
-        // }
-        // else {
-        //     if (g_debug)
-        //         cout << "    old subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << endl;
-        // }
+        if(!child_problem) {
+            child_problem = new LocalProblem(precond_var_no, context);
+            table->add(child_problem);
+            g_HACK->local_problems.push_back(child_problem);
+            if (g_debug)
+                cout << "    new subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << endl;
+        }
+        else {
+            if (g_debug)
+                cout << "    old subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << endl;
+        }
+#else
         LocalProblem *&child_problem = problem_index[precond_var_no][current_val];
         if(!child_problem) {
             child_problem = new LocalProblem(precond_var_no);
@@ -160,6 +165,7 @@ void LocalTransition::on_source_expanded(const State &state) {
         else if (g_debug)
             cout << "    old subproblem: " << g_variable_name[precond_var_no] << " = " << precond_value << "(now: " << current_val << ")" << endl;
 
+#endif
 
         if(!child_problem->is_initialized())
             child_problem->initialize(source->priority(), current_val, state);
@@ -239,9 +245,11 @@ void LocalProblemNode::on_expand() {
     if(reached_by) {
         LocalProblemNode *parent = reached_by->source;
         children_state = parent->children_state;
-        // const vector<LocalAssignment> &context = parent->owner->add_context;
-        // for(int i = 0; i < context.size(); i++)
-        //     children_state[context[i].local_var] = context[i].value;
+#ifdef USE_CONTEXT       
+        const vector<LocalAssignment> &context = parent->owner->add_context;
+        for(int i = 0; i < context.size(); i++)
+            children_state[context[i].local_var] = context[i].value;
+#endif
         const vector<LocalAssignment> &precond = reached_by->label->precond;
         for(int i = 0; i < precond.size(); i++)
             children_state[precond[i].local_var] = precond[i].value;
@@ -257,37 +265,38 @@ void LocalProblemNode::on_expand() {
 }
 
 
-// void LocalProblemTable::add(LocalProblem* _problem, int var_no) {
-//     assert ((var == var_no) || (var == -1));
-//     if (var_no < _problem->context_values.size()) {
-//         // gvar = (*(_problem->poss_add_context))[var_no];
-//         // cout << "add: " << var << "/" << gvar<< " ("<< g_variable_name[gvar]<<")"<< endl; 
-//         if (var == -1) {
-//             var = var_no;
-//             children.resize(g_variable_domain[(*(_problem->poss_add_context))[var_no]] + 1);
-//         }
-//         int pos = _problem->context_values[var_no];
-//         if (pos == -1) 
-//             pos = children.size()-1;
-//         children[pos].add(_problem, var_no + 1);
-//     }
-//     else {
-//         problem = _problem;
-//     }
-// }
+#ifdef USE_CONTEXT       
+void LocalProblemTable::add(LocalProblem* _problem, int var_no) {
+    assert ((var == var_no) || (var == -1));
+    if (var_no < _problem->context_values.size()) {
+        // gvar = (*(_problem->poss_add_context))[var_no];
+        // cout << "add: " << var << "/" << gvar<< " ("<< g_variable_name[gvar]<<")"<< endl; 
+        if (var == -1) {
+            var = var_no;
+            children.resize(g_variable_domain[(*(_problem->poss_add_context))[var_no]] + 1);
+        }
+        int pos = _problem->context_values[var_no];
+        if (pos == -1) 
+            pos = children.size()-1;
+        children[pos].add(_problem, var_no + 1);
+    }
+    else {
+        problem = _problem;
+    }
+}
 
-// LocalProblem* LocalProblemTable::get(const std::vector<int>& context, int var_no) {
-//     assert(var == var_no || var == -1);
-//     if (var == -1) {
-//         return problem;
-//     }
-//     assert(var_no < context.size());
-//     int pos = context[var_no];
-//     if (pos == -1) 
-//         pos = children.size()-1;
-//     assert(pos < children.size());
-//     return children[pos].get(context, var_no + 1);
-// }
+LocalProblem* LocalProblemTable::get(const std::vector<int>& context, int var_no) {
+    assert(var == var_no || var == -1);
+    if (var == -1) {
+        return problem;
+    }
+    assert(var_no < context.size());
+    int pos = context[var_no];
+    if (pos == -1) 
+        pos = children.size()-1;
+    assert(pos < children.size());
+    return children[pos].get(context, var_no + 1);
+}
 
 void LocalProblem::context_key(int var_no, const std::vector<std::pair<int, int> >& context, std::vector<int>& result) {
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
@@ -298,36 +307,41 @@ void LocalProblem::context_key(int var_no, const std::vector<std::pair<int, int>
         // cout << context[i].first << "/"<< dtg->oneshot_to_local[context[i].first] << "  ";
         if (dtg->ccg_to_oneshot[context[i].first] != -1) {
             result[dtg->ccg_to_oneshot[context[i].first]] = context[i].second;
-            cout << "context key:" << g_variable_name[context[i].first] << "/ "<< context[i].first << " = " << context[i].second << endl;
+            // cout << "context key:" << g_variable_name[context[i].first] << "/ "<< context[i].first << " = " << context[i].second << endl;
         }
     }
 
 }
+#endif
 
-
-// void LocalProblem::build_nodes_for_variable(int var_no, const std::vector<std::pair<int, int> >& context) {
+#ifdef USE_CONTEXT       
+void LocalProblem::build_nodes_for_variable(int var_no, const std::vector<std::pair<int, int> >& context) {
+#else
 void LocalProblem::build_nodes_for_variable(int var_no) {
+#endif
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
     causal_graph_parents = &dtg->ccg_parents;
-    // poss_add_context = &dtg->oneshot_parents;
 
     int num_parents = causal_graph_parents->size();
     for(int value = 0; value < g_variable_domain[var_no]; value++)
         nodes.push_back(LocalProblemNode(this, num_parents));
 
-    // context_values.resize(poss_add_context->size());
-    // fill(context_values.begin(), context_values.end(), -1);
-    // for(int i = 0; i < context.size(); i++) {
-    //     // cout << context[i].first << "/"<< dtg->oneshot_to_local[context[i].first] << "  ";
-    //     if (dtg->ccg_to_oneshot[context[i].first] != -1) {
-    //         add_context.push_back(LocalAssignment(dtg->ccg_to_local[context[i].first], context[i].second));
-    //         context_values[dtg->ccg_to_oneshot[context[i].first]] = context[i].second;
-    //         cout << "add context:" << dtg->ccg_to_local[context[i].first] << "/"<< g_variable_name[context[i].first] << " = " << context[i].second << endl;
-    //         // cout << context[i].first << " / " << dtg->ccg_to_local[context[i].first] << " / " << dtg-> ccg_parents[dtg->ccg_to_local[context[i].first]] << endl;
-    //     }
-    // }
+#ifdef USE_CONTEXT       
+    poss_add_context = &dtg->oneshot_parents;
+    context_values.resize(poss_add_context->size());
+    fill(context_values.begin(), context_values.end(), -1);
+    for(int i = 0; i < context.size(); i++) {
+        // cout << context[i].first << "/"<< dtg->oneshot_to_local[context[i].first] << "  ";
+        if (dtg->ccg_to_oneshot[context[i].first] != -1) {
+            add_context.push_back(LocalAssignment(dtg->ccg_to_local[context[i].first], context[i].second));
+            context_values[dtg->ccg_to_oneshot[context[i].first]] = context[i].second;
+            // cout << "add context:" << dtg->ccg_to_local[context[i].first] << "/"<< g_variable_name[context[i].first] << " = " << context[i].second << endl;
+            // cout << context[i].first << " / " << dtg->ccg_to_local[context[i].first] << " / " << dtg-> ccg_parents[dtg->ccg_to_local[context[i].first]] << endl;
+        }
+    }
     // cout << endl;
+#endif
 
     // Compile the DTG arcs into LocalTransition objects.
     for(int value = 0; value < nodes.size(); value++) {
@@ -341,10 +355,12 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
             LocalProblemNode &target = nodes[target_value];
             for(int j = 0; j < dtg_trans.ccg_labels.size(); j++) {
                 const ValueTransitionLabel &label = dtg_trans.ccg_labels[j];
-                // if (!label.is_applicable(add_context)) {
-                //     cout << "pruned transition "  << label.op->get_name() << endl;
-                //     continue;
-                // }
+#ifdef USE_CONTEXT       
+                if (!label.is_applicable(add_context)) {
+                    cout << "pruned transition "  << label.op->get_name() << endl;
+                    continue;
+                }
+#endif
                 // int action_cost = dtg->is_axiom ? 0 : label.op->get_cost() + (g_reward * 0.5 * label.op->get_p_cost()) / g_multiplier;
                 int action_cost = dtg->is_axiom ? 0 : label.op->get_cost();
                 // std::cout << "build node: " << label.op->get_name() << " cost: " << label.op->get_cost() << " + " <<  g_reward << " * 0.5 * " << label.op->get_p_cost() << " = " << action_cost << std::endl;
@@ -382,13 +398,19 @@ LocalProblem::LocalProblem(int var_no) {
     if(var_no == -1)
         build_nodes_for_goal();
     else
+#ifdef USE_CONTEXT
+        build_nodes_for_variable(var_no, vector<pair<int, int> >());
+#else
         build_nodes_for_variable(var_no);
+#endif
 }
 
-// LocalProblem::LocalProblem(int var_no, const std::vector<std::pair<int, int> >& context ) {
-//     base_priority = -1;
-//     build_nodes_for_variable(var_no, context);
-// }
+#ifdef USE_CONTEXT       
+LocalProblem::LocalProblem(int var_no, const std::vector<std::pair<int, int> >& context ) {
+    base_priority = -1;
+    build_nodes_for_variable(var_no, context);
+}
+#endif
 
 void LocalProblem::initialize(int base_priority_, int start_value,
                               const State &state) {
@@ -431,8 +453,10 @@ void LocalProblemNode::mark_helpful_transitions(const State &state, int level) {
             if (g_debug && reached_by->label->op)
                 std::cout << indent << "indirectly helpful: " << reached_by->label->op->get_name() << " / " << reached_by->label->op->get_prob() << std::endl;
 
-            // vector<pair<int, int> > context;
-            // reached_by->get_context(context);
+#ifdef USE_CONTEXT       
+            vector<pair<int, int> > context;
+            reached_by->get_context(context);
+#endif
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = reached_by->label->precond;
             int *parent_vars = &*owner->causal_graph_parents->begin();
@@ -442,10 +466,13 @@ void LocalProblemNode::mark_helpful_transitions(const State &state, int level) {
                 int precond_var_no = parent_vars[local_var];
                 if(state[precond_var_no] == precond_value)
                     continue;
+#ifdef USE_CONTEXT       
+                LocalProblemNode *child_node = &g_HACK->get_local_problem(
+                    precond_var_no, state[precond_var_no], context)->nodes[precond_value];
+#else
                 LocalProblemNode *child_node = &g_HACK->get_local_problem(
                     precond_var_no, state[precond_var_no])->nodes[precond_value];
-                // LocalProblemNode *child_node = &g_HACK->get_local_problem(
-                //     precond_var_no, state[precond_var_no], context)->nodes[precond_value];
+#endif
                 child_node->mark_helpful_transitions(state, level+1);
             }
         }
@@ -461,15 +488,16 @@ std::pair<int, double> LocalProblemNode::compute_probability(const State &state,
         if (op && ops.find(op) == ops.end())
             ops.insert(op);
 
-        if(reached_by->target_action_costs + reached_by->max_cost == reached_by->action_cost) {
-        // if (op && ops.find(op) == ops.end())
-        //     ops.insert(op);
-            // Transition applicable, all preconditions achieved.
-        } else {
+        // if(reached_by->target_action_costs + reached_by->max_cost == reached_by->action_cost) {
+        // // if (op && ops.find(op) == ops.end())
+        // //     ops.insert(op);
+        //     // Transition applicable, all preconditions achieved.
+        // } else {
             // Recursively compute helpful transitions for precondition variables.
-            
-            // vector<pair<int, int> > context;
-            // reached_by->get_context(context);
+#ifdef USE_CONTEXT       
+            vector<pair<int, int> > context;
+            reached_by->get_context(context);
+#endif
             const vector<LocalAssignment> &precond = reached_by->label->precond;
             int *parent_vars = &*owner->causal_graph_parents->begin();
             for(int i = 0; i < precond.size(); i++) {
@@ -478,15 +506,18 @@ std::pair<int, double> LocalProblemNode::compute_probability(const State &state,
                 int precond_var_no = parent_vars[local_var];
                 if(state[precond_var_no] == precond_value)
                     continue;
+#ifdef USE_CONTEXT       
+                LocalProblemNode *child_node = &g_HACK->get_local_problem(
+                    precond_var_no, state[precond_var_no], context)->nodes[precond_value];
+#else
                 LocalProblemNode *child_node = &g_HACK->get_local_problem(
                     precond_var_no, state[precond_var_no])->nodes[precond_value];
-                // LocalProblemNode *child_node = &g_HACK->get_local_problem(
-                //     precond_var_no, state[precond_var_no], context)->nodes[precond_value];
+#endif
                 pair<int, double> r = child_node->compute_probability(state, ops);
                 //cout << "    " << p_child << endl;
                 c_max = max(c_max, r.first);
                 p_min = min(p_min, r.second);
-            }
+            // }
         }
         if (op) {
             //cout << op->get_prob() << " / " << op->get_prob() * p_min << endl;
@@ -536,33 +567,22 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
 
     int heuristic = compute_costs(state);
 
-    if(heuristic != DEAD_END && heuristic != 0) {
-        double p_init = 1.0;
-        if (einfo != NULL) {
-            p_init = einfo->get_p();
-        }
-        goal_node->mark_helpful_transitions(state);
-        std::set<const Operator *> ops;
-        pair<int, double> r = goal_node->compute_probability(state, ops);
-        int cost = r.first;
-        double p = r.second;
-        // double p = 1.0;
-        // std::set<const Operator *>::const_iterator i = ops.begin();
-        // for(; i != ops.end(); i++) {
-        //     cost += (*i)->get_cost();
-        //     // p *= (*i)->get_prob();
-        //     // if (g_debug)
-        //     //     cout << (*i)->get_name() << ": " << (*i)->get_prob() << " -> " << p << endl;
-        // }
-        if (g_debug)
-            cout << "p: " << p << ", c: " << cost << endl;
-        // cout << cost << " / "  << p << " - " << p_init * p <<  " // " << cost + (1-p) * g_reward << endl;
-        heuristic = cost + p_init * (1-p) * g_reward;
-        // cout << p_init << " - " << heuristic << endl;
-        // if ( p_init * p < 0.02) {
-        //     heuristic = DEAD_END;
-        // }
-    }
+    // if(heuristic != DEAD_END && heuristic != 0) {
+    //     double p_init = 1.0;
+    //     if (einfo != NULL) {
+    //         p_init = einfo->get_p();
+    //     }
+    //     goal_node->mark_helpful_transitions(state);
+    //     std::set<const Operator *> ops;
+    //     pair<int, double> r = goal_node->compute_probability(state, ops);
+    //     int cost = r.first;
+    //     double p = r.second;
+
+    //     if (g_debug)
+    //         cout << "p: " << p << ", c: " << cost << endl;
+    //     // cout << cost << " / "  << p << " - " << p_init * p <<  " // " << cost + (1-p) * g_reward << endl;
+    //     heuristic = cost + p_init * (1-p) * g_reward;
+    // }
 
     if (g_debug) {
         cout << "h = " << heuristic << endl;
@@ -612,7 +632,8 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
                 if (node->cost == 0)
                     return 0;
                 
-                return node->action_cost;// + p_init * (1-node->prob) * g_reward;
+                // cout << node->action_cost << " / "  << node->prob << " - " << p_init * node->prob <<  " // " << node->action_cost + (1-node->prob) * g_reward << endl;
+                return node->action_cost + p_init * (1-node->prob) * g_reward;
                 // return 1 + (1-node->prob) * g_reward;
             }
 
