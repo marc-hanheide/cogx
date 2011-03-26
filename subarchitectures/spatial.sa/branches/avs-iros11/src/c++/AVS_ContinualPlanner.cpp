@@ -219,7 +219,9 @@ try {
   log("Got Spatial Object: %s", newObj->label.c_str());
   model->pose = newObj->pose;
 
-  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup->bloxelMapId], model);
+  if (m_currentConeGroup){
+	  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup->bloxelMapId], model);
+  }
 } catch (DoesNotExistOnWMException e) {
     log("Error! SpatialObject disappeared from WM!");
   }
