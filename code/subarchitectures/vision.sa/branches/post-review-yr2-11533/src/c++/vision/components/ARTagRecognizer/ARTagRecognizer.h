@@ -13,13 +13,6 @@
 #include <VideoClient.h>
 
 #include <AR/ar.h>
-#include <AR/gsub.h>
-#include <AR/video.h>
-#include <AR/param.h>
-#include <AR/ar.h>
-#include <AR/arMulti.h>
-
-
 #include <Matrix33.h>
 #include "ModelLoader.h"
 namespace cast
@@ -33,15 +26,15 @@ private:
   /**
    * Which camera to get images from
    */
-  int m_camId;
+  int camId;
   /**
    * component ID of the video server to connect to
    */
-  std::string m_videoServerName;
+  std::string videoServerName;
   /**
    * our ICE proxy to the video server
    */
-  Video::VideoInterfacePrx mvideoServer;
+  Video::VideoInterfacePrx videoServer;
   /**
    * wether we are currently receiving images from the server
    */
@@ -57,21 +50,32 @@ private:
     std::string wmid;
   };
 
-  std::vector<object> m_taggedObjects;
-
   struct objectInfo {
-    cogx::Math::Vector3 fixedPosition;
-    cogx::Math::Vector3 boxDimensions;
-  };
+      cogx::Math::Vector3 fixedPosition;
+      cogx::Math::Vector3 boxDimensions;
+    };
 
-  std::map<int, objectInfo> m_preKnownObjects;
+    std::map<int, objectInfo> m_preKnownObjects;
 
+
+
+
+
+  std::vector<object> taggedObjects;
+
+  int             marker_width;
+  double*          marker_center;                                                                        
+
+  int             xsize, ysize;                                                                                         
+  int             thresh;                                                                         
+  int             count;
+  ARParam         cparam;                    
 
   bool dummy;
   std::string tagpath;
   void LoadPatterns(std::string filename);
-  void LoadPreKnown(std::string filename);
   void printPose(cogx::Math::Pose3 pose);
+  void LoadPreKnown(std::string filename);
 protected:
   /**
    * called by the framework to configure our component
