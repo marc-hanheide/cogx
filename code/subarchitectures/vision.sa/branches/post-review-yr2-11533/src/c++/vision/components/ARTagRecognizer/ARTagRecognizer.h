@@ -23,6 +23,8 @@ class ARTagRecognizer:
     public VideoClient
 {
 private:
+
+  bool sendSelfCommand;
   /**
    * Which camera to get images from
    */
@@ -99,7 +101,7 @@ public:
    * The callback function for images pushed by the image server.
    * To be overwritten by derived classes.
    */
-   virtual cogx::Math::Pose3 getMarkerPosition(std::string label);
+   virtual bool isMarkerPresent(int targetId);
   void init();
 };
 

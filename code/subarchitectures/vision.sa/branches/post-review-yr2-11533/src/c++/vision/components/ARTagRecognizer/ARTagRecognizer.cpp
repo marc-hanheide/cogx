@@ -66,6 +66,13 @@ namespace cast
       istr >> camId;
     }
 
+    sendSelfCommand = false;
+    if((it = _config.find("--send-self-command")) != _config.end())
+    {
+    sendSelfCommand = true;
+    }
+
+
     // sanity checks: Have all important things be configured? Is the
     // configuration consistent?
     if(videoServerName.empty())
@@ -82,7 +89,7 @@ namespace cast
     if (it != _config.end()) {
       cfg = it->second;
     }
-    marker_width = 160.0;
+    marker_width = 80.0;
     thresh = 100;                                                                         
     count = 0;
     dummy = true;
@@ -208,6 +215,7 @@ namespace cast
     log("starting...");
     init();
     // get connection to the video server
+    log("Getting video server name %s", videoServerName.c_str());
     videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
     // register our client interface to allow the video server pushing images
@@ -259,9 +267,13 @@ namespace cast
 		  log("ARTag already detected, skipping...");
 		}
 		else {
-		  Pose3 p = getMarkerPosition(taggedObjects[targetId].label);
+		  Pose3 p; 
+		  p.pos.x = 0;
+		  p.pos.y = 0;
+		  p.pos.z = 0;
+		  setIdentity(p);
 
-		  if (p.pos.x != 1E40){
+		  if (isMarkerPresent(targetId)){
 		    VisionData::VisualObjectPtr newVisualObject =
 		      new VisionData::VisualObject;
 
@@ -305,28 +317,28 @@ namespace cast
    */
   /* set up the video format globals */                                                                                 
 
-  char           *cparam_name    = "/home/cogx/projects/kthsys/subarchitectures/vision.sa/config/ARData/Data/camera_para.dat";                                                              
+  char           *cparam_name    = "/home/cogx/avs-yr3/subarchitectures/vision.sa/config/ARdata/camera_para.dat";                                                              
 
 
   void ARTagRecognizer::init(){
     ARParam  wparam;
 
-    /* set the initial camera parameters */
+     //set the initial camera parameters 
     if( arParamLoad(cparam_name, 1, &wparam) < 0 ) {
-      printf("Camera parameter load error !!\n");
-      exit(0);
+      log("Camera parameter load error !!\n");
+      exit(1);
     }
     arParamChangeSize( &wparam, 640, 480, &cparam );
     arInitCparam( &cparam );
-    printf("*** Camera Parameter ***\n");
+    log("*** Camera Parameter ***\n");
     arParamDisp( &cparam );
     log("lala");
     for (unsigned int i = 0; i < taggedObjects.size(); i++){
       /* load pattern file */
       if( (taggedObjects[i].id =arLoadPatt(taggedObjects[i].filename.c_str())) < 0)
       {
-	printf ("Pattern file load error !! \n");
-	exit(0);
+	log("Pattern file load error !! \n");
+	exit(1);
       }
       log("loaded pattern for: %s, id: %d",taggedObjects[i].label.c_str(), taggedObjects[i].id);
 
@@ -341,19 +353,12 @@ namespace cast
     printf("pos: %3.2f , %3.2f, %3.2f \n", pose.pos.x, pose.pos.y, pose.pos.z);
 
   }
-  Pose3 ARTagRecognizer::getMarkerPosition(std::string label)
-  {
-    int targetId = -1;
-    for(unsigned int i =0; i < taggedObjects.size(); i++){
-      if (taggedObjects[i].label == label)
-	targetId = i;
-    }
-    log("requested object %s had id: %d", label.c_str(), targetId);
+  bool ARTagRecognizer::isMarkerPresent(int targetId)
+  {    log("requested object %s had id: %d", taggedObjects[targetId].label.c_str(), targetId);
     if(targetId == -1){
       log("this object does not exists! ignoring..");
     }
     Pose3 ret;
-    ret.pos.x = 1E40;
     ARMarkerInfo    *marker_info;
     int             marker_num;
     int i,k;
@@ -368,21 +373,23 @@ namespace cast
 	  &marker_info, &marker_num) < 0 ) {
       exit(0);
     }
+    log("Found %d markers", marker_num);
     k = -1;
     for( i = 0; i < marker_num; i++ ) {
       log("Found A pattern with id: %d",marker_info[i]);
-      for (unsigned int j = 0; j < taggedObjects.size(); j++){
-	if( marker_info[i].id  == targetId) {
+	if( marker_info[i].id  == taggedObjects[targetId].id) {
 	  //  you've found a pattern 
-	  printf("Found pattern with id: %d \n",taggedObjects[j].id);
-	  double inv_trans[3][4];
+	  log("Found pattern with id: %d \n",taggedObjects[targetId].id);
+	  cvReleaseImage(&iplImage);
+	  return true;
+	  /*	  double inv_trans[3][4];
 
 	  if( arGetTransMat(&marker_info[i], marker_center, marker_width, marker_trans) < 0 ){
 	    log("transmat failed!!!");
 	  }
-	  /*else{
+	  else{
 	    if( arGetTransMatCont(&marker_info[i], marker_trans, marker_center, marker_width, marker_trans) < 0 ) return;
-	  }*/
+	  }
 
 	  //Calculate its position and pose and put in the WM
 	  Pose3 P, A, B, O;
@@ -412,18 +419,17 @@ namespace cast
 
 	  Math::transform(P,A,B);
 
-	  mult(B.rot,taggedObjects[j].trans.rot,B.rot);
+	  mult(B.rot,taggedObjects[targetId].trans.rot,B.rot);
 	  printf("object pose B: %3.2f, %3.2f, %3.2f \n", B.pos.x,B.pos.y,B.pos.z);
-	  ret = B;
-	  cvReleaseImage(&iplImage);
+	  ret = B; */
 	}
 	else{
-	//  log("object %s not found",label.c_str());
+	  log("object %s not found",taggedObjects[targetId].label.c_str());
   cvReleaseImage(&iplImage);
+  return false;
 	}
-      }
     }
-    return ret;
+    return false;
   }
       void ARTagRecognizer::runComponent()
     {
@@ -431,7 +437,14 @@ namespace cast
       sleep(10);
       while(isRunning())
       {
-	//getMarkerPosition();
+	if(sendSelfCommand){
+	  log("Sending command to self");
+	  for (unsigned i=0; i < taggedObjects.size(); i++){
+	  VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;
+	  cmd->label = taggedObjects[i].label;
+	  addToWorkingMemory(newDataID(), cmd);
+	  }
+	}
 	sleepComponent(500);
       }
     }
