@@ -209,7 +209,9 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
 		log("Visual Object Id: %s", elformula->prop.c_str());
 
-		m_fromBeliefIdtoVisualLabel[objID.address.id] = elformula->prop.c_str();
+		//m_fromBeliefIdtoVisualLabel[objID.address.id] = elformula->prop.c_str();
+
+		m_fromBeliefIdtoVisualLabel[objID.address.id] = objID.address.id;
 
 		SpatialProperties::ObjectPlacePropertyPtr result = new SpatialProperties::ObjectPlaceProperty;
 		result->category = m_currentConeGroup->searchedObjectCategory;
