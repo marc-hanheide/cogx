@@ -182,8 +182,8 @@ namespace cast
       return;
     }
     objectInfo temp;
-    std::string number;
     temp.id = -1;
+    int i = 0;
     while(getline(file,line)){
       //first line is label
       string label = line;
@@ -200,11 +200,9 @@ namespace cast
       istr2 >> temp.boxDimensions.y;
       istr2 >> temp.boxDimensions.z;
 
-      for (int i = 0; i < m_taggedObjects; i++) {
-	if (m_taggedObjects[i].label == label) {
-	  m_preKnownObjects[i] = temp;
-	}
-      }
+
+      m_preKnownObjects[i] = temp;
+      i++;
     }
   }
 
