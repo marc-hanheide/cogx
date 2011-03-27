@@ -33,6 +33,7 @@ using namespace SpatialGridMap;
 using namespace cogx;
 using namespace Math;
 using namespace de::dfki::lt::tr::beliefs::slice;
+using namespace de::dfki::lt::tr::beliefs::slice::history;
 using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
 using namespace de::dfki::lt::tr::beliefs::slice::distribs;
 using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
@@ -205,8 +206,7 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	log("Overwriting command to change status to: SUCCESS");
 	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
-
-	}
+}
 
 void
 AVS_ContinualPlanner::newSpatialObject(const cast::cdl::WorkingMemoryChange &objID)
@@ -218,10 +218,6 @@ try {
   spatial::Object *model = generateNewObjectModel(newObj->label);
   log("Got Spatial Object: %s", newObj->label.c_str());
   model->pose = newObj->pose;
-
-  if (m_currentConeGroup){
-	  putObjectInMap(*m_objectBloxelMaps[m_currentConeGroup->bloxelMapId], model);
-  }
 } catch (DoesNotExistOnWMException e) {
     log("Error! SpatialObject disappeared from WM!");
   }
@@ -245,11 +241,25 @@ void AVS_ContinualPlanner::newGroundedBelief(
 	dBeliefPtr belief = new dBelief;
 	belief = getMemoryEntry<dBelief>(objID.address);
 
-	if (belief->type == "VisualObject"){
-		// Let's get it's Id;
 
-		log("Got a new Visual Object!");
+	if (belief->type == "VisualObject"){
 		CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(belief->content));
+		if (dist->distribs.count("label") != 0){
+		// Let's get it's Id;
+		log("Got a new Visual Object!");
+		log("getting percept WMid for this grounded belief");
+		CASTBeliefHistoryPtr history(CASTBeliefHistoryPtr::dynamicCast(belief->hist));
+
+		log("getting percept belief associated with this grounded object at: %s", history->ancestors[0]->address.id.c_str());
+
+		PerceptBeliefPtr visualpercept = new PerceptBelief;
+		visualpercept = getMemoryEntry<PerceptBelief>(history->ancestors[0]->address);
+		CASTBeliefHistoryPtr history2(CASTBeliefHistoryPtr::dynamicCast(visualpercept->hist));
+		std::string visualobjectid = history2->ancestors[0]->address.id;
+
+
+
+
 		BasicProbDistributionPtr  basicdist(BasicProbDistributionPtr::dynamicCast(dist->distribs["label"]));
 		FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(basicdist->values));
 		ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues->values[0].val));
@@ -257,7 +267,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 
 		//m_fromBeliefIdtoVisualLabel[objID.address.id] = elformula->prop.c_str();
 
-		m_fromBeliefIdtoVisualLabel[objID.address.id] = objID.address.id;
+		m_fromBeliefIdtoVisualLabel[objID.address.id] = visualobjectid;
 
 		SpatialProperties::ObjectPlacePropertyPtr result = new SpatialProperties::ObjectPlaceProperty;
 		result->category = m_currentConeGroup->searchedObjectCategory;
@@ -286,6 +296,10 @@ void AVS_ContinualPlanner::newGroundedBelief(
 	  			result->category.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
 	  	addToWorkingMemory(newDataID(), result);
+}
+else{
+	log("Empty VisualObject belief!");
+}
 	}
 
 }
@@ -914,6 +928,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 
 void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
 
+	log("Making VC update at: %f, %f, %f", viewcone.second.pos[0],viewcone.second.pos[1],viewcone.second.pos[2]);
 m_currentConeGroup->isprocessed = true;
 bool isAllConeGroupsProcessed = true;
 
@@ -1338,6 +1353,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 		log("Nav Command succeeded");
 		// it means we've reached viewcone position
 		if(!m_runInSimulation){
+			log("Not running in simulation mode, moving pan tilt");
 			MovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
 			Recognize();
 		}
