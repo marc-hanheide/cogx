@@ -89,6 +89,14 @@ namespace cast
     if (it != _config.end()) {
       cfg = it->second;
     }
+    camParamFileName = "camera_para.dat";
+    it = _config.find("--camfilename");
+        if (it != _config.end()) {
+        	camParamFileName = it->second;
+        }
+        log("Path to camParamFile data %s", (tagpath +camParamFileName).c_str());
+
+
     marker_width = 80.0;
     thresh = 100;                                                                         
     count = 0;
@@ -205,7 +213,7 @@ namespace cast
 
     for (unsigned int i = 0; i < taggedObjects.size(); i++){
       log("loaded %s at %s", taggedObjects[i].label.c_str(), taggedObjects[i].filename.c_str());
-      printPose(taggedObjects[i].trans);
+    //  printPose(taggedObjects[i].trans);
     }
 
 
@@ -303,30 +311,14 @@ namespace cast
 	      }
 	    }
   }
-  /*
-     char           *patt_name      = "/home/cogx/projects/kthsys/subarchitectures/vision.sa/config/ARData/Data/patt.hiro";                                                                    
-     int             patt_id;                                                                                              
-
-     int             marker_width     = 80.0;
-     double          marker_center[2] = {0.0, 0.0};                                                                        
-     double          marker_trans[3][4];                                                                                   
-
-     int             xsize, ysize;                                                                                         
-     int             thresh = 100;                                                                         
-     int             count = 0;                                                                                            
-   */
-  /* set up the video format globals */                                                                                 
-
-  char           *cparam_name    = "/home/cogx/avs-yr3/subarchitectures/vision.sa/config/ARdata/camera_para.dat";                                                              
-
 
   void ARTagRecognizer::init(){
     ARParam  wparam;
 
      //set the initial camera parameters 
-    if( arParamLoad(cparam_name, 1, &wparam) < 0 ) {
+    if( arParamLoad((tagpath +camParamFileName).c_str(), 1, &wparam) < 0 ) {
       log("Camera parameter load error !!\n");
-      exit(1);
+      exit(0);
     }
     arParamChangeSize( &wparam, 640, 480, &cparam );
     arInitCparam( &cparam );

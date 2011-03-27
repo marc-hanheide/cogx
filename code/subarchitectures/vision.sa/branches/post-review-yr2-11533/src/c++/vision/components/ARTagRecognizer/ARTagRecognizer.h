@@ -71,7 +71,8 @@ private:
   int             xsize, ysize;                                                                                         
   int             thresh;                                                                         
   int             count;
-  ARParam         cparam;                    
+  ARParam         cparam;
+  std::string camParamFileName;
 
   bool dummy;
   std::string tagpath;
