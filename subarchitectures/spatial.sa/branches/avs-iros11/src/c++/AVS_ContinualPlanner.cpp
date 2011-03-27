@@ -587,11 +587,34 @@ void AVS_ContinualPlanner::generateViewCones(
 	log("getting cones..");
 
 
+
+	vector<comadata::ComaRoomPtr> comarooms;
+	getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
+
+	log("Got %d rooms", comarooms.size());
+
+	if (comarooms.size() == 0){
+		log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
+		return;
+	}
+	unsigned int i = 0;
+	for (; i < comarooms.size(); i++) {
+		log("Got coma room with room id: %d", comarooms[i]->roomId);
+		if (comarooms[i]->roomId == newVPCommand->roomId) {
+			break;
+		}
+	}
+
+	FrontierInterface::PlaceInterfacePrx agg2(getIceServer<
+			FrontierInterface::PlaceInterface> ("place.manager"));
+	 NavData::FNodePtr node = new NavData::FNode;
+	 node =  agg2->getNodeFromPlaceID(comarooms[i]->containedPlaceIds[0]);
+
 	ViewPointGenerator coneGenerator(this,
 			m_templateRoomGridMaps[newVPCommand->roomId],
 			m_objectBloxelMaps[id], m_samplesize, m_sampleawayfromobs,
 			m_conedepth, m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance, pdfmass,
-			0.7, 0, 0);
+			0.7, node->x, node->y);
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones();
 
