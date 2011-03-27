@@ -547,7 +547,20 @@ DensitySampler::sampleBinaryRelationSystematically(
     supportObject = objects[currentLevel+1];
 
     string onObjectLabel = objectLabels[currentLevel];
-    string supportObjectLabel = objectLabels[currentLevel+1];
+    
+    // Identify support object by "label+length+width"
+//    string supportObjectLabel = objectLabels[currentLevel+1];
+    string supportObjectLabel;
+    ostringstream ostr(supportObjectLabel);
+    if (supportObject->type == spatial::OBJECT_BOX ||
+	supportObject->type == spatial::OBJECT_HOLLOW_BOX) {
+    ostr << (int)(100*((BoxObject*)supportObject)->radius1) <<
+"x" << (int)(100*((BoxObject*)supportObject)->radius2);
+    }
+    else {
+      printf("Error! %s, %i: Unexpected object type!", __FILE__, __LINE__);
+      return;
+    }
 
     Pose3 oldPose = onObject->pose;
 
