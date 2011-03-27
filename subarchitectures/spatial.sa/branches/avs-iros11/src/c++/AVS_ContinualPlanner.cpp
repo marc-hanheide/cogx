@@ -444,7 +444,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
     if(m_usePeekabot){
     	//log("Displaying Map in PB.");
-    //	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+    	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
     }
 	m_currentBloxelMap = m_objectBloxelMaps[id];
 	m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
@@ -562,7 +562,7 @@ void AVS_ContinualPlanner::generateViewCones(
 											&& bloxelY + i > 0)) {
 //								/log("modifying bloxelmap pdf");
 								m_objectBloxelMaps[id]->boxSubColumnModifier(
-										bloxelX + i, bloxelY + j, 1.5, m_mapceiling-1, initfunctor);
+										bloxelX + i, bloxelY + j, .5, 1.0, initfunctor);
 							}
 						}
 					}
@@ -581,8 +581,8 @@ void AVS_ContinualPlanner::generateViewCones(
 	//Now that we've got our map generate cones for this
 	//Todo: and generateViewCones based on this
     if(m_usePeekabot){
-    //	log("Displaying PDF Map in PB.");
-     // pbVis->AddPDF(*m_objectBloxelMaps[id]);
+      log("Displaying PDF Map in PB.");
+      pbVis->AddPDF(*m_objectBloxelMaps[id]);
       pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
     }
 	log("getting cones..");
