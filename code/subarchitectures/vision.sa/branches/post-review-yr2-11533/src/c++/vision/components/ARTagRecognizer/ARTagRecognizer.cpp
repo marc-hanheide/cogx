@@ -275,9 +275,9 @@ namespace cast
 		if (m_preKnownObjects.count(targetId) == 0) {
 		  log("Warning: nothing preloaded for %i(%s)", targetId, label.c_str());
 		}
-		else if (taggedObjects[targetId].wmid != "") {
-		  log("ARTag already detected, skipping...");
-		}
+		//else if (taggedObjects[targetId].wmid != "") {
+		 // log("ARTag already detected, skipping...");
+	//	}
 		else {
 		  Pose3 p; 
 		  p.pos.x = 0;
