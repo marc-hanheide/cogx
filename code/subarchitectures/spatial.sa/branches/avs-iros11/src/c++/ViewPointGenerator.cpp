@@ -39,7 +39,7 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
     m_component->log("ViewPointGenerator parameters: m_samplesize: %d, m_sampleawayfromobs: %f, m_conedepth: %f, m_horizangle: %f, m_vertangle: %f, m_minDistance: %f, m_bloxelmapPDFsum: %f , m_pdfthreshold: %f",
     		m_samplesize, m_sampleawayfromobs, m_conedepth,m_horizangle,m_vertangle,m_minDistance, m_bloxelmapPDFsum, m_pdfthreshold);
     m_component->log("BloxelMap size: %d, %d CureMap size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgm->getSize());
-    m_sensingProb = 1.0;
+    m_sensingProb = 0.5;
     m_panstep = panstep*M_PI/180;
     m_tiltstep = tiltstep*M_PI/180;
 }
@@ -98,7 +98,6 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 			double maxpdf = -1;
 			int bestindex = -1;
 			GDIsObstacle isobstacle;
-			GDProbScale scalefunctor(1-m_sensingProb);
 
 		for (unsigned int i=0; i < unordered3DVCList.size(); i++) {
 			if (unordered3DVCList[i].totalprob > maxpdf){
@@ -107,23 +106,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 			}
 		}
 
-
-		m_component->log("Best index %d", bestindex);
-		lastConePDFSum = unordered3DVCList[bestindex].totalprob;
-		if(lastConePDFSum < 0.01){
-			m_component->log("Best cone's prob. sum. is less than 1%, returning what we have so far");
-			break;
-		}
-		totalprobsum += lastConePDFSum;
-		result3DVCList.push_back(unordered3DVCList[bestindex]);
-
-		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
-
-		if(m_component->m_usePeekabot){
-		m_component->PostViewCone(unordered3DVCList[bestindex]);
-		}
-
-		GDProbSum sumcells;
+	GDProbSum sumcells;
+		GDProbScale scalefunctor(1-m_sensingProb);
 
 		bloxelmap->universalQuery(sumcells);
 		double initialMapPDFSum = sumcells.getResult();
@@ -139,15 +123,35 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 			m_component->displayPDF(*bloxelmap);
 		}
 		bloxelmap->universalQuery(sumcells);
-		initialMapPDFSum = sumcells.getResult();
-		m_component->log("getBest3DViewCones: After whole map PDF sums to: %f", initialMapPDFSum);
+		double postMapPDFSum = sumcells.getResult();
+		m_component->log("getBest3DViewCones: After whole map PDF sums to: %f", postMapPDFSum);
 
+
+		m_component->log("Best index %d", bestindex);
+		//lastConePDFSum = unordered3DVCList[bestindex].totalprob;
+		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
+		if(lastConePDFSum < 0.001){
+			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
+			break;
 		}
+		totalprobsum += lastConePDFSum;
+		result3DVCList.push_back(unordered3DVCList[bestindex]);
+
+		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
+
+		if(m_component->m_usePeekabot){
+		m_component->PostViewCone(unordered3DVCList[bestindex]);
+		}
+
+			}
 		m_component->log("Returning %d 3D viewcones", result3DVCList.size());
+		printf("Returning %d 3D viewcones \n", result3DVCList.size());
+				for (unsigned int i=0; i < result3DVCList.size(); i++){
 				for (unsigned int i=0; i < result3DVCList.size(); i++){
 					m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);
 				}
 		return result3DVCList;
+}
 }
 
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(std::vector<SensingAction> &samplepoints) {
@@ -297,7 +301,7 @@ double ViewPointGenerator::getPathLength(Cure::Pose3D start,
 
 	// Grow each occupied cell to account for the size of the
 	// robot. We put the result in another binary matrix, m_PathGrid
-	m_NonFreeSpace.growInto(m_PathGrid, 0.5 * 0.01 / lgm->getCellSize(), true);
+	m_NonFreeSpace.growInto(m_PathGrid, 0.3,  true);
 	// 0.45 is robot width hard coded here.
 	// We treat all unknown cells as occupied so that the robot only
 	// uses paths that it knowns to be free. Note that we perfom this
@@ -359,6 +363,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 	int i = 0;
 	int randx, randy;
 	double xW, yW, angle;
+	cout << "sampling 2D points" << endl;
 	m_component->log("Sampling %d points ", m_samplesize);
 	bool haspoint;
 	Cure::Pose3D singlesample;
@@ -407,9 +412,12 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 				samples.push_back(singlesample);
 				i++;
 			}
+			else {
+			  cout << "no path to here" << endl;
+			}
 
-	//	} else {
-			//m_component->log("point either non free space or seen.");
+		} else {
+			printf("point either non free space or seen.");
 		//}
 		//if (giveup > m_samplesize*5){
 			//m_component->log("Tried to much giving up, anything can happen after this.");
