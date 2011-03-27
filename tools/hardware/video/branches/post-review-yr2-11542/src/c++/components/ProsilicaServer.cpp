@@ -160,7 +160,7 @@ void ProsilicaServer::init()
   log("Initializing API.");
   if(PvInitialize())
   {
-    throw cast::CASTException("Cannot initalize the API.");
+    throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot initalize the API."));
   }
 
   // List the cameras
@@ -175,7 +175,7 @@ void ProsilicaServer::init()
 
   if (camNo==0)
   {
-    throw cast::CASTException("No Prosilica GigE cameras detected.");
+    throw cast::CASTException(cast::exceptionMessage(__HERE__, "No Prosilica GigE cameras detected."));
   }
 
   // Find cameras
@@ -199,14 +199,17 @@ void ProsilicaServer::init()
   }
 
   if (!foundLeft)
-	  throw cast::CASTException("Left camera not found!");
+  {
+      error("Left camera not found.");
+	  throw cast::CASTException(cast::exceptionMessage(__HERE__, "Left camera not found!"));
+  }
 
   // Init left camera
     // Open camera
     log("Opening left camera");
     if (PvCameraOpen(PROSILICA_LEFT_CAM_ID, ePvAccessMaster, &_leftCamHandle))
     {
-      throw cast::CASTException("Cannot open the left camera.");
+      throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot open the left camera."));
     }
     // Adjust packet size
 //    if (mtuAuto)
@@ -230,7 +233,8 @@ void ProsilicaServer::init()
     log("Setting left camera parameters.");
     if (!setCameraAttributes(_leftCamHandle))
     {
-    	throw cast::CASTException("Cannot set left camera attributes.");
+        error("Cannot set left camera attributes.");
+    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot set left camera attributes."));
     }
     // Calculating StreamBytesPerSecond
     tPvUint32 tbpf=0;
@@ -255,14 +259,17 @@ void ProsilicaServer::init()
     log("Starting capture for the left camera.");
     if (PvCaptureStart(_leftCamHandle))
     {
-    	throw cast::CASTException("Error invoking CaptureStart for left camera.");
+    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Error invoking CaptureStart for left camera."));
     }
+
+    sleepComponent(1000);
     // Start acquisition
     log("Starting acquisition for the left camera.");
     if (PvCommandRun(_leftCamHandle, "AcquisitionStart"))
     {
-    	throw cast::CASTException("Cannot start acquisition for the left camera.");
+    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot start acquisition for the left camera."));
     }
+    log("Finished initialization.");
 
 }
 
@@ -294,6 +301,7 @@ bool ProsilicaServer::setCameraAttributes(tPvHandle cam)
      y=vertShiftAbs;
   }
 
+  log ("Settin W&H");
   if (PvAttrUint32Set(cam, "Width", 1360))
     return false;
   if (PvAttrUint32Set(cam, "Height", 1024-vertShiftAbs))
@@ -321,16 +329,22 @@ bool ProsilicaServer::setCameraAttributes(tPvHandle cam)
 //  if (PvAttrEnumSet(cam, "AcqRecTriggerMode", "Disabled"))
 //    return false;
   // Feature control
+  log("Setting exposure.");
   if (PvAttrEnumSet(cam, "ExposureMode", "Auto"))
     return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "ExposureValue", 15000 ))
     return false;
-  if (PvAttrUint32Set(cam, "ExposureAutoAdjustDelay", 0 ))
-    return false;
+  log("xx");
+//  if (PvAttrUint32Set(cam, "ExposureAutoAdjustDelay", 0 ))
+//    return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "ExposureAutoAdjustTol", 3 ))
     return false;
+  log("xx");
   if (PvAttrEnumSet(cam, "ExposureAutoAlg", "Mean"))
     return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "ExposureAutoMax", 15000 ))
     return false;
   if (PvAttrUint32Set(cam, "ExposureAutoMin", 6000 ))
@@ -341,22 +355,31 @@ bool ProsilicaServer::setCameraAttributes(tPvHandle cam)
     return false;
   if (PvAttrUint32Set(cam, "ExposureAutoTarget", 35 ))
     return false;
+  log("Setting gain");
   if (PvAttrUint32Set(cam, "GainValue", 15 ))
     return false;
+  log("Setting white balance");
   if (PvAttrEnumSet(cam, "WhitebalMode", "Auto"))
     return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "WhitebalValueRed",100 ))
     return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "WhitebalValueBlue", 300 ))
     return false;
-  if (PvAttrUint32Set(cam, "WhitebalAutoAdjustDelay", 0 ))
-    return false;
+  log("xx");
+//  if (PvAttrUint32Set(cam, "WhitebalAutoAdjustDelay", 0 ))
+//    return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "WhitebalAutoAdjustTol", 5 ))
     return false;
-  if (PvAttrEnumSet(cam, "WhitebalAutoAlg", "Mean"))
-    return false;
-  if (PvAttrUint32Set(cam, "WhitebalAutoOutliers", 5 ))
-    return false;
+  log("xx");
+//  if (PvAttrEnumSet(cam, "WhitebalAutoAlg", "Mean"))
+//    return false;
+  log("xx");
+//  if (PvAttrUint32Set(cam, "WhitebalAutoOutliers", 5 ))
+//    return false;
+  log("xx");
   if (PvAttrUint32Set(cam, "WhitebalAutoRate", 100))
     return false;
 
@@ -371,19 +394,18 @@ void ProsilicaServer::configure(const map<string,string> & _config)
   // first let the base class configure itself
   VideoServer::configure(_config);
 
-
-	init();
-	void grabFrames();
+  init();
 }
 
 
 void ProsilicaServer::grabFrames()
 {
+	log("Grabbing frames");
 	pthread_mutex_lock(&_pvMutex);
 	if(!PvCaptureQueueFrame(_leftCamHandle,&(_frame),NULL))
 	{
 		debug("waiting for the frame to be done ...");
-		while(PvCaptureWaitForFrameDone(_leftCamHandle,&(_frame),100) == ePvErrTimeout)
+		while(PvCaptureWaitForFrameDone(_leftCamHandle,&(_frame),PVINFINITE) == ePvErrTimeout)
 			debug("still waiting ...");
 		grabTime = getCASTTime();
 		if(_frame.Status == ePvErrSuccess)
@@ -402,6 +424,7 @@ void ProsilicaServer::grabFrames()
 void ProsilicaServer::retrieveFrameInternal(int camIdx, int w, int h,
     Video::Image &frame)
 {
+	log("Retrieving frame");
 	pthread_mutex_lock(&_pvMutex);
 
 	frame.time = grabTime;
