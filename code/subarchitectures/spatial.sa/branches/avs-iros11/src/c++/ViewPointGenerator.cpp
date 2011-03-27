@@ -36,8 +36,8 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
 	  m_roboty= roboty;
 	m_best3DConeRatio = 0.1;
     m_tiltstep = 0.1;
-    m_component->log("ViewPointGenerator parameters: m_samplesize: %d, m_sampleawayfromobs: %f, m_conedepth: %f, m_horizangle: %f, m_vertangle: %f, m_minDistance: %f, m_bloxelmapPDFsum: %f , m_pdfthreshold: %f",
-    		m_samplesize, m_sampleawayfromobs, m_conedepth,m_horizangle,m_vertangle,m_minDistance, m_bloxelmapPDFsum, m_pdfthreshold);
+    m_component->log("ViewPointGenerator parameters: m_samplesize: %d, m_sampleawayfromobs: %f, m_conedepth: %f, m_horizangle: %f, m_vertangle: %f, m_minDistance: %f, m_bloxelmapPDFsum: %f , m_pdfthreshold: %f, robotx %f, roboty %f",
+    		m_samplesize, m_sampleawayfromobs, m_conedepth,m_horizangle,m_vertangle,m_minDistance, m_bloxelmapPDFsum, m_pdfthreshold, m_robotx, m_roboty);
     m_component->log("BloxelMap size: %d, %d CureMap size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgm->getSize());
     m_sensingProb = 0.5;
     m_panstep = panstep*M_PI/180;
@@ -402,7 +402,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			dest.setX(yW);
 
 			double d = getPathLength(start, dest, lgm);
-			m_component->log("path to here: %3.2f", d);
+			//m_component->log("path to here: %3.2f", d);
 			// There is a path to this destination
 			//	    log("there's a path to this destination");
 			if (d > 0) {
@@ -413,11 +413,11 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 				i++;
 			}
 			else {
-			  cout << "no path to here" << endl;
+			 // cout << "no path to here" << endl;
 			}
 
 		} else {
-			printf("point either non free space or seen.");
+		//	printf("point either non free space or seen.");
 		//}
 		//if (giveup > m_samplesize*5){
 			//m_component->log("Tried to much giving up, anything can happen after this.");
