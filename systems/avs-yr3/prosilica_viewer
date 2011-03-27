@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./tools/hardware/video/src/c++/components/prosilica/bin-pc/x64/SampleViewer
