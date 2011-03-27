@@ -655,9 +655,9 @@ void AVS_ContinualPlanner::generateViewCones(
 			ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(formulaValues1->values[0].val));
 
 			int placeid = intformula->val;
-			log("Place Id for this belief: %d", placeid);
+		//	log("Place Id for this belief: %d", placeid);
 			if (conePlaceId == placeid && elformula->prop == "TRUEPLACE"){
-				log("Got  place belief from roomid: %d", conePlaceId);
+		//		log("Got  place belief from roomid: %d", conePlaceId);
 				placeWMaddress.id = placeBeliefs[j]->getID();
 				placeWMaddress.subarchitecture = "spatial";
 				break;
@@ -950,7 +950,7 @@ for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!
 	}
 }
 
-double sensingProb = 0.8;
+double sensingProb = 0.5;
 GDProbSum sumcells;
 GDIsObstacle isobstacle;
 /* DEBUG */
@@ -1044,7 +1044,6 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 			log("Error! ObjectSearchResult missing on WM!");
 		}
 	}
-
 }
 
 
