@@ -138,6 +138,7 @@ void ProsilicaServer::Timer::increment()
 ProsilicaServer::ProsilicaServer()
 {
 	pthread_mutex_init(&_pvMutex, NULL);
+	initDone=false;
 }
 
 ProsilicaServer::~ProsilicaServer()
@@ -158,9 +159,14 @@ void ProsilicaServer::init()
 {
   // Init API
   log("Initializing API.");
-  if(PvInitialize())
+  tPvErr err;
+  if((err=PvInitialize()))
   {
-    throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot initalize the API."));
+	if (err == ePvErrResources)
+		throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot initalize the API (RESOURCES)."));
+	if (err == ePvErrInternalFault)
+		throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot initalize the API (INTERNAL FAULT)."));
+	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot initalize the API."));
   }
 
   // List the cameras
@@ -400,6 +406,13 @@ void ProsilicaServer::configure(const map<string,string> & _config)
 
 void ProsilicaServer::grabFrames()
 {
+//	if (!initDone)
+//	{
+//		init();
+//		initDone = false;
+//	}
+
+
 	log("Grabbing frames");
 	pthread_mutex_lock(&_pvMutex);
 	if(!PvCaptureQueueFrame(_leftCamHandle,&(_frame),NULL))

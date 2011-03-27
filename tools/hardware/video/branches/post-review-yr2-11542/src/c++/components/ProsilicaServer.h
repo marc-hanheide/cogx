@@ -87,6 +87,7 @@ private:
 
 	  cast::cdl::CASTTime grabTime;
 
+	  bool initDone;
 
 };
 
