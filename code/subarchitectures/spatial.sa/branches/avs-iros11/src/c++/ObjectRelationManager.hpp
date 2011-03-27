@@ -66,7 +66,7 @@ protected:
   std::map<std::string, SpatialObjectPtr> m_objects; 
   std::map<std::string, spatial::Object*> m_objectModels;
   std::map<std::string, std::string> m_objectWMIDs; 
-  std::map<std::string, std::string> m_visualObjectIDs;
+//  std::map<std::string, std::string> m_visualObjectIDs;
 
   std::map<std::string, PlaneObject> m_planeObjectModels;
   std::map<std::string, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
@@ -89,7 +89,7 @@ protected:
   std::map<StrPair, double> m_objectInnessValues;
 
   std::map<std::string, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
-  std::map<std::string, std::string> m_containmentPropWMIDs; 
+//  std::map<std::string, std::string> m_containmentPropWMIDs; 
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
@@ -134,7 +134,7 @@ protected:
 //  void sampleOnnessForObject(const std::string &supLabel, 
 //      const std::string &onLabel);
 
-  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
+//  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
   void new3DPriorRequest(const cast::cdl::WorkingMemoryChange &wmc);
 
