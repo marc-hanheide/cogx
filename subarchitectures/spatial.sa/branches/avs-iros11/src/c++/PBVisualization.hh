@@ -66,18 +66,23 @@ class VisualPB_Bloxel{
 void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
   peekabot::OccupancySet2D cells;
   peekabot::OccupancyGrid2DProxy og2d;
-  og2d.add(m_2DOccGridProxy,name,peekabot::REPLACE_ON_CONFLICT);
-  og2d.translate(0,0,-0.005);
-  og2d.hide(); 
+  og2d.add(m_2DOccGridProxy,name,curemap->getCellSize(), peekabot::REPLACE_ON_CONFLICT);
+  og2d.translate(0,0,-0.10,peekabot::LOCAL_COORDINATES);
+  og2d.set_unoccupied_color(0.5,0.5,0.5);
+  og2d.set_occupied_color(0,0,0);
+
   for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
     for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
       double xw,yw;
       curemap->index2WorldCoords(x,y,xw,yw);
-     if ((*curemap)(x,y) == '1' || (*curemap)(x,y) == '3'){
+     if ((*curemap)(x,y) == '1'){
 	cells.set_cell(xw,yw,1);
       }
       else if ((*curemap)(x,y) == '0'){
 	cells.set_cell(xw,yw,0);
+      }
+      else if ((*curemap)(x,y) == '0'){
+    		cells.set_cell(xw,yw,0.5);
       }
     }
   }
@@ -88,7 +93,7 @@ void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const
   peekabot::OccupancyGrid2DProxy og2d;
  peekabot::OccupancySet2D cells;
  og2d.add(client, name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
- og2d.translate(0,0,-0.005);
+ //og2d.translate(0,0,-0.005);
  
  for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
    for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
