@@ -396,17 +396,17 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			dest.setX(xW);
 			dest.setX(yW);
 
-		//	double d = getPathLength(start, dest, lgm);
-			//m_component->log("path to here: %3.2f", d);
+			double d = getPathLength(start, dest, lgm);
+			m_component->log("path to here: %3.2f", d);
 			// There is a path to this destination
 			//	    log("there's a path to this destination");
-	//		if (d > 0 || true) {
+			if (d > 0) {
 				singlesample.setX(randx);
 				singlesample.setY(randy);
 				singlesample.setTheta(angle);
 				samples.push_back(singlesample);
 				i++;
-		//	}
+			}
 
 	//	} else {
 			//m_component->log("point either non free space or seen.");

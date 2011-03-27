@@ -381,7 +381,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		/* Remove all free space and obstacle which does not belong to this room
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
-	/*	std::set<int> currentRoomPlaceIds;
+		std::set<int> currentRoomPlaceIds;
 		double xW,yW;
 		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
 			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
@@ -400,7 +400,7 @@ void AVS_ContinualPlanner::generateViewCones(
 					}
 				}
 			}
-		}*/
+		}
 		log("removed");
 
 		m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
@@ -461,9 +461,6 @@ void AVS_ContinualPlanner::generateViewCones(
 	}
 	double pdfmass = probdist.massFunction[0].probability;
 	log("Got probability for %s Conceptual %f",id.c_str(),pdfmass);
-
-	//Todo: Somehow get the probability from probDist
-	//double pdfmass = 0.5;
 
 	//Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
 	if (newVPCommand->relation != SpatialData::INROOM && !alreadyGenerated) {
