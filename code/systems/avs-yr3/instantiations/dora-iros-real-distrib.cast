@@ -68,7 +68,7 @@ JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V1
 JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
 
 
-HOST 192.186.0.11
+#HOST 192.186.0.11
 
 # Categorical.SA ############################################################
 INCLUDE includes/categorical.sa/categorical-teknikringen-shape-appearance.cast
