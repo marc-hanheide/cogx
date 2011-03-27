@@ -48,22 +48,29 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
 	m_component->log("ViewPointGenerator::GetBest3DViewCones");
 
+	std::vector<double> angles;
+	for (double rad = -30 * M_PI / 180; rad < 30 * M_PI / 180; rad = rad
+			+ m_tiltstep) {
+		angles.push_back(rad);
+	}
+
+	double totalprobsum = 0;
+	double lastConePDFSum = 1;
+	vector<SensingAction> result3DVCList;
+	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)){
 	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones();
-	vector<SensingAction> unordered3DVCList, ordered3DVCList, result3DVCList, tmp;
+	vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
 
 	SensingAction sample;
 		std::vector<SensingAction> samplepoints;
 
-		std::vector<double> angles;
-		for (double rad = -30 * M_PI / 180; rad < 30 * M_PI / 180; rad = rad
-				+ m_tiltstep) {
-			angles.push_back(rad);
-		}
+
 
 		// We have the VC candidate list ordered according to their 2D pdf sums
 		// now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
 		double xW, yW;
-		for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) {
+		for (unsigned int j = 0; j < 10; j++) {
+	//	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) {
 			lgm->index2WorldCoords(m_samples2D[ordered2DVClist[j].first].getX(),
 					m_samples2D[ordered2DVClist[j].first].getY(), xW, yW);
 
@@ -83,12 +90,9 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 			}
 		}
 
-		double totalprobsum = 0;
-		double lastConePDFSum = 1;
-
 
 		unordered3DVCList = samplepoints;
-		while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold) && lastConePDFSum > 0.03 ){
+
 			// turn
 			unordered3DVCList = getViewConeSums(samplepoints);
 			double maxpdf = -1;
@@ -106,9 +110,18 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
 		m_component->log("Best index %d", bestindex);
 		lastConePDFSum = unordered3DVCList[bestindex].totalprob;
+		if(lastConePDFSum < 0.01){
+			m_component->log("Best cone's prob. sum. is less than 1%, returning what we have so far");
+			break;
+		}
 		totalprobsum += lastConePDFSum;
 		result3DVCList.push_back(unordered3DVCList[bestindex]);
+
 		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
+
+		if(m_component->m_usePeekabot){
+		m_component->PostViewCone(unordered3DVCList[bestindex]);
+		}
 
 		GDProbSum sumcells;
 
@@ -120,9 +133,11 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		bloxelmap->coneModifier(unordered3DVCList[bestindex].pos[0], unordered3DVCList[bestindex].pos[1],
 				unordered3DVCList[bestindex].pos[2], unordered3DVCList[bestindex].pan,
 				unordered3DVCList[bestindex].tilt, m_horizangle, m_vertangle,
-				m_conedepth, 5, 5, isobstacle, scalefunctor, scalefunctor,
+				m_conedepth, 20, 20, isobstacle, scalefunctor, scalefunctor,
 				m_minDistance);
-
+		if (m_component->m_usePeekabot){
+			m_component->displayPDF(*bloxelmap);
+		}
 		bloxelmap->universalQuery(sumcells);
 		initialMapPDFSum = sumcells.getResult();
 		m_component->log("getBest3DViewCones: After whole map PDF sums to: %f", initialMapPDFSum);
@@ -151,7 +166,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 					samplepoints[i].tilt, m_horizangle, m_vertangle,
 					m_conedepth, 5, 5, isobstacle, sumcells, sumcells,
 					m_minDistance);
-			m_component->log("PDFSum of cone: %f.", sumcells.getResult());
+		//	m_component->log("PDFSum of cone: %f.", sumcells.getResult());
 
 			cout << "cone #" << i << " " << viewpoint.pos[0] << " "
 					<< viewpoint.pos[1] << " " << viewpoint.pos[2] << " "
@@ -238,9 +253,9 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
 			}
 		}
 		m_component->log("Ordered 2D VC list has %d cones", orderedVClist.size());
-		for(unsigned int i=0; i < orderedVClist.size(); i++){
-			m_component->log("Sum of VC #%d is %f", i, orderedVClist[i].second);
-		}
+	//	for(unsigned int i=0; i < orderedVClist.size(); i++){
+		//	m_component->log("Sum of VC #%d is %f", i, orderedVClist[i].second);
+//		}
 		return orderedVClist;
 }
 

@@ -17,6 +17,7 @@
 #include <SensorData/SensorPose.hh>
 #include "BloxelFunctors.hh"
 #include "GridDataFunctors.hh"
+//#include "AVS_ContinualPlanner.h"
 
 namespace spatial {
 
