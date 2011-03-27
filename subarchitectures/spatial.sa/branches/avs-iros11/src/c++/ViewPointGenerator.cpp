@@ -399,7 +399,8 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			start.setX(m_robotx);
 			start.setY(m_roboty);
 			dest.setX(xW);
-			dest.setX(yW);
+			dest.setY(yW);
+			m_component->log("from: %f, %f", xW, yW);
 
 			double d = getPathLength(start, dest, lgm);
 			//m_component->log("path to here: %3.2f", d);
