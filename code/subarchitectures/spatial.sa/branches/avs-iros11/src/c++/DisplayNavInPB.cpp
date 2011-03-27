@@ -40,6 +40,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <list>
 #include <string>
+#include <cfloat>
 
 
 using namespace std;
@@ -65,6 +66,8 @@ DisplayNavInPB::DisplayNavInPB()
   m_FovH = 45.0;
   m_FovV = 35.0;
   previouscenter.assign(3,0.0);
+  m_lastLoggedX = DBL_MAX;
+  m_lastLoggedY = DBL_MAX;
 }
 
 
@@ -92,6 +95,8 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPlaceholders = (_config.find("--no-placeholders") == _config.end());
   m_ShowRoomId = (_config.find("--no-roomid") == _config.end());
   m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
+
+  m_ShowPath = (_config.find("--log-path") != _config.end());
 
   if (_config.find("--laser-server-host") != _config.end()) {
     std::istringstream str(_config.find("--laser-server-host")->second);
@@ -1167,6 +1172,17 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
   debug("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
+  if (m_ShowPath) {
+    double diffSq = (m_RobotPose->x-m_lastLoggedX)*(m_RobotPose->x-m_lastLoggedX) +
+      (m_RobotPose->y-m_lastLoggedY)*(m_RobotPose->y-m_lastLoggedY);
+    if (diffSq > 0.01) {
+      peekabot::VertexSet set;
+      set.add(m_RobotPose->x, m_RobotPose->y, 0.01);
+      m_ProxyPathLog.add_vertices(set);
+      m_lastLoggedX = m_RobotPose->x;
+      m_lastLoggedY = m_RobotPose->y;
+    }
+  }
 }
 
 
@@ -1970,6 +1986,9 @@ void DisplayNavInPB::connectPeekabot()
       log("Loading robot file \"%s\"", 
 	  m_PbRobotFile.c_str());
       
+      if (m_ShowPath) {
+	m_ProxyPathLog.add(m_PeekabotClient, "path_log", peekabot::REPLACE_ON_CONFLICT);
+      }
       
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
       m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
