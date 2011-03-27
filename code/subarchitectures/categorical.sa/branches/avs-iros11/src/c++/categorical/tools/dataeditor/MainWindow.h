@@ -63,6 +63,8 @@ private slots:
   void actionChangeLabelTriggered();
   void actionMarkForRemovalTriggered();
   void actionUnmarkTriggered();
+  void actionChangeLabelTo1Triggered();
+  void actionChangeLabelTo2Triggered();
 
   void currentItemChanged(QTreeWidgetItem * current, QTreeWidgetItem * previous);
 
