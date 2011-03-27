@@ -255,6 +255,7 @@ void ObjectRelationManager::start()
 void 
 ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+	//log("got new robotpose");
   double oldX = 0.0;
   double oldY = 0.0;
   double oldTheta = 0.0;
@@ -483,20 +484,20 @@ void ObjectRelationManager::runComponent()
 void
 ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 {
-  debug("newObject called");
+  log("newObject called ");
   try {
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
       string obsLabel = observedObject->identLabels[0];
 
-      debug("Confidence %f", observedObject->detectionConfidence);
+      log("Confidence %f", observedObject->detectionConfidence);
       if(observedObject->detectionConfidence == 0) {
 	return;
       }
 
 
-   // if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-      debug("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
+   // if (m_timeSinceLastMoved > m_trackerTimeThresh old) {
+      log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
 	  observedObject->pose.pos.x,
 	  observedObject->pose.pos.y,
 	  observedObject->pose.pos.z);
@@ -558,10 +559,12 @@ pose.pos.z > 100 || pose.pos.z < -100) {
       }
 
       if (m_objectModels.find(visualObjectID) == m_objectModels.end()) {
+    	  log("Generating a new object model for %s", obsLabel.c_str());
 	// Generate new object model
 	// Check if box geometry is provided in VisualObject struct
 	// If it is, generate object model based on that information
 	if (observedObject->model->vertices.size() == 1) {
+		  log("Object model has 1 vertex");
 	  Vector3 cornerInfo = observedObject->model->vertices[0].pos;
 
 	  if (cornerInfo.x < 0 || cornerInfo.y < 0 || cornerInfo.z < 0) {
@@ -596,6 +599,7 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 	  }
 	}
 	else {
+		  log("Object model has more than 1 vertices");
 	  // Couln't get geometry from GeometryModel. Generate one based
 	  // on label instead
 	  m_objectModels[visualObjectID] = generateNewObjectModel(obsLabel);
@@ -607,9 +611,9 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 
 //          log("2");
 
-      double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
-      diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 1));
-      diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
+      double diff = length(m_objects[visualObjectID]->pose.pos - pose.pos);
+      diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 1));
+      diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
 //	      log("3");
 //	if (obsObject->type == OBJECT_PLANE ||
@@ -635,6 +639,7 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 	m_lastObjectPoseTimes[visualObjectID] = observedObject->time;
 
 	if (m_objectWMIDs.find(visualObjectID) == m_objectWMIDs.end()) {
+		log("Writing new spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
 	  string newID = newDataID();
 
 	  addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[visualObjectID]);
@@ -643,6 +648,7 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 	else {
 
 	  try {
+			log("Overwriting spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
 	    overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[visualObjectID],
 		m_objects[visualObjectID]);
 	  }
@@ -651,7 +657,7 @@ pose.pos.z > 100 || pose.pos.z < -100) {
 	    return;
 	  }
 	}
-//	    log("4");
+	    log("4");
 
 	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
 	  log("5");
