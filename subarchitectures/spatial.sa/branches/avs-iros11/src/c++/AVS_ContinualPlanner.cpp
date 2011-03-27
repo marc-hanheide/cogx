@@ -381,6 +381,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		/* Remove all free space and obstacle which does not belong to this room
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
+		cout << "Removing all free space not belongin to this room" << endl;
 		std::set<int> currentRoomPlaceIds;
 		double xW,yW;
 		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
@@ -402,6 +403,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			}
 		}
 		log("removed");
+		cout << " done " << endl;
 
 		m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
 		GDMakeObstacle makeobstacle;
@@ -579,7 +581,7 @@ void AVS_ContinualPlanner::generateViewCones(
 	//Todo: and generateViewCones based on this
     if(m_usePeekabot){
       log("Displaying PDF Map in PB.");
-      pbVis->AddPDF(*m_objectBloxelMaps[id]);
+     // pbVis->AddPDF(*m_objectBloxelMaps[id]);
       pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
     }
 	log("getting cones..");
@@ -1670,7 +1672,7 @@ AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object 
 	}
 
 void AVS_ContinualPlanner::displayPDF(BloxelMap map){
-	pbVis->AddPDF(map);
+//	pbVis->AddPDF(map);
 }
 
 } //namespace
