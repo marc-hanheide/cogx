@@ -52,6 +52,7 @@ namespace spatial
  * @param --no-robotviewcone Do not display the robot viewcone
  * @param --people-id       Display the id above the head of each person
  * @param --non-unique      More than one objects of each kind accepted
+ * @param --log-path	    Output the robot's movements over time
  *
  * @author Patric Jensfelt
  */
@@ -148,6 +149,7 @@ private:
 	peekabot::GroupProxy m_ProxyObjects;
 	peekabot::GroupProxy m_ProxyObjectLabels;
 	peekabot::GroupProxy m_ProxyViewPoints;
+	peekabot::PolylineProxy m_ProxyPathLog;
 	peekabot::ObjectProxy m_ProxyCam;
 	peekabot::HingeProxy m_ProxyPan;
 	peekabot::HingeProxy m_ProxyTilt;
@@ -166,6 +168,7 @@ private:
 	bool m_ShowRobotViewCone;
 	bool m_ShowPlanePoints;
 	bool m_ShowSOIs;
+	bool m_ShowPath;
 	bool m_NonUniqueObjects;
 	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
@@ -186,6 +189,8 @@ private:
 	double m_ScanAngFOV;
 	double m_ScanMaxRange;
 	int m_CurrPersonId;
+	double m_lastLoggedX;
+	double m_lastLoggedY;
 
 
 	std::vector<PersonData> m_People; // The people that are currently in view
