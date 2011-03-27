@@ -94,8 +94,10 @@ public class VisualObjectTransferFunction
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			result.put(LABEL_ID, PropositionFormula.create(from.identLabels[0])
-					.getAsFormula());
+            if (from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+                result.put(LABEL_ID, PropositionFormula.create(from.identLabels[0])
+                           .getAsFormula());
+            }
 		} catch (BeliefException e) {
 			component.logException(e);
 		}
@@ -140,17 +142,19 @@ public class VisualObjectTransferFunction
         component.log("size of from.identDistrib: "
                       + from.identDistrib.length);
 
-        FormulaDistribution fd1 = FormulaDistribution.create();
-        fd1.add(related_to.get(), 1.0);
-        FormulaDistribution fd2 = FormulaDistribution.create();
-        fd2.add(relation.get(), 1.0);
-        // FormulaDistribution fd3 = FormulaDistribution.create();
-        // fd3.add(label.get(), 1.0);
-        FormulaDistribution fd4 = FormulaDistribution.create();
-        fd4.add(cone.get(), 1.0);
+        if (from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+            FormulaDistribution fd1 = FormulaDistribution.create();
+            fd1.add(related_to.get(), 1.0);
+            FormulaDistribution fd2 = FormulaDistribution.create();
+            fd2.add(relation.get(), 1.0);
+            // FormulaDistribution fd3 = FormulaDistribution.create();
+            // fd3.add(label.get(), 1.0);
+            FormulaDistribution fd4 = FormulaDistribution.create();
+            fd4.add(cone.get(), 1.0);
             
-        belief.getContent().put(IS_IN, fd1);
-        belief.getContent().put("relation", fd2);
-        belief.getContent().put(CONE, fd4);
+            belief.getContent().put(IS_IN, fd1);
+            belief.getContent().put("relation", fd2);
+            belief.getContent().put(CONE, fd4);
+        }
 	}
 }
