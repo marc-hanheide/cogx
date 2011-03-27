@@ -628,7 +628,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 			for(unsigned int j=0; j < placeBeliefs.size(); j++){
 				if (placeBeliefs[j]->getData()->type != "Place"){
-					log("Not a place belief, but a %s belief", placeBeliefs[j]->getData()->type.c_str());
+				//	log("Not a place belief, but a %s belief", placeBeliefs[j]->getData()->type.c_str());
 					continue;
 				}
 			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(placeBeliefs[j]->getData()->content));
@@ -690,12 +690,12 @@ void AVS_ContinualPlanner::generateViewCones(
 				return;
 			}
 			else{
-				log("Go %d Grounded beliefs", comaRoomBeliefs.size());
+				log("Got %d Grounded beliefs", comaRoomBeliefs.size());
 			}
 
 			for(unsigned int j =0; j < comaRoomBeliefs.size(); j++){
 				if (comaRoomBeliefs[j]->getData()->type != "ComaRoom"){
-									log("Not a place belief, but a %s belief", comaRoomBeliefs[j]->getData()->type.c_str());
+								//	log("Not a place belief, but a %s belief", comaRoomBeliefs[j]->getData()->type.c_str());
 									continue;
 					}
 			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(comaRoomBeliefs[j]->getData()->content));
@@ -909,12 +909,6 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 			PostNavCommand(pos, SpatialData::GOTOPOSITION);
 			log("Posting a nav command");
 	}
-
-
-
-
-
-
 }
 
 
@@ -1041,20 +1035,20 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 
 void AVS_ContinualPlanner::Recognize() {
+	log("Sending a recognition command");
 	for (unsigned int i = 0; i < m_siftObjects.size(); i++) {
 		//todo: ask for visual object recognition
 		if (m_siftObjects[i] == m_currentConeGroup->searchedObjectCategory) {
-			log("This is a sift object posting a 3DRecognizer command");
+			log("This is a sift object posting a 3DRecognizer command \n");
 			addRecognizer3DCommand(VisionData::RECOGNIZE, m_currentConeGroup->searchedObjectCategory, "");
 			break;
 		}
-
 	}
 
 	for (unsigned int i = 0; i < m_ARtaggedObjects.size(); i++) {
 		//todo: ask for tagged objects
 		if (m_ARtaggedObjects[i] == m_currentConeGroup->searchedObjectCategory) {
-			log("This is an ARTag object posting an ARTagcommand");
+			log("This is an ARTag object posting an ARTagcommand \n");
 			VisionData::ARTagCommandPtr cmd = new VisionData::ARTagCommand;
 			cmd->label = m_currentConeGroup->searchedObjectCategory;
 			addToWorkingMemory(newDataID(),"vision.sa", cmd);
