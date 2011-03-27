@@ -70,6 +70,10 @@ namespace cast
     if((it = _config.find("--send-self-command")) != _config.end())
     {
     sendSelfCommand = true;
+    log("will send self command");
+    }
+    else{
+    	  log("will not send self command");
     }
 
 
