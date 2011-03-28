@@ -31,12 +31,12 @@ class VisualPB_Bloxel{
     template<class MapData>
       void DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map,double cellsize);
 
-    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
+    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d", bool drawNew = false);
     void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
     void Add3DPointCloud(std::vector< Cure::Pose3D > point, bool ishidden = true, std::string name = "extrapoints");
     
     template<class MapData>
-    void AddPDF (SpatialGridMap::GridMap<MapData> &map);
+    void AddPDF (SpatialGridMap::GridMap<MapData> &map, bool drawNew = false);
     
     double scale,CellSize;
     int xSize,ySize;
@@ -63,10 +63,18 @@ class VisualPB_Bloxel{
     //peekabot::OccupancyGrid3DProxy OGProxy;
 };
 
-void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
+void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name, bool drawNew){
   peekabot::OccupancySet2D cells;
   peekabot::OccupancyGrid2DProxy og2d;
-  og2d.add(m_2DOccGridProxy,name,curemap->getCellSize(), peekabot::REPLACE_ON_CONFLICT);
+  peekabot::GroupProxy local2DOccGridProxy = m_2DOccGridProxy;
+
+  if (drawNew){
+	  peekabot::GroupProxy temp2DOccGridProxy;
+	  temp2DOccGridProxy.add(client, "combined_placemap2D", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+  local2DOccGridProxy = temp2DOccGridProxy;
+  }
+
+  og2d.add(local2DOccGridProxy,name,curemap->getCellSize(), peekabot::REPLACE_ON_CONFLICT);
   og2d.translate(0,0,-0.10,peekabot::LOCAL_COORDINATES);
   og2d.set_unoccupied_color(0.5,0.5,0.5);
   og2d.set_occupied_color(0,0,0);
@@ -143,8 +151,8 @@ bool VisualPB_Bloxel::connectPeekabot(){
     // Assign root
     pb_map.add(client,"map",peekabot::REPLACE_ON_CONFLICT);
     
-    pdf.add(client, "pdf", peekabot::REPLACE_ON_CONFLICT);
-    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::REPLACE_ON_CONFLICT);
+    pdf.add(client, "pdf", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
     
     // Add 15 levels for pdf-visualization
     maxLevels = 15;
@@ -256,8 +264,31 @@ int fallsWhere(std::vector < std::pair<double,double> > thresholdvalues, double 
 }
 
 template<class MapData>
-void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
+void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map, bool drawNew){
   try{
+	  std::vector <peekabot::GroupProxy> localpdflevels = pdflevels;
+	  if (drawNew){
+	  peekabot::GroupProxy pdftemp;
+	  std::vector <peekabot::GroupProxy> pdflevelstemp;
+
+	  pdftemp.add(client, "pdf", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	     // Add 15 levels for pdf-visualization
+	     maxLevels = 15;
+	     thresholds.push_back(1.0);
+	     for(int i=0; i<maxLevels; i++){
+	       thresholds.push_back(thresholds.back()/2);
+
+	       char buf[256];
+	       sprintf(buf, "distribution_%4.5f_%4.5f", thresholds[i],thresholds[i+1]);
+	       std::string s(buf);
+	       std::replace(s.begin(),s.end(),'.',',');
+	       strcpy(buf,s.c_str());
+	       peekabot::GroupProxy level;
+	       level.add(pdftemp, buf, peekabot::REPLACE_ON_CONFLICT);
+	       pdflevelstemp.push_back(level);
+	     }
+	     localpdflevels = pdflevelstemp;
+	  }
     std::cout << "Displaying PDF" << std::endl;
     std::cout << "Map Size: " << map.getMapSize().first << " " << map.getMapSize().second << endl;
     typedef SpatialGridMap::Bloxel<MapData> MapBloxel;
@@ -356,7 +387,7 @@ void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
                       nameBuilder << x << "_" << y << "_" << number; //add coords and count for unique name
 
                       peekabot::CubeProxy cube;
-                      cube.add(pdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
+                      cube.add(localpdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
                       cube.remove();
 
                       number++;
@@ -376,7 +407,7 @@ void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
                       nameBuilder << x << "_" << y << "_" << number; //add coords and count for unique name
 
                       peekabot::CubeProxy cube;
-                      cube.add(pdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
+                      cube.add(localpdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
                       cube.set_position(coord.first,coord.second, (bloxel_floor+it->celing)/2);
                       cube.set_scale(CellSize,CellSize,(it->celing-bloxel_floor));
                       colorval = (double)(it->data.data) / maxLevels;
