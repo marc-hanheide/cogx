@@ -295,7 +295,7 @@ namespace cast
 
 		    newVisualObject->model = new VisionData::GeometryModel;
 		    VisionData::Vertex vert;
-		    vert.pos = m_preKnownObjects[targetId].fixedPosition;
+		    vert.pos = m_preKnownObjects[targetId].boxDimensions;
 		    newVisualObject->model->vertices.push_back(vert);
 
 		    newVisualObject->identLabels.push_back(label);
