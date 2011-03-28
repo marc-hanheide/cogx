@@ -158,6 +158,9 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
 	m_CameraPoseR.pos.x = xytheta[0];
 	m_CameraPoseR.pos.y = xytheta[1];
       }
+      else {
+	setIdentity(m_CameraPoseR);
+      }
     }
   }
 
@@ -456,6 +459,60 @@ void ObjectRelationManager::runComponent()
   def.pdf = 0.0;
   SpatialGridMap::GridMap<SpatialGridMap::GridMapData> pdfMap(100, 100, 0.05, 0.05, 0, 2.0, 0, 0, 0, def);
 
+  //REMOVEME: Short-circuiting point cloud creation process
+  if (0)
+  {
+    DensitySampler sampler(&m_evaluator);
+    string fakeID = newDataID();
+    VisionData::VisualObjectPtr fakeBaseObject = new VisionData::VisualObject;
+
+    setIdentity(fakeBaseObject->pose);
+    fakeBaseObject->detectionConfidence = 1.0;
+
+    fakeBaseObject->model = new VisionData::GeometryModel;
+    VisionData::Vertex vert;
+
+    vert.pos.x = 0.6;
+    vert.pos.y = 0.35;
+    vert.pos.z = 0.1;
+    fakeBaseObject->model->vertices.push_back(vert);
+
+    fakeBaseObject->identLabels.push_back("table");
+    fakeBaseObject->identLabels.push_back("unknown");
+    fakeBaseObject->identDistrib.push_back(1.0);
+    fakeBaseObject->identDistrib.push_back(0.0);
+
+    string dataID = newDataID();
+
+
+    lockComponent();
+    newObject(fakeBaseObject, dataID);
+    unlockComponent();
+
+    FrontierInterface::ObjectPriorRequestPtr fakePriorRequest =
+      new FrontierInterface::ObjectPriorRequest;
+
+		// Construct Request object
+		std::vector<std::string> labels;
+		vector<Vector3> centers;
+		std::vector<FrontierInterface::ObjectRelation> relation;
+
+		labels.push_back("cerealbox");
+		labels.push_back(dataID);
+
+		relation.push_back(FrontierInterface::ON);
+
+		FrontierInterface::WeightedPointCloudPtr queryCloud =
+				new FrontierInterface::WeightedPointCloud;
+		fakePriorRequest->relationTypes = relation; // ON or IN or whatnot
+		fakePriorRequest->objects = labels; // Names of objects, starting with the query object
+		fakePriorRequest->cellSize = 0.05; // CelGOTONODEll size of map (affects spacing of samples)
+		fakePriorRequest->outCloud = queryCloud; // Data struct to receive output
+		fakePriorRequest->totalMass = 1.0; // we will normalize anyways
+
+		processPriorRequest(fakePriorRequest); 
+  }
+
   sleepComponent(2000);
 
   while (isRunning()) {
@@ -488,276 +545,280 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
   try {
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
-      string obsLabel = observedObject->identLabels[0];
 
-      log("Confidence %f", observedObject->detectionConfidence);
-      if(observedObject->detectionConfidence == 0) {
-	return;
-      }
-
-
-   // if (m_timeSinceLastMoved > m_trackerTimeThresh old) {
-      log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
-	  observedObject->pose.pos.x,
-	  observedObject->pose.pos.y,
-	  observedObject->pose.pos.z);
-
-      if (observedObject->pose.pos.x == 0.0 && observedObject->pose.pos.y == 0.0 && observedObject->pose.pos.z == 0.0)
-      {
-    	  log("Warning: object has invalid pose, returning without doing anything");
-    	  return;
-      }
-      Pose3 pose = observedObject->pose;
-
-      if (pose.pos.x > 100 || pose.pos.x < -100 ||
-pose.pos.y > 100 || pose.pos.y < -100 ||
-pose.pos.z > 100 || pose.pos.z < -100) {
-	log("Warning! Junk coordinates in visual object %s! (%f, %f, %f); Ignoring", 
-	    observedObject->identLabels[0].c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
-	return;
-      }
-      //Get robot pose
-//      Pose3 robotTransform;
-//      if (lastRobotPose != 0) {
-//	fromRotZ(robotTransform.rot, lastRobotPose->theta);
-//
-//	robotTransform.pos.x = lastRobotPose->x;
-//	robotTransform.pos.y = lastRobotPose->y;
-//      }
-//      else {
-//	fromRotZ(robotTransform.rot, 0);
-//	robotTransform.pos.x = 0.0;
-//	robotTransform.pos.y = 0.0;
-//      }
-//      transform(robotTransform, pose, pose);
-      Pose3 cameraToWorldTransform = getCameraToWorldTransform();
-      transform(cameraToWorldTransform, pose, pose);
-
-//      //FIXME: ARTag objects already get their coords in the world frame
-//      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
-//	  || obsLabel == "shelves" || obsLabel == "table"){
-//	pose = observedObject->pose;
-//      }
-
-      string visualObjectID = wmc.address.id;
-
-
-      map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(visualObjectID);
-      bool bNewObject = false;
-      if (it != m_objects.end()) {
-	// update object
-	//	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
-	log("Updating %s on %s", obsLabel.c_str(), wmc.address.id.c_str());
-      }
-      else {
-	// New object
-	bNewObject = true;
-	log("New SpatialObject: %s", obsLabel.c_str());
-	m_objects[visualObjectID] = new SpatialData::SpatialObject;
-	m_objects[visualObjectID]->label = obsLabel;
-	m_objects[visualObjectID]->pose = pose;
-      }
-
-      if (m_objectModels.find(visualObjectID) == m_objectModels.end()) {
-    	  log("Generating a new object model for %s", obsLabel.c_str());
-	// Generate new object model
-	// Check if box geometry is provided in VisualObject struct
-	// If it is, generate object model based on that information
-	if (observedObject->model->vertices.size() == 1) {
-		  log("Object model has 1 vertex");
-	  Vector3 cornerInfo = observedObject->model->vertices[0].pos;
-
-	  if (cornerInfo.x < 0 || cornerInfo.y < 0 || cornerInfo.z < 0) {
-	    // Code for hollow box
-	    HollowBoxObject *newBoxObject = new HollowBoxObject;
-	    newBoxObject->type = OBJECT_HOLLOW_BOX;
-	    newBoxObject->thickness = 0.051;
-	    newBoxObject->radius1 = cornerInfo.x;
-	    newBoxObject->radius2 = cornerInfo.y;
-	    newBoxObject->radius3 = cornerInfo.z;
-	    if (cornerInfo.x < 0) {
-	      newBoxObject->sideOpen = 1;
-	      newBoxObject->radius1 = -cornerInfo.x;
-	    }
-	    else if (cornerInfo.y < 0) {
-	      newBoxObject->sideOpen = 3;
-	      newBoxObject->radius2 = -cornerInfo.y;
-	    }
-	    else {
-	      newBoxObject->sideOpen = 5;
-	      newBoxObject->radius3 = -cornerInfo.z;
-	    }
-	    m_objectModels[visualObjectID] = newBoxObject;
-	  }
-	  else {
-	    BoxObject *newBoxObject = new BoxObject;
-	    newBoxObject->type = OBJECT_BOX;
-	    newBoxObject->radius1 = cornerInfo.x;
-	    newBoxObject->radius2 = cornerInfo.y;
-	    newBoxObject->radius3 = cornerInfo.z;
-	    m_objectModels[visualObjectID] = newBoxObject;
-	  }
-	}
-	else {
-		  log("Object model has more than 1 vertices");
-	  // Couln't get geometry from GeometryModel. Generate one based
-	  // on label instead
-	  m_objectModels[visualObjectID] = generateNewObjectModel(obsLabel);
-	}
-      }
-      ASSERT_TYPE(m_objectModels[visualObjectID]);
-
-      spatial::Object *obsObject = m_objectModels[visualObjectID];
-
-//          log("2");
-
-      double diff = length(m_objects[visualObjectID]->pose.pos - pose.pos);
-      diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 1));
-      diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 2));
-      if (diff > 0.01 || bNewObject) {
-//	      log("3");
-//	if (obsObject->type == OBJECT_PLANE ||
-//	    //FIXME
-//	    obsLabel == "table" || 
-//	    obsLabel == "table1" ||
-//	      obsLabel == "table2" ||
-//	      obsLabel == "bookcase_sm" ||
-//	      obsLabel == "bookcase_lg" ||
-//	      obsLabel == "shelves" ||
-//	      obsLabel == "desk"){
-//	  // Flatten pose for plane objects
-//	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
-//	    setIdentity(pose.rot);
-//	  }
-//	  else {
-//	    fromRotZ(pose.rot, atan2(pose.rot.m01, pose.rot.m00));
-//	  }
-//	}
-
-
-	m_objects[visualObjectID]->pose = pose;
-	m_lastObjectPoseTimes[visualObjectID] = observedObject->time;
-
-	if (m_objectWMIDs.find(visualObjectID) == m_objectWMIDs.end()) {
-		log("Writing new spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
-	  string newID = newDataID();
-
-	  addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[visualObjectID]);
-	  m_objectWMIDs[visualObjectID]=newID;
-	}
-	else {
-
-	  try {
-			log("Overwriting spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
-	    overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[visualObjectID],
-		m_objects[visualObjectID]);
-	  }
-	  catch (DoesNotExistOnWMException) {
-	    log("Error! SpatialObject disappeared from memory!");
-	    return;
-	  }
-	}
-	    log("4");
-
-	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-	  log("5");
-	  if (obsObject->type == OBJECT_BOX) {
-	    BoxObject *box = (BoxObject*)obsObject;
-	    peekabot::CubeProxy theobjectproxy;
-	    theobjectproxy.add(m_objectProxies, m_objects[visualObjectID]->label, peekabot::REPLACE_ON_CONFLICT);
-	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
-	    double angle;
-	    Vector3 axis;
-	    toAngleAxis(pose.rot, angle, axis);
-	    log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
-		pose.pos.x, pose.pos.y, pose.pos.z, angle, 
-		axis.x, axis.y, axis.z);
-	    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
-	    theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
-		box->radius3*2);
-	  }
-	  else if (obsObject->type == OBJECT_HOLLOW_BOX){
-	    HollowBoxObject *box = (HollowBoxObject*)obsObject;
-	    peekabot::CubeProxy theobjectproxy;
-	    theobjectproxy.add(m_objectProxies, m_objects[visualObjectID]->label, peekabot::REPLACE_ON_CONFLICT);
-	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
-	    double angle;
-	    Vector3 axis;
-	    toAngleAxis(pose.rot, angle, axis);
-	    log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
-		pose.pos.x, pose.pos.y, pose.pos.z, angle, 
-		axis.x, axis.y, axis.z);
-	    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
-	    theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
-		box->radius3*2);
-	  }
-	  else {
-	  }
-	}
-	//    log("5");
-
-	// Check degree of onness
-	if (0) {
-	recomputeOnnessForObject(visualObjectID);
-	recomputeInnessForObject(visualObjectID);
-
-	//FIXME: 3-object scene hack
-	if (m_objectOnnessValues.size() == 6 &&
-	    m_objectInnessValues.size() == 6) {
-	  double BOnA = m_objectOnnessValues[StrPair("paperclip","stapler")];
-	  double AOnB = m_objectOnnessValues[StrPair("stapler","paperclip")];
-	  double AOnT = m_objectOnnessValues[StrPair("box","paperclip")];
-	  double BOnT = m_objectOnnessValues[StrPair("box","stapler")];
-	  double BInA = m_objectInnessValues[StrPair("paperclip","stapler")];
-	  double AInB = m_objectInnessValues[StrPair("stapler","paperclip")];
-	  double AInT = m_objectInnessValues[StrPair("box","paperclip")];
-	  double BInT = m_objectInnessValues[StrPair("box","stapler")];
-	  vector<double> inferred;
-	  if (inferRelationsThreeObjects(inferred,
-		BOnA, AOnB, BOnT, AOnT, BInA, AInB, BInT, AInT)) {
-	    log("stapler on paperclip: %f", inferred[11]);
-	    log("stapler on box: %f", inferred[5]);
-	    log("stapler on_t paperclip: %f", inferred[10]);
-	    log("stapler on_t box: %f", inferred[4]);
-	    log("stapler in paperclip: %f", inferred[9]);
-	    log("stapler in box: %f", inferred[3]);
-	    log("paperclip on stapler: %f", inferred[8]);
-	    log("paperclip on box: %f", inferred[2]);
-	    log("paperclip on_t stapler: %f", inferred[7]);
-	    log("paperclip on_t box: %f", inferred[1]);
-	    log("paperclip in stapler: %f", inferred[6]);
-	    log("paperclip in box: %f", inferred[0]);
-	  }
-	  else {
-	    log("Error! inferRelationsThreeObjects failed!");
-	  }
-	}
-	}
-
-	if (m_placeInterface != 0) {
-	  // Check degree of containment in Places
-	  FrontierInterface::PlaceMembership membership = 
-	    m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
-
-	  setContainmentProperty(visualObjectID, membership.placeID, 1.0);
-	}
-
-	//  Needs estimate of extent of Places, in sensory frame
-	//   Add interface to PlaceManager?
-	// Post one or more Place containment structs on WM
-	// Find and remove/update extant property structs
-
-	// Check degree of support between Objects
-	//  Need a list of tracked Object
-	//  Check contact points and estimated centers of gravity
-	//   Need access to representation of object models
-	//   
-      }
-    //}
+    newObject(observedObject, wmc.address.id);
   }
   catch (DoesNotExistOnWMException) {
     log("Error! new Object missing on WM!");
   }
+}
+
+void
+ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObject,
+    const string &wmId)
+{
+  string obsLabel = observedObject->identLabels[0];
+
+  log("Confidence %f", observedObject->detectionConfidence);
+  if(observedObject->detectionConfidence == 0) {
+    return;
+  }
+
+
+  // if (m_timeSinceLastMoved > m_trackerTimeThresh old) {
+  log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
+      observedObject->pose.pos.x,
+      observedObject->pose.pos.y,
+      observedObject->pose.pos.z);
+
+  Pose3 pose = observedObject->pose;
+
+  if (pose.pos.x > 100 || pose.pos.x < -100 ||
+      pose.pos.y > 100 || pose.pos.y < -100 ||
+      pose.pos.z > 100 || pose.pos.z < -100) {
+    log("Warning! Junk coordinates in visual object %s! (%f, %f, %f); Ignoring", 
+	observedObject->identLabels[0].c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
+    return;
+  }
+  //Get robot pose
+  //      Pose3 robotTransform;
+  //      if (lastRobotPose != 0) {
+  //	fromRotZ(robotTransform.rot, lastRobotPose->theta);
+  //
+  //	robotTransform.pos.x = lastRobotPose->x;
+  //	robotTransform.pos.y = lastRobotPose->y;
+  //      }
+  //      else {
+  //	fromRotZ(robotTransform.rot, 0);
+  //	robotTransform.pos.x = 0.0;
+  //	robotTransform.pos.y = 0.0;
+  //      }
+  //      transform(robotTransform, pose, pose);
+  Pose3 cameraToWorldTransform = getCameraToWorldTransform();
+  transform(cameraToWorldTransform, pose, pose);
+
+  //      //FIXME: ARTag objects already get their coords in the world frame
+  //      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
+  //	  || obsLabel == "shelves" || obsLabel == "table"){
+  //	pose = observedObject->pose;
+  //      }
+
+  string visualObjectID = wmId;
+
+
+  map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(visualObjectID);
+  bool bNewObject = false;
+  if (it != m_objects.end()) {
+    // update object
+    //	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
+    log("Updating %s on %s", obsLabel.c_str(), visualObjectID.c_str());
+  }
+  else {
+    // New object
+    bNewObject = true;
+    log("New SpatialObject: %s", obsLabel.c_str());
+    m_objects[visualObjectID] = new SpatialData::SpatialObject;
+    m_objects[visualObjectID]->label = obsLabel;
+    m_objects[visualObjectID]->pose = pose;
+  }
+
+  if (m_objectModels.find(visualObjectID) == m_objectModels.end()) {
+    log("Generating a new object model for %s", obsLabel.c_str());
+    // Generate new object model
+    // Check if box geometry is provided in VisualObject struct
+    // If it is, generate object model based on that information
+    if (observedObject->model->vertices.size() == 1) {
+      log("Object model has 1 vertex");
+      Vector3 cornerInfo = observedObject->model->vertices[0].pos;
+
+      if (cornerInfo.x < 0 || cornerInfo.y < 0 || cornerInfo.z < 0) {
+	// Code for hollow box
+	HollowBoxObject *newBoxObject = new HollowBoxObject;
+	newBoxObject->type = OBJECT_HOLLOW_BOX;
+	newBoxObject->thickness = 0.051;
+	newBoxObject->radius1 = cornerInfo.x;
+	newBoxObject->radius2 = cornerInfo.y;
+	newBoxObject->radius3 = cornerInfo.z;
+	if (cornerInfo.x < 0) {
+	  newBoxObject->sideOpen = 1;
+	  newBoxObject->radius1 = -cornerInfo.x;
+	}
+	else if (cornerInfo.y < 0) {
+	  newBoxObject->sideOpen = 3;
+	  newBoxObject->radius2 = -cornerInfo.y;
+	}
+	else {
+	  newBoxObject->sideOpen = 5;
+	  newBoxObject->radius3 = -cornerInfo.z;
+	}
+	m_objectModels[visualObjectID] = newBoxObject;
+      }
+      else {
+	BoxObject *newBoxObject = new BoxObject;
+	newBoxObject->type = OBJECT_BOX;
+	newBoxObject->radius1 = cornerInfo.x;
+	newBoxObject->radius2 = cornerInfo.y;
+	newBoxObject->radius3 = cornerInfo.z;
+	m_objectModels[visualObjectID] = newBoxObject;
+      }
+    }
+    else {
+      log("Object model has more than 1 vertices");
+      // Couln't get geometry from GeometryModel. Generate one based
+      // on label instead
+      m_objectModels[visualObjectID] = generateNewObjectModel(obsLabel);
+    }
+  }
+  ASSERT_TYPE(m_objectModels[visualObjectID]);
+
+  spatial::Object *obsObject = m_objectModels[visualObjectID];
+
+  //          log("2");
+
+  double diff = length(m_objects[visualObjectID]->pose.pos - pose.pos);
+  diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 1));
+  diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 2));
+  if (diff > 0.01 || bNewObject) {
+    //	      log("3");
+    //	if (obsObject->type == OBJECT_PLANE ||
+    //	    //FIXME
+    //	    obsLabel == "table" || 
+    //	    obsLabel == "table1" ||
+    //	      obsLabel == "table2" ||
+    //	      obsLabel == "bookcase_sm" ||
+    //	      obsLabel == "bookcase_lg" ||
+    //	      obsLabel == "shelves" ||
+    //	      obsLabel == "desk"){
+    //	  // Flatten pose for plane objects
+    //	  if (pose.rot.m00 == 0.0 && pose.rot.m10 == 0.0) {
+    //	    setIdentity(pose.rot);
+    //	  }
+    //	  else {
+    //	    fromRotZ(pose.rot, atan2(pose.rot.m01, pose.rot.m00));
+    //	  }
+    //	}
+
+
+    m_objects[visualObjectID]->pose = pose;
+    m_lastObjectPoseTimes[visualObjectID] = observedObject->time;
+
+    if (m_objectWMIDs.find(visualObjectID) == m_objectWMIDs.end()) {
+      log("Writing new spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
+      string newID = newDataID();
+
+      addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[visualObjectID]);
+      m_objectWMIDs[visualObjectID]=newID;
+    }
+    else {
+
+      try {
+	log("Overwriting spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
+	overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[visualObjectID],
+	    m_objects[visualObjectID]);
+      }
+      catch (DoesNotExistOnWMException) {
+	log("Error! SpatialObject disappeared from memory!");
+	return;
+      }
+    }
+    log("4");
+
+    if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
+      log("5");
+      if (obsObject->type == OBJECT_BOX) {
+	BoxObject *box = (BoxObject*)obsObject;
+	peekabot::CubeProxy theobjectproxy;
+	theobjectproxy.add(m_objectProxies, m_objects[visualObjectID]->label, peekabot::REPLACE_ON_CONFLICT);
+	theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+	double angle;
+	Vector3 axis;
+	toAngleAxis(pose.rot, angle, axis);
+	log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+	    pose.pos.x, pose.pos.y, pose.pos.z, angle, 
+	    axis.x, axis.y, axis.z);
+	theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+	theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
+	    box->radius3*2);
+      }
+      else if (obsObject->type == OBJECT_HOLLOW_BOX){
+	HollowBoxObject *box = (HollowBoxObject*)obsObject;
+	peekabot::CubeProxy theobjectproxy;
+	theobjectproxy.add(m_objectProxies, m_objects[visualObjectID]->label, peekabot::REPLACE_ON_CONFLICT);
+	theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+	double angle;
+	Vector3 axis;
+	toAngleAxis(pose.rot, angle, axis);
+	log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+	    pose.pos.x, pose.pos.y, pose.pos.z, angle, 
+	    axis.x, axis.y, axis.z);
+	theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+	theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
+	    box->radius3*2);
+      }
+      else {
+      }
+    }
+    //    log("5");
+
+    // Check degree of onness
+    if (0) {
+      recomputeOnnessForObject(visualObjectID);
+      recomputeInnessForObject(visualObjectID);
+
+      //FIXME: 3-object scene hack
+      if (m_objectOnnessValues.size() == 6 &&
+	  m_objectInnessValues.size() == 6) {
+	double BOnA = m_objectOnnessValues[StrPair("paperclip","stapler")];
+	double AOnB = m_objectOnnessValues[StrPair("stapler","paperclip")];
+	double AOnT = m_objectOnnessValues[StrPair("box","paperclip")];
+	double BOnT = m_objectOnnessValues[StrPair("box","stapler")];
+	double BInA = m_objectInnessValues[StrPair("paperclip","stapler")];
+	double AInB = m_objectInnessValues[StrPair("stapler","paperclip")];
+	double AInT = m_objectInnessValues[StrPair("box","paperclip")];
+	double BInT = m_objectInnessValues[StrPair("box","stapler")];
+	vector<double> inferred;
+	if (inferRelationsThreeObjects(inferred,
+	      BOnA, AOnB, BOnT, AOnT, BInA, AInB, BInT, AInT)) {
+	  log("stapler on paperclip: %f", inferred[11]);
+	  log("stapler on box: %f", inferred[5]);
+	  log("stapler on_t paperclip: %f", inferred[10]);
+	  log("stapler on_t box: %f", inferred[4]);
+	  log("stapler in paperclip: %f", inferred[9]);
+	  log("stapler in box: %f", inferred[3]);
+	  log("paperclip on stapler: %f", inferred[8]);
+	  log("paperclip on box: %f", inferred[2]);
+	  log("paperclip on_t stapler: %f", inferred[7]);
+	  log("paperclip on_t box: %f", inferred[1]);
+	  log("paperclip in stapler: %f", inferred[6]);
+	  log("paperclip in box: %f", inferred[0]);
+	}
+	else {
+	  log("Error! inferRelationsThreeObjects failed!");
+	}
+      }
+    }
+
+    if (m_placeInterface != 0) {
+      // Check degree of containment in Places
+      FrontierInterface::PlaceMembership membership = 
+	m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
+
+      setContainmentProperty(visualObjectID, membership.placeID, 1.0);
+    }
+
+    //  Needs estimate of extent of Places, in sensory frame
+    //   Add interface to PlaceManager?
+    // Post one or more Place containment structs on WM
+    // Find and remove/update extant property structs
+
+    // Check degree of support between Objects
+    //  Need a list of tracked Object
+    //  Check contact points and estimated centers of gravity
+    //   Need access to representation of object models
+    //   
+  }
+  //}
+
 }
 
 void 
@@ -902,6 +963,7 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
 {
   //Get camera ptz from PTZServer
   Pose3 cameraRotation; //Transform from unrotated to rotated camera
+  setIdentity(cameraRotation);
   if (m_ptzInterface != 0) {
     ptz::PTZReading reading = m_ptzInterface->getPose();
 
@@ -939,6 +1001,7 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
 
   //Get robot pose
   Pose3 robotTransform;
+  setIdentity(robotTransform);
   if (lastRobotPose != 0) {
     fromRotZ(robotTransform.rot, lastRobotPose->theta);
 
@@ -1279,171 +1342,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     FrontierInterface::ObjectPriorRequestPtr request =
       getMemoryEntry<FrontierInterface::ObjectPriorRequest>(wmc.address);
 
-    if (request->objects.size() < 2) {
-      log("Error! Can't compute onness for less than 2 objects!");
-      return;
-    }
-
-    vector<spatial::Object *> objectChain;
-    vector<spatial::SpatialRelationType> relations;
-
-    //Fill it
-    string supportObjectID = request->objects.back();
-    log("SupportObject: %s", supportObjectID.c_str());
-
-    spatial::Object *supportObject;
-
-    //Look for the base object in the requested hierarchy.
-    //If it doesn't exist, create a model for it and generate a 
-    //sample cloud based on random orientation, position = origin
-
-    request->outCloud->isBaseObjectKnown = true;
-
-    if (m_planeObjectModels.find(supportObjectID) != m_planeObjectModels.end()) {
-      supportObject = &m_planeObjectModels[supportObjectID];
-      for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
-	if (it->second->label == supportObjectID) {
-	  // update object
-	  supportObject->pose.pos = it->second->pos;
-	  fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
-	}
-      }
-    }
-    else {
-      // Check if the object model is known (with a known pose).
-      if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
-	log("Error! Support object %s was unknown!", supportObjectID.c_str());
-	return;
-//	m_objectModels[supportObjectID] = generateNewObjectModel(supportObjectLabel);
-      }
-      // Pose is known
-      supportObject = m_objectModels[supportObjectID];
-      ASSERT_TYPE(supportObject);
-
-      // Otherwise, generate a model and have its poses randomly sampled
-      if (m_objects.find(supportObjectID) == m_objects.end()) {
-	// The pose of this object is not known.
-	log("Support object was unknown; computing distribution with object in origin");
-
-	request->outCloud->isBaseObjectKnown = false;
-      }
-      else {
-	supportObject->pose = m_objects[supportObjectID]->pose;
-      }
-    }
-//    objectChain.push_back(supportObject);
-
-    FrontierInterface::RelationSeq::iterator rit =
-      request->relationTypes.begin();
-    for (vector<string>::iterator it = request->objects.begin();
-	it != request->objects.end(); it++, rit++) {
-      if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
-	log("Can't compute ON for table on sth else!");
-	return;
-      }
-      else {
-	// For now, assume each label represents a unique object
-	if (m_objectModels.find(*it) == m_objectModels.end()) {
-	  // New object model
-	//  log("Error! Target object %s was unknown!", it->c_str());
-	//  return;
-	  m_objectModels[*it] = generateNewObjectModel(*it);
-	}
-	ASSERT_TYPE(m_objectModels[*it]);
-	objectChain.push_back(m_objectModels[*it]);
-	if (rit != request->relationTypes.end()) {
-	  switch (*rit) {
-	    case FrontierInterface::ON: 
-	      relations.push_back(RELATION_ON);
-	      break;
-	    case FrontierInterface::IN:
-	      relations.push_back(RELATION_IN);
-	      break;
-	  }
-	}
-      }
-    }
-
-    Pose3 tmpPose = supportObject->pose;
-
-    if (request->baseObjectPose.size() > 0) {
-      // The base object pose is given. Set the model's pose to this value
-      // temporarily
-      supportObject->pose = request->baseObjectPose[0];
-    }
-
-    SampleCloud cloud;
-    m_sampler.
-      sampleBinaryRelationSystematically(relations, objectChain,
-	  request->objects, request->cellSize, cloud);
-
-    log("got cloud.");
-    supportObject->pose = tmpPose;
-
-    cloud.compact();
-
-    cloud.makePointCloud(request->outCloud->center, 
-	request->outCloud->interval,
-	request->outCloud->xExtent,
-	request->outCloud->yExtent,
-	request->outCloud->zExtent,
-	request->outCloud->values);
-    log("made point cloud.");
-
-    if (request->outCloud->isBaseObjectKnown) {
-      request->outCloud->center += m_objects[supportObjectID]->pose.pos;
-    }
-//    // Hard-coded z-coordinates of some floor-bound objects
-//    else if (supportObjectLabel == "table1") {
-//      request->outCloud->center.z += 0.45-0.225;
-//    }
-//    else if (supportObjectLabel == "table2") {
-//      request->outCloud->center.z += 0.72-0.36;
-//    }
-//    else if (supportObjectLabel == "desk") {
-//      request->outCloud->center.z += 0.75-0.05;
-//    }
-//    else if (supportObjectLabel == "bookcase_sm") {
-//      request->outCloud->center.z += 0.75+0.08;
-//    }
-//    else if (supportObjectLabel == "bookcase_lg") {
-//      request->outCloud->center.z += 0.965+0.08;
-//    }
-//    else if (supportObjectLabel == "shelves") {
-//      request->outCloud->center.z += 1.075+0.00;
-//    }
-//    
-//    //HACK for review; removeme
-//
-//    if (request->objects.size() == 2 && request->objects[1] == "table") {
-//      string filename = "table+with+object.txt";
-//      ofstream tableCloudFile(filename.c_str(), ios::out);
-//      tableCloudFile << request->outCloud->center.x;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->center.y;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->center.z;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->interval;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->xExtent;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->yExtent;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->zExtent;
-//     tableCloudFile << " " ; 
-//      tableCloudFile << request->outCloud->values.size();
-//      tableCloudFile << " ";
-//
-//      for (unsigned long i = 0; i < request->outCloud->values.size(); i++) {
-//	tableCloudFile << request->outCloud->values[i];
-//     tableCloudFile << " " ; 
-//      }
-//      tableCloudFile << request->outCloud->isBaseObjectKnown;
-//     tableCloudFile << " " ; 
-//
-//      tableCloudFile << request->totalMass;
-//    }
+    processPriorRequest(request);
 
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
     log("overwrote point cloud.");
@@ -1452,6 +1351,178 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
   catch (DoesNotExistOnWMException) {
     log("Error! Prior request disappeared from WM!");
   }
+
+}
+
+void
+ObjectRelationManager::processPriorRequest(FrontierInterface::ObjectPriorRequestPtr
+    request)
+{
+  if (request->objects.size() < 2) {
+    log("Error! Can't compute onness for less than 2 objects!");
+    return;
+  }
+
+  vector<spatial::Object *> objectChain;
+  vector<spatial::SpatialRelationType> relations;
+
+  //Fill it
+  string supportObjectID = request->objects.back();
+  log("SupportObject: %s", supportObjectID.c_str());
+
+  spatial::Object *supportObject;
+
+  //Look for the base object in the requested hierarchy.
+  //If it doesn't exist, create a model for it and generate a 
+  //sample cloud based on random orientation, position = origin
+
+  request->outCloud->isBaseObjectKnown = true;
+
+  if (m_planeObjectModels.find(supportObjectID) != m_planeObjectModels.end()) {
+    supportObject = &m_planeObjectModels[supportObjectID];
+    for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
+      if (it->second->label == supportObjectID) {
+	// update object
+	supportObject->pose.pos = it->second->pos;
+	fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
+      }
+    }
+  }
+  else {
+    // Check if the object model is known (with a known pose).
+    if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
+      log("Error! VisualObject %s was unknown!", supportObjectID.c_str());
+      return;
+      //	m_objectModels[supportObjectID] = generateNewObjectModel(supportObjectLabel);
+    }
+    // Pose is known
+    supportObject = m_objectModels[supportObjectID];
+    ASSERT_TYPE(supportObject);
+
+    // Otherwise, generate a model and have its poses randomly sampled
+    if (m_objects.find(supportObjectID) == m_objects.end()) {
+      // The pose of this object is not known.
+      log("Support object was unknown; computing distribution with object in origin");
+
+      request->outCloud->isBaseObjectKnown = false;
+    }
+    else {
+      supportObject->pose = m_objects[supportObjectID]->pose;
+    }
+  }
+  //    objectChain.push_back(supportObject);
+
+  FrontierInterface::RelationSeq::iterator rit =
+    request->relationTypes.begin();
+  for (vector<string>::iterator it = request->objects.begin();
+      it != request->objects.end(); it++, rit++) {
+    if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
+      log("Can't compute ON for table on sth else!");
+      return;
+    }
+    else {
+      // For now, assume each label represents a unique object
+      if (m_objectModels.find(*it) == m_objectModels.end()) {
+	// New object model
+	//  log("Error! Target object %s was unknown!", it->c_str());
+	//  return;
+	m_objectModels[*it] = generateNewObjectModel(*it);
+      }
+      ASSERT_TYPE(m_objectModels[*it]);
+      objectChain.push_back(m_objectModels[*it]);
+      if (rit != request->relationTypes.end()) {
+	switch (*rit) {
+	  case FrontierInterface::ON: 
+	    relations.push_back(RELATION_ON);
+	    break;
+	  case FrontierInterface::IN:
+	    relations.push_back(RELATION_IN);
+	    break;
+	}
+      }
+    }
+  }
+
+  Pose3 tmpPose = supportObject->pose;
+
+  if (request->baseObjectPose.size() > 0) {
+    // The base object pose is given. Set the model's pose to this value
+    // temporarily
+    supportObject->pose = request->baseObjectPose[0];
+  }
+
+  SampleCloud cloud;
+  m_sampler.
+    sampleBinaryRelationSystematically(relations, objectChain,
+	request->objects, request->cellSize, cloud);
+
+  log("got cloud.");
+  supportObject->pose = tmpPose;
+
+  cloud.compact();
+
+  cloud.makePointCloud(request->outCloud->center, 
+      request->outCloud->interval,
+      request->outCloud->xExtent,
+      request->outCloud->yExtent,
+      request->outCloud->zExtent,
+      request->outCloud->values);
+  log("made point cloud.");
+
+  if (request->outCloud->isBaseObjectKnown) {
+    request->outCloud->center += m_objects[supportObjectID]->pose.pos;
+  }
+  //    // Hard-coded z-coordinates of some floor-bound objects
+  //    else if (supportObjectLabel == "table1") {
+  //      request->outCloud->center.z += 0.45-0.225;
+  //    }
+  //    else if (supportObjectLabel == "table2") {
+  //      request->outCloud->center.z += 0.72-0.36;
+  //    }
+  //    else if (supportObjectLabel == "desk") {
+  //      request->outCloud->center.z += 0.75-0.05;
+  //    }
+  //    else if (supportObjectLabel == "bookcase_sm") {
+  //      request->outCloud->center.z += 0.75+0.08;
+  //    }
+  //    else if (supportObjectLabel == "bookcase_lg") {
+  //      request->outCloud->center.z += 0.965+0.08;
+  //    }
+  //    else if (supportObjectLabel == "shelves") {
+  //      request->outCloud->center.z += 1.075+0.00;
+  //    }
+  //    
+  //    //HACK for review; removeme
+  //
+  //    if (request->objects.size() == 2 && request->objects[1] == "table") {
+  //      string filename = "table+with+object.txt";
+  //      ofstream tableCloudFile(filename.c_str(), ios::out);
+  //      tableCloudFile << request->outCloud->center.x;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->center.y;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->center.z;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->interval;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->xExtent;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->yExtent;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->zExtent;
+  //     tableCloudFile << " " ; 
+  //      tableCloudFile << request->outCloud->values.size();
+  //      tableCloudFile << " ";
+  //
+  //      for (unsigned long i = 0; i < request->outCloud->values.size(); i++) {
+  //	tableCloudFile << request->outCloud->values[i];
+  //     tableCloudFile << " " ; 
+  //      }
+  //      tableCloudFile << request->outCloud->isBaseObjectKnown;
+  //     tableCloudFile << " " ; 
+  //
+  //      tableCloudFile << request->totalMass;
+  //    }
 
 }
 
