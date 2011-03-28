@@ -140,6 +140,7 @@ private:
   categorical::LabelFile _sizeLabels;
 
   bool _useVision;
+  bool _convertToSick;
   bool _useSize;
 };
 

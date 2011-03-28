@@ -91,6 +91,7 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
 
     _useVision=cf.getBoolValue("DataProvider", "UseVision", true);
     _useSize=cf.getBoolValue(_cfgGroup, "UseSize", false);
+    _convertToSick=cf.getBoolValue(_cfgGroup, "ConvertToSick", false);
     _delay=cf.getIntValue(_cfgGroup, "Delay", 0);
 
     _featureFilePath=cf.getStrValue(_cfgGroup, "FeatureConfigFile", "");
@@ -545,12 +546,47 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 
   debug("Processing scan...");
 
+  // Convert the scan to the SICK format
+  double *ranges = 0;
+  int rangesCount = 0;
+  if (_convertToSick)
+  {
+	  const double sickStartAngle = -1.5708;
+	  const double sickAngleStep = 0.017453;
+	  const int sickCount = 181;
+
+	  ranges = new double[sickCount];
+	  rangesCount = sickCount;
+
+	  double angle = scan.startAngle;
+	  for (size_t i=0; i<scan.ranges.size(); ++i)
+	  {
+		  // Convert the hokuyo angle to the nearest sick angle
+		  if ((angle >= sickStartAngle) && (angle <= -sickStartAngle))
+		  {
+			  int j = ((angle - sickStartAngle)/sickAngleStep);
+			  if (j<sickCount)
+			  {
+				  ranges[j] = scan.ranges[i];
+				  ranges[j+1] = scan.ranges[i];
+			  }
+//			  error("%d %d %f", j, i, scan.ranges[i]);
+		  }
+		  angle += scan.angleStep;
+	  }
+  }
+  else
+  {
+	  ranges = &(scan.ranges[0]);
+	  rangesCount = scan.ranges.size();
+  }
+
   // Get processing start timestamp
   laserProcessorStatus->processingStartTimeStamp = getCASTTime();
 
   // Extract features
   _rangeExample->clean();
-  if (_rangeExample->setRanges(scan.ranges.size(), &(scan.ranges[0]))<0)
+  if (_rangeExample->setRanges(rangesCount, ranges)<0)
     throw(CASTException(exceptionMessage(__HERE__, "Couldn't set ranges!")));
 
   classifier.calcSelectedFeatures(_rangeExample, _featureInfoList);
@@ -714,6 +750,7 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   }
 
   // Clean up
+  delete [] ranges;
   free(libSvmFeatures);
 }
 
