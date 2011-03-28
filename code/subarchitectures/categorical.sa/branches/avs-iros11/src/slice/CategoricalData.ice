@@ -284,8 +284,13 @@ module CategoricalData
     /** Time when the scan was placed in the WM. */
     cast::cdl::CASTTime scanWmTimeStamp;
 
+	bool useSize;
+
     /** Outputs of the classifier. */
     ClassifierOutputs outputs;
+
+    /** Outputs of the classifier. */
+    ClassifierOutputs sizeOutputs;
 
     /** SVM multi-class algorithm */
     SvmMulticlassAlg multiclassAlg;
@@ -296,11 +301,15 @@ module CategoricalData
     /** Results produced by the classifier. */
     ClassifierResults results;
 
+    /** Results produced by the classifier. */
+    ClassifierResults sizeResults;
+
     /** Confidence threshold below which the classifier is unconfident. */
     double confidenceThreshold;
 
     /** Was the classifier confident? */
     bool confident;
+    bool sizeConfident;
   };
 
 
