@@ -677,7 +677,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 					for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
 						acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
 					acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-					acp.set_opacity(0.3);
+					acp.set_opacity(0.7);
 					acp.set_color(r,g,b);
 					startAngle=endAngle;
 				}
@@ -694,7 +694,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 				for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
 					acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
 				acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-				acp.set_opacity(0.3);
+				acp.set_opacity(0.7);
 				acp.set_color(0.3,0.3,0.3);
 				startAngle=endAngle;
 			}
@@ -1920,65 +1920,108 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
   m_Mutex.unlock();
 }
 
+
+
+
+
+
+
+
+
+
 void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 {
+/*
+// LightCoral
+// PaleGreen
+// HotPink
+// LightBlue
+// Orange
+ *
+ */
+
   switch (id) {
-  case 0: // Green
+  	case 0:
+      r = 1.0/0xFF*0xF0;
+      g = 1.0/0xFF*0x80;
+      b = 1.0/0xFF*0x80;
+      break;
+    case 1:
+      r = 1.0/0xFF*0x98;
+      g = 1.0/0xFF*0xFB;
+      b = 1.0/0xFF*0x98;
+      break;
+    case 2:
+      r = 1.0/0xFF*0xFF;
+      g = 1.0/0xFF*0x69;
+      b = 1.0/0xFF*0xB4;
+      break;
+    case 3:
+      r = 1.0/0xFF*0xAD;
+      g = 1.0/0xFF*0xD8;
+      b = 1.0/0xFF*0xE6;
+      break;
+    case 4:
+      r = 1.0/0xFF*0xFF;
+      g = 1.0/0xFF*0xA5;
+      b = 1.0/0xFF*0x00;
+      break;
+  case 5: // Green
     r = 1.0/0xFF*0x00;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x00;
     break;
-  case 1: // Red
+  case 6: // Red
     r = 1.0/0xFF*0xFF; 
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0x00;
     break;
-  case 2: // Blue
+  case 7: // Blue
     r = 1.0/0xFF*0x00;
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0xFF;
     break;
-  case 3: 
+  case 8:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x00;
     break;
-  case 4:
+  case 9:
     r = 1.0/0xFF*0x00; 
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0xFF;
     break;
-  case 5:
+  case 10:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0xFF;
     break;
-  case 6:
+  case 11:
     r = 1.0/0xFF*0x24;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x24;
     break;
-  case 7:
+  case 12:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0x24;
     b = 1.0/0xFF*0x00;
     break;
-  case 8:
+  case 13:
     r = 1.0/0xFF*0x6F;
     g = 1.0/0xFF*0x42;
     b = 1.0/0xFF*0x42;
     break;
-  case 9:
+  case 14:
     r = 1.0/0xFF*0x8C;
     g = 1.0/0xFF*0x17;
     b = 1.0/0xFF*0x17;
     break;
-  case 10:
+  case 15:
     r = 1.0/0xFF*0x5C; 
     g = 1.0/0xFF*0x33;
     b = 1.0/0xFF*0x17;
     break;
-  case 11:// If more colours are added change MAX_COLORS below
+  case 16:// If more colours are added change MAX_COLORS below
     r = 1.0/0xFF*0x2F; 
     g = 1.0/0xFF*0x4F;
     b = 1.0/0xFF*0x2F;
@@ -1990,7 +2033,7 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 	}
 	else
 	{
-		const int MAX_COLORS = 11;
+		const int MAX_COLORS = 16;
 		const int useColor = id % MAX_COLORS;
 		debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
         getColorByIndex(useColor, r, g, b);
