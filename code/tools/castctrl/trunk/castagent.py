@@ -8,7 +8,7 @@ import shutil
 import optparse
 from string import Template
 
-from core import castagentsrv, procman, options, messages, logger
+from core import castagentsrv, procman, options, messages, logger, log4util
 LOGGER = logger.get()
 
 import threading
@@ -100,6 +100,11 @@ class CConsoleAgent:
         self.manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
         self.manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
         #self.manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
+
+        p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
+        p.messageProcessor = log4util.CLog4MessageProcessor()
+        self.manager.addProcess(p)
+
         if appOptions.player_cfg != None:
             # TODO: Player configuration (file contents) could also be sent from the remote machine
             if not os.path.exists(appOptions.player_cfg):
@@ -135,15 +140,16 @@ class CConsoleAgent:
     def _shutdown(self, agent):
         count = 10
         agent.shutdown()
+        LOGGER.log("Shutdown")
         while agent.isAlive():
             LOGGER.log("... waiting for shutdown")
             time.sleep(1.0)
             count -= 1
             if count <= 0: break
         if agent.isAlive():
-            LOGGER.warn("Server didn't shut down")
+            LOGGER.warn("ICE Server didn't shut down")
         else:
-            LOGGER.log("Server stopped.")
+            LOGGER.log("ICE Server stopped.")
 
     def startServing(self):
         if self.agent != None: self.stopServing()

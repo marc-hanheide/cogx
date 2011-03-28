@@ -147,6 +147,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         # def startProcess(self, name, current=None):
         # def stopProcess(self, name, current=None):
         # def setLog4jClientProperties(self, propText, current=None):
+        # def setLog4jServerProperties(self, port, propText, current=None):
 
         def __str__(self):
             return IcePy.stringify(self, _M_icemodule.castcontrol.CastAgent._t_Agent)
@@ -171,6 +172,9 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         def setLog4jClientProperties(self, propText, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_setLog4jClientProperties.invoke(self, ((propText, ), _ctx))
 
+        def setLog4jServerProperties(self, port, propText, _ctx=None):
+            return _M_icemodule.castcontrol.CastAgent.Agent._op_setLog4jServerProperties.invoke(self, ((port, propText), _ctx))
+
         def checkedCast(proxy, facetOrCtx=None, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.AgentPrx.ice_checkedCast(proxy, '::castcontrol::CastAgent::Agent', facetOrCtx, _ctx)
         checkedCast = staticmethod(checkedCast)
@@ -189,6 +193,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
     Agent._op_startProcess = IcePy.Operation('startProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
     Agent._op_stopProcess = IcePy.Operation('stopProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
     Agent._op_setLog4jClientProperties = IcePy.Operation('setLog4jClientProperties', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), None, ())
+    Agent._op_setLog4jServerProperties = IcePy.Operation('setLog4jServerProperties', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_int), ((), IcePy._t_string)), (), None, ())
 
     _M_icemodule.castcontrol.CastAgent.Agent = Agent
     del Agent

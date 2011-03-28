@@ -14,6 +14,8 @@ import options, messages, logger
 import itertools
 import legacy
 
+LOG4J_PROCESS = "log4jServer"
+
 LOGGER = logger.get()
 def log(msg):
     global LOGGER
@@ -166,7 +168,7 @@ class CProcess(CProcessBase):
         self.willClearAt = time.time() + 1
         self._setStatus(CProcessBase.FLUSH)
 
-    def start(self, params=None):
+    def start(self, params=None, env=None):
         if self.isRunning():
             warn("Process '%s' is already running" % self.name)
             return
@@ -189,7 +191,10 @@ class CProcess(CProcessBase):
                 self._stopReader()
             self.pipeReader = CPipeReader_1(self)
             self.pipeReader.start()
-            self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
+            self.process = subp.Popen(
+                    command, bufsize=1,
+                    stdout=subp.PIPE, stderr=subp.PIPE,
+                    cwd=self.workdir, env=env)
 
             # Make the pipes nonblocking so we can read the messages better
             fcntl.fcntl(self.process.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
@@ -224,11 +229,11 @@ class CProcess(CProcessBase):
             self.pipeReader = None
 
     def stop(self):
-        log("Stopping process %s" % self.name)
         self.error = CProcessBase.OK
         if self.process == None:
             self._clear()
             return
+        log("Stopping process %s" % self.name)
         self._setStatus(CProcessBase.STOPPING)
         try:
             # for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
