@@ -286,6 +286,17 @@ void DisplayNavInPB::start() {
 		  &DisplayNavInPB::newShapeProperty));
 
 
+	    addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomSizePlaceProperty>(cdl::ADD),
+		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+		  &DisplayNavInPB::newSizeProperty));
+
+	    addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomSizePlaceProperty>(cdl::OVERWRITE),
+		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+		  &DisplayNavInPB::newSizeProperty));
+
+
+
+
 	    addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomAppearancePlaceProperty>(cdl::ADD),
 		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
 		  &DisplayNavInPB::newAppearanceProperty));
@@ -436,6 +447,67 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     m_Mutex.unlock();
 
 }
+
+
+
+
+void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID)
+{
+
+    // Get the property
+	SpatialProperties::RoomSizePlacePropertyPtr property;
+    try
+    {
+    	property = getMemoryEntry<SpatialProperties::RoomSizePlaceProperty>(objID.address);
+	}
+	catch (...)
+	{
+	  log("Error! property disappeared from WM.");
+	  return;
+	}
+
+
+	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+
+    m_Mutex.lock();
+    m_PeekabotClient.begin_bundle();
+
+	_sizeProps[property->placeId] = property;
+
+	// Get node it for the place ID
+    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
+    // search m_Nodes for place and change its room id
+    std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
+
+    if (nodeIter == m_Nodes.end()) {
+        println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
+        m_PeekabotClient.end_bundle();
+        m_Mutex.unlock();
+
+        return;
+    }
+
+    DisplayNavInPB::Node node = nodeIter->second;
+
+
+	// Get the node proxy
+	peekabot::SphereProxy sp;
+    char name1[32];
+    sprintf(name1, "node%ld", (long)node.m_Id);
+    sp.assign(m_ProxyNodes, name1);
+
+
+    addProperties(sp, property->placeId);
+
+    m_PeekabotClient.end_bundle();
+    m_Mutex.unlock();
+
+}
+
+
+
+
 
 
 
@@ -685,6 +757,31 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 
 void DisplayNavInPB::addProperties(peekabot::SphereProxy &sp, int placeId)
 {
+	if (_sizeProps.find(placeId)!=_sizeProps.end())
+	{
+		string map;
+		if (_sizeProps[placeId]->mapValue)
+		{
+			SpatialProperties::StringValuePtr ptr =
+					SpatialProperties::StringValuePtr::dynamicCast(
+							_sizeProps[placeId]->mapValue);
+			if (ptr)
+			{
+				map=ptr->value;
+			}
+		}
+
+		// Add out property proxy
+		peekabot::LabelProxy lp;
+		lp.add(sp, "size_property", peekabot::REPLACE_ON_CONFLICT);
+		lp.set_pose(0.5,0.7,0.3,0,0,0);
+		lp.set_scale(10, 10, 10);
+		lp.set_text(map.c_str());
+		lp.set_alignment(peekabot::ALIGN_CENTER);
+		lp.set_color(0.3,0.3,0.3);
+	}
+
+
 	if (_shapeProps.find(placeId)!=_shapeProps.end())
 	{
 		string map;
