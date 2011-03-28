@@ -124,19 +124,28 @@ class CASTTask(object):
 
     def wait_update(self):
         assert self.wait_update_callback is not None
-        if self.wait_update_callback():
+        # store the old handlers and restore if the update wasn't handled
+        # we do it this way because the update handler (if successful) may
+        # install its own update handlers
+        old_update_callback = self.wait_update_callback
+        old_timeout_callback = self.wait_timeout_callback
+        self.wait_update_callback = None
+        self.wait_timeout_callback = None
+        if not old_update_callback():
+            self.wait_update_callback = old_update_callback
+            self.wait_timeout_callback = old_timeout_callback
+        else:
             log.debug("update was handled")
-            self.wait_update_callback = None
-            self.wait_timeout_callback = None
 
     def wait_timeout(self):
         if self.wait_timeout_callback is None:
             log.debug("no timeout handler installed")
             return
         log.debug("calling timeout handler")
-        self.wait_timeout_callback()
+        callback = self.wait_timeout_callback
         self.wait_timeout_callback = None
         self.wait_update_callback = None
+        callback()
 
     def write_cp_problem(self, problem_fn):
         w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
