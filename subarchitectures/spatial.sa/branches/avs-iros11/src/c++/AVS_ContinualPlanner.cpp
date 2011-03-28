@@ -446,7 +446,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
     if(m_usePeekabot){
     	//log("Displaying Map in PB.");
-    	pbVis->DisplayMap(*m_objectBloxelMaps[id]);
+    	//pbVis->DisplayMap(*m_objectBloxelMaps[id]);
     }
 	m_currentBloxelMap = m_objectBloxelMaps[id];
 	m_currentCureObstMap = m_templateRoomGridMaps[newVPCommand->roomId];
@@ -582,7 +582,7 @@ void AVS_ContinualPlanner::generateViewCones(
     if(m_usePeekabot){
       log("Displaying PDF Map in PB.");
      // pbVis->AddPDF(*m_objectBloxelMaps[id]);
-      pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
+   //   pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
     }
 	log("getting cones..");
 
@@ -972,7 +972,7 @@ for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!
 	}
 }
 
-double sensingProb = 0.5;
+double sensingProb = 0.8;
 GDProbSum sumcells;
 GDIsObstacle isobstacle;
 /* DEBUG */
