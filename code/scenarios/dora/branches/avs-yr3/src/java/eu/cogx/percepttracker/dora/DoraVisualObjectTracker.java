@@ -64,6 +64,12 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 			  log("2");
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
+
+        if (pb.getContent().get(VisualObjectTransferFunction.LABEL_ID) == null) {
+            log("belief is empty, returning.");
+            return;
+        }
+
 			  log("3");
 		String perceptLabel = pb.getContent().get(
 				VisualObjectTransferFunction.LABEL_ID).getDistribution()
