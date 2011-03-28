@@ -119,7 +119,7 @@ class CCastSlave(threading.Thread):
         except:
             LOGGER.error(traceback.format_exc(20))
             status = 1
-        
+ 
         # Clean up
         try:
             if self._ic != None: self._ic.destroy()
@@ -175,7 +175,7 @@ def discoverRemoteHosts(hosts, tcpPort):
 
     for (haddr, chkr) in checker: chkr.start()
     for (haddr, chkr) in checker: chkr.join()
-    
+
     working = []
     for (haddr, chkr) in checker:
         if chkr.success: working.append(haddr)
