@@ -1312,7 +1312,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     else {
       // Check if the object model is known (with a known pose).
       if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
-	log("Error! VisualObject %s was unknown!", supportObjectID.c_str());
+	log("Error! Support object %s was unknown!", supportObjectID.c_str());
 	return;
 //	m_objectModels[supportObjectID] = generateNewObjectModel(supportObjectLabel);
       }
@@ -1345,9 +1345,9 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	// For now, assume each label represents a unique object
 	if (m_objectModels.find(*it) == m_objectModels.end()) {
 	  // New object model
-	  log("Error! VisualObject %s was unknown!", it->c_str());
-	  return;
-	  //m_objectModels[*it] = generateNewObjectModel(*it);
+	//  log("Error! Target object %s was unknown!", it->c_str());
+	//  return;
+	  m_objectModels[*it] = generateNewObjectModel(*it);
 	}
 	ASSERT_TYPE(m_objectModels[*it]);
 	objectChain.push_back(m_objectModels[*it]);
