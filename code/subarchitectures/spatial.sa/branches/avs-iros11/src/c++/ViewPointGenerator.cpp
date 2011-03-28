@@ -39,7 +39,7 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
     m_component->log("ViewPointGenerator parameters: m_samplesize: %d, m_sampleawayfromobs: %f, m_conedepth: %f, m_horizangle: %f, m_vertangle: %f, m_minDistance: %f, m_bloxelmapPDFsum: %f , m_pdfthreshold: %f, robotx %f, roboty %f",
     		m_samplesize, m_sampleawayfromobs, m_conedepth,m_horizangle,m_vertangle,m_minDistance, m_bloxelmapPDFsum, m_pdfthreshold, m_robotx, m_roboty);
     m_component->log("BloxelMap size: %d, %d CureMap size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgm->getSize());
-    m_sensingProb = 0.5;
+    m_sensingProb = 1;
     m_panstep = panstep*M_PI/180;
     m_tiltstep = tiltstep*M_PI/180;
 }
@@ -130,7 +130,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		m_component->log("Best index %d", bestindex);
 		//lastConePDFSum = unordered3DVCList[bestindex].totalprob;
 		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
-		if(lastConePDFSum < 0.001){
+		if(lastConePDFSum < 0.001 || result3DVCList.size() > 10){
 			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
 			break;
 		}
