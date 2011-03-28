@@ -570,7 +570,6 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 				  ranges[j] = scan.ranges[i];
 				  ranges[j+1] = scan.ranges[i];
 			  }
-//			  error("%d %d %f", j, i, scan.ranges[i]);
 		  }
 		  angle += scan.angleStep;
 	  }
