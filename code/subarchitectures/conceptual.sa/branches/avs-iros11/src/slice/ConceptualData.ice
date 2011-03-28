@@ -131,6 +131,13 @@ module ConceptualData
 	
 	sequence<ShapePlacePropertyInfo> ShapePlacePropertyInfos;
 
+	struct SizePlacePropertyInfo
+	{
+		ValuePotentialPairs distribution;
+	};
+	
+	sequence<SizePlacePropertyInfo> SizePlacePropertyInfos;
+
 	struct AppearancePlacePropertyInfo
 	{
 		ValuePotentialPairs distribution;
@@ -145,6 +152,7 @@ module ConceptualData
         int placeId;
 		ObjectPlacePropertyInfos objectProperties;
 		ShapePlacePropertyInfos shapeProperties;
+		SizePlacePropertyInfos sizeProperties;
 		AppearancePlacePropertyInfos appearanceProperties;
 	};
 
@@ -225,14 +233,16 @@ module ConceptualData
 		// 11 12 13
 		EventObjectSearchResultAdded, EventObjectSearchResultDeleted, EventObjectSearchResultChanged, // placeId, propertyNo
 		// 14 15 16
-		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
+		EventSizePlacePropertyAdded, EventSizePlacePropertyDeleted, EventSizePlacePropertyChanged, // placeid
 		// 17 18 19
+		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
+		// 20 21 22
 		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
-		// 20
+		// 23
 		EventRoomConnectivityChanged, // place1id, place2id
-		// 21 22 23
-		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
 		// 24 25 26
+		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
+		// 27 28 29
 		EventAssociatedSpacePlaceholderPropertyAdded, EventAssociatedSpacePlaceholderPropertyChanged, EventAssociatedSpacePlaceholderPropertyDeleted 
 	};
 	

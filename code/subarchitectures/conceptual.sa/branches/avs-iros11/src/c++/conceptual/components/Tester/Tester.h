@@ -59,6 +59,9 @@ public:
 	const DefaultData::StringSeq &getShapes()
 		{ return _shapes; }
 
+	const DefaultData::StringSeq &getSizes()
+		{ return _sizes; }
+
 	const DefaultData::StringSeq &getAppearances()
 		{ return _appearances; }
 
@@ -140,6 +143,9 @@ private:
 
 	/** Names of all shapes. */
 	DefaultData::StringSeq _shapes;
+
+	/** Names of all sizes. */
+	DefaultData::StringSeq _sizes;
 
 	/** Names of all appearances. */
 	DefaultData::StringSeq _appearances;

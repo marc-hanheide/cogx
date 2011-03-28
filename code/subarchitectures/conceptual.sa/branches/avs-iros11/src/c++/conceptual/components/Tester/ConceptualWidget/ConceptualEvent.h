@@ -42,6 +42,7 @@ public:
 	QList<ConceptualData::EventInfo> infos;
 	QList<double> curRoomCategories;
 	QList<double> curShapes;
+	QList<double> curSizes;
 	QList<double> curAppearances;
 	QList<double> curObjects;
 

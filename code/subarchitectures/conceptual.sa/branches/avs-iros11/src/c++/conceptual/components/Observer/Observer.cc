@@ -61,6 +61,7 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 {
 	map<string,string>::const_iterator it;
 	_shapeThreshold = -1.0;
+	_sizeThreshold = -1.0;
 	_appearanceThreshold = -1.0;
 	_gatewayThreshold = -1.0;
 	_associatedSpaceThreshold = -1.0;
@@ -69,6 +70,10 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	if((it = _config.find("--shape-threshold")) != _config.end())
 	{
 		_shapeThreshold = boost::lexical_cast<double>(it->second);
+	}
+	if((it = _config.find("--size-threshold")) != _config.end())
+	{
+		_sizeThreshold = boost::lexical_cast<double>(it->second);
 	}
 	if((it = _config.find("--appearance-threshold")) != _config.end())
 	{
@@ -88,10 +93,11 @@ void Observer::configure(const std::map<std::string,std::string> & _config)
 	}
 	_includePlaceholderInfo = (_config.find("--no-placeholders") == _config.end());
 
-	if ((_shapeThreshold<0.0) || (_appearanceThreshold<0.0) || (_gatewayThreshold<0.0) || (_associatedSpaceThreshold<0.0))
-		throw CASTException(exceptionMessage(__HERE__, "Please set shape-threshold, appearance-threshold, associatedspace-placeholder-threshold and gateway-placeholder-threshold!"));
+	if ((_sizeThreshold<0.0) || (_shapeThreshold<0.0) || (_appearanceThreshold<0.0) || (_gatewayThreshold<0.0) || (_associatedSpaceThreshold<0.0))
+		throw CASTException(exceptionMessage(__HERE__, "Please set size-threshold, shape-threshold, appearance-threshold, associatedspace-placeholder-threshold and gateway-placeholder-threshold!"));
 
 	log("Configuration parameters:");
+	log("-> Size threshold: %f", _sizeThreshold);
 	log("-> Shape threshold: %f", _shapeThreshold);
 	log("-> Appearances threshold: %f", _appearanceThreshold);
 	log("-> Gateway placeholder threshold: %f", _gatewayThreshold);
@@ -130,6 +136,11 @@ void Observer::start()
 	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomShapePlaceProperty>(cdl::WILDCARD),
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::shapePlacePropertyChanged));
+
+	// Global filter on SpatialProperties::RoomSizePlaceProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomSizePlaceProperty>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::sizePlacePropertyChanged));
 
 	// Global filter on SpatialProperties::RoomAppearancePlaceProperty
 	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomAppearancePlaceProperty>(cdl::WILDCARD),
@@ -346,6 +357,27 @@ void Observer::updateWorldState()
 					sppi.distribution.push_back(vpp);
 				}
 				pi.shapeProperties.push_back(sppi);
+			}
+
+			// Size properties
+			std::vector<SpatialProperties::RoomSizePlacePropertyPtr> sizePlaceProperties;
+			getSizePlaceProperties(placeId, sizePlaceProperties);
+			for (unsigned int j=0; j<sizePlaceProperties.size(); ++j)
+			{
+				SpatialProperties::RoomSizePlacePropertyPtr sizePlacePropertyPtr =
+						sizePlaceProperties[j];
+				SpatialProperties::DiscreteProbabilityDistributionPtr dpdPtr =
+						SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(sizePlacePropertyPtr->distribution);
+
+				ConceptualData::SizePlacePropertyInfo sppi;
+				for (unsigned int k=0; k<dpdPtr->data.size(); ++k)
+				{
+					ConceptualData::ValuePotentialPair vpp;
+					vpp.value = SpatialProperties::StringValuePtr::dynamicCast(dpdPtr->data[k].value)->value;
+					vpp.potential = dpdPtr->data[k].probability;
+					sppi.distribution.push_back(vpp);
+				}
+				pi.sizeProperties.push_back(sppi);
 			}
 
 			// Appearance properties
@@ -1264,6 +1296,119 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
 
 // -------------------------------------------------------
+void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{
+		SpatialProperties::RoomSizePlacePropertyPtr sizePlacePropertyPtr;
+		try
+		{
+			sizePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomSizePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		_sizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
+
+		if (isGatewayPlace(sizePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
+			return;
+		}
+
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventSizePlacePropertyAdded;
+		ei.roomId = -1;
+		ei.place1Id = sizePlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialProperties::RoomSizePlacePropertyPtr sizePlacePropertyPtr;
+		try
+		{
+			sizePlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomSizePlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::RoomSizePlacePropertyPtr old = _sizePlacePropertyWmAddressMap[wmChange.address];
+	  	_sizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->placeId != sizePlacePropertyPtr->placeId)
+			throw cast::CASTException("The mapping between RoomSizePlaceProperty WMAddress and Place ID changed!");
+
+		if (isGatewayPlace(sizePlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
+			return;
+		}
+
+		// Check if something substantial changed
+		if ( calculateDistributionDifference(old->distribution,
+								sizePlacePropertyPtr->distribution) > _sizeThreshold )
+		{
+			ConceptualData::EventInfo ei;
+			ei.type = ConceptualData::EventSizePlacePropertyChanged;
+			ei.roomId = -1;
+			ei.place1Id = sizePlacePropertyPtr->placeId;
+			ei.place2Id = -1;
+			_accumulatedEvents.push_back(ei);
+
+			updateWorldState();
+		}
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::RoomSizePlacePropertyPtr old = _sizePlacePropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.type = ConceptualData::EventSizePlacePropertyDeleted;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
+		_sizePlacePropertyWmAddressMap.erase(wmChange.address);
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+// -------------------------------------------------------
 void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
 	// Decide what change has been made
@@ -1804,6 +1949,22 @@ void Observer::getShapePlaceProperties(int placeId,
 		// Get only the observed properties
 		if ((shapePlacePropertyPtr->placeId == placeId) && (!shapePlacePropertyPtr->inferred))
 			properties.push_back(shapePlacePropertyPtr);
+	}
+}
+
+
+// -------------------------------------------------------
+void Observer::getSizePlaceProperties(int placeId,
+		std::vector<SpatialProperties::RoomSizePlacePropertyPtr> &properties)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr>::iterator sizePlacePropertyIt;
+	for( sizePlacePropertyIt=_sizePlacePropertyWmAddressMap.begin();
+			sizePlacePropertyIt!=_sizePlacePropertyWmAddressMap.end(); ++sizePlacePropertyIt)
+	{
+		SpatialProperties::RoomSizePlacePropertyPtr sizePlacePropertyPtr = sizePlacePropertyIt->second;
+		// Get only the observed properties
+		if ((sizePlacePropertyPtr->placeId == placeId) && (!sizePlacePropertyPtr->inferred))
+			properties.push_back(sizePlacePropertyPtr);
 	}
 }
 

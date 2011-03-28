@@ -306,6 +306,11 @@ void ConceptualWidget::refreshWsButtonClicked()
 							setIcon(0, QIcon(":/icons/icons/flag-green.png"));
 				}
 			}
+			if (pi.sizeProperties.size())
+			{
+				QTreeWidgetItem *sizeItem = new QTreeWidgetItem(placeItem, QStringList("Size Place Property"));
+				sizeItem->setIcon(0, QIcon(":/icons/icons/shape.png"));
+			}
 			if (pi.shapeProperties.size())
 			{
 				QTreeWidgetItem *shapeItem = new QTreeWidgetItem(placeItem, QStringList("Shape Place Property"));
@@ -449,7 +454,7 @@ void ConceptualWidget::wsTimerTimeout()
 void ConceptualWidget::visualizeButtonClicked()
 {
 	EventVisualizer *rcv = new EventVisualizer(this, _component->getRoomCategories(),
-			_component->getShapes(), _component->getAppearances(),
+			_component->getShapes(), _component->getSizes(), _component->getAppearances(),
 			_component->getVisualizedObjects());
 	connect(this, SIGNAL(newEventInfo(const QList<conceptual::ConceptualEvent>&)), rcv, SLOT(generate(const QList<conceptual::ConceptualEvent>&)));
 	rcv->show();
@@ -580,6 +585,15 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			break;
 		case ConceptualData::EventShapePlacePropertyChanged:
 			eventStr+="ShapePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventSizePlacePropertyAdded:
+			eventStr+="SizePlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventSizePlacePropertyDeleted:
+			eventStr+="SizePlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventSizePlacePropertyChanged:
+			eventStr+="SizePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
 			break;
 		case ConceptualData::EventAppearancePlacePropertyAdded:
 			eventStr+="AppearancePlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
@@ -718,6 +732,61 @@ void ConceptualWidget::collectEventInfo(conceptual::ConceptualEvent event)
 			sum+=event.curShapes[i];
 		for (unsigned int i=0; i<shapes.size(); ++i)
 			event.curShapes[i]/=sum;
+
+
+
+
+		// Get size for the current room
+		results =
+				_component->sendQueryHandlerQuery("p(place*_size_property)", false, false);
+
+		const DefaultData::StringSeq &sizes = _component->getSizes();
+		for (unsigned int i=0; i<sizes.size(); ++i)
+			event.curSizes.push_back(1.0);
+		for (unsigned int r=0; r<results.size(); ++r)
+		{
+			SpatialProbabilities::ProbabilityDistribution result = results[r];
+			string varName = result.variableNameToPositionMap.begin()->first;
+			erase_first(varName, "place");
+			erase_last(varName, "_size_property");
+			int placeId = lexical_cast<int>(varName);
+
+			bool found = false;
+			for (int i=0; i<event.curRoomPlaces.size(); ++i)
+			{
+				if (event.curRoomPlaces[i]==placeId)
+				{
+					found=true;
+					break;
+				}
+			}
+			if (found)
+			{
+				for(unsigned int i=0; i<result.massFunction.size(); ++i)
+				{
+					double probability = result.massFunction[i].probability;
+					string value =
+							SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+									result.massFunction[i].variableValues[0])->value;
+					int sizeIndex=-1;
+					for(unsigned int j=0; j<sizes.size(); ++j)
+					{
+						if (sizes[j]==value)
+						{
+							sizeIndex=j;
+							break;
+						}
+					}
+					event.curSizes[sizeIndex]*=probability;
+				} //for
+			}
+		}
+		// Normalize
+		sum = 0.0;
+		for (unsigned int i=0; i<sizes.size(); ++i)
+			sum+=event.curSizes[i];
+		for (unsigned int i=0; i<sizes.size(); ++i)
+			event.curSizes[i]/=sum;
 
 
 		// Get appearance for the current room
@@ -876,6 +945,7 @@ void ConceptualWidget::saveEventsButtonClicked()
 			 QDataStream out(&file);
 			 out << _component->getRoomCategories();
 			 out << _component->getShapes();
+			 out << _component->getSizes();
 			 out << _component->getAppearances();
 			 out << _component->getVisualizedObjects();
 			 out << _events;

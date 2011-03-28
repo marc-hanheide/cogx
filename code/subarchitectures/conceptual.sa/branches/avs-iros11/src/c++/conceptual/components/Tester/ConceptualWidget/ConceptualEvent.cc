@@ -97,6 +97,7 @@ QDataStream &operator<<(QDataStream &stream, const ConceptualEvent &event)
 	stream << event.infos;
 	stream << event.curRoomCategories;
 	stream << event.curShapes;
+	stream << event.curSizes;
 	stream << event.curAppearances;
 	stream << event.curObjects;
 
@@ -112,6 +113,7 @@ QDataStream &operator>>(QDataStream &stream, ConceptualEvent &event)
 	stream >> event.infos;
 	stream >> event.curRoomCategories;
 	stream >> event.curShapes;
+	stream >> event.curSizes;
 	stream >> event.curAppearances;
 	stream >> event.curObjects;
 

@@ -21,17 +21,19 @@ int main(int argc, char **argv)
 			QDataStream in(&file);
 			vector<string> roomCats;
 			vector<string> shapes;
+			vector<string> sizes;
 			vector<string> appearances;
 			vector<string> visualizedObjects;
 			in >> roomCats;
 			in >> shapes;
+			in >> sizes;
 			in >> appearances;
 			in >> visualizedObjects;
 			QList<conceptual::ConceptualEvent> events;
 			in >> events;
 			file.close();
 
-			EventVisualizer visualizer(0, roomCats, shapes, appearances, visualizedObjects);
+			EventVisualizer visualizer(0, roomCats, shapes, sizes, appearances, visualizedObjects);
 			visualizer.generate(events);
 			visualizer.exec();
 		}
