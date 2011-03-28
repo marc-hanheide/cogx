@@ -1,4 +1,4 @@
-INROOM counter kitchen 0.33616346
+INROOM counter kitchen 0.55616346
 INROOM counter meetingroom 0.03347149
 INROOM counter office 0.27807754
 INROOM counter corridor 0.0587
@@ -8,9 +8,9 @@ INROOM table meetingroom 0.10420009
 INROOM table office 0.51997805
 INROOM table corridor 0.0594
 
-INROOM box kitchen 0.15457517
+INROOM box kitchen 0.25457517
 INROOM box meetingroom 0.011069357
-INROOM box office 0.19933626
+INROOM box office 0.49933626
 INROOM box corridor 0
 
 INROOM bookcase kitchen 0.35544333
@@ -83,7 +83,7 @@ INOBJECT cerealbox bookcase meetingroom 0.03
 INOBJECT cerealbox bookcase office 0.03
 INOBJECT cerealbox bookcase corridor 0.03
 
-INOBJECT cerealbox box kitchen 0.2
+INOBJECT cerealbox box kitchen 0.4
 INOBJECT cerealbox box meetingroom 0.03
 INOBJECT cerealbox box office 0.03
 INOBJECT cerealbox box corridor 0.03
