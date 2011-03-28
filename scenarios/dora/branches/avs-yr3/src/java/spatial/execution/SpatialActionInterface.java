@@ -223,11 +223,13 @@ public class SpatialActionInterface extends ManagedComponent {
 				getComponent().unlockEntry(_wmc.address);
                 actionComplete();
                 executionComplete(TriBool.TRIFALSE);
+				getComponent().removeChangeFilter(this);
 			} else if (cmd.status == AVSStatus.SUCCESS) {
 				log("command completed by the looks of this: " + cmd.status);
 				getComponent().unlockEntry(_wmc.address);
                 actionComplete();
                 executionComplete(TriBool.TRITRUE);
+				getComponent().removeChangeFilter(this);
 			} else {
 				log("command in progress: " + cmd.status);
 				getComponent().unlockEntry(_wmc.address);
