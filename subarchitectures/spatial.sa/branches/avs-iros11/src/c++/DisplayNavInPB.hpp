@@ -101,6 +101,7 @@ private:
 	void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
 
 	void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
+	void newSizeProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID);
 
@@ -207,6 +208,7 @@ private:
 	/** List of categories of rooms that we know about. */
 	std::vector<std::string> _roomCategories;
 	std::map<int, SpatialProperties::RoomShapePlacePropertyPtr> _shapeProps;
+	std::map<int, SpatialProperties::RoomSizePlacePropertyPtr> _sizeProps;
 	std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearanceProps;
 	std::map<std::string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr> _roomCatPlaceholderProps;
 
