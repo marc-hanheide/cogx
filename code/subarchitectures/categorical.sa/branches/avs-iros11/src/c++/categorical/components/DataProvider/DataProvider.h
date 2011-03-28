@@ -234,6 +234,9 @@ private: // WM object IDs
   std::string _dataProviderCommandAckId;
 
 
+
+  std::string _laserRobotServersHostname;
+
 private:
 
   /** Frame no. of the data tha will be added to WM now. */
