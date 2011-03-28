@@ -594,14 +594,15 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
   //	robotTransform.pos.y = 0.0;
   //      }
   //      transform(robotTransform, pose, pose);
-  Pose3 cameraToWorldTransform = getCameraToWorldTransform();
+
+    Pose3 cameraToWorldTransform = getCameraToWorldTransform();
   transform(cameraToWorldTransform, pose, pose);
 
   //      //FIXME: ARTag objects already get their coords in the world frame
-  //      if(obsLabel == "metalbox" || obsLabel == "bookcase" || obsLabel == "table2" 
-  //	  || obsLabel == "shelves" || obsLabel == "table"){
-  //	pose = observedObject->pose;
-  //      }
+        if(observedObject->model != 0 && observedObject->model->vertices.size() == 1){
+	  log("This is an ARTag object");
+	  pose = observedObject->pose;
+        }
 
   string visualObjectID = wmId;
 
@@ -616,7 +617,8 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
   else {
     // New object
     bNewObject = true;
-    log("New SpatialObject: %s", obsLabel.c_str());
+    log("New VisualObject: %s (%s)", obsLabel.c_str(), visualObjectID.c_str());
+
     m_objects[visualObjectID] = new SpatialData::SpatialObject;
     m_objects[visualObjectID]->label = obsLabel;
     m_objects[visualObjectID]->pose = pose;
@@ -631,6 +633,8 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
       log("Object model has 1 vertex");
       Vector3 cornerInfo = observedObject->model->vertices[0].pos;
 
+      log("Read object dimensions as %f %f %f", cornerInfo.x, cornerInfo.y,
+	  cornerInfo.z);
       if (cornerInfo.x < 0 || cornerInfo.y < 0 || cornerInfo.z < 0) {
 	// Code for hollow box
 	HollowBoxObject *newBoxObject = new HollowBoxObject;
@@ -1451,6 +1455,7 @@ ObjectRelationManager::processPriorRequest(FrontierInterface::ObjectPriorRequest
     supportObject->pose = request->baseObjectPose[0];
   }
 
+ 
   SampleCloud cloud;
   m_sampler.
     sampleBinaryRelationSystematically(relations, objectChain,

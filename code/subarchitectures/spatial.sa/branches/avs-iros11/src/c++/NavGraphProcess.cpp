@@ -1467,7 +1467,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 	    if (distSq < minDistSq) minDistSq = distSq;
 	  }
 	}
-	if (!m_UseDoorHypotheses || minDistSq > 4.0) {
+	if (!m_UseDoorHypotheses || minDistSq < 4.0) {
 
 	  log("Door is detected angR=%.2fdeg angL=%.2fdeg",
 	      m_DoorDetector.m_AngleR*180/M_PI,
@@ -1636,7 +1636,8 @@ NavGraphProcess::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 
     if (doorHyp != 0) {
       double doorX = doorHyp->x;
-      double doorY = doorHyp->x;
+      double doorY = doorHyp->y;
+      log("Adding door hypothesis at (%f, %f)", doorX, doorY);
 
       m_doorHypPositions.push_back(pair<double, double>(doorX, doorY));
     }
