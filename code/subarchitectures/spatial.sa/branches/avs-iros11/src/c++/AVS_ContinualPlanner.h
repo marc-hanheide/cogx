@@ -108,6 +108,7 @@ public:
 	 void displayPDF(BloxelMap map);
 	 void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
 	 void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
+	 void setConeDepth(const string &label);
 
 public:
 	 bool m_usePeekabot;
@@ -152,6 +153,7 @@ private:
 	double m_vertangle;
 	double m_tiltstep;
 	double m_panstep;
+	double m_coneGroupNormalization;
 
 	SpatialGridMap::GridMapData m_defaultBloxelCell;
 	Cure::SensorPose m_LaserPoseR;

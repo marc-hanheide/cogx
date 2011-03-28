@@ -189,7 +189,7 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	log("Overwriting command to change status to: SUCCESS");
 	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
-	}
+}
 
 
 void
@@ -623,15 +623,15 @@ void AVS_ContinualPlanner::generateViewCones(
 
 	// normalizing cone probabilities
 	log("normalizing viewcone probabilities");
-	double tmp = 0;
+	m_coneGroupNormalization = 0;
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		tmp += viewcones[i].totalprob;
+		m_coneGroupNormalization += viewcones[i].totalprob;
 	}
 
-	log("Total prob %f, normalizing constant %f", tmp, 1/tmp);
+	log("Total prob %f, normalizing constant %f", m_coneGroupNormalization, 1/m_coneGroupNormalization);
 
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		viewcones[i].totalprob = viewcones[i].totalprob * (1/tmp);
+		viewcones[i].totalprob = viewcones[i].totalprob * (1/m_coneGroupNormalization);
 	}
 
 	//Getting the place belief pointer
@@ -1043,8 +1043,9 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		BasicProbDistributionPtr  basicdist = BasicProbDistributionPtr::dynamicCast(dist->distribs["p-visible"]);
 		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
-		log("Got conegroup probability %f", floatformula->val);
-		floatformula->val -= differenceMapPDFSum; // remove current conesum's result
+		log("Got conegroup beliefs probability %f ", floatformula->val);
+		log("Will substract %f from it:", differenceMapPDFSum*m_coneGroupNormalization);
+		floatformula->val = floatformula->val - differenceMapPDFSum*m_coneGroupNormalization; // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], "binder", belief);
 
@@ -1699,5 +1700,7 @@ AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object 
 void AVS_ContinualPlanner::displayPDF(BloxelMap map){
 //	pbVis->AddPDF(map);
 }
+
+
 
 } //namespace
