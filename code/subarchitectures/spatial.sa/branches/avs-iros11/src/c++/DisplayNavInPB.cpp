@@ -97,6 +97,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
 
   m_ShowPath = (_config.find("--log-path") != _config.end());
+  m_ShowCommands = (_config.find("--log-commands") != _config.end());
 
   if (_config.find("--laser-server-host") != _config.end()) {
     std::istringstream str(_config.find("--laser-server-host")->second);
@@ -347,6 +348,17 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newComaRoom));
 
+
+  // Logging events
+  addChangeFilter(createGlobalTypeFilter<SpatialData::RelationalViewPointGenerationCommand>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newViewpointGenCommand));
+  addChangeFilter(createGlobalTypeFilter<VisionData::ARTagCommand>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newARTagCommand));
+  addChangeFilter(createGlobalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newRecognizerCommand));
   log("start done");  
 }
 
@@ -1270,6 +1282,28 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
   if (m_ShowPath) {
+    if (objID.operation == cdl::ADD) {
+      m_ProxyPathStartMarker.add(m_PeekabotClient, "PathStart", peekabot::REPLACE_ON_CONFLICT);
+      peekabot::VertexSet set1;
+      set1.add(0,0,0);
+      set1.add(-0.5, 0.5, 0);
+      set1.add(-0.3, 0, 0);
+      set1.add(-0.5, -0.5, 0);
+      m_ProxyPathStartMarker.add_vertices(set1);
+      m_ProxyPathStartMarker.set_rotation(m_RobotPose->theta, 0,0);
+      m_ProxyPathStartMarker.set_position(m_RobotPose->x, m_RobotPose->y, 0.02);
+
+      m_ProxyPathEndMarker.add(m_PeekabotClient, "PathEnd", peekabot::REPLACE_ON_CONFLICT);
+      peekabot::VertexSet set2;
+      set2.add(0.3,0,0);
+      set2.add(-0.2, 0.5, 0);
+      set2.add(0, 0, 0);
+      set2.add(-0.2, -0.5, 0);
+      m_ProxyPathEndMarker.add_vertices(set2);
+    }
+    m_ProxyPathEndMarker.set_rotation(m_RobotPose->theta, 0,0);
+    m_ProxyPathEndMarker.set_position(m_RobotPose->x, m_RobotPose->y, 0.02);
+
     double diffSq = (m_RobotPose->x-m_lastLoggedX)*(m_RobotPose->x-m_lastLoggedX) +
       (m_RobotPose->y-m_lastLoggedY)*(m_RobotPose->y-m_lastLoggedY);
     if (diffSq > 0.01) {
@@ -2128,6 +2162,14 @@ void DisplayNavInPB::connectPeekabot()
       
       if (m_ShowPath) {
 	m_ProxyPathLog.add(m_PeekabotClient, "path_log", peekabot::REPLACE_ON_CONFLICT);
+	m_ProxyPathLog.set_line_width(2);
+      }
+
+      if (m_ShowCommands) {
+	m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
+	    peekabot::REPLACE_ON_CONFLICT);
+	m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
+	    peekabot::REPLACE_ON_CONFLICT);
       }
       
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
@@ -2270,3 +2312,114 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
   Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
   return robotTransform3 + cameraOnRobot;
 } 
+
+void 
+DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID)
+{
+  if (!m_PeekabotClient.is_connected() ||
+      !m_ShowCommands ||
+      !m_RobotPose)
+    return;
+
+  SpatialData::RelationalViewPointGenerationCommandPtr obj;
+  try
+  {
+    obj = 
+      getMemoryEntry<SpatialData::RelationalViewPointGenerationCommand>(objID.address);
+
+    peekabot::PolygonProxy crossProxy;
+    char buf[256];
+    sprintf(buf, "Gen-%s-%s-%s",
+	obj->searchedObjectCategory.c_str(),
+	(obj->relation == SpatialData::ON) ? "on" : "in",
+	obj->supportObject.c_str());
+    crossProxy.add(m_ProxyViewpointGenCommands, buf, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+    peekabot::VertexSet crossVerts;
+    crossVerts.add(0.1, 0, 0.02);
+    crossVerts.add(0.5, 0.4, 0.02);
+    crossVerts.add(0.4, 0.5, 0.02);
+    crossVerts.add(0, 0.1, 0.02);
+    crossVerts.add(-0.4, 0.5, 0.02);
+    crossVerts.add(-0.5, 0.4, 0.02);
+    crossVerts.add(-0.1, 0, 0.02);
+    crossVerts.add(-0.5, -0.4, 0.02);
+    crossVerts.add(-0.4, -0.5, 0.02);
+    crossVerts.add(0, -0.1, 0.02);
+    crossVerts.add(0.4, -0.5, 0.02);
+    crossVerts.add(0.5, -0.4, 0.02);
+    crossProxy.add_vertices(crossVerts);
+    crossProxy.set_position(m_RobotPose->x, m_RobotPose->y, 0);
+    crossProxy.set_color(1.0, 0.5, 0);
+  }
+  catch (...)
+  {
+    log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    return;
+  }
+}
+
+void 
+DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
+{
+  if (!m_PeekabotClient.is_connected() ||
+      !m_RobotPose ||
+      !m_ShowCommands)
+    return;
+
+  VisionData::ARTagCommandPtr obj;
+  try
+  {
+    obj = 
+      getMemoryEntry<VisionData::ARTagCommand>(objID.address);
+
+    logDetectionCommand(obj->label);
+  }
+  catch (...)
+  {
+    log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    return;
+  }
+}
+
+void 
+DisplayNavInPB::newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID)
+{
+  if (!m_PeekabotClient.is_connected() ||
+      !m_RobotPose ||
+      !m_ShowCommands)
+    return;
+
+  VisionData::Recognizer3DCommandPtr obj;
+  try
+  {
+    obj = 
+      getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
+
+    logDetectionCommand(obj->label);
+  }
+  catch (...)
+  {
+    log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    return;
+  }
+}
+
+void
+DisplayNavInPB::logDetectionCommand(const string &label)
+{
+  peekabot::PolygonProxy viewProxy;
+  char buf[256];
+  sprintf(buf, "Detect-%s", label.c_str());
+  viewProxy.add(m_ProxyDetectionCommands, buf, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+  peekabot::VertexSet viewVerts;
+  viewVerts.add(0, 0, 0.02);
+  const double radius = 0.5;
+  double step = M_PI/32;
+  for (double angle = -M_PI/4; angle <= M_PI/4; angle += step) {
+    viewVerts.add(radius*cos(angle), radius*sin(angle), 0.02); 
+  }
+  viewProxy.add_vertices(viewVerts);
+  viewProxy.set_position(m_RobotPose->x, m_RobotPose->y, 0);
+  viewProxy.set_rotation(m_RobotPose->theta, 0, 0);
+  viewProxy.set_color(1.0, 0, 0);
+}

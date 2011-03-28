@@ -100,6 +100,11 @@ private:
 	void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
 
+	void newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID);
+	void newARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
+	void newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID);
+	void logDetectionCommand(const std::string &label);
+
 	void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newSizeProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
@@ -151,6 +156,11 @@ private:
 	peekabot::GroupProxy m_ProxyObjectLabels;
 	peekabot::GroupProxy m_ProxyViewPoints;
 	peekabot::PolylineProxy m_ProxyPathLog;
+	peekabot::PolygonProxy m_ProxyPathStartMarker;
+	peekabot::PolygonProxy m_ProxyPathEndMarker;
+	peekabot::GroupProxy m_ProxyViewpointGenCommands;
+	peekabot::GroupProxy m_ProxyDetectionCommands;
+
 	peekabot::ObjectProxy m_ProxyCam;
 	peekabot::HingeProxy m_ProxyPan;
 	peekabot::HingeProxy m_ProxyTilt;
@@ -170,6 +180,7 @@ private:
 	bool m_ShowPlanePoints;
 	bool m_ShowSOIs;
 	bool m_ShowPath;
+	bool m_ShowCommands;
 	bool m_NonUniqueObjects;
 	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
