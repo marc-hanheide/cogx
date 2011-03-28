@@ -223,6 +223,8 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
       maxLateral = frameRadius*1.5;
       minVertical = -frameRadius*1.5;
       maxVertical = frameRadius*3;
+      cout << "maxLateral: " << maxLateral << "  minVertical" << minVertical
+	  << "  maxVertical: " << maxVertical << "\n";
       break;
 
     case RELATION_IN:
