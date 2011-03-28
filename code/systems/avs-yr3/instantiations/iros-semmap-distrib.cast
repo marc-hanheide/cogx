@@ -8,7 +8,7 @@ INCLUDE includes/visualization.sa/v11n-base.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-semmap.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
@@ -25,7 +25,7 @@ INCLUDE includes/default.sa/default-main-semmap.cast
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
-INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-main-semmap.cast
 INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
 INCLUDE includes/conceptual.sa/conceptual-test.cast
 
@@ -57,6 +57,6 @@ CPP MG viewer VideoViewer --videoname VideoServerP --camid 0
 HOST 192.168.0.11
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-cvap-avs-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-cvap-semmapping-size-shape-appearance-dist.cast
 CPP GD  VideoServerP ProsilicaServer --videoname video --camids "0" --devnums "0"
 
