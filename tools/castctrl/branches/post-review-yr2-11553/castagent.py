@@ -8,11 +8,8 @@ import shutil
 import optparse
 from string import Template
 
-from core import castagentsrv, procman, options, messages
-# LOGGER = messages.CStdoutLogger()
-LOGGER = messages.CInternalLogger()
-procman.LOGGER = LOGGER
-castagentsrv.LOGGER = LOGGER
+from core import castagentsrv, procman, options, messages, logger
+LOGGER = logger.get()
 
 import threading
 import Ice
@@ -85,7 +82,6 @@ class CLogDisplayer(threading.Thread):
         self._isRunning = False
 
 
-
 class CConsoleAgent:
     def __init__(self, appOptions):
         port = appOptions.port
@@ -112,6 +108,15 @@ class CConsoleAgent:
                 cmd = self._options.xe("${CMD_PLAYER}")
                 cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
                 self.manager.addProcess(procman.CProcess("player", cmd))
+
+        if appOptions.golem_cfg != None:
+            if not os.path.exists(appOptions.golem_cfg):
+                LOGGER.warn("Golem configuration file '%s' not found." % appOptions.golem_cfg)
+            else:
+                cmd = self._options.xe("${CMD_GOLEM}")
+                cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
+                self.manager.addProcess(procman.CProcess("golem", cmd))
+
         #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
         #self.procBuild.allowTerminate = True
@@ -164,6 +169,8 @@ def parseOptions():
         help="Set a configuration file. Default=castcontrol.conf.")
     parser.add_option("", "--player", action="store", type="string", default=None, dest="player_cfg",
         help="Set the Player configuration file. If not set, Player won't be started by this agent.")
+    parser.add_option("", "--golem", action="store", type="string", default=None, dest="golem_cfg",
+        help="Set the Golem configuration file. If not set, Golem won't be started by this agent.")
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
@@ -173,7 +180,12 @@ def parseOptions():
 
 def main():
     opts, args = parseOptions()
-    print opts, args
+    print "Settings:"
+    for o in dir(opts):
+        if o.startswith("_"): continue
+        if o in ['read_file', 'read_module', 'ensure_value']: continue
+        try: print "%14s:\t%s" % (o, eval("opts.%s" % o))
+        except: pass
     agent = CConsoleAgent(opts)
     agent.startServing()
     try:

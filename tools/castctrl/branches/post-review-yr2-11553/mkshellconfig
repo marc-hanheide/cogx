@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+# vim: set sw=4 ts=8 et fileencoding=utf-8: #
+#
+# Create a bash script from variables in castcontrol.conf
+# Genrate the script:
+#    - start and close CAST Control so that castcontrol.conf is generated
+#    - mkshellconfig > castenv
+# Use the script in bash shell:
+#    - source castenv
+
+import os, sys, re
+from core import options
+
+opts = options.CCastOptions()
+opts.loadConfig("castcontrol.conf")
+opts.configEnvironment()
+
+cenv = opts.environ
+cscr = opts.environscript
+cvars = []
+cnames = {}
+for line in cscr:
+    mo = options.regVarSet.match(line)
+    if mo == None: continue
+    lhs, rhs = mo.group(1), mo.group(2)
+    if cnames.has_key(lhs):
+        cvars.remove(lhs)
+    cvars.append(lhs)
+    cnames[lhs] = 1
+
+for v in cvars:
+    if cenv.has_key(v):
+        print "export %s='%s'" % (v, cenv[v])

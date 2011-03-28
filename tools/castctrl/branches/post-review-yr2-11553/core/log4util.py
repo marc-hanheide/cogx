@@ -3,7 +3,8 @@
 
 import os, sys, time
 import stat
-import options
+import options, logger
+import re, messages
 
 log4jlevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
 
@@ -31,7 +32,7 @@ class CLog4Config:
     @property
     def clientConfigFile(self):
         return os.path.join(self._logDir, self._clientConf)
-    
+
     def setServerXmlFileLevel(self, levelName):
         self.serverXmlFileLevel = levelName
 
@@ -49,8 +50,11 @@ class CLog4Config:
             self._logFile = "cast-log.xml"
 
     def _prepareLogDir(self):
-        if not os.path.exists(self._logDir):
-            os.makedirs(self._logDir)
+        try:
+            if not os.path.exists(self._logDir):
+                os.makedirs(self._logDir)
+        except Exception as e:
+            logger.get().error("%s" % e)
 
     def _prepareLogFile(self):
         opts = options.getCastOptions()
@@ -64,9 +68,12 @@ class CLog4Config:
             ln = ln.replace('${NOW}', now)
             result.append(ln)
 
-        f = open(self.logFile, 'w')
-        f.write("\n".join(result))
-        f.close()
+        try:
+            f = open(self.logFile, 'w')
+            f.write("\n".join(result))
+            f.close()
+        except Exception as e:
+            logger.get().error("%s" % e)
 
     def prepareServerConfig(self):
         opts = options.getCastOptions()
@@ -103,9 +110,12 @@ class CLog4Config:
 
         result.insert(0, ",".join(lnroot))
 
-        f = open(self.serverConfigFile, "w")
-        f.write("\n".join(result))
-        f.close()
+        try:
+            f = open(self.serverConfigFile, "w")
+            f.write("\n".join(result))
+            f.close()
+        except Exception as e:
+            logger.get().error("%s" % e)
 
     def prepareClientConfig(self, console = True, socketServer = True):
         opts = options.getCastOptions()
@@ -142,16 +152,43 @@ class CLog4Config:
 
         result.insert(0, ",".join(lnroot))
 
-        f = open(clientfile, "w")
-        f.write("\n".join(result))
-        f.close()
+        self._prepareLogDir()
+        try:
+            f = open(clientfile, "w")
+            f.write("\n".join(result))
+            f.close()
+        except Exception as e:
+            logger.get().error("%s" % e)
 
-        if os.path.exists(self.logPropLink):
-            st = os.lstat(self.logPropLink)
-            if not stat.S_ISLNK(st.st_mode):
-                os.rename(self.logPropLink, os.tempnam(self._logDir, self.logPropLink))
-            os.remove(self.logPropLink)
-        os.symlink(clientfile, self.logPropLink)
+        try:
+            if os.path.exists(self.logPropLink):
+                st = os.lstat(self.logPropLink)
+                if not stat.S_ISLNK(st.st_mode):
+                    os.rename(self.logPropLink, os.tempnam(self._logDir, self.logPropLink))
+                os.remove(self.logPropLink)
+            os.symlink(clientfile, self.logPropLink)
+        except Exception as e:
+            logger.get().error("%s" % e)
 
-        f.close()
+class CLog4MessageProcessor:
+    reMsg = re.compile("^\s*\[[A-Z]+\s+([^:]+):")
+    def __init__(self):
+        self.colors = {}
+        self.nextColor = 0
 
+    def paint(self, message, id):
+        co = self.colors[id] % 10
+        return "\x1b[%dm%s\x1b[0m" % (co + 30, message)
+
+    def process(self, message, mtype):
+        if mtype == messages.CMessage.MESSAGE:
+            mo = CLog4MessageProcessor.reMsg.match(message)
+            if mo != None: # re.match
+                mtype = messages.CMessage.CASTLOG
+                id = mo.group(1)
+                if not id in self.colors:
+                    self.colors[id] = self.nextColor
+                    self.nextColor += 1
+                message = self.paint(message, id)
+
+        return (message, mtype)

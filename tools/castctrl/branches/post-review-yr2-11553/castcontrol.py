@@ -8,18 +8,17 @@ import re
 import tempfile
 from PyQt4 import QtCore, QtGui
 
-from core import procman, options, messages, confbuilder, network
+from core import procman, options, messages, logger, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
 from core import log4util
-from qtui import uimainwindow, uiresources
+from qtui import uimainwindow
 from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
 import processtree
 
-LOGGER = messages.CInternalLogger()
-procman.LOGGER = LOGGER
-castagentsrv.LOGGER = LOGGER
+LOGGER = logger.get()
+NOFILE_FILENAME = "<none>"
 
 class CLogDisplayer:
     def __init__(self, qtext):
@@ -91,6 +90,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = uimainwindow.Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
 
         self.fnconf = "castcontrol.conf"
         self.fnhist = "castcontrol.hist"
@@ -150,10 +150,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Config actions
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
+        self.connect(self.ui.actOpenGolemConfig, QtCore.SIGNAL("triggered()"), self.onBrowseGolemConfig)
         self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
         self.connect(self.ui.playerConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onPlayerConfigChanged)
+        self.connect(self.ui.golemConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onGolemConfigChanged)
         self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
 
         # Process actions
@@ -183,8 +185,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actEditUserSettings, QtCore.SIGNAL("triggered()"), self.onEditUserSettings)
         self.connect(self.ui.actEditCastEnvironment, QtCore.SIGNAL("triggered()"), self.onEditCastEnvironment)
 
-        pic = uiresources.createPixmap(uiresources.icon_cogx)
-        self.setWindowIcon(QtGui.QIcon(pic))
         LOGGER.log("CAST Control initialized")
 
     def _initContent(self):
@@ -194,6 +194,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         for fn in self._options.mruCfgPlayer:
             if fn.strip() == "": continue
             self.ui.playerConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        for fn in self._options.mruCfgGolem:
+            if fn.strip() == "": continue
+            self.ui.golemConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
         for fn in self._options.mruCfgHosts:
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
@@ -218,6 +221,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
         self.ui.ckRunPeekabot.setCheckState(ckint("ckRunPeekabot", 2))
         self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
+        self.ui.ckRunGolem.setCheckState(ckint("ckRunGolem", 2))
         self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
         self.ui.ckRunDisplaySrv.setCheckState(ckint("ckRunDisplaySrv", 2))
         self.ui.ckRunAbducerServer.setCheckState(ckint("ckRunAbducerServer", 2))
@@ -278,7 +282,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             else:
                 comps = coff; cond = "not m.component in"
                 extra = ["''"]
-            comps = extra + [ "'" + c.cid + "'" for c in comps ]
+            # New log4j form for component id: 'SA.ID'; the old form was 'ID'.
+            comps = extra + [ "'%s.%s'" % (c.subarch, c.cid) for c in comps ]
             comps = ",".join(comps)
             if flt != "": flt = "(" + flt + ") and "
             flt = flt + "(" + cond + " [" + comps + "])"
@@ -311,6 +316,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         if rp.startswith(".."): return fn
         return rp
 
+    def isNullFilename(self, fn):
+        if fn == None: return True
+        test = fn.lower().strip()
+        if test == "": return True
+        if test.startswith(NOFILE_FILENAME): return True
+        if test.startswith("-"): return True
+        return False
+
     @property
     def _clientConfig(self):
         cmb = self.ui.clientConfigCmbx
@@ -326,11 +339,18 @@ class CCastControlWnd(QtGui.QMainWindow):
         return fn.toString()
 
     @property
+    def _golemConfig(self):
+        cmb = self.ui.golemConfigCmbx
+        i = cmb.currentIndex()
+        fn = cmb.itemData(i)
+        return fn.toString()
+
+    @property
     def _hostConfig(self):
         cmb = self.ui.hostConfigCmbx
         i = cmb.currentIndex()
         fn = cmb.itemData(i)
-        return fn.toString()
+        return "%s" % fn.toString()
 
     @property
     def _localhost(self):
@@ -371,8 +391,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
         self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
+        self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
-        self._manager.addProcess(procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}")))
+
+        p = procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}"))
+        p.messageProcessor = log4util.CLog4MessageProcessor()
+        self._manager.addProcess(p)
 
         self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
 
@@ -390,16 +414,23 @@ class CCastControlWnd(QtGui.QMainWindow):
             if self._pumpRemoteMessages: rpm.pumpRemoteMessages()
 
     def closeEvent(self, event):
-        self._manager.stopReaderThread()
         self._manager.stopAll()
+        self._manager.stopReaderThread()
         time.sleep(0.2)
-        def getitems(cmbx, count=30):
+        def getitems(cmbx, count=30, hasNullFile=False):
             mx = cmbx.count()
-            if mx > count: mx = count
             lst = []
+            nullSelected = False
             for i in xrange(mx):
-                fn = cmbx.itemData(i).toString()
-                lst.append("%s" % fn)
+                fn = "%s" % cmbx.itemData(i).toString()
+                if hasNullFile and self.isNullFilename(fn):
+                    if i == 0: nullSelected = True
+                    continue
+                lst.append(fn)
+            lst = lst[:count]
+            if hasNullFile:
+                if nullSelected: lst.insert(0, NOFILE_FILENAME)
+                else: lst.append(NOFILE_FILENAME)
             return lst
 
         try:
@@ -411,7 +442,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
-            self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx)
+            self._options.mruCfgGolem = getitems(self.ui.golemConfigCmbx)
+            self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx, hasNullFile=True)
             self._options.setOption("log4jServerPort", self._log4jServerPort)
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
             self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
@@ -420,6 +452,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
             self._options.setOption("ckRunPeekabot", self.ui.ckRunPeekabot.checkState())
             self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
+            self._options.setOption("ckRunGolem", self.ui.ckRunGolem.checkState())
             self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
             self._options.setOption("ckRunDisplaySrv", self.ui.ckRunDisplaySrv.checkState())
             self._options.setOption("ckRunAbducerServer", self.ui.ckRunAbducerServer.checkState())
@@ -460,7 +493,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
 
-        log4config = "\n".join(open(log4.clientConfigFile).readlines())
+        # The client config file was prepared in prepareClientConfig.
+        # We send it to remote agents so they use the same settings.
+        log4config = "".join(open(log4.clientConfigFile).readlines())
 
         # XXX Processes could be started for each host separately;  (id=remotestart)
         # Each process on each host could be started separately;
@@ -468,7 +503,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         for h in self._remoteHosts:
             h.agentProxy.setLog4jClientProperties(log4config)
             for p in h.proclist: p.start()
-        self.ui.processTree.expandAll()
 
     def stopServers(self):
         srvs = self.getServers(self._manager)
@@ -476,7 +510,6 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         for h in self._remoteHosts: # See <URL:#remotestart>
             for p in h.proclist: p.stop()
-        self.ui.processTree.expandAll()
 
     # Somehow we get 2 events for a button click ... filter one out
     def onStartCastServers(self):
@@ -486,9 +519,11 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
         self.startServers(log4)
+        self.ui.processTree.expandAll()
 
     def onStopCastServers(self):
         self.stopServers()
+        self.ui.processTree.expandAll()
 
     # Add components to filter; put the used components to the top of the list
     def addComponentFilters(self, components):
@@ -509,7 +544,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         clientConfig = clientConfig.strip()
         if clientConfig == "": return
 
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -518,15 +553,17 @@ class CCastControlWnd(QtGui.QMainWindow):
         cfg.clearRules()
         if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
+
         cfg.prepareConfig(clientConfig)
         self.addComponentFilters(cfg.components)
+
 
     # build config file from rules in hostconfig
     def buildConfigFile(self):
         if self._clientConfig == None: clientConfig = ""
         else: clientConfig = "%s" % self._clientConfig
         clientConfig = clientConfig.strip()
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -548,7 +585,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def getConfiguredHosts(self):
-        if self._hostConfig == None: hostConfig = ""
+        if self.isNullFilename(self._hostConfig): hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
@@ -642,6 +679,10 @@ class CCastControlWnd(QtGui.QMainWindow):
             p = self._manager.getProcess("player")
             if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
 
+        if self.ui.ckRunGolem.isChecked():
+            p = self._manager.getProcess("golem")
+            if p != None: p.start( params = { "GOLEM_CONFIG": self._golemConfig } )
+
         if self.ui.ckRunPeekabot.isChecked():
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
@@ -660,6 +701,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onStopExternalServers(self):
         p = self._manager.getProcess("player")
+        if p != None: p.stop()
+        p = self._manager.getProcess("golem")
         if p != None: p.stop()
         p = self._manager.getProcess("peekabot")
         if p != None: p.stop()
@@ -756,7 +799,13 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btEditFilterComponents_clicked(self, valid=True):
         if not valid: return
-        self.extractComponentsFromConfig()
+
+        try:
+            self.extractComponentsFromConfig()
+        except Exception as e:
+            LOGGER.error("%s" % e)
+            return
+
         dlg = CSelectComponentsDlg(self)
         dlg.setComponentList(self.componentFilter)
         rv = dlg.exec_()
@@ -813,9 +862,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not valid: return
         self.editFile(self._playerConfig)
 
+    def on_btEditGolemConfig_clicked(self, valid=True):
+        if not valid: return
+        self.editFile(self._golemConfig)
+
     def on_btEditHostConfig_clicked(self, valid=True):
         if not valid: return
-        self.editFile(self._hostConfig)
+        if not self.isNullFilename(self._hostConfig):
+            self.editFile(self._hostConfig)
 
     def on_btDetectLocalHost_clicked(self, valid=True):
         if not valid: return
@@ -900,21 +954,44 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
                 self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
-    def onBrowseHostConfig(self):
+    def onBrowseGolemConfig(self):
         qfd = QtGui.QFileDialog
         fn = qfd.getOpenFileName(
+            self, self.ui.actOpenGolemConfig.text(),
+            "", "Golem Config (*.xml)")
+        if fn != None and len(fn) > 1:
+            fn = self.makeConfigFileRelPath(fn)
+            self._ComboBox_AddMru(self.ui.golemConfigCmbx,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def onGolemConfigChanged(self, index):
+        if index < 1: return
+        fn = self._golemConfig
+        self._ComboBox_SelectMru(self.ui.golemConfigCmbx, index,
+                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def onBrowseHostConfig(self):
+        qfd = QtGui.QFileDialog
+        fn = "%s" % qfd.getOpenFileName(
             self, self.ui.actOpenHostConfig.text(),
             "", "Component Host Config (*.hconf)")
-        if fn != None and len(fn) > 1:
+        if fn == None or len(fn) < 2:
+            return
+        elif self.isNullFilename(fn):
+            self._ComboBox_AddMru(self.ui.hostConfigCmbx, NOFILE_FILENAME, NOFILE_FILENAME)
+        else:
             fn = self.makeConfigFileRelPath(fn)
             self._ComboBox_AddMru(self.ui.hostConfigCmbx,
                     self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onHostConfigChanged(self, index):
         if index < 1: return
-        fn = self._hostConfig
-        self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        fn = "%s" % self._hostConfig
+        if self.isNullFilename(fn):
+            self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index, NOFILE_FILENAME, NOFILE_FILENAME)
+        else:
+            self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def _ComboBox_AddMru(self, uiCmbx, title, varData):
         uiCmbx.blockSignals(True)
@@ -935,8 +1012,9 @@ def guiMain():
     app = QtGui.QApplication(sys.argv)
     myapp = CCastControlWnd()
     myapp.show()
-    sys.exit(app.exec_())
-    pass
+    rv = app.exec_()
+    sys.exit(rv)
+
 
 if __name__ == "__main__":
     guiMain()
