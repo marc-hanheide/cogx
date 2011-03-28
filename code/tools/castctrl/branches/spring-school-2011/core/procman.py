@@ -10,11 +10,11 @@ import subprocess as subp
 import tempfile
 import select, signal, threading
 import fcntl
-import options, messages
+import options, messages, logger
 import itertools
 import legacy
 
-LOGGER = None
+LOGGER = logger.get()
 def log(msg):
     global LOGGER
     if LOGGER != None: LOGGER.log(msg)
@@ -122,6 +122,7 @@ class CProcess(CProcessBase):
         self.allowTerminate = False # CAST apps should not autoTerm; others may
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
+        self.messageProcessor = None  # Some servers (log4j) could do additional message processing
         self.errors = legacy.deque(maxlen=200)
         self.lastLinesEmpty = 0 # suppress consecutive empty lines
         self.msgOrder = 0
@@ -184,7 +185,8 @@ class CProcess(CProcessBase):
         if self.workdir != None: log("PWD=%s" % self.workdir)
         try:
             self._setStatus(CProcessBase.STARTING)
-            if self.pipeReader != None: self.pipeReader.stop()
+            if self.pipeReader != None:
+                self._stopReader()
             self.pipeReader = CPipeReader_1(self)
             self.pipeReader.start()
             self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
@@ -211,8 +213,14 @@ class CProcess(CProcessBase):
         nextStatus = CProcessBase.STOPPED
         if not notify: self.status = nextStatus
         else: self._setStatus(nextStatus)
+        self._stopReader()
+
+    def _stopReader(self):
         if self.pipeReader != None:
             self.pipeReader.stop()
+            self.pipeReader.join(0.2)
+            if self.pipeReader and self.pipeReader.isAlive():
+                error("Failed to join thread (Reader, %s)" % self.name)
             self.pipeReader = None
 
     def stop(self):
@@ -274,6 +282,8 @@ class CProcess(CProcessBase):
                     else: self.lastLinesEmpty = 0
                     if self.lastLinesEmpty > maxempty: continue
                     typ = fnType(msg)
+                    if self.messageProcessor:
+                        (msg, typ) = self.messageProcessor.process(msg, typ)
                     self.msgOrder += 1
                     msg = msg.decode("utf-8", "replace")
                     targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
@@ -450,36 +460,24 @@ class CProcessManager(object):
     def stopAll(self):
         for proc in self.proclist: proc.stop()
 
-    #def checkProcesses(self): # MOVED to a separate thread
-    #    for proc in self.proclist: proc.check()
 
     def stopReaderThread(self):
-        if self.pipeReaderThread != None: self.pipeReaderThread.stop()
-        self.pipeReaderThread = None
-        if self.procCheckerThread != None: self.procCheckerThread.stop()
+        #if self.pipeReaderThread != None:
+        #    self.pipeReaderThread.stop()
+        #    self.pipeReaderThread.join(2.0)
+        #    if self.pipeReaderThread.isAlive():
+        #        error("Failed to join thread (Reader)")
+        #self.pipeReaderThread = None
+
+        for proc in self.proclist: proc._stopReader()
+
+        if self.procCheckerThread != None:
+            self.procCheckerThread.stop()
+            self.procCheckerThread.join(2.0)
+            if self.procCheckerThread.isAlive():
+                error("Failed to join thread (Checker)")
         self.procCheckerThread = None
 
-    # MOVED to a separate thread!
-    #def communicate(self, timeout=0.01):
-    #    return 0
-    #    procs = self.proclist
-    #    pipes = []
-    #    for proc in procs: pipes.extend(proc.getPipes())
-    #    ready = select.select(pipes, [], [], 0.0)
-    #    now = time.time(); tm = now; tmend = now + timeout
-    #    while (len(ready[0]) > 0 and now >= tm and now < tmend):
-    #        time.sleep(0)
-    #        count = 100 # batch size
-    #        while len(ready[0]) > 0 and count > 0 and now >= tm and now < tmend:
-    #            for proc in procs:
-    #                nl = proc.readPipes(ready[0], count)
-    #                count -= nl
-    #            for proc in procs: pipes.extend(proc.getPipes())
-    #            ready = select.select(pipes, [], [], 0.0)
-    #            now = time.time()
-    #        now = time.time()
-
-    #    return len(ready[0]) > 0 # True if there might be more lines to read
 
     def getStatus(self, procname):
         p = self.getProcess(procname)

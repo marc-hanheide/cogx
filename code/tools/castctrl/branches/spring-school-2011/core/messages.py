@@ -6,7 +6,6 @@
 import sys, time, re
 import itertools, heapq
 import legacy
-from collections import deque
 
 reColorEscape = re.compile("\x1b\\[[0-9;]+m")
 reColorEscapeSplit = re.compile("(\x1b\\[[0-9;]+m)")
@@ -214,52 +213,3 @@ class CLogMerger(object):
         self._applyFilter(msgs)
         self._checkLength()
 
-class CInternalLogger(object):
-    def __init__(self):
-        # Modelled like CProcess: messages, errors
-        self.messages = legacy.deque(maxlen=500)
-        self.errors = legacy.deque(maxlen=200)
-        self.srcid = "castcontrol"
-
-    def getMessages(self, clear=True):
-        msgs = list(self.messages)
-        if clear: self.messages.clear()
-        return msgs
-
-    def getErrors(self, clear=True):
-        msgs = list(self.errors)
-        if clear: self.errors.clear()
-        return msgs
-
-    def log(self, msg):
-        self.messages.append(CMessage(self.srcid, msg))
-
-    def warn(self, msg):
-        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.WARNING))
-
-    def error(self, msg):
-        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.ERROR))
-
-    def addMessage(self, cmsg):
-        if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
-            self.errors.append(cmsg)
-        else: self.messages.append(cmsg)
-
-class CStdoutLogger(CInternalLogger):
-    def __init__(self):
-        CInternalLogger.__init__(self)
-
-    def log(self, msg):
-        CInternalLogger.log(self, msg)
-        print msg
-
-    def warn(self, msg):
-        CInternalLogger.warn(self, msg)
-        print "!", msg
-
-    def error(self, msg):
-        CInternalLogger.error(self, msg)
-        print "!!!!!", msg
-
-    def addMessage(self, cmsg):
-        CInternalLogger.addMessage(self, cmsg)

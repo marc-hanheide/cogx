@@ -9,9 +9,9 @@ import stat
 import modice
 import icemodule.castcontrol.CastAgent as CastAgent
 # import icemodule.castcontrol.ProcessInfo as ProcessInfo
-from core import messages, options, procman
+from core import messages, logger, options, procman
 
-LOGGER = messages.CInternalLogger()
+LOGGER = logger.get()
 
 # Default port for the Ice server of a CastAgent.
 SLAVE_PORT=7832
@@ -119,7 +119,7 @@ class CCastSlave(threading.Thread):
         except:
             LOGGER.error(traceback.format_exc(20))
             status = 1
-        
+ 
         # Clean up
         try:
             if self._ic != None: self._ic.destroy()
@@ -175,7 +175,7 @@ def discoverRemoteHosts(hosts, tcpPort):
 
     for (haddr, chkr) in checker: chkr.start()
     for (haddr, chkr) in checker: chkr.join()
-    
+
     working = []
     for (haddr, chkr) in checker:
         if chkr.success: working.append(haddr)
