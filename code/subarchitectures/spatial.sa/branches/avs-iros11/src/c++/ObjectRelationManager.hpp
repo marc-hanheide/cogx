@@ -120,6 +120,7 @@ protected:
 
   void newRobotPose(const cast::cdl::WorkingMemoryChange &);
   void newObject(const cast::cdl::WorkingMemoryChange &);
+  void newObject(const VisionData::VisualObjectPtr obj, const string &wmid);
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
@@ -136,6 +137,7 @@ protected:
 
 //  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
+  void processPriorRequest(FrontierInterface::ObjectPriorRequestPtr request);
   void new3DPriorRequest(const cast::cdl::WorkingMemoryChange &wmc);
 
   void setContainmentProperty(const std::string &objectLabel, int placeID, double confidence);
