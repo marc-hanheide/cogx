@@ -63,6 +63,9 @@ module DefaultData
 		/** Returns the names of all the shapes. */
 		StringSeq getShapes();
 
+		/** Returns the names of all the sizes. */
+		StringSeq getSizes();
+
 		/** Returns the names of all the appearances. */
 		StringSeq getAppearances();
 
