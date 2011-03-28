@@ -68,6 +68,7 @@ DisplayNavInPB::DisplayNavInPB()
   previouscenter.assign(3,0.0);
   m_lastLoggedX = DBL_MAX;
   m_lastLoggedY = DBL_MAX;
+  m_currentMostLikelyRoom= "";
 }
 
 
@@ -1176,6 +1177,7 @@ void DisplayNavInPB::runComponent() {
 
       m_Mutex.unlock();
       
+
       // Make sure the server processed what we've sent
       m_PeekabotClient.sync();
 
@@ -1184,7 +1186,6 @@ void DisplayNavInPB::runComponent() {
 	      s.get_error_message().c_str());
       }
       
-
 
       usleep(250000);
     }
@@ -1312,7 +1313,65 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
       m_ProxyPathLog.add_vertices(set);
       m_lastLoggedX = m_RobotPose->x;
       m_lastLoggedY = m_RobotPose->y;
+
+    FrontierInterface::PlaceInterfacePrx agg2(getIceServer<
+			FrontierInterface::PlaceInterface> ("place.manager"));
+
+	NavData::FNodePtr node = new NavData::FNode;
+	SpatialData::PlacePtr place = new SpatialData::Place;
+	place = agg2->getCurrentPlace();
+	if (place) {
+
+		node = agg2->getNodeFromPlaceID(place->id);
+		std::string roomid = lexical_cast<string> (node->areaId);
+
+		ConceptualData::QueryHandlerServerInterfacePrx
+				m_queryHandlerServerInterfacePrx(getIceServer<
+						ConceptualData::QueryHandlerServerInterface> (
+						"conceptual.queryhandler"));
+		ConceptualData::ProbabilityDistributions conceptualProbdist =
+				m_queryHandlerServerInterfacePrx->query("p(*room" + roomid
+						+ "_category)");
+		log("prod dist has: %d", conceptualProbdist.size());
+		if(conceptualProbdist.size() != 0){
+			SpatialProbabilities::ProbabilityDistribution probdist = conceptualProbdist[0];
+			double maxprob = -1;
+			int maxindex = -1;
+			log("massfunction has: %d", probdist.massFunction.size());
+			for (unsigned int i=0; i< probdist.massFunction.size(); i++){
+				if (probdist.massFunction[i].probability > maxprob){
+					maxindex = i;
+					maxprob = probdist.massFunction[i].probability;
+				}
+			}
+			log("maxprob index is: %d", maxindex);
+			SpatialProbabilities::StringRandomVariableValuePtr val = new SpatialProbabilities::StringRandomVariableValue;
+			val = SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[maxindex].variableValues[0]);
+			peekabot::PolylineProxy ProxyPathLogtemp;
+			if(val->value != m_currentMostLikelyRoom){
+				m_currentMostLikelyRoom = val->value;
+				log("Changing line color!");
+				ProxyPathLogtemp.add(m_PeekabotClient, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+			      peekabot::VertexSet set;
+			      set.add(m_RobotPose->x, m_RobotPose->y, 0.01);
+			      ProxyPathLogtemp.add_vertices(set);
+			      ProxyPathLogtemp.set_line_width(5);
+			      m_ProxyPathLog = ProxyPathLogtemp;
+			}
+			int index = -1;
+				double prob = 0.0;
+				for (unsigned int j = 0; j < _roomCategories.size(); ++j) {
+					if (val->value == _roomCategories[j]) {
+						index = j;
+					}
+				}
+				float r,g,b;
+				getColorByIndex(index,r,g,b);
+				m_ProxyPathLog.set_color(r,g,b);
+		}
+	}
     }
+
   }
 }
 
@@ -2161,8 +2220,8 @@ void DisplayNavInPB::connectPeekabot()
 	  m_PbRobotFile.c_str());
       
       if (m_ShowPath) {
-	m_ProxyPathLog.add(m_PeekabotClient, "path_log", peekabot::REPLACE_ON_CONFLICT);
-	m_ProxyPathLog.set_line_width(2);
+	m_ProxyPathLog.add(m_PeekabotClient, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	m_ProxyPathLog.set_line_width(5);
       }
 
       if (m_ShowCommands) {
