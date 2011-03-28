@@ -42,6 +42,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
 
 		virtual DefaultData::StringSeq getShapes(const Ice::Current &);
 
+		virtual DefaultData::StringSeq getSizes(const Ice::Current &);
+
 		virtual DefaultData::StringSeq getAppearances(const Ice::Current &);
 
 		virtual SpatialProbabilities::ProbabilityDistribution
@@ -152,6 +154,9 @@ private:
 	/** List of all the shapes. */
 	std::vector<std::string> _shapes;
 
+	/** List of all the sizes. */
+	std::vector<std::string> _sizes;
+
 	/** List of all the appearances. */
 	std::vector<std::string> _appearances;
 
@@ -171,6 +176,25 @@ private:
 	};
 
 	std::list<DefaultShapePropertyGivenRoomCategory> _defaultShapePropertyGivenRoomCategory;
+
+
+	struct SizePropertyGivenRoomCategory
+	{
+		std::string roomCategory1;
+		std::string sizeProperty;
+		double probability;
+	};
+
+	std::list<SizePropertyGivenRoomCategory> _sizePropertyGivenRoomCategory;
+
+	struct DefaultSizePropertyGivenRoomCategory
+	{
+		std::string sizeProperty;
+		double probability;
+	};
+
+	std::list<DefaultSizePropertyGivenRoomCategory> _defaultSizePropertyGivenRoomCategory;
+
 
 	struct AppearancePropertyGivenRoomCategory
 	{
