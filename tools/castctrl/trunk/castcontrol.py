@@ -85,6 +85,14 @@ class CLogDisplayer:
         # maybe: restart, pullRawLogs-->stream, clearOutput, restart
         pass
 
+class CProcessGroup:
+    def __init__(self, name):
+        self.name = name
+        self.processlist = []
+
+    def addProcess(self, procname):
+        self.processlist.append(procname)
+
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -102,6 +110,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
         self.componentFilter = []
+        self.procGroupA = CProcessGroup("External Servers")
+        self.procGroupB = CProcessGroup("CAST Servers")
+        self.procGroupC = CProcessGroup("CAST Client")
 
         # move option values to UI
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
@@ -386,15 +397,27 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
+        self.procGroupB.addProcess("cast-java")
+        self.procGroupB.addProcess("cast-cpp")
+        self.procGroupB.addProcess("cast-python")
+
         self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
+        self.procGroupC.addProcess("cast-client")
+
         self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
         self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
         self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        self.procGroupA.addProcess("display")
+        self.procGroupA.addProcess("player")
+        self.procGroupA.addProcess("peekabot")
+        self.procGroupA.addProcess("abducer")
+        self.procGroupA.addProcess("mary.tts")
+        self.procGroupA.addProcess("golem")
 
-        p = procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}"))
+        p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
         p.messageProcessor = log4util.CLog4MessageProcessor()
         self._manager.addProcess(p)
 
@@ -465,16 +488,6 @@ class CCastControlWnd(QtGui.QMainWindow):
             print "Failed to save configuration"
             print e
 
-    def getServers(self, manager):
-        srvs = []
-        p = manager.getProcess("cast-java")
-        if p != None: srvs.append(p)
-        p = manager.getProcess("cast-cpp")
-        if p != None: srvs.append(p)
-        p = manager.getProcess("cast-python")
-        if p != None: srvs.append(p)
-        return srvs
-
     def runCleanupScript(self):
         script = []
         for stm in self._options.cleanupScript:
@@ -486,15 +499,13 @@ class CCastControlWnd(QtGui.QMainWindow):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
 
-    def startServers(self, log4):
-        self._options.checkConfigFile()
-        if self.ui.actEnableCleanupScript.isChecked():
-            self.runCleanupScript()
-        srvs = self.getServers(self._manager)
-        for p in srvs: p.start()
+    def startProcesses(self, procGroup):
+        LOGGER.log("Starting %s" % procGroup.name)
+        for name in procGroup.processlist:
+            p = self._manager.getProcess(name)
+            if p: p.start()
 
-        # The client config file was prepared in prepareClientConfig.
-        # We send it to remote agents so they use the same settings.
+        log4 = self._getLog4jConfig()
         log4config = "".join(open(log4.clientConfigFile).readlines())
 
         # XXX Processes could be started for each host separately;  (id=remotestart)
@@ -502,23 +513,50 @@ class CCastControlWnd(QtGui.QMainWindow):
         # ATM we start all processes on all hosts, so the UI can remain unchanged.
         for h in self._remoteHosts:
             h.agentProxy.setLog4jClientProperties(log4config)
-            for p in h.proclist: p.start()
+            for p in h.proclist:
+                if p.name == procman.LOG4J_PROCESS:
+                    continue # log4j server is started separately
+                if not p.name in procGroup.proclist:
+                    continue
+                p.start()
 
-    def stopServers(self):
-        srvs = self.getServers(self._manager)
-        for p in srvs: p.stop()
+
+    def stopProcesses(self, procGroup):
+        LOGGER.log("Stopping %s" % procGroup.name)
+        for name in procGroup.processlist:
+            p = self._manager.getProcess(name)
+            if p: p.stop()
 
         for h in self._remoteHosts: # See <URL:#remotestart>
-            for p in h.proclist: p.stop()
+            for p in h.proclist:
+                if p.name == procman.LOG4J_PROCESS:
+                    continue # log4j server is started separately
+                if not p.name in procGroup.proclist:
+                    continue
+                p.stop()
 
-    # Somehow we get 2 events for a button click ... filter one out
-    def onStartCastServers(self):
+        self.checkStopLog4jServer()
+
+
+    def startServers(self):
+        self._options.checkConfigFile()
         log4 = self._getLog4jConfig()
         hasServer = self.ui.ckRunLog4jServer.isChecked()
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
+        if self.ui.actEnableCleanupScript.isChecked():
+            self.runCleanupScript()
+
+        self.startProcesses(self.procGroupB)
+
+
+    def stopServers(self):
+        self.stopProcesses(self.procGroupB)
+
+
+    def onStartCastServers(self):
         self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-        self.startServers(log4)
+        self.startServers()
         self.ui.processTree.expandAll()
 
     def onStopCastServers(self):
@@ -643,6 +681,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("cast-client")
         if p != None: p.stop()
 
+        self.checkStopLog4jServer()
+
     def _getLog4jConfig(self):
         try:
             log4 = log4util.CLog4Config()
@@ -651,6 +691,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             log4.setServerXmlFileLevel(self._log4jXmlFileLevel)
             log4.setServerPort(self._log4jServerPort)
             # XXX: currently it can only run on localhost; agents have to be modified for remote execution
+            # TODO: option log4j-HOST in log4j config dialog
             log4.serverHost = self._localhost
             return log4
         except Exception as e:
@@ -658,22 +699,41 @@ class CCastControlWnd(QtGui.QMainWindow):
             dlg.setModal(True)
             dlg.showMessage("Had some problems preparing the log file.\n%s" % e)
 
+
+    def startLog4jServer(self):
+        if not self.ui.ckRunLog4jServer.isChecked():
+            return
+
+        # TODO: start the server only if it's not running, yet
+        # TODO: select the host/agent to start the log4j server
+
+        p = self._manager.getProcess(procman.LOG4J_PROCESS)
+        if p != None:
+            log4 = self._getLog4jConfig()
+            log4.prepareServerConfig()
+            LOGGER.log("Log4j STARTING 2")
+            p.start( params = {
+                "LOG4J_PORT": log4.serverPort,
+                "LOG4J_SERVER_CONFIG": log4.serverConfigFile
+                })
+            time.sleep(0.5) # give the server time to start before the others start
+
+
+    def checkStopLog4jServer(self):
+        if not self.ui.ckRunLog4jServer.isChecked():
+            return
+        # Stop it if all other processes were stopped
+        pass
+
+
     def onStartExternalServers(self):
         self._options.checkConfigFile()
         log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        if self.ui.ckRunLog4jServer.isChecked():
-            p = self._manager.getProcess("log4jServer")
-            if p != None:
-                log4.prepareServerConfig()
-                LOGGER.log("Log4j STARTING 2")
-                p.start( params = {
-                    "LOG4J_PORT": log4.serverPort,
-                    "LOG4J_SERVER_CONFIG": log4.serverConfigFile
-                    })
-                time.sleep(0.5) # give the server time to start before the others start
+        self.startLog4jServer()
+
+        hasServer = self.ui.ckRunLog4jServer.isChecked() # TODO: or ckUseLog4jServer.isChecked()
+        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
         if self.ui.ckRunPlayer.isChecked():
             p = self._manager.getProcess("player")
@@ -699,21 +759,16 @@ class CCastControlWnd(QtGui.QMainWindow):
             p = self._manager.getProcess("mary.tts")
             if p != None: p.start()
 
+
     def onStopExternalServers(self):
-        p = self._manager.getProcess("player")
+        self.stopProcesses(self.procGroupA)
+
+        # TODO: this should be moved to checkStopLog4jServer
+        p = self._manager.getProcess(procman.LOG4J_PROCESS)
         if p != None: p.stop()
-        p = self._manager.getProcess("golem")
-        if p != None: p.stop()
-        p = self._manager.getProcess("peekabot")
-        if p != None: p.stop()
-        p = self._manager.getProcess("log4jServer")
-        if p != None: p.stop()
-        p = self._manager.getProcess("display")
-        if p != None: p.stop()
-        p = self._manager.getProcess("abducer")
-        if p != None: p.stop()
-        p = self._manager.getProcess("mary.tts")
-        if p != None: p.stop()
+
+        self.checkStopLog4jServer()
+
 
     def _checkBuidDir(self):
         workdir=self._options.xe("${COGX_BUILD_DIR}")
