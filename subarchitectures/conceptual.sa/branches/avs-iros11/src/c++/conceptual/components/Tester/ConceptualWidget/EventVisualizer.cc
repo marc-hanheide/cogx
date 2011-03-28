@@ -324,9 +324,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				sizeAdded = true;
 		if (sizeAdded)
 		{
-			scene->addLine(e*resultWidth, (rowCount+0.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+0.5)*rowHeight+markPlusSize/2.0,
+			scene->addLine(e*resultWidth, (rowCount+1.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+1.5)*rowHeight+markPlusSize/2.0,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
-			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+0.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+0.5)*rowHeight,
+			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+1.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+1.5)*rowHeight,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
 		}
 		bool sizeChanged = false;
@@ -335,7 +335,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				sizeChanged = true;
 		if (sizeChanged)
 		{
-			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+0.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+1.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 					QPen(), QBrush(qRgb(0,0,0)));
 		}
 		// Appearance events
@@ -345,9 +345,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				appearanceAdded = true;
 		if (appearanceAdded)
 		{
-			scene->addLine(e*resultWidth, (rowCount+1.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+1.5)*rowHeight+markPlusSize/2.0,
+			scene->addLine(e*resultWidth, (rowCount+2.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+2.5)*rowHeight+markPlusSize/2.0,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
-			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+1.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+1.5)*rowHeight,
+			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+2.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+2.5)*rowHeight,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
 		}
 		bool appearanceChanged = false;
@@ -356,7 +356,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				appearanceChanged = true;
 		if (appearanceChanged)
 		{
-			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+1.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+2.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 					QPen(), QBrush(qRgb(0,0,0)));
 		}
 		// Object events
@@ -366,9 +366,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				objectAdded = true;
 		if (objectAdded)
 		{
-			scene->addLine(e*resultWidth, (rowCount+2.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+2.5)*rowHeight+markPlusSize/2.0,
+			scene->addLine(e*resultWidth, (rowCount+3.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+3.5)*rowHeight+markPlusSize/2.0,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
-			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+2.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+2.5)*rowHeight,
+			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+3.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+3.5)*rowHeight,
 					QPen(QBrush("black"), 2, Qt::SolidLine));
 		}
 		bool objectChanged = false;
@@ -377,7 +377,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 				objectChanged = true;
 		if (objectChanged)
 		{
-			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+2.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+3.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 					QPen(), QBrush(qRgb(0,0,0)));
 		}
 
@@ -391,10 +391,10 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	if (placeIds)
 	{
 		text = scene->addSimpleText(QString::number(curPlace), smallFont);
-		text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, (rowCount+3)*rowHeight);
+		text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, (rowCount+4)*rowHeight);
 	}
 	text = scene->addSimpleText(QString::number(curRoom), defaultFont);
-	text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+4)*rowHeight);
+	text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+5)*rowHeight);
 
 
 	// Start
@@ -421,9 +421,9 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<sizeCount; ++i)
 	{
-		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(_sizes[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
 	}
 
 	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount+sizeCount)*rowHeight,
