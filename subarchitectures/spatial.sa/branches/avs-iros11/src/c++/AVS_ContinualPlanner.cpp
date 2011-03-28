@@ -525,6 +525,7 @@ void AVS_ContinualPlanner::generateViewCones(
 					pdfmass, m_templateRoomGridMaps[newVPCommand->roomId]);
 			normalizePDF(*m_objectBloxelMaps[id], pdfmass);
 		}
+		m_conedepth = 2;
 
 	} else if (newVPCommand->relation == SpatialData::INROOM && !alreadyGenerated) {
 		log("Searching in the room, assuming uniform probability");
@@ -1388,6 +1389,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 	}
 	if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
+		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 				m_currentProcessConeGroup->status = SpatialData::FAILED;
 				log("Overwriting command to change status to: FAILED");
 				overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
