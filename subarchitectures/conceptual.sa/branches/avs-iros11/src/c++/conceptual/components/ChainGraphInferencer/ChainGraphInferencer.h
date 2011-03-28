@@ -108,7 +108,9 @@ private:
 			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
 			const std::string &supportObjectId, double beta);
 	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
+	void createDaiSizePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
+	void createDaiObservedSizePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedAppearancePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 
@@ -225,6 +227,7 @@ private:
 	double _freespacePlaceholderRate;
 
 	bool _addUnobservedShape;
+	bool _addUnobservedSize;
 	bool _addUnobservedAppearance;
 	std::vector<std::string> _addUnobservedObjects;
 
@@ -245,6 +248,9 @@ private:
 
 	/** Names of all shapes. */
 	DefaultData::StringSeq _shapes;
+
+	/** Names of all sizes. */
+	DefaultData::StringSeq _sizes;
 
 	/** Names of all appearances. */
 	DefaultData::StringSeq _appearances;

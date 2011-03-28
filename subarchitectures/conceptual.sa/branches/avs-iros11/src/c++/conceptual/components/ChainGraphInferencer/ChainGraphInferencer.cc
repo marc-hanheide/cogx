@@ -90,6 +90,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_freespacePlaceholderRate = 300;
 	_inferPlaceholderProperties = (_config.find("--infer-placeholder-properties") != _config.end());
 	_addUnobservedShape = (_config.find("--add-unobserved-shape") != _config.end());
+	_addUnobservedSize = (_config.find("--add-unobserved-size") != _config.end());
 	_addUnobservedAppearance = (_config.find("--add-unobserved-appearance") != _config.end());
 	if((it = _config.find("--add-unobserved-objects")) != _config.end())
 		boost::split(_addUnobservedObjects, it->second, is_any_of(", "));
@@ -865,6 +866,128 @@ void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::createDaiSizePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
+{
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,size_property)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string sizePropVarName = "place"+lexical_cast<string>(placeId)+"_size_property";
+
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), sizePropVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	createDaiVariable(sizePropVarName, _sizes);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[sizePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Check if the variables in the factor are order the way they should
+	bool switchVars=false;
+	if (daiFactor.vars().elements()[0].label() != dv1.var.label())
+	{
+		switchVars=true;
+		DaiVariable &tmp = dv1;
+		dv1=dv2;
+		dv2=tmp;
+	}
+
+	// Note: first variable changes faster
+	// Go over the second variable
+	int index=0;
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
+	{
+		// Go over the first variable
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
+		{
+			string roomCategory;
+			string size;
+			if (switchVars)
+			{
+				roomCategory = dv2.valueIdToName[i2];
+				size = dv1.valueIdToName[i1];
+			}
+			else
+			{
+				roomCategory = dv1.valueIdToName[i1];
+				size = dv2.valueIdToName[i2];
+			}
+
+			double potential = getProbabilityValue(factor, roomCategory, size);
+			if (potential<0)
+				throw CASTException(exceptionMessage(__HERE__,
+						"Potential not found for values '%s' and '%s'", roomCategory.c_str(), size.c_str()));
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedSizePropertyFactor(int placeId,
+		ConceptualData::ValuePotentialPairs dist)
+{
+	string sizePropVarName = "place"+lexical_cast<string>(placeId)+"_size_property";
+
+	debug("Creating DAI observed size property factor for variable '%s'",
+			sizePropVarName.c_str());
+
+	// Create variables
+	createDaiVariable(sizePropVarName, _sizes);
+	DaiVariable &dv = _variableNameToDai[sizePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dv.var );
+
+	int index=0;
+	for (unsigned int i = 0; i<dv.var.states(); ++i)
+	{
+		// Find probability for the size
+		string size = _sizes[i];
+		double potential = -1;
+		for (unsigned int j=0; j<dist.size(); ++j)
+		{
+			if (dist[j].value == size)
+			{
+				potential = dist[j].potential;
+				break;
+			}
+		}
+		if (potential<0)
+		{
+			log("Warning: Can't find potential for a size %s while building observed size property DAI factor!"
+					"This probably means that the size value is not present in the model for this property.",
+					size.c_str());
+			potential=0.01;
+		}
+		daiFactor.set(index, potential);
+		++index;
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedSizePropertyFactor");
+
+}
+
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
 {
 	// Get the default connectivity factor
@@ -1033,6 +1156,18 @@ void ChainGraphInferencer::addDaiFactors()
 			if ( (pi.shapeProperties.empty()) && (_addUnobservedShape) )
 			{
 				createDaiShapePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+			}
+
+			// Size properties
+			for (unsigned int s=0; s<pi.sizeProperties.size(); ++s)
+			{
+				const ConceptualData::SizePlacePropertyInfo &sppi = pi.sizeProperties[s];
+				createDaiSizePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiObservedSizePropertyFactor(pi.placeId, sppi.distribution);
+			} // s
+			if ( (pi.sizeProperties.empty()) && (_addUnobservedSize) )
+			{
+				createDaiSizePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
 			}
 
 			// Appearance properties
@@ -1676,6 +1811,8 @@ void ChainGraphInferencer::getDefaultKnowledge()
 		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
 	_shapes =
 		_defaultChainGraphInferencerServerInterfacePrx->getShapes();
+	_sizes =
+		_defaultChainGraphInferencerServerInterfacePrx->getSizes();
 	_appearances =
 		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
 
@@ -1708,6 +1845,14 @@ void ChainGraphInferencer::getDefaultKnowledge()
 
 	// Get the room1_category -> shape_property factor
 	factorStr = "f(room_category1,shape_property)";
+	_defaultKnowledgeFactors[factorStr] =
+			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException(exceptionMessage(__HERE__,
+				"Did not receive information from Default.SA. Is everything started?"));
+
+	// Get the room1_category -> size_property factor
+	factorStr = "f(room_category1,size_property)";
 	_defaultKnowledgeFactors[factorStr] =
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
