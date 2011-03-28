@@ -582,8 +582,8 @@ void AVS_ContinualPlanner::generateViewCones(
 	//Todo: and generateViewCones based on this
     if(m_usePeekabot){
       log("Displaying PDF Map in PB.");
-     // pbVis->AddPDF(*m_objectBloxelMaps[id]);
-   //   pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap");
+      pbVis->AddPDF(*m_objectBloxelMaps[id], true);
+      pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId], "roommap", true);
     }
 	log("getting cones..");
 
@@ -1449,6 +1449,7 @@ void AVS_ContinualPlanner::MovePanTilt(double pan, double tilt, double tolerance
 		double actualtilt = ptuPose.pose.tilt;
 
 		while (run) {
+
 			m_ptzInterface->setPose(p);
 			ptuPose = m_ptzInterface->getPose();
 			actualpan = ptuPose.pose.pan;
@@ -1698,9 +1699,8 @@ AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object 
 	}
 
 void AVS_ContinualPlanner::displayPDF(BloxelMap map){
-//	pbVis->AddPDF(map);
+//	pbVis->AddPDF(map,true);
 }
-
 
 
 } //namespace
