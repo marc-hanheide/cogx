@@ -20,6 +20,7 @@
 #include "Scan2dReceiver.hpp"
 #include "SpatialProbabilities.hpp"
 #include "SpatialProperties.hpp"
+#include "ConceptualData.hpp"
 
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
@@ -203,6 +204,7 @@ private:
 	int m_CurrPersonId;
 	double m_lastLoggedX;
 	double m_lastLoggedY;
+	std::string m_currentMostLikelyRoom;
 
 
 	std::vector<PersonData> m_People; // The people that are currently in view
