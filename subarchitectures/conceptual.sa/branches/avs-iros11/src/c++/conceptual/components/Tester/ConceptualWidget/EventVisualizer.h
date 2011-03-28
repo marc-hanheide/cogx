@@ -16,7 +16,7 @@ class EventVisualizer : public QDialog
 
 public:
     EventVisualizer(QWidget *parent,
-    		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
+    		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes, const std::vector<std::string> &sizes,
 			const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects);
     ~EventVisualizer();
 
@@ -46,6 +46,7 @@ private:
 
 	const std::vector<std::string> &_roomCats;
 	const std::vector<std::string> &_shapes;
+	const std::vector<std::string> &_sizes;
 	const std::vector<std::string> &_appearances;
 	const std::vector<std::string> &_visualizedObjects;
 

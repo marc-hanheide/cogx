@@ -166,6 +166,8 @@ std::string GraphDialog::getFactorColor(std::string factorName)
 		return "#F08080"; // LightCoral
 	else if (factorName == "f(room_category1,shape_property)")
 		return "#98FB98"; // PaleGreen
+	else if (factorName == "f(room_category1,size_property)")
+		return "#FF69B4"; // HotPink
 	else if (factorName == "f(room_category1,appearance_property)")
 		return "#ADD8E6"; // LightBlue
 	else if (wildcmp("f(room*_category,room*_object_*_unexplored)", factorName.c_str()))
@@ -174,6 +176,8 @@ std::string GraphDialog::getFactorColor(std::string factorName)
 		return "#FFA500"; // Orange
 	else if (factorName == "ObservedShapePropertyFactor")
 		return "#98FB98"; // PaleGreen
+	else if (factorName == "ObservedSizePropertyFactor")
+		return "#FF69B4"; // HotPink
 	else if (factorName == "ObservedAppearancePropertyFactor")
 		return "#ADD8E6"; // LightBlue
 
@@ -187,6 +191,8 @@ std::string GraphDialog::getVariableColor(std::string factorName)
 		return "#F08080"; // LightCoral
 	else if (wildcmp("place*_shape_property", factorName.c_str()))
 		return "#98FB98"; // PaleGreen
+	else if (wildcmp("place*_size_property", factorName.c_str()))
+		return "#FF69B4"; // HotPink
 	else if (wildcmp("place*_appearance_property", factorName.c_str()))
 		return "#ADD8E6"; // LightBlue
 	else if (wildcmp("room*_object_*_unexplored", factorName.c_str()))

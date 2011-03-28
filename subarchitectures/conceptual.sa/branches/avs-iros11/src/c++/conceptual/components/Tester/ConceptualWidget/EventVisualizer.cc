@@ -11,9 +11,9 @@ using namespace conceptual;
 
 
 EventVisualizer::EventVisualizer(QWidget *parent,
-		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes,
+		const std::vector<std::string> &roomCats, const std::vector<std::string> &shapes, const std::vector<std::string> &sizes,
 		const std::vector<std::string> &appearances, const std::vector<std::string> &visualizedObjects)
-    : QDialog(parent), _roomCats(roomCats), _shapes(shapes),
+    : QDialog(parent), _roomCats(roomCats), _shapes(shapes), _sizes(sizes),
       _appearances(appearances), _visualizedObjects(visualizedObjects), _curPlaceId(0)
 {
 	ui.setupUi(this);
@@ -82,10 +82,12 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	unsigned int objectCount = _visualizedObjects.size();
 	unsigned int roomCatCount = _roomCats.size();
 	unsigned int shapeCount = _shapes.size();
+	unsigned int sizeCount = _sizes.size();
 	unsigned int appearanceCount = _appearances.size();
-	unsigned int rowCount = roomCatCount+shapeCount+appearanceCount+objectCount;
+	unsigned int rowCount = roomCatCount+shapeCount+sizeCount+appearanceCount+objectCount;
 	unsigned int roomCatCountReal = 0;
 	unsigned int shapeCountReal = 0;
+	unsigned int sizeCountReal = 0;
 	unsigned int appearanceCountReal = 0;
 	unsigned int objectsCountReal = 0;
 
@@ -104,6 +106,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	std::vector<int> groundTruthRows;
 	std::vector<int> mapRows;
 	std::vector<int> mapShapeRows;
+	std::vector<int> mapSizeRows;
 	std::vector<int> mapAppearanceRows;
 	std::vector<ConceptualData::EventInfo> accumulatedInfos;
 	for (long _e=0; _e<events.size(); ++_e)
@@ -130,6 +133,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		// Events
 		roomCatCountReal = event.curRoomCategories.size();
 		shapeCountReal = event.curShapes.size();
+		sizeCountReal = event.curSizes.size();
 		appearanceCountReal = event.curAppearances.size();
 		objectsCountReal = event.curObjects.size();
 
@@ -179,8 +183,29 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		mapShapeRows.push_back(mapIndex);
 
 
+		// Draw sizes
+		row = roomCatCount+ shapeCount;
+		mapIndex = -1;
+		mapValue = -1;
+		for(unsigned int i=0; i<sizeCountReal; ++i)
+		{
+			double prob = event.curSizes[i];
+			if (prob>mapValue)
+			{
+				mapValue = prob;
+				mapIndex = i;
+			}
+			scene->addRect(e*resultWidth, row*rowHeight, resultWidth, rowHeight,
+					(verticalLines)?QPen():QPen(Qt::NoPen), getBrushForProbability(prob));
+			row++;
+		}
+		// Add map
+		mapSizeRows.push_back(mapIndex);
+
+
+
 		// Draw appearances
-		row = roomCatCount + shapeCount;
+		row = roomCatCount + shapeCount + sizeCount;
 		mapIndex = -1;
 		mapValue = -1;
 		for(unsigned int i=0; i<appearanceCountReal; ++i)
@@ -199,7 +224,7 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		mapAppearanceRows.push_back(mapIndex);
 
 		// Draw objects
-		row = roomCatCount + shapeCount + appearanceCount;
+		row = roomCatCount + shapeCount + appearanceCount + sizeCount;
 		for(unsigned int i=0; i<objectsCountReal; ++i)
 		{
 			double prob = event.curObjects[i];
@@ -292,6 +317,27 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+0.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 					QPen(), QBrush(qRgb(0,0,0)));
 		}
+		// Size events
+		bool sizeAdded = false;
+		for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
+			if (accumulatedInfos[i].type==ConceptualData::EventSizePlacePropertyAdded)
+				sizeAdded = true;
+		if (sizeAdded)
+		{
+			scene->addLine(e*resultWidth, (rowCount+0.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+0.5)*rowHeight+markPlusSize/2.0,
+					QPen(QBrush("black"), 2, Qt::SolidLine));
+			scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+0.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+0.5)*rowHeight,
+					QPen(QBrush("black"), 2, Qt::SolidLine));
+		}
+		bool sizeChanged = false;
+		for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
+			if (accumulatedInfos[i].type==ConceptualData::EventSizePlacePropertyChanged)
+				sizeChanged = true;
+		if (sizeChanged)
+		{
+			scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+0.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+					QPen(), QBrush(qRgb(0,0,0)));
+		}
 		// Appearance events
 		bool appearanceAdded = false;
 		for (unsigned int i=0; i<accumulatedInfos.size(); ++i)
@@ -370,24 +416,34 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 		text = scene->addSimpleText(QString::fromStdString(_shapes[i]), defaultFont);
 		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
 	}
+
 	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<sizeCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString(_sizes[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
+	}
+
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount+sizeCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<appearanceCount; ++i)
 	{
-		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,
-				resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount)*rowHeight,
+				resultWidth*e,(i+roomCatCount+shapeCount+sizeCount)*rowHeight, stdPen); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(_appearances[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount)*rowHeight);
 	}
-	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+appearanceCount)*rowHeight,resultWidth*e,
-			(roomCatCount+shapeCount+appearanceCount)*rowHeight,
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,resultWidth*e,
+			(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<objectCount; ++i)
 	{
-		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+appearanceCount)*rowHeight,
-				resultWidth*e,(i+roomCatCount+shapeCount+appearanceCount)*rowHeight, stdPen); // Horizontal line
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
+				resultWidth*e,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight, stdPen); // Horizontal line
 		text = scene->addSimpleText(QString::fromStdString(_visualizedObjects[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+appearanceCount)*rowHeight);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight);
 	}
 	// Events
 	scene->addLine(-horizSeparator,rowCount*rowHeight,resultWidth*e,rowCount*rowHeight,
@@ -395,23 +451,26 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	text = scene->addSimpleText("shape", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, rowCount*rowHeight);
 	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight,resultWidth*e,(rowCount+1)*rowHeight, stdPen);
-	text = scene->addSimpleText("appearance", defaultFont);
+	text = scene->addSimpleText("size", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+1)*rowHeight);
 	scene->addLine(-categorySeparator,(rowCount+2)*rowHeight,resultWidth*e,(rowCount+2)*rowHeight, stdPen);
-	text = scene->addSimpleText("object", defaultFont);
+	text = scene->addSimpleText("appearance", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+2)*rowHeight);
 	scene->addLine(-categorySeparator,(rowCount+3)*rowHeight,resultWidth*e,(rowCount+3)*rowHeight, stdPen);
-	text = scene->addSimpleText("place", defaultFont);
+	text = scene->addSimpleText("object", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+3)*rowHeight);
 	scene->addLine(-categorySeparator,(rowCount+4)*rowHeight,resultWidth*e,(rowCount+4)*rowHeight, stdPen);
-	text = scene->addSimpleText("room", defaultFont);
+	text = scene->addSimpleText("place", defaultFont);
 	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+4)*rowHeight);
-	scene->addLine(-horizSeparator,(rowCount+5)*rowHeight,resultWidth*e,(rowCount+5)*rowHeight,
+	scene->addLine(-categorySeparator,(rowCount+5)*rowHeight,resultWidth*e,(rowCount+5)*rowHeight, stdPen);
+	text = scene->addSimpleText("room", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+5)*rowHeight);
+	scene->addLine(-horizSeparator,(rowCount+6)*rowHeight,resultWidth*e,(rowCount+6)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	// Starting and ending vertical line
-	scene->addLine(0,-eventSeparator,0,rowHeight*(rowCount+5), QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
-	scene->addLine((e)*resultWidth,-eventSeparator,(e)*resultWidth,rowHeight*(rowCount+5),
+	scene->addLine(0,-eventSeparator,0,rowHeight*(rowCount+6), QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	scene->addLine((e)*resultWidth,-eventSeparator,(e)*resultWidth,rowHeight*(rowCount+6),
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	// Groundtruth
@@ -444,9 +503,13 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 	{
 		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+mapShapeRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
 	}
+	for (unsigned int i=0; i<mapSizeRows.size(); ++i)
+	{
+		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+shapeCount+mapSizeRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
+	}
 	for (unsigned int i=0; i<mapAppearanceRows.size(); ++i)
 	{
-		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+shapeCount+mapAppearanceRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
+		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+shapeCount+sizeCount+mapAppearanceRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
 	}
 
 	ui.graphicsView->setScene(scene);

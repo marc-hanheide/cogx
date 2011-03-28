@@ -78,6 +78,9 @@ private:
 	void shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
+	void sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
 	void appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
@@ -119,6 +122,9 @@ private:
 
 	/** Returns all object properties of the place. */
 	void getShapePlaceProperties(int placeId, std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties);
+
+	/** Returns all object properties of the place. */
+	void getSizePlaceProperties(int placeId, std::vector<SpatialProperties::RoomSizePlacePropertyPtr> &properties);
 
 	/** Returns all gateway properties of the placeholder. */
 	void getGatewayPlaceholderProperties(int placeId, std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> &properties);
@@ -165,6 +171,9 @@ private:
 	/** Map of place wmAddress -> ShapePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _shapePlacePropertyWmAddressMap;
 
+	/** Map of place wmAddress -> SizePlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr> _sizePlacePropertyWmAddressMap;
+
 	/** Map of place wmAddress -> AppearancePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearancePlacePropertyWmAddressMap;
 
@@ -190,6 +199,7 @@ private:
 	double _lastWsUpdateTime;
 
 	double _shapeThreshold;
+	double _sizeThreshold;
 	double _appearanceThreshold;
 	double _gatewayThreshold;
 	double _associatedSpaceThreshold;

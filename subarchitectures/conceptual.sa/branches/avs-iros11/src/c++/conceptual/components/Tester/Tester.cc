@@ -132,11 +132,14 @@ void Tester::runComponent()
 		_defaultChainGraphInferencerServerInterfacePrx->getRoomCategories();
 	_shapes =
 		_defaultChainGraphInferencerServerInterfacePrx->getShapes();
+	_sizes =
+		_defaultChainGraphInferencerServerInterfacePrx->getSizes();
 	_appearances =
 		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
 	// Sort room categories for nice display
 	sort (_roomCategories.begin(), _roomCategories.end());
 	sort (_shapes.begin(), _shapes.end());
+	sort (_sizes.begin(), _sizes.end());
 	sort (_appearances.begin(), _appearances.end());
 
 	QCoreApplication *app = QApplication::instance();
