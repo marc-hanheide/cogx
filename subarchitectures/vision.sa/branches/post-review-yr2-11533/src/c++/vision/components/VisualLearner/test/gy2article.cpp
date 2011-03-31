@@ -185,6 +185,43 @@ void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _conf
       ss >> m_currentTest;
       if (m_currentTest < 0) m_currentTest = 0;
    }
+
+   int tm;
+   // CONFIG: --wait-object-on
+   // TYPE: integer
+   // Seconds to wait for the scene to settle when the object appears.
+   m_delayObjectOn = 5;
+   if((it = _config.find("--wait-object-on")) != _config.end())
+   {
+      istringstream ss(it->second);
+      ss >> tm;
+      if (tm < 0) tm = 0;
+      m_delayObjectOn = tm;
+   }
+
+   // CONFIG: --wait-object-off
+   // TYPE: integer
+   // Seconds to wait before removing the object from the scene (so that visual objects can be released)
+   m_delayObjectOff = 5;
+   if((it = _config.find("--wait-object-off")) != _config.end())
+   {
+      istringstream ss(it->second);
+      ss >> tm;
+      if (tm < 0) tm = 0;
+      m_delayObjectOff = tm;
+   }
+
+   // CONFIG: --timeout-learning-task
+   // TYPE: integer
+   // Timeout in seconds before the tutor aborts waiting for the learning task
+   m_timeoutLearningTask = 20;
+   if((it = _config.find("--timeout-learning-task")) != _config.end())
+   {
+      istringstream ss(it->second);
+      ss >> tm;
+      if (tm < 0) tm = 0;
+      m_timeoutLearningTask = tm;
+   }
 }
 
 void CGeorgeY2Article::onStart()
@@ -304,20 +341,20 @@ void CGeorgeY2Article::switchState(int newState)
          timeout = 20;
          break;
       case stUnloadScene:
-         if (m_ObjectCount) enterWait = 5; // Something may still be using the VO
+         if (m_ObjectCount) enterWait = m_delayObjectOff; // Something may still be using the VO
          break;
       case stTableEmpty:
          enterWait = 2;
          break;
       case stObjectOn:
-         enterWait = 5;  // maybe something else will appear
+         enterWait = m_delayObjectOn;  // maybe something else will appear
          break;
       case stTeaching:
          enterWait = 1;  // wait a little between consecutive teaching statemetns
-         timeout = 10;   // If the number of objects isn't 1, we don't teach and wait
+         timeout = 10;   // If the number of objects isn't 1, we don't teach and we wait for timeout
          break;
       case stWaitForLearningTask: // Motivation/Planner/Execution
-         timeout = 120;  // time-to-appear increases with running time :(
+         timeout = m_timeoutLearningTask; // time-to-appear increases with running time :(
          break;
    }
    m_waitOnEnter = now() + enterWait;
