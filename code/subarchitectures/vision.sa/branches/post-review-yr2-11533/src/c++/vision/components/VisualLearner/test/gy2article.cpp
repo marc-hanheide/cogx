@@ -43,7 +43,7 @@ CGeorgeY2Article::CGeorgeY2Article(string name, CTestRecognizer *pOwner)
    m_imageDir = "";
    m_currentTest = 0;
    options["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
-   options["video.sa"] = pOwner->getSubarchitectureID(); // change with --video-sa
+   options["vision.sa"] = pOwner->getSubarchitectureID(); // change with --vision-sa
    m_timeout = now();
    m_waitOnEnter = now();
 
@@ -164,16 +164,16 @@ void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _conf
       else options["dialogue.sa"] = it->second;
    }
 
-   // CONFIG: --video-sa
+   // CONFIG: --vision-sa
    // TYPE: string (subarchitecture-id)
    // DEFAULT: ""
-   // The subarchitecture id in which the OpenCvImgSeqServer video server is running.
-   // The default is empty which means that the video server is running in the same
-   // SA as this component.
-   if((it = _config.find("--video-sa")) != _config.end())
+   // The subarchitecture id in which SOIFilter, PlanePopout and OpenCvImgSeqServer
+   // video server are running. The default is empty which means that the components
+   // are running in the same SA as this component.
+   if((it = _config.find("--vision-sa")) != _config.end())
    {
-      if (it->second == "") options["video.sa"] = m_pOwner->getSubarchitectureID();
-      else options["video.sa"] = it->second;
+      if (it->second == "") options["vision.sa"] = m_pOwner->getSubarchitectureID();
+      else options["vision.sa"] = it->second;
    }
 
    // CONFIG: --start-number
@@ -412,7 +412,7 @@ void CGeorgeY2Article::blockVisualObjectUpdates(bool enable)
    pRpc->argmap["enable"] = enable ? "true" : "false";
 
    cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = options["video.sa"];
+   addr.subarchitecture = options["vision.sa"];
    addr.id = m_pOwner->newDataID();
    m_pOwner->addToWorkingMemory(addr, pRpc);
 
@@ -438,7 +438,7 @@ void CGeorgeY2Article::loadScene()
    pseq->repeatFrame = 5;
 
    cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = options["video.sa"];
+   addr.subarchitecture = options["vision.sa"];
    addr.id = m_pOwner->newDataID();
 
    m_pOwner->addToWorkingMemory(addr, pseq);
@@ -456,7 +456,7 @@ void CGeorgeY2Article::loadEmptyScene()
    pseq->repeatFrame = 5;
 
    cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = options["video.sa"];
+   addr.subarchitecture = options["vision.sa"];
    addr.id = m_pOwner->newDataID();
 
    m_pOwner->addToWorkingMemory(addr, pseq);
