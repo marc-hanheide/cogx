@@ -21,6 +21,9 @@ SETVAR gy2test_params=<multiline>
    # objects can be released)
    # --wait-object-off 5
    #
+   # This will create a PENDING plan when learning the second object
+   # --wait-object-on 0 --wait-object-off 0
+   #
    # Timeout in seconds before the tutor aborts waiting for the learning task
    # --timeout-learning-task 20
    #
@@ -38,5 +41,7 @@ SETVAR gy2test_video_params=<multiline>
    --files "%(gy2test_image_dir)/empty-l.png  %(gy2test_image_dir)/empty-r.png"
    --start 0 --end 0
    --framerate_ms 100 --repeat-frame 10
+   # the OpenCvImgSeqServer will receive requests through WM
+   --wminterface
 </multiline>
 CPP MG videoserver OpenCvImgSeqServer %(gy2test_video_params)
