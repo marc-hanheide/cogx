@@ -1,10 +1,18 @@
 # CAST config file
+# HOSTNAME  localhost     192.168.33.129
+#HOSTNAME  Main          localhost
+#HOSTNAME  PlayerHost    [Main]
+#HOSTNAME  PeekabotHost  [Main]
+#HOSTNAME  DisplayHost   [Main]
+
+#HOST      [Main]
 HOST localhost
 
 COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log --displayserver "display.srv" --nodot
 INCLUDE georgeY2-vision-srv.incl
 
 ####################################################################################################################
+# SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
 SETVAR displaysrv_param_redirect=--redirect-to-host localhost
 INCLUDE ../includes/visualization.sa/v11n-base-p.cast
 
@@ -21,7 +29,8 @@ INCLUDE ../includes/binder.sa/binder-base.cast
 ####################################################################################################################
 INCLUDE ../includes/planner.sa/planner-base.cast
 
-CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "plandir=subarchitectures/planner.sa/src/python"  --monitor "CurrentPlan=dot:%(plandir)/{plan*.dot}"
+SETVAR fmdc_plandir=subarchitectures/planner.sa/src/python
+CPP MG filemon.planner FileMonitorDC --displayserver "display.srv" --monitor "CurrentPlan=dot:%(fmdc_plandir)/{plan*.dot}"
 
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,GainFilter,MinAgeFilter,LimitTriesFilter" --min-gain 0.2 --min-age 5000 --max-tries 1 --log
 
@@ -54,7 +63,7 @@ JAVA MG execution.dialogue dialogue.execution.DialogueActionInterface
 # Monitors
 
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" # --generic-col
 JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
 JAVA MG speechdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem" --generic-col
