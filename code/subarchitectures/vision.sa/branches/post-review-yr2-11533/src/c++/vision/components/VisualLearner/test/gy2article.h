@@ -40,6 +40,7 @@ struct CTestEntry
 // of objects and tell it about these objects.
 class CGeorgeY2Article: public CTestCase
 {
+private:
    void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
@@ -66,6 +67,14 @@ class CGeorgeY2Article: public CTestCase
    std::map<int, std::string> m_stateNames;
    int m_State;
    IceUtil::Monitor<IceUtil::Mutex> m_EventMonitor; // WM Events can trigger state changes
+
+private:
+   // configuration
+   int m_delayObjectOn;
+   int m_delayObjectOff;
+   int m_timeoutLearningTask;
+
+private:
    void switchState(int newState);
    void verifyCount(int count);
    CTestEntry* getCurrentTest();

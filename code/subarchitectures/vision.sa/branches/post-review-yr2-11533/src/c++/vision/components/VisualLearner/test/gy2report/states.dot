@@ -25,25 +25,25 @@ digraph G {
 		{ opLoadScene } -> {stWaitToAppear }
 		{ stTableEmpty } -> { stFinished } [ label="No more tests" ]
 		{ stWaitToAppear } -> { stObjectOn }
-		{ stWaitToAppear } -> { stTimedOut } [ taillabel="to=20" labelfontcolor="red" ]
-		{ stObjectOn } -> { stTeaching } [ taillabel="wait=5" label="lock-VO" labelfontcolor="blue" ]
+		{ stWaitToAppear } -> { stTimedOut } /*TIME [ taillabel="to=20" labelfontcolor="red" ] */
+		{ stObjectOn } -> { stTeaching } [ /*TIME taillabel="wait=5" */ label="lock-VO" labelfontcolor="blue" ]
 		{ stTeaching } -> { opDescribe } [ label="Exactly 1 object,\nKnown attribute" ]
 		{ stTeaching } -> { opSayHi } [ label="No Attribute" ]
 		{ opDescribe } -> { stWaitForResponse } 
 		{ opSayHi } -> { stWaitForResponse2 }
 		{ stTeaching } -> { stEndOfTeaching }
-		{ stTeaching } -> { stTimedOut } [taillabel="to=10" labelfontcolor="red"]
+		{ stTeaching } -> { stTimedOut } /*TIME [taillabel="to=10" labelfontcolor="red"] */
 		{ stWaitForResponse } -> { stWaitForLearningTask } [ label="Got Response" ]
-		{ stWaitForResponse } -> { stTimedOut } [ taillabel="to=15"  labelfontcolor="red"] 
+		{ stWaitForResponse } -> { stTimedOut } /*TIME [ taillabel="to=15"  labelfontcolor="red"] */
 		{ stWaitForResponse2 } -> { stTeaching }
-		{ stWaitForResponse2 } -> { stTimedOut } [ taillabel="to=15"  labelfontcolor="red"] 
+		{ stWaitForResponse2 } -> { stTimedOut } /*TIME [ taillabel="to=15"  labelfontcolor="red"] */
 		{ stWaitForLearningTask } -> { stTeaching } [ label="Got LearningTask" ]
-		{ stWaitForLearningTask } -> { stTimedOut } [ taillabel="to=120"  labelfontcolor="red"]
+		{ stWaitForLearningTask } -> { stTimedOut } /*TIME [ taillabel="to=120"  labelfontcolor="red"] */
 		{ stEndOfTeaching } -> { stUnloadScene }
-		{ stUnloadScene } -> { opUnloadScene } [ taillabel="wait=5" label="unlock-VO" labelfontcolor="blue" ]
+		{ stUnloadScene } -> { opUnloadScene } [ /*TIME taillabel="wait=5" */ label="unlock-VO" labelfontcolor="blue" ]
 		{ opUnloadScene } -> { stWaitToDisappear }
 		{ stWaitToDisappear } -> { stTableEmpty }
-		{ stWaitToDisappear } -> { stTimedOut } [taillabel="to=20" labelfontcolor="red"]
+		{ stWaitToDisappear } -> { stTimedOut } /*TIME [taillabel="to=20" labelfontcolor="red"] */
 		{ stTimedOut } -> { stUnloadScene }
 
 

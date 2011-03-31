@@ -60,9 +60,10 @@ is a signal to the tutor that he can continue with the next object. The system
 presents an empty scene, waits that all VisualObjects disappear. Then it
 presents a scene with the next object.
 
-Although the previous learning task has been completed, the change in the
-contents of the set of VisualObjects in the WM locks the planner as in the
-previous case.
+The change in the contents of the set of VisualObjects in the WM locks the
+planner again: when a teaching goal for the new object appears, the planner
+creates a plan that includes a belief about an object that has just
+disappeared. This results in a plan in a {\tt PENDING} state.
 
 \subsection{The improved tutor}
 
@@ -117,6 +118,9 @@ XX:goal.scheduler:data:planner.sa.  Local version: 5.  WM version: 6''.
 
 Some of the image pairs (less than 10 out of $1200$ in the database) cause the
 components {\em PlanePopout} or {\em SOIFilter} to crash.
+
+On rare occasions Matlab VisualRecognizer crashes when rendering the
+recognition results.
 
 \subsection{Example log}
 
