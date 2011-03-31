@@ -10,8 +10,7 @@ HOST localhost
 
 COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log --displayserver "display.srv" --nodot
 
-SETVAR camera_config_file=subarchitectures/vision.sa/config/ul_13dec10.ini
-#SETVAR camera_config_file=xdata/grab/TwPureGreen/camera.ini
+SETVAR camera_config_file=subarchitectures/vision.sa/config/ul_stereo_5_10_2010.ini
 INCLUDE georgeY2-vision-srv.incl
 
 ####################################################################################################################
@@ -22,9 +21,8 @@ INCLUDE ../includes/visualization.sa/v11n-base-p.cast
 ####################################################################################################################
 INCLUDE georgeY2-vision.incl
 
-# Select the video input; change the camera_config_file accordingly
-#INCLUDE image-live.incl
-INCLUDE image-sequence.incl
+# NOTE: The tester will add a videoserver (OpenCvImgSeqServer)
+INCLUDE georgeY2-vision-tester.incl
 
 
 # mediators, execution
