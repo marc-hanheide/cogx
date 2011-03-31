@@ -1,0 +1,6 @@
+.cproject
+.project
+/BUILD
+/output
+.svn
+*/.svn
