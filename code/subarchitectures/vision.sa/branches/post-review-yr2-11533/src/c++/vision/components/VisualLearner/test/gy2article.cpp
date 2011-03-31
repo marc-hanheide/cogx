@@ -167,7 +167,7 @@ void CGeorgeY2Article::configure(const std::map<std::string,std::string> & _conf
    // CONFIG: --vision-sa
    // TYPE: string (subarchitecture-id)
    // DEFAULT: ""
-   // The subarchitecture id in which SOIFilter, PlanePopout and OpenCvImgSeqServer
+   // The subarchitecture id in which SOIFilter, ObjectAnalyzer and OpenCvImgSeqServer
    // video server are running. The default is empty which means that the components
    // are running in the same SA as this component.
    if((it = _config.find("--vision-sa")) != _config.end())
