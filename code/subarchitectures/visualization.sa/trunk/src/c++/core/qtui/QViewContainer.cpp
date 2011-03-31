@@ -86,6 +86,8 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    // otherwise delete the view
    removeUi();
    QVBoxLayout *pLayout = new QVBoxLayout();
+   pLayout->setSpacing(2);
+   pLayout->setContentsMargins(2, 2, 2, 2);
    setLayout(pLayout);
 
    // TODO: Also create toolbars for active views!
