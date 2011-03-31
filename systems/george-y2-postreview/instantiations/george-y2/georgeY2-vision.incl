@@ -1,16 +1,10 @@
 # CAST config file
 
-# NOTE: camera_config_file is set in georgeY2-vision-srv.incl
+# NOTE: camera_config_file is set in georgeY2-vision-srv.incl or in the main cast file
 
 SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-
-#INCLUDE image-live.incl
-#INCLUDE image-sequence.incl
-
-# NOTE: The tester will add a videoserver (OpenCvImgSeqServer)
-INCLUDE georgeY2-vision-tester.incl
 
 CPP MG vis.plane.pop.out PlanePopOut --videoname videoserver --stereohost localhost --stereoname stereoserver  --displayserver "display.srv"  --minObjHeight 0.015 --totalPoints 8000 --LeastPointsInOneObj 40 --display --agonalTime 10 --stableTime 5  # --log
 
