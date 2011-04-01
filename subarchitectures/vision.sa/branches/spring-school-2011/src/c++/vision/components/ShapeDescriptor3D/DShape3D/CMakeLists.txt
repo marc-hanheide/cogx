@@ -39,7 +39,7 @@ SET(SOURCES
     DShapeCore.cc
     RASDescriptor.cc)
 
-LINK_LIBRARIES(cv cxcore homest lapack blas levmar rt pthread)
+LINK_LIBRARIES(${OpenCV_LIBRARIES} homest lapack blas levmar rt pthread)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
