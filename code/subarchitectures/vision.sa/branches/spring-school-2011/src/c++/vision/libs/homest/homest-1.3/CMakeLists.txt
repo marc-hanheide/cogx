@@ -44,18 +44,18 @@ ADD_LIBRARY(homest STATIC
    )
 
 # demo program
-LINK_DIRECTORIES(${LAPACKBLAS_DIR})
-LINK_DIRECTORIES(.)
-ADD_EXECUTABLE(homest_demo homest_demo.c)
-# libraries the demo depends on
-IF(HAVE_F2C)
-   TARGET_LINK_LIBRARIES(homest_demo homest levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
-ELSE(HAVE_F2C)
-   TARGET_LINK_LIBRARIES(homest_demo homest levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
-ENDIF(HAVE_F2C)
-
-# make sure that the library is built before the demo
-ADD_DEPENDENCIES(homest_demo homest levmar)
+#LINK_DIRECTORIES(${LAPACKBLAS_DIR})
+#LINK_DIRECTORIES(.)
+#ADD_EXECUTABLE(homest_demo homest_demo.c)
+## libraries the demo depends on
+#IF(HAVE_F2C)
+#   TARGET_LINK_LIBRARIES(homest_demo homest levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
+#ELSE(HAVE_F2C)
+#   TARGET_LINK_LIBRARIES(homest_demo homest levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
+#ENDIF(HAVE_F2C)
+#
+## make sure that the library is built before the demo
+#ADD_DEPENDENCIES(homest_demo homest levmar)
 
 #SUBDIRS(matlab)
 
