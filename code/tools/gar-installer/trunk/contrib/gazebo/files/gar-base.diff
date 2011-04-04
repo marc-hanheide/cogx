@@ -1,0 +1,36 @@
+diff --speed-large-files --minimal -ru gazebo-0.9.0.orig/player/FiducialInterface.cc gazebo-0.9.0/player/FiducialInterface.cc
+--- gazebo-0.9.0.orig/player/FiducialInterface.cc	2009-07-08 20:00:41.000000000 +0200
++++ gazebo-0.9.0/player/FiducialInterface.cc	2011-03-31 19:56:34.000000000 +0200
+@@ -33,7 +33,7 @@
+ 
+ #include <math.h>
+ #include <iostream>
+-#include <libplayerxdr/playerxdr.h>
++#include <libplayerinterface/playerxdr.h>
+ #include <boost/thread/recursive_mutex.hpp>
+ 
+ #include "gazebo.h"
+diff --speed-large-files --minimal -ru gazebo-0.9.0.orig/player/IRInterface.cc gazebo-0.9.0/player/IRInterface.cc
+--- gazebo-0.9.0.orig/player/IRInterface.cc	2009-07-08 20:00:41.000000000 +0200
++++ gazebo-0.9.0/player/IRInterface.cc	2011-03-31 19:56:07.000000000 +0200
+@@ -30,7 +30,7 @@
+ 
+ #include <math.h>
+ #include <iostream>
+-#include <libplayerxdr/playerxdr.h>
++#include <libplayerinterface/playerxdr.h>
+ #include <boost/thread/recursive_mutex.hpp>
+ 
+ #include "gazebo.h"
+diff --speed-large-files --minimal -ru gazebo-0.9.0.orig/player/LaserInterface.cc gazebo-0.9.0/player/LaserInterface.cc
+--- gazebo-0.9.0.orig/player/LaserInterface.cc	2009-07-08 20:00:41.000000000 +0200
++++ gazebo-0.9.0/player/LaserInterface.cc	2011-03-31 19:56:19.000000000 +0200
+@@ -29,7 +29,7 @@
+ 
+ #include <math.h>
+ #include <iostream>
+-#include <libplayerxdr/playerxdr.h>
++#include <libplayerinterface/playerxdr.h>
+ #include <boost/thread/recursive_mutex.hpp>
+ 
+ #include "gazebo.h"
