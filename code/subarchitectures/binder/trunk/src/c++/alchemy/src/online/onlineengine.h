@@ -320,7 +320,11 @@ class OnlineEngine
     if (MaxWalkSat* mws = dynamic_cast<MaxWalkSat*>(inference_))
     {
       mws->setMaxSteps(inferenceSteps);
-    }    
+    }  
+    else if (MCSAT* ms = dynamic_cast<MCSAT*>(inference_))
+    {
+      ms->setMaxSteps(inferenceSteps);
+    } 
   }
   
  private:

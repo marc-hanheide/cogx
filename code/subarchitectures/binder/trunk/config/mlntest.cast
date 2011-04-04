@@ -1,0 +1,8 @@
+HOST localhost
+SUBARCHITECTURE binder.sa
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+CPP GD	mlnengine MLNEngine --bsa binder.sa  --log true
+
+JAVA MG resultviewer castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.Result" --generic-col
