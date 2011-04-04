@@ -633,7 +633,7 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 
     if (doorHyp != 0) {
       double doorX = doorHyp->x;
-      double doorY = doorHyp->x;
+      double doorY = doorHyp->y;
 
       for (map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
 	  m_PlaceIDToHypMap.begin(); it != m_PlaceIDToHypMap.end(); it++) {
