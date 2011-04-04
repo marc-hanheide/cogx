@@ -1283,6 +1283,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
   if (m_ShowPath) {
+    log("drawing path");
     if (objID.operation == cdl::ADD) {
       m_ProxyPathStartMarker.add(m_PeekabotClient, "PathStart", peekabot::REPLACE_ON_CONFLICT);
       peekabot::VertexSet set1;
@@ -1301,10 +1302,10 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
       set2.add(0, 0, 0);
       set2.add(-0.2, -0.5, 0);
       m_ProxyPathEndMarker.add_vertices(set2);
-    }
+    
     m_ProxyPathEndMarker.set_rotation(m_RobotPose->theta, 0,0);
     m_ProxyPathEndMarker.set_position(m_RobotPose->x, m_RobotPose->y, 0.02);
-
+    }
     double diffSq = (m_RobotPose->x-m_lastLoggedX)*(m_RobotPose->x-m_lastLoggedX) +
       (m_RobotPose->y-m_lastLoggedY)*(m_RobotPose->y-m_lastLoggedY);
     if (diffSq > 0.01) {
@@ -1351,7 +1352,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 			if(val->value != m_currentMostLikelyRoom){
 				m_currentMostLikelyRoom = val->value;
 				log("Changing line color!");
-				ProxyPathLogtemp.add(m_PeekabotClient, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+				ProxyPathLogtemp.add(m_ProxyTrajectory, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
 			      peekabot::VertexSet set;
 			      set.add(m_RobotPose->x, m_RobotPose->y, 0.01);
 			      ProxyPathLogtemp.add_vertices(set);
@@ -1371,7 +1372,6 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 		}
 	}
     }
-
   }
 }
 
@@ -2034,7 +2034,7 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
  */
 
   switch (id) {
-  	case 0:
+/*  	case 0:
       r = 1.0/0xFF*0xF0;
       g = 1.0/0xFF*0x80;
       b = 1.0/0xFF*0x80;
@@ -2058,63 +2058,63 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
       r = 1.0/0xFF*0xFF;
       g = 1.0/0xFF*0xA5;
       b = 1.0/0xFF*0x00;
-      break;
-  case 5: // Green
+      break; */
+  case 0: // Green
     r = 1.0/0xFF*0x00;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x00;
     break;
-  case 6: // Red
+  case 1: // Red
     r = 1.0/0xFF*0xFF; 
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0x00;
     break;
-  case 7: // Blue
+  case 2: // Blue
     r = 1.0/0xFF*0x00;
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0xFF;
     break;
-  case 8:
+  case 3:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x00;
     break;
-  case 9:
+  case 4:
     r = 1.0/0xFF*0x00; 
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0xFF;
     break;
-  case 10:
+  case 5:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0x00;
     b = 1.0/0xFF*0xFF;
     break;
-  case 11:
+  case 6:
     r = 1.0/0xFF*0x24;
     g = 1.0/0xFF*0xFF;
     b = 1.0/0xFF*0x24;
     break;
-  case 12:
+  case 7:
     r = 1.0/0xFF*0xFF;
     g = 1.0/0xFF*0x24;
     b = 1.0/0xFF*0x00;
     break;
-  case 13:
+  case 8:
     r = 1.0/0xFF*0x6F;
     g = 1.0/0xFF*0x42;
     b = 1.0/0xFF*0x42;
     break;
-  case 14:
+  case 9:
     r = 1.0/0xFF*0x8C;
     g = 1.0/0xFF*0x17;
     b = 1.0/0xFF*0x17;
     break;
-  case 15:
+  case 10:
     r = 1.0/0xFF*0x5C; 
     g = 1.0/0xFF*0x33;
     b = 1.0/0xFF*0x17;
     break;
-  case 16:// If more colours are added change MAX_COLORS below
+  case 11:// If more colours are added change MAX_COLORS below
     r = 1.0/0xFF*0x2F; 
     g = 1.0/0xFF*0x4F;
     b = 1.0/0xFF*0x2F;
@@ -2126,7 +2126,7 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 	}
 	else
 	{
-		const int MAX_COLORS = 16;
+		const int MAX_COLORS = 11;
 		const int useColor = id % MAX_COLORS;
 		debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
         getColorByIndex(useColor, r, g, b);
@@ -2218,13 +2218,7 @@ void DisplayNavInPB::connectPeekabot()
     
       log("Loading robot file \"%s\"", 
 	  m_PbRobotFile.c_str());
-      
-      if (m_ShowPath) {
-	m_ProxyPathLog.add(m_PeekabotClient, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-	m_ProxyPathLog.set_line_width(5);
-      }
-
-      if (m_ShowCommands) {
+           if (m_ShowCommands) {
 	m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
 	    peekabot::REPLACE_ON_CONFLICT);
 	m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
@@ -2305,6 +2299,7 @@ void DisplayNavInPB::connectPeekabot()
                      "nodes",
                      peekabot::REPLACE_ON_CONFLICT);
 
+
     m_ProxyEdges.add(m_ProxyGraph,
                      "edges",
                      peekabot::REPLACE_ON_CONFLICT);
@@ -2316,6 +2311,16 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyObjectLabels.add(m_ProxyGraph,
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
+ 
+      if (m_ShowPath) {
+    m_ProxyTrajectory.add(m_PeekabotClient,
+                     "trajectory",
+                     peekabot::REPLACE_ON_CONFLICT);
+
+	m_ProxyPathLog.add(m_ProxyTrajectory, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	m_ProxyPathLog.set_line_width(5);
+      }
+
 
     createRobotFOV();
     log("Connection to Peekabot established");
