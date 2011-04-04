@@ -273,7 +273,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (!m_bNoPlanes) {
     if (m_planeObjectFilename == "") {
       // Create plane objects
-      m_planeObjectFinders.push_back(createTableFinder(1.1, 0.9, CellSize));
+      //m_planeObjectFinders.push_back(createTableFinder(1.1, 0.9, CellSize));
     }
     for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
       m_planeObstacleMaps.push_back(new CharMap(MapSize, CellSize, 0, CharMap::MAP1));
