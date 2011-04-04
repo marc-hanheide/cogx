@@ -32,6 +32,33 @@ module binder {
 
 	const string thisAgent = "self";
 	const string humanAgent = "human";
+	
+module mln {
+
+	sequence<string> PredStrSeq;
+	sequence<double> WeightSeq;
+	sequence<float> ProbSeq;
+	
+	class Evidence {
+		string mrfId;
+		PredStrSeq trueEvidence;
+		PredStrSeq falseEvidence;
+		PredStrSeq oldEvidence;
+		PredStrSeq probEvidence;
+		WeightSeq weights;
+	};
+	
+	class Query {
+		string mrfId;
+		PredStrSeq atoms;
+	};
+	
+	class Result {
+		string mrfId;
+		PredStrSeq atoms;
+		ProbSeq probs;
+	};
+};
 
 };
 }; 

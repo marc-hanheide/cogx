@@ -543,6 +543,11 @@ class MCMC : public Inference
 		  if (prob >= 0.5) hstate_->printGndPred(i, out);
 	  }    
   }
+  
+  void setMaxSteps(const int& maxSteps)
+  {
+     maxSteps_ = maxSteps;
+  }
 
 
  protected:
