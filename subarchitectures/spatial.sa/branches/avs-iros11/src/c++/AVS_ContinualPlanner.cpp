@@ -1044,7 +1044,7 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
 		log("Got conegroup beliefs probability %f ", floatformula->val);
-		log("Will substract %f from it:", differenceMapPDFSum*m_coneGroupNormalization);
+		log("Will substract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
 		floatformula->val = floatformula->val - differenceMapPDFSum*m_coneGroupNormalization; // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], "binder", belief);
