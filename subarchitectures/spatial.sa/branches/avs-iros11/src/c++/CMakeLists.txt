@@ -2,6 +2,8 @@ include_directories(../autogen)
 
 Find_package(Player REQUIRED)
 Find_package(X11 REQUIRED)
+# Set build type
+  set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Peekabot REQUIRED)
 
@@ -15,12 +17,14 @@ include_directories(/usr/include/eigen2)
 include_directories(${PEEKABOT_INSTALLROOT}/include)
 link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
+
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
-
+#MESSAGE(${OPENCV_INCLUDE_DIRS})
+#MESSAGE(${OPENCV_LDFLAGS})
 Find_package(Cure REQUIRED)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
@@ -125,8 +129,7 @@ add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp scan
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
-#link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
+ link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 #add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
@@ -174,7 +177,6 @@ if(BUILD_AVS)
 #link_cast_component(${CAST_COMPONENT_NAME} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
 #link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
 #link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
 
 Find_package(GTK2 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
@@ -218,7 +220,6 @@ if(BUILD_SA_SPATIAL_RELATIONMANAGER)
   set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
   link_cast_component(${CAST_COMPONENT_NAME} peekabot)
   link_cast_component(${CAST_COMPONENT_NAME} dai)
-#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
   link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank CureTransformation CureMath CureSensorData)
   link_cast_component(${CAST_COMPONENT_NAME} Math)
 endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
@@ -227,6 +228,7 @@ endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
     add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ViewPointGenerator.cpp) 
     link_cast_component(${CAST_COMPONENT_NAME} peekabot PTZ)
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualShared NavData VisionData ConceptualData FrontierInterface SpatialProperties SpatialProbabilities SpatialData CureAddressBank ComaData BeliefsCogX )
-    link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-    link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} ${OPENCV_LIBRARY_DIRS})
+# link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+ link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
+   link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
     
