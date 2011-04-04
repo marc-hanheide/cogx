@@ -15,6 +15,11 @@ link_directories(${CUDA_INSTALLROOT}/lib)
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)
 
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+
+
+
 # Set the sources.
 SET(SOURCES 
 		ObjectRecognizer3D.cpp
@@ -41,5 +46,5 @@ add_cast_component(ObjectRecognizer3D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix siftgpu)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore Cg CgGL GLEW glut IL)
-
+link_cast_component(${CAST_COMPONENT_NAME} Cg CgGL GLEW glut IL)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
