@@ -1,0 +1,28 @@
+diff --speed-large-files --minimal -ru player-3.0.2.orig/server/drivers/ptz/ptu46.cc player-3.0.2/server/drivers/ptz/ptu46.cc
+--- player-3.0.2.orig/server/drivers/ptz/ptu46.cc	2009-12-16 01:51:26.000000000 +0100
++++ player-3.0.2/server/drivers/ptz/ptu46.cc	2011-03-31 20:59:13.000000000 +0200
+@@ -236,6 +236,7 @@
+   Write("ed "); // disable echo
+   Write("ci "); // position mode
+   Write("i "); // immediate mode, do not await "A" command for execution 
++  Write("ld "); // 
+ 
+   // delay here so data has arrived at serial port so we can flush it
+   usleep(200000);
+@@ -420,11 +421,11 @@
+   int Count = static_cast<int> (pos/(type == PTU46_TILT ? tr : pr));
+ 
+     // Check limits
+-  if (Count < (type == PTU46_TILT ? TMin : PMin) || Count > (type == PTU46_TILT ? TMax : PMax))
+-  {
+-    fprintf (stderr,"Pan Tilt Value out of Range: %c %f(%d) (%d-%d)\n", type, pos, Count, (type == PTU46_TILT ? TMin : PMin),(type == PTU46_TILT ? TMax : PMax));
+-    return false;
+-  }
++  //if (Count < (type == PTU46_TILT ? TMin : PMin) || Count > (type == PTU46_TILT ? TMax : PMax))
++  //{
++   // fprintf (stderr,"Pan Tilt Value out of Range: %c %f(%d) (%d-%d)\n", type, pos, Count, (type == PTU46_TILT ? TMin : PMin),(type == PTU46_TILT ? TMax : PMax));
++   // return false;
++  //}
+ 
+   char cmd[16];
+   snprintf (cmd,16,"%cp%d ",type,Count);
