@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import manipulation.core.bham.simulationConnector.BhamSimulationConnector;
+import manipulation.core.cogx.simulationConnector.CogXSimulationConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.InternalMemoryException;
@@ -330,7 +330,7 @@ public class MapPanel extends JPanel implements Observer {
 		}
 
 		List<ViewPoint> graspingPoints;
-		graspingPoints = ((BhamSimulationConnector) manipulator
+		graspingPoints = ((CogXSimulationConnector) manipulator
 				.getSimulationConnector()).getPoints();
 
 		if (!graspingPoints.isEmpty()) {
