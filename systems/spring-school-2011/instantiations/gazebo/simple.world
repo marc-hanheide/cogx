@@ -77,12 +77,12 @@ model of "oberhaus" office room, 7 by 3 m
     </model:physical>
 
     <model:physical name="arm">
-      <xyz>-0.400 0.000 0.000</xyz>
+      <xyz>0.0 0.0 0.300</xyz>
       <rpy>0.0 0.0 0.0</rpy>
 
       <attach>
         <parentBody>chassis_body</parentBody>
-        <myBody>arm_base_body</myBody>
+        <myBody>base_body</myBody>
       </attach>
 
       <include embedded="true">
@@ -151,109 +151,41 @@ model of "oberhaus" office room, 7 by 3 m
         </visual>
       </geom:box>
     </body:box>
- </model:physical>
-
-<!--
-  <model:physical name="scenery1_model">
-    <static>true</static>
-    <xyz>5 2 0.5</xyz>
-    <body:box name="scenery1_body">
-      <geom:box name="scenery1_geom">
-        <size>0.5 0.5 1</size>
-        <visual>
-	  <size>0.5 0.5 1</size>
-          <mesh>unit_cylinder</mesh>
-          <material>Gazebo/RustyBarrel</material>
-        </visual>
-      </geom:box>
-    </body:box>
   </model:physical>
 
-  <model:physical name="scenery2_model">
-    <static>true</static>
-    <xyz>-5 -2 0.5</xyz>
-    <body:box name="scenery2_body">
-      <geom:box name="scenery2_geom">
-        <size>1 1 1</size>
-        <visual>
-	  <size>1 1 1</size>
-          <mesh>unit_box</mesh>
-	  <uvTile>2 2</uvTile>
-          <material>Gazebo/BumpyMetal</material>
-        </visual>
-      </geom:box>
-    </body:box>
-  </model:physical>
-
-  <model:physical name="scenery3_model">
-    <static>true</static>
-    <xyz>0 -5 0</xyz>
-    <body:box name="scenery3_body">
-      <geom:box name="scenery3_geom">
-	<rpy>0 0 90</rpy>
-        <size>2 2 2</size>
-        <visual>
-	  <size>2 2 2</size>
-          <mesh>unit_sphere</mesh>
-	  <uvTile>1 1</uvTile>
-          <material>Gazebo/GrassFloor</material>
-        </visual>
-      </geom:box>
-    </body:box>
-  </model:physical>
-
-  <model:physical name="scenery4_model">
-    <static>true</static>
-    <xyz>0 5 0.4</xyz>
-    <body:box name="scenery4_body">
-      <geom:box name="scenery4_geom">
-        <size>2 1 0.8</size>
-        <visual>
-	  <size>2 1 0.8</size>
-          <mesh>unit_box</mesh>
-	  <uvTile>4 2</uvTile>
-          <material>Gazebo/Chrome</material>
-        </visual>
-      </geom:box>
-    </body:box>
- </model:physical>
--->
-
-  <model:physical name="goal_model">
+  <model:physical name="table_model">
     <static>false</static>
-    <xyz>3 0 0.5</xyz>
-    <body:box name="goal_body">
-      <geom:box name="goal_geom">
-        <size>1 1 1</size>
+    <xyz>3 0 0.15</xyz>
+    <body:box name="table_body">
+      <geom:box name="table_geom">
+        <size>0.6 0.6 0.3</size>
         <mass>1</mass>
         <visual>
-          <scale>1 1 1</scale>
+          <scale>0.6 0.6 0.3</scale>
           <mesh>unit_box</mesh>
           <uvTile>1 1</uvTile>
-          <material>Gazebo/Green</material>
+          <material>Gazebo/Blue</material>
         </visual>
       </geom:box>
     </body:box>
- </model:physical>
+  </model:physical>
 
-<!--
-  <model:physical name="home_model">
+  <model:physical name="cornflakes_model">
     <static>false</static>
-    <xyz>0 -1.5 0.5</xyz>
-    <body:box name="home_body">
-      <geom:box name="home_geom">
-        <size>0.10 0.10 0.10</size>
+    <xyz>3 0 0.46</xyz>
+    <body:box name="cornflakes_body">
+      <geom:box name="cornflakes_geom">
+        <size>0.20 0.06 0.30</size>
         <mass>1</mass>
         <visual>
-          <scale>0.10 0.10 0.10</scale>
+          <scale>0.20 0.06 0.30</scale>
           <mesh>unit_box</mesh>
           <uvTile>1 1</uvTile>
-          <material>Gazebo/RedEmissive</material>
+          <material>Gazebo/Red</material>
         </visual>
       </geom:box>
     </body:box>
- </model:physical>
--->
+  </model:physical>
 
   <!-- White Directional light -->
   <model:renderable name="directional_white">
@@ -264,7 +196,7 @@ model of "oberhaus" office room, 7 by 3 m
       <specularColor>0.2 0.2 0.2</specularColor>
       <attenuation>1000 1.0 0.0 0</attenuation>
       <range>.8</range>
-   </light>
+    </light>
   </model:renderable>
 
 </gazebo:world>
