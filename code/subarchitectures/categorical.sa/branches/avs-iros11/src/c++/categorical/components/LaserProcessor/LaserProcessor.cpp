@@ -749,7 +749,7 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   }
 
   // Clean up
-  delete [] ranges;
+//  delete [] ranges;
   free(libSvmFeatures);
 }
 
