@@ -117,8 +117,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 		GenWorkspaceState genPosition = new GenWorkspaceState();
 		genPosition.pos = new Mat34();
-		genPosition.pos.p = new Vec3(position.getX(), position.getY(), position
-				.getZ());
+		genPosition.pos.p = new Vec3(position.getX(), position.getY(),
+				position.getZ());
 
 		// genPosition.pos.R = CogXConverter.convMatrixToGolem(MathOperation
 		// .multMatrixWithMatrix(rotation, initArmRotation));
@@ -236,18 +236,22 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 		KatanaSensorData[] threshold = new KatanaSensorData[4];
 
-		threshold[0] = new KatanaSensorData(SensorData
-				.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_FAR),
+		threshold[0] = new KatanaSensorData(
+				SensorData
+						.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_FAR),
 				(sensorData.get(SensorPosition.FORCE_LEFT_FAR) + force));
 
-		threshold[1] = new KatanaSensorData(SensorData
-				.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_NEAR),
+		threshold[1] = new KatanaSensorData(
+				SensorData
+						.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_NEAR),
 				(sensorData.get(SensorPosition.FORCE_LEFT_NEAR) + force));
-		threshold[2] = new KatanaSensorData(SensorData
-				.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_FAR),
+		threshold[2] = new KatanaSensorData(
+				SensorData
+						.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_FAR),
 				(sensorData.get(SensorPosition.FORCE_RIGHT_FAR) + force));
-		threshold[3] = new KatanaSensorData(SensorData
-				.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_NEAR),
+		threshold[3] = new KatanaSensorData(
+				SensorData
+						.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_NEAR),
 				(sensorData.get(SensorPosition.FORCE_RIGHT_NEAR) + force));
 
 		try {
@@ -272,7 +276,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void openGripper() {
 
-		if (!manipulator.getConfiguration().isSimulation()) {
+		if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
 			try {
 				((KatanaArmPrx) arm).gripperOpen(5);
 				closed = false;
@@ -296,7 +300,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void freezeGripper() {
-		if (!manipulator.getConfiguration().isSimulation()) {
+		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			try {
 				((KatanaArmPrx) arm).gripperFreeze(5);
 			} catch (ExTinyKatanaArm e) {
@@ -314,7 +318,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public HashMap<SensorPosition, Integer> receiveGripperSensorData() {
-		if (!manipulator.getConfiguration().isSimulation()) {
+		if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
 			HashMap<SensorPosition, Integer> sensorData = new HashMap<SensorPosition, Integer>();
 
 			// TODO was fuer einen Timeout?
@@ -350,8 +354,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 		GenWorkspaceState genPosition = new GenWorkspaceState();
 		genPosition.pos = new Mat34();
-		genPosition.pos.p = new Vec3(targetPosition.getX(), targetPosition
-				.getY(), targetPosition.getZ());
+		genPosition.pos.p = new Vec3(targetPosition.getX(),
+				targetPosition.getY(), targetPosition.getZ());
 
 		// genPosition.pos.R = CogXConverter.convMatrixToGolem(MathOperation
 		// .multMatrixWithMatrix(rotation, initArmRotation));

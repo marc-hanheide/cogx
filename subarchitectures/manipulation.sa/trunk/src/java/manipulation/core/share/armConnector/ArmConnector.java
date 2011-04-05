@@ -15,6 +15,21 @@ import manipulation.core.share.types.SensorData.SensorPosition;
  * 
  */
 public interface ArmConnector {
+	public enum ArmName {
+		/**
+		 * running in simulation
+		 */
+		SIMULATION,
+		/**
+		 * using the katana 300
+		 */
+		KATANA300,
+		/**
+		 * using the katana 450
+		 */
+		KATANA450
+	}	
+	
 	/**
 	 * reaches a position with the arm
 	 * 
@@ -109,7 +124,7 @@ public interface ArmConnector {
 	/**
 	 * gets the current rotation of the end-effector
 	 * 
-	 * @return rotation vallu
+	 * @return rotation value
 	 * @throws ManipulatorException
 	 */
 	public Matrix getCurrentRotation() throws ManipulatorException;

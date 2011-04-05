@@ -6,8 +6,10 @@ import manipulation.core.cogx.CogXManipulatorStore;
 import manipulation.core.cogx.baseConnector.CogXDoraBaseConnector;
 import manipulation.core.cogx.camConnector.CogXBlortConnector;
 import manipulation.core.share.Manipulator;
-import manipulation.core.share.ManipulatorStore;
 import manipulation.core.share.Manipulator.ManipulatorName;
+import manipulation.core.share.ManipulatorStore;
+import manipulation.core.share.armConnector.ArmConnector;
+import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
@@ -21,7 +23,6 @@ import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
-import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -51,15 +52,28 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				&& config.containsKey("--configPath")
 				&& config.containsKey("--maxDistanceVP")
 				&& config.containsKey("--nearPoints")
-				&& config.containsKey("--fixedTilt")) {
+				&& config.containsKey("--fixedTilt")
+				&& config.containsKey("--armName")) {
+
+			ArmConnector.ArmName armName = null;
+
+			if (config.get("--armName").equals("katana450")) {
+				armName = ArmName.KATANA450;
+			} else if (config.get("--armName").equals("katana300")) {
+				armName = ArmName.KATANA300;
+			} else if (config.get("--armName").equals("simluation")) {
+				armName = ArmName.SIMULATION;
+			} else {
+				logger.error("Cannot parse arm name - using simulation environment");
+				armName = ArmName.SIMULATION;
+			}
 
 			configuration = new Configuration(Double.parseDouble(config
 					.get("--reachingDistance")), Double.parseDouble(config
 					.get("--distanceInFrontDesk")), config.get("--configPath"),
-					Double.parseDouble(config.get("--maxDistanceVP")), Double
-							.parseDouble(config.get("--nearPoints")), config
-							.containsKey("--simulation"), Double
-							.parseDouble(config.get("--fixedTilt")));
+					Double.parseDouble(config.get("--maxDistanceVP")),
+					Double.parseDouble(config.get("--nearPoints")), armName,
+					Double.parseDouble(config.get("--fixedTilt")));
 		} else {
 			logger.error("Cannot read arguments - exit");
 			System.exit(-1);
