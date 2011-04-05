@@ -28,6 +28,7 @@ import manipulation.core.cogx.simulationConnector.initObjects.KatanaArmDescI;
 import manipulation.core.cogx.simulationConnector.initObjects.PlaneShapeDescI;
 import manipulation.core.cogx.simulationConnector.initObjects.RigidBodyDescI;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.exceptions.ManipulatorException;
@@ -114,7 +115,7 @@ public class CogXSimulationConnector implements SimulationConnector {
 			BasePositionData position = new BasePositionData(
 					new Vector2D(0, 0), 0);
 			robot = updateRobot(position);
-			arm = createArm(manipulator.getConfiguration().isSimulation());
+			arm = createArm(manipulator.getConfiguration().getArmName());
 		} catch (Exception e) {
 			logger.error(e);
 		}
@@ -132,14 +133,14 @@ public class CogXSimulationConnector implements SimulationConnector {
 				.createActor(pGroundPlaneDesc));
 	}
 
-	private ArmPrx createArm(boolean simulation) {
+	private ArmPrx createArm(ArmName armName) {
 		Vec3 globalArmPosePos = new Vec3(0, 0, BASEHIGHT);
 		Mat33 globalArmPoseRot = CogXConverter
 				.convMatrixToGolem(initArmRotation);
 		ArmPrx arm = null;
 		logger.debug("Creating Arm...");
 
-		if (simulation) {
+		if (armName == ArmName.SIMULATION) {
 			ArmDesc pArmDesc = new ArmDescI();
 			pArmDesc.path = "GolemDeviceKatana300Sim";
 			pArmDesc.globalPose.p = globalArmPosePos;
@@ -152,7 +153,7 @@ public class CogXSimulationConnector implements SimulationConnector {
 				logger.error(e);
 			}
 
-		} else {
+		} else if (armName == ArmName.KATANA300) {
 			KatanaArmDesc pArmDesc = new KatanaArmDescI();
 			pArmDesc.path = "GolemDeviceKatana300";
 			pArmDesc.bGripper = true;
@@ -165,6 +166,20 @@ public class CogXSimulationConnector implements SimulationConnector {
 				logger.error(e);
 			}
 
+		} else if (armName == ArmName.KATANA450) {
+			KatanaArmDesc pArmDesc = new KatanaArmDescI();
+			pArmDesc.path = "GolemDeviceKatana450";
+			pArmDesc.bGripper = true;
+			pArmDesc.globalPose.p = globalArmPosePos;
+			pArmDesc.globalPose.R = globalArmPoseRot;
+			try {
+				arm = KatanaArmPrxHelper.checkedCast(tinyInterface
+						.createActor(pArmDesc));
+			} catch (Exception e) {
+				logger.error(e);
+			}
+		} else {
+			logger.error("Cannot create arm");
 		}
 
 		JointPrx pEffector = arm.getJoints()[arm.getJoints().length - 1];
@@ -177,9 +192,9 @@ public class CogXSimulationConnector implements SimulationConnector {
 		pFingerRodShapeDesc.dimensions.v1 = FINGERDIAM / 2.0;
 		pFingerRodShapeDesc.dimensions.v2 = FINGERLENGTH / 2.0;
 		pFingerRodShapeDesc.dimensions.v3 = FINGERDIAM / 2.0;
-		pFingerRodShapeDesc.localPose = new Mat34(CogXConverter
-				.convMatrixToGolem(oldRefRot), CogXConverter
-				.convVecToGolem(oldRefPos));
+		pFingerRodShapeDesc.localPose = new Mat34(
+				CogXConverter.convMatrixToGolem(oldRefRot),
+				CogXConverter.convVecToGolem(oldRefPos));
 		pFingerRodShapeDesc.localPose.p.v2 += (FINGERLENGTH / 2.0) - 0.05;
 		pFingerRodShapeDesc.localPose.p.v1 -= 0.05;
 		pFingerRodShapeDesc.localPose.R = CogXConverter
@@ -194,9 +209,9 @@ public class CogXSimulationConnector implements SimulationConnector {
 		pFingerRodShapeDesc2.dimensions.v1 = FINGERDIAM / 2.0;
 		pFingerRodShapeDesc2.dimensions.v2 = FINGERLENGTH / 2.0;
 		pFingerRodShapeDesc2.dimensions.v3 = FINGERDIAM / 2.0;
-		pFingerRodShapeDesc2.localPose = new Mat34(CogXConverter
-				.convMatrixToGolem(oldRefRot), CogXConverter
-				.convVecToGolem(oldRefPos));
+		pFingerRodShapeDesc2.localPose = new Mat34(
+				CogXConverter.convMatrixToGolem(oldRefRot),
+				CogXConverter.convVecToGolem(oldRefPos));
 		;
 		pFingerRodShapeDesc2.localPose.p.v2 += (FINGERLENGTH / 2.0) - 0.05;
 		pFingerRodShapeDesc2.localPose.p.v1 += 0.05;
@@ -253,8 +268,9 @@ public class CogXSimulationConnector implements SimulationConnector {
 				MathOperation.getMatrixMatrixMultiplication(rotation1,
 						rotation2), rotation3);
 
-		Vector2D direction = MathOperation.getDirection(currentPosition
-				.getPoint(), itemPosition.forgetThirdDimension());
+		Vector2D direction = MathOperation
+				.getDirection(currentPosition.getPoint(),
+						itemPosition.forgetThirdDimension());
 
 		double currentAngle = currentPosition.getAngle();
 		Vector2D currentPos = currentPosition.getPoint();
@@ -272,10 +288,10 @@ public class CogXSimulationConnector implements SimulationConnector {
 		boolean stop = false;
 
 		while (i < 20 && !stop) {
-			virtualPosition = new BasePositionData(new Vector2D(currentPos
-					.getX()
-					+ runner * direction.getX(), currentPos.getY() + runner
-					* direction.getY()), currentAngle);
+			virtualPosition = new BasePositionData(new Vector2D(
+					currentPos.getX() + runner * direction.getX(),
+					currentPos.getY() + runner * direction.getY()),
+					currentAngle);
 
 			moveRobotInVirtualScene(virtualPosition);
 

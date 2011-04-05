@@ -1,5 +1,7 @@
 package manipulation.core.share.types;
 
+import manipulation.core.share.armConnector.ArmConnector;
+
 /**
  * represents the given configuration of the program
  * 
@@ -12,7 +14,7 @@ public class Configuration {
 	String configPath;
 	double maxDistanceForViewPoints;
 	double nearPoints;
-	boolean simulation;
+	ArmConnector.ArmName armName;
 	double fixedtiltAngle;
 
 	/**
@@ -30,20 +32,20 @@ public class Configuration {
 	 * @param nearPoints
 	 *            which viewpoints should be deleted when the robot does not
 	 *            found the object
-	 * @param simulation
-	 *            true if a simulation is used, false if it is a real world
-	 *            system
+	 * @param armName
+	 *            name of the used arm
 	 * @param fixedTiltAngle
 	 *            angle to look down
 	 */
 	public Configuration(double reachingDistance, double distanceInFrontDesk,
 			String configPath, double maxDistanceForViewPoints,
-			double nearPoints, boolean simulation, double fixedTiltAngle) {
+			double nearPoints, ArmConnector.ArmName armName,
+			double fixedTiltAngle) {
 		this.reachingDistance = reachingDistance;
 		this.distanceInFrontDesk = distanceInFrontDesk;
 		this.configPath = configPath;
 		this.maxDistanceForViewPoints = maxDistanceForViewPoints;
-		this.simulation = simulation;
+		this.armName = armName;
 		this.nearPoints = nearPoints;
 		this.fixedtiltAngle = fixedTiltAngle;
 
@@ -110,24 +112,18 @@ public class Configuration {
 	}
 
 	/**
-	 * returns if it is a simulation of not
-	 * 
-	 * @return <code>true</code> if a simulation is used, <code>false</code> if
-	 *         it is a real world system
+	 * @return the armName
 	 */
-	public boolean isSimulation() {
-		return simulation;
+	public ArmConnector.ArmName getArmName() {
+		return armName;
 	}
 
 	/**
-	 * sets if a simulation is used or not
-	 * 
-	 * @param simulation
-	 *            true if a simulation is used, false if it is a real world
-	 *            system
+	 * @param armName
+	 *            the armName to set
 	 */
-	public void setSimulation(boolean simulation) {
-		this.simulation = simulation;
+	public void setArmName(ArmConnector.ArmName armName) {
+		this.armName = armName;
 	}
 
 	/**
