@@ -197,7 +197,7 @@ static int init(void)
     ARParam  wparam;
 
     strcpy( cparaname, "Data/camera_para.dat" );
-    strcpy( pattname,  "Data/patt.hiro" );
+    strcpy( pattname,  "Data/test.patt" );
     
     /* open the video path */
     if( arVideoOpen( vconf ) < 0 ) exit(0);

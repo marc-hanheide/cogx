@@ -7,7 +7,7 @@ LIB_DIR = ../..
 #  compiler
 #
 CC=cc
-CFLAG= -O -I/usr/X11R6/include -I$(INC_DIR)
+CFLAG= -O -I/usr/X11R6/include -g -I$(INC_DIR)
 #
 # For making the library
 #

@@ -4,7 +4,7 @@ BIN_DIR= ../../bin
 
 LDFLAG=-L/usr/X11R6/lib -L$(LIB_DIR)
 LIBS= -lARgsub -lARvideo  -lARMulti -lAR -lglut -lGLU -lGL -lXi -lXmu -lX11 -lm -lraw1394 -ldc1394_control
-CFLAG= -O -I/usr/X11R6/include -I$(INC_DIR)
+CFLAG= -O -I/usr/X11R6/include -g -I$(INC_DIR)
 
 OBJS = command_sub.o util.o paddle.o
 HEADDERS = command_sub.h util.h paddle.h

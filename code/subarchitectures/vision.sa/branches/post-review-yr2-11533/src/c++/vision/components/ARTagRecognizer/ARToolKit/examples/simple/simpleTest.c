@@ -83,6 +83,7 @@ static void mainLoop(void)
     argDispImage( dataPtr, 0,0 );
 
     /* detect the markers in the video frame */
+    printf("detecting markers in the frame \n");
     if( arDetectMarker(dataPtr, thresh, &marker_info, &marker_num) < 0 ) {
         cleanup();
         exit(0);

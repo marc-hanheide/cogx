@@ -19,7 +19,7 @@
 char           *patt_name      = "Data/patt.hiro";
 int             patt_id;
 
-int             marker_width     = 80.0;
+int             marker_width     = 160.0;
 double          marker_center[2] = {0.0, 0.0};
 double          marker_trans[3][4];
 
@@ -161,7 +161,28 @@ static void init( void )
         exit(0);
     }
     arParamChangeSize( &wparam, xsize, ysize, &cparam );
+    /*cparam.dist_factor[0] = 0;
+    cparam.dist_factor[1] = 0;
+    cparam.dist_factor[2] = 0;
+    cparam.dist_factor[3] = 0;*/
+
+    cparam.mat[0][0] = 895.095620;
+    cparam.mat[0][1] = 0;
+    cparam.mat[0][2] = 337.230318;
+    cparam.mat[0][3] = 0;
+    
+    cparam.mat[1][0] = 0;
+    cparam.mat[1][1] = 893.216993;
+    cparam.mat[1][2] = 215.541590;
+    cparam.mat[0][3] = 0;
+   
+    cparam.mat[2][0] = 0;
+    cparam.mat[2][1] = 0;
+    cparam.mat[2][2] = 1;
+    cparam.mat[0][2] = 0;
+  
     arInitCparam( &cparam );
+
     printf("*** Camera Parameter ***\n");
     arParamDisp( &cparam );
 

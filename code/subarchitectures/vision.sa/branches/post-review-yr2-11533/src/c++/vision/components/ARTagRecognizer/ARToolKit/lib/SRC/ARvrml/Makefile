@@ -10,8 +10,8 @@ endif
 VRML_CPPFLAGS = -I$(VRML_HOME)/include/openvrml -I/usr/X11R6/include
 
 CPPFLAGS = $(AR_CPPFLAGS) $(VRML_CPPFLAGS)
-CFLAGS = -O -I/usr/X11R6/include
-CXXFLAGS = -O -I/usr/X11R6/include
+CFLAGS = -O -I/usr/X11R6/include -g
+CXXFLAGS = -O -I/usr/X11R6/include -g
 AR = ar
 ARFLAGS = rs
 RANLIB = 
