@@ -135,8 +135,41 @@ class CCastOptions(object):
             self._xenviron = self._mergeEnvironment(startup_environ, self.environscript)
         return self._xenviron
 
-    def xe(self, shexpr):
-        return _xe(shexpr, self.environ)
+    def xe(self, shexpr, environ=None):
+        if not environ:
+            environ = self.environ
+        return _xe(shexpr, environ)
+
+    def getExtendedEnviron(self, defaults=None):
+        """
+        Expand the 'shell' expression shexpr in the environment self.environ.
+        If there are variables in defaults that are not in self.environ,
+        self.environ will be recreated: first the missing variables will be
+        defined and the the self.environscript will be re-evaluated.
+        """
+        if not defaults:
+            return self.environ.copy()
+
+        defaults = [ l.strip() for l in defaults.split("\n") if l.strip() != "" ]
+        if len(defaults) < 1:
+            return self.environ.copy()
+
+        # Parse defaults to discover missing variables
+        edef = self._mergeEnvironment({}, defaults)
+        enew = {}
+        for k,v in edef.items():
+            if not k in self.environ:
+                enew[k] = _xe(v, self.environ)
+        if len(enew) < 1:
+            return self.environ.copy()
+
+        # Rebuild the environment: strtup, defaults, environscript
+        edef = self._mergeEnvironment(startup_environ, [])
+        for k,v in enew.items():
+            edef[k] = _xe(v, edef)
+        edef = self._mergeEnvironment(edef, self.environscript)
+
+        return edef
 
     def parseConfigLines(self, lines):
         section = None
@@ -196,6 +229,10 @@ class CCastOptions(object):
 
         f.close()
 
+        # TODO: use ConfigParser to parse options!
+        self.mruCfgCast = [ l[4:] for l in self.mruCfgCast ] # XXX: manually removing 00x=
+        self.mruCfgHosts = [ l[4:] for l in self.mruCfgHosts ] # XXX: manually removing 00x=
+
         for ln in options:
             expr = ln.split("=", 2)
             if len(expr) != 2: continue
@@ -227,8 +264,8 @@ class CCastOptions(object):
     def saveHistory(self, afile):
         f = afile
         f.write("[MRU-CAST]\n")
-        for ln in self.mruCfgCast:
-            f.write(ln); f.write("\n")
+        for i,ln in enumerate(self.mruCfgCast):
+            f.write("%03d=%s\n" % (i, ln))
         f.write("[MRU-PLAYER]\n")
         for ln in self.mruCfgPlayer:
             f.write(ln); f.write("\n")
@@ -236,8 +273,8 @@ class CCastOptions(object):
         for ln in self.mruCfgGolem:
             f.write(ln); f.write("\n")
         f.write("[MRU-HOSTS]\n")
-        for ln in self.mruCfgHosts:
-            f.write(ln); f.write("\n")
+        for i,ln in enumerate(self.mruCfgHosts):
+            f.write("%03d=%s\n" % (i, ln))
         f.write("[OPTIONS]\n")
         for k,v in self.options.iteritems():
             f.write("%s=%s\n" % (k,v))

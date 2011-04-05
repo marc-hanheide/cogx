@@ -168,23 +168,30 @@ class CProcess(CProcessBase):
         self.willClearAt = time.time() + 1
         self._setStatus(CProcessBase.FLUSH)
 
-    def start(self, params=None, env=None):
+    def start(self, command=None, params=None, workdir=None, env=None):
         if self.isRunning():
             warn("Process '%s' is already running" % self.name)
             return
         if params == None: params = self.params
         else: self.params = params
-        if self.command == None or self.command.strip() == "":
-            error("No command for process '%s'" % self.name)
-            return
+
+        if command == None or command.strip() == "":
+            if self.command == None or self.command.strip() == "":
+                error("No command for process '%s'" % self.name)
+                return
+            command = self.command
+
         self.error = CProcessBase.OK
-        command = self.command
         if params != None:
             for par in params.iterkeys():
                 command = command.replace("[%s]" % par, params[par])
         log("CMD=%s" % command)
+
         command = cmdlineToArray(command)
-        if self.workdir != None: log("PWD=%s" % self.workdir)
+        if workdir == None or workdir.strip() == "":
+            workdir = self.workdir
+        if workdir != None: log("PWD=%s" % workdir)
+
         try:
             self._setStatus(CProcessBase.STARTING)
             if self.pipeReader != None:
@@ -194,7 +201,7 @@ class CProcess(CProcessBase):
             self.process = subp.Popen(
                     command, bufsize=1,
                     stdout=subp.PIPE, stderr=subp.PIPE,
-                    cwd=self.workdir, env=env)
+                    cwd=workdir, env=env)
 
             # Make the pipes nonblocking so we can read the messages better
             fcntl.fcntl(self.process.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
@@ -208,7 +215,7 @@ class CProcess(CProcessBase):
             self.error = CProcessBase.ERRSTART
             self._setStatus(CProcessBase.STOPPED)
             error("Process '%s' failed to start" % (self.name))
-            error("Command: '%s'" % (self.command))
+            error("Command: '%s'" % (" ".join(command)))
             error("%s" % e)
         time.sleep(0.01)
 
