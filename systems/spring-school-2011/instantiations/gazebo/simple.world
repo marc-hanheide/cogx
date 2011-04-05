@@ -76,7 +76,6 @@ model of "oberhaus" office room, 7 by 3 m
       </include>
     </model:physical>
 
-<!--
     <model:physical name="arm">
       <xyz>-0.400 0.000 0.000</xyz>
       <rpy>0.0 0.0 0.0</rpy>
@@ -90,7 +89,7 @@ model of "oberhaus" office room, 7 by 3 m
          <xi:include href="katana-6m180.model" />
       </include>
     </model:physical>
--->
+
     <include embedded="true">
        <xi:include href="cogx-platform.model" />
     </include>
