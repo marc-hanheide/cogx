@@ -73,9 +73,9 @@ public class HomographyCalibration implements CalibrationConnector {
 
 		// calculate mean vectors
 		Array2DRowRealMatrix sourcePointsMean = BhamConverter
-				.convertVecToRowMatrix(MathOperation.getMean(sourcePoints));
+				.convertVecToRowMatrix(MathOperation.getMean3D(sourcePoints));
 		Array2DRowRealMatrix targetPointsMean = BhamConverter
-				.convertVecToRowMatrix(MathOperation.getMean(targetPoints));
+				.convertVecToRowMatrix(MathOperation.getMean3D(targetPoints));
 
 		logger.info("source points mean: " + sourcePointsMean);
 		logger.info("target points mean: " + targetPointsMean);

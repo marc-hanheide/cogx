@@ -10,9 +10,8 @@ import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.PTZPosition;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.ViewPoint;
-import manipulation.itemMemory.Item;
-import manipulation.itemMemory.ItemMemory;
 import manipulation.itemMemory.Item.PropertyName;
+import manipulation.itemMemory.ItemMemory;
 import manipulation.itemMemory.ItemMemory.ReachingStatus;
 import manipulation.strategies.MobileManipulationNew;
 import manipulation.strategies.Strategy;
@@ -54,8 +53,8 @@ public class FarApproach extends StrategyPart implements Observer {
 			getManipulator().getBaseConnector().goTo(
 
 					((ViewPoint) getManipulator().getItemMemory()
-							.getFirstGraspItem().getAttribute(
-									PropertyName.BEST_VIEW_POINT))
+							.getFirstGraspItem()
+							.getAttribute(PropertyName.BEST_VIEW_POINT))
 							.getPosition());
 
 		} catch (ExternalMemoryException e) {
@@ -141,8 +140,10 @@ public class FarApproach extends StrategyPart implements Observer {
 						getManipulator().getItemMemory().removeViewPoint(
 								getManipulator().getItemMemory()
 										.getFirstGraspItem(),
-								(ViewPoint) getManipulator().getItemMemory()
-										.getFirstGraspItem().getAttribute(
+								(ViewPoint) getManipulator()
+										.getItemMemory()
+										.getFirstGraspItem()
+										.getAttribute(
 												PropertyName.BEST_VIEW_POINT),
 								getManipulator());
 						alwaysGoToPosition();
@@ -155,8 +156,7 @@ public class FarApproach extends StrategyPart implements Observer {
 					}
 					break;
 				case OTHER:
-					logger
-							.error("An error occures in the navigation component");
+					logger.error("An error occures in the navigation component");
 					logger.error("Try again");
 					alwaysGoToPosition();
 					break;

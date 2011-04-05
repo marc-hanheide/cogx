@@ -445,7 +445,7 @@ public class MapAlgorithms {
 		}
 
 		// linear regression
-		Vector2D meanvalue = MathOperation.getMean(borderInWorldList2D);
+		Vector2D meanvalue = MathOperation.getMean2D(borderInWorldList2D);
 
 		double temp1 = 0;
 		double temp2 = 0;

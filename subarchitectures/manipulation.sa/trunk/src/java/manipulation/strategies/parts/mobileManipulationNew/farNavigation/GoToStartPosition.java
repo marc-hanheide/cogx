@@ -5,17 +5,11 @@ import java.util.Observer;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
-import manipulation.core.share.exceptions.InternalMemoryException;
-import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Vector3D;
-import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.ItemMemory;
-import manipulation.itemMemory.Item.PropertyName;
-import manipulation.itemMemory.ItemMemory.ReachingStatus;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
