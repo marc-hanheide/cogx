@@ -87,7 +87,7 @@ public class FarGrasping extends StrategyPart implements Observer {
 				MathOperation.getMatrixMatrixMultiplication(rotation1,
 						rotation2), rotation3);
 
-		// ((BhamSimulationConnector)getManipulator().getSimulationConnector()).addBox(greifRotation);
+		// ((CogXSimulationConnector)getManipulator().getSimulationConnector()).addBox(greifRotation);
 
 		Vector3D goalWithDistance = new Vector3D(
 				(currentGoalPosition.getX() - posInFront * direction.getX()),
