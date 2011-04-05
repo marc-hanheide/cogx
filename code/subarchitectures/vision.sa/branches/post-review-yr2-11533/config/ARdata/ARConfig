@@ -1,23 +1,23 @@
 table
-patt.hiro
+4x4_15.patt
 0 0 1 
 -1 0 0
 0 -1 0
 0 0 0.1
 table
-table1.patt
+4x4_53.patt
 0 0 1 
 -1 0 0
 0 -1 0
 0 0 0.1
 table
-table1.patt
+4x4_73.patt
 0 0 1 
 -1 0 0
 0 -1 0
 0 0 0.1
 bookcase
-table2.patt
+4x4_83.patt
 0 0 1 
 -1 0 0
 0 -1 0
@@ -29,7 +29,7 @@ table2.patt
 0 -1 0
 0 0 0.1
 counter
-table2.patt
+4x4_95.patt
 0 0 1 
 -1 0 0
 0 -1 0
