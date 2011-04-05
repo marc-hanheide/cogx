@@ -17,6 +17,10 @@ from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
 import processtree
 
+import pconfig
+from pconfig.configwidget import CConfigWidget
+from pconfig.manager import CServerManager
+
 LOGGER = logger.get()
 NOFILE_FILENAME = "<none>"
 
@@ -90,15 +94,13 @@ class CProcessGroup:
         self.name = name
         self.processlist = []
 
-    def addProcess(self, procname):
-        self.processlist.append(procname)
+    def addProcess(self, processInfo):
+        self.processlist.append(processInfo)
 
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.ui = uimainwindow.Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
+        self._setup_ui()
 
         self.fnconf = "castcontrol.conf"
         self.fnhist = "castcontrol.hist"
@@ -110,9 +112,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
         self.componentFilter = []
-        self.procGroupA = CProcessGroup("External Servers")
-        self.procGroupB = CProcessGroup("CAST Servers")
-        self.procGroupC = CProcessGroup("CAST Client")
 
         # move option values to UI
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
@@ -128,9 +127,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         root = self._options.xe("${COGX_ROOT}")
         if len(root) > 64: root = "..." + root[-64:]
         self.setWindowTitle("CAST Control - " + root)
-
-        # XXX keep the old interface, just in case, but hide it
-        self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
@@ -154,6 +150,25 @@ class CCastControlWnd(QtGui.QMainWindow):
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
         self.tmStatus.start(632)
 
+        self._connect_signals()
+        LOGGER.log("CAST Control initialized")
+
+
+    def _setup_ui(self):
+        self.ui = uimainwindow.Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
+        self.wAppConfig = CConfigWidget(self.ui.applicationTreeView)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.wAppConfig.setSizePolicy(sizePolicy)
+        layout = QtGui.QVBoxLayout(self.ui.applicationTreeView)
+        layout.addWidget(self.wAppConfig)
+
+        # XXX keep the old interface, just in case, but hide it
+        self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
+
+
+    def _connect_signals(self):
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
@@ -196,7 +211,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actEditUserSettings, QtCore.SIGNAL("triggered()"), self.onEditUserSettings)
         self.connect(self.ui.actEditCastEnvironment, QtCore.SIGNAL("triggered()"), self.onEditCastEnvironment)
 
-        LOGGER.log("CAST Control initialized")
+
 
     def _initContent(self):
         for fn in self._options.mruCfgCast:
@@ -394,6 +409,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         return val
 
     def _initLocalProcesses(self):
+        self.procGroupA = CProcessGroup("External Servers")
+        self.procGroupB = CProcessGroup("CAST Servers")
+        self.procGroupC = CProcessGroup("CAST Client")
+
         self._manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
@@ -404,18 +423,32 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
         self.procGroupC.addProcess("cast-client")
 
-        self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
-        self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
-        self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
-        self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
-        self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
-        self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
-        self.procGroupA.addProcess("display")
-        self.procGroupA.addProcess("player")
-        self.procGroupA.addProcess("peekabot")
-        self.procGroupA.addProcess("abducer")
-        self.procGroupA.addProcess("mary.tts")
-        self.procGroupA.addProcess("golem")
+        self.serverManager = CServerManager()
+        fn = os.path.join(os.path.dirname(pconfig.__file__), "cogxservers.txt")
+        self.serverManager.addServersFromFile(fn)
+        self.wAppConfig.addServers(self.serverManager.servers)
+        for csi in self.serverManager.servers:
+            if csi.group == 'B': self.procGroupB.addProcess(csi.name)
+            elif csi.group == 'C': self.procGroupC.addProcess(csi.name)
+            else: self.procGroupA.addProcess(csi.name)
+            # the command will be evaluated at startup
+            self._manager.addProcess(procman.CProcess(csi.name, command=None))
+
+        if os.path.exists(self.fnhist):
+            self.serverManager.loadServerConfig(self.fnhist)
+
+        #self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
+        #self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
+        #self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
+        #self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
+        #self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
+        #self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        #self.procGroupA.addProcess("display")
+        #self.procGroupA.addProcess("player")
+        #self.procGroupA.addProcess("peekabot")
+        #self.procGroupA.addProcess("abducer")
+        #self.procGroupA.addProcess("mary.tts")
+        #self.procGroupA.addProcess("golem")
 
         p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
         p.messageProcessor = log4util.CLog4MessageProcessor()
@@ -481,9 +514,14 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckRunAbducerServer", self.ui.ckRunAbducerServer.checkState())
             self._options.setOption("ckRunSpeechServer", self.ui.ckRunSpeechServer.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
-            self._options.saveHistory(open(self.fnhist, 'w'))
+
+            fhist = open(self.fnhist, 'w')
+            self._options.saveHistory(fhist)
+            self.serverManager.saveServerConfig(fhist)
+
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
+
         except Exception, e:
             print "Failed to save configuration"
             print e
@@ -735,29 +773,48 @@ class CCastControlWnd(QtGui.QMainWindow):
         hasServer = self.ui.ckRunLog4jServer.isChecked() # TODO: or ckUseLog4jServer.isChecked()
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        if self.ui.ckRunPlayer.isChecked():
-            p = self._manager.getProcess("player")
-            if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
+        #if self.ui.ckRunPlayer.isChecked():
+        #    p = self._manager.getProcess("player")
+        #    if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
 
-        if self.ui.ckRunGolem.isChecked():
-            p = self._manager.getProcess("golem")
-            if p != None: p.start( params = { "GOLEM_CONFIG": self._golemConfig } )
+        #if self.ui.ckRunGolem.isChecked():
+        #    p = self._manager.getProcess("golem")
+        #    if p != None: p.start( params = { "GOLEM_CONFIG": self._golemConfig } )
 
-        if self.ui.ckRunPeekabot.isChecked():
-            p = self._manager.getProcess("peekabot")
-            if p != None: p.start()
+        #if self.ui.ckRunPeekabot.isChecked():
+        #    p = self._manager.getProcess("peekabot")
+        #    if p != None: p.start()
 
-        if self.ui.ckRunDisplaySrv.isChecked():
-            p = self._manager.getProcess("display")
-            if p != None: p.start()
+        #if self.ui.ckRunDisplaySrv.isChecked():
+        #    p = self._manager.getProcess("display")
+        #    if p != None: p.start()
 
-        if self.ui.ckRunAbducerServer.isChecked():
-            p = self._manager.getProcess("abducer")
-            if p != None: p.start()
+        #if self.ui.ckRunAbducerServer.isChecked():
+        #    p = self._manager.getProcess("abducer")
+        #    if p != None: p.start()
 
-        if self.ui.ckRunSpeechServer.isChecked():
-            p = self._manager.getProcess("mary.tts")
-            if p != None: p.start()
+        #if self.ui.ckRunSpeechServer.isChecked():
+        #    p = self._manager.getProcess("mary.tts")
+        #    if p != None: p.start()
+
+        for name in self.procGroupA.processlist:
+            csi = None
+            for c in self.serverManager.servers:
+                if c.name == name:
+                    csi = c
+                    break
+            if not csi: continue
+            if not csi.enabled: continue
+            p = self._manager.getProcess(csi.name)
+            if not p: continue
+
+            extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+            command = self._options.xe(csi.command, environ=extenv)
+            params = csi.getParameters()
+            if params:
+                for k,v in params.items():
+                    params[k] = self._options.xe(v, environ=extenv)
+            p.start(command=command, params=params, workdir=csi.workdir)
 
 
     def onStopExternalServers(self):
