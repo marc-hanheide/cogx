@@ -41,8 +41,8 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "
 CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
 CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
 INCLUDE includes/vision.sa/vision-artag.cast
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/cornflakes.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply" --siftfiles "instantiations/ply-models/cornflakes.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift" --labels "cornflakes marker stapler paperclip box" --log
-
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/cerealbox.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply" --siftfiles "instantiations/ply-models/cerealbox.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift" --labels "cerealbox marker stapler paperclip box" --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "frosties"
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -68,11 +68,12 @@ JAVA MG spatialdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V
 JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
 JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
+CPP MG viewer VideoViewer --videoname VideoServerP --camid 0 
 
 
 HOST 192.168.0.11
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-cvap-avs-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-cvap-avs-shape-appearance-dist.cast
 CPP GD  VideoServerP ProsilicaServer --videoname video --camids "0" --devnums "0"
 
