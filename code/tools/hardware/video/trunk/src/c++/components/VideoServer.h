@@ -294,13 +294,13 @@ public:
    * @param mode Image grabbing mode for the Format7 mode.
    * @param fps Requested framerate [1/s]
    */
-  virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) = 0;
+  virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
 
   /**
    * @brief Checks if the PointGreyServer is active and in Format7 mode.
    * @return Returns true if PointGreyServer is active and in Format7 mode.
    */
-  virtual bool inFormat7Mode() = 0;
+  virtual bool inFormat7Mode();
 
   /**
    * @brief Change the properties in the PointGreyServer for the Format7 mode.
