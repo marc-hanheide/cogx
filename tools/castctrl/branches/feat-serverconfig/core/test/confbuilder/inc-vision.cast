@@ -1,0 +1,8 @@
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD  video.server OpenCvLiveServer --videoname video --camids "0" --devnums "1" --devclass FIREWIRE --imgsize "640 480"
+
+CPP MG video.viewer VideoViewer --videoname video.server --camid 0 
+
