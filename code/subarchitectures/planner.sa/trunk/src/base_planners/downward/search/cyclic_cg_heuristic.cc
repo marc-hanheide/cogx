@@ -261,7 +261,7 @@ void LocalProblemNode::compute_probability(const State &state, std::vector<const
     if(reached_by) {
         const Operator *op = reached_by->label->op;
         if (op && ops.find(op) == ops.end())
-            ops.push_back(op);
+            ops.insert(op);
 
         if(reached_by->target_cost == reached_by->action_cost) {
             // Transition applicable, all preconditions achieved.
@@ -325,7 +325,7 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
 
     if(heuristic != DEAD_END && heuristic != 0) {
         goal_node->mark_helpful_transitions(state);
-        std::vector<const Operator *>& ops;
+        std::set<const Operator *> ops;
         goal_node->compute_probability(state, ops);
     }
 
