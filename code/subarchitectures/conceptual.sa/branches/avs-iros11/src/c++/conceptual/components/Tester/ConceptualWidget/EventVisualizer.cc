@@ -255,44 +255,44 @@ void EventVisualizer::generate(const QList<ConceptualEvent> &events)
 			if (placeIds)
 			{
 				text = scene->addSimpleText(QString::number(curPlace), smallFont);
-				text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, (rowCount+3)*rowHeight);
+				text->setPos((e*resultWidth+lastPlaceChange)/2-text->boundingRect().width()/2, (rowCount+4)*rowHeight);
 				lastPlaceChange=e*resultWidth;
 			}
 
 			if (event.curRoomId!=curRoom)
 			{
 				text = scene->addSimpleText(QString::number(curRoom), defaultFont);
-				text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+4)*rowHeight);
+				text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+5)*rowHeight);
 				lastRoomChange=e*resultWidth;
 				if (verticalIndicators)
-					scene->addLine(e*resultWidth, 0 ,e*resultWidth, (rowCount+5)*rowHeight,
+					scene->addLine(e*resultWidth, 0 ,e*resultWidth, (rowCount+6)*rowHeight,
 							QPen(QBrush(Qt::black), 1, Qt::DashLine));
 
 				if (addingPlace)
 				{
-					scene->addLine(e*resultWidth, (rowCount+4.5)*rowHeight-markPlusSize/2.0, e*resultWidth,
-							(rowCount+4.5)*rowHeight+markPlusSize/2.0,
+					scene->addLine(e*resultWidth, (rowCount+5.5)*rowHeight-markPlusSize/2.0, e*resultWidth,
+							(rowCount+5.5)*rowHeight+markPlusSize/2.0,
 							QPen(QBrush("black"), 2, Qt::SolidLine));
-					scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+4.5)*rowHeight, e*resultWidth+markPlusSize/2.0,
-							(rowCount+4.5)*rowHeight,
+					scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+5.5)*rowHeight, e*resultWidth+markPlusSize/2.0,
+							(rowCount+5.5)*rowHeight,
 							QPen(QBrush("black"), 2, Qt::SolidLine));
 				}
 				else
 				{
-					scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+4.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+					scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+5.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 							QPen(), QBrush(qRgb(0,0,0)));
 				}
 			}
 			if (addingPlace)
 			{
-				scene->addLine(e*resultWidth, (rowCount+3.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+3.5)*rowHeight+markPlusSize/2.0,
+				scene->addLine(e*resultWidth, (rowCount+4.5)*rowHeight-markPlusSize/2.0, e*resultWidth,(rowCount+4.5)*rowHeight+markPlusSize/2.0,
 						QPen(QBrush("black"), 2, Qt::SolidLine));
-				scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+3.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+3.5)*rowHeight,
+				scene->addLine(e*resultWidth-markPlusSize/2.0, (rowCount+4.5)*rowHeight, e*resultWidth+markPlusSize/2.0,(rowCount+4.5)*rowHeight,
 						QPen(QBrush("black"), 2, Qt::SolidLine));
 			}
 			else
 			{
-				scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+3.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
+				scene->addEllipse(e*resultWidth-markDotSize/2.0, (rowCount+4.5)*rowHeight-markDotSize/2.0, markDotSize, markDotSize,
 						QPen(), QBrush(qRgb(0,0,0)));
 			}
 		}
