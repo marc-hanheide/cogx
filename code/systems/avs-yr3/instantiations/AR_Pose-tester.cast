@@ -3,6 +3,6 @@ HOST localhost
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory #--debug
 CPP TM AlwaysPositiveTaskManager
-CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass USB --devnums "0"
-CPP MG ARTAAAG ARTagRecognizer --videoname VideoServer --camid "0" --log --tagpath "/home/cogx/projects/kthsys/subarchitectures/vision.sa/config/ARData/Data/" --cfgfilename "ARConfig" --pre-known-object-file "preKnownObjects.txt"
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1"
+CPP MG ARTAAAG ARTagRecognizer --videoname VideoServer --camid "0" --log --tagpath "/home/cogx/avs-yr3/subarchitectures/vision.sa/config/ARdata/" --cfgfilename "ARConfig" --pre-known-object-file "preKnownObjects.txt" --send-self-command
 CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST

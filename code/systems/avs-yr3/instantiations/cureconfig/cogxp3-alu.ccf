@@ -5,6 +5,7 @@ PEEKABOT_HOST
 localhost
 #192.168.1.40
 #132.230.209.75
+#130.237.218.80
 
 PEEKABOT_ROBOT_XML_FILE
 CogX_base.xml
@@ -17,6 +18,14 @@ rolf.pbmf
 # Press the button with this id on the joystick and you can move the robot
 JOYSTICK_DEADSWITCH_ID
 4
+
+# Press the button with this id on the joystick and you can move the robot
+JOYSTICK_PANTILT_ID
+7
+
+# Press the button with this id on the joystick and you can move the robot
+JOYSTICK_PANTILTHOME_ID
+1
 
 # These ids tell the system the id of the EW (right-left) and the NS
 # (forw-back) axes on the joystick
