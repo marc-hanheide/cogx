@@ -13,7 +13,6 @@ import manipulation.math.MathOperation;
 import manipulation.strategies.MobileManipulationNew;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 

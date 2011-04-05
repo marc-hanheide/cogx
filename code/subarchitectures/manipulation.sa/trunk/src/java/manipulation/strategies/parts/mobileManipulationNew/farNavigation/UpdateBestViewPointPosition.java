@@ -7,7 +7,6 @@ import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.Item.PropertyName;
 import manipulation.math.MathOperation;
-import manipulation.strategies.MobileManipulationNew;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 

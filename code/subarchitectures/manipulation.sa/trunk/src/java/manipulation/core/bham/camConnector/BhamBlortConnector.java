@@ -1,7 +1,6 @@
 package manipulation.core.bham.camConnector;
 
 import manipulation.core.bham.converter.BhamConverter;
-import manipulation.core.bham.simulationConnector.BhamSimulationConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.camConnector.CamConnector;
 import manipulation.core.share.exceptions.ExternalMemoryException;

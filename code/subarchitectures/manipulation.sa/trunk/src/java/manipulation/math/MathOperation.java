@@ -298,7 +298,7 @@ public class MathOperation {
 	 *            given 3D vectors
 	 * @return single 3D mean vector
 	 */
-	public static Vector3D getMean(Vector<Vector3D> points) {
+	public static Vector3D getMean3D(Vector<Vector3D> points) {
 		Vector3D mean = new Vector3D(0, 0, 0);
 		for (Vector3D point3d : points) {
 			mean = MathOperation.getVectorAddition(mean, point3d);
@@ -317,7 +317,7 @@ public class MathOperation {
 	 *            given 2D vectors
 	 * @return single 2D mean vector
 	 */
-	public static Vector2D getMean(Vector<Vector2D> points) {
+	public static Vector2D getMean2D(Vector<Vector2D> points) {
 		Vector2D mean = new Vector2D(0, 0);
 		for (Vector2D point2d : points) {
 			mean = MathOperation.getVectorAddition(mean, point2d);
