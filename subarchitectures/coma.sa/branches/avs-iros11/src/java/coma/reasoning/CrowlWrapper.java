@@ -687,7 +687,7 @@ public class CrowlWrapper {
 	private void log(String _msg) {
 //		if (m_logging) System.out.println("[CrowlWrapper: " + _msg + "]");
 
-		m_logger.info(_msg);
+		m_logger.debug(_msg);
 	}
 	
 }
