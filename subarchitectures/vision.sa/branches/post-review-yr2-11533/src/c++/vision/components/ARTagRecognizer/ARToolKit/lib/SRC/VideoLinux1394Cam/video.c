@@ -433,7 +433,10 @@ AR2VideoParamT *ar2VideoOpen( char *config_in )
 	  }
         initFlag = 1;
       }
-    
+   
+
+    printf("modified: video set to 640x480 RGB \n");
+    vid->int_mode = MODE_640x480_RGB;
     switch( vid->mode )
       {
       case VIDEO_MODE_320x240_YUV422:
@@ -447,11 +450,11 @@ AR2VideoParamT *ar2VideoOpen( char *config_in )
 	break;
       default:
 	printf("Sorry, Unsupported Video Format for IEEE1394 Camera.\n");
-	exit(1);
+//	exit(1);
 	break;
       }
     
-    
+   vid->int_rate = FRAMERATE_15; 
     switch( vid->rate ) {
         case VIDEO_FRAME_RATE_1_875:
           vid->int_rate = FRAMERATE_1_875;
@@ -472,8 +475,8 @@ AR2VideoParamT *ar2VideoOpen( char *config_in )
           vid->int_rate = FRAMERATE_60;
           break;
         default:
-          fprintf(stderr, "Sorry, Unsupported Frame Rate for IEEE1394 Camera.\n");
-          exit(1);
+          printf("Sorry, Unsupported Frame Rate for IEEE1394 Camera.\n");
+//          exit(1);
     }
     
 

@@ -15,7 +15,7 @@
 #include <AR/param.h>
 #include <AR/ar.h>
 
-/* set up the video format globals */
+/*   set up the video format globals */
 
 #ifdef _WIN32
 char			*vconf = "Data\\WDM_camera_flipV.xml";
@@ -34,7 +34,7 @@ ARParam         cparam;
 
 char           *patt_name      = "Data/patt.hiro";
 int             patt_id;
-int             patt_width     = 80.0;
+int             patt_width     = 200.0;
 double          patt_center[2] = {0.0, 0.0};
 double          patt_trans[3][4];
 
@@ -123,6 +123,19 @@ static void mainLoop(void)
         arGetTransMatCont(&marker_info[k], patt_trans, patt_center, patt_width, patt_trans);
     }
     contF = 1;
+
+    float			Xpos, Ypos, Zpos;
+    double			range;
+
+
+    /* find the range */
+    Xpos = patt_trans[0][3];
+    Ypos = patt_trans[1][3];
+    Zpos = patt_trans[2][3];
+    range = sqrt(Xpos*Xpos+Ypos*Ypos+Zpos*Zpos);
+
+    printf(" X: %3.2f Y: %3.2f Z: %3.2f Range: %3.2f \n",Xpos,Ypos,Zpos,range);
+
 
     draw( patt_trans );
 

@@ -595,10 +595,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
   if(m_recEntries.find(m_label) == m_recEntries.end())
   {
     log("%s: Unknown model", m_label.c_str());
-    std::string newID = loadEmptyVisualModelToWM(m_label);
-    m_rec_cmd->confidence = 0.;
+         std::string newID = loadEmptyVisualModelToWM(m_label);
+ m_rec_cmd->confidence = 0.;
     m_rec_cmd->visualObjectID = newID;
-  }
+}
   else
   {
 	log("%s: Detecting object", m_label.c_str());

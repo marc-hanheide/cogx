@@ -12,8 +12,8 @@ VRML_CPPFLAGS =
 VRML_LDFLAGS = -L$(VRML_HOME)/lib
 
 CPPFLAGS = $(AR_CPPFLAGS) $(VRML_CPPFLAGS)
-CFLAGS = -O -I/usr/X11R6/include
-CXXFLAGS = -O -I/usr/X11R6/include
+CFLAGS = -O -I/usr/X11R6/include -g
+CXXFLAGS = -O -I/usr/X11R6/include -g
 LDFLAGS = $(AR_LDFLAGS) $(VRML_LDFLAGS) -L/usr/X11R6/lib
 LIBS = -lARvrml -lARgsub_lite -lARvideo -lAR \
     -lopenvrml -lopenvrml-gl -lstdc++ -ljpeg -lpng -lz -lm \

@@ -9,7 +9,7 @@ LIB_DIR = ../..
 # Note we hard code in -O3 here because the Bayer decoder needs to be highly
 # optimised otherwise it runs so slow you can't use it!
 CC= cc
-CFLAG= -O -I/usr/X11R6/include -I$(INC_DIR) -O3
+CFLAG= -O -I/usr/X11R6/include -g -I$(INC_DIR) -O3
 #
 # For making the library
 #

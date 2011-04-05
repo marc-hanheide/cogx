@@ -3,8 +3,8 @@ UNAME = $(shell uname)
 AR_HOME = ../../..
 
 CPPFLAGS = -I$(AR_HOME)/include
-CFLAGS = -fpascal-strings -O -I/usr/X11R6/include
-CXXFLAGS = -O -I/usr/X11R6/include
+CFLAGS = -fpascal-strings -O -I/usr/X11R6/include -g
+CXXFLAGS = -O -I/usr/X11R6/include -g
 LDFLAGS = -L$(AR_HOME)/lib -L/usr/X11R6/lib
 LIBS = -lglut -lGLU -lGL -lXi -lXmu -lX11 -lm -lraw1394 -ldc1394_control
 AR = ar
