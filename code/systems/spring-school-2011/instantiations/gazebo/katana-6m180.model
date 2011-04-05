@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+
+<!-- Neuronics Katana 6M180 arm
+
+
+            t1    t2                t3               t4       
+            ^    ^                 ^           ^ Z  ^         
+            |   /                 /            |   /          
+            |  /                 /             |  /           
+            | /                 /              | /            
+            |/       l1        /       l2      |/       Y     
+            O*****************O****************O=========> t5 
+           /*                /                /               
+          / *               /                /   T            
+         /  *              /                /                  
+        /   * l0          /                V X                  
+            *                                                 
+            *^ Z                                              
+            *|                                                
+            *|                                                
+            *| S     Y                                        
+             O========>                                       
+            /                                                 
+           /                                                  
+          / X                                                 
+         v                                                    
+
+  l0 = 202 (201.5)
+  l1 = 190
+  l2 = 139
+  l3 = 188 (188.3)
+
+ -->
+<model:physical name="katana_6m180_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  >
+
+  <verbosity>5</verbosity>
+
+  <xyz>0 0 0</xyz>
+  <rpy>0.0 0.0 0.0</rpy>
+  <static>false</static>
+
+  <canonicalBody>base_body</canonicalBody>
+
+  <body:cylinder name="base_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+  </body:cylinder>
+
+  <body:cylinder name="link0_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:cylinder name="link0_geom">
+      <xyz>0.0 0.0 0.101</xyz>
+      <size>0.02 0.202</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.04 0.04 0.202</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="link1_body">
+    <xyz>0.0 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="link1_geom">
+      <xyz>0.0 0.0 0.095</xyz>
+      <size>0.020 0.190</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.190</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.095</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="link2_body">
+    <xyz>0.190 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="link2_geom">
+      <xyz>0.0 0.0 0.0695</xyz>
+      <size>0.020 0.139</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.139</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.0695</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="link3_body">
+    <xyz>0.329 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="link3_geom">
+      <xyz>0.0 0.0 0.094</xyz>
+      <size>0.020 0.188</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.188</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.094</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:box name="gripper_body">
+    <xyz>0.517 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="gripper_geom">
+      <xyz>0.0 0.0 0.02</xyz>
+      <size>0.04 0.04 0.04</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.040</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:box name="left_finger_body">
+    <xyz>0.557 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="left_finger_geom">
+      <xyz>0.0 0.0 0.02</xyz>
+      <size>0.04 0.01 0.08</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.010 0.080</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:box name="right_finger_body">
+    <xyz>0.557 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="right_finger_geom">
+      <xyz>0.0 0.0 0.02</xyz>
+      <size>0.04 0.01 0.08</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.010 0.080</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <joint:hinge name="base_link0_joint">
+    <body1>link0_body</body1>
+    <body2>base_body</body2>
+    <anchor>link0_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 0 1</axis>
+    <lowstop>-170</lowstop>
+    <highstop>170</highstop>
+  </joint:hinge>
+
+  <joint:hinge name="link0_link1_joint">
+    <body1>link1_body</body1>
+    <body2>link0_body</body2>
+    <anchor>link1_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link1_link2_joint">
+    <body1>link2_body</body1>
+    <body2>link1_body</body2>
+    <anchor>link2_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link2_link3_joint">
+    <body1>link3_body</body1>
+    <body2>link2_body</body2>
+    <anchor>link3_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link3_gripper_joint">
+    <body1>gripper_body</body1>
+    <body2>link3_body</body2>
+    <anchor>gripper_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>1 0 0</axis>
+  </joint:hinge>
+
+  <joint:slider name="gripper_left_finger_joint">
+    <body1>left_finger_body</body1>
+    <body2>gripper_body</body2>
+    <anchor>left_finger_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+    <lowStop>0</lowStop>
+    <highStop>30</highStop>
+  </joint:slider>
+
+  <joint:slider name="gripper_right_finger_joint">
+    <body1>right_finger_body</body1>
+    <body2>gripper_body</body2>
+    <anchor>right_finger_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 -1 0</axis>
+    <lowStop>0</lowStop>
+    <highStop>30</highStop>
+  </joint:slider>
+
+  <controller:generic_actarray name="controller">
+    <joint name="base_link0_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link0_link1_joint">
+      <force>100</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link1_link2_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link2_link3_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link3_gripper_joint">
+      <force>10</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="gripper_left_finger_joint">
+      <force>10</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="gripper_right_finger_joint">
+      <force>10</force>
+      <gain>2</gain>
+    </joint>    <interface:actarray name="generic_actarray_iface_0"/>
+  </controller:generic_actarray>
+
+</model:physical>
+
