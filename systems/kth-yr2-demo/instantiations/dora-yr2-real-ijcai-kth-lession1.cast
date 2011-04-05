@@ -10,7 +10,7 @@ INCLUDE includes/conceptual.sa/conceptual-base.cast
 INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Categorical.SA ############################################################
-INCLUDE includes/categorical.sa/categorical-teknikringen-shape-appearance.cast
+#INCLUDE includes/categorical.sa/categorical-teknikringen-shape-appearance.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
