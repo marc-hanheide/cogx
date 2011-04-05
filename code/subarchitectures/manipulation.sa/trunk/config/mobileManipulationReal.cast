@@ -40,6 +40,6 @@ CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inif
 
 #CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
 
-JAVA MG  manipulatorRunner manipulation.runner.bham.BhamRunner --reachingDistance "0.05" --distanceInFrontDesk "0.6" --configPath "/home/ttoenige/Desktop/calib_real.xml" --maxDistanceVP "1" --nearPoints "0.5" --fixedTilt "-55"
+JAVA MG  manipulatorRunner manipulation.runner.cogx.CogXRunner --reachingDistance "0.05" --distanceInFrontDesk "0.6" --configPath "/home/ttoenige/Desktop/calib_real.xml" --maxDistanceVP "1" --nearPoints "0.5" --fixedTilt "-55"
 
 #JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
