@@ -11,7 +11,7 @@ include_directories(ARToolKit/include)
 # Set the sources.
 SET(SOURCES ARTagRecognizer.cpp)
 
-add_cast_component(ARTagRecognizer.cpp ${SOURCES})
+add_cast_component(ARTagRecognizer ${SOURCES})
 
 link_cast_component(${CAST_COMPONENT_NAME} 
    Math AR VisionData Video VideoUtils   ${VISUALIZATION_LIBRARIES}
