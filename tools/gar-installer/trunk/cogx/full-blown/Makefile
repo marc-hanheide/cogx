@@ -26,13 +26,13 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 
 
 
-LIBDEPS = 	contrib/opencv-trunk \
-		contrib/peekabot \
-		contrib/player-2.1.2 \
-		contrib/stage \
+LIBDEPS = 			contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
-		cogx/cosycure
+		cogx/cosycure 
+#contrib/opencv-trunk 
+#		contrib/player-2.1.2 
+#		contrib/stage 
 
 DESCRIPTION = agai-distro
 
