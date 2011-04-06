@@ -19,7 +19,9 @@ class CConfigWidget(QtGui.QWidget):
         self.itemDelegate.setItemEditorFactory(self.editFactory)
         self.wItems.setItemDelegate(self.itemDelegate)
         qet = QtGui.QAbstractItemView
-        self.wItems.setEditTriggers(qet.DoubleClicked | qet.SelectedClicked | qet.EditKeyPressed)
+        # XXX: Activation variant could be user configurable
+        # self.wItems.setEditTriggers(qet.DoubleClicked | qet.SelectedClicked | qet.EditKeyPressed)
+        self.wItems.setEditTriggers(qet.SelectedClicked | qet.EditKeyPressed | qet.CurrentChanged)
 
     def createUi(self):
         self.mProperties = CPropertyTreeModel()
