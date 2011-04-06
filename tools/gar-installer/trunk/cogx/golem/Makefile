@@ -7,9 +7,6 @@ WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
 MAINTAINER = ttoenige
 
-SVNUSER = pub
-MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/msk/development/Golem/trunk/
-
 LIBDEPS = cogx/kni_3.9.2
 
 DEB_PACKAGES= 
