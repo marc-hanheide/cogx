@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.grasp;
+package manipulation.strategies.parts.mobileManipulation.grasp;
 
 import java.util.HashMap;
 

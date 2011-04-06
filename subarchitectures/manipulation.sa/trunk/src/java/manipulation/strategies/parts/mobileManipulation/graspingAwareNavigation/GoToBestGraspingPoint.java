@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.graspingAwareNavigation;
+package manipulation.strategies.parts.mobileManipulation.graspingAwareNavigation;
 
 import java.util.Observable;
 import java.util.Observer;

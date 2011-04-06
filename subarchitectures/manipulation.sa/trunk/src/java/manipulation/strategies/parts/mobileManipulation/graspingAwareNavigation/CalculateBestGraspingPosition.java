@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.graspingAwareNavigation;
+package manipulation.strategies.parts.mobileManipulation.graspingAwareNavigation;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;

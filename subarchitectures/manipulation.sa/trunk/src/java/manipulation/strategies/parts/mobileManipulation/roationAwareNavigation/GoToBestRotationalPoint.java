@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigation;
+package manipulation.strategies.parts.mobileManipulation.roationAwareNavigation;
 
 import java.util.Observable;
 import java.util.Observer;
