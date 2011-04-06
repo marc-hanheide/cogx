@@ -10,6 +10,8 @@
 #include "ConceptualWidget.h"
 #include "SpatialProbabilities.hpp"
 #include "NavWidget.h"
+#include "CategoricalWidget.h"
+#include "DemoWidget.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Qt, std
@@ -117,6 +119,30 @@ void Tester::start()
 	addChangeFilter(createGlobalTypeFilter<SpatialData::NavCommand>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<Tester>(this,
 					&Tester::newNavCommand));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::LaserScan>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newLaserScan));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::LaserScan>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newLaserScan));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::Odometry>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newOdometry));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::Odometry>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newOdometry));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::LaserResults>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newLaserResults));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::LaserResults>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newLaserResults));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::VisualResults>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newVisualResults));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::VisualResults>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newVisualResults));
 }
 
 
@@ -264,9 +290,7 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 	try
 	{
 		SpatialData::NavCommandPtr navCommandPtr;
-		lockEntry(wmChange.address, cdl::LOCKEDODR);
 		navCommandPtr = getMemoryEntry<SpatialData::NavCommand>(wmChange.address);
-		unlockEntry(wmChange.address);
 
 		if (navCommandPtr)
 		{
@@ -278,8 +302,115 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 	{
 		log("Exception while reading nav command from the WM!");
 	}
-
 }
+
+
+
+// -------------------------------------------------------
+void Tester::newLaserScan(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		CategoricalData::LaserScanPtr laserScanPtr;
+		laserScanPtr = getMemoryEntry<CategoricalData::LaserScan>(wmChange.address);
+
+		if (laserScanPtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getCategoricalWidget()->newLaserScan(laserScanPtr);
+		}
+	}
+	catch(...)
+	{
+		log("Exception while reading from the WM!");
+	}
+}
+
+
+// -------------------------------------------------------
+void Tester::newOdometry(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		CategoricalData::OdometryPtr odometryPtr;
+		odometryPtr = getMemoryEntry<CategoricalData::Odometry>(wmChange.address);
+
+		if (odometryPtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getCategoricalWidget()->newOdometry(odometryPtr);
+		}
+	}
+	catch(...)
+	{
+		log("Exception while reading from the WM!");
+	}
+}
+
+
+// -------------------------------------------------------
+void Tester::newImage(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		CategoricalData::ImagePtr imagePtr;
+		imagePtr = getMemoryEntry<CategoricalData::Image>(wmChange.address);
+
+		if (imagePtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getCategoricalWidget()->newImage(imagePtr);
+		}
+	}
+	catch(...)
+	{
+		log("Exception while reading from the WM!");
+	}
+}
+
+
+// -------------------------------------------------------
+void Tester::newLaserResults(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		CategoricalData::LaserResultsPtr laserResultsPtr;
+		laserResultsPtr = getMemoryEntry<CategoricalData::LaserResults>(wmChange.address);
+
+		if (laserResultsPtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getCategoricalWidget()->newLaserResults(laserResultsPtr);
+		}
+	}
+	catch(...)
+	{
+		log("Exception while reading from the WM!");
+	}
+}
+
+
+// -------------------------------------------------------
+void Tester::newVisualResults(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	try
+	{
+		CategoricalData::VisualResultsPtr visualResultsPtr;
+		visualResultsPtr = getMemoryEntry<CategoricalData::VisualResults>(wmChange.address);
+
+		if (visualResultsPtr)
+		{
+			if (_mainDialog)
+				_mainDialog->getCategoricalWidget()->newVisualResults(visualResultsPtr);
+		}
+	}
+	catch(...)
+	{
+		log("Exception while reading from the WM!");
+	}
+}
+
+
 
 
 } // namespace def

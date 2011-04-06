@@ -8,6 +8,8 @@ class ConceptualWidget;
 class AVSMainWidget;
 class DefaultWidget;
 class NavWidget;
+class DemoWidget;
+class CategoricalWidget;
 
 namespace conceptual
 {
@@ -30,6 +32,13 @@ public:
     NavWidget *getNavWidget()
     {return _navWidget;}
 
+    CategoricalWidget *getCategoricalWidget()
+    {return _categoricalWidget;}
+
+    DemoWidget *getDemoWidget()
+    {return _demoWidget;}
+
+
 private:
     Ui::MainDialogClass ui;
     conceptual::Tester *_component;
@@ -38,6 +47,8 @@ private:
     AVSMainWidget *_avsMainWidget;
     DefaultWidget *_defaultWidget;
     NavWidget *_navWidget;
+    DemoWidget *_demoWidget;
+    CategoricalWidget *_categoricalWidget;
 };
 
 #endif // MAINDIALOG_H

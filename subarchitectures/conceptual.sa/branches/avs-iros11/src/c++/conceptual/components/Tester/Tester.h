@@ -10,6 +10,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <ConceptualData.hpp>
 #include <DefaultData.hpp>
+#include <CategoricalData.hpp>
 #include <FrontierInterface.hpp>
 #include <Transformation/Pose3D.hh>
 
@@ -91,8 +92,12 @@ private:
 
 	/** World state changed, infer and then update the coma room structs. */
 	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
-
 	void newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange);
+	void newLaserScan(const cast::cdl::WorkingMemoryChange &wmChange);
+	void newOdometry(const cast::cdl::WorkingMemoryChange &wmChange);
+	void newImage(const cast::cdl::WorkingMemoryChange &wmChange);
+	void newLaserResults(const cast::cdl::WorkingMemoryChange &wmChange);
+	void newVisualResults(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
 private:
