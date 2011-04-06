@@ -17,6 +17,13 @@ disp=Server("Display", label="Standalone Display Server")
 disp.setCommand("${COGX_ROOT}/output/bin/display-server")
 
 
+gazebo = Server("Gazebo", label="Gazebo")
+gazebo.filenameField("WORLD", label="World", filter="Gazebo Worlds (*.world);;All files (*)")
+gazebo.stringItemField("GUI", label="Disable GUI", items=["", "-g"] )
+gazebo.stringItemField("PHYSICS", label="Disable Physics", items=["", "-p"] )
+gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
+
+
 player = Server("Player", label="Player")
 player.filenameField("CONFIG", label="Configuration", filter="Player Config (*.cfg);;All files (*)")
 player.stringItemField("DEBUG", label="Debug level", items=["-d %d" % l for l in range(10)] )
