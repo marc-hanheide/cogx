@@ -1,4 +1,4 @@
-package manipulation.core.cogx.simulationConnector;
+package manipulation.core.cogx.virtualSceneConnector;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
@@ -17,7 +17,7 @@ public class UpdatePositionRunnable implements Runnable {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 	
-	private CogXSimulationConnector simCon;
+	private CogXVirtualSceneConnector simCon;
 	private Manipulator manipulator;
 	
 	/**
@@ -28,7 +28,7 @@ public class UpdatePositionRunnable implements Runnable {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public UpdatePositionRunnable(CogXSimulationConnector simCon,
+	public UpdatePositionRunnable(CogXVirtualSceneConnector simCon,
 			Manipulator manipulator) {
 		this.manipulator = manipulator;
 		this.simCon = simCon;

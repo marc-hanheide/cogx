@@ -48,11 +48,11 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	public CogXKatanaArmConnector(Manipulator manipulator) {
 		this.manipulator = manipulator;
 
-		arm = manipulator.getSimulationConnector().getArm();
+		arm = manipulator.getVirtualSceneConnector().getArm();
 
 		try {
 			homePosition = arm.recvGenConfigspaceState(manipulator
-					.getSimulationConnector().getTime());
+					.getVirtualSceneConnector().getTime());
 		} catch (ExTinyArm e) {
 			logger.error(e);
 		}
@@ -70,7 +70,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		GenConfigspaceState currentConfState = null;
 		try {
 			currentConfState = arm.recvGenConfigspaceState(manipulator
-					.getSimulationConnector().getTime()
+					.getVirtualSceneConnector().getTime()
 					+ arm.getTimeDeltaAsync());
 		} catch (ExTinyArm e) {
 			throw new ManipulatorException(e.what);
@@ -85,13 +85,13 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void goHome() throws ManipulatorException {
 		stopArm();
-		manipulator.getSimulationConnector().clearScene();
-		homePosition.t = manipulator.getSimulationConnector().getTime() + 5;
+		manipulator.getVirtualSceneConnector().clearScene();
+		homePosition.t = manipulator.getVirtualSceneConnector().getTime() + 5;
 
 		try {
 			GenConfigspaceState cBegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getSimulationConnector().getTime());
+							.getVirtualSceneConnector().getTime());
 			GenConfigspaceState cEnd = homePosition;
 
 			GenConfigspaceState[] trajectory;
@@ -125,13 +125,13 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		genPosition.pos.R = CogXConverter.convMatrixToGolem(rotation);
 
 		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
-		genPosition.t = manipulator.getSimulationConnector().getTime()
+		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
 				+ arm.getTimeDeltaAsync();
 
 		try {
 			GenConfigspaceState cbegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getSimulationConnector().getTime()
+							.getVirtualSceneConnector().getTime()
 							+ arm.getTimeDeltaAsync());
 
 			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
@@ -159,7 +159,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		GenWorkspaceState armPos;
 		try {
 			armPos = arm.recvGenWorkspaceState(manipulator
-					.getSimulationConnector().getTime()
+					.getVirtualSceneConnector().getTime()
 					+ arm.getTimeDeltaAsync());
 
 			returnValue = CogXConverter.convGolemToVec(armPos.pos.p);
@@ -179,7 +179,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		Matrix returnValue = null;
 		try {
 			armPos = arm.recvGenWorkspaceState(manipulator
-					.getSimulationConnector().getTime()
+					.getVirtualSceneConnector().getTime()
 					+ arm.getTimeDeltaAsync());
 			returnValue = CogXConverter.convGolemToMatrix(armPos.pos.R);
 		} catch (ExTinyArm e) {
@@ -362,7 +362,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		genPosition.pos.R = CogXConverter.convMatrixToGolem(targetRotation);
 
 		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
-		genPosition.t = manipulator.getSimulationConnector().getTime()
+		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
 				+ arm.getTimeDeltaAsync();
 
 		Vector3D positionError = null;
@@ -371,7 +371,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			GenConfigspaceState cbegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getSimulationConnector().getTime()
+							.getVirtualSceneConnector().getTime()
 							+ arm.getTimeDeltaAsync());
 			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
 			Mat34[] forwardTransArray = arm.getForwardTransform(cend.pos);
@@ -447,6 +447,56 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		} else {
 			logger.error("Not grasping object!");
 			return false;
+		}
+
+	}
+
+	@Override
+	public void approachObject(Vector3D targetPosition) {
+
+		double posInFront = 0.1;
+
+		Vector3D direction = null;
+		try {
+			direction = MathOperation.getDirection(getCurrentPosition(),
+					targetPosition);
+		} catch (ManipulatorException e1) {
+			// TODO Auto-generated catch block
+			logger.error(e1);
+		}
+
+		logger.debug("Try to approach the item!");
+
+		Matrix rotationX = MathOperation.getRotationAroundX(MathOperation
+				.getRadiant(0));
+		Matrix rotationY = MathOperation.getRotationAroundY(MathOperation
+				.getRadiant(0));
+		Matrix rotationZ = MathOperation.getRotationAroundZ(MathOperation
+				.getRadiant(-90));
+
+		Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
+				MathOperation.getMatrixMatrixMultiplication(rotationX,
+						rotationY), rotationZ);
+
+		Vector3D goalWithDistance = new Vector3D(
+				(targetPosition.getX() - posInFront * direction.getX()),
+				targetPosition.getY() - posInFront * direction.getY(),
+				targetPosition.getZ());
+
+		ArmError armError = null;
+		try {
+			armError = getPosError(goalWithDistance, graspRotation);
+		} catch (ManipulatorException e) {
+			logger.error(e);
+		}
+
+		logger.debug(MathOperation.getEuclDistance(armError.getPoseError()));
+
+		try {
+			reach(goalWithDistance, graspRotation);
+		} catch (ManipulatorException e) {
+			// TODO Auto-generated catch block
+			logger.error(e);
 		}
 
 	}

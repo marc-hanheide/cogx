@@ -1,4 +1,4 @@
-package manipulation.core.cogx.simulationConnector;
+package manipulation.core.cogx.virtualSceneConnector;
 
 import golem.tinyice.RigidBodyPrx;
 import manipulation.core.share.Manipulator;
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 public class UpdateItemPositionRunnable implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass());
 	
-	private CogXSimulationConnector simCon;
+	private CogXVirtualSceneConnector simCon;
 	private Manipulator manipulator;
 
 	/**
@@ -27,7 +27,7 @@ public class UpdateItemPositionRunnable implements Runnable {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public UpdateItemPositionRunnable(CogXSimulationConnector simCon,
+	public UpdateItemPositionRunnable(CogXVirtualSceneConnector simCon,
 			Manipulator manipulator) {
 		this.manipulator = manipulator;
 		this.simCon = simCon;

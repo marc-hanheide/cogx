@@ -44,9 +44,9 @@ import org.apache.log4j.Logger;
  * 
  */
 public class CalibrationGUI extends JPanel implements ActionListener {
-	
+
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private static final long serialVersionUID = 1489792232139115240L;
 
 	private Manipulator manipulator;
@@ -74,7 +74,8 @@ public class CalibrationGUI extends JPanel implements ActionListener {
 	private JButton btnConvertCamToRob;
 
 	/**
-	 * constructor for the calibration GUI, displays the GUI and can be used
+	 * constructor for the calibration GUI, displays the GUI and can be used to
+	 * calibrate the arm to the visual system
 	 * 
 	 * @param manipulator
 	 *            corresponding manipulator

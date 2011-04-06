@@ -35,7 +35,6 @@ public abstract class Strategy {
 	private Manipulator manipulator;
 	private Name name;
 
-	private StrategyPart beforePart;
 
 	/**
 	 * sets the next part of the strategy
@@ -44,7 +43,6 @@ public abstract class Strategy {
 	 *            next part to execute
 	 */
 	public void setNextPart(StrategyPart nextPart) {
-		beforePart = currentPart;
 		this.currentPart = nextPart;
 		nextPart.execute();
 	}
@@ -95,7 +93,7 @@ public abstract class Strategy {
 	}
 
 	/**
-	 * initialize the strategy parts of the strategys
+	 * initialize the strategy parts of the strategies
 	 */
 	public abstract void initParts();
 
@@ -131,8 +129,5 @@ public abstract class Strategy {
 		this.name = name;
 	}
 
-	public StrategyPart getBeforePart() {
-		return beforePart;
-	}
 
 }

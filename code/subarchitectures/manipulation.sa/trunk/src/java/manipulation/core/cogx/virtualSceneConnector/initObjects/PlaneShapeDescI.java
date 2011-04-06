@@ -1,4 +1,4 @@
-package manipulation.core.cogx.simulationConnector.initObjects;
+package manipulation.core.cogx.virtualSceneConnector.initObjects;
 
 import golem.tinyice.Mat33;
 import golem.tinyice.Mat34;

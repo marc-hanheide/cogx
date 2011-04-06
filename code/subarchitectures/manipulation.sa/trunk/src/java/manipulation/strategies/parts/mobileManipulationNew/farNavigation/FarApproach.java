@@ -13,7 +13,7 @@ import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.Item.PropertyName;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.itemMemory.ItemMemory.ReachingStatus;
-import manipulation.strategies.MobileManipulationNew;
+import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 
@@ -117,7 +117,7 @@ public class FarApproach extends StrategyPart implements Observer {
 				logger.error("Item changed in memory");
 				alwaysGoToPosition();
 
-				((MobileManipulationNew) getGlobalStrategy())
+				((MobileManipulation) getGlobalStrategy())
 						.setCurrentTarget((Vector3D) arg);
 			}
 

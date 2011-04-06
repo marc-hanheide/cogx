@@ -195,9 +195,9 @@ public class FineGrasping extends StrategyPart {
 				logger.error("Try to recognize again and go on");
 
 				try {
-					if (getManipulator().getSimulationConnector()
+					if (getManipulator().getVirtualSceneConnector()
 							.removeGraspingBasePoint(
-									getManipulator().getSimulationConnector()
+									getManipulator().getVirtualSceneConnector()
 											.getBestGraspingBasePoint())) {
 						logger.error("another try");
 						setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);

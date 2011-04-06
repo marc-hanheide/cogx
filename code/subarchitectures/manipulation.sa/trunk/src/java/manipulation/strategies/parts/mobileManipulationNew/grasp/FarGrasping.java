@@ -15,8 +15,8 @@ import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.ViewPoint;
 import manipulation.core.share.types.ViewPoints;
 import manipulation.itemMemory.Item;
-import manipulation.itemMemory.ItemMemory;
 import manipulation.itemMemory.Item.PropertyName;
+import manipulation.itemMemory.ItemMemory;
 import manipulation.math.MathOperation;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
@@ -63,7 +63,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 			currentArmPos = getManipulator().getArmConnector()
 					.getCurrentPosition();
 		} catch (ManipulatorException e) {
-			logger.error("1");
 			logger.error(e);
 		}
 
@@ -87,8 +86,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 				MathOperation.getMatrixMatrixMultiplication(rotation1,
 						rotation2), rotation3);
 
-		// ((CogXSimulationConnector)getManipulator().getSimulationConnector()).addBox(greifRotation);
-
 		Vector3D goalWithDistance = new Vector3D(
 				(currentGoalPosition.getX() - posInFront * direction.getX()),
 				currentGoalPosition.getY() - posInFront * direction.getY(),
@@ -99,29 +96,25 @@ public class FarGrasping extends StrategyPart implements Observer {
 			armError = getManipulator().getArmConnector().getPosError(
 					goalWithDistance, greifRotation);
 		} catch (ManipulatorException e) {
-			logger.error("2");
 			logger.error(e);
 		}
 
 		logger.error(MathOperation.getEuclDistance(armError.getPoseError()));
 
-		// if (MathOperation.getEuclDistance(armError.getPoseError()) < 0.0001)
-		// {
 		logger.error("GREIFE");
 		try {
 			getManipulator().getArmConnector().reach(goalWithDistance,
 					greifRotation);
 		} catch (ManipulatorException e) {
-			logger.error("3");
 			logger.error(e);
 
 			logger.error("greife nicht test!");
 			stopTracking();
 
 			try {
-				if (getManipulator().getSimulationConnector()
+				if (getManipulator().getVirtualSceneConnector()
 						.removeGraspingBasePoint(
-								getManipulator().getSimulationConnector()
+								getManipulator().getVirtualSceneConnector()
 										.getBestGraspingBasePoint())) {
 					logger.error("another try");
 

@@ -26,7 +26,7 @@ import manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigatio
  * @author ttoenige
  * 
  */
-public class MobileManipulationNew extends Strategy {
+public class MobileManipulation extends Strategy {
 
 	private Vector<BasePositionData> objectSeen = new Vector<BasePositionData>();
 	private Vector3D currentTarget;
@@ -37,7 +37,7 @@ public class MobileManipulationNew extends Strategy {
 	 * @param manipulator
 	 *            corresponding manipulator
 	 */
-	public MobileManipulationNew(Manipulator manipulator) {
+	public MobileManipulation(Manipulator manipulator) {
 		setManipulator(manipulator);
 		setName(Name.MOBILE_MANIPULATION);
 		initParts();

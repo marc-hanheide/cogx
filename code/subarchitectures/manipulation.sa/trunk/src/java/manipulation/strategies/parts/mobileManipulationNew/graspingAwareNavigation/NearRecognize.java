@@ -11,7 +11,7 @@ import manipulation.core.share.types.ViewPoints;
 import manipulation.itemMemory.Item;
 import manipulation.itemMemory.Item.PropertyName;
 import manipulation.math.MathOperation;
-import manipulation.strategies.MobileManipulationNew;
+import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 
@@ -75,7 +75,7 @@ public class NearRecognize extends StrategyPart {
 
 			try {
 				double distance = MathOperation.getDistance(
-						((MobileManipulationNew) getGlobalStrategy())
+						((MobileManipulation) getGlobalStrategy())
 								.getCurrentTarget(),
 						(Vector3D) getManipulator().getItemMemory()
 								.getFirstGraspItem().getAttribute(
@@ -91,7 +91,7 @@ public class NearRecognize extends StrategyPart {
 				}
 
 				try {
-					((MobileManipulationNew) getGlobalStrategy())
+					((MobileManipulation) getGlobalStrategy())
 							.setCurrentTarget((Vector3D) getManipulator()
 									.getItemMemory().getFirstGraspItem()
 									.getAttribute(PropertyName.WORLD_POSITION));
@@ -111,9 +111,9 @@ public class NearRecognize extends StrategyPart {
 		} else {
 
 			try {
-				if (getManipulator().getSimulationConnector()
+				if (getManipulator().getVirtualSceneConnector()
 						.removeGraspingBasePoint(
-								getManipulator().getSimulationConnector()
+								getManipulator().getVirtualSceneConnector()
 										.getBestGraspingBasePoint())) {
 					logger.error("another try");
 					setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
