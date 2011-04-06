@@ -62,7 +62,7 @@ private:
 
   void sendDpUpdateCommand();
 
-
+  
 private:
 
   /** Initializes the part of the recogntion system implemented in this component. */
@@ -140,7 +140,6 @@ private:
   categorical::LabelFile _sizeLabels;
 
   bool _useVision;
-  bool _convertToSick;
   bool _useSize;
 };
 
