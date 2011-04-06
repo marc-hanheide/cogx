@@ -169,14 +169,12 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
                 cb.removeItem(0);
             for mri in prop.mruHistory:
                 cb.addItem(self.formatter(mri), QtCore.QVariant(mri))
-                print "History: ", mri
-            #cb.setCurrentIndex(0)
+            # don't cb.setCurrentIndex(0)
             cb.blockSignals(False)
 
         v = prop.value if prop.value != None else ""
         self.e.setText(v)
         self.filter = prop.filter
-        print "Value: ", v
 
 
 
