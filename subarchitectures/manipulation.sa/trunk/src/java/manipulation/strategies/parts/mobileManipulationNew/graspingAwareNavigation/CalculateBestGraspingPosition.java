@@ -38,7 +38,7 @@ public class CalculateBestGraspingPosition extends StrategyPart {
 		logger.error("execute: " + this.getClass());
 		
 		try {
-			getManipulator().getSimulationConnector()
+			getManipulator().getVirtualSceneConnector()
 					.updateBestGraspingBasePoints(
 							getManipulator().getBaseConnector()
 									.getCurrentPosition(),

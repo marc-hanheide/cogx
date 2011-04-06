@@ -7,7 +7,7 @@ import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.Item.PropertyName;
-import manipulation.strategies.MobileManipulationNew;
+import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 
@@ -67,7 +67,7 @@ public class FarRecognize extends StrategyPart {
 			logger.debug("Object has been recognized!");
 
 			try {
-				((MobileManipulationNew) getGlobalStrategy())
+				((MobileManipulation) getGlobalStrategy())
 						.setCurrentTarget((Vector3D) getManipulator()
 								.getItemMemory().getFirstGraspItem()
 								.getAttribute(PropertyName.WORLD_POSITION));
@@ -79,7 +79,7 @@ public class FarRecognize extends StrategyPart {
 
 			setNextPartName(PartName.UPDATE_BEST_VIEWPOINT_POSITION);
 			try {
-				((MobileManipulationNew) getGlobalStrategy())
+				((MobileManipulation) getGlobalStrategy())
 						.addToObejctSeenList(((ViewPoint) getManipulator()
 								.getItemMemory().getFirstGraspItem()
 								.getAttribute(PropertyName.BEST_VIEW_POINT))

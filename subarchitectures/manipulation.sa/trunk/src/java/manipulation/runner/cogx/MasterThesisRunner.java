@@ -11,26 +11,22 @@ import manipulation.core.share.ManipulatorStore;
 import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
-import manipulation.core.share.types.Vector3D;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
-import manipulation.slice.GraspCommand;
-import manipulation.slice.PutDownCommand;
+import manipulation.strategies.CalibrationStrategy;
+import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
-import manipulation.visualisation.CogXTestGUI;
+import manipulation.visualisation.ExecutionGUI;
 
 import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cogx.Math.Vector3;
 
 /**
  * concrete start-up / runner for the Birmingham / CogX environment
@@ -38,7 +34,7 @@ import cogx.Math.Vector3;
  * @author ttoenige
  * 
  */
-public class CogXRunner extends ManagedComponent implements Runner {
+public class MasterThesisRunner extends ManagedComponent implements Runner {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -98,7 +94,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 		logger.debug("Adding Listener");
 		addBaseMovementListener();
 		addVisionListener();
-		addManipulationListener();
 	}
 
 	/**
@@ -106,7 +101,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 */
 	@Override
 	protected void runComponent() {
-		new CogXTestGUI(manipulator);
+		new ExecutionGUI(manipulator);
 	}
 
 	/**
@@ -134,7 +129,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	}
 
 	/**
-	 * add the vision listener to the CAST working memory
+	 * add the vision listener to the CAST working memorys
 	 */
 	public void addVisionListener() {
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
@@ -157,63 +152,22 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	}
 
 	/**
-	 * add the manipulation listener to the CAST working memory
-	 */
-	public void addManipulationListener() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				GraspCommand.class, WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.debug("Getting graspCommand from add action in WM");
-						handleGraspCommand(_wmc);
-					}
-				});
-
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				GraspCommand.class, WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.debug("Getting graspCommand from overwrite action in WM");
-
-					}
-				});
-
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				PutDownCommand.class, WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.error("Getting putDownCommand from add action in WM");
-					}
-				});
-
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				PutDownCommand.class, WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.error("Getting putDownCommand from overwrite action in WM");
-					}
-				});
-	}
-
-	void handleGraspCommand(WorkingMemoryChange _wmc) {
-		try {
-			GraspCommand command = getMemoryEntry(_wmc.address,
-					GraspCommand.class);
-			Vector3 position = command.targetObject.pose.pos;
-			manipulator.getArmConnector().approachObject(
-					new Vector3D(position.x, position.y, position.z));
-		} catch (DoesNotExistOnWMException e) {
-			logger.error(e);
-		} catch (UnknownSubarchitectureException e) {
-			logger.error(e);
-		}
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void startStrategy(Strategy.Name strategyName) {
-		logger.info("No strategies available to start");
+		Strategy strategy = null;
+		switch (strategyName) {
+		case MOBILE_MANIPULATION:
+			strategy = new MobileManipulation(manipulator);
+			break;
+		case CALIBRATION:
+			strategy = new CalibrationStrategy(manipulator);
+			break;
+		default:
+			logger.error("Does not know the strategy name!");
+			break;
+		}
+		strategy.startExecution();
 	}
 }

@@ -1,4 +1,4 @@
-package manipulation.core.share.simulationConnector;
+package manipulation.core.share.virtualSceneConnector;
 
 import golem.tinyice.ArmPrx;
 import manipulation.core.share.exceptions.InternalMemoryException;
@@ -16,7 +16,7 @@ import manipulation.itemMemory.Item;
  * @author ttoenige
  * 
  */
-public interface SimulationConnector {
+public interface VirtualSceneConnector {
 
 	/**
 	 * moves the robot in the virtual scene but not in the real world

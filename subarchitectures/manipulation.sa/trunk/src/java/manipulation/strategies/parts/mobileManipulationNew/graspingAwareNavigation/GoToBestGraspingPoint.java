@@ -42,7 +42,7 @@ public class GoToBestGraspingPoint extends StrategyPart implements Observer {
 	public void approach() {
 		try {
 
-			ViewPoint bestPoint = getManipulator().getSimulationConnector()
+			ViewPoint bestPoint = getManipulator().getVirtualSceneConnector()
 					.getBestGraspingBasePoint();
 
 			logger.error("Best grasping point in front: " + bestPoint);
@@ -182,10 +182,10 @@ public class GoToBestGraspingPoint extends StrategyPart implements Observer {
 					logger.error("not reachable");
 
 					try {
-						if (getManipulator().getSimulationConnector()
+						if (getManipulator().getVirtualSceneConnector()
 								.removeGraspingBasePoint(
 										getManipulator()
-												.getSimulationConnector()
+												.getVirtualSceneConnector()
 												.getBestGraspingBasePoint())) {
 							logger.error("another try");
 							// TODO best point neu berechnen?!?!

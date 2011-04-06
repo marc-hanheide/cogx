@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import manipulation.core.cogx.simulationConnector.CogXSimulationConnector;
+import manipulation.core.cogx.virtualSceneConnector.CogXVirtualSceneConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.InternalMemoryException;
@@ -330,8 +330,8 @@ public class MapPanel extends JPanel implements Observer {
 		}
 
 		List<ViewPoint> graspingPoints;
-		graspingPoints = ((CogXSimulationConnector) manipulator
-				.getSimulationConnector()).getPoints();
+		graspingPoints = ((CogXVirtualSceneConnector) manipulator
+				.getVirtualSceneConnector()).getPoints();
 
 		if (!graspingPoints.isEmpty()) {
 			g2.setColor(Color.CYAN);

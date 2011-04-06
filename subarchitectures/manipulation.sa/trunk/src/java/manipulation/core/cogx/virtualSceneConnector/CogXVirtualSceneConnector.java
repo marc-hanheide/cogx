@@ -1,4 +1,4 @@
-package manipulation.core.cogx.simulationConnector;
+package manipulation.core.cogx.virtualSceneConnector;
 
 import golem.tinyice.ArmDesc;
 import golem.tinyice.ArmPrx;
@@ -22,24 +22,24 @@ import golem.tinyice.Vec3;
 import java.util.Vector;
 
 import manipulation.core.cogx.converter.CogXConverter;
-import manipulation.core.cogx.simulationConnector.initObjects.ArmDescI;
-import manipulation.core.cogx.simulationConnector.initObjects.BoxShapeDescI;
-import manipulation.core.cogx.simulationConnector.initObjects.KatanaArmDescI;
-import manipulation.core.cogx.simulationConnector.initObjects.PlaneShapeDescI;
-import manipulation.core.cogx.simulationConnector.initObjects.RigidBodyDescI;
+import manipulation.core.cogx.virtualSceneConnector.initObjects.ArmDescI;
+import manipulation.core.cogx.virtualSceneConnector.initObjects.BoxShapeDescI;
+import manipulation.core.cogx.virtualSceneConnector.initObjects.KatanaArmDescI;
+import manipulation.core.cogx.virtualSceneConnector.initObjects.PlaneShapeDescI;
+import manipulation.core.cogx.virtualSceneConnector.initObjects.RigidBodyDescI;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.exceptions.ViewPointException;
-import manipulation.core.share.simulationConnector.SimulationConnector;
 import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.ViewPoint;
+import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 import manipulation.itemMemory.Item;
 import manipulation.itemMemory.Item.PropertyName;
 import manipulation.math.MathOperation;
@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class CogXSimulationConnector implements SimulationConnector {
+public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	private static final double BASEHIGHT = 0.215;
 	private static final double BASELENGTH = 0.51;
 	private static final double BASEWIDTH = 0.38;
@@ -92,7 +92,7 @@ public class CogXSimulationConnector implements SimulationConnector {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public CogXSimulationConnector(Manipulator manipulator) {
+	public CogXVirtualSceneConnector(Manipulator manipulator) {
 		obstacles = new Vector<RigidBodyPrx>();
 		tables = new Vector<RigidBodyPrx>();
 		this.manipulator = manipulator;

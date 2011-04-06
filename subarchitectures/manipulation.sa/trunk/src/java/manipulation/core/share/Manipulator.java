@@ -7,8 +7,8 @@ import manipulation.core.share.baseConnector.MapConnector;
 import manipulation.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.core.share.camConnector.CamConnector;
 import manipulation.core.share.panTiltConnector.PanTiltConnector;
-import manipulation.core.share.simulationConnector.SimulationConnector;
 import manipulation.core.share.types.Configuration;
+import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
 
@@ -41,7 +41,7 @@ public abstract class Manipulator {
 	private BaseConnector baseConnector;
 	private CamConnector camConnector;
 	private MapConnector mapConnector;
-	private SimulationConnector simulationConnector;
+	private VirtualSceneConnector virtualSceneConnector;
 	private CalibrationConnector calibrationConnector;
 	private PanTiltConnector panTiltConnector;
 
@@ -150,18 +150,18 @@ public abstract class Manipulator {
 	 * 
 	 * @return virtual-scene-connector of the current manipulator
 	 */
-	public SimulationConnector getSimulationConnector() {
-		return simulationConnector;
+	public VirtualSceneConnector getVirtualSceneConnector() {
+		return virtualSceneConnector;
 	}
 
 	/**
 	 * sets the virtual-scene-connector of the current manipulator
 	 * 
-	 * @param simulationConnector
+	 * @param virtualSceneConnector
 	 *            new virtual-scene-connector
 	 */
-	public void setSimulationConnector(SimulationConnector simulationConnector) {
-		this.simulationConnector = simulationConnector;
+	public void setVirtualSceneConnector(VirtualSceneConnector virtualSceneConnector) {
+		this.virtualSceneConnector = virtualSceneConnector;
 	}
 
 	/**

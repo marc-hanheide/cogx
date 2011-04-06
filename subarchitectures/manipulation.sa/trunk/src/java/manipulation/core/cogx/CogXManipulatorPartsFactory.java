@@ -6,7 +6,7 @@ import manipulation.core.cogx.baseConnector.CogXLocalMapConnector;
 import manipulation.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.core.cogx.camConnector.CogXBlortConnector;
 import manipulation.core.cogx.panTiltConnector.CogXPanTiltConnector;
-import manipulation.core.cogx.simulationConnector.CogXSimulationConnector;
+import manipulation.core.cogx.virtualSceneConnector.CogXVirtualSceneConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.ManipulatorPartFactory;
 import manipulation.core.share.armConnector.ArmConnector;
@@ -15,7 +15,7 @@ import manipulation.core.share.baseConnector.MapConnector;
 import manipulation.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.core.share.camConnector.CamConnector;
 import manipulation.core.share.panTiltConnector.PanTiltConnector;
-import manipulation.core.share.simulationConnector.SimulationConnector;
+import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 
 import org.apache.log4j.Logger;
 
@@ -70,9 +70,9 @@ public class CogXManipulatorPartsFactory implements ManipulatorPartFactory {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SimulationConnector createSimulationConnector(Manipulator manipulator) {
+	public VirtualSceneConnector createVirtualSceneConnector(Manipulator manipulator) {
 		logger.debug("Creating SimulationConnector: CogXSimulationConnector");
-		return new CogXSimulationConnector(manipulator);
+		return new CogXVirtualSceneConnector(manipulator);
 	}
 
 	/**
