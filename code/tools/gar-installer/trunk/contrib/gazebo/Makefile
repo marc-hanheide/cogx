@@ -10,7 +10,7 @@ MASTER_SITES = http://downloads.sourceforge.net/project/playerstage/Gazebo/$(GAR
 PATCHFILES= gar-base.diff
 
 DEB_PACKAGES=\
-	libode1sp@ubuntu libode-sp-dev@ubuntu libogre-dev@ubuntu libogremain-1.6.4@ubuntu ogre-tools@ubuntu
+	libode1sp@ubuntu libode-sp-dev@ubuntu libogre-dev@ubuntu libogremain-1.6.4@ubuntu ogre-tools@ubuntu libxml2-dev@ubuntu
 
 LIBDEPS = contrib/player-3.0.2
 
