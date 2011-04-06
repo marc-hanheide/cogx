@@ -19,7 +19,3 @@ include ../../gar.extend.mk
 
 CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
 
-checksum-$(DISTFILES):  
-	true
-checksum-$(PATCHFILES): 
-	true
