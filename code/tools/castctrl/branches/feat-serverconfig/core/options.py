@@ -36,13 +36,14 @@ def getUserOptions():
     return _userOptions
 
 # Env-var expander
-def _xe(shexpr, env=None):
+def _xe(shexpr, env=None, keepUnknown=False):
     if env == None: env = startup_environ
     for rx in [regSimple, regSimpleBrace]:
         mos = [mo for mo in rx.finditer(shexpr)]
         mos.reverse()
         for m in mos:
             if env.has_key(m.group(1)): v = env[m.group(1)]
+            elif keepUnknown: v = "${%s}" % m.group(1)
             else: v = ""
             shexpr = shexpr.replace(m.group(0), v)
 
@@ -155,11 +156,13 @@ class CCastOptions(object):
             return self.environ.copy()
 
         # Parse defaults to discover missing variables
-        edef = self._mergeEnvironment({}, defaults)
+        defaults = self._parseEnvironmentScript(defaults)
         enew = {}
-        for k,v in edef.items():
+        for (k, v, isPath) in defaults:
             if not k in self.environ:
-                enew[k] = _xe(v, self.environ)
+                v = _xe(v, self.environ, keepUnknown=True)
+                if isPath: v = self._cleanPathList(v)
+                enew[k] = v
         if len(enew) < 1:
             return self.environ.copy()
 
@@ -293,6 +296,12 @@ class CCastOptions(object):
         paths = separator.join(paths)
         return paths
 
+    def _cleanPathList(self, pathString, delim=":"):
+        p = pathString.replace(": :", ":")
+        p = p.replace("::", ":")
+        p = p.strip(": ")
+        return p
+
     def _readMultiLine(self, lineIterator):
         res = []
         for stm in lineIterator:
@@ -303,32 +312,42 @@ class CCastOptions(object):
             res.append(stm)
         return " ".join(res)
 
-    def _mergeEnvironment(self, env, expressionList):
-        self._tempNewEnv = env.copy()
-        iexpr = expressionList.__iter__()
+
+    # Returns a list [ (key, value, isPath), ... ]
+    def _parseEnvironmentScript(self, lineList):
+        iexpr = lineList.__iter__()
+        elist = []
         for stm in iexpr:
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
             mo = regVarSet.match(stm)
+            isPath = False
             if mo != None:
                 lhs, rhs = mo.group(1), mo.group(2)
                 if rhs == "<pathlist>":
                     rhs = self._readPathList(iexpr, ":")
-                    rhs = _xe(rhs, self._tempNewEnv)
-                    rhs = rhs.replace(": :", ":")
-                    rhs = rhs.replace("::", ":")
-                    rhs = rhs.strip(": ")
+                    isPath = True
                 elif rhs == "<multiline>":
                     rhs = self._readMultiLine(iexpr)
-                    rhs = _xe(rhs, self._tempNewEnv)
-                else:
-                    rhs = _xe(rhs, self._tempNewEnv)
                 rhs = rhs.replace("[PWD]", self.codeRootDir)
-                self._tempNewEnv[lhs] = rhs
+
+                elist.append( (lhs, rhs, isPath) )
             else: print "Invalid ENV expression:", stm
 
+        return elist
+
+    def _mergeEnvironment(self, env, expressionList):
+        self._tempNewEnv = env.copy()
+
+        elist = self._parseEnvironmentScript(expressionList)
+        for (lhs, rhs, isPath) in elist:
+            rhs = _xe(rhs, self._tempNewEnv)
+            if isPath: rhs = self._cleanPathList(rhs)
+            self._tempNewEnv[lhs] = rhs
+
         return self._tempNewEnv
+
 
     def configEnvironment(self):
         newenv = self.environ
