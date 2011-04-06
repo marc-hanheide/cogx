@@ -3,7 +3,7 @@ include_directories(../autogen)
 Find_package(Player REQUIRED)
 Find_package(X11 REQUIRED)
 # Set build type
-  set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Peekabot REQUIRED)
 
