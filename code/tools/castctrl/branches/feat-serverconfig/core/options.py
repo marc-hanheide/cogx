@@ -376,8 +376,11 @@ class CCastOptions(object):
         pass
 
     def getOption(self, key):
+        key = key.lower() # ConfigParser uses lower case in the default optionxform()
         if self.options.has_key(key): return self.options[key]
         return ""
 
     def setOption(self, key, value):
+        key = key.lower() # ConfigParser uses lower case in the default optionxform()
         self.options["%s" % key] =  "%s" % value
+
