@@ -8,6 +8,7 @@ CategoricalWidget::CategoricalWidget(QWidget *parent, conceptual::Tester *compon
 {
 	ui.setupUi(this);
 	qRegisterMetaType< QVector<double> >("QVector<double>");
+	qRegisterMetaType< QList<double> >("QList<double>");
 
 	// Color map for images
 	for (int i=0; i<256; ++i)
