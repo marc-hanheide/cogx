@@ -1,7 +1,7 @@
 project(SequentialAdaBoost)
 
 # Set build type
-set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Release)
 
 # Set the sources.
 set(SOURCES 
