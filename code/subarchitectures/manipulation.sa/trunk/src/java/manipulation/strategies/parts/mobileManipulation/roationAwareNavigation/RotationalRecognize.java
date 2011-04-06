@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigation;
+package manipulation.strategies.parts.mobileManipulation.roationAwareNavigation;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;

@@ -1,18 +1,17 @@
-package manipulation.strategies.parts.mobileManipulationNew.farNavigation;
+package manipulation.strategies.parts.mobileManipulation.roationAwareNavigation;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
-import manipulation.core.share.types.ViewPoint;
-import manipulation.itemMemory.Item.PropertyName;
-import manipulation.math.MathOperation;
+import manipulation.core.share.exceptions.MathException;
+import manipulation.itemMemory.ItemMemory.UpdateAction;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 
 import org.apache.log4j.Logger;
 
-public class UpdateBestViewPointPosition extends StrategyPart {
+public class UpdateBestViewPointRotation extends StrategyPart {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -24,11 +23,11 @@ public class UpdateBestViewPointPosition extends StrategyPart {
 	 * @param globalStrategy
 	 *            corresponding global strategy
 	 */
-	public UpdateBestViewPointPosition(Manipulator manipulator,
+	public UpdateBestViewPointRotation(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.UPDATE_BEST_VIEWPOINT_POSITION);
+		setPartName(PartName.UPDATE_BEST_VIEWPOINT_ROTATION);
 
 	}
 
@@ -40,33 +39,21 @@ public class UpdateBestViewPointPosition extends StrategyPart {
 		logger.debug("execute: " + this.getClass());
 
 		try {
-			getManipulator().getItemMemory().updateViewPointErrorByDistance(
+
+			// TODO nur wenn VP geändertt wurde neu generieren!!!!!
+			getManipulator().getItemMemory().updateRotationAwareViewPoints(
 					getManipulator().getItemMemory().getFirstGraspItem(),
-					getManipulator());
+					getManipulator(), UpdateAction.GENERATE);
 
-			double distance = MathOperation.getDistance(getManipulator()
-					.getBaseConnector().getCurrentPosition().getPoint(),
-					((ViewPoint) getManipulator().getItemMemory()
-							.getFirstGraspItem().getAttribute(
-									PropertyName.BEST_VIEW_POINT))
-							.getPosition().getPoint());
+			setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
 
-			// TODO constant
-			if (distance > 0.1) {
-				logger.error("Other and better viewpoint avialable!");
-				logger.error("Dist: " + distance);
-				setNextPartName(PartName.FAR_APPROACH);
-
-			} else {
-				logger.error("Reached good viewpoint");
-				logger.error("Dist: " + distance);
-				setNextPartName(PartName.UPDATE_BEST_VIEWPOINT_ROTATION);
-			}
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
 		} catch (ItemException e) {
 			logger.error(e);
 		} catch (InternalMemoryException e) {
+			logger.error(e);
+		} catch (MathException e) {
+			logger.error(e);
+		} catch (ExternalMemoryException e) {
 			logger.error(e);
 		}
 

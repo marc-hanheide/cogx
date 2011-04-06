@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.farNavigation;
+package manipulation.strategies.parts.mobileManipulation.farNavigation;
 
 import java.util.Observable;
 import java.util.Observer;

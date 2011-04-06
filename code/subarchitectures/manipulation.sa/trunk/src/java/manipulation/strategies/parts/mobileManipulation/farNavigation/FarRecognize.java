@@ -1,4 +1,4 @@
-package manipulation.strategies.parts.mobileManipulationNew.farNavigation;
+package manipulation.strategies.parts.mobileManipulation.farNavigation;
 
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
