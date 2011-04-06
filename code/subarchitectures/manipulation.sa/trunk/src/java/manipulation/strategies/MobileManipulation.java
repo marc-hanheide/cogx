@@ -6,18 +6,18 @@ import manipulation.core.share.Manipulator;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Vector3D;
 import manipulation.strategies.parts.StrategyPart.PartName;
-import manipulation.strategies.parts.mobileManipulationNew.farNavigation.FarApproach;
-import manipulation.strategies.parts.mobileManipulationNew.farNavigation.FarRecognize;
-import manipulation.strategies.parts.mobileManipulationNew.farNavigation.GoToStartPosition;
-import manipulation.strategies.parts.mobileManipulationNew.farNavigation.UpdateBestViewPointPosition;
-import manipulation.strategies.parts.mobileManipulationNew.grasp.FarGrasping;
-import manipulation.strategies.parts.mobileManipulationNew.grasp.FineGrasping;
-import manipulation.strategies.parts.mobileManipulationNew.graspingAwareNavigation.CalculateBestGraspingPosition;
-import manipulation.strategies.parts.mobileManipulationNew.graspingAwareNavigation.GoToBestGraspingPoint;
-import manipulation.strategies.parts.mobileManipulationNew.graspingAwareNavigation.NearRecognize;
-import manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigation.GoToBestRotationalPoint;
-import manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigation.RotationalRecognize;
-import manipulation.strategies.parts.mobileManipulationNew.roationAwareNavigation.UpdateBestViewPointRotation;
+import manipulation.strategies.parts.mobileManipulation.farNavigation.FarApproach;
+import manipulation.strategies.parts.mobileManipulation.farNavigation.FarRecognize;
+import manipulation.strategies.parts.mobileManipulation.farNavigation.GoToStartPosition;
+import manipulation.strategies.parts.mobileManipulation.farNavigation.UpdateBestViewPointPosition;
+import manipulation.strategies.parts.mobileManipulation.grasp.FarGrasping;
+import manipulation.strategies.parts.mobileManipulation.grasp.FineGrasping;
+import manipulation.strategies.parts.mobileManipulation.graspingAwareNavigation.CalculateBestGraspingPosition;
+import manipulation.strategies.parts.mobileManipulation.graspingAwareNavigation.GoToBestGraspingPoint;
+import manipulation.strategies.parts.mobileManipulation.graspingAwareNavigation.NearRecognize;
+import manipulation.strategies.parts.mobileManipulation.roationAwareNavigation.GoToBestRotationalPoint;
+import manipulation.strategies.parts.mobileManipulation.roationAwareNavigation.RotationalRecognize;
+import manipulation.strategies.parts.mobileManipulation.roationAwareNavigation.UpdateBestViewPointRotation;
 
 /**
  * defines the global strategy (state machine) to manipulate items with a mobile

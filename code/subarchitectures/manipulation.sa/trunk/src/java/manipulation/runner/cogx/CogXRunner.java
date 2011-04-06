@@ -11,11 +11,13 @@ import manipulation.core.share.ManipulatorStore;
 import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
-import manipulation.core.share.types.Vector3D;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
-import manipulation.slice.GraspCommand;
+import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.LinearBaseMovementApproachCommand;
+import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.PutDownCommand;
+import manipulation.slice.SimulateGraspCommand;
 import manipulation.strategies.Strategy;
 import manipulation.visualisation.CogXTestGUI;
 
@@ -23,14 +25,11 @@ import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cogx.Math.Vector3;
 
 /**
  * concrete start-up / runner for the Birmingham / CogX environment
@@ -156,28 +155,12 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				});
 	}
 
+	
+	
 	/**
 	 * add the manipulation listener to the CAST working memory
 	 */
 	public void addManipulationListener() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				GraspCommand.class, WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.debug("Getting graspCommand from add action in WM");
-						handleGraspCommand(_wmc);
-					}
-				});
-
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				GraspCommand.class, WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.debug("Getting graspCommand from overwrite action in WM");
-
-					}
-				});
-
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 				PutDownCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -193,21 +176,74 @@ public class CogXRunner extends ManagedComponent implements Runner {
 						logger.error("Getting putDownCommand from overwrite action in WM");
 					}
 				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				FarArmMovementCommand.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting FarArmMovementCommand from add action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				FarArmMovementCommand.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting FarArmMovementCommand from overwrite action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				LinearGraspApproachCommand.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting LinearGraspApproachCommand from add action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				LinearGraspApproachCommand.class,
+				WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting LinearGraspApproachCommand from overwrite action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				SimulateGraspCommand.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting SimulateGraspCommand from add action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				SimulateGraspCommand.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting SimulateGraspCommand from overwrite action in WM");
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				LinearBaseMovementApproachCommand.class,
+				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				logger.error("Getting LinearBaseMovementApproachCommand from add action in WM");
+			}
+		});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				LinearBaseMovementApproachCommand.class,
+				WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.error("Getting LinearBaseMovementApproachCommand from overwrite action in WM");
+					}
+				});
 	}
 
-	void handleGraspCommand(WorkingMemoryChange _wmc) {
-		try {
-			GraspCommand command = getMemoryEntry(_wmc.address,
-					GraspCommand.class);
-			Vector3 position = command.targetObject.pose.pos;
-			manipulator.getArmConnector().approachObject(
-					new Vector3D(position.x, position.y, position.z));
-		} catch (DoesNotExistOnWMException e) {
-			logger.error(e);
-		} catch (UnknownSubarchitectureException e) {
-			logger.error(e);
-		}
-	}
 
 	/**
 	 * {@inheritDoc}
