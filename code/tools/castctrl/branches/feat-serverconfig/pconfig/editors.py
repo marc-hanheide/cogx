@@ -4,6 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 class ICustomEditorBase:
     # @param data see CTreeItem.data()
+    # data = QVariant( [ string type, object property, function formatter ] )
     def setEditData(self, data): pass
 
     # @return see CTreeItem.setData()
@@ -78,21 +79,17 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         horz = QtGui.QHBoxLayout(self)
         horz.setContentsMargins(0, 0, -1, 0)
 
-        self.e = QtGui.QLineEdit(self)
-        #self.cb = QtGui.QComboBox(self)
-        #self.cb.setEditable(True)
-        #self.cb.setLineEdit(self.e)
+        #ctrl = self._ui_init_line_edit()
+        ctrl = self._ui_init_combo_box()
+
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(4)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.e.sizePolicy().hasHeightForWidth())
-        self.e.setSizePolicy(sizePolicy)
-        horz.addWidget(self.e)
+        ctrl.setSizePolicy(sizePolicy)
+        horz.addWidget(ctrl)
         # Pass the focus to the editor on start. Also necessary for QToolButton-s to work.
-        self.setFocusProxy(self.e)
-
-        #TODO: Combo box instead of QLineEdit
-        #self.connect(self.e, QtCore.SIGNAL("currentIndexChanged(int)"), self.onComboIndexChanged)
+        self.setFocusProxy(ctrl)
 
         #self.b = QtGui.QPushButton(self)
         self.b = QtGui.QToolButton(self)
@@ -114,6 +111,22 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         horz.addWidget(self.be)
         self.connect(self.be, QtCore.SIGNAL("clicked(bool)"), self.onEditFile)
 
+
+    def _ui_init_line_edit(self):
+        self.e = QtGui.QLineEdit(self)
+        return self.e
+
+
+    def _ui_init_combo_box(self):
+        self.cb = QtGui.QComboBox(self)
+        self.e = QtGui.QLineEdit(self.cb)
+        self.cb.setEditable(True)
+        self.cb.setLineEdit(self.e)
+
+        self.connect(self.cb, QtCore.SIGNAL("currentIndexChanged(int)"), self.onComboIndexChanged)
+        return self.cb
+
+
     def onBrowseForFile(self):
         qfd = QtGui.QFileDialog
         fn = qfd.getOpenFileName(self, self.e.text(), "", self.filter)
@@ -131,7 +144,10 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
             pass
 
     def onComboIndexChanged(self, index):
-        if index < 1: return
+        if index < 0: return
+        value = "%s" % self.cb.itemData(index).toString()
+        self.e.setText(value)
+
         #fn = self._playerConfig
         #self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
         #        self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
@@ -140,11 +156,29 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         ldata = data.toList()
         self._type = ldata[0]
         prop = ldata[1].toPyObject()
+
+        if len(ldata) > 2:
+            self.formatter = ldata[2].toPyObject()
+
+        if prop.mruEnabled:
+            if prop.mruHistory == None:
+                prop.mruHistory = []
+            cb = self.cb
+            cb.blockSignals(True)
+            while cb.count() > 0:
+                cb.removeItem(0);
+            for mri in prop.mruHistory:
+                cb.addItem(self.formatter(mri), QtCore.QVariant(mri))
+                print "History: ", mri
+            #cb.setCurrentIndex(0)
+            cb.blockSignals(False)
+
         v = prop.value if prop.value != None else ""
         self.e.setText(v)
         self.filter = prop.filter
-        if len(ldata) > 2:
-            self.formatter = ldata[2].toPyObject()
+        print "Value: ", v
+
+
 
     def editData(self):
         return QtCore.QVariant([self._type, self.e.text()])
