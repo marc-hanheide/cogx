@@ -9,9 +9,13 @@ class CServerInfo(CPropertySet):
         self.command = None
         self.workdir = None
         self.defaultVars = []
+        self._paramPreprocess = None
 
         if 'group' in kwargs: self.group = kwargs['group']
         else: self.group = 'A'
+
+    def setParamProcessor(self, processor):
+        self._paramPreprocess = processor
 
     def setVar(self, name, value):
         self.defaultVars.append( (name, value) )
@@ -30,8 +34,12 @@ class CServerInfo(CPropertySet):
 
     def getParameters(self):
         params = {}
-        for p in self.properties:
-            params[p.name] = "%s" % p.value
+        if self._paramPreprocess != None:
+            for p in self.properties:
+                params[p.name] = "%s" % self._paramPreprocess("%s" % p.name, "%s" % p.value)
+        else:
+            for p in self.properties:
+                params[p.name] = "%s" % p.value
         return params if len(params) > 0 else None
 
     def getEnvVarScript(self):
