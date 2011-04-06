@@ -178,13 +178,9 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         # Config actions
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
-        self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
-        self.connect(self.ui.actOpenGolemConfig, QtCore.SIGNAL("triggered()"), self.onBrowseGolemConfig)
         self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
-        self.connect(self.ui.playerConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onPlayerConfigChanged)
-        self.connect(self.ui.golemConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onGolemConfigChanged)
         self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
 
         # Process actions
@@ -220,12 +216,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         for fn in self._options.mruCfgCast:
             if fn.strip() == "": continue
             self.ui.clientConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-        for fn in self._options.mruCfgPlayer:
-            if fn.strip() == "": continue
-            self.ui.playerConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-        for fn in self._options.mruCfgGolem:
-            if fn.strip() == "": continue
-            self.ui.golemConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
         for fn in self._options.mruCfgHosts:
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
@@ -248,13 +238,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             except: return default
         self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
-        self.ui.ckRunPeekabot.setCheckState(ckint("ckRunPeekabot", 2))
-        self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
-        self.ui.ckRunGolem.setCheckState(ckint("ckRunGolem", 2))
         self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
-        self.ui.ckRunDisplaySrv.setCheckState(ckint("ckRunDisplaySrv", 2))
-        self.ui.ckRunAbducerServer.setCheckState(ckint("ckRunAbducerServer", 2))
-        self.ui.ckRunSpeechServer.setCheckState(ckint("ckRunSpeechServer", 2))
         self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
 
     def _fillMessageFilterCombo(self):
@@ -361,20 +345,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         return fn.toString()
 
     @property
-    def _playerConfig(self):
-        cmb = self.ui.playerConfigCmbx
-        i = cmb.currentIndex()
-        fn = cmb.itemData(i)
-        return fn.toString()
-
-    @property
-    def _golemConfig(self):
-        cmb = self.ui.golemConfigCmbx
-        i = cmb.currentIndex()
-        fn = cmb.itemData(i)
-        return fn.toString()
-
-    @property
     def _hostConfig(self):
         cmb = self.ui.hostConfigCmbx
         i = cmb.currentIndex()
@@ -442,19 +412,6 @@ class CCastControlWnd(QtGui.QMainWindow):
             cfg.read(self.fnhist)
             self.serverManager.loadServerConfig(cfg)
 
-        #self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
-        #self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
-        #self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
-        #self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
-        #self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
-        #self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
-        #self.procGroupA.addProcess("display")
-        #self.procGroupA.addProcess("player")
-        #self.procGroupA.addProcess("peekabot")
-        #self.procGroupA.addProcess("abducer")
-        #self.procGroupA.addProcess("mary.tts")
-        #self.procGroupA.addProcess("golem")
-
         p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
         p.messageProcessor = log4util.CLog4MessageProcessor()
         self._manager.addProcess(p)
@@ -502,8 +459,6 @@ class CCastControlWnd(QtGui.QMainWindow):
             print e
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
-            self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
-            self._options.mruCfgGolem = getitems(self.ui.golemConfigCmbx)
             self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx, hasNullFile=True)
             self._options.setOption("log4jServerPort", self._log4jServerPort)
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
@@ -511,13 +466,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
-            self._options.setOption("ckRunPeekabot", self.ui.ckRunPeekabot.checkState())
-            self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
-            self._options.setOption("ckRunGolem", self.ui.ckRunGolem.checkState())
             self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
-            self._options.setOption("ckRunDisplaySrv", self.ui.ckRunDisplaySrv.checkState())
-            self._options.setOption("ckRunAbducerServer", self.ui.ckRunAbducerServer.checkState())
-            self._options.setOption("ckRunSpeechServer", self.ui.ckRunSpeechServer.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
 
             cfg = ConfigParser.RawConfigParser()
@@ -781,29 +730,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         hasServer = self.ui.ckRunLog4jServer.isChecked() # TODO: or ckUseLog4jServer.isChecked()
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        #if self.ui.ckRunPlayer.isChecked():
-        #    p = self._manager.getProcess("player")
-        #    if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
-
-        #if self.ui.ckRunGolem.isChecked():
-        #    p = self._manager.getProcess("golem")
-        #    if p != None: p.start( params = { "GOLEM_CONFIG": self._golemConfig } )
-
-        #if self.ui.ckRunPeekabot.isChecked():
-        #    p = self._manager.getProcess("peekabot")
-        #    if p != None: p.start()
-
-        #if self.ui.ckRunDisplaySrv.isChecked():
-        #    p = self._manager.getProcess("display")
-        #    if p != None: p.start()
-
-        #if self.ui.ckRunAbducerServer.isChecked():
-        #    p = self._manager.getProcess("abducer")
-        #    if p != None: p.start()
-
-        #if self.ui.ckRunSpeechServer.isChecked():
-        #    p = self._manager.getProcess("mary.tts")
-        #    if p != None: p.start()
 
         for name in self.procGroupA.processlist:
             csi = None
@@ -978,14 +904,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not valid: return
         self.editFile(self._clientConfig)
 
-    def on_btEditPlayerConfig_clicked(self, valid=True):
-        if not valid: return
-        self.editFile(self._playerConfig)
-
-    def on_btEditGolemConfig_clicked(self, valid=True):
-        if not valid: return
-        self.editFile(self._golemConfig)
-
     def on_btEditHostConfig_clicked(self, valid=True):
         if not valid: return
         if not self.isNullFilename(self._hostConfig):
@@ -1056,38 +974,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         if index < 1: return
         fn = self._clientConfig
         self._ComboBox_SelectMru(self.ui.clientConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onBrowsePlayerConfig(self):
-        qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(
-            self, self.ui.actOpenPlayerConfig.text(),
-            "", "Player Config (*.cfg)")
-        if fn != None and len(fn) > 1:
-            fn = self.makeConfigFileRelPath(fn)
-            self._ComboBox_AddMru(self.ui.playerConfigCmbx,
-                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onPlayerConfigChanged(self, index):
-        if index < 1: return
-        fn = self._playerConfig
-        self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onBrowseGolemConfig(self):
-        qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(
-            self, self.ui.actOpenGolemConfig.text(),
-            "", "Golem Config (*.xml)")
-        if fn != None and len(fn) > 1:
-            fn = self.makeConfigFileRelPath(fn)
-            self._ComboBox_AddMru(self.ui.golemConfigCmbx,
-                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onGolemConfigChanged(self, index):
-        if index < 1: return
-        fn = self._golemConfig
-        self._ComboBox_SelectMru(self.ui.golemConfigCmbx, index,
                 self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onBrowseHostConfig(self):
