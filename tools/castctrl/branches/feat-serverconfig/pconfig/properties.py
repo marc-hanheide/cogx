@@ -100,6 +100,8 @@ class CPropertySet(object):
         self.properties.append(p)
 
     def stringItemField(self, name, label=None, items=None, default=None, group=None):
+        if default == None and items != None:
+            default = items[0]
         p = CStringItemProperty(name, label, default, items)
         self.properties.append(p)
 
