@@ -1,4 +1,7 @@
-# vim: set ft=python ts=8 sw=4 et :vim #
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 ft=python ts=8 sw=4 et :vim #
+# Author: Marko Mahnič
+# Created: March 2011
 
 class CProperty(object):
     def __init__(self, name, label=None, default=None):

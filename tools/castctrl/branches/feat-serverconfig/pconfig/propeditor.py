@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim #
+# Author: Marko Mahnič
+# Created: March 2011
 
 import os, sys
 from PyQt4 import QtCore, QtGui
