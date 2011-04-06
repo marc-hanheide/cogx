@@ -21,13 +21,9 @@ public abstract class Strategy {
 	 */
 	public enum Name {
 		/**
-		 * name for the mobile manipulation behaviour.
+		 * name of the new reactive mobile manipulation behaviour.
 		 */
 		MOBILE_MANIPULATION,
-		/**
-		 * name for the new reactive mobile manipulation behaviour.
-		 */
-		MOBILE_MANIPULATION_NEW,
 		/**
 		 * name for the calibration behaviour.
 		 */

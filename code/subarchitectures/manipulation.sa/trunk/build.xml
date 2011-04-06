@@ -37,6 +37,14 @@
 	<target name="slice" depends="prepare" description="generates source from slice">
 		<slice2java tie="true" outputdir="${src.dir}">
 			<fileset dir="/usr/local/share/golem/slice" includes="TinyIce.ice" />
+			<fileset dir="${slice.dir}" includes="manipulation.ice" />
+			
+			<includepath>
+							<pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
+							<pathelement path="${basedir}/../../tools/math/src/slice" />
+							<pathelement path="${basedir}/../vision.sa/src/slice" />
+							<pathelement path="${castslice.dir}" />
+						</includepath>
 		</slice2java>
 	</target>
 

@@ -490,7 +490,7 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 				@Override
 				public void run() {
 					manipulator.getRunner().startStrategy(
-							Name.MOBILE_MANIPULATION_NEW);
+							Name.MOBILE_MANIPULATION);
 				}
 			});
 			t.start();

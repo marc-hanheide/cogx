@@ -39,7 +39,7 @@ public class MobileManipulationNew extends Strategy {
 	 */
 	public MobileManipulationNew(Manipulator manipulator) {
 		setManipulator(manipulator);
-		setName(Name.MOBILE_MANIPULATION_NEW);
+		setName(Name.MOBILE_MANIPULATION);
 		initParts();
 		setFirstPart(getPart(PartName.FAR_APPROACH));
 
