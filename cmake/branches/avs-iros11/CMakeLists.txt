@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # ------------ <CCache> ------------
 if(USE_CCACHE)
 	set(CMAKE_CXX_COMPILER "ccache")
