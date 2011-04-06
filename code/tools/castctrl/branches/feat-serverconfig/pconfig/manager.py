@@ -63,29 +63,36 @@ class CServerManager:
 
         return srvrs
 
-    def saveServerConfig(self, file):
+    def saveServerConfig(self, configParser):
+        p = configParser
         for csi in self.servers:
-            file.write("\n### %s ###\n" % (csi.name))
-            file.write("[Server:%s]\n" % (csi.name.upper()))
-            file.write("enabled=%d\n" % (1 if csi.enabled else 0))
+            section = "Server:%s" % (csi.name.upper())
+            if not p.has_section(section):
+                p.add_section(section)
+            p.set(section, "enabled", "1" if csi.enabled else "0")
             for prop in csi.properties:
                 v = prop.value
                 if v == None: v = ""
-                file.write("%s=%s\n" % (prop.name, v))
+                p.set(section, prop.name, "%s" % v)
 
             for prop in csi.properties:
                 if not prop.mruEnabled: continue
+
+                section = "MRU:%s-%s" % (csi.name.upper(), prop.name)
+                p.remove_section(section)
+                p.add_section(section)
+
                 if not prop.mruHistory: continue
                 if len(prop.mruHistory) < 1: continue
 
-                file.write("\n[MRU:%s-%s]\n" % (csi.name.upper(), prop.name))
                 for i,h in enumerate(prop.mruHistory):
-                    file.write("%03d=%s\n" % (i+1, h))
+                    p.set(section, "%03d" % (i+1), "%s" % h)
 
-    def loadServerConfig(self, filename):
-        import ConfigParser
-        p = ConfigParser.RawConfigParser()
-        p.read(filename)
+    def loadServerConfig(self, configParser):
+        #import ConfigParser
+        #p = ConfigParser.RawConfigParser()
+        #p.read(filename)
+        p = configParser
         for csi in self.servers:
             section = "Server:%s" % csi.name.upper()
             if not p.has_section(section): continue
@@ -103,7 +110,6 @@ class CServerManager:
                 section = "MRU:%s-%s" % (csi.name.upper(), prop.name)
                 if not p.has_section(section): continue
                 items = sorted(p.items(section))
-                if len(items) < 1: continue
                 prop.mruHistory = [ v[1] for v in items ]
 
 

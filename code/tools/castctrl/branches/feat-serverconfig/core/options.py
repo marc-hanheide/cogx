@@ -210,35 +210,31 @@ class CCastOptions(object):
             self.loadConfig(filename)
             self.configEnvironment()
 
-    def loadHistory(self, filename):
-        if not os.path.exists(filename): return
-        f = open(filename, "r")
-        options = []
-        section = None
-        for ln in f.readlines():
-            l = ln.split('#')[0]
-            l = l.strip()
-            if l == "[MRU-CAST]": section = self.mruCfgCast
-            elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
-            elif l == "[MRU-GOLEM]": section = self.mruCfgGolem
-            elif l == "[MRU-HOSTS]": section = self.mruCfgHosts
-            elif l == "[OPTIONS]": section = options
-            elif l.startswith('['): section = None
-            elif section != None:
-                section.append(ln.rstrip())
 
-        f.close()
+    def _get_mru_lists(self):
+        return [ ("MRU-CAST", self.mruCfgCast), ("MRU-HOSTS", self.mruCfgHosts) ]
 
-        # TODO: use ConfigParser to parse options!
-        self.mruCfgCast = [ l[4:] for l in self.mruCfgCast ] # XXX: manually removing 00x=
-        self.mruCfgHosts = [ l[4:] for l in self.mruCfgHosts ] # XXX: manually removing 00x=
 
-        for ln in options:
-            expr = ln.split("=", 2)
-            if len(expr) != 2: continue
-            expr = [ e.strip() for e in expr ]
-            if expr[0].startswith("#") or expr[0] == "": continue
-            self.options[expr[0]] = expr[1]
+    def loadHistory(self, configParser):
+        p = configParser
+        hists = self._get_mru_lists()
+
+        for mru in hists:
+            section = mru[0]
+            if not p.has_section(section): continue
+            items = sorted(p.items(section))
+            mlist = mru[1]
+            try: # clear list
+                while 1: mlist.pop()
+            except: pass
+            mlist += [ v[1] for v in items ]
+
+        section = "OPTIONS"
+        if p.has_section(section):
+            items = p.items(section)
+            for v in items:
+                self.options[v[0]] = v[1]
+
 
     def getSection(self, sectionName):
         if self.confSection.has_key(sectionName): return self.confSection[sectionName]
@@ -261,23 +257,23 @@ class CCastOptions(object):
                 f.write(ln); f.write("\n")
 
 
-    def saveHistory(self, afile):
-        f = afile
-        f.write("[MRU-CAST]\n")
-        for i,ln in enumerate(self.mruCfgCast):
-            f.write("%03d=%s\n" % (i, ln))
-        f.write("[MRU-PLAYER]\n")
-        for ln in self.mruCfgPlayer:
-            f.write(ln); f.write("\n")
-        f.write("[MRU-GOLEM]\n")
-        for ln in self.mruCfgGolem:
-            f.write(ln); f.write("\n")
-        f.write("[MRU-HOSTS]\n")
-        for i,ln in enumerate(self.mruCfgHosts):
-            f.write("%03d=%s\n" % (i, ln))
-        f.write("[OPTIONS]\n")
+    def saveHistory(self, configParser):
+        p = configParser
+        hists = self._get_mru_lists()
+
+        for mru in hists:
+           section = mru[0]
+           p.remove_section(section)
+           p.add_section(section)
+           for i,h in enumerate(mru[1]):
+              p.set(section, "%03d" % (i+1), "%s" % h)
+
+        section = "OPTIONS"
+        if not p.has_section(section):
+            p.add_section(section)
         for k,v in self.options.iteritems():
-            f.write("%s=%s\n" % (k,v))
+            p.set(section, "%s" % k, "%s" % v)
+
 
     def _globFileList(self, globTag):
         globTag = globTag.replace("<glob>", "").replace("</glob>", "")

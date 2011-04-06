@@ -6,6 +6,7 @@
 import os, sys, time
 import re
 import tempfile
+import ConfigParser
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages, logger, confbuilder, network
@@ -106,8 +107,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.fnhist = "castcontrol.hist"
         self._options = options.getCastOptions()
         self._options.loadConfig(self.fnconf)
-        if os.path.exists(self.fnhist): self._options.loadHistory(self.fnhist)
-        else: self._options.loadHistory(self.fnconf) # old place for history
+        if os.path.exists(self.fnhist):
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self._options.loadHistory(cfg)
         self._options.configEnvironment()
         self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
@@ -435,7 +438,9 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._manager.addProcess(procman.CProcess(csi.name, command=None))
 
         if os.path.exists(self.fnhist):
-            self.serverManager.loadServerConfig(self.fnhist)
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self.serverManager.loadServerConfig(cfg)
 
         #self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
         #self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
@@ -515,9 +520,12 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckRunSpeechServer", self.ui.ckRunSpeechServer.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
 
-            fhist = open(self.fnhist, 'w')
-            self._options.saveHistory(fhist)
-            self.serverManager.saveServerConfig(fhist)
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self._options.saveHistory(cfg)
+            self.serverManager.saveServerConfig(cfg)
+            with open(self.fnhist, 'wb') as conffile:
+                cfg.write(conffile)
 
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
