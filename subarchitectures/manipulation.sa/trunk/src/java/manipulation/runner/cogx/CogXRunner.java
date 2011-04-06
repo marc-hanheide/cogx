@@ -160,9 +160,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 		Strategy strategy = null;
 		switch (strategyName) {
 		case MOBILE_MANIPULATION:
-			strategy = new MobileManipulation(manipulator);
-			break;
-		case MOBILE_MANIPULATION_NEW:
 			strategy = new MobileManipulationNew(manipulator);
 			break;
 		case CALIBRATION:
