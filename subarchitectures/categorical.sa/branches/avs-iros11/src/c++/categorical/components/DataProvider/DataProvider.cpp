@@ -220,6 +220,9 @@ void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
     println("Empty scan, ignoring it");
     return;
   }
+  if (_odometryQueue.back().odompose.size()<1)
+    return;
+
   Laser::Scan2d scan = inScan;
 
   debug("Received scan acquired at %d.%d.", scan.time.s, scan.time.us);
