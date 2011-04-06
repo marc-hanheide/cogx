@@ -1,4 +1,7 @@
-# vim: set ft=python ts=8 sw=4 et :vim #
+#!/usr/bin/python
+# vim:set fileencoding=utf-8 sw=4 ts=8 et:vim #
+# Author: Marko Mahnič
+# Created: March 2011
 
 from properties import CPropertySet
 
