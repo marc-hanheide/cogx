@@ -13,16 +13,13 @@ import javax.swing.JPanel;
 
 import manipulation.core.share.Manipulator;
 import manipulation.runner.cogx.CogXRunner;
-import manipulation.slice.GraspCommand;
+import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.LinearBaseMovementApproachCommand;
+import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.PutDownCommand;
+import manipulation.slice.SimulateGraspCommand;
 
 import org.apache.log4j.Logger;
-
-import cogx.Math.Matrix33;
-import cogx.Math.Pose3;
-import cogx.Math.Vector3;
-
-import VisionData.VisualObject;
 
 import cast.AlreadyExistsOnWMException;
 
@@ -40,9 +37,11 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 	private Manipulator manipulator;
 
-	private JButton btnGrasp;
-
 	private JButton btnPutDown;
+	private JButton btnFarArm;
+	private JButton btnLinGraspApp;
+	private JButton btnSimGrasp;
+	private JButton btnLinBaseApp;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -90,17 +89,32 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		GridBagLayout gbl = new GridBagLayout();
 		pane.setLayout(gbl);
 
-		btnGrasp = new JButton("grasp command");
-		btnGrasp.setActionCommand("grasp");
-		btnGrasp.addActionListener(this);
-
 		btnPutDown = new JButton("put down command");
 		btnPutDown.setActionCommand("putDown");
 		btnPutDown.addActionListener(this);
 
+		btnFarArm = new JButton("far arm movement");
+		btnFarArm.setActionCommand("farArm");
+		btnFarArm.addActionListener(this);
+
+		btnLinGraspApp = new JButton("linear grasping approach");
+		btnLinGraspApp.setActionCommand("linGraspApp");
+		btnLinGraspApp.addActionListener(this);
+
+		btnSimGrasp = new JButton("simulate grasping");
+		btnSimGrasp.setActionCommand("simulateGrasp");
+		btnSimGrasp.addActionListener(this);
+
+		btnLinBaseApp = new JButton("linear base approach");
+		btnLinBaseApp.setActionCommand("linBaseApp");
+		btnLinBaseApp.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
-		addComponent(pane, gbl, btnGrasp, 0, 0, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnPutDown, 0, 1, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnPutDown, 0, 0, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnFarArm, 0, 1, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnLinGraspApp, 0, 2, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnSimGrasp, 0, 3, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnLinBaseApp, 0, 4, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -114,30 +128,58 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals("grasp")) {
+		if (e.getActionCommand().equals("putDown")) {
+			logger.error("putDown pressed");
+
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
-
-			GraspCommand graspCommand = new GraspCommand();
-			VisualObject vo = new VisualObject();
-			Pose3 pos = new Pose3(new Vector3(0, 1, 2), new Matrix33());
-			vo.pose = pos;
-
-			graspCommand.targetObject = vo;
-
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-						graspCommand);
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
-			}
-		} else if (e.getActionCommand().equals("putDown")) {
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
-
 			PutDownCommand putDownCommand = new PutDownCommand();
-
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						putDownCommand);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("farArm")) {
+			logger.error("farArm pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						farArmMovementCom);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("linGraspApp")) {
+			logger.error("linGraspApp pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			LinearGraspApproachCommand linGraspApproachCom = new LinearGraspApproachCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						linGraspApproachCom);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("simulateGrasp")) {
+			logger.error("simulateGrasp pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			SimulateGraspCommand simulateGraspCommand = new SimulateGraspCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						simulateGraspCommand);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("linBaseApp")) {
+			logger.error("linBaseApp pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			LinearBaseMovementApproachCommand linBaseMovCommand = new LinearBaseMovementApproachCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						linBaseMovCommand);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}

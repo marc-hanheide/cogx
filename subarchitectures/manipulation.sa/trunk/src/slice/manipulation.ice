@@ -14,25 +14,14 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief simulate the grasp command
-   		* @param targetObject object to simulate to 
-   		* @param translational error value of the inverse kinematic
+   		* @brief put down a given visual object
+   		* @param basedOnObject object to put down the current object
+   		* @param comp returns the completion of the put down task
    		* @author Torben Toeniges
    		**/
-		class SimulateGraspCommand {
-			VisionData::VisualObject targetObject;
-			double errorValue;
-		};
-
-		/**
-   		* @brief combination of the FarArmMovementCommand and the LinearGraspApproachCommand
-   		* @param targetObject object to grasp 
-   		* @param comp returns the completion of the whole grasp task
-   		* @author Torben Toeniges
-   		**/
-		class GraspCommand {
-			VisionData::VisualObject targetObject;
-			Completion comp;
+		class PutDownCommand {
+			VisionData::VisualObject basedOnObject;
+			Completion comp;			
 		};
 		
 		/**
@@ -41,7 +30,7 @@ module manipulation {
    		* @param comp returns the completion of the task
    		* @author Torben Toeniges
    		**/
-		class FarArmMovmentCommand {
+		class FarArmMovementCommand {
 			VisionData::VisualObject targetObject;
 			Completion comp;
 		};
@@ -58,14 +47,14 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief put down a given visual object
-   		* @param basedOnObject object to put down the current object
-   		* @param comp returns the completion of the put down task
+   		* @brief simulate the grasp command
+   		* @param targetObject object to simulate to 
+   		* @param translational error value of the inverse kinematic
    		* @author Torben Toeniges
    		**/
-		class PutDownCommand {
-			VisionData::VisualObject basedOnObject;
-			Completion comp;			
+		class SimulateGraspCommand {
+			VisionData::VisualObject targetObject;
+			double errorValue;
 		};
 		
 		/**
