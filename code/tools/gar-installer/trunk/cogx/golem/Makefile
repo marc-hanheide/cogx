@@ -7,10 +7,6 @@ WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
 MAINTAINER = ttoenige
 
-LIBDEPS = cogx/kni_3.9.2
-
-DEB_PACKAGES= 
-
 MFLAGS=$(MFLAGS_NUMCPU)
 
 
