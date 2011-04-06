@@ -5,9 +5,9 @@ DISTNAME = $(GARNAME)-$(GARVERSION)
 DISTFILES = $(DISTNAME).tar.gz
 WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
-MAINTAINER = ttoenige
+LIBDEPS = contrib/peak-linux
 
-MFLAGS=$(MFLAGS_NUMCPU)
+MAINTAINER = ttoenige
 
 
 CONFIGURE_SCRIPTS = cmake
