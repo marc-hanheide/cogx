@@ -19,9 +19,21 @@ disp.setCommand("${COGX_ROOT}/output/bin/display-server")
 
 gazebo = Server("Gazebo", label="Gazebo")
 gazebo.filenameField("WORLD", label="World", filter="Gazebo Worlds (*.world);;All files (*)")
-gazebo.stringItemField("GUI", label="Disable GUI", items=["", "-g"] )
-gazebo.stringItemField("PHYSICS", label="Disable Physics", items=["", "-p"] )
+gazebo.stringItemField("GUI", label="Show GUI", items=["Yes", "No"] )
+gazebo.stringItemField("PHYSICS", label="Enable Physics", items=["Yes", "No"] )
 gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
+
+def gazeboParamProcessor(name, value):
+    if name == "GUI":
+        if value == "No": return "-g"
+        return ""
+    if name == "PHYSICS":
+        if value == "No": return "-p"
+        return ""
+
+    return value
+
+gazebo.setParamProcessor(gazeboParamProcessor)
 
 
 player = Server("Player", label="Player")
