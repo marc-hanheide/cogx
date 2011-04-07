@@ -36,7 +36,11 @@ private:
    * WM IDs of camera poses.
    */
   std::vector<std::string> camWMIds;
-
+  /**
+   * If true, the camera mounting is considered fixed and the pan tilt server
+   * is not asked for positions.
+   */
+  bool isFixed;
   /**
    * for given pan and tilt angles, calculate poses of cameras w.r.t. robot ego
    * system
