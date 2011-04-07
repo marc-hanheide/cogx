@@ -53,71 +53,80 @@ class CConfigWidget(QtGui.QWidget):
         horz.addWidget(self.wItems)
 
 
+    def updateHeader(self):
+        self.wItems.expandAll()
+        self.wItems.resizeColumnToContents(0)
+        #maxWidth = self.wItems.width() / 3
+        #if self.wItems.columnWidth(0) > maxWidth:
+        #   self.wItems.setColumnWidth(0, maxWidth)
+        self.wItems.collapseAll()
+
+
     def addServers(self, servers):
         self.mProperties.addServers(servers)
         self.mProperties.prepareServerRows(self.wItems)
 
 
-    def loadServers(self, fname):
-        import manager
-        am = manager.CAppManager()
-        srvrs = am.discoverServers(fname)
-        self.mProperties.addServers(srvrs)
-        self.mProperties.prepareServerRows(self.wItems)
+    #def loadServers(self, fname):
+    #    import manager
+    #    am = manager.CAppManager()
+    #    srvrs = am.discoverServers(fname)
+    #    self.mProperties.addServers(srvrs)
+    #    self.mProperties.prepareServerRows(self.wItems)
 
 
-    def demoServers_load(self):
-        import manager
-        am = manager.CAppManager()
-        srvrs = am.discoverServers("mainservers.txt")
-        self.mProperties.addServers(srvrs)
-        srvrs = am.discoverServers("cogxservers.txt")
-        self.mProperties.addServers(srvrs)
+    #def demoServers_load(self):
+    #    import manager
+    #    am = manager.CAppManager()
+    #    srvrs = am.discoverServers("mainservers.txt")
+    #    self.mProperties.addServers(srvrs)
+    #    srvrs = am.discoverServers("cogxservers.txt")
+    #    self.mProperties.addServers(srvrs)
 
-    def demoData(self):
-        import extserver
-        prg = CProcessNode(self.mProperties.rootNode)
-        prop = CPropertyNode(prg)
-        prop.property = extserver.CStringProperty("Good")
-        prg.propertyList.append(prop)
-        prop = CPropertyNode(prg)
-        prop.property = extserver.CFilenameProperty("Filename")
-        prg.propertyList.append(prop)
-        self.mProperties.rootNode.processList.append(prg)
+    #def demoData(self):
+    #    import extserver
+    #    prg = CProcessNode(self.mProperties.rootNode)
+    #    prop = CPropertyNode(prg)
+    #    prop.property = extserver.CStringProperty("Good")
+    #    prg.propertyList.append(prop)
+    #    prop = CPropertyNode(prg)
+    #    prop.property = extserver.CFilenameProperty("Filename")
+    #    prg.propertyList.append(prop)
+    #    self.mProperties.rootNode.processList.append(prg)
 
-        prg = CProcessNode(self.mProperties.rootNode)
-        prop = CPropertyNode(prg)
-        prop.property = extserver.CStringProperty("Good", label="Good 2")
-        prg.propertyList.append(prop)
-        prop = CPropertyNode(prg)
-        prop.property = extserver.CFilenameProperty("Filename", label="Filename 2")
-        prg.propertyList.append(prop)
-        self.mProperties.rootNode.processList.append(prg)
+    #    prg = CProcessNode(self.mProperties.rootNode)
+    #    prop = CPropertyNode(prg)
+    #    prop.property = extserver.CStringProperty("Good", label="Good 2")
+    #    prg.propertyList.append(prop)
+    #    prop = CPropertyNode(prg)
+    #    prop.property = extserver.CFilenameProperty("Filename", label="Filename 2")
+    #    prg.propertyList.append(prop)
+    #    self.mProperties.rootNode.processList.append(prg)
 
-    def demoServers_make(self):
-        build = extserver.Server("BUILD", label="Build", group="Build")
-        build.stringField("BUILDDIR", label="Build directory", default="${COGX_ROOT}/BUILD")
-        build.stringItemField("PROFILE", label="Profile", items=["Debug", "Release"], default="Release")
-        build.setCommand("make [TARGET]", workdir="[BUILDDIR]")
+    #def demoServers_make(self):
+    #    build = extserver.Server("BUILD", label="Build", group="Build")
+    #    build.stringField("BUILDDIR", label="Build directory", default="${COGX_ROOT}/BUILD")
+    #    build.stringItemField("PROFILE", label="Profile", items=["Debug", "Release"], default="Release")
+    #    build.setCommand("make [TARGET]", workdir="[BUILDDIR]")
 
-        player = extserver.Server("PLAYER", label="Player")
-        player.filenameField("CONFIG",
-                label="Configuration", filter="Player Config (*.cfg);;All files (*)")
-        player.integerField("PORT", label="Port", default=0, range=(1000, 40000))
-        player.floatField("WEIGHT", label="Weight", default=0, range=(1000, 40000))
-        player.setCommand("player [CONFIG]")
+    #    player = extserver.Server("PLAYER", label="Player")
+    #    player.filenameField("CONFIG",
+    #            label="Configuration", filter="Player Config (*.cfg);;All files (*)")
+    #    player.integerField("PORT", label="Port", default=0, range=(1000, 40000))
+    #    player.floatField("WEIGHT", label="Weight", default=0, range=(1000, 40000))
+    #    player.setCommand("player [CONFIG]")
 
-        pbot = extserver.Server("PEEKABOT", label="Peekabot")
-        pbot.filenameField("CONFIG",
-                label="Configuration", filter="Peekaobt Config (*.cfg);;All files (*)")
-        pbot.setCommand("peekabot")
+    #    pbot = extserver.Server("PEEKABOT", label="Peekabot")
+    #    pbot.filenameField("CONFIG",
+    #            label="Configuration", filter="Peekaobt Config (*.cfg);;All files (*)")
+    #    pbot.setCommand("peekabot")
 
-        disp=extserver.Server("DISPLAY", label="Standalone Display Server")
-        pbot.filenameField("CONFIG",
-                label="Configuration", filter="Peekaobt Config (*.cfg)")
-        disp.setCommand("${COGX_ROOT}/output/bin/display-server")
+    #    disp=extserver.Server("DISPLAY", label="Standalone Display Server")
+    #    pbot.filenameField("CONFIG",
+    #            label="Configuration", filter="Peekaobt Config (*.cfg)")
+    #    disp.setCommand("${COGX_ROOT}/output/bin/display-server")
 
-        self.mProperties.addServers([build, player, pbot, disp])
+    #    self.mProperties.addServers([build, player, pbot, disp])
 
 
 if __name__== "__main__":

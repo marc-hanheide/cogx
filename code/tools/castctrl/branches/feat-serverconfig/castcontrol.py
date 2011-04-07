@@ -400,6 +400,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         fn = os.path.join(os.path.dirname(pconfig.__file__), "cogxservers.txt")
         self.serverManager.addServersFromFile(fn)
         self.wAppConfig.addServers(self.serverManager.servers)
+        self.wAppConfig.updateHeader();
+
         for csi in self.serverManager.servers:
             if csi.group == 'B': self.procGroupB.addProcess(csi.name)
             elif csi.group == 'C': self.procGroupC.addProcess(csi.name)
@@ -422,6 +424,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
         self.ui.processTree.expandAll()
+        self.ui.processTree.resizeColumnToContents(0)
 
     def statusUpdate(self):
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
