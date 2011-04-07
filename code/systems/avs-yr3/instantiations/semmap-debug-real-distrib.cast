@@ -34,5 +34,5 @@ HOST 192.168.0.11
 
 # Categorical.SA ############################################################
 INCLUDE includes/categorical.sa/categorical-cvap-semmap-size-shape-appearance-dist.cast
-CPP GD  VideoServerP ProsilicaServer --videoname video --camids "0" --devnums "0"
+CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
 
