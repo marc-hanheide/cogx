@@ -21,9 +21,11 @@ namespace cast
 
 Video::CIplImageCache CCameraInfo::m_imageCache;
 
+static const int FRAMERATE_DEFAULT = 100; // 10 fps
+
 PlayerVideoServer::PlayerVideoServer()
 {
-  m_frameDuration = 100;
+  m_frameDurationMs = FRAMERATE_DEFAULT;
   m_nextFrameTime = 0;
   m_pPlayer = 0;
   m_playerHost = "localhost";
@@ -48,7 +50,6 @@ void PlayerVideoServer::start()
   VideoServer::start();
   m_nextFrameTime = m_timer.elapsed();
 }
-
 
 void PlayerVideoServer::configure(const map<string,string> & _config)
   throw(runtime_error)
@@ -78,6 +79,26 @@ void PlayerVideoServer::configure(const map<string,string> & _config)
   if ((it = _config.find("--player-port")) != _config.end()) {
     istringstream str(it->second);
     str >> m_playerPort;
+  }
+
+  if((it = _config.find("--framerate_ms")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> m_frameDurationMs;
+    if (m_frameDurationMs <= 0)
+      m_frameDurationMs = FRAMERATE_DEFAULT;
+    if (m_frameDurationMs > 10000)
+      m_frameDurationMs = 10000;
+  }
+
+  if((it = _config.find("--framerate_fps")) != _config.end())
+  {
+    istringstream str(it->second);
+    double fps;
+    str >> fps;
+    if (fps < 0.1) fps = 0.1;
+    if (fps > 100) fps = 100;
+    m_frameDurationMs = (long) (1000.0 / fps + 0.5);
   }
 
 #if 0
@@ -272,6 +293,81 @@ void PlayerVideoServer::getImageSize(int &width, int &height)
   width = 0;
   height = 0;
 }
+
+using namespace Video;
+
+void PlayerVideoServer::runComponent()
+{
+  vector<Image> frames;
+  string myid = getComponentID();
+  const int reportDelay = CMilliTimer::seconds(30);
+  long long now = m_timer.elapsed();
+  long long tmNextReport = now + CMilliTimer::seconds(5);
+  long long tmLastReport = now;
+  long long tmNextFrame = now + m_frameDurationMs;
+  int sendCount = 0;
+  while(isRunning())
+  {
+    now = m_timer.elapsed();
+    if (now < tmNextFrame) {
+      long long dt = tmNextFrame - now;
+      if (dt > 1) dt /= 2;
+      sleepComponent(dt);
+      continue;
+    }
+    tmNextFrame += m_frameDurationMs;
+    if (tmNextFrame < now) // Frame was dropped!
+    {
+      if (now - tmNextFrame > m_frameDurationMs * 5)
+        tmNextFrame = now + m_frameDurationMs;
+      else
+        while (tmNextFrame < now)
+          tmNextFrame += m_frameDurationMs;
+    }
+
+    // TODO: If I could have this lock after grabFrames() I could avoid the
+    // stupid sleep.
+    lockComponent();
+    grabFrames();
+
+    // TODO: grabFrames may take less than the duration of a frame
+
+    for(size_t i = 0; i < imageReceivers.size(); i++)
+    {
+      retrieveFrames(imageReceivers[i].camIds, imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
+      if(swapRB)
+        for(size_t i = 0; i < frames.size(); i++)
+          SwapRedBlueChannel(frames[i]);
+      imageReceivers[i].videoClient->receiveImages2(myid, frames);
+    }
+    unlockComponent();
+    // HACK: to let getImages() have chance to lockComponent()
+    sleepComponent(10);
+
+    ++sendCount;
+    now = m_timer.elapsed();
+    if(now > tmNextReport || now < tmLastReport /* timer was reset */)
+    {
+      int fr = getFramerateMilliSeconds();
+      debug("grabbing with %d ms per frame (%.2f frames per second)",
+          fr, (fr > 0. ? 1000./fr : 0.));
+      if(fr > 0.) realFps = 1000./fr;
+      else realFps = 0.;
+
+      double dfr = now - tmLastReport;
+      if (dfr > 0 && sendCount > 0)
+      {
+        debug("sending with %.0f ms per frame (%.2f frames per second)",
+            dfr / sendCount, sendCount / dfr * 1000);
+      }
+
+      tmLastReport = now;
+      tmNextReport = now + reportDelay;
+      sendCount = 0;
+    }
+  }
+}
+
 
 }; // namespace
 /* vim:set sw=2 sts=4 ts=8 et:vim */
