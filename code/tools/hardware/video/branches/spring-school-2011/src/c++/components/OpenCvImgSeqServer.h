@@ -8,13 +8,50 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include <cv.h>
-//#include <opencv/cv.h>  -- this is incorrect according to the pkg-config flags
+#include <ImageCache.h>
 #include "VideoServer.h"
+
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
 
 namespace cast
 {
+
+struct CSequenceInfo
+{
+  // List of filename templates, one for each camera.
+  // The list is space-delimited to be compatible with --files in configure().
+  std::string fileTemplates;
+
+  // Start index, end index, step.
+  int start;
+  int end;
+  int step;
+
+  // True, if the sequence should play continuously.
+  // TODO: make int to add bidirectional looping; rename to loopmode, add loopdirection
+  bool loop;
+
+  // How many times to repeat each frame.
+  // Framerate should be set in configure().
+  int repeatFrame;
+
+  // Integer factor for downsampling.
+  // NOTE: ignored for now!
+  int downsampleFactor;
+
+  CSequenceInfo();
+  void clear();
+  void checkLimits();
+  void parseConfig(const std::map<std::string,std::string> & _config);
+  void parseConfig(const std::string& _configStr);
+  void setInfo(Video::VideoSequenceInfo& info);
+};
+
 
 /**
  * Video device reading from stored files.
@@ -31,6 +68,10 @@ private:
    * raw Ipl images
    */
   std::vector<IplImage*> grabbedImages;
+
+  // This monitor is used to sync grabFramesInternal and switchSequence threads.
+  IceUtil::Monitor<IceUtil::Mutex> m_sequenceMonitor;
+
   /**
    * time stamps when Ipl images were captured.
    */
@@ -52,6 +93,11 @@ private:
    * NOTE: ignored for now!
    */
   int downsampleFactor;
+
+  /**
+   * Image cache that reduces the number of reallocations.
+   */
+  Video::CIplImageCache m_imageCache;
 
   /**
    * Initialise with a filename template and frame numbers.
@@ -78,20 +124,59 @@ private:
   virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
-	virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
+  virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
 
+  void switchSequence(CSequenceInfo& seq);
 
 public:
   OpenCvImgSeqServer();
   virtual ~OpenCvImgSeqServer();
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
+  virtual void start();
   virtual void grabFrames();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
-	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
-	virtual bool inFormat7Mode();
-	virtual const std::string getServerName();
+  virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
+  virtual bool inFormat7Mode();
+  virtual const std::string getServerName();
+
+private:
+  std::map<std::string, CSequenceInfo> leadInMap;
+  std::map<std::string, CSequenceInfo> sequenceMap;
+  std::map<std::string, CSequenceInfo> leadOutMap;
+  std::string m_currentSequenceName;
+  std::string m_nextSequenceName;
+  bool m_bWmInterface;
+  enum SequenceStage {
+    stLeadIn, stLoop, stLeadOut
+  };
+  SequenceStage m_sequenceStage;
+  void installSequence(const std::string& name);
+  void tryNextSequence();
+
+  std::string sequenceIniFile;
+  int displayStage; // in/loop/out
+  bool parseSequenceIniFile(const std::string& fname);
+  void onAdd_VideoSequenceInfo(const cast::cdl::WorkingMemoryChange & _wmc);
+
+#ifdef FEAT_VISUALIZATION
+  class CDisplayClient: public cogx::display::CDisplayClient
+  {
+    OpenCvImgSeqServer* pComponent;
+  public:
+    CDisplayClient() { pComponent = NULL; }
+    void setClientData(OpenCvImgSeqServer* pComponent) { this->pComponent = pComponent; }
+    void handleEvent(const Visualization::TEvent &event); /*override*/
+    //std::string getControlState(const std::string& ctrlId); [>override<]
+    //void handleForm(const std::string& id, const std::string& partId,
+    //  const std::map<std::string, std::string>& fields); [>override<]
+    //bool getFormData(const std::string& id, const std::string& partId,
+    //  std::map<std::string, std::string>& fields); [>override<]
+  };
+  CDisplayClient m_display;
+#endif
+
 };
 
 }

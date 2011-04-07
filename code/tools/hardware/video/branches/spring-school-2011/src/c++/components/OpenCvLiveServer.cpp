@@ -29,74 +29,6 @@ namespace cast
 
 using namespace std;
 
-OpenCvLiveServer::Timer::Timer()
-: count(0),
-  rate(0.),
-  lastRate(0.),
-  changeThresh(0.),
-  sigChange(false)
-{
-}
-
-void OpenCvLiveServer::Timer::increment()
-{
-  // increment
-  count++;
-
-  // if this is the first time
-  if(count == 1)
-  {
-    // start timer
-    gettimeofday(&startTime, 0);
-  }
-  else
-  {
-    // current time
-    timeval now;
-    gettimeofday(&now, 0);
-    timeval start(startTime);
-
-    // from http://www.delorie.com/gnu/docs/glibc/libc_428.html
-    // Perform the carry for the later subtraction by updating y.
-    if(now.tv_usec < start.tv_usec)
-    {
-      int nsec = (start.tv_usec - now.tv_usec) / 1000000 + 1;
-      start.tv_usec -= 1000000 * nsec;
-      start.tv_sec += nsec;
-    }
-    if(now.tv_usec - start.tv_usec > 1000000)
-    {
-      int nsec = (now.tv_usec - start.tv_usec) / 1000000;
-      start.tv_usec += 1000000 * nsec;
-      start.tv_sec -= nsec;
-    }
-
-    // tv_usec is certainly positive.
-    double diffSeconds = (double)(now.tv_sec - start.tv_sec);
-    double diffMicros = (double)(now.tv_usec - start.tv_usec);
-
-    double totalDiffSeconds = diffSeconds  + (diffMicros / 1000000.);
-
-    // get new rate
-    rate = (double)count/totalDiffSeconds;
-
-    // diff the old and new rates
-    double diffRate = abs(lastRate - rate);
-
-    // compare diff to a percentage of the old rate
-    if(diffRate > changeThresh)
-    {
-      sigChange = true;
-      lastRate = rate;
-      // get 3% of the old rate... HACK WARNING CONSTANT
-      changeThresh = lastRate * 0.03;
-    }
-    else
-    {
-      sigChange = false;
-    }
-  }
-}
 
 OpenCvLiveServer::OpenCvLiveServer()
 {
@@ -184,7 +116,7 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
 {
   if(dev_nums.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__,
-          "must specify at least one camera"));
+	  "must specify at least one camera"));
   if(dev_nums.size() != camIds.size())
     throw runtime_error(exceptionMessage(__HERE__,
           "number of devices %d does not match number of camera IDs %d",
@@ -339,11 +271,11 @@ void OpenCvLiveServer::grabFramesInternal()
   cdl::CASTTime time = getCASTTime();
   for(size_t i = 0; i < grabTimes.size(); i++)
     grabTimes[i] = time;
-  timer.increment();
+  timeStats.increment();
   // frames per second
-  if(timer.getRate() > 0.)
+  if(timeStats.getRate() > 0.)
     // milliseconds per frame
-    framerateMillis = (int)(1000./timer.getRate());
+    framerateMillis = (int)(1000./timeStats.getRate());
 }
 
 void OpenCvLiveServer::grabFrames()
@@ -375,11 +307,13 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
   }
   else
   {
-    IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    char id[16];
+    sprintf(id, "frame%d", camIdx);
+    // use image cache to avoid allocate/deallocating all the time
+    IplImage *tmp = m_imageCache.getImage(id, width, height, IPL_DEPTH_8U, 3);
     cvResize(retrievedImages[camIdx], tmp);
     copyImage(tmp, frame);
-    // TODO: avoid allocate/deallocating all the time
-    cvReleaseImage(&tmp);
+
     // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
   }
@@ -400,7 +334,7 @@ void OpenCvLiveServer::retrieveFrames(int width, int height,
     std::vector<Video::Image> &frames)
 {
   frames.resize(getNumCameras());
-  for(size_t i = 0; i < getNumCameras(); i++)
+  for(int i = 0; i < getNumCameras(); i++)
     retrieveFrameInternal(i, width, height, frames[i]);
 }
 
@@ -413,7 +347,7 @@ void OpenCvLiveServer::retrieveFrame(int camId, int width, int height,
 
 void OpenCvLiveServer::retrieveHRFrames(std::vector<Video::Image> &frames)
 {
-	log("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
+  log("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
 }
 
 void OpenCvLiveServer::getImageSize(int &width, int &height)
@@ -501,12 +435,12 @@ void OpenCvLiveServer::copyImage(const IplImage *iplImg, Video::Image &img)
  */
 void OpenCvLiveServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
 {
-	log("only for the PointGrey server available: abort.");
+  log("only for the PointGrey server available: abort.");
 }
 
 bool OpenCvLiveServer::inFormat7Mode()
 {
-	return false;
+  return false;
 }
 
 /**
@@ -515,8 +449,8 @@ bool OpenCvLiveServer::inFormat7Mode()
  */
 const std::string OpenCvLiveServer::getServerName()
 {
-	const std::string str("OpenCvLiveServer");
-	return str;
+  const std::string str("OpenCvLiveServer");
+  return str;
 }
 
 }

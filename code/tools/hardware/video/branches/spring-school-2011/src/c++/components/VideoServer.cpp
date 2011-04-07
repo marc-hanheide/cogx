@@ -60,7 +60,7 @@ void VideoServerI::getScaledImages(Ice::Int width, Ice::Int height,
 
 bool VideoServerI::getHRImages(ImageSeq& images, const Ice::Current&)
 {
-	return vidSrv->getHRImages(images);
+  return vidSrv->getHRImages(images);
 }
 
 void VideoServerI::startReceiveImages(const std::string& receiverComponentId,
@@ -79,20 +79,18 @@ void VideoServerI::stopReceiveImages(const std::string& receiverComponentId,
 void VideoServerI::changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX,
     Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&)
 {
-	vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
+  vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
 }
 
 bool VideoServerI::inFormat7Mode(const Ice::Current&)
 {
-	return vidSrv->inFormat7Mode();
+  return vidSrv->inFormat7Mode();
 }
 
 std::string VideoServerI::getServerName(const Ice::Current&)
 {
-	return vidSrv->getServerName();
+  return vidSrv->getServerName();
 }
-
-
 
 
 
@@ -201,6 +199,8 @@ void VideoServer::start()
   addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<VideoServer>(this,
         &VideoServer::receiveCameraParameters));
+
+  m_timer.restart();
 }
 
 void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
@@ -300,50 +300,80 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
 
 bool VideoServer::getHRImages(std::vector<Video::Image> &images)
 {
-	  lockComponent();
-		retrieveHRFrames(images);
-		if(swapRB)
-			for(size_t i = 0; i < images.size(); i++)
-				SwapRedBlueChannel(images[i]);
-	  unlockComponent();
-		return true;																					/// TODO TODO TODO TODO 
+  lockComponent();
+  retrieveHRFrames(images);
+  if(swapRB)
+    for(size_t i = 0; i < images.size(); i++)
+      SwapRedBlueChannel(images[i]);
+  unlockComponent();
+  return true;                                // TODO TODO TODO TODO 
 }
 
 
-void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) {}
-bool VideoServer::inFormat7Mode() {}
-const std::string VideoServer::getServerName() {}
+void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+{
+}
+
+bool VideoServer::inFormat7Mode()
+{
+  return false;
+}
+
+const std::string VideoServer::getServerName()
+{
+  return "VideoServer";
+}
 
 void VideoServer::runComponent()
 {
   vector<Image> frames;
-  int cnt = 10;
+  string myid = getComponentID();
+  const int reportDelay = CMilliTimer::seconds(30);
+  long long now = m_timer.elapsed();
+  long long tmNextReport = now + CMilliTimer::seconds(5);
+  long long tmLastReport = now;
+  int sendCount = 0;
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
     // stupid sleep.
     lockComponent();
     grabFrames();
+
+    // TODO: grabFrames may take less than the duration of a frame
+
     for(size_t i = 0; i < imageReceivers.size(); i++)
     {
       retrieveFrames(imageReceivers[i].camIds, imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
       if(swapRB)
         for(size_t i = 0; i < frames.size(); i++)
           SwapRedBlueChannel(frames[i]);
-      imageReceivers[i].videoClient->receiveImages(frames);
+      imageReceivers[i].videoClient->receiveImages2(myid, frames);
     }
     unlockComponent();
     // HACK: to let getImages() have chance to lockComponent()
     sleepComponent(10);
-    cnt--;
-    if(cnt == 0)
+
+    ++sendCount;
+    now = m_timer.elapsed();
+    if(now > tmNextReport || now < tmLastReport /* timer was reset */)
     {
       int fr = getFramerateMilliSeconds();
       debug("grabbing with %d ms per frame (%.2f frames per second)",
           fr, (fr > 0. ? 1000./fr : 0.));
-			if(fr > 0.) realFps = 1000./fr;
-			else realFps = 0.;
-      cnt = 10;
+      if(fr > 0.) realFps = 1000./fr;
+      else realFps = 0.;
+
+      double dfr = now - tmLastReport;
+      if (dfr > 0 && sendCount > 0)
+      {
+        debug("sending with %.0f ms per frame (%.2f frames per second)",
+            dfr / sendCount, sendCount / dfr * 1000);
+      }
+
+      tmLastReport = now;
+      tmNextReport = now + reportDelay;
+      sendCount = 0;
     }
   }
 }
