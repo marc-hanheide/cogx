@@ -8,7 +8,7 @@ from properties import CPropertySet
 class CServerInfo(CPropertySet):
     def __init__(self, name, **kwargs):
         super(CServerInfo, self).__init__(name, **kwargs)
-        self.enabled = True
+        self.enabled = False
         self.command = None
         self.workdir = None
         self.defaultVars = []
