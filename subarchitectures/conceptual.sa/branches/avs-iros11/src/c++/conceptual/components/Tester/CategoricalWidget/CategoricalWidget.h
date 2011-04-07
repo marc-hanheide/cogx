@@ -34,7 +34,7 @@ private slots:
 	void newSizeResults(QStringList sizes, QList<double> values);
 	void newAppearanceResults(QStringList appearances, QList<double> values);
 
-	void setImage(QImage img);
+	void setImage(QImage img, int frame);
 
 
 private:

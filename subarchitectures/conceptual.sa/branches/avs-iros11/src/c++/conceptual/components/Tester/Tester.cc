@@ -131,6 +131,12 @@ void Tester::start()
 	addChangeFilter(createGlobalTypeFilter<CategoricalData::Odometry>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<Tester>(this,
 					&Tester::newOdometry));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::Image>(cdl::ADD),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newImage));
+	addChangeFilter(createGlobalTypeFilter<CategoricalData::Image>(cdl::OVERWRITE),
+			new MemberFunctionChangeReceiver<Tester>(this,
+					&Tester::newImage));
 	addChangeFilter(createGlobalTypeFilter<CategoricalData::LaserResults>(cdl::ADD),
 			new MemberFunctionChangeReceiver<Tester>(this,
 					&Tester::newLaserResults));
@@ -214,7 +220,10 @@ void Tester::worldStateChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		{
 			log("New worldstate for event %d", worldStatePtr->lastEvents.back().type);
 			if (_mainDialog)
+			{
 				_mainDialog->getConceptualWidget()->newWorldState(worldStatePtr);
+				_mainDialog->getDemoWidget()->newWorldState(worldStatePtr);
+			}
 		}
 	}
 	catch(CASTException &e)
@@ -317,7 +326,10 @@ void Tester::newLaserScan(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (laserScanPtr)
 		{
 			if (_mainDialog)
+			{
 				_mainDialog->getCategoricalWidget()->newLaserScan(laserScanPtr);
+				_mainDialog->getDemoWidget()->newLaserScan(laserScanPtr);
+			}
 		}
 	}
 	catch(...)
@@ -359,7 +371,10 @@ void Tester::newImage(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (imagePtr)
 		{
 			if (_mainDialog)
+			{
 				_mainDialog->getCategoricalWidget()->newImage(imagePtr);
+				_mainDialog->getDemoWidget()->newImage(imagePtr);
+			}
 		}
 	}
 	catch(...)
@@ -380,7 +395,10 @@ void Tester::newLaserResults(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (laserResultsPtr)
 		{
 			if (_mainDialog)
+			{
 				_mainDialog->getCategoricalWidget()->newLaserResults(laserResultsPtr);
+				_mainDialog->getDemoWidget()->newLaserResults(laserResultsPtr);
+			}
 		}
 	}
 	catch(...)
@@ -401,7 +419,10 @@ void Tester::newVisualResults(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (visualResultsPtr)
 		{
 			if (_mainDialog)
+			{
 				_mainDialog->getCategoricalWidget()->newVisualResults(visualResultsPtr);
+				_mainDialog->getDemoWidget()->newVisualResults(visualResultsPtr);
+			}
 		}
 	}
 	catch(...)
