@@ -26,7 +26,8 @@ gazebo = Server("Gazebo", label="Gazebo")
 gazebo.filenameField("WORLD", label="World", filter="Gazebo Worlds (*.world);;All files (*)")
 gazebo.stringItemField("GUI", label="Show GUI", items=["Yes", "No"] )
 gazebo.stringItemField("PHYSICS", label="Enable Physics", items=["Yes", "No"] )
-gazebo.stringItemField("DEBUG", label="Debug level", items=["Off"] + ["-d %d" % l for l in range(10)], default="-d 0" )
+levels = ["Off", "Critical (default)", "Medium", "All"]
+gazebo.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1])
 gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
 
 def gazeboParamProcessor(name, value):
@@ -37,8 +38,11 @@ def gazeboParamProcessor(name, value):
         if value == "No": return "-p"
         return ""
     if name == "DEBUG":
-        if value == "Off": return "-d -1"
-        return value
+        if value.startswith("Off"): return "-d -1"
+        elif value.startswith("Critical"): return "-d 0"
+        elif value.startswith("Medium"): return "-d 5"
+        elif value.startswith("All"): return "-d 9"
+        return ""
 
     return value
 
@@ -47,8 +51,21 @@ gazebo.setParamProcessor(gazeboParamProcessor)
 
 player = Server("Player", label="Player")
 player.filenameField("CONFIG", label="Configuration", filter="Player Config (*.cfg);;All files (*)")
-player.stringItemField("DEBUG", label="Debug level", items=["-d %d" % l for l in range(10)] )
+levels = ["Off", "Default", "Medium", "All"]
+player.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1] )
 player.setCommand("player  [DEBUG]  [CONFIG]")
+
+def playerParamProcessor(name, value):
+    if name == "DEBUG":
+        if value.startswith("Off"): return "-d 0"
+        elif value.startswith("Default"): return "-d 1"
+        elif value.startswith("Medium"): return "-d 5"
+        elif value.startswith("All"): return "-d 9"
+        return ""
+
+    return value
+
+player.setParamProcessor(playerParamProcessor)
 
 
 pbot = Server("Peekabot", label="Peekabot")
