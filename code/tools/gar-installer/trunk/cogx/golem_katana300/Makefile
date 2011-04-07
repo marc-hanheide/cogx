@@ -5,7 +5,7 @@ DISTNAME = $(GARNAME)-$(GARVERSION)
 DISTFILES = $(DISTNAME).tar.gz
 WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
-LIBDEPS = contrib/peak-linux
+#LIBDEPS = contrib/peak-linux
 
 MAINTAINER = ttoenige
 
@@ -17,5 +17,6 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
+CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix) \
+			-D BUILD_DEVICE_KATANA450=OFF
 
