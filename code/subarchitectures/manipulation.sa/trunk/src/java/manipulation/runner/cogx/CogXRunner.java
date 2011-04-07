@@ -18,6 +18,7 @@ import manipulation.runner.share.Runner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -221,6 +222,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 								command.comp = ManipulationCompletion.FAILED;
 							}
 
+							command.status = ManipulationCommandStatus.FINISHED;
+
 							try {
 								overwriteWorkingMemory(_wmc.address, command);
 							} catch (ConsistencyException e) {
@@ -241,7 +244,20 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				FarArmMovementCommand.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.error("Getting FarArmMovementCommand from overwrite action in WM");
+
+						try {
+							FarArmMovementCommand command = getMemoryEntry(
+									_wmc.address, FarArmMovementCommand.class);
+
+							if (command.status != ManipulationCommandStatus.FINISHED) {
+								logger.error("Getting FarArmMovementCommand from overwrite action in WM");
+							}
+						} catch (DoesNotExistOnWMException e) {
+							logger.error(e);
+						} catch (UnknownSubarchitectureException e) {
+							logger.error(e);
+						}
+
 					}
 				});
 

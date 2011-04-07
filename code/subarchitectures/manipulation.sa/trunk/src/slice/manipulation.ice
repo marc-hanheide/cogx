@@ -13,6 +13,11 @@ module manipulation {
 			SUCCEEDED
 		};
 		
+		enum ManipulationCommandStatus {
+			PENDING,
+			FINISHED,
+		};
+		
 		/**
    		* @brief put down a given visual object
    		* @param basedOnObject object to put down the current object
@@ -21,8 +26,10 @@ module manipulation {
    		**/
 		class PutDownCommand {
 			VisionData::VisualObject basedOnObject;
-			ManipulationCompletion comp;			
+			ManipulationCompletion comp;
+			ManipulationCommandStatus status;			
 		};
+		
 		
 		/**
    		* @brief perform a far arm movement to place the gripper in front of the given object
@@ -36,6 +43,7 @@ module manipulation {
 			double yError;
 			double zError;
 			ManipulationCompletion comp;
+			ManipulationCommandStatus status;
 		};
 		
 		/**
@@ -47,6 +55,7 @@ module manipulation {
 		class LinearGraspApproachCommand {
 			VisionData::VisualObject targetObject;
 			ManipulationCompletion comp;
+			ManipulationCommandStatus status;
 		};
 		
 		/**
@@ -57,7 +66,10 @@ module manipulation {
    		**/
 		class SimulateGraspCommand {
 			VisionData::VisualObject targetObject;
-			double errorValue;
+			double xError;
+			double yError;
+			double zError;
+			ManipulationCommandStatus status;
 		};
 		
 		/**
@@ -69,6 +81,7 @@ module manipulation {
 		class LinearBaseMovementApproachCommand {
 			VisionData::VisualObject targetObject;
 			ManipulationCompletion comp;
+			ManipulationCommandStatus status;
 		};
     };
 };
