@@ -200,6 +200,8 @@ protected:
    */
   int realFps;
 
+  Video::CMilliTimer m_timer;
+
   /**
    * @brief Return the index of the camera for a given camera ID
    */
@@ -303,7 +305,6 @@ public:
   virtual bool inFormat7Mode();
 
   /**
-   * @brief Change the properties in the PointGreyServer for the Format7 mode.
    * @return Returns the server name (PointGreyServer / OpenCvImgSeqServer / OpenCvLiveServer)
    */
   virtual const std::string getServerName() = 0;

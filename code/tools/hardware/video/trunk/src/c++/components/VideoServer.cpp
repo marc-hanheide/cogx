@@ -201,6 +201,8 @@ void VideoServer::start()
   addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<VideoServer>(this,
         &VideoServer::receiveCameraParameters));
+
+  m_timer.restart();
 }
 
 void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
@@ -328,16 +330,20 @@ void VideoServer::runComponent()
 {
   vector<Image> frames;
   string myid = getComponentID();
-  IceUtil::Time tm, tm2;
-  tm = IceUtil::Time::now();
-  const int reportDelay = 20;
-  int cnt = reportDelay;
+  const int reportDelay = CMilliTimer::seconds(30);
+  long long now = m_timer.elapsed();
+  long long tmNextReport = now + CMilliTimer::seconds(5);
+  long long tmLastReport = now;
+  int sendCount = 0;
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
     // stupid sleep.
     lockComponent();
     grabFrames();
+
+    // TODO: grabFrames may take less than the duration of a frame
+
     for(size_t i = 0; i < imageReceivers.size(); i++)
     {
       retrieveFrames(imageReceivers[i].camIds, imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
@@ -349,20 +355,27 @@ void VideoServer::runComponent()
     unlockComponent();
     // HACK: to let getImages() have chance to lockComponent()
     sleepComponent(10);
-    cnt--;
-    if(cnt == 0)
+
+    ++sendCount;
+    now = m_timer.elapsed();
+    if(now > tmNextReport || now < tmLastReport /* timer was reset */)
     {
-      tm2 = IceUtil::Time::now() - tm;
-      tm = IceUtil::Time::now();
       int fr = getFramerateMilliSeconds();
       debug("grabbing with %d ms per frame (%.2f frames per second)",
           fr, (fr > 0. ? 1000./fr : 0.));
       if(fr > 0.) realFps = 1000./fr;
       else realFps = 0.;
-      double dfr = tm2.toMilliSeconds() / double(reportDelay);
-      debug("sending with %.0f ms per frame (%.2f frames per second)",
-          dfr, (dfr > 0. ? 1000./dfr : 0.));
-      cnt = reportDelay;
+
+      double dfr = now - tmLastReport;
+      if (dfr > 0 && sendCount > 0)
+      {
+        debug("sending with %.0f ms per frame (%.2f frames per second)",
+            dfr / sendCount, sendCount / dfr * 1000);
+      }
+
+      tmLastReport = now;
+      tmNextReport = now + reportDelay;
+      sendCount = 0;
     }
   }
 }

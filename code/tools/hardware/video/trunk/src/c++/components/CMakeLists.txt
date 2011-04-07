@@ -49,3 +49,12 @@ if(BUILD_HAL_VIDEO_POINTGREY)
    link_cast_component(${CAST_COMPONENT_NAME} flycapture)
 endif(BUILD_HAL_VIDEO_POINTGREY)
 
+option(BUILD_HAL_VIDEO_PLAYER "Build Player video server" NO)
+if(BUILD_HAL_VIDEO_PLAYER)
+   find_package(Player REQUIRED)
+   include_directories(${PLAYER_INCLUDE})
+   add_cast_component(PlayerVideoServer PlayerVideoServer.cpp)
+   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
+   link_cast_component(${CAST_COMPONENT_NAME} ${PLAYER_LIBRARIES})
+endif(BUILD_HAL_VIDEO_PLAYER)
+
