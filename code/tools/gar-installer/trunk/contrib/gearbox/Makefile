@@ -5,7 +5,7 @@ MAINTAINER = ttoenige
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MASTER_SITES = http://downloads.sourceforge.net/project/gearbox/gearbox/${GARVERSION}/
-PATCHFILES= gar-base.diff
+#PATCHFILES= gar-base.diff
 
 # no parallel build due to problems of player make scheme
 #MFLAGS=$(MFLAGS_NUMCPU)
