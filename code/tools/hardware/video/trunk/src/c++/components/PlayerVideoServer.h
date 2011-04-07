@@ -104,7 +104,7 @@ private:
    */
   Video::CTimeStats timeStats;
   long long m_nextFrameTime;
-  int m_frameDuration;
+  long m_frameDurationMs;
 
   Video::CIplImageCache m_imageCache;
 
@@ -146,6 +146,7 @@ public:
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
   virtual const std::string getServerName();
+  virtual void runComponent();
 };
 
 }
