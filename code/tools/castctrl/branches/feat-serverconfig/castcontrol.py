@@ -104,7 +104,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._setup_ui()
 
         self.fnconf = "castcontrol.conf"
-        self.fnhist = "castcontrol.hist"
+        self.fnhist = "castcontrol.ini"
         self._options = options.getCastOptions()
         self._options.loadConfig(self.fnconf)
         if os.path.exists(self.fnhist):
