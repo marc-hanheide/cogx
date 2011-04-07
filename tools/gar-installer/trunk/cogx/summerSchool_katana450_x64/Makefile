@@ -32,9 +32,9 @@ LIBDEPS = 	contrib/peekabot \
 		cogx/cosycure \
 		contrib/opencv-trunk \
 		contrib/player-3.0.2 \
-		contrib/physx_x32 \
+		contrib/physx_x64 \
 		contrib/gazebo \
-		cogx/golem_katana300
+		cogx/golem_katana450
 
 DESCRIPTION = agai-distro
 
