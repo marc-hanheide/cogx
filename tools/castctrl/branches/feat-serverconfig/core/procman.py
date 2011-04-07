@@ -112,7 +112,7 @@ class CProcessBase(object):
             ob.notifyStatusChange(self, oldStatus, newStatus)
 
 class CProcess(CProcessBase):
-    def  __init__(self, name, command, params=None, workdir=None, host=None):
+    def  __init__(self, name, command, params=None, workdir=None, host=None, allowTerminate=False):
         if host == None: host = CRemoteHostInfo()
         CProcessBase.__init__(self, name, host)
         self.command = command
@@ -121,7 +121,7 @@ class CProcess(CProcessBase):
         self.process = None
         self.lastPollState = 0
         self.keepalive = False
-        self.allowTerminate = False # CAST apps should not autoTerm; others may
+        self.allowTerminate = allowTerminate # CAST apps should not autoTerm; others may
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
         self.messageProcessor = None  # Some servers (log4j) could do additional message processing
@@ -168,7 +168,7 @@ class CProcess(CProcessBase):
         self.willClearAt = time.time() + 1
         self._setStatus(CProcessBase.FLUSH)
 
-    def start(self, command=None, params=None, workdir=None, env=None):
+    def start(self, command=None, params=None, workdir=None, env=None, allowTerminate=None):
         if self.isRunning():
             warn("Process '%s' is already running" % self.name)
             return
@@ -191,6 +191,9 @@ class CProcess(CProcessBase):
         if workdir == None or workdir.strip() == "":
             workdir = self.workdir
         if workdir != None: log("PWD=%s" % workdir)
+
+        if allowTerminate != None:
+            self.allowTerminate = True if allowTerminate else False
 
         try:
             self._setStatus(CProcessBase.STARTING)

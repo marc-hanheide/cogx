@@ -751,7 +751,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             if params:
                 for k,v in params.items():
                     params[k] = self._options.xe(v, environ=extenv)
-            p.start(command=command, params=params, workdir=csi.workdir)
+            p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
 
 
     def onStopExternalServers(self):
