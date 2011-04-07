@@ -30,7 +30,7 @@ LIBDEPS = 	contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
 		cogx/cosycure \
-		contrib/opencv-trunk \
+		contrib/opencv \
 		contrib/player-3.0.2 \
 		contrib/physx_x32 \
 		contrib/gazebo \
