@@ -1,10 +1,33 @@
-diff --speed-large-files --minimal -ru gearbox-9.11.orig/src/hokuyo_aist/python/CMakeLists.txt gearbox-9.11/src/hokuyo_aist/python/CMakeLists.txt
---- gearbox-9.11.orig/src/hokuyo_aist/python/CMakeLists.txt	2009-04-14 11:11:54.000000000 +0200
-+++ gearbox-9.11/src/hokuyo_aist/python/CMakeLists.txt	2011-04-05 17:43:59.000000000 +0200
-@@ -32,16 +32,7 @@
+diff --speed-large-files --minimal -ru gearbox-9.11.orig/src/flexiport/python/CMakeLists.txt gearbox-9.11/src/flexiport/python/CMakeLists.txt
+--- gearbox-9.11.orig/src/flexiport/python/CMakeLists.txt	2009-04-14 11:11:54.000000000 +0200
++++ gearbox-9.11/src/flexiport/python/CMakeLists.txt	2011-04-07 12:50:38.000000000 +0200
+@@ -31,17 +31,7 @@
+ else(CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6)
  	FIND_PACKAGE (Boost)
  	if(Boost_FOUND)
- 		# For 2.4, assume that if boost is found then boost::python is present
+-		# For 2.4, assume that if boost is found then boost::python is present
+-		OPTION (Boost_USE_MULTITHREAD "Use the multithreaded versions of the Boost libraries" ON)
+-		MARK_AS_ADVANCED (Boost_USE_MULTITHREAD)
+-		if(Boost_USE_MULTITHREAD)
+-			SET (BOOST_LIB_SUFFIX "-mt" CACHE STRING "Boost library name suffix")
+-		else(Boost_USE_MULTITHREAD)
+-			SET (BOOST_LIB_SUFFIX "" CACHE STRING "Boost library name suffix")
+-		endif(Boost_USE_MULTITHREAD)
+-		MARK_AS_ADVANCED (BOOST_LIB_SUFFIX)
+-
+-		SET (boostPythonLib boost_python${BOOST_LIB_SUFFIX})
++		SET (boostPythonLib boost_python)
+ 		INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
+ 		LINK_DIRECTORIES (${Boost_LIBRARY_DIRS})
+ 	else(Boost_FOUND)
+diff --speed-large-files --minimal -ru gearbox-9.11.orig/src/hokuyo_aist/python/CMakeLists.txt gearbox-9.11/src/hokuyo_aist/python/CMakeLists.txt
+--- gearbox-9.11.orig/src/hokuyo_aist/python/CMakeLists.txt	2009-04-14 11:11:54.000000000 +0200
++++ gearbox-9.11/src/hokuyo_aist/python/CMakeLists.txt	2011-04-07 12:51:07.000000000 +0200
+@@ -31,17 +31,7 @@
+ else(CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6)
+ 	FIND_PACKAGE (Boost)
+ 	if(Boost_FOUND)
+-		# For 2.4, assume that if boost is found then boost::python is present
 -		OPTION (Boost_USE_MULTITHREAD "Use the multithreaded versions of the Boost libraries" ON)
 -		MARK_AS_ADVANCED (Boost_USE_MULTITHREAD)
 -		if(Boost_USE_MULTITHREAD)
