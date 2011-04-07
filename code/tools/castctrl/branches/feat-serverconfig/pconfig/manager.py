@@ -10,12 +10,16 @@ class CServerInfo(CPropertySet):
         super(CServerInfo, self).__init__(name, **kwargs)
         self.enabled = False
         self.command = None
+        self.isServer = True
         self.workdir = None
         self.defaultVars = []
         self._paramPreprocess = None
 
         if 'group' in kwargs: self.group = kwargs['group']
         else: self.group = 'A'
+
+        if 'server' in kwargs:
+            self.isServer = True if kwargs['server'] else False
 
     def setParamProcessor(self, processor):
         self._paramPreprocess = processor
