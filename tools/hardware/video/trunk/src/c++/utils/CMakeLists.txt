@@ -9,6 +9,7 @@ ADD_LIBRARY(VideoUtils SHARED
    ConvertImage.cpp
    ImageCache.cpp
    VideoClient2.cpp
+   Timers.cpp
    )
 
 # Add libraries to link against.

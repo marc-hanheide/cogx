@@ -18,6 +18,7 @@
 #include <dc1394/types.h>		// apt-get libdc1394-22-dev
 #include <dc1394/control.h>	// apt-get libdc1394-22-dev
 #include <ImageCache.h>
+#include <Timers.h>
 #include "VideoServer.h"
 
 namespace cast
@@ -29,32 +30,6 @@ namespace cast
 class OpenCvLiveServer : public VideoServer
 {
 private:
-  /**
-   * @brief Class for measuring how many things happen per second. \n
-   * author: Nick Hawes
-   */
-  class Timer
-  {
-  public:
-    Timer();
-    void increment();
-    double getRate() const
-    {
-      return rate;
-    }
-    bool rateChange() const
-    {
-      return sigChange;
-    }
-
-  private:
-    int count;
-    double rate;
-    double lastRate;
-    double changeThresh;
-    timeval startTime;
-    bool sigChange;
-  };
 
   /**
    * the actual wrapped OpenCV captures.
@@ -83,7 +58,7 @@ private:
   /**
    * Timer to measure actual frame rate.
    */
-  Timer timer;
+  Video::CTimeStats timeStats;
 
   Video::CIplImageCache m_imageCache;
 
