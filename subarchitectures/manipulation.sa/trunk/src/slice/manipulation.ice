@@ -6,7 +6,7 @@
 
 module manipulation {
     module slice {
-		enum Completion {
+		enum ManipulationCompletion {
 			// failed to grasp the object
 			FAILED,
 			// grasped the object
@@ -21,7 +21,7 @@ module manipulation {
    		**/
 		class PutDownCommand {
 			VisionData::VisualObject basedOnObject;
-			Completion comp;			
+			ManipulationCompletion comp;			
 		};
 		
 		/**
@@ -32,7 +32,10 @@ module manipulation {
    		**/
 		class FarArmMovementCommand {
 			VisionData::VisualObject targetObject;
-			Completion comp;
+			double xError;
+			double yError;
+			double zError;
+			ManipulationCompletion comp;
 		};
 		
 		/**
@@ -43,7 +46,7 @@ module manipulation {
    		**/
 		class LinearGraspApproachCommand {
 			VisionData::VisualObject targetObject;
-			Completion comp;
+			ManipulationCompletion comp;
 		};
 		
 		/**
@@ -65,7 +68,7 @@ module manipulation {
    		**/
 		class LinearBaseMovementApproachCommand {
 			VisionData::VisualObject targetObject;
-			Completion comp;
+			ManipulationCompletion comp;
 		};
     };
 };

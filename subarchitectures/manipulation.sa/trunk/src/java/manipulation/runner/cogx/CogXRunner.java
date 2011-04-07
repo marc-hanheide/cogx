@@ -10,12 +10,15 @@ import manipulation.core.share.Manipulator.ManipulatorName;
 import manipulation.core.share.ManipulatorStore;
 import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
+import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Configuration;
+import manipulation.core.share.types.Vector3D;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.strategies.Strategy;
@@ -25,11 +28,16 @@ import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cogx.Math.Vector3;
 
 /**
  * concrete start-up / runner for the Birmingham / CogX environment
@@ -155,8 +163,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				});
 	}
 
-	
-	
 	/**
 	 * add the manipulation listener to the CAST working memory
 	 */
@@ -166,6 +172,17 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						logger.error("Getting putDownCommand from add action in WM");
+
+						try {
+							PutDownCommand command = getMemoryEntry(
+									_wmc.address, PutDownCommand.class);
+						} catch (DoesNotExistOnWMException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (UnknownSubarchitectureException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				});
 
@@ -182,6 +199,41 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						logger.error("Getting FarArmMovementCommand from add action in WM");
+
+						try {
+							FarArmMovementCommand command = getMemoryEntry(
+									_wmc.address, FarArmMovementCommand.class);
+
+							Vector3 targetPosition = command.targetObject.pose.pos;
+							ArmError error = manipulator.getArmConnector()
+									.approachObject(
+											new Vector3D(targetPosition.x,
+													targetPosition.y,
+													targetPosition.z));
+
+							command.xError = error.getPoseError().getX();
+							command.yError = error.getPoseError().getY();
+							command.zError = error.getPoseError().getZ();
+
+							if (error.isSuccess()) {
+								command.comp = ManipulationCompletion.SUCCEEDED;
+							} else {
+								command.comp = ManipulationCompletion.FAILED;
+							}
+
+							try {
+								overwriteWorkingMemory(_wmc.address, command);
+							} catch (ConsistencyException e) {
+								logger.error(e);
+							} catch (PermissionException e) {
+								logger.error(e);
+							}
+						} catch (DoesNotExistOnWMException e) {
+							logger.error(e);
+						} catch (UnknownSubarchitectureException e) {
+							logger.error(e);
+						}
+
 					}
 				});
 
@@ -243,7 +295,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 					}
 				});
 	}
-
 
 	/**
 	 * {@inheritDoc}
