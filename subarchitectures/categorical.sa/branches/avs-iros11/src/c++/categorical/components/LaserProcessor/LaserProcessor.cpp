@@ -557,6 +557,7 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   if (_rangeExample->setRanges(rangesCount, ranges)<0)
     throw(CASTException(exceptionMessage(__HERE__, "Couldn't set ranges!")));
 
+
   classifier.calcSelectedFeatures(_rangeExample, _featureInfoList);
   int featureCount = _featureInfoList->num();
 
@@ -568,11 +569,13 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   for (int i=0; i<featureCount; ++i)
   {
     FeatureInfo *fi = _featureInfoList->getElement(i);
+
     libSvmFeatures[i].index = i+1;
     if (_scales[i].min==_scales[i].max)
       libSvmFeatures[i].value = 0; //fi->result;
     else
       libSvmFeatures[i].value = ((fi->result-_scales[i].min)*2.0)/(_scales[i].max-_scales[i].min) - 1.0;
+
   }
   libSvmFeatures[featureCount].index=-1;
   libSvmFeatures[featureCount].value=0.0;

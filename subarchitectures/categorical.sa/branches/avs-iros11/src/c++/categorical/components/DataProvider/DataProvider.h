@@ -194,7 +194,7 @@ private: // Queues
 
   pthread_mutex_t _odometryQueueMutex;
   std::list<Robotbase::Odometry> _odometryQueue;
-
+  typedef std::list<Robotbase::Odometry> OdomQueue;
 
 private: // Thread synchronization
 
