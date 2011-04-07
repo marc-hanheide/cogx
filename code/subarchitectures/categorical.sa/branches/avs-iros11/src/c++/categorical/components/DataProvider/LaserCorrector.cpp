@@ -6,6 +6,7 @@
 #include "LaserCorrector.h"
 #include <stddef.h>
 #include <math.h>
+#include "medflt.h"
 
 
 using namespace std;
@@ -121,6 +122,10 @@ void CategoricalLaserCorrector::rebuildMap()
 	            int xCell=static_cast<int>(round((_mapSize+x)/_cellSize));
 	            int yCell=static_cast<int>(round((_mapSize+y)/_cellSize));
 	            _map[yCell][xCell] = 1;
+	            _map[yCell-1][xCell] = 1;
+	            _map[yCell+1][xCell] = 1;
+	            _map[yCell][xCell-1] = 1;
+	            _map[yCell][xCell+1] = 1;
 	        }
 	        angle+=scan.angleStep;
 	    }
@@ -156,101 +161,12 @@ void CategoricalLaserCorrector::getVirtualScan(std::vector<double> &ranges, doub
 
 }
 
-
-// ------------------------------------------------------
 void CategoricalLaserCorrector::medianFilter(const std::vector<double> &in, std::vector<double> &out, unsigned int order)
 {
-	out = in;
-//    virtRanges(1) = virtRanges(2);
-//    virtRanges(end) = virtRanges(end-1);
+	TMedianFilter1D<double> flt;
+	flt.SetWindowSize(order);
+	flt.Execute(in, true);
+	out.resize(in.size());
+	for(int j=0; j<flt.Count(); j++)
+		out[j]=flt[j];
 }
-
-
-
-
-
-//	  if (_convertToSick)
-//	  {
-//		  const double sickStartAngle = -1.5708;
-//		  const double sickAngleStep = 0.017453;
-//		  const int sickCount = 181;
-//
-//		  ranges = new double[sickCount];
-//		  rangesCount = sickCount;
-//		 // log("%f %f %d", scan.angleStep, scan.startAngle, scan.ranges.size());
-//
-//		  double angle = scan.startAngle;
-//		  for (size_t i=0; i<scan.ranges.size(); ++i)
-//		  {
-//			  // Convert the hokuyo angle to the nearest sick angle
-//			  if ((angle >= sickStartAngle) && (angle <= -sickStartAngle))
-//			  {
-//				  int j = ((angle - sickStartAngle)/sickAngleStep);
-//				  if (j<sickCount)
-//				  {
-//	//log("%d %d %f", i, j, scan.ranges[i]);
-//					  ranges[j] = scan.ranges[i];
-//	//		  ranges[j] = scan.ranges[i];
-//				  }
-//			  }
-//			  angle += scan.angleStep;
-//		  }
-//
-//	      growNonMax(ranges, rangesCount);
-//
-//
-//	  }
-//	  else
-
-//
-//void CategoricalLaserProcessor::growNonMax(double *ranges, int size)
-//{
-//  const int winSize = 5;
-//
-//  double *ranges2 = new double[size];
-//  for (int i=0; i<size; ++i)
-//    ranges2[i] = ranges[i];
-//
-//
-//  int winSize2 = winSize/2;
-//
-//    for (int i=winSize2; i<size-winSize2; ++i)
-//    {
-//	  bool isMax=false;
-//	  double avg=0.0;
-//	  int nonMaxCount=0;
-//	  int maxCount=0;
-//
-//	for (int j=i-winSize2; j<i+winSize2+1; ++j)
-//	{
-//	  if (ranges2[j]<5.57)
-//	  {
-//	     nonMaxCount++;
-//	     avg+=ranges2[j];
-//	  }
-//	  else
-//	  {
-//	      maxCount++;
-//	  }
-//	}
-//
-//	avg/=(double)(nonMaxCount);
-//
-//	if ((maxCount>0) && (nonMaxCount>0))
-//	{
-//	  for (int j=i-winSize2; j<i+winSize2+1; ++j)
-//	  {
-//	    if (ranges2[j]>=5.57)
-//	    {
-//	      ranges[j]=avg;
-//	    }
-//	  }
-//
-//
-//	}
-//    }
-//
-//
-//   delete [] ranges2;
-//}
-

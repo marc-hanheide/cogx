@@ -56,7 +56,7 @@ CategoricalDataProvider::CategoricalDataProvider(): _cfgGroup("DataProvider")
   pthread_mutex_init(&_odometryQueueMutex, 0);
 
   // Laser corrector
-  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.1, 20, 20, 5.6);
+  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.05, 20, 19, 5.6);
 
   // Other
   _frameNo=0;
@@ -220,23 +220,42 @@ void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
     println("Empty scan, ignoring it");
     return;
   }
-  if (_odometryQueue.back().odompose.size()<1)
-    return;
-
   Laser::Scan2d scan = inScan;
 
   debug("Received scan acquired at %d.%d.", scan.time.s, scan.time.us);
 
-  pthread_mutex_lock(&_scanQueueMutex);
-
   if (_correctScans)
   {
-	  // Get the most recent odometry
+	  // Find best matching odometry
+	  double x=0;
+  	  double y=0;
+  	  double theta=0;
 	  pthread_mutex_lock(&_odometryQueueMutex);
-	  double x=_odometryQueue.back().odompose[0].x;
-	  double y=_odometryQueue.back().odompose[0].y;
-	  double theta=_odometryQueue.back().odompose[0].theta;
+	  double minTDiff = 100000;
+	  OdomQueue::iterator minTDiffIt = _odometryQueue.end();
+	  for (OdomQueue::iterator it = _odometryQueue.begin(); it!=_odometryQueue.end(); ++it)
+	  {
+		  double tDiff = fabs(castTimeToSeconds(castTimeDiff(scan.time, it->time)));
+		  if ((it->odompose.size()>0) && (tDiff < minTDiff))
+		  {
+			  minTDiff = tDiff;
+			  minTDiffIt = it;
+		  }
+	  }
+	  if (minTDiffIt!=_odometryQueue.end())
+	  {
+		  x=minTDiffIt->odompose[0].x;
+		  y=minTDiffIt->odompose[0].y;
+		  theta=minTDiffIt->odompose[0].theta;
+	  }
 	  pthread_mutex_unlock(&_odometryQueueMutex);
+
+	  // If good enough, use it
+	  if ((minTDiff>0.05) || (minTDiffIt==_odometryQueue.end()))
+	  {
+		  debug("Ignoring scan as it does not have a corresponding odometry (timediff=%f)!", minTDiff);
+		  return;
+	  }
 
 	  _laserCorrector->addScan(x, y, theta, scan.ranges, scan.startAngle, scan.angleStep);
 	  if (_convertScansToSick)
@@ -252,6 +271,7 @@ void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
 		  _laserCorrector->getCorrectedScan(scan.ranges, scan.startAngle, scan.angleStep, scan.ranges.size());
   }
 
+  pthread_mutex_lock(&_scanQueueMutex);
   _scanQueue.push_back(scan);
   cdl::CASTTime tDiff = castTimeDiff(_scanQueue.front().time, _scanQueue.back().time);
   while ((castTimeToSeconds(tDiff) > _queueTimeWindow) || (_scanQueue.size() > 100))
