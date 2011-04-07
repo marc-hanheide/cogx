@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>834</width>
-    <height>501</height>
+    <width>937</width>
+    <height>588</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,17 +56,28 @@
               <property name="text">
                <string/>
               </property>
-              <property name="scaledContents">
-               <bool>true</bool>
-              </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="showImageCheckBox">
-              <property name="text">
-               <string>Show</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="showImageCheckBox">
+                <property name="text">
+                 <string>Show</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="imageFrameLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -81,11 +92,25 @@
              <widget class="LaserScanView" name="laserScanView"/>
             </item>
             <item>
-             <widget class="QCheckBox" name="showScanCheckBox">
-              <property name="text">
-               <string>Show</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QCheckBox" name="showScanCheckBox">
+                <property name="text">
+                 <string>Show</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="scanFrameLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -100,11 +125,25 @@
              <widget class="OdometryView" name="odometryView"/>
             </item>
             <item>
-             <widget class="QCheckBox" name="showOdometryCheckBox">
-              <property name="text">
-               <string>Show</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QCheckBox" name="showOdometryCheckBox">
+                <property name="text">
+                 <string>Show</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="odometryFrameLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

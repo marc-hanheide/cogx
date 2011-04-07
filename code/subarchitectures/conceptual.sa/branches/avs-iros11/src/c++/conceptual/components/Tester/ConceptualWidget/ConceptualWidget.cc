@@ -106,7 +106,6 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 // -------------------------------------------------------
 void ConceptualWidget::sendQueryButtonClicked()
 {
-	try{
 	if (queryComboBox->currentText().isEmpty())
 		return;
 
@@ -186,12 +185,6 @@ void ConceptualWidget::sendQueryButtonClicked()
 		queryResultTreeWidget->insertTopLevelItem(0,
 				new QTreeWidgetItem((QTreeWidget*)0, QStringList("Incorrect query!")) );
 	}
-	}catch(...)
-	{
-		_component->log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA sendQueryButton");
-		throw;
-	}
-
 }
 
 
@@ -246,7 +239,6 @@ void ConceptualWidget::factorListCurrentTextChanged(const QString &curText)
 // -------------------------------------------------------
 void ConceptualWidget::refreshWsButtonClicked()
 {
-	try{
 	wsTreeWidget->clear();
 
 	pthread_mutex_lock(&_worldStateMutex);
@@ -400,12 +392,6 @@ void ConceptualWidget::refreshWsButtonClicked()
 
 	wsTreeWidget->expandAll();
 
-	}catch(...)
-	{
-		_component->log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA refreshWS");
-		throw;
-	}
-
 }
 
 
@@ -519,10 +505,6 @@ void ConceptualWidget::objectsButtonClicked()
 // -------------------------------------------------------
 void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 {
-	try
-	{
-
-
 	for (int i=0; i<event.infos.size(); ++i)
 	{
 		// Increment the overall event number
@@ -637,11 +619,6 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 	if (collectInfoCheckBox->isChecked())
 	{
 		collectEventInfo(event);
-	}
-	}catch(...)
-	{
-		_component->log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA addEvent");
-		throw;
 	}
 
 }
@@ -886,8 +863,6 @@ double ConceptualWidget::getExistsProbability(SpatialProbabilities::ProbabilityD
 // -------------------------------------------------------
 void ConceptualWidget::posTimerTimeout()
 {
-	try{
-
 	int curPlaceId = _component->getCurrentPlace();
 
 	// Did we change place?
@@ -914,12 +889,7 @@ void ConceptualWidget::posTimerTimeout()
 		event.infos.push_back(info);
 
 		addEvent(event);
-	}
-
-	}catch(...)
-	{
-		_component->log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA posTimerTimeout");
-		throw;
+		emit locationChanged(curPlaceId);
 	}
 }
 

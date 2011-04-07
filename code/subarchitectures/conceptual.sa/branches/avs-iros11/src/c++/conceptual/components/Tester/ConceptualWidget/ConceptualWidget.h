@@ -45,6 +45,7 @@ public:
 signals:
 
 	void newEventInfo(const QList<conceptual::ConceptualEvent> &events);
+	void locationChanged(int placeId);
 
 
 private slots:

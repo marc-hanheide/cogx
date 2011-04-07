@@ -8,7 +8,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
 
     qt4_add_resources( RC_SOURCES resources.qrc )
     qt4_wrap_ui( UI_HEADERS_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.ui ConceptualWidget/AddGroundtruthDialog.ui)
-    qt4_wrap_cpp( MOC_SOURCES_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.h ConceptualWidget/AddGroundtruthDialog.h)
+    qt4_wrap_cpp( MOC_SOURCES_EVENT_VISUALIZER ConceptualWidget/EventVisualizer.h ConceptualWidget/AddGroundtruthDialog.h ConceptualWidget/EventView.h)
     qt4_wrap_ui( UI_HEADERS MainDialog.ui ConceptualWidget/ConceptualWidget.ui ConceptualWidget/ObjectPlacePropertyDialog.ui 
                             ConceptualWidget/ObjectSearchResultDialog.ui ConceptualWidget/GraphDialog.ui 
                             ConceptualWidget/EventVisualizer.ui AVSMainWidget/AVSMainWidget.ui 
@@ -16,7 +16,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                             CategoricalWidget/CategoricalWidget.ui)
     qt4_wrap_cpp( MOC_SOURCES MainDialog.h ConceptualWidget/ConceptualWidget.h ConceptualWidget/ObjectPlacePropertyDialog.h 
                               ConceptualWidget/ObjectSearchResultDialog.h ConceptualWidget/GraphDialog.h 
-                              ConceptualWidget/EventVisualizer.h NavWidget/NavWidget.h
+                              ConceptualWidget/EventVisualizer.h NavWidget/NavWidget.h 
                               AVSMainWidget/AVSMainWidget.h DefaultWidget/DefaultWidget.h
                               DemoWidget/DemoWidget.h CategoricalWidget/CategoricalWidget.h
                               CategoricalWidget/LaserScanView.h CategoricalWidget/OdometryView.h )
@@ -37,7 +37,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                                         ConceptualWidget/ObjectSearchResultDialog.cc ConceptualWidget/GraphDialog.cc ConceptualWidget/AddGroundtruthDialog.cc
                                         AVSMainWidget/AVSMainWidget.cpp ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                         NavWidget/NavWidget.cc DemoWidget/DemoWidget.cc CategoricalWidget/CategoricalWidget.cc
-                                        DefaultWidget/DefaultWidget.cc 
+                                        DefaultWidget/DefaultWidget.cc ConceptualWidget/EventView.cc
                                         CategoricalWidget/LaserScanView.cc CategoricalWidget/OdometryView.cc
                                         ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} )
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared DefaultData SpatialData 
@@ -47,7 +47,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                                                CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 
     add_executable(event-visualizer event-visualizer.cc ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
-                                    ConceptualWidget/AddGroundtruthDialog.cc
+                                    ConceptualWidget/AddGroundtruthDialog.cc ConceptualWidget/EventView.cc
                                     ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} ${RC_SOURCES})
     link_cast_component(event-visualizer ConceptualData QtGui QtSvg)
     install(TARGETS event-visualizer RUNTIME DESTINATION bin ARCHIVE DESTINATION bin)

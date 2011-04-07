@@ -21,7 +21,7 @@
     <number>2</number>
    </property>
    <item>
-    <widget class="QGraphicsView" name="graphicsView"/>
+    <widget class="EventView" name="eventView"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -177,6 +177,13 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>EventView</class>
+   <extends>QGraphicsView</extends>
+   <header>EventView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

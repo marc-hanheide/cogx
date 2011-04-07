@@ -91,7 +91,8 @@ void CategoricalWidget::newLaserScan(CategoricalData::LaserScanPtr lsPtr)
 		                           Q_ARG(double, max),
 		                           Q_ARG(QVector<double>, range),
 		                           Q_ARG(double, static_cast<double>(lsPtr->realTimeStamp.s) + static_cast<double>(lsPtr->realTimeStamp.us)/1000000.0));
-
+		QMetaObject::invokeMethod(ui.scanFrameLabel, "setText", Qt::QueuedConnection,
+		                           Q_ARG(QString, QString::number(lsPtr->frameNo)));
 	}
 }
 
@@ -105,7 +106,8 @@ void CategoricalWidget::newOdometry(CategoricalData::OdometryPtr oPtr)
 		                           Q_ARG(double, oPtr->odometryBuffer.odompose[0].y),
 		                           Q_ARG(double, oPtr->odometryBuffer.odompose[0].theta),
 		                           Q_ARG(double, static_cast<double>(oPtr->realTimeStamp.s) + static_cast<double>(oPtr->realTimeStamp.us)/1000000.0));
-
+		QMetaObject::invokeMethod(ui.odometryFrameLabel, "setText", Qt::QueuedConnection,
+		                           Q_ARG(QString, QString::number(oPtr->frameNo)));
 	}
 }
 
@@ -117,22 +119,24 @@ void CategoricalWidget::newImage(CategoricalData::ImagePtr iPtr)
 		// Convert image to pixmap
 		int w=iPtr->imageBuffer.width;
 		int h=iPtr->imageBuffer.height;
-		QImage tmpImage(w, h, QImage::Format_Indexed8);
+		QImage tmpImage(w/2, h/2, QImage::Format_Indexed8);
 		tmpImage.setColorTable(_colorMap);
 
-		for (int i=0; i<h; ++i)
-			for (int j=0; j<w; ++j)
-				tmpImage.setPixel(j, i, (unsigned char)(iPtr->imageBuffer.data[i*w+j]) );
+		for (int i=0; i<h; i+=2)
+			for (int j=0; j<w; j+=2)
+				tmpImage.setPixel(j/2, i/2, (unsigned char)(iPtr->imageBuffer.data[i*w+j]) );
 
 		QMetaObject::invokeMethod(this, "setImage", Qt::QueuedConnection,
-		                           Q_ARG(QImage, tmpImage));
+		                           Q_ARG(QImage, tmpImage),
+		                           Q_ARG(int, iPtr->frameNo));
 	}
 }
 
 
-void CategoricalWidget::setImage(QImage img)
+void CategoricalWidget::setImage(QImage img, int frame)
 {
 	ui.imageLabel->setPixmap(QPixmap::fromImage(img));
+	ui.imageFrameLabel->setText(QString::number(frame));
 }
 
 

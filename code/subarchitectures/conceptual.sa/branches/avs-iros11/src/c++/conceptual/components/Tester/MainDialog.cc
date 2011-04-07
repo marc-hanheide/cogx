@@ -22,7 +22,14 @@ MainDialog::MainDialog(conceptual::Tester *component)
 	ui.tabWidget->addTab(_defaultWidget, "Default.SA Tester");
 	ui.tabWidget->addTab(_avsMainWidget, "AVS Tester");
 	ui.tabWidget->addTab(_navWidget, "Naigation Tester");
+
+	connect(_conceptualWidget, SIGNAL(newEventInfo(const QList<conceptual::ConceptualEvent>&)),
+			_demoWidget, SLOT(updateEvents(const QList<conceptual::ConceptualEvent>&)));
+	connect(_conceptualWidget, SIGNAL(locationChanged(int)),
+			_demoWidget, SLOT(locationChanged(int)));
+
 }
+
 
 MainDialog::~MainDialog()
 {

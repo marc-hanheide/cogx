@@ -33,28 +33,15 @@ private slots:
 	void addGroundtruthButtonClicked();
 
 
-private:
-
-	QBrush getBrushForProbability(double prob);
 
 
 private:
     Ui::RCVisualizerClass ui;
 
-    /** Map roomId -> roomCateogory index. */
-    std::map<int, int> _groundTruth;
-
-	const std::vector<std::string> &_roomCats;
-	const std::vector<std::string> &_shapes;
-	const std::vector<std::string> &_sizes;
-	const std::vector<std::string> &_appearances;
-	const std::vector<std::string> &_visualizedObjects;
-
+	const std::vector<std::string> *_roomCats;
 	int _curPlaceId;
 	int _curRoomId;
-
 	std::set<int> _roomIds;
-
 	QList<conceptual::ConceptualEvent> _lastEvents;
 
 };
