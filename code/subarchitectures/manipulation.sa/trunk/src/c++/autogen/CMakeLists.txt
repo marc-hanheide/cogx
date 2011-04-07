@@ -1,5 +1,9 @@
 include_directories(.)
 
+include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/math/src/c++/math)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
 
 include(Slice2Cpp)
 
