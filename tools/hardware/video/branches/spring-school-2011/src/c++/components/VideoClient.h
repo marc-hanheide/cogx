@@ -34,6 +34,10 @@ protected:
     {
       vidClt->receiveImages(images);
     }
+    virtual void receiveImages2(const std::string& serverName, const Video::ImageSeq &images, const Ice::Current&)
+    {
+      vidClt->receiveImages(serverName, images);
+    }
   };
 
 public:
@@ -42,6 +46,11 @@ public:
    * To be overwritten by derived classes.
    */
   virtual void receiveImages(const std::vector<Video::Image>& images) {}
+
+  virtual void receiveImages(const std::string& serverName, const std::vector<Video::Image>& images)
+  {
+    receiveImages(images);
+  }
 };
 
 }

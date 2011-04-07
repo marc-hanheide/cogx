@@ -10,5 +10,6 @@
 #include "CameraParameters.h"
 #include "ConvertImage.h"
 #include "AccessImage.h"
+#include "Timers.h"
 
 #endif

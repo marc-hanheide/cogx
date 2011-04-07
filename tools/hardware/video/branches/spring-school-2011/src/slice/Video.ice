@@ -154,6 +154,27 @@ module Video {
   
   interface VideoClientInterface {
     void receiveImages(ImageSeq images);
+    void receiveImages2(string serverName, ImageSeq images);
+  };
+
+  // The structure contains parameters that describe the sequence of images
+  // that should be loaded.
+  class VideoSequenceInfo {
+    // List of filename templates, one for each camera.
+    // The list is space-delimited to be compatible with --files in configure().
+    string fileTemplates;
+
+    // Start index, end index, step.
+    int start;
+    int end;
+    int step;
+
+    // True, if the sequence should play continuously.
+    bool loop;
+
+    // How many times to repeat each frame.
+    // Framerate should be set in configure().
+    int repeatFrame;
   };
 };
 

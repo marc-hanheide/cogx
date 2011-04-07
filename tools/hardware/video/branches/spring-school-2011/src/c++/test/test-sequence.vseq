@@ -1,0 +1,38 @@
+#
+# The file contains multiple sections that are processed in the
+# order they are defined. Each section defines either global
+# variables or a video sequence. The section name represetns a
+# unique sequence identifier. Global variables are stored in
+# the section called "[:global:]". There can be multiple
+# global sections.
+#
+# The parameters of a sequence are defined with the "sequence=" variable.
+# The parameters are in the format accepted by OpenCvImgSeqServer.
+# The variables "in" and "out" define transitions between sequences. 
+#
+# The special variable INI_DIR contains the directory where the video
+# sequence confiuguration file (vseq) is stored and can be used to define
+# sequences with images that are stored in a path relative to the config
+# file's path.
+
+
+[:global:]
+# CAST processes start in COGX_ROOT; imagepath is relative to that.
+imagepath=subarchitectures/vision.sa/config/test-ferns
+tea_lr=%(imagepath)/tea%03d.jpg  %(imagepath)/tea%03d.jpg
+
+[TeaStart]
+files=%(tea_lr)
+sequence=--files "%(files)" --start 0 --end 1 --repeatframe 4
+
+[TeaEnd]
+files=%(tea_lr)
+in=--files "%(files)" --start 2 --end 2
+sequence=--files "%(files)" --start 2 --end 3 --repeatframe 4
+out=--files "%(files)" --start 3 --end 3
+
+[TeaAll]
+files=%(tea_lr)
+in=--files "%(files)" --start 0 --end 0
+sequence=--files "%(files)" --start 0 --end 3
+out=--files "%(files)" --start 3 --end 3
