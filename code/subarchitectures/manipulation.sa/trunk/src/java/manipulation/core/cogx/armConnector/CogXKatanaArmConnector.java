@@ -452,17 +452,20 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	}
 
 	@Override
-	public void approachObject(Vector3D targetPosition) {
+	public ArmError approachObject(Vector3D targetPosition) {
 
 		double posInFront = 0.1;
 
+		ArmError armError = new ArmError();
+		armError.setSuccess(true);
+
 		Vector3D direction = null;
+
 		try {
 			direction = MathOperation.getDirection(getCurrentPosition(),
 					targetPosition);
 		} catch (ManipulatorException e1) {
-			// TODO Auto-generated catch block
-			logger.error(e1);
+			armError.setSuccess(false);
 		}
 
 		logger.debug("Try to approach the item!");
@@ -483,21 +486,19 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				targetPosition.getY() - posInFront * direction.getY(),
 				targetPosition.getZ());
 
-		ArmError armError = null;
 		try {
 			armError = getPosError(goalWithDistance, graspRotation);
 		} catch (ManipulatorException e) {
-			logger.error(e);
+			armError.setSuccess(false);
 		}
-
-		logger.debug(MathOperation.getEuclDistance(armError.getPoseError()));
 
 		try {
 			reach(goalWithDistance, graspRotation);
 		} catch (ManipulatorException e) {
-			// TODO Auto-generated catch block
-			logger.error(e);
+			armError.setSuccess(false);
 		}
+
+		return armError;
 
 	}
 }

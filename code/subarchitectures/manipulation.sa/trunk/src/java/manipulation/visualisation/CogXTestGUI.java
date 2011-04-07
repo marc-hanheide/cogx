@@ -21,6 +21,12 @@ import manipulation.slice.SimulateGraspCommand;
 
 import org.apache.log4j.Logger;
 
+import cogx.Math.Matrix33;
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
+
+import VisionData.VisualObject;
+
 import cast.AlreadyExistsOnWMException;
 
 /**
@@ -144,6 +150,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
+
+			VisualObject visObj = new VisualObject();
+			Pose3 pos = new Pose3();
+			pos.pos = new Vector3(0, 0, 0);
+			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			visObj.pose = pos;
+
+			farArmMovementCom.targetObject = visObj;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						farArmMovementCom);
