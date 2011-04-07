@@ -84,3 +84,14 @@ spatial.sa:
 		exp(-distSq/1.0) where distSq is the square distance between
 		them.
   		The switch --doorway-width does nothing currently.
+	-- On the exploration exclusion zones: Using --exclude-from-exploration,
+		it's possible to create a zone in which no Placeholders will
+		be created (in absolute coordinates).
+		The syntax is:
+		--exclude-from-exploration "{x|y} {<|>} value [{|or} {x|y}
+			{<|>} value ...]"
+		Example: 
+		--exclude-from-exploration "x < 5 x > 0 y < 5 y > 0 or x > 15"
+		will create two zones: one rectangular between (0,0) and (5,5),
+		and one whole half-plane x>15. No placeholders will be created
+		in these zones.
