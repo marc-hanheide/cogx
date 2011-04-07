@@ -676,12 +676,12 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 		newDoor);
 	    m_detectedDoors[newID] = newDoor;
 
-	    if (m_bShowDoorsInPB) {
+	 /*   if (m_bShowDoorsInPB) {
 	      peekabot::SphereProxy sph;
 	      sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
 	      sph.set_scale(0.1, 0.1, 0.1);
 	      sph.translate(doorX, doorY, 2.0);
-	    }
+	    }*/
 
 //	    updatePlaceholderGatewayProperties(doorX, doorY);
 	  }
