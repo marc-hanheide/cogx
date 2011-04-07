@@ -33,7 +33,12 @@ class CItemDelegate(QtGui.QStyledItemDelegate):
             return QtCore.QSize()
         obj = index.internalPointer()
         if isinstance(obj, CPropertyNode):
-            return QtCore.QSize(16, 22)
+            editor_height = 22 # XXX: depends on font and decorations
+            sz = super(CItemDelegate, self).sizeHint(option, index)
+            if sz.height() < editor_height:
+                sz.setHeight(editor_height)
+            return sz
+
         return super(CItemDelegate, self).sizeHint(option, index)
 
     def getType(self, data):
