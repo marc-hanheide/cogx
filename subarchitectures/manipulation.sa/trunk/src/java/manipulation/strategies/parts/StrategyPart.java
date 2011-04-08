@@ -1,6 +1,7 @@
 package manipulation.strategies.parts;
 
 import manipulation.core.share.Manipulator;
+import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.strategies.Strategy;
 
 /**
@@ -73,7 +74,7 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		ROTATIONAL_RECOGNIZE, 
+		ROTATIONAL_RECOGNIZE,
 		/**
 		 * 
 		 */
@@ -81,7 +82,31 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		GO_TO_BEST_GRASPING_POINT
+		GO_TO_BEST_GRASPING_POINT,
+		/**
+		 * 
+		 */
+		WAIT_PART,
+		/**
+		 * 
+		 */
+		FAR_ARM_MOVEMENT_COMMAND_PART,
+		/**
+		 * 
+		 */
+		PUT_DOWN_COMMAND_PART,
+		/**
+		 * 
+		 */
+		LINEAR_GRASP_APPROACH_COMMAND_PART,
+		/**
+		 * 
+		 */
+		SIMULATE_GRASP_COMMAND_PART,
+		/**
+		 * 
+		 */
+		LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART
 	}
 
 	/**

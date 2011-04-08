@@ -451,54 +451,5 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 	}
 
-	@Override
-	public ArmError approachObject(Vector3D targetPosition) {
 
-		double posInFront = 0.1;
-
-		ArmError armError = new ArmError();
-		armError.setSuccess(true);
-
-		Vector3D direction = null;
-
-		try {
-			direction = MathOperation.getDirection(getCurrentPosition(),
-					targetPosition);
-		} catch (ManipulatorException e1) {
-			armError.setSuccess(false);
-		}
-
-		logger.debug("Try to approach the item!");
-
-		Matrix rotationX = MathOperation.getRotationAroundX(MathOperation
-				.getRadiant(0));
-		Matrix rotationY = MathOperation.getRotationAroundY(MathOperation
-				.getRadiant(0));
-		Matrix rotationZ = MathOperation.getRotationAroundZ(MathOperation
-				.getRadiant(-90));
-
-		Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
-				MathOperation.getMatrixMatrixMultiplication(rotationX,
-						rotationY), rotationZ);
-
-		Vector3D goalWithDistance = new Vector3D(
-				(targetPosition.getX() - posInFront * direction.getX()),
-				targetPosition.getY() - posInFront * direction.getY(),
-				targetPosition.getZ());
-
-		try {
-			armError = getPosError(goalWithDistance, graspRotation);
-		} catch (ManipulatorException e) {
-			armError.setSuccess(false);
-		}
-
-		try {
-			reach(goalWithDistance, graspRotation);
-		} catch (ManipulatorException e) {
-			armError.setSuccess(false);
-		}
-
-		return armError;
-
-	}
 }

@@ -27,7 +27,11 @@ public abstract class Strategy {
 		/**
 		 * name for the calibration behaviour.
 		 */
-		CALIBRATION
+		CALIBRATION,
+		/**
+		 * 
+		 */
+		COMMAND_EXECUTION
 	}
 
 	private StrategyPart currentPart;
@@ -128,6 +132,6 @@ public abstract class Strategy {
 	public void setName(Name name) {
 		this.name = name;
 	}
-
+	
 
 }
