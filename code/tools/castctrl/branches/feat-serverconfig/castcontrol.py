@@ -115,11 +115,13 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
         self.componentFilter = []
+        _localhost = self._options.getOption("localhost")
+        self.configuredHosts = confbuilder.CHostMap(localhost=_localhost)
 
         # move option values to UI
-        self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
+        self.ui.txtLocalHost.setText(_localhost)
         val = self._options.getOption("log4jServerPort")
-        if val != "": self.ui.edLo4jServerPort.setText(val)
+        if val != "": self.ui.edLog4jServerPort.setText(val)
         val = self._options.getOption("log4jServerOutfile")
         if val != "": self.ui.edLog4jOutfile.setText(val)
 
@@ -221,6 +223,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
         log4jlevels = log4util.log4jlevels
+        self.ui.log4jConsoleLevelCmbx.clear()
+        self.ui.log4jFileLevelCmbx.clear()
         for i in log4jlevels:
             self.ui.log4jConsoleLevelCmbx.addItem(i)
             self.ui.log4jFileLevelCmbx.addItem(i)
@@ -238,7 +242,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             except: return default
         self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
-        self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
+        #self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
         self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
 
     def _fillMessageFilterCombo(self):
@@ -358,8 +362,24 @@ class CCastControlWnd(QtGui.QMainWindow):
         return lhost
 
     @property
+    def _log4j_start_server(self):
+        return self.ui.cbLog4jMode.currentIndex() == 0
+
+    @property
+    def _log4j_use_server(self):
+        return self.ui.cbLog4jMode.currentIndex() in [0, 1]
+
+    @property
+    def _log4jServerHost(self):
+        val = "%s" % self.ui.edLog4jServerHost.text()
+        val = val.strip()
+        if val == '' or val == 'localhost':
+            val = 'localhost'
+        return val
+
+    @property
     def _log4jServerPort(self):
-        val = "%s" % self.ui.edLo4jServerPort.text()
+        val = "%s" % self.ui.edLog4jServerPort.text()
         val = val.strip()
         return val
 
@@ -469,7 +489,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
-            self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
+            #self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
 
             cfg = ConfigParser.RawConfigParser()
@@ -514,7 +534,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             for p in h.proclist:
                 if p.name == procman.LOG4J_PROCESS:
                     continue # log4j server is started separately
-                if not p.name in procGroup.proclist:
+                if not p.name in procGroup.processlist:
                     continue
                 p.start()
 
@@ -529,7 +549,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             for p in h.proclist:
                 if p.name == procman.LOG4J_PROCESS:
                     continue # log4j server is started separately
-                if not p.name in procGroup.proclist:
+                if not p.name in procGroup.processlist:
                     continue
                 p.stop()
 
@@ -539,7 +559,8 @@ class CCastControlWnd(QtGui.QMainWindow):
     def startServers(self):
         self._options.checkConfigFile()
         log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        #hasServer = self.ui.ckRunLog4jServer.isChecked()
+        hasServer = self._log4j_use_server
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
         if self.ui.actEnableCleanupScript.isChecked():
@@ -585,9 +606,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         hostConfig = hostConfig.strip()
         lhost = self._localhost
 
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
 
         cfg.prepareConfig(clientConfig)
@@ -608,9 +628,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         LOGGER.log("LOCALHOST: %s" % lhost)
 
         self._tmpCastFile = tempfile.NamedTemporaryFile(suffix=".cast")
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
         cfg.prepareConfig(clientConfig, self._tmpCastFile)
         self._tmpCastFile.flush()
@@ -625,9 +644,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig == "" or not os.path.exists(hostConfig):
             msg = "Host configuration file (.hconf) not defined or it doesn't exist."
             LOGGER.warn(msg)
@@ -636,14 +654,14 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         cfg.addRules(open(hostConfig, "r").readlines())
 
-        hosts = []
-        for hid,haddr in cfg.hosts.iteritems():
+        hlst = []
+        for hid,haddr in self.configuredHosts.items():
             if hid[:4] == "127.": continue
             if haddr == "localhost" or haddr[:4] == "127.": continue
             # if haddr == lhost: continue # XXX Comment this line when testing and an agent is on localhost
-            if not haddr in hosts: hosts.append(haddr)
+            if not haddr in hlst: hlst.append(haddr)
 
-        return hosts
+        return hlst
 
 
     def discoverCastAgents(self):
@@ -658,7 +676,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onStartCastClient(self):
         log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        #hasServer = self.ui.ckRunLog4jServer.isChecked()
+        hasServer = self._log4j_use_server
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
         if self.ui.ckAutoClearLog.isChecked():
@@ -688,9 +707,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             log4.setServerConsoleLevel(self._log4jConsoleLevel)
             log4.setServerXmlFileLevel(self._log4jXmlFileLevel)
             log4.setServerPort(self._log4jServerPort)
-            # XXX: currently it can only run on localhost; agents have to be modified for remote execution
-            # TODO: option log4j-HOST in log4j config dialog
-            log4.serverHost = self._localhost
+            log4.serverHost = self._log4jServerHost
             return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self)
@@ -699,28 +716,52 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def startLog4jServer(self):
-        if not self.ui.ckRunLog4jServer.isChecked():
+        #if not self.ui.ckRunLog4jServer.isChecked():
+        startServer = self._log4j_start_server
+        if not startServer:
             return
 
+        # XXX: currently it can only run on localhost; agents have to be modified for remote execution
+        # TODO: option log4j-HOST in log4j config dialog
         # TODO: start the server only if it's not running, yet
         # TODO: select the host/agent to start the log4j server
 
-        p = self._manager.getProcess(procman.LOG4J_PROCESS)
-        if p != None:
-            log4 = self._getLog4jConfig()
-            log4.prepareServerConfig()
-            LOGGER.log("Log4j STARTING 2")
-            p.start( params = {
-                "LOG4J_PORT": log4.serverPort,
-                "LOG4J_SERVER_CONFIG": log4.serverConfigFile
-                })
-            time.sleep(0.5) # give the server time to start before the others start
+        log4 = self._getLog4jConfig()
+        if self.configuredHosts.isLocalHost(log4.serverHost):
+            p = self._manager.getProcess(procman.LOG4J_PROCESS)
+            if p != None:
+                log4.prepareServerConfig()
+                LOGGER.log("Log4j STARTING 2")
+                p.start( params = {
+                    "LOG4J_PORT": log4.serverPort,
+                    "LOG4J_SERVER_CONFIG": log4.serverConfigFile
+                    })
+                time.sleep(1) # give the server time to start before the others start
+                return
+
+        # start Log4j remotely
+        haddr = self.configuredHosts.expandHostName(log4.serverHost)
+        started = False
+        for h in self._remoteHosts:
+            if started: break
+            if h.address != haddr: continue
+            for p in h.proclist:
+                if p.name == procman.LOG4J_PROCESS:
+                    log4.prepareServerConfig()
+                    conf = open(log4.serverConfigFile).read()
+                    h.agentProxy.setLog4jServerProperties(int(log4.serverPort), conf)
+                    p.start()
+                    started = True
+                    break
 
 
     def checkStopLog4jServer(self):
-        if not self.ui.ckRunLog4jServer.isChecked():
+        #if not self.ui.ckRunLog4jServer.isChecked():
+        startServer = self._log4j_start_server # TODO: check if it was actually started, instead
+        if not startServer:
             return
         # Stop it if all other processes were stopped
+        # TODO: Stop it on the remote host !!!!
         pass
 
 
@@ -730,7 +771,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.startLog4jServer()
 
-        hasServer = self.ui.ckRunLog4jServer.isChecked() # TODO: or ckUseLog4jServer.isChecked()
+        #hasServer = self.ui.ckRunLog4jServer.isChecked() # TODO: or ckUseLog4jServer.isChecked()
+        hasServer = self._log4j_use_server
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
 

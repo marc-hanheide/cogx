@@ -184,7 +184,7 @@ class CProcess(CProcessBase):
         self.error = CProcessBase.OK
         if params != None:
             for par in params.iterkeys():
-                command = command.replace("[%s]" % par, params[par])
+                command = command.replace("[%s]" % par, "%s" % params[par])
         log("CMD=%s" % command)
 
         command = cmdlineToArray(command)
