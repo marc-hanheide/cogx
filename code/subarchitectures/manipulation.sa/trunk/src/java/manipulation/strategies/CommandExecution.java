@@ -6,6 +6,7 @@ import manipulation.strategies.parts.StrategyPart.PartName;
 import manipulation.strategies.parts.commands.FarArmMovementCommandPart;
 import manipulation.strategies.parts.commands.LinearBaseMovementApproachCommandPart;
 import manipulation.strategies.parts.commands.LinearGraspApproachCommandPart;
+import manipulation.strategies.parts.commands.MoveArmToHomePositionCommandPart;
 import manipulation.strategies.parts.commands.PutDownCommandPart;
 import manipulation.strategies.parts.commands.SimulateGraspCommandPart;
 import manipulation.strategies.parts.commands.StopCommandPart;
@@ -56,5 +57,7 @@ public class CommandExecution extends Strategy {
 		addToPartList(new LinearBaseMovementApproachCommandPart(
 				getManipulator(), this));
 		addToPartList(new StopCommandPart(getManipulator(), this));
+		addToPartList(new MoveArmToHomePositionCommandPart(getManipulator(),
+				this));
 	}
 }
