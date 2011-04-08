@@ -84,7 +84,8 @@ protected:
   double m_recognitionTimeThreshold;
   bool m_bRecognitionIssuedThisStop;
 
-  //Pair order: (landmark, trajector)
+  std::set<cdl::WorkingMemoryAddress> m_updatedObjects;
+  //Pair order: (trajector, landmark)
   std::map<StrPair, double> m_objectOnnessValues;
   std::map<StrPair, double> m_objectInnessValues;
 
@@ -120,7 +121,7 @@ protected:
 
   void newRobotPose(const cast::cdl::WorkingMemoryChange &);
   void newObject(const cast::cdl::WorkingMemoryChange &);
-  void newObject(const VisionData::VisualObjectPtr obj, const string &wmid);
+  void newObject(const cast::cdl::WorkingMemoryAddress &);
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
@@ -129,6 +130,7 @@ protected:
   void recomputeOnnessForObject(const std::string &label);
   void recomputeOnnessForPlane(const std::string &label);
   void recomputeInnessForObject(const std::string &label);
+  void runInference();
 
 //  void sampleOnnessForPlane(const std::string &planeLabel, 
 //      const std::string &objectLabel);
