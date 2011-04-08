@@ -25,7 +25,7 @@
 
     <geom:box name="chassis_geom">
       <size>0.510 0.300 0.205</size>
-      <mass>1000</mass>
+      <mass>30</mass>
 
       <visual>
         <scale>0.510 0.300 0.205</scale>
@@ -39,7 +39,7 @@
         <mesh>unit_sphere</mesh>
         <material>Gazebo/Grey</material>
       </visual>
-      <!-- arrows indicating axes -->
+      <!-- arrows indicating axes
       <visual>
         <xyz>1 0 0</xyz>
         <rpy>0 90 0</rpy>
@@ -60,6 +60,35 @@
         <mesh>unit_cone</mesh>
         <material>Gazebo/Blue</material>
       </visual>
+      -->
+    </geom:box>
+  </body:box>
+
+  <body:box name="superstructure_body">
+    <xyz>-0.140 0 0.24</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:box name="superstructure_geom">
+      <xyz>0 0 0.520</xyz>
+      <size>0.044 0.044 1.040</size>
+      <mass>0.1</mass>
+      <visual>
+        <scale>0.044 0.044 1.040</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>-0.047 0 0.508</xyz>
+        <scale>0.05 0.044 0.024</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0.152 0 0.508</xyz>
+        <scale>0.26 0.044 0.024</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
     </geom:box>
   </body:box>
 
@@ -77,6 +106,20 @@
       </visual>
     </geom:cylinder>
   </body:cylinder>
+
+  <joint:hinge name="dummy_joint">
+    <body1>superstructure_body</body1>
+    <body2>chassis_body</body2>
+    <anchor>superstructure_body</anchor>
+    <axis>0 0 1</axis>
+  </joint:hinge>
+
+<!--
+  <attach>
+    <parentBody>chassis_body</parentBody>
+    <myBody>superstructure_body</myBody>
+  </attach>
+-->
 
   <body:cylinder name="right_wheel_body">
     <xyz>0.000 0.14 0.095</xyz>

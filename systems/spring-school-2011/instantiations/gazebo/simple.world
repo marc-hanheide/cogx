@@ -64,7 +64,7 @@ model of "oberhaus" office room, 7 by 3 m
 -->
 
     <model:physical name="ptz">
-      <xyz>-0.15 0 0.30</xyz>
+      <xyz>0.10 0 1.28</xyz>
 
       <attach>
         <parentBody>chassis_body</parentBody>
@@ -77,7 +77,7 @@ model of "oberhaus" office room, 7 by 3 m
     </model:physical>
 
     <model:physical name="arm">
-      <xyz>0.0 0.0 0.300</xyz>
+      <xyz>0.0 0.0 0.24</xyz>
       <rpy>0.0 0.0 0.0</rpy>
 
       <attach>
