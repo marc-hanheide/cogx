@@ -110,7 +110,11 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		STOP_COMMAND_PART
+		STOP_COMMAND_PART,
+		/**
+		 * 
+		 */
+		MOVE_ARM_TO_HOME_POSITION_COMMAND_PART
 	}
 
 	/**

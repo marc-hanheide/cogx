@@ -16,6 +16,7 @@ import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
@@ -50,6 +51,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnSimGrasp;
 	private JButton btnLinBaseApp;
 	private JButton btnStopCmd;
+	private JButton btnMoveHomeCmd;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -121,6 +123,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnStopCmd.setActionCommand("stopCmd");
 		btnStopCmd.addActionListener(this);
 
+		btnMoveHomeCmd = new JButton("move arm to home position");
+		btnMoveHomeCmd.setActionCommand("moveHome");
+		btnMoveHomeCmd.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, btnPutDown, 0, 0, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnFarArm, 0, 1, 12, 1, 0, 0);
@@ -128,6 +134,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		addComponent(pane, gbl, btnSimGrasp, 0, 3, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnLinBaseApp, 0, 4, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnStopCmd, 0, 5, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnMoveHomeCmd, 0, 6, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -213,6 +220,17 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						stopCommand);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("moveHome")) {
+			logger.error("moveHome pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						moveHomeCmd);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}

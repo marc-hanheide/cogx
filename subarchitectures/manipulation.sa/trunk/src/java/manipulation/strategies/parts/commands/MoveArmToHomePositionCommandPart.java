@@ -26,14 +26,16 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class PutDownCommandPart extends StrategyPart implements Observer {
+public class MoveArmToHomePositionCommandPart extends StrategyPart implements
+		Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	public PutDownCommandPart(Manipulator manipulator, Strategy globalStrategy) {
+	public MoveArmToHomePositionCommandPart(Manipulator manipulator,
+			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.PUT_DOWN_COMMAND_PART);
+		setPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
 	}
 
 	/**
@@ -54,7 +56,6 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 		}
 
 		logger.debug("we go on!");
-
 		changeToNextPart();
 
 	}
@@ -117,7 +118,6 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 				synchronized (this) {
 					notifyAll();
 				}
-
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
 				setNextPartName(PartName.STOP_COMMAND_PART);

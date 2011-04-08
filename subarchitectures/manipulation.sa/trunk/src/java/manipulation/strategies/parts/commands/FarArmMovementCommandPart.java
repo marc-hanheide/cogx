@@ -14,12 +14,14 @@ import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
+import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -185,8 +187,16 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				}
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
-					
+
 				setNextPartName(PartName.STOP_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof MoveArmToHomePositionCommand) {
+				logger.info("move arm to home position command");
+				setNextPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
