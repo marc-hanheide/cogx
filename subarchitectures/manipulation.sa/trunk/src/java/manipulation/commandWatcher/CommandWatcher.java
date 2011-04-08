@@ -11,6 +11,10 @@ import manipulation.slice.ManipulationCommand;
 public class CommandWatcher extends Observable {
 	private Logger logger = Logger.getLogger(this.getClass());
 
+	public enum ArmReachingStatus {
+		REACHED
+	}
+
 	public WorkingMemoryAddress currentCommandAddress;
 
 	/**
@@ -34,4 +38,8 @@ public class CommandWatcher extends Observable {
 		notifyObservers(cmd);
 	}
 
+	public void posReached() {
+		setChanged();
+		notifyObservers(ArmReachingStatus.REACHED);
+	}
 }
