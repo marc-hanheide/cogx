@@ -82,7 +82,7 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 		ItemMemory itemMemory = new ItemMemory();
 
 		manipulator = cogxManStore.orderManipulator(
-				ManipulatorName.INTELLIGENT_GRASPING, this, itemMemory,
+				ManipulatorName.INTELLIGENT_GRASPING, this, itemMemory, null,
 				configuration);
 	}
 

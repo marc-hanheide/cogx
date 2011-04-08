@@ -1,5 +1,6 @@
 package manipulation.core.share;
 
+import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.baseConnector.BaseConnector;
 import manipulation.core.share.baseConnector.MapAlgorithms;
@@ -22,7 +23,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class Manipulator {
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	/**
 	 * represent different names of possible manipulators
 	 * 
@@ -48,6 +49,7 @@ public abstract class Manipulator {
 	private MapAlgorithms mapAlgorithms;
 	private Configuration configuration;
 	private ItemMemory itemMemory;
+	private CommandWatcher watcher;
 	private Runner runner;
 
 	/**
@@ -160,7 +162,8 @@ public abstract class Manipulator {
 	 * @param virtualSceneConnector
 	 *            new virtual-scene-connector
 	 */
-	public void setVirtualSceneConnector(VirtualSceneConnector virtualSceneConnector) {
+	public void setVirtualSceneConnector(
+			VirtualSceneConnector virtualSceneConnector) {
 		this.virtualSceneConnector = virtualSceneConnector;
 	}
 
@@ -271,6 +274,21 @@ public abstract class Manipulator {
 	 */
 	public void setRunner(Runner runner) {
 		this.runner = runner;
+	}
+
+	/**
+	 * @return the watcher
+	 */
+	public CommandWatcher getWatcher() {
+		return watcher;
+	}
+
+	/**
+	 * @param watcher
+	 *            the watcher to set
+	 */
+	public void setWatcher(CommandWatcher watcher) {
+		this.watcher = watcher;
 	}
 
 	/**
