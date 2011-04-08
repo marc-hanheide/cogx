@@ -56,6 +56,53 @@ class CComponent:
 class CNullFile:
     def write(self, msg): pass
 
+class CHostMap:
+    def __init__(self, localhost=None):
+        self._localhost = "127.0.0.1"
+        self.clearHosts()
+        self.setLocalhost(localhost)
+
+    def clearHosts(self):
+        self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
+
+    def setLocalhost(self, address):
+        if address == None or address.strip() == "":
+            return
+        self._localhost = address
+        self.hosts["localhost"] = self._localhost
+        self.hosts["127.0.0.1"] = self._localhost
+
+    def isKnownHost(self, hostname):
+        return hostname in self.hosts
+
+    def isLocalHost(self, hostname):
+        h = hostname
+        if h in self.hosts:
+            h = self.hosts[hostname]
+        if h == "localhost" or h.startswith("127.0.0.") or h == "::1":
+            return True
+        if self.hosts["localhost"] == h:
+            return True
+        return False
+
+    def setHostAddress(self, name, addr):
+        self.hosts[name] = addr
+
+    def expandHostName(self, name):
+        name = self.fixLocalhost(name)
+        if name in self.hosts:
+            name = self.hosts[name]
+        return name
+
+    def fixLocalhost(self, host):
+        h = host.lower()
+        if h == "localhost" or h.startswith("127.0.0.") or h == "::1":
+            if "localhost" in self.hosts: host = self.hosts["localhost"]
+        return host
+
+    def items(self):
+        return self.hosts.items()
+
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
     reHostName = re.compile(r"^\s*hostname\s+(\S+)\s+(\S+)", re.IGNORECASE)
@@ -63,11 +110,12 @@ class CCastConfig:
     reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
     reComponent = re.compile(r"^\s*component\s+(\S+\s+)?(cpp|java|python)\s+(\S+)(\s+.*)?", re.IGNORECASE)
     reSubComponent = re.compile(r"^\s*(\S+\s+)?(cpp|java|python)\s+(\S\S)\s+(\S+)(\s+.*)?", re.IGNORECASE)
-    def __init__(self):
+    def __init__(self, hostMap):
         # rules: subarch on machine; component on machine; machine file (hosts, components, subarchs)
         # [ (type, token, ip) ]
-        self._localhost = "127.0.0.1"
-        self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
+        #self._localhost = "127.0.0.1"
+        #self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
+        self.hostMap = hostMap
         self.rules = []
         self.components = []
         self._cast_hostnames = {} # defined in .cast
@@ -83,12 +131,12 @@ class CCastConfig:
 
     def clearRules(self):
         self.rules = []
-        self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
+        #self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
 
-    def setLocalhost(self, address):
-        self._localhost = address
-        self.hosts["localhost"] = self._localhost
-        self.hosts["127.0.0.1"] = self._localhost
+    #def setLocalhost(self, address):
+    #    self._localhost = address
+    #    self.hosts["localhost"] = self._localhost
+    #    self.hosts["127.0.0.1"] = self._localhost
 
     # one rule per line
     #   HOST name address
@@ -104,8 +152,8 @@ class CCastConfig:
             if r == "": continue
             if r.lower().startswith("host"):
                 rs = r.split()
-                if rs[1].lower() == "localhost": self.setLocalhost(rs[2])
-                else: self.hosts[rs[1]] = rs[2]
+                if rs[1].lower() == "localhost": self.hostMap.setLocalhost(rs[2])
+                else: self.hostMap.setHostAddress(rs[1], rs[2])
                 continue
             rs = r.split()
             if len(rs) < 2: continue
@@ -118,7 +166,8 @@ class CCastConfig:
                 if rs[2].startswith("[") and rs[2].endswith("]"):
                     # TODO: Should leave hosts as they are; let _update_cast_hostnames take care of translation
                     host = rs[2].strip(" []")
-                    if host in self.hosts: rs[2] = self.hosts[host]
+                    if self.hostMap.isKnownHost(host):
+                        rs[2] = self.hostMap.expandHostName(host)
                 self.rules.append(rs)
                 continue
             logger.get().warn("Bad rule: '%s'" % line)
@@ -188,7 +237,7 @@ class CCastConfig:
 
         # add localhost definition
         if not "localhost" in self._cast_hostnames:
-            self._cast_hostnames["localhost"] = self._fixLocalhost("localhost")
+            self._cast_hostnames["localhost"] = self.hostMap.fixLocalhost("localhost")
             lines.insert(first, "HOSTNAME  localhost  %s" % self._cast_hostnames["localhost"])
             last = last + 1
 
@@ -197,11 +246,11 @@ class CCastConfig:
             line = lines[i]
             mo = CCastConfig.reHostName.match(line)
             if mo == None: continue
-            if mo.group(1) in self.hosts:
-                lines[i] = "HOSTNAME  %s  %s" % (mo.group(1), self.hosts[mo.group(1)])
+            if self.hostMap.isKnownHost(mo.group(1)):
+                lines[i] = "HOSTNAME  %s  %s" % (mo.group(1), self.hostMap.expandHostName(mo.group(1)))
 
         # add additional hosts from hconf
-        for k,v in self.hosts.items():
+        for k,v in self.hostMap.items():
             if k in self._cast_hostnames: continue
             mo = re.match("^[a-zA-Z][a-zA-Z0-9_]*$", k)
             if not mo: continue;
@@ -272,7 +321,7 @@ class CCastConfig:
                     for r in self.rules:
                         if r[0] == "SA" and r[1].lower() == "none":
                             host = r[2]
-                newline = "HOST %s" % self._fixLocalhost(host)
+                newline = "HOST %s" % self.hostMap.fixLocalhost(host)
                 afile.write(newline + "\n")
                 defaultHostFound = True
                 continue
@@ -284,17 +333,17 @@ class CCastConfig:
 
             afile.write(line + "\n")
 
-    def _fixLocalhost(self, host):
-        h = host.lower()
-        if h == "localhost" or h.startswith("127.0.0.") or h == "::1":
-            if "localhost" in self.hosts: host = self.hosts["localhost"]
-        return host
+    #def _fixLocalhost(self, host):
+    #    h = host.lower()
+    #    if h == "localhost" or h.startswith("127.0.0.") or h == "::1":
+    #        if "localhost" in self.hosts: host = self.hosts["localhost"]
+    #    return host
 
     def _fixHostParam(self, text, param):
         rx = re.compile(r"%s\s+(\"[^\"]+\"|\S+)" % param)
         mo = rx.search(text)
         if mo != None:
-            host = self._fixLocalhost(mo.group(1))
+            host = self.hostMap.fixLocalhost(mo.group(1))
             text = text[:mo.start(1)] + host + text[mo.end(1):]
         return text
 
@@ -352,7 +401,7 @@ class CCastConfig:
         else:
             disabled = "# rule(%s) " % disabled
             comp.enabled = False
-        host = self._fixLocalhost(host)
+        host = self.hostMap.fixLocalhost(host)
         if rest != "":
             rest = self._fixHostParam(rest, "--player-host") # spatial
             # rest = self._fixHostParam(rest, "--serverHost") # comsys tts
