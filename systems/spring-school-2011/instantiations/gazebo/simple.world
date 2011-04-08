@@ -163,8 +163,8 @@ model of "oberhaus" office room, 7 by 3 m
         <visual>
           <scale>0.6 0.6 0.3</scale>
           <mesh>unit_box</mesh>
-          <uvTile>1 1</uvTile>
-          <material>Gazebo/Blue</material>
+          <uvTile>0.5 0.5</uvTile>
+          <material>Gazebo/crap</material>
         </visual>
       </geom:box>
     </body:box>
@@ -177,11 +177,33 @@ model of "oberhaus" office room, 7 by 3 m
       <geom:box name="cornflakes_geom">
         <size>0.20 0.06 0.30</size>
         <mass>1</mass>
+
         <visual>
-          <scale>0.20 0.06 0.30</scale>
+          <xyz>0 0.03 0</xyz>
+          <scale>0.20 0 0.30</scale>
           <mesh>unit_box</mesh>
-          <uvTile>1 1</uvTile>
-          <material>Gazebo/Red</material>
+          <material>Gazebo/Rocky</material>
+        </visual>
+
+        <visual>
+          <xyz>0 -0.03 0</xyz>
+          <scale>0.20 0 0.30</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Rocky</material>
+        </visual>
+
+        <visual>
+          <xyz>0.10 0 0</xyz>
+          <scale>0 0.06 0.30</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/RustySteel</material>
+        </visual>
+
+        <visual>
+          <xyz>-0.10 0 0</xyz>
+          <scale>0 0.06 0.30</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/RustySteel</material>
         </visual>
       </geom:box>
     </body:box>
