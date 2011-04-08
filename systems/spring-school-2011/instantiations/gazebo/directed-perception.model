@@ -13,79 +13,62 @@
   <xyz>0 0.0 0.0</xyz>
   <rpy>0 0 0</rpy>
   <static>false</static>
-  <canonicalBody>sonyvid30_body</canonicalBody>
+  <canonicalBody>ptu_base_body</canonicalBody>
 
-  <body:box name="sonyvid30_body">
+  <body:box name="ptu_base_body">
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:box name="camera_bottom_geom">
-      <xyz>0.0 0.0 0.02</xyz>
-      <rpy>0 0 90</rpy>
-      <size>0.15 0.14 0.04</size>
+    <geom:box name="base_geom">
+      <xyz>0.0 0.0 0.025</xyz>
+      <rpy>0 0 0</rpy>
+      <size>0.04 0.07 0.05</size>
       <mass>0.1</mass>
 
       <visual>
-        <rpy>0 0 -90</rpy>
-        <size>0.15 0.14 0.04</size>
-        <mesh>sonyvid30/sonyvid30_bottom.mesh</mesh>
+        <rpy>0 0 0</rpy>
+        <size>0.04 0.07 0.05</size>
+        <mesh>unit_box</mesh>
         <material>Gazebo/Grey</material>
       </visual>
     </geom:box>
   </body:box>
 
-  <body:box name="sonyvid30_column_body">
-    <xyz>0.0 0.0 0.04</xyz>
+  <body:box name="ptu_pan_body">
+    <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:box name="camera_column_geom">
-      <xyz>0.02 0.00 0.0</xyz>
-      <rpy>0 0 90</rpy>
-      <size>0.11 0.11 0.03</size>
-      <mass>0.01</mass>
-
+    <geom:box name="ptu_pan_geom">
+      <xyz>0.0 0.0 0.08</xyz>
+      <rpy>0 0 0</rpy>
+      <size>0.04 0.04 0.06</size>
+      <mass>0.1</mass>
       <visual>
-        <rpy>0 0 -90</rpy>
-        <size>0.11 0.11 0.03</size>
-        <mesh>sonyvid30/sonyvid30_mid.mesh</mesh>
-        <material>Gazebo/Black</material>
+        <size>0.04 0.04 0.06</size>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
       </visual>
     </geom:box>
   </body:box>
 
 
-  <body:box name="sonyvid30_top_body">
-    <xyz>0.0 0.0 0.06</xyz>
+  <body:box name="ptu_tilt_body">
+    <xyz>0.0 0.0 0.14</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:box name="camera_top_geom">
-      <rpy>0 0 90</rpy>
-      <size>0.12 0.119 0.03</size>
+    <geom:box name="ptu_tilt_geom">
+      <rpy>0 0 0</rpy>
+      <size>0.03 0.24 0.02</size>
       <mass>0.0</mass>
 
       <visual>
-        <xyz>0.0 0.06 -0.015</xyz>
-        <rpy>0 0 90</rpy>
-        <size>0.12 0.119 0.03</size>
-        <mesh>sonyvid30/sonyvid30_top.mesh</mesh>
+        <size>0.03 0.24 0.02</size>
+        <mesh>unit_box</mesh>
         <material>Gazebo/Grey</material>
       </visual>
     </geom:box>
 
-    <geom:cylinder name="camera_lens_geom">
-      <xyz>0.045 -0.002 -0.002</xyz>
-      <rpy>0 90 0</rpy>
-      <size>0.01 0.04</size>
-      <mass>0.0</mass>
-
-      <visual>
-        <size>0.025 0.025 0.04</size>
-        <mesh>unit_cylinder</mesh>
-        <material>Gazebo/White</material>
-      </visual>
-    </geom:cylinder>
-
-    <sensor:camera name="sonyvid30_camera_sensor">
+    <sensor:camera name="left_camera_sensor">
       <imageSize>320 240</imageSize>
       <hfov>60</hfov>
       <nearClip>0.1</nearClip>
@@ -93,16 +76,16 @@
       <saveFrames>false</saveFrames>
       <saveFramePath>frames</saveFramePath>
 
-      <controller:generic_camera name="sonyvid30_camera_controller">
+      <controller:generic_camera name="left_camera_controller">
         <interface:camera name="camera_iface_0"/>
       </controller:generic_camera>
     </sensor:camera>
   </body:box>
 
   <joint:hinge name="pan_joint">
-    <body1>sonyvid30_body</body1>
-    <body2>sonyvid30_column_body</body2>
-    <anchor>sonyvid30_body</anchor>
+    <body1>ptu_base_body</body1>
+    <body2>ptu_pan_body</body2>
+    <anchor>ptu_base_body</anchor>
     <axis>0 0 1</axis>
     <lowStop>-170</lowStop>
     <highStop>170</highStop>
@@ -111,9 +94,9 @@
   </joint:hinge>
 
   <joint:hinge name="tilt_joint">
-    <body1>sonyvid30_column_body</body1>
-    <body2>sonyvid30_top_body</body2>
-    <anchor>sonyvid30_body</anchor>
+    <body1>ptu_pan_body</body1>
+    <body2>ptu_tilt_body</body2>
+    <anchor>ptu_base_body</anchor>
     <axis>0 1 0</axis>
     <lowStop>-20</lowStop>
     <highStop>20</highStop>

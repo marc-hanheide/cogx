@@ -68,7 +68,7 @@ model of "oberhaus" office room, 7 by 3 m
 
       <attach>
         <parentBody>chassis_body</parentBody>
-        <myBody>sonyvid30_body</myBody>
+        <myBody>ptu_base_body</myBody>
       </attach>
 
       <include embedded="true">
