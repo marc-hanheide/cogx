@@ -1,6 +1,7 @@
 package manipulation.strategies;
 
 import manipulation.core.share.Manipulator;
+import manipulation.slice.ManipulationCommand;
 import manipulation.strategies.parts.StrategyPart.PartName;
 import manipulation.strategies.parts.commands.FarArmMovementCommandPart;
 import manipulation.strategies.parts.commands.LinearBaseMovementApproachCommandPart;
@@ -10,6 +11,8 @@ import manipulation.strategies.parts.commands.SimulateGraspCommandPart;
 import manipulation.strategies.parts.commands.WaitPart;
 
 public class CommandExecution extends Strategy {
+
+	private ManipulationCommand currentCommand = null;
 
 	/**
 	 * constructor of the strategy
@@ -23,6 +26,21 @@ public class CommandExecution extends Strategy {
 		initParts();
 		setFirstPart(getPart(PartName.WAIT_PART));
 
+	}
+
+	/**
+	 * @return the currentCommand
+	 */
+	public ManipulationCommand getCurrentCommand() {
+		return currentCommand;
+	}
+
+	/**
+	 * @param currentCommand
+	 *            the currentCommand to set
+	 */
+	public void setCurrentCommand(ManipulationCommand currentCommand) {
+		this.currentCommand = currentCommand;
 	}
 
 	/**

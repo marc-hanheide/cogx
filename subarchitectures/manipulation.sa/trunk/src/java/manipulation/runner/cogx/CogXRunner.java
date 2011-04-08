@@ -93,22 +93,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 
 		manipulator = cogxManStore.orderManipulator(
 				ManipulatorName.INTELLIGENT_GRASPING, this, itemMemory,
-				configuration);
-	}
-
-	/**
-	 * @return the watcher
-	 */
-	public CommandWatcher getWatcher() {
-		return watcher;
-	}
-
-	/**
-	 * @param watcher
-	 *            the watcher to set
-	 */
-	public void setWatcher(CommandWatcher watcher) {
-		this.watcher = watcher;
+				watcher, configuration);
 	}
 
 	/**

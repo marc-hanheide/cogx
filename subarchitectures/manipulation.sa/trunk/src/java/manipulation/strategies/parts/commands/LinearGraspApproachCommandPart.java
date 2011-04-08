@@ -5,12 +5,13 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.Manipulator;
-import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.ManipulationCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
+import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
 
@@ -22,11 +23,13 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class LinearGraspApproachCommandPart extends StrategyPart implements Observer {
+public class LinearGraspApproachCommandPart extends StrategyPart implements
+		Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	public LinearGraspApproachCommandPart(Manipulator manipulator, Strategy globalStrategy) {
+	public LinearGraspApproachCommandPart(Manipulator manipulator,
+			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
 		setPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
@@ -39,8 +42,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements Obse
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
 
-		((CogXRunner) getManipulator().getRunner()).getWatcher().addObserver(
-				this);
+		getManipulator().getWatcher().addObserver(this);
 
 		synchronized (this) {
 			try {
@@ -51,6 +53,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements Obse
 		}
 
 		logger.debug("we go on!");
+
 		changeToNextPart();
 
 	}
@@ -60,8 +63,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements Obse
 	 */
 	@Override
 	public void changeToNextPart() {
-		((CogXRunner) getManipulator().getRunner()).getWatcher()
-				.deleteObserver(this);
+		getManipulator().getWatcher().deleteObserver(this);
 
 		getGlobalStrategy().setNextPart(
 				getGlobalStrategy().getPart(getNextPartName()));
@@ -76,14 +78,44 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements Obse
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof FarArmMovementCommand) {
 				logger.info("far arm movement command");
+				setNextPartName(PartName.FAR_ARM_MOVEMENT_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
 			} else if (arg instanceof PutDownCommand) {
 				logger.info("put down command");
+				setNextPartName(PartName.PUT_DOWN_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
 			} else if (arg instanceof LinearGraspApproachCommand) {
 				logger.info("linear grasp approach command");
+				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
 			} else if (arg instanceof SimulateGraspCommand) {
 				logger.info("simulate grasp command");
+				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
 			} else if (arg instanceof LinearBaseMovementApproachCommand) {
 				logger.info("linear base movement approach command");
+				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
 			}
 		}
 	}
