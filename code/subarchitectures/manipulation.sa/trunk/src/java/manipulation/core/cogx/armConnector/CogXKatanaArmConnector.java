@@ -85,7 +85,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void goHome() throws ManipulatorException {
 		stopArm();
-		manipulator.getVirtualSceneConnector().clearScene();
+		// manipulator.getVirtualSceneConnector().clearScene();
 		homePosition.t = manipulator.getVirtualSceneConnector().getTime() + 5;
 
 		try {
@@ -97,7 +97,12 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			GenConfigspaceState[] trajectory;
 			trajectory = arm.findTrajectory(cBegin, cEnd);
 			logger.debug("Moving to home position...");
-			arm.send(trajectory, Double.MAX_VALUE);
+			reached = false;
+
+			Thread t = new Thread(new GoalReachedRunnable(manipulator));
+			t.start();
+
+			arm.send(trajectory, 1);
 			home = true;
 		} catch (Exception e) {
 			logger.error(e);
@@ -450,6 +455,5 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		}
 
 	}
-
 
 }

@@ -2,6 +2,7 @@ package manipulation.strategies;
 
 import manipulation.core.share.Manipulator;
 import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationCommandStatus;
 import manipulation.strategies.parts.StrategyPart.PartName;
 import manipulation.strategies.parts.commands.FarArmMovementCommandPart;
 import manipulation.strategies.parts.commands.LinearBaseMovementApproachCommandPart;

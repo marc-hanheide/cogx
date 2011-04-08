@@ -10,12 +10,17 @@ module manipulation {
 			// failed to grasp the object
 			FAILED,
 			// grasped the object
-			SUCCEEDED
+			SUCCEEDED,
+			// on the way
+			ONTHEWAY
 		};
 		
 		enum ManipulationCommandStatus {
+			NEW,
+			CHANGED,
 			PENDING,
 			FINISHED,
+			COMMANDFAILED
 		};
 		
 		class ManipulationCommand {
