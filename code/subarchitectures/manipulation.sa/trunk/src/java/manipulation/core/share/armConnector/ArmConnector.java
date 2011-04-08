@@ -136,6 +136,4 @@ public interface ArmConnector {
 	
 	public boolean isHome();
 
-	public ArmError approachObject(Vector3D targetPosition);
-	
 }

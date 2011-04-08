@@ -18,16 +18,21 @@ module manipulation {
 			FINISHED,
 		};
 		
+		class ManipulationCommand {
+			ManipulationCommandStatus status;			
+			ManipulationCompletion comp;
+		};
+		
 		/**
    		* @brief put down a given visual object
    		* @param basedOnObject object to put down the current object
    		* @param comp returns the completion of the put down task
    		* @author Torben Toeniges
    		**/
-		class PutDownCommand {
+		class PutDownCommand extends ManipulationCommand {
 			VisionData::VisualObject basedOnObject;
-			ManipulationCompletion comp;
-			ManipulationCommandStatus status;			
+		
+		
 		};
 		
 		
@@ -37,13 +42,12 @@ module manipulation {
    		* @param comp returns the completion of the task
    		* @author Torben Toeniges
    		**/
-		class FarArmMovementCommand {
+		class FarArmMovementCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
 			double xError;
 			double yError;
 			double zError;
-			ManipulationCompletion comp;
-			ManipulationCommandStatus status;
+		
 		};
 		
 		/**
@@ -52,10 +56,8 @@ module manipulation {
    		* @param comp returns the completion of the task
    		* @author Torben Toeniges
    		**/
-		class LinearGraspApproachCommand {
+		class LinearGraspApproachCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
-			ManipulationCompletion comp;
-			ManipulationCommandStatus status;
 		};
 		
 		/**
@@ -64,12 +66,11 @@ module manipulation {
    		* @param translational error value of the inverse kinematic
    		* @author Torben Toeniges
    		**/
-		class SimulateGraspCommand {
+		class SimulateGraspCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
 			double xError;
 			double yError;
 			double zError;
-			ManipulationCommandStatus status;
 		};
 		
 		/**
@@ -78,10 +79,8 @@ module manipulation {
    		* @param comp returns the completion of the approaching task
    		* @author Torben Toeniges
    		**/
-		class LinearBaseMovementApproachCommand {
+		class LinearBaseMovementApproachCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
-			ManipulationCompletion comp;
-			ManipulationCommandStatus status;
 		};
     };
 };
