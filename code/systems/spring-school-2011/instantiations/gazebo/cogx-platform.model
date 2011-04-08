@@ -25,29 +25,39 @@
 
     <geom:box name="chassis_geom">
       <size>0.510 0.300 0.205</size>
-      <mass>10</mass>
+      <mass>1000</mass>
 
       <visual>
         <scale>0.510 0.300 0.205</scale>
         <mesh>unit_box</mesh>
         <material>Gazebo/Red</material>
       </visual>
+      <!-- fake caster wheel, just for appearance -->
+      <visual>
+        <xyz>-0.170 0 -0.120</xyz>
+        <scale>0.0175 0.0175 0.0175</scale>
+        <mesh>unit_sphere</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <!-- arrows indicating axes -->
       <visual>
         <xyz>1 0 0</xyz>
-        <scale>0.03 0.03 0.03</scale>
-        <mesh>unit_sphere</mesh>
+        <rpy>0 90 0</rpy>
+        <scale>0.03 0.03 0.1</scale>
+        <mesh>unit_cone</mesh>
         <material>Gazebo/Red</material>
       </visual>
       <visual>
         <xyz>0 1 0</xyz>
-        <scale>0.03 0.03 0.03</scale>
-        <mesh>unit_sphere</mesh>
+        <rpy>-90 0 0</rpy>
+        <scale>0.03 0.03 0.1</scale>
+        <mesh>unit_cone</mesh>
         <material>Gazebo/Green</material>
       </visual>
       <visual>
         <xyz>0 0 1</xyz>
-        <scale>0.03 0.03 0.03</scale>
-        <mesh>unit_sphere</mesh>
+        <scale>0.03 0.03 0.1</scale>
+        <mesh>unit_cone</mesh>
         <material>Gazebo/Blue</material>
       </visual>
     </geom:box>
@@ -83,41 +93,59 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <model:physical name = "caster_model">
+  <!--
+     4 invisible caster wheels to prevent tipping over with sudden breaks
+     or outstretched arm.
+
+     Note: The normal way of doing this would be to have a single caster
+     wheel with a free running ball joint. But in the current version of
+     ODE (libode.so.1.1) and gazebo (0.9) the wheel keeps spinning as if
+     it had a very high inertia and thus keep pushing the robot although
+     the motors have already stopped, leading to very odd behaviour.
+     So we take 4 (invisible) sliding caster balls, with friction turned
+     off.
+  -->
+  <model:physical name = "caster1_model">	
     <enableFriction>0</enableFriction>
-    <body:sphere name="caster_body">
-      <xyz>-0.170 0 0.0175</xyz>
+    <body:sphere name="caster1_body">
+      <xyz>0.250 0.140 0.0175</xyz>
       <rpy>0 0 0</rpy>
-      <geom:sphere name="caster_geom">
+      <geom:sphere name="caster1_geom">
         <size>0.0175</size>
         <mass>0.1</mass>
-
-        <visual>
-          <scale>0.0175 0.0175 0.0175</scale>
-          <mesh>unit_sphere</mesh>
-          <material>Gazebo/Grey</material>
-        </visual>
       </geom:sphere>
     </body:sphere>
   </model:physical>
-
-  <!--
-  additional caster wheel to prevent tipping over with sudden breaks
-  -->
-  <model:physical name = "caster_model_2">
+  <model:physical name = "caster2_model">
     <enableFriction>0</enableFriction>
-    <body:sphere name="caster_body_2">
-      <xyz>0.170 0 0.0175</xyz>
+    <body:sphere name="caster2_body">
+      <xyz>-0.180 0.140 0.0175</xyz>
       <rpy>0 0 0</rpy>
-      <geom:sphere name="caster_geom_2">
+      <geom:sphere name="caster2_geom">
         <size>0.0175</size>
         <mass>0.1</mass>
-
-        <visual>
-          <scale>0.0175 0.0175 0.0175</scale>
-          <mesh>unit_sphere</mesh>
-          <material>Gazebo/Grey</material>
-        </visual>
+      </geom:sphere>
+    </body:sphere>
+  </model:physical>
+  <model:physical name = "caster3_model">
+    <enableFriction>0</enableFriction>
+    <body:sphere name="caster3_body">
+      <xyz>-0.180 -0.140 0.0175</xyz>
+      <rpy>0 0 0</rpy>
+      <geom:sphere name="caster3_geom">
+        <size>0.0175</size>
+        <mass>0.1</mass>
+      </geom:sphere>
+    </body:sphere>
+  </model:physical>
+  <model:physical name = "caster4_model">
+    <enableFriction>0</enableFriction>
+    <body:sphere name="caster4_body">
+      <xyz>0.250 -0.140 0.0175</xyz>
+      <rpy>0 0 0</rpy>
+      <geom:sphere name="caster4_geom">
+        <size>0.0175</size>
+        <mass>0.1</mass>
       </geom:sphere>
     </body:sphere>
   </model:physical>
@@ -136,17 +164,13 @@
     <axis>0 1 0</axis>
   </joint:hinge>
 
+<!-- don't need a caster joint
   <joint:ball name="caster_joint">
     <body1>caster_body</body1>
     <body2>chassis_body</body2>
     <anchor>caster_body</anchor>
   </joint:ball>
-
-  <joint:ball name="caster_joint_2">
-    <body1>caster_body_2</body1>
-    <body2>chassis_body</body2>
-    <anchor>caster_body_2</anchor>
-  </joint:ball>
+-->
 
   <model:physical name="laser0">
       <xyz>0.300 0.000 0.300</xyz>
