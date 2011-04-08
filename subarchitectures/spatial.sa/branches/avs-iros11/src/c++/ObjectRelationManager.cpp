@@ -14,6 +14,9 @@
 //
 /*----------------------------------------------------------------------*/
 
+#include "rocs/concept/ObjectRelationGraphGenerator.h"
+#include "rocs/ml.h"
+#include "rocs/ml/FactorGraph.h"
 #include "ObjectRelationManager.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VisionData.hpp>
@@ -297,6 +300,12 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
       for (std::set<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
 	addTrackerCommand(VisionData::REMOVEMODEL, it->c_str());
       }
+      for (std::map<std::string, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	addTrackerCommand(VisionData::REMOVEMODEL, it->first);
+      }
+      m_objectOnnessValues.clear();
+      m_objectInnessValues.clear();
+      m_objects.clear();
     }
     m_bRecognitionIssuedThisStop = false;
   }
@@ -486,7 +495,7 @@ void ObjectRelationManager::runComponent()
 
 
     lockComponent();
-    newObject(fakeBaseObject, dataID);
+//    newObject(fakeBaseObject, dataID);
     unlockComponent();
 
     FrontierInterface::ObjectPriorRequestPtr fakePriorRequest =
@@ -515,7 +524,17 @@ void ObjectRelationManager::runComponent()
 
   sleepComponent(2000);
 
+  int counter = 0;
   while (isRunning()) {
+    // Process changed objects
+    lockComponent();
+    for (std::set<cdl::WorkingMemoryAddress>::iterator it = 
+	m_updatedObjects.begin(); it != m_updatedObjects.end(); it++) {
+      newObject(*it);
+    }
+    m_updatedObjects.clear();
+    unlockComponent();
+
     // Dispatch recognition commands if the robot has been standing still
     // long enough
 
@@ -534,6 +553,22 @@ void ObjectRelationManager::runComponent()
       unlockComponent();
     }
 
+    if (m_bDetectObjects) {
+      lockComponent();
+      if (m_objectOnnessValues.size() > 0 ||
+	  m_objectInnessValues.size() > 0) {
+	log("counter == %i", counter);
+	if (counter == 0) {
+	  runInference();
+	  counter = 20;
+	}
+	else {
+	  counter--;
+	}
+      }
+      unlockComponent();
+    }
+
     sleepComponent(500);
   }
 }
@@ -541,32 +576,34 @@ void ObjectRelationManager::runComponent()
 void
 ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 {
-  log("newObject called ");
-  try {
-    VisionData::VisualObjectPtr observedObject =
-      getMemoryEntry<VisionData::VisualObject>(wmc.address);
-
-    newObject(observedObject, wmc.address.id);
-  }
-  catch (DoesNotExistOnWMException) {
-    log("Error! new Object missing on WM!");
-  }
+  m_updatedObjects.insert(wmc.address);
+  debug("newObject called ");
 }
 
 void
-ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObject,
-    const string &wmId)
+ObjectRelationManager::newObject(const cdl::WorkingMemoryAddress &wmAddress)
 {
+  VisionData::VisualObjectPtr observedObject;
+  string wmId = wmAddress.id;
+  try {
+    observedObject =
+      getMemoryEntry<VisionData::VisualObject>(wmAddress);
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Error! new Object missing on WM!");
+    return;
+  }
+
   string obsLabel = observedObject->identLabels[0];
 
-  log("Confidence %f", observedObject->detectionConfidence);
+  debug("Confidence %f", observedObject->detectionConfidence);
   if(observedObject->detectionConfidence == 0) {
     return;
   }
 
 
   // if (m_timeSinceLastMoved > m_trackerTimeThresh old) {
-  log("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
+  debug("Got VisualObject: %s (%f,%f,%f)", obsLabel.c_str(),
       observedObject->pose.pos.x,
       observedObject->pose.pos.y,
       observedObject->pose.pos.z);
@@ -612,7 +649,7 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
   if (it != m_objects.end()) {
     // update object
     //	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
-    log("Updating %s on %s", obsLabel.c_str(), visualObjectID.c_str());
+    debug("Updating %s (%s)", obsLabel.c_str(), visualObjectID.c_str());
   }
   else {
     // New object
@@ -682,7 +719,7 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
   double diff = length(m_objects[visualObjectID]->pose.pos - pose.pos);
   diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 1));
   diff += length(getRow(m_objects[visualObjectID]->pose.rot - pose.rot, 2));
-  if (diff > 0.01 || bNewObject) {
+  if (diff > 0.1 || bNewObject) {
     //	      log("3");
     //	if (obsObject->type == OBJECT_PLANE ||
     //	    //FIXME
@@ -716,7 +753,7 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
     else {
 
       try {
-	log("Overwriting spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
+	debug("Overwriting spatial object to WM: %s", m_objects[visualObjectID]->label.c_str());
 	overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[visualObjectID],
 	    m_objects[visualObjectID]);
       }
@@ -725,10 +762,10 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
 	return;
       }
     }
-    log("4");
+//    log("4");
 
     if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-      log("5");
+//      log("5");
       if (obsObject->type == OBJECT_BOX) {
 	BoxObject *box = (BoxObject*)obsObject;
 	peekabot::CubeProxy theobjectproxy;
@@ -737,7 +774,7 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
 	double angle;
 	Vector3 axis;
 	toAngleAxis(pose.rot, angle, axis);
-	log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+	debug("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
 	    pose.pos.x, pose.pos.y, pose.pos.z, angle, 
 	    axis.x, axis.y, axis.z);
 	theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
@@ -765,21 +802,21 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
     //    log("5");
 
     // Check degree of onness
-    if (0) {
-      recomputeOnnessForObject(visualObjectID);
-      recomputeInnessForObject(visualObjectID);
+    recomputeOnnessForObject(visualObjectID);
+    recomputeInnessForObject(visualObjectID);
 
+    if (0) {
       //FIXME: 3-object scene hack
       if (m_objectOnnessValues.size() == 6 &&
 	  m_objectInnessValues.size() == 6) {
-	double BOnA = m_objectOnnessValues[StrPair("paperclip","stapler")];
-	double AOnB = m_objectOnnessValues[StrPair("stapler","paperclip")];
-	double AOnT = m_objectOnnessValues[StrPair("box","paperclip")];
-	double BOnT = m_objectOnnessValues[StrPair("box","stapler")];
-	double BInA = m_objectInnessValues[StrPair("paperclip","stapler")];
-	double AInB = m_objectInnessValues[StrPair("stapler","paperclip")];
-	double AInT = m_objectInnessValues[StrPair("box","paperclip")];
-	double BInT = m_objectInnessValues[StrPair("box","stapler")];
+	double BOnA = m_objectOnnessValues[StrPair("stapler","paperclip")];
+	double AOnB = m_objectOnnessValues[StrPair("paperclip","stapler")];
+	double AOnT = m_objectOnnessValues[StrPair("paperclip","box")];
+	double BOnT = m_objectOnnessValues[StrPair("stapler","box")];
+	double BInA = m_objectInnessValues[StrPair("stapler","paperclip")];
+	double AInB = m_objectInnessValues[StrPair("paperclip","stapler")];
+	double AInT = m_objectInnessValues[StrPair("paperclip","box")];
+	double BInT = m_objectInnessValues[StrPair("stapler","box")];
 	vector<double> inferred;
 	if (inferRelationsThreeObjects(inferred,
 	      BOnA, AOnB, BOnT, AOnT, BInA, AInB, BInT, AInT)) {
@@ -823,6 +860,113 @@ ObjectRelationManager::newObject(const VisionData::VisualObjectPtr observedObjec
   }
   //}
 
+}
+
+void
+ObjectRelationManager::runInference()
+{
+  log("ObjectRelationGraphGenerator::runInference called");
+  rocs::ml::FactorGraph fg;
+  rocs::concept::ObjectRelationGraphGenerator orgg(&fg);
+  std::set<string> objects;
+  std::set<string> baseObjects;
+
+
+  for (map<StrPair, double>::iterator it = m_objectOnnessValues.begin();
+      it != m_objectOnnessValues.end(); it++) {
+    string label1 = it->first.first;
+    string label2 = it->first.second;
+
+    if (objects.count(label1) == 0) {
+      objects.insert(label1);
+      orgg.addObject(label1);
+    }
+    if (objects.count(label2) == 0) {
+      objects.insert(label2);
+      orgg.addObject(label2);
+    }
+
+    if (baseObjects.count(label1) == 0) {
+      log("Adding ON relation: %s, %s, %f", label1.c_str(), label2.c_str(), it->second);
+      orgg.addOnRelationObservation(label1, label2, it->second);
+    }
+  }
+
+  for (map<StrPair, double>::iterator it = m_objectInnessValues.begin();
+      it != m_objectInnessValues.end(); it++) {
+    string label1 = it->first.first;
+    string label2 = it->first.second;
+
+    if (objects.count(label1) == 0) {
+      objects.insert(label1);
+      orgg.addObject(label1);
+    }
+    if (objects.count(label2) == 0) {
+      objects.insert(label2);
+      orgg.addObject(label2);
+    }
+
+    if (baseObjects.count(label1) == 0) {
+      log("Adding IN relation: %s, %s, %f", label1.c_str(), label2.c_str(), it->second);
+      orgg.addInRelationObservation(label1, label2, it->second);
+    }
+  }
+
+  baseObjects.insert("box");
+
+  for (std::set<string>::iterator it = objects.begin(); it != objects.end(); it++) {
+    if (m_objects.count(*it) > 0) {
+      string label = m_objects[*it]->label;
+      if (baseObjects.count(label) > 0) {
+	orgg.addInRelationException(*it,"");
+	orgg.addOnRelationException(*it,"");
+	orgg.addOntRelationException(*it,"");
+      }
+    }
+  }
+  //	orgg.addInRelationException("T","");
+  //	orgg.addOnRelationException("T","");
+  //	orgg.addOntRelationException("T","");
+  //	orgg.addOnRelationObservation("B", "A", 0.05);
+  //	orgg.addOnRelationObservation("A", "B", 0.8);
+  //	orgg.addOnRelationObservation("B", "T", 0.8);
+  //	orgg.addOnRelationObservation("A", "T", 0.05);
+  //	orgg.addInRelationObservation("B", "A", 0.05);
+  //	orgg.addInRelationObservation("A", "B", 0.05);
+  //	orgg.addInRelationObservation("B", "T", 0);
+  //	orgg.addInRelationObservation("A", "T", 0);
+  try {
+    log("Generating graph");
+    orgg.generate();
+    log("Generating graph:completed");
+  }
+  catch (...){
+    log("Error generating graph!");
+    return;
+  }
+  cout <<fg;
+
+  rocs::ml::DaiBpFactorGraphSolver solver(&fg);
+  try {
+	solver.solveMP();
+  }
+  catch (...) {
+    log("Error solving graph!");
+    return;
+  }
+
+	solver.saveDaiGraph("test.fg");
+
+	vector<size_t> map = solver.getMAP();
+	int i=0;
+	for (rocs::ml::FactorGraph::ConstVariableIterator it = fg.variableBegin(); it!=fg.variableEnd(); ++it)
+	{
+	  log("%s %i (%f)", it->name().c_str(), map[i], solver.getMarginal(*it)[1]);
+		cout << it->name() << " " << map[i] << endl;
+		i++;
+	}
+	double MAPprob = solver.getMapPosterior();
+	log("MAP posterior: %f", MAPprob);
 }
 
 void 
@@ -1036,9 +1180,16 @@ ObjectRelationManager::recomputeOnnessForObject(const string &visualObjectID)
     return;
   }
 
+  std::set<string> baseObjects;
+  baseObjects.insert("box");
+
 //  log("1");
       ASSERT_TYPE(m_objectModels[visualObjectID]);
   spatial::Object *obj = m_objectModels[visualObjectID];
+  string visualObjectLabel = m_objects[visualObjectID]->label;
+  if (baseObjects.count(visualObjectLabel) > 0) {
+    return;
+  }
 
   obj->pose = m_objects[visualObjectID]->pose;
 
@@ -1069,6 +1220,7 @@ ObjectRelationManager::recomputeOnnessForObject(const string &visualObjectID)
   for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin();
       it != m_objects.end(); it++) {
     string supportObjectID = it->first;
+    string supportObjectLabel = it->second->label;
     if (supportObjectID != visualObjectID) {
 
       if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
@@ -1082,9 +1234,11 @@ ObjectRelationManager::recomputeOnnessForObject(const string &visualObjectID)
       double onness = m_evaluator.evaluateOnness(m_objectModels[supportObjectID],
 	  obj);
 
-      log("Object %s on object %s is %f", visualObjectID.c_str(), 
-	  it->second->label.c_str(), onness);
-      pair<string, string> pairID(supportObjectID, visualObjectID);
+      log("Object %s(%s) on object %s(%s) is %f", visualObjectID.c_str(), 
+	  visualObjectLabel.c_str(),
+	  it->first.c_str(),
+	  supportObjectLabel.c_str(), onness);
+      pair<string, string> pairID(visualObjectID, supportObjectID);
       m_objectOnnessValues[pairID] = onness;
     }
   }
@@ -1125,7 +1279,7 @@ ObjectRelationManager::recomputeInnessForObject(const string &visualObjectID)
 
       log("Object %s in object %s is %f", visualObjectID.c_str(),
 	  it->second->label.c_str(), inness);
-      pair<string, string> pairID(containerObjectID, visualObjectID);
+      pair<string, string> pairID(visualObjectID, containerObjectID);
       m_objectInnessValues[pairID] = inness;
     }
   }
