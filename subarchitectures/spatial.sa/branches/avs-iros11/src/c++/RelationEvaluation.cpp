@@ -1665,8 +1665,8 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius3 = 0.05;
     }
     else if (label == "stapler") {
-      newBoxObject->radius1 = 0.029;
-      newBoxObject->radius2 = 0.019;
+      newBoxObject->radius1 = 0.0305;
+      newBoxObject->radius2 = 0.0185;
       newBoxObject->radius3 = 0.077;
     }
     else if (label == "marker") {
