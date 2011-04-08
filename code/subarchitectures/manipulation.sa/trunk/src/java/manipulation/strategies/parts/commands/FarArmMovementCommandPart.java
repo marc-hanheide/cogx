@@ -4,6 +4,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
+import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.ArmError;
@@ -39,6 +40,8 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
+	private boolean manipulationFailed = false;
+
 	public FarArmMovementCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
@@ -60,14 +63,14 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 					.getCurrentPosition();
 		} catch (ManipulatorException e) {
 			logger.error(e);
+			manipulationFailed = true;
+			return;
 		}
 
 		double posInFront = 0.1;
 
 		Vector3D direction = MathOperation.getDirection(currentArmPos,
 				currentGoalPosition);
-
-		logger.error("Grasp the item!");
 
 		Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 				.getRadiant(0));
@@ -94,6 +97,8 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 					goalWithDistance, greifRotation);
 		} catch (ManipulatorException e) {
 			logger.error(e);
+			manipulationFailed = true;
+			return;
 		}
 
 		try {
@@ -101,6 +106,8 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 					greifRotation);
 		} catch (ManipulatorException e) {
 			logger.error(e);
+			manipulationFailed = true;
+			return;
 		}
 	}
 
@@ -115,12 +122,16 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 
 		farGraspApproach();
 
-		synchronized (this) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				logger.error(e);
+		if (!manipulationFailed) {
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					logger.error(e);
+				}
 			}
+		} else {
+			setNextPartName(PartName.WAIT_PART);
 		}
 
 		logger.debug("we go on!");
@@ -147,9 +158,11 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
-			if (arg instanceof FarArmMovementCommand) {
-				logger.info("far arm movement command");
-
+			if (arg instanceof ArmReachingStatus) {
+				logger.error("HELLO");
+				logger.error((ArmReachingStatus) arg);
+			}
+			if (arg instanceof ManipulationCommand) {
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
@@ -157,6 +170,10 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),
 								currentCom);
+			}
+
+			if (arg instanceof FarArmMovementCommand) {
+				logger.info("far arm movement command");
 
 				setNextPartName(PartName.FAR_ARM_MOVEMENT_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
@@ -167,14 +184,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			} else if (arg instanceof PutDownCommand) {
 				logger.info("put down command");
 
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
-
 				setNextPartName(PartName.PUT_DOWN_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationCommand) arg);
@@ -183,14 +192,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				}
 			} else if (arg instanceof LinearGraspApproachCommand) {
 				logger.info("linear grasp approach command");
-
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
 
 				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
@@ -201,14 +202,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			} else if (arg instanceof SimulateGraspCommand) {
 				logger.info("simulate grasp command");
 
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
-
 				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationCommand) arg);
@@ -217,14 +210,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				}
 			} else if (arg instanceof LinearBaseMovementApproachCommand) {
 				logger.info("linear base movement approach command");
-
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
 
 				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
@@ -235,14 +220,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
 
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
-
 				setNextPartName(PartName.STOP_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationCommand) arg);
@@ -251,14 +228,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				}
 			} else if (arg instanceof MoveArmToHomePositionCommand) {
 				logger.info("move arm to home position command");
-
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand();
-				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
 
 				setNextPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())

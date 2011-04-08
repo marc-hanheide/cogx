@@ -227,6 +227,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void setReached(boolean reached) {
+		manipulator.getWatcher().posReached();
 		this.reached = reached;
 	}
 
@@ -414,8 +415,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			angularError = MathOperation.getAngularDist(newRorationQuad,
 					inputRotation);
 
-			logger.error("Position Error = " + positionError);
-			logger.error("Angular Error = " + positionError);
+			// logger.error("Position Error = " + positionError);
+			// logger.error("Angular Error = " + positionError);
 
 		} catch (ExTinyArm e) {
 			throw new ManipulatorException(e.what);
