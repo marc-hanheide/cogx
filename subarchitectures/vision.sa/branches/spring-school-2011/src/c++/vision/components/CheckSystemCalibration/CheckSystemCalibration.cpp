@@ -15,6 +15,24 @@
 #include "CheckSystemCalibration.h"
 
 /**
+ * distance between pattern corners in x and y
+ */
+static const double PATTERN_DX = 0.08;
+static const double PATTERN_DY = 0.08;
+/**
+ * Offset in x and y (z = 0) of the top left corner of the calibration pattern
+ * w.r.t. robot ego
+ */
+static const double PATTERN_X_OFFSET = 1.030;
+static const double PATTERN_Y_OFFSET = 0.280; 
+/**
+ * Number of corners in x and y direction. Note: robot ego x points forward,
+ * the pattern is viewed in landscape orientation. So NX < NY.
+ */
+static const int PATTERN_NX = 6;
+static const int PATTERN_NY = 8;
+
+/**
  * The function called to create a new instance of our component.
  */
 extern "C"
@@ -78,6 +96,7 @@ void CheckSystemCalibration::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> tilt;
   }
+
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
 #endif
@@ -192,13 +211,13 @@ void CheckSystemCalibration::MovePanTilt(double pan, double tilt, double toleran
 
 void CheckSystemCalibration::drawCalibrationPattern(const Video::CameraParameters &cam, IplImage *iplImg)
 {
-  double dx = 0.08;
-  double dy = 0.08;
-  double xoffs = 1.030;
-  double yoffs = 0.280; 
+  double dx = PATTERN_DX;
+  double dy = PATTERN_DY;
+  double xoffs = PATTERN_X_OFFSET;
+  double yoffs = PATTERN_Y_OFFSET;
+  int nx = PATTERN_NX;
+  int ny = PATTERN_NY;
   double x = xoffs, y = yoffs;
-  int nx = 6;
-  int ny = 8;
   for(int i = 0; i < nx; i++, x -= dx)
   {
     Vector2 p1 = projectPoint(cam, vector3(x, yoffs, 0.));
