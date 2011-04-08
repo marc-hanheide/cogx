@@ -11,6 +11,7 @@ import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
@@ -108,6 +109,14 @@ public class WaitPart extends StrategyPart implements Observer {
 			} else if (arg instanceof LinearBaseMovementApproachCommand) {
 				logger.info("linear base movement approach command");
 				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof StopCommand) {
+				logger.info("stop command");
+				setNextPartName(PartName.STOP_COMMAND_PART);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {

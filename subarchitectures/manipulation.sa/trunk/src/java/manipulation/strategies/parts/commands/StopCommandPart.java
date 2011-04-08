@@ -5,6 +5,9 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ManipulatorException;
+import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector3D;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
@@ -24,16 +27,14 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class LinearGraspApproachCommandPart extends StrategyPart implements
-		Observer {
+public class StopCommandPart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	public LinearGraspApproachCommandPart(Manipulator manipulator,
-			Strategy globalStrategy) {
+	public StopCommandPart(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+		setPartName(PartName.STOP_COMMAND_PART);
 	}
 
 	/**
@@ -42,8 +43,13 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
-
 		getManipulator().getWatcher().addObserver(this);
+
+		try {
+			getManipulator().getArmConnector().stopArm();
+		} catch (ManipulatorException e1) {
+			logger.error(e1);
+		}
 
 		synchronized (this) {
 			try {
@@ -54,7 +60,6 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 		}
 
 		logger.debug("we go on!");
-
 		changeToNextPart();
 
 	}
