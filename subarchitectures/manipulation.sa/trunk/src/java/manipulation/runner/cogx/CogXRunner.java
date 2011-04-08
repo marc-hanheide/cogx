@@ -26,11 +26,14 @@ import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
@@ -167,7 +170,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 * add the manipulation listener to the CAST working memory
 	 */
 	public void addManipulationListener() {
-
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 				ManipulationCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -176,7 +178,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 						try {
 							ManipulationCommand command = getMemoryEntry(
 									_wmc.address, ManipulationCommand.class);
-
+							watcher.setCurrentCommandAddress(_wmc.address);
 							watcher.newCommand(command);
 						} catch (DoesNotExistOnWMException e) {
 							logger.error(e);
@@ -185,6 +187,38 @@ public class CogXRunner extends ManagedComponent implements Runner {
 						}
 					}
 				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				ManipulationCommand.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						logger.info("getting manipulation command (overwrite)");
+						try {
+							ManipulationCommand command = getMemoryEntry(
+									_wmc.address, ManipulationCommand.class);
+							logger.error(command.status);
+						} catch (DoesNotExistOnWMException e) {
+							logger.error(e);
+						} catch (UnknownSubarchitectureException e) {
+							logger.error(e);
+						}
+					}
+				});
+	}
+
+	public void updateWorkingMemoryCommand(WorkingMemoryAddress adress,
+			ManipulationCommand cmd) {
+		try {
+			overwriteWorkingMemory(adress, cmd);
+		} catch (DoesNotExistOnWMException e) {
+			logger.error(e);
+		} catch (ConsistencyException e) {
+			logger.error(e);
+		} catch (PermissionException e) {
+			logger.error(e);
+		} catch (UnknownSubarchitectureException e) {
+			logger.error(e);
+		}
 	}
 
 	/**
