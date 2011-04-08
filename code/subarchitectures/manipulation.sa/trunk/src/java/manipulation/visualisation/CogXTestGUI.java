@@ -18,6 +18,7 @@ import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
 
@@ -48,6 +49,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnLinGraspApp;
 	private JButton btnSimGrasp;
 	private JButton btnLinBaseApp;
+	private JButton btnStopCmd;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -115,12 +117,17 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnLinBaseApp.setActionCommand("linBaseApp");
 		btnLinBaseApp.addActionListener(this);
 
+		btnStopCmd = new JButton("stop arm");
+		btnStopCmd.setActionCommand("stopCmd");
+		btnStopCmd.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, btnPutDown, 0, 0, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnFarArm, 0, 1, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnLinGraspApp, 0, 2, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnSimGrasp, 0, 3, 12, 1, 0, 0);
 		addComponent(pane, gbl, btnLinBaseApp, 0, 4, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnStopCmd, 0, 5, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -195,6 +202,17 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						linBaseMovCommand);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("stopCmd")) {
+			logger.error("stopCmd pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			StopCommand stopCommand = new StopCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						stopCommand);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}

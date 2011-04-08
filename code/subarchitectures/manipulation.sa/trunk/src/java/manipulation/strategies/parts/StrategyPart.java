@@ -106,7 +106,11 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART
+		LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART,
+		/**
+		 * 
+		 */
+		STOP_COMMAND_PART
 	}
 
 	/**

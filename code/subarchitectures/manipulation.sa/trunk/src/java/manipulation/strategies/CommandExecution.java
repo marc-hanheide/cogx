@@ -8,6 +8,7 @@ import manipulation.strategies.parts.commands.LinearBaseMovementApproachCommandP
 import manipulation.strategies.parts.commands.LinearGraspApproachCommandPart;
 import manipulation.strategies.parts.commands.PutDownCommandPart;
 import manipulation.strategies.parts.commands.SimulateGraspCommandPart;
+import manipulation.strategies.parts.commands.StopCommandPart;
 import manipulation.strategies.parts.commands.WaitPart;
 
 public class CommandExecution extends Strategy {
@@ -25,7 +26,6 @@ public class CommandExecution extends Strategy {
 		setName(Name.COMMAND_EXECUTION);
 		initParts();
 		setFirstPart(getPart(PartName.WAIT_PART));
-
 	}
 
 	/**
@@ -55,5 +55,6 @@ public class CommandExecution extends Strategy {
 		addToPartList(new SimulateGraspCommandPart(getManipulator(), this));
 		addToPartList(new LinearBaseMovementApproachCommandPart(
 				getManipulator(), this));
+		addToPartList(new StopCommandPart(getManipulator(), this));
 	}
 }

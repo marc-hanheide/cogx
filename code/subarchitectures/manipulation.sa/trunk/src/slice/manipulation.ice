@@ -24,9 +24,7 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief put down a given visual object
-   		* @param basedOnObject object to put down the current object
-   		* @param comp returns the completion of the put down task
+   		* @brief puts down a given visual object
    		* @author Torben Toeniges
    		**/
 		class PutDownCommand extends ManipulationCommand {
@@ -37,9 +35,7 @@ module manipulation {
 		
 		
 		/**
-   		* @brief perform a far arm movement to place the gripper in front of the given object
-   		* @param targetObject object to grasp 
-   		* @param comp returns the completion of the task
+   		* @brief performs a far arm movement to place the gripper in front of the given object
    		* @author Torben Toeniges
    		**/
 		class FarArmMovementCommand extends ManipulationCommand {
@@ -51,9 +47,7 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief grasp a given visual object with a linear arm movement approach
-   		* @param targetObject object to grasp 
-   		* @param comp returns the completion of the task
+   		* @brief grasps a given visual object with a linear arm movement approach
    		* @author Torben Toeniges
    		**/
 		class LinearGraspApproachCommand extends ManipulationCommand {
@@ -61,9 +55,7 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief simulate the grasp command
-   		* @param targetObject object to simulate to 
-   		* @param translational error value of the inverse kinematic
+   		* @brief simulates the grasp command
    		* @author Torben Toeniges
    		**/
 		class SimulateGraspCommand extends ManipulationCommand {
@@ -74,13 +66,18 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief approach a given object with linear robot base movements
-   		* @param targetObject the object to approach
-   		* @param comp returns the completion of the approaching task
+   		* @brief approaches a given object with linear robot base movements
    		* @author Torben Toeniges
    		**/
 		class LinearBaseMovementApproachCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
+		};
+		
+		/**
+   		* @brief stops the manipulator movement
+   		* @author Torben Toeniges
+		**/
+		class StopCommand extends ManipulationCommand {
 		};
     };
 };
