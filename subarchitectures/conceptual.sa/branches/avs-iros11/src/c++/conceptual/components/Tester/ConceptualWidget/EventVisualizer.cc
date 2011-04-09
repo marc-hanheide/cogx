@@ -17,6 +17,7 @@ EventVisualizer::EventVisualizer(QWidget *parent,
 	ui.setupUi(this);
 	_roomCats = &roomCats;
 	ui.eventView->setDisplayedEntities(roomCats, shapes, sizes, appearances, visualizedObjects);
+	ui.legendView->setDisplayedEntities(roomCats, shapes, sizes, appearances, visualizedObjects);
 
 	connect(ui.saveSvgButton, SIGNAL(clicked()), this, SLOT(saveSvgButtonClicked()));
 	connect(ui.savePngButton, SIGNAL(clicked()), this, SLOT(savePngButtonClicked()));
@@ -52,9 +53,10 @@ void EventVisualizer::generate(const QList<conceptual::ConceptualEvent> &events)
 
 void EventVisualizer::generate()
 {
-	ui.eventView->update(_lastEvents, ui.placesCheckBox->isChecked(),
+	ui.eventView->updateEvents(_lastEvents, ui.placesCheckBox->isChecked(),
 			ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
 			ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
+	ui.legendView->updateLegend();
 }
 
 
@@ -64,6 +66,12 @@ void EventVisualizer::saveSvgButtonClicked()
 	                            "", tr("SVG Images (*.svg)"));
 	if (!fileName.isEmpty())
 	{
+		QGraphicsScene scene;
+		ui.eventView->drawEvents(&scene, _lastEvents, ui.placesCheckBox->isChecked(),
+				ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
+				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
+		ui.eventView->drawLegend(&scene);
+
 		QSvgGenerator generator;
 		generator.setFileName(fileName);
 		generator.setSize(QSize(200, 200));
@@ -71,7 +79,7 @@ void EventVisualizer::saveSvgButtonClicked()
 		generator.setTitle("Room Category Visualization");
 		QPainter painter;
 		painter.begin(&generator);
-		ui.eventView->scene()->render(&painter);
+		scene.render(&painter);
 		painter.end();
 	}
 }
@@ -83,11 +91,17 @@ void EventVisualizer::savePngButtonClicked()
 	                            "", tr("PNG Images (*.png)"));
 	if (!fileName.isEmpty())
 	{
-		QImage image(QSize(ui.eventView->scene()->width(),ui.eventView->scene()->height())*5, QImage::Format_RGB32);
+		QGraphicsScene scene;
+		ui.eventView->drawEvents(&scene, _lastEvents, ui.placesCheckBox->isChecked(),
+				ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
+				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
+		ui.eventView->drawLegend(&scene);
+
+		QImage image(QSize(scene.width(), scene.height())*5, QImage::Format_RGB32);
 		QPainter painter;
 		painter.setRenderHints(QPainter::Antialiasing);
 		painter.begin(&image);
-		ui.eventView->scene()->render(&painter);
+		scene.render(&painter);
 		painter.end();
 		image.save(fileName, "PNG");
 	}

@@ -4,9 +4,29 @@
 
 // ------------------------------------------------------
 EventView::EventView(QWidget *parent)
-    : QGraphicsView(parent), _curPlaceId(0)
+    : QGraphicsView(parent),
+      _roomCats(0), _shapes(0), _sizes(0), _appearances(0), _visualizedObjects(0),
+      _lastUpdatedEvents(false), _lastE(0), _lastResultWidth(0)
 {
 	setRenderHints(QPainter::Antialiasing);
+
+	_drawLegend=true;
+	_drawEvents=true;
+
+	categoriesDist = 5;
+	rowHeight = 22;
+	categorySeparator = 10;
+	eventSeparator = 10;
+	eventSeparatorCount = 10;
+	horizSeparator = 50;
+	horizSepWidth = 2;
+	markDotSize=4;
+	markPlusSize=6;
+	defaultFont = QFont("Ubuntu", 12);
+	smallFont = QFont("Ubuntu", 6);
+	stdPen = QPen(Qt::black, 1, Qt::SolidLine);
+	gtPen = QPen(Qt::black, 5, Qt::DotLine);
+	gtPenBg = QPen(Qt::white, 5, Qt::SolidLine);
 }
 
 
@@ -18,39 +38,74 @@ EventView::~EventView()
 
 
 // ------------------------------------------------------
-void EventView::update(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
+void EventView::updateAll(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
 		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
 {
-	_curPlaceId = events.last().curPlaceId;
-	_curRoomId = events.last().curRoomId;
-
-	_roomIds.clear();
-
-	// Settings
-	const int categoriesDist = 5;
-	const int rowHeight = 22;
-	const int categorySeparator = 10;
-	const int eventSeparator = 10;
-	const int eventSeparatorCount = 10;
-	const int horizSeparator = 50;
-	const int horizSepWidth = 2;
-	const double markDotSize=4;
-	const double markPlusSize=6;
-	QFont defaultFont("Ubuntu", 12);
-	QFont smallFont("Ubuntu", 6);
-	QPen stdPen(Qt::black, 1, Qt::SolidLine);
-	QPen gtPen(Qt::black, 5, Qt::DotLine);
-	QPen gtPenBg(Qt::white, 5, Qt::SolidLine);
-
-	// Create scene
 	QGraphicsScene *scene = new QGraphicsScene(this);
-	scene->setBackgroundBrush(Qt::white);
+	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly);
+	drawLegend(scene);
+	setScene(scene);
 
+	_lastResultWidth = resultWidth;
+	_lastUpdatedEvents=true;
+	fit();
+}
+
+
+
+// ------------------------------------------------------
+void EventView::updateEvents(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
+		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
+{
+	QGraphicsScene *scene = new QGraphicsScene(this);
+	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly);
+	setScene(scene);
+
+	_lastResultWidth = resultWidth;
+	_lastUpdatedEvents=true;
+	fit();
+}
+
+
+// ------------------------------------------------------
+void EventView::updateLegend()
+{
+	QGraphicsScene *scene = new QGraphicsScene(this);
+	drawLegend(scene);
+	setScene(scene);
+
+	_lastUpdatedEvents=false;
+	fit();
+}
+
+
+// ------------------------------------------------------
+void EventView::fit()
+{
+	if ( _roomCats&&_shapes&&_sizes&&_appearances&&_visualizedObjects)
+	{
+		QGraphicsSimpleTextItem text("100");
+		text.setFont(defaultFont);
+		int top = -eventSeparator-text.boundingRect().height();
+		unsigned int rowCount = _visualizedObjects->size()+_roomCats->size()+_shapes->size()+_sizes->size()+_appearances->size();
+
+		if (_lastUpdatedEvents)
+			fitInView(_lastE*_lastResultWidth, top, 10, -top + rowHeight*(rowCount+6), Qt::KeepAspectRatio);
+		else
+			fitInView(0, top-10, 10, -top-10 + rowHeight*(rowCount+6)+10, Qt::KeepAspectRatio);
+	}
+}
+
+
+// ------------------------------------------------------
+int EventView::drawEvents(QGraphicsScene *scene, const QList<conceptual::ConceptualEvent> &events, bool placeIds,
+		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
+{
 	// Initialization
+	scene->setBackgroundBrush(Qt::white);
 	QGraphicsSimpleTextItem *text;
 
 	// Get data info
-
 	unsigned int objectCount = _visualizedObjects->size();
 	unsigned int roomCatCount = _roomCats->size();
 	unsigned int shapeCount = _shapes->size();
@@ -84,8 +139,6 @@ void EventView::update(const QList<conceptual::ConceptualEvent> &events, bool pl
 	for (long _e=0; _e<events.size(); ++_e)
 	{
 		const conceptual::ConceptualEvent &event = events[_e];
-		if (event.curRoomId>=0)
-			_roomIds.insert(event.curRoomId);
 
 		for (int i=0; i<event.infos.size(); ++i)
 		{
@@ -368,76 +421,43 @@ void EventView::update(const QList<conceptual::ConceptualEvent> &events, bool pl
 	text = scene->addSimpleText(QString::number(curRoom), defaultFont);
 	text->setPos((e*resultWidth+lastRoomChange)/2-text->boundingRect().width()/2, (rowCount+5)*rowHeight);
 
-
-	// Start
+	// Horizontal lines
 	for(unsigned int i=0; i<roomCatCount; ++i)
 	{
 		if (i==0)
-			scene->addLine(-horizSeparator,i*rowHeight,resultWidth*e,i*rowHeight,
+			scene->addLine(0,i*rowHeight,resultWidth*e,i*rowHeight,
 					QPen(QBrush("black"), horizSepWidth, Qt::SolidLine)); // Horizontal line
 		else
-			scene->addLine(-categorySeparator,i*rowHeight,resultWidth*e,i*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString((*_roomCats)[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
+			scene->addLine(0,i*rowHeight,resultWidth*e,i*rowHeight, stdPen); // Horizontal line
 	}
-	scene->addLine(-horizSeparator,roomCatCount*rowHeight,resultWidth*e,roomCatCount*rowHeight,
+	scene->addLine(0,roomCatCount*rowHeight,resultWidth*e,roomCatCount*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<shapeCount; ++i)
-	{
-		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString((*_shapes)[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
-	}
-
-	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount)*rowHeight,
+		scene->addLine(0,(i+roomCatCount)*rowHeight,resultWidth*e,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
+	scene->addLine(0,(roomCatCount+shapeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<sizeCount; ++i)
-	{
-		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString((*_sizes)[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
-	}
-
-	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount+sizeCount)*rowHeight,
+		scene->addLine(0,(i+roomCatCount+shapeCount)*rowHeight,resultWidth*e,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
+	scene->addLine(0,(roomCatCount+shapeCount+sizeCount)*rowHeight,resultWidth*e,(roomCatCount+shapeCount+sizeCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<appearanceCount; ++i)
-	{
-		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount)*rowHeight,
+		scene->addLine(0,(i+roomCatCount+shapeCount+sizeCount)*rowHeight,
 				resultWidth*e,(i+roomCatCount+shapeCount+sizeCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString((*_appearances)[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount)*rowHeight);
-	}
-	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,resultWidth*e,
+	scene->addLine(0,(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,resultWidth*e,
 			(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 	for(unsigned int i=0; i<objectCount; ++i)
-	{
-		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
+		scene->addLine(0,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
 				resultWidth*e,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight, stdPen); // Horizontal line
-		text = scene->addSimpleText(QString::fromStdString((*_visualizedObjects)[i]), defaultFont);
-		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight);
-	}
 	// Events
-	scene->addLine(-horizSeparator,rowCount*rowHeight,resultWidth*e,rowCount*rowHeight,
+	scene->addLine(0,rowCount*rowHeight,resultWidth*e,rowCount*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
-	text = scene->addSimpleText("shape", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, rowCount*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight,resultWidth*e,(rowCount+1)*rowHeight, stdPen);
-	text = scene->addSimpleText("size", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+1)*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+2)*rowHeight,resultWidth*e,(rowCount+2)*rowHeight, stdPen);
-	text = scene->addSimpleText("appearance", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+2)*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+3)*rowHeight,resultWidth*e,(rowCount+3)*rowHeight, stdPen);
-	text = scene->addSimpleText("object", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+3)*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+4)*rowHeight,resultWidth*e,(rowCount+4)*rowHeight, stdPen);
-	text = scene->addSimpleText("place", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+4)*rowHeight);
-	scene->addLine(-categorySeparator,(rowCount+5)*rowHeight,resultWidth*e,(rowCount+5)*rowHeight, stdPen);
-	text = scene->addSimpleText("room", defaultFont);
-	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+5)*rowHeight);
-	scene->addLine(-horizSeparator,(rowCount+6)*rowHeight,resultWidth*e,(rowCount+6)*rowHeight,
+	scene->addLine(0,(rowCount+1)*rowHeight,resultWidth*e,(rowCount+1)*rowHeight, stdPen);
+	scene->addLine(0,(rowCount+2)*rowHeight,resultWidth*e,(rowCount+2)*rowHeight, stdPen);
+	scene->addLine(0,(rowCount+3)*rowHeight,resultWidth*e,(rowCount+3)*rowHeight, stdPen);
+	scene->addLine(0,(rowCount+4)*rowHeight,resultWidth*e,(rowCount+4)*rowHeight, stdPen);
+	scene->addLine(0,(rowCount+5)*rowHeight,resultWidth*e,(rowCount+5)*rowHeight, stdPen);
+	scene->addLine(0,(rowCount+6)*rowHeight,resultWidth*e,(rowCount+6)*rowHeight,
 			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 
 	// Starting and ending vertical line
@@ -484,7 +504,93 @@ void EventView::update(const QList<conceptual::ConceptualEvent> &events, bool pl
 		scene->addEllipse(i*resultWidth+0.5*(resultWidth-5), (roomCatCount+shapeCount+sizeCount+mapAppearanceRows[i])*rowHeight+0.5*(rowHeight-5), 5, 5, QPen(Qt::black, 1), QBrush(Qt::white));
 	}
 
-	setScene(scene);
+	return e;
+}
+
+
+// ------------------------------------------------------
+void EventView::drawLegend(QGraphicsScene *scene)
+{
+	scene->setBackgroundBrush(Qt::white);
+
+	unsigned int objectCount = _visualizedObjects->size();
+	unsigned int roomCatCount = _roomCats->size();
+	unsigned int shapeCount = _shapes->size();
+	unsigned int sizeCount = _sizes->size();
+	unsigned int appearanceCount = _appearances->size();
+	unsigned int rowCount = roomCatCount+shapeCount+sizeCount+appearanceCount+objectCount;
+	QGraphicsSimpleTextItem *text;
+
+	// Start
+	for(unsigned int i=0; i<roomCatCount; ++i)
+	{
+		if (i==0)
+			scene->addLine(-horizSeparator,i*rowHeight, 0, i*rowHeight,
+					QPen(QBrush("black"), horizSepWidth, Qt::SolidLine)); // Horizontal line
+		else
+			scene->addLine(-categorySeparator,i*rowHeight, 0,i*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString((*_roomCats)[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, i*rowHeight);
+	}
+	scene->addLine(-horizSeparator,roomCatCount*rowHeight, 0,roomCatCount*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<shapeCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount)*rowHeight,0,(i+roomCatCount)*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString((*_shapes)[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount)*rowHeight);
+	}
+
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount)*rowHeight,0,(roomCatCount+shapeCount)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<sizeCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount)*rowHeight,0,(i+roomCatCount+shapeCount)*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString((*_sizes)[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount)*rowHeight);
+	}
+
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount)*rowHeight,0,(roomCatCount+shapeCount+sizeCount)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<appearanceCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount)*rowHeight,
+				0,(i+roomCatCount+shapeCount+sizeCount)*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString((*_appearances)[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount)*rowHeight);
+	}
+	scene->addLine(-horizSeparator,(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight, 0,
+			(roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	for(unsigned int i=0; i<objectCount; ++i)
+	{
+		scene->addLine(-categorySeparator,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight,
+				0,(i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight, stdPen); // Horizontal line
+		text = scene->addSimpleText(QString::fromStdString((*_visualizedObjects)[i]), defaultFont);
+		text->setPos(-text->boundingRect().width()-categoriesDist, (i+roomCatCount+shapeCount+sizeCount+appearanceCount)*rowHeight);
+	}
+	// Events
+	scene->addLine(-horizSeparator,rowCount*rowHeight,0,rowCount*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
+	text = scene->addSimpleText("shape", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, rowCount*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+1)*rowHeight, 0,(rowCount+1)*rowHeight, stdPen);
+	text = scene->addSimpleText("size", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+1)*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+2)*rowHeight, 0,(rowCount+2)*rowHeight, stdPen);
+	text = scene->addSimpleText("appearance", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+2)*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+3)*rowHeight, 0,(rowCount+3)*rowHeight, stdPen);
+	text = scene->addSimpleText("object", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+3)*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+4)*rowHeight, 0,(rowCount+4)*rowHeight, stdPen);
+	text = scene->addSimpleText("place", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+4)*rowHeight);
+	scene->addLine(-categorySeparator,(rowCount+5)*rowHeight, 0,(rowCount+5)*rowHeight, stdPen);
+	text = scene->addSimpleText("room", defaultFont);
+	text->setPos(-text->boundingRect().width()-categoriesDist, (rowCount+5)*rowHeight);
+	scene->addLine(-horizSeparator,(rowCount+6)*rowHeight, 0,(rowCount+6)*rowHeight,
+			QPen(QBrush("black"), horizSepWidth, Qt::SolidLine));
 }
 
 
