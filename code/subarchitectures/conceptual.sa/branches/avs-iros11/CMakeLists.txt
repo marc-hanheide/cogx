@@ -1,7 +1,7 @@
 project (CONCEPTUALSA)
 
 # Set build type
-# set(CMAKE_BUILD_TYPE Debug)
+ set(CMAKE_BUILD_TYPE Debug)
 
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)

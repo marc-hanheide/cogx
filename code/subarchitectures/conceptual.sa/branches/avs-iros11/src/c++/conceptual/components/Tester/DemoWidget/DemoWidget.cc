@@ -24,6 +24,9 @@ DemoWidget::DemoWidget(QWidget *parent, conceptual::Tester *component)
 	ui.eventView->setDisplayedEntities(*_roomCats,
 				_component->getShapes(), _component->getSizes(), _component->getAppearances(),
 				_component->getVisualizedObjects());
+	ui.legendView->setDisplayedEntities(*_roomCats,
+				_component->getShapes(), _component->getSizes(), _component->getAppearances(),
+				_component->getVisualizedObjects());
 
 	const std::vector<std::string> &vos = _component->getVisualizedObjects();
 	for (size_t i=0; i<vos.size(); ++i)
@@ -204,7 +207,8 @@ void DemoWidget::updateEvents(const QList<conceptual::ConceptualEvent> &events)
 	if (_enabled)
 	{
 		_lastEvents = events;
-		ui.eventView->update(events, true, 10, true, false, false);
+		ui.eventView->updateEvents(events, true, 10, true, false, false);
+		ui.legendView->updateLegend();
 	}
 }
 
@@ -249,6 +253,9 @@ void DemoWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 
 void DemoWidget::updateStuff()
 {
+	if (!_wsPtr)
+		return;
+
 	pthread_mutex_lock(&_worldStateMutex);
 
 	// Get properties for current place
