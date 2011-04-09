@@ -60,6 +60,7 @@ private:
 	double _lastTheta;
 
 	std::list<Scan> _scans;
+
 };
 
 
