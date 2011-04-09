@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include <math.h>
 #include "medflt.h"
-
+#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
 
 using namespace std;
 
@@ -115,7 +116,7 @@ void CategoricalLaserCorrector::rebuildMap()
 	    for(size_t j=0; j<scan.ranges.size(); ++j)
 	    {
 	        double r = scan.ranges[j];
-	        if (r<_maxRange)
+	        if (r<_maxRange-0.1)
 	        {
 	            double x = r * cos(angle + scan.theta) + relX;
 	            double y = r * sin(angle + scan.theta) + relY;
@@ -130,6 +131,17 @@ void CategoricalLaserCorrector::rebuildMap()
 	        angle+=scan.angleStep;
 	    }
 	}
+
+//	cv::namedWindow("LaserCorrector");
+//	cv::Mat map(_mapCells,_mapCells, CV_8UC1);
+//	// Clean the map
+//	for (size_t i=0; i<_mapCells; ++i)
+//	{
+//		for (size_t j=0; j<_mapCells; ++j)
+//			map.at<unsigned char>(_mapCells-1-i,j) = _map[i][j]*250;
+//	}
+//	cv::imshow("LaserCorrector", map);
+//	cout<<"asdasd"<<endl;
 }
 
 

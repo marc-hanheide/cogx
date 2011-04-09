@@ -185,6 +185,7 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
     getObjectAdapter()->add(&_laserServer, id2);
     println("Laser server registered.");
   }
+
 }
 
 
