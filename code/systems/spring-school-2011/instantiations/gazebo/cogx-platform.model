@@ -64,33 +64,43 @@
     </geom:box>
   </body:box>
 
-  <body:box name="superstructure_body">
-    <xyz>-0.140 0 0.24</xyz>
-    <rpy>0.0 0.0 0.0</rpy>
+  <!-- Note: I need an extra model for the superstrcuture, because <attach>
+       only works between bodies that are part of different models, not bodies
+       of the same model (probably a bug) -->
+  <model:physical name = "superstructure_model">	
+    <attach>
+      <parentBody>chassis_body</parentBody>
+      <myBody>superstructure_body</myBody>
+    </attach>
 
-    <geom:box name="superstructure_geom">
-      <xyz>0 0 0.520</xyz>
-      <size>0.044 0.044 1.040</size>
-      <mass>0.1</mass>
-      <visual>
-        <scale>0.044 0.044 1.040</scale>
-        <mesh>unit_box</mesh>
-        <material>Gazebo/Grey</material>
-      </visual>
-      <visual>
-        <xyz>-0.047 0 0.508</xyz>
-        <scale>0.05 0.044 0.024</scale>
-        <mesh>unit_box</mesh>
-        <material>Gazebo/Grey</material>
-      </visual>
-      <visual>
-        <xyz>0.152 0 0.508</xyz>
-        <scale>0.26 0.044 0.024</scale>
-        <mesh>unit_box</mesh>
-        <material>Gazebo/Grey</material>
-      </visual>
-    </geom:box>
-  </body:box>
+    <body:box name="superstructure_body">
+      <xyz>-0.140 0 0.24</xyz>
+      <rpy>0.0 0.0 0.0</rpy>
+
+      <geom:box name="superstructure_geom">
+        <xyz>0 0 0.520</xyz>
+        <size>0.044 0.044 1.040</size>
+        <mass>0.1</mass>
+        <visual>
+          <scale>0.044 0.044 1.040</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+        <visual>
+          <xyz>-0.047 0 0.508</xyz>
+          <scale>0.05 0.044 0.024</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+        <visual>
+          <xyz>0.152 0 0.508</xyz>
+          <scale>0.26 0.044 0.024</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+      </geom:box>
+    </body:box>
+  </model:physical>
 
   <body:cylinder name="left_wheel_body">
     <xyz>0.000 -0.14 0.095</xyz>
@@ -106,20 +116,6 @@
       </visual>
     </geom:cylinder>
   </body:cylinder>
-
-  <joint:hinge name="dummy_joint">
-    <body1>superstructure_body</body1>
-    <body2>chassis_body</body2>
-    <anchor>superstructure_body</anchor>
-    <axis>0 0 1</axis>
-  </joint:hinge>
-
-<!--
-  <attach>
-    <parentBody>chassis_body</parentBody>
-    <myBody>superstructure_body</myBody>
-  </attach>
--->
 
   <body:cylinder name="right_wheel_body">
     <xyz>0.000 0.14 0.095</xyz>
@@ -159,6 +155,7 @@
       </geom:sphere>
     </body:sphere>
   </model:physical>
+
   <model:physical name = "caster2_model">
     <enableFriction>0</enableFriction>
     <body:sphere name="caster2_body">
@@ -170,6 +167,7 @@
       </geom:sphere>
     </body:sphere>
   </model:physical>
+
   <model:physical name = "caster3_model">
     <enableFriction>0</enableFriction>
     <body:sphere name="caster3_body">
@@ -181,6 +179,7 @@
       </geom:sphere>
     </body:sphere>
   </model:physical>
+
   <model:physical name = "caster4_model">
     <enableFriction>0</enableFriction>
     <body:sphere name="caster4_body">
@@ -207,60 +206,13 @@
     <axis>0 1 0</axis>
   </joint:hinge>
 
-<!-- don't need a caster joint
+  <!-- don't need caster joints, as caster wheels simply slide frictionless
   <joint:ball name="caster_joint">
     <body1>caster_body</body1>
     <body2>chassis_body</body2>
     <anchor>caster_body</anchor>
   </joint:ball>
--->
-
-
-  <model:physical name="laser">
-    <xyz>0.300 0.000 0.300</xyz>
-    <rpy>0 0 0</rpy>
-    
-    <attach>
-      <parentBody>chassis_body</parentBody>
-      <myBody>laser0_body</myBody>
-    </attach>
-
-    <body:box name="laser0_body">
-      <xyz>0.000 0.000 0.000</xyz>
-      <rpy>0.0 0.0 0.0</rpy>
-
-      <geom:box name="laser0_geom">
-        <xyz>0.0 0.0 0.0</xyz>
-        <rpy>0 0 0</rpy>
-        <size>0.01 0.01 0.01</size>
-        <mass>0.1</mass>
-
-        <visual>
-          <scale>0.01 0.01 0.01</scale>
-          <mesh>unit_box</mesh>
-          <material>Gazebo/Blue</material>
-        </visual>
-      </geom:box>
-
-      <sensor:ray name="ray0">
-        <rayCount>270</rayCount>
-        <rangeCount>654</rangeCount>
-        <origin>0.0 0.0 0.0</origin>
-
-        <displayRays>fan</displayRays>
-
-        <minAngle>-120</minAngle>
-        <maxAngle>120</maxAngle>
-
-        <minRange>0.04</minRange>
-        <maxRange>5.6</maxRange>
-        <resRange>1</resRange>
-        <controller:sicklms200_laser name="laser_controller_0">
-          <interface:laser name="laser_iface_0"/>
-        </controller:sicklms200_laser>
-      </sensor:ray>
-    </body:box>
-  </model:physical>
+  -->
 
   <controller:differential_position2d name="controller1">
     <leftJoint>left_wheel_joint</leftJoint>
@@ -270,6 +222,5 @@
     <torque>5</torque>
     <interface:position name="position_iface_0"/>
   </controller:differential_position2d>
-
 </model:physical>
 
