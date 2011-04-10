@@ -48,20 +48,19 @@ model of "oberhaus" office room, 7 by 3 m
     <xyz>0.0 0.0 0.01</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-<!--
     <model:physical name="laser">
-      <xyz>0.15 0 0.18</xyz>
-
+      <xyz>0.300 0.000 0.300</xyz>
+      <rpy>0 0 0</rpy>
+      
       <attach>
         <parentBody>chassis_body</parentBody>
-        <myBody>laser_body</myBody>
+        <myBody>hokuyo_base_body</myBody>
       </attach>
 
       <include embedded="true">
-        <xi:include href="sicklms200.model" />
+        <xi:include href="hokuyo.model" />
       </include>
     </model:physical>
--->
 
     <model:physical name="ptu">
       <xyz>0.10 0 1.28</xyz>
@@ -82,7 +81,7 @@ model of "oberhaus" office room, 7 by 3 m
 
       <attach>
         <parentBody>chassis_body</parentBody>
-        <myBody>base_body</myBody>
+        <myBody>katana_base_body</myBody>
       </attach>
 
       <include embedded="true">
@@ -108,8 +107,6 @@ model of "oberhaus" office room, 7 by 3 m
       </geom:plane>
     </body:plane>
   </model:physical>
-
-
 
   <model:physical name="walls_model">
     <static>true</static>

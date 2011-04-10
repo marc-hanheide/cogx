@@ -47,18 +47,18 @@
   <rpy>0.0 0.0 0.0</rpy>
   <static>false</static>
 
-  <canonicalBody>base_body</canonicalBody>
+  <canonicalBody>katana_base_body</canonicalBody>
 
-  <body:cylinder name="base_body">
+  <body:cylinder name="katana_base_body">
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
   </body:cylinder>
 
-  <body:cylinder name="link0_body">
+  <body:cylinder name="katana_link0_body">
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:cylinder name="link0_geom">
+    <geom:cylinder name="katana_link0_geom">
       <xyz>0.0 0.0 0.101</xyz>
       <size>0.02 0.202</size>
       <mass>0.1</mass>
@@ -71,11 +71,11 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <body:cylinder name="link1_body">
+  <body:cylinder name="katana_link1_body">
     <xyz>0.0 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:cylinder name="link1_geom">
+    <geom:cylinder name="katana_link1_geom">
       <xyz>0.0 0.0 0.095</xyz>
       <size>0.020 0.190</size>
       <mass>0.1</mass>
@@ -95,11 +95,11 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <body:cylinder name="link2_body">
+  <body:cylinder name="katana_link2_body">
     <xyz>0.190 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:cylinder name="link2_geom">
+    <geom:cylinder name="katana_link2_geom">
       <xyz>0.0 0.0 0.0695</xyz>
       <size>0.020 0.139</size>
       <mass>0.1</mass>
@@ -119,11 +119,11 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <body:cylinder name="link3_body">
+  <body:cylinder name="katana_link3_body">
     <xyz>0.329 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:cylinder name="link3_geom">
+    <geom:cylinder name="katana_link3_geom">
       <xyz>0.0 0.0 0.094</xyz>
       <size>0.020 0.188</size>
       <mass>0.1</mass>
@@ -144,11 +144,11 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <body:box name="gripper_body">
+  <body:box name="katana_gripper_body">
     <xyz>0.517 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:box name="gripper_geom">
+    <geom:box name="katana_gripper_geom">
       <xyz>0.0 0.0 0.02</xyz>
       <size>0.04 0.04 0.04</size>
       <mass>0.1</mass>
@@ -161,11 +161,11 @@
     </geom:box>
   </body:box>
 
-  <body:box name="left_finger_body">
+  <body:box name="katana_left_finger_body">
     <xyz>0.557 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:box name="left_finger_geom">
+    <geom:box name="katana_left_finger_geom">
       <xyz>0.0 0.0 0.02</xyz>
       <size>0.04 0.01 0.08</size>
       <mass>0.1</mass>
@@ -178,11 +178,11 @@
     </geom:box>
   </body:box>
 
-  <body:box name="right_finger_body">
+  <body:box name="katana_right_finger_body">
     <xyz>0.557 0.0 0.202</xyz>
     <rpy>0.0 90.0 0.0</rpy>
 
-    <geom:box name="right_finger_geom">
+    <geom:box name="katana_right_finger_geom">
       <xyz>0.0 0.0 0.02</xyz>
       <size>0.04 0.01 0.08</size>
       <mass>0.1</mass>
@@ -196,9 +196,9 @@
   </body:box>
 
   <joint:hinge name="base_link0_joint">
-    <body1>link0_body</body1>
-    <body2>base_body</body2>
-    <anchor>link0_body</anchor>
+    <body1>katana_link0_body</body1>
+    <body2>katana_base_body</body2>
+    <anchor>katana_link0_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 0 1</axis>
     <lowstop>-170</lowstop>
@@ -206,41 +206,41 @@
   </joint:hinge>
 
   <joint:hinge name="link0_link1_joint">
-    <body1>link1_body</body1>
-    <body2>link0_body</body2>
-    <anchor>link1_body</anchor>
+    <body1>katana_link1_body</body1>
+    <body2>katana_link0_body</body2>
+    <anchor>katana_link1_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 1 0</axis>
   </joint:hinge>
 
   <joint:hinge name="link1_link2_joint">
-    <body1>link2_body</body1>
-    <body2>link1_body</body2>
-    <anchor>link2_body</anchor>
+    <body1>katana_link2_body</body1>
+    <body2>katana_link1_body</body2>
+    <anchor>katana_link2_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 1 0</axis>
   </joint:hinge>
 
   <joint:hinge name="link2_link3_joint">
-    <body1>link3_body</body1>
-    <body2>link2_body</body2>
-    <anchor>link3_body</anchor>
+    <body1>katana_link3_body</body1>
+    <body2>katana_link2_body</body2>
+    <anchor>katana_link3_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 1 0</axis>
   </joint:hinge>
 
   <joint:hinge name="link3_gripper_joint">
-    <body1>gripper_body</body1>
-    <body2>link3_body</body2>
-    <anchor>gripper_body</anchor>
+    <body1>katana_gripper_body</body1>
+    <body2>katana_link3_body</body2>
+    <anchor>katana_gripper_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>1 0 0</axis>
   </joint:hinge>
 
   <joint:slider name="gripper_left_finger_joint">
-    <body1>left_finger_body</body1>
-    <body2>gripper_body</body2>
-    <anchor>left_finger_body</anchor>
+    <body1>katana_left_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_left_finger_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 1 0</axis>
     <lowStop>0</lowStop>
@@ -248,9 +248,9 @@
   </joint:slider>
 
   <joint:slider name="gripper_right_finger_joint">
-    <body1>right_finger_body</body1>
-    <body2>gripper_body</body2>
-    <anchor>right_finger_body</anchor>
+    <body1>katana_right_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_right_finger_body</anchor>
     <anchorOffset>0 0 0</anchorOffset>
     <axis>0 -1 0</axis>
     <lowStop>0</lowStop>

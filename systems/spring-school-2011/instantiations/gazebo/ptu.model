@@ -19,7 +19,7 @@
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:box name="base_geom">
+    <geom:box name="ptu_base_geom">
       <xyz>0.0 0.0 0.025</xyz>
       <rpy>0 0 0</rpy>
       <size>0.04 0.07 0.05</size>
@@ -163,13 +163,14 @@
     <cfm>10e-5</cfm>
   </joint:hinge>
 
-  <controller:generic_ptz name="sonyvid30_controller">
+  <controller:generic_ptz name="ptu_controller">
     <panJoint>pan_joint</panJoint>
     <tiltJoint>tilt_joint</tiltJoint>
 
     <motionGain>1</motionGain>
     <force>10</force>
-    <interface:ptz name="ptz_iface_1"/>
+    <interface:ptz name="ptz_iface_0"/>
   </controller:generic_ptz>
 
 </model:physical>
+
