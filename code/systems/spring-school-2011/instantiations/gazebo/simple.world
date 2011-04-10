@@ -49,7 +49,7 @@ model of "oberhaus" office room, 7 by 3 m
     <rpy>0.0 0.0 0.0</rpy>
 
     <model:physical name="laser">
-      <xyz>0.300 0.000 0.300</xyz>
+      <xyz>0.21 0.00 0.24</xyz>
       <rpy>0 0 0</rpy>
       
       <attach>
