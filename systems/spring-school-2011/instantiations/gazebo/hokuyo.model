@@ -15,27 +15,30 @@
   <static>false</static>
   <canonicalBody>hokuyo_base_body</canonicalBody>
 
-  <body:box name="hokuyo_base_body">
-    <xyz>0.000 0.000 0.000</xyz>
+  <body:cylinder name="hokuyo_base_body">
+    <xyz>0.00 0.00 0.04</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
-    <geom:box name="hokuyo_base_geom">
+    <geom:cylinder name="hokuyo_base_geom">
       <xyz>0.0 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
-      <size>0.01 0.01 0.01</size>
+      <size>0.04 0.08</size>
       <mass>0.1</mass>
 
       <visual>
-        <scale>0.01 0.01 0.01</scale>
-        <mesh>unit_box</mesh>
+        <scale>0.08 0.08 0.08</scale>
+        <mesh>unit_cylinder</mesh>
         <material>Gazebo/Blue</material>
       </visual>
-    </geom:box>
+    </geom:cylinder>
 
     <sensor:ray name="ray0">
       <rayCount>270</rayCount>
       <rangeCount>654</rangeCount>
-      <origin>0.0 0.0 0.0</origin>
+      <!-- Note: have to shift origin a little bit forward (though can still be
+           inside hokuyo_base_geom) because otherwise (if at 0 0 0) all rays are
+           mysteriously blocked by hokuyo_base_geom (probably a bug). -->
+      <origin>0.01 0.0 0.0</origin>
 
       <!-- Note: displayed rays are also visible in simulated cameras! So have
            to turn this off.
@@ -53,6 +56,6 @@
         <interface:laser name="laser_iface_0"/>
       </controller:sicklms200_laser>
     </sensor:ray>
-  </body:box>
+  </body:cylinder>
 </model:physical>
 
