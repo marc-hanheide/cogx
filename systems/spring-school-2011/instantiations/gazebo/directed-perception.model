@@ -67,20 +67,79 @@
         <material>Gazebo/Grey</material>
       </visual>
     </geom:box>
-
-    <sensor:camera name="left_camera_sensor">
-      <imageSize>320 240</imageSize>
-      <hfov>60</hfov>
-      <nearClip>0.1</nearClip>
-      <farClip>50</farClip>
-      <saveFrames>false</saveFrames>
-      <saveFramePath>frames</saveFramePath>
-
-      <controller:generic_camera name="left_camera_controller">
-        <interface:camera name="camera_iface_0"/>
-      </controller:generic_camera>
-    </sensor:camera>
   </body:box>
+
+  <model:physical name="camera0_model">
+    <xyz>0.00 0.20 0.16</xyz>
+    <rpy>0 0 0</rpy>
+
+    <attach>
+      <parentBody>ptu_tilt_body</parentBody>
+      <myBody>camera0_body</myBody>
+    </attach>
+
+    <body:box name="camera0_body">
+      <geom:box name="camera0_geom">
+        <size>0.02 0.02 0.02</size>
+        <mass>0.1</mass>
+
+        <visual>
+          <scale>0.02 0.02 0.02</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Blue</material>
+        </visual>
+      </geom:box>
+
+      <sensor:camera name="camera0_sensor">
+        <imageSize>320 240</imageSize>
+        <hfov>60</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>50</farClip>
+        <saveFrames>false</saveFrames>
+        <saveFramePath>frames</saveFramePath>
+
+        <controller:generic_camera name="camera0_controller">
+          <interface:camera name="camera_iface_0"/>
+        </controller:generic_camera>
+      </sensor:camera>
+    </body:box>
+  </model:physical>
+
+  <model:physical name="camera1_model">
+    <xyz>0.00 -0.20 0.16</xyz>
+    <rpy>0 0 0</rpy>
+
+    <attach>
+      <parentBody>ptu_tilt_body</parentBody>
+      <myBody>camera1_body</myBody>
+    </attach>
+
+    <body:box name="camera1_body">
+      <geom:box name="camera1_geom">
+        <size>0.02 0.02 0.02</size>
+        <mass>0.1</mass>
+
+        <visual>
+          <scale>0.02 0.02 0.02</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Blue</material>
+        </visual>
+      </geom:box>
+
+      <sensor:camera name="camera1_sensor">
+        <imageSize>320 240</imageSize>
+        <hfov>60</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>50</farClip>
+        <saveFrames>false</saveFrames>
+        <saveFramePath>frames</saveFramePath>
+
+        <controller:generic_camera name="camera1_controller">
+          <interface:camera name="camera_iface_1"/>
+        </controller:generic_camera>
+      </sensor:camera>
+    </body:box>
+  </model:physical>
 
   <joint:hinge name="pan_joint">
     <body1>ptu_base_body</body1>
@@ -109,7 +168,7 @@
     <tiltJoint>tilt_joint</tiltJoint>
 
     <motionGain>1</motionGain>
-    <force>1</force>
+    <force>10</force>
     <interface:ptz name="ptz_iface_1"/>
   </controller:generic_ptz>
 
