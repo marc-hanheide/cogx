@@ -215,72 +215,9 @@
   </joint:ball>
 -->
 
-  <model:physical name="laser0">
-      <xyz>0.300 0.000 0.300</xyz>
-      <rpy>0 0 0</rpy>
-      
-      <attach>
-        <parentBody>chassis_body</parentBody>
-        <myBody>laser0_body</myBody>
-      </attach>
 
-      <model:physical name="laser0_model">
-        <xyz>0 0 0</xyz>
-        <rpy>0 0 0</rpy>
-        <canonicalBody>laser0_body</canonicalBody>
-        <body:box name="laser0_body">
-          <xyz>0.000 0.000 0.000</xyz>
-          <rpy>0.0 0.0 0.0</rpy>
-
-          <geom:box name="laser0_geom">
-            <xyz>0.0 0.0 0.0</xyz>
-            <rpy>0 0 0</rpy>
-            <size>0.01 0.01 0.01</size>
-            <mass>0.1</mass>
-
-            <visual>
-              <scale>0.01 0.01 0.01</scale>
-              <mesh>unit_box</mesh>
-              <material>Gazebo/Blue</material>
-            </visual>
-          </geom:box>
-
-          <sensor:ray name="ray0">
-            <rayCount>270</rayCount>
-            <rangeCount>654</rangeCount>
-            <origin>0.0 0.0 0.0</origin>
-
-            <displayRays>fan</displayRays>
-
-            <minAngle>-120</minAngle>
-            <maxAngle>120</maxAngle>
-
-            <minRange>0.04</minRange>
-            <maxRange>5.6</maxRange>
-            <resRange>1</resRange>
-            <controller:sicklms200_laser name="laser_controller_0">
-              <interface:laser name="laser_iface_0"/>
-            </controller:sicklms200_laser>
-          </sensor:ray>
-        </body:box>
-      </model:physical>
-    </model:physical>
-
-<!--
-    <model:physical name="camera">
-      <xyz>0.11 0 0.10</xyz>
-      <attach>
-        <parentBody>chassis_body</parentBody>
-        <myBody>camera_body</myBody>
-      </attach>
-      <include embedded="true">
-        <xi:include href="camera.model" />
-      </include>
-    </model:physical>
--->
-<!--
-  <model:physical name="laser0">
-    <xyz>0.500 0.000 0.100</xyz>
+  <model:physical name="laser">
+    <xyz>0.300 0.000 0.300</xyz>
     <rpy>0 0 0</rpy>
     
     <attach>
@@ -288,46 +225,43 @@
       <myBody>laser0_body</myBody>
     </attach>
 
-    <model:physical name="laser0_model">
-      <xyz>0.105 0.040 0.051</xyz>
-      <rpy>0 0 10</rpy>
-      <canonicalBody>laser0_body</canonicalBody>
-      <body:cyliner name="laser0_body">
-        <xyz>0.000 0.000 0.000</xyz>
-        <rpy>0.0 0.0 0.0</rpy>
+    <body:box name="laser0_body">
+      <xyz>0.000 0.000 0.000</xyz>
+      <rpy>0.0 0.0 0.0</rpy>
 
-        <geom:cylinder name="laser0_geom">
-          <xyz>0.0 0.0 0.0</xyz>
-          <rpy>0 0 0</rpy>
-          <size>0.05 0.10</size>
-          <mass>0.1</mass>
+      <geom:box name="laser0_geom">
+        <xyz>0.0 0.0 0.0</xyz>
+        <rpy>0 0 0</rpy>
+        <size>0.01 0.01 0.01</size>
+        <mass>0.1</mass>
 
-          <visual>
-            <scale>0.01 0.01 0.01</scale>
-            <mesh>unit_box</mesh>
-            <material>Gazebo/Blue</material>
-          </visual>
-        </geom:cylinder>
+        <visual>
+          <scale>0.01 0.01 0.01</scale>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Blue</material>
+        </visual>
+      </geom:box>
 
-        <sensor:ray name="ray0">
-          <rayCount>270</rayCount>
-          <rangeCount>271</rangeCount>
-          <origin>0.0 0.0 0.0</origin>
+      <sensor:ray name="ray0">
+        <rayCount>270</rayCount>
+        <rangeCount>654</rangeCount>
+        <origin>0.0 0.0 0.0</origin>
 
-          <minAngle>-135</minAngle>
-          <maxAngle>135</maxAngle>
+        <displayRays>fan</displayRays>
 
-          <minRange>0.01</minRange>
-          <maxRange>6.000</maxRange>
-          <resRange>.1</resRange>
-          <controller:sicklms200_laser name="laser_controller_0">
-            <interface:laser name="laser_iface_0"/>
-          </controller:sicklms200_laser>
-        </sensor:ray>
-      </body:cylinder>
-    </model:physical>
+        <minAngle>-120</minAngle>
+        <maxAngle>120</maxAngle>
+
+        <minRange>0.04</minRange>
+        <maxRange>5.6</maxRange>
+        <resRange>1</resRange>
+        <controller:sicklms200_laser name="laser_controller_0">
+          <interface:laser name="laser_iface_0"/>
+        </controller:sicklms200_laser>
+      </sensor:ray>
+    </body:box>
   </model:physical>
--->
+
   <controller:differential_position2d name="controller1">
     <leftJoint>left_wheel_joint</leftJoint>
     <rightJoint>right_wheel_joint</rightJoint>
