@@ -219,7 +219,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 					notifyAll();
 				}
 			} else if (arg instanceof CloseGripperCommand) {
-				logger.info("open gripper command");
+				logger.info("close gripper command");
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				synchronized (this) {
 					notifyAll();

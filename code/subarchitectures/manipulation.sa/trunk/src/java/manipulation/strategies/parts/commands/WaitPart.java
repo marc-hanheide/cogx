@@ -124,7 +124,7 @@ public class WaitPart extends StrategyPart implements Observer {
 					notifyAll();
 				}
 			} else if (arg instanceof CloseGripperCommand) {
-				logger.info("open gripper command");
+				logger.info("close gripper command");
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				synchronized (this) {
 					notifyAll();
