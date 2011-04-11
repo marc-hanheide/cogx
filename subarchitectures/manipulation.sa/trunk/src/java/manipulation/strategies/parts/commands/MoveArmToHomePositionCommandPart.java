@@ -4,6 +4,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
+import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.runner.cogx.CogXRunner;
@@ -19,7 +20,6 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -87,7 +87,22 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
+			if (arg instanceof ArmReachingStatus) {
+				logger.info("reached position with the arm");
+				setNextPartName(PartName.WAIT_PART);
+				MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
+						.getCurrentCommand());
+				currentCom.status = ManipulationCommandStatus.FINISHED;
 
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getCurrentCommandAddress(),
+								currentCom);
+
+				synchronized (this) {
+					notifyAll();
+				}
+			}
 			if (arg instanceof ManipulationCommand) {
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
