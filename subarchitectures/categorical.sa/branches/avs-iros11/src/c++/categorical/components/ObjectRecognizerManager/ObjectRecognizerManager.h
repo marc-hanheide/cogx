@@ -8,7 +8,6 @@
 #define CONCEPTUAL_OBJECTRECOGNIZERMANAGER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include <ConceptualData.hpp>
 #include <FrontierInterface.hpp>
 
 
