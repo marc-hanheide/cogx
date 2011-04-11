@@ -1,0 +1,16 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
+INCLUDE includes/vision.sa/vision-viewer.cast
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply " --siftfiles "instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift" --labels "paperclip box marker stapler" --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile --labels "stapler" --Loops 1000 --mode RECOGNIZE --log
+
+
+
+
