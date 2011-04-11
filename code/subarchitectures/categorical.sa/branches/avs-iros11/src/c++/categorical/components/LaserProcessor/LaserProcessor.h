@@ -74,7 +74,7 @@ private:
   /** Performs processing of a single laser scan and produces classification results. */
   void processLaserScan(Laser::Scan2d &scan,
                         CategoricalData::LaserProcessorStatusPtr laserProcessorStatus,
-                        CategoricalData::LaserResultsPtr laserResults);
+                        CategoricalData::LaserResultsPtr laserResults, bool &wasError);
 
 
 private:

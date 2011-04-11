@@ -461,10 +461,11 @@ ts.tv_nsec = 0;
       CategoricalData::LaserResultsPtr laserResults = new CategoricalData::LaserResults;
       CategoricalData::LaserProcessorStatusPtr laserProcessorStatus = new CategoricalData::LaserProcessorStatus;
 
+      bool wasError=false;
       if (scan->status==CategoricalData::DsValid)
       {
         // Run all the feature extraction and classification
-        processLaserScan(scan->scanBuffer, laserProcessorStatus, laserResults);
+        processLaserScan(scan->scanBuffer, laserProcessorStatus, laserResults, wasError);
         // Set remaining fields
         laserResults->status=CategoricalData::DsValid;
         laserResults->frameNo=scan->frameNo;
@@ -475,7 +476,8 @@ ts.tv_nsec = 0;
         laserProcessorStatus->scanRealTimeStamp=scan->realTimeStamp;
         laserProcessorStatus->scanWmTimeStamp=scan->wmTimeStamp;
       }
-      else
+
+      if ((scan->status!=CategoricalData::DsValid) || (wasError))
       {
         // Create empty, invalid outputs
         createInvalidLaserResults(laserResults);
@@ -540,7 +542,7 @@ void CategoricalLaserProcessor::initProcessing()
 
 void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
                                            CategoricalData::LaserProcessorStatusPtr laserProcessorStatus,
-                                           CategoricalData::LaserResultsPtr laserResults)
+                                           CategoricalData::LaserResultsPtr laserResults, bool &wasError)
 {
 
   debug("Processing scan...");
@@ -617,6 +619,8 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 	    laserResults->results[i].classNo=classes[i];
 	    laserResults->results[i].className=_labels.labelNoToName(classes[i]).c_str();
 	    laserResults->results[i].confidence=confidence[i];
+	    if (isnan(confidence[i]))
+	      wasError=true;
 	  }
 	  for (int i=0; i<nrHyp; ++i)
 	  {
@@ -628,6 +632,8 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 	      lexical_cast<string>(_labels.labelNoToName(outputLabels2[i]));
 	    laserResults->outputs[i].name=outName.c_str();
 	    laserResults->outputs[i].value=outputs[i];
+	    if (isnan(outputs[i]))
+	      wasError=true;
 	  }
 
 	  // Confidence
@@ -681,6 +687,8 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 	    laserResults->sizeResults[i].classNo=classes[i];
 	    laserResults->sizeResults[i].className=_sizeLabels.labelNoToName(classes[i]).c_str();
 	    laserResults->sizeResults[i].confidence=confidence[i];
+	    if (isnan(confidence[i]))
+	      wasError=true;
 	  }
 	  for (int i=0; i<nrHyp; ++i)
 	  {
@@ -692,6 +700,8 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
 	      lexical_cast<string>(_sizeLabels.labelNoToName(outputLabels2[i]));
 	    laserResults->sizeOutputs[i].name=outName.c_str();
 	    laserResults->sizeOutputs[i].value=outputs[i];
+	    if (isnan(outputs[i]))
+	      wasError=true;
 	  }
 
 	  // Confidence
