@@ -442,26 +442,29 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public boolean isGraspingObject() {
 
-		KatanaGripperEncoderData data = null;
+		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+			KatanaGripperEncoderData data = null;
 
-		try {
-			data = ((KatanaArmPrx) arm).gripperRecvEncoderData(5);
-		} catch (ExTinyKatanaArm e) {
-			logger.debug(e);
-		}
+			try {
+				data = ((KatanaArmPrx) arm).gripperRecvEncoderData(5);
+			} catch (ExTinyKatanaArm e) {
+				logger.debug(e);
+			}
 
-		logger.error("Closed: " + data.closed);
-		logger.error("Open: " + data.open);
-		logger.error("Current: " + data.current);
+			logger.error("Closed: " + data.closed);
+			logger.error("Open: " + data.open);
+			logger.error("Current: " + data.current);
 
-		if (data.current > 8700 && closed) {
-			logger.error("Grasping object!");
-			return true;
+			if (data.current > 8700 && closed) {
+				logger.error("Grasping object!");
+				return true;
+			} else {
+				logger.error("Not grasping object!");
+				return false;
+			}
 		} else {
-			logger.error("Not grasping object!");
+			logger.error("Receiving encoder data not implemented for simulation");
 			return false;
 		}
-
 	}
-
 }

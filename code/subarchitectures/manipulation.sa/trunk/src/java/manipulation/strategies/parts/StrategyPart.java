@@ -1,7 +1,6 @@
 package manipulation.strategies.parts;
 
 import manipulation.core.share.Manipulator;
-import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.strategies.Strategy;
 
 /**
@@ -114,7 +113,15 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		MOVE_ARM_TO_HOME_POSITION_COMMAND_PART
+		MOVE_ARM_TO_HOME_POSITION_COMMAND_PART,
+		/**
+		 * 
+		 */
+		OPEN_GRIPPER_PART,
+		/**
+		 * 
+		 */
+		CLOSE_GRIPPER_PART
 	}
 
 	/**

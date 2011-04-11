@@ -11,19 +11,21 @@ import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -109,19 +111,30 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 		simulateArm();
 
 		setNextPartName(PartName.WAIT_PART);
-		SimulateGraspCommand currentCom = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand());
 
-		currentCom.status = ManipulationCommandStatus.FINISHED;
-		currentCom.comp = ManipulationCompletion.SUCCEEDED;
-		currentCom.xError = armError.getPoseError().getX();
-		currentCom.yError = armError.getPoseError().getY();
-		currentCom.zError = armError.getPoseError().getZ();
+		if (!manipulationFailed) {
+			SimulateGraspCommand currentCom = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
 
-		((CogXRunner) (getManipulator().getRunner()))
-				.updateWorkingMemoryCommand(getManipulator().getWatcher()
-						.getCurrentCommandAddress(), currentCom);
+			currentCom.status = ManipulationCommandStatus.FINISHED;
+			currentCom.comp = ManipulationCompletion.SUCCEEDED;
+			currentCom.xError = armError.getPoseError().getX();
+			currentCom.yError = armError.getPoseError().getY();
+			currentCom.zError = armError.getPoseError().getZ();
 
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+		} else {
+			SimulateGraspCommand currentCom = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+			currentCom.comp = ManipulationCompletion.FAILED;
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+		}
 		logger.debug("we go on!");
 		changeToNextPart();
 
@@ -133,7 +146,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 	@Override
 	public void changeToNextPart() {
 		getManipulator().getWatcher().deleteObserver(this);
-
 		getGlobalStrategy().setNextPart(
 				getGlobalStrategy().getPart(getNextPartName()));
 	}
@@ -175,10 +187,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 				logger.info("simulate grasp command");
 				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
 				changeToNextPart();
-			} else if (arg instanceof LinearBaseMovementApproachCommand) {
-				logger.info("linear base movement approach command");
-				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
-				changeToNextPart();
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
 				setNextPartName(PartName.STOP_COMMAND_PART);
@@ -186,6 +194,14 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 			} else if (arg instanceof MoveArmToHomePositionCommand) {
 				logger.info("move arm to home position command");
 				setNextPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
+				changeToNextPart();
+			} else if (arg instanceof OpenGripperCommand) {
+				logger.info("open gripper command");
+				setNextPartName(PartName.OPEN_GRIPPER_PART);
+				changeToNextPart();
+			} else if (arg instanceof CloseGripperCommand) {
+				logger.info("open gripper command");
+				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				changeToNextPart();
 			}
 		}
