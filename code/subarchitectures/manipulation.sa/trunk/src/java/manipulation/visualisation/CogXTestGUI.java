@@ -9,7 +9,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import manipulation.core.share.Manipulator;
 import manipulation.runner.cogx.CogXRunner;
@@ -45,12 +47,22 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 	private Manipulator manipulator;
 
+	private JTextField txtItemXPosition;
+	private JTextField txtItemYPosition;
+	private JTextField txtItemZPosition;
+
 	private JButton btnPutDown;
+
 	private JButton btnFarArm;
+
 	private JButton btnLinGraspApp;
+
 	private JButton btnSimGrasp;
+
 	private JButton btnLinBaseApp;
+
 	private JButton btnStopCmd;
+
 	private JButton btnMoveHomeCmd;
 
 	/**
@@ -99,6 +111,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		GridBagLayout gbl = new GridBagLayout();
 		pane.setLayout(gbl);
 
+		txtItemXPosition = new JTextField("", 7);
+		txtItemYPosition = new JTextField("", 7);
+		txtItemZPosition = new JTextField("", 7);
+
 		btnPutDown = new JButton("put down command");
 		btnPutDown.setActionCommand("putDown");
 		btnPutDown.addActionListener(this);
@@ -128,13 +144,26 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnMoveHomeCmd.addActionListener(this);
 
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
-		addComponent(pane, gbl, btnPutDown, 0, 0, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnFarArm, 0, 1, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnLinGraspApp, 0, 2, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnSimGrasp, 0, 3, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnLinBaseApp, 0, 4, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnStopCmd, 0, 5, 12, 1, 0, 0);
-		addComponent(pane, gbl, btnMoveHomeCmd, 0, 6, 12, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("x:"), 0, 0, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtItemXPosition, 1, 0, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("y:"), 3, 0, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtItemYPosition, 4, 0, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("z:"), 6, 0, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtItemZPosition, 7, 0, 2, 1, 0, 0);
+
+		addComponent(pane, gbl, btnPutDown, 0, 1, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnFarArm, 0, 2, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnLinGraspApp, 0, 3, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnSimGrasp, 0, 4, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnLinBaseApp, 0, 5, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnStopCmd, 0, 6, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnMoveHomeCmd, 0, 7, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -167,7 +196,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			VisualObject visObj = new VisualObject();
 			Pose3 pos = new Pose3();
-			pos.pos = new Vector3(0, 0, 0);
+			pos.pos = new Vector3(
+					Double.parseDouble(txtItemXPosition.getText()),
+					Double.parseDouble(txtItemYPosition.getText()),
+					Double.parseDouble(txtItemZPosition.getText()));
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			visObj.pose = pos;
 
@@ -195,6 +227,18 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			SimulateGraspCommand simulateGraspCommand = new SimulateGraspCommand();
+
+			VisualObject visObj = new VisualObject();
+			Pose3 pos = new Pose3();
+			pos.pos = new Vector3(
+					Double.parseDouble(txtItemXPosition.getText()),
+					Double.parseDouble(txtItemYPosition.getText()),
+					Double.parseDouble(txtItemZPosition.getText()));
+			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			visObj.pose = pos;
+
+			simulateGraspCommand.targetObject = visObj;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						simulateGraspCommand);

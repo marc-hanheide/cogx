@@ -246,43 +246,41 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void closeGripper(int force) {
-		HashMap<SensorPosition, Integer> sensorData = null;
+		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+			KatanaSensorData[] threshold = new KatanaSensorData[4];
 
-		sensorData = receiveGripperSensorData();
+			HashMap<SensorPosition, Integer> sensorData = null;
+			sensorData = receiveGripperSensorData();
 
-		KatanaSensorData[] threshold = new KatanaSensorData[4];
+			if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
+				threshold[0] = new KatanaSensorData(
+						SensorData
+								.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_FAR),
+						(sensorData.get(SensorPosition.FORCE_LEFT_FAR) + force));
 
-		threshold[0] = new KatanaSensorData(
-				SensorData
-						.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_FAR),
-				(sensorData.get(SensorPosition.FORCE_LEFT_FAR) + force));
-
-		threshold[1] = new KatanaSensorData(
-				SensorData
-						.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_NEAR),
-				(sensorData.get(SensorPosition.FORCE_LEFT_NEAR) + force));
-		threshold[2] = new KatanaSensorData(
-				SensorData
-						.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_FAR),
-				(sensorData.get(SensorPosition.FORCE_RIGHT_FAR) + force));
-		threshold[3] = new KatanaSensorData(
-				SensorData
-						.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_NEAR),
-				(sensorData.get(SensorPosition.FORCE_RIGHT_NEAR) + force));
-
-		try {
-			((KatanaArmPrx) arm).gripperClose(threshold, 5);
-			closed = true;
-		} catch (ExTinyKatanaArm e) {
-			logger.debug(e);
-			closed = true;
+				threshold[1] = new KatanaSensorData(
+						SensorData
+								.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_NEAR),
+						(sensorData.get(SensorPosition.FORCE_LEFT_NEAR) + force));
+				threshold[2] = new KatanaSensorData(
+						SensorData
+								.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_FAR),
+						(sensorData.get(SensorPosition.FORCE_RIGHT_FAR) + force));
+				threshold[3] = new KatanaSensorData(
+						SensorData
+								.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_NEAR),
+						(sensorData.get(SensorPosition.FORCE_RIGHT_NEAR) + force));
+			}
 
 			try {
 				((KatanaArmPrx) arm).gripperClose(threshold, 5);
-			} catch (ExTinyKatanaArm e1) {
-				logger.error(e1);
+				closed = true;
+			} catch (ExTinyKatanaArm e) {
+				logger.debug(e);
+				closed = true;
 			}
-			// TODO really ignore here?
+		} else {
+			logger.info("Close Gripper not implemented yet");
 		}
 	}
 
@@ -292,7 +290,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void openGripper() {
 
-		if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
+		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			try {
 				((KatanaArmPrx) arm).gripperOpen(5);
 				closed = false;
@@ -337,7 +335,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
 			HashMap<SensorPosition, Integer> sensorData = new HashMap<SensorPosition, Integer>();
 
-			// TODO was fuer einen Timeout?
+			// TODO what a timeout
 			KatanaSensorData[] golemSensorData;
 			try {
 				golemSensorData = ((KatanaArmPrx) arm).gripperRecvSensorData(5);
@@ -349,7 +347,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 			} catch (ExTinyKatanaArm e) {
 				logger.debug(e);
-				// TOOD wirklich ignorieren?
+				// TOOD really ignore?
 			}
 
 			return sensorData;
@@ -359,7 +357,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		}
 	}
 
-	// TODO wirklich so machen, dass man alles nochmal berechnet?
 	/**
 	 * {@inheritDoc}
 	 */

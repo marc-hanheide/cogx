@@ -143,68 +143,50 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),
 								currentCom);
+
+				((CommandExecution) getGlobalStrategy())
+						.setCurrentCommand((ManipulationCommand) arg);
 			}
 
 			if (arg instanceof FarArmMovementCommand) {
 				logger.info("far arm movement command");
-
 				setNextPartName(PartName.FAR_ARM_MOVEMENT_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof PutDownCommand) {
 				logger.info("put down command");
-
 				setNextPartName(PartName.PUT_DOWN_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof LinearGraspApproachCommand) {
 				logger.info("linear grasp approach command");
-
 				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof SimulateGraspCommand) {
 				logger.info("simulate grasp command");
-
 				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof LinearBaseMovementApproachCommand) {
 				logger.info("linear base movement approach command");
-
 				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
-
 				setNextPartName(PartName.STOP_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}
 			} else if (arg instanceof MoveArmToHomePositionCommand) {
 				logger.info("move arm to home position command");
-
 				setNextPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
-				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
 				synchronized (this) {
 					notifyAll();
 				}

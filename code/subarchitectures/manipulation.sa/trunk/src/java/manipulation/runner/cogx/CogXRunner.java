@@ -14,13 +14,12 @@ import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
-import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.strategies.CommandExecution;
-import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.Strategy.Name;
 import manipulation.visualisation.CogXTestGUI;
+import manipulation.visualisation.ExecutionGUI;
 
 import org.apache.log4j.Logger;
 
@@ -116,6 +115,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	@Override
 	protected void runComponent() {
 		new CogXTestGUI(manipulator);
+		new ExecutionGUI(manipulator);
+
 		startStrategy(Name.COMMAND_EXECUTION);
 	}
 
@@ -196,7 +197,11 @@ public class CogXRunner extends ManagedComponent implements Runner {
 						try {
 							ManipulationCommand command = getMemoryEntry(
 									_wmc.address, ManipulationCommand.class);
+							logger.error("--------------------------------------------");
 							logger.error(command.status);
+							logger.error(command.comp);
+							logger.error(command.getClass());
+							logger.error("--------------------------------------------");
 						} catch (DoesNotExistOnWMException e) {
 							logger.error(e);
 						} catch (UnknownSubarchitectureException e) {
