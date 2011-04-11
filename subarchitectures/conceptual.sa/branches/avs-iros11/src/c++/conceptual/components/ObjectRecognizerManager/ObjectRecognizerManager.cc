@@ -64,7 +64,7 @@ void ObjectRecognizerManager::configure(const map<string,string> & _config)
 // -------------------------------------------------------
 void ObjectRecognizerManager::start()
 {
-	addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::OVERWRITE),
+	addChangeFilter(createGlobalTypeFilter<VisionData::Recognizer3DCommand>(cdl::OVERWRITE),
 			new MemberFunctionChangeReceiver<ObjectRecognizerManager>(this,
 					&ObjectRecognizerManager::overwriteRecognizer3DCommand));
 }
@@ -79,6 +79,7 @@ void ObjectRecognizerManager::runComponent()
 	// Run component
 	while(isRunning())
 	{
+		println("Recognizing objects!");
 		for(size_t i=0; i<m_labels.size(); i++)
 		{
 			addRecognizer3DCommand(m_labels[i]);
@@ -100,15 +101,14 @@ void ObjectRecognizerManager::addRecognizer3DCommand(std::string label)
 	VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
 	rec_cmd->cmd = VisionData::RECOGNIZE;
 	rec_cmd->label = label;
-	addToWorkingMemory(newDataID(), rec_cmd);
-	log("Add Recognizer3DCommand: '%s'", rec_cmd->label.c_str());
+	addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+	println("Add Recognizer3DCommand: '%s'", rec_cmd->label.c_str());
 }
 
 
 void ObjectRecognizerManager::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc)
 {
 	VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
-
 	println("%s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
 }
 

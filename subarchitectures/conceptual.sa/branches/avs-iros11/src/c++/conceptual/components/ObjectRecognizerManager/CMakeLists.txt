@@ -2,6 +2,6 @@ option(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER "Build Conceptual.SA Object
 if(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER)
 
     add_cast_component(ConceptualObjectRecognizerManager ObjectRecognizerManager.cc)
-    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData ComaData)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData VisionData)
 
 endif(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER)
