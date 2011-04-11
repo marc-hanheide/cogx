@@ -112,7 +112,7 @@ class CProcessBase(object):
             ob.notifyStatusChange(self, oldStatus, newStatus)
 
 class CProcess(CProcessBase):
-    def  __init__(self, name, command, params=None, workdir=None, host=None):
+    def  __init__(self, name, command, params=None, workdir=None, host=None, allowTerminate=False):
         if host == None: host = CRemoteHostInfo()
         CProcessBase.__init__(self, name, host)
         self.command = command
@@ -121,7 +121,7 @@ class CProcess(CProcessBase):
         self.process = None
         self.lastPollState = 0
         self.keepalive = False
-        self.allowTerminate = False # CAST apps should not autoTerm; others may
+        self.allowTerminate = allowTerminate # CAST apps should not autoTerm; others may
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
         self.messageProcessor = None  # Some servers (log4j) could do additional message processing
@@ -168,23 +168,33 @@ class CProcess(CProcessBase):
         self.willClearAt = time.time() + 1
         self._setStatus(CProcessBase.FLUSH)
 
-    def start(self, params=None, env=None):
+    def start(self, command=None, params=None, workdir=None, env=None, allowTerminate=None):
         if self.isRunning():
             warn("Process '%s' is already running" % self.name)
             return
         if params == None: params = self.params
         else: self.params = params
-        if self.command == None or self.command.strip() == "":
-            error("No command for process '%s'" % self.name)
-            return
+
+        if command == None or command.strip() == "":
+            if self.command == None or self.command.strip() == "":
+                error("No command for process '%s'" % self.name)
+                return
+            command = self.command
+
         self.error = CProcessBase.OK
-        command = self.command
         if params != None:
             for par in params.iterkeys():
-                command = command.replace("[%s]" % par, params[par])
+                command = command.replace("[%s]" % par, "%s" % params[par])
         log("CMD=%s" % command)
+
         command = cmdlineToArray(command)
-        if self.workdir != None: log("PWD=%s" % self.workdir)
+        if workdir == None or workdir.strip() == "":
+            workdir = self.workdir
+        if workdir != None: log("PWD=%s" % workdir)
+
+        if allowTerminate != None:
+            self.allowTerminate = True if allowTerminate else False
+
         try:
             self._setStatus(CProcessBase.STARTING)
             if self.pipeReader != None:
@@ -194,7 +204,7 @@ class CProcess(CProcessBase):
             self.process = subp.Popen(
                     command, bufsize=1,
                     stdout=subp.PIPE, stderr=subp.PIPE,
-                    cwd=self.workdir, env=env)
+                    cwd=workdir, env=env)
 
             # Make the pipes nonblocking so we can read the messages better
             fcntl.fcntl(self.process.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
@@ -208,7 +218,7 @@ class CProcess(CProcessBase):
             self.error = CProcessBase.ERRSTART
             self._setStatus(CProcessBase.STOPPED)
             error("Process '%s' failed to start" % (self.name))
-            error("Command: '%s'" % (self.command))
+            error("Command: '%s'" % (" ".join(command)))
             error("%s" % e)
         time.sleep(0.01)
 
