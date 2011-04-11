@@ -11,7 +11,7 @@
 #include <FrontierInterface.hpp>
 
 
-namespace conceptual
+namespace categorical
 {
 
 /**

@@ -1,10 +1,9 @@
 /**
  * @author Andrzej Pronobis
  *
- * Definition of the conceptual::ObjectRecognizerManager class.
+ * Definition of the ObjectRecognizerManager class.
  */
 
-// Conceptual.SA
 #include "ObjectRecognizerManager.h"
 // System
 #include "ConceptualData.hpp"
@@ -19,11 +18,11 @@ extern "C"
 {
 	cast::CASTComponentPtr newComponent()
 	{
-		return new conceptual::ObjectRecognizerManager();
+		return new categorical::ObjectRecognizerManager();
 	}
 }
 
-namespace conceptual
+namespace categorical
 {
 
 using namespace std;
