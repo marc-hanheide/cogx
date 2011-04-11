@@ -690,28 +690,35 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onStartCastClient(self):
         log4 = self._getLog4jConfig()
         hasServer = self._log4j_use_server
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        if self.ui.ckAutoClearLog.isChecked():
-            self.mainLog.clearOutput()
-        self._options.checkConfigFile()
-        p = self._manager.getProcess("cast-client")
-        if p != None:
-            self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-            try:
-                confname = self.buildConfigFile()
-                if confname != None and confname != "":
-                    p.start( params = { "CAST_CONFIG": confname } )
-            except Exception as e:
-                LOGGER.error("%s" % e)
-        # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
+            if self.ui.ckAutoClearLog.isChecked():
+                self.mainLog.clearOutput()
+            self._options.checkConfigFile()
+            p = self._manager.getProcess("cast-client")
+            if p != None:
+                self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
+                try:
+                    confname = self.buildConfigFile()
+                    if confname != None and confname != "":
+                        p.start( params = { "CAST_CONFIG": confname } )
+                except Exception as e:
+                    LOGGER.error("%s" % e)
+            # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
 
     def onStopCastClient(self):
-        p = self._manager.getProcess("cast-client")
-        if p != None: p.stop()
-
-        #self.checkStopLog4jServer()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            p = self._manager.getProcess("cast-client")
+            if p != None: p.stop()
+            #self.checkStopLog4jServer()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
 
     def onLog4jHostCbItemActivated(self, index):
