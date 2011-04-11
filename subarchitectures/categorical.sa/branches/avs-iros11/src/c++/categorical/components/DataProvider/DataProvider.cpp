@@ -99,7 +99,7 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
       throw(CASTException(exceptionMessage(__HERE__, "Please provide --laser-robot-servers-hostname")));
 
   // --startservers
-  it = config.find("--startservers");
+  it = config.find("--start-servers");
   _startServers=(it!=config.end());
 
   // --correct-scans
@@ -532,7 +532,7 @@ std::string CategoricalDataProvider::addEmptyImage()
   debug("Empty image placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+//  lockEntry(dataId, cdl::LOCKEDOD);
 
   return dataId;
 }
@@ -554,7 +554,7 @@ std::string CategoricalDataProvider::addEmptyLaserScan()
   debug("Empty laser scan placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
   return dataId;
 }
@@ -576,7 +576,7 @@ std::string CategoricalDataProvider::addEmptyOdometry()
   debug("Empty odometry reading placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
 
   return dataId;
@@ -597,7 +597,7 @@ std::string CategoricalDataProvider::addEmptyTarget()
   debug("Empty target placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
 
   return dataId;
