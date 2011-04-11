@@ -36,13 +36,14 @@ def getUserOptions():
     return _userOptions
 
 # Env-var expander
-def _xe(shexpr, env=None):
+def _xe(shexpr, env=None, keepUnknown=False):
     if env == None: env = startup_environ
     for rx in [regSimple, regSimpleBrace]:
         mos = [mo for mo in rx.finditer(shexpr)]
         mos.reverse()
         for m in mos:
             if env.has_key(m.group(1)): v = env[m.group(1)]
+            elif keepUnknown: v = "${%s}" % m.group(1)
             else: v = ""
             shexpr = shexpr.replace(m.group(0), v)
 
@@ -135,8 +136,43 @@ class CCastOptions(object):
             self._xenviron = self._mergeEnvironment(startup_environ, self.environscript)
         return self._xenviron
 
-    def xe(self, shexpr):
-        return _xe(shexpr, self.environ)
+    def xe(self, shexpr, environ=None):
+        if not environ:
+            environ = self.environ
+        return _xe(shexpr, environ)
+
+    def getExtendedEnviron(self, defaults=None):
+        """
+        Expand the 'shell' expression shexpr in the environment self.environ.
+        If there are variables in defaults that are not in self.environ,
+        self.environ will be recreated: first the missing variables will be
+        defined and the the self.environscript will be re-evaluated.
+        """
+        if not defaults:
+            return self.environ.copy()
+
+        defaults = [ l.strip() for l in defaults.split("\n") if l.strip() != "" ]
+        if len(defaults) < 1:
+            return self.environ.copy()
+
+        # Parse defaults to discover missing variables
+        defaults = self._parseEnvironmentScript(defaults)
+        enew = {}
+        for (k, v, isPath) in defaults:
+            if not k in self.environ:
+                v = _xe(v, self.environ, keepUnknown=True)
+                if isPath: v = self._cleanPathList(v)
+                enew[k] = v
+        if len(enew) < 1:
+            return self.environ.copy()
+
+        # Rebuild the environment: strtup, defaults, environscript
+        edef = self._mergeEnvironment(startup_environ, [])
+        for k,v in enew.items():
+            edef[k] = _xe(v, edef)
+        edef = self._mergeEnvironment(edef, self.environscript)
+
+        return edef
 
     def parseConfigLines(self, lines):
         section = None
@@ -177,31 +213,31 @@ class CCastOptions(object):
             self.loadConfig(filename)
             self.configEnvironment()
 
-    def loadHistory(self, filename):
-        if not os.path.exists(filename): return
-        f = open(filename, "r")
-        options = []
-        section = None
-        for ln in f.readlines():
-            l = ln.split('#')[0]
-            l = l.strip()
-            if l == "[MRU-CAST]": section = self.mruCfgCast
-            elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
-            elif l == "[MRU-GOLEM]": section = self.mruCfgGolem
-            elif l == "[MRU-HOSTS]": section = self.mruCfgHosts
-            elif l == "[OPTIONS]": section = options
-            elif l.startswith('['): section = None
-            elif section != None:
-                section.append(ln.rstrip())
 
-        f.close()
+    def _get_mru_lists(self):
+        return [ ("MRU-CAST", self.mruCfgCast), ("MRU-HOSTS", self.mruCfgHosts) ]
 
-        for ln in options:
-            expr = ln.split("=", 2)
-            if len(expr) != 2: continue
-            expr = [ e.strip() for e in expr ]
-            if expr[0].startswith("#") or expr[0] == "": continue
-            self.options[expr[0]] = expr[1]
+
+    def loadHistory(self, configParser):
+        p = configParser
+        hists = self._get_mru_lists()
+
+        for mru in hists:
+            section = mru[0]
+            if not p.has_section(section): continue
+            items = sorted(p.items(section))
+            mlist = mru[1]
+            try: # clear list
+                while 1: mlist.pop()
+            except: pass
+            mlist += [ v[1] for v in items ]
+
+        section = "OPTIONS"
+        if p.has_section(section):
+            items = p.items(section)
+            for v in items:
+                self.options[v[0]] = v[1]
+
 
     def getSection(self, sectionName):
         if self.confSection.has_key(sectionName): return self.confSection[sectionName]
@@ -224,23 +260,23 @@ class CCastOptions(object):
                 f.write(ln); f.write("\n")
 
 
-    def saveHistory(self, afile):
-        f = afile
-        f.write("[MRU-CAST]\n")
-        for ln in self.mruCfgCast:
-            f.write(ln); f.write("\n")
-        f.write("[MRU-PLAYER]\n")
-        for ln in self.mruCfgPlayer:
-            f.write(ln); f.write("\n")
-        f.write("[MRU-GOLEM]\n")
-        for ln in self.mruCfgGolem:
-            f.write(ln); f.write("\n")
-        f.write("[MRU-HOSTS]\n")
-        for ln in self.mruCfgHosts:
-            f.write(ln); f.write("\n")
-        f.write("[OPTIONS]\n")
+    def saveHistory(self, configParser):
+        p = configParser
+        hists = self._get_mru_lists()
+
+        for mru in hists:
+           section = mru[0]
+           p.remove_section(section)
+           p.add_section(section)
+           for i,h in enumerate(mru[1]):
+              p.set(section, "%03d" % (i+1), "%s" % h)
+
+        section = "OPTIONS"
+        if not p.has_section(section):
+            p.add_section(section)
         for k,v in self.options.iteritems():
-            f.write("%s=%s\n" % (k,v))
+            p.set(section, "%s" % k, "%s" % v)
+
 
     def _globFileList(self, globTag):
         globTag = globTag.replace("<glob>", "").replace("</glob>", "")
@@ -260,6 +296,12 @@ class CCastOptions(object):
         paths = separator.join(paths)
         return paths
 
+    def _cleanPathList(self, pathString, delim=":"):
+        p = pathString.replace(": :", ":")
+        p = p.replace("::", ":")
+        p = p.strip(": ")
+        return p
+
     def _readMultiLine(self, lineIterator):
         res = []
         for stm in lineIterator:
@@ -270,32 +312,42 @@ class CCastOptions(object):
             res.append(stm)
         return " ".join(res)
 
-    def _mergeEnvironment(self, env, expressionList):
-        self._tempNewEnv = env.copy()
-        iexpr = expressionList.__iter__()
+
+    # Returns a list [ (key, value, isPath), ... ]
+    def _parseEnvironmentScript(self, lineList):
+        iexpr = lineList.__iter__()
+        elist = []
         for stm in iexpr:
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
             mo = regVarSet.match(stm)
+            isPath = False
             if mo != None:
                 lhs, rhs = mo.group(1), mo.group(2)
                 if rhs == "<pathlist>":
                     rhs = self._readPathList(iexpr, ":")
-                    rhs = _xe(rhs, self._tempNewEnv)
-                    rhs = rhs.replace(": :", ":")
-                    rhs = rhs.replace("::", ":")
-                    rhs = rhs.strip(": ")
+                    isPath = True
                 elif rhs == "<multiline>":
                     rhs = self._readMultiLine(iexpr)
-                    rhs = _xe(rhs, self._tempNewEnv)
-                else:
-                    rhs = _xe(rhs, self._tempNewEnv)
                 rhs = rhs.replace("[PWD]", self.codeRootDir)
-                self._tempNewEnv[lhs] = rhs
+
+                elist.append( (lhs, rhs, isPath) )
             else: print "Invalid ENV expression:", stm
 
+        return elist
+
+    def _mergeEnvironment(self, env, expressionList):
+        self._tempNewEnv = env.copy()
+
+        elist = self._parseEnvironmentScript(expressionList)
+        for (lhs, rhs, isPath) in elist:
+            rhs = _xe(rhs, self._tempNewEnv)
+            if isPath: rhs = self._cleanPathList(rhs)
+            self._tempNewEnv[lhs] = rhs
+
         return self._tempNewEnv
+
 
     def configEnvironment(self):
         newenv = self.environ
@@ -324,8 +376,11 @@ class CCastOptions(object):
         pass
 
     def getOption(self, key):
+        key = key.lower() # ConfigParser uses lower case in the default optionxform()
         if self.options.has_key(key): return self.options[key]
         return ""
 
     def setOption(self, key, value):
+        key = key.lower() # ConfigParser uses lower case in the default optionxform()
         self.options["%s" % key] =  "%s" % value
+
