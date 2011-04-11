@@ -22,6 +22,7 @@ import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.exceptions.MathException;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.PTZPosition;
 import manipulation.core.share.types.Region;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.SensorData.SensorPosition;
@@ -86,6 +87,8 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 	private JButton btnFreezeGripper;
 
 	private JButton btnTest;
+
+	private JButton btnPanTilt;
 
 	private MapPanel mapPanel;
 
@@ -210,9 +213,13 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 		btnFreezeGripper.setActionCommand("btnFreezeGripper");
 		btnFreezeGripper.addActionListener(this);
 
-		btnTest = new JButton("Test whatever");
+		btnTest = new JButton("is Grapsing");
 		btnTest.setActionCommand("btnTest");
 		btnTest.addActionListener(this);
+
+		btnPanTilt = new JButton("Pan Tilt");
+		btnPanTilt.setActionCommand("btnPanTilt");
+		btnPanTilt.addActionListener(this);
 
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, new JLabel("Goto Position:"), 0, 0, 10, 1, 0, 0);
@@ -264,6 +271,8 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 
 		addComponent(pane, gbl, btnTest, 0, 11, 12, 1, 0, 0);
 
+		addComponent(pane, gbl, btnPanTilt, 0, 12, 12, 1, 0, 0);
+
 		gui.pack();
 		gui.setVisible(true);
 	}
@@ -284,10 +293,10 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 			logger.debug("Input: x: " + txtGoToX.getText() + " y: "
 					+ txtGoToY.getText() + " angle: " + txtGoToAngle.getText());
 
-			BasePositionData baseNavData = new BasePositionData(Double
-					.parseDouble(txtGoToX.getText()), Double
-					.parseDouble(txtGoToY.getText()), Double
-					.parseDouble(txtGoToAngle.getText()));
+			BasePositionData baseNavData = new BasePositionData(
+					Double.parseDouble(txtGoToX.getText()),
+					Double.parseDouble(txtGoToY.getText()),
+					Double.parseDouble(txtGoToAngle.getText()));
 			try {
 
 				manipulator.getBaseConnector().goTo(baseNavData);
@@ -304,10 +313,10 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 					+ txtItemName.getText());
 
 			if (txtItemName.getText().equals("FROSTIES_SMALL")) {
-				Vector3D translationData = new Vector3D(Double
-						.parseDouble(txtItemXPosition.getText()), Double
-						.parseDouble(txtItemYPosition.getText()), Double
-						.parseDouble(txtItemZPosition.getText()));
+				Vector3D translationData = new Vector3D(
+						Double.parseDouble(txtItemXPosition.getText()),
+						Double.parseDouble(txtItemYPosition.getText()),
+						Double.parseDouble(txtItemZPosition.getText()));
 
 				Matrix rotationData = new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
@@ -317,9 +326,7 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 							ItemName.FROSTIES_SMALL);
 					item.setAttribute(PropertyName.WORLD_POSITION,
 							translationData);
-					item
-							.setAttribute(PropertyName.WORLD_ROTATION,
-									rotationData);
+					item.setAttribute(PropertyName.WORLD_ROTATION, rotationData);
 					item.setAttribute(PropertyName.INTENTION,
 							ItemIntention.GRASP_ME);
 
@@ -406,15 +413,13 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 						MathOperation.getMatrixMatrixMultiplication(rotation1,
 								rotation2), rotation3);
 
-				manipulator.getArmConnector()
-						.reach(
-								new Vector3D(
-										Double.parseDouble(txtItemXPosition
-												.getText()), Double
-												.parseDouble(txtItemYPosition
-														.getText()), Double
-												.parseDouble(txtItemZPosition
-														.getText())), result);
+				manipulator
+						.getArmConnector()
+						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
+								.getText()), Double
+								.parseDouble(txtItemYPosition.getText()),
+								Double.parseDouble(txtItemZPosition.getText())),
+								result);
 
 			} catch (ManipulatorException e1) {
 				logger.error(e1);
@@ -427,15 +432,13 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 
 			Matrix rotation = MathOperation.getRotationAroundX(-Math.PI / 2);
 			try {
-				manipulator.getArmConnector()
-						.reach(
-								new Vector3D(
-										Double.parseDouble(txtItemXPosition
-												.getText()), Double
-												.parseDouble(txtItemYPosition
-														.getText()), Double
-												.parseDouble(txtItemZPosition
-														.getText())), rotation);
+				manipulator
+						.getArmConnector()
+						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
+								.getText()), Double
+								.parseDouble(txtItemYPosition.getText()),
+								Double.parseDouble(txtItemZPosition.getText())),
+								rotation);
 			} catch (NumberFormatException e1) {
 				logger.error(e1);
 			} catch (ManipulatorException e1) {
@@ -468,18 +471,14 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("btnArmGetPos")) {
 			logger.debug("pressed btnArmGetPos");
 			try {
-				logger
-						.debug(manipulator.getArmConnector()
-								.getCurrentPosition());
+				logger.debug(manipulator.getArmConnector().getCurrentPosition());
 			} catch (ManipulatorException e1) {
 				logger.error(e1);
 			}
 		} else if (e.getActionCommand().equals("btnArmGetRot")) {
 			logger.debug("pressed btnArmGetRot");
 			try {
-				logger
-						.debug(manipulator.getArmConnector()
-								.getCurrentRotation());
+				logger.debug(manipulator.getArmConnector().getCurrentRotation());
 			} catch (ManipulatorException e1) {
 				logger.error(e1);
 			}
@@ -517,15 +516,18 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 			manipulator.getArmConnector().freezeGripper();
 		} else if (e.getActionCommand().equals("btnTest")) {
 			logger.debug("pressed btnTest");
-
-			// manipulator.getBaseConnector().startExplore();
-
 			logger.error(manipulator.getArmConnector().isGraspingObject());
 
-//			HashMap<SensorPosition, Integer> sensors = manipulator
-//					.getArmConnector().receiveGripperSensorData();
-//
-//			logger.error(sensors.get(SensorPosition.INFRARED_MIDDLE));
+			// HashMap<SensorPosition, Integer> sensors = manipulator
+			// .getArmConnector().receiveGripperSensorData();
+			//
+			// logger.error(sensors.get(SensorPosition.INFRARED_MIDDLE));
+		} else if (e.getActionCommand().equals("btnPanTilt")) {
+			logger.debug("pressed btnPanTilt");
+			manipulator.getPanTiltConnector().setPoseDeg(
+					new PTZPosition(Double.parseDouble(txtItemXPosition
+							.getText()), Double.parseDouble(txtItemYPosition
+							.getText())));
 		}
 
 	}

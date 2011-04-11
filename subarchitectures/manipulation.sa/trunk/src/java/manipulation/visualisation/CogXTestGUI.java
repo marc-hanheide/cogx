@@ -15,10 +15,12 @@ import javax.swing.JTextField;
 
 import manipulation.core.share.Manipulator;
 import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
@@ -64,6 +66,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnStopCmd;
 
 	private JButton btnMoveHomeCmd;
+
+	private JButton btnOpenGripperCmd;
+
+	private JButton btnCloseGripperCmd;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -143,6 +149,14 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnMoveHomeCmd.setActionCommand("moveHome");
 		btnMoveHomeCmd.addActionListener(this);
 
+		btnOpenGripperCmd = new JButton("open gripper");
+		btnOpenGripperCmd.setActionCommand("openGripper");
+		btnOpenGripperCmd.addActionListener(this);
+
+		btnCloseGripperCmd = new JButton("close gripper");
+		btnCloseGripperCmd.setActionCommand("closeGripper");
+		btnCloseGripperCmd.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, new JLabel("x:"), 0, 0, 1, 1, 0, 0);
 		addComponent(pane, gbl, txtItemXPosition, 1, 0, 2, 1, 0, 0);
@@ -164,6 +178,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		addComponent(pane, gbl, btnStopCmd, 0, 6, 12, 1, 0, 0);
 
 		addComponent(pane, gbl, btnMoveHomeCmd, 0, 7, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnOpenGripperCmd, 0, 8, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnCloseGripperCmd, 0, 9, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -287,6 +305,28 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						moveHomeCmd);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("openGripper")) {
+			logger.error("openGripper pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						openGripperCmd);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("closeGripper")) {
+			logger.error("closeGripper pressed");
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						closeGripperCmd);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}

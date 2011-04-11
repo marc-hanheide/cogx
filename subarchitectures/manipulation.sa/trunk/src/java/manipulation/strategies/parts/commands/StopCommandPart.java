@@ -7,13 +7,14 @@ import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
@@ -25,7 +26,7 @@ import manipulation.strategies.parts.StrategyPart.PartName;
 import org.apache.log4j.Logger;
 
 /**
- * defines a behaviour to reach a position in front of an object with the arm
+ * defines a behaviour to stop the arm movement
  * 
  * @author ttoenige
  * 
@@ -145,11 +146,6 @@ public class StopCommandPart extends StrategyPart implements Observer {
 
 				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
 				changeToNextPart();
-			} else if (arg instanceof LinearBaseMovementApproachCommand) {
-				logger.info("linear base movement approach command");
-
-				setNextPartName(PartName.LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART);
-				changeToNextPart();
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");
 
@@ -159,6 +155,16 @@ public class StopCommandPart extends StrategyPart implements Observer {
 				logger.info("move arm to home position command");
 
 				setNextPartName(PartName.MOVE_ARM_TO_HOME_POSITION_COMMAND_PART);
+				changeToNextPart();
+			} else if (arg instanceof OpenGripperCommand) {
+				logger.info("open gripper command");
+				
+				setNextPartName(PartName.OPEN_GRIPPER_PART);
+				changeToNextPart();
+			} else if (arg instanceof CloseGripperCommand) {
+				logger.info("open gripper command");
+				
+				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				changeToNextPart();
 			}
 		}

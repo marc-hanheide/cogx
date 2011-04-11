@@ -7,11 +7,8 @@
 module manipulation {
     module slice {
 		enum ManipulationCompletion {
-			// failed to grasp the object
 			FAILED,
-			// grasped the object
 			SUCCEEDED,
-			// on the way
 			ONTHEWAY
 		};
 		
@@ -21,6 +18,11 @@ module manipulation {
 			PENDING,
 			FINISHED,
 			COMMANDFAILED
+		};
+		
+		enum GraspingStatus {
+			GRASPING,
+			NOTGRASPING
 		};
 		
 		/**
@@ -59,6 +61,7 @@ module manipulation {
    		**/
 		class LinearGraspApproachCommand extends ManipulationCommand {
 			VisionData::VisualObject targetObject;
+			GraspingStatus graspStatus;
 		};
 		
 		/**
@@ -73,14 +76,6 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief approaches a given object with linear robot base movements
-   		* @author Torben Toeniges
-   		**/
-		class LinearBaseMovementApproachCommand extends ManipulationCommand {
-			VisionData::VisualObject targetObject;
-		};
-		
-		/**
    		* @brief stops the manipulator movement
    		* @author Torben Toeniges
 		**/
@@ -92,6 +87,21 @@ module manipulation {
    		* @author Torben Toeniges
 		**/
 		class MoveArmToHomePositionCommand extends ManipulationCommand {
+		};
+		
+		/**
+   		* @brief open gripper
+   		* @author Torben Toeniges
+		**/
+		class OpenGripperCommand extends ManipulationCommand {
+		};
+		
+		/**
+   		* @brief close gripper
+   		* @author Torben Toeniges
+		**/
+		class CloseGripperCommand extends ManipulationCommand {
+			GraspingStatus graspStatus;
 		};
     };
 };
