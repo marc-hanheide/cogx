@@ -179,8 +179,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
-        self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
-        self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
+        self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onClientConfigChanged)
+        self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onHostConfigChanged)
+        self.connect(self.ui.cbLog4jServerHost, QtCore.SIGNAL("activated(int)"), self.onLog4jHostCbItemActivated)
 
         # Process actions
         self.connect(self.ui.actStartCastServers, QtCore.SIGNAL("triggered()"), self.onStartCastServers)
@@ -218,8 +219,9 @@ class CCastControlWnd(QtGui.QMainWindow):
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
+        self.updateCbLog4jHosts()
         val = self._options.getOption("log4jServerHost")
-        if val != "": self.ui.edLog4jServerHost.setText(val)
+        if val != "": self.ui.cbLog4jServerHost.setEditText(val)
         val = self._options.getOption("log4jServerPort")
         if val != "": self.ui.edLog4jServerPort.setText(val)
         val = self._options.getOption("log4jServerOutfile")
@@ -375,7 +377,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     @property
     def _log4jServerHost(self):
-        val = "%s" % self.ui.edLog4jServerHost.text()
+        val = "%s" % self.ui.cbLog4jServerHost.lineEdit().text()
         val = val.strip()
         if val == '' or val == 'localhost':
             val = 'localhost'
@@ -577,13 +579,21 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onStartCastServers(self):
-        self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-        self.startServers()
-        self.ui.processTree.expandAll()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
+            self.startServers()
+            self.ui.processTree.expandAll()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     def onStopCastServers(self):
-        self.stopServers()
-        self.ui.processTree.expandAll()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.stopServers()
+            self.ui.processTree.expandAll()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     # Add components to filter; put the used components to the top of the list
     def addComponentFilters(self, components):
@@ -704,6 +714,26 @@ class CCastControlWnd(QtGui.QMainWindow):
         #self.checkStopLog4jServer()
 
 
+    def onLog4jHostCbItemActivated(self, index):
+        if index < 0: return
+        cb = self.ui.cbLog4jServerHost
+        value = "%s" % cb.itemData(index).toString()
+        cb.setEditText(value)
+
+
+    def updateCbLog4jHosts(self):
+        text = self._log4jServerHost
+        cb = self.ui.cbLog4jServerHost
+        cb.blockSignals(True)
+        cb.clear()
+        for k,v in sorted(self.configuredHosts.items()):
+            if self.configuredHosts.isLocalHost(k):
+                if k != "localhost": continue
+            cb.addItem("%s (%s)" % (k, v), QtCore.QVariant(k))
+        self.ui.cbLog4jServerHost.setEditText(text)
+        cb.blockSignals(False)
+
+
     def _getLog4jConfig(self):
         try:
             log4 = log4util.CLog4Config()
@@ -780,34 +810,42 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._options.checkConfigFile()
         log4 = self._getLog4jConfig()
 
-        self.startLog4jServer()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.startLog4jServer()
 
-        hasServer = self._log4j_use_server
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+            hasServer = self._log4j_use_server
+            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        for name in self.procGroupA.processlist:
-            csi = None
-            for c in self.serverManager.servers:
-                if c.name == name:
-                    csi = c
-                    break
-            if not csi: continue
-            if not csi.enabled: continue
-            p = self._manager.getProcess(csi.name)
-            if not p: continue
+            for name in self.procGroupA.processlist:
+                csi = None
+                for c in self.serverManager.servers:
+                    if c.name == name:
+                        csi = c
+                        break
+                if not csi: continue
+                if not csi.enabled: continue
+                p = self._manager.getProcess(csi.name)
+                if not p: continue
 
-            extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
-            command = self._options.xe(csi.command, environ=extenv)
-            params = csi.getParameters()
-            if params:
-                for k,v in params.items():
-                    params[k] = self._options.xe(v, environ=extenv)
-            p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+                extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+                command = self._options.xe(csi.command, environ=extenv)
+                params = csi.getParameters()
+                if params:
+                    for k,v in params.items():
+                        params[k] = self._options.xe(v, environ=extenv)
+                p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
 
     def onStopExternalServers(self):
-        self.stopProcesses(self.procGroupA)
-        self.checkStopLog4jServer()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.stopProcesses(self.procGroupA)
+            self.checkStopLog4jServer()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
 
     def _checkBuidDir(self):
@@ -968,10 +1006,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btDiscoverRemote_clicked(self, valid=True):
         if not valid: return
         try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             agents = self.discoverCastAgents()
         except UserWarning as uw:
             rv = QtGui.QMessageBox.information(self, "Discover Agents", "%s" % uw)
             return
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
         for rpm in self._remoteHosts:
             self._processModel.rootItem.removeHost(rpm)
@@ -989,6 +1030,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.ui.processTree.expandAll()
         self._fillMessageFilterCombo()
+        self.updateCbLog4jHosts()
 
 
     def onShowEnvironment(self):

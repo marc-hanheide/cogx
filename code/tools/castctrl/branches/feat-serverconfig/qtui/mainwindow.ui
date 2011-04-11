@@ -585,12 +585,15 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="edLog4jServerHost">
+                 <widget class="QComboBox" name="cbLog4jServerHost">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>2</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
+                  </property>
+                  <property name="editable">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -1645,9 +1648,12 @@
     <string>Select Player Configuration</string>
    </property>
   </action>
-  <action name="actOpenGolemConfig">
+  <action name="actSelectLog4jHost">
    <property name="text">
-    <string>Select Golem Configuration</string>
+    <string>Select Log4j Host</string>
+   </property>
+   <property name="toolTip">
+    <string>Select Log4j Host</string>
    </property>
   </action>
   <action name="actShowEnv">
@@ -1861,38 +1867,6 @@
     <hint type="sourcelabel">
      <x>676</x>
      <y>151</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btBrowsePlayerFile</sender>
-   <signal>clicked()</signal>
-   <receiver>actOpenPlayerConfig</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>672</x>
-     <y>146</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btBrowseGolemFile</sender>
-   <signal>clicked()</signal>
-   <receiver>actOpenGolemConfig</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>805</x>
-     <y>229</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

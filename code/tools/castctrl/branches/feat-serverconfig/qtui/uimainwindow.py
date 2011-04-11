@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Apr  8 11:57:45 2011
+# Created: Mon Apr 11 09:33:52 2011
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -290,14 +290,15 @@ class Ui_MainWindow(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.horizontalLayout_17.addWidget(self.label)
-        self.edLog4jServerHost = QtGui.QLineEdit(self.frame_8)
+        self.cbLog4jServerHost = QtGui.QComboBox(self.frame_8)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(2)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.edLog4jServerHost.sizePolicy().hasHeightForWidth())
-        self.edLog4jServerHost.setSizePolicy(sizePolicy)
-        self.edLog4jServerHost.setObjectName("edLog4jServerHost")
-        self.horizontalLayout_17.addWidget(self.edLog4jServerHost)
+        sizePolicy.setHeightForWidth(self.cbLog4jServerHost.sizePolicy().hasHeightForWidth())
+        self.cbLog4jServerHost.setSizePolicy(sizePolicy)
+        self.cbLog4jServerHost.setEditable(True)
+        self.cbLog4jServerHost.setObjectName("cbLog4jServerHost")
+        self.horizontalLayout_17.addWidget(self.cbLog4jServerHost)
         self.label_7 = QtGui.QLabel(self.frame_8)
         self.label_7.setObjectName("label_7")
         self.horizontalLayout_17.addWidget(self.label_7)
@@ -702,8 +703,8 @@ class Ui_MainWindow(object):
         self.actOpenClientConfig.setObjectName("actOpenClientConfig")
         self.actOpenPlayerConfig = QtGui.QAction(MainWindow)
         self.actOpenPlayerConfig.setObjectName("actOpenPlayerConfig")
-        self.actOpenGolemConfig = QtGui.QAction(MainWindow)
-        self.actOpenGolemConfig.setObjectName("actOpenGolemConfig")
+        self.actSelectLog4jHost = QtGui.QAction(MainWindow)
+        self.actSelectLog4jHost.setObjectName("actSelectLog4jHost")
         self.actShowEnv = QtGui.QAction(MainWindow)
         self.actShowEnv.setObjectName("actShowEnv")
         self.actCtxShowBuildError = QtGui.QAction(MainWindow)
@@ -825,8 +826,6 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowseHostFile, QtCore.SIGNAL("clicked()"), self.actOpenHostConfig.trigger)
-        QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
-        QtCore.QObject.connect(self.btBrowseGolemFile, QtCore.SIGNAL("clicked()"), self.actOpenGolemConfig.trigger)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -922,7 +921,8 @@ class Ui_MainWindow(object):
         self.actQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenClientConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Client Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Player Configuration", None, QtGui.QApplication.UnicodeUTF8))
-        self.actOpenGolemConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Golem Configuration", None, QtGui.QApplication.UnicodeUTF8))
+        self.actSelectLog4jHost.setText(QtGui.QApplication.translate("MainWindow", "Select Log4j Host", None, QtGui.QApplication.UnicodeUTF8))
+        self.actSelectLog4jHost.setToolTip(QtGui.QApplication.translate("MainWindow", "Select Log4j Host", None, QtGui.QApplication.UnicodeUTF8))
         self.actShowEnv.setText(QtGui.QApplication.translate("MainWindow", "Show ENV", None, QtGui.QApplication.UnicodeUTF8))
         self.actCtxShowBuildError.setText(QtGui.QApplication.translate("MainWindow", "Show code", None, QtGui.QApplication.UnicodeUTF8))
         self.actStartTerminal.setText(QtGui.QApplication.translate("MainWindow", "Start Terminal", None, QtGui.QApplication.UnicodeUTF8))
