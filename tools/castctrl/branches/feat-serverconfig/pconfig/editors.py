@@ -11,13 +11,16 @@ class ICustomEditorBase:
     # data = QVariant( [ string type, object property, function formatter ] )
     def setEditData(self, data): pass
 
+
     # @return see CTreeItem.setData()
     def editData(self): pass
+
 
 class CTextEditor(QtGui.QLineEdit, ICustomEditorBase):
     def __init__(self, parent = None):
         QtGui.QLineEdit.__init__(self, parent)
         self._type = QtCore.QVariant('')
+
 
     # @param data see CTreeItem.data()
     def setEditData(self, data):
@@ -38,15 +41,18 @@ class CTextEditor(QtGui.QLineEdit, ICustomEditorBase):
 
         self.setText(v)
 
+
     # @return see CTreeItem.setData()
     def editData(self):
         return QtCore.QVariant([self._type, self.text()])
+
 
 class CStringItemEditor(QtGui.QComboBox, ICustomEditorBase):
     def __init__(self, parent = None):
         QtGui.QComboBox.__init__(self, parent)
         self._type = QtCore.QVariant('')
         self.items = []
+
 
     def setEditData(self, data):
         ldata = data.toList()
@@ -60,6 +66,7 @@ class CStringItemEditor(QtGui.QComboBox, ICustomEditorBase):
         v = prop.value if prop.value != None else ""
         i = self.findText(v)
         self.setCurrentIndex(i)
+
 
     # @return see CTreeItem.setData()
     def editData(self):
@@ -127,7 +134,7 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         self.cb.setEditable(True)
         self.cb.setLineEdit(self.e)
 
-        self.connect(self.cb, QtCore.SIGNAL("currentIndexChanged(int)"), self.onComboIndexChanged)
+        self.connect(self.cb, QtCore.SIGNAL("activated(int)"), self.onComboItemActivated)
         return self.cb
 
 
@@ -135,10 +142,8 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         qfd = QtGui.QFileDialog
         fn = qfd.getOpenFileName(self, self.e.text(), "", self.filter)
         if fn != None and len(fn) > 1:
-            #fn = self.makeConfigFileRelPath(fn)
-            #self._ComboBox_AddMru(self.ui.playerConfigCmbx,
-            #        self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
             self.e.setText(fn)
+
 
     def onEditFile(self):
         qfd = QtGui.QFileDialog
@@ -147,14 +152,12 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
             # TODO: a call into castcontrol to edit(fn)
             pass
 
-    def onComboIndexChanged(self, index):
+
+    def onComboItemActivated(self, index):
         if index < 0: return
         value = "%s" % self.cb.itemData(index).toString()
         self.e.setText(value)
 
-        #fn = self._playerConfig
-        #self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
-        #        self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def setEditData(self, data):
         ldata = data.toList()
@@ -178,7 +181,6 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         v = prop.value if prop.value != None else ""
         self.e.setText(v)
         self.filter = prop.filter
-
 
 
     def editData(self):
