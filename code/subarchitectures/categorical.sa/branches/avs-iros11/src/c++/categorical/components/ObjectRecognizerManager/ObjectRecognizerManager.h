@@ -48,13 +48,20 @@ private:
 	void overwriteRecognizer3DCommand(const cast::cdl::WorkingMemoryChange & _wmc);
 	void addRecognizer3DCommand(std::string label);
 	int getCurrentPlace();
+	void addNewObject(std::string label, int curPlaceId, int curRoomId);
+	void worldStateChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
 	std::vector<std::string> m_labels;
+	int _curRoomId;
+
 
 	FrontierInterface::PlaceInterfacePrx _placeInterfacePrx;
 	std::string _placeManagerName;
 
+
+	typedef std::list< std::pair<std::string, int> > ObjectPlaceList;
+	ObjectPlaceList _objectInPlace;
 
 }; // class ObjectRecognizerManager
 } // namespace
