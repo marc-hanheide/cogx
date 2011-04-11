@@ -16,6 +16,7 @@ namespace ConceptualData
 QDataStream &operator<<(QDataStream &stream, const ConceptualData::EventInfo &eventInfo)
 {
 	stream << eventInfo.type;
+	stream << eventInfo.time;
 	stream << eventInfo.roomId;
 	stream << eventInfo.place1Id;
 	stream << eventInfo.place2Id;
@@ -30,6 +31,7 @@ QDataStream &operator>>(QDataStream &stream, ConceptualData::EventInfo &eventInf
 	int i;
 	stream >> i;
 	eventInfo.type = static_cast<ConceptualData::EventType>(i);
+	stream >> eventInfo.time;
 	stream >> eventInfo.roomId;
 	stream >> eventInfo.place1Id;
 	stream >> eventInfo.place2Id;
@@ -91,6 +93,7 @@ void ConceptualEvent::setInfos(std::vector<ConceptualData::EventInfo> infos)
 
 QDataStream &operator<<(QDataStream &stream, const ConceptualEvent &event)
 {
+	stream << event.time;
 	stream << event.curRoomId;
 	stream << event.curPlaceId;
 	stream << event.curRoomPlaces;
@@ -107,6 +110,7 @@ QDataStream &operator<<(QDataStream &stream, const ConceptualEvent &event)
 
 QDataStream &operator>>(QDataStream &stream, ConceptualEvent &event)
 {
+	stream >> event.time;
 	stream >> event.curRoomId;
 	stream >> event.curPlaceId;
 	stream >> event.curRoomPlaces;

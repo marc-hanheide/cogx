@@ -45,6 +45,7 @@ public:
 	QList<double> curSizes;
 	QList<double> curAppearances;
 	QList<double> curObjects;
+	double time;
 
 public:
 

@@ -73,6 +73,8 @@ private:
 	void collectEventInfo(conceptual::ConceptualEvent event);
 	void getPlacesForRoom(ConceptualData::WorldStatePtr wsPtr, int roomId, QList<int> &places);
 	double getExistsProbability(SpatialProbabilities::ProbabilityDistribution &probDist);
+	void saveEvents(QString fileName);
+	double castTimeToSeconds(const cast::cdl::CASTTime &time);
 
 
 private:

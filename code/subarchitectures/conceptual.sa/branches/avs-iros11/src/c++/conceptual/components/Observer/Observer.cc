@@ -616,6 +616,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		_comaRoomWmAddressMap[wmChange.address] = comaRoomPtr;
 		ConceptualData::EventInfo ei;
 		ei.type = ConceptualData::EventRoomAdded;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.roomId = comaRoomPtr->roomId;
 		ei.place1Id = -1;
 		ei.place2Id = -1;
@@ -652,6 +653,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 
 		// Check what has changed
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.roomId = comaRoomPtr->roomId;
 		ei.place2Id = -1;
 
@@ -697,6 +699,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		pthread_mutex_lock(&_worldStateMutex);
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventRoomDeleted;
 		ei.roomId = _comaRoomWmAddressMap[wmChange.address]->roomId;
 		ei.place1Id = -1;
@@ -742,6 +745,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (placePtr->status == SpatialData::PLACEHOLDER)
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventPlaceholderAdded;
 			ei.roomId = -1;
 			ei.place1Id = placePtr->id;
@@ -782,6 +786,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		if ((old->status != placePtr->status) )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = (placePtr->status == SpatialData::PLACEHOLDER)?
 					ConceptualData::EventPlaceholderAdded:ConceptualData::EventPlaceholderDeleted;
 			ei.roomId = -1;
@@ -805,6 +810,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		if (old->status == SpatialData::PLACEHOLDER)
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventPlaceholderDeleted;
 			ei.roomId = -1;
 			ei.place1Id = old->id;
@@ -849,6 +855,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 
 		_gatewayPlacePropertyWmAddressMap[wmChange.address] = gatewayPlacePropertyPtr;
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
@@ -885,6 +892,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 			throw cast::CASTException("The mapping between GatewayPlaceProperty WMAddress and Place ID changed!");
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlacePropertyPtr->placeId;
@@ -902,6 +910,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		pthread_mutex_lock(&_worldStateMutex);
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventGatewayPlacePropertyChanged;
 		ei.roomId = -1;
 		ei.place1Id = _gatewayPlacePropertyWmAddressMap[wmChange.address]->placeId;
@@ -944,6 +953,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 
 		_objectPlacePropertyWmAddressMap[wmChange.address] = objectPlacePropertyPtr;
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectPlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = objectPlacePropertyPtr->placeId;
@@ -990,6 +1000,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 			throw cast::CASTException("The mapping between ObjectPlaceProperty WMAddress and Place ID changed!");
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectPlacePropertyChanged;
 		ei.roomId = -1;
 		ei.place1Id = objectPlacePropertyPtr->placeId;
@@ -1019,6 +1030,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 
 		SpatialProperties::ObjectPlacePropertyPtr old = _objectPlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1072,6 +1084,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectSearchResultAdded;
 		ei.roomId = objectSearchResultPtr->roomId;
 		ei.place1Id = -1;
@@ -1121,6 +1134,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		if (fabs(old->beta-objectSearchResultPtr->beta)> _betaThreshold)
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventObjectSearchResultChanged;
 			ei.roomId = objectSearchResultPtr->roomId;
 			ei.place1Id = -1;
@@ -1151,6 +1165,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectSearchResultDeleted;
 		ei.roomId = old->roomId;
 		ei.place1Id = -1;
@@ -1211,6 +1226,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventShapePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = shapePlacePropertyPtr->placeId;
@@ -1256,6 +1272,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 								shapePlacePropertyPtr->distribution) > _shapeThreshold )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventShapePlacePropertyChanged;
 			ei.roomId = -1;
 			ei.place1Id = shapePlacePropertyPtr->placeId;
@@ -1275,6 +1292,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
 		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventShapePlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1325,6 +1343,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		}
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventSizePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = sizePlacePropertyPtr->placeId;
@@ -1370,6 +1389,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 								sizePlacePropertyPtr->distribution) > _sizeThreshold )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventSizePlacePropertyChanged;
 			ei.roomId = -1;
 			ei.place1Id = sizePlacePropertyPtr->placeId;
@@ -1389,6 +1409,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 
 		SpatialProperties::RoomSizePlacePropertyPtr old = _sizePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventSizePlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1438,6 +1459,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		}
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventAppearancePlacePropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = appearancePlacePropertyPtr->placeId;
@@ -1483,6 +1505,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 								appearancePlacePropertyPtr->distribution) > _appearanceThreshold )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventAppearancePlacePropertyChanged;
 			ei.roomId = -1;
 			ei.place1Id = appearancePlacePropertyPtr->placeId;
@@ -1502,6 +1525,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 
 		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventAppearancePlacePropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1544,6 +1568,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		_gatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventGatewayPlaceholderPropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = gatewayPlaceholderPropertyPtr->placeId;
@@ -1583,6 +1608,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 				gatewayPlaceholderPropertyPtr->distribution) > _gatewayThreshold )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventGatewayPlaceholderPropertyChanged;
 			ei.roomId = -1;
 			ei.place1Id = gatewayPlaceholderPropertyPtr->placeId;
@@ -1602,6 +1628,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 
 		SpatialProperties::GatewayPlaceholderPropertyPtr old = _gatewayPlaceholderPropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventGatewayPlaceholderPropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1646,6 +1673,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		log("associatedSpacePlaceholderPropertyChanged ADD %d", associatedSpacePlaceholderPropertyPtr->placeId);
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyAdded;
 		ei.roomId = -1;
 		ei.place1Id = associatedSpacePlaceholderPropertyPtr->placeId;
@@ -1692,6 +1720,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		if ( fabs(oldVal-newVal) > _associatedSpaceThreshold )
 		{
 			ConceptualData::EventInfo ei;
+			ei.time = castTimeToSeconds(getCASTTime());
 			ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyChanged;
 			ei.roomId = -1;
 			ei.place1Id = associatedSpacePlaceholderPropertyPtr->placeId;
@@ -1714,6 +1743,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		log("associatedSpacePlaceholderPropertyChanged DELETE %d", old->placeId);
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyDeleted;
 		ei.roomId = -1;
 		ei.place1Id = old->placeId;
@@ -1757,6 +1787,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 
 		_connectivityPathPropertyWmAddressMap[wmChange.address] = connectivityPathPropertyPtr;
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventRoomConnectivityChanged;
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
@@ -1793,6 +1824,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 			throw cast::CASTException("The mapping between ConnectivityPathProperty WMAddress and Place ID changed!");
 
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventRoomConnectivityChanged;
 		ei.roomId = -1;
 		ei.place1Id = connectivityPathPropertyPtr->place1Id;
@@ -1811,6 +1843,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 
 		SpatialProperties::ConnectivityPathPropertyPtr old = _connectivityPathPropertyWmAddressMap[wmChange.address];
 		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventRoomConnectivityChanged;
 		ei.roomId = -1;
 		ei.place1Id = old->place1Id;
@@ -2097,6 +2130,13 @@ void Observer::getConnectedPlaces(int placeId, vector<int> *connectedPlaces,
 	removeDuplicates(*connectedPlaces);
 	connectedPlaces->erase(std::remove(connectedPlaces->begin(), connectedPlaces->end(),
 			placeId), connectedPlaces->end());
+}
+
+
+// -------------------------------------------------------
+double Observer::castTimeToSeconds(const cast::cdl::CASTTime &time)
+{
+  return static_cast<double>(time.s) + 1e-6 * static_cast<double>(time.us);
 }
 
 

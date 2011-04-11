@@ -248,7 +248,8 @@ module ConceptualData
 	
 	struct EventInfo
 	{
-		EventType type;	
+		EventType type;
+		double time;	
 		int roomId;
 		int place1Id;
 		int place2Id;
