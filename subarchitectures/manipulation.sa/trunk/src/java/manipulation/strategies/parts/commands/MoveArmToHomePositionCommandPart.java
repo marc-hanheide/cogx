@@ -13,6 +13,7 @@ import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -24,7 +25,7 @@ import manipulation.strategies.parts.StrategyPart;
 import org.apache.log4j.Logger;
 
 /**
- * defines a behaviour to reach a position in front of an object with the arm
+ * defines a behaviour to reach the home position of the manipulator
  * 
  * @author ttoenige
  * 
@@ -33,6 +34,7 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 		Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
+	private boolean manipulationFailed = false;
 
 	public MoveArmToHomePositionCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
@@ -47,21 +49,36 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
+		manipulationFailed = false;
 
 		getManipulator().getWatcher().addObserver(this);
 
 		try {
 			getManipulator().getArmConnector().goHome();
 		} catch (ManipulatorException e1) {
-			logger.error(e1);
+			manipulationFailed = true;
 		}
 
-		synchronized (this) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				logger.error(e);
+		if (!manipulationFailed) {
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					logger.error(e);
+				}
 			}
+		} else {
+			MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+			currentCom.comp = ManipulationCompletion.FAILED;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+
+			setNextPartName(PartName.WAIT_PART);
 		}
 
 		logger.debug("we go on!");
@@ -93,6 +110,7 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 				MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand());
 				currentCom.status = ManipulationCommandStatus.FINISHED;
+				currentCom.comp = ManipulationCompletion.SUCCEEDED;
 
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
@@ -107,6 +125,7 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),

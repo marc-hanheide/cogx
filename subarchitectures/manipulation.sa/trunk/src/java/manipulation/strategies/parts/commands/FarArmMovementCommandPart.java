@@ -17,6 +17,7 @@ import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -132,6 +133,16 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				}
 			}
 		} else {
+			FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+			currentCom.comp = ManipulationCompletion.FAILED;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+
 			setNextPartName(PartName.WAIT_PART);
 		}
 
@@ -164,7 +175,12 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				setNextPartName(PartName.WAIT_PART);
 				FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand());
+
 				currentCom.status = ManipulationCommandStatus.FINISHED;
+				currentCom.comp = ManipulationCompletion.SUCCEEDED;
+				currentCom.xError = armError.getPoseError().getX();
+				currentCom.yError = armError.getPoseError().getY();
+				currentCom.zError = armError.getPoseError().getZ();
 
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
@@ -179,6 +195,7 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+				currentCom.comp = ManipulationCompletion.FAILED;				
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),

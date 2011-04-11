@@ -11,6 +11,7 @@ import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -85,6 +86,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),
