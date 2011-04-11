@@ -10,7 +10,7 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "
 INCLUDE includes/vision.sa/vision-viewer.cast
 
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply " --siftfiles "instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift" --labels "paperclip box marker stapler" --log
-CPP MG  conceptual.objectrecognitionmanager ConceptualObjectRecognizerManager --labels "stapler"
+INCLUDE includes/categorical.sa/categorical-object.cast
 
 
 
