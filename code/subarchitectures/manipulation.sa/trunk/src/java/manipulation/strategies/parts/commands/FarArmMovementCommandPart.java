@@ -24,7 +24,6 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -41,6 +40,7 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean manipulationFailed = false;
+	ArmError armError = null;
 
 	public FarArmMovementCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
@@ -90,8 +90,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 				currentGoalPosition.getY() - posInFront * direction.getY(),
 				currentGoalPosition.getZ());
 
-		ArmError armError = null;
-
 		try {
 			armError = getManipulator().getArmConnector().getPosError(
 					goalWithDistance, greifRotation);
@@ -117,6 +115,9 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
+
+		manipulationFailed = false;
+		armError = new ArmError();
 
 		getManipulator().getWatcher().addObserver(this);
 
@@ -159,8 +160,20 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof ArmReachingStatus) {
-				logger.error("HELLO");
-				logger.error((ArmReachingStatus) arg);
+				logger.info("reached position with the arm");
+				setNextPartName(PartName.WAIT_PART);
+				FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+						.getCurrentCommand());
+				currentCom.status = ManipulationCommandStatus.FINISHED;
+
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getCurrentCommandAddress(),
+								currentCom);
+
+				synchronized (this) {
+					notifyAll();
+				}
 			}
 			if (arg instanceof ManipulationCommand) {
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
