@@ -2,6 +2,6 @@ option(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER "Build CATEGORICAL.SA Obje
 if(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER)
 
     add_cast_component(CategoricalObjectRecognizerManager ObjectRecognizerManager.cc)
-    link_cast_component(${CAST_COMPONENT_NAME} VisionData FrontierInterface)
+    link_cast_component(${CAST_COMPONENT_NAME} VisionData FrontierInterface SpatialProperties SpatialProbabilities ConceptualData)
 
 endif(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER)
