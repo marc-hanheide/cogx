@@ -6,6 +6,7 @@
 import os, sys, time
 import re
 import tempfile
+import ConfigParser
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages, logger, confbuilder, network
@@ -16,6 +17,10 @@ from qtui import uimainwindow
 from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
 import processtree
+
+import pconfig
+from pconfig.configwidget import CConfigWidget
+from pconfig.manager import CServerManager
 
 LOGGER = logger.get()
 NOFILE_FILENAME = "<none>"
@@ -85,30 +90,37 @@ class CLogDisplayer:
         # maybe: restart, pullRawLogs-->stream, clearOutput, restart
         pass
 
+class CProcessGroup:
+    def __init__(self, name):
+        self.name = name
+        self.processlist = []
+
+    def addProcess(self, processInfo):
+        self.processlist.append(processInfo)
+
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.ui = uimainwindow.Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
+        self._setup_ui()
 
         self.fnconf = "castcontrol.conf"
-        self.fnhist = "castcontrol.hist"
+        self.fnhist = "castctrl.cache.ini"
         self._options = options.getCastOptions()
         self._options.loadConfig(self.fnconf)
-        if os.path.exists(self.fnhist): self._options.loadHistory(self.fnhist)
-        else: self._options.loadHistory(self.fnconf) # old place for history
+        if os.path.exists(self.fnhist):
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self._options.loadHistory(cfg)
         self._options.configEnvironment()
         self._userOptions = options.getUserOptions()
         self._userOptions.loadConfig()
         self.componentFilter = []
+        _localhost = self._options.getOption("localhost")
+        self.configuredHosts = confbuilder.CHostMap(localhost=_localhost)
+        self.log4jStartedOn = None
 
         # move option values to UI
-        self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
-        val = self._options.getOption("log4jServerPort")
-        if val != "": self.ui.edLo4jServerPort.setText(val)
-        val = self._options.getOption("log4jServerOutfile")
-        if val != "": self.ui.edLog4jOutfile.setText(val)
+        self.ui.txtLocalHost.setText(_localhost)
 
         self._manager = procman.CProcessManager()
         self._remoteHosts = []
@@ -117,9 +129,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         root = self._options.xe("${COGX_ROOT}")
         if len(root) > 64: root = "..." + root[-64:]
         self.setWindowTitle("CAST Control - " + root)
-
-        # XXX keep the old interface, just in case, but hide it
-        self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
@@ -143,20 +152,36 @@ class CCastControlWnd(QtGui.QMainWindow):
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
         self.tmStatus.start(632)
 
+        self._connect_signals()
+        LOGGER.log("CAST Control initialized")
+
+
+    def _setup_ui(self):
+        self.ui = uimainwindow.Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
+        self.wAppConfig = CConfigWidget(self.ui.applicationTreeView)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.wAppConfig.setSizePolicy(sizePolicy)
+        layout = QtGui.QVBoxLayout(self.ui.applicationTreeView)
+        layout.addWidget(self.wAppConfig)
+
+        # XXX keep the old interface, just in case, but hide it
+        self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
+
+
+    def _connect_signals(self):
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
 
         # Config actions
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
-        self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
-        self.connect(self.ui.actOpenGolemConfig, QtCore.SIGNAL("triggered()"), self.onBrowseGolemConfig)
         self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
-        self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
-        self.connect(self.ui.playerConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onPlayerConfigChanged)
-        self.connect(self.ui.golemConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onGolemConfigChanged)
-        self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
+        self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onClientConfigChanged)
+        self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onHostConfigChanged)
+        self.connect(self.ui.cbLog4jServerHost, QtCore.SIGNAL("activated(int)"), self.onLog4jHostCbItemActivated)
 
         # Process actions
         self.connect(self.ui.actStartCastServers, QtCore.SIGNAL("triggered()"), self.onStartCastServers)
@@ -185,23 +210,26 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actEditUserSettings, QtCore.SIGNAL("triggered()"), self.onEditUserSettings)
         self.connect(self.ui.actEditCastEnvironment, QtCore.SIGNAL("triggered()"), self.onEditCastEnvironment)
 
-        LOGGER.log("CAST Control initialized")
 
     def _initContent(self):
         for fn in self._options.mruCfgCast:
             if fn.strip() == "": continue
             self.ui.clientConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-        for fn in self._options.mruCfgPlayer:
-            if fn.strip() == "": continue
-            self.ui.playerConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-        for fn in self._options.mruCfgGolem:
-            if fn.strip() == "": continue
-            self.ui.golemConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
         for fn in self._options.mruCfgHosts:
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
+        self.updateCbLog4jHosts()
+        val = self._options.getOption("log4jServerHost")
+        if val != "": self.ui.cbLog4jServerHost.setEditText(val)
+        val = self._options.getOption("log4jServerPort")
+        if val != "": self.ui.edLog4jServerPort.setText(val)
+        val = self._options.getOption("log4jServerOutfile")
+        if val != "": self.ui.edLog4jOutfile.setText(val)
+
         log4jlevels = log4util.log4jlevels
+        self.ui.log4jConsoleLevelCmbx.clear()
+        self.ui.log4jFileLevelCmbx.clear()
         for i in log4jlevels:
             self.ui.log4jConsoleLevelCmbx.addItem(i)
             self.ui.log4jFileLevelCmbx.addItem(i)
@@ -219,14 +247,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             except: return default
         self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
-        self.ui.ckRunPeekabot.setCheckState(ckint("ckRunPeekabot", 2))
-        self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
-        self.ui.ckRunGolem.setCheckState(ckint("ckRunGolem", 2))
-        self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
-        self.ui.ckRunDisplaySrv.setCheckState(ckint("ckRunDisplaySrv", 2))
-        self.ui.ckRunAbducerServer.setCheckState(ckint("ckRunAbducerServer", 2))
-        self.ui.ckRunSpeechServer.setCheckState(ckint("ckRunSpeechServer", 2))
         self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
+
 
     def _fillMessageFilterCombo(self):
         self.ui.messageSourceCmbx.clear()
@@ -249,6 +271,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.componentFilterCmbx.clear()
         self.ui.componentFilterCmbx.addItem("All components")
         self.ui.componentFilterCmbx.addItem("Selected components")
+
 
     def _applyMessageFilter(self):
         cmb = self.ui.messageSourceCmbx
@@ -332,20 +355,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         return fn.toString()
 
     @property
-    def _playerConfig(self):
-        cmb = self.ui.playerConfigCmbx
-        i = cmb.currentIndex()
-        fn = cmb.itemData(i)
-        return fn.toString()
-
-    @property
-    def _golemConfig(self):
-        cmb = self.ui.golemConfigCmbx
-        i = cmb.currentIndex()
-        fn = cmb.itemData(i)
-        return fn.toString()
-
-    @property
     def _hostConfig(self):
         cmb = self.ui.hostConfigCmbx
         i = cmb.currentIndex()
@@ -359,8 +368,24 @@ class CCastControlWnd(QtGui.QMainWindow):
         return lhost
 
     @property
+    def _log4j_start_server(self):
+        return self.ui.cbLog4jMode.currentIndex() == 0
+
+    @property
+    def _log4j_use_server(self):
+        return self.ui.cbLog4jMode.currentIndex() in [0, 1]
+
+    @property
+    def _log4jServerHost(self):
+        val = "%s" % self.ui.cbLog4jServerHost.lineEdit().text()
+        val = val.strip()
+        if val == '' or val == 'localhost':
+            val = 'localhost'
+        return val
+
+    @property
     def _log4jServerPort(self):
-        val = "%s" % self.ui.edLo4jServerPort.text()
+        val = "%s" % self.ui.edLog4jServerPort.text()
         val = val.strip()
         return val
 
@@ -383,18 +408,39 @@ class CCastControlWnd(QtGui.QMainWindow):
         return val
 
     def _initLocalProcesses(self):
+        self.procGroupA = CProcessGroup("External Servers")
+        self.procGroupB = CProcessGroup("CAST Servers")
+        self.procGroupC = CProcessGroup("CAST Client")
+
         self._manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
         self._manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
-        self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
-        self._manager.addProcess(procman.CProcess("display", self._options.xe("${CMD_DISPLAY_SERVER}")))
-        self._manager.addProcess(procman.CProcess("abducer", self._options.xe("${CMD_ABDUCER_SERVER}")))
-        self._manager.addProcess(procman.CProcess("mary.tts", self._options.xe("${CMD_SPEECH_SERVER}")))
-        self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
-        self._manager.addProcess(procman.CProcess("golem", self._options.xe("${CMD_GOLEM}")))
-        self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        self.procGroupB.addProcess("cast-java")
+        self.procGroupB.addProcess("cast-cpp")
+        self.procGroupB.addProcess("cast-python")
 
-        p = procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}"))
+        self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
+        self.procGroupC.addProcess("cast-client")
+
+        self.serverManager = CServerManager()
+        fn = os.path.join(os.path.dirname(pconfig.__file__), "cogxservers.txt")
+        self.serverManager.addServersFromFile(fn)
+        self.wAppConfig.addServers(self.serverManager.servers)
+        self.wAppConfig.updateHeader();
+
+        for csi in self.serverManager.servers:
+            if csi.group == 'B': self.procGroupB.addProcess(csi.name)
+            elif csi.group == 'C': self.procGroupC.addProcess(csi.name)
+            else: self.procGroupA.addProcess(csi.name)
+            # the command will be evaluated at startup
+            self._manager.addProcess(procman.CProcess(csi.name, command=None))
+
+        if os.path.exists(self.fnhist):
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self.serverManager.loadServerConfig(cfg)
+
+        p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
         p.messageProcessor = log4util.CLog4MessageProcessor()
         self._manager.addProcess(p)
 
@@ -404,6 +450,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
         self.ui.processTree.expandAll()
+        self.ui.processTree.resizeColumnToContents(0)
 
     def statusUpdate(self):
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
@@ -441,39 +488,29 @@ class CCastControlWnd(QtGui.QMainWindow):
             print e
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
-            self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
-            self._options.mruCfgGolem = getitems(self.ui.golemConfigCmbx)
             self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx, hasNullFile=True)
+            self._options.setOption("log4jServerHost", self._log4jServerHost)
             self._options.setOption("log4jServerPort", self._log4jServerPort)
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
             self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
             self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
-            self._options.setOption("ckRunPeekabot", self.ui.ckRunPeekabot.checkState())
-            self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
-            self._options.setOption("ckRunGolem", self.ui.ckRunGolem.checkState())
-            self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
-            self._options.setOption("ckRunDisplaySrv", self.ui.ckRunDisplaySrv.checkState())
-            self._options.setOption("ckRunAbducerServer", self.ui.ckRunAbducerServer.checkState())
-            self._options.setOption("ckRunSpeechServer", self.ui.ckRunSpeechServer.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
-            self._options.saveHistory(open(self.fnhist, 'w'))
+
+            cfg = ConfigParser.RawConfigParser()
+            cfg.read(self.fnhist)
+            self._options.saveHistory(cfg)
+            self.serverManager.saveServerConfig(cfg)
+            with open(self.fnhist, 'wb') as conffile:
+                cfg.write(conffile)
+
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
+
         except Exception, e:
             print "Failed to save configuration"
             print e
-
-    def getServers(self, manager):
-        srvs = []
-        p = manager.getProcess("cast-java")
-        if p != None: srvs.append(p)
-        p = manager.getProcess("cast-cpp")
-        if p != None: srvs.append(p)
-        p = manager.getProcess("cast-python")
-        if p != None: srvs.append(p)
-        return srvs
 
     def runCleanupScript(self):
         script = []
@@ -486,15 +523,13 @@ class CCastControlWnd(QtGui.QMainWindow):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
 
-    def startServers(self, log4):
-        self._options.checkConfigFile()
-        if self.ui.actEnableCleanupScript.isChecked():
-            self.runCleanupScript()
-        srvs = self.getServers(self._manager)
-        for p in srvs: p.start()
+    def startProcesses(self, procGroup):
+        LOGGER.log("Starting %s" % procGroup.name)
+        for name in procGroup.processlist:
+            p = self._manager.getProcess(name)
+            if p: p.start()
 
-        # The client config file was prepared in prepareClientConfig.
-        # We send it to remote agents so they use the same settings.
+        log4 = self._getLog4jConfig()
         log4config = "".join(open(log4.clientConfigFile).readlines())
 
         # XXX Processes could be started for each host separately;  (id=remotestart)
@@ -502,28 +537,63 @@ class CCastControlWnd(QtGui.QMainWindow):
         # ATM we start all processes on all hosts, so the UI can remain unchanged.
         for h in self._remoteHosts:
             h.agentProxy.setLog4jClientProperties(log4config)
-            for p in h.proclist: p.start()
+            for p in h.proclist:
+                if p.name == procman.LOG4J_PROCESS:
+                    continue # log4j server is started separately
+                if not p.name in procGroup.processlist:
+                    continue
+                p.start()
 
-    def stopServers(self):
-        srvs = self.getServers(self._manager)
-        for p in srvs: p.stop()
+
+    def stopProcesses(self, procGroup):
+        LOGGER.log("Stopping %s" % procGroup.name)
+        for name in procGroup.processlist:
+            p = self._manager.getProcess(name)
+            if p: p.stop()
 
         for h in self._remoteHosts: # See <URL:#remotestart>
-            for p in h.proclist: p.stop()
+            for p in h.proclist:
+                if p.name == procman.LOG4J_PROCESS:
+                    continue # log4j server is started separately
+                if not p.name in procGroup.processlist:
+                    continue
+                p.stop()
 
-    # Somehow we get 2 events for a button click ... filter one out
-    def onStartCastServers(self):
+        #self.checkStopLog4jServer()
+
+
+    def startServers(self):
+        self._options.checkConfigFile()
         log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
+        hasServer = self._log4j_use_server
         log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-        self.startServers(log4)
-        self.ui.processTree.expandAll()
+        if self.ui.actEnableCleanupScript.isChecked():
+            self.runCleanupScript()
+
+        self.startProcesses(self.procGroupB)
+
+
+    def stopServers(self):
+        self.stopProcesses(self.procGroupB)
+
+
+    def onStartCastServers(self):
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
+            self.startServers()
+            self.ui.processTree.expandAll()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     def onStopCastServers(self):
-        self.stopServers()
-        self.ui.processTree.expandAll()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.stopServers()
+            self.ui.processTree.expandAll()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     # Add components to filter; put the used components to the top of the list
     def addComponentFilters(self, components):
@@ -549,9 +619,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         hostConfig = hostConfig.strip()
         lhost = self._localhost
 
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
 
         cfg.prepareConfig(clientConfig)
@@ -572,9 +641,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         LOGGER.log("LOCALHOST: %s" % lhost)
 
         self._tmpCastFile = tempfile.NamedTemporaryFile(suffix=".cast")
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
         cfg.prepareConfig(clientConfig, self._tmpCastFile)
         self._tmpCastFile.flush()
@@ -589,9 +657,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
         lhost = self._localhost
-        cfg = confbuilder.CCastConfig()
+        cfg = confbuilder.CCastConfig(self.configuredHosts)
         cfg.clearRules()
-        if lhost != "": cfg.setLocalhost(lhost)
         if hostConfig == "" or not os.path.exists(hostConfig):
             msg = "Host configuration file (.hconf) not defined or it doesn't exist."
             LOGGER.warn(msg)
@@ -600,14 +667,14 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         cfg.addRules(open(hostConfig, "r").readlines())
 
-        hosts = []
-        for hid,haddr in cfg.hosts.iteritems():
+        hlst = []
+        for hid,haddr in self.configuredHosts.items():
             if hid[:4] == "127.": continue
             if haddr == "localhost" or haddr[:4] == "127.": continue
             # if haddr == lhost: continue # XXX Comment this line when testing and an agent is on localhost
-            if not haddr in hosts: hosts.append(haddr)
+            if not haddr in hlst: hlst.append(haddr)
 
-        return hosts
+        return hlst
 
 
     def discoverCastAgents(self):
@@ -622,26 +689,57 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onStartCastClient(self):
         log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+        hasServer = self._log4j_use_server
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        if self.ui.ckAutoClearLog.isChecked():
-            self.mainLog.clearOutput()
-        self._options.checkConfigFile()
-        p = self._manager.getProcess("cast-client")
-        if p != None:
-            self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-            try:
-                confname = self.buildConfigFile()
-                if confname != None and confname != "":
-                    p.start( params = { "CAST_CONFIG": confname } )
-            except Exception as e:
-                LOGGER.error("%s" % e)
-        # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
+            if self.ui.ckAutoClearLog.isChecked():
+                self.mainLog.clearOutput()
+            self._options.checkConfigFile()
+            p = self._manager.getProcess("cast-client")
+            if p != None:
+                self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
+                try:
+                    confname = self.buildConfigFile()
+                    if confname != None and confname != "":
+                        p.start( params = { "CAST_CONFIG": confname } )
+                except Exception as e:
+                    LOGGER.error("%s" % e)
+            # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+
 
     def onStopCastClient(self):
-        p = self._manager.getProcess("cast-client")
-        if p != None: p.stop()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            p = self._manager.getProcess("cast-client")
+            if p != None: p.stop()
+            #self.checkStopLog4jServer()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+
+
+    def onLog4jHostCbItemActivated(self, index):
+        if index < 0: return
+        cb = self.ui.cbLog4jServerHost
+        value = "%s" % cb.itemData(index).toString()
+        cb.setEditText(value)
+
+
+    def updateCbLog4jHosts(self):
+        text = self._log4jServerHost
+        cb = self.ui.cbLog4jServerHost
+        cb.blockSignals(True)
+        cb.clear()
+        for k,v in sorted(self.configuredHosts.items()):
+            if self.configuredHosts.isLocalHost(k):
+                if k != "localhost": continue
+            cb.addItem("%s (%s)" % (k, v), QtCore.QVariant(k))
+        self.ui.cbLog4jServerHost.setEditText(text)
+        cb.blockSignals(False)
+
 
     def _getLog4jConfig(self):
         try:
@@ -650,22 +748,24 @@ class CCastControlWnd(QtGui.QMainWindow):
             log4.setServerConsoleLevel(self._log4jConsoleLevel)
             log4.setServerXmlFileLevel(self._log4jXmlFileLevel)
             log4.setServerPort(self._log4jServerPort)
-            # XXX: currently it can only run on localhost; agents have to be modified for remote execution
-            log4.serverHost = self._localhost
+            log4.serverHost = self._log4jServerHost
             return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self)
             dlg.setModal(True)
             dlg.showMessage("Had some problems preparing the log file.\n%s" % e)
 
-    def onStartExternalServers(self):
-        self._options.checkConfigFile()
-        log4 = self._getLog4jConfig()
-        hasServer = self.ui.ckRunLog4jServer.isChecked()
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-        if self.ui.ckRunLog4jServer.isChecked():
-            p = self._manager.getProcess("log4jServer")
+    def startLog4jServer(self):
+        startServer = self._log4j_start_server
+        if not startServer:
+            return
+
+        # TODO: start the server only if it's not running, yet
+
+        log4 = self._getLog4jConfig()
+        if self.configuredHosts.isLocalHost(log4.serverHost):
+            p = self._manager.getProcess(procman.LOG4J_PROCESS)
             if p != None:
                 log4.prepareServerConfig()
                 LOGGER.log("Log4j STARTING 2")
@@ -673,47 +773,87 @@ class CCastControlWnd(QtGui.QMainWindow):
                     "LOG4J_PORT": log4.serverPort,
                     "LOG4J_SERVER_CONFIG": log4.serverConfigFile
                     })
-                time.sleep(0.5) # give the server time to start before the others start
+                time.sleep(1) # give the server time to start before the others start
+                self.log4jStartedOn = "LOCAL"
+                return
 
-        if self.ui.ckRunPlayer.isChecked():
-            p = self._manager.getProcess("player")
-            if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
+        # start Log4j remotely
+        haddr = self.configuredHosts.expandHostName(log4.serverHost)
+        for h in self._remoteHosts:
+            if h.address != haddr: continue
+            p = h.getProcess(procman.LOG4J_PROCESS)
+            if p != None:
+                log4.prepareServerConfig()
+                conf = open(log4.serverConfigFile).read()
+                h.agentProxy.setLog4jServerProperties(int(log4.serverPort), conf)
+                p.start()
+                time.sleep(1) # give the server time to start before the others start
+                self.log4jStartedOn = h.address
+                return
 
-        if self.ui.ckRunGolem.isChecked():
-            p = self._manager.getProcess("golem")
-            if p != None: p.start( params = { "GOLEM_CONFIG": self._golemConfig } )
 
-        if self.ui.ckRunPeekabot.isChecked():
-            p = self._manager.getProcess("peekabot")
-            if p != None: p.start()
+    # Stop log4j server if it was started (and all other processes are stopped)
+    def checkStopLog4jServer(self):
+        if not self.log4jStartedOn:
+            return
 
-        if self.ui.ckRunDisplaySrv.isChecked():
-            p = self._manager.getProcess("display")
-            if p != None: p.start()
+        # TODO: (maybe) Check if everything else is stopped
 
-        if self.ui.ckRunAbducerServer.isChecked():
-            p = self._manager.getProcess("abducer")
-            if p != None: p.start()
+        if self.log4jStartedOn == "LOCAL":
+            p = self._manager.getProcess(procman.LOG4J_PROCESS)
+            if p:
+                p.stop()
+                return
 
-        if self.ui.ckRunSpeechServer.isChecked():
-            p = self._manager.getProcess("mary.tts")
-            if p != None: p.start()
+        for h in self._remoteHosts:
+            if h.address != self.log4jStartedOn: continue
+            p = h.getProcess(procman.LOG4J_PROCESS)
+            if p:
+                p.stop()
+                return
+
+
+    def onStartExternalServers(self):
+        self._options.checkConfigFile()
+        log4 = self._getLog4jConfig()
+
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.startLog4jServer()
+
+            hasServer = self._log4j_use_server
+            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+
+            for name in self.procGroupA.processlist:
+                csi = None
+                for c in self.serverManager.servers:
+                    if c.name == name:
+                        csi = c
+                        break
+                if not csi: continue
+                if not csi.enabled: continue
+                p = self._manager.getProcess(csi.name)
+                if not p: continue
+
+                extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+                command = self._options.xe(csi.command, environ=extenv)
+                params = csi.getParameters()
+                if params:
+                    for k,v in params.items():
+                        params[k] = self._options.xe(v, environ=extenv)
+                p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+
 
     def onStopExternalServers(self):
-        p = self._manager.getProcess("player")
-        if p != None: p.stop()
-        p = self._manager.getProcess("golem")
-        if p != None: p.stop()
-        p = self._manager.getProcess("peekabot")
-        if p != None: p.stop()
-        p = self._manager.getProcess("log4jServer")
-        if p != None: p.stop()
-        p = self._manager.getProcess("display")
-        if p != None: p.stop()
-        p = self._manager.getProcess("abducer")
-        if p != None: p.stop()
-        p = self._manager.getProcess("mary.tts")
-        if p != None: p.stop()
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.stopProcesses(self.procGroupA)
+            self.checkStopLog4jServer()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+
 
     def _checkBuidDir(self):
         workdir=self._options.xe("${COGX_BUILD_DIR}")
@@ -858,14 +998,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not valid: return
         self.editFile(self._clientConfig)
 
-    def on_btEditPlayerConfig_clicked(self, valid=True):
-        if not valid: return
-        self.editFile(self._playerConfig)
-
-    def on_btEditGolemConfig_clicked(self, valid=True):
-        if not valid: return
-        self.editFile(self._golemConfig)
-
     def on_btEditHostConfig_clicked(self, valid=True):
         if not valid: return
         if not self.isNullFilename(self._hostConfig):
@@ -881,10 +1013,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btDiscoverRemote_clicked(self, valid=True):
         if not valid: return
         try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             agents = self.discoverCastAgents()
         except UserWarning as uw:
             rv = QtGui.QMessageBox.information(self, "Discover Agents", "%s" % uw)
             return
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
         for rpm in self._remoteHosts:
             self._processModel.rootItem.removeHost(rpm)
@@ -902,6 +1037,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self.ui.processTree.expandAll()
         self._fillMessageFilterCombo()
+        self.updateCbLog4jHosts()
 
 
     def onShowEnvironment(self):
@@ -936,38 +1072,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         if index < 1: return
         fn = self._clientConfig
         self._ComboBox_SelectMru(self.ui.clientConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onBrowsePlayerConfig(self):
-        qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(
-            self, self.ui.actOpenPlayerConfig.text(),
-            "", "Player Config (*.cfg)")
-        if fn != None and len(fn) > 1:
-            fn = self.makeConfigFileRelPath(fn)
-            self._ComboBox_AddMru(self.ui.playerConfigCmbx,
-                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onPlayerConfigChanged(self, index):
-        if index < 1: return
-        fn = self._playerConfig
-        self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
-                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onBrowseGolemConfig(self):
-        qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(
-            self, self.ui.actOpenGolemConfig.text(),
-            "", "Golem Config (*.xml)")
-        if fn != None and len(fn) > 1:
-            fn = self.makeConfigFileRelPath(fn)
-            self._ComboBox_AddMru(self.ui.golemConfigCmbx,
-                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-
-    def onGolemConfigChanged(self, index):
-        if index < 1: return
-        fn = self._golemConfig
-        self._ComboBox_SelectMru(self.ui.golemConfigCmbx, index,
                 self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onBrowseHostConfig(self):

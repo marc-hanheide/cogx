@@ -18,10 +18,15 @@ SLAVE_PORT=7832
 
 # Ice servant
 class CAgentI(CastAgent.Agent):
+    logDir = "./logs"
+    clientfile = os.path.join(logDir, "ccatmp.log4client.conf")
+    serverfile = os.path.join(logDir, "ccatmp.log4server.conf")
+
     def __init__(self, processManager, options):
         self.manager = processManager
         self.options = options
         self.logs = {}
+        self.log4jport = 48143
 
     def getProcessList(self, current=None):
         # LOGGER.log("Retrieveing process list")
@@ -62,8 +67,18 @@ class CAgentI(CastAgent.Agent):
     def startProcess(self, processName, current=None):
         # LOGGER.log("Starting %s" % processName)
         p = self.manager.getProcess(processName)
-        if p != None: p.start()
-        return 1 if p != None else 0
+        if not p:
+            return 0
+        params = None
+
+        if processName == procman.LOG4J_PROCESS:
+            params = {
+                    "LOG4J_PORT": self.log4jport,
+                    "LOG4J_SERVER_CONFIG": CAgentI.serverfile
+                   }
+
+        p.start(params=params)
+        return 1
 
     def stopProcess(self, processName, current=None):
         # LOGGER.log("Stopping %s" % processName)
@@ -75,20 +90,25 @@ class CAgentI(CastAgent.Agent):
         # based on log4jutil.prepareClientConfig()
         # WARNING: if the client and the server are running from the same directory
         # the link to log4j properties will switch between two files
-        logDir = os.path.abspath("./logs")
         logPropLink = "log4j.properties"
-        clientfile = os.path.join(logDir, "ccatmp.log4client.conf")
-        if not os.path.exists(logDir):
-            os.makedirs(logDir)
-        f = open(clientfile, 'w')
+        if not os.path.exists(CAgentI.logDir):
+            os.makedirs(CAgentI.logDir)
+        f = open(CAgentI.clientfile, 'w')
         f.write(propText)
         f.close()
         if os.path.exists(logPropLink):
             if not os.path.islink(logPropLink):
-                os.rename(logPropLink, os.tempnam(logDir, logPropLink))
+                os.rename(logPropLink, os.tempnam(CAgentI.logDir, logPropLink))
             os.remove(logPropLink)
-        os.symlink(clientfile, logPropLink)
-        pass
+        os.symlink(CAgentI.clientfile, logPropLink)
+
+    def setLog4jServerProperties(self, port, propText, current=None):
+        self.log4jport = port
+        if not os.path.exists(CAgentI.logDir):
+            os.makedirs(CAgentI.logDir)
+        f = open(CAgentI.serverfile, 'w')
+        f.write(propText)
+        f.close()
 
 
 class CCastSlave(threading.Thread):
