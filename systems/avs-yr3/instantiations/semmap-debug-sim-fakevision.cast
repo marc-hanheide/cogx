@@ -27,10 +27,6 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 INCLUDE includes/categorical.sa/categorical-cvap-semmap-size-shape-appearance.cast
 CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
 
-# Vision.SA  ################################################################
-INCLUDE includes/vision.sa/vision-base.cast
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/ply-models/cerealbox.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply" --siftfiles "instantiations/ply-models/cerealbox.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift" --labels "cerealbox marker stapler paperclip box"
-
 # Viewing and debugging #######################################################
 JAVA MG pathpropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PathProperty" --generic-col
 JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
