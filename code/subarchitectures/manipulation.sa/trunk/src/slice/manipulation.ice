@@ -34,8 +34,6 @@ module manipulation {
    		**/
 		class PutDownCommand extends ManipulationCommand {
 			VisionData::VisualObject basedOnObject;
-		
-		
 		};
 		
 		
