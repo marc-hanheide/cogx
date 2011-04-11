@@ -21,6 +21,7 @@ module castcontrol{
          int startProcess(string name);
          int stopProcess(string name);
          void setLog4jClientProperties(string propText);
+         void setLog4jServerProperties(int port, string propText);
       };
    };
 };
