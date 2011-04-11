@@ -200,7 +200,7 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 				setNextPartName(PartName.OPEN_GRIPPER_PART);
 				changeToNextPart();
 			} else if (arg instanceof CloseGripperCommand) {
-				logger.info("open gripper command");
+				logger.info("close gripper command");
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				changeToNextPart();
 			}

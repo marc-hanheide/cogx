@@ -5,7 +5,6 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.Manipulator;
-import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -22,7 +21,6 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -36,8 +34,6 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	private boolean manipulationFailed = false;
-
 	public CloseGripperPart(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
@@ -50,8 +46,6 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
-
-		manipulationFailed = false;
 
 		getManipulator().getWatcher().addObserver(this);
 
@@ -148,12 +142,12 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 				changeToNextPart();
 			} else if (arg instanceof OpenGripperCommand) {
 				logger.info("open gripper command");
-			
+
 				setNextPartName(PartName.OPEN_GRIPPER_PART);
 				changeToNextPart();
 			} else if (arg instanceof CloseGripperCommand) {
-				logger.info("open gripper command");
-				
+				logger.info("close gripper command");
+
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
 				changeToNextPart();
 			}
