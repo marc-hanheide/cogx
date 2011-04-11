@@ -38,7 +38,7 @@
       <!-- Note: have to shift origin a little bit forward (though can still be
            inside hokuyo_base_geom) because otherwise (if at 0 0 0) all rays are
            mysteriously blocked by hokuyo_base_geom (probably a bug). -->
-      <origin>0.01 0.0 0.0</origin>
+      <origin>0.1 0.0 0.0</origin>
 
       <!-- Note: displayed rays are also visible in simulated cameras! So have
            to turn this off.

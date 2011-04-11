@@ -25,7 +25,8 @@
 
     <geom:box name="chassis_geom">
       <size>0.510 0.300 0.205</size>
-      <mass>30</mass>
+      <mass>3</mass>
+	 <mu1>1</mu1>
 
       <visual>
         <scale>0.510 0.300 0.205</scale>
@@ -108,7 +109,7 @@
     <geom:cylinder name="left_wheel_geom">
       <size>0.095 0.050</size>
       <mass>0.2</mass>
-
+   <mu1>0.5</mu1>
       <visual>
         <scale>0.190 0.190 0.050</scale>
         <mesh>unit_cylinder</mesh>
@@ -123,7 +124,7 @@
     <geom:cylinder name="right_wheel_geom">
       <size>0.095 0.050</size>
       <mass>0.2</mass>
-
+   <mu1>0.5</mu1>
       <visual>
         <scale>0.190 0.190 0.050</scale>
         <mesh>unit_cylinder</mesh>
@@ -151,7 +152,6 @@
       <rpy>0 0 0</rpy>
       <geom:sphere name="caster1_geom">
         <size>0.0175</size>
-        <mass>0.1</mass>
       </geom:sphere>
     </body:sphere>
   </model:physical>
@@ -163,7 +163,6 @@
       <rpy>0 0 0</rpy>
       <geom:sphere name="caster2_geom">
         <size>0.0175</size>
-        <mass>0.1</mass>
       </geom:sphere>
     </body:sphere>
   </model:physical>
@@ -175,7 +174,6 @@
       <rpy>0 0 0</rpy>
       <geom:sphere name="caster3_geom">
         <size>0.0175</size>
-        <mass>0.1</mass>
       </geom:sphere>
     </body:sphere>
   </model:physical>
@@ -187,7 +185,6 @@
       <rpy>0 0 0</rpy>
       <geom:sphere name="caster4_geom">
         <size>0.0175</size>
-        <mass>0.1</mass>
       </geom:sphere>
     </body:sphere>
   </model:physical>
