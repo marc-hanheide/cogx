@@ -69,6 +69,9 @@ public:
 	const std::vector<std::string> &getVisualizedObjects()
 		{ return _visualizedObjects; }
 
+	bool saveEvents()
+		{ return _saveEvents; }
+
 	int getCurrentPlace();
 
 	void postNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
@@ -157,6 +160,9 @@ private:
 
 	/** List of objects to be shown in the visualizations. */
 	std::vector<std::string> _visualizedObjects;
+
+	/*! If true, each event will trigger saving to disk of all event history. */
+	bool _saveEvents;
 
 }; // class Tester
 } // namespace def

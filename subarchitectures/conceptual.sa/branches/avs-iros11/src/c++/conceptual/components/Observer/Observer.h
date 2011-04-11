@@ -150,6 +150,8 @@ private:
 	double calculateBinaryDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
 			SpatialProperties::ProbabilityDistributionPtr dist2);
 
+	double castTimeToSeconds(const cast::cdl::CASTTime &time);
+
 private:
 
 

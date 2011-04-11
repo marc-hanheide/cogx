@@ -80,6 +80,7 @@ void ConceptualWidget::newWorldState(ConceptualData::WorldStatePtr wsPtr)
 
 	// Get current place and room for the event
 	conceptual::ConceptualEvent event;
+	event.time = castTimeToSeconds(_component->getCASTTime());
 	event.curPlaceId = _component->getCurrentPlace();
 	event.curRoomId = getRoomForPlace(wsPtr, event.curPlaceId);
 	getPlacesForRoom(wsPtr, event.curRoomId, event.curRoomPlaces);
@@ -843,6 +844,14 @@ void ConceptualWidget::collectEventInfo(conceptual::ConceptualEvent event)
 	_events.push_back(event);
 
 	emit newEventInfo(_events);
+
+	// Save event history to disk
+	if (_component->saveEvents())
+	{
+		double time = castTimeToSeconds(_component->getCASTTime());
+		QString fileName = "events/"+QString::number(time, 'f', 6) + ".cevents";
+		saveEvents(fileName);
+	}
 }
 
 
@@ -871,6 +880,7 @@ void ConceptualWidget::posTimerTimeout()
 		_prevPlace = curPlaceId;
 
 		conceptual::ConceptualEvent event;
+		event.time = castTimeToSeconds(_component->getCASTTime());
 
 		// Get room Id
 		pthread_mutex_lock(&_worldStateMutex);
@@ -885,6 +895,7 @@ void ConceptualWidget::posTimerTimeout()
 
 		// Prepare event
 		ConceptualData::EventInfo info;
+		info.time = castTimeToSeconds(_component->getCASTTime());
 		info.type = ConceptualData::EventNothig;
 		event.infos.push_back(info);
 
@@ -907,6 +918,20 @@ void ConceptualWidget::saveEventsButtonClicked()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Conceptual.SA Events"),
 	                            "", tr("Conceptual Events (*.cevents)"));
+	saveEvents(fileName);
+}
+
+
+// -------------------------------------------------------
+double ConceptualWidget::castTimeToSeconds(const cast::cdl::CASTTime &time)
+{
+  return static_cast<double>(time.s) + 1e-6 * static_cast<double>(time.us);
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::saveEvents(QString fileName)
+{
 	if (!fileName.isEmpty())
 	{
 		 QFile file(fileName);
@@ -923,4 +948,3 @@ void ConceptualWidget::saveEventsButtonClicked()
 		 }
 	}
 }
-

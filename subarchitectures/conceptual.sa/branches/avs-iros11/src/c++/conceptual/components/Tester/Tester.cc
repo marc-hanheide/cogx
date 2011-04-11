@@ -51,6 +51,7 @@ void Tester::configure(const map<string,string> & _config)
 		_defaultChainGraphInferencerName = it->second;
 	if((it = _config.find("--placemanager")) != _config.end())
 		_placeManagerName = it->second;
+	_saveEvents = (_config.find("--save-events") != _config.end());
 	if((it = _config.find("--visualized-objects")) != _config.end())
 		boost::split(_visualizedObjects, it->second, is_any_of(", "));
 	sort (_visualizedObjects.begin(), _visualizedObjects.end());
