@@ -149,6 +149,7 @@ void ObjectRecognizerManager::overwriteRecognizer3DCommand(const cdl::WorkingMem
 		if (!exists)
 		{
 			println("Found new object %s!", rec_cmd->label.c_str());
+			_objectInPlace.push_back(pair<string,int>(rec_cmd->label, placeId));
 			addNewObject(rec_cmd->label, placeId, _curRoomId);
 		}
 	}
