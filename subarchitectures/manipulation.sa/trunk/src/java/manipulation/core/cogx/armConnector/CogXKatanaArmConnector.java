@@ -85,6 +85,13 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void goHome() throws ManipulatorException {
 		stopArm();
+
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e1) {
+			logger.error(e1);
+		}
+
 		// manipulator.getVirtualSceneConnector().clearScene();
 		homePosition.t = manipulator.getVirtualSceneConnector().getTime() + 5;
 
@@ -117,6 +124,12 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	public void reach(Vector3D position, Matrix rotation)
 			throws ManipulatorException {
 		stopArm();
+
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e1) {
+			logger.error(e1);
+		}
 
 		home = false;
 
@@ -203,12 +216,9 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			if (!reached) {
 				logger.debug("STOP");
 				arm.stop();
-				Thread.sleep(3000);
 			}
 		} catch (ExTinyArm e) {
 			throw new ManipulatorException(e.what);
-		} catch (InterruptedException e) {
-			throw new ManipulatorException(e.getMessage());
 		}
 	}
 

@@ -23,6 +23,10 @@ module manipulation {
 			COMMANDFAILED
 		};
 		
+		/**
+   		* @brief Manipulation Command class
+   		* @author Torben Toeniges
+   		**/
 		class ManipulationCommand {
 			ManipulationCommandStatus status;			
 			ManipulationCompletion comp;

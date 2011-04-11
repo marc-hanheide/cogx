@@ -103,6 +103,16 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 		try {
 			getManipulator().getArmConnector().reach(goalWithDistance,
 					greifRotation);
+
+			FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.PENDING;
+			currentCom.comp = ManipulationCompletion.ONTHEWAY;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
@@ -171,31 +181,33 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof ArmReachingStatus) {
-				logger.info("reached position with the arm");
-				setNextPartName(PartName.WAIT_PART);
-				FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand());
+				if ((ArmReachingStatus) arg == ArmReachingStatus.REACHED) {
+					logger.info("reached position with the arm");
+					setNextPartName(PartName.WAIT_PART);
+					FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+							.getCurrentCommand());
 
-				currentCom.status = ManipulationCommandStatus.FINISHED;
-				currentCom.comp = ManipulationCompletion.SUCCEEDED;
-				currentCom.xError = armError.getPoseError().getX();
-				currentCom.yError = armError.getPoseError().getY();
-				currentCom.zError = armError.getPoseError().getZ();
+					currentCom.status = ManipulationCommandStatus.FINISHED;
+					currentCom.comp = ManipulationCompletion.SUCCEEDED;
+					currentCom.xError = armError.getPoseError().getX();
+					currentCom.yError = armError.getPoseError().getY();
+					currentCom.zError = armError.getPoseError().getZ();
 
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getCurrentCommandAddress(),
+									currentCom);
 
-				synchronized (this) {
-					notifyAll();
+					synchronized (this) {
+						notifyAll();
+					}
 				}
 			}
 			if (arg instanceof ManipulationCommand) {
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
-				currentCom.comp = ManipulationCompletion.FAILED;				
+				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
 								.getWatcher().getCurrentCommandAddress(),

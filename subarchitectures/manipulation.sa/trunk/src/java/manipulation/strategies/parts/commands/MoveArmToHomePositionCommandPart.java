@@ -55,6 +55,17 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 
 		try {
 			getManipulator().getArmConnector().goHome();
+
+			MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.PENDING;
+			currentCom.comp = ManipulationCompletion.ONTHEWAY;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+
 		} catch (ManipulatorException e1) {
 			manipulationFailed = true;
 		}
@@ -105,20 +116,22 @@ public class MoveArmToHomePositionCommandPart extends StrategyPart implements
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof ArmReachingStatus) {
-				logger.info("reached position with the arm");
-				setNextPartName(PartName.WAIT_PART);
-				MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand());
-				currentCom.status = ManipulationCommandStatus.FINISHED;
-				currentCom.comp = ManipulationCompletion.SUCCEEDED;
+				if ((ArmReachingStatus) arg == ArmReachingStatus.REACHED) {
+					logger.info("reached position with the arm");
+					setNextPartName(PartName.WAIT_PART);
+					MoveArmToHomePositionCommand currentCom = ((MoveArmToHomePositionCommand) ((CommandExecution) getGlobalStrategy())
+							.getCurrentCommand());
+					currentCom.status = ManipulationCommandStatus.FINISHED;
+					currentCom.comp = ManipulationCompletion.SUCCEEDED;
 
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getCurrentCommandAddress(),
+									currentCom);
 
-				synchronized (this) {
-					notifyAll();
+					synchronized (this) {
+						notifyAll();
+					}
 				}
 			}
 			if (arg instanceof ManipulationCommand) {

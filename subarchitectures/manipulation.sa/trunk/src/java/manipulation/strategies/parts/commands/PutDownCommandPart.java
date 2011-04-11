@@ -82,19 +82,21 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof ArmReachingStatus) {
-				logger.info("reached position with the arm");
-				setNextPartName(PartName.WAIT_PART);
-				PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
-						.getCurrentCommand());
-				currentCom.status = ManipulationCommandStatus.FINISHED;
+				if ((ArmReachingStatus) arg == ArmReachingStatus.REACHED) {
+					logger.info("reached position with the arm");
+					setNextPartName(PartName.WAIT_PART);
+					PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
+							.getCurrentCommand());
+					currentCom.status = ManipulationCommandStatus.FINISHED;
 
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getCurrentCommandAddress(),
+									currentCom);
 
-				synchronized (this) {
-					notifyAll();
+					synchronized (this) {
+						notifyAll();
+					}
 				}
 			}
 			if (arg instanceof ManipulationCommand) {
