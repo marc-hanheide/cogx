@@ -249,12 +249,12 @@ void ProsilicaServer::init()
 //                                          (1000.0/static_cast<double>(periodMs))*
 //                                          3
 //                                          );
-//    sbps=40000000;
-//    if (PvAttrUint32Set(_leftCamHandle, "StreamBytesPerSecond",  sbps))
-//    {
-//    	throw cast::CASTException("Cannot set StreamBytesPerSecond for the left camera.");
-//    }
-//    log("StreamBytesPerSecond of the left camera set to %d ", sbps);
+    int sbps=6493836;
+    if (PvAttrUint32Set(_leftCamHandle, "StreamBytesPerSecond",  sbps))
+    {
+    	throw cast::CASTException("Cannot set StreamBytesPerSecond for the left camera.");
+    }
+    log("StreamBytesPerSecond of the left camera set to %d ", sbps);
     // Create buffers
     log("Creating buffer for the left camera.");
     _frame.ImageBuffer=new char[tbpf];
