@@ -83,6 +83,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
   m_ShowGraph = (_config.find("--no-graph") == _config.end());
+  m_ShowLabels = (_config.find("--no-labels") == _config.end());
   m_ShowPeople = (_config.find("--no-people") == _config.end());
   m_ShowScans = (_config.find("--no-scans") == _config.end());
   m_ShowObjects = (_config.find("--no-objects") == _config.end());
@@ -690,7 +691,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 					for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
 						acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
 					acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-					acp.set_opacity(0.7);
+					//acp.set_opacity(0.7);
 					acp.set_color(r,g,b);
 					startAngle=endAngle;
 				}
@@ -707,8 +708,8 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 				for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
 					acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
 				acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
-				acp.set_opacity(0.7);
-				acp.set_color(0.3,0.3,0.3);
+				//acp.set_opacity(0.7);
+				acp.set_color(0.7,0.7,0.7);
 				startAngle=endAngle;
 			}
 
@@ -1743,16 +1744,19 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 
 			// Draw the placeholder
 			// Add text
-			char buf[32];
-			peekabot::LabelProxy text;
-			sprintf(buf, "%d", placeId);
-			text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-			text.set_text(buf);
-			text.set_pose(nodeHypPtr->x,nodeHypPtr->y,0.3,0,0.0,0);
-			text.set_rotation(0,0,0);
-			text.set_scale(20, 20, 20);
-			text.set_alignment(peekabot::ALIGN_CENTER);
-			text.set_color(1,0,0);
+			if (m_ShowLabels)
+			{
+				char buf[32];
+				peekabot::LabelProxy text;
+				sprintf(buf, "%d", placeId);
+				text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+				text.set_text(buf);
+				text.set_pose(nodeHypPtr->x,nodeHypPtr->y,0.3,0,0.0,0);
+				text.set_rotation(0,0,0);
+				text.set_scale(20, 20, 20);
+				text.set_alignment(peekabot::ALIGN_CENTER);
+				text.set_color(1,0,0);
+			}
 
 			// Mashroom
 			peekabot::CubeProxy sp;
@@ -1810,19 +1814,22 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 		_places[wmChange.address.id]=pd;
 
 		// Add PlaceID text to existing node
-		std::map<long,Node>::iterator n = m_Nodes.find(nodeId);
-		if (n != m_Nodes.end())
+		if (m_ShowLabels)
 		{
-			char buf[32];
-			peekabot::LabelProxy text;
-			sprintf(buf, "%d", placeId);
-			text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-			text.set_text(buf);
-			text.set_pose(n->second.m_X,n->second.m_Y,0.3,0,0.0,0);
-			text.set_rotation(0,0,0);
-			text.set_scale(20, 20, 20);
-			text.set_alignment(peekabot::ALIGN_CENTER);
-			text.set_color(1,0,0);
+			std::map<long,Node>::iterator n = m_Nodes.find(nodeId);
+			if (n != m_Nodes.end())
+			{
+				char buf[32];
+				peekabot::LabelProxy text;
+				sprintf(buf, "%d", placeId);
+				text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+				text.set_text(buf);
+				text.set_pose(n->second.m_X,n->second.m_Y,0.3,0,0.0,0);
+				text.set_rotation(0,0,0);
+				text.set_scale(20, 20, 20);
+				text.set_alignment(peekabot::ALIGN_CENTER);
+				text.set_color(1,0,0);
+			}
 		}
 	}
 }
@@ -1844,12 +1851,15 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 	{
 		if (m_ShowPlaceholders)
 		{
-			// Delete ID text
-			peekabot::LabelProxy text;
-			char buf[32];
-			sprintf(buf, "%d", pd.placeId);
-			text.assign(m_ProxyLabels, buf);
-			text.remove();
+			if (m_ShowLabels)
+			{
+				// Delete ID text
+				peekabot::LabelProxy text;
+				char buf[32];
+				sprintf(buf, "%d", pd.placeId);
+				text.assign(m_ProxyLabels, buf);
+				text.remove();
+			}
 
 			// Delete the node
 		    peekabot::CubeProxy sp;
@@ -1861,12 +1871,15 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 	}
 	else
 	{
-	    // Delete ID text
-		peekabot::LabelProxy text;
-		char buf[32];
-		sprintf(buf, "%d", pd.placeId);
-		text.assign(m_ProxyLabels, buf);
-		text.remove();
+		if (m_ShowLabels)
+		{
+			// Delete ID text
+			peekabot::LabelProxy text;
+			char buf[32];
+			sprintf(buf, "%d", pd.placeId);
+			text.assign(m_ProxyLabels, buf);
+			text.remove();
+		}
 	}
 }
 
@@ -1937,7 +1950,7 @@ void DisplayNavInPB::addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &s
 	  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
 	acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
 	acp.set_opacity(0.3);
-	acp.set_color(0.3,0.3,0.3);
+	acp.set_color(0.7,0.7,0.7);
 	startAngle=endAngle;
 }
 
@@ -2024,100 +2037,101 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 {
-/*
-// LightCoral
-// PaleGreen
-// HotPink
-// LightBlue
-// Orange
- *
- */
-
   switch (id) {
-/*  	case 0:
-      r = 1.0/0xFF*0xF0;
-      g = 1.0/0xFF*0x80;
-      b = 1.0/0xFF*0x80;
-      break;
-    case 1:
-      r = 1.0/0xFF*0x98;
-      g = 1.0/0xFF*0xFB;
-      b = 1.0/0xFF*0x98;
-      break;
-    case 2:
-      r = 1.0/0xFF*0xFF;
-      g = 1.0/0xFF*0x69;
-      b = 1.0/0xFF*0xB4;
-      break;
-    case 3:
-      r = 1.0/0xFF*0xAD;
-      g = 1.0/0xFF*0xD8;
-      b = 1.0/0xFF*0xE6;
-      break;
-    case 4:
-      r = 1.0/0xFF*0xFF;
-      g = 1.0/0xFF*0xA5;
-      b = 1.0/0xFF*0x00;
-      break; */
-  case 0: // Green
+  case 0: //Vivid Yellow
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0xB3;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 1: //Strong Purple
+    r = 1.0/0xFF*0x80;
+    g = 1.0/0xFF*0x3E;
+    b = 1.0/0xFF*0x75;
+    break;
+  case 2: //Vivid Orange
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x68;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 3: //Very Light Blue
+    r = 1.0/0xFF*0xA6;
+    g = 1.0/0xFF*0xBD;
+    b = 1.0/0xFF*0xD7;
+    break;
+  case 4://Vivid Red
+    r = 1.0/0xFF*0xC1;
+    g = 1.0/0xFF*0x00;
+    b = 1.0/0xFF*0x20;
+    break;
+  case 5: //Grayish Yellow
+    r = 1.0/0xFF*0xCE;
+    g = 1.0/0xFF*0xA2;
+    b = 1.0/0xFF*0x62;
+    break;
+  case 6: //Vivid Green
     r = 1.0/0xFF*0x00;
-    g = 1.0/0xFF*0xFF;
-    b = 1.0/0xFF*0x00;
+    g = 1.0/0xFF*0x7D;
+    b = 1.0/0xFF*0x34;
     break;
-  case 1: // Red
-    r = 1.0/0xFF*0xFF; 
-    g = 1.0/0xFF*0x00;
-    b = 1.0/0xFF*0x00;
+  case 7: //Strong Purplish Pink
+    r = 1.0/0xFF*0xF6;
+    g = 1.0/0xFF*0x76;
+    b = 1.0/0xFF*0x8E;
     break;
-  case 2: // Blue
+  case 8: //Strong Blue
     r = 1.0/0xFF*0x00;
-    g = 1.0/0xFF*0x00;
-    b = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x53;
+    b = 1.0/0xFF*0x8A;
     break;
-  case 3:
+  case 9: //Strong Yellowish Pink
     r = 1.0/0xFF*0xFF;
-    g = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x7A;
+    b = 1.0/0xFF*0x5C;
+    break;
+  case 10: //Strong Violet
+    r = 1.0/0xFF*0x53;
+    g = 1.0/0xFF*0x37;
+    b = 1.0/0xFF*0x7A;
+    break;
+  case 11: //Vivid Orange Yellow
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x8E;
     b = 1.0/0xFF*0x00;
     break;
-  case 4:
-    r = 1.0/0xFF*0x00; 
-    g = 1.0/0xFF*0xFF;
-    b = 1.0/0xFF*0xFF;
+  case 12://Strong Purplish Red
+    r = 1.0/0xFF*0xB3;
+    g = 1.0/0xFF*0x28;
+    b = 1.0/0xFF*0x51;
     break;
-  case 5:
-    r = 1.0/0xFF*0xFF;
-    g = 1.0/0xFF*0x00;
-    b = 1.0/0xFF*0xFF;
-    break;
-  case 6:
-    r = 1.0/0xFF*0x24;
-    g = 1.0/0xFF*0xFF;
-    b = 1.0/0xFF*0x24;
-    break;
-  case 7:
-    r = 1.0/0xFF*0xFF;
-    g = 1.0/0xFF*0x24;
+  case 13: //Vivid Greenish Yellow
+    r = 1.0/0xFF*0xF4;
+    g = 1.0/0xFF*0xC8;
     b = 1.0/0xFF*0x00;
     break;
-  case 8:
-    r = 1.0/0xFF*0x6F;
-    g = 1.0/0xFF*0x42;
-    b = 1.0/0xFF*0x42;
+  case 14: //Strong Reddish Brown
+    r = 1.0/0xFF*0x7F;
+    g = 1.0/0xFF*0x18;
+    b = 1.0/0xFF*0x0D;
     break;
-  case 9:
-    r = 1.0/0xFF*0x8C;
-    g = 1.0/0xFF*0x17;
-    b = 1.0/0xFF*0x17;
+  case 15: //Vivid Yellowish Green
+    r = 1.0/0xFF*0x93;
+    g = 1.0/0xFF*0xAA;
+    b = 1.0/0xFF*0x00;
     break;
-  case 10:
-    r = 1.0/0xFF*0x5C; 
+  case 16://Deep Yellowish Brown
+    r = 1.0/0xFF*0x59;
     g = 1.0/0xFF*0x33;
-    b = 1.0/0xFF*0x17;
+    b = 1.0/0xFF*0x15;
     break;
-  case 11:// If more colours are added change MAX_COLORS below
-    r = 1.0/0xFF*0x2F; 
-    g = 1.0/0xFF*0x4F;
-    b = 1.0/0xFF*0x2F;
+  case 17: //Vivid Reddish Orange
+    r = 1.0/0xFF*0xF1;
+    g = 1.0/0xFF*0x3A;
+    b = 1.0/0xFF*0x13;
+    break;
+  case 18: //Dark Olive Green
+    r = 1.0/0xFF*0x23;
+    g = 1.0/0xFF*0x2C;
+    b = 1.0/0xFF*0x16;
     break;
   default: // If more colours are added change
 	if (id<0)
@@ -2126,9 +2140,9 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
 	}
 	else
 	{
-		const int MAX_COLORS = 11;
+		const int MAX_COLORS = 18;
 		const int useColor = id % MAX_COLORS;
-		debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
+//		debug("Only handles color with indices 0-%d, not %d, reusing colour %d", MAX_COLORS, id, useColor);
         getColorByIndex(useColor, r, g, b);
 	}
   }
