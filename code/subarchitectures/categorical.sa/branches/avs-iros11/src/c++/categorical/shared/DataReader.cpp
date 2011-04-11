@@ -531,7 +531,7 @@ bool DataReader::readPgmImage(CategoricalData::ImagePtr image, std::string fileP
   }
 
   // Prepare image
-  image->imageBuffer.data.resize(3*width*height);
+  image->imageBuffer.data.resize(width*height);
   image->imageBuffer.width=width;
   image->imageBuffer.height=height;
 
@@ -549,10 +549,8 @@ bool DataReader::readPgmImage(CategoricalData::ImagePtr image, std::string fileP
     int shift=i*width;
     for(int j=0; j<width; ++j)
     {
-      int pos = shift+j*3;
+      int pos = shift+j;
       image->imageBuffer.data[pos]=row[j];
-      image->imageBuffer.data[pos+1]=row[j];
-      image->imageBuffer.data[pos+2]=row[j];
     }
 
     // Yield
