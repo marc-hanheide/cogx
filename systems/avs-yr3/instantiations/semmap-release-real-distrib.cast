@@ -1,0 +1,27 @@
+HOST 192.168.0.10
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-semmap.cast
+INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
+
+# Coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main-semmap.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main-semmap.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+HOST 192.168.0.11
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-cvap-semmap-size-shape-appearance-dist.cast
+CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
+
