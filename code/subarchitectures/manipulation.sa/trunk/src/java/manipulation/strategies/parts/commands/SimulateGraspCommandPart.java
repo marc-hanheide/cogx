@@ -80,7 +80,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
-
 			if (arg instanceof ManipulationCommand) {
 				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
