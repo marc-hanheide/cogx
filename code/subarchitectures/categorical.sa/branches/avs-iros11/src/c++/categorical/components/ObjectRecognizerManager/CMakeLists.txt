@@ -1,7 +1,7 @@
-option(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER "Build Conceptual.SA ObjectRecognizerManager component" YES)
-if(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER)
+option(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER "Build CATEGORICAL.SA ObjectRecognizerManager component" YES)
+if(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER)
 
-    add_cast_component(ConceptualObjectRecognizerManager ObjectRecognizerManager.cc)
-    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData VisionData FrontierInterface)
+    add_cast_component(CategoricalObjectRecognizerManager ObjectRecognizerManager.cc)
+    link_cast_component(${CAST_COMPONENT_NAME} VisionData FrontierInterface)
 
-endif(BUILD_SA_CONCEPTUAL_OBJECT_RECOGNIZER_MANAGER)
+endif(BUILD_SA_CATEGORICAL_OBJECT_RECOGNIZER_MANAGER)
