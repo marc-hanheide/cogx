@@ -182,6 +182,18 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			PutDownCommand putDownCommand = new PutDownCommand();
+
+			VisualObject visObj = new VisualObject();
+			Pose3 pos = new Pose3();
+			pos.pos = new Vector3(
+					Double.parseDouble(txtItemXPosition.getText()),
+					Double.parseDouble(txtItemYPosition.getText()),
+					Double.parseDouble(txtItemZPosition.getText()));
+			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			visObj.pose = pos;
+
+			putDownCommand.basedOnObject = visObj;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						putDownCommand);

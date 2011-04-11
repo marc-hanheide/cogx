@@ -1,10 +1,24 @@
 package manipulation.strategies.parts.commands;
 
+import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.InternalMemoryException;
+import manipulation.core.share.exceptions.ItemException;
+import manipulation.core.share.exceptions.ManipulatorException;
+import manipulation.core.share.exceptions.ViewPointException;
+import manipulation.core.share.types.ArmError;
+import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector3D;
+import manipulation.core.share.types.ViewPoint;
+import manipulation.core.share.types.ViewPoints;
+import manipulation.core.share.types.SensorData.SensorPosition;
+import manipulation.itemMemory.Item;
+import manipulation.itemMemory.Item.PropertyName;
+import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
@@ -19,11 +33,14 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
+import VisionData.VisualObject;
+
 /**
- * defines a behaviour to reach a position in front of an object with the arm
+ * defines a behaviour to linear approach an object with the gripper
  * 
  * @author ttoenige
  * 
@@ -38,6 +55,34 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
 		setPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+	}
+
+	private void fineApproach() {
+
+		VisualObject targetVisOb = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetObject;
+
+		Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+				targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+
+		try {
+			Matrix currentArmRot = getManipulator().getArmConnector()
+					.getCurrentRotation();
+
+			getManipulator().getArmConnector().reach(currentGoalPosition,
+					currentArmRot);
+
+		} catch (ManipulatorException e3) {
+			logger.error("ANFANG FEHLER");
+		}
+
+		getManipulator().getArmConnector().closeGripper(10);
+
+		if (getManipulator().getArmConnector().isGraspingObject()) {
+			logger.error("Object in the gripper");
+		} else {
+			logger.error("Object not in the gripper");
+		}
 	}
 
 	/**

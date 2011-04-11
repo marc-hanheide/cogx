@@ -522,10 +522,10 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 
 			logger.error(manipulator.getArmConnector().isGraspingObject());
 
-			HashMap<SensorPosition, Integer> sensors = manipulator
-					.getArmConnector().receiveGripperSensorData();
-
-			logger.error(sensors.get(SensorPosition.INFRARED_MIDDLE));
+//			HashMap<SensorPosition, Integer> sensors = manipulator
+//					.getArmConnector().receiveGripperSensorData();
+//
+//			logger.error(sensors.get(SensorPosition.INFRARED_MIDDLE));
 		}
 
 	}

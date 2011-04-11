@@ -6,6 +6,10 @@ import java.util.Observer;
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ManipulatorException;
+import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector3D;
+import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearBaseMovementApproachCommand;
@@ -20,12 +24,13 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
+import VisionData.VisualObject;
+
 /**
- * defines a behaviour to reach a position in front of an object with the arm
+ * defines a behaviour to put an object on another object
  * 
  * @author ttoenige
  * 
@@ -34,10 +39,56 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
+	private boolean manipulationFailed = false;
+
 	public PutDownCommandPart(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
 		setPartName(PartName.PUT_DOWN_COMMAND_PART);
+	}
+
+	private void putDownApproach() {
+
+		VisualObject targetVisOb = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetObject;
+
+		Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+				targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+
+		double posOver = 0.1;
+
+		Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
+				.getRadiant(0));
+		Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
+				.getRadiant(0));
+		Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
+				.getRadiant(-90));
+		Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
+				MathOperation.getMatrixMatrixMultiplication(rotation1,
+						rotation2), rotation3);
+
+		Vector3D goalWithDistance = new Vector3D(currentGoalPosition.getX(),
+				currentGoalPosition.getY(), currentGoalPosition.getZ()
+						+ posOver);
+
+		try {
+			getManipulator().getArmConnector().reach(goalWithDistance,
+					graspRotation);
+
+			PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.PENDING;
+			currentCom.comp = ManipulationCompletion.ONTHEWAY;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+		} catch (ManipulatorException e) {
+			logger.error(e);
+			manipulationFailed = true;
+			return;
+		}
 	}
 
 	/**
@@ -48,13 +99,30 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 		logger.debug("execute: " + this.getClass());
 
 		getManipulator().getWatcher().addObserver(this);
+		manipulationFailed = false;
 
-		synchronized (this) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				logger.error(e);
+		putDownApproach();
+
+		if (!manipulationFailed) {
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					logger.error(e);
+				}
 			}
+		} else {
+			PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+			currentCom.comp = ManipulationCompletion.FAILED;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+
+			setNextPartName(PartName.WAIT_PART);
 		}
 
 		logger.debug("we go on!");
@@ -84,6 +152,10 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			if (arg instanceof ArmReachingStatus) {
 				if ((ArmReachingStatus) arg == ArmReachingStatus.REACHED) {
 					logger.info("reached position with the arm");
+
+					logger.info("open gripper");
+					getManipulator().getArmConnector().openGripper();
+
 					setNextPartName(PartName.WAIT_PART);
 					PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
 							.getCurrentCommand());

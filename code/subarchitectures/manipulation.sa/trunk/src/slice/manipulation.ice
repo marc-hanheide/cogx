@@ -87,7 +87,7 @@ module manipulation {
 		class StopCommand extends ManipulationCommand {
 		};
 		
-			/**
+		/**
    		* @brief stops the manipulator movement
    		* @author Torben Toeniges
 		**/

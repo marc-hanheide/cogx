@@ -41,7 +41,7 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean manipulationFailed = false;
-	ArmError armError = null;
+	private ArmError armError = null;
 
 	public FarArmMovementCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
