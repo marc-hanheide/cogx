@@ -22,12 +22,19 @@ public class CogXManipulatorStore extends ManipulatorStore {
 	@Override
 	protected Manipulator createManipulator(ManipulatorName name) {
 		Manipulator manipulator = null;
-		ManipulatorPartFactory manPartFactory = new CogXManipulatorPartsFactory();
+		ManipulatorPartFactory manPartFactory;
 
 		switch (name) {
 		case INTELLIGENT_GRASPING:
 			logger.debug("Int grasp CogX");
+			manPartFactory = new CogXManipulatorPartsFactory();
 			manipulator = new CogXIntGraspingManipulator(manPartFactory);
+			manipulator.setName(name);
+			break;
+		case MASTER_THESIS:
+			logger.debug("Int grasp MasterThesis");
+			 manPartFactory = new MasterThesisManipulatorPartsFactory();
+			manipulator = new MasterThesisIntGraspingManipulator(manPartFactory);
 			manipulator.setName(name);
 			break;
 		default:

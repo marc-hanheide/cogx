@@ -34,7 +34,7 @@ public abstract class Manipulator {
 		/**
 		 * manipulator name for an intelligent grasping task
 		 */
-		INTELLIGENT_GRASPING
+		INTELLIGENT_GRASPING, MASTER_THESIS
 	}
 
 	private ManipulatorName name;

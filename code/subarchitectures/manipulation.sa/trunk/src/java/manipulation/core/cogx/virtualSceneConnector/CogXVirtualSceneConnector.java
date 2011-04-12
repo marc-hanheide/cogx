@@ -636,10 +636,10 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Matrix getInitArmRotation() {
-		return initArmRotation;
-	}
+//	@Override
+//	public Matrix getInitArmRotation() {
+//		return initArmRotation;
+//	}
 
 	/**
 	 * {@inheritDoc}

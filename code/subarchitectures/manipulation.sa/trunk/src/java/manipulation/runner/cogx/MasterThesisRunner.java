@@ -3,8 +3,8 @@ package manipulation.runner.cogx;
 import java.util.Map;
 
 import manipulation.core.cogx.CogXManipulatorStore;
-import manipulation.core.cogx.baseConnector.CogXDoraBaseConnector;
-import manipulation.core.cogx.camConnector.CogXBlortConnector;
+import manipulation.core.cogx.baseConnector.MasterThesisDoraBaseConnector;
+import manipulation.core.cogx.camConnector.MasterThesisBlortConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.Manipulator.ManipulatorName;
 import manipulation.core.share.ManipulatorStore;
@@ -82,7 +82,7 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 		ItemMemory itemMemory = new ItemMemory();
 
 		manipulator = cogxManStore.orderManipulator(
-				ManipulatorName.INTELLIGENT_GRASPING, this, itemMemory, null,
+				ManipulatorName.MASTER_THESIS, this, itemMemory, null,
 				configuration);
 	}
 
@@ -113,8 +113,8 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 				RobotPose2d.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						((CogXDoraBaseConnector) manipulator.getBaseConnector())
-								.robotPositionChanged(_wmc);
+						((MasterThesisDoraBaseConnector) manipulator
+								.getBaseConnector()).robotPositionChanged(_wmc);
 					}
 				});
 
@@ -122,8 +122,8 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 				RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						((CogXDoraBaseConnector) manipulator.getBaseConnector())
-								.robotPositionChanged(_wmc);
+						((MasterThesisDoraBaseConnector) manipulator
+								.getBaseConnector()).robotPositionChanged(_wmc);
 					}
 				});
 	}
@@ -136,8 +136,8 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 				VisualObject.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						((CogXBlortConnector) manipulator.getCamConnector())
-								.visualObjectChanged(_wmc);
+						((MasterThesisBlortConnector) manipulator
+								.getCamConnector()).visualObjectChanged(_wmc);
 					}
 				});
 
@@ -145,8 +145,8 @@ public class MasterThesisRunner extends ManagedComponent implements Runner {
 				VisualObject.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						((CogXBlortConnector) manipulator.getCamConnector())
-								.visualObjectChanged(_wmc);
+						((MasterThesisBlortConnector) manipulator
+								.getCamConnector()).visualObjectChanged(_wmc);
 					}
 				});
 	}
