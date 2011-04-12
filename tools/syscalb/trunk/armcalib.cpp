@@ -214,23 +214,37 @@ static void setupObstacles(Tiny &tiny) {
 	RigidBody* pSuperStructure = dynamic_cast<RigidBody*>(tiny.createActor(ActorDescPtr(pSuperStructureDesc)));
 }
 
-static void moveTCP(Tiny &tiny, golem::tiny::Arm *pArm, Mat34 &tcp) {
+static void moveJoints(Tiny &tiny, golem::tiny::Arm *pArm, golem::tiny::GenConfigspaceState &pos, Real duration = 3.0) {
+	if(duration <= 0.) {
+		duration = 3.0;
+	}
 	// trajectory
 	GenConfigspaceStateSeq trajectory;
-	// movement begin and end position in join configuration space
-	golem::tiny::GenConfigspaceState cbegin, cend;
-	// initial configuration (it is the current joint configuration)
-	golem::tiny::GenConfigspaceState initial = pArm->recvGenConfigspaceState(tiny.getTime());
+	// movement will last no shorter than "duraton" sec
+	pos.t = tiny.getTime() + pArm->getTimeDeltaAsync() + duration;
+	// compute movement end/target in joint configuration space
+	golem::tiny::GenConfigspaceState cbegin = pArm->recvGenConfigspaceState(tiny.getTime());
+	golem::tiny::GenConfigspaceState cend = pos;
+	// compute trajectory using path planning with collision detection
+	trajectory = pArm->findTrajectory(cbegin, cend);
+	// move the arm and wait until it stops
+	pArm->send(trajectory, numeric_const<double>::INF);
+}
 
+static void moveTCP(Tiny &tiny, golem::tiny::Arm *pArm, Mat34 &tcp, Real duration = 3.0) {
+	if(duration <= 0.) {
+		duration = 3.0;
+	}
+	// trajectory
+	GenConfigspaceStateSeq trajectory;
 	// setup target end-effector pose (the joint configuration is not known)
 	golem::tiny::GenWorkspaceState target;
 	target.pos = tcp;
-
-	// setup movement to target position
-	target.t = tiny.getTime() + pArm->getTimeDeltaAsync() + 1.0; // movement will last no shorter than 1 sec
+	// movement will last no shorter than "duraton" sec
+	target.t = tiny.getTime() + pArm->getTimeDeltaAsync() + duration;
 	// compute movement end/target in joint configuration space
-	cbegin = pArm->recvGenConfigspaceState(tiny.getTime());
-	cend = pArm->findTarget(cbegin, target);
+	golem::tiny::GenConfigspaceState cbegin = pArm->recvGenConfigspaceState(tiny.getTime());
+	golem::tiny::GenConfigspaceState cend = pArm->findTarget(cbegin, target);
 	// compute trajectory using path planning with collision detection
 	trajectory = pArm->findTrajectory(cbegin, cend);
 	// move the arm and wait until it stops
@@ -300,8 +314,11 @@ int main(int argc, char *argv[]) {
 
 	// move to target position, show calibration pattern to camera
 	Mat34 calibTarget;
+	golem::tiny::GenConfigspaceState home;
 	calibTarget.R.rotX(REAL_PI/Real(4.0));
 	calibTarget.p.set(Real(0.0), Real(0.38), Real(0.68));
+	// remember home (= initial) configuration (it is the current joint configuration)
+	home = pArm->recvGenConfigspaceState(tiny.getTime());
 	moveTCP(tiny, pArm, calibTarget);
 
 	tiny.print("Wait for end of movement and press a key ...");
@@ -332,9 +349,14 @@ int main(int argc, char *argv[]) {
   tiny.print("\nparameters saved to file: %s\n", outPoseFileName.c_str());
 
   cvShowImage (PROGRAM_NAME, frame);
-	cvWaitKey(10);
+	cvWaitKey(100);
 
-	tiny.print("Press a key to quit...");
+	tiny.print("Press a key to return arm to home position...");
+	tiny.waitKey();
+
+	moveJoints(tiny, pArm, home);
+
+	tiny.print("Press a key to quit ...");
 	tiny.waitKey();
 
 	cvReleaseImage(&frame);

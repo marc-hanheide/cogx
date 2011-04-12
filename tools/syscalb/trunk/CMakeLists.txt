@@ -22,13 +22,14 @@ endif(BUILD_PTUCALIB)
 option(BUILD_ARMCALIB "Build robot arm calibration" NO)
 if(BUILD_ARMCALIB)
 
+#  SET(GOLEM_ROOT "" CACHE PATH "Path to golem installation directory")
   SET(PHYSX_INCLUDE /usr/include/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX include")
   SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX library")
 
   INCLUDE_DIRECTORIES(
-#	${GOLEM_ROOT}/include
-#	${GOLEM_ROOT}/resources
-#	${GOLEM_ROOT}/include/Golem/Demo
+#    ${GOLEM_ROOT}/include
+#    ${GOLEM_ROOT}/resources
+#    ${GOLEM_ROOT}/include/Golem/Demo
     ${PHYSX_INCLUDE}/SDKs/Physics/include
     ${PHYSX_INCLUDE}/SDKs/Foundation/include
     ${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
@@ -44,6 +45,14 @@ if(BUILD_ARMCALIB)
   ADD_EXECUTABLE(armcalib armcalib.cpp)
   TARGET_LINK_LIBRARIES(armcalib ${OpenCV_LIBS} GolemDemoCommon GolemTiny)
   INSTALL(TARGETS armcalib RUNTIME DESTINATION bin)
+
+#  SET(ARMCALIB_ICE_SOURCES
+#    TinyIce.cc
+#    armcalib_ice.cpp
+#  )
+#  ADD_EXECUTABLE(armcalib_ice ${ARMCALIB_ICE_SOURCES})
+#  TARGET_LINK_LIBRARIES(armcalib_ice Ice IceUtil)
+#  INSTALL(TARGETS armcalib_ice RUNTIME DESTINATION bin)
 endif(BUILD_ARMCALIB)
 
 
