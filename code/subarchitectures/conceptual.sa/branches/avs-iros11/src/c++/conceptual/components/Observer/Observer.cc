@@ -172,9 +172,10 @@ void Observer::start()
 // -------------------------------------------------------
 void Observer::runComponent()
 {
-    while (isRunning())
+	println("Running!!");
+	while (isRunning())
     {
-    	sleepComponent(100);
+    	usleep(1000000);
     	pthread_mutex_lock(&_worldStateMutex);
     	updateWorldState();
     	pthread_mutex_unlock(&_worldStateMutex);
@@ -198,16 +199,18 @@ void Observer::initializeWorldState()
 // -------------------------------------------------------
 void Observer::updateWorldState()
 {
-	std::vector<ConceptualData::EventInfo> accumulatedEvents;
-
 	// Check if we've had an update within one second. If so, do nothing
 	// Get current time
 	timeval now;
 	gettimeofday(&now, 0);
-	double curTime = now.tv_sec+ now.tv_usec/1000000.0;
+	double curTime = static_cast<double>(now.tv_sec) + static_cast<double>(now.tv_usec)/1000000.0;
 	// If nothing there or not yet time, do nothing
-	if ((_accumulatedEvents.empty()) || ((curTime-_lastWsUpdateTime)<1.0))
+	if ((_accumulatedEvents.empty()) || ((curTime-_lastWsUpdateTime)<3))
 		return;
+
+	println("Updating world state!");
+
+	std::vector<ConceptualData::EventInfo> accumulatedEvents;
 	accumulatedEvents = _accumulatedEvents;
 	_accumulatedEvents.clear();
 	_lastWsUpdateTime = curTime;
@@ -1083,6 +1086,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
+		_acceptedObjectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 		ConceptualData::EventInfo ei;
 		ei.time = castTimeToSeconds(getCASTTime());
 		ei.type = ConceptualData::EventObjectSearchResultAdded;
@@ -1124,6 +1128,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialData::ObjectSearchResultPtr old = _objectSearchResultWmAddressMap[wmChange.address];
+		SpatialData::ObjectSearchResultPtr oldAccepted = _acceptedObjectSearchResultWmAddressMap[wmChange.address];
 		_objectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 
 	  	// Check wmAddresss and ID
@@ -1131,7 +1136,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 			throw cast::CASTException("The mapping between ObjectSearchResult WMAddress and Room ID changed!");
 
 		// Check if something substantial changed
-		if (fabs(old->beta-objectSearchResultPtr->beta)> _betaThreshold)
+		if (fabs(oldAccepted->beta-objectSearchResultPtr->beta)> _betaThreshold)
 		{
 			ConceptualData::EventInfo ei;
 			ei.time = castTimeToSeconds(getCASTTime());
@@ -1152,6 +1157,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 			}
 			_accumulatedEvents.push_back(ei);
 
+			_acceptedObjectSearchResultWmAddressMap[wmChange.address] = objectSearchResultPtr;
 			updateWorldState();
 		}
 
@@ -1182,6 +1188,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 					old->supportObjectId;
 		}
 		_objectSearchResultWmAddressMap.erase(wmChange.address);
+		_acceptedObjectSearchResultWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1218,6 +1225,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
+		_acceptedShapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
 
 		if (isGatewayPlace(shapePlacePropertyPtr->placeId))
 		{
@@ -1255,6 +1263,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
+		SpatialProperties::RoomShapePlacePropertyPtr oldAccepted = _acceptedShapePlacePropertyWmAddressMap[wmChange.address];
 	  	_shapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
 
 	  	// Check wmAddresss and ID
@@ -1268,7 +1277,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 
 		// Check if something substantial changed
-		if ( calculateDistributionDifference(old->distribution,
+		if ( calculateDistributionDifference(oldAccepted->distribution,
 								shapePlacePropertyPtr->distribution) > _shapeThreshold )
 		{
 			ConceptualData::EventInfo ei;
@@ -1279,6 +1288,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 			ei.place2Id = -1;
 			_accumulatedEvents.push_back(ei);
 
+		  	_acceptedShapePlacePropertyWmAddressMap[wmChange.address] = shapePlacePropertyPtr;
 			updateWorldState();
 		}
 
@@ -1298,6 +1308,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_shapePlacePropertyWmAddressMap.erase(wmChange.address);
+		_acceptedShapePlacePropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1335,6 +1346,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_sizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
+		_acceptedSizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
 
 		if (isGatewayPlace(sizePlacePropertyPtr->placeId))
 		{
@@ -1372,6 +1384,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::RoomSizePlacePropertyPtr old = _sizePlacePropertyWmAddressMap[wmChange.address];
+		SpatialProperties::RoomSizePlacePropertyPtr oldAccepted = _acceptedSizePlacePropertyWmAddressMap[wmChange.address];
 	  	_sizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
 
 	  	// Check wmAddresss and ID
@@ -1385,7 +1398,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		}
 
 		// Check if something substantial changed
-		if ( calculateDistributionDifference(old->distribution,
+		if ( calculateDistributionDifference(oldAccepted->distribution,
 								sizePlacePropertyPtr->distribution) > _sizeThreshold )
 		{
 			ConceptualData::EventInfo ei;
@@ -1396,6 +1409,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 			ei.place2Id = -1;
 			_accumulatedEvents.push_back(ei);
 
+		  	_acceptedSizePlacePropertyWmAddressMap[wmChange.address] = sizePlacePropertyPtr;
 			updateWorldState();
 		}
 
@@ -1415,6 +1429,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_sizePlacePropertyWmAddressMap.erase(wmChange.address);
+		_acceptedSizePlacePropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1451,6 +1466,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
+		_acceptedAppearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 
 		if (isGatewayPlace(appearancePlacePropertyPtr->placeId))
 		{
@@ -1488,6 +1504,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::RoomAppearancePlacePropertyPtr old = _appearancePlacePropertyWmAddressMap[wmChange.address];
+		SpatialProperties::RoomAppearancePlacePropertyPtr oldAccepted = _acceptedAppearancePlacePropertyWmAddressMap[wmChange.address];
 	  	_appearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 
 	  	// Check wmAddresss and ID
@@ -1501,7 +1518,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		}
 
 		// Check if something substantial changed
-		if ( calculateDistributionDifference(old->distribution,
+		if ( calculateDistributionDifference(oldAccepted->distribution,
 								appearancePlacePropertyPtr->distribution) > _appearanceThreshold )
 		{
 			ConceptualData::EventInfo ei;
@@ -1512,6 +1529,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 			ei.place2Id = -1;
 			_accumulatedEvents.push_back(ei);
 
+		  	_acceptedAppearancePlacePropertyWmAddressMap[wmChange.address] = appearancePlacePropertyPtr;
 			updateWorldState();
 		}
 
@@ -1531,6 +1549,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_appearancePlacePropertyWmAddressMap.erase(wmChange.address);
+		_acceptedAppearancePlacePropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1566,6 +1585,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_gatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
+		_acceptedGatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
 
 		ConceptualData::EventInfo ei;
 		ei.time = castTimeToSeconds(getCASTTime());
@@ -1597,6 +1617,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::GatewayPlaceholderPropertyPtr old = _gatewayPlaceholderPropertyWmAddressMap[wmChange.address];
+		SpatialProperties::GatewayPlaceholderPropertyPtr oldAccepted = _acceptedGatewayPlaceholderPropertyWmAddressMap[wmChange.address];
 		_gatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
 
 	  	// Check wmAddresss and ID
@@ -1604,7 +1625,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			throw cast::CASTException("The mapping between GatewayPlacholderProperty WMAddress and Place ID changed!");
 
 		// Check if something substantial changed
-		if ( calculateBinaryDistributionDifference(old->distribution,
+		if ( calculateBinaryDistributionDifference(oldAccepted->distribution,
 				gatewayPlaceholderPropertyPtr->distribution) > _gatewayThreshold )
 		{
 			ConceptualData::EventInfo ei;
@@ -1615,6 +1636,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 			ei.place2Id = -1;
 			_accumulatedEvents.push_back(ei);
 
+			_acceptedGatewayPlaceholderPropertyWmAddressMap[wmChange.address] = gatewayPlaceholderPropertyPtr;
 			updateWorldState();
 		}
 
@@ -1634,6 +1656,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_gatewayPlaceholderPropertyWmAddressMap.erase(wmChange.address);
+		_acceptedGatewayPlaceholderPropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();
@@ -1670,6 +1693,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		pthread_mutex_lock(&_worldStateMutex);
 
 		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
+		_acceptedAssociatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
 		log("associatedSpacePlaceholderPropertyChanged ADD %d", associatedSpacePlaceholderPropertyPtr->placeId);
 
 		ConceptualData::EventInfo ei;
@@ -1703,8 +1727,9 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		pthread_mutex_lock(&_worldStateMutex);
 
 		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
+		SpatialProperties::AssociatedSpacePlaceholderPropertyPtr oldAccepted = _acceptedAssociatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
 		_associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
-		log("associatedSpacePlaceholderPropertyChanged OVERWRITE %d", associatedSpacePlaceholderPropertyPtr->placeId);
+		//log("associatedSpacePlaceholderPropertyChanged OVERWRITE %d", associatedSpacePlaceholderPropertyPtr->placeId);
 
 	  	// Check wmAddresss and ID
 		if (old->placeId != associatedSpacePlaceholderPropertyPtr->placeId)
@@ -1712,7 +1737,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 
 		// Check if something substantial changed
 		double oldVal = SpatialProperties::FloatValuePtr::dynamicCast(
-				SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(old->distribution)->data[0].value)->value;
+				SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(oldAccepted->distribution)->data[0].value)->value;
 		double newVal = SpatialProperties::FloatValuePtr::dynamicCast(
 				SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(
 						associatedSpacePlaceholderPropertyPtr->distribution)->data[0].value)->value;
@@ -1727,6 +1752,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 			ei.place2Id = -1;
 			_accumulatedEvents.push_back(ei);
 
+			_acceptedAssociatedSpacePlaceholderPropertyWmAddressMap[wmChange.address] = associatedSpacePlaceholderPropertyPtr;
 			updateWorldState();
 		}
 
@@ -1749,6 +1775,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		ei.place1Id = old->placeId;
 		ei.place2Id = -1;
 		_associatedSpacePlaceholderPropertyWmAddressMap.erase(wmChange.address);
+		_acceptedAssociatedSpacePlaceholderPropertyWmAddressMap.erase(wmChange.address);
 		_accumulatedEvents.push_back(ei);
 
 		updateWorldState();

@@ -169,24 +169,30 @@ private:
 
 	/** Map of place wmAddress -> ObjectSearchResult*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr> _objectSearchResultWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr> _acceptedObjectSearchResultWmAddressMap;
 
 	/** Map of place wmAddress -> ShapePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _shapePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _acceptedShapePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> SizePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr> _sizePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr> _acceptedSizePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> AppearancePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearancePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _acceptedAppearancePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> ConnectivityPathProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;
 
 	/** Map of place wmAddress -> GatewayPlaceholderProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _gatewayPlaceholderPropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _acceptedGatewayPlaceholderPropertyWmAddressMap;
 
 	/** Map of place wmAddress -> AssociatedSpacePlaceholderProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> _associatedSpacePlaceholderPropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> _acceptedAssociatedSpacePlaceholderPropertyWmAddressMap;
 
 	/** Current state of the world as much as
 	 * the conceptual.sa is concerned. */
