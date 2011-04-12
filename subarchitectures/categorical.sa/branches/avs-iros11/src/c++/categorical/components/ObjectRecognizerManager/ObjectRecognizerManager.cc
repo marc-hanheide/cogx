@@ -91,7 +91,7 @@ void ObjectRecognizerManager::start()
 // -------------------------------------------------------
 void ObjectRecognizerManager::runComponent()
 {
-	sleepComponent(1000);  // HACK: the nav visualisation might crash if we send it
+	usleep(1000000);  // HACK: the nav visualisation might crash if we send it
 	                     // object observations too soon.
 
 	// Run component
@@ -102,7 +102,7 @@ void ObjectRecognizerManager::runComponent()
 		{
 			addRecognizer3DCommand(m_labels[i]);
 		}
-		sleepComponent(2000);
+		usleep(2000000);
 	} // while
 } // runComponent()
 
