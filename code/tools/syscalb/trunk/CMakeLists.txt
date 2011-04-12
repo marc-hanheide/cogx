@@ -42,7 +42,7 @@ if(BUILD_ARMCALIB)
   SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-O2 -fPIC -DLINUX -DNX64")
 
   ADD_EXECUTABLE(armcalib armcalib.cpp)
-  TARGET_LINK_LIBRARIES(armcalib GolemDemoCommon)
+  TARGET_LINK_LIBRARIES(armcalib ${OpenCV_LIBS} GolemDemoCommon GolemTiny)
   INSTALL(TARGETS armcalib RUNTIME DESTINATION bin)
 endif(BUILD_ARMCALIB)
 
