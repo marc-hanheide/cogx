@@ -1,17 +1,14 @@
 HOST localhost
 
 # spatial #####################################################################
-#INCLUDE includes/spatial.sa/spatial-ptz.cast
 COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
 
-#INCLUDE includes/spatial.sa/spatial-base.cast
 COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 SUBARCHITECTURE spatial.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-#INCLUDE includes/spatial.sa/spatial-gripper.sa
 CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #-m tmpmap.metric #--no-file-output
 CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #-m tmpmap.graph #--no-file-output
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf
@@ -41,6 +38,6 @@ CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inif
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
 
-JAVA MG manipulatorRunner manipulation.runner.cogx.MasterThesisRunner --reachingDistance "0.01" --distanceInFrontDesk "0.5" --configPath "/home/ttoenige/Desktop/calib_real_65.xml" --maxDistanceVP "1" --nearPoints "0.5" --armName "simulation" --fixedTilt "-65"
+JAVA MG manipulatorRunner manipulation.runner.cogx.CogXRunner --reachingDistance "0.01" --distanceInFrontDesk "0.5" --configPath "/home/ttoenige/Desktop/calib_sim.xml" --maxDistanceVP "1" --nearPoints "0.5" --armName "simulation" --fixedTilt "-65"
 
 JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col

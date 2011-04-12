@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  */
 public class UpdateItemPositionRunnable implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private CogXVirtualSceneConnector simCon;
 	private Manipulator manipulator;
 
@@ -48,21 +48,21 @@ public class UpdateItemPositionRunnable implements Runnable {
 			}
 			simCon.getObstacles().clear();
 
-			for (RigidBodyPrx table : simCon.getTables()) {
-				try {
-					simCon.getTinyInterface().releaseActor(table);
-				} catch (Exception e) {
-					logger.error(e);
-				}
-			}
+			// for (RigidBodyPrx table : simCon.getTables()) {
+			// try {
+			// simCon.getTinyInterface().releaseActor(table);
+			// } catch (Exception e) {
+			// logger.error(e);
+			// }
+			// }
 
-			simCon.getTables().clear();
+			// simCon.getTables().clear();
 
 			try {
 				for (Item item : manipulator.getItemMemory().getItemList()) {
 					simCon.getObstacles().add(simCon.updateObstacle(item));
 
-					simCon.getTables().add(simCon.generateTable(item));
+					// simCon.getTables().add(simCon.generateTable(item));
 				}
 			} catch (InternalMemoryException e) {
 				// logger.warn(e);

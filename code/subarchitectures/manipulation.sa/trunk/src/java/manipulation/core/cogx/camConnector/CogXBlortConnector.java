@@ -8,7 +8,9 @@ import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
+import manipulation.core.share.types.ViewPoints;
 import manipulation.itemMemory.Item;
+import manipulation.itemMemory.Item.ItemIntention;
 import manipulation.itemMemory.Item.ItemName;
 import manipulation.itemMemory.Item.PropertyName;
 import manipulation.runner.cogx.CogXRunner;
@@ -35,7 +37,7 @@ import cast.cdl.WorkingMemoryChange;
 public class CogXBlortConnector implements CamConnector {
 
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private Manipulator manipulator;
 
 	private boolean objectFound = false;
@@ -58,48 +60,110 @@ public class CogXBlortConnector implements CamConnector {
 	 *            relevant working memory change
 	 */
 	public void visualObjectChanged(WorkingMemoryChange _wmc) {
+
+		VisualObject changedObject = null;
 		try {
-
-			VisualObject changedObject = ((CogXRunner) manipulator.getRunner())
+			changedObject = ((CogXRunner) manipulator.getRunner())
 					.getMemoryEntry(_wmc.address, VisualObject.class);
-
-			Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
-					changedObject.pose.pos.y, changedObject.pose.pos.z);
-
-			Matrix camRot = CogXConverter
-					.convBlortToMatrix(changedObject.pose.rot);
-
-			// TODO richtige Item updaten nicht einfach erst beste
-			if (!manipulator.getItemMemory().getFirstGraspItem()
-					.getAllAtributeKeys().contains(PropertyName.MODEL)) {
-				manipulator
-						.getItemMemory()
-						.addItemModel(
-								manipulator.getItemMemory().getFirstGraspItem(),
-								CogXConverter
-										.convBlortGeomModelToVisionModel(changedObject.model));
-			}
-
-			if (changedObject.identDistrib[0] > 0.08) {
-				manipulator.getItemMemory().updatePosition(
-						manipulator.getItemMemory().getFirstGraspItem(),
-						camPoint, camRot, manipulator, false);
-				objectFound = true;
-			} else {
-				objectFound = false;
-			}
-
-			synchronized (this) {
-				notifyAll();
-			}
-
 		} catch (DoesNotExistOnWMException e) {
 			logger.error(e);
 		} catch (UnknownSubarchitectureException e) {
 			logger.error(e);
-		} catch (InternalMemoryException e) {
-			logger.error(e);
 		}
+
+		Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
+				changedObject.pose.pos.y, changedObject.pose.pos.z);
+
+		Matrix camRot = CogXConverter.convBlortToMatrix(changedObject.pose.rot);
+
+		// TODO richtige Item updaten nicht einfach erst beste
+		// try {
+		// if (!manipulator.getItemMemory().getFirstGraspItem()
+		// .getAllAtributeKeys().contains(PropertyName.MODEL)) {
+		// manipulator
+		// .getItemMemory()
+		// .addItemModel(
+		// manipulator.getItemMemory().getFirstGraspItem(),
+		// CogXConverter
+		// .convBlortGeomModelToVisionModel(changedObject.model));
+		// }
+		// } catch (InternalMemoryException e) {
+		// logger.error(e);
+		// }
+
+		double bestRecValue = 0;
+		String bestLabel = "";
+
+		for (int i = 0; i < changedObject.identLabels.length; i++) {
+			if (!changedObject.identLabels[i].equals("unknown")) {
+				if (changedObject.identDistrib[i] > bestRecValue) {
+					bestRecValue = changedObject.identDistrib[i];
+					bestLabel = changedObject.identLabels[i];
+				}
+			}
+		}
+
+		// logger.error("BEST LABEL: " + bestLabel);
+		// logger.error("BEST VALUE: " + bestRecValue);
+
+		if (!bestLabel.equals("")) {
+			boolean alreadyInMem = false;
+			Item currentItem = null;
+			for (Item item : manipulator.getItemMemory().getItemList()) {
+				try {
+					if (((String) item.getAttribute(PropertyName.BLORT_NAME))
+							.equals(bestLabel)) {
+						alreadyInMem = true;
+						currentItem = item;
+						break;
+					}
+				} catch (ItemException e) {
+					logger.debug(e);
+				}
+			}
+
+			if (alreadyInMem) {
+				try {
+					manipulator.getItemMemory().updatePosition(currentItem,
+							camPoint, camRot, manipulator, false);
+				} catch (InternalMemoryException e) {
+					logger.error(e);
+				}
+			} else {
+				logger.error("Added obstacle with label " + bestLabel
+						+ "to arm planning");
+				Item newItem = new Item();
+				newItem.setAttribute(PropertyName.BLORT_NAME, bestLabel);
+				newItem.setAttribute(PropertyName.INTENTION,
+						ItemIntention.AVOID_ME);
+				newItem.setAttribute(PropertyName.WORLD_POSITION, new Vector3D(
+						Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE));
+				newItem.setAttribute(PropertyName.WORLD_ROTATION, new Matrix(1,
+						0, 0, 0, 1, 0, 0, 0, 1));
+				manipulator.getItemMemory().addItemToQueue(newItem);
+
+				try {
+					manipulator.getItemMemory().updatePosition(newItem,
+							camPoint, camRot, manipulator, false);
+				} catch (InternalMemoryException e) {
+					logger.error(e);
+				}
+			}
+
+			if (bestRecValue > 0.08) {
+				objectFound = true;
+			} else {
+				objectFound = false;
+			}
+		} else {
+			logger.error("Recognition value: " + bestRecValue
+					+ "! Will not add anything to the arm planning.");
+		}
+
+		synchronized (this) {
+			notifyAll();
+		}
+
 	}
 
 	/**
@@ -221,8 +285,8 @@ public class CogXBlortConnector implements CamConnector {
 
 		}
 
-//		((CogXSimulationConnector) manipulator.getSimulationConnector())
-//				.startItemThread();
+		// ((CogXSimulationConnector) manipulator.getSimulationConnector())
+		// .startItemThread();
 	}
 
 	/**
@@ -232,8 +296,8 @@ public class CogXBlortConnector implements CamConnector {
 	public void stopTracking() throws ExternalMemoryException {
 		logger.debug("stop tracking");
 
-//		((CogXSimulationConnector) manipulator.getSimulationConnector())
-//				.stopItemThread();
+		// ((CogXSimulationConnector) manipulator.getSimulationConnector())
+		// .stopItemThread();
 
 		TrackingCommand trackCom = new TrackingCommand();
 		trackCom.cmd = TrackingCommandType.STOP;

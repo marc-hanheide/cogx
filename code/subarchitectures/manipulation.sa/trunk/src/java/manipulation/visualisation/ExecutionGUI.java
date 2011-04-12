@@ -372,6 +372,7 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 				logger.error("TRACKINGSUCCESS: " + success);
 
 			} catch (ExternalMemoryException e1) {
+				logger.error("Geht nicht!");
 				logger.error(e1);
 			}
 

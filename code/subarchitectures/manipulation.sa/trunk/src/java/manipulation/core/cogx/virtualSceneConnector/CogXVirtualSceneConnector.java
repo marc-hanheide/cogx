@@ -74,7 +74,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 			.getRotationAroundZ(-(Math.PI / 2));
 
 	private Vector<RigidBodyPrx> obstacles;
-	private Vector<RigidBodyPrx> tables;
+	// private Vector<RigidBodyPrx> tables;
 	public TinyPrx tinyInterface;
 	private RigidBodyPrx robot = null;
 	private ArmPrx arm;
@@ -94,7 +94,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	 */
 	public CogXVirtualSceneConnector(Manipulator manipulator) {
 		obstacles = new Vector<RigidBodyPrx>();
-		tables = new Vector<RigidBodyPrx>();
+		// tables = new Vector<RigidBodyPrx>();
 		this.manipulator = manipulator;
 
 		posThread = new Thread(new UpdatePositionRunnable(this, manipulator));
@@ -324,39 +324,6 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 
 		}
 
-		// while (MathOperation.getDistance(virtualPosition.getPoint(),
-		// itemPosition.forgetThirdDimension()) > 0.1) {
-		// logger.error("search");
-		// virtualPosition = new BasePositionData(new Vector2D(currentPos
-		// .getX()
-		// + runner * direction.getX(), currentPos.getY() + runner
-		// * direction.getY()), currentAngle);
-		//
-		// moveRobotInVirtualScene(virtualPosition);
-		//
-		// ArmError errorVec;
-		// double tmpError;
-		// try {
-		// errorVec = manipulator.getArmConnector().getPosError(
-		// itemPosition, goalRot);
-		// tmpError = MathOperation.getEuclDistance(errorVec
-		// .getPoseError());
-		// logger.error("ANGLE: " + errorVec.getAngleError());
-		// logger.error("POS: " + tmpError);
-		// } catch (ManipulatorException e) {
-		// tmpError = MathOperation.getEuclDistance(new Vector3D(
-		// Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE));
-		// }
-		//
-		// if (Math.abs(tmpError - error) < 0.0001) {
-		// stop = true;
-		// }
-		//
-		// error = tmpError;
-		// allPoints.add(new ViewPoint(error, virtualPosition));
-		// runner += stepsize;
-		// }
-
 		return allPoints;
 	}
 
@@ -517,42 +484,42 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 				.createActor(obstacle));
 	}
 
-	public RigidBodyPrx generateTable(Item item) throws Exception {
-		RigidBodyDesc obstacle = new RigidBodyDescI();
-		obstacle.shapes = new ShapeDesc[1];
-
-		// TODO auch was anderes ausser kasten
-		BoxShapeDesc obstacleShape = new BoxShapeDescI();
-		// TODO itemgroesse
-		// TODO itemrotation
-		obstacleShape.dimensions.v1 = 0.15;
-		obstacleShape.dimensions.v2 = 0.15;
-		obstacleShape.dimensions.v3 = (((((Vector3D) item
-				.getAttribute(PropertyName.WORLD_POSITION)).getZ())) / 2) - 0.02;
-		obstacle.shapes[0] = obstacleShape;
-		// TODO worldcoordinates to robot
-
-		Vector3D itemPosition;
-		try {
-			itemPosition = ((Vector3D) item
-					.getAttribute(PropertyName.WORLD_POSITION));
-			obstacle.globalPose.p.v1 = itemPosition.getX();
-			obstacle.globalPose.p.v2 = itemPosition.getY();
-			obstacle.globalPose.p.v3 = (((((Vector3D) item
-					.getAttribute(PropertyName.WORLD_POSITION)).getZ())) / 2) - 0.02;
-
-			obstacle.globalPose.R = CogXConverter
-					.convMatrixToGolem(MathOperation.getRotationAroundZ(0));
-
-		} catch (ItemException e) {
-			logger.error(e);
-		}
-
-		obstacle.kinematic = true;
-
-		return RigidBodyPrxHelper.checkedCast(tinyInterface
-				.createActor(obstacle));
-	}
+	// public RigidBodyPrx generateTable(Item item) throws Exception {
+	// RigidBodyDesc obstacle = new RigidBodyDescI();
+	// obstacle.shapes = new ShapeDesc[1];
+	//
+	// // TODO auch was anderes ausser kasten
+	// BoxShapeDesc obstacleShape = new BoxShapeDescI();
+	// // TODO itemgroesse
+	// // TODO itemrotation
+	// obstacleShape.dimensions.v1 = 0.15;
+	// obstacleShape.dimensions.v2 = 0.15;
+	// obstacleShape.dimensions.v3 = (((((Vector3D) item
+	// .getAttribute(PropertyName.WORLD_POSITION)).getZ())) / 2) - 0.02;
+	// obstacle.shapes[0] = obstacleShape;
+	// // TODO worldcoordinates to robot
+	//
+	// Vector3D itemPosition;
+	// try {
+	// itemPosition = ((Vector3D) item
+	// .getAttribute(PropertyName.WORLD_POSITION));
+	// obstacle.globalPose.p.v1 = itemPosition.getX();
+	// obstacle.globalPose.p.v2 = itemPosition.getY();
+	// obstacle.globalPose.p.v3 = (((((Vector3D) item
+	// .getAttribute(PropertyName.WORLD_POSITION)).getZ())) / 2) - 0.02;
+	//
+	// obstacle.globalPose.R = CogXConverter
+	// .convMatrixToGolem(MathOperation.getRotationAroundZ(0));
+	//
+	// } catch (ItemException e) {
+	// logger.error(e);
+	// }
+	//
+	// obstacle.kinematic = true;
+	//
+	// return RigidBodyPrxHelper.checkedCast(tinyInterface
+	// .createActor(obstacle));
+	// }
 
 	/**
 	 * gets the communication interface of GOLEM
@@ -618,28 +585,28 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		this.obstacles = obstacles;
 	}
 
-	/**
-	 * @return the tables
-	 */
-	public Vector<RigidBodyPrx> getTables() {
-		return tables;
-	}
-
-	/**
-	 * @param tables
-	 *            the tables to set
-	 */
-	public void setTables(Vector<RigidBodyPrx> tables) {
-		this.tables = tables;
-	}
+	// /**
+	// * @return the tables
+	// */
+	// public Vector<RigidBodyPrx> getTables() {
+	// return tables;
+	// }
+	//
+	// /**
+	// * @param tables
+	// * the tables to set
+	// */
+	// public void setTables(Vector<RigidBodyPrx> tables) {
+	// this.tables = tables;
+	// }
 
 	/**
 	 * {@inheritDoc}
 	 */
-//	@Override
-//	public Matrix getInitArmRotation() {
-//		return initArmRotation;
-//	}
+	// @Override
+	// public Matrix getInitArmRotation() {
+	// return initArmRotation;
+	// }
 
 	/**
 	 * {@inheritDoc}
@@ -734,15 +701,15 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 
 		itemThread.interrupt();
 
-		for (RigidBodyPrx table : getTables()) {
-			try {
-				getTinyInterface().releaseActor(table);
-			} catch (Exception e) {
-				logger.error(e);
-			}
-		}
-
-		getTables().clear();
+		// for (RigidBodyPrx table : getTables()) {
+		// try {
+		// getTinyInterface().releaseActor(table);
+		// } catch (Exception e) {
+		// logger.error(e);
+		// }
+		// }
+		//
+		// getTables().clear();
 
 		for (RigidBodyPrx obstacle : getObstacles()) {
 			try {
