@@ -330,6 +330,7 @@ ts.tv_nsec = 0;
 					// Now, turn the outputs into "probabilities" or rather potentials
 					vector<double> potentials;
 					potentials.resize(outputsWithPrior.size());
+					double sum = 0;
 					for (unsigned int i=0; i<outputs.size(); ++i)
 					{
 						potentials[i] = outputsWithPrior[i].value;
@@ -338,6 +339,13 @@ ts.tv_nsec = 0;
 
 						debug("place %d, name=%s potential=%lf", curPlace->id, outputs[i].name.c_str(),
 								potentials[i]);
+						sum+=potentials[i];
+					}
+
+					// Normalize the potentials
+					for (unsigned int i=0; i<potentials.size(); ++i)
+					{
+						potentials[i]/=sum;
 					}
 
 					// Output the property
