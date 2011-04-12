@@ -12,16 +12,10 @@ import manipulation.core.share.ManipulatorStore;
 import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
-import manipulation.core.share.types.Matrix;
-import manipulation.core.share.types.Vector3D;
-import manipulation.core.share.types.ViewPoints;
-import manipulation.itemMemory.Item;
 import manipulation.itemMemory.ItemMemory;
-import manipulation.itemMemory.Item.ItemIntention;
-import manipulation.itemMemory.Item.ItemName;
-import manipulation.itemMemory.Item.PropertyName;
 import manipulation.runner.share.Runner;
 import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationCommandStatus;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.Strategy.Name;
@@ -94,24 +88,6 @@ public class CogXRunner extends ManagedComponent implements Runner {
 		manipulator = cogxManStore.orderManipulator(
 				ManipulatorName.INTELLIGENT_GRASPING, this, itemMemory,
 				watcher, configuration);
-
-		// Item item = new Item();
-		// Vector3D translationData = new Vector3D(1, 0, 0);
-		// Matrix rotationData = new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		// item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
-		// item.setAttribute(PropertyName.WORLD_POSITION, translationData);
-		// item.setAttribute(PropertyName.WORLD_ROTATION, rotationData);
-		// item.setAttribute(PropertyName.INTENTION, ItemIntention.AVOID_ME);
-		// itemMemory.addItemToQueue(item);
-		//
-		// Item item2 = new Item();
-		// Vector3D tD = new Vector3D(0, 1, 0);
-		// Matrix rD = new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		// item2.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
-		// item2.setAttribute(PropertyName.WORLD_POSITION, tD);
-		// item2.setAttribute(PropertyName.WORLD_ROTATION, rD);
-		// item2.setAttribute(PropertyName.INTENTION, ItemIntention.AVOID_ME);
-		// itemMemory.addItemToQueue(item2);
 	}
 
 	/**
@@ -210,15 +186,22 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				ManipulationCommand.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						logger.info("getting manipulation command (overwrite)");
 						try {
+							logger.info("getting manipulation command (overwrite)");
+
 							ManipulationCommand command = getMemoryEntry(
 									_wmc.address, ManipulationCommand.class);
-							logger.error("--------------------------------------------");
-							logger.error(command.status);
-							logger.error(command.comp);
-							logger.error(command.getClass());
-							logger.error("--------------------------------------------");
+							if ((command.status == ManipulationCommandStatus.NEW)
+									|| (command.status == ManipulationCommandStatus.CHANGED)) {
+								watcher.setCurrentCommandAddress(_wmc.address);
+								watcher.newCommand(command);
+							} else {
+								logger.info("----------ignoring overwrite command:-------");
+								logger.info(command.status);
+								logger.info(command.comp);
+								logger.info(command.getClass());
+								logger.info("--------------------------------------------");
+							}
 						} catch (DoesNotExistOnWMException e) {
 							logger.error(e);
 						} catch (UnknownSubarchitectureException e) {
