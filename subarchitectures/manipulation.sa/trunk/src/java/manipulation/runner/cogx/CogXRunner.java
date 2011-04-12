@@ -63,12 +63,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	@Override
 	protected void configure(Map<String, String> config) {
 		Configuration configuration = null;
-		if (config.containsKey("--reachingDistance")
-				&& config.containsKey("--distanceInFrontDesk")
-				&& config.containsKey("--configPath")
-				&& config.containsKey("--maxDistanceVP")
-				&& config.containsKey("--nearPoints")
-				&& config.containsKey("--fixedTilt")
+		if (config.containsKey("--configPath")
 				&& config.containsKey("--armName")) {
 
 			ArmConnector.ArmName armName = null;
@@ -84,12 +79,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				armName = ArmName.SIMULATION;
 			}
 
-			configuration = new Configuration(Double.parseDouble(config
-					.get("--reachingDistance")), Double.parseDouble(config
-					.get("--distanceInFrontDesk")), config.get("--configPath"),
-					Double.parseDouble(config.get("--maxDistanceVP")),
-					Double.parseDouble(config.get("--nearPoints")), armName,
-					Double.parseDouble(config.get("--fixedTilt")));
+			configuration = new Configuration(0, 0, config.get("--configPath"),
+					0, 0, armName, 0);
 		} else {
 			logger.error("Cannot read arguments - exit");
 			System.exit(-1);
