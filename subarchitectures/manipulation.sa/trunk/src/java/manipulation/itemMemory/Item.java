@@ -156,7 +156,11 @@ public class Item {
 		/**
 		 * 
 		 */
-		BEST_ROTATIONAL_VIEWPOINT
+		BEST_ROTATIONAL_VIEWPOINT,
+		/**
+		 * 
+		 */
+		BLORT_NAME
 	}
 
 	private HashMap<PropertyName, Object> properties = new HashMap<PropertyName, Object>();

@@ -6,7 +6,6 @@ import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.exceptions.ViewPointException;
 import manipulation.core.share.types.BasePositionData;
-import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.Item;
 
