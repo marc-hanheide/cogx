@@ -5,7 +5,9 @@ DISTNAME = $(GARNAME)-$(GARVERSION)
 DISTFILES = $(DISTNAME).tar.gz
 WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
-LIBDEPS = contrib/peak-linux
+MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/msk/development/Golem/trunk/
+
+#LIBDEPS = contrib/peak-linux
 
 MAINTAINER = ttoenige
 
@@ -17,6 +19,7 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix) \
-			-D BUILD_DEVICE_KATANA300=OFF
-
+CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix) \
+			-D BUILD_DEVICE_KATANA450=OFF \
+			-D BUILD_AXNI=OFF \
+			-D BUILD_32_BIT=OFF

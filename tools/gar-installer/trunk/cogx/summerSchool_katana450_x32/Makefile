@@ -34,7 +34,7 @@ LIBDEPS = 	contrib/peekabot \
 		contrib/player-3.0.2 \
 		contrib/physx_x32 \
 		contrib/gazebo \
-		cogx/golem_katana450
+		cogx/golem_katana450_x32
 
 DESCRIPTION = agai-distro
 
