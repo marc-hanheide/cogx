@@ -157,8 +157,8 @@ int main ( int argc, char *argv[] ) {
 
     if ( argc < 3 ) {
         printf ( "usage: %s <image> <camera calibration> [ -c -o -i -m ]\n", argv[0] );
-        printf ( "sample Linux  : %s img.png -c 8 6 80 80 -o offset.xml\n", argv[0] );
-        printf ( "sample Windows: %s img.gif -c 8 6 80 80 -o offset.xml\n", argv[0] );
+        printf ( "sample Linux  : %s img.png camcal.xml -c 8 6 80 80 -o offset.xml\n", argv[0] );
+        printf ( "sample Windows: %s img.gif camcal.xml -c 8 6 80 80 -o offset.xml\n", argv[0] );
         printf ( "-c	<width> <height> <boxwidth> <boxheight> default is 8 x 6 boxes size of 80 mm\n" );
         printf ( "-o	<pose> pose offset file of calibration pattern w.r.t. world\n" );
         printf ( "-m	display the calibration off\n" );
