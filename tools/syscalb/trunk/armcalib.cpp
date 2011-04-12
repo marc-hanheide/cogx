@@ -21,86 +21,63 @@
 #include <Golem/PhysCtrl/PhysReacPlanner.h>
 #include <Golem/PhysCtrl/Creator.h>
 #include <Golem/Demo/Common/Tools.h>
+#include <Golem/Tiny/Tiny.h>
+
+#define PROGRAM_NAME "armcalib"
+
+#define CHESSBOARD_WIDTH 8
+#define CHESSBOARD_HEIGHT 6
+#define CHESSBOARD_BOXES_WIDTH 0.028
+#define CHESSBOARD_BOXES_HEIGHT 0.028
 
 using namespace golem;
+using namespace golem::tiny;
 
-//------------------------------------------------------------------------------
-
-void setupObjects(Scene* scene) {
-	// Creator
-	Creator creator(*scene);
-	Actor::Desc *pActorDesc;
-	
-	// Create ground plane.
-	pActorDesc = creator.createGroundPlaneDesc();
-	scene->createObject(*pActorDesc);
-	
-	// "Base"
-	pActorDesc = creator.createBoxDesc(Real(0.20), Real(0.10), Real(0.60));
-	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(0.00), NxReal(-0.22), NxReal(0.60));
-	scene->createObject(*pActorDesc);
-}
-
-// create gripper, in open position
-void createGripper(std::vector<Bounds::Desc::Ptr> &boundsDescSeq, Mat34 &referencePose, const Mat34 &pose) {
-	// finger characteristic dimensions
-	const Real tcpOffset = Real(0.11);
-
-	// reference pose at the end (on Y-axis)
-	referencePose.setId();
-	referencePose.p.v2 += tcpOffset;
-	referencePose.multiply(pose, referencePose);
-	
-	boundsDescSeq.clear();
-	
-	// model opened gripper as a simple bounding box
-	BoundingBox::Desc gripper;
-	gripper.dimensions = Vec3(Real(0.08), Real(0.07), Real(0.02));
-	gripper.pose.p.v2 += (0.07 - 0.11);
-	gripper.pose.multiply(referencePose, gripper.pose);
-
-	boundsDescSeq.push_back(gripper.clone());
-}
-
-//------------------------------------------------------------------------------
-
-// Add new bounds to the Joint Actor.
-void addBounds(Actor* actor, Bounds::ConstSeq &boundsSeq, const Bounds::Desc::Seq &boundsDescSeq) {
-	ASSERT(actor)
-	boundsSeq.clear();
-	for (Bounds::Desc::Seq::const_iterator i = boundsDescSeq.begin(); i != boundsDescSeq.end(); i++)
-		boundsSeq.push_back(actor->createBounds(*i));
-}
-
-// Remove bounds of the Joint Actor.
-void removeBounds(Actor* actor, Bounds::ConstSeq &boundsSeq) {
-	ASSERT(actor)
-	for (Bounds::ConstSeq::const_iterator i = boundsSeq.begin(); i != boundsSeq.end(); i++)
-		actor->releaseBounds(**i);
-}
-
-//------------------------------------------------------------------------------
-
-void setupPlanner(PhysReacPlanner::Desc &desc, XMLContext* xmlcontext, golem::Context* context) {
-	// some planner parameter tuning
-	desc.pPlannerDesc->pHeuristicDesc->distJointcoordMax[4] = Real(1.0)*REAL_PI;// last joint
-	// Disable signal synchronization
-	desc.pReacPlannerDesc->signalSync = false;
-}
-
-void openCvPoseToGolemPose(CvMat *tvec, CvMat *rvec, Mat34 &pose)
-{
-	Vec3 r(cvGet1D(rvec, 0), cvGet1D(rvec, 1), cvGet1D(rvec, 2));
+static void openCvPoseToGolemPose(CvMat *tvec, CvMat *rvec, Mat34 &pose) {
+	Vec3 r(Real(cvmGet(rvec, 0, 0)), Real(cvmGet(rvec, 1, 0)), Real(cvmGet(rvec, 2, 0)));
 	Real a = r.normalise();
 	pose.R.fromAngleAxis(a, r);
-  pose.p = Vec3(tvec, 0), cvGet1D(tvec, 1), cvGet1D(tvec, 2));
+  pose.p = Vec3(Real(cvmGet(tvec, 0, 0)), Real(cvmGet(tvec, 1, 0)), Real(cvmGet(tvec, 2, 0)));
 }
 
-//------------------------------------------------------------------------------
-Mat34 findPattern(IplImage *pImg, const string &camCalibFile, const string &camPoseFile)
-{
-	IplImage *pImgGray = cvCreateImage ( cvGetSize ( pImg ), IPL_DEPTH_8U, 1 );
-	cvReleaseImage ( &pImg );
+static void golemPoseToOpenCvPose(Mat34 &pose, CvMat *tvec, CvMat *rvec) {
+	Vec3 r;
+	Real a;
+	pose.R.toAngleAxis(a, r);
+	r *= a;
+	cvSet1D(rvec, 0, cvScalar(r.v1));
+	cvSet1D(rvec, 1, cvScalar(r.v2));
+	cvSet1D(rvec, 2, cvScalar(r.v3));
+	cvSet1D(tvec, 0, cvScalar(pose.p.v1));
+	cvSet1D(tvec, 1, cvScalar(pose.p.v2));
+	cvSet1D(tvec, 2, cvScalar(pose.p.v3));	
+}
+
+static void storeOpenCvPose(cv::FileStorage &file, CvMat *tvec, CvMat *rvec) {
+	CvMat *R = cvCreateMat( 3, 3, CV_64FC1 );
+	cvRodrigues2(rvec, R);
+	file.writeObj( "tvec", tvec );
+printf("written tvec\n");
+	file.writeObj( "rvec", rvec );
+printf("written rvec\n");
+	file.writeObj( "rmat", R );
+printf("written rmat\n");
+	cvReleaseMat(&R);
+}
+
+/**
+ * @param pImg opencv image with calibration pattern as it is held by the arm
+ * @param camCalibFile intrinsic camera parameter calibration file
+ * @param camPoseFile camera pose calbration file containing camera pose w.r.t. world
+ *
+ * @return pose of gripper w.r.t. world
+ */
+Mat34 findGripperInWorld(Tiny &tiny, IplImage *pImg, cv::FileStorage &camCalibFile, cv::FileStorage &camPoseFile) {
+
+	CvSize pattern_size = cvSize ( CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT );
+	int iNrOfCorners = pattern_size.width * pattern_size.height;
+	float fBoardBoxWidth = CHESSBOARD_BOXES_WIDTH;
+	float fBoardBoxHeight = CHESSBOARD_BOXES_HEIGHT;	IplImage *pImgGray = cvCreateImage ( cvGetSize ( pImg ), IPL_DEPTH_8U, 1 );
 
 	int pattern_was_found = 0;
 	int corner_count = 0;
@@ -109,230 +86,260 @@ Mat34 findPattern(IplImage *pImg, const string &camCalibFile, const string &camP
 	std::vector <int> count_points;
 	int width = pImg->width;
 	int height = pImg->height;
+	Mat34 gripper2World;
+	gripper2World.setId();
 
 	cvCvtColor ( pImg, pImgGray, CV_BGR2GRAY );
-	if ( ( pImgGray->width != pImg->width ) || ( pImgGray->height != pImg->height ) ) {
-		  std::cout << " images has a different size\n";
-		  exit ( 1 );
-	}
-	CvPoint2D32f *pImageCorners = ( CvPoint2D32f* ) malloc ( sizeof ( CvPoint2D32f ) * iNrOfCorners );
+
+	CvPoint2D32f *pImageCorners = new CvPoint2D32f[iNrOfCorners];
+
 	pattern_was_found = cvFindChessboardCorners ( pImg, pattern_size, pImageCorners, &corner_count, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS );
-	cvDrawChessboardCorners ( pImg, pattern_size, pImageCorners, corner_count, pattern_was_found );
+
 	if ( pattern_was_found ) {
-		  std::cout << " pattern OK\n";
-		  cvFindCornerSubPix ( pImgGray, pImageCorners, corner_count, cvSize ( 11,11 ), cvSize ( -1,-1 ), cvTermCriteria ( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
-		  for ( int j = 0; j < corner_count; j++ ) {
-		      CvPoint2D64f imageCorner = cvPoint2D64f(pImageCorners[j].x,pImageCorners[j].y);
-		      image_points.push_back ( imageCorner );
-		      CvPoint3D64f worldPoint;
-		      worldPoint.x = ( j % pattern_size.width ) * fBoardBoxHeight;
-		      worldPoint.y = ( j / pattern_size.width ) * fBoardBoxWidth;
-		      worldPoint.z = 0;
-		      object_points.push_back ( worldPoint );
-		  }
-		  count_points.push_back ( iNrOfCorners );
+	  tiny.print("calibration pattern OK");
+	  cvFindCornerSubPix ( pImgGray, pImageCorners, corner_count, cvSize ( 11,11 ), cvSize ( -1,-1 ), cvTermCriteria ( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+	  for ( int j = 0; j < corner_count; j++ ) {
+      CvPoint2D64f imageCorner = cvPoint2D64f(pImageCorners[j].x,pImageCorners[j].y);
+      image_points.push_back ( imageCorner );
+      CvPoint3D64f worldPoint;
+      worldPoint.x = ( j % pattern_size.width ) * fBoardBoxHeight;
+      worldPoint.y = ( j / pattern_size.width ) * fBoardBoxWidth;
+      worldPoint.z = 0;
+      object_points.push_back ( worldPoint );
+	  }
+	  count_points.push_back ( iNrOfCorners );
 
-		  cvDrawChessboardCorners ( pImg, pattern_size, pImageCorners, corner_count, pattern_was_found );
+	  cvDrawChessboardCorners ( pImg, pattern_size, pImageCorners, corner_count, pattern_was_found );
 	}
-
-	cvWaitKey ( 0 );
-	free ( pImageCorners );
-
-	CvMat *pImagePoints = cvCreateMat ( image_points.size(),2,CV_64FC1 );
-	CvMat *pObjectPoints = cvCreateMat ( object_points.size(),3,CV_64FC1 );
-	CvMat *pTraVecPattern2Cam = cvCreateMat( 3, 1, CV_64FC1 );
-	CvMat *pRotVecPattern2Cam = cvCreateMat( 3, 1, CV_64FC1 );
-	CvMat *pTraVecCam2Pattern = cvCreateMat( 3, 1, CV_64FC1 );
-	CvMat *pRotVecCam2Pattern = cvCreateMat( 3, 1, CV_64FC1 );
-	CvMat *pIntrinsic = 0;
-	CvMat *pDistortions = 0;
-	CvMat *pTraVecCam2World = 0;
-	CvMat *pRotVecCam2World = 0;
-
-	for ( unsigned int i = 0; i < image_points.size(); i++ ) {
-		  CV_MAT_ELEM ( *pImagePoints, double, i, 0 ) = image_points[i].x;
-		  CV_MAT_ELEM ( *pImagePoints, double, i, 1 ) = image_points[i].y;
-		  CV_MAT_ELEM ( *pObjectPoints, double, i, 0 ) = object_points[i].x;
-		  CV_MAT_ELEM ( *pObjectPoints, double, i, 1 ) = object_points[i].y;
-		  CV_MAT_ELEM ( *pObjectPoints, double, i, 2 ) = object_points[i].z;
+	else {
+		tiny.print("* Failed to find calibration pattern.");
 	}
+	delete[] pImageCorners;
 
-	cv::FileStorage calibFile( camCalibFile.c_str(), cv::FileStorage::READ );
-	pIntrinsic = (CvMat*)calibFile["intrinsic"].readObj();
-	pDistortions = (CvMat*)calibFile["distortion"].readObj();
+	if(pattern_was_found) {
+		CvMat *pImagePoints = cvCreateMat ( image_points.size(),2,CV_64FC1 );
+		CvMat *pObjectPoints = cvCreateMat ( object_points.size(),3,CV_64FC1 );
+		CvMat *pTraVecPattern2Cam = cvCreateMat( 3, 1, CV_64FC1 );
+		CvMat *pRotVecPattern2Cam = cvCreateMat( 3, 1, CV_64FC1 );
+		CvMat *pTraVecCam2Pattern = cvCreateMat( 3, 1, CV_64FC1 );
+		CvMat *pRotVecCam2Pattern = cvCreateMat( 3, 1, CV_64FC1 );
+		CvMat *pIntrinsic = 0;
+		CvMat *pDistortions = 0;
+		CvMat *pTraVecCam2World = 0;
+		CvMat *pRotVecCam2World = 0;
 
-	cv::FileStorage calibFile( camPoseFile.c_str(), cv::FileStorage::READ );
-	pTraVecCam2World = (CvMat*)calibFile["tvec"].readObj();
-	pRotVecCam2World = (CvMat*)calibFile["rvec"].readObj();
-
-	printf("estimating pose, please wait ...\n");
-	cvFindExtrinsicCameraParams2( pObjectPoints, pImagePoints, pIntrinsic, pDistortions,
-		  pRotVecPattern2Cam, pTraVecPattern2Cam );
-
-	Mat34 gripper2Pattern, pattern2Cam, cam2World, pattern2World;
-  gripper2Pattern.setId();  0.047
-  gripper2Pattern.p.set(-0.126, 0.158, 0.);
-	gripper2Pattern.R.fromAngleAxis(REAL_PI, Vec3(1., 0., 0.);
-  openCvPoseToGolemPose(pTraVecPattern2Cam, pRotVecPattern2Cam, pattern2Cam);
-  openCvPoseToGolemPose(pTraVecCam2World, pRotVecCam2World, cam2World);
-	
-
-  // invert pose
-	invertPose(pTraVecPattern2Cam, pRotVecPattern2Cam, pTraVecCam2Pattern, pRotVecCam2Pattern);
-	multPose(pTraVecPattern2World, pRotVecPattern2World, pTraVecCam2Pattern, pRotVecCam2Pattern,
-		  pTraVecCam2World, pRotVecCam2World);
-
-	poseFile.writeObj( "tvec", pTraVecCam2World );
-	poseFile.writeObj( "rvec", pRotVecCam2World );
-	printf("\nparameters saved to file: %s\n", "campose.xml");
-
-	/*double o[6] = {0., 0., 0., 0., 0., 0.}, oi[4];
-	CvMat omat = cvMat(1, 6, CV_64FC1, o);
-	CvMat oimat = cvMat(1, 4, CV_64FC1, oi);
-	cvProjectPoints2(&omat, pRotVecCam2World, pTraVecCam2World, pIntrinsic, pDistortions, &oimat);
-	cvCircle(pImg, cvPoint(oi[0], oi[1]), 2, cvScalar(0, 255, 0));
-	cvShowImage ( "Camera", pImg );
-	cvWaitKey ( 0 );*/
-
-	// HACK
-	/*{
-	double R[9] = {0, -1,  0,
-		            -1,  0,  0,
-		             0,  0,  -1};
-	double r[3] = {0, 0, 0};
-	CvMat Rmat = cvMat(3, 3, CV_64FC1, R);
-	CvMat rvec = cvMat(3, 1, CV_64FC1, r);
-	cvRodrigues2(&Rmat, &rvec);
-	cvPrint ( &rvec, "rvec" );
-	}*/
-
-	cvReleaseMat ( &pImagePoints );
-	cvReleaseMat ( &pObjectPoints );
-	cvReleaseMat ( &pIntrinsic );
-	cvReleaseMat ( &pDistortions );
-	cvReleaseMat ( &pTraVecPattern2World );
-	cvReleaseMat ( &pRotVecPattern2World );
-	cvReleaseMat ( &pTraVecPattern2Cam );
-	cvReleaseMat ( &pRotVecPattern2Cam );
-	cvReleaseMat ( &pTraVecCam2Pattern );
-	cvReleaseMat ( &pRotVecCam2Pattern );
-	cvReleaseMat ( &pTraVecCam2World );
-	cvReleaseMat ( &pRotVecCam2World );
-	cvReleaseImage ( &pImg );
-	cvReleaseImage ( &pImgGray );
-}
-
-/** MyApplication */
-class MyApplication : public Application {
-protected:
-	/** Runs MyApplication */
-	virtual void run(int argc, char *argv[]) {
-		printf("Use the arrow keys to move the camera.\n");
-		printf("Use the mouse to rotate the camera.\n");
-		printf("Press p to pause simulations.\n");
-		printf("Press pgup/pgdn/space to switch between simulations.\n");
-		printf("Press v to show Actors reference frames.\n");
-		printf("Use z, x, c to change randering mode.\n");
-		printf("Use F1-F12 to display program specific debug information:\n");
-		printf("\tF1 to display/hide the current destination pose.\n");
-		printf("\tF2 to display/hide the current trajectory.\n");
-		printf("\tF3 to display/hide the goal/desired pose.\n");
-		printf("\tF4 to display/hide the global waypoint graph nodes.\n");
-		printf("\tF5 to display/hide the global waypoint path.\n");
-		printf("\tF6 to display/hide the local waypoint graph nodes.\n");
-		printf("\tF7 to display/hide the local waypoint path.\n");
-		printf("\tF8 to display/hide the optimised waypoint path.\n");
-		printf("Press esc to exit.\n");
-		
-		// Random number generator seed
-		context()->getMessageStream()->write(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
-
-		// Get arm driver name
-		std::string driver;
-		XMLData("driver", driver, xmlcontext()->getContextFirst("arm"));
-		// Load driver and setup planner
-		PhysReacPlanner::Desc physReacPlannerDesc;
-		physReacPlannerDesc.pArmDesc = Arm::Desc::load(*context(), driver);
-		setupPlanner(physReacPlannerDesc, xmlcontext(), context());
-
-		// Create PhysReacPlanner
-		context()->getMessageStream()->write(Message::LEVEL_INFO, "Initialising reactive planner...");
-		PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(scene()->createObject(physReacPlannerDesc));
-		if (pPhysReacPlanner == NULL)
-			throw Message(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
-		
-		// some useful pointers
-		ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
-		Planner &planner = pPhysReacPlanner->getPlanner();
-		Arm &arm = pPhysReacPlanner->getArm();
-		
-		// Display arm information
-		armInfo(arm);
-
-		// Scene objects setup
-		setupObjects(scene());
-
-		// Create bounds to be attached to the end-effector (the last joint) 
-		Bounds::Desc::Seq boundsDescSeq;
-		const Mat34 initReferencePose = arm.getReferencePose();
-		Mat34 referencePose;
-		createGripper(boundsDescSeq, referencePose, initReferencePose);
-		// set new arm reference pose
-		arm.setReferencePose(referencePose);
-		// Modify shape of the joint by adding new bounds to the Actor representing the end-effector.
-		Bounds::ConstSeq boundsSeq;
-		addBounds(pPhysReacPlanner->getJointActors().back(), boundsSeq, boundsDescSeq);
-
-		// (Synchronous) Time Delta - a minimum elapsed time between two consecutive waypoints sent to the controller
-		SecTmReal timeDelta = reacPlanner.getTimeDelta();
-		// Asynchronous Time Delta - a minimum elapsed time between the current time and the first waypoint sent to the controller
-		// (no matter what has been sent before)
-		SecTmReal timeDeltaAsync = reacPlanner.getTimeDeltaAsync();
-		
-		// Define the initial pose in the Cartesian workspace
-		Vec3 position(Real(0.0), Real(0.43), Real(0.73));
-		Vec3 orientation(REAL_PI/Real(4.0), Real(0.0), Real(0.0));
-		// and set target waypoint
-		golem::GenWorkspaceState target;
-		fromCartesianPose(target.pos, position, orientation);
-		target.vel.setZero(); // it doesn't move
-		target.t = context()->getTimer().elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
-		
-		// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
-		reacPlanner.send(target, ReacPlanner::ACTION_GLOBAL);
-		// wait for completion of the action (until the arm moves to the initial pose)
-		reacPlanner.waitForEnd();
-
-		context()->getMessageStream()->write(Message::LEVEL_INFO, "Now please attach calibpration pattern and press a key ...");
-    getchar();
-
-		CvCapture* capture = 0;
-		int device_class = IEEE1394; //CV_CAP_ANY, V4L2, IEEE1394
-		int cam = 0;    // camera (device) number
-		IplImage* frame = 0;
-
-		capture = cvCreateCameraCapture(device_class + cam);
-		if(!capture)
-		{
-			fprintf(stderr,"Could not initialize capturing...\n");
-			exit(1);
+		for ( unsigned int i = 0; i < image_points.size(); i++ ) {
+				CV_MAT_ELEM ( *pImagePoints, double, i, 0 ) = image_points[i].x;
+				CV_MAT_ELEM ( *pImagePoints, double, i, 1 ) = image_points[i].y;
+				CV_MAT_ELEM ( *pObjectPoints, double, i, 0 ) = object_points[i].x;
+				CV_MAT_ELEM ( *pObjectPoints, double, i, 1 ) = object_points[i].y;
+				CV_MAT_ELEM ( *pObjectPoints, double, i, 2 ) = object_points[i].z;
 		}
 
-		cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, 640);
-		cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, 480);
-		printf("image size %.0f x %.0f\n",
-				cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH),
-				cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT));
-		printf("framerate %.2f Hz\n", cvGetCaptureProperty(capture, CV_CAP_PROP_FPS));
+		pIntrinsic = (CvMat*)camCalibFile["intrinsic"].readObj();
+		pDistortions = (CvMat*)camCalibFile["distortion"].readObj();
 
-		cvNamedWindow("armcalib", 0);
-		frame = cvQueryFrame( capture );
-		printf("frame size: %d x %d\n", frame->width, frame->height);
-		cvResizeWindow("armcalib", frame->width, frame->height);
+		pTraVecCam2World = (CvMat*)camPoseFile["tvec"].readObj();
+		pRotVecCam2World = (CvMat*)camPoseFile["rvec"].readObj();
 
+		tiny.print("estimating pose, please wait ...\n");
+		cvFindExtrinsicCameraParams2( pObjectPoints, pImagePoints, pIntrinsic, pDistortions,
+				pRotVecPattern2Cam, pTraVecPattern2Cam );
+
+		Mat34 gripper2Pattern, pattern2Cam, cam2World, pattern2World, gripper2Cam;
+		// defined by how the gripper holds the pattern
+		gripper2Pattern.setId();
+		gripper2Pattern.p.set(-0.126, 0.158, 0.);
+		gripper2Pattern.R.fromAngleAxis(REAL_PI, Vec3(1., 0., 0.));
+		// this what we get from checkerboard detection
+		openCvPoseToGolemPose(pTraVecPattern2Cam, pRotVecPattern2Cam, pattern2Cam);
+		// how the camera was caibrated w.r.t. world
+		openCvPoseToGolemPose(pTraVecCam2World, pRotVecCam2World, cam2World);
+		gripper2Cam.multiply(pattern2Cam, gripper2Pattern);
+		gripper2World.multiply(cam2World, gripper2Cam);
+
+		cvReleaseMat ( &pImagePoints );
+		cvReleaseMat ( &pObjectPoints );
+		cvReleaseMat ( &pIntrinsic );
+		cvReleaseMat ( &pDistortions );
+		cvReleaseMat ( &pTraVecPattern2Cam );
+		cvReleaseMat ( &pRotVecPattern2Cam );
+		cvReleaseMat ( &pTraVecCam2Pattern );
+		cvReleaseMat ( &pRotVecCam2Pattern );
+		cvReleaseImage ( &pImgGray );
 	}
-};
+
+	return gripper2World;
+}
+
+static golem::tiny::Arm* createArm(Tiny &tiny, const string &armType) {
+	//KatanaArmDesc* pArmDesc = new KatanaArmDesc; // specialised Katana 300/450 description
+	ArmDesc* pArmDesc = new ArmDesc; // generic description
+	pArmDesc->path = armType; // specify driver path
+	return dynamic_cast<golem::tiny::Arm*>(tiny.createActor(ActorDescPtr(pArmDesc)));
+}
+
+static void attachGripper(golem::tiny::Arm *pArm) {
+	// attach a joint to the end-effector (the last joint)
+	golem::tiny::Joint* pEffector = pArm->getJoints().back();
+	// get the end-effector reference pose
+	Mat34 referencePose = pArm->getReferencePose();
+
+	// construct a simple bounding box approximation of the opened gripper,
+	// in local end-effector coordinates (arm at reference configuration stretched along Y-axis)
+	BoxShapeDesc* pGripperShapeDesc = new BoxShapeDesc;
+	pGripperShapeDesc->dimensions.set(Real(0.08), Real(0.07), Real(0.02));
+	pGripperShapeDesc->localPose = referencePose;
+	pGripperShapeDesc->localPose.p.v2 += Real(0.07);
+	Shape* pGripperShape = pEffector->createShape(ShapeDescPtr(pGripperShapeDesc));
+
+	// and change reference pose, so the end-effector pose (TCP) will between the fingers
+	const Real tcpOffset = Real(0.11);
+	referencePose.p.v2 += tcpOffset;
+	pArm->setReferencePose(referencePose);
+}
+
+static void setupObstacles(Tiny &tiny) {
+	// create ground plane using plane shape
+	RigidBodyDesc* pGroundPlaneDesc = new RigidBodyDesc;
+	PlaneShapeDesc* pGroundPlaneShapeDesc = new PlaneShapeDesc;
+	pGroundPlaneDesc->shapes.push_back(ShapeDescPtr(pGroundPlaneShapeDesc));
+	tiny.createActor(ActorDescPtr(pGroundPlaneDesc));
+
+	RigidBodyDesc* pSuperStructureDesc = new RigidBodyDesc;
+	BoxShapeDesc* pSuperStructureShapeDesc = new BoxShapeDesc;
+	pSuperStructureShapeDesc->dimensions.set(Real(0.20), Real(0.10), Real(0.60));
+	pSuperStructureShapeDesc->localPose.p.set(Real(0.00), Real(-0.22), Real(0.60));
+	pSuperStructureDesc->shapes.push_back(ShapeDescPtr(pSuperStructureShapeDesc));
+	RigidBody* pSuperStructure = dynamic_cast<RigidBody*>(tiny.createActor(ActorDescPtr(pSuperStructureDesc)));
+}
+
+static void moveTCP(Tiny &tiny, golem::tiny::Arm *pArm, Mat34 &tcp) {
+	// trajectory
+	GenConfigspaceStateSeq trajectory;
+	// movement begin and end position in join configuration space
+	golem::tiny::GenConfigspaceState cbegin, cend;
+	// initial configuration (it is the current joint configuration)
+	golem::tiny::GenConfigspaceState initial = pArm->recvGenConfigspaceState(tiny.getTime());
+
+	// setup target end-effector pose (the joint configuration is not known)
+	golem::tiny::GenWorkspaceState target;
+	target.pos = tcp;
+
+	// setup movement to target position
+	target.t = tiny.getTime() + pArm->getTimeDeltaAsync() + 1.0; // movement will last no shorter than 1 sec
+	// compute movement end/target in joint configuration space
+	cbegin = pArm->recvGenConfigspaceState(tiny.getTime());
+	cend = pArm->findTarget(cbegin, target);
+	// compute trajectory using path planning with collision detection
+	trajectory = pArm->findTrajectory(cbegin, cend);
+	// move the arm and wait until it stops
+	pArm->send(trajectory, numeric_const<double>::INF);
+}
+
+Mat34 getTCP(Tiny &tiny, golem::tiny::Arm *pArm) {
+	golem::tiny::GenWorkspaceState gwss = pArm->recvGenWorkspaceState(tiny.getTime());
+	return gwss.pos;
+}
+
+CvCapture *setupCapture(Tiny &tiny, int deviceClass, int camId, cv::FileStorage &calib) {
+	CvCapture *capture = cvCreateCameraCapture(deviceClass + camId);
+	if(!capture) {
+		tiny.print("* Failed to initialise capture.");
+		return 0;
+	}
+
+	CvMat *imgSize = (CvMat*)calib["imgsize"].readObj();
+
+	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, (int)cvGetReal1D(imgSize, 0));
+	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, (int)cvGetReal1D(imgSize, 1));
+
+	if((int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH) != (int)cvGetReal1D(imgSize, 0) ||
+	   (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT) != (int)cvGetReal1D(imgSize, 1)) {
+		tiny.print("* Failed to set capture size to values specified in camera calibration.");
+		return 0;
+	}
+
+	cvNamedWindow(PROGRAM_NAME, CV_WINDOW_AUTOSIZE);
+
+	return capture;
+}
 
 int main(int argc, char *argv[]) {
-	return MyApplication().main(argc, argv);
+
+	if(argc != 8) {
+		printf("usage: %s <golem config> <arm type> <cam calibration> <cam pose> <cam type> <cam id> <out pose>\n", argv[0]);
+		printf("  golem config .. golem config file\n"
+		       "  arm type .. one of GolemDeviceKatana300Sim, GolemDeviceKatana300, GolemDeviceKatana450\n"
+		       "  cam calibration .. camera intrinsic calibration file\n"
+		       "  cam pose .. camera pose (extrinsic parameters), w.r.t. world\n"
+		       "  cam type .. one of firewire, usb\n"
+		       "  cam id .. which camera on the respective bus\n"
+		       "  out pose .. output pose file, pose of gripper base w.r.t. world\n");
+		printf("example: %s armcalib.xml GolemDeviceKatana300Sim camcalib.xml campose.xml firewire 0 armpose,xml\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	Tiny tiny(argc, argv);
+
+	// note: argv[1] is the golem xml config file, e.g. "armcalib.xml"
+	string armType(argv[2]);
+	string camCalibFileName(argv[3]);
+	string camPoseFileName(argv[4]);
+	int camType = (strcmp(argv[5], "firewire") == 0 ? CV_CAP_V4L2 : CV_CAP_V4L2);
+	int camId = atoi(argv[6]);
+	string outPoseFileName(argv[7]);
+
+	golem::tiny::Arm* pArm = createArm(tiny, armType);
+	attachGripper(pArm);
+	setupObstacles(tiny);
+
+	cv::FileStorage camCalibFile( camCalibFileName.c_str(), cv::FileStorage::READ );
+	cv::FileStorage camPoseFile( camPoseFileName.c_str(), cv::FileStorage::READ );
+	CvCapture* capture = setupCapture(tiny, camType, camId, camCalibFile);
+
+	// move to target position, show calibration pattern to camera
+	Mat34 calibTarget;
+	calibTarget.R.rotX(REAL_PI/Real(4.0));
+	calibTarget.p.set(Real(0.0), Real(0.38), Real(0.68));
+	moveTCP(tiny, pArm, calibTarget);
+
+	tiny.print("Wait for end of movement and press a key ...");
+	tiny.waitKey();
+
+	Mat34 gripper2Base = getTCP(tiny, pArm);
+	IplImage* frame = cvCloneImage(cvQueryFrame( capture ));
+  cvShowImage (PROGRAM_NAME, frame);
+	cvWaitKey(100);
+
+	Mat34 gripper2World = findGripperInWorld(tiny, frame, camCalibFile, camPoseFile);
+	Mat34 base2Gripper;
+  base2Gripper.setInverseRT(gripper2Base);
+	Mat34 base2World;
+	base2World.multiply(gripper2World, base2Gripper);
+
+	tiny.print("gripper to world: %f %f %f\n", (float)gripper2World.p.v1, (float)gripper2World.p.v2, (float)gripper2World.p.v3);
+	tiny.print("gripper to base: %f %f %f\n", (float)gripper2Base.p.v1, (float)gripper2Base.p.v2, (float)gripper2Base.p.v3);
+	tiny.print("base to world: %f %f %f\n", (float)base2World.p.v1, (float)base2World.p.v2, (float)base2World.p.v3);
+	
+	CvMat *tvec = cvCreateMat(3, 1, CV_64FC1);
+	CvMat *rvec = cvCreateMat(3, 1, CV_64FC1);
+	golemPoseToOpenCvPose(base2World, tvec, rvec);
+  cv::FileStorage outPoseFile( outPoseFileName, cv::FileStorage::WRITE );
+	storeOpenCvPose(outPoseFile, tvec, rvec);
+	outPoseFile.release();
+
+  tiny.print("\nparameters saved to file: %s\n", outPoseFileName.c_str());
+
+  cvShowImage (PROGRAM_NAME, frame);
+	cvWaitKey(10);
+
+	tiny.print("Press a key to quit...");
+	tiny.waitKey();
+
+	cvReleaseImage(&frame);
+	cvReleaseCapture(&capture);
+
+	exit(EXIT_SUCCESS);
 }
+
