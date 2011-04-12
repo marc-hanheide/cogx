@@ -1,7 +1,7 @@
 HOST 192.168.0.10
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-base-slow.cast
 INCLUDE includes/spatial.sa/spatial-semmap.cast
 INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
 
