@@ -56,7 +56,7 @@ public interface VirtualSceneConnector {
 	 * 
 	 * @return initial arm rotation
 	 */
-	public Matrix getInitArmRotation();
+	//public Matrix getInitArmRotation();
 
 	/**
 	 * gets the time in the virtual scene (used to define goals of the arm)
