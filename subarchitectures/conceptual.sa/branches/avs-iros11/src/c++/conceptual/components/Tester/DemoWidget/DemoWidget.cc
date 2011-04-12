@@ -129,7 +129,7 @@ void DemoWidget::newImage(CategoricalData::ImagePtr iPtr)
 		// Convert image to pixmap
 		int w=iPtr->imageBuffer.width;
 		int h=iPtr->imageBuffer.height;
-		QImage tmpImage(w/2, h/2, QImage::Format_Indexed8);
+		QImage tmpImage(w/2+1, h/2+1, QImage::Format_Indexed8);
 		tmpImage.setColorTable(_colorMap);
 
 		for (int i=0; i<h; i+=2)
