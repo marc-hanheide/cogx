@@ -127,10 +127,10 @@ void ObjectRecognizerManager::addRecognizer3DCommand(std::string label)
 void ObjectRecognizerManager::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc)
 {
 	VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
-	if (rec_cmd->confidence>0.06)
+	if (rec_cmd->confidence>0.12)
 	{
 		println("Visual detection of %s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
-
+		cout << rec_cmd->label.c_str() << rec_cmd->confidence << endl;
 		// Current place
 		int placeId = getCurrentPlace();
 
