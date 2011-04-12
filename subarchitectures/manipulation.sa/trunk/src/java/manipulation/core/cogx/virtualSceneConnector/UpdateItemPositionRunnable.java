@@ -3,6 +3,7 @@ package manipulation.core.cogx.virtualSceneConnector;
 import golem.tinyice.RigidBodyPrx;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.InternalMemoryException;
+import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 import manipulation.itemMemory.Item;
 
 import org.apache.log4j.Logger;
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
 public class UpdateItemPositionRunnable implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	private CogXVirtualSceneConnector simCon;
+	private VirtualSceneConnector simCon;
 	private Manipulator manipulator;
 
 	/**
@@ -27,7 +28,7 @@ public class UpdateItemPositionRunnable implements Runnable {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public UpdateItemPositionRunnable(CogXVirtualSceneConnector simCon,
+	public UpdateItemPositionRunnable(VirtualSceneConnector simCon,
 			Manipulator manipulator) {
 		this.manipulator = manipulator;
 		this.simCon = simCon;

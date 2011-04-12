@@ -36,11 +36,9 @@ import manipulation.core.share.exceptions.ViewPointException;
 import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Matrix;
-import manipulation.core.share.types.ModelPoint;
 import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.ViewPoint;
-import manipulation.core.share.types.VisionModel;
 import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 import manipulation.itemMemory.Item;
 import manipulation.itemMemory.Item.PropertyName;
@@ -55,12 +53,12 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class CogXVirtualSceneConnector implements VirtualSceneConnector {
+public class MasterThesisVirtualSceneConnector implements VirtualSceneConnector {
 	private static final double BASEHIGHT = 0.215;
 	private static final double BASELENGTH = 0.51;
 	private static final double BASEWIDTH = 0.38;
 
-	private static final double STICKHIGHT = 0.2;
+	private static final double STICKHIGHT = 1;
 	private static final double STICKLENGTH = 0.05;
 	private static final double STICKWIDTH = 0.05;
 
@@ -94,7 +92,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public CogXVirtualSceneConnector(Manipulator manipulator) {
+	public MasterThesisVirtualSceneConnector(Manipulator manipulator) {
 		obstacles = new Vector<RigidBodyPrx>();
 		// tables = new Vector<RigidBodyPrx>();
 		this.manipulator = manipulator;
@@ -373,7 +371,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	// }
 
 	/**
-	 * {@inheritDoc}
+	 * update the arm in the virtual scene
 	 */
 	public void updateArm() {
 		Matrix globalRobotPoseRot = CogXConverter.convGolemToMatrix(robot
@@ -403,8 +401,12 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	}
 
 	/**
+	 * update the robot position in the virtual scene
 	 * 
-	 * {@inheritDoc}
+	 * @param position
+	 *            new position value
+	 * @return new robot representation
+	 * @throws Exception
 	 */
 	public RigidBodyPrx updateRobot(BasePositionData position) throws Exception {
 		RigidBodyDesc robot = new RigidBodyDescI();
@@ -438,45 +440,27 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * updates an item position in the virtual scene
+	 * 
+	 * @param item
+	 *            item to change its the position
+	 * @return new item representation
+	 * @throws Exception
 	 */
 	public RigidBodyPrx updateObstacle(Item item) throws Exception {
 		RigidBodyDesc obstacle = new RigidBodyDescI();
 		obstacle.shapes = new ShapeDesc[1];
 
+		// TODO auch was anderes ausser kasten
 		BoxShapeDesc obstacleShape = new BoxShapeDescI();
-
-		VisionModel visionModel = (VisionModel) item
-				.getAttribute(PropertyName.MODEL);
-
-		double lowestX = Double.MAX_VALUE;
-		double highestX = Double.MIN_VALUE;
-		double lowestY = Double.MAX_VALUE;
-		double highestY = Double.MIN_VALUE;
-		double lowestZ = Double.MAX_VALUE;
-		double highestZ = Double.MIN_VALUE;
-
-		for (ModelPoint mp : visionModel.getModelPoints()) {
-			Vector3D point = mp.getPosition();
-			if (point.getX() < lowestX)
-				lowestX = point.getX();
-			if (point.getX() > highestX)
-				highestX = point.getX();
-			if (point.getY() < lowestY)
-				lowestY = point.getY();
-			if (point.getY() > highestY)
-				highestY = point.getY();
-			if (point.getZ() < lowestZ)
-				lowestZ = point.getZ();
-			if (point.getZ() > highestZ)
-				highestZ = point.getZ();
-		}
-
-		obstacleShape.dimensions.v1 = (highestX - lowestX) / 2;
-		obstacleShape.dimensions.v2 = (highestY - lowestY) / 2;
-		obstacleShape.dimensions.v3 = (highestZ - lowestZ) / 2;
+		// TODO itemgroesse
+		// TODO itemrotation
+		obstacleShape.dimensions.v1 = 0.01;
+		obstacleShape.dimensions.v2 = 0.01;
+		obstacleShape.dimensions.v3 = 0.01;
 
 		obstacle.shapes[0] = obstacleShape;
+		// TODO worldcoordinates to robot
 
 		Vector3D itemPosition;
 		try {
@@ -489,6 +473,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 			obstacle.globalPose.R = CogXConverter
 					.convMatrixToGolem((Matrix) item
 							.getAttribute(PropertyName.WORLD_ROTATION));
+
 		} catch (ItemException e) {
 			logger.error(e);
 		}
@@ -537,7 +522,9 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	// }
 
 	/**
-	 * {@inheritDoc}
+	 * gets the communication interface of GOLEM
+	 * 
+	 * @return communication interface of GOLEM
 	 */
 	public TinyPrx getTinyInterface() {
 		return tinyInterface;
@@ -561,23 +548,28 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * gets the robot representation of the virtual scene
+	 * 
+	 * @return the robot representation of the virtual scene
 	 */
 	public RigidBodyPrx getRobot() {
 		return robot;
 	}
 
 	/**
+	 * sets the robot representation
 	 * 
-	 * {@inheritDoc}
+	 * @param robot
+	 *            new robot representation
 	 */
 	public void setRobot(RigidBodyPrx robot) {
 		this.robot = robot;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * gets all obstacle / item representations
 	 * 
+	 * @return all obstacle / item representations
 	 */
 	public Vector<RigidBodyPrx> getObstacles() {
 		return obstacles;

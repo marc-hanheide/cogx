@@ -1,11 +1,17 @@
 package manipulation.core.share.virtualSceneConnector;
 
 import golem.tinyice.ArmPrx;
+import golem.tinyice.RigidBodyPrx;
+import golem.tinyice.TinyPrx;
+
+import java.util.Vector;
+
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.exceptions.ViewPointException;
 import manipulation.core.share.types.BasePositionData;
+import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.ViewPoint;
 import manipulation.itemMemory.Item;
 
@@ -47,15 +53,14 @@ public interface VirtualSceneConnector {
 	 */
 	public ViewPoint getBestGraspingBasePoint() throws ViewPointException;
 
-	public boolean removeGraspingBasePoint(ViewPoint point)
-		;
+	public boolean removeGraspingBasePoint(ViewPoint point);
 
 	/**
 	 * gets the initial arm rotation
 	 * 
 	 * @return initial arm rotation
 	 */
-	//public Matrix getInitArmRotation();
+	public Matrix getInitArmRotation();
 
 	/**
 	 * gets the time in the virtual scene (used to define goals of the arm)
@@ -70,7 +75,61 @@ public interface VirtualSceneConnector {
 	 * @return arm in the virtual scene
 	 */
 	public ArmPrx getArm();
-	
+
 	public void clearScene();
+
+	/**
+	 * gets the robot representation of the virtual scene
+	 * 
+	 * @return the robot representation of the virtual scene
+	 */
+	public RigidBodyPrx getRobot();
+
+	/**
+	 * sets the robot representation
+	 * 
+	 * @param robot
+	 *            new robot representation
+	 */
+	public void setRobot(RigidBodyPrx robot);
+
+	/**
+	 * gets the communication interface of GOLEM
+	 * 
+	 * @return communication interface of GOLEM
+	 */
+	public TinyPrx getTinyInterface();
+
+	/**
+	 * update the robot position in the virtual scene
+	 * 
+	 * @param position
+	 *            new position value
+	 * @return new robot representation
+	 * @throws Exception
+	 */
+	public RigidBodyPrx updateRobot(BasePositionData position) throws Exception;
+
+	/**
+	 * update the arm in the virtual scene
+	 */
+	public void updateArm();
+
+	/**
+	 * gets all obstacle / item representations
+	 * 
+	 * @return all obstacle / item representations
+	 */
+	public Vector<RigidBodyPrx> getObstacles();
+
+	/**
+	 * updates an item position in the virtual scene
+	 * 
+	 * @param item
+	 *            item to change its the position
+	 * @return new item representation
+	 * @throws Exception
+	 */
+	public RigidBodyPrx updateObstacle(Item item) throws Exception;
 
 }

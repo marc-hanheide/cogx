@@ -7,6 +7,7 @@ import manipulation.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.core.cogx.camConnector.MasterThesisBlortConnector;
 import manipulation.core.cogx.panTiltConnector.CogXPanTiltConnector;
 import manipulation.core.cogx.virtualSceneConnector.CogXVirtualSceneConnector;
+import manipulation.core.cogx.virtualSceneConnector.MasterThesisVirtualSceneConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.ManipulatorPartFactory;
 import manipulation.core.share.armConnector.ArmConnector;
@@ -73,8 +74,8 @@ public class MasterThesisManipulatorPartsFactory implements
 	@Override
 	public VirtualSceneConnector createVirtualSceneConnector(
 			Manipulator manipulator) {
-		logger.debug("Creating SimulationConnector: CogXSimulationConnector");
-		return new CogXVirtualSceneConnector(manipulator);
+		logger.debug("Creating SimulationConnector: MasterThesisVirtualSceneConnector");
+		return new MasterThesisVirtualSceneConnector(manipulator);
 	}
 
 	/**
