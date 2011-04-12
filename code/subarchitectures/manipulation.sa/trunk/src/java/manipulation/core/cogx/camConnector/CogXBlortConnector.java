@@ -76,21 +76,6 @@ public class CogXBlortConnector implements CamConnector {
 
 		Matrix camRot = CogXConverter.convBlortToMatrix(changedObject.pose.rot);
 
-		// TODO richtige Item updaten nicht einfach erst beste
-		// try {
-		// if (!manipulator.getItemMemory().getFirstGraspItem()
-		// .getAllAtributeKeys().contains(PropertyName.MODEL)) {
-		// manipulator
-		// .getItemMemory()
-		// .addItemModel(
-		// manipulator.getItemMemory().getFirstGraspItem(),
-		// CogXConverter
-		// .convBlortGeomModelToVisionModel(changedObject.model));
-		// }
-		// } catch (InternalMemoryException e) {
-		// logger.error(e);
-		// }
-
 		double bestRecValue = 0;
 		String bestLabel = "";
 
@@ -140,6 +125,7 @@ public class CogXBlortConnector implements CamConnector {
 						Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE));
 				newItem.setAttribute(PropertyName.WORLD_ROTATION, new Matrix(1,
 						0, 0, 0, 1, 0, 0, 0, 1));
+
 				manipulator.getItemMemory().addItemToQueue(newItem);
 
 				try {
@@ -148,6 +134,18 @@ public class CogXBlortConnector implements CamConnector {
 				} catch (InternalMemoryException e) {
 					logger.error(e);
 				}
+
+				try {
+					manipulator
+							.getItemMemory()
+							.addItemModel(
+									newItem,
+									CogXConverter
+											.convBlortGeomModelToVisionModel(changedObject.model));
+				} catch (InternalMemoryException e) {
+					logger.error(e);
+				}
+
 			}
 
 			if (bestRecValue > 0.08) {

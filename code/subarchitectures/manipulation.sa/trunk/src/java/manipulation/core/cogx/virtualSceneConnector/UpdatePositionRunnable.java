@@ -3,6 +3,7 @@ package manipulation.core.cogx.virtualSceneConnector;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.types.BasePositionData;
+import manipulation.core.share.virtualSceneConnector.VirtualSceneConnector;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +18,7 @@ public class UpdatePositionRunnable implements Runnable {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 	
-	private CogXVirtualSceneConnector simCon;
+	private VirtualSceneConnector simCon;
 	private Manipulator manipulator;
 	
 	/**
@@ -28,7 +29,7 @@ public class UpdatePositionRunnable implements Runnable {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public UpdatePositionRunnable(CogXVirtualSceneConnector simCon,
+	public UpdatePositionRunnable(VirtualSceneConnector simCon,
 			Manipulator manipulator) {
 		this.manipulator = manipulator;
 		this.simCon = simCon;
