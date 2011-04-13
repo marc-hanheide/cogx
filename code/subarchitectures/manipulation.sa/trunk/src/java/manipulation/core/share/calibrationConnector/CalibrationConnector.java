@@ -26,7 +26,7 @@ public interface CalibrationConnector {
 	 * 
 	 * @throws CalibrationException
 	 */
-	public void readCamToRobCalibration() throws CalibrationException;
+	public void readCalibrationFile() throws CalibrationException;
 
 	/**
 	 * gets the camera to robot translation
@@ -60,6 +60,7 @@ public interface CalibrationConnector {
 	 */
 	public Vector3D getRobToArmTranslation() throws CalibrationException;
 
+	
 	/**
 	 * save the camera to robot calibration in a configuration file (path
 	 * defined while starting the program)
