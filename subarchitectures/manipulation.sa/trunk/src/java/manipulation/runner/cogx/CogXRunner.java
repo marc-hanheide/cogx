@@ -20,7 +20,6 @@ import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.Strategy.Name;
 import manipulation.visualisation.CogXTestGUI;
-import manipulation.visualisation.ExecutionGUI;
 
 import org.apache.log4j.Logger;
 
@@ -108,7 +107,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	@Override
 	protected void runComponent() {
 		new CogXTestGUI(manipulator);
-		new ExecutionGUI(manipulator);
+		// new ExecutionGUI(manipulator);
 
 		startStrategy(Name.COMMAND_EXECUTION);
 	}
