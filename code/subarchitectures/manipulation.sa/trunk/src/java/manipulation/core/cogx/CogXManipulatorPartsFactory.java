@@ -3,6 +3,7 @@ package manipulation.core.cogx;
 import manipulation.core.cogx.armConnector.CogXKatanaArmConnector;
 import manipulation.core.cogx.baseConnector.CogXDoraBaseConnector;
 import manipulation.core.cogx.baseConnector.CogXLocalMapConnector;
+import manipulation.core.cogx.calibrationConnector.CogXCalibConnector;
 import manipulation.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.core.cogx.camConnector.CogXBlortConnector;
 import manipulation.core.cogx.panTiltConnector.CogXPanTiltConnector;
@@ -70,7 +71,8 @@ public class CogXManipulatorPartsFactory implements ManipulatorPartFactory {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VirtualSceneConnector createVirtualSceneConnector(Manipulator manipulator) {
+	public VirtualSceneConnector createVirtualSceneConnector(
+			Manipulator manipulator) {
 		logger.debug("Creating SimulationConnector: CogXSimulationConnector");
 		return new CogXVirtualSceneConnector(manipulator);
 	}
@@ -81,8 +83,8 @@ public class CogXManipulatorPartsFactory implements ManipulatorPartFactory {
 	@Override
 	public CalibrationConnector createCalibrationConnector(
 			Manipulator manipulator) {
-		logger.debug("Creating CalibrationConnector: HomographyCalibration");
-		return new HomographyCalibration(manipulator);
+		logger.debug("Creating CalibrationConnector: CogXCalibConnector");
+		return new CogXCalibConnector(manipulator);
 	}
 
 	/**

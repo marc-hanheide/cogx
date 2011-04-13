@@ -60,7 +60,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	private static final double BASELENGTH = 0.51;
 	private static final double BASEWIDTH = 0.38;
 
-	private static final double STICKHIGHT = 0.2;
+	private static final double STICKHIGHT = 1;
 	private static final double STICKLENGTH = 0.05;
 	private static final double STICKWIDTH = 0.05;
 
