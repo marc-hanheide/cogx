@@ -369,7 +369,7 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	f.vertices.clear();
 	
 	//* **** Compute Normals *****
-	computeNormalsByFaces(obj->model);
+	computeNormalsFromFaces(obj->model);
 	
 	obj->detectionConfidence = 1.0;						// detection confidence is always 1
 
