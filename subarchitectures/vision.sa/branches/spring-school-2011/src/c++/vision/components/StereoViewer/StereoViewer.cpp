@@ -356,6 +356,12 @@ void StereoViewer::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> camId;
   }
+
+  logImages = false;
+  if((it = _config.find("--logimages")) != _config.end())
+  {
+    logImages = true;
+  }
 }
 
 void StereoViewer::start()
@@ -400,8 +406,9 @@ void StereoViewer::runComponent()
       if(side == LEFT)
         img_cam_pos = image.camPars.pose.pos;
 
-      cvSaveImage(side == LEFT ? "viewer-rect-L.png" : "viewer-rect-R.png",
-        iplImage);
+      if(logImages)
+        cvSaveImage(side == LEFT ? "viewer-rect-L.png" : "viewer-rect-R.png",
+          iplImage);
 
       // clear image before drawing reprojected points
       //cvSet(iplImage, cvScalar(0));
@@ -433,8 +440,9 @@ void StereoViewer::runComponent()
         }
       }
 
-      cvSaveImage(side == LEFT ? "viewer-overlay-L.png" : "viewer-overlay-R.png",
-        iplImage);
+      if(logImages)
+        cvSaveImage(side == LEFT ? "viewer-overlay-L.png" : "viewer-overlay-R.png",
+          iplImage);
 
       if(side == RIGHT)
         cvShowImage(getComponentID().c_str(), iplImage);

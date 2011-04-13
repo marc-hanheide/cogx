@@ -13,5 +13,5 @@ link_directories(${GLUT_LIBRARY_DIRS})
 add_cast_component(StereoViewer StereoViewer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
-    ${GLUT_LDFLAGS} ${OPENCV_LDFLAGS} glut)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LIBS} ${GLU_LIBS}
+    ${GLUT_LIBS} ${OPENCV_LIBS} GLU GL glut)
