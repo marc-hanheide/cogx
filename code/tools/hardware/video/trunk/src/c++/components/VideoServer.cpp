@@ -94,8 +94,6 @@ std::string VideoServerI::getServerName(const Ice::Current&)
 
 
 
-
-
 /**
  * Configure options common to all video servers.
  */
@@ -131,8 +129,12 @@ void VideoServer::configure(const map<string,string> & _config)
       // the stereo rig.
       if(file.find(":") == string::npos)
       {
-        // monocular case
-        loadCameraParameters(pars, file);
+        // monocular files can be either .cal (INI style) or .xml (from OpenCV
+        // file storage)
+        if(file.find(".xml") == string::npos)
+          loadCameraParameters(pars, file);
+        else
+          loadCameraParametersXML(pars, file);
       }
       else
       {
