@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <opencv/cv.h>
 #include "CDataFile.h"
 #include "CameraParameters.h"
 
@@ -118,6 +119,50 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
   istringstream istr(cfg.GetString("pose"));
   if(!istr.str().empty())
     istr >> cam.pose;
+}
+
+void loadCameraParametersXML(CameraParameters &cam, const string &configfile)
+  throw(runtime_error)
+{
+  // first make sure all values are set to meaningful defaults
+  // note that some values might not be set from the config file
+  initCameraParameters(cam);
+
+  cv::FileStorage calibFile(configfile, cv::FileStorage::READ);
+  if(calibFile.isOpened())
+  {
+    CvMat *intr = (CvMat*)calibFile["intrinsic"].readObj();
+    CvMat *dist = (CvMat*)calibFile["distortion"].readObj();
+    CvMat *imgsize = (CvMat*)calibFile["imgsize"].readObj();
+    CvMat *tvecs = (CvMat*)calibFile["tvecs"].readObj();
+    CvMat *rvecs = (CvMat*)calibFile["rvecs"].readObj();
+
+    cam.width = (int)cvGetReal1D(imgsize, 0);
+    cam.height = (int)cvGetReal1D(imgsize, 1);
+    cam.fx = cvGetReal2D(intr, 0, 0);
+    cam.fy = cvGetReal2D(intr, 1, 1);
+    cam.cx = cvGetReal2D(intr, 0, 2);
+    cam.cy = cvGetReal2D(intr, 1, 2);
+    cam.k1 = cvGetReal1D(dist, 0);
+    cam.k2 = cvGetReal1D(dist, 1);
+    cam.p1 = cvGetReal1D(dist, 2);
+    cam.p2 = cvGetReal1D(dist, 3);
+    if(dist->rows >= 5)
+      cam.k3 = cvGetReal1D(dist, 4);
+    else
+      cam.k3 = 0.;
+    
+    // if exactly one pose was given, use this as camera pose
+    if(tvecs != 0 && rvecs != 0 && tvecs->rows == 1 && rvecs->rows == 1)
+    {
+      fromRotVector(cam.pose.rot, vector3(cvGetReal2D(rvecs, 0, 0), cvGetReal2D(rvecs, 1, 0), cvGetReal2D(rvecs, 2, 0)));
+      cam.pose.pos = vector3(cvGetReal2D(tvecs, 0, 0), cvGetReal2D(tvecs, 1, 0), cvGetReal2D(tvecs, 2, 0));
+    }
+  }
+  else
+  {
+    throw runtime_error(exceptionMessage(__HERE__, "failed to read calibration file '%s'", configfile.c_str()));
+  }
 }
 
 void loadCameraParametersFromSVSCalib(CameraParameters &cam,
