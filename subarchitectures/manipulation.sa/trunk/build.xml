@@ -86,9 +86,8 @@
 	<!-- =================================================================== -->
 	<target name="clean">
 		<delete file="${src.dir}/.depend" />
-
 		<delete dir="${output.dir}/manipulation" />
-
+		<delete dir="${src.dir}/manipulation/slice" />
 	</target>
 
 
