@@ -8,7 +8,6 @@ import manipulation.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.core.share.exceptions.CalibrationException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
-import manipulation.math.MathOperation;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -189,16 +188,8 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Vector3D getCamPointInRob(Vector3D camPoint) {
-		Vector3D returnValue = null;
-		try {
-			returnValue = MathOperation.getVectorAddition(MathOperation
-					.getMatrixVectorMultiplication(getCamToRobRotation(),
-							camPoint), getCamToRobTranslation());
-		} catch (CalibrationException e) {
-			logger.error(e);
-		}
-
-		return returnValue;
+		logger.error("No need for an implementation for the spring school cogx system!");
+		return null;
 	}
 
 	/**
@@ -206,15 +197,29 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Matrix getCamRotationInRob(Matrix camRotation) {
-		Matrix returnValue = null;
+		logger.error("No need for an implementation for the spring school cogx system!");
+		return null;
+	}
 
-		try {
-			returnValue = MathOperation.getMatrixMatrixMultiplication(
-					getCamToRobRotation(), camRotation);
-		} catch (CalibrationException e) {
-			logger.error(e);
-		}
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Matrix getRobToArmRotation() throws CalibrationException {
+		if (!calibrationRead)
+			readCamToRobCalibration();
 
-		return returnValue;
+		return rotation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Vector3D getRobToArmTranslation() throws CalibrationException {
+		if (!calibrationRead)
+			readCamToRobCalibration();
+
+		return translation;
 	}
 }

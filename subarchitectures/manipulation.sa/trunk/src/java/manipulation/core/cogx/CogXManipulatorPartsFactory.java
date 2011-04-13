@@ -4,7 +4,6 @@ import manipulation.core.cogx.armConnector.CogXKatanaArmConnector;
 import manipulation.core.cogx.baseConnector.CogXDoraBaseConnector;
 import manipulation.core.cogx.baseConnector.CogXLocalMapConnector;
 import manipulation.core.cogx.calibrationConnector.CogXCalibConnector;
-import manipulation.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.core.cogx.camConnector.CogXBlortConnector;
 import manipulation.core.cogx.panTiltConnector.CogXPanTiltConnector;
 import manipulation.core.cogx.virtualSceneConnector.CogXVirtualSceneConnector;

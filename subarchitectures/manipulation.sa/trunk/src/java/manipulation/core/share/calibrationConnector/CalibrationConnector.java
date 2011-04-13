@@ -45,6 +45,22 @@ public interface CalibrationConnector {
 	public Matrix getCamToRobRotation() throws CalibrationException;
 
 	/**
+	 * gets the robot to arm rotation
+	 * 
+	 * @return robot to arm rotation
+	 * @throws CalibrationException
+	 */
+	public Matrix getRobToArmRotation() throws CalibrationException;
+
+	/**
+	 * gets the robot to arm translation
+	 * 
+	 * @return robot to arm translation
+	 * @throws CalibrationException
+	 */
+	public Vector3D getRobToArmTranslation() throws CalibrationException;
+
+	/**
 	 * save the camera to robot calibration in a configuration file (path
 	 * defined while starting the program)
 	 * 
