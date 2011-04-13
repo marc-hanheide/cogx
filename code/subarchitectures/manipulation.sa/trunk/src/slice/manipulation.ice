@@ -2,7 +2,6 @@
 #define MANIPULATION_ICE
 
 #include <cast/slice/CDL.ice>
-#include <VisionData.ice>
 
 module manipulation {
     module slice {
@@ -39,7 +38,7 @@ module manipulation {
    		* @author Torben Toeniges
    		**/
 		class PutDownCommand extends ManipulationCommand {
-			VisionData::VisualObject basedOnObject;
+			cast::cdl::WorkingMemoryAddress basedObjectAddr;
 		};
 		
 		
@@ -48,7 +47,7 @@ module manipulation {
    		* @author Torben Toeniges
    		**/
 		class FarArmMovementCommand extends ManipulationCommand {
-			VisionData::VisualObject targetObject;
+			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			double xError;
 			double yError;
 			double zError;
@@ -60,7 +59,7 @@ module manipulation {
    		* @author Torben Toeniges
    		**/
 		class LinearGraspApproachCommand extends ManipulationCommand {
-			VisionData::VisualObject targetObject;
+			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			GraspingStatus graspStatus;
 		};
 		
@@ -69,7 +68,7 @@ module manipulation {
    		* @author Torben Toeniges
    		**/
 		class SimulateGraspCommand extends ManipulationCommand {
-			VisionData::VisualObject targetObject;
+			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			double xError;
 			double yError;
 			double zError;

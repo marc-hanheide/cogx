@@ -212,28 +212,28 @@ public class HomographyCalibration implements CalibrationConnector {
 		calibrationRead = true;
 
 	}
-//
-//	/**
-//	 * {@inheritDoc}
-//	 */
-//	@Override
-//	public Vector3D getCamToRobTranslation() throws CalibrationException {
-//		if (!calibrationRead)
-//			readCalibrationFile();
-//
-//		return translation;
-//	}
-//
-//	/**
-//	 * {@inheritDoc}
-//	 */
-//	@Override
-//	public Matrix getCamToRobRotation() throws CalibrationException {
-//		if (!calibrationRead)
-//			readCalibrationFile();
-//
-//		return rotation;
-//	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Vector3D getCamToRobTranslation() throws CalibrationException {
+		if (!calibrationRead)
+			readCalibrationFile();
+
+		return translation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Matrix getCamToRobRotation() throws CalibrationException {
+		if (!calibrationRead)
+			readCalibrationFile();
+
+		return rotation;
+	}
 
 	/**
 	 * {@inheritDoc}

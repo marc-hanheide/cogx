@@ -40,9 +40,6 @@
 			<fileset dir="${slice.dir}" includes="manipulation.ice" />
 			
 			<includepath>
-				<pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
-				<pathelement path="${basedir}/../../tools/math/src/slice" />
-				<pathelement path="${basedir}/../vision.sa/src/slice" />
 				<pathelement path="${castslice.dir}" />
 			</includepath>
 		</slice2java>

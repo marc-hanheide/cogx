@@ -25,11 +25,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import cast.SubarchitectureComponentException;
+import cast.cdl.WorkingMemoryAddress;
 
 /**
  * defines a behaviour to linear approach an object with the gripper
@@ -52,23 +53,30 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 	}
 
 	private void fineApproach() {
-
-		VisualObject targetVisOb = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand()).targetObject;
-
-		Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
-				targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetObjectAddr;
 
 		try {
+			VisualObject targetVisOb = (((CogXRunner) getManipulator()
+					.getRunner()).getMemoryEntry(wma, VisualObject.class));
+
+			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+
 			Matrix currentArmRot = getManipulator().getArmConnector()
 					.getCurrentRotation();
 
 			getManipulator().getArmConnector().reach(currentGoalPosition,
 					currentArmRot);
 
+		} catch (SubarchitectureComponentException e) {
+			logger.error(e);
+			manipulationFailed = true;
+			return;
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
+			return;
 		}
 
 	}

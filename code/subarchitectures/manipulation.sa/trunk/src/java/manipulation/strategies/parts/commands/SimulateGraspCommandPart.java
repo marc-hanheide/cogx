@@ -25,11 +25,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import cast.SubarchitectureComponentException;
+import cast.cdl.WorkingMemoryAddress;
 
 /**
  * defines a behaviour to reach a position in front of an object with the arm
@@ -52,43 +53,50 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 	}
 
 	private void simulateArm() {
-		VisualObject targetVisOb = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand()).targetObject;
+		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetObjectAddr;
 
-		Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
-				targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
-
-		Vector3D currentArmPos = null;
 		try {
-			currentArmPos = getManipulator().getArmConnector()
-					.getCurrentPosition();
-		} catch (ManipulatorException e) {
+			VisualObject targetVisOb = (((CogXRunner) getManipulator()
+					.getRunner()).getMemoryEntry(wma, VisualObject.class));
+
+			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+
+			Vector3D currentArmPos = null;
+			try {
+				currentArmPos = getManipulator().getArmConnector()
+						.getCurrentPosition();
+			} catch (ManipulatorException e) {
+				logger.error(e);
+				manipulationFailed = true;
+				return;
+			}
+
+			Vector3D direction = MathOperation.getDirection(currentArmPos,
+					currentGoalPosition);
+
+			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
+					.getRadiant(0));
+			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
+					.getRadiant(0));
+			Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
+					.getRadiant(-90));
+			Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
+					MathOperation.getMatrixMatrixMultiplication(rotation1,
+							rotation2), rotation3);
+
+			Vector3D goalWithDistance = new Vector3D(
+					(currentGoalPosition.getX() - direction.getX()),
+					currentGoalPosition.getY() - direction.getY(),
+					currentGoalPosition.getZ());
+
+			armError = getManipulator().getArmConnector().getPosError(
+					goalWithDistance, greifRotation);
+		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
 			manipulationFailed = true;
 			return;
-		}
-
-		Vector3D direction = MathOperation.getDirection(currentArmPos,
-				currentGoalPosition);
-
-		Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
-				.getRadiant(0));
-		Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
-				.getRadiant(0));
-		Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
-				.getRadiant(-90));
-		Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
-				MathOperation.getMatrixMatrixMultiplication(rotation1,
-						rotation2), rotation3);
-
-		Vector3D goalWithDistance = new Vector3D(
-				(currentGoalPosition.getX() - direction.getX()),
-				currentGoalPosition.getY() - direction.getY(),
-				currentGoalPosition.getZ());
-
-		try {
-			armError = getManipulator().getArmConnector().getPosError(
-					goalWithDistance, greifRotation);
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
