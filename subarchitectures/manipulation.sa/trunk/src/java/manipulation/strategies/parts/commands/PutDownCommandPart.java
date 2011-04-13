@@ -25,11 +25,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import cast.SubarchitectureComponentException;
+import cast.cdl.WorkingMemoryAddress;
 
 /**
  * defines a behaviour to put an object on another object
@@ -50,30 +51,32 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 	}
 
 	private void putDownApproach() {
-
-		VisualObject targetVisOb = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand()).targetObject;
-
-		Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
-				targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
-
-		double posOver = 0.1;
-
-		Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
-				.getRadiant(0));
-		Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
-				.getRadiant(0));
-		Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
-				.getRadiant(-90));
-		Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
-				MathOperation.getMatrixMatrixMultiplication(rotation1,
-						rotation2), rotation3);
-
-		Vector3D goalWithDistance = new Vector3D(currentGoalPosition.getX(),
-				currentGoalPosition.getY(), currentGoalPosition.getZ()
-						+ posOver);
+		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetObjectAddr;
 
 		try {
+			VisualObject targetVisOb = (((CogXRunner) getManipulator()
+					.getRunner()).getMemoryEntry(wma, VisualObject.class));
+
+			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+
+			double posOver = 0.1;
+
+			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
+					.getRadiant(0));
+			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
+					.getRadiant(0));
+			Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
+					.getRadiant(-90));
+			Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
+					MathOperation.getMatrixMatrixMultiplication(rotation1,
+							rotation2), rotation3);
+
+			Vector3D goalWithDistance = new Vector3D(
+					currentGoalPosition.getX(), currentGoalPosition.getY(),
+					currentGoalPosition.getZ() + posOver);
+
 			getManipulator().getArmConnector().reach(goalWithDistance,
 					graspRotation);
 
@@ -86,6 +89,10 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
 							.getCurrentCommandAddress(), currentCom);
+		} catch (SubarchitectureComponentException e) {
+			logger.error(e);
+			manipulationFailed = true;
+			return;
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;

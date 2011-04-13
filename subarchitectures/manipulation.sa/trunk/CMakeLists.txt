@@ -9,6 +9,4 @@ include_directories(src/c++/autogen)
 # add a subdirectory containing another CMakeLists.txt file
 add_subdirectory(src/c++/autogen)
 
-include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
-include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)

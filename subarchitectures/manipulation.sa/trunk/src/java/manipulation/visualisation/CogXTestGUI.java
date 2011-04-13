@@ -210,7 +210,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			visObj.pose = pos;
 
-			putDownCommand.basedOnObject = visObj;
+//			putDownCommand.basedOnObject = visObj;
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -233,7 +233,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			visObj.pose = pos;
 
-			farArmMovementCom.targetObject = visObj;
+		//	farArmMovementCom.targetObject = visObj;
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -267,7 +267,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			visObj.pose = pos;
 
-			simulateGraspCommand.targetObject = visObj;
+	//		simulateGraspCommand.targetObject = visObj;
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,

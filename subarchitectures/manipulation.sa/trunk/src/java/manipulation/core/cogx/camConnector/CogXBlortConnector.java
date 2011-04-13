@@ -8,7 +8,6 @@ import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
-import manipulation.core.share.types.ViewPoints;
 import manipulation.itemMemory.Item;
 import manipulation.itemMemory.Item.ItemIntention;
 import manipulation.itemMemory.Item.ItemName;
