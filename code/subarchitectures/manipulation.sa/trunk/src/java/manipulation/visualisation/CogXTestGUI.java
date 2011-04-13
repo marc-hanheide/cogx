@@ -14,7 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import manipulation.core.share.Manipulator;
-import manipulation.core.share.exceptions.CalibrationException;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -27,13 +26,20 @@ import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
 
+import VisionData.Face;
+import VisionData.GeometryModel;
+import VisionData.Vertex;
+import VisionData.VisualObject;
+import VisionData.VisualObjectView;
+import cast.AlreadyExistsOnWMException;
+import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
 import cogx.Math.Matrix33;
 import cogx.Math.Pose3;
+import cogx.Math.Rect2;
+import cogx.Math.Sphere3;
+import cogx.Math.Vector2;
 import cogx.Math.Vector3;
-
-import VisionData.VisualObject;
-
-import cast.AlreadyExistsOnWMException;
 
 /**
  * GUI to use for the calibration procedure
@@ -84,6 +90,39 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		this.manipulator = manipulator;
 
 		guiSetup();
+	}
+
+	private VisualObject initVisualObject() {
+		Pose3 initPos = new Pose3();
+		initPos.pos = new Vector3(0, 0, 0);
+		initPos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+		String[] intStringArray = new String[1];
+		intStringArray[0] = "";
+		double[] initDoubleArray = new double[1];
+		initDoubleArray[0] = 0;
+		Vertex[] initVertex = new Vertex[1];
+		initVertex[0] = new Vertex(new Vector3(0, 0, 0), new Vector3(0, 0, 0),
+				new Vector2(0, 0));
+		Face[] initFace = new Face[1];
+		int[] initIntArray = new int[1];
+		initIntArray[0] = 0;
+		initFace[0] = new Face(initIntArray);
+		CASTTime initTime = ((CogXRunner) manipulator.getRunner())
+				.getTimeServer().getCASTTime();
+		Sphere3 initSphere = new Sphere3(new Vector3(0, 0, 0), 0);
+		VisualObjectView initVisualObjView = new VisualObjectView(new Rect2(
+				new Vector2(0, 0), 0, 0), 0, 0);
+		VisualObjectView[] initVisualObjViewArray = new VisualObjectView[1];
+		initVisualObjViewArray[0] = initVisualObjView;
+		GeometryModel initGeomModel = new GeometryModel(initVertex, initFace);
+		String compID = ((CogXRunner) manipulator.getRunner()).getComponentID();
+		VisualObject visObj = new VisualObject(initPos, intStringArray, 0,
+				initSphere, initTime, compID, initVisualObjViewArray,
+				initGeomModel, 0, intStringArray, initDoubleArray, 0, 0,
+				intStringArray, initDoubleArray, initDoubleArray, 0, 0,
+				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "");
+
+		return visObj;
 	}
 
 	/**
@@ -198,42 +237,71 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		if (e.getActionCommand().equals("putDown")) {
 			logger.error("putDown pressed");
 
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			String visObjID = ((CogXRunner) manipulator.getRunner())
+					.newDataID();
 			PutDownCommand putDownCommand = new PutDownCommand();
 
-			VisualObject visObj = new VisualObject();
 			Pose3 pos = new Pose3();
 			pos.pos = new Vector3(
 					Double.parseDouble(txtItemXPosition.getText()),
 					Double.parseDouble(txtItemYPosition.getText()),
 					Double.parseDouble(txtItemZPosition.getText()));
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+			VisualObject visObj = initVisualObject();
 			visObj.pose = pos;
 
-//			putDownCommand.basedOnObject = visObj;
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+						visObjID, visObj);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+
+			putDownCommand.basedObjectAddr = new WorkingMemoryAddress(visObjID,
+					((CogXRunner) manipulator.getRunner())
+							.getSubarchitectureID());
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						putDownCommand);
+
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
 		} else if (e.getActionCommand().equals("farArm")) {
 			logger.error("farArm pressed");
 
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			String visObjID = ((CogXRunner) manipulator.getRunner())
+					.newDataID();
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 
-			VisualObject visObj = new VisualObject();
 			Pose3 pos = new Pose3();
 			pos.pos = new Vector3(
 					Double.parseDouble(txtItemXPosition.getText()),
 					Double.parseDouble(txtItemYPosition.getText()),
 					Double.parseDouble(txtItemZPosition.getText()));
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+			VisualObject visObj = initVisualObject();
 			visObj.pose = pos;
 
-		//	farArmMovementCom.targetObject = visObj;
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+						visObjID, visObj);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+
+			farArmMovementCom.targetObjectAddr = new WorkingMemoryAddress(
+					visObjID,
+					((CogXRunner) manipulator.getRunner())
+							.getSubarchitectureID());
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -255,23 +323,38 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("simulateGrasp")) {
 			logger.error("simulateGrasp pressed");
 
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			String visObjID = ((CogXRunner) manipulator.getRunner())
+					.newDataID();
 			SimulateGraspCommand simulateGraspCommand = new SimulateGraspCommand();
 
-			VisualObject visObj = new VisualObject();
 			Pose3 pos = new Pose3();
 			pos.pos = new Vector3(
 					Double.parseDouble(txtItemXPosition.getText()),
 					Double.parseDouble(txtItemYPosition.getText()),
 					Double.parseDouble(txtItemZPosition.getText()));
 			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+			VisualObject visObj = initVisualObject();
 			visObj.pose = pos;
 
-	//		simulateGraspCommand.targetObject = visObj;
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+						visObjID, visObj);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+
+			simulateGraspCommand.targetObjectAddr = new WorkingMemoryAddress(
+					visObjID,
+					((CogXRunner) manipulator.getRunner())
+							.getSubarchitectureID());
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						simulateGraspCommand);
+
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}

@@ -53,7 +53,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 	}
 
 	private void fineApproach() {
-		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+		WorkingMemoryAddress wma = ((LinearGraspApproachCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
 		try {

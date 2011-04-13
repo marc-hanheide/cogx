@@ -53,6 +53,7 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 	}
 
 	private void simulateArm() {
+		
 		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
