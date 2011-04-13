@@ -17,7 +17,6 @@ import manipulation.core.share.Manipulator;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.LinearBaseMovementApproachCommand;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
@@ -272,17 +271,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						simulateGraspCommand);
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
-			}
-		} else if (e.getActionCommand().equals("linBaseApp")) {
-			logger.error("linBaseApp pressed");
-
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
-			LinearBaseMovementApproachCommand linBaseMovCommand = new LinearBaseMovementApproachCommand();
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-						linBaseMovCommand);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
