@@ -85,6 +85,7 @@ private:
 	float Compare2SOI(ObjPara obj1, ObjPara obj2);
 	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
+	VisionData::VisualObjectPtr ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label);
 	void AddConvexHullinWM();
 
 	vector< VisionData::SurfacePointSeq > SOIPointsSeq;

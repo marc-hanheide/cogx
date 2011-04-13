@@ -94,7 +94,11 @@ double mConvexHullDensity;
 
 Vector3 pre_mCenterOfHull;
 double pre_mConvexHullRadius;
-std::string pre_id;
+string pre_id;
+string pre_obj_id;
+const std::string obj_label_base = "plane";
+map<string, string> obj_id_map;
+map<string, string> obj_label_map;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector <CvRect> vSOIonImg;
@@ -680,7 +684,7 @@ void PlanePopOut::runComponent()
 #endif
   while(isRunning())
   {
-	long long t0 = gethrtime();
+	//long long t0 = gethrtime();
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 
@@ -792,8 +796,8 @@ void PlanePopOut::runComponent()
 		}
 		SOIManagement();
 	}
-	long long t1 = gethrtime();
-	double dt = (t1 - t0) * 1e-9;
+	//long long t1 = gethrtime();
+	//double dt = (t1 - t0) * 1e-9;
 // 	log("run time / frame rate: %lf / %lf", dt, 1./dt);
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
@@ -2065,6 +2069,52 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     return 1.0-wS*surfmacthingRatio-wC*abs(dist_histogram)-wP*sizeRatio;
 }
 
+VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label)
+{
+	VisionData::VisualObjectPtr oPtr = new VisionData::VisualObject;
+
+	// object pose
+	oPtr->pose = CHPtr->center;
+	oPtr->model = new VisionData::GeometryModel;
+
+	// geometry model
+	VisionData::Face face1, face2;
+	for(size_t i = 0; i < CHPtr->PointsSeq.size(); i++)
+	{
+		// note: Points of a visual object are given in object local coordinates,
+		// points of a plane convex hull are given in robot ego coordinates, so
+		// have to transform back into object local coords
+		Vertex v;
+		v.pos = transformInverse(oPtr->pose, CHPtr->PointsSeq[i]);
+		// z-direction is plane normal
+		v.normal = transformDirectionInverse(oPtr->pose, getColumn(oPtr->pose.rot, 2));
+		setZero(v.texCoord);
+		oPtr->model->vertices.push_back(v);
+		// fill one face clockwise, the other counter-clockwise
+		face1.vertices.push_back(i);
+		face2.vertices.insert(face2.vertices.begin(), i);
+	}
+	oPtr->model->faces.push_back(face1);
+	oPtr->model->faces.push_back(face2);
+
+	// NOTE: for now use a stupid fixed probability 
+	oPtr->identLabels.push_back(label);
+	oPtr->identLabels.push_back("unknown");
+	// note: distribution must of course sum to 1
+	oPtr->identDistrib.push_back(0.9);
+	oPtr->identDistrib.push_back(0.1);
+
+	// NOTE: for now use a stupid fixed probability 
+	oPtr->shapeLabels.push_back("plane");
+	oPtr->shapeLabels.push_back("unknown");
+	oPtr->shapeDistrib.push_back(0.9);
+	oPtr->shapeDistrib.push_back(0.1);
+
+	oPtr->time = CHPtr->time;
+
+	return oPtr;
+}
+
 void PlanePopOut::AddConvexHullinWM()
 {
 	double T_CenterHull = 0.5 * mConvexHullRadius;
@@ -2082,14 +2132,24 @@ void PlanePopOut::AddConvexHullinWM()
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
 		p3.pos = mCenterOfHull;
-
+		definePlaneAxes(CHPtr->plane, p3.rot);
 		CHPtr->center = p3;
 		CHPtr->radius = mConvexHullRadius;
 		CHPtr->density = mConvexHullDensity;
 		CHPtr->Objects = mObjSeq;
 		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
 		pre_id = newDataID();
-		addToWorkingMemory(pre_id,CHPtr);
+
+    // create a visual object from the convex hull
+		// id and label for the visual object associated to that plane
+		obj_id_map[pre_id] = newDataID();
+		ostringstream slabel(obj_label_base);
+		slabel << "." << obj_id_map[pre_id];
+		obj_label_map[pre_id] = slabel.str();
+		VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+
+		addToWorkingMemory(pre_id, CHPtr);
+		addToWorkingMemory(obj_id_map[pre_id], oPtr);
 
 		pre_mConvexHullRadius = mConvexHullRadius;
 		pre_mCenterOfHull = mCenterOfHull;
@@ -2109,18 +2169,32 @@ void PlanePopOut::AddConvexHullinWM()
 		    CHPtr->density = mConvexHullDensity;
 		    CHPtr->Objects = mObjSeq;
 		    CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
+
 		    if (dist(pre_mCenterOfHull, mCenterOfHull) > T_CenterHull)
 		    {
 			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
 			  //debug("add sth into WM");
 			  pre_id = newDataID();
-			  addToWorkingMemory(pre_id,CHPtr);
+
+			  // create a visual object from the convex hull
+			  // id and label for the visual object associated to that plane
+			  obj_id_map[pre_id] = newDataID();
+			  ostringstream slabel(obj_label_base);
+			  slabel << "." << obj_id_map[pre_id];
+			  obj_label_map[pre_id] = slabel.str();
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+
+			  addToWorkingMemory(pre_id, CHPtr);
+			  addToWorkingMemory(obj_id_map[pre_id], oPtr);
+
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
 		    }
 		    else
 		    {
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 			  overwriteWorkingMemory(pre_id, CHPtr);
+			  overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
 	}
