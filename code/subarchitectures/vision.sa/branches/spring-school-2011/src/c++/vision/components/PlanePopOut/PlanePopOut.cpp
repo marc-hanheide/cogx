@@ -3,16 +3,17 @@
  * @date June 2009
  */
 
-#include <GL/freeglut.h>
-#include <cogxmath.h>
-#include "PlanePopOut.h"
+#include <math.h>
+#include <time.h>
+#include <algorithm>
 #include <stack>
 #include <vector>
+#include <GL/freeglut.h>
+#include <cogxmath.h>
 #include <VideoUtils.h>
-#include <math.h>
-#include <algorithm>
-#include <time.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <../../VisionUtils.h>
+#include "PlanePopOut.h"
 
 long long gethrtime(void)
 {
@@ -2072,10 +2073,10 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label)
 {
 	VisionData::VisualObjectPtr oPtr = new VisionData::VisualObject;
+	oPtr->model = new VisionData::GeometryModel;
 
 	// object pose
 	oPtr->pose = CHPtr->center;
-	oPtr->model = new VisionData::GeometryModel;
 
 	// geometry model
 	VisionData::Face face1, face2;
@@ -2088,14 +2089,15 @@ VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::Co
 		v.pos = transformInverse(oPtr->pose, CHPtr->PointsSeq[i]);
 		// z-direction is plane normal
 		v.normal = transformDirectionInverse(oPtr->pose, getColumn(oPtr->pose.rot, 2));
-		setZero(v.texCoord);
+		v.texCoord = vector2(v.pos.x, v.pos.y);
 		oPtr->model->vertices.push_back(v);
 		// fill one face clockwise, the other counter-clockwise
 		face1.vertices.push_back(i);
-		face2.vertices.insert(face2.vertices.begin(), i);
+		face2.vertices.push_back(CHPtr->PointsSeq.size() - 1 - i);
 	}
 	oPtr->model->faces.push_back(face1);
 	oPtr->model->faces.push_back(face2);
+  computeNormalsFromFaces(oPtr->model);
 
 	// NOTE: for now use a stupid fixed probability 
 	oPtr->identLabels.push_back(label);
@@ -2119,10 +2121,6 @@ void PlanePopOut::AddConvexHullinWM()
 {
 	double T_CenterHull = 0.5 * mConvexHullRadius;
 	VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
-	Pose3 p3;
-	setIdentity(p3);
-	Vector3 v3;
-	setZero(v3);
 
 	if (pre_mConvexHullRadius == 0.0)
 	{
@@ -2131,20 +2129,20 @@ void PlanePopOut::AddConvexHullinWM()
 		//debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
-		p3.pos = mCenterOfHull;
-		definePlaneAxes(CHPtr->plane, p3.rot);
-		CHPtr->center = p3;
 		CHPtr->radius = mConvexHullRadius;
 		CHPtr->density = mConvexHullDensity;
 		CHPtr->Objects = mObjSeq;
 		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
+		normalisePlane(CHPtr->plane);
+		CHPtr->center.pos = mCenterOfHull;
+		definePlaneAxes(CHPtr->plane, CHPtr->center.rot);
 		pre_id = newDataID();
 
     // create a visual object from the convex hull
 		// id and label for the visual object associated to that plane
 		obj_id_map[pre_id] = newDataID();
-		ostringstream slabel(obj_label_base);
-		slabel << "." << obj_id_map[pre_id];
+		ostringstream slabel;
+		slabel << obj_label_base << "." << obj_id_map[pre_id];
 		obj_label_map[pre_id] = slabel.str();
 		VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 
@@ -2162,13 +2160,13 @@ void PlanePopOut::AddConvexHullinWM()
 		    //debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
-		    p3.pos = mCenterOfHull;
-
-		    CHPtr->center = p3;
 		    CHPtr->radius = mConvexHullRadius;
 		    CHPtr->density = mConvexHullDensity;
 		    CHPtr->Objects = mObjSeq;
 		    CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
+		    normalisePlane(CHPtr->plane);
+		    CHPtr->center.pos = mCenterOfHull;;
+		    definePlaneAxes(CHPtr->plane, CHPtr->center.rot);
 
 		    if (dist(pre_mCenterOfHull, mCenterOfHull) > T_CenterHull)
 		    {
@@ -2178,23 +2176,23 @@ void PlanePopOut::AddConvexHullinWM()
 
 			  // create a visual object from the convex hull
 			  // id and label for the visual object associated to that plane
-			  obj_id_map[pre_id] = newDataID();
-			  ostringstream slabel(obj_label_base);
-			  slabel << "." << obj_id_map[pre_id];
+			  /*obj_id_map[pre_id] = newDataID();
+			  ostringstream slabel;
+			  slabel << obj_label_base << "." << obj_id_map[pre_id];
 			  obj_label_map[pre_id] = slabel.str();
-			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);*/
 
 			  addToWorkingMemory(pre_id, CHPtr);
-			  addToWorkingMemory(obj_id_map[pre_id], oPtr);
+			  //addToWorkingMemory(obj_id_map[pre_id], oPtr);
 
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
 		    }
 		    else
 		    {
-			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+			  //VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 			  overwriteWorkingMemory(pre_id, CHPtr);
-			  overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
+			  //overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
 	}
