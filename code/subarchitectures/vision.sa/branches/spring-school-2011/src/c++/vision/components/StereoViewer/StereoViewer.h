@@ -32,6 +32,10 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
+  /**
+   * whether to log images to files
+   */
+  bool logImages;
 
 protected:
   /**
