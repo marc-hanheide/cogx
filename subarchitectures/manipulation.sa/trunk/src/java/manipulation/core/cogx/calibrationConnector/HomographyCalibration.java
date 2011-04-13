@@ -165,7 +165,7 @@ public class HomographyCalibration implements CalibrationConnector {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void readCamToRobCalibration() throws CalibrationException {
+	public void readCalibrationFile() throws CalibrationException {
 		Builder builder = new Builder();
 		try {
 			Document calibrationDoc = builder.build(manipulator
@@ -212,28 +212,28 @@ public class HomographyCalibration implements CalibrationConnector {
 		calibrationRead = true;
 
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Vector3D getCamToRobTranslation() throws CalibrationException {
-		if (!calibrationRead)
-			readCamToRobCalibration();
-
-		return translation;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Matrix getCamToRobRotation() throws CalibrationException {
-		if (!calibrationRead)
-			readCamToRobCalibration();
-
-		return rotation;
-	}
+//
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override
+//	public Vector3D getCamToRobTranslation() throws CalibrationException {
+//		if (!calibrationRead)
+//			readCalibrationFile();
+//
+//		return translation;
+//	}
+//
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override
+//	public Matrix getCamToRobRotation() throws CalibrationException {
+//		if (!calibrationRead)
+//			readCalibrationFile();
+//
+//		return rotation;
+//	}
 
 	/**
 	 * {@inheritDoc}

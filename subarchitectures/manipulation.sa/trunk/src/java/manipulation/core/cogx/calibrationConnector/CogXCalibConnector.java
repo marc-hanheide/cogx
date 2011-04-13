@@ -56,7 +56,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void readCamToRobCalibration() throws CalibrationException {
+	public void readCalibrationFile() throws CalibrationException {
 		Builder builder = new Builder();
 		try {
 			Document calibrationDoc = builder.build(manipulator
@@ -125,10 +125,8 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Vector3D getCamToRobTranslation() throws CalibrationException {
-		if (!calibrationRead)
-			readCamToRobCalibration();
-
-		return translation;
+		logger.info("Cam system is providing coordinates in robot coordinates");
+		return new Vector3D(0, 0, 0);
 	}
 
 	/**
@@ -136,10 +134,8 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Matrix getCamToRobRotation() throws CalibrationException {
-		if (!calibrationRead)
-			readCamToRobCalibration();
-
-		return rotation;
+		logger.info("Cam system is providing coordinates in robot coordinates");
+		return new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 	}
 
 	/**
@@ -188,8 +184,8 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Vector3D getCamPointInRob(Vector3D camPoint) {
-		logger.error("No need for an implementation for the spring school cogx system!");
-		return null;
+		logger.info("Cam system is providing coordinates in robot coordinates");
+		return camPoint;
 	}
 
 	/**
@@ -197,8 +193,8 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Matrix getCamRotationInRob(Matrix camRotation) {
-		logger.error("No need for an implementation for the spring school cogx system!");
-		return null;
+		logger.info("Cam system is providing coordinates in robot coordinates");
+		return camRotation;
 	}
 
 	/**
@@ -207,7 +203,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	@Override
 	public Matrix getRobToArmRotation() throws CalibrationException {
 		if (!calibrationRead)
-			readCamToRobCalibration();
+			readCalibrationFile();
 
 		return rotation;
 	}
@@ -218,7 +214,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	@Override
 	public Vector3D getRobToArmTranslation() throws CalibrationException {
 		if (!calibrationRead)
-			readCamToRobCalibration();
+			readCalibrationFile();
 
 		return translation;
 	}
