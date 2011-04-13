@@ -37,6 +37,6 @@ CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--de
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
 
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "/home/ttoenige/Desktop/calib_real.xml" --armName "simulation"
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "/home/ttoenige/Desktop/newCalib.xml" --armName "simulation"
 
 JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col

@@ -142,8 +142,8 @@ public class MapPanel extends JPanel implements Observer {
 		Region surrounding;
 		Item item;
 
-		Vector2D panelCoordinates = new Vector2D(mouseEvent.getX(), mouseEvent
-				.getY());
+		Vector2D panelCoordinates = new Vector2D(mouseEvent.getX(),
+				mouseEvent.getY());
 		Vector2D gridCoordinates = panelCoordinates2Grid(panelCoordinates);
 		Vector2D worldCoordinates = manipulator.getMapConnector()
 				.getWorldFromIndex(gridCoordinates);
@@ -250,8 +250,8 @@ public class MapPanel extends JPanel implements Observer {
 			g2.setColor(Color.GREEN);
 			double[] mapPointArray = mapPoint.toArray();
 			pointTransform.transform(mapPointArray, 0, mapPointArray, 0, 1);
-			drawPose((int) mapPointArray[0], (int) mapPointArray[1], currentPos
-					.getAngle(), true, "");
+			drawPose((int) mapPointArray[0], (int) mapPointArray[1],
+					currentPos.getAngle(), true, "");
 
 		} catch (ExternalMemoryException e) {
 			logger.warn(e);
@@ -317,7 +317,8 @@ public class MapPanel extends JPanel implements Observer {
 			g2.setColor(Color.BLUE);
 
 			for (ViewPoint point : viewPoints) {
-				double[] pointArray = manipulator.getMapConnector()
+				double[] pointArray = manipulator
+						.getMapConnector()
 						.getIndexFromWorldCoordinates(
 								point.getPosition().getPoint()).toArray();
 
@@ -329,22 +330,22 @@ public class MapPanel extends JPanel implements Observer {
 			e.printStackTrace();
 		}
 
-		List<ViewPoint> graspingPoints;
-		graspingPoints = ((CogXVirtualSceneConnector) manipulator
-				.getVirtualSceneConnector()).getPoints();
-
-		if (!graspingPoints.isEmpty()) {
-			g2.setColor(Color.CYAN);
-
-			for (ViewPoint point : graspingPoints) {
-				double[] pointArray = manipulator.getMapConnector()
-						.getIndexFromWorldCoordinates(
-								point.getPosition().getPoint()).toArray();
-
-				pointTransform.transform(pointArray, 0, pointArray, 0, 1);
-				drawPose((int) pointArray[0], (int) pointArray[1], 0, false, "");
-			}
-		}
+		// List<ViewPoint> graspingPoints;
+		// graspingPoints = ((CogXVirtualSceneConnector) manipulator
+		// .getVirtualSceneConnector()).getPoints();
+		//
+		// if (!graspingPoints.isEmpty()) {
+		// g2.setColor(Color.CYAN);
+		//
+		// for (ViewPoint point : graspingPoints) {
+		// double[] pointArray = manipulator.getMapConnector()
+		// .getIndexFromWorldCoordinates(
+		// point.getPosition().getPoint()).toArray();
+		//
+		// pointTransform.transform(pointArray, 0, pointArray, 0, 1);
+		// drawPose((int) pointArray[0], (int) pointArray[1], 0, false, "");
+		// }
+		// }
 
 		if (changedItem.getAllAtributeKeys().contains(
 				PropertyName.ROTATIONAL_VIEWPOINT)) {
@@ -360,7 +361,8 @@ public class MapPanel extends JPanel implements Observer {
 						g2.setColor(Color.ORANGE);
 
 						for (ViewPoint viewPoint : rotVP) {
-							double[] pointArray = manipulator.getMapConnector()
+							double[] pointArray = manipulator
+									.getMapConnector()
 									.getIndexFromWorldCoordinates(
 											viewPoint.getPosition().getPoint())
 									.toArray();
@@ -376,7 +378,8 @@ public class MapPanel extends JPanel implements Observer {
 
 						g2.setColor(Color.PINK);
 
-						double[] pointArray1 = manipulator.getMapConnector()
+						double[] pointArray1 = manipulator
+								.getMapConnector()
 								.getIndexFromWorldCoordinates(
 										bestVP.getPosition().getPoint())
 								.toArray();
@@ -422,9 +425,8 @@ public class MapPanel extends JPanel implements Observer {
 				// coordinate, because of the occupancy grids layout, described
 				// at the top).
 
-				Rectangle2D pixelRect = new Rectangle2D.Double(x, (image
-						.getHeight() - 1)
-						- y, 1, 1);
+				Rectangle2D pixelRect = new Rectangle2D.Double(x,
+						(image.getHeight() - 1) - y, 1, 1);
 				g2d.draw(pixelRect);
 			}
 		}

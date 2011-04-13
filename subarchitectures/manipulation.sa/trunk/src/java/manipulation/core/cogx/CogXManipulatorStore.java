@@ -33,8 +33,15 @@ public class CogXManipulatorStore extends ManipulatorStore {
 			break;
 		case MASTER_THESIS:
 			logger.debug("Int grasp MasterThesis");
-			 manPartFactory = new MasterThesisManipulatorPartsFactory();
+			manPartFactory = new MasterThesisManipulatorPartsFactory();
 			manipulator = new MasterThesisIntGraspingManipulator(manPartFactory);
+			manipulator.setName(name);
+			break;
+		case EXEMPLARY_SOLUTION:
+			logger.debug("Int grasp exemplay solution");
+			manPartFactory = new ExemplarySolutionManipulatorPartsFactory();
+			manipulator = new ExemplarySolutionIntGraspingManipulator(
+					manPartFactory);
 			manipulator.setName(name);
 			break;
 		default:
