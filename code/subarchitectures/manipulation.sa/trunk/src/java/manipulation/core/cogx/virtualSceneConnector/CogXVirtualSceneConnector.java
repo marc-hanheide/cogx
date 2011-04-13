@@ -29,6 +29,7 @@ import manipulation.core.cogx.virtualSceneConnector.initObjects.PlaneShapeDescI;
 import manipulation.core.cogx.virtualSceneConnector.initObjects.RigidBodyDescI;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.armConnector.ArmConnector.ArmName;
+import manipulation.core.share.exceptions.CalibrationException;
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.exceptions.ManipulatorException;
@@ -56,32 +57,31 @@ import org.apache.log4j.Logger;
  * 
  */
 public class CogXVirtualSceneConnector implements VirtualSceneConnector {
-	private static final double BASEHIGHT = 0.215;
-	private static final double BASELENGTH = 0.51;
-	private static final double BASEWIDTH = 0.38;
+	private Manipulator manipulator;
 
-	private static final double STICKHIGHT = 1;
-	private static final double STICKLENGTH = 0.05;
-	private static final double STICKWIDTH = 0.05;
+	private double baseHeight;
+	private double baseLength = 0.51;
+	private double baseWidth = 0.38;
 
-	private static final double FINGERLENGTH = 0.15;
-	private static final double FINGERDIAM = 0.005;
-	private static final double GRIPPERLENGTH = 0.08;
+	private double stichHeight = 1;
+	private double stickLength = 0.05;
+	private double stickWidth = 0.05;
+
+	private double fingerLength = 0.15;
+	private double fingerDiam = 0.005;
+	private double gripperLength = 0.08;
 
 	// private static final double fingerTipRadius = 0.015;
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	private Matrix initArmRotation = MathOperation
-			.getRotationAroundZ(-(Math.PI / 2));
+	private Matrix initArmRotation;
 
 	private Vector<RigidBodyPrx> obstacles;
 	// private Vector<RigidBodyPrx> tables;
 	public TinyPrx tinyInterface;
 	private RigidBodyPrx robot = null;
 	private ArmPrx arm;
-
-	private Manipulator manipulator;
 
 	private Thread posThread;
 	private Thread itemThread;
@@ -98,6 +98,31 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		obstacles = new Vector<RigidBodyPrx>();
 		// tables = new Vector<RigidBodyPrx>();
 		this.manipulator = manipulator;
+
+		try {
+			baseHeight = (manipulator.getCalibrationConnector()
+					.getRobToArmTranslation().getZ());
+		} catch (CalibrationException e2) {
+			logger.error(e2);
+		}
+
+		baseLength = 0.51;
+		baseWidth = 0.38;
+
+		stichHeight = 1;
+		stickLength = 0.05;
+		stickWidth = 0.05;
+
+		fingerLength = 0.15;
+		fingerDiam = 0.005;
+		gripperLength = 0.08;
+
+		try {
+			initArmRotation = manipulator.getCalibrationConnector()
+					.getRobToArmRotation();
+		} catch (CalibrationException e1) {
+			logger.error(e1);
+		}
 
 		posThread = new Thread(new UpdatePositionRunnable(this, manipulator));
 		itemThread = new Thread(new UpdateItemPositionRunnable(this,
@@ -136,7 +161,16 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	}
 
 	private ArmPrx createArm(ArmName armName) {
-		Vec3 globalArmPosePos = new Vec3(0, 0, BASEHIGHT);
+		Vec3 globalArmPosePos = null;
+		try {
+			globalArmPosePos = new Vec3(manipulator.getCalibrationConnector()
+					.getRobToArmTranslation().getX(), manipulator
+					.getCalibrationConnector().getRobToArmTranslation().getY(),
+					manipulator.getCalibrationConnector()
+							.getRobToArmTranslation().getZ());
+		} catch (CalibrationException e1) {
+			logger.error(e1);
+		}
 		Mat33 globalArmPoseRot = CogXConverter
 				.convMatrixToGolem(initArmRotation);
 		ArmPrx arm = null;
@@ -191,13 +225,13 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		Matrix oldRefRot = CogXConverter.convGolemToMatrix(referencePose.R);
 
 		BoxShapeDesc pFingerRodShapeDesc = new BoxShapeDescI();
-		pFingerRodShapeDesc.dimensions.v1 = FINGERDIAM / 2.0;
-		pFingerRodShapeDesc.dimensions.v2 = FINGERLENGTH / 2.0;
-		pFingerRodShapeDesc.dimensions.v3 = FINGERDIAM / 2.0;
+		pFingerRodShapeDesc.dimensions.v1 = fingerDiam / 2.0;
+		pFingerRodShapeDesc.dimensions.v2 = fingerLength / 2.0;
+		pFingerRodShapeDesc.dimensions.v3 = fingerDiam / 2.0;
 		pFingerRodShapeDesc.localPose = new Mat34(
 				CogXConverter.convMatrixToGolem(oldRefRot),
 				CogXConverter.convVecToGolem(oldRefPos));
-		pFingerRodShapeDesc.localPose.p.v2 += (FINGERLENGTH / 2.0) - 0.05;
+		pFingerRodShapeDesc.localPose.p.v2 += (fingerLength / 2.0) - 0.05;
 		pFingerRodShapeDesc.localPose.p.v1 -= 0.05;
 		pFingerRodShapeDesc.localPose.R = CogXConverter
 				.convMatrixToGolem(MathOperation.getRotationAroundZ(10));
@@ -208,14 +242,14 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		}
 
 		BoxShapeDesc pFingerRodShapeDesc2 = new BoxShapeDescI();
-		pFingerRodShapeDesc2.dimensions.v1 = FINGERDIAM / 2.0;
-		pFingerRodShapeDesc2.dimensions.v2 = FINGERLENGTH / 2.0;
-		pFingerRodShapeDesc2.dimensions.v3 = FINGERDIAM / 2.0;
+		pFingerRodShapeDesc2.dimensions.v1 = fingerDiam / 2.0;
+		pFingerRodShapeDesc2.dimensions.v2 = fingerLength / 2.0;
+		pFingerRodShapeDesc2.dimensions.v3 = fingerDiam / 2.0;
 		pFingerRodShapeDesc2.localPose = new Mat34(
 				CogXConverter.convMatrixToGolem(oldRefRot),
 				CogXConverter.convVecToGolem(oldRefPos));
 		;
-		pFingerRodShapeDesc2.localPose.p.v2 += (FINGERLENGTH / 2.0) - 0.05;
+		pFingerRodShapeDesc2.localPose.p.v2 += (fingerLength / 2.0) - 0.05;
 		pFingerRodShapeDesc2.localPose.p.v1 += 0.05;
 		pFingerRodShapeDesc2.localPose.R = CogXConverter
 				.convMatrixToGolem(MathOperation.getRotationAroundZ(-10));
@@ -227,7 +261,7 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 
 		Mat34 newRefPos = new Mat34(CogXConverter.convMatrixToGolem(oldRefRot),
 				CogXConverter.convVecToGolem(new Vector3D(oldRefPos.getX(),
-						oldRefPos.getY() + GRIPPERLENGTH, oldRefPos.getZ())));
+						oldRefPos.getY() + gripperLength, oldRefPos.getZ())));
 
 		arm.setReferencePose(newRefPos);
 
@@ -381,7 +415,16 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 
 		Vec3 globalRobotPoseTrans = robot.getGlobalPose().p;
 
-		Vector3D relativeCoordinate = new Vector3D(0, 0, BASEHIGHT / 2);
+		Vector3D relativeCoordinate = null;
+		try {
+			relativeCoordinate = new Vector3D(
+					manipulator.getCalibrationConnector()
+							.getRobToArmTranslation().getX() / 2, manipulator
+							.getCalibrationConnector().getRobToArmTranslation()
+							.getY() / 2, baseHeight / 2);
+		} catch (CalibrationException e) {
+			logger.error(e);
+		}
 
 		Vector3D newRelCoordinate = MathOperation
 				.getMatrixVectorMultiplication(globalRobotPoseRot,
@@ -411,25 +454,25 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		robot.shapes = new ShapeDesc[2];
 
 		BoxShapeDesc base = new BoxShapeDescI();
-		base.dimensions.v1 = BASELENGTH / 2;
-		base.dimensions.v2 = BASEWIDTH / 2;
-		base.dimensions.v3 = BASEHIGHT / 2;
+		base.dimensions.v1 = baseLength / 2;
+		base.dimensions.v2 = baseWidth / 2;
+		base.dimensions.v3 = baseHeight / 2;
 
-		base.localPose.p = new Vec3(-BASELENGTH / 4, 0, 0);
+		base.localPose.p = new Vec3(-baseLength / 4, 0, 0);
 
 		robot.shapes[0] = base;
 
 		BoxShapeDesc stick = new BoxShapeDescI();
-		stick.dimensions.v1 = STICKWIDTH;
-		stick.dimensions.v2 = STICKLENGTH;
-		stick.dimensions.v3 = STICKHIGHT / 2;
-		stick.localPose.p = new Vec3(-BASELENGTH / 3, 0, BASEHIGHT / 2
-				+ STICKHIGHT / 2);
+		stick.dimensions.v1 = stickWidth;
+		stick.dimensions.v2 = stickLength;
+		stick.dimensions.v3 = stichHeight / 2;
+		stick.localPose.p = new Vec3(-baseLength / 3, 0, baseHeight / 2
+				+ stichHeight / 2);
 		robot.shapes[1] = stick;
 
 		robot.globalPose.p.v1 = position.getPoint().getX();
 		robot.globalPose.p.v2 = position.getPoint().getY();
-		robot.globalPose.p.v3 = BASEHIGHT / 2;
+		robot.globalPose.p.v3 = baseHeight / 2;
 
 		robot.globalPose.R = CogXConverter.convMatrixToGolem(MathOperation
 				.getRotationAroundZ(position.getAngle()));

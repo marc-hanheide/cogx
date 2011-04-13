@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
  */
 public class HomographyCalibration implements CalibrationConnector {
 	private Logger logger = Logger.getLogger(this.getClass());
-	
+
 	private Manipulator manipulator;
 
 	private Matrix rotation = new Matrix();
@@ -352,5 +352,17 @@ public class HomographyCalibration implements CalibrationConnector {
 		}
 
 		return returnValue;
+	}
+
+	@Override
+	public Matrix getRobToArmRotation() throws CalibrationException {
+		logger.error("No need for an implementation for the spring school master thesis system!");
+		return null;
+	}
+
+	@Override
+	public Vector3D getRobToArmTranslation() throws CalibrationException {
+		logger.error("No need for an implementation for the spring school master thesis system!");
+		return null;
 	}
 }

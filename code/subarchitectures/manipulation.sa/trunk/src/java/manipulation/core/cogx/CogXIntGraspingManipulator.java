@@ -35,12 +35,12 @@ public class CogXIntGraspingManipulator extends Manipulator {
 
 	
 		setBaseConnector(partFactory.createBaseConnector(this));
+		setCalibrationConnector(partFactory.createCalibrationConnector(this));
 		setVirtualSceneConnector(partFactory.createVirtualSceneConnector(this));
 		setArmConnector(partFactory.createArmConnector(this));
 		setCamConnector(partFactory.createCamConnector(this));
 		setMapConnector(partFactory.createMapConnector(this));
-		setCalibrationConnector(partFactory.createCalibrationConnector(this));
-
+		
 		setPanTiltConnector(partFactory.createPanTiltConnector(this));
 
 	}
