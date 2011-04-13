@@ -51,8 +51,8 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 	}
 
 	private void putDownApproach() {
-		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand()).targetObjectAddr;
+		WorkingMemoryAddress wma = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).basedObjectAddr;
 
 		try {
 			VisualObject targetVisOb = (((CogXRunner) getManipulator()

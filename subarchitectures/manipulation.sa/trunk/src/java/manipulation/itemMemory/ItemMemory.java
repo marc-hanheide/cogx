@@ -202,8 +202,6 @@ public class ItemMemory extends Observable {
 
 		try {
 			if ((MathOperation.getDistance(newPositionData, oldPos) > 1000)) {
-				logger.error("ERRRRR "
-						+ MathOperation.getDistance(newPositionData, oldPos));
 				Region potentionalSurrounding = manipulator.getMapAlgorithms()
 						.updateSurroundingFromWorldCoordinates(newItem);
 

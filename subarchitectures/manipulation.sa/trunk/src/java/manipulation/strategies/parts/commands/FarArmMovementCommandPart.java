@@ -55,7 +55,7 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 
 	private void farGraspApproach() {
 
-		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+		WorkingMemoryAddress wma = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
 		try {
