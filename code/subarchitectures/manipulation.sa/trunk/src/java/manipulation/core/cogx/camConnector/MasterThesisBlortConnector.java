@@ -128,6 +128,10 @@ public class MasterThesisBlortConnector implements CamConnector {
 				recognizeCommand.label = "pringles";
 				logger.debug("try to find pringles");
 				break;
+			case GREEN_TEA:
+				recognizeCommand.label = "green_tea";
+				logger.debug("try to find green_tea");
+				break;
 			default:
 				logger.error("don't know the item");
 				break;
