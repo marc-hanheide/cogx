@@ -57,7 +57,7 @@ void CameraMount::configure(const map<string,string> & _config)
     camPoses.push_back(readPoseXML(filename));
   }
 
-  if((it = _config.find("--cam_ids")) != _config.end())
+  if((it = _config.find("--camids")) != _config.end())
   {
     istringstream str(it->second);
     int id;
