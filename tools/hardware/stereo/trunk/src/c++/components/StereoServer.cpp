@@ -1,16 +1,14 @@
 /**
- * @file StereoServer.cpp
- * @author Richtsfeld Andreas
- * @date April 2011
- * @version 0.1
- * @brief Point cloud server for the cast-framework implemented as stereo server.
+ * @author Michael Zillich
+ * @date June 2009
  */
 
-#include <cast/core/CASTUtils.hpp>
 #include <limits.h>
 #include <sstream>
 #include <opencv/highgui.h>
+#include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
+#include <VisionUtils.h>
 #include "StereoServer.h"
 
 // a useful default max disparity
@@ -48,6 +46,26 @@ static double gethrtime_d()
   return (double)ts.tv_sec + 1e-9*(double)ts.tv_nsec;
 }
 
+void StereoServerI::getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
+{
+  stereoSrv->getPoints(transformToGlobal, imgWidth, points, false);
+}
+
+void StereoServerI::getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&)
+{
+  stereoSrv->getPoints(transformToGlobal, imgWidth, points, true);
+}
+
+void StereoServerI::getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&)
+{
+  stereoSrv->getRectImage(side, imgWidth, image);
+}
+
+void StereoServerI::getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&)
+{
+  stereoSrv->getDisparityImage(imgWidth, image);
+}
+
 StereoServer::StereoServer()
 {
 #ifdef HAVE_GPU_STEREO
@@ -74,11 +92,15 @@ StereoServer::~StereoServer()
   }
 }
 
-void StereoServer::configure(const map<string,string> & _config) throw(runtime_error)
+void StereoServer::setupMyIceCommunication()
 {
-  // configure base class
-  PointCloudServer::configure(_config);
+  hStereoServer = new StereoServerI(this);
+  registerIceServer<Stereo::StereoInterface, StereoServerI>(hStereoServer);
+}
 
+void StereoServer::configure(const map<string,string> & _config)
+  throw(runtime_error)
+{
   map<string,string>::const_iterator it;
   string stereoCalibFile;
 
@@ -86,30 +108,27 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   {
     videoServerName = it->second;
   }
-  else throw runtime_error(exceptionMessage(__HERE__, "no video config file (videoname) given"));			/// TODO Notwendige mit throw exception ausstatten
 
-//   if((it = _config.find("--camids")) != _config.end())     // moved to Point Cloud Server
-//   {
-//     istringstream str(it->second);
-//     int id;
-//     while(str >> id)
-//       camIds.push_back(id);
-//   } 
-//   else printf("StereoServer::configure: Warning: No camids specified.\n");
+  if((it = _config.find("--camids")) != _config.end())
+  {
+    istringstream str(it->second);
+    int id;
+    while(str >> id)
+      camIds.push_back(id);
+  }
 
   if((it = _config.find("--stereoconfig")) != _config.end())
   {
     stereoCalibFile = it->second;
   }
-  else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file given"));
 
-  if((it = _config.find("--imgsize")) != _config.end())							/// TODO nicht notwendige mit log oder debug Meldungen ausstatten
+  if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
     int w, h;
     while(str >> w >> h)
       stereoSizes.push_back(cvSize(w, h));
-  }  
+  }
 
   if((it = _config.find("--maxdisp")) != _config.end())
   {
@@ -149,6 +168,9 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   {
     logImages = true;
   }
+
+  if(stereoCalibFile.empty())
+    throw runtime_error(exceptionMessage(__HERE__, "no stereo config file given"));
 
   // if no image size was specified, use the original image size as given by the stereo config
   if(stereoSizes.empty())
@@ -199,6 +221,7 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   census = new CensusGPU();
 #endif
 
+  setupMyIceCommunication();
 }
 
 void StereoServer::start()
@@ -223,8 +246,6 @@ void StereoServer::start()
     cvNamedWindow("right", 1);
     cvNamedWindow("disparity", 1);
   }
-  
-  PointCloudServer::start();
 }
 
 int StereoServer::findClosestResolution(int imgWidth)
@@ -244,7 +265,8 @@ int StereoServer::findClosestResolution(int imgWidth)
   return idx;
 }
 
-void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
+void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<VisionData::SurfacePoint> &points,
+  bool complete)
 {
   lockComponent();
 
@@ -271,14 +293,15 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointC
     for(int x = 0; x < imgSet.disparityImg->width; x++)
     {
       float d = *((float*)Video::cvAccessImageData(imgSet.disparityImg, x, y));
-      PointCloud::SurfacePoint p;
-      if(stereoCam->ReconstructPoint((double)x, (double)y, (double)d, p.p.x, p.p.y, p.p.z))
+      VisionData::SurfacePoint p;
+      if(stereoCam->ReconstructPoint((double)x, (double)y, (double)d,
+           p.p.x, p.p.y, p.p.z))
       {
         if(transformToGlobal)
           // now get from left cam coord sys to global coord sys
           p.p = transform(global_left_pose, p.p);
-        
-        cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
+        VisionData::ColorRGB *c =
+          (VisionData::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
         p.c = *c;
         points.push_back(p);
       }
@@ -290,8 +313,8 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointC
           // now get from left cam coord sys to global coord sys
           p.p = transform(global_left_pose, p.p);*/
         p.p = vector3(0., 0., 0.);
-        cogx::Math::ColorRGB *c =
-          (cogx::Math::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
+        VisionData::ColorRGB *c =
+          (VisionData::ColorRGB*)Video::cvAccessImageData(imgSet.rectColorImg[LEFT], x, y);
         p.c = *c;
         points.push_back(p);
       }
@@ -424,13 +447,13 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
 void StereoServer::receiveImages(const vector<Video::Image>& images)
 {
   lockComponent();
-  printf("StereoServer::receiveImages: Warning: Not yet implemented!\n");
   //stereoProcessing();
   unlockComponent();
 }
 
 void StereoServer::runComponent()
-{}
+{
+}
 
 /*void StereoServer::redraw3D(vector<VisionData::SurfacePoint> &points)
 {

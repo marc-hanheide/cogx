@@ -89,7 +89,7 @@ public:
 public:
   StereoCamera();
   ~StereoCamera();
-  bool ReadSVSCalib(const std::string &calibfile);
+  void ReadSVSCalib(const std::string &calibfile);
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
   bool ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
   void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);
@@ -103,9 +103,8 @@ public:
   void SetDisparityRange(int minDisp, int maxDisp);
   void SetInputImageSize(CvSize size);
   void SetMatchingAlgoritm(MatchingAlgorithm algo);
-  void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
-  
-  cv::Mat GetIntrinsic(unsigned side);
+  void CalculateDisparity(const IplImage *left, const IplImage *right,
+      IplImage *disp);
 };
 
 }

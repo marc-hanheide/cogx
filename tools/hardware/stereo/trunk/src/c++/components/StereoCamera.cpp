@@ -69,115 +69,92 @@ StereoCamera::~StereoCamera()
  * NOTE: the 'frame' parameter in the SVS calibration file is ignored. It is
  * typically 1 anyway.
  */
-bool StereoCamera::ReadSVSCalib(const string &calibfile)
+void StereoCamera::ReadSVSCalib(const string &calibfile)
 {
-  CDataFile file;
-  if(file.Load(calibfile))
+  CDataFile file(calibfile);
+
+  for(int side = LEFT; side <= RIGHT; side++)
   {
-    cam[LEFT].width = file.GetInt("pwidth", "left camera");
-    cam[LEFT].height = file.GetInt("pheight", "left camera");
-    cam[LEFT].fx = file.GetFloat("f", "left camera");
-    cam[LEFT].fy = file.GetFloat("fy", "left camera");
-    cam[LEFT].cx = file.GetFloat("Cx", "left camera");
-    cam[LEFT].cy = file.GetFloat("Cy", "left camera");
-    cam[LEFT].k1 = file.GetFloat("kappa1", "left camera");
-    cam[LEFT].k2 = file.GetFloat("kappa2", "left camera");
-    cam[LEFT].k3 = file.GetFloat("kappa3", "left camera");
-    cam[LEFT].t1 = file.GetFloat("tau1", "left camera");
-    cam[LEFT].t2 = file.GetFloat("tau2", "left camera");
+    const char *side_str = side == LEFT ? "left camera" : "right camera";
+    cam[side].width = file.GetInt("pwidth", side_str);
+    cam[side].height = file.GetInt("pheight", side_str);
+    cam[side].fx = file.GetFloat("f", side_str);
+    cam[side].fy = file.GetFloat("fy", side_str);
+    cam[side].cx = file.GetFloat("Cx", side_str);
+    cam[side].cy = file.GetFloat("Cy", side_str);
+    cam[side].k1 = file.GetFloat("kappa1", side_str);
+    cam[side].k2 = file.GetFloat("kappa2", side_str);
+    cam[side].k3 = file.GetFloat("kappa3", side_str);
+    cam[side].t1 = file.GetFloat("tau1", side_str);
+    cam[side].t2 = file.GetFloat("tau2", side_str);
 
-    string str1 = file.GetString("proj", "left camera");
+    string str1 = file.GetString("proj", side_str);
     istringstream sstr1(str1);
-    ReadMat34(sstr1, cam[LEFT].proj);
+    ReadMat34(sstr1, cam[side].proj);
 
-    string str2 = file.GetString("rect", "left camera");
+    string str2 = file.GetString("rect", side_str);
     istringstream sstr2(str2);
-    ReadMat33(sstr2, cam[LEFT].rect);
+    ReadMat33(sstr2, cam[side].rect);
+  }
 
-    cam[RIGHT].width = file.GetInt("pwidth", "right camera");
-    cam[RIGHT].height = file.GetInt("pheight", "right camera");
-    cam[RIGHT].fx = file.GetFloat("f", "right camera");
-    cam[RIGHT].fy = file.GetFloat("fy", "right camera");
-    cam[RIGHT].cx = file.GetFloat("Cx", "right camera");
-    cam[RIGHT].cy = file.GetFloat("Cy", "right camera");
-    cam[RIGHT].k1 = file.GetFloat("kappa1", "right camera");
-    cam[RIGHT].k2 = file.GetFloat("kappa2", "right camera");
-    cam[RIGHT].k3 = file.GetFloat("kappa3", "right camera");
-    cam[RIGHT].t1 = file.GetFloat("tau1", "right camera");
-    cam[RIGHT].t2 = file.GetFloat("tau2", "right camera");
+  // read poses
+  // Note: an ideal camera is the camera associated with the ideal, i.e. rectified
+  // image
+  // We have:
+  // - pose of the whole stereo rig, we call that the global rig pose
+  //   (this->pose)
+  // - pose of the left ideal camera relative to the rig (cam[LEFT]->pose), we assume
+  //   this to be identity (as is quite common), so global rig pose and global
+  //   ideal left camera pose are the same
+  // - global pose of left ideal camera, same as global rig pose (see above).
+  //   This is called "global" in the calibration file.
+  // - pose of the right ideal camera relative to the rig (cam[RIGHT]->pose).
+  //   This is stored implicitly in the right projection matrix Pr:
+  //   relative right ideal pose is identity except x = -Pr(0,3)/Pr(0,0)
+  //   (Note: What is called "external" in the calibration file (NOTE: Actually it is
+  //   the inverse of "external"!) is the pose of the real (not ideal) right camera.)
+  // - global pose of the right ideal camera, i.e. global rig pose + relative ideal
+  //   right pose
 
-    string str3 = file.GetString("proj", "right camera");
-    istringstream sstr3(str3);
-    ReadMat34(sstr3, cam[RIGHT].proj);
+  Vector3 r;
+  pose.pos.x = file.GetFloat("GTx", "global");
+  pose.pos.y = file.GetFloat("GTy", "global");
+  pose.pos.z = file.GetFloat("GTz", "global");
+  // SVS uses mm, we use m
+  pose.pos /= 1000.;
+  r.x = file.GetFloat("GRx", "global");
+  r.y = file.GetFloat("GRy", "global");
+  r.z = file.GetFloat("GRz", "global");
+  fromRotVector(pose.rot, r);
 
-    string str4 = file.GetString("rect", "right camera");
-    istringstream sstr4(str4);
-    ReadMat33(sstr4, cam[RIGHT].rect);
+  setIdentity(cam[LEFT].pose);
 
+  setIdentity(cam[RIGHT].pose);
+  cam[RIGHT].pose.pos.x = -cam[RIGHT].proj[0][3]/cam[RIGHT].proj[0][0];
+  // SVS uses mm, we use m
+  cam[RIGHT].pose.pos /= 1000.;
 
-    // read poses
-    // Note: an ideal camera is the camera associated with the ideal, i.e. rectified
-    // image
-    // We have:
-    // - pose of the whole stereo rig, we call that the global rig pose
-    //   (this->pose)
-    // - pose of the left ideal camera relative to the rig (cam[LEFT]->pose), we assume
-    //   this to be identity (as is quite common), so global rig pose and global
-    //   ideal left camera pose are the same
-    // - global pose of left ideal camera, same as global rig pose (see above).
-    //   This is called "global" in the calibration file.
-    // - pose of the right ideal camera relative to the rig (cam[RIGHT]->pose).
-    //   This is stored implicitly in the right projection matrix Pr:
-    //   relative right ideal pose is identity except x = -Pr(0,3)/Pr(0,0)
-    //   (Note: What is called "external" in the calibration file (NOTE: Actually it is
-    //   the inverse of "external"!) is the pose of the real (not ideal) right camera.)
-    // - global pose of the right ideal camera, i.e. global rig pose + relative ideal
-    //   right pose
+  /* Note: the following would get the real (not ideal) right camera pose
+  cam[RIGHT].pose.pos.x = file.GetFloat("Tx", "external");
+  cam[RIGHT].pose.pos.y = file.GetFloat("Ty", "external");
+  cam[RIGHT].pose.pos.z = file.GetFloat("Tz", "external");
+  // SVS use mm, we use m
+  cam[RIGHT].pose.pos /= 1000.;
+  r.x = file.GetFloat("Rx", "external");
+  r.y = file.GetFloat("Ry", "external");
+  r.z = file.GetFloat("Rz", "external");
+  fromRotVector(cam[RIGHT].pose.rot, r);
+  // "external" is the pose of the left w.r.t. right camera, so need to
+  // invert:
+  inverse(cam[RIGHT].pose, cam[RIGHT].pose);*/
 
-    Vector3 r;
-    pose.pos.x = file.GetFloat("GTx", "global");
-    pose.pos.y = file.GetFloat("GTy", "global");
-    pose.pos.z = file.GetFloat("GTz", "global");
-    // SVS uses mm, we use m
-    pose.pos /= 1000.;
-    r.x = file.GetFloat("GRx", "global");
-    r.y = file.GetFloat("GRy", "global");
-    r.z = file.GetFloat("GRz", "global");
-    fromRotVector(pose.rot, r);
+  assert(cam[LEFT].width == cam[RIGHT].width);
+  assert(cam[LEFT].height == cam[RIGHT].height);
 
-    setIdentity(cam[LEFT].pose);
-
-    setIdentity(cam[RIGHT].pose);
-    cam[RIGHT].pose.pos.x = -cam[RIGHT].proj[0][3]/cam[RIGHT].proj[0][0];
-    // SVS uses mm, we use m
-    cam[RIGHT].pose.pos /= 1000.;
-
-    /* Note: the following would get the real (not ideal) right camera pose
-    cam[RIGHT].pose.pos.x = file.GetFloat("Tx", "external");
-    cam[RIGHT].pose.pos.y = file.GetFloat("Ty", "external");
-    cam[RIGHT].pose.pos.z = file.GetFloat("Tz", "external");
-    // SVS use mm, we use m
-    cam[RIGHT].pose.pos /= 1000.;
-    r.x = file.GetFloat("Rx", "external");
-    r.y = file.GetFloat("Ry", "external");
-    r.z = file.GetFloat("Rz", "external");
-    fromRotVector(cam[RIGHT].pose.rot, r);
-    // "external" is the pose of the left w.r.t. right camera, so need to
-    // invert:
-    inverse(cam[RIGHT].pose, cam[RIGHT].pose);*/
-
-    assert(cam[LEFT].width == cam[RIGHT].width);
-    assert(cam[LEFT].height == cam[RIGHT].height);
-
-    inImgSize.width = cam[LEFT].width;
-    inImgSize.height = cam[LEFT].height;
-    sx = 1.;
-    sy = 1.;
-  
-  
-    return true;
-  } 
-  else return false;
+  inImgSize.width = cam[LEFT].width;
+  inImgSize.height = cam[LEFT].height;
+  sx = 1.;
+  sy = 1.;
 }
 
 /**
@@ -432,10 +409,5 @@ void StereoCamera::SetMatchingAlgoritm(MatchingAlgorithm algo)
   matchAlgorithm = algo;
 }
 
-cv::Mat StereoCamera::GetIntrinsic(unsigned side)
-{
-  cv::Mat mat = (cv::Mat_<double>(3,3) << cam[side].fx,0,cam[side].cx, 0,cam[side].fy,cam[side].cy, 0,0,1);
-  return mat;
-}
 }
 
