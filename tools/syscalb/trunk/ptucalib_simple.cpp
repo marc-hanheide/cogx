@@ -141,6 +141,15 @@ static void multPose(const CvMat *t1, const CvMat *r1, const CvMat *t2, const Cv
     cvReleaseMat(&Rd);
 }
 
+static void storeOpenCvPose(cv::FileStorage &file, CvMat *tvec, CvMat *rvec) {
+	CvMat *R = cvCreateMat( 3, 3, CV_64FC1 );
+	cvRodrigues2(rvec, R);
+	file.writeObj( "tvec", tvec );
+	file.writeObj( "rvec", rvec );
+	file.writeObj( "rmat", R );
+	cvReleaseMat(&R);
+}
+
 int main ( int argc, char *argv[] ) {
 
     CvSize pattern_size = cvSize ( CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT );
@@ -191,7 +200,7 @@ int main ( int argc, char *argv[] ) {
         }
         if ( strcmp ( argv[i], "-o" ) == 0 ) {
             if ( i + 1 >= argc ) {
-                printf ( "One parameters needed for %s, aborting.\n", argv[i] );
+                printf ( "One parameter needed for %s, aborting.\n", argv[i] );
                 exit ( 1 );
             }
             cv::FileStorage poseFile( argv[i + 1], cv::FileStorage::READ );
@@ -287,8 +296,7 @@ int main ( int argc, char *argv[] ) {
         pTraVecCam2World, pRotVecCam2World);
 
     cv::FileStorage poseFile( "campose.xml", cv::FileStorage::WRITE );
-    poseFile.writeObj( "tvec", pTraVecCam2World );
-    poseFile.writeObj( "rvec", pRotVecCam2World );
+    storeOpenCvPose(poseFile, pTraVecCam2World, pRotVecCam2World);
     printf("\nparameters saved to file: %s\n", "campose.xml");
 
     /*double o[6] = {0., 0., 0., 0., 0., 0.}, oi[4];
