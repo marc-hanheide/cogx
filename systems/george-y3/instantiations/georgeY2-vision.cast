@@ -1,0 +1,54 @@
+# CAST config file
+HOST localhost
+
+#SETVAR camera_config_file=subarchitectures/vision.sa/config/tuw_stereo_new.ini
+SETVAR camera_config_file=review2010/grab/20101013/review_stereo.ini
+
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig %(camera_config_file) --logimages --imgsize "640 480 320 240" --maxdisp "192 96" #$V11N_STANDALONE $V11N_STANDALONE_HOST --display
+
+####################################################################################################################
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+#CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#CPP MG videoserver PointGreyServer --camids "0 1" --camconfigs "%(camera_config_file):L  %(camera_config_file):R" --imgsize "640 480"  --framerate_fps "15" --swapredblue
+
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/bham_stereo.ini:L  subarchitectures/vision.sa/config/bham_stereo.ini:R" --imgsize "640 480"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "kai-%1d-L.jpg kai-%1d-R.jpg" --start 0 --end 0 --framerate_ms 30 --camconfigs "%(camera_config_file):L  %(camera_config_file):R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "kai-%1d-L.jpg kai-%1d-R.jpg" --start 0 --end 0 --framerate_ms 30 --camconfigs "%(camera_config_file):L  %(camera_config_file):R"
+
+INCLUDE image-sequence.incl
+
+CPP MG plane.pop.out PlanePopOut --videoname videoserver --stereohost localhost --stereoname stereoserver  $V11N_STANDALONE $V11N_STANDALONE_HOST  --minObjHeight 0.02 # --display --log
+
+CPP MG SOI.filter SOIFilter --videoname videoserver --camid 0 --display --stereoname stereoserver --objht 23 --objdt 60 -bght 24 --bgdt 9999 --fixc 24 $V11N_STANDALONE $V11N_STANDALONE_HOST --log --debug
+
+INCLUDE includes/vision.sa/vision-visual-learner.cast
+
+CPP MG vis.analyzer ObjectAnalyzer  --log --debug
+
+# ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
+# Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
+# the ProtoObject.
+CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
+
+#INCLUDE includes/vision.sa/vision-recognizer-3d.cast
+
+##### Monitors
+
+#JAVA MG percepts castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
+#JAVA MG beliefs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
+#JAVA MG visual.objects castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "VisionData.VisualObject"
+JAVA MG proto.objectrs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "VisionData.ProtoObject"
+#JAVA MG SOIs castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "VisionData.SOI"
+#JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --subscribe "VisionData.VisualLearningTask"
+
+CPP MG video.viewer VideoViewer --videoname videoserver --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
+#CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
+
+SETVAR displaysrv_param_redirect=--redirect-to-host localhost
+INCLUDE includes/visualization.sa/v11n-base-p.cast
+
