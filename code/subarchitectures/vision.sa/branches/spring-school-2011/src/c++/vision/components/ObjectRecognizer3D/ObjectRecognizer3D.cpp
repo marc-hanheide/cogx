@@ -21,12 +21,34 @@ using namespace cogx;
 using namespace Math;
 using namespace std;
 
+
+static Pose3 readPoseXML(const string &filename)
+{
+  cv::FileStorage poseFile(filename, cv::FileStorage::READ);
+  CvMat *t = (CvMat*)poseFile["tvec"].readObj();
+  CvMat *r = (CvMat*)poseFile["rvec"].readObj();
+  Pose3 pose;
+  fromRotVector(pose.rot, vector3(cvmGet(r, 0, 0), cvmGet(r, 1, 0), cvmGet(r, 2, 0)));
+  pose.pos = vector3(cvmGet(t, 0, 0), cvmGet(t, 1, 0), cvmGet(t, 2, 0));
+  return pose;
+}
+
 ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
 	m_showCV = true;
 	m_confidence = 0.08;
 	m_simulationOnly=false;
+	// initial pose for tracking when learning a new object:
+  // useful values for a user presenting an object to the system:
+  // 1.0 meters away and rotated 90 deg around x, so the object stands upright
+  // assuming that the objects local z axis points "up"
+  // can be overwritten in configure
+  setIdentity(initPose);
+  initPose.pos.x = 0.0;
+  initPose.pos.y = 0.0;
+  initPose.pos.z = 1.0;
+  fromRotVector(initPose.rot, vector3(M_PI/2., 0., 0.));
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -74,6 +96,16 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 	if((it = _config.find("--plyfiles")) != _config.end()){
 		plyiss.str(it->second);
 	}
+
+	if((it = _config.find("--initpose")) != _config.end()){
+    istringstream str(it->second);
+    str >> initPose;
+	}
+  if((it = _config.find("--initpose_xml")) != _config.end())
+  {
+    string filename = it->second;
+    initPose = readPoseXML(filename);
+  }
 
 	std::string label, plystr, siftstr;
 
@@ -204,14 +236,7 @@ void ObjectRecognizer3D::runComponent(){
           if(m_rec_cmd->visualObjectID.empty())
           {
             log("%s: Warning no VisualObject given", m_label.c_str());
-            Math::Pose3 pose;
-            setIdentity(pose);
-            // NOTE: useful values for a user presenting an object to the system:
-            // 1.0 meters away and rotated 90 deg around x, so the object stands upright
-            // assuming that the objects local z axis points "up"
-            pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 1.0;
-            fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
-            loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
+            loadVisualModelToWM(m_recEntries[m_label], initPose, m_label);
             m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
           }
         }
