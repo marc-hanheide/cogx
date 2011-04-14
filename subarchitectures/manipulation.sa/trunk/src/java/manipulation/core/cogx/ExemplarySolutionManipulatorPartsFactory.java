@@ -3,6 +3,7 @@ package manipulation.core.cogx;
 import manipulation.core.cogx.armConnector.ExemplarySolutionKatanaArmConnector;
 import manipulation.core.cogx.baseConnector.ExemplarySolutionDoraBaseConnector;
 import manipulation.core.cogx.baseConnector.ExemplarySolutionLocalMapConnector;
+import manipulation.core.cogx.calibrationConnector.CogXCalibConnector;
 import manipulation.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.core.cogx.camConnector.ExemplarySolutionBlortConnector;
 import manipulation.core.cogx.panTiltConnector.CogXPanTiltConnector;
@@ -83,8 +84,8 @@ public class ExemplarySolutionManipulatorPartsFactory implements
 	@Override
 	public CalibrationConnector createCalibrationConnector(
 			Manipulator manipulator) {
-		logger.debug("Creating CalibrationConnector: HomographyCalibration");
-		return new HomographyCalibration(manipulator);
+		logger.debug("Creating CalibrationConnector: CogXCalibConnector");
+		return new CogXCalibConnector(manipulator);
 	}
 
 	/**
