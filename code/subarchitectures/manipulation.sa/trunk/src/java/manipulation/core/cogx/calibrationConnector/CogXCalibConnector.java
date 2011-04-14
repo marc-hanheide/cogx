@@ -90,7 +90,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 			rotation.setM20(rotationalDataList.get(6));
 			rotation.setM21(rotationalDataList.get(7));
 			rotation.setM22(rotationalDataList.get(8));
-
+			
 			Element translationElem = root.getFirstChildElement("tvec");
 
 			String transloationDataRaw = getFirstElem(translationElem, "data");
@@ -110,7 +110,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 			translation.setX(translationalDataList.get(0));
 			translation.setY(translationalDataList.get(1));
 			translation.setZ(translationalDataList.get(2));
-
+			
 		} catch (Exception e) {
 			throw new CalibrationException(
 					"Error while reading cablibration file");

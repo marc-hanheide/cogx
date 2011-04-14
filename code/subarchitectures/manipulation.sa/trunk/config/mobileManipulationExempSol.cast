@@ -23,11 +23,12 @@ CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-ca
 
 
 # vision ######################################################################
-#CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
-#CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+
+CPP MG cameramount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/calib/cam-left-pose.xml"
+
 
 CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video2/soup-0000000%d.ppm" --start "100" --end "600" --framerate_ms "100" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
-#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/calib/cam-left-cal.xml"
 
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties_small.ply" --siftfiles "instantiations/sift-models/frosties_small.sift" --labels "frosties_small" --log $V11N_STANDALONE $V11N_STANDALONE_HOST
 
@@ -37,8 +38,8 @@ CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--de
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
 
-#JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "/home/ttoenige/Desktop/calib_real.xml" --armName "simulation"
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/calib/robToArm.xml" --armName "simulation"
 
-JAVA MG exempSol manipulation.runner.cogx.ExemplarySolutionRunner --reachingDistance "0.01" --distanceInFrontDesk "0.5" --configPath "/home/ttoenige/Desktop/calib_real_65.xml" --maxDistanceVP "1" --nearPoints "0.5" --armName "simulation" --fixedTilt "-65" 
+JAVA MG exempSol manipulation.runner.cogx.ExemplarySolutionRunner --reachingDistance "0.01" --distanceInFrontDesk "0.5" --configPath "instantiations/calib/robToArm.xml" --maxDistanceVP "1" --nearPoints "0.5" --armName "simulation" --fixedTilt "-65" 
 
 JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
