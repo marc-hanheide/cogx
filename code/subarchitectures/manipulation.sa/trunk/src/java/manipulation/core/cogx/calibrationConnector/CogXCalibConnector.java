@@ -184,7 +184,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Vector3D getCamPointInRob(Vector3D camPoint) {
-		logger.info("Cam system is providing coordinates in robot coordinates");
+	//	logger.info("Cam system is providing coordinates in robot coordinates");
 		return camPoint;
 	}
 
@@ -193,7 +193,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Matrix getCamRotationInRob(Matrix camRotation) {
-		logger.info("Cam system is providing coordinates in robot coordinates");
+	//	logger.info("Cam system is providing coordinates in robot coordinates");
 		return camRotation;
 	}
 
