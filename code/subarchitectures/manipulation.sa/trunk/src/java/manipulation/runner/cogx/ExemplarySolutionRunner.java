@@ -13,15 +13,20 @@ import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
+import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationCommandStatus;
 import manipulation.strategies.CalibrationStrategy;
 import manipulation.strategies.MobileManipulation;
 import manipulation.strategies.Strategy;
+import manipulation.strategies.Strategy.Name;
 import manipulation.visualisation.ExecutionGUI;
 
 import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -94,6 +99,7 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 		logger.debug("Adding Listener");
 		addBaseMovementListener();
 		addVisionListener();
+		addManipulationListener();
 	}
 
 	/**
@@ -101,7 +107,9 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 	 */
 	@Override
 	protected void runComponent() {
-		new ExecutionGUI(manipulator);
+		startStrategy(Name.MOBILE_MANIPULATION);
+		
+		//new ExecutionGUI(manipulator);
 	}
 
 	/**
@@ -147,6 +155,15 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						((ExemplarySolutionBlortConnector) manipulator
 								.getCamConnector()).visualObjectChanged(_wmc);
+					}
+				});
+	}
+
+	public void addManipulationListener() {
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				ManipulationCommand.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					}
 				});
 	}

@@ -49,7 +49,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public void calculateCamToRobCalibration() throws CalibrationException {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Vector3D getCamToRobTranslation() throws CalibrationException {
-		logger.info("Cam system is providing coordinates in robot coordinates");
+	//	logger.debug("Cam system is already providing coordinates in robot system");
 		return new Vector3D(0, 0, 0);
 	}
 
@@ -134,7 +134,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public Matrix getCamToRobRotation() throws CalibrationException {
-		logger.info("Cam system is providing coordinates in robot coordinates");
+	//	logger.debug("Cam system is already providing coordinates in robot system");
 		return new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 	}
 
@@ -144,7 +144,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	@Override
 	public void saveCamToRobCalibration(Array2DRowRealMatrix R,
 			Array2DRowRealMatrix t) throws CalibrationException {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public void resetCamToRobAllPairs() {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public void resetCamToRobLastPair() {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public void addCamToRobPair(Vector3D sourcePoint, Vector3D targetPoint) {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 */
 	@Override
 	public void testCamToRobAdd() {
-		logger.error("No need for an implementation for the spring school cogx system!");
+		logger.debug("No need for an implementation for the spring school cogx system!");
 	}
 
 	/**

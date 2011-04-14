@@ -11,12 +11,21 @@ import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.SensorData.SensorPosition;
 import manipulation.core.share.types.Vector3D;
+import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.CloseGripperCommand;
+import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.OpenGripperCommand;
+import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
+
+import cast.AlreadyExistsOnWMException;
 
 public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 
 	private Logger logger = Logger.getLogger(this.getClass());
+
+	private Manipulator manipulator;
 
 	/**
 	 * constructor of the Birmingham / CogX arm controller
@@ -25,7 +34,7 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 *            corresponding manipulator
 	 */
 	public ExemplarySolutionKatanaArmConnector(Manipulator manipulator) {
-
+		this.manipulator = manipulator;
 	}
 
 	/**
@@ -45,7 +54,14 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void goHome() throws ManipulatorException {
-
+		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
+		try {
+			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+					moveHomeCmd);
+		} catch (AlreadyExistsOnWMException e1) {
+			logger.error(e1);
+		}
 	}
 
 	/**
@@ -80,6 +96,14 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void stopArm() throws ManipulatorException {
+		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		StopCommand stopCommand = new StopCommand();
+		try {
+			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+					stopCommand);
+		} catch (AlreadyExistsOnWMException e1) {
+			logger.error(e1);
+		}
 	}
 
 	@Override
@@ -107,7 +131,14 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void closeGripper(int force) {
-
+		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
+		try {
+			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+					closeGripperCmd);
+		} catch (AlreadyExistsOnWMException e1) {
+			logger.error(e1);
+		}
 	}
 
 	/**
@@ -115,7 +146,14 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void openGripper() {
-
+		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+		try {
+			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+					openGripperCmd);
+		} catch (AlreadyExistsOnWMException e1) {
+			logger.error(e1);
+		}
 	}
 
 	/**
@@ -153,6 +191,7 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 
 	@Override
 	public boolean isGraspingObject() {
+		logger.error("NOT USE isClosed");
 		return false;
 	}
 }
