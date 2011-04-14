@@ -144,8 +144,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				VisualObject.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						 ((CogXBlortConnector) manipulator.getCamConnector())
-						 .visualObjectChanged(_wmc);
+						((CogXBlortConnector) manipulator.getCamConnector())
+								.visualObjectChanged(_wmc);
 					}
 				});
 
