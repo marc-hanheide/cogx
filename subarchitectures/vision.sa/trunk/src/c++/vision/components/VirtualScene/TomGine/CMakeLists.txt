@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(TomGine)
+PROJECT(VSZTomGine)
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
