@@ -2,6 +2,7 @@
 <project name="execution" default="compile" basedir=".">
 	<property name="projectroot.dir" value="${basedir}/../.." />
 	<property file="${projectroot.dir}/build.properties" />
+	<property name="log4j.jar" value="/usr/share/java/log4j-1.2.jar" />
 
 	<!-- =================================================================== -->
 	<!-- Add JAR files to classpath                                          -->
@@ -9,6 +10,8 @@
 	<path id="build.classpath">
 		<pathelement path="${ice.jar}" />
 		<pathelement path="${cast.jar}" />
+		<pathelement path="${log4j.jar}" />
+
 		<fileset dir="lib">
 			<include name="**/*.jar" />
 		</fileset>
