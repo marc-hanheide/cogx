@@ -1,0 +1,7 @@
+# CAST include file
+
+#SETVAR image_prefix=review2010/grab/20101013/grabbed/VitaFitKaroten/image%03d
+SETVAR image_prefix=review2010/grab/20101013/grabbed/CocCola3sms/image%03d
+SETVAR ext=png
+SETVAR sequence_params=--start 15 --end 16 --framerate_ms 100 --repeatframe 50 
+CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "%(image_prefix)-L.%(ext) %(image_prefix)-R.%(ext)" %(sequence_params) --camconfigs "%(camera_config_file):L  %(camera_config_file):R"

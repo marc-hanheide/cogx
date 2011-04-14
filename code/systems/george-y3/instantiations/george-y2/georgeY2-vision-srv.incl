@@ -1,0 +1,17 @@
+# CAST config file
+
+#VARDEFAULT camera_config_file=subarchitectures/vision.sa/config/tuw_stereo_new.ini
+#VARDEFAULT camera_config_file=review2010/grab/20101013/review_stereo.ini
+#VARDEFAULT camera_config_file=subarchitectures/vision.sa/config/ul_13dec10.ini
+#VARDEFAULT camera_config_file=subarchitectures/vision.sa/config/ul_stereo.ini
+
+# Camera for a video sequence
+#VARDEFAULT camera_config_file=xdata/grab/TwPureGreen/camera.ini
+
+# Camera setup for the static object database (commited by kzhou)
+VARDEFAULT camera_config_file=subarchitectures/vision.sa/config/ul_stereo_5_10_2010.ini
+
+
+# Not part of any SA
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig %(camera_config_file) --logimages --imgsize "640 480 320 240" --maxdisp "192 96" --displayserver "display.srv" --display
+
