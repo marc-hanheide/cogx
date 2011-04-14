@@ -73,6 +73,8 @@ public class CogXBlortConnector implements CamConnector {
 		Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
 				changedObject.pose.pos.y, changedObject.pose.pos.z);
 
+		logger.error("OBJ-POSE: " + camPoint);
+		
 		Matrix camRot = CogXConverter.convBlortToMatrix(changedObject.pose.rot);
 
 		double bestRecValue = 0;
