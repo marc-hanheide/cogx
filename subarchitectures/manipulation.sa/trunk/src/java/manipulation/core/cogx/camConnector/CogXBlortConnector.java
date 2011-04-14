@@ -118,6 +118,7 @@ public class CogXBlortConnector implements CamConnector {
 						+ "to arm planning");
 				Item newItem = new Item();
 				newItem.setAttribute(PropertyName.BLORT_NAME, bestLabel);
+				newItem.setAttribute(PropertyName.WMA_ADDRESS, _wmc.address);
 				newItem.setAttribute(PropertyName.INTENTION,
 						ItemIntention.AVOID_ME);
 				newItem.setAttribute(PropertyName.WORLD_POSITION, new Vector3D(

@@ -14,6 +14,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
+import manipulation.core.share.exceptions.ItemException;
+import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector3D;
+import manipulation.itemMemory.Item;
+import manipulation.itemMemory.Item.ItemIntention;
+import manipulation.itemMemory.Item.ItemName;
+import manipulation.itemMemory.Item.PropertyName;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -76,6 +84,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnOpenGripperCmd;
 
 	private JButton btnCloseGripperCmd;
+
+	private JButton btnRecognize;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -196,6 +206,10 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnCloseGripperCmd.setActionCommand("closeGripper");
 		btnCloseGripperCmd.addActionListener(this);
 
+		btnRecognize = new JButton("recognize");
+		btnRecognize.setActionCommand("recognize");
+		btnRecognize.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, new JLabel("x:"), 0, 0, 1, 1, 0, 0);
 		addComponent(pane, gbl, txtItemXPosition, 1, 0, 2, 1, 0, 0);
@@ -221,6 +235,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		addComponent(pane, gbl, btnOpenGripperCmd, 0, 8, 12, 1, 0, 0);
 
 		addComponent(pane, gbl, btnCloseGripperCmd, 0, 9, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnRecognize, 0, 10, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -274,32 +290,48 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 		} else if (e.getActionCommand().equals("farArm")) {
 			logger.error("farArm pressed");
-
-			String visObjID = ((CogXRunner) manipulator.getRunner())
-					.newDataID();
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 
-			Pose3 pos = new Pose3();
-			pos.pos = new Vector3(
-					Double.parseDouble(txtItemXPosition.getText()),
-					Double.parseDouble(txtItemYPosition.getText()),
-					Double.parseDouble(txtItemZPosition.getText()));
-			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			if (!txtItemXPosition.getText().isEmpty()) {
+				String visObjID = ((CogXRunner) manipulator.getRunner())
+						.newDataID();
 
-			VisualObject visObj = initVisualObject();
-			visObj.pose = pos;
+				Pose3 pos = new Pose3();
 
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
-						visObjID, visObj);
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
+				pos.pos = new Vector3(Double.parseDouble(txtItemXPosition
+						.getText()), Double.parseDouble(txtItemYPosition
+						.getText()), Double.parseDouble(txtItemZPosition
+						.getText()));
+
+				pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+				VisualObject visObj = initVisualObject();
+				visObj.pose = pos;
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							visObjID, visObj);
+				} catch (AlreadyExistsOnWMException e1) {
+					logger.error(e1);
+				}
+
+				farArmMovementCom.targetObjectAddr = new WorkingMemoryAddress(
+						visObjID,
+						((CogXRunner) manipulator.getRunner())
+								.getSubarchitectureID());
+
+			} else {
+				Item it = manipulator.getItemMemory().getItemList().getFirst();
+				try {
+					WorkingMemoryAddress wma = (WorkingMemoryAddress) it
+							.getAttribute(PropertyName.WMA_ADDRESS);
+
+					farArmMovementCom.targetObjectAddr = wma;
+				} catch (ItemException e1) {
+					logger.error(e1);
+				}
+
 			}
-
-			farArmMovementCom.targetObjectAddr = new WorkingMemoryAddress(
-					visObjID,
-					((CogXRunner) manipulator.getRunner())
-							.getSubarchitectureID());
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
@@ -402,6 +434,28 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+		} else if (e.getActionCommand().equals("recognize")) {
+			logger.error("recognize pressed");
+
+			Item item = new Item();
+			item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
+			item.setAttribute(PropertyName.WORLD_POSITION,
+					new Vector3D(0, 0, 0));
+			item.setAttribute(PropertyName.WORLD_ROTATION, new Matrix(1, 0, 0,
+					0, 1, 0, 0, 0, 1));
+			item.setAttribute(PropertyName.INTENTION, ItemIntention.GRASP_ME);
+
+			try {
+				boolean success = manipulator.getCamConnector()
+						.recognizeTrackItem(item);
+
+				logger.error("TRACKINGSUCCESS: " + success);
+
+			} catch (ExternalMemoryException e1) {
+				logger.error("Geht nicht!");
+				logger.error(e1);
+			}
+
 		}
 	}
 

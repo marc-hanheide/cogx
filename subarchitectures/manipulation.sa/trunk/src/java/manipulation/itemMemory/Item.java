@@ -31,7 +31,7 @@ public class Item {
 		/**
 		 * small soup package
 		 */
-		SOUP, PRINGLES
+		SOUP, PRINGLES, GREEN_TEA
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class Item {
 		/**
 		 * 
 		 */
-		BLORT_NAME
+		BLORT_NAME, WMA_ADDRESS
 	}
 
 	private HashMap<PropertyName, Object> properties = new HashMap<PropertyName, Object>();
