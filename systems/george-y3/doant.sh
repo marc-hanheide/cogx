@@ -1,5 +1,7 @@
 #!/bin/bash
-COGX_ROOT=/home/cogx/svn/systems/ul
+SCRIPT=$(readlink -f $0)
+COGX_ROOT=$(dirname $SCRIPT)
+
 CAST_DIR=/usr/local
 
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
