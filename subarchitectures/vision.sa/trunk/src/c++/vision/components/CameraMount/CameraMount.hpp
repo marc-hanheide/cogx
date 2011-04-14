@@ -48,8 +48,7 @@ private:
   void calculatePoses(ptz::PTZReading &ptz, std::vector<cogx::Math::Pose3> &poses);
 
 protected:
-  virtual void configure(const std::map<std::string, std::string>& _config)
-    throw(std::runtime_error);
+  virtual void configure(const std::map<std::string, std::string>& _config) throw(std::runtime_error);
   virtual void start();
   virtual void runComponent();
 
