@@ -1,26 +1,21 @@
 /**
- * @file StereoServer.h
- * @author Richtsfeld Andreas
- * @date April 2011
- * @version 0.1
- * @brief Point cloud server for the cast-framework implemented as stereo server.
+ * @author Michael Zillich
+ * @date June 2009
  */
 
 #ifndef STEREO_SERVER_H
 #define STEREO_SERVER_H
 
-#include <cast/core/CASTComponent.hpp>
 #include <stdexcept>
 #include <vector>
 #include <map>
 #include <string>
 #include <opencv/cv.h>
+#include <cast/core/CASTComponent.hpp>
 #include <VideoClient.h>
 #include "StereoCamera.h"
 #include "Math.hpp"
-#include "PointCloud.hpp"
-#include "PointCloudServer.h"
-
+#include "Stereo.hpp"
 #ifdef HAVE_GPU_STEREO
 #include "gpustereo/CensusGPU.h"
 #endif
@@ -28,7 +23,30 @@
 namespace cast
 {
 
-class StereoServer : public PointCloudServer,
+class StereoServer;
+
+/**
+ * Ice interface to a stereo server.
+ */
+class StereoServerI : public Stereo::StereoInterface
+{
+private:
+  StereoServer *stereoSrv;
+
+public:
+  StereoServerI(StereoServer *_stereo) : stereoSrv(_stereo) {}
+
+  virtual void getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&);
+
+  // returns dense point cloud, with 0 values???
+  virtual void getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&);
+
+  virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
+
+  virtual void getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&);
+};
+
+class StereoServer : public CASTComponent,
                      public VideoClient
 {
 private:
@@ -85,7 +103,7 @@ private:
    * this must be a vector of length 2 with camIds[LEFT] and camIds[RIGHT] the
    * ids of the left and right cameras respectively
    */
-//   std::vector<int> camIds; // TODO shifted to PointCloud server!!!
+  std::vector<int> camIds;
 
   /**
    * component ID of the video server to connect to
@@ -96,6 +114,11 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
+
+  /**
+   * the ICE stereo server instance
+   */
+  Stereo::StereoInterfacePtr hStereoServer;
 
   /**
    * We offer different resolutions for high speed / low accuracy and vice versa
@@ -130,12 +153,19 @@ private:
   int medianSize;
 #endif
 
-  bool doDisplay;               // display the stereo images
-  bool logImages;		//
+  bool doDisplay;
+  bool logImages;
 
-  virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
+  /**
+   * Create Ice video interface.
+   */
+  void setupMyIceCommunication();
+
+  void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
+
   virtual void start();
-  void runComponent();
+
+  virtual void runComponent();
 
   int findClosestResolution(int imgWidth);
 
@@ -150,10 +180,31 @@ public:
   StereoServer();
   virtual ~StereoServer();
 
-  void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete);
+  /**
+   * Returns the 3D point cloud.
+   * @param transformToGlobal If true use the camera's pose to return points in global coordinates.
+   *        Otherwise return in left camera coordinates.
+   * @param imgWidth Specifies at which image resolution stereo matching should be performed.
+   *        The nearest available resolution will be used.
+   * @param points The 3D points with their color.
+   * @param complete If false pixels with no available disparity are discarded. So there is
+   *        no correspondence of the resulting point cloud and the rectangular image pixel grid.
+   *        If true pixels with no available disparity will result in points with (0, 0, 0).
+   *        The rectangular grid structure of points is thus maintained, which can help in finding
+   *        nearest neighours etc.
+   */
+  void getPoints(bool transformToGlobal, int imgWidth, std::vector<VisionData::SurfacePoint> &points,
+    bool complete);
+
   void getRectImage(int side, int imgWidth, Video::Image& image);
+
   void getDisparityImage(int imgWidth, Video::Image& image);
-  void receiveImages(const std::vector<Video::Image>& images);
+
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }
