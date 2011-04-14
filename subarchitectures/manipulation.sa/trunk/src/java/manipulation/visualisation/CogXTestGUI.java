@@ -438,7 +438,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			logger.error("recognize pressed");
 
 			Item item = new Item();
-			item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
+			item.setAttribute(PropertyName.NAME, ItemName.GREEN_TEA);
 			item.setAttribute(PropertyName.WORLD_POSITION,
 					new Vector3D(0, 0, 0));
 			item.setAttribute(PropertyName.WORLD_ROTATION, new Matrix(1, 0, 0,
