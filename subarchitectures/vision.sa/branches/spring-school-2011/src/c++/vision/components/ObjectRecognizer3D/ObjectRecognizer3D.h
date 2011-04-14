@@ -60,6 +60,10 @@ private:
   int camId;
   std::string videoServerName;
   Video::VideoInterfacePrx videoServer;
+  /**
+   * initial pose for tracking when learning a new object
+   */
+  cogx::Math::Pose3 initPose;
 
   struct RecEntry{
   	std::string siftfile;
