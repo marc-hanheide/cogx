@@ -11,7 +11,7 @@ HOST localhost
 COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log --displayserver "display.srv" --nodot
 
 SETVAR camera_config_file=subarchitectures/vision.sa/config/ul_stereo_5_10_2010.ini
-INCLUDE georgeY2-vision-srv.incl
+INCLUDE georgeY3-vision-srv.incl
 
 ####################################################################################################################
 # SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
@@ -19,10 +19,10 @@ SETVAR displaysrv_param_redirect=--redirect-to-host localhost
 INCLUDE ../includes/visualization.sa/v11n-base-p.cast
 
 ####################################################################################################################
-INCLUDE georgeY2-vision.incl
+INCLUDE georgeY3-vision.incl
 
 # NOTE: The tester will add a videoserver (OpenCvImgSeqServer)
-INCLUDE georgeY2-vision-tester.incl
+INCLUDE georgeY3-vision-tester.incl
 
 
 # mediators, execution

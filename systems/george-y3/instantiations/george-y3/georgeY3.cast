@@ -12,7 +12,7 @@ COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl -
 
 SETVAR camera_config_file=subarchitectures/vision.sa/config/ul_13dec10.ini
 #SETVAR camera_config_file=xdata/grab/TwPureGreen/camera.ini
-INCLUDE georgeY2-vision-srv.incl
+INCLUDE georgeY3-vision-srv.incl
 
 ####################################################################################################################
 # SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
@@ -20,7 +20,7 @@ SETVAR displaysrv_param_redirect=--redirect-to-host localhost
 INCLUDE ../includes/visualization.sa/v11n-base-p.cast
 
 ####################################################################################################################
-INCLUDE georgeY2-vision.incl
+INCLUDE georgeY3-vision.incl
 
 # Select the video input; change the camera_config_file accordingly
 #INCLUDE image-live.incl
