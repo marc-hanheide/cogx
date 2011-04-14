@@ -10,7 +10,7 @@
 #include <string>
 #include <opencv/cv.h>
 #include <opencv/cv.hpp>
-#include <cogxmath.h>
+//#include <cogxmath.h>
 
 namespace cast
 {
@@ -89,13 +89,10 @@ public:
 public:
   StereoCamera();
   ~StereoCamera();
-  void ReadSVSCalib(const std::string &calibfile);
-  void ProjectPoint(double X, double Y, double Z, double &u, double &v,
-      int side);
-  bool ReconstructPoint(double u, double v, double d, double &X, double &Y,
-      double &Z);
-  void DistortNormalisedPoint(double u, double d, double &ud, double &vd,
-      int side);
+  bool ReadSVSCalib(const std::string &calibfile);
+  void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
+  bool ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
+  void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);
   void DistortPoint(double u, double d, double &ud, double &vd, int side);
   bool UndistortPoint(double ud, double vd, double &u, double &v,int side);
   void SetMaxDistortion(double err = .5) {maxDistortion = err;}
@@ -106,8 +103,9 @@ public:
   void SetDisparityRange(int minDisp, int maxDisp);
   void SetInputImageSize(CvSize size);
   void SetMatchingAlgoritm(MatchingAlgorithm algo);
-  void CalculateDisparity(const IplImage *left, const IplImage *right,
-      IplImage *disp);
+  void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
+  
+  cv::Mat GetIntrinsic(unsigned side);
 };
 
 }
