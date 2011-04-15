@@ -116,7 +116,7 @@ void ObjectDetector::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-	// start receiving images pushed by the video server
+  // start receiving images pushed by the video server
   vector<int> camIds;
   camIds.push_back(camId);
   videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
