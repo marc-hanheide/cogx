@@ -39,7 +39,11 @@ echo "# Use:"
 echo "#  mkdir BUILD"
 echo "#  cd BUILD"
 echo "#  ccmake -C <path/to/thisfile>  .."
-echo "# Note: -C works only if BUILD is empty."
+echo "# Note: -C works only if BUILD/CMakeCache.txt doesn't exist."
+echo "#"
+echo "# Alternatively you can use tools/scripts/cmake-apply which"
+echo "# also works with an existing CMakeCache.txt."
+
 
 mode="comment"
 if [ "$mode" == "nocomment" ]; then
