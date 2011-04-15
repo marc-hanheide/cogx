@@ -137,7 +137,6 @@ if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
-
 option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)
 add_subdirectory (tools/hardware/tts)
@@ -163,9 +162,7 @@ if(BUILD_HAL_TESTS)
 add_subdirectory (tools/hardware/tests)
 endif(BUILD_HAL_TESTS)
 
-
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
-
 
 add_subdirectory (tools/math)
 
@@ -174,10 +171,20 @@ if(BUILD_HAL_VIDEO)
 add_subdirectory (tools/hardware/video)
 endif(BUILD_HAL_VIDEO)
 
-option(BUILD_HAL_STEREO "Build hardware stereo" NO)
-if(BUILD_HAL_STEREO)
-add_subdirectory (tools/hardware/stereo)
-endif(BUILD_HAL_STEREO)
+#option(BUILD_HAL_STEREO "Build hardware stereo" NO)
+#if(BUILD_HAL_STEREO)
+#add_subdirectory (tools/hardware/stereo)
+#endif(BUILD_HAL_STEREO)
+
+option(BUILD_HAL_POINT_CLOUD "Build point cloud server/client" NO)
+if(BUILD_HAL_POINT_CLOUD)
+add_subdirectory (tools/hardware/pointCloud)
+endif(BUILD_HAL_POINT_CLOUD)
+
+option(BUILD_HAL_KINECT "Build hardware kinect" NO)
+if(BUILD_HAL_KINECT)
+add_subdirectory (tools/hardware/kinect)
+endif(BUILD_HAL_KINECT)
 
 option(BUILD_SA_VISION "Build vision subarchitecure" NO)
 if(BUILD_SA_VISION)
