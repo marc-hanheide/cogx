@@ -4,6 +4,8 @@
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
 #include <Video.ice>
+#include <PointCloud.ice>
+
 
 module VisionData {
 
@@ -48,27 +50,6 @@ module VisionData {
 
   sequence<string> IdSeq;
 
-  /**
-   * RGB color
-   * NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
-   * char in your code.
-   * @author Michael Zillich
-   */
-  struct ColorRGB {
-    byte r;
-    byte g;
-    byte b;
-  };
-
-  /**
-   * A 3D point with a color, as e.g. returned by stereo
-   * @author Michael Zillich
-   */
-  struct SurfacePoint {
-    cogx::Math::Vector3 p;
-    VisionData::ColorRGB c;
-  };
-  sequence<SurfacePoint> SurfacePointSeq;
 
   /**
    * A planar surface patch
@@ -80,7 +61,7 @@ module VisionData {
     cogx::Math::Pose3 pose;
 
     // 3D points used to estimate this patch
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
   };
   
   sequence<SurfacePatch> SurfacePatchSeq;
@@ -275,10 +256,8 @@ module VisionData {
    * @author Andreas Richtsfeld
    */
   class ReasonerObject {
-    VisualObject obj;
-	// visual object from stereo detector
-    int frameNr;
-	// frame number
+    VisualObject obj;   // visual object from stereo detector
+    int frameNr;        // frame number
   };
 
   /**
@@ -296,11 +275,11 @@ module VisionData {
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
     // frontground points
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
     // background points
-    SurfacePointSeq BGpoints;
+    PointCloud::SurfacePointSeq BGpoints;
     // equivocal points which either belongs to fg or bg
-    SurfacePointSeq EQpoints;
+    PointCloud::SurfacePointSeq EQpoints;
     int status;
   };
 
@@ -400,7 +379,7 @@ module VisionData {
     cogx::Math::Vector2 imageOrigin;
 
     // List of all surface 3D points
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
 
     // RAS shape descriptor
     RASShapeDescriptor rasShapeDesc;
