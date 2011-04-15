@@ -7,7 +7,7 @@ MAINTAINER = ttoenige
 DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libqt4-webkit@ubuntu \
 		python-qt4@ubuntu \
-		libboost-python1.40-dev@ubuntu \
+		libboost-all-dev@ubuntu \
 		libqt4-dev@ubuntu \
 		libgl1-mesa-dev@ubuntu \
 		libglu1-mesa-dev@ubuntu \
