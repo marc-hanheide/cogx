@@ -92,8 +92,7 @@ void convertImageToGrayBytes(const Video::Image & image, std::vector<unsigned ch
  * @param iplImg OpenCv IplImage
  * @param img Video Image
  */
-void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
-  throw(runtime_error);
+void convertImageFromIpl(const IplImage *iplImg, Video::Image &img) throw(runtime_error);
   
   
 /**

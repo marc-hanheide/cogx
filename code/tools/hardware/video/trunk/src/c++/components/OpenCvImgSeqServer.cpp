@@ -246,8 +246,7 @@ void OpenCvImgSeqServer::obtainImageSize() throw(runtime_error)
  * Construct filenames from file templates.
  * Each camera has a file template, e.g. img_left_%03d.jpg img_right_%03d.jpg
  */
-void OpenCvImgSeqServer::constructFilenames(const vector<string> &fileTemplates,
-    int first, int last, int inc)
+void OpenCvImgSeqServer::constructFilenames(const vector<string> &fileTemplates, int first, int last, int inc)
 {
   char filename[1024];
   // normal order: first < last, positive increment
@@ -434,8 +433,7 @@ int OpenCvImgSeqServer::getFramerateMilliSeconds()
   return framerateMillis;
 }
 
-void OpenCvImgSeqServer::configure(const map<string,string> & _config)
-  throw(runtime_error)
+void OpenCvImgSeqServer::configure(const map<string,string> & _config) throw(runtime_error)
 {
   map<string,string>::const_iterator it;
 

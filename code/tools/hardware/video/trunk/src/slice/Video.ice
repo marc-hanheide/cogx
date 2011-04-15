@@ -79,7 +79,7 @@ module Video {
    *   u_y' = f_x*y' + c_y
    */
   struct CameraParameters {
-    int id;
+    int id;					// What id??? ARI
     // image dimension
     int width;
     int height;
@@ -144,8 +144,7 @@ module Video {
     void getScaledImages(int width, int height, out ImageSeq images);
     //void getScaledImages(IntSeq camIds, int width, int height, out ImageSeq images);
     bool getHRImages(out ImageSeq images);
-    void startReceiveImages(string receiverComponentId, IntSeq camIds,
-        int width, int height);
+    void startReceiveImages(string receiverComponentId, IntSeq camIds, int width, int height);
     void stopReceiveImages(string receiverComponentId);
     void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int fps);
     bool inFormat7Mode();
