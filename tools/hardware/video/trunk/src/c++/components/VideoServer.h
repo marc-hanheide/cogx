@@ -3,17 +3,17 @@
  * @author Andreas Richtsfeld, Michael Zillich
  * @date Februrary 2010, Februar 2009
  * @version 0.1
- * @brief Video server: Manage capturing of videos from different sources (PointGrey, OpenCV, ImgSequences).
+ * @brief Video server: Manage capturing of videos from different sources (PointGrey, OpenCV, ImgSequences, Kinect).
  */
 
 #ifndef VIDEO_SERVER_H
 #define VIDEO_SERVER_H
 
+#include <cast/architecture/ManagedComponent.hpp>
 #include <stdexcept>
 #include <vector>
 #include <string>
 #include <map>
-#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoUtils.h>
 #include "Video.hpp"
 
@@ -237,8 +237,7 @@ public:
    * @param height (in) Height of image.
    * @param frames  (out) Array of images, as many as size of camIds, including timestamps
    */
-  virtual void retrieveFrames(const std::vector<int> &camIds,
-    int width, int height, std::vector<Video::Image> &frames) = 0;
+  virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames) = 0;
 
   /**
    * @brief Retrieves previously grabbed frames from all sources.
@@ -246,8 +245,7 @@ public:
    * @param height (in) Height of image.
    * @param frames  (out) array of images, as many as num cameras, including timestamps
    */
-  virtual void retrieveFrames(int width, int height,
-      std::vector<Video::Image> &frames) = 0;
+  virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames) = 0;
 
   /**
    * @brief Retrieve previously grabbed frame from just one source.
@@ -262,7 +260,7 @@ public:
    * @brief Retrieve previously grabbed frames.
    * @param frames (out) images, including timestamp
    */
-  virtual void retrieveHRFrames(std::vector<Video::Image> &frames) = 0;    /// TODO Pure virtual setzen!
+  virtual void retrieveHRFrames(std::vector<Video::Image> &frames) = 0;
 
   /**
    * @brief Returns number of cameras this device manages.
@@ -313,10 +311,9 @@ public:
   void getImage(int camId, Video::Image &img);
   void getImages(std::vector<Video::Image> &images);
   void getImages(int width, int height, std::vector<Video::Image> &images);                  /// TODO unneccessary (== getScaledImages)
-  void getScaledImages(int width, int height, std::vector<Video::Image> &images);
+  void getScaledImages(int width, int height, std::vector<Video::Image> &images);            /// TODO This is unneccessary!!!
   bool getHRImages(std::vector<Video::Image> &images);
-  void startReceiveImages(const std::string &receiverComponentId,
-      const std::vector<int> &camIds, int width, int height);
+  void startReceiveImages(const std::string &receiverComponentId, const std::vector<int> &camIds, int width, int height);
   void stopReceiveImages(const std::string &receiverComponentId);
 };
 

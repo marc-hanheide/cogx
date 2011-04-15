@@ -3,7 +3,7 @@
  * @author Andreas Richtsfeld, Michael Zillich
  * @date Februrary 2010, Februar 2009
  * @version 0.1
- * @brief Video server: Manage capturing of videos from different sources (PointGrey, OpenCV, ImgSequences).
+ * @brief Video server: Manage capturing of videos from different sources (PointGrey, OpenCV, ImgSequences, Kinect).
  */
 
 
@@ -97,8 +97,7 @@ std::string VideoServerI::getServerName(const Ice::Current&)
 /**
  * Configure options common to all video servers.
  */
-void VideoServer::configure(const map<string,string> & _config)
-  throw(runtime_error)
+void VideoServer::configure(const map<string,string> & _config) throw(runtime_error)
 {
   map<string,string>::const_iterator it;
 
@@ -197,12 +196,10 @@ void VideoServer::configure(const map<string,string> & _config)
 void VideoServer::start()
 {
   addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::ADD),
-      new MemberFunctionChangeReceiver<VideoServer>(this,
-        &VideoServer::receiveCameraParameters));
+      new MemberFunctionChangeReceiver<VideoServer>(this, &VideoServer::receiveCameraParameters));
 
   addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<VideoServer>(this,
-        &VideoServer::receiveCameraParameters));
+      new MemberFunctionChangeReceiver<VideoServer>(this, &VideoServer::receiveCameraParameters));
 
   m_timer.restart();
 }
@@ -339,8 +336,7 @@ void VideoServer::runComponent()
   int sendCount = 0;
   while(isRunning())
   {
-    // TODO: If I could have this lock after grabFrames() I could avoid the
-    // stupid sleep.
+    // TODO: If I could have this lock after grabFrames() I could avoid the stupid sleep.
     lockComponent();
     grabFrames();
 

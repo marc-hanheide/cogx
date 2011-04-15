@@ -1,6 +1,8 @@
 /**
- * @author Michael Zillich
- * @date February 2009
+ * @file OpenCvLiveServer.h
+ * @author Michael Zillich, Andreas Richtsfeld
+ * @date February 2009, 2010
+ * @brief Image server, based on openCV, to grab live images from multiple cameras.
  */
 
 #include <cmath>
@@ -204,8 +206,7 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
   grabFramesInternal();
 }
 
-void OpenCvLiveServer::configure(const map<string,string> & _config)
-  throw(runtime_error)
+void OpenCvLiveServer::configure(const map<string,string> & _config) throw(runtime_error)
 {
   vector<int> dev_nums;
   int dev_class = CV_CAP_ANY;
