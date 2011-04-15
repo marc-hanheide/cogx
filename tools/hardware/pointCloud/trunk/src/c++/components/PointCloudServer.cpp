@@ -185,8 +185,6 @@ void PointCloudServer::start()
  */
 void PointCloudServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
 {
-printf("PointCloudServer::receiveCameraParameters!\n");
-
   Video::CameraParametersWrapperPtr newCam = getMemoryEntry<Video::CameraParametersWrapper>(_wmc.address);
   // find the camera paramters that need updating and update pose and time stamp
   // Note that we don't change any other (instrinsic) parameters yet as we
@@ -198,7 +196,6 @@ printf("PointCloudServer::receiveCameraParameters!\n");
   {
     if(newCam->cam.id == camPars[i].id)
     {
-printf("PointCloudServer::receiveCameraParameters: newCam->cam.pose.pos.x: %4.3f!!!\n", newCam->cam.pose.pos.x);
       camPars[i].pose = newCam->cam.pose;
       camPars[i].time = newCam->cam.time;
       break;
