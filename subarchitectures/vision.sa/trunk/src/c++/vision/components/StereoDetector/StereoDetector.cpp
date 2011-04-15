@@ -11,13 +11,14 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include "StereoDetector.h"
 #include "StereoBase.h"
 #include "Draw.hh"
 
 #include "Mouse.cpp"
 #include "stereo/StereoCamera.hh"
+// #include "../TomGine/TomGineWraper/TomGineThread.hh"
 
 
 using namespace std;
@@ -48,7 +49,7 @@ StereoDetector::~StereoDetector() {}
 void StereoDetector::configure(const map<string,string> & _config)
 {
   // first let the base classes configure themselves (for getRectImage)
-  configureStereoCommunication(_config);
+  configureServerCommunication(_config);
 
   nr_p_score = 0;                       // start with first processing score
   
@@ -132,26 +133,45 @@ void StereoDetector::configure(const map<string,string> & _config)
     single = true;
   }
   
+  ///< OpenNI Interface
+//   openNI = new Z::OpenNIInterface(KINECT_XML_FILE);
+//   openNI->StartCapture(0);
+//   showKinectImage = true;				// TODO
+//   log("kinect connected and started capturing!");
+  
+  
+  /// initialize ipl-Images
+  iplImage_l = 0;
+  iplImage_r = 0;
+  iplImage_l_pr = 0;
+  iplImage_r_pr = 0;
+  iplImage_l_hr = 0;
+  iplImage_r_hr = 0;
+//   kinectImage = 0;
+//   kinectDepthImage = 0;
+  
+  
 //   reasoner = new Z::Reasoner();
 
 
-//   // initialize tgRenderer
-//   Z::StereoCamera *stereo_cam = new Z::StereoCamera();
-//   if(!stereo_cam->ReadSVSCalib(camconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
-//   cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
-//   
-//   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
-//   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
-//   cv::Vec3d rotCenter(0,0,0.4);
-//   
-//   // Initialize 3D render engine 
-//   tgRenderer = new P::TomGineThread(1024, 768);
-//   tgRenderer->SetParameter(intrinsic);
-//   tgRenderer->SetCamera(R, t, rotCenter);			/// TODO funktioniert nicht => Wieso?
-// //   tgRenderer->SetRotationCenter(rotCenter);			/// TODO funktioniert nicht => Wieso?
-//   
-//   // initialize object representation
-//   objRep = new Z::ObjRep();
+  // initialize tgRenderer
+  Z::StereoCamera *stereo_cam = new Z::StereoCamera();
+  if(!stereo_cam->ReadSVSCalib(camconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
+  cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
+  
+  cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+  cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+  cv::Vec3d rotCenter(0,0,0.4);
+  
+  // Initialize 3D render engine 
+  tgRenderer = new TGThread::TomGineThread(1280, 1024);
+  tgRenderer->SetParameter(intrinsic);
+  tgRenderer->SetCamera(R, t, rotCenter);			/// TODO funktioniert nicht => Wieso?
+//   tgRenderer->SetRotationCenter(rotCenter);			/// TODO funktioniert nicht => Wieso?
+  tgRenderer->SetCoordinateFrame();
+  
+  // initialize object representation
+  objRep = new Z::ObjRep();
 }
 
 /**
@@ -163,7 +183,7 @@ void StereoDetector::start()
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
   // start stereo communication
-  startStereoCommunication(*this);
+  startPCCServerCommunication(*this);
 
   // register our client interface to allow the video server pushing images
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
@@ -202,13 +222,13 @@ void StereoDetector::start()
   {
     cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("rectified", CV_WINDOW_AUTOSIZE);
+//     cvNamedWindow("rectified", CV_WINDOW_AUTOSIZE);
     // 		cvNamedWindow("Pruned left", CV_WINDOW_AUTOSIZE);
     // 		cvNamedWindow("Pruned right", CV_WINDOW_AUTOSIZE);
 
     cvMoveWindow("Stereo left", 10, 10);
     cvMoveWindow("Stereo right", 680, 10);
-    cvMoveWindow("rectified",  1350, 10);
+//     cvMoveWindow("rectified",  1350, 10);
     // 		cvMoveWindow("Pruned left",  10, 500);
     // 		cvMoveWindow("Pruned right",  680, 500);
 
@@ -216,6 +236,16 @@ void StereoDetector::start()
     cvSetMouseCallback("Stereo left", LeftMouseHandler, &mouseParam);
     cvSetMouseCallback("Stereo right", RightMouseHandler, &mouseParam);
   }
+
+//   if(showKinectImage)
+//   {
+//     cv::namedWindow("Kinect image");
+//     cv::namedWindow("Kinect depth image");
+// //     cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
+// //     cvMoveWindow("Kinect image", 1350, 10);
+// //     cvNamedWindow("Kinect depth image", CV_WINDOW_AUTOSIZE);
+// //     cvMoveWindow("Kinect depth image", 1350, 500);
+//   }
 
   isFormat7 = videoServer->inFormat7Mode();
 }
@@ -231,12 +261,24 @@ void StereoDetector::runComponent()
   }
   while(isRunning()) {}
 
-  log("destroy openCV windows.");
-  cvDestroyWindow("Stereo left");
-  cvDestroyWindow("Stereo right");
-  cvDestroyWindow("rectified");
-// 	cvDestroyWindow("Pruned left");
-// 	cvDestroyWindow("Pruned right");
+  // release all ipl images
+  cvReleaseImage(&iplImage_l);
+  cvReleaseImage(&iplImage_r);
+  cvReleaseImage(&iplImage_l_hr);
+  cvReleaseImage(&iplImage_r_hr);
+  cvReleaseImage(&iplImage_l_pr);
+  cvReleaseImage(&iplImage_r_pr);
+  
+  if(showImages)
+  {
+    log("destroy openCV windows.");
+    cvDestroyWindow("Stereo left");
+    cvDestroyWindow("Stereo right");
+//     cvDestroyWindow("rectified");
+//     cvDestroyWindow("Pruned left");
+//     cvDestroyWindow("Pruned right");
+  }
+  
   log("windows destroyed");
 }
 
@@ -592,16 +634,16 @@ void StereoDetector::processImage()
   
   
   // Create object representations from new objects!
-//   try 
-//   {
-//     objRep->Process(score);
-//     DrawIntoTomGine();
-//   }
-//   catch (exception &e)
-//   {
-//     log("StereoDetector::processImage: Unknown exception during creation of object representations.\n");
-//     cout << e.what() << endl;
-//   }
+  try 
+  {
+    objRep->Process(score);
+    DrawIntoTomGine();
+  }
+  catch (exception &e)
+  {
+    log("StereoDetector::processImage: Unknown exception during creation of object representations.\n");
+    cout << e.what() << endl;
+  }
 
   
   // Write visual objects to working memory and show images!
@@ -722,27 +764,48 @@ void StereoDetector::processPrunedHRImage(int oX, int oY, int sc)
  */
 void StereoDetector::DrawIntoTomGine()
 {
-//   std::vector< std::vector<cv::Point3d> > first;
-//   std::vector< std::vector<cv::Point3d> > second;
-//   std::vector< std::vector<double> > probability;
-//   std::vector< std::vector<std::string> > link;
-//   std::vector< std::vector<std::string> > node_0;
-//   std::vector< std::vector<std::string> > node_1;
-//   
-//   objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
-//  
-//   tgRenderer->Clear();
-//   tgRenderer->AddLine3D(0, 0, 0, 0.1, 0, 0, 255, 0, 0, 0.4);   // coordinate frame
-//   tgRenderer->AddLine3D(0, 0, 0, 0, 0.1, 0, 0, 255, 0, 0.4);
-//   tgRenderer->AddLine3D(0, 0, 0, 0, 0, 0.1, 0, 0, 255, 0.4);
-// 
-//   for(unsigned i=0; i<first.size(); i++)
+  // clear the render display
+  tgRenderer->Clear();
+
+  /// get object graph model
+  std::vector< std::vector<cv::Point3d> > first;
+  std::vector< std::vector<cv::Point3d> > second;
+  std::vector< std::vector<double> > probability;
+  std::vector< std::vector<std::string> > link;
+  std::vector< std::vector<std::string> > node_0;
+  std::vector< std::vector<std::string> > node_1;
+  objRep->GetObjectGraphModel(first, second, probability, link, node_0, node_1);
+
+  /// color generation for models
+  for(unsigned i=0; i<first.size(); i++)
+  {
+    uint r = std::rand()%255;
+    uint g = std::rand()%255;
+    uint b = std::rand()%255;
+    tgRenderer->AddGraphModel(first[i], second[i], probability[i], link[i], node_0[i], node_1[i], r, g, b);
+  }
+  
+  ///   now get some world points:
+//   for(unsigned pos_x = 0; pos_x<640; pos_x+=4)
 //   {
-//     uint r = std::rand()%255;
-//     uint g = std::rand()%255;
-//     uint b = std::rand()%255;
-//     tgRenderer->DrawGraphModel(first[i], second[i], probability[i], link[i], node_0[i], node_1[i], r, g, b);
+//     for(unsigned pos_y = 0; pos_y<480; pos_y+=4)
+//     {
+//       cv::Point3f point = openNI->Get3dWorldPoint(pos_x, pos_y);
+//       
+//       if(point.z > 0)
+// 	tgRenderer->AddPoint3D(point.x, point.y, point.z, 255, 0, 0, 5);
+//       else
+// 	printf("StereoDetector::DrawIntoTomGine: Point is not good for me!\n");
+//     }
 //   }
+  
+  /// get point cloud from point cloud server
+  points.resize(0);
+  getPoints(false, 320, points);                 /// TODO with set to 320
+  cv::Mat_<cv::Point3f> cloud;
+  cv::Mat_<cv::Point3f> colCloud;
+  Points2Cloud(points, cloud, colCloud);
+  tgRenderer->SetPointCloud(cloud, colCloud);
 }
 
 /**
@@ -843,20 +906,13 @@ void StereoDetector::WriteVisualObjects()
 //     }
     
     if(write_stereo_lines) WriteToWM(Z::StereoBase::STEREO_LINE);
-    if(write_stereo_ljcts) WriteToWM(Z::StereoBase::STEREO_LJUNCTION);
+//    if(write_stereo_ljcts) WriteToWM(Z::StereoBase::STEREO_LJUNCTION);      /// TODO ausgeschaltet
     if(write_stereo_ellipses) WriteToWM(Z::StereoBase::STEREO_ELLIPSE);
     if(write_stereo_closures) WriteToWM(Z::StereoBase::STEREO_CLOSURE);
     if(write_stereo_rectangles) WriteToWM(Z::StereoBase::STEREO_RECTANGLE);
     if(write_stereo_flaps) WriteToWM(Z::StereoBase::STEREO_FLAP_ARI);
     if(write_stereo_corners) WriteToWM(Z::StereoBase::STEREO_CORNER);
     
-  }
-  
-  if(showReasoner)
-  {
-//     Z::Array<VisionData::VisualObjectPtr> objects;
-//     reasoner->GetResults(objects, showReasonerUnprojected);
-//     WriteToWM(objects);
   }
 }
 
@@ -873,40 +929,30 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
   for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) type); i++)
   {
     obj = new VisionData::VisualObject;
-
     bool success = score->GetVisualObject((Z::StereoBase::Type) type, i, obj);
-
     if(success)
     {
       // add visual object to working memory
       std::string objectID = newDataID();
       objectIDs.push_back(objectID);
 
-// 	VisionData::ReasonerObjectPtr reaObj = new VisionData::ReasonerObject;		/// TODO TODO TODO Write to Reasoner COMPONENT => delete later
-// 	reaObj->obj = obj;
-// 	reaObj->frameNr = frameNumber;
-// 	addToWorkingMemory(objectID, reaObj);
-
-      addToWorkingMemory(objectID, obj);						/// TODO TODO TODO Write Visual Object!!!
-
+      addToWorkingMemory(objectID, obj);
       cvWaitKey(200);	                                                                /// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
-
       log("Add new visual object to working memory: %s", objectID.c_str());
-}
+    }
   }
   
   // Send newFrame command for Reasoner component => TODO delete later
-  VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
-  newFrame->cmd = VisionData::NEWFRAME;
-  addToWorkingMemory(newDataID(), newFrame);
-  debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
+//  VisionData::SDReasonerCommandPtr newFrame = new VisionData::SDReasonerCommand;
+//  newFrame->cmd = VisionData::NEWFRAME;
+//  addToWorkingMemory(newDataID(), newFrame);
+//  debug("NewFrame command sent!");																																						/// TODO wird auch gesendet, wenn Ansicht geändert wird!
 
   frameNumber++;
 }
 
-/**																																					TODO New version!
+/**
  * @brief Write visual objects to the working memory.
- * First delete all the old ones!
  * @param objects Write this visual objects
  */
 void StereoDetector::WriteToWM(Z::Array<VisionData::VisualObjectPtr> objects)
@@ -989,6 +1035,26 @@ void StereoDetector::DeleteVisualObjectsFromWM()
  */
 void StereoDetector::SingleShotMode()
 {
+//   if(showKinectImage)
+//   {
+//     openNI->NextFrame();
+//     cv::Mat rgbImg, depImg;
+//     if(openNI->GetImages(rgbImg, depImg))
+//     {
+//       cv::imshow("Kinect image", rgbImg);
+//       cv::imshow("Kinect depth image", depImg);
+//       DrawIntoTomGine();
+//     }
+//   }
+  
+// static bool printit = true;
+// if(printit)
+//   for(unsigned co=640*14; co<640*15; co++)
+//   {
+//     printf("%u ", kinectImage->imageData[co]);
+//   }
+// printit = false;
+
 	if(mouseEvent) MouseEvent();
 	mouseEvent = false;
 

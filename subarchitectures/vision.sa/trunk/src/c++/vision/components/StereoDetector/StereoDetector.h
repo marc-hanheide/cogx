@@ -10,6 +10,7 @@
 #define STEREO_DETECTOR_H
 
 //#define HAVE_CAST 1	// Enable cast-functionality in ./stereo
+// #define KINECT_XML_FILE "subarchitectures/vision.sa/config/KinectConfig.xml"
 
 #include "DoxyMain.h"
 
@@ -19,7 +20,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <VideoClient.h>
-#include <StereoClient.h>
+#include <PointCloudClient.h>
 #include <VideoUtils.h>
 #include <../../VisionUtils.h>
 
@@ -31,7 +32,7 @@
 #include "Array.hh"
 
 #include "ObjRep.h"
-#include "TomGineWraper/TomGineThread.hh"
+#include "TomGineThread.hh"
 
 namespace cast
 {
@@ -42,18 +43,19 @@ namespace cast
  */
 class StereoDetector : public ManagedComponent,
                        public VideoClient,
-                       public StereoClient
+                       public PointCloudClient
 {
 private:
-//  P::TomGineThread *tgRenderer;                   ///< 3D render engine
-
+  TGThread::TomGineThread *tgRenderer;            ///< 3D render engine
+  std::vector<PointCloud::SurfacePoint> points;   ///< 3D point vector
+  
   int runtime;                                    ///< Overall processing runtime for one image (pair)
   Z::StereoCore *score;                           ///< Stereo core
   Z::StereoCore *p_score[3];                      ///< Processing stereo cores for three frames
   int nr_p_score;                                 ///< Actual number of processing score
   int showFrame;                                  ///< Show another frame (p_score[showFrame])
 //	Z::Reasoner *reasoner;                          ///< Reasoner (and Filter)
-//  Z::ObjRep *objRep;                              ///< Object representation as graph
+  Z::ObjRep *objRep;                              ///< Object representation as graph
   
   float cannyAlpha, cannyOmega;                   ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::vector<int> camIds;                        ///< Which cameras to get images from
