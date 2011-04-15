@@ -12,6 +12,7 @@
 #include <math.h>
 #include <algorithm>
 #include <time.h>
+#include "StereoCamera.h"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 long long gethrtime(void)
@@ -31,8 +32,8 @@ long long gethrtime(void)
   return v;
 }
 
-#define USE_MOTION_DETECTION
-// #define SAVE_SOI_PATCH
+//#define USE_MOTION_DETECTION
+//#define SAVE_SOI_PATCH  //todo: fix that !crop the ROI may cause the crash since the size of the ROI may exceeds the boundaries of img  
 #define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
 #define Shrink_SOI 1
@@ -63,7 +64,7 @@ extern "C"
 namespace cast
 {
 using namespace std;
-using namespace Stereo;
+using namespace PointCloud;
 using namespace cogx;
 using namespace cogx::Math;
 using namespace VisionData;
@@ -83,8 +84,8 @@ GLfloat col_surface[4];
 GLfloat col_overlay[4];
 GLfloat col_highlight[4];
 
-VisionData::SurfacePointSeq points;
-VisionData::SurfacePointSeq pointsN;
+PointCloud::SurfacePointSeq points;
+PointCloud::SurfacePointSeq pointsN;
 
 VisionData::ObjSeq mObjSeq;
 VisionData::Vector3Seq mConvexHullPoints;
@@ -103,8 +104,6 @@ int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of fra
 int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 		//this makes stable obj
 
-
-
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
@@ -113,288 +112,11 @@ Vector3 v3dmax;
 Vector3 v3dmin;
 
 
-void InitWin()
-{
-  GLfloat light_ambient[] = {0.4, 0.4, 0.4, 1.0};
-  GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-  GLfloat light_specular[] = {0.0, 0.0, 0.0, 1.0};
-
-  glClearColor(col_background[0], col_background[1], col_background[2],
-      col_background[3]);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  glShadeModel(GL_SMOOTH);
-
-  // setup lighting
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
-  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-
-  // setup view point stuff
-  cam_trans[0] = cam_trans[1] = cam_trans[2] = 0.;
-  cam_rot[0] = cam_rot[1] = 0.;
-  mouse_x = mouse_y = 0;
-  mouse_butt = 0;
-  butt_state = 0;
-
-  // look in z direcction with y pointing downwards
-  view_point = vector3(0.0, 0.0, 0.0);
-  view_dir = vector3(0.0, 0.0, 1.0);
-  view_up = vector3(0.0, -1.0, 0.0);
-  view_normal = cross(view_dir, view_up);
-
-  // black background
-  col_background[0] = 0.0;
-  col_background[1] = 0.0;
-  col_background[2] = 0.0;
-  col_background[3] = 1.0;
-
-  // surfaces in white
-  col_surface[0] = 1.0;
-  col_surface[1] = 1.0;
-  col_surface[2] = 1.0;
-  col_surface[3] = 1.0;
-
-  // highlighted things in light blue
-  col_highlight[0] = 0.2;
-  col_highlight[1] = 0.2;
-  col_highlight[2] = 1.0;
-  col_highlight[3] = 1.0;
-
-  // overlay thingies (e.g. coordinate axes) in yellow
-  col_overlay[0] = 1.0;
-  col_overlay[1] = 1.0;
-  col_overlay[2] = 0.0;
-  col_overlay[3] = 1.0;
-
-  mbDrawWire = true;
-}
-
-void ResizeWin(int w, int h)
-{
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(45., (double)w/(double)h, 0.001, 10000.);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-}
-
-void DrawText3D(const char *text, double x, double y, double z)
-{
-  glRasterPos3d(x, y, z);
-  while(*text != '\0')
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *text++);
-}
-/**
- * Draw things like coord frames
- */
-void DrawOverlays()
-{
-  glColor4fv(col_overlay);
-
-  // draw coordinate axes
-  glBegin(GL_LINES);
-  glVertex3d(-1000., 0., 0.);
-  glVertex3d(1000., 0., 0.);
-  glVertex3d(0., -1000., 0.);
-  glVertex3d(0., 1000., 0.);
-  glVertex3d(0., 0., -1000.);
-  glVertex3d(0., 0., 1000.);
-  glEnd();
-  DrawText3D("x", 0.1, 0.02, 0.);
-  DrawText3D("y", 0., 0.1, 0.02);
-  DrawText3D("z", 0.02, 0., 0.1);
-
-  // draw tics every m, up to 10 m
-  const double tic_size = 0.05;
-  glBegin(GL_LINES);
-  for(int i = -10; i < 10; i++)
-  {
-    if(i != 0)
-    {
-      glVertex3d((double)i, 0, 0.);
-      glVertex3d((double)i, tic_size, 0.);
-      glVertex3d(0., (double)i, 0.);
-      glVertex3d(0., (double)i, tic_size);
-      glVertex3d(0., 0., (double)i);
-      glVertex3d(tic_size, 0., (double)i);
-    }
-  }
-  glEnd();
-  char buf[100];
-  for(int i = -10; i < 10; i++)
-  {
-    if(i != 0)
-    {
-      snprintf(buf, 100, "%d", i);
-      DrawText3D(buf, (double)i, 2.*tic_size, 0.);
-      DrawText3D(buf, 0., (double)i, 2.*tic_size);
-      DrawText3D(buf, 2.*tic_size, 0., (double)i);
-    }
-  }
-}
-
-void DrawPlaneGrid()
-{
-	glLineWidth(1);
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-///////////////////////////////////////////////////////////
-	glBegin(GL_LINE_LOOP);
-	glColor3f(1.0,1.0,1.0);
-	glVertex3f(v3dmax.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x, v3dmin.y, v3dmin.z);
-	glVertex3f(v3dmax.x, v3dmin.y, v3dmin.z);
-	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x, v3dmin.y, v3dmin.z);
-	glEnd();
-
-	glBegin(GL_LINE_LOOP);
-	glColor3f(1.0,1.0,1.0);
-	glVertex3f(v3dmax.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x+A, v3dmin.y+B, v3dmin.z+C);
-	glVertex3f(v3dmax.x+A, v3dmax.y+B, v3dmax.z+C);
-	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
-	glVertex3f(v3dmin.x+A, v3dmin.y+B, v3dmin.z+C);
-	glEnd();
-
-	glDisable(GL_BLEND);
-}
-
-void DrawPointb(Vector3 v3p, GLbyte red, GLbyte green, GLbyte blue)
-{
-	glPointSize(2);
-	glBegin(GL_POINTS);
-	glColor3b(red,green,blue);
-	glVertex3f(v3p.x, v3p.y, v3p.z);
-	glEnd();
-}
-void DrawPointf(Vector3 v3p, GLfloat red, GLfloat green, GLfloat blue)
-{
-	glPointSize(2);
-	glBegin(GL_POINTS);
-	glColor3f(red,green,blue);
-	glVertex3f(v3p.x, v3p.y, v3p.z);
-	glEnd();
-}
-
-void DrawPoints()
-{
-  //cout<<"Drawing......"<<endl;
-  glPointSize(2);
-  glBegin(GL_POINTS);
-  for(size_t i = 0; i < pointsN.size(); i++)
-  {
-	if (points_label.at(i) == 0)   		glColor3f(1.0,0.0,0.0);
-	else if (points_label.at(i) == -10)  	glColor3f(0.0,1.0,0.0);
-	else if (points_label.at(i) == -20)  	glColor3f(0.0,0.0,1.0);
-	else if (points_label.at(i) > 0)  	glColor3f(0.2,1.0,0.2);
-	glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);
-  }
-  glEnd();
-/*
-glPointSize(20);
-glColor3ub(255, 255, 255);
-glBegin(GL_POINTS);
-glVertex3f(0.0, 0.0, 0.0);
-glEnd();
-*/
-}
-
-void DisplayWin()
-{
-	GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(view_point.x, view_point.y, view_point.z,
-	view_point.x + view_dir.x, view_point.y + view_dir.y,
-	view_point.z + view_dir.z,
-	view_up.x, view_up.y, view_up.z);
-	glRotated(cam_rot[0], 0., 1., 0.);
-	glRotated(-cam_rot[1], 1., 0., 0.);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glDisable(GL_LIGHTING);
-	DrawOverlays();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	DrawPoints();
-
-	glDisable(GL_COLOR_MATERIAL);
-	glutSwapBuffers();
-
-}
-
-void KeyPress(unsigned char key, int x, int y)
-{
-  switch(key)
-  {/*
-    case 'q':
-      // a slightly harsh way to end a program ...
-      exit(EXIT_SUCCESS);
-      break;*/
-    case 's':
-	{if (mbDrawWire) mbDrawWire = false;
-	 else mbDrawWire = true;}
-      break;
-    default:
-      break;
-  }
-  glutPostRedisplay();
-}
-
-void MousePress(int button, int state, int x, int y)
-{
-  mouse_x = x;
-  mouse_y = y;
-  mouse_butt = button;
-  butt_state = state;
-}
-
-void MouseMove(int x, int y)
-{
-  double trans_scale = 0.005, rot_scale = 1.;
-  double delta_x = (double)(x - mouse_x);
-  double delta_y = (double)(y - mouse_y);
-
-  if(mouse_butt == GLUT_LEFT_BUTTON)
-  {
-    view_point += (view_up*delta_y - view_normal*delta_x)*trans_scale;
-  }
-  else if(mouse_butt == GLUT_MIDDLE_BUTTON)
-  {
-    view_point -= view_dir*delta_y*trans_scale;
-  }
-  else if(mouse_butt == GLUT_RIGHT_BUTTON)
-  {
-    cam_rot[0] += (GLfloat)delta_x/rot_scale;
-    cam_rot[1] += (GLfloat)delta_y/rot_scale;
-  }
-  mouse_x = x;
-  mouse_y = y;
-  glutPostRedisplay();
-}
-
-void show_window()
-{
-    glutPostRedisplay();
-}
-
 
 void PlanePopOut::configure(const map<string,string> & _config)
 {
   // first let the base classes configure themselves
-  configureStereoCommunication(_config);
+  configureServerCommunication(_config);
 
   map<string,string>::const_iterator it;
 
@@ -426,6 +148,26 @@ void PlanePopOut::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> StableTime;
   }
+   if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
+  {
+    stereoconfig = it->second;
+  } else printf("PointCloudViewer::configure: Warning: No stereoconfig specified!\n");
+
+  StereoCamera *stereo_cam = new StereoCamera();
+  if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
+    throw (std::runtime_error("PointCloudViewer::configure: Warning: Cannot open calibration file for stereo camera."));
+  cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
+  
+  cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+  cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+  cv::Vec3d rotCenter(0,0,0.4);
+
+  // Initialize 3D render engine 
+  tgRenderer = new TGThread::TomGineThread(1280, 1024);
+  tgRenderer->SetParameter(intrinsic);
+  tgRenderer->SetCamera(R, t, rotCenter);
+  tgRenderer->SetCoordinateFrame(0.5);
+  
   println("use global points: %d", (int)useGlobalPoints);
   mConvexHullDensity = 0.0;
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
@@ -455,8 +197,9 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
 void PlanePopOut::start()
 {
-  startStereoCommunication(*this);
+  startPCCServerCommunication(*this);
 #ifdef FEAT_VISUALIZATION
+
   m_bSendPoints = true;
   m_bSendPlaneGrid = false;
   m_bSendImage = true;
@@ -523,7 +266,7 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 	return "";
 }
 
-void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
     IplImage *iplImg = convertImageToIpl(img);
     Video::CameraParameters c = img.camPars;
@@ -548,12 +291,12 @@ void SendImage(VisionData::SurfacePointSeq points, std::vector <int> &labels, co
 	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.5*vSOIonImg.at(i).height);
 	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
     }
-    //cvSaveImage("/tmp/planes_image.jpg", iplImg);
+    cvSaveImage("/tmp/planes_image.jpg", iplImg);
     m_display.setImage(ID_OBJECT_IMAGE, iplImg);
     cvReleaseImage(&iplImg);
 }
 
-void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &labels,
+void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels,
   cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
 	long long t0 = gethrtime();
@@ -575,7 +318,7 @@ void SendPoints(const VisionData::SurfacePointSeq& points, std::vector<int> &lab
 				default: str << "glColor(1.0,1.0,0.0)\n"; break;
 			}
 		}
-		const VisionData::SurfacePoint &p = points[i];
+		const PointCloud::SurfacePoint &p = points[i];
 		str << "glVertex(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
 	}
 	str << "glEnd()\nend\n";
@@ -670,30 +413,20 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 void PlanePopOut::runComponent()
 {
   sleepComponent(100);
-  //log("Component is running now");
+  log("Component PlanePopOut is running now");
   // note: this must be called in the run loop, not in configure or start as these are all different threads!
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
   int stereoWidth = 640;
-  if (doDisplay)
-  {
-      glutInit(&argc, argv);
-      win = glutCreateWindow("points");
-      InitWin();
-      glutKeyboardFunc(KeyPress);
-      glutMouseFunc(MousePress);
-      glutMotionFunc(MouseMove);
-      glutReshapeFunc(ResizeWin);
-      glutDisplayFunc(DisplayWin);
-  }
+
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
 #endif
   while(isRunning())
   {
 	long long t0 = gethrtime();
-	VisionData::SurfacePointSeq tempPoints = points;
+	PointCloud::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 
 	getPoints(useGlobalPoints, stereoWidth, points);
@@ -728,20 +461,33 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		if (points.size()>= 3000)	N = (int)points.size()/3000;
+		if (points.size()>= 10000)	N = (int)points.size()/10000;
 		else N = 1;
 		random_shuffle ( points.begin(), points.end() );
-		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
-		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<10)
+		/* for debug
+		for (unsigned int k = 0; k<100; k++)
+		{
+		      log("The %d point is at %f, %f, %f",k, points.at(k).p.x, points.at(k).p.y, points.at(k).p.z);
+		}
+		 for debug */
+		for (PointCloud::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
+		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<20 && (*it).p.x*(*it).p.x!=0)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
+		
+		/* for debug *
+		for (unsigned int k = 0; k<100; k++)
+		{
+		      log("The %d point is at %f, %f, %f",k, pointsN.at(k).p.x, pointsN.at(k).p.y, pointsN.at(k).p.z);
+		}
+		 / for debug */
 
 		bool executeflag = false;
 		if (USE_PSO == 0)		executeflag = RANSAC(pointsN,points_label);
 		else if (USE_PSO == 1)		executeflag = PSO_Label(pointsN,points_label);
 		//log("parameters of plane: A, B, C = (%f, %f, %f)", A, B, C);
-		if (executeflag == true)
+		if (executeflag == true && A!=0 && B!=0 && C!=0)
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
@@ -752,6 +498,7 @@ void PlanePopOut::runComponent()
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
 				if (SendDensePoints==1) CollectDensePoints(image.camPars, points);
 				//cout<<"m_bSendImage is "<<m_bSendImage<<endl;
+				//log("Done CollectDensePoints");
 #ifdef FEAT_VISUALIZATION
 				if (m_bSendImage)
 				{
@@ -770,22 +517,25 @@ void PlanePopOut::runComponent()
 			}
 			if (doDisplay)
 			{
-				glutIdleFunc(show_window);
-				glutPostRedisplay();
-				glutMainLoopEvent();
+			      DisplayInTG();
 			}
 			AddConvexHullinWM();
+			
+			//log("Done AddConvexHullinWM");
 #ifdef FEAT_VISUALIZATION
 			if (m_bSendPoints) SendPoints(pointsN, points_label, m_display, this);
 			if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
+			//log("Done FEAT_VISUALIZATION");
 #endif
 		}
 		else	log("Wrong with the execution of Plane fitting!");
 	}
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
 	{
+		//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 		CurrentObjList.clear();
 		Pre2CurrentList.clear();
+		//log("v3center.size() = %d",v3center.size());	
 		for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 		{
 			ObjPara OP;
@@ -802,10 +552,12 @@ void PlanePopOut::runComponent()
 			OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf, OP.rect);
 			CurrentObjList.push_back(OP);
 		}
+
 		SOIManagement();
+		//log("Done SOIManagement");
 	}
-	long long t1 = gethrtime();
-	double dt = (t1 - t0) * 1e-9;
+//	long long t1 = gethrtime();
+//	double dt = (t1 - t0) * 1e-9;
 // 	log("run time / frame rate: %lf / %lf", dt, 1./dt);
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
@@ -1058,7 +810,7 @@ void PlanePopOut::SOIManagement()
     }
 }
 
-CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
+CvHistogram* PlanePopOut::GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
 {
     Video::CameraParameters c = img.camPars;
     IplImage *iplImage = convertImageToIpl(img);
@@ -1073,7 +825,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
 	if (SOIPointOnImg.x<minx)	minx = SOIPointOnImg.x;
 	if (SOIPointOnImg.y<miny)	miny = SOIPointOnImg.y;
 	
-	VisionData::ColorRGB rgb = points.at(i).c;
+	cogx::Math::ColorRGB rgb = points.at(i).c;
 	CvScalar v;	  
 	v.val[0] = rgb.b;
 	v.val[1] = rgb.g;
@@ -1124,7 +876,7 @@ CvHistogram* PlanePopOut::GetSurfAndHistogram(VisionData::SurfacePointSeq points
     return hist;
 }
 
-Vector3 PlanePopOut::PixelRGB2HSV(VisionData::ColorRGB rgb)
+Vector3 PlanePopOut::PixelRGB2HSV(cogx::Math::ColorRGB rgb)
 {
     CvScalar v;	  
     v.val[0] = rgb.r;
@@ -1172,12 +924,12 @@ Vector3 PlanePopOut::PixelRGB2HSV(VisionData::ColorRGB rgb)
     return hsv;
 }
 
-void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points)
+void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points)
 {
 	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
 	for (unsigned int i=0; i<SOIPointsSeq.size(); i++)
 	{
-		VisionData::SurfacePointSeq DenseSurfacePoints;
+		PointCloud::SurfacePointSeq DenseSurfacePoints;
 		for (unsigned int j=0; j<SOIPointsSeq.at(i).size(); j++)
 		{
 			Vector3 v3OneObj = SOIPointsSeq.at(i).at(j).p;
@@ -1208,7 +960,7 @@ void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, VisionData::S
 	free(points2D);	
 }
 
-void PlanePopOut::CalRadiusCenter4BoundingSphere(VisionData::SurfacePointSeq points, Vector3 &c, double &r)
+void PlanePopOut::CalRadiusCenter4BoundingSphere(PointCloud::SurfacePointSeq points, Vector3 &c, double &r)
 {
     for (unsigned int i = 0 ; i<points.size() ; i++)
     {
@@ -1313,7 +1065,7 @@ double PlanePopOut::DistOfParticles(Particle p1, Particle p2, Vector3 c, double 
     return re;
 }
 
-double PlanePopOut::PSO_EvaluateParticle(Particle OneParticle, vector <Particle> optima_found, VisionData::SurfacePointSeq points, Vector3 cc, double rr)
+double PlanePopOut::PSO_EvaluateParticle(Particle OneParticle, vector <Particle> optima_found, PointCloud::SurfacePointSeq points, Vector3 cc, double rr)
 {
       double dSumError = 0.0;
       double lambda = 50;
@@ -1416,7 +1168,7 @@ vector<double> PlanePopOut::UpdateVelocity(vector<double> p, vector<double> v, v
 
 }
 
-void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr)
+void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, PointCloud::SurfacePointSeq points, Vector3 cc, double rr)
 {
     Vector3 vnorm; // normal vector of found plane
     if (vFO.size() == 1)
@@ -1463,7 +1215,7 @@ void PlanePopOut::Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>
 
 /*
 void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
-						   VisionData::SurfacePointSeq &points,
+						   PointCloud::SurfacePointSeq &points,
 						   std::vector <int> &labels)
 {
     if (bHorizontalFound == true)
@@ -1478,7 +1230,7 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 }
 */
 void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
-						   VisionData::SurfacePointSeq &points,
+						   PointCloud::SurfacePointSeq &points,
 						   std::vector <int> &labels)
 {
      int N_iter = 100; 				// iteration number
@@ -1622,11 +1374,11 @@ void PlanePopOut::PSO_internal(vector < vector<double> > init_positions,
 
 }
 
-bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+bool PlanePopOut::PSO_Label(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
      int N_particle = 80; 			// particle number
 
-      VisionData::SurfacePointSeq P_points = points;
+      PointCloud::SurfacePointSeq P_points = points;
       unsigned int nPoints = P_points.size();
       if(nPoints < 10)
       {
@@ -1668,7 +1420,7 @@ bool PlanePopOut::PSO_Label(VisionData::SurfacePointSeq &points, std::vector <in
       return true;
 }
 
-void PlanePopOut::FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::vector <int> &labels, double B, double C)
+void PlanePopOut::FindVerticalPlanes(PointCloud::SurfacePointSeq &points, std::vector <int> &labels, double B, double C)
 {	
     std::vector<int> candidants;
     for (unsigned int i=0; i<labels.size(); i++)
@@ -1739,9 +1491,9 @@ void PlanePopOut::FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::v
     }
 }
 
-bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	VisionData::SurfacePointSeq R_points = points;
+	PointCloud::SurfacePointSeq R_points = points;
 	unsigned int nPoints = R_points.size();
 	if(nPoints < 10)
 	{
@@ -1775,17 +1527,18 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			if (norm(v3Normal) != 0)
 				normalise(v3Normal);
 			else v3Normal = 99999.9*v3Normal;
-		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01); //the plane should parallel with the initialisation motion of camera
+		} while ( fabs(v3Normal.x) < 0.00001); //the plane should parallel with the initialisation motion of camera  fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01 ||
 
 		Vector3 v3Mean = 0.33333333 * (R_points.at(nA).p + R_points.at(nB).p + R_points.at(nC).p);
+		//log("v3Normal (%f, %f, %f)",v3Normal.x,v3Normal.y,v3Normal.z);
 		double dSumError = 0.0;
 		for(unsigned int i=0; i<nPoints; i++)
 		{
 			Vector3 v3Diff = R_points.at(i).p - v3Mean;
-			double dDistSq = dot(v3Diff, v3Diff);
+			double dDistSq = dot(v3Diff, v3Diff); 
 			if(dDistSq == 0.0)
 			continue;
-			double dNormDist = fabs(dot(v3Diff, v3Normal));
+			double dNormDist = fabs(dot(v3Diff, v3Normal));//log("dNormDist (%f)",dNormDist);
 			if(dNormDist > min_height_of_obj)
 			dNormDist = min_height_of_obj;
 			dSumError += dNormDist;
@@ -1800,7 +1553,9 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			point3 = nC;
 		}
 	}
+	//log("Index of three points are (%d, %d, %d)",point1,point2,point3);
 ////////////////////////////////use three points to cal plane////
+	//log("dBestDistSquared = %f, CurrentBestDistSquared= %f",dBestDistSquared,CurrentBestDistSquared);
 	if(dBestDistSquared<CurrentBestDistSquared)
 	{
 	    para_a = ( (R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.z-R_points.at(point1).p.z)-(R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.y-R_points.at(point1).p.y) );
@@ -1816,6 +1571,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 	    para_c = C;
 	    para_d = D;
 	}
+	//log("The parameters of the dominate plane are (%f, %f, %f)",para_a, para_b,para_c,para_d);
 /////////////////////////////////end parameters calculation/////////////
 
 	if (para_d<0)
@@ -1898,7 +1654,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 	return true;
 }
 
-void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+void PlanePopOut::SplitPoints(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	std::vector<int> candidants;
 	std::vector <int> S_label = labels;
@@ -1948,7 +1704,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	objnumber--;
 }
 
-double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+double PlanePopOut::Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	double max_x = -99999.0;
 	double min_x = 99999.0;
@@ -1973,7 +1729,7 @@ double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std
 	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/25;
 }
 
-SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
+SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI)
 {
 	//debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
 	VisionData::SOIPtr obs = new VisionData::SOI;
@@ -2186,15 +1942,15 @@ void PlanePopOut::DrawOneCuboid(Vector3 Max, Vector3 Min)
 	glDisable(GL_BLEND);
 }
 
-void PlanePopOut::DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+void PlanePopOut::DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	VisionData::SurfacePointSeq Max;
-	VisionData::SurfacePointSeq Min;
+	PointCloud::SurfacePointSeq Max;
+	PointCloud::SurfacePointSeq Min;
 	Vector3 initial_vector;
 	initial_vector.x = -9999;
 	initial_vector.y = -9999;
 	initial_vector.z = -9999;
-	VisionData::SurfacePoint InitialStructure;
+	PointCloud::SurfacePoint InitialStructure;
 	InitialStructure.p = initial_vector;
 	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
 	Max.assign(objnumber, InitialStructure);
@@ -2295,7 +2051,7 @@ inline Vector3 PlanePopOut::AffineTrans(Matrix33 m33, Vector3 v3)
 	return m33*v3;
 }
 
-void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+void PlanePopOut::ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
 	vector<Vector3> PlanePoints3D;
@@ -2407,7 +2163,7 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 */
 }
 
-void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
+void PlanePopOut::BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels)
 {
 	CvPoint* points2D = (CvPoint*)malloc( pointsN.size() * sizeof(points2D[0]));
 
@@ -2474,14 +2230,14 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 	free( points2D );
 }
 
-void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	VisionData::SurfacePointSeq center;
+	PointCloud::SurfacePointSeq center;
 	Vector3 initial_vector;
 	initial_vector.x = 0;
 	initial_vector.y = 0;
 	initial_vector.z = 0;
-	VisionData::SurfacePoint InitialStructure;
+	PointCloud::SurfacePoint InitialStructure;
 	InitialStructure.p = initial_vector;
 	center.assign(objnumber,InitialStructure);
 
@@ -2492,7 +2248,7 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 
 	std::vector<double> radius_world;
 	radius_world.assign(objnumber,0);
-	VisionData::SurfacePointSeq pointsInOneSOI;
+	PointCloud::SurfacePointSeq pointsInOneSOI;
 	SOIPointsSeq.clear();
 	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
 	BGPointsSeq.clear();
@@ -2523,7 +2279,7 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
-			VisionData::SurfacePoint PushStructure;
+			PointCloud::SurfacePoint PushStructure;
 			PushStructure.p = points.at(j).p;
 			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
 			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
@@ -2568,6 +2324,44 @@ void PlanePopOut::RefinePlaneEstimation(vector <Vector3> lines)
     PlaneNormal.x = A; PlaneNormal.y = B; PlaneNormal.z = C;
     normalise(PlaneNormal);
     double newD = PlaneNormal.x *D/A;
+}
+
+void PlanePopOut::Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
+{
+  cloud = cv::Mat_<cv::Point3f>(1, pointsN.size());
+  colCloud = cv::Mat_<cv::Point3f>(1, pointsN.size());    
+
+  for(unsigned i = 0; i<pointsN.size(); i++)
+  {
+    cv::Point3f p, cp;
+    p.x = (float) pointsN[i].p.x;
+    p.y = (float) pointsN[i].p.y;
+    p.z = (float) pointsN[i].p.z;
+    if (points_label.at(i) == 0)	//points belong to the dominant plane
+    {
+	    cp.x = 255.0;	// change rgb to bgr
+	    cp.y = 0.0;
+	    cp.z = 0.0;
+    }
+    else
+    {
+	  cp.x = (uchar) pointsN[i].c.b;	// change rgb to bgr
+	  cp.y = (uchar) pointsN[i].c.g;
+	  cp.z = (uchar) pointsN[i].c.r;
+    }
+
+    cloud.at<cv::Point3f>(0, i) = p;
+    colCloud.at<cv::Point3f>(0, i) = cp;
+  }
+}
+
+void PlanePopOut::DisplayInTG()
+{
+	cv::Mat_<cv::Point3f> cloud;
+	cv::Mat_<cv::Point3f> colCloud;
+	Points2Cloud(cloud, colCloud);
+	tgRenderer->Clear();
+	tgRenderer->SetPointCloud(cloud, colCloud);
 }
 
 }
