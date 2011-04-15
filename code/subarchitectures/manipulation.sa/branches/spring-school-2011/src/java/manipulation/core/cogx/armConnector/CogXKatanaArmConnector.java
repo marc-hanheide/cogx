@@ -21,6 +21,7 @@ import manipulation.core.share.armConnector.ArmConnector;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Pose;
 import manipulation.core.share.types.SensorData;
 import manipulation.core.share.types.SensorData.SensorPosition;
 import manipulation.core.share.types.Vector3D;
@@ -376,7 +377,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public ArmError getPosError(Vector3D targetPosition, Matrix targetRotation)
 			throws ManipulatorException {
-		// stopArm();
+		stopArm();
 
 		GenWorkspaceState genPosition = new GenWorkspaceState();
 		genPosition.pos = new Mat34();
@@ -462,5 +463,56 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			logger.error("Receiving encoder data not implemented for simulation");
 			return false;
 		}
+	}
+
+	public Pose simulateArmMovement(Pose target) throws ManipulatorException {
+		stopArm();
+
+		GenWorkspaceState genPosition = new GenWorkspaceState();
+		genPosition.pos = new Mat34();
+		genPosition.pos.p = new Vec3(target.getTranslation().getX(), target
+				.getTranslation().getY(), target.getTranslation().getZ());
+
+		genPosition.pos.R = CogXConverter.convMatrixToGolem(target
+				.getRotation());
+
+		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
+		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
+				+ arm.getTimeDeltaAsync();
+
+		Matrix newRotation;
+		Vector3D newTranslation;
+
+		try {
+			GenConfigspaceState cbegin = arm
+					.recvGenConfigspaceState(manipulator
+							.getVirtualSceneConnector().getTime()
+							+ arm.getTimeDeltaAsync());
+			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
+			Mat34[] forwardTransArray = arm.getForwardTransform(cend.pos);
+			Mat34 forwardTrans = forwardTransArray[forwardTransArray.length - 1];
+
+			Matrix forwardTransRot = CogXConverter
+					.convGolemToMatrix(forwardTrans.R);
+			Vector3D forwardTransVec = CogXConverter
+					.convGolemToVec(forwardTrans.p);
+
+			Mat34 refMatrix = arm.getReferencePose();
+			Matrix refRotation = CogXConverter.convGolemToMatrix(refMatrix.R);
+			Vector3D refPosition = CogXConverter.convGolemToVec(refMatrix.p);
+
+			newRotation = MathOperation.getMatrixMatrixMultiplication(
+					forwardTransRot, refRotation);
+
+			newTranslation = MathOperation.getVectorAddition(
+					MathOperation.getMatrixVectorMultiplication(
+							forwardTransRot, refPosition), forwardTransVec);
+
+		} catch (ExTinyArm e) {
+			throw new ManipulatorException(e.what);
+		}
+
+		return new Pose(newRotation, newTranslation);
+
 	}
 }

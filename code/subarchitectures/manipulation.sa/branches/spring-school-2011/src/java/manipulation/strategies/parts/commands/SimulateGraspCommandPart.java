@@ -4,10 +4,11 @@ import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
+import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
-import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Pose;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
@@ -42,8 +43,9 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	private ArmError armError = null;
 	private boolean manipulationFailed = false;
+
+	private Pose simulatedPose = null;
 
 	public SimulateGraspCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
@@ -53,7 +55,7 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 	}
 
 	private void simulateArm() {
-		
+
 		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
@@ -74,9 +76,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 				return;
 			}
 
-			Vector3D direction = MathOperation.getDirection(currentArmPos,
-					currentGoalPosition);
-
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
 			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
@@ -87,13 +86,10 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			Vector3D goalWithDistance = new Vector3D(
-					(currentGoalPosition.getX() - direction.getX()),
-					currentGoalPosition.getY() - direction.getY(),
-					currentGoalPosition.getZ());
+			simulatedPose = getManipulator().getArmConnector()
+					.simulateArmMovement(
+							new Pose(greifRotation, currentGoalPosition));
 
-			armError = getManipulator().getArmConnector().getPosError(
-					goalWithDistance, greifRotation);
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
 			manipulationFailed = true;
@@ -115,7 +111,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 		getManipulator().getWatcher().addObserver(this);
 
 		manipulationFailed = false;
-		armError = new ArmError();
 
 		simulateArm();
 
@@ -127,9 +122,10 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 
 			currentCom.status = ManipulationCommandStatus.FINISHED;
 			currentCom.comp = ManipulationCompletion.SUCCEEDED;
-			currentCom.xError = armError.getPoseError().getX();
-			currentCom.yError = armError.getPoseError().getY();
-			currentCom.zError = armError.getPoseError().getZ();
+
+			currentCom.simulatedReachablePose = CogXConverter
+					.convertToPose3(simulatedPose.getTranslation(),
+							simulatedPose.getRotation());
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()

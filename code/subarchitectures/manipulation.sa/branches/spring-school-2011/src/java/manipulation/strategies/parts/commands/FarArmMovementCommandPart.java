@@ -5,9 +5,9 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
+import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
-import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
@@ -44,7 +44,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean manipulationFailed = false;
-	private ArmError armError = null;
 
 	public FarArmMovementCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
@@ -91,9 +90,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 					currentGoalPosition.getY() - posInFront * direction.getY(),
 					currentGoalPosition.getZ());
 
-			armError = getManipulator().getArmConnector().getPosError(
-					goalWithDistance, greifRotation);
-
 			getManipulator().getArmConnector().reach(goalWithDistance,
 					greifRotation);
 
@@ -126,7 +122,6 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 		logger.debug("execute: " + this.getClass());
 
 		manipulationFailed = false;
-		armError = new ArmError();
 
 		getManipulator().getWatcher().addObserver(this);
 
@@ -187,9 +182,18 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 
 					currentCom.status = ManipulationCommandStatus.FINISHED;
 					currentCom.comp = ManipulationCompletion.SUCCEEDED;
-					currentCom.xError = armError.getPoseError().getX();
-					currentCom.yError = armError.getPoseError().getY();
-					currentCom.zError = armError.getPoseError().getZ();
+
+					try {
+						Vector3D currentPos = getManipulator()
+								.getArmConnector().getCurrentPosition();
+						Matrix currentRot = getManipulator().getArmConnector()
+								.getCurrentRotation();
+
+						currentCom.reachedPose = CogXConverter.convertToPose3(
+								currentPos, currentRot);
+					} catch (ManipulatorException e) {
+						logger.error(e);
+					}
 
 					((CogXRunner) (getManipulator().getRunner()))
 							.updateWorkingMemoryCommand(getManipulator()

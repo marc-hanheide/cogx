@@ -2,6 +2,7 @@
 #define MANIPULATION_ICE
 
 #include <cast/slice/CDL.ice>
+#include <Math.ice>
 
 module manipulation {
     module slice {
@@ -48,9 +49,8 @@ module manipulation {
    		**/
 		class FarArmMovementCommand extends ManipulationCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
-			double xError;
-			double yError;
-			double zError;
+		
+			cogx::Math::Pose3 reachedPose;
 		
 		};
 		
@@ -69,9 +69,8 @@ module manipulation {
    		**/
 		class SimulateGraspCommand extends ManipulationCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
-			double xError;
-			double yError;
-			double zError;
+
+			cogx::Math::Pose3 simulatedReachablePose;
 		};
 		
 		/**
@@ -101,6 +100,15 @@ module manipulation {
 		**/
 		class CloseGripperCommand extends ManipulationCommand {
 			GraspingStatus graspStatus;
+		};
+		
+		class MoveArmToPose extends ManipulationCommand {
+			cogx::Math::Pose3 targetPose;
+			cogx::Math::Pose3 reachedPose;			
+		};
+		
+		class GetCurrentArmPose extends ManipulationCommand {
+			cogx::Math::Pose3 currentPose;
 		};
     };
 };

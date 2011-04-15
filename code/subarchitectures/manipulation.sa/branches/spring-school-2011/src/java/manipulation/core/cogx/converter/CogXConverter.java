@@ -13,6 +13,8 @@ import manipulation.core.share.types.VisionModel;
 import VisionData.GeometryModel;
 import VisionData.Vertex;
 import cogx.Math.Matrix33;
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 /**
  * represents a collection of convert functions
@@ -103,6 +105,17 @@ public class CogXConverter {
 		VisionModel model = new VisionModel(modelPoints);
 
 		return model;
+	}
+
+	public static Pose3 convertToPose3(Vector3D vec, Matrix matrix) {
+		Vector3 returnVec = new Vector3(vec.getX(), vec.getY(), vec.getZ());
+		Matrix33 returnMat = new Matrix33(matrix.getM00(), matrix.getM01(),
+				matrix.getM02(), matrix.getM10(), matrix.getM11(),
+				matrix.getM12(), matrix.getM20(), matrix.getM21(),
+				matrix.getM22());
+
+		return new Pose3(returnVec, returnMat);
+
 	}
 
 }
