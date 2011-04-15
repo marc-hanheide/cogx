@@ -114,7 +114,6 @@ public:
   void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
   
   cv::Mat GetIntrinsic(unsigned side);
-  
 };
 
 
