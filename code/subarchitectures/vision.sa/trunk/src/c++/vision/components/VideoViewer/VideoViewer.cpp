@@ -80,11 +80,12 @@ void VideoViewer::start()
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
 #ifdef FEAT_VISUALIZATION
+// printf("Feat_Visualization is ON!!!\n");
   m_display.connectIceClient(*this);
   m_display.installEventReceiver();
   m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
 #else
-  cvNamedWindow(getComponentID().c_str(), 1);
+  cvNamedWindow(getComponentID().c_str(), CV_WINDOW_AUTOSIZE);
 #endif
 
   vector<int> camIds;
