@@ -126,7 +126,7 @@ void PointCloudViewer::runComponent()
     tgRenderer->SetPointCloud(cloud, colCloud);
 
 #ifdef SHOW_IMAGE
-    getRectImage(2, 640, img);
+    getRectImage(0, 320, img);
 //     getDisparityImage(640, img);
     iplImg = convertImageToIpl(img);
     cvShowImage("PointCloudViewer Display", iplImg);
