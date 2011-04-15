@@ -107,7 +107,7 @@ void PointCloudViewer::start()
  */
 void PointCloudViewer::runComponent()
 {
-  static int stereoWidth = 640;   // width of stereo point cloud
+  static int stereoWidth = 320;   // width of stereo point cloud
 
 #ifdef SHOW_IMAGE
   cvNamedWindow("PointCloudViewer Display", CV_WINDOW_AUTOSIZE);
