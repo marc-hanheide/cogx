@@ -14,8 +14,8 @@ CPP MG cameramount CameraMount --fixed --camids "0 1 2" --cam_poses_xml "subarch
 ############ POINT CLOUD SERVER ##############
 #CPP MG pcserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --imgsize "320 240" --maxdisp 96 #--display --logimages --log 
 #CPP MG pcserver KinectPCServer --camids "2" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --log
-#CPP MG pcserver KinectStereoServer --videoname videoserver --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-left.xml subarchitectures/vision.sa/config/camPose/camcalib-right.xml subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --maxdisp 96 --imgsize "320 240" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --log #--logimages --display
-CPP MG pcserver KinectStereoSeqServer --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-left.xml subarchitectures/vision.sa/config/camPose/camcalib-right.xml subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --imgsize "640 480 320 240" --maxdisp "64 128" --framerate_ms 10000 --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-K.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-C.pts" --start 0 --end 7 --log #--display 
+CPP MG pcserver KinectStereoServer --videoname videoserver --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-left.xml subarchitectures/vision.sa/config/camPose/camcalib-right.xml subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --imgsize "640 480 320 240" --maxdisp "64 96" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --log #--logimages --display
+#CPP MG pcserver KinectStereoSeqServer --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-left.xml subarchitectures/vision.sa/config/camPose/camcalib-right.xml subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --imgsize "640 480 320 240" --maxdisp "64 128" --framerate_ms 10000 --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-K.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-C.pts" --start 0 --end 7 --log #--display 
 
 
 ############ VIDEO SERVER ##############
@@ -23,7 +23,7 @@ CPP MG pcserver KinectStereoSeqServer --camids "0 1 2" --camconfigs "subarchitec
 #CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg" --start 0 --end 7 --framerate_ms 1000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110404.ini:L subarchitectures/vision.sa/config/tuw_stereo_110404.ini:R"
 
 ### opencv live images
-#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480" #--camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110404.ini:L subarchitectures/vision.sa/config/tuw_stereo_110404.ini:R"
+CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480" #--camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110404.ini:L subarchitectures/vision.sa/config/tuw_stereo_110404.ini:R"
 
 ############ POINT CLOUD VIEWER ##############
 ## --servername pcserver => a point cloud server
