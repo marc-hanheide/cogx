@@ -35,7 +35,8 @@
 ^/code/tools/hardware/ptz/trunk                   tools/hardware/ptz
 ^/code/tools/hardware/robotbase/branches/stable-0 tools/hardware/robotbase
 ^/code/tools/hardware/sonar/branches/stable-0     tools/hardware/sonar
-^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
+^/code/tools/hardware/kinect/trunk                tools/hardware/kinect
+^/code/tools/hardware/pointCloud/trunk            tools/hardware/pointCloud
 ^/code/tools/hardware/tests/trunk                 tools/hardware/tests
 ^/code/tools/hardware/tts/trunk                   tools/hardware/tts
 ^/code/tools/hardware/utils/trunk                 tools/hardware/utils
@@ -52,4 +53,5 @@
 # Obsolete
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 # ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
+# ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
 
