@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# @author: Marko Mahnič
+# @created: December 2010
+#
 # This script will create an initial cache file for cmake from an
 # existing CMakeLists.txt. The script will search for CMakeLists.txt
 # in the current directory and in the directories BUILD, Build and

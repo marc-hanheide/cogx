@@ -106,5 +106,8 @@ function addMissingValues()
    done
 }
 
-addMissingValues
+echo "Setting existing options"
 replaceCacheValues
+echo "Adding new options"
+addMissingValues
+
