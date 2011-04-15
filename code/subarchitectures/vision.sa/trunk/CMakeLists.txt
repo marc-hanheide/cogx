@@ -171,10 +171,12 @@ if (BUILD_SA_VISION_VISLEARNER)
    else(VISUAL_LEARNER_MATLAB_PROXY)
       message(
          "${LIB_VLPROXY_SO} not installed, yet.\n"
-         "   Run 'make install' to generate and install it.\n"
-         "   Then run 'ccmake' again.\n"
-         "   (For now, VisualLearner won't be built)\n"
-         "   (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
+         "  Run 'make install' to generate and install it.\n"
+         "  If you don't have Matlab, put prebuilt libraries into\n"
+         "  vision.sa/config/prebuilt.\n"
+         "  Then run 'ccmake' again.\n"
+         "  (For now, VisualLearner won't be built)\n"
+         "  (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
       )
    endif (VISUAL_LEARNER_MATLAB_PROXY)
 endif (BUILD_SA_VISION_VISLEARNER)
