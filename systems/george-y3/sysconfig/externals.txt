@@ -45,7 +45,7 @@
 ^/code/tools/mary                                 tools/mary
 ^/code/tools/math/trunk                           tools/math
 ^/code/tools/python/trunk                         tools/python
-^/code/tools/rocs                                 tools/rocs
+^/code/tools/rocs/trunk                           tools/rocs
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/testing/trunk                        tools/testing
 
