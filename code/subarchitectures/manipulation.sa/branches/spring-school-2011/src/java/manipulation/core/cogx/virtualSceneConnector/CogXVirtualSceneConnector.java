@@ -33,7 +33,6 @@ import manipulation.core.share.exceptions.CalibrationException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.BasePositionData;
 import manipulation.core.share.types.Matrix;
-import manipulation.core.share.types.ModelPoint;
 import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.VisionModel;
@@ -361,32 +360,12 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		VisionModel visionModel = (VisionModel) item
 				.getAttribute(PropertyName.MODEL);
 
-		double lowestX = Double.MAX_VALUE;
-		double highestX = Double.MIN_VALUE;
-		double lowestY = Double.MAX_VALUE;
-		double highestY = Double.MIN_VALUE;
-		double lowestZ = Double.MAX_VALUE;
-		double highestZ = Double.MIN_VALUE;
-
-		for (ModelPoint mp : visionModel.getModelPoints()) {
-			Vector3D point = mp.getPosition();
-			if (point.getX() < lowestX)
-				lowestX = point.getX();
-			if (point.getX() > highestX)
-				highestX = point.getX();
-			if (point.getY() < lowestY)
-				lowestY = point.getY();
-			if (point.getY() > highestY)
-				highestY = point.getY();
-			if (point.getZ() < lowestZ)
-				lowestZ = point.getZ();
-			if (point.getZ() > highestZ)
-				highestZ = point.getZ();
-		}
-
-		obstacleShape.dimensions.v1 = (highestX - lowestX) / 2;
-		obstacleShape.dimensions.v2 = (highestY - lowestY) / 2;
-		obstacleShape.dimensions.v3 = (highestZ - lowestZ) / 2;
+		obstacleShape.dimensions.v1 = (visionModel.getHighestXValue() - visionModel
+				.getLowestXValue()) / 2;
+		obstacleShape.dimensions.v2 = (visionModel.getHighestYValue() - visionModel
+				.getLowestYValue()) / 2;
+		obstacleShape.dimensions.v3 = (visionModel.getHighestZValue() - visionModel
+				.getLowestZValue()) / 2;
 
 		obstacle.shapes[0] = obstacleShape;
 
