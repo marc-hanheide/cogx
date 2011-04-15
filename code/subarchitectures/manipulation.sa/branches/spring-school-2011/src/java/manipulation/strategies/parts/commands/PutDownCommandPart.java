@@ -5,10 +5,12 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
+import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector3D;
+import manipulation.core.share.types.VisionModel;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
@@ -58,10 +60,13 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			VisualObject targetVisOb = (((CogXRunner) getManipulator()
 					.getRunner()).getMemoryEntry(wma, VisualObject.class));
 
-			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
-					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+			VisionModel model = CogXConverter
+					.convBlortGeomModelToVisionModel(targetVisOb.model);
 
-			double posOver = 0.1;
+			double posOver = 0.05;
+
+			Vector3D goalPosition = new Vector3D(model.getAvgXvalue(),
+					model.getAvgYvalue(), model.getHighestZValue() + posOver);
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
@@ -73,11 +78,7 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			Vector3D goalWithDistance = new Vector3D(
-					currentGoalPosition.getX(), currentGoalPosition.getY(),
-					currentGoalPosition.getZ() + posOver);
-
-			getManipulator().getArmConnector().reach(goalWithDistance,
+			getManipulator().getArmConnector().reach(goalPosition,
 					graspRotation);
 
 			PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
