@@ -5,6 +5,7 @@ import java.util.HashMap;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.ArmError;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Pose;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.SensorData.SensorPosition;
 
@@ -28,8 +29,8 @@ public interface ArmConnector {
 		 * using the katana 450
 		 */
 		KATANA450
-	}	
-	
+	}
+
 	/**
 	 * reaches a position with the arm
 	 * 
@@ -124,7 +125,9 @@ public interface ArmConnector {
 			throws ManipulatorException;
 
 	public boolean isGraspingObject();
-	
+
 	public boolean isHome();
+
+	public Pose simulateArmMovement(Pose target) throws ManipulatorException;
 
 }
