@@ -1,4 +1,4 @@
-# file: george-y3.externals
+# file: george-y3-trunk.externals
 
 ^/code/cmake/trunk					cmake
 
