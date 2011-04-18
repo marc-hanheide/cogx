@@ -9,7 +9,9 @@ If the file BUILD/CMakeCache.txt doesn't exist, you can create one with:
 This will create the BUILD directory and run cmake with the initial cache file
 sysconfig/cmakecache/george-y3.txt.
 
-Change into BUILD and run make or start the build from CAST Control.
+Change into BUILD and run make or start the build from CAST Control. If you
+encounter problems with the libraries levmar or homest, you may have to change
+F2C_LIB from 'f2c' to 'f2c.a' in ccmake.
 
 If you want to restore the set of components that are built in the George
 system, use the following command:

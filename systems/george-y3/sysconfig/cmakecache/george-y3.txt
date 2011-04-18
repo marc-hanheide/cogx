@@ -3,7 +3,10 @@
 #  mkdir BUILD
 #  cd BUILD
 #  ccmake -C <path/to/thisfile>  ..
-# Note: -C works only if BUILD is empty.
+# Note: -C works only if BUILD/CMakeCache.txt doesn't exist.
+#
+# Alternatively you can use tools/scripts/cmake-apply which
+# also works with an existing CMakeCache.txt.
 set(BUILD_AVS OFF CACHE BOOL "NO")
 set(BUILD_BELIEFS ON CACHE BOOL "Build beliefs")
 set(BUILD_DORA OFF CACHE BOOL "Build dora specific code")
@@ -18,6 +21,7 @@ set(BUILD_HAL_PTZ ON CACHE BOOL "Build hardware ptz")
 set(BUILD_HAL_PTZ_PLAYER OFF CACHE BOOL "Build hardware ptz: player version")
 set(BUILD_HAL_ROBOT ON CACHE BOOL "Build hardware robotbase")
 set(BUILD_HAL_ROBOT_TESTS OFF CACHE BOOL "Build hardware robot tests")
+set(BUILD_HAL_STEREO_GPU ON CACHE BOOL "Build the GPU Library for Stereo Server")
 set(BUILD_HAL_TESTS OFF CACHE BOOL "Build hardware tests")
 set(BUILD_HAL_TTS ON CACHE BOOL "Build hardware tts")
 set(BUILD_HAL_UTILS OFF CACHE BOOL "Build hardware utils")
