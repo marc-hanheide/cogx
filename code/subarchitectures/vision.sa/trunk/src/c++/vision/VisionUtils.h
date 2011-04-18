@@ -1,6 +1,6 @@
 /**
- * @author Michael Zillich
- * @date May 2009
+ * @author Michael Zillich, Andreas Richtsfeld
+ * @date May 2009, 2011
  */
 
 #ifndef VISION_UTILS_H
@@ -87,7 +87,7 @@ inline cogx::Math::Vector3 getCenterOfGeometryModel(VisionData::GeometryModelPtr
 /**
  * Print RGB color in text form to a stream: '[r g b]`
  */
-inline void writeText(std::ostream &os, const VisionData::ColorRGB &col)
+inline void writeText(std::ostream &os, const cogx::Math::ColorRGB &col)
 {
   os << '[' << col.r << ' ' << col.g << ' ' << col.b << ']';
 }
@@ -96,7 +96,7 @@ inline void writeText(std::ostream &os, const VisionData::ColorRGB &col)
  * Read RGB color in text from a stream.
  * The expected format is: '[r g b]', white spaces are ignored.
  */
-inline void readText(std::istream &is, VisionData::ColorRGB &col) throw(std::runtime_error)
+inline void readText(std::istream &is, cogx::Math::ColorRGB &col) throw(std::runtime_error)
 {
   char c;
   is >> c;
@@ -126,7 +126,7 @@ inline void readText(std::istream &is, VisionData::ColorRGB &col) throw(std::run
  * Writing to a stream is taken to be a textual output, rather than a
  * serialisation of the actual binary data.
  */
-inline std::ostream& operator<<(std::ostream &os, const VisionData::ColorRGB &col)
+inline std::ostream& operator<<(std::ostream &os, const cogx::Math::ColorRGB &col)
 {
   writeText(os, col);
   return os;
@@ -136,10 +136,36 @@ inline std::ostream& operator<<(std::ostream &os, const VisionData::ColorRGB &co
  * Reading from a stream is taken to read a textual input, rather than
  * de-serialising the actual binary data.
  */
-inline std::istream& operator>>(std::istream &is, VisionData::ColorRGB &col)
+inline std::istream& operator>>(std::istream &is, cogx::Math::ColorRGB &col)
 {
   readText(is, col);
   return is;
+}
+
+/**
+ * @brief Convert points from point cloud server to opencv matrix.
+ * @param points Points from the point cloud as vector
+ * @param cloud Point cloud
+ * @param colCloud Color values for the point cloud
+ */
+inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
+{
+  cloud = cv::Mat_<cv::Point3f>(1, points.size());
+  colCloud = cv::Mat_<cv::Point3f>(1, points.size());    
+
+  for(unsigned i = 0; i<points.size(); i++)
+  {
+    cv::Point3f p, cp;
+    p.x = (float) points[i].p.x;
+    p.y = (float) points[i].p.y;
+    p.z = (float) points[i].p.z;
+    cp.x = (uchar) points[i].c.b; // change rgb to bgr
+    cp.y = (uchar) points[i].c.g;
+    cp.z = (uchar) points[i].c.r;
+
+    cloud.at<cv::Point3f>(0, i) = p;
+    colCloud.at<cv::Point3f>(0, i) = cp;
+  }
 }
 
 #endif
