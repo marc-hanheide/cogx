@@ -43,6 +43,7 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 add_cast_component(VisualizationTest ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
