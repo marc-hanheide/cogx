@@ -5,31 +5,30 @@ FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options 
 FIND_PACKAGE (OpenCV REQUIRED)
 
 
-option(BUILD_CAMCALIB "Build single monocular camera calibration" YES)
-if(BUILD_CAMCALIB)
+option(BUILD_CALIB_CAM "Build single monocular camera calibration" YES)
+if(BUILD_CALIB_CAM)
   add_executable(camcalib camcalib.cpp)
-  target_link_libraries(camcalib ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+  target_link_libraries(camcalib ${OPENCV_LDFLAGS} ${Boost_LIBRARIES} )
   INSTALL(TARGETS camcalib RUNTIME DESTINATION bin)
-endif(BUILD_CAMCALIB)
+endif(BUILD_CALIB_CAM)
 
-option(BUILD_PTUCALIB "Build PTU calibration" YES)
-if(BUILD_PTUCALIB)
+option(BUILD_CALIB_PTU "Build PTU calibration" YES)
+if(BUILD_CALIB_PTU)
   add_executable(ptucalib_simple ptucalib_simple.cpp)
-  target_link_libraries(ptucalib_simple ${OpenCV_LIBS} )
+  target_link_libraries(ptucalib_simple ${OPENCV_LDFLAGS} )
   INSTALL(TARGETS ptucalib_simple RUNTIME DESTINATION bin)
-endif(BUILD_PTUCALIB)
+endif(BUILD_CALIB_PTU)
 
-option(BUILD_ARMCALIB "Build robot arm calibration" NO)
-if(BUILD_ARMCALIB)
-
-#  SET(GOLEM_ROOT "" CACHE PATH "Path to golem installation directory")
+option(BUILD_CALIB_ARM "Build robot arm calibration" NO)
+if(BUILD_CALIB_ARM)
+  # SET(GOLEM_ROOT "" CACHE PATH "Path to golem installation directory")
   SET(PHYSX_INCLUDE /usr/include/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX include")
   SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX library")
 
   INCLUDE_DIRECTORIES(
-#    ${GOLEM_ROOT}/include
-#    ${GOLEM_ROOT}/resources
-#    ${GOLEM_ROOT}/include/Golem/Demo
+    # ${GOLEM_ROOT}/include
+    # ${GOLEM_ROOT}/resources
+    # ${GOLEM_ROOT}/include/Golem/Demo
     ${PHYSX_INCLUDE}/SDKs/Physics/include
     ${PHYSX_INCLUDE}/SDKs/Foundation/include
     ${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
@@ -43,16 +42,15 @@ if(BUILD_ARMCALIB)
   SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-O2 -fPIC -DLINUX -DNX64")
 
   ADD_EXECUTABLE(armcalib armcalib.cpp)
-  TARGET_LINK_LIBRARIES(armcalib ${OpenCV_LIBS} GolemDemoCommon GolemTiny)
+  TARGET_LINK_LIBRARIES(armcalib ${OPENCV_LDFLAGS} GolemDemoCommon GolemTiny)
   INSTALL(TARGETS armcalib RUNTIME DESTINATION bin)
 
-#  SET(ARMCALIB_ICE_SOURCES
-#    TinyIce.cc
-#    armcalib_ice.cpp
-#  )
-#  ADD_EXECUTABLE(armcalib_ice ${ARMCALIB_ICE_SOURCES})
-#  TARGET_LINK_LIBRARIES(armcalib_ice Ice IceUtil)
-#  INSTALL(TARGETS armcalib_ice RUNTIME DESTINATION bin)
-endif(BUILD_ARMCALIB)
-
+  # SET(ARMCALIB_ICE_SOURCES
+  #   TinyIce.cc
+  #   armcalib_ice.cpp
+  # )
+  # ADD_EXECUTABLE(armcalib_ice ${ARMCALIB_ICE_SOURCES})
+  # TARGET_LINK_LIBRARIES(armcalib_ice Ice IceUtil)
+  # INSTALL(TARGETS armcalib_ice RUNTIME DESTINATION bin)
+endif(BUILD_CALIB_ARM)
 
