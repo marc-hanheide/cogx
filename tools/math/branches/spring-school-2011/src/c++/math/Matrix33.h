@@ -16,6 +16,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <cast/core/CASTUtils.hpp>
 #include <cogxmath_base.h>
@@ -273,6 +274,16 @@ inline bool isFinite(const Matrix33 &a)
     isfinite(a.m00) && isfinite(a.m01) && isfinite(a.m02) &&
     isfinite(a.m10) && isfinite(a.m11) && isfinite(a.m12) &&
     isfinite(a.m20) && isfinite(a.m21) && isfinite(a.m22);
+}
+
+/**
+ * Returns true if A and B's elems are within epsilon of each other.
+ */
+inline bool equals(const Matrix33& A, const Matrix33& B, double eps)
+{
+  return equals(A.m00, B.m00, eps) && equals(A.m01, B.m01, eps) && equals(A.m02, B.m02, eps) &&
+         equals(A.m10, B.m10, eps) && equals(A.m11, B.m11, eps) && equals(A.m12, B.m12, eps) &&
+         equals(A.m20, B.m20, eps) && equals(A.m21, B.m21, eps) && equals(A.m22, B.m22, eps);
 }
 
 inline void setZero(Matrix33 &a)
@@ -752,9 +763,14 @@ inline void readTextRotVec(istream &is, Matrix33 &m)
  */
 inline void writeTextMatrix(ostream &os, const Matrix33 &a)
 {
-  os << '|' << a.m00 << ' ' << a.m01 << ' ' << a.m02 << '|' << endl;
-  os << '|' << a.m10 << ' ' << a.m11 << ' ' << a.m12 << '|' << endl;
-  os << '|' << a.m20 << ' ' << a.m21 << ' ' << a.m22 << '|' << endl;
+  const streamsize w = 7;
+  streamsize prec = os.precision(3);
+  ios::fmtflags flags = os.setf(ios::fixed, ios::floatfield);
+  os << '[' << setw(w) << a.m00 << ' ' << setw(w) << a.m01 << ' ' << setw(w) << a.m02 << endl;
+  os << ' ' << setw(w) << a.m10 << ' ' << setw(w) << a.m11 << ' ' << setw(w) << a.m12 << endl;
+  os << ' ' << setw(w) << a.m20 << ' ' << setw(w) << a.m21 << ' ' << setw(w) << a.m22 << ']';
+  os.precision(prec);
+  os.setf(flags, ios::floatfield);
 }
 
 /**
@@ -775,6 +791,16 @@ inline istream& operator >> (istream &is, Matrix33 &m)
 {
   readTextRotVec(is, m);
   return is;
+}
+
+/**
+ * Returns a convenient string representation of a matrix.
+ */
+inline string toString(const Matrix33& m)
+{
+  ostringstream s;
+  writeTextMatrix(s, m);
+  return s.str();
 }
 
 }

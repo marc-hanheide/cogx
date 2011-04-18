@@ -34,62 +34,62 @@ using namespace cast;
  */
 inline Pose3 pose3(const Vector3& pos, const Matrix33& rot)
 {
-  Pose3 p;
-  p.pos = pos;
-  p.rot = rot;
-  return p;
+  Pose3 T;
+  T.pos = pos;
+  T.rot = rot;
+  return T;
 }
 
 /**
  * Set from a 4x4 float array in row major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void setRow44(Pose3 &p, const float m[])
+inline void setRow44(Pose3 &T, const float m[])
 {
-  setRow44(p.rot, m);
-  set(p.pos, (double)m[3], (double)m[7], (double)m[11]);
+  setRow44(T.rot, m);
+  set(T.pos, (double)m[3], (double)m[7], (double)m[11]);
 }
 
 /**
  * Set from a 4x4 double array in row major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void setRow44(Pose3 &p, const double m[])
+inline void setRow44(Pose3 &T, const double m[])
 {
-  setRow44(p.rot, m);
-  set(p.pos, m[3], m[7], m[11]);
+  setRow44(T.rot, m);
+  set(T.pos, m[3], m[7], m[11]);
 }
 
 /**
  * Set from a 4x4 float array in column major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void setColumn44(Pose3 &p, const float m[])
+inline void setColumn44(Pose3 &T, const float m[])
 {
-  setColumn44(p.rot, m);
-  set(p.pos, (double)m[12], (double)m[13], (double)m[14]);
+  setColumn44(T.rot, m);
+  set(T.pos, (double)m[12], (double)m[13], (double)m[14]);
 }
 
 /**
  * Set from a 4x4 double array in column major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void setColumn44(Pose3 &p, const double m[])
+inline void setColumn44(Pose3 &T, const double m[])
 {
-  setColumn44(p.rot, m);
-  set(p.pos, m[12], m[13], m[14]);
+  setColumn44(T.rot, m);
+  set(T.pos, m[12], m[13], m[14]);
 }
 
 /**
  * Get to a 4x4 float array in row major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void getRow44(const Pose3 &p, float m[])
+inline void getRow44(const Pose3 &T, float m[])
 {
-  getRow44(p.rot, m);
-  m[3] = (float)p.pos.x;
-  m[7] = (float)p.pos.y;
-  m[11] = (float)p.pos.z;
+  getRow44(T.rot, m);
+  m[3] = (float)T.pos.x;
+  m[7] = (float)T.pos.y;
+  m[11] = (float)T.pos.z;
   m[12] = m[13] = m[14] = 0.;
   m[15] = 1.;
 }
@@ -98,12 +98,12 @@ inline void getRow44(const Pose3 &p, float m[])
  * Get to a 4x4 double array in row major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void getRow44(const Pose3 &p, double m[])
+inline void getRow44(const Pose3 &T, double m[])
 {
-  getRow44(p.rot, m);
-  m[3] = p.pos.x;
-  m[7] = p.pos.y;
-  m[11] = p.pos.z;
+  getRow44(T.rot, m);
+  m[3] = T.pos.x;
+  m[7] = T.pos.y;
+  m[11] = T.pos.z;
   m[12] = m[13] = m[14] = 0.;
   m[15] = 1.;
 }
@@ -112,12 +112,12 @@ inline void getRow44(const Pose3 &p, double m[])
  * Get to a 4x4 float array in column major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void getColumn44(const Pose3 &p, float m[])
+inline void getColumn44(const Pose3 &T, float m[])
 {
-  getColumn44(p.rot, m);
-  m[12] = (float)p.pos.x;
-  m[13] = (float)p.pos.y;
-  m[14] = (float)p.pos.z;
+  getColumn44(T.rot, m);
+  m[12] = (float)T.pos.x;
+  m[13] = (float)T.pos.y;
+  m[14] = (float)T.pos.z;
   m[3] = m[7] = m[11] = 0.;
   m[15] = 1.;
 }
@@ -126,126 +126,165 @@ inline void getColumn44(const Pose3 &p, float m[])
  * Get to a 4x4 double array in column major order, where the upper 3x3 part
  * corresponds to the rotation matrix.
  */
-inline void getColumn44(const Pose3 &p, double m[])
+inline void getColumn44(const Pose3 &T, double m[])
 {
-  getColumn44(p.rot, m);
-  m[12] = p.pos.x;
-  m[13] = p.pos.y;
-  m[14] = p.pos.z;
+  getColumn44(T.rot, m);
+  m[12] = T.pos.x;
+  m[13] = T.pos.y;
+  m[14] = T.pos.z;
   m[3] = m[7] = m[11] = 0.;
   m[15] = 1.;
 }
 
-inline void setIdentity(Pose3 &p)
+inline void setIdentity(Pose3 &T)
 {
-  setIdentity(p.rot);
-  setZero(p.pos);
+  setIdentity(T.rot);
+  setZero(T.pos);
 }
 
-inline bool isIdentity(const Pose3 &p)
+inline bool isIdentity(const Pose3 &T)
 {
-  return isIdentity(p.rot) && isZero(p.pos);
+  return isIdentity(T.rot) && isZero(T.pos);
 }
 
-inline bool isFinite(const Pose3 &p)
+inline bool isFinite(const Pose3 &T)
 {
-  return isFinite(p.rot) && isFinite(p.pos);
+  return isFinite(T.rot) && isFinite(T.pos);
 }
 
 /**
- * Transform 3D point from local to world coordinates.
+ * Returns true if A and B's elems are within epsilon of each other.
+ */
+inline bool equals(const Pose3& A, const Pose3& B, double eps)
+{
+  return equals(A.pos, B.pos, eps) && equals(A.rot, B.rot, eps);
+}
+
+/**
+ * Assigns inverse to B, assuming R is orthonormal, i.e. inv(R) = R^T, i.e. R
+ * is a rotation matrix. poses T1 = [R1, p1], T2 = [R2, p2]
+ * T2 = [R1^T, - R1^T * p1]
+ */
+inline void inverse(const Pose3 &T1, Pose3& T2)
+{
+  transpose(T1.rot, T2.rot);
+  T2.pos = -T1.pos;
+  mult(T2.rot, T2.pos, T2.pos);
+}
+
+/**
+ * Transform 3D point from local to world coordinates, pose T = [R, p].
  * b = R * a + p;
  */
-inline Vector3 transform(const Pose3 &p, const Vector3& a)
+inline Vector3 transform(const Pose3 &T, const Vector3& a)
 {
   Vector3 b;
-  mult(p.rot, a, b);
-  b += p.pos;
+  mult(T.rot, a, b);
+  b += T.pos;
   return b;
 }
 
 /**
- * Transform 3D point from world to local coordinates, assumng R is rotation
- * matrix
- * b = RT * (a - p)
+ * Transform 3D point from world to local coordinates, pose T = [R, p].
+ * b = R^T * (a - p)
  */
-inline Vector3 transformInverse(const Pose3 &p, const Vector3& a)
+inline Vector3 transformInverse(const Pose3 &T, const Vector3& a)
 {
   Vector3 b;
-  sub(a, p.pos, b);
-  multByTranspose(p.rot, b, b);
+  sub(a, T.pos, b);
+  multByTranspose(T.rot, b, b);
   return b;
 }
 
 /**
- * Transform 3D direction vector from local to world coordinates.
+ * Transform 3D direction vector from local to world coordinates, pose T = [R, p].
  * b = R * a;
  */
-inline Vector3 transformDirection(const Pose3 &p, const Vector3& a)
+inline Vector3 transformDirection(const Pose3 &T, const Vector3& a)
 {
   Vector3 b;
-  mult(p.rot, a, b);
+  mult(T.rot, a, b);
   return b;
 }
 
 /**
- * Transform 3D direction vector from world to local coordinates.
- * b = RT * a;
+ * Transform 3D direction vector from world to local coordinates, pose T = [R, p].
+ * b = R^T * a;
  */
-inline Vector3 transformDirectionInverse(const Pose3 &p, const Vector3& a)
+inline Vector3 transformDirectionInverse(const Pose3 &T, const Vector3& a)
 {
   Vector3 b;
-  multByTranspose(p.rot, a, b);
+  multByTranspose(T.rot, a, b);
   return b;
 }
 
 /**
- * Transform pose from local to world coordinates.
- * B = [R * AR, R * Ap + p]
+ * Transform pose from local to world coordinates, poses T = [R, p], T1 = [R1, p1], T2 = [R2, p2].
+ * T2 = [R * R1, R * p1 + p]
  */
-inline void transform(const Pose3 &P, const Pose3& A, Pose3& B)
+inline void transform(const Pose3 &T, const Pose3& T1, Pose3& T2)
 {
-  mult(P.rot, A.rot, B.rot);
-  B.pos = transform(P, A.pos);
+  mult(T.rot, T1.rot, T2.rot);
+  T2.pos = transform(T, T1.pos);
 }
 
 /**
- * Transform pose from global to local coordinates.
- * B = [RT * AR, RT * (Ap - p)]
+ * Transform pose from global to local coordinates, poses T = [R, p], T1 = [R1, p1], T2 = [R2, p2].
+ * T2 = [R^T * R1, R^T * (p1 - p)]
  */
-inline void transformInverse(const Pose3 &P, const Pose3& A, Pose3& B)
+inline void transformInverse(const Pose3 &T, const Pose3& T1, Pose3& T2)
 {
-  multByTranspose(P.rot, A.rot, B.rot);
-  B.pos = transformInverse(P, A.pos);
+  multByTranspose(T.rot, T1.rot, T2.rot);
+  T2.pos = transformInverse(T, T1.pos);
 }
 
 /**
  * Print a Pose3 to a stream, where rotation is written as rotation
  * vector: '[x y z] [rx ry rz]`
  */
-inline void writeText(ostream &os, const Pose3 &p)
+inline void writeTextRotVec(ostream &os, const Pose3 &T)
 {
-  writeText(os, p.pos);
-  writeTextRotVec(os, p.rot);
+  writeText(os, T.pos);
+  writeTextRotVec(os, T.rot);
+}
+
+/**
+ * Print a Pose3 to a stream, where rotation is written as rotation
+ * vector: '[x y z] [rx ry rz]`
+ */
+inline void writeTextRotMat(ostream &os, const Pose3 &T)
+{
+  writeText(os, T.pos);
+  os << endl;
+  writeTextMatrix(os, T.rot);
+}
+
+/**
+ * Default: Print a Pose3 to a stream, where rotation is written as rotation
+ * vector: '[x y z] [rx ry rz]`
+ */
+inline void writeText(ostream &os, const Pose3 &T)
+{
+  writeTextRotVec(os, T);
 }
 
 /**
  * Read a Pose3 from a stream, where rotation is stored as rotation vector.
  * The expected format is: '[x y z] [rx ry rz]', white spaces are ignored.
  */
-inline void readText(istream &is, Pose3 &p)
+inline void readText(istream &is, Pose3 &T)
 {
-  readText(is, p.pos);
-  readTextRotVec(is, p.rot);
+  readText(is, T.pos);
+  readTextRotVec(is, T.rot);
 }
 
 /**
  * Writing to a stream is taken to be a textual output, rather than a
  * serialisation of the actual binary data.
  */
-inline ostream& operator << (ostream &os, const Pose3 &p)
+inline ostream& operator << (ostream &os, const Pose3 &T)
 {
-  writeText(os, p);
+  writeText(os, T);
   return os;
 }
 
@@ -253,22 +292,20 @@ inline ostream& operator << (ostream &os, const Pose3 &p)
  * Reading from a stream is taken to read a textual input, rather than
  * de-serialising the actual binary data.
  */
-inline istream& operator >> (istream &is, Pose3 &p)
+inline istream& operator >> (istream &is, Pose3 &T)
 {
-  readText(is, p);
+  readText(is, T);
   return is;
 }
 
 /**
- * Assigns inverse to B, assuming R is orthonormal, i.e. inv(R) = RT, i.e. R
- * is a rotation matrix
- * B = [ART, ART * -Ap]
+ * Returns a convenient string representation of a pose.
  */
-inline void inverse(const Pose3 &A, Pose3& B)
+inline string toString(const Pose3& T)
 {
-  transpose(A.rot, B.rot);
-  B.pos = -A.pos;
-  mult(B.rot, B.pos, B.pos);
+  ostringstream s;
+  writeTextRotMat(s, T);
+  return s.str();
 }
 
 }
