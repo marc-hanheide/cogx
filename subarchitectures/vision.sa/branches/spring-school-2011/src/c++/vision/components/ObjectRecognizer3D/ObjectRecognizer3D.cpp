@@ -660,7 +660,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       Pose3 P, A, B;
       P = m_image.camPars.pose;
       convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
-      Math::transform(P,A,B);
+      Math::transform(P, A, B);
 
       if(m_recEntries[m_label].object->conf < m_confidence)
       {
