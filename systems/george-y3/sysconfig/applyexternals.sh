@@ -5,5 +5,10 @@ COGX_ROOT=$(readlink -f $SCRIPT_DIR/..)
 echo "COGX_ROOT: $COGX_ROOT"
 echo ""
 
-svn ps svn:externals --file $SCRIPT_DIR/george-y3.externals  $COGX_ROOT
+extfile=george-y3.externals
+if [ "$1" != "" ]; then
+   extfile="$1"
+fi
+
+svn ps svn:externals --file $SCRIPT_DIR/$extfile  $COGX_ROOT
 
