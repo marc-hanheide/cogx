@@ -8,6 +8,6 @@ echo ""
 tmpfile=$(tempfile)
 
 svn pg svn:externals $COGX_ROOT > $tmpfile
-diff -U 3 --ignore-all-space --ignore-blank-lines $SCRIPT_DIR/externals.txt $tmpfile
+diff -U 3 --ignore-all-space --ignore-blank-lines $SCRIPT_DIR/george-y3.externals $tmpfile
 
 rm $tmpfile
