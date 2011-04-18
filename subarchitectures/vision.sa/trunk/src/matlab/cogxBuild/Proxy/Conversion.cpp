@@ -8,6 +8,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <VisionData.hpp>
+#include <PointCloud.hpp>
 #include "../../../c++/vision/VisionUtils.h"
 
 #include "MatlabHelper.h"
@@ -15,6 +16,7 @@
 
 using namespace std;
 using namespace VisionData;
+using namespace PointCloud;
 
 namespace matlab {
 
