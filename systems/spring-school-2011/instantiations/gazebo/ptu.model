@@ -59,7 +59,7 @@
     <geom:box name="ptu_tilt_geom">
       <rpy>0 0 0</rpy>
       <size>0.03 0.24 0.02</size>
-      <mass>0.0</mass>
+      <mass>0.1</mass>
 
       <visual>
         <size>0.03 0.24 0.02</size>
@@ -148,8 +148,6 @@
     <axis>0 0 1</axis>
     <lowStop>-170</lowStop>
     <highStop>170</highStop>
-    <erp>0.2</erp>
-    <cfm>10e-5</cfm>
   </joint:hinge>
 
   <joint:hinge name="tilt_joint">
@@ -157,18 +155,16 @@
     <body2>ptu_tilt_body</body2>
     <anchor>ptu_base_body</anchor>
     <axis>0 1 0</axis>
-    <lowStop>-20</lowStop>
-    <highStop>20</highStop>
-    <erp>0.2</erp>
-    <cfm>10e-5</cfm>
+    <lowStop>-60</lowStop>
+    <highStop>60</highStop>
   </joint:hinge>
 
   <controller:generic_ptz name="ptu_controller">
     <panJoint>pan_joint</panJoint>
     <tiltJoint>tilt_joint</tiltJoint>
 
-    <motionGain>1</motionGain>
-    <force>10</force>
+    <motionGain>3</motionGain>
+    <force>20</force>
     <interface:ptz name="ptz_iface_0"/>
   </controller:generic_ptz>
 

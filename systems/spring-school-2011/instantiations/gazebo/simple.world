@@ -23,11 +23,24 @@ model of "oberhaus" office room, 7 by 3 m
 
   <verbosity>5</verbosity>
 
+<!-- cfm 10e-5 works
+     erp 0.8 works 
   <physics:ode>
     <stepTime>0.003</stepTime>
     <gravity>0 0 -9.81</gravity>
-    <cfm>0.00001</cfm> <!-- 10e-5 works -->
-    <erp>0.8</erp> <!-- 0.8 works -->
+    <cfm>0.00001</cfm>
+    <erp>0.8</erp>
+  </physics:ode>-->
+
+  <physics:ode>
+    <stepTime>0.03</stepTime>
+    <gravity>0 0 -9.81</gravity>
+    <cfm>10e-5</cfm>
+    <erp>0.3</erp>
+    <!-- updateRate: <0 == throttle simTime to match realTime.
+                      0 == No throttling
+                     >0 == Frequency at which to throttle the sim --> 
+    <updateRate>-1</updateRate>
   </physics:ode>
 
   <rendering:gui>
@@ -41,11 +54,51 @@ model of "oberhaus" office room, 7 by 3 m
   <rendering:ogre>
     <ambient>0.8 0.8 0.8 1.0</ambient>
   </rendering:ogre>
-  
+
+<!--
+ <model:physical name="cam1_model">
+    <xyz>0 0 1</xyz>
+    <rpy>0 0 0</rpy>
+    <static>true</static>
+    <body:empty name="cam1_body">
+      <sensor:camera name="camera0_sensor">
+        <imageSize>320 240</imageSize>
+        <hfov>60</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>50</farClip>
+        <saveFrames>false</saveFrames>
+        <saveFramePath>frames</saveFramePath>
+
+        <controller:generic_camera name="camera0_controller">
+          <interface:camera name="camera_iface_0"/>
+        </controller:generic_camera>
+      </sensor:camera>
+
+      <sensor:stereocamera name="stereo0_sensor">
+        <imageSize>320 240</imageSize>
+        <hfov>60</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>10</farClip>
+        <saveFrames>false</saveFrames>
+        <saveFramePath>frames</saveFramePath>
+        <baseline>0.2</baseline>
+
+        <controller:stereocamera name="stereo_camera_controller">
+          <interface:stereocamera name="stereo_iface_0" />
+          <interface:camera name="camera_iface_0" />
+          <interface:camera name="camera_iface_1" />
+
+          <leftcamera>camera_iface_0</leftcamera>
+          <rightcamera>camera_iface_1</rightcamera>
+        </controller:stereocamera>
+      </sensor:stereocamera>
+    </body:empty>
+  </model:physical>
+-->
 
   <!-- robot model -->
   <model:physical name="robot">
-    <xyz>0.0 0.0 0.01</xyz>
+    <xyz>2.2 0.0 0.01</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
     <model:physical name="laser">
@@ -76,7 +129,7 @@ model of "oberhaus" office room, 7 by 3 m
     </model:physical>
 
     <model:physical name="arm">
-      <xyz>0.0 0.0 0.24</xyz>
+      <xyz>0.04 0.00 0.24</xyz>
       <rpy>0.0 0.0 0.0</rpy>
 
       <attach>
@@ -173,7 +226,7 @@ model of "oberhaus" office room, 7 by 3 m
     <body:box name="cornflakes_body">
       <geom:box name="cornflakes_geom">
         <size>0.20 0.06 0.30</size>
-        <mass>1</mass>
+        <mass>0.01</mass>
 
         <visual>
           <xyz>0 0.03 0</xyz>

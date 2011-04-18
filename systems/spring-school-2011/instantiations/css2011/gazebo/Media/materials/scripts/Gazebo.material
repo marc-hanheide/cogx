@@ -1,0 +1,86 @@
+// our own textures
+
+material cogx/cereals-schokomusli-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-schokomusli-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-schokomusli-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-schokomusli-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-schokomusli-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-schokomusli-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-schokomusli-bottom.jpg
+      }
+    }
+  }
+}
+
