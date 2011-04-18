@@ -1,0 +1,35 @@
+
+Building the system
+===================
+
+If the file BUILD/CMakeCache.txt doesn't exist, you can create one with:
+
+   bash sysconfig/prepare_build.sh
+
+This will create the BUILD directory and run cmake with the initial cache file
+sysconfig/cmakecache/george-y3.txt.
+
+Change into BUILD and run make or start the build from CAST Control.
+
+If you want to restore the set of components that are built in the George
+system, use the following command:
+
+   tools/scripts/cmake-apply BUILD sysconfig/cmakecache/george-y3.txt
+
+To save the current set of components:
+
+   tools/scripts/cmake-freeze > my-components.txt
+
+
+Changing externals
+==================
+
+The externals can be changed with the script applyexternals.sh in sysconfig:
+
+   cd sysconfig
+   bash  applyexternals.sh  george-y3-trunk.externals
+   svn up ..
+
+if the .externals file is not provided, the default file george-y3.externals
+will be used.
+
