@@ -13,7 +13,7 @@
 
   <verbosity>5</verbosity>
 
-  <xyz>0 0 0</xyz>
+  <xyz>0 0 1</xyz>
   <rpy>0.0 0.0 0.0</rpy>
   <static>false</static>
 
@@ -216,7 +216,7 @@
     <rightJoint>right_wheel_joint</rightJoint>
     <wheelSeparation>0.330</wheelSeparation>
     <wheelDiameter>0.190</wheelDiameter>
-    <torque>5</torque>
+    <torque>50</torque>
     <interface:position name="position_iface_0"/>
   </controller:differential_position2d>
 </model:physical>

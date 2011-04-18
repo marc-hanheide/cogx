@@ -8,4 +8,4 @@ CPP GD path.query PathQueryProcessor #--no-indirect-paths
 
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --load-nodemap --log
 
-JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+#JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 

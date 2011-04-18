@@ -2,7 +2,7 @@
 # defines CogX demo robot
 include "../common/cogxp3.inc"
 
-include "box.inc"
+#include "box.inc"
 
 # defines 'map' object used for floorplans
 include "../common/map.inc"
