@@ -42,18 +42,20 @@ ADD_LIBRARY(levmar STATIC
 )
 
 # demo program
-LINK_DIRECTORIES(${LAPACKBLAS_DIR})
-LINK_DIRECTORIES(.)
-ADD_EXECUTABLE(lmdemo lmdemo.c levmar.h)
-# libraries the demo depends on
-IF(HAVE_F2C)
-  TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
-ELSE(HAVE_F2C)
-  TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
-ENDIF(HAVE_F2C)
+if (LIBBUILD_LEVMAR_HOMEST_DEMO)
+   LINK_DIRECTORIES(${LAPACKBLAS_DIR})
+   LINK_DIRECTORIES(.)
+   ADD_EXECUTABLE(lmdemo lmdemo.c levmar.h)
+   # libraries the demo depends on
+   IF(HAVE_F2C)
+     TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
+   ELSE(HAVE_F2C)
+     TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
+   ENDIF(HAVE_F2C)
 
-# make sure that the library is built before the demo
-ADD_DEPENDENCIES(lmdemo levmar)
+   # make sure that the library is built before the demo
+   ADD_DEPENDENCIES(lmdemo levmar)
+endif (LIBBUILD_LEVMAR_HOMEST_DEMO)
 
 #SUBDIRS(matlab)
 
