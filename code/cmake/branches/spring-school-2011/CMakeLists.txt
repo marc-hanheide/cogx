@@ -211,6 +211,11 @@ if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
 
+option(BUILD_CALIB "Build system calibration tools" YES)
+if(BUILD_CALIB)
+add_subdirectory (tools/syscalb)
+endif(BUILD_CALIB)
+
 add_subdirectory(tools/scripts)
 
 # Find ICE_SLICE_DIR by searching for Ice/Identity.ice
