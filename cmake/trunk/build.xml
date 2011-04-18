@@ -125,6 +125,7 @@
 		<ant target="${target}" dir="tools/hardware/blobfinder" />
 		<ant target="${target}" dir="tools/hardware/laser" />
 		<ant target="${target}" dir="tools/hardware/robotbase" />
+		<ant target="${target}" dir="tools/hardware/pointCloud" />
 
 		<antcall target="sa.visualization">
 		  <param name="target" value="${target}" />
