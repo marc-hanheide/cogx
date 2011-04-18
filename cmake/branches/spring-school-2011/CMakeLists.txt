@@ -41,7 +41,7 @@ add_subdirectory (tools/d-lib)
 
 
 # ------------ <ROCS> ------------
-option(BUILD_ROCS "Build the internal version of the ROCS library." YES)
+option(BUILD_ROCS "Build the internal version of the ROCS library." NO)
 if(BUILD_ROCS)
 	# We don't want the ROCS build system to define its own build options. We will set them as variables.
 	set(ROCS_DONT_DEFINE_OPTIONS yes)
@@ -152,7 +152,7 @@ if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
 endif(BUILD_HAL_PTZ)
 
-option(BUILD_HAL_BLOBFINDER "Build hardware blobfinder" YES)
+option(BUILD_HAL_BLOBFINDER "Build hardware blobfinder" NO)
 if(BUILD_HAL_BLOBFINDER)
 add_subdirectory (tools/hardware/blobfinder)
 endif(BUILD_HAL_BLOBFINDER)
