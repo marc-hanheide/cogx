@@ -35,3 +35,17 @@ The externals can be changed with the script applyexternals.sh in sysconfig:
 if the .externals file is not provided, the default file george-y3.externals
 will be used.
 
+
+The VisualLearner component
+===========================
+
+If you don't have the Matlab Compiler you have to download the prebuilt
+component from  http://cogx.eu/data/cogx/prebuilt/ and install the files into
+
+ subarchitectures/vision.sa/prebuilt/VisualLearner/glnx86
+
+You can also use the George Year 2 DVD ISO to run the VisualLearner component
+inside the virtual machine. See
+
+ https://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/george2/review
+
