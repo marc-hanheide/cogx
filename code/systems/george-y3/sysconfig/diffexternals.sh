@@ -7,7 +7,12 @@ echo ""
 
 tmpfile=$(tempfile)
 
+extfile=george-y3.externals
+if [ "$1" != "" ]; then
+   extfile="$1"
+fi
+
 svn pg svn:externals $COGX_ROOT > $tmpfile
-diff -U 3 --ignore-all-space --ignore-blank-lines $SCRIPT_DIR/george-y3.externals $tmpfile
+diff -U 3 --ignore-all-space --ignore-blank-lines $SCRIPT_DIR/$extfile  $tmpfile
 
 rm $tmpfile
