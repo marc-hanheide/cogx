@@ -11,6 +11,7 @@
  * @author	Michael Zillich (Vienna Universityl of Technology)
  */
 
+#include <strstream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <Golem/Ctrl/Arm.h>
@@ -33,14 +34,29 @@
 using namespace golem;
 using namespace golem::tiny;
 
-static void openCvPoseToGolemPose(CvMat *tvec, CvMat *rvec, Mat34 &pose) {
+static string golemPoseToString(const Mat34 &pose) {
+	ostringstream s;
+	Vec3 r;
+	Real a;
+	pose.R.toAngleAxis(a, r);
+	r *= a;
+	s.precision(3);
+	s << "t: " << pose.p.v1 << " " << pose.p.v2 << " " << pose.p.v3 << "\n";
+	s << "r: " << r.v1 << " " << r.v2 << " " << r.v3 << "\n";
+	s << "R: " << pose.R.m11 << " " << pose.R.m12 << " " << pose.R.m13 << "\n";
+	s << "   " << pose.R.m21 << " " << pose.R.m22 << " " << pose.R.m23 << "\n";
+	s << "   " << pose.R.m31 << " " << pose.R.m32 << " " << pose.R.m33 << "\n";
+	return s.str();
+}
+
+static void openCvPoseToGolemPose(const CvMat *tvec, const CvMat *rvec, Mat34 &pose) {
 	Vec3 r(Real(cvmGet(rvec, 0, 0)), Real(cvmGet(rvec, 1, 0)), Real(cvmGet(rvec, 2, 0)));
 	Real a = r.normalise();
 	pose.R.fromAngleAxis(a, r);
   pose.p = Vec3(Real(cvmGet(tvec, 0, 0)), Real(cvmGet(tvec, 1, 0)), Real(cvmGet(tvec, 2, 0)));
 }
 
-static void golemPoseToOpenCvPose(Mat34 &pose, CvMat *tvec, CvMat *rvec) {
+static void golemPoseToOpenCvPose(const Mat34 &pose, CvMat *tvec, CvMat *rvec) {
 	Vec3 r;
 	Real a;
 	pose.R.toAngleAxis(a, r);
@@ -53,15 +69,12 @@ static void golemPoseToOpenCvPose(Mat34 &pose, CvMat *tvec, CvMat *rvec) {
 	cvSet1D(tvec, 2, cvScalar(pose.p.v3));	
 }
 
-static void storeOpenCvPose(cv::FileStorage &file, CvMat *tvec, CvMat *rvec) {
+static void storeOpenCvPose(cv::FileStorage &file, const CvMat *tvec, const CvMat *rvec) {
 	CvMat *R = cvCreateMat( 3, 3, CV_64FC1 );
 	cvRodrigues2(rvec, R);
 	file.writeObj( "tvec", tvec );
-printf("written tvec\n");
 	file.writeObj( "rvec", rvec );
-printf("written rvec\n");
 	file.writeObj( "rmat", R );
-printf("written rmat\n");
 	cvReleaseMat(&R);
 }
 
@@ -146,17 +159,30 @@ Mat34 findGripperInWorld(Tiny &tiny, IplImage *pImg, cv::FileStorage &camCalibFi
 		cvFindExtrinsicCameraParams2( pObjectPoints, pImagePoints, pIntrinsic, pDistortions,
 				pRotVecPattern2Cam, pTraVecPattern2Cam );
 
-		Mat34 gripper2Pattern, pattern2Cam, cam2World, pattern2World, gripper2Cam;
+		Mat34 pattern2Gripper, gripper2Pattern, pattern2Cam, cam2Pattern, cam2World, pattern2World, gripper2Cam;
 		// defined by how the gripper holds the pattern
-		gripper2Pattern.setId();
-		gripper2Pattern.p.set(-0.126, 0.158, 0.);
-		gripper2Pattern.R.fromAngleAxis(REAL_PI, Vec3(1., 0., 0.));
+		pattern2Gripper.setId();
+		pattern2Gripper.p.set(-0.126, 0.158, 0.018);
+		pattern2Gripper.R.fromAngleAxis(REAL_PI, Vec3(1., 0., 0.));
+  	gripper2Pattern.setInverseRT(pattern2Gripper);
+		tiny.print("pattern to gripper:\n%s\n", golemPoseToString(pattern2Gripper).c_str());
+		tiny.print("gripper to pattern:\n%s\n", golemPoseToString(gripper2Pattern).c_str());
+
 		// this what we get from checkerboard detection
 		openCvPoseToGolemPose(pTraVecPattern2Cam, pRotVecPattern2Cam, pattern2Cam);
 		// how the camera was caibrated w.r.t. world
 		openCvPoseToGolemPose(pTraVecCam2World, pRotVecCam2World, cam2World);
+
+  	cam2Pattern.setInverseRT(pattern2Cam);
+		tiny.print("camera to pattern:\n%s\n", golemPoseToString(cam2Pattern).c_str());
+
 		gripper2Cam.multiply(pattern2Cam, gripper2Pattern);
 		gripper2World.multiply(cam2World, gripper2Cam);
+
+		tiny.print("pattern to camera:\n%s\n", golemPoseToString(pattern2Cam).c_str());
+		tiny.print("camera to world:\n%s\n", golemPoseToString(cam2World).c_str());
+		tiny.print("gripper to camera:\n%s\n", golemPoseToString(gripper2Cam).c_str());
+		tiny.print("gripper to world:\n%s\n", golemPoseToString(gripper2World).c_str());
 
 		cvReleaseMat ( &pImagePoints );
 		cvReleaseMat ( &pObjectPoints );
@@ -274,8 +300,6 @@ CvCapture *setupCapture(Tiny &tiny, int deviceClass, int camId, cv::FileStorage 
 		return 0;
 	}
 
-	cvNamedWindow(PROGRAM_NAME, CV_WINDOW_AUTOSIZE);
-
 	return capture;
 }
 
@@ -300,17 +324,38 @@ int main(int argc, char *argv[]) {
 	string armType(argv[2]);
 	string camCalibFileName(argv[3]);
 	string camPoseFileName(argv[4]);
-	int camType = (strcmp(argv[5], "firewire") == 0 ? CV_CAP_V4L2 : CV_CAP_V4L2);
-	int camId = atoi(argv[6]);
+	int camType = CV_CAP_ANY;
+	int camId = 0;
+	string imgFileName;
 	string outPoseFileName(argv[7]);
 
+	if(strcmp(argv[5], "firewire") == 0) {
+		camType = CV_CAP_IEEE1394;
+		camId = atoi(argv[6]);
+	}
+	else if(strcmp(argv[5], "usb") == 0) {
+		camType = CV_CAP_V4L2;
+		camId = atoi(argv[6]);
+	}
+	else {
+		camType = CV_CAP_ANY;
+		imgFileName = argv[6];
+	}
+
+	cvNamedWindow(PROGRAM_NAME, CV_WINDOW_AUTOSIZE);
+
 	golem::tiny::Arm* pArm = createArm(tiny, armType);
+	tiny.print("without gripper to base:\n%s\n", golemPoseToString(getTCP(tiny, pArm)).c_str());
 	attachGripper(pArm);
+	tiny.print("with gripper to base:\n%s\n", golemPoseToString(getTCP(tiny, pArm)).c_str());
 	setupObstacles(tiny);
 
 	cv::FileStorage camCalibFile( camCalibFileName.c_str(), cv::FileStorage::READ );
 	cv::FileStorage camPoseFile( camPoseFileName.c_str(), cv::FileStorage::READ );
-	CvCapture* capture = setupCapture(tiny, camType, camId, camCalibFile);
+	CvCapture* capture = 0;
+
+	if(camType != CV_CAP_ANY)
+		capture = setupCapture(tiny, camType, camId, camCalibFile);
 
 	// move to target position, show calibration pattern to camera
 	Mat34 calibTarget;
@@ -319,15 +364,25 @@ int main(int argc, char *argv[]) {
 	calibTarget.p.set(Real(0.0), Real(0.38), Real(0.68));
 	// remember home (= initial) configuration (it is the current joint configuration)
 	home = pArm->recvGenConfigspaceState(tiny.getTime());
-	moveTCP(tiny, pArm, calibTarget);
 
-	tiny.print("Wait for end of movement and press a key ...");
+	tiny.print("To move to calibration position, please press <return> ...");
+	tiny.waitKey();
+
+	tiny.print("Moving to calibration, wait for end of movement and press <return> ...");
+	moveTCP(tiny, pArm, calibTarget);
 	tiny.waitKey();
 
 	Mat34 gripper2Base = getTCP(tiny, pArm);
-	IplImage* frame = cvCloneImage(cvQueryFrame( capture ));
-  cvShowImage (PROGRAM_NAME, frame);
-	cvWaitKey(100);
+
+	IplImage* frame = 0;
+	if(capture != 0)
+		frame = cvCloneImage(cvQueryFrame( capture ));
+	else
+		frame = cvLoadImage(imgFileName.c_str(), 1);
+	if(frame == 0) {
+		tiny.print("* Failed to load imgae '%s'\n", imgFileName.c_str());
+		exit(EXIT_FAILURE);
+	}
 
 	Mat34 gripper2World = findGripperInWorld(tiny, frame, camCalibFile, camPoseFile);
 	Mat34 base2Gripper;
@@ -335,9 +390,9 @@ int main(int argc, char *argv[]) {
 	Mat34 base2World;
 	base2World.multiply(gripper2World, base2Gripper);
 
-	tiny.print("gripper to world: %f %f %f\n", (float)gripper2World.p.v1, (float)gripper2World.p.v2, (float)gripper2World.p.v3);
-	tiny.print("gripper to base: %f %f %f\n", (float)gripper2Base.p.v1, (float)gripper2Base.p.v2, (float)gripper2Base.p.v3);
-	tiny.print("base to world: %f %f %f\n", (float)base2World.p.v1, (float)base2World.p.v2, (float)base2World.p.v3);
+	tiny.print("gripper to world:\n%s\n", golemPoseToString(gripper2World).c_str());
+	tiny.print("gripper to base:\n%s\n", golemPoseToString(gripper2Base).c_str());
+	tiny.print("base to world:\n%s\n", golemPoseToString(base2World).c_str());
 	
 	CvMat *tvec = cvCreateMat(3, 1, CV_64FC1);
 	CvMat *rvec = cvCreateMat(3, 1, CV_64FC1);
@@ -345,22 +400,21 @@ int main(int argc, char *argv[]) {
   cv::FileStorage outPoseFile( outPoseFileName, cv::FileStorage::WRITE );
 	storeOpenCvPose(outPoseFile, tvec, rvec);
 	outPoseFile.release();
-
   tiny.print("\nparameters saved to file: %s\n", outPoseFileName.c_str());
 
-  cvShowImage (PROGRAM_NAME, frame);
+  cvShowImage(PROGRAM_NAME, frame);
 	cvWaitKey(100);
 
-	tiny.print("Press a key to return arm to home position...");
+	tiny.print("Press <return> to return arm to home position...");
 	tiny.waitKey();
 
+	tiny.print("Moving to home position, wait for end of movement and press <return> to quit...");
 	moveJoints(tiny, pArm, home);
-
-	tiny.print("Press a key to quit ...");
 	tiny.waitKey();
 
 	cvReleaseImage(&frame);
-	cvReleaseCapture(&capture);
+	if(capture != 0)
+		cvReleaseCapture(&capture);
 
 	exit(EXIT_SUCCESS);
 }
