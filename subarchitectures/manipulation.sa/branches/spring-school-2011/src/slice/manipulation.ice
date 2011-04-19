@@ -144,7 +144,7 @@ module manipulation {
 			* Send trajectory calculated by Golem to a component controlling
 			* the arm in the player/gazebo simulated environment.
 		**/
-		class PlayerBridgeSendTrajectory extends ManipulationCommand {
+		class PlayerBridgeSendTrajectoryCommmand extends ManipulationCommand {
 			GenConfigspaceStateSeq trajectory;
 		};
 
@@ -152,7 +152,7 @@ module manipulation {
 			* Send open gripper command to a component controlling
 			* the arm in the player/gazebo simulated environment.
 		**/
-		class PlayerBridgeOpenGripper extends ManipulationCommand {
+		class PlayerBridgeOpenGripperCommmand extends ManipulationCommand {
 		};
 
 		/**
@@ -161,7 +161,7 @@ module manipulation {
 			* returns GRASPING or NOTGRASPING, depending on whether the gripper
 			* fingers could fully close.
 		**/
-		class PlayerBridgeCloseGripper extends ManipulationCommand {
+		class PlayerBridgeCloseGripperCommmand extends ManipulationCommand {
 			GraspingStatus graspStatus;
 		};
     };
