@@ -42,7 +42,7 @@ void PlayerArmBridge::configure(const map<string, string> &_config)
   {
     playerHost = it->second;
   }
-  if((it = _config.find("--playerhost")) != _config.end())
+  if((it = _config.find("--playerport")) != _config.end())
   {
     istringstream str(it->second);
     str >> playerPort;
@@ -71,40 +71,28 @@ void PlayerArmBridge::newCommand(const cdl::WorkingMemoryChange &_wmc)
 {
 }
 
-void PlayerArmBridge::moveTCP()
+void PlayerArmBridge::sendTrajectory(manipulation::slice::GenConfigspaceStateSeq &trajectory)
 {
   for(size_t i = 1; i < trajectory.size(); i++)
   {
-    std::vector<float> pos(CONFIG_SPACE_DIM);
-    printf("%.3lf: ", trajectory[i].t);
-    for(int j = 0; j < CONFIG_SPACE_DIM; j++)
-    {
-      printf("%.3lf ", trajectory[i].pos.c[j]);
-      pos[j] = trajectory[i].pos.c[j];
-    }
-    printf("\n");
-    for(int j = 0; j < 5; j++)
-    {
-      actarray.MoveTo(j, pos[j]);
-    }
-    usleep(100000);
+    for(int j = 0; j < NUM_JOINTS; j++)
+      arm->MoveTo(j, trajectory[i].coord.pos[j]);
+    long t0 = (long)(1e6*trajectory[i-1].t);
+    long t1 = (long)(1e6*trajectory[i].t);
+    usleep(t1 - t0);
   }
-}
-
-void PlayerArmBridge::getTCP()
-{
 }
 
 void PlayerArmBridge::openGripper()
 {
-  arm->MoveTo(5, GRIPPER_OPEN_POS);
-  arm->MoveTo(6, GRIPPER_OPEN_POS);
+  arm->MoveTo(LEFT_FINGER_JOINT, GRIPPER_OPEN_POS);
+  arm->MoveTo(RIGHT_FINGER_JOINT, GRIPPER_OPEN_POS);
 }
 
 void PlayerArmBridge::closeGripper()
 {
-  arm->MoveTo(5, GRIPPER_CLOSE_POS);
-  arm->MoveTo(6, GRIPPER_CLOSE_POS);
+  arm->MoveTo(LEFT_FINGER_JOINT, GRIPPER_CLOSE_POS);
+  arm->MoveTo(RIGHT_FINGER_JOINT, GRIPPER_CLOSE_POS);
 }
 
 }

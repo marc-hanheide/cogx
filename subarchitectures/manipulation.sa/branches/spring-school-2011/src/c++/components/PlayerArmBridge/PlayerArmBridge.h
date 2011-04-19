@@ -16,6 +16,8 @@
 #include <CDisplayClient.hpp>
 #endif
 
+#include <manipulation.hpp>
+
 namespace cogx
 {
 
@@ -49,6 +51,13 @@ private:
   };
   PABDisplayClient display;
 #endif
+
+  static const double GRIPPER_OPEN_POS = 0.05;
+  static const double GRIPPER_CLOSE_POS = 0.00;
+  static const int NUM_JOINTS = 5;
+  static const int LEFT_FINGER_JOINT = NUM_JOINTS;
+  static const int RIGHT_FINGER_JOINT = NUM_JOINTS + 1;
+
   /**
    * host on which player server runs (typically localhost)
    */
@@ -63,6 +72,9 @@ private:
   PlayerCc::ActArrayProxy *arm;
 
   void newCommand(const cdl::WorkingMemoryChange &_wmc);
+  void sendTrajectory(manipulation::slice::GenConfigspaceStateSeq &trajectory);
+  void openGripper();
+  void closeGripper();
 
 protected:
   virtual void configure(const map<string, string> &_config);
