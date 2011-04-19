@@ -84,3 +84,45 @@ material cogx/cereals-schokomusli-bottom
   }
 }
 
+material cogx/tiled-floor
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture tiled-floor.jpg
+      }
+    }
+  }
+}
+
+material cogx/hardwood-floor
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture hardwood-floor.jpg
+      }
+    }
+  }
+}
+
+material cogx/white-wall
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture white-wall.jpg
+      }
+    }
+  }
+}
+
