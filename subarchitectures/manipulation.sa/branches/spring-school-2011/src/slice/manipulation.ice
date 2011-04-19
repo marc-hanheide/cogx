@@ -113,14 +113,16 @@ module manipulation {
 
 		/**
 			* Golem type set of joint angles
-		**/
+			* @author Michael Zillich
+			**/
 		sequence<double> ConfigspaceCoord;
 
 		/**
 			* Golem type set of joint position and velocity values.
 			* Note: we actually ignore velocities, but keep them in order to remain
 			* similar to Golem data types.
-		**/
+			* @author Michael Zillich
+			**/
 		struct GenConfigspaceCoord {
     	ConfigspaceCoord pos;
     	ConfigspaceCoord vel;
@@ -128,7 +130,8 @@ module manipulation {
 		
 		/**
 			* Golem type set of joint positions (and velocities) with a time stamp
-		**/
+			* @author Michael Zillich
+			**/
 		struct GenConfigspaceState {
 			GenConfigspaceCoord coord;
 			double t;
@@ -137,13 +140,21 @@ module manipulation {
 		/**
 			* Golem type sequence of time stamped joint positions (and velocities),
 			* making up a trajectory.
-		**/
+			* @author Michael Zillich
+			**/
 		sequence<GenConfigspaceState> GenConfigspaceStateSeq;
 		
 		/**
 			* Send trajectory calculated by Golem to a component controlling
 			* the arm in the player/gazebo simulated environment.
-		**/
+			* @author Michael Zillich
+			*
+      * Completion status will be set to ONTHEWAY while executing the trajectory.
+      * Completion status will be set to SUCCEEDED upon finishing
+      * execution of the trajectory if the last position of the
+      * trajectory could actually be reached or FAILED if the arm was blocked
+      * due to a collision,
+			**/
 		class PlayerBridgeSendTrajectoryCommand extends ManipulationCommand {
 			GenConfigspaceStateSeq trajectory;
 		};
@@ -151,16 +162,24 @@ module manipulation {
 		/**
 			* Send open gripper command to a component controlling
 			* the arm in the player/gazebo simulated environment.
-		**/
+			* @author Michael Zillich
+			*
+      * Completion status will be set to ONTHEWAY while opening the gripper.
+      * Completion status will be set to SUCCEEDED once the gripper is opened.
+			**/
 		class PlayerBridgeOpenGripperCommand extends ManipulationCommand {
 		};
 
 		/**
 			* Send close gripper to a component controlling
 			* the arm in the player/gazebo simulated environment.
-			* returns GRASPING or NOTGRASPING, depending on whether the gripper
-			* fingers could fully close.
-		**/
+			* @author Michael Zillich
+			*
+      * Completion status will be set to ONTHEWAY while closing the gripper.
+      * Completion status will be set to SUCCEEDED once the gripper is closed.
+			* Grasp status will be set to GRASPING or NOTGRASPING, depending on
+			* whether the gripper fingers could fully close.
+			**/
 		class PlayerBridgeCloseGripperCommand extends ManipulationCommand {
 			GraspingStatus graspStatus;
 		};
