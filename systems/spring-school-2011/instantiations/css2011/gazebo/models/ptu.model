@@ -96,7 +96,7 @@
 
       <sensor:camera name="camera0_sensor">
         <imageSize>640 480</imageSize>
-        <hfov>60</hfov>
+        <hfov>45</hfov>
         <nearClip>0.1</nearClip>
         <farClip>50</farClip>
         <saveFrames>false</saveFrames>
@@ -132,7 +132,7 @@
 
       <sensor:camera name="camera1_sensor">
         <imageSize>640 480</imageSize>
-        <hfov>60</hfov>
+        <hfov>45</hfov>
         <nearClip>0.1</nearClip>
         <farClip>50</farClip>
         <saveFrames>false</saveFrames>
