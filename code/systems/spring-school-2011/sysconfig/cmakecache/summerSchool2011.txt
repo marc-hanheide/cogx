@@ -62,7 +62,7 @@ set(BUILD_SA_V11N_USE_WEBKIT ON CACHE BOOL "Build with HTML support (Qt-WebKit)"
 set(BUILD_SA_V11N_USE_WEBKIT_PLUGINS ON CACHE BOOL "Enable plugins in HTML pages (Qt-WebKit)")
 set(BUILD_SA_VISION ON CACHE BOOL "Build vision subarchitecure")
 set(BUILD_SA_VISION_CAMERA_MOUNT ON CACHE BOOL "build camera mount")
-set(BUILD_SA_VISION_CHECK_SYS_CALIB ON CACHE BOOL "build system calibration check")
+set(BUILD_SA_VISION_CHECK_SYS_CALIB OFF CACHE BOOL "build system calibration check")
 set(BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB OFF CACHE BOOL "build convex hull display")
 set(BUILD_SA_VISION_FERNS ON CACHE BOOL "build FERNS detector")
 set(BUILD_SA_VISION_OBJANALYZER ON CACHE BOOL "build Object Analyzer")
