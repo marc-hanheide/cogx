@@ -23,6 +23,7 @@ namespace cogx
 
 using namespace std;
 using namespace cast;
+using namespace manipulation::slice;
 
 /**
  * Provides a bridge between Golem path planning and a player actarray interface.
@@ -71,10 +72,35 @@ private:
   /** interface to the arm */
   PlayerCc::ActArrayProxy *arm;
 
-  void newCommand(const cdl::WorkingMemoryChange &_wmc);
-  void sendTrajectory(manipulation::slice::GenConfigspaceStateSeq &trajectory);
+  void receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc);
+  void receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc);
+  void receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc);
+  /**
+   * Sends given trajectory to the player actarray interface, taking into
+   * account timestamps of the trajectory.
+   * Blocks until trajectory finished.
+   * @return true if last point of trajectory could actually be reached, false
+   *         otherwise (e.g. if collision occured and the arm is stuck)
+   */
+  bool sendTrajectory(GenConfigspaceStateSeq &trajectory);
   void openGripper();
-  void closeGripper();
+  /**
+   * Blocks until the gripper is closed or holding an object, or until an
+   * internal timeout is reached,
+   * @return true if gripper could fully close (with some epsilon), false
+   *         otherwise (i.e. if the fingers are blocked as the gripper is
+   *         holding something)
+   */
+  bool closeGripper();
+  /**
+   * Returns whether two joint configurations are equal, up to some epsilon.
+   */
+  bool equals(GenConfigspaceCoord &p1, GenConfigspaceCoord &p2);
+  /**
+   * Blocks until the fingers are no longer moving, or until an
+   * internal timeout is reached,
+   */
+  void waitGripperMoving();
 
 protected:
   virtual void configure(const map<string, string> &_config);
