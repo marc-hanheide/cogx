@@ -110,6 +110,60 @@ module manipulation {
 		class GetCurrentArmPose extends ManipulationCommand {
 			cogx::Math::Pose3 currentPose;
 		};
+
+		/**
+			* Golem type set of joint angles
+		**/
+		sequence<double> ConfigspaceCoord;
+
+		/**
+			* Golem type set of joint position and velocity values.
+			* Note: we actually ignore velocities, but keep them in order to remain
+			* similar to Golem data types.
+		**/
+		struct GenConfigspaceCoord {
+    	ConfigspaceCoord pos;
+    	ConfigspaceCoord vel;
+		};
+		
+		/**
+			* Golem type set of joint positions (and velocities) with a time stamp
+		**/
+		struct GenConfigspaceState {
+			GenConfigspaceCoord coord;
+			double t;
+		};
+		
+		/**
+			* Golem type sequence of time stamped joint positions (and velocities),
+			* making up a trajectory.
+		**/
+		sequence<GenConfigspaceState> GenConfigspaceStateSeq;
+		
+		/**
+			* Send trajectory calculated by Golem to a component controlling
+			* the arm in the player/gazebo simulated environment.
+		**/
+		class PlayerBridgeSendTrajectory extends ManipulationCommand {
+			GenConfigspaceStateSeq trajectory;
+		};
+
+		/**
+			* Send open gripper command to a component controlling
+			* the arm in the player/gazebo simulated environment.
+		**/
+		class PlayerBridgeOpenGripper extends ManipulationCommand {
+		};
+
+		/**
+			* Send close gripper to a component controlling
+			* the arm in the player/gazebo simulated environment.
+			* returns GRASPING or NOTGRASPING, depending on whether the gripper
+			* fingers could fully close.
+		**/
+		class PlayerBridgeCloseGripper extends ManipulationCommand {
+			GraspingStatus graspStatus;
+		};
     };
 };
 
