@@ -4,7 +4,6 @@ import manipulation.muster.core.cogx.armConnector.ExemplarySolutionKatanaArmConn
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionDoraBaseConnector;
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionLocalMapConnector;
 import manipulation.muster.core.cogx.calibrationConnector.CogXCalibConnector;
-import manipulation.muster.core.cogx.calibrationConnector.HomographyCalibration;
 import manipulation.muster.core.cogx.camConnector.ExemplarySolutionBlortConnector;
 import manipulation.muster.core.cogx.panTiltConnector.CogXPanTiltConnector;
 import manipulation.muster.core.cogx.virtualSceneConnector.ExemplarySolutionVirtualSceneConnector;

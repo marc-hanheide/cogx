@@ -13,7 +13,7 @@ import manipulation.muster.core.share.Manipulator.ManipulatorName;
  * @author ttoenige
  * 
  */
-public class CogXManipulatorStore extends ManipulatorStore {
+public class ExemplarySolutionManipulatorStore extends ManipulatorStore {
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	/**
@@ -25,18 +25,6 @@ public class CogXManipulatorStore extends ManipulatorStore {
 		ManipulatorPartFactory manPartFactory;
 
 		switch (name) {
-		case INTELLIGENT_GRASPING:
-			logger.debug("Int grasp CogX");
-			manPartFactory = new CogXManipulatorPartsFactory();
-			manipulator = new CogXIntGraspingManipulator(manPartFactory);
-			manipulator.setName(name);
-			break;
-		case MASTER_THESIS:
-			logger.debug("Int grasp MasterThesis");
-			manPartFactory = new MasterThesisManipulatorPartsFactory();
-			manipulator = new MasterThesisIntGraspingManipulator(manPartFactory);
-			manipulator.setName(name);
-			break;
 		case EXEMPLARY_SOLUTION:
 			logger.debug("Int grasp exemplay solution");
 			manPartFactory = new ExemplarySolutionManipulatorPartsFactory();
