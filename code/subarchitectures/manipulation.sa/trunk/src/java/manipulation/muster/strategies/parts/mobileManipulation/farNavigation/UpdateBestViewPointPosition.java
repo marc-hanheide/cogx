@@ -1,0 +1,89 @@
+package manipulation.muster.strategies.parts.mobileManipulation.farNavigation;
+
+import manipulation.muster.core.share.Manipulator;
+import manipulation.muster.core.share.exceptions.ExternalMemoryException;
+import manipulation.muster.core.share.exceptions.InternalMemoryException;
+import manipulation.muster.core.share.exceptions.ItemException;
+import manipulation.muster.core.share.types.ViewPoint;
+import manipulation.muster.itemMemory.Item.PropertyName;
+import manipulation.muster.math.MathOperation;
+import manipulation.muster.strategies.Strategy;
+import manipulation.muster.strategies.parts.StrategyPart;
+
+import org.apache.log4j.Logger;
+
+public class UpdateBestViewPointPosition extends StrategyPart {
+
+	private Logger logger = Logger.getLogger(this.getClass());
+
+	/**
+	 * constructor for the grasping approach part
+	 * 
+	 * @param manipulator
+	 *            corresponding manipulator
+	 * @param globalStrategy
+	 *            corresponding global strategy
+	 */
+	public UpdateBestViewPointPosition(Manipulator manipulator,
+			Strategy globalStrategy) {
+		setManipulator(manipulator);
+		setGlobalStrategy(globalStrategy);
+		setPartName(PartName.UPDATE_BEST_VIEWPOINT_POSITION);
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void execute() {
+		logger.debug("execute: " + this.getClass());
+
+		try {
+			getManipulator().getItemMemory().updateViewPointErrorByDistance(
+					getManipulator().getItemMemory().getFirstGraspItem(),
+					getManipulator());
+
+			double distance = MathOperation.getDistance(getManipulator()
+					.getBaseConnector().getCurrentPosition().getPoint(),
+					((ViewPoint) getManipulator().getItemMemory()
+							.getFirstGraspItem().getAttribute(
+									PropertyName.BEST_VIEW_POINT))
+							.getPosition().getPoint());
+
+			// TODO constant
+			if (distance > 0.1) {
+				logger.error("Other and better viewpoint avialable!");
+				logger.error("Dist: " + distance);
+				setNextPartName(PartName.FAR_APPROACH);
+
+			} else {
+				logger.error("Reached good viewpoint");
+				logger.error("Dist: " + distance);
+				setNextPartName(PartName.UPDATE_BEST_VIEWPOINT_ROTATION);
+			}
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
+		} catch (ItemException e) {
+			logger.error(e);
+		} catch (InternalMemoryException e) {
+			logger.error(e);
+		}
+
+		logger.debug("we go on!");
+		changeToNextPart();
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void changeToNextPart() {
+		logger.debug("cleaning up, starting next Part");
+
+		getGlobalStrategy().setNextPart(
+				getGlobalStrategy().getPart(getNextPartName()));
+
+	}
+}
