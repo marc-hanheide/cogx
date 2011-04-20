@@ -4,6 +4,8 @@
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
 #include <Video.ice>
+#include <PointCloud.ice>
+
 
 module VisionData {
 
@@ -21,8 +23,7 @@ module VisionData {
     Vector3Seq pTop;
 	// 3D vector sequence, describing the object top surface ???
   };
-
-sequence<OneObj> ObjSeq;
+  sequence<OneObj> ObjSeq;
 
   /**
    * @brief A convex hull describes ...???
@@ -49,22 +50,6 @@ sequence<OneObj> ObjSeq;
 
   sequence<string> IdSeq;
 
-  // RGB color
-  // NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
-  // char in your code.
-  struct ColorRGB {
-    byte r;
-    byte g;
-    byte b;
-  };
-
-  // A 3D point with a color, as e.g. returned by stereo
-  struct SurfacePoint {
-    cogx::Math::Vector3 p;
-    VisionData::ColorRGB c;
-  };
-
-  sequence<SurfacePoint> SurfacePointSeq;
 
   /**
    * A planar surface patch
@@ -76,14 +61,14 @@ sequence<OneObj> ObjSeq;
     cogx::Math::Pose3 pose;
 
     // 3D points used to estimate this patch
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
   };
   
   sequence<SurfacePatch> SurfacePatchSeq;
 
   /**
-   * @brief ???
-   * @author ???
+   * @brief Data related to one (of possibly several) view on an object.
+   * @author Michael Zillich
    */
   struct VisualObjectView {
     // 2D bounding box in the image
@@ -186,6 +171,9 @@ sequence<OneObj> ObjSeq;
 
     // Source proto object
     string protoObjectID;
+
+    // HACK: Points in 2D
+    DoubleSeq points2D;
   };
 
   class DetectionCommand {
@@ -268,10 +256,8 @@ sequence<OneObj> ObjSeq;
    * @author Andreas Richtsfeld
    */
   class ReasonerObject {
-    VisualObject obj;
-	// visual object from stereo detector
-    int frameNr;
-	// frame number
+    VisualObject obj;   // visual object from stereo detector
+    int frameNr;        // frame number
   };
 
   /**
@@ -289,11 +275,11 @@ sequence<OneObj> ObjSeq;
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
     // frontground points
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
     // background points
-    SurfacePointSeq BGpoints;
+    PointCloud::SurfacePointSeq BGpoints;
     // equivocal points which either belongs to fg or bg
-    SurfacePointSeq EQpoints;
+    PointCloud::SurfacePointSeq EQpoints;
     int status;
   };
 
@@ -351,6 +337,9 @@ sequence<OneObj> ObjSeq;
   };
 
 
+  /**
+   * The segmentation mask is a grayscale image.
+   */
   struct SegmentMask {
     int width;
     int height;
@@ -391,7 +380,7 @@ sequence<OneObj> ObjSeq;
     cogx::Math::Vector2 imageOrigin;
 
     // List of all surface 3D points
-    SurfacePointSeq points;
+    PointCloud::SurfacePointSeq points;
 
     // RAS shape descriptor
     RASShapeDescriptor rasShapeDesc;
