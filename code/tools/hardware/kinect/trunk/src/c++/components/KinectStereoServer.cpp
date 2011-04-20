@@ -518,15 +518,14 @@ void KinectStereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<
 
 void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
 {
-printf("KinectStereoServer::getRectImage: Warning: Not jet implemented for KinectStereoServer!\n");
-  
+  lockComponent();
+
   int res = findClosestResolution(imgWidth);
   StereoCamera *stereoCam = stereoCams[res];
   ImageSet &imgSet = imgSets[res];
   IplImage *kinectIpl;
   
   vector<Video::Image> images;
-  
   
   if(side == LEFT || side == RIGHT) // get stereo images
   {

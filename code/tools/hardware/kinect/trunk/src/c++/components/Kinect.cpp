@@ -392,12 +392,12 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
       short depth = depImage.at<short>(row, col);
       if(depth != shadow_value && depth != no_sample_value)
       {
-	int col4tel = col/scale;
-	int row4tel = row/scale;
-	cloud.at<cv::Point3f>(row4tel, col4tel) = DepthToWorld(col, row, (int) depth);
-	
-	int rgb2depthRatio = rgbWidth/depWidth;									/// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
-	colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
+        int col4tel = col/scale;
+        int row4tel = row/scale;
+        cloud.at<cv::Point3f>(row4tel, col4tel) = DepthToWorld(col, row, (int) depth);
+
+        int rgb2depthRatio = rgbWidth/depWidth;									/// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
+        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
       }
     }
   }
