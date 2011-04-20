@@ -232,10 +232,8 @@ link_cast_component(${CAST_COMPONENT_NAME} rt)
 link_cast_component(${CAST_COMPONENT_NAME} m)
 link_cast_component(${CAST_COMPONENT_NAME} dl)
 link_cast_component(${CAST_COMPONENT_NAME} pthread)
-link_cast_component(${CAST_COMPONENT_NAME} highgui)
-link_cast_component(${CAST_COMPONENT_NAME} cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} cv)
 link_cast_component(${CAST_COMPONENT_NAME} qt-mt)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
 
 
 #link_cast_component(${CAST_COMPONENT_NAME} matas)

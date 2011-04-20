@@ -126,6 +126,31 @@ inline Vector3 Normalise(const Vector3 &v)
   return v/n;
 }
 
+/**
+ * @brief Opening angle between two 3d voctors (0 - PI)
+ */ 
+inline double OpeningAngle(const Vector3 &a, const Vector3 &b)
+{
+  double angle = 0.;
+  double dot = Dot(a, b);
+  double norm = Length(a) * Length(b);
+  if(norm !=0)
+    angle = acos(dot/norm);
+  else
+    printf("Vector3::Angle: Warning: Division by zero.\n");
+  return angle;
+}
+
+/**
+ * @brief Smallest angle between two 3d voctors (intersecting lines) (0 - PI/2)
+ */ 
+inline double SmallestAngle(const Vector3 &a, const Vector3 &b)
+{
+  double angle = OpeningAngle(a, b);
+  if(angle > M_PI/2.) angle = M_PI - angle;
+  return angle;
+}
+
 inline std::istream& operator>>(std::istream &is, Vector3 &v)
 {
   return is >> v.x >> v.y >> v.z;
@@ -135,6 +160,7 @@ inline std::ostream& operator<<(std::ostream &os, const Vector3 &v)
 {
   return os << v.x << " " << v.y << " " << v.z;
 }
+
 
 }
 

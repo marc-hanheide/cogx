@@ -40,8 +40,7 @@ static const char type_names[][NAME_LENGTH] = {
   "UNDEF"
   };
 
-static const int type_names_length[] = {
-  7, 4, 3, 16, 7, 6, 12, 10, 10, 10, 10, 11, 8, 4, 7, 9, 4, 8, 4, 5};
+static const int type_names_length[] = {7, 4, 3, 16, 7, 6, 12, 10, 10, 10, 10, 6, 11, 8, 4, 7, 9, 4, 8, 4, 5};
 
 /**
  * @brief Returns the name of a given gestalt type.

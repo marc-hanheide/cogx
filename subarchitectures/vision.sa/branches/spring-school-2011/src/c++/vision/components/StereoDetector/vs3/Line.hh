@@ -27,9 +27,7 @@
 namespace Z
 {
 
-/// Wozu sind diese gut? Wieso nicht include? 
-/// => wenn gegenseitig included wird, dann muss einer zuerst deklariert werden
-class LJunction;
+class LJunction;    // forward declaration of some classes
 class Collinearity;
 class TJunction;
 class Closure;
@@ -41,35 +39,35 @@ class Corner;
 class Line : public Gestalt
 {
 protected:
-  RGBColor mean_col[2];  							///< mean color LEFT/RIGHT
+  RGBColor mean_col[2];                 ///< mean color LEFT/RIGHT
   void CalculateParameters();
   virtual void CalculateColors() = 0;
   void MoveJunctions(Line *l2, int end);
 
 public:
-	Vector2 point[2];										///< end points, START/END
-	Vector2 dir;												///< direction of the line, normalised to 1
-  Vector2 tang[2];										///< tangents STAR/END
-  double phi;													///< angular direction
-  double len;													///< length of line
-  //double s;														///< hessian form: distance
-  //double theta;												///< hessian form: angle
-  Array<Collinearity*> coll[2];				///< collinearities at line-end [START/END]
-  Array<LJunction*> l_jct[2][2];			///< L-junctions at START/END and LEFT/RIGHT
-  TJunction* t_jct[2];								///< T-junctions at START/END
-  Array<TJunction*> pt_jct[2][2];			///< passive T-jcts, START/END and LEFT/RIGHT
-  Array<Closure*> closures; 					///< Closures TODO: have two lists, for both senses
-  Array<Corner*> corners[2];	 				///< Corners at [START/END]
-  int label;													///< label LEFT/RIGHT
-  double energy;											///< energy for global conistency
-  double stability;										///< stability for global consistency
-  set<Line*> neighbors;								///< neighbors for global consistency
-  Line* next;													///< next line if split
-  Line* defer_vote;										///< lines created by splitting don't vote themselves
-																			/// but defer votes to original line
+  Vector2 point[2];                     ///< end points, START/END
+  Vector2 dir;                          ///< direction of the line, normalised to 1
+  Vector2 tang[2];                      ///< tangents STAR/END
+  double phi;                           ///< angular direction (0-2PI)
+  double len;                           ///< length of line
+  //double s;                           ///< hessian form: distance
+  //double theta;                       ///< hessian form: angle
+  Array<Collinearity*> coll[2];         ///< collinearities at line-end [START/END]
+  Array<LJunction*> l_jct[2][2];        ///< L-junctions at START/END and LEFT/RIGHT
+  TJunction* t_jct[2];                  ///< T-junctions at START/END
+  Array<TJunction*> pt_jct[2][2];       ///< passive T-jcts, START/END and LEFT/RIGHT
+  Array<Closure*> closures;             ///< Closures TODO: have two lists, for both senses
+  Array<Corner*> corners[2];            ///< Corners at [START/END]
+  int label;                            ///< label LEFT/RIGHT
+  double energy;                        ///< energy for global conistency
+  double stability;                     ///< stability for global consistency
+  std::set<Line*> neighbors;            ///< neighbors for global consistency
+  Line* next;                           ///< next line if split
+  Line* defer_vote;                     ///< lines created by splitting don't vote themselves
+                                        /// but defer votes to original line
 
-  unsigned idx[2];										///< index of start and end point 	HACK ARI: moved from VisibleLine
-  Segment* seg;												///< the originating segment				HACK ARI: moved from VisibleLine
+  unsigned idx[2];                      ///< index of start and end point
+  Segment* seg;                         ///< the originating segment
 
 protected:
   Line(VisionCore *vc);
@@ -79,15 +77,16 @@ public:
   void DrawVotes();
   virtual void DrawInfo();
   virtual const char* GetInfo();
-  double Length() {return len;}																		///< Return length of line TODO stimmt?
+  double Length() {return len;}                                 ///< Return length of line
   double MinEndpointDistance(const Line* l);
   double DistanceToPoint(const Vector2 &q);
   void AddLJunction(int end, int side, LJunction* jct);
   void AddCollinearity(int end, Collinearity* co);
   void AddPassiveTJunction(int end, int side, TJunction* jct);
-  RGBColor MeanCol(int side) {return mean_col[side];}							///< Return mean color of one side.
+  RGBColor MeanCol(int side) {return mean_col[side];}           ///< Return mean color of one side.
   virtual Line* Split(const Vector2 &p) = 0;
-  bool IsSplit() {return next != 0;}															///< Returns next line, if line is splitted.
+  bool IsSplit() {return next != 0;}                            ///< Returns true, if line is splitted.
+  bool HasDeferVote() {if(defer_vote != this) return true; else return false;}
 };
 
 /**
@@ -101,9 +100,8 @@ private:
   unsigned FindSplitIdx(const Vector2 &p);
 
 public:
-
   VisibleLine(VisionCore *c, Segment* s, unsigned i, unsigned j);
-  unsigned NumEdgels() {return idx[END] - idx[START] + 1;}				///< Return the number of edgels
+  unsigned NumEdgels() {return idx[END] - idx[START] + 1;}       ///< Return the number of edgels
   void Recalc();
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();

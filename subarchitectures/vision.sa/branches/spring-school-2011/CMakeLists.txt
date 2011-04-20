@@ -13,8 +13,8 @@ include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
-include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/components)
-include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 
 # auto generated code
@@ -38,10 +38,15 @@ add_subdirectory (src/c++/vision/components/VideoViewer)
 add_subdirectory (src/c++/vision/components/VideoGrabber)
 endif (BUILD_SA_VISION_UTIL_COMPS)
 
-option(BUILD_SA_VISION_STEREOVIEWER "build stereo viewer (needs hardware/stereo)" YES)
+option(BUILD_SA_VISION_STEREOVIEWER "build stereo viewer (needs hardware/stereo)" NO)
 if(BUILD_SA_VISION_STEREOVIEWER)
 add_subdirectory (src/c++/vision/components/StereoViewer)
 endif(BUILD_SA_VISION_STEREOVIEWER)
+
+option(BUILD_SA_VISION_PCVIEWER "build point cloud viewer (needs hardware/pointCloud)" YES)
+if(BUILD_SA_VISION_PCVIEWER)
+add_subdirectory (src/c++/vision/components/PointCloudViewer)
+endif(BUILD_SA_VISION_PCVIEWER)
 
 option(BUILD_SA_VISION_PEOPLE_DETECTOR "build people detector" YES)
 if (BUILD_SA_VISION_PEOPLE_DETECTOR)
@@ -75,11 +80,16 @@ add_subdirectory (src/c++/vision/components/StereoFlapDetector)
 add_subdirectory (src/c++/vision/components/StereoFlapDetectorDriver)
 endif (BUILD_SA_VISION_STEREOFLAPDETECTOR)
 
+option(BUILD_SA_VISION_TOMGINE "build TomGine libraries and wrapper" YES)
+if (BUILD_SA_VISION_TOMGINE)
+add_subdirectory (src/c++/vision/components/TomGine)
+endif (BUILD_SA_VISION_TOMGINE)
+
 option(BUILD_SA_VISION_STEREODETECTOR "build stereo detector" NO)
 if (BUILD_SA_VISION_STEREODETECTOR)
 add_subdirectory (src/c++/vision/components/StereoDetector)
-add_subdirectory (src/c++/vision/components/StereoDetectorReasoner)
-add_subdirectory (src/c++/vision/components/StereoDetectorDriver)
+#add_subdirectory (src/c++/vision/components/StereoDetectorReasoner)
+#add_subdirectory (src/c++/vision/components/StereoDetectorDriver)
 endif (BUILD_SA_VISION_STEREODETECTOR)
 
 option(BUILD_SA_VISION_PLANEPOPOUT "build plane pop-out (needs hardware/stereo)" YES)
@@ -122,13 +132,13 @@ if (BUILD_SA_VISION_OBJRECOGNIZER)
    add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
-option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" YES)
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3D)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3DDriver)
 endif (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 
-option(BUILD_SA_VISION_OBJRECOGNIZER_3D2 "build Object Recognizer2 (for George)" YES)
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D2 "build Object Recognizer2 (for George)" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3D2)
 endif (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
@@ -161,10 +171,12 @@ if (BUILD_SA_VISION_VISLEARNER)
    else(VISUAL_LEARNER_MATLAB_PROXY)
       message(
          "${LIB_VLPROXY_SO} not installed, yet.\n"
-         "   Run 'make install' to generate and install it.\n"
-         "   Then run 'ccmake' again.\n"
-         "   (For now, VisualLearner won't be built)\n"
-         "   (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
+         "  Run 'make install' to generate and install it.\n"
+         "  If you don't have Matlab, put prebuilt libraries into\n"
+         "  vision.sa/config/prebuilt.\n"
+         "  Then run 'ccmake' again.\n"
+         "  (For now, VisualLearner won't be built)\n"
+         "  (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
       )
    endif (VISUAL_LEARNER_MATLAB_PROXY)
 endif (BUILD_SA_VISION_VISLEARNER)
@@ -199,6 +211,11 @@ option(BUILD_SA_VISION_CHECK_SYS_CALIB "build system calibration check" NO)
 if (BUILD_SA_VISION_CHECK_SYS_CALIB)
 add_subdirectory (src/c++/vision/components/CheckSystemCalibration)
 endif (BUILD_SA_VISION_CHECK_SYS_CALIB)
+
+option(BUILD_SA_VISION_GAZEBO "build gazebo simulated vision" NO)
+if (BUILD_SA_VISION_GAZEBO)
+add_subdirectory (src/c++/vision/components/GazeboVision)
+endif (BUILD_SA_VISION_GAZEBO)
 
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)

@@ -32,17 +32,17 @@ namespace Z
 class Reasoner
 {
 private:
-	bool havePlane;					// True, if we have a dominant plane
-	Plane *plane;						// The dominant plane
+	bool havePlane;			///< True, if we have a dominant plane
+	Plane *plane;			///< The dominant plane
 	
-	StereoCore *score;			// Actual stereo core
-	int maxSG;							// Maximum value for the stereoGestalt array
-	int sgCounter;					// Counter for the stereoGestalt array
+	StereoCore *score;		///< Actual stereo core
+	int maxSG;			///< Maximum value for the stereoGestalt array
+	int sgCounter;			///< Counter for the stereoGestalt array
 	StereoBase* stereoGestalts[StereoBase::MAX_TYPE][3];
-	bool gAF;								// True, if gestalt array is filled.
+	bool gAF;							///< True, if gestalt array is filled.
 	
-	Array<VisionData::VisualObjectPtr> filteredObjs;		// actual filtered visual objects
-	Array<Object*> objects;															// stored objects
+	Array<VisionData::VisualObjectPtr> filteredObjs;		///< actual filtered visual objects
+	Array<Object*> objects;						///< stored objects
 	
 	void FilterGestalt(StereoBase::Type type);
 	bool HackFilter(VisionData::VisualObjectPtr &obj);

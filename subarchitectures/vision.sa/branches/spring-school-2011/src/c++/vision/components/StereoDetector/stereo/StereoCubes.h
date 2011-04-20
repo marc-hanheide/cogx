@@ -63,33 +63,33 @@ private:
 #ifdef HAVE_CAST
 	bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id);
 #endif
-	void RecalculateCoordsystem(Cube3D &cube, Pose3 &pose);
+  void RecalculateCoordsystem(Cube3D &cube, Pose3 &pose);
   double MatchingScore(TmpCube &left_cube, TmpCube &right_cube, 
-                       unsigned &off_0, unsigned &off_1, unsigned &off_2, 
-                       unsigned &assign_0, unsigned &assign_1, unsigned &assign_2);
+  unsigned &off_0, unsigned &off_1, unsigned &off_2, 
+  unsigned &assign_0, unsigned &assign_1, unsigned &assign_2);
   unsigned FindMatchingCube(TmpCube &left_cube, Array<TmpCube> &right_cubes, unsigned l);
   void MatchCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, int &matches);
   void Calculate3DCubes(Array<TmpCube> &left_cubes, Array<TmpCube> &right_cubes, 
-                        int &cubeMatches, Array<Cube3D> &cube3ds);
-	void DrawSingleMatched(int side, int id, int detail);
+  int &cubeMatches, Array<Cube3D> &cube3ds);
+  void DrawSingleMatched(int side, int id, int detail);
 
 public:
-	StereoCubes(VisionCore *vc[2], StereoCamera *sc);
-	~StereoCubes() {}
+  StereoCubes(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  ~StereoCubes() {}
 
   int NumCubes2D(int side);   /// Sollte NumCubes2D(int LEFT/RIGHT) nicht anders ersetzt werden "NumGestalts(type, side)", dann überall gleich???
-	int NumCubesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CUBE);}			///< Return cubes from left stereo image in 2D
-	int NumCubesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CUBE);}		///< Return cubes from right stereo image in 2D
+  int NumCubesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CUBE);}			///< Return cubes from left stereo image in 2D
+  int NumCubesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CUBE);}		///< Return cubes from right stereo image in 2D
 
   const TmpCube &Cubes2D(int side, int i);
   const Cube3D &Cubes(int i) {return cube3ds[i];}		///< Return 3D-Cube from position i.
 
-	int NumStereoMatches() {return cubeMatches;}			///< Number of matched stereo features. TODO eigentlich hier "return cube3ds.Size();"
-	void DrawMatched(int side, bool single, int id, int detail);
+  int NumStereoMatches() {return cubeMatches;}			///< Number of matched stereo features. TODO eigentlich hier "return cube3ds.Size();"
+  void DrawMatched(int side, bool single, int id, int detail);
 
-	void ClearResults();
-	void Process();
-	void Process(int oX, int oY, int sc);
+  void ClearResults();
+  void Process();
+  void Process(int oX, int oY, int sc);
 };
 
 }

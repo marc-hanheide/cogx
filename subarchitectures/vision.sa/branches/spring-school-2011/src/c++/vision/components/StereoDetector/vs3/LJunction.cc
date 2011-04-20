@@ -167,15 +167,15 @@ void LJunction::Draw(int detail)
 
   if(detail >= 1 && detail < 6)
   {
-		// draw arms of junction
-		Vector2 pl = line[LEFT]->point[near_point[LEFT]];
-		Vector2 pr = line[RIGHT]->point[near_point[RIGHT]];
-		DrawLine2D(isct.x, isct.y, pl.x, pl.y, RGBColor::cyan);
-		DrawLine2D(isct.x, isct.y, pr.x, pr.y, RGBColor::magenta);
-	}
+    // draw arms of junction
+    Vector2 pl = line[LEFT]->point[near_point[LEFT]];
+    Vector2 pr = line[RIGHT]->point[near_point[RIGHT]];
+    DrawLine2D(isct.x, isct.y, pl.x, pl.y, RGBColor::cyan);
+    DrawLine2D(isct.x, isct.y, pr.x, pr.y, RGBColor::magenta);
+  }
   if(detail >= 2)
   {
-		// draw left and right line
+    // draw left and right line
     line[LEFT]->Draw(detail - 2);
     line[RIGHT]->Draw(detail - 2);
   }

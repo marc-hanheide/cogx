@@ -1,5 +1,7 @@
 include_directories(.)
 include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGine)
 
 # remove_definitions(-DFEAT_VISUALIZATION)
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
@@ -37,7 +39,8 @@ SET(SOURCES
 )
 
 add_cast_component(PlanePopOut ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}

@@ -546,10 +546,22 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 
 	int key;
 	do{
-			key = cvWaitKey ( 10 );
+			key = cvWaitKey ( 100 );
 	}while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s') && ((char)key!='q')) );
 
 	if((char)key==' '){
+
+    // HACK
+		/*VisualObjectPtr obj = getMemoryEntry<VisualObject>(m_rec_cmd->visualObjectID);
+		//Vector3 r = vector3(unifrand(-M_PI, M_PI), unifrand(-M_PI, M_PI), unifrand(-M_PI, M_PI));
+		double d = M_PI*(double)rand()/(double)RAND_MAX;
+		Vector3 r = vector3(d, d, d);
+		fromRotVector(obj->pose.rot, r);
+		overwriteWorkingMemory(m_rec_cmd->visualObjectID, obj);
+		addTrackerCommand(OVERWRITE, m_rec_cmd->visualObjectID);
+		log("random rotate VisualObject '%s'", getComponentID().c_str());*/
+		// HACK END
+
 		// 	Lock model
 		addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
 
@@ -573,7 +585,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 		get3DPointFromTrackerModel(m_rec_cmd->visualObjectID, vertexlist);
 
 		while( isRunning() && m_wait4data ){
-			sleepComponent(10);
+			sleepComponent(100);
 		}
 
 	}else if((char)key=='s'){
