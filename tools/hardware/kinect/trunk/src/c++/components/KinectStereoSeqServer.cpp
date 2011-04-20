@@ -368,7 +368,7 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
   }
   else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file specified"));
 
-  if((it = _config.find("--imgsize")) != _config.end())							/// TODO nicht notwendige mit log oder debug Meldungen ausstatten
+  if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
     int w, h;
@@ -805,9 +805,10 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
   if(transformToGlobal)
     transform(camPars[2].pose, stereoCam->cam[0].pose, global_kinect_pose);    /// TODO stereoCam->cam[0].pose ??? is left stereo!!!
 
-  for(unsigned row=0; row< cloud.size().height; row++)                /// TODO SLOW!!!
+  int scale = (int) cloud.size().width / imgWidth;        // scale down to imageWidth (in full steps)
+  for(unsigned row=0; row< cloud.size().height; row+=scale)                /// TODO SLOW!!!
   {
-    for(unsigned col=0; col < cloud.size().width; col++)
+    for(unsigned col=0; col < cloud.size().width; col+=scale)
     {
       PointCloud::SurfacePoint pt;
       pt.p.x = cloud.at<cv::Point3f>(row, col).x;
