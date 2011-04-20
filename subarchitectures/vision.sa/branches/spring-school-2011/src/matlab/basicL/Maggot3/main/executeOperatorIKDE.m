@@ -423,11 +423,15 @@ end
 % ------ process KDE
 switch operator_data    
     
-    case 'test_if_kde_is_degenerated'
+    case 'test_if_kde_is_degenerated'        
+        if ~isfield(input_kde.pdf, 'smod')
+            input_kde.pdf.smod.H= input_kde.ikdeParams.scale.Cov ;
+        end
         [U,S,V] = svd(input_kde.pdf.smod.H) ;
         
 %         input_kde.ikdeParams.scale.Cov) ;
         S = diag(S) ;
+        S = S / max(S) ;
         if sum(S<1e-6) > 0
             out_kde = 1 ;
         else
@@ -522,7 +526,7 @@ switch operator_data
         if input_kde.ikdeParams.maxNumCompsBeforeCompression == -1 && ~isempty(obs)        
                 dm = size(obs,1) ;
 %                 if isempty(force_value_of_maxNumCompsBeforeCompression)
-                    input_kde.ikdeParams.maxNumCompsBeforeCompression = ((dm^2-dm)/2+dm+dm+1) ;
+                    input_kde.ikdeParams.maxNumCompsBeforeCompression = min([15, ((dm^2-dm)/2+dm+dm+1)]) ;
 %                 else
 %                     input_kde.ikdeParams.maxNumCompsBeforeCompression = force_value_of_maxNumCompsBeforeCompression ;
 %                 end
@@ -543,6 +547,12 @@ switch operator_data
         diagonalize_kernels = 0 ;
 %         enforce_spherical_shapes = 0 ;
         
+
+% % %       wsempty = 0 ;
+% % %          if isempty(input_kde.pdf.Mu)
+% % %              wsempty = 1 ;
+% % %          end
+
         % generate appropriate weight vector and calculate the effective sample size, ikdeParams
         input_kde.ikdeParams = recalculateIkdeTmpPars( input_kde.ikdeParams, ...
                                                        input_kde.pdf, obs_relative_weights, obs, diagonalize_kernels ) ;
@@ -553,6 +563,7 @@ switch operator_data
                                             input_kde.otherParams.sUpdatePars ) ;      
         input_kde.pdf.Cov = {} ;
          input_kde.pdf.idxToref_out={} ;
+   
           
             % forward transform the sample distribution and ikdeParams.scale.Mu
             minEigenEnergy = 1e-5 ;
@@ -567,22 +578,54 @@ switch operator_data
             svdRes.globalCov = output.globalCov ;
  
         input_kde.ikdeParams.dim_subspace = length(svdRes.id_valid) ;
-        if svdRes.isCompletelySingular ~= 1
+        if svdRes.isCompletelySingular ~= 1 && ~isempty(svdRes.id_valid)
             
             if  isempty(input_kde.pdf.smod.H) ||length(input_kde.pdf.w) >= abs(input_kde.ikdeParams.maxNumCompsBeforeCompression) || calculate_bw_always == 1 
     
-            
-            % get the bandwidth from sample distribution
-            H = ndDirectPlugin_JointClean( input_kde.pdf.Mu, input_kde.pdf.smod.ps.Cov, ...
-                input_kde.pdf.w, ...
-                output.globalCov, ... %input_kde.ikdeParams.scale.Cov,...
-                input_kde.ikdeParams.N_eff ) ;
+            if isempty(typeOfKDEInit)
+                typeOfKDEInit = 'directPlugin' ;
+            end
+                
+            switch(typeOfKDEInit) 
+                case 'directPlugin'
+                    % get the bandwidth from sample distribution
+%                     if wsempty == 1
+                    H = ndDirectPlugin_JointClean( input_kde.pdf.Mu, input_kde.pdf.smod.ps.Cov, ...
+                            input_kde.pdf.w, ...
+                            output.globalCov, ... %input_kde.ikdeParams.scale.Cov,...
+                            input_kde.ikdeParams.N_eff ) ;
+                        
+%                     else
+%                         H=input_kde.pdf.smod.H ;
+%                     end
+                    
+                case 'lscv' 
+                    [H, F, h_amise, dim_subspace] = leastSquaresCrossValidation( 'obs', input_kde.pdf.Mu,...
+                                            'kernelType', 'general', ...
+                                            'model', [],...
+                                            'ikdeParams', input_kde.ikdeParams) ;
+ 
+                        input_kde.otherParams.typekdevalid = 'invalidkde' ;
+                case 'Hall'
+%                     pdf_hall = get_KDEtlbx( input_kde.pdf.Mu, 'hall', 0 ) ; 
+%                     H  = pdf_hall.Cov{1} ;
+                        H = getMyHallBandwidth( input_kde.pdf.Mu, input_kde.ikdeParams ) ;
+                    input_kde.otherParams.typekdevalid = 'invalidkde' ;
+                otherwise
+                    error('Unknown kernel estimator type!') ;
+            end
+                    
             else
                H =  input_kde.pdf.smod.H ;
             end
         else
             % add noise to components if singularity is detected
-            H = getNoisyAddons( output.globalCov ) ; %input_kde.ikdeParams.scale.Cov) ; %input_kde.ikdeParams.scale.Cov ) ;
+            if isempty(output.globalCov)
+                C = output.globalCov ;
+            else
+                C = eye(size(input_kde.pdf.Mu,1)) ;
+            end
+            H = getNoisyAddons(C ) ; %input_kde.ikdeParams.scale.Cov) ; %input_kde.ikdeParams.scale.Cov ) ;
         end
         % update the kernel bandwidth
         input_kde.pdf.smod.H = H ;        
@@ -590,8 +633,21 @@ switch operator_data
         input_kde.otherParams.auxiliary_bandwidth_active = 0 ; 
          
         % update the KDE model from the bandwidth and the sample distribution
+       
         input_kde.pdf = getKDEfromSampleDistribution( input_kde.pdf ) ;
- 
+     
+         % should we rsde the kde?  
+        if getRSDEcompression == 1  
+            H_tmp = input_kde.pdf.smod.H ;
+%             try
+           input_kde.pdf = get_rsde( input_kde.pdf.Mu, input_kde.pdf.smod.H ) ;
+%             catch
+%                 df =4 
+%             end
+           input_kde.otherParams.typekdevalid = 'invalidkde' ;
+           input_kde.pdf.smod.H = H_tmp ;
+        end
+        
         if just_add_data == 1
             force_prevent_compression = 1 ;
         end
@@ -684,9 +740,9 @@ switch operator_data
 % % %         end   
 % % %       end
 % % %   end
+         
+            input_kde.pdf.smod.useVbw = 0 ;
         
-        
-        input_kde.pdf.smod.useVbw = 0 ;
         
         if isempty(selectSubDimensions)
             % backward transform the sample distribution and ikdeParams.scale.Mu
@@ -733,6 +789,16 @@ switch operator_data
         input_kde.otherParams.singleGaussApp.Cov = new_Cov ;
         out_kde = input_kde ;
     case 'set_auxiliary_bandwidth'
+        
+        if isequal(input_kde.otherParams.typekdevalid,'invalidkde')  
+            deltaH = eye(size(input_kde.pdf.Cov{1}))*(1e-5) ;
+            for k = 1 : length(input_kde.pdf.w)
+                input_kde.pdf.Cov{k} = input_kde.pdf.Cov{k} + deltaH ;
+            end
+            out_kde = input_kde ;
+            out_kde.pdf.smod.H = out_kde.pdf.smod.H *0 ;
+        else
+        
         thnull = 1e-6 ;
         
         % identify the subspace of our kde's H
@@ -741,6 +807,11 @@ switch operator_data
         
         s_h = diag(S_h) ; 
         id_null = s_h < thnull ;
+        if sum(id_null) < 1
+            out_kde = input_kde ;
+            return ;
+        end
+        
         s_h(id_null) = 0 ; 
  
         % calculate Ht from all classes
@@ -781,6 +852,7 @@ switch operator_data
          out_kde.pdf.smod.H = H ;
          out_kde.pdf = getKDEfromSampleDistribution( out_kde.pdf ) ;
          out_kde.otherParams.auxiliary_bandwidth_active = 1 ;
+        end
     
     case 'unlearn_with_input'
        
@@ -951,11 +1023,18 @@ switch operator_data
         if ~isfield(kde1.otherParams, 'typekdevalid')
             kde1.otherParams.typekdevalid = 'validkde';
         end
- 
+        
+        
+%         kde1.pdf.smod.H = kde1.pdf.smod.H + eye(size(kde1.pdf.smod.H))*1e-5 ; 
+%         kde1.pdf = getKDEfromSampleDistribution( kde1.pdf ) ;
+        
+        
         if isequal(kde1.otherParams.typekdevalid,'validkde')  
             is_kde_degenerate = executeOperatorIKDE( kde1, 'test_if_kde_is_degenerated') ;
             if is_kde_degenerate == 1 
-                [kde1_r, subindicator] = regularizeKDEInBandwidth( kde1, 'practicallyZero', 1e-5 ) ;
+                %[kde1_r, subindicator] = regularizeKDEInBandwidth( kde1, 'practicallyZero', 1e-5 ) ;
+               [kde1_r, input_data] = projectKDEandDataToSubspace(kde1, input_data, 1e-15, 0 ) ;   
+               subindicator = [] ;
             else
                kde1_r = kde1 ;  
                subindicator = [] ;
@@ -964,7 +1043,7 @@ switch operator_data
         else
             kde1_r = kde1 ;
             subindicator = [] ;
-        end
+        end       
 
         % evaluate pdf
         pdf_data = evaluatePointsUnderPdf( kde1_r.pdf, input_data ) ;
@@ -1068,6 +1147,7 @@ switch operator_data
              draw_to_these_axes, 'decompose', decompose) ;
          out_kde = [] ;
 end
+ 
  
 % --------------------------------------------------------------------- %
 function [ikdeParams, otherParams ]= initializeParamsKDE( inputPdf, showMessages ) 
@@ -1174,7 +1254,7 @@ otherParams.maximumsOnPdf = [] ;
 otherParams.singleGaussApp = [] ;
 
 otherParams.sUpdatePars.approximate = 0 ;
-otherParams.sUpdatePars.distThresh = 1.5^2 ; %0.5^2 ; %1.5 ; %2.34 ;
+otherParams.sUpdatePars.distThresh = 1.5^2 ;% 1.5^2 ; %0.5^2 ; %1.5 ; %2.34 ;
 
 otherParams.use_revitalization = 1 ; % whether to use the components revitalization or not
 
@@ -1295,7 +1375,7 @@ function Cr = getNoisyAddons( C )
 s = diag(S) ;  
 minVals = 1e-7;
 
-I = s < minVals ;
+I = s > minVals ;
 if sum(~I) == 0
     cl = 1 ;
 else
