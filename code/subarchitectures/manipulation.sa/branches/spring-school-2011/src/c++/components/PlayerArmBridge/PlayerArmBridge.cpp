@@ -157,9 +157,9 @@ bool PlayerArmBridge::sendTrajectory(GenConfigspaceStateSeq &trajectory)
     // NOTE: MoveToMulti() did not work, so setting joints individually.
     for(size_t j = 0; j < (size_t)NUM_JOINTS; j++)
       arm->MoveTo(j, trajectory[i].coord.pos[j]);
-    long t0 = (long)(1e6*trajectory[i-1].t);
-    long t1 = (long)(1e6*trajectory[i].t);
-    usleep(t1 - t0);
+    // in seconds
+    double dt = trajectory[i].t - trajectory[i-1].t;
+    usleep((long)(dt*1e6));
   }
   // now read which position we actually reached
   robot->Read();
