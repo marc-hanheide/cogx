@@ -9,9 +9,9 @@ import manipulation.muster.core.share.armConnector.ArmConnector;
 import manipulation.muster.core.share.exceptions.ManipulatorException;
 import manipulation.muster.core.share.types.ArmError;
 import manipulation.muster.core.share.types.Matrix;
-import manipulation.muster.core.share.types.Vector3D;
 import manipulation.muster.core.share.types.SensorData.SensorPosition;
-import manipulation.muster.runner.cogx.CogXRunner;
+import manipulation.muster.core.share.types.Vector3D;
+import manipulation.muster.runner.cogx.ExemplarySolutionRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
@@ -54,11 +54,12 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void goHome() throws ManipulatorException {
-		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 		MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
 		try {
-			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-					moveHomeCmd);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, moveHomeCmd);
 		} catch (AlreadyExistsOnWMException e1) {
 			logger.error(e1);
 		}
@@ -96,11 +97,12 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void stopArm() throws ManipulatorException {
-		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 		StopCommand stopCommand = new StopCommand();
 		try {
-			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-					stopCommand);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, stopCommand);
 		} catch (AlreadyExistsOnWMException e1) {
 			logger.error(e1);
 		}
@@ -131,11 +133,12 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void closeGripper(int force) {
-		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 		CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
 		try {
-			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-					closeGripperCmd);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, closeGripperCmd);
 		} catch (AlreadyExistsOnWMException e1) {
 			logger.error(e1);
 		}
@@ -146,11 +149,12 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void openGripper() {
-		String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 		OpenGripperCommand openGripperCmd = new OpenGripperCommand();
 		try {
-			((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-					openGripperCmd);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, openGripperCmd);
 		} catch (AlreadyExistsOnWMException e1) {
 			logger.error(e1);
 		}

@@ -2,31 +2,26 @@ package manipulation.muster.runner.cogx;
 
 import java.util.Map;
 
-import manipulation.muster.core.cogx.CogXManipulatorStore;
+import manipulation.muster.core.cogx.ExemplarySolutionManipulatorStore;
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionDoraBaseConnector;
 import manipulation.muster.core.cogx.camConnector.ExemplarySolutionBlortConnector;
 import manipulation.muster.core.share.Manipulator;
-import manipulation.muster.core.share.ManipulatorStore;
 import manipulation.muster.core.share.Manipulator.ManipulatorName;
+import manipulation.muster.core.share.ManipulatorStore;
 import manipulation.muster.core.share.armConnector.ArmConnector;
 import manipulation.muster.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.muster.core.share.types.Configuration;
 import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.runner.share.Runner;
-import manipulation.muster.strategies.CalibrationStrategy;
 import manipulation.muster.strategies.MobileManipulation;
 import manipulation.muster.strategies.Strategy;
 import manipulation.muster.strategies.Strategy.Name;
-import manipulation.muster.visualisation.ExecutionGUI;
 import manipulation.slice.ManipulationCommand;
-import manipulation.slice.ManipulationCommandStatus;
 
 import org.apache.log4j.Logger;
 
 import NavData.RobotPose2d;
 import VisionData.VisualObject;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -83,7 +78,7 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 			System.exit(-1);
 		}
 
-		ManipulatorStore cogxManStore = new CogXManipulatorStore();
+		ManipulatorStore cogxManStore = new ExemplarySolutionManipulatorStore();
 		ItemMemory itemMemory = new ItemMemory();
 
 		manipulator = cogxManStore.orderManipulator(
@@ -108,8 +103,8 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 	@Override
 	protected void runComponent() {
 		startStrategy(Name.MOBILE_MANIPULATION);
-		
-		//new ExecutionGUI(manipulator);
+
+		// new ExecutionGUI(manipulator);
 	}
 
 	/**
@@ -177,9 +172,6 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 		switch (strategyName) {
 		case MOBILE_MANIPULATION:
 			strategy = new MobileManipulation(manipulator);
-			break;
-		case CALIBRATION:
-			strategy = new CalibrationStrategy(manipulator);
 			break;
 		default:
 			logger.error("Does not know the strategy name!");
