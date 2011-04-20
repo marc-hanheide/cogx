@@ -25,7 +25,7 @@ import cogx.Math.Matrix33;
  * @author ttoenige
  * 
  */
-public class CogXConverter {
+public class ExemplarySolution {
 
 	/**
 	 * convert a matrix to the GOLEM matrix representation

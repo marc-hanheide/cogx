@@ -1,6 +1,6 @@
 package manipulation.muster.core.cogx.camConnector;
 
-import manipulation.muster.core.cogx.converter.CogXConverter;
+import manipulation.muster.core.cogx.converter.ExemplarySolution;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.camConnector.CamConnector;
 import manipulation.muster.core.share.exceptions.ExternalMemoryException;
@@ -67,7 +67,7 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 			Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
 					changedObject.pose.pos.y, changedObject.pose.pos.z);
 
-			Matrix camRot = CogXConverter
+			Matrix camRot = ExemplarySolution
 					.convBlortToMatrix(changedObject.pose.rot);
 
 			// TODO richtige Item updaten nicht einfach erst beste
@@ -77,7 +77,7 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 						.getItemMemory()
 						.addItemModel(
 								manipulator.getItemMemory().getFirstGraspItem(),
-								CogXConverter
+								ExemplarySolution
 										.convBlortGeomModelToVisionModel(changedObject.model));
 			}
 
