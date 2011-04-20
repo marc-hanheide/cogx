@@ -738,6 +738,41 @@ inline void fromRotZ(Matrix33 &a, double angle)
   a.m20 = REAL_ZERO; a.m21 = REAL_ZERO; a.m22 = REAL_ONE;
 }
 
+/** 
+ * Rotation matrix from Euler angles - rotation about: X (roll) -> Y(pitch) -> Z(yaw).
+ *   roll, pitch, yaw  in <-PI/2, PI/2>
+ */
+inline void fromEuler(Matrix33 &a, double roll, double pitch, double yaw)
+{
+  double sg = sin(roll), cg = cos(roll);
+  double sb = sin(pitch), cb = cos(pitch);
+  double sa = sin(yaw), ca = cos(yaw);
+
+  a.m00 = ca*cb;  a.m01 = ca*sb*sg - sa*cg;   a.m02 = ca*sb*cg + sa*sg;
+  a.m10 = sa*cb;  a.m11 = sa*sb*sg + ca*cg;   a.m12 = sa*sb*cg - ca*sg;
+  a.m20 = -sb;    a.m21 = cb*sg;              a.m22 = cb*cg;
+}
+
+inline void fromRPY(Matrix33 &a, double roll, double pitch, double yaw)
+{
+  fromEuler(a, roll, pitch, yaw);
+}
+
+/**
+ * Rotation matrix to Euler angles - rotation about: X (roll) -> Y(pitch) -> Z(yaw).
+ */
+inline void toEuler(const Matrix33 &a, double &roll, double &pitch, double &yaw)
+{
+  roll = atan2(a.m21, a.m22);
+  pitch = atan2(-a.m20, sqrt(a.m21*a.m21 + a.m22*a.m22));
+  yaw = atan2(a.m10, a.m00);
+}
+
+inline void toRPY(const Matrix33 &a, double &roll, double &pitch, double &yaw)
+{
+  toEuler(a, roll, pitch, yaw);
+}
+
 /**
  * Print as rotation vector in text form to a stream,
  */
