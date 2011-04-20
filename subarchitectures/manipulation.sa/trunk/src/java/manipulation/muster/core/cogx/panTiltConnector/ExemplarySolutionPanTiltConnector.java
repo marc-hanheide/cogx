@@ -12,7 +12,7 @@ import ptz.PTZInterfacePrxHelper;
 import ptz.PTZPose;
 import Ice.Identity;
 
-public class CogXPanTiltConnector implements PanTiltConnector {
+public class ExemplarySolutionPanTiltConnector implements PanTiltConnector {
 
 	Manipulator manipulator;
 
@@ -20,7 +20,7 @@ public class CogXPanTiltConnector implements PanTiltConnector {
 	
 	private PTZInterfacePrx ptzInterface;
 
-	public CogXPanTiltConnector(Manipulator manipulator) {
+	public ExemplarySolutionPanTiltConnector(Manipulator manipulator) {
 		this.manipulator = manipulator;
 
 		Ice.Communicator ic = null;

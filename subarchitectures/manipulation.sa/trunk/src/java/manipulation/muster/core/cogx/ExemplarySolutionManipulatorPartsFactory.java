@@ -3,9 +3,9 @@ package manipulation.muster.core.cogx;
 import manipulation.muster.core.cogx.armConnector.ExemplarySolutionKatanaArmConnector;
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionDoraBaseConnector;
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionLocalMapConnector;
-import manipulation.muster.core.cogx.calibrationConnector.CogXCalibConnector;
+import manipulation.muster.core.cogx.calibrationConnector.ExemplarySolutionCalibConnector;
 import manipulation.muster.core.cogx.camConnector.ExemplarySolutionBlortConnector;
-import manipulation.muster.core.cogx.panTiltConnector.CogXPanTiltConnector;
+import manipulation.muster.core.cogx.panTiltConnector.ExemplarySolutionPanTiltConnector;
 import manipulation.muster.core.cogx.virtualSceneConnector.ExemplarySolutionVirtualSceneConnector;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.ManipulatorPartFactory;
@@ -84,7 +84,7 @@ public class ExemplarySolutionManipulatorPartsFactory implements
 	public CalibrationConnector createCalibrationConnector(
 			Manipulator manipulator) {
 		logger.debug("Creating CalibrationConnector: CogXCalibConnector");
-		return new CogXCalibConnector(manipulator);
+		return new ExemplarySolutionCalibConnector(manipulator);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ExemplarySolutionManipulatorPartsFactory implements
 	@Override
 	public PanTiltConnector createPanTiltConnector(Manipulator manipulator) {
 		logger.debug("Creating PanTiltConnecotr: BHamPanTiltConnector");
-		return new CogXPanTiltConnector(manipulator);
+		return new ExemplarySolutionPanTiltConnector(manipulator);
 	}
 
 }

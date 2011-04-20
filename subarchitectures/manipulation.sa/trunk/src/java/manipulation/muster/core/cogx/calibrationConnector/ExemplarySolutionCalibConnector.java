@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class CogXCalibConnector implements CalibrationConnector {
+public class ExemplarySolutionCalibConnector implements CalibrationConnector {
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private Manipulator manipulator;
@@ -36,7 +36,7 @@ public class CogXCalibConnector implements CalibrationConnector {
 	 * @param manipulator
 	 *            current manipulator
 	 */
-	public CogXCalibConnector(Manipulator manipulator) {
+	public ExemplarySolutionCalibConnector(Manipulator manipulator) {
 		this.manipulator = manipulator;
 	}
 
