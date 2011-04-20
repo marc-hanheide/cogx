@@ -15,8 +15,8 @@
 #    ../tools/scripts/freezecmake > frozen_settings.txt
 
 # Absolute path and directory
-SCRIPT=$(readlink -f $0)
-SCRIPTDIR=$(dirname $SCRIPT)
+#SCRIPT=$(readlink -f $0)
+#SCRIPTDIR=$(dirname $SCRIPT)
 
 if [ -f CMakeCache.txt ]; then
    fnin=CMakeCache.txt
