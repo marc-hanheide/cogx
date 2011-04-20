@@ -6,17 +6,20 @@
  * @brief StereoCamera calculation class
  */
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
+#include <cfloat>
 #include <sstream>
 #include <iostream>
-#include <float.h>
+#include <opencv/cvaux.h>
 #include "CDataFile.h"
 #include "StereoCamera.hh"
 
 namespace Z
 {
 
+using namespace std;
+ 
 static void ReadMat33(istream &s, double M[3][3])
 {
   s >> M[0][0] >> M[0][1] >> M[0][2]
@@ -33,7 +36,29 @@ static void ReadMat34(istream &s, double M[3][4])
 
 StereoCamera::StereoCamera()
 {
-  maxDistortion=.5;
+  maxDistortion = .5;
+  mapx[LEFT] = mapx[RIGHT] = 0;
+  mapy[LEFT] = mapy[RIGHT] = 0;
+  sx = sy = 1.;
+  inImgSize.width = 0;
+  inImgSize.height = 0;
+  //matchAlgorithm = SEMI_GLOBAL_BLOCK_MATCH;
+  matchAlgorithm = BLOCK_MATCH;
+  stereo_bm_state = cvCreateStereoBMState(CV_STEREO_BM_BASIC);
+  stereoBM = new cv::StereoBM();
+  stereoSGBM = new cv::StereoSGBM(0, 64, 21);  // HACK: disparity range}
+}
+
+StereoCamera::~StereoCamera()
+{
+  // TODO: free remapping images!
+  cvReleaseImage(&mapx[LEFT]);
+  cvReleaseImage(&mapx[RIGHT]);
+  cvReleaseImage(&mapy[LEFT]);
+  cvReleaseImage(&mapy[RIGHT]);
+  cvReleaseStereoBMState(&stereo_bm_state);
+  delete stereoBM;
+  delete stereoSGBM;
 }
 
 /**
@@ -43,54 +68,54 @@ StereoCamera::StereoCamera()
 bool StereoCamera::ReadSVSCalib(const string &calibfile)
 {
   CDataFile file;
-	if(file.Load(calibfile))
-	{
-		cam[LEFT].width = file.GetInt("pwidth", "left camera");
-		cam[LEFT].height = file.GetInt("pheight", "left camera");
-		cam[LEFT].fx = file.GetFloat("f", "left camera");
-		cam[LEFT].fy = file.GetFloat("fy", "left camera");
-		cam[LEFT].cx = file.GetFloat("Cx", "left camera");
-		cam[LEFT].cy = file.GetFloat("Cy", "left camera");
-		cam[LEFT].k1 = file.GetFloat("kappa1", "left camera");
-		cam[LEFT].k2 = file.GetFloat("kappa2", "left camera");
-		cam[LEFT].k3 = file.GetFloat("kappa3", "left camera");
-		cam[LEFT].t1 = file.GetFloat("tau1", "left camera");
-		cam[LEFT].t2 = file.GetFloat("tau2", "left camera");
-	
-		string str1 = file.GetString("proj", "left camera");
-		istringstream sstr1(str1);
-		ReadMat34(sstr1, cam[LEFT].proj);
-	
-		string str2 = file.GetString("rect", "left camera");
-		istringstream sstr2(str2);
-		ReadMat33(sstr2, cam[LEFT].rect);
-	
-		cam[RIGHT].width = file.GetInt("pwidth", "right camera");
-		cam[RIGHT].height = file.GetInt("pheight", "right camera");
-		cam[RIGHT].fx = file.GetFloat("f", "right camera");
-		cam[RIGHT].fy = file.GetFloat("fy", "right camera");
-		cam[RIGHT].cx = file.GetFloat("Cx", "right camera");
-		cam[RIGHT].cy = file.GetFloat("Cy", "right camera");
-		cam[RIGHT].k1 = file.GetFloat("kappa1", "right camera");
-		cam[RIGHT].k2 = file.GetFloat("kappa2", "right camera");
-		cam[RIGHT].k3 = file.GetFloat("kappa3", "right camera");
-		cam[RIGHT].t1 = file.GetFloat("tau1", "right camera");
-		cam[RIGHT].t2 = file.GetFloat("tau2", "right camera");
-	
-		string str3 = file.GetString("proj", "right camera");
-		istringstream sstr3(str3);
-		ReadMat34(sstr3, cam[RIGHT].proj);
-	
-		string str4 = file.GetString("rect", "right camera");
-		istringstream sstr4(str4);
-		ReadMat33(sstr4, cam[RIGHT].rect);
-	
-		return true;
-	} else return false;
+  if(file.Load(calibfile))
+  {
+    cam[LEFT].width = file.GetInt("pwidth", "left camera");
+    cam[LEFT].height = file.GetInt("pheight", "left camera");
+    cam[LEFT].fx = file.GetFloat("f", "left camera");
+    cam[LEFT].fy = file.GetFloat("fy", "left camera");
+    cam[LEFT].cx = file.GetFloat("Cx", "left camera");
+    cam[LEFT].cy = file.GetFloat("Cy", "left camera");
+    cam[LEFT].k1 = file.GetFloat("kappa1", "left camera");
+    cam[LEFT].k2 = file.GetFloat("kappa2", "left camera");
+    cam[LEFT].k3 = file.GetFloat("kappa3", "left camera");
+    cam[LEFT].t1 = file.GetFloat("tau1", "left camera");
+    cam[LEFT].t2 = file.GetFloat("tau2", "left camera");
+
+    string str1 = file.GetString("proj", "left camera");
+    istringstream sstr1(str1);
+    ReadMat34(sstr1, cam[LEFT].proj);
+
+    string str2 = file.GetString("rect", "left camera");
+    istringstream sstr2(str2);
+    ReadMat33(sstr2, cam[LEFT].rect);
+
+    cam[RIGHT].width = file.GetInt("pwidth", "right camera");
+    cam[RIGHT].height = file.GetInt("pheight", "right camera");
+    cam[RIGHT].fx = file.GetFloat("f", "right camera");
+    cam[RIGHT].fy = file.GetFloat("fy", "right camera");
+    cam[RIGHT].cx = file.GetFloat("Cx", "right camera");
+    cam[RIGHT].cy = file.GetFloat("Cy", "right camera");
+    cam[RIGHT].k1 = file.GetFloat("kappa1", "right camera");
+    cam[RIGHT].k2 = file.GetFloat("kappa2", "right camera");
+    cam[RIGHT].k3 = file.GetFloat("kappa3", "right camera");
+    cam[RIGHT].t1 = file.GetFloat("tau1", "right camera");
+    cam[RIGHT].t2 = file.GetFloat("tau2", "right camera");
+
+    string str3 = file.GetString("proj", "right camera");
+    istringstream sstr3(str3);
+    ReadMat34(sstr3, cam[RIGHT].proj);
+
+    string str4 = file.GetString("rect", "right camera");
+    istringstream sstr4(str4);
+    ReadMat33(sstr4, cam[RIGHT].rect);
+
+    return true;
+  } else return false;
 }
 
 /**
- * @brief Point (X,Y,Z) is given in coor sys of left camera.
+ * @brief Point (X,Y,Z) is given in coor sys of left camera. Project to image plane
  * @param X 3D-coordinate ?
  * @param Y 3D-coordinate ?
  * @param Z 3D-coordinate ?
@@ -112,7 +137,7 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z, double &u, double 
  * @brief Given a point in the left image and its disparity, return the reconstructed 3D point.
  * @param u 2D-coordinate ?
  * @param v 2D-coordinate ?
- * @param d distance ?
+ * @param d disparity
  * @param X 3D-coordinate ?
  * @param Y 3D-coordinate ?
  * @param Z 3D-coordinate ?
@@ -149,21 +174,34 @@ void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, dou
  * @param vd Image point distorted (y-coordinate) ? 
  * @param side Left or right side of the stereo rig.
  */
-void StereoCamera::DistortPoint(double u, double v, double &ud, double &vd, int side)
+void StereoCamera::DistortNormalisedPoint(double x, double y, double &xd, double &yd, int side)
 {
-  double x = (u - cam[side].cx)/cam[side].fx;
-  double y = (v - cam[side].cy)/cam[side].fy;
   double x2 = x*x;
   double y2 = y*y;
-  double two_xy = 2.*x*y;
   double r2 = x2 + y2;
   double r4 = r2*r2;
   double r6 = r4*r2;
   double t = (1. + cam[side].k1*r2 + cam[side].k2*r4 + cam[side].k3*r6);
-  double xd = x*t + two_xy*cam[side].t1 + cam[side].t2*(r2 + 2.*x2);
-  double yd = y*t + two_xy*cam[side].t2 + cam[side].t1*(r2 + 2.*y2);
-  ud = xd*cam[side].fx + cam[side].cx;
-  vd = yd*cam[side].fy + cam[side].cy;
+  xd = x*t + 2.*cam[side].t1*x*y + cam[side].t2*(r2 + 2.*x2);
+  yd = y*t + 2.*cam[side].t2*x*y + cam[side].t1*(r2 + 2.*y2);
+}
+
+/**
+ * @brief Distort point from the image plane.
+ * @param u Image point (x-coordinate) ? 
+ * @param v Image point (y-coordinate) ? 
+ * @param ud Image point distorted (x-coordinate) ? 
+ * @param vd Image point distorted (y-coordinate) ? 
+ * @param side Left or right side of the stereo rig.
+ */
+void StereoCamera::DistortPoint(double u, double v, double &ud, double &vd, int side)
+{
+  double x = (u - sx*cam[side].cx)/(sx*cam[side].fx);
+  double y = (v - sy*cam[side].cy)/(sy*cam[side].fy);
+  double xd, yd;
+  DistortNormalisedPoint(x, y, xd, yd, side);
+  ud = xd*sx*cam[side].fx + sx*cam[side].cx;
+  vd = yd*sy*cam[side].fy + sy*cam[side].cy;
 }
 
 /**
@@ -206,7 +244,6 @@ bool StereoCamera::UndistortPoint(double ud, double vd, double &u, double &v, in
   return false;
 }
 
-
 /**
  * @brief Undistort and rectify point.
  * @param ud Image point distorted (x-coordinate) ? 
@@ -219,17 +256,140 @@ void StereoCamera::RectifyPoint(double ud, double vd, double &ur, double &vr, in
 {
   double u, v;
   UndistortPoint(ud, vd, u, v, side);
-  //u = ud;  // HACK: no undistortion
-  //v = vd;
-  double x = (u - cam[side].cx)/cam[side].fx;
-  double y = (v - cam[side].cy)/cam[side].fy;
+  double x = (u - sx*cam[side].cx)/(sx*cam[side].fx);
+  double y = (v - sy*cam[side].cy)/(sy*cam[side].fy);
   double xr = cam[side].rect[0][0]*x + cam[side].rect[0][1]*y + cam[side].rect[0][2];
   double yr = cam[side].rect[1][0]*x + cam[side].rect[1][1]*y + cam[side].rect[1][2];
   double wr = cam[side].rect[2][0]*x + cam[side].rect[2][1]*y + cam[side].rect[2][2];
   xr /= wr;
   yr /= wr;
-  ur = xr*cam[side].proj[0][0] + cam[side].proj[0][2];
-  vr = yr*cam[side].proj[1][1] + cam[side].proj[1][2];
+  ur = xr*sx*cam[side].proj[0][0] + sx*cam[side].proj[0][2];
+  vr = yr*sy*cam[side].proj[1][1] + sy*cam[side].proj[1][2];
+}
+
+void StereoCamera::UnrectifyPointFast(double ur, double vr, double &ud, double &vd, int side)
+{
+  int ui = (int)floor(ur), vi =  (int)floor(vr);
+  if(ui >= 0 && ui < inImgSize.width && vi >= 0 && vi < inImgSize.height)
+  {
+    ud = *(float*)cvAccessImageData(mapx[side], ui, vi);
+    vd = *(float*)cvAccessImageData(mapy[side], ui, vi);
+  }
+  else
+  {
+    ud = vd = 0.;
+  }
+}
+
+void StereoCamera::SetupImageRectification()
+{
+  for(int side = LEFT; side <= RIGHT; side++)
+  {
+    CvMat R = cvMat(3, 3, CV_64FC1, cam[side].rect);
+    // inverse of rectification matrix: xu = R_i * xi (with xu and xi
+    // homogeneous)
+    double r_i[3][3];
+    CvMat R_i = cvMat(3, 3, CV_64FC1, r_i);
+    cvInvert(&R, &R_i);
+    // make sure this function is only called once
+    assert(mapx[side] == 0);
+    mapx[side] = cvCreateImage(inImgSize, IPL_DEPTH_32F, 1);
+    mapy[side] = cvCreateImage(inImgSize, IPL_DEPTH_32F, 1);
+    //cvSetZero(mapx[side]);
+    //cvSetZero(mapy[side]);
+    // iterate over ideal image coords
+    for(int vi = 0; vi < inImgSize.height; vi++)
+    {
+      for(int ui = 0; ui < inImgSize.width; ui++)
+      {
+        // ideal normalised coords
+        double xi = (ui - sx*cam[side].proj[0][2])/(sx*cam[side].proj[0][0]);
+        double yi = (vi - sy*cam[side].proj[1][2])/(sy*cam[side].proj[1][1]);
+        // undistorted normalised coords
+        double xu = r_i[0][0]*xi + r_i[0][1]*yi + r_i[0][2];
+        double yu = r_i[1][0]*xi + r_i[1][1]*yi + r_i[1][2];
+        double wu = r_i[2][0]*xi + r_i[2][1]*yi + r_i[2][2];
+        assert(!iszero(wu));
+        xu /= wu;
+        yu /= wu;
+        // distorted normalised coords
+        double xd, yd;
+        DistortNormalisedPoint(xu, yu, xd, yd, side);
+        // distorted image coords
+        double ud = xd*sx*cam[side].fx + sx*cam[side].cx;
+        double vd = yd*sy*cam[side].fy + sy*cam[side].cy;
+        *(float*)cvAccessImageData(mapx[side], ui, vi) = ud;
+        *(float*)cvAccessImageData(mapy[side], ui, vi) = vd;
+      }
+    }
+    //cvDeleteMoire(mapx[side]);
+    //cvDeleteMoire(mapy[side]);
+  }
+}
+
+void StereoCamera::RectifyImage(const IplImage *src, IplImage *dst, int side)
+{
+  assert(src != 0 && dst != 0);
+  cvRemap(src, dst, mapx[side], mapy[side],
+          CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll(0));
+}
+
+void StereoCamera::CalculateDisparity(const IplImage *left, const IplImage *right,
+      IplImage *disp)
+{
+  assert(left != 0 && right != 0 && disp != 0);
+  if(matchAlgorithm == BLOCK_MATCH)
+  {
+    //cvFindStereoCorrespondenceBM(left, right, disp, stereo_bm_state);
+    stereoBM->init(cv::StereoBM::BASIC_PRESET, stereo_bm_state->numberOfDisparities);
+    cv::Mat leftM(left, false);
+    cv::Mat rightM(right, false);
+    cv::Mat dispM(disp, false);
+    (*stereoBM)(leftM, rightM, dispM, CV_32F);
+  }
+  else if(matchAlgorithm == SEMI_GLOBAL_BLOCK_MATCH)
+  {
+    // it is safe to directly access the settings values of cv::StereoSGBM
+    stereoSGBM->numberOfDisparities = stereo_bm_state->numberOfDisparities;
+    cv::Mat leftM(left, false);
+    cv::Mat rightM(right, false);
+    cv::Mat dispM(disp, false);
+    cv::Mat dispM_short(dispM.rows, dispM.cols, CV_16S);
+    (*stereoSGBM)(leftM, rightM, dispM_short);
+    dispM_short.convertTo(dispM, CV_32F, 1./(double)stereoSGBM->DISP_SCALE);
+  }
+  else
+    assert("only supports BLOCK_MATCH for now" == 0);
+}
+
+void StereoCamera::SetInputImageSize(CvSize size)
+{
+  inImgSize = size;
+  // NOTE: I assume that of course left and right camera have the same
+  // width/height
+  sx = (double)inImgSize.width/(double)cam[LEFT].width;
+  sy = (double)inImgSize.height/(double)cam[LEFT].height;
+}
+
+void StereoCamera::SetDisparityRange(int minDisp, int maxDisp)
+{
+  // note: disparity limits must by divisible by 16 - q requirement by
+  // OpenCV stereo matching
+  minDisp = minDisp - minDisp%16;
+  maxDisp = maxDisp - maxDisp%16;
+  stereo_bm_state->minDisparity = minDisp;
+  stereo_bm_state->numberOfDisparities = maxDisp - minDisp;
+}
+
+void StereoCamera::SetMatchingAlgoritm(MatchingAlgorithm algo)
+{
+  matchAlgorithm = algo;
+}
+
+cv::Mat StereoCamera::GetIntrinsic(unsigned side)
+{
+  cv::Mat mat = (cv::Mat_<double>(3,3) << cam[side].fx,0,cam[side].cx, 0,cam[side].fy,cam[side].cy, 0,0,1);
+  return mat;
 }
 
 }

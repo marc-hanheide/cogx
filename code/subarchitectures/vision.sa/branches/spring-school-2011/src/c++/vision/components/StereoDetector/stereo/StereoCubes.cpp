@@ -20,9 +20,10 @@ namespace Z
  */
 TmpCube::TmpCube(Cube *cube)
 {
-	surf[0].Init(cube, 0);
-	surf[1].Init(cube, 1);
-	surf[2].Init(cube, 2);
+  printf("TmpCube::TmpCube: Surface init bad implemented!\n");
+  surf[0].Init(cube, 0);
+  surf[1].Init(cube, 1);
+  surf[2].Init(cube, 2);
 }
 
 /**
@@ -33,9 +34,9 @@ TmpCube::TmpCube(Cube *cube)
  */
 void TmpCube::RePrune(int oX, int oY, int sc)
 {
-	surf[0].RePrune(oX, oY, sc);
-	surf[1].RePrune(oX, oY, sc);
-	surf[2].RePrune(oX, oY, sc);
+  surf[0].RePrune(oX, oY, sc);
+  surf[1].RePrune(oX, oY, sc);
+  surf[2].RePrune(oX, oY, sc);
 }
 
 /**
@@ -157,11 +158,11 @@ bool Cube3D::Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoCubes::StereoCubes(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoCubes::StereoCubes(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   cubeMatches = 0;
 }
 
@@ -579,11 +580,10 @@ printf("StereoCubes::Calculate3DCubes: matches: %u\n", matches);
  */
 void StereoCubes::ClearResults()
 {
-	cubes[LEFT].Clear();
-	cubes[RIGHT].Clear();
-	cube3ds.Clear();
-
-	cubeMatches = 0;
+  cubes[LEFT].Clear();
+  cubes[RIGHT].Clear();
+  cube3ds.Clear();
+  cubeMatches = 0;
 }
 
 /**

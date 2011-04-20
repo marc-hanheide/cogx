@@ -9,11 +9,12 @@
 #define PLANE_POPOUT_H
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include <StereoClient.h>
+#include <PointCloudClient.h>
 #include <VisionData.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "OpenSURF/surflib.h"
+#include "TomGineWraper/TomGineThread.hh"
 
 //#undef FEAT_VISUALIZATION
 
@@ -26,8 +27,8 @@ namespace cast
 using namespace cogx;
 using namespace cogx::Math;
 
-class PlanePopOut : public StereoClient,
-                     public ManagedComponent
+class PlanePopOut : public PointCloudClient,
+                    public ManagedComponent
 {
 typedef struct ObjP
 {
@@ -38,9 +39,9 @@ typedef struct ObjP
 	bool bComCurrentPre;
 	bool bInWM;
 	int count;
-	VisionData::SurfacePointSeq pointsInOneSOI;
-	VisionData::SurfacePointSeq BGInOneSOI;
-	VisionData::SurfacePointSeq EQInOneSOI;
+	PointCloud::SurfacePointSeq pointsInOneSOI;
+	PointCloud::SurfacePointSeq BGInOneSOI;
+	PointCloud::SurfacePointSeq EQInOneSOI;
 	IpVec surf;
 	CvHistogram* hist;
 	CvRect rect;
@@ -77,28 +78,38 @@ private:
 	bool useGlobalPoints;
 	// unit m, due to the error of stereo, >0.01 is suggested
 	double min_height_of_obj;
-	double Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &label);
+	double Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
 	std::vector<ObjPara> Pre2CurrentList;
-	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
+	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI);
 	float Compare2SOI(ObjPara obj1, ObjPara obj2);
 	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	VisionData::VisualObjectPtr ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label);
 	void AddConvexHullinWM();
+	void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
+	void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
+	void RefinePlaneEstimation(vector <Vector3> lines);
 
-	vector< VisionData::SurfacePointSeq > SOIPointsSeq;
-	vector< VisionData::SurfacePointSeq > BGPointsSeq;
-	vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
+	vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
+	vector< PointCloud::SurfacePointSeq > BGPointsSeq;
+	vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points
 	vector< Vector3 > v3center;
 	vector<double> vdradius;
 	vector< Vector3 > v3size;
+	vector <Vector3> vlines;
+	vector <double>	vlineConfidence;
 	IplImage* previousImg;
 	bool bIsMoving;
 	double CurrentBestDistSquared;
 	bool bHorizontalFound;
 	bool bVerticalOn;
+	std::string stereoconfig;                         ///< Config name of the stereo configuration file
+	TGThread::TomGineThread *tgRenderer;              ///< 3D render engine
+  
+	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
+	void DisplayInTG();
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -133,14 +144,14 @@ protected:
 public:
 
 
-	bool RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
-	void SplitPoints(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	bool RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+	void SplitPoints(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
 	void DrawOneCuboid(Vector3 Max, Vector3 Min);
-	void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
-	void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
-	void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels);
+	void DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+	void BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+	void BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels);
 	void DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c);
-	void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	void ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
 	inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
 	Vector3 GetAffineTransVec(Vector3 v3p);
 	Matrix33 GetAffineRotMatrix();
@@ -148,25 +159,25 @@ public:
 	void DrawWireSphere(Vector3 center, double radius);
 
 	vector<double> Hypo2ParaSpace(vector<Vector3> vv3Hypo);
-	void PSO_internal(vector < vector<double> > init_positions, VisionData::SurfacePointSeq &points, std::vector <int> &labels);
-	bool PSO_Label(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
-	double PSO_EvaluateParticle(Particle OneParticle, vector <Particle> optima_found, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
+	void PSO_internal(vector < vector<double> > init_positions, PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+	bool PSO_Label(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+	double PSO_EvaluateParticle(Particle OneParticle, vector <Particle> optima_found, PointCloud::SurfacePointSeq points, Vector3 cc, double rr);
 	bool lessfitness(const Particle& p1, const Particle& p2);
 	vector<double> UpdatePosition(vector<double> p, vector<double> v);
 	vector<double> UpdateVelocity(vector<double> p, vector<double> v, vector<double> pbest, vector<double> gbest, float chi, float c1, float c2, float w);
-	void CalRadiusCenter4BoundingSphere(VisionData::SurfacePointSeq points, Vector3 &c, double &r);
+	void CalRadiusCenter4BoundingSphere(PointCloud::SurfacePointSeq points, Vector3 &c, double &r);
 	double DistOfParticles(Particle p1, Particle p2, Vector3 c, double r, bool& bParallel);
 	Vector3 ProjectPointOnPlane(Vector3 p, double A, double B, double C, double D);
-	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, VisionData::SurfacePointSeq points, Vector3 cc, double rr);
+	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, PointCloud::SurfacePointSeq points, Vector3 cc, double rr);
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
-	void CollectDensePoints(Video::CameraParameters &cam, VisionData::SurfacePointSeq points);
-	CvHistogram* GetSurfAndHistogram(VisionData::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
+	void CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points);
+	CvHistogram* GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
 	void SOIManagement();
 	void SaveHistogramImg(CvHistogram* hist, std::string str);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
-	Vector3 PixelRGB2HSV(VisionData::ColorRGB rgb);
-	void FindVerticalPlanes(VisionData::SurfacePointSeq &points, std::vector <int> &labels, double B, double C);
+	Vector3 PixelRGB2HSV(cogx::Math::ColorRGB rgb);
+	void FindVerticalPlanes(PointCloud::SurfacePointSeq &points, std::vector <int> &labels, double B, double C);
 	
 	inline Particle InitialParticle()
 	{

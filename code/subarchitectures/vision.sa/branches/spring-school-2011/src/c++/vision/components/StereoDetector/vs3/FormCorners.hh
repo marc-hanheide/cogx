@@ -26,7 +26,7 @@ class FormCorners : public GestaltPrinciple
 {
 private:
 
-	void Rank();
+  void Rank();
   void Create(unsigned idx);
   void NewCorner(Array<LJunction*> ljcts, Array<Line*> lines, Array<unsigned> near_points);
   unsigned CornerExists(Array<Line*> lines, Array<unsigned> near_points);

@@ -20,25 +20,21 @@ namespace Z
  */
 TmpEllipse::TmpEllipse(Ellipse *ellipse)
 {
-	id = ellipse->ID();
-	center.p = ellipse->center;
-	
-	// calculate points on the ellipse hull
-	for(unsigned i=0; i<6; i++)
-	{
-		hullPoint[i].p.x = center.p.x + ellipse->a*cos(2*M_PI*i/6.)*cos(ellipse->phi) 
-																	- ellipse->b*sin(2*M_PI*i/6.)*sin(ellipse->phi);
-		hullPoint[i].p.y = center.p.y + ellipse->a*cos(2*M_PI*i/6.)*sin(ellipse->phi) 
-																	+ ellipse->b*sin(2*M_PI*i/6.)*cos(ellipse->phi);
-		if((hullPoint[i].p.x - center.p.x) < 0)
-			isLeftOfCenter[i] = true;
-		else
-			isLeftOfCenter[i] = false;
-	}
-	
-	a = ellipse->a;
-	b = ellipse->b;
-	phi = ellipse->phi;
+  vs3ID = ellipse->ID();
+  center.p = ellipse->center;
+  
+  // calculate points on the ellipse hull
+  for(unsigned i=0; i<6; i++)
+  {
+    hullPoint[i].p.x = center.p.x + ellipse->a*cos(2*M_PI*i/6.)*cos(ellipse->phi) - ellipse->b*sin(2*M_PI*i/6.)*sin(ellipse->phi);
+    hullPoint[i].p.y = center.p.y + ellipse->a*cos(2*M_PI*i/6.)*sin(ellipse->phi) + ellipse->b*sin(2*M_PI*i/6.)*cos(ellipse->phi);
+  }
+  
+  a = ellipse->a;
+  b = ellipse->b;
+  phi = ellipse->phi;
+  
+  valid = true;
 }
 
 /**
@@ -49,28 +45,28 @@ TmpEllipse::TmpEllipse(Ellipse *ellipse)
  */
 void TmpEllipse::RePrune(int oX, int oY, int sc)
 {
-	printf("TmpEllipse::RePrune: Not yet implemented!\n");
+  printf("TmpEllipse::RePrune: Not yet implemented!\n");
 // 	surf.RePrune(oX, oY, sc);
 }
 
 /**
- * @brief Rectify TmpEllipse
+ * @brief Rectify TmpEllipse and estimate left/right hullPoints
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
 void TmpEllipse::Rectify(StereoCamera *stereo_cam, int side)
 {
-	center.Rectify(stereo_cam, side);
-	for(unsigned i=0; i<6; i++)
-		hullPoint[i].Rectify(stereo_cam, side);
-}
+  center.Rectify(stereo_cam, side);
+  for(unsigned i=0; i<6; i++)
+    hullPoint[i].Rectify(stereo_cam, side);
 
-/**																										/// TODO TODO not yet implemented!
- * @brief Refine TmpEllipse
- */
-void TmpEllipse::Refine()
-{
-// 	printf("TmpEllipse::Refine: Not yet implemented!\n");
+  for(unsigned i=0; i<6; i++)
+  {
+    if((hullPoint[i].pr.x - center.pr.x) < 0)
+      isLeftOfCenter[i] = true;
+    else
+      isLeftOfCenter[i] = false;
+  }
 }
 
 /**
@@ -85,92 +81,96 @@ void TmpEllipse::Refine()
 // }
 
 
+
 //-------------------------------------------------------------------//
-//---------------------------- Ellipse3D ----------------------------//
+//-------------------------- TmpEllipse3D ---------------------------//
 //-------------------------------------------------------------------//
 /**
  * @brief Fit a ellipse into some rectified points of the ellipse, \n
  * to get the rectified ellipse parameters.
- * @param tmpEll Tmp. ellipse
+ * @param left Tmp. ellipse from the left image
+ * @param numPoints Defines the number of hull points for later 3D matching
  */
-void Ellipse3D::FitRectifiedEllipse(TmpEllipse &tmpEll)
+void TmpEllipse3D::FitRectifiedEllipse(TmpEllipse &left, unsigned numPoints)
 {
-	// first match an ellipse in some left rectified ellipse points
-	CvPoint2D32f *points = 0;
-	CvBox2D params;
-	unsigned numPoints = 6;
+  // first match an ellipse in some left rectified ellipse points
+  CvPoint2D32f *points = 0;
+  CvBox2D params;
 
-	// some rectified points of left ellipse
-	points = new CvPoint2D32f[numPoints];
-	for(unsigned i=0; i<numPoints; i++)
-	{
-		points[i].x = tmpEll.hullPoint[i].pr.x;
-		points[i].y = tmpEll.hullPoint[i].pr.y;
-	}
-	
-	// fit new ellipse to rectified points of ellipse and estimate parameters
-	cvFitEllipse(points, numPoints, &params);
-	x_e = params.center.x;
-	y_e = params.center.y;
-	// box size is double the axis lengths
-	a_e = params.size.width/2.;
-	b_e = params.size.height/2.;
-	// note: the angle returned is in degrees!
-	phi_e = ScaleAngle_0_pi/*ScaleAngle_mpi_pi*/(params.angle*M_PI/180.);		/// HACK
-	// note: for unknown reasons sometimes a < b!
-	if(a_e < b_e)
-	{
-		swap(a_e, b_e);
-		phi_e = ScaleAngle_0_pi/*ScaleAngle_mpi_pi*/(phi_e + M_PI_2);					/// HACK
-	}
-	delete[] points;
+  // some rectified points of left ellipse
+  points = new CvPoint2D32f[numPoints];
+  for(unsigned i=0; i<numPoints; i++)
+  {
+    points[i].x = left.hullPoint[i].pr.x;
+    points[i].y = left.hullPoint[i].pr.y;
+  }
+  
+  // fit new ellipse to rectified points of ellipse and estimate parameters
+  cvFitEllipse(points, numPoints, &params);
+  x_r = params.center.x;
+  y_e = params.center.y;
+  // box size is double the axis lengths
+  a_e = params.size.width/2.;
+  b_e = params.size.height/2.;
+  // note: the angle returned is in degrees!
+  phi_e = ScaleAngle_0_pi(params.angle*M_PI/180.);        /// HACK
+  // note: for unknown reasons sometimes a < b!
+  if(a_e < b_e)
+  {
+    swap(a_e, b_e);
+    phi_e = ScaleAngle_0_pi(phi_e + M_PI_2);              /// HACK
+  }
+  delete[] points;
 }
+
 
 /**
  * @brief Fit a ellipse into some rectified points of the ellipse, \n
  * to get the rectified ellipse parameters.
  * First, shift ellipse to the middle, 
- * @param left Left tmp. ellipse
  * @param right Right tmp. ellipse
  */
-void Ellipse3D::SolveEllipseLineIntersection(TmpEllipse &left, TmpEllipse &right)
+void TmpEllipse3D::SolveEllipseLineIntersection(TmpEllipse &right)
 {
-	double y_gv[6];												// y-values of the straight line, shifted by ellipse center.
-	double qe_a, qe_b[6], qe_c[6];				// values of the quadratic equation
+  double y_gv[6];                               // y-values of the straight line, shifted by ellipse center.
+  double qe_a, qe_b[6], qe_c[6];                // values of the quadratic equation
 
-	k = -tan(phi_e);											// rotate the straight line (around zero-point)
-	qe_a = 1 + (k*k*a_e*a_e/(b_e*b_e));		// a parameter of quadratic equation
-	for(unsigned i=0; i<6; i++)
-	{
-		y_g[i] = right.hullPoint[i].pr.y;		// get a y-coordinate from a point on the right ellipse
-		y_gv[i] = y_g[i] - y_e;							// shift the line
-		d[i] = y_gv[i]/cos(phi_e);					// offset of straight line
-		qe_b[i] = 2*k*d[i]*a_e*a_e/(b_e*b_e);
-		qe_c[i] = -(a_e*a_e)*(1 - (d[i]*d[i]/(b_e*b_e)));
-		x[i][0] = x_e + ((-qe_b[i] - sqrt(qe_b[i]*qe_b[i] - 4*qe_a*qe_c[i]))/(2*qe_a));
-		x[i][1] = x_e + ((-qe_b[i] + sqrt(qe_b[i]*qe_b[i] - 4*qe_a*qe_c[i]))/(2*qe_a));
-	}
+  k = -tan(phi_e);                              // rotate the straight line (around zero-point)
+  qe_a = 1 + (k*k*a_e*a_e/(b_e*b_e));           // a parameter of quadratic equation
+  for(unsigned i=0; i<6; i++)                   /// TODO man könnte die numPoints angeben wie bei FitRectifiedEllipse
+  {
+    y_g[i] = right.hullPoint[i].pr.y;           // get a y-coordinate from a point on the right ellipse
+    y_gv[i] = y_g[i] - y_e;                     // shift the line (y_e = center.y)
+    d[i] = y_gv[i]/cos(phi_e);                  // offset of straight line
+    qe_b[i] = 2*k*d[i]*a_e*a_e/(b_e*b_e);
+    qe_c[i] = -(a_e*a_e)*(1 - (d[i]*d[i]/(b_e*b_e)));
+    x[i][0] = x_r + ((-qe_b[i] - sqrt(qe_b[i]*qe_b[i] - 4*qe_a*qe_c[i]))/(2*qe_a));
+    x[i][1] = x_r + ((-qe_b[i] + sqrt(qe_b[i]*qe_b[i] - 4*qe_a*qe_c[i]))/(2*qe_a));
+//     printf("Result: x[%u]: %4.2f / %4.2f\n",i, x[i][0], x[i][1]);
+  }
 }
 
 /**
- * @brief Check the results of the solved ellipse-line intersections and prune wrong results.
+ * @brief Check the results of the solved ellipse-line intersections and prune wrong results.			/// TODO Bad results => Check again!
+ * Only results in the image plane and != nan are valid.
  * @return True, if more than three reliable cPoints.
  */
-bool Ellipse3D::CheckReliabilityOfResults()
+bool TmpEllipse3D::CheckReliabilityOfResults()
 {
-	nrReliableCPoints = 0;
-	for(unsigned i=0; i<6; i++)
-	{
-		if(isnan(x[i][0]) || isnan(x[i][1]) || (x[i][0] < 0 && x[i][1] < 0) || (x[i][0] > 640 && x[i][1] > 640))
-			reliableCPoint[i] = false;
-		else 
-		{
-			reliableCPoint[i] = true;
-			nrReliableCPoints++;
-		}
-	}
-	if(nrReliableCPoints < 4) return false;
-	else return true;
+  nrReliableCPoints = 0;
+  for(unsigned i=0; i<6; i++)
+  {
+    if(isnan(x[i][0]) || isnan(x[i][1]) || (x[i][0] < 0 && x[i][1] < 0) || (x[i][0] > 640 && x[i][1] > 640))
+      reliableCPoint[i] = false;
+    else 
+    {
+      reliableCPoint[i] = true;
+      nrReliableCPoints++;
+    }
+  }
+// printf("TmpEllipse3D::CheckReliabilityOfResults: %u\n", nrReliableCPoints);
+  if(nrReliableCPoints < 4) return false;
+  else return true;
 }
 
 
@@ -180,94 +180,102 @@ bool Ellipse3D::CheckReliabilityOfResults()
  * @param left Left tmp. ellipse
  * @param right Right tmp. ellipse
  */
-void Ellipse3D::CalculateCirclePoints(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right)
+void TmpEllipse3D::CalculateCirclePoints(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right)
 {
-	center.Reconstruct(stereo_cam, left.center, right.center);
-	for(unsigned i=0; i<6; i++)
-	{
-		if(reliableCPoint[i])
-		{
-			if(right.isLeftOfCenter[i])
-			{
-				leftHullPoint[i].pr.x = x[i][0];
-				leftHullPoint[i].pr.y = y_g[i];
-				cPoints[i].Reconstruct(stereo_cam, leftHullPoint[i], right.hullPoint[i]);
-			}
-			else
-			{
-				leftHullPoint[i].pr.x = x[i][1];
-				leftHullPoint[i].pr.y = y_g[i];
-				cPoints[i].Reconstruct(stereo_cam, leftHullPoint[i], right.hullPoint[i]);
-			}
-		}
-	}
-}
+  center3D.Reconstruct(stereo_cam, left.center, right.center);
+  for(unsigned i=0; i<6; i++)
+  {
+    if(reliableCPoint[i])
+    {
+      if(right.isLeftOfCenter[i])
+	leftHullPoint[i].pr.x = x[i][0];
+      else
+	leftHullPoint[i].pr.x = x[i][1];
 
+      leftHullPoint[i].pr.y = y_g[i];
+      cPoints[i].Reconstruct(stereo_cam, leftHullPoint[i], right.hullPoint[i]);
+    }
+  }
+}
 
 /**
  * @brief Check the results of the calculated 3D circle points (cPoints).
  * To get a reliable result, we need at least 3 reliable points on the circle.
+ * Calculate the construction significance from the deviations.
  * @return Return true, if geometry of a circle is reliable.
  */
-bool Ellipse3D::CheckGeometry()
+bool TmpEllipse3D::CheckCircleGeometry()
 {
-	// calculate mean
-	double mean = 0.;
-	for(unsigned i=0; i<6; i++)
-	{
-		if(reliableCPoint[i])
-		{
-			distance[i] = cPoints[i].Distance(center);
-			mean += distance[i];
-		}
-	}
-	mean /= (double) nrReliableCPoints;
-	
-	// The max. deviation of a point may be half of the radius (1/maxD...).
-	double maxDeviationFactor = 2.;
-	for(unsigned i=0; i<6; i++)
-		if(reliableCPoint[i])
-			deviation[i] = mean - distance[i];
+//  double maxDeviationFactor = 2.;										/// TODO we allow everything! Unused variable
 
-	// prune cPoints with "too" high deviation
-	for(unsigned i=0; i<6; i++)
-	{
-		if(reliableCPoint[i])
-		{
-			if(fabs(deviation[i]*maxDeviationFactor) > mean)
-			{
-				reliableCPoint[i] = false;
-				nrReliableCPoints--;
-			}
-		}
-	}
+  // calculate mean distance between center and points
+  radius3D = 0.;
+  for(unsigned i=0; i<6; i++)
+  {
+    if(reliableCPoint[i])
+    {
+      distance[i] = cPoints[i].Distance(center3D);
+      radius3D += distance[i];
+    }
+  }
+  radius3D /= (double) nrReliableCPoints;
 
-	if(nrReliableCPoints < 3) return false;
-	else return true;
+  // The max. deviation of a point may be half of the radius (1/maxD...).
+  double deviation[6];
+  for(unsigned i=0; i<6; i++)
+    if(reliableCPoint[i])
+      deviation[i] = radius3D - distance[i];
+  
+  // prune cPoints with "too" high deviation
+//   for(unsigned i=0; i<6; i++)
+//   {
+//     if(reliableCPoint[i])
+//     {
+//       if(fabs(deviation[i]*maxDeviationFactor) > meanDistance)
+//       {
+// 	reliableCPoint[i] = false;
+// 	nrReliableCPoints--;
+//       }
+//     }
+//   }
+
+  // calculate 3D construction significance
+  double deviationSum = 0.;
+  for(unsigned i=0; i<6; i++)
+    if(reliableCPoint[i])
+      deviationSum += fabs(deviation[i]);
+  deviationSum /= nrReliableCPoints;
+  constructionSignificance = 1 - deviationSum/radius3D;
+      
+  if(nrReliableCPoints < 3)
+    printf("##################################### TmpEllipse3D::CheckGeometry: Geometry is not good!\n");
+
+//   if(nrReliableCPoints < 3) return false;
+//   else return true;
+  return true;
 }
-
 
 
 /**
  * @brief Span one plane into the circle points (with center) and project all resulting \n
  * points to this plane. Calculate the normal direction of the circle plane.
  */
-void Ellipse3D::RefineVertices()
+void TmpEllipse3D::RefineVertices()
 {
-	// copy the reliable cPoints and the center to Vertex3D array
-	int nrVertices = nrReliableCPoints + 1;		// circle points + center
-	Vertex3D vertex[nrVertices];
-	int j=0;
-	for(unsigned i=0; i<6; i++)
-		if(reliableCPoint[i])
-		{
-			vertex[j] = cPoints[i];
-			j++;
-		}
-	vertex[nrVertices-1] = center;
+  // copy the reliable cPoints and the center to Vertex3D array
+  int nrVertices = nrReliableCPoints + 1;	// circle points + center
+  Vertex3D vertex[nrVertices];
+  int j=0;
+  for(unsigned i=0; i<6; i++)
+  if(reliableCPoint[i])
+  {
+    vertex[j] = cPoints[i];
+    j++;
+  }
+  vertex[nrVertices-1] = center3D;
 
-	// create matrices and make cvSVD
-	CvMat *A = cvCreateMat(nrVertices, 4, CV_32FC1);
+  // create matrices and make cvSVD
+  CvMat *A = cvCreateMat(nrVertices, 4, CV_32FC1);
   CvMat *W = cvCreateMat(4, 1, CV_32FC1);
   CvMat *VT = cvCreateMat(4, 4, CV_32FC1);
   for(int i = 0; i < nrVertices; i++)
@@ -299,67 +307,60 @@ void Ellipse3D::RefineVertices()
   cvReleaseMat(&W);
   cvReleaseMat(&VT);
 	
-	// copy the results back to cPoints (and center)!
-	j=0;
-	for(unsigned i=0; i<6; i++)
-		if(reliableCPoint[i])
-		{
-			cPoints[i] = vertex[j];
-			j++;
-		}
-	center = vertex[nrVertices-1];
+  // copy the results back to cPoints (and center3D)!
+  j=0;
+  for(unsigned i=0; i<6; i++)
+  if(reliableCPoint[i])
+  {
+// printf("TmpEllipse3D::RefineVertices: Distance[%u]: %4.3f\n", i, vertex[j].Distance(cPoints[i]));
+    cPoints[i] = vertex[j];
+    j++;
+  }
+// printf("TmpEllipse3D::RefineVertices: Distance[center]: %4.3f\n",  vertex[nrVertices-1].Distance(center));
+
+  // copy the center point with the calculated NORMAL back to center3D
+  center3D = vertex[nrVertices-1];
 }
 
 
-/**
+/**													// TODO Die sollte man eigentlich nur für die Anzeige berechnen!!!
  * @brief Calculate the radius (as mean), the calculated circle points and \n
  * the significance of the circle (from the deviation)
  */
-void Ellipse3D::CalculateCircleProperties()
+void TmpEllipse3D::CalculateCircleProperties()
 {
-	// calculate radius
-	radius = 0.;
-	for(unsigned i=0; i<6; i++)
-		if(reliableCPoint[i])
-			radius += distance[i];
-	radius /= (double) nrReliableCPoints;
-	
-	// calculate circle plane vectors
-	Vector3 u,v;
-	// rotate u 90 degree to center
-	u.x = center.n.x;
-	u.y = center.n.z;
-	u.z = -center.n.y;
-	// v = n x u => 3rd orthogonal vector
-	v.x = center.n.y*u.z - center.n.z*u.y;
-	v.y = center.n.z*u.x - center.n.x*u.z;
-	v.z = center.n.x*u.y - center.n.y*u.x;
-	
-	// calculate cPointsCalc
-	nrCPointsCalc = 20;		// set number of cPointsCalc
-	for(unsigned i=0; i<nrCPointsCalc; i++)
-	{
-		cPointsCalc[i].p.x = center.p.x + radius*u.x*cos(i*2*M_PI/(double)nrCPointsCalc) + radius*v.x*sin(i*2*M_PI/(double)nrCPointsCalc);
-		cPointsCalc[i].p.y = center.p.y + radius*u.y*cos(i*2*M_PI/(double)nrCPointsCalc) + radius*v.y*sin(i*2*M_PI/(double)nrCPointsCalc);
-		cPointsCalc[i].p.z = center.p.z + radius*u.z*cos(i*2*M_PI/(double)nrCPointsCalc) + radius*v.z*sin(i*2*M_PI/(double)nrCPointsCalc);
-	}
+//   // calculate circle plane vectors
+//   Vector3 u,v;
+//   // rotate u 90 degree to center
+//   u.x = center3D.n.x;
+//   u.y = center3D.n.z;
+//   u.z = -center3D.n.y;
+//   // v = n x u => 3rd orthogonal vector
+//   v.x = center3D.n.y*u.z - center3D.n.z*u.y;
+//   v.y = center3D.n.z*u.x - center3D.n.x*u.z;
+//   v.z = center3D.n.x*u.y - center3D.n.y*u.x;
+//   
+//   // calculate cPointsCalc
+//   nrCPointsCalc = 20;		// set number of cPointsCalc
+//   for(unsigned i=0; i<nrCPointsCalc; i++)
+//   {
+//     cPointsCalc[i].p.x = center3D.p.x + radius3D*u.x*cos(i*2*M_PI/(double)nrCPointsCalc) + radius3D*v.x*sin(i*2*M_PI/(double)nrCPointsCalc);
+//     cPointsCalc[i].p.y = center3D.p.y + radius3D*u.y*cos(i*2*M_PI/(double)nrCPointsCalc) + radius3D*v.y*sin(i*2*M_PI/(double)nrCPointsCalc);
+//     cPointsCalc[i].p.z = center3D.p.z + radius3D*u.z*cos(i*2*M_PI/(double)nrCPointsCalc) + radius3D*v.z*sin(i*2*M_PI/(double)nrCPointsCalc);
+//   }
 }
-
 
 /**
  * @brief Calculate the significance of the estimated circle hypothesis.
  * The significance is calculated from the deviations between distance of the
  * hull points to the center and the radius. [is between 0...1?]
+ * This significance is for detection of CIRCLES!
+ * @param significance2D 2D significance from matching algorithm.
  */
-void Ellipse3D::CalculateSignificance()
+void TmpEllipse3D::CalculateSignificance(double significance2D)
 {
-	// calculate significance
-	double deviationSum = 0.;
-	for(unsigned i=0; i<6; i++)
-		if(reliableCPoint[i])
-			deviationSum += fabs(deviation[i]);
-	deviationSum /= nrReliableCPoints;
-	significance = 1 - deviationSum/radius;
+  significance = constructionSignificance * significance2D;
+//   printf("  TmpEllipse3D::CalcSig: sig2D: %4.3f / con_sig: %4.2f / sig: %4.2f of ell: %u-%u\n", significance2D, constructionSignificance, significance, vs3ID[0], vs3ID[1]);
 }
 	
 /**
@@ -367,15 +368,15 @@ void Ellipse3D::CalculateSignificance()
  * Check the distance from the camera to the object (z-coordinate)
  * @return Return true, if sanity check was ok.
  */
-bool Ellipse3D::SanityOK()
+bool TmpEllipse3D::SanityOK()
 {
-	// center should be inside the space of interest (SOI)
-	if(center.p.z < SC_MIN_DIST_Z || center.p.z > SC_MAX_DIST_Z)
-	{
-		printf("Ellipse3D::SanityOK: not ok: %4.2f => Error?\n", center.p.z);
-		return false;
-	}
-	return true;
+  // center should be inside the space of interest (SOI)
+  if(center3D.p.z < SC_MIN_DIST_Z || center3D.p.z > SC_MAX_DIST_Z)
+  {
+    printf("Ellipse3D::SanityOK: not ok: %4.2f => Error?\n", center3D.p.z);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -383,39 +384,25 @@ bool Ellipse3D::SanityOK()
  * @param stereo_cam Stereo camera paramters and functions.
  * @param left Left tmp. ellipse
  * @param right Right tmp. ellipse
+ * @param y_dist Distance between the center points
  * @return Return true, if reconstruction was ok.
  */
-bool Ellipse3D::Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right)
+bool TmpEllipse3D::Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D)
 {
-	FitRectifiedEllipse(left);
-	SolveEllipseLineIntersection(left, right);
-	if(!CheckReliabilityOfResults()) return false;
-	CalculateCirclePoints(stereo_cam, left, right);
-	if(!CheckGeometry()) return false;
-	RefineVertices();
-	CalculateCircleProperties();
-	CalculateSignificance();
+  vs3ID[LEFT] = left.vs3ID;
+  vs3ID[RIGHT] = right.vs3ID;
+  FitRectifiedEllipse(left, 6);
+  SolveEllipseLineIntersection(right);
+  if(!CheckReliabilityOfResults()) return false;
+  CalculateCirclePoints(stereo_cam, left, right);
+  if(!CheckCircleGeometry()) return false;
+  RefineVertices();
+  CalculateCircleProperties();
+  CalculateSignificance(significance2D);
   return(SanityOK());
 }
 
 
-/**
- * @brief Compare two ellipses for filtering.
- * @param ell 3D ellipse to compare
- * @return Return certainty value for equality [0,100]
- */
-double Ellipse3D::Compare(Ellipse3D &ell)
-{
-	/// use center and radius
-	
-	/// distance between center points
-	double dist = Length(center.p - ell.center.p) + fabs(radius-ell.radius);
-	
-// 	printf("  Ellipse3D::Compare: dist: %4.2f\n", dist);
-	
-	return dist;
-}
-	
 //-------------------------------------------------------------------//
 //------------------------- StereoEllipses --------------------------//
 //-------------------------------------------------------------------//
@@ -424,11 +411,11 @@ double Ellipse3D::Compare(Ellipse3D &ell)
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera paramters and functions.
  */
-StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase()
+StereoEllipses::StereoEllipses(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
 {
-	vcore[LEFT] = vc[LEFT];
-	vcore[RIGHT] = vc[RIGHT];
-	stereo_cam = sc;
+  vcore[LEFT] = vc[LEFT];
+  vcore[RIGHT] = vc[RIGHT];
+  stereo_cam = sc;
   ellMatches = 0;
 }
 
@@ -441,134 +428,166 @@ StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase
  */
 void StereoEllipses::DrawMatched(int side, bool single, int id, int detail)
 {
-	if(single)
-		DrawSingleMatched(side, id, detail);
-	else
-		for(int i=0; i<candMatches; i++)
-			DrawSingleMatched(side, i, detail);
+  if(single)
+    DrawSingleMatched(side, id, detail);
+  else
+    for(int i=0; i<ellMatches; i++)
+      DrawSingleMatched(side, i, detail);
 }
 
-/**
+/**															TODO Diese Implementierungen sollten eigentlich mit den Daten in den tmpXX sein!
  * @brief Draw single matched ellipses.
  * @param side Left/right side of stereo images.
  * @param id ID of the ellipse for ellipse3ds & ellipses
  */
 void StereoEllipses::DrawSingleMatched(int side, int id, int detail)
 {
-	if(detail == 0) 			// draw then original ellises of the matching ellipses in 2D
+  if(detail == 0) 		// draw then original ellises of the matching ellipses in 2D
+  {
+    if(id >= 0 && id < ellMatches)
+    {
+      if(side == LEFT)		// rectified new ellipse
+      {
+	DrawEllipse2D(ellipses[LEFT][id].center.p.x, ellipses[LEFT][id].center.p.y, 
+		      ellipses[LEFT][id].a, ellipses[LEFT][id].b, ellipses[LEFT][id].phi, RGBColor::blue);
+      }
+      if(side == RIGHT)		// rectified new ellipse
+      {
+	DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
+		      ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
+      }
+    }
+  }
+  
+  if(detail == 1)		// draw ellipses and hull points (rectified)
+  {
+    if(id >= 0 && id < ellMatches)
+    {
+      if(side == LEFT)          // old unrectified ellipse on left side with hull points
+      {
+	DrawEllipse2D(ellipses[LEFT][id].center.p.x, ellipses[LEFT][id].center.p.y,
+		      ellipses[LEFT][id].a, ellipses[LEFT][id].b, ellipses[LEFT][id].phi, RGBColor::blue);
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipses[LEFT][id].center.p.x, ellipses[LEFT][id].center.p.y, 
-											ellipses[LEFT][id].a, ellipses[LEFT][id].b, ellipses[LEFT][id].phi, RGBColor::blue);
-			}
-			if(side == RIGHT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
-											ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
-			}
-		}
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::red);
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
 	}
-	
-	if(detail == 1)				// draw resulting ellipse
+      }
+      else                      // right ellipse and rectified points of right ellipse
+      {
+	DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
+		      ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)		// rectified new ellipse
-			{
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);				
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);
-				for(unsigned i=0; i<6; i++)
-					DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::yellow);
-			}
-			else								// rectified points of right ellipse
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::blue);
-					DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
-				}
-		}
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::red);
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
 	}
-	
-	if(detail == 2 || detail == 3)		// draw the ellipse candidates, before 3D calculated
+      }
+    }
+  }
+ 
+  if(detail == 2)		// draw resulting ellipse
+  {
+    if(id >= 0 && id < ellMatches) 
+    {
+      if(side == LEFT)          // rectified new ellipse on left si-de
+      {
+	DrawEllipse2D(ellipses3D[id].x_r, ellipses3D[id].y_e,
+		      ellipses3D[id].a_e, ellipses3D[id].b_e, 
+		      ellipses3D[id].phi_e, RGBColor::blue);
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < candMatches) 
-		{
-			DrawEllipse2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y,
-										ellipses[side][id].a, ellipses[side][id].b, ellipses[side][id].phi, RGBColor::blue);
-		}
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
 	}
-
-	if(detail == 3)		// draw the candidates, before 3D calculated, with center point and id
+      }
+      else                      // rectified points of right ellipse
+      {
+	DrawEllipse2D(ellipses[RIGHT][id].center.p.x, ellipses[RIGHT][id].center.p.y,
+		      ellipses[RIGHT][id].a, ellipses[RIGHT][id].b, ellipses[RIGHT][id].phi, RGBColor::blue);
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < candMatches) 
-		{
-			DrawPoint2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
-			char id_str[20];
-			snprintf(id_str, 20, "%u", ellipses[side][id].id);
-			DrawText2D(id_str, ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
-		}
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].p.x, ellipses[side][id].hullPoint[i].p.y, RGBColor::red);
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
 	}
+      }
+    }
+  }
+  
+//   if(detail == 2 || detail == 3) // draw the ellipse candidates, before 3D calculated
+//   {
+//     if(id >= 0 && id < ellMatches) 
+//     {
+//       DrawEllipse2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y,
+// 		    ellipses[side][id].a, ellipses[side][id].b, ellipses[side][id].phi, RGBColor::blue);
+//     }
+//   }
+// 
 
-	if(detail == 4)
+  if(detail == 3)
+  {
+    if(id >= 0 && id < ellMatches) 
+    {
+      if(side == LEFT)
+      {
+	// rectified new ellipse on left image
+	DrawEllipse2D(ellipses3D[id].x_r, ellipses3D[id].y_e, 
+		      ellipses3D[id].a_e, ellipses3D[id].b_e, 
+		      ellipses3D[id].phi_e, RGBColor::blue);
+
+	// draw epipolar lines (y_g[i]).
+	for(unsigned i=0; i<6; i++)
 	{
-		if(id >= 0 && id < ellMatches) 
-		{
-			if(side == LEFT)
-			{
-				// rectified new ellipse
-				DrawEllipse2D(ellipse3ds[id].x_e, ellipse3ds[id].y_e, 
-											ellipse3ds[id].a_e, ellipse3ds[id].b_e, 
-											ellipse3ds[id].phi_e, RGBColor::blue);
-
-				// draw epipolar lines
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawLine2D(0, ellipse3ds[id].y_g[i], 640, ellipse3ds[id].y_g[i], RGBColor::red);
-				}
-
-				// draw solutions
-				for(unsigned i=0; i<6; i++)
-				{
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-					DrawLine2D(ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i]-5, 
-										ellipse3ds[id].leftHullPoint[i].pr.x-5, ellipse3ds[id].y_g[i]+5, RGBColor::blue);
-
-					char id_str[20];
-					snprintf(id_str, 20, "%u", i);
-					DrawText2D(id_str, ellipse3ds[id].leftHullPoint[i].pr.x+5, ellipse3ds[id].y_g[i], RGBColor::blue);
-				}
-			}
-
-			if(side == RIGHT)
-			{
-				// draw epipolar lines
-				for(unsigned i=0; i<6; i++)
-					DrawLine2D(0, ellipses[side][id].hullPoint[i].pr.y, 640, ellipses[side][id].hullPoint[i].pr.y, RGBColor::red);
-				
-				for(unsigned i=0; i<6; i++)
-				{
-					// rectified points of right ellipse
-					DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
-
-					char id_str[20];
-					snprintf(id_str, 20, "%u", i);
-					DrawText2D(id_str, ellipses[side][id].hullPoint[i].pr.x+5, ellipses[side][id].hullPoint[i].pr.y, RGBColor::blue);
-				}
-			}
-		}
+	  DrawLine2D(0, ellipses3D[id].y_g[i], 640, ellipses3D[id].y_g[i], RGBColor::red);
 	}
+
+	// draw solutions
+	for(unsigned i=0; i<6; i++)
+	{
+// 	  DrawLine2D(ellipses3D[id].leftHullPoint[i].pr.x-5, ellipses3D[id].y_g[i]-5, 
+// 		     ellipses3D[id].leftHullPoint[i].pr.x+5, ellipses3D[id].y_g[i]+5, RGBColor::blue);
+// 	  DrawLine2D(ellipses3D[id].leftHullPoint[i].pr.x+5, ellipses3D[id].y_g[i]-5, 
+// 		     ellipses3D[id].leftHullPoint[i].pr.x-5, ellipses3D[id].y_g[i]+5, RGBColor::blue);
+// 	  DrawLine2D(ellipses3D[id].leftHullPoint[i].pr.x-5, ellipses3D[id].y_g[i]-5, 
+// 		     ellipses3D[id].leftHullPoint[i].pr.x+5, ellipses3D[id].y_g[i]+5, RGBColor::blue);
+// 	  DrawLine2D(ellipses3D[id].leftHullPoint[i].pr.x+5, ellipses3D[id].y_g[i]-5, 
+// 		     ellipses3D[id].leftHullPoint[i].pr.x-5, ellipses3D[id].y_g[i]+5, RGBColor::blue);
+	  
+	  // results of ellipse-line equation!
+	  DrawPoint2D(ellipses3D[id].leftHullPoint[i].pr.x, ellipses3D[id].y_g[i], RGBColor::yellow);		/// excact point!
+	  char id_str[20];
+	  snprintf(id_str, 20, "%u", i);
+	  DrawText2D(id_str, ellipses3D[id].leftHullPoint[i].pr.x+8, ellipses3D[id].y_g[i], RGBColor::blue);
+	}
+      }
+
+      if(side == RIGHT)
+      {
+	// draw epipolar lines
+	for(unsigned i=0; i<6; i++)
+	  DrawLine2D(0, ellipses[side][id].hullPoint[i].pr.y, 640, ellipses[side][id].hullPoint[i].pr.y, RGBColor::red);
+
+	// rectified points of right ellipse
+	for(unsigned i=0; i<6; i++)
+	{
+	  DrawPoint2D(ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::yellow);
+	  char id_str[20];
+	  snprintf(id_str, 20, "%u", i);
+	  DrawText2D(id_str, ellipses[side][id].hullPoint[i].pr.x, ellipses[side][id].hullPoint[i].pr.y, RGBColor::blue);
+	}
+      }
+    }
+  }
+  
+  if(detail == 0)		// draw the candidates, before 3D calculated, with center point and id
+  {
+    if(id >= 0 && id < ellMatches) 
+    {
+      DrawPoint2D(ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
+      char id_str[20];
+      snprintf(id_str, 20, "%u", ellipses[side][id].vs3ID);
+      DrawText2D(id_str, ellipses[side][id].center.p.x, ellipses[side][id].center.p.y, RGBColor::blue);
+    }
+  }
 }
 
 /**
@@ -580,241 +599,334 @@ void StereoEllipses::DrawSingleMatched(int side, int id, int detail)
 #ifdef HAVE_CAST
 bool StereoEllipses::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id)
 {
-	obj->model = new VisionData::GeometryModel;
-	VisionData::Vertex v;
-	VisionData::Face f;
-	Ellipse3D ellipse = Ellipses(id);
-
-	// Recalculate pose of vertices (relative to the pose of the flap == cog)
-	Pose3 pose;
-	RecalculateCoordsystem(ellipse, pose);
-
-	// add center point to the model
-	cogx::Math::Pose3 cogxPose;
-	cogxPose.pos.x = pose.pos.x;
-	cogxPose.pos.y = pose.pos.y;
-	cogxPose.pos.z = pose.pos.z;
-	obj->pose = cogxPose;
-
-	unsigned maxNr = -1;
-	v.pos.x = ellipse.center.p.x;
-	v.pos.y = ellipse.center.p.y;
-	v.pos.z = ellipse.center.p.z;
-	obj->model->vertices.push_back(v);
-
-	// ++++++++++++++++++++++++++++++++++ real Points +++++++++++++++++++++++++++++++++ //
-	// create vertices (relative to the 3D center point)
-// 	for(unsigned i=0; i<6; i++)
-// 	{
-// 		if(ellipse.reliableCPoint[i])
-// 		{
-// 			v.pos.x = ellipse.cPoints[i].p.x;
-// 			v.pos.y = ellipse.cPoints[i].p.y;
-// 			v.pos.z = ellipse.cPoints[i].p.z;
-// 			obj->model->vertices.push_back(v);
-// 		}
-// 	}
+  obj->model = new VisionData::GeometryModel;
+  Ellipse3D *ell3D = Ellipses3D(score, id);
+  
+  VisionData::Vertex v;
+  VisionData::Face f;
+//   Ellipse3D ellipse = Ellipses(id);
 // 
-// 	// create faces
-// 	for(unsigned i=1; i<ellipse.nrReliableCPoints; i++)
-// 	{
-// 		f.vertices.push_back(0);
-// 		f.vertices.push_back(i);
-// 		f.vertices.push_back(i+1);
-// 		obj->model->faces.push_back(f);
-// 		f.vertices.clear();
-// 	}
-// 	maxNr = ellipse.nrReliableCPoints;
-// 	f.vertices.push_back(0);
-// 	f.vertices.push_back(maxNr);
-// 	f.vertices.push_back(1);
-// 	obj->model->faces.push_back(f);
-// 	f.vertices.clear();
-
-	
-	// ++++++++++++++++++++++++++++++++++ calc. Points +++++++++++++++++++++++++++++++++ //
-	// create vertices (relative to the 3D center point)
-	for(unsigned i=0; i<ellipse.nrCPointsCalc; i++)
-	{
-		v.pos.x = ellipse.cPointsCalc[i].p.x;
-		v.pos.y = ellipse.cPointsCalc[i].p.y;
-		v.pos.z = ellipse.cPointsCalc[i].p.z;
-		obj->model->vertices.push_back(v);
-	}
-
-	// create faces
-	for(unsigned i=1; i<ellipse.nrCPointsCalc; i++)
-	{
-		f.vertices.push_back(maxNr+1);
-		f.vertices.push_back(maxNr+1+i);
-		f.vertices.push_back(maxNr+1+i+1);
-		obj->model->faces.push_back(f);
-		f.vertices.clear();
-	}
-	f.vertices.push_back(maxNr+1+0);
-	f.vertices.push_back(maxNr+1+ellipse.nrCPointsCalc);
-	f.vertices.push_back(maxNr+1+1);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	obj->detectionConfidence = 1.0;						// TODO detection confidence is always 1
-
-	return true;
-}
-#endif
-
-/**
- * @brief Try to find a "natural" looking coordinate system for a ellipse.
- * The coordinate system is really arbitrary, there is no proper implicitly defined coordinate system.
- * We take the (geometrical) center of gravity as position and set orientation to identity.
- * @param ellipse 3D ellipse
- * @param pose calculated pose
- */
-void StereoEllipses::RecalculateCoordsystem(Ellipse3D &ellipse, Pose3 &pose)
-{
-	// we use the center of the ellipse as feature center!
-  pose.pos.x = ellipse.center.p.x;
-  pose.pos.y = ellipse.center.p.y;
-  pose.pos.z = ellipse.center.p.z;
-
-	// set the orientation to identity, i.e. parallel to world coordinate system
-  pose.rot.x = 0.;
+  // Recalculate pose of vertices (relative to the pose of the ell == cog)
+  Pose3 pose;
+  // we use the center of the ellipse as feature center!
+  pose.pos.x = (ell3D->GetCenter()).p.x;
+  pose.pos.y = (ell3D->GetCenter()).p.y;
+  pose.pos.z = (ell3D->GetCenter()).p.z;
+  pose.rot.x = 0.;	// set the orientation to identity, i.e. parallel to world coordinate system
   pose.rot.y = 0.;
   pose.rot.z = 0.;
 
   // invert to get pose of world w.r.t. feature
   Pose3 inv = pose.Inverse();
 
-	// recalculate the vectors to the vertices from new center point
-	// => center
-	Vector3 p(ellipse.center.p.x,	ellipse.center.p.y,	ellipse.center.p.z);
-	ellipse.center.p = inv.Transform(p);
-
-	// => cPoints
-	for(unsigned i = 0; i < 6; i++)
-	{
-		if(ellipse.reliableCPoint)
-		{
-			Vector3 p(ellipse.cPoints[i].p.x,	ellipse.cPoints[i].p.y,	ellipse.cPoints[i].p.z);
-			ellipse.cPoints[i].p = inv.Transform(p);
-		}
-	}
-	
-	// => cPointsCalc
-	for(unsigned i = 0; i < ellipse.nrCPointsCalc; i++)
-	{
-			Vector3 p(ellipse.cPointsCalc[i].p.x,	ellipse.cPointsCalc[i].p.y,	ellipse.cPointsCalc[i].p.z);
-			ellipse.cPointsCalc[i].p = inv.Transform(p);
-	}
-}
-
-/**
- * @brief Calculate the matching score of two ellipses.
- * @param left_ell Left tmp. ellipse
- * @param right_ell Right tmp. ellipse
- * @return Returns the vertical deviation of the center point (distance \n
- * to epipolar line)
- */
-double StereoEllipses::MatchingScoreEllipse(TmpEllipse &left_ell, TmpEllipse &right_ell)
-{
-	// do not compare ellipses with "too" big deviation in size
-	double ratio_a = left_ell.a/right_ell.a;
-	double ratio_b = left_ell.b/right_ell.b;
-	if(ratio_a < 0.5 || ratio_a > 1.5 || ratio_b < 0.5 || ratio_b > 1.5)
-		return HUGE;
-
-	// get vertical deviation (distance to epipolar line)
-	double match = MatchingScorePoint(left_ell.center, right_ell.center);
-
-	// no match if vertical deviation is bigger than main axis length
-	if (match != HUGE && match > left_ell.a && match > right_ell.a)
-		match = HUGE;
-
-	return match;
-}
-
-/**
- * @brief Find right best matching ellipse for given left ellipse, begining at position l of right ellipse array.
- * @param left_ell Tmp. ellipse of left stereo image.
- * @param right_ell Array of all ellipses from right stereo image.
- * @param l Begin at position l of right ellipse array
- * @return Returns position of best matching right ellipse from the right_ell array.
- */
-unsigned StereoEllipses::FindMatchingEllipse(TmpEllipse &left_ell, Array<TmpEllipse> &right_ell, unsigned l)
-{
-	double match, best_match = HUGE;
-	unsigned j, j_best = UNDEF_ID;
-
-	for(j = l; j < right_ell.Size(); j++)
-	{
-    match = MatchingScoreEllipse(left_ell, right_ell[j]);
-
-		if(match < best_match)
-		{
-			best_match = match;
-			j_best = j;
-		}
-	}
-	return j_best;
-}
-
-/**
- * @brief Match left and right ellipses from an stereo image pair and get it sorted to the beginning of the array.
- * @param left_ell Array of all ellipses from left stereo image (matching ellipses get sorted to the beginning of the array.)
- * @param right_ell Array of all ellipses from right stereo image.
- * @param matches Number of matched ellipses (sorted to the beginning of the arrays).
- */
-void StereoEllipses::MatchEllipses(Array<TmpEllipse> &left_ell, Array<TmpEllipse> &right_ell, int &matches)
-{
-  unsigned j, l = 0, u = left_ell.Size();
-  for(; l < u && l < right_ell.Size();)
+  // add center point to the model
+  cogx::Math::Pose3 cogxPose;
+  cogxPose.pos.x = pose.pos.x;
+  cogxPose.pos.y = pose.pos.y;
+  cogxPose.pos.z = pose.pos.z;
+  obj->pose = cogxPose;
+  
+  // calculate circle plane vectors
+  Vector3 vec_u,vec_v;
+  // rotate u 90 degree to center
+  vec_u.x = (ell3D->GetCenter()).n.x;
+  vec_u.y = (ell3D->GetCenter()).n.z;
+  vec_u.z = -(ell3D->GetCenter()).n.y;
+  // v = n x u => 3rd orthogonal vector
+  vec_v.x = (ell3D->GetCenter()).n.y*vec_u.z - (ell3D->GetCenter()).n.z*vec_u.y;
+  vec_v.y = (ell3D->GetCenter()).n.z*vec_u.x - (ell3D->GetCenter()).n.x*vec_u.z;
+  vec_v.z = (ell3D->GetCenter()).n.x*vec_u.y - (ell3D->GetCenter()).n.y*vec_u.x;
+  
+  unsigned nrCPointsCalc = 20;                  // Number of calculated circle points (cPointsCalc)
+  Vertex3D cPointsCalc[20];                     // Calculated points on a "real" circle.
+  for(unsigned i=0; i<nrCPointsCalc; i++)
   {
-    j = FindMatchingEllipse(left_ell[l], right_ell, l);
-    if(j != UNDEF_ID)
+    cPointsCalc[i].p.x = (ell3D->GetCenter()).p.x + ell3D->GetRadius()*vec_u.x*cos(i*2*M_PI/(double)nrCPointsCalc) + ell3D->GetRadius()*vec_v.x*sin(i*2*M_PI/(double)nrCPointsCalc);
+    cPointsCalc[i].p.y = (ell3D->GetCenter()).p.y + ell3D->GetRadius()*vec_u.y*cos(i*2*M_PI/(double)nrCPointsCalc) + ell3D->GetRadius()*vec_v.y*sin(i*2*M_PI/(double)nrCPointsCalc);
+    cPointsCalc[i].p.z = (ell3D->GetCenter()).p.z + ell3D->GetRadius()*vec_u.z*cos(i*2*M_PI/(double)nrCPointsCalc) + ell3D->GetRadius()*vec_v.z*sin(i*2*M_PI/(double)nrCPointsCalc);
+  }
+  // recalculate the vertices, relative to new center point
+  for(unsigned i=0; i<nrCPointsCalc; i++)
+    cPointsCalc[i].p = cPointsCalc[i].p - pose.pos;
+  
+  // recalculate the vectors to the vertices from new center point
+  // => center
+  Vector3 xavier((ell3D->GetCenter()).p.x, (ell3D->GetCenter()).p.y, (ell3D->GetCenter()).p.z);			/// TODO TODO Was macht diese Berechnung? => Wenn man weglöscht, dann ist nur mehr eine Ellipse in der VirtualSzene
+  xavier = inv.Transform(xavier);
+// ellipse.center.p = inv.Transform(p);
+
+  // => cPointsCalc
+  Vector3 cP[nrCPointsCalc];
+  for(unsigned i = 0; i < nrCPointsCalc; i++)
+  {
+    cP[i] = Vector3(cPointsCalc[i].p.x, cPointsCalc[i].p.y, cPointsCalc[i].p.z);
+    cP[i] = inv.Transform(cP[i]);
+  }
+
+  // copy center point to a vertex
+  unsigned maxNr = -1;
+  v.pos.x = 0.0; //(ell3D->GetCenter()).p.x;
+  v.pos.y = 0.0; //(ell3D->GetCenter()).p.y;
+  v.pos.z = 0.0; //(ell3D->GetCenter()).p.z;
+  v.normal.x = (ell3D->GetCenter()).n.x;
+  v.normal.y = (ell3D->GetCenter()).n.y;
+  v.normal.z = (ell3D->GetCenter()).n.z;
+  obj->model->vertices.push_back(v);
+
+    
+//   // => cPoints
+// //   for(unsigned i = 0; i < 6; i++)
+// //   {
+// //     if(ellipse.reliableCPoint)
+// //     {
+// //       Vector3 p(ellipse.cPoints[i].p.x,	ellipse.cPoints[i].p.y,	ellipse.cPoints[i].p.z);
+// //       ellipse.cPoints[i].p = inv.Transform(p);
+// //     }
+// //   }
+//   // ++++++++++++++++++++++++++++++++++ real Points +++++++++++++++++++++++++++++++++ //
+//   // create vertices (relative to the 3D center point)
+// // 	for(unsigned i=0; i<6; i++)
+// // 	{
+// // 		if(ellipse.reliableCPoint[i])
+// // 		{
+// // 			v.pos.x = ellipse.cPoints[i].p.x;
+// // 			v.pos.y = ellipse.cPoints[i].p.y;
+// // 			v.pos.z = ellipse.cPoints[i].p.z;
+// // 			obj->model->vertices.push_back(v);
+// // 		}
+// // 	}
+// // 
+// // 	// create faces
+// // 	for(unsigned i=1; i<ellipse.nrReliableCPoints; i++)
+// // 	{
+// // 		f.vertices.push_back(0);
+// // 		f.vertices.push_back(i);
+// // 		f.vertices.push_back(i+1);
+// // 		obj->model->faces.push_back(f);
+// // 		f.vertices.clear();
+// // 	}
+// // 	maxNr = ellipse.nrReliableCPoints;
+// // 	f.vertices.push_back(0);
+// // 	f.vertices.push_back(maxNr);
+// // 	f.vertices.push_back(1);
+// // 	obj->model->faces.push_back(f);
+// // 	f.vertices.clear();
+
+  
+  // ++++++++++++++++++++++++++++++++++ calc. Points +++++++++++++++++++++++++++++++++ //
+  // create vertices (relative to the 3D center point)
+  for(unsigned i=0; i<nrCPointsCalc; i++)
+  {
+    v.pos.x = cPointsCalc[i].p.x;
+    v.pos.y = cPointsCalc[i].p.y;
+    v.pos.z = cPointsCalc[i].p.z;
+    obj->model->vertices.push_back(v);
+  }
+
+  // create faces
+  for(unsigned i=1; i<nrCPointsCalc; i++)
+  {
+    f.vertices.push_back(maxNr+1);
+    f.vertices.push_back(maxNr+1+i);
+    f.vertices.push_back(maxNr+1+i+1);
+    obj->model->faces.push_back(f);
+    f.vertices.clear();
+  }
+  f.vertices.push_back(maxNr+1+0);
+  f.vertices.push_back(maxNr+1+nrCPointsCalc);
+  f.vertices.push_back(maxNr+1+1);
+  obj->model->faces.push_back(f);
+  f.vertices.clear();
+
+  obj->detectionConfidence = ell3D->GetSignificance(); // 0.0;			// TODO detection confidence
+
+  return true;
+}
+#endif
+
+/**
+ * @brief Calculate the significance of the matched result.
+ * @param match_distance Distance between matching center points.
+ * @param left_ell Left ellipse candidates
+ * @param right_ell Right ellipse candidate
+ */
+double StereoEllipses::Calculate2DSignificance(double match_distance, TmpEllipse &left_ell,  TmpEllipse &right_ell)
+{
+  double sig = 1 - match_distance / SC_MAX_DELTA_V_POINT;
+  double axis_deviation = 0;
+  if(left_ell.a < right_ell.a)
+    axis_deviation = left_ell.a/right_ell.a;
+  else
+    axis_deviation = right_ell.a/left_ell.a;
+  sig = sig*axis_deviation;
+
+// printf("Calculate2DSignificance: sig: %4.2f of %u-%u\n", sig, left_ell.vs3ID, right_ell.vs3ID);
+  return sig;
+}
+
+/**
+ * @brief Match left and right ellipses from an stereo image pair and create a match map for each left ellipse with the best
+ * fitting ellipses of the right image.
+ * @param left_ell Array of all ellipses from left stereo image
+ * @param right_ell Array of all ellipses from right stereo image.
+ * @param match_map Map for each left ellipse with the best fitting right ellipses (significance / right ellipse id)
+ */
+void StereoEllipses::MatchEllipses(Array<TmpEllipse> &left_ell, Array<TmpEllipse> &right_ell, std::map<double, unsigned> *match_map)
+{
+  for(unsigned i=0; i < left_ell.Size(); i++)
+  {
+    for(unsigned j=0; j < right_ell.Size(); j++)
     {
-      right_ell.Swap(l, j);
-      l++;
-    }
-    else
-    {
-      left_ell.Swap(l, u-1);
-      u--;
+      double match = MatchingScorePoint(left_ell[i].center, right_ell[j].center);
+      if(match != HUGE)
+      {
+	double sig = Calculate2DSignificance(match, left_ell[i], right_ell[j]);
+	double size = (left_ell[i].a + right_ell[j].a)/2.;
+// printf("MatchEllipses: size: %4.3f\n", size);
+// 	if(sig > SC_MIN_2D_SIGNIFICANCE && size > SC_MIN_AXIS_SIZE)  // delete the really bad 2D results
+	if((sig > SC_MIN_2D_ELL_SIGNIFICANCE && size > SC_MIN_AXIS_SIZE) || !SC_USE_ELL_THRESHOLDS)  // delete the really bad 2D results
+	{
+	  std::pair<double, unsigned> pair(sig, right_ell[j].vs3ID);
+	  match_map[i].insert(pair);
+	}
+      }
+    }    
+  }
+}
+
+/**
+ * @brief Each right ellipse can have only one best matching left ellipse.
+ * Delete double assigned ones.
+ * @param match_map Match map for ellipses
+ * @param map_size Size of the match_map
+ */
+void StereoEllipses::BackCheck(std::map<double, unsigned> *match_map, unsigned map_size)
+{
+  unsigned nrMatches[map_size];
+  for(unsigned i=0; i< map_size; i++)
+    nrMatches[i] = match_map[i].size();
+
+  bool solved = false;
+  while(!solved)
+  {
+    solved = true;
+    std::map<double, unsigned>::iterator it_i;
+    std::map<double, unsigned>::iterator it_j;
+
+    for (unsigned i=0; i<map_size; i++)
+    {    
+      for(unsigned j=0; j<map_size; j++)
+      {
+	if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+	{
+	  it_i = match_map[i].end(); it_i--;
+	  it_j = match_map[j].end(); it_j--;
+	  
+	  if((*it_i).second == (*it_j).second)
+	  {
+	    solved = false;
+	    if((*it_i).first > (*it_j).first)  // delete smaller value
+	    {
+	      match_map[j].erase(it_j);
+	      nrMatches[j]--;
+	    }
+	    else
+	    {
+	      match_map[i].erase(it_i);
+	      nrMatches[i]--;
+	    }
+	  }
+	}
+      }
     }
   }
-  u = min(u, right_ell.Size());
-  matches = u;
+  
+  /// PRINT match map
+//   for(unsigned i=0; i<map_size; i++)
+//   {
+//     std::map<double, unsigned>::iterator it;
+//     if(match_map[i].size() > 0)
+//     {
+//       it = match_map[i].end(); it--;
+//       printf("MatchMap after: %4.3f with %u / %u\n", (*it).first, i, (*it).second);
+//     }
+//   }
 }
-
 
 /**
  * @brief Calculate 3D ellipses from matched ellipses.
  * @param left_ell Array of all ellipses from left stereo image.
  * @param right_ell Array of all ellipses from right stereo image.
- * @param matches Number of matched ellipses.
- * @param ellipse3ds Array of calculated 3d ellipses.
+ * @param match_map 
+ * @return Returns the number of matched ellipses.
  */
-void StereoEllipses::Calculate3DEllipses(Array<TmpEllipse> &left_ell, Array<TmpEllipse> &right_ell, int &matches, Array<Ellipse3D> &ellipse3ds)
+unsigned StereoEllipses::Calculate3DEllipses(Array<TmpEllipse3D> &ellipses3D, Array<TmpEllipse> &left_ell, Array<TmpEllipse> &right_ell, std::map<double, unsigned> *match_map)
 {
-  unsigned u = matches;
-  for(unsigned i = 0; i < u;)
+  Array<TmpEllipse> left, right;
+  unsigned maxSize = 5;							// TODO maximum size of 5!
+  std::map<double, unsigned> new_match_map[left_ell.Size()]; 
+  
+  unsigned nrMatches = 0;
+  std::map<double, unsigned>::iterator it;
+  TmpEllipse3D tmpEll3D[left_ell.Size()][maxSize];
+  
+  for(unsigned i=0; i<left_ell.Size(); i++)
   {
-    Ellipse3D ellipse3d;
-// 		bool reconstructed = ellipse3d.Reconstruct(stereo_cam, left_ell[i], right_ell[i]);
-		if(ellipse3d.Reconstruct(stereo_cam, left_ell[i], right_ell[i]))
-		{
-			ellipse3d.tmpID = i;																																		/// TODO add to all stereo principles!
-			ellipse3ds.PushBack(ellipse3d);
-			i++;
-    }
-    // move unacceptable features to the end
-    else
+    unsigned nrResults = match_map[i].size();
+    if(nrResults > maxSize) nrResults = maxSize;
+    if(nrResults > 0)
     {
-      left_ell.Swap(i, u-1);
-      right_ell.Swap(i, u-1);
-      u--;
+      it = match_map[i].end();
+      for(unsigned j=0; j<nrResults; j++)
+      {
+	it--;
+	bool reconstruct = tmpEll3D[i][j].Reconstruct(stereo_cam, left_ell[i], right_ell[(*it).second], (*it).first);
+	if(reconstruct)
+	{ 
+	  std::pair<double, unsigned> pair(tmpEll3D[i][j].GetSignificance(), (*it).second);
+	  new_match_map[i].insert(pair);
+	  tmpEll3D[i][j].SetParameter(i, (*it).second, (*it).first);
+	} 
+	tmpEll3D[i][j].SetValidation(reconstruct);
+      }
     }
   }
-  matches = u;
+  
+  // only one to one assignments between left and right ellipses
+  BackCheck(new_match_map, left_ell.Size());
+
+  // Create new stereo ellipses and store in the arrays
+  for(unsigned i=0; i<left_ell.Size(); i++)
+  {
+    if(new_match_map[i].size() > 0)
+    {
+      it = new_match_map[i].end(); it--;
+      for(unsigned k=0; k<maxSize; k++)
+      {
+	if(tmpEll3D[i][k].IsValid())
+	{
+	  if(tmpEll3D[i][k].GetVs3ID(RIGHT) == (*it).second)
+	  {
+	    ellipses3D.PushBack(tmpEll3D[i][k]);
+	    Ellipse3D *ell3D = new Ellipse3D(tmpEll3D[i][k].GetVs3ID(LEFT), (*it).second, tmpEll3D[i][k].GetCenter(), 
+					     tmpEll3D[i][k].GetRadius(), tmpEll3D[i][k].GetSignificance());
+	    score->NewGestalt3D(ell3D);    
+	  
+// printf("Calculate3DEllipses: 3Dsig: %4.3f and ids: %u, %u\n", tmpEll3D[i][k].GetSignificance(), tmpEll3D[i][k].GetTmpEllID(LEFT), tmpEll3D[i][k].GetTmpEllID(RIGHT));
+	    
+	    left.PushBack(left_ell[tmpEll3D[i][k].GetTmpEllID(LEFT)]);
+	    right.PushBack(right_ell[tmpEll3D[i][k].GetTmpEllID(RIGHT)]);
+	    nrMatches++;
+	  }
+	}
+      }
+    }
+  }
+
+  left_ell = left;
+  right_ell = right;
+    
+  return nrMatches;
 }
 
 /**
@@ -822,10 +934,9 @@ void StereoEllipses::Calculate3DEllipses(Array<TmpEllipse> &left_ell, Array<TmpE
  */
 void StereoEllipses::ClearResults()
 {
-	ellipse3ds.Clear();
-	ellipses[LEFT].Clear();
-	ellipses[RIGHT].Clear();
-	ellMatches = 0;
+  ellipses[LEFT].Clear();
+  ellipses[RIGHT].Clear();
+  ellMatches = 0;
 }
 
 /**
@@ -835,49 +946,60 @@ void StereoEllipses::Process()
 {
   for(int side = LEFT; side <= RIGHT; side++)
   {
-		for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::ELLIPSE); i++)
-		{
-			Ellipse *core_ellipse = (Ellipse*)vcore[side]->Gestalts(Gestalt::ELLIPSE, i);
-			if(!vcore[side]->use_masking || !core_ellipse->IsMasked())													/// TODO use_masking ist immer true => damit immer true!
-			{
-				TmpEllipse ellipse(core_ellipse);
-				if(ellipse.IsValid())
-					ellipses[side].PushBack(ellipse);
-			}
-		}
-		
-		/// TODO Insert RePrune
-// 		if(pPara.pruning)
-// 			for(unsigned i = 0; i < cubes[side].Size(); i++)
-// 				cubes[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+    for(unsigned i = 0; i < vcore[side]->NumGestalts(Gestalt::ELLIPSE); i++)
+    {
+      Ellipse *core_ellipse = (Ellipse*)vcore[side]->Gestalts(Gestalt::ELLIPSE, i);
+//      if(!vcore[side]->use_masking || !core_ellipse->IsMasked())	/// TODO use_masking ist immer true => damit immer true!
+//       {
+	TmpEllipse ellipse(core_ellipse);
+	if(ellipse.IsValid())
+	  ellipses[side].PushBack(ellipse);
+//       }
+    }
+    /// TODO Insert RePrune
+//   if(pPara.pruning)
+//     for(unsigned i = 0; i < cubes[side].Size(); i++)
+//       cubes[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 
-		// Rectify ellipse points.
-		for(unsigned i = 0; i < ellipses[side].Size(); i++)
-			ellipses[side][i].Rectify(stereo_cam, side);
-		for(unsigned i = 0; i < ellipses[side].Size(); i++)
-			ellipses[side][i].Refine();
-	}
+    for(unsigned i = 0; i < ellipses[side].Size(); i++)    // Rectify ellipse.
+      ellipses[side][i].Rectify(stereo_cam, side);
+  }
 
-  // do stereo matching and depth calculation
-	ellMatches = 0;	
-	MatchEllipses(ellipses[LEFT], ellipses[RIGHT], ellMatches);
-	candMatches = ellMatches;
-	Calculate3DEllipses(ellipses[LEFT], ellipses[RIGHT], ellMatches, ellipse3ds);
+// struct timespec start, end;
+// clock_gettime(CLOCK_REALTIME, &start);
+  
+  // define match map with significance value as key and right ellipse id
+  std::map<double, unsigned> match_map[ellipses[LEFT].Size()];
+  MatchEllipses(ellipses[LEFT], ellipses[RIGHT], match_map);
+
+// clock_gettime(CLOCK_REALTIME, &end);
+// cout<<"StereoEllipses::Process: Time to match [s]: " << timespec_diff(&end, &start) << endl;
+
+// struct timespec cstart, cend;
+// clock_gettime(CLOCK_REALTIME, &cstart);
+  
+  ellMatches = Calculate3DEllipses(ellipses3D, ellipses[LEFT], ellipses[RIGHT], match_map);
+
+// clock_gettime(CLOCK_REALTIME, &cend);
+// cout<<"StereoEllipses::Process: Time to calculate 3D ellipses [s]: " << timespec_diff(&cend, &cstart) << endl;
+
 }
 
 
 /**
- * @brief Match and calculate 3D rectangles from 2D rectangles.
- * @param side LEFT/RIGHT image of stereo.images.
+ * @brief Match and calculate 3D ellipses from 2D ellipses using a pruned image pair.
+ * @param oX Offset in x-coordinate
+ * @param oY Offset in y-coordinate
+ * @param sc Scale factor
  */
-void StereoEllipses::Process(int oX, int oY, int sc)
+    void StereoEllipses::Process(int oX, int oY, int sc)
 {
-	pPara.pruning = true;
-	pPara.offsetX = oX;
-	pPara.offsetY = oY;
-	pPara.scale = sc;
-	Process();
-	pPara.pruning = false;
+  pPara.pruning = true;
+  pPara.offsetX = oX;
+  pPara.offsetY = oY;
+  pPara.scale = sc;
+  Process();
+  pPara.pruning = false;
 }
 
 

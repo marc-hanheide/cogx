@@ -39,11 +39,11 @@ void FormLines::PreOperate()
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
-		StartRunTime();
+    StartRunTime();
     Create();
     Rank();
     done = true;
-		StopRunTime();
+    StopRunTime();
   }
 }
 

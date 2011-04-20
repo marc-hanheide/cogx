@@ -223,22 +223,27 @@ bool Closure::IsAtPosition(int x, int y)
 
 /**
  * @brief Calculate significance of closures.
- * Significance is equal to the area of the closure
- * TODO Other implementation?
+ * TODO Different implementations for significance calculation.
+ * 1. Signifacance is relation between number of gap-pixels and gap+line pixels
+ * 2. Significance is equal to the sum line significances
+ * 3. Significance is equal to the area of the closure
  */
 void Closure::CalculateSignificance()
 {
-  /*double l = SumLines();
+  double l = SumLines();
   double g = SumGaps();
-  sig = l/(g+l);*/
-  
+  sig = l/(g+l);
+// printf("Sig of Closure 1: %4.2f\n", sig);
+
   /*sig = 0.;
   for(unsigned i = 0; i < lines.Size(); i++)
   {
     sig += lines[i]->sig;
     sig += GetJunctionSig(i);
   }*/
-  sig = Area();
+  
+//   sig = Area();
+// printf("Sig of Closure 2: %4.2f\n", sig);
 }
 
 /**

@@ -10,9 +10,8 @@
 #define Z_GESTALT_HH
 
 #include <cstdio>
-// #include "Namespace.hh"
 #include "Array.hh"
-// #include "VisionCore.hh"
+#include "Math.hh"
 
 namespace Z
 {
@@ -58,9 +57,9 @@ protected:
   unsigned rank;
 
 public:
-  double acc;  ///< probability of accidental occurrance
-  double sig;  ///< significance
-  unsigned masked;  // TODO: might be masked by more gestalts
+  double acc;		///< probability of accidental occurrance
+  double sig;		///< significance
+  unsigned masked;  	///< TODO: might be masked by more gestalts
 
 public:
   static const char* TypeName(Type t);

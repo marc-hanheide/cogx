@@ -11,25 +11,20 @@
 
 #include <stdexcept>
 
-#include "Vector.hh"
-#include "VisionCore.hh"
 #include "StereoCamera.hh"
-#include "Gestalt.hh"
-#include "Draw.hh"
-#include "Math.hh"
-
 #include "StereoBase.h"
-#include "StereoLJunctions.h"
-#include "StereoEllipses.h"
-#include "StereoClosures.h"
-#include "StereoRectangles.h"
-#include "StereoFlaps.h"
-#include "StereoFlapsAri.h"
-#include "StereoCubes.h"
+#include "Gestalt3D.h"
 
-#include "Closure.hh"
-#include "Flap.hh"
-#include "Corner.hh"
+#include "math/Math.hh"
+#include "math/Vector.hh"
+#include "utils/Draw.hh"
+
+#include "vs3/VisionCore.hh"
+#include "vs3/Gestalt.hh"
+#include "vs3/Closure.hh"
+#include "vs3/Flap.hh"
+#include "vs3/Corner.hh"
+#include "vs3/Line.hh"
 
 namespace Z
 {
@@ -39,57 +34,68 @@ namespace Z
  */
 class StereoCore
 {
+public:
+  VisionCore *vcore[2];                                         ///< left and right vision core
+
 private:
-	VisionCore *vcore[2];																					///< left and right vision core
-	StereoCamera *stereo_cam;																			///< stereo camera parameters and functions
-	IplImage *img_l, *img_r;																			///< current left and right image
-	StereoBase* stereoGestalts[StereoBase::MAX_TYPE];							///< Stereo gestalt type list.
+  StereoCamera *stereo_cam;                                     ///< stereo camera parameters and functions
+  IplImage *img_l, *img_r;                                      ///< current left and right image
+  StereoBase* stereoPrinciples[StereoBase::MAX_TYPE];           ///< Stereo gestalt principle list.
+  Array<Gestalt3D*> stereoGestalts[Gestalt3D::MAX_TYPE];        ///< Stereo gestalt list 
 
-	struct PruningParameter																				///< Parameters, when pruned image will be processed at stereo core
-	{
-		bool pruning;						///< Pruned image delivered
-		int offsetX;						///< Offset x-coordinate
-		int offsetY;						///< Offset y-coordinate
-		int scale;							///< Scale between original and pruned image
-	};
-	PruningParameter *pPara;																			///< Pruning parameters of an image.
+  struct PruningParameter                                       ///< Parameters, when pruned image will be processed at stereo core
+  {
+    bool pruning;                                               ///< Pruned image delivered
+    int offsetX;                                                ///< Offset x-coordinate
+    int offsetY;                                                ///< Offset y-coordinate
+    int scale;                                                  ///< Scale between original and pruned image
+  };
+  PruningParameter *pPara;                                      ///< Pruning parameters of an image.
 
-	void SetActiveDrawAreaSide(int side);
-	void SetImages(IplImage *iIl, IplImage *iIr);
-	void InitStereoGestalts();
-	const StereoCamera* GetCamera() {return stereo_cam;}					///< Return stereo camera parameters
+  void SetActiveDrawAreaSide(int side);
+  void SetImages(IplImage *iIl, IplImage *iIr);
+  void InitStereoPrinciples();
+  const StereoCamera* GetCamera() {return stereo_cam;}          ///< Return stereo camera parameters
 
 public:
   StereoCore(const string &stereocal_file) throw(std::runtime_error);
   ~StereoCore();
 
-  VisionCore* GetMonoCore(int side) {return vcore[side];}										///< Return single vision core [LEFT/RIGHT]
-	StereoBase* GetStereoGestalts(int type) {return stereoGestalts[type];}		///< Return the stereo results
+  VisionCore* GetMonoCore(int side) {return vcore[side];}                                               ///< Return single vision core [LEFT/RIGHT]
+  StereoBase* GetStereoPrinciples(int type) {return stereoPrinciples[type];}                            ///< Return the stereo principles 
+
+  Array<Gestalt3D*>* Gestalts3D() {return stereoGestalts;}                                              ///< Return Gestalt array
+  Array<Gestalt3D*>& Gestalts3D(Gestalt3D::Type type) {return stereoGestalts[type];}                    ///< Returns Gestalt array of "type"
+  Gestalt3D* Gestalts3D(Gestalt3D::Type type, unsigned id) {return stereoGestalts[type][id];}           ///< Returns Gestalt of "type" and "id"
+  unsigned NumGestalts3D(Gestalt3D::Type type) {return stereoGestalts[type].Size();}                    ///< Ruturns number of Gestalts of "type"
+  void NewGestalt3D(/*StereoBase::Type type, */Gestalt3D* g);  // TODO Wieso stereo base type
 
   void ClearResults();
-	void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr);
-	void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr, int oX, int oY, int sc);
+  void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr);
+  void ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr, int oX, int oY, int sc);
+
 #ifdef HAVE_CAST
-	bool GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
+  bool GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
 #endif
-	const char* GetGestaltListInfo();
+  
+  const char* GetStereoTypeName(StereoBase::Type type);
+  const char* GetGestaltListInfo();
+   
+  int NumMonoGestalts(Gestalt::Type type, int side) {return vcore[side]->Gestalts(type).Size();}
+  bool DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide = 0, int id = 0, int detail = 0);
+  int NumStereoMatches(StereoBase::Type type) {return stereoPrinciples[type]->NumStereoMatches();}
+  void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool showAllStereoMatched, bool single, int id = 0, int detail = 0);
+  void DrawROI(int side, CvRect roi, int roiScale, IplImage *iIl, IplImage *iIr);
+  void DrawPrunedROI(int side, int offsetX, int offsetY, IplImage *iIl, IplImage *iIr);
 
-	int NumMonoGestalts(Gestalt::Type type, int side) {return vcore[side]->Gestalts(type).Size();}
-	bool DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single,
-											 int singleSide = 0, int id = 0, int detail = 0);
-	int NumStereoMatches(StereoBase::Type type) {return stereoGestalts[type]->NumStereoMatches();}
-	void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool showAllStereoMatched, 
-												 bool single, int id = 0, int detail = 0);
-	void DrawROI(int side, CvRect roi, int roiScale, IplImage *iIl, IplImage *iIr);
-	void DrawPrunedROI(int side, int offsetX, int offsetY, IplImage *iIl, IplImage *iIr);
-
-	void PrintVCoreStatistics();
-	unsigned PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked);
-	
-	/// TODO delete later: only for debuging first results
-	void PrintResults();
-	void PrintJunctions2File();
-	void PrintCorners2File();
+  void PrintVCoreStatistics();
+  unsigned PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked);
+  
+  /// TODO delete later: only for debuging first results
+  void PrintResults();
+  void PrintJunctions2File();
+  void PrintCorners2File();
+  void Print3DLines2File();
 };
 
 }

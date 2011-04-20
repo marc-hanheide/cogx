@@ -1,7 +1,6 @@
 include_directories(.)
 #include_directories(../ObjectTracker)
 #include_directories(../ObjectTracker/include)
-#include_directories(/usr/local/include/opencv)
 #include_directories(/usr/include/SDL)
 
 

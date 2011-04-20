@@ -1,3 +1,4 @@
+FIND_PACKAGE( OpenCV REQUIRED )
 
 # Set the sources.
 SET(SOURCES VideoViewer.cpp)

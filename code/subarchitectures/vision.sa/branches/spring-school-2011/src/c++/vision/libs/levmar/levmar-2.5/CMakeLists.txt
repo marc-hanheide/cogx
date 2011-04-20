@@ -4,10 +4,6 @@
 PROJECT(LEVMAR)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
 # compiler flags
 #ADD_DEFINITIONS(-DLINSOLVERS_RETAIN_MEMORY) # do not free memory between linear solvers calls
 #REMOVE_DEFINITIONS(-DLINSOLVERS_RETAIN_MEMORY) # free memory between calls
@@ -46,18 +42,20 @@ ADD_LIBRARY(levmar STATIC
 )
 
 # demo program
-#LINK_DIRECTORIES(${LAPACKBLAS_DIR})
-#LINK_DIRECTORIES(.)
-#ADD_EXECUTABLE(lmdemo lmdemo.c levmar.h)
-## libraries the demo depends on
-#IF(HAVE_F2C)
-#  TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
-#ELSE(HAVE_F2C)
-#  TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
-#ENDIF(HAVE_F2C)
-#
-## make sure that the library is built before the demo
-#ADD_DEPENDENCIES(lmdemo levmar)
+if (LIBBUILD_LEVMAR_HOMEST_DEMO)
+   LINK_DIRECTORIES(${LAPACKBLAS_DIR})
+   LINK_DIRECTORIES(.)
+   ADD_EXECUTABLE(lmdemo lmdemo.c levmar.h)
+   # libraries the demo depends on
+   IF(HAVE_F2C)
+     TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F2C_LIB})
+   ELSE(HAVE_F2C)
+     TARGET_LINK_LIBRARIES(lmdemo levmar ${LAPACK_LIB} ${BLAS_LIB} ${F77_LIB} ${I77_LIB})
+   ENDIF(HAVE_F2C)
+
+   # make sure that the library is built before the demo
+   ADD_DEPENDENCIES(lmdemo levmar)
+endif (LIBBUILD_LEVMAR_HOMEST_DEMO)
 
 #SUBDIRS(matlab)
 

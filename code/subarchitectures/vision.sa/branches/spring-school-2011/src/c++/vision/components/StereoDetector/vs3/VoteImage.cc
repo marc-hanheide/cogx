@@ -36,17 +36,17 @@ static GrowMethod grow_method = GROW_SMART;
  * @param w Image width
  * @param h Image height
  */
-VoteImage::VoteImage(VisionCore *vc, int w, int h)															/// TODO w,h kann später gelöscht werden => vc->IW(), vc->IH()
+VoteImage::VoteImage(VisionCore *vc, int w, int h)	/// TODO w,h kann später gelöscht werden => vc->IW(), vc->IH()
 {
   core = vc;
   width = vc->IW();
   height = vc->IH();
   data = new Elem*[width*height];
   assert(data != 0);
-  store_size = 2*width*height;			// TODO: this is an arbitrary choice
+  store_size = 2*width*height;          // TODO: this is an arbitrary choice
   store = new Elem[store_size];
   fill = 0;
-	initialized = false;
+  initialized = false;
 }
 
 /**
@@ -63,15 +63,16 @@ VoteImage::~VoteImage()
  */
 void VoteImage::Initialize()
 {
-	baseIndex = 18;										// number of search lines
-	arcOffset = 0;
-	ellOffset = 0;
-	activeJcts = true;								// TODO configure later via Initialize
-	activeAJcts = true;								// TODO configure later
-	activeEJcts = true;								// TODO configure later
-	SetupAdmissibilityMatrix();
-	InitSearchLines();
-	initialized = true;
+  Clear();                              // clear vote image and initialize 'data' structure
+  baseIndex = 18;                       // number of search lines
+  arcOffset = 0;
+  ellOffset = 0;
+  activeJcts = true;                    // TODO configure later via Initialize
+  activeAJcts = true;                   // TODO configure later
+  activeEJcts = true;                   // TODO configure later
+  SetupAdmissibilityMatrix();
+  InitSearchLines();
+  initialized = true;
 }
 
 /**
@@ -79,7 +80,7 @@ void VoteImage::Initialize()
  */
 void VoteImage::SetupAdmissibilityMatrix()
 {
-	unsigned i, j;
+  unsigned i, j;
   for(i = 0; i < baseIndex; i++)
     for(j = 0; j < baseIndex; j++)
       isct_ok[i][j] = 0;
@@ -89,53 +90,53 @@ void VoteImage::SetupAdmissibilityMatrix()
   // I.e. in isct_ok[i][j] i must be <= j.
   if (activeJcts)
   {
-		// tangents/edge						=> T-Junctions
-		isct_ok[VOTE_E][VOTE_TS] = 1;
-		isct_ok[VOTE_E][VOTE_TE] = 1;
-		// tangents/tangents					=> L-Junctions or Collinearities
-		isct_ok[VOTE_TS][VOTE_TE] = 1;
-		isct_ok[VOTE_TS][VOTE_TS] = 1;
-		isct_ok[VOTE_TE][VOTE_TE] = 1;
-		// tangents/normals					=> L-Junctions or Collinearities
-		isct_ok[VOTE_TS][VOTE_NLS] = 1;
-		isct_ok[VOTE_TS][VOTE_NLE] = 1;
-		isct_ok[VOTE_TS][VOTE_NRS] = 1;
-		isct_ok[VOTE_TS][VOTE_NRE] = 1;
-		isct_ok[VOTE_TE][VOTE_NLS] = 1;
-		isct_ok[VOTE_TE][VOTE_NLE] = 1;
-		isct_ok[VOTE_TE][VOTE_NRS] = 1;
-		isct_ok[VOTE_TE][VOTE_NRE] = 1;
-	}
+    // tangents/edge						=> T-Junctions
+    isct_ok[VOTE_E][VOTE_TS] = 1;
+    isct_ok[VOTE_E][VOTE_TE] = 1;
+    // tangents/tangents					=> L-Junctions or Collinearities
+    isct_ok[VOTE_TS][VOTE_TE] = 1;
+    isct_ok[VOTE_TS][VOTE_TS] = 1;
+    isct_ok[VOTE_TE][VOTE_TE] = 1;
+    // tangents/normals					=> L-Junctions or Collinearities
+    isct_ok[VOTE_TS][VOTE_NLS] = 1;
+    isct_ok[VOTE_TS][VOTE_NLE] = 1;
+    isct_ok[VOTE_TS][VOTE_NRS] = 1;
+    isct_ok[VOTE_TS][VOTE_NRE] = 1;
+    isct_ok[VOTE_TE][VOTE_NLS] = 1;
+    isct_ok[VOTE_TE][VOTE_NLE] = 1;
+    isct_ok[VOTE_TE][VOTE_NRS] = 1;
+    isct_ok[VOTE_TE][VOTE_NRE] = 1;
+  }
  
   // arcs => A-Junctions
   if (activeAJcts)
   {
-		// basic "daisy chain" constraint: connect only START <-> END of two arcs
-		// tangents/tangents
-		isct_ok[VOTE_ATS][VOTE_ATE] = 2;
-		// tangents/normals
-		isct_ok[VOTE_ATS][VOTE_ANLE] = 2;
-		isct_ok[VOTE_ATS][VOTE_ANRE] = 2;
-		isct_ok[VOTE_ATE][VOTE_ANLS] = 2;
-		isct_ok[VOTE_ATE][VOTE_ANRS] = 2;
-	}
-	
+    // basic "daisy chain" constraint: connect only START <-> END of two arcs
+    // tangents/tangents
+    isct_ok[VOTE_ATS][VOTE_ATE] = 2;
+    // tangents/normals
+    isct_ok[VOTE_ATS][VOTE_ANLE] = 2;
+    isct_ok[VOTE_ATS][VOTE_ANRE] = 2;
+    isct_ok[VOTE_ATE][VOTE_ANLS] = 2;
+    isct_ok[VOTE_ATE][VOTE_ANRS] = 2;
+  }
+  
   if (activeEJcts) // ellipses => E-Junctions
   {
-		isct_ok[VOTE_E][VOTE_EOTL] = 3; 	// edge itself & ellipse tangents
-		isct_ok[VOTE_E][VOTE_EOTR] = 3;	
-		isct_ok[VOTE_E][VOTE_EITL] = 3;
-		isct_ok[VOTE_E][VOTE_EITR] = 3;
+    isct_ok[VOTE_E][VOTE_EOTL] = 3; 	// edge itself & ellipse tangents
+    isct_ok[VOTE_E][VOTE_EOTR] = 3;	
+    isct_ok[VOTE_E][VOTE_EITL] = 3;
+    isct_ok[VOTE_E][VOTE_EITR] = 3;
 
-		isct_ok[VOTE_TS][VOTE_EOTL] = 3;	// tangents - outer ellipse tangents
-		isct_ok[VOTE_TS][VOTE_EOTR] = 3;
-		isct_ok[VOTE_TE][VOTE_EOTL] = 3;
-		isct_ok[VOTE_TE][VOTE_EOTR] = 3;
+    isct_ok[VOTE_TS][VOTE_EOTL] = 3;	// tangents - outer ellipse tangents
+    isct_ok[VOTE_TS][VOTE_EOTR] = 3;
+    isct_ok[VOTE_TE][VOTE_EOTL] = 3;
+    isct_ok[VOTE_TE][VOTE_EOTR] = 3;
 
-		isct_ok[VOTE_TS][VOTE_EITL] = 3;	// Tangents - inner ellipse tangents
-		isct_ok[VOTE_TS][VOTE_EITR] = 3;
-		isct_ok[VOTE_TE][VOTE_EITL] = 3;
-		isct_ok[VOTE_TE][VOTE_EITR] = 3;
+    isct_ok[VOTE_TS][VOTE_EITL] = 3;	// Tangents - inner ellipse tangents
+    isct_ok[VOTE_TS][VOTE_EITR] = 3;
+    isct_ok[VOTE_TE][VOTE_EITL] = 3;
+    isct_ok[VOTE_TE][VOTE_EITR] = 3;
   }
   // now mirror along diagonal to fill lower left side of matrix
   for(i = 0; i < baseIndex; i++)
@@ -151,35 +152,35 @@ void VoteImage::SetupAdmissibilityMatrix()
  */
 void VoteImage::InitSearchLines()
 {
-	// set num lines
-	unsigned numLines = 0;
-	if (activeJcts) numLines += (core->RankedGestalts(Gestalt::LINE)).Size();
-	if (activeAJcts) numLines += (core->RankedGestalts(Gestalt::ARC)).Size();
-	SetNumLines(numLines*baseIndex);
+  // set num lines
+  unsigned numLines = 0;
+  if (activeJcts) numLines += (core->RankedGestalts(Gestalt::LINE)).Size();
+  if (activeAJcts) numLines += (core->RankedGestalts(Gestalt::ARC)).Size();
+  SetNumLines(numLines*baseIndex);
 
-	if(activeJcts)						// number of lines is static
-	{
-		Array<Gestalt*> lines = core->RankedGestalts(Gestalt::LINE);
-		for(unsigned i = 0; i < lines.Size(); i++)
-			InitLineSearchLines((Line*)lines[i]);	  
-		arcOffset = lines.Size();
-	}
-	else arcOffset = 0;
+  if(activeJcts)						// number of lines is static
+  {
+    Array<Gestalt*> lines = core->RankedGestalts(Gestalt::LINE);
+    for(unsigned i = 0; i < lines.Size(); i++)
+      InitLineSearchLines((Line*)lines[i]);	  
+    arcOffset = lines.Size();
+  }
+  else arcOffset = 0;
 
-	if(activeAJcts)						// number of arcs is static
-	{
-		Array<Gestalt*> arcs = core->RankedGestalts(Gestalt::ARC);
-		for(unsigned i=0; i<arcs.Size(); i++)
-			InitArcSearchLines((Arc*)arcs[i]);
-		ellOffset = arcOffset + arcs.Size();
-	} 
-	else ellOffset = arcOffset;
+  if(activeAJcts)						// number of arcs is static
+  {
+    Array<Gestalt*> arcs = core->RankedGestalts(Gestalt::ARC);
+    for(unsigned i=0; i<arcs.Size(); i++)
+	    InitArcSearchLines((Arc*)arcs[i]);
+    ellOffset = arcOffset + arcs.Size();
+  } 
+  else ellOffset = arcOffset;
 
-	if(activeEJcts)						// number of arcs is dynamic
-	{
-		// Initialize FormEJunctions, if not already done
-		((FormEJunctions*)core->Principles(GestaltPrinciple::FORM_E_JUNCTIONS))->Initialize();
-	}
+  if(activeEJcts)						// number of ellipses is dynamic
+  {
+    // Initialize FormEJunctions, if not already done
+    ((FormEJunctions*)core->Principles(GestaltPrinciple::FORM_E_JUNCTIONS))->Initialize();
+  }
 }
 
 /**
@@ -193,6 +194,7 @@ void VoteImage::InitLineSearchLines(Line *l)
 
   // draw edge itself
   DrawLine(l->point[START], l->point[END], sline + VOTE_E);
+
   // initialise tangents for growing
   InitLine(l->point[START], l->point[START] - length*l->dir, sline + VOTE_TS);
   InitLine(l->point[END], l->point[END] + length*l->dir, sline + VOTE_TE);
@@ -858,6 +860,7 @@ void VoteImage::DrawLine(int x1, int y1, int x2, int y2, unsigned id)
     inc_y = -1;
   }
   // octants 1,4,5,8
+
   if(dx >= dy)
   {
     // first octant bresenham
@@ -871,8 +874,10 @@ void VoteImage::DrawLine(int x1, int y1, int x2, int y2, unsigned id)
         y += inc_y;
         err -= dx;
         if(x + inc_x != x2)
+	{
           // make line dense
           SetPixel(x, y, /*type,*/ id);
+	}
       }
       x += inc_x;
     } while(x != x2); // TODO: x2 is not coloured!

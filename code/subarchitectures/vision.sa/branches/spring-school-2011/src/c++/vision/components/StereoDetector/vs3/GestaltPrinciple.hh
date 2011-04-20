@@ -18,17 +18,27 @@ namespace Z
 
 // class VisionCore;
 
+// When creating rectangles, we use a method, where we delete short lines to create quadrangles.
+// After meassuring the maximum line length, we delete all lines which are LENGTH_THR_FACTOR*maxLineLength
+const static double LENGTH_THR_FACTOR = 0.25;
+
+// When creating rectangles we use a threshold for the minimum parallelity of opposing edges
+// to prune really accidential results
+const static double MIN_PARALLELITY = 0.5;
+
+
+
 /**
  * @brief Class GestaltPrinciple
  */
 class GestaltPrinciple
 {
 public:
-  enum Type																	///< Type of Gestalt principle
+  enum Type						///< Type of Gestalt principle
   {
     FORM_SEGMENTS,
     FORM_LINES,
-    FORM_E_JUNCTIONS,							// TODO not fail save: must run, before ellipse creation.
+    FORM_E_JUNCTIONS,					// TODO not fail save: must run, before ellipse creation.
     FORM_ARCS,
     FORM_ARC_JUNCTIONS,
     FORM_CONVEX_ARC_GROUPS,
@@ -49,13 +59,13 @@ public:
   };
 
 private:
-  double runtime;   								///< processing runtime in [s]
+  double runtime;   					///< processing runtime in [s]
   struct timespec startTime;				///< start time [timespec]
-  struct timespec endTime;					///< end time [timespec]
+  struct timespec endTime;				///< end time [timespec]
 
 protected:
-  VisionCore *core;													///< Vision core
-  Array<unsigned> next_principles;					///< Next principles, to be informed of new gestalts			TODO used?
+  VisionCore *core;					///< Vision core
+  Array<unsigned> next_principles;			///< Next principles, to be informed of new gestalts		TODO used?
 
   /**
    * @brief Rank Gestalts according to their significance value
@@ -170,7 +180,7 @@ public:
   
   void StartRunTime();
 
-	void StopRunTime();
+  void StopRunTime();
 };
 
 }

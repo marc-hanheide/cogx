@@ -193,9 +193,9 @@ double Line::MinEndpointDistance(const Line* l)
 }
 
 /**
- * 
- * @param q 
- * @return 
+ * @brief Calculate the distance to a point
+ * @param q Vector to the point
+ * @return Returns the distance from the point to the line.
  */
 double Line::DistanceToPoint(const Vector2 &q)
 {
@@ -285,8 +285,8 @@ void Line::AddPassiveTJunction(int end, int side, TJunction* jct)
 }
 
 /**
- * TODO TODO Was macht diese Funktion genau?
- * @brief Move junction after splitting a line
+ * @brief Move junction after splitting a line. We have to move the junctions 
+ * of the line end to the end of the new split line.
  * @param l2 Line
  * @param end Line end (start/end)
  */
@@ -383,13 +383,13 @@ const char* VisibleLine::GetInfo()
   static char info_text[info_size] = "";
   int n = 0;
   n += snprintf(info_text + n, info_size, 
-  				"%s"
-					"  Visible line\n"
-					"  seg: %u\n"
-					"  label: %d\n"
-					"  energy: %4.2f \n"
-					"  stability: %f\n"
-					"  Ts %d %d\n",
+      "%s"
+      "  Visible line\n"
+      "  seg: %u\n"
+      "  label: %d\n"
+      "  energy: %4.2f \n"
+      "  stability: %f\n"
+      "  Ts %d %d\n",
 
       Line::GetInfo(), seg->ID(), label, energy, stability,
       (t_jct[START] ? t_jct[START]->ID() : UNDEF_ID),
@@ -481,10 +481,11 @@ bool VisibleLine::IsAtPosition(int x, int y)
  */
 void VisibleLine::CalculateSignificance()
 {
-	sig = -log(pow(core->p_ee, (double)NumEdgels()));
-  // if we have a ROI defined, weight significance
-  if(core->roi_sigma > 0)
+  sig = -log(pow(core->p_ee, (double)NumEdgels()));
+  
+  if(core->roi_sigma > 0)  // if we have a ROI defined, weight significance
   {
+    printf("VisibleLine::CalculateSignificance: Warning: ROI defined => weight significance!\n");
     Vector2 m = MidPoint(point[START], point[END]);
     double weight = BivariateGaussianPDF(
           core->roi_center.x, core->roi_center.y,
@@ -547,9 +548,10 @@ void VisibleLine::CalculateColors()
 }
 
 /**
- * @brief Find index of edgel of line l which is closes to point p.
+ * @brief Find index of edgel of line l which is closest to point p.
  * Is used to find split point for lines.
  * @param p Point p
+ * @return Returns the minimum split index
  */
 unsigned VisibleLine::FindSplitIdx(const Vector2 &p)
 {

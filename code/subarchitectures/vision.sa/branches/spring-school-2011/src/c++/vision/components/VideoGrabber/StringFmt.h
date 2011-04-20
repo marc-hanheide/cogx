@@ -162,7 +162,7 @@ struct _s_
          const std::string &newval, int maxreplace=0)
    {
       size_t findlen = what.length();
-      size_t replen = newval.length();
+      //size_t replen = newval.length();
       size_t pos = std::string::npos;
       int count = 0;
       while((pos = str.rfind(what, pos)) != std::string::npos) {
