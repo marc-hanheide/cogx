@@ -15,7 +15,7 @@ function hyper_output_kde_cl = executeOperatorIKDEClsfr( hyper_input_kde_cl, var
 %  hyper_input_kde_cl.class_labels = class_labels ;
 %
 
-
+turn_off_splitting = [] ;
 type_update = 'partial' ; % 'partial', 'joint'
 % useSomeOtherKindOfEstimator = [] ; % empty means default, 'adaptiveMixtures' uses adaptive mixtures
 use_equalimportance =  0 ;
@@ -112,6 +112,7 @@ while i <= nargs
              vforwvargin = horzcat(vforwvargin, args{i} ) ;
             vforwvargin = horzcat(vforwvargin, args{i+1} ) ;
             i = i + 2 ; 
+        case 'turn_off_splitting', turn_off_splitting = args{i+1} ; i = i + 2 ;
         otherwise
              vforwvargin = horzcat(vforwvargin, args{i} ) ;
              i = i + 1 ; 
@@ -142,14 +143,18 @@ if isempty(hyper_input_kde_cl)
     hyper_input_kde_cl.random_fselect_threshold = 1 ;
     
     pair_dist_struct.dist = [] ;
-    pair_dist_struct.dist_th = 4.0 ;
+    pair_dist_struct.dist_th = 4^2 ; %2.0^2 ;
     pair_dist_struct.use_approx = 0 ;
     hyper_input_kde_cl.pair_dist_struct = pair_dist_struct ;
     hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = -1 ;
+    hyper_input_kde_cl.turn_off_splitting = 0 ;
 %     hyper_input_kde_cl.minimal_required_examps_mode = 0 ;
 end
 
-
+if ~isempty(turn_off_splitting)
+    hyper_input_kde_cl.turn_off_splitting = turn_off_splitting ;
+end
+ 
 if ~isempty(force_value_init_of_maxNumCompsBeforeCompression)
     hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression = force_value_init_of_maxNumCompsBeforeCompression ;
 end
@@ -431,6 +436,25 @@ switch operator_data
         % determine if the class already exists, and initialize it if it
         % does not exist
 
+% % % % %          
+% % % % % if length(hyper_input_kde_cl.kde_cl) > 0
+% % % % %             pdf.Mu = [] ;
+% % % % %             pdf.Cov = {} ;
+% % % % %             pdf.w = [] ;
+% % % % %             N_eff = 0 ;
+% % % % %             for i = 1 : length(hyper_input_kde_cl.kde_cl) 
+% % % % %                pdf.Mu = horzcat(pdf.Mu, hyper_input_kde_cl.kde_cl{i}.pdf.Mu) ;
+% % % % %                pdf.Cov = horzcat(pdf.Cov, hyper_input_kde_cl.kde_cl{i}.pdf.smod.ps.Cov) ; 
+% % % % %                pdf.w = horzcat(pdf.w, hyper_input_kde_cl.kde_cl{i}.pdf.w) ;  
+% % % % %                N_eff = N_eff + hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff ;
+% % % % %             end
+% % % % %             [new_mu, new_Cov, new_w] = momentMatchPdf(pdf.Mu, pdf.Cov, pdf.w) ;
+% % % % %             
+% % % % %             H = ndDirectPlugin_JointClean( pdf.Mu, pdf.Cov, pdf.w, new_Cov, N_eff ) ;
+% % % % %             hyper_input_kde_cl.kde_cl{i}.pdf.smod.H = H ;
+% % % % % end
+        
+        
         answers = [] ;
         for i = 1 : length(input_data)  
             if isempty(input_data{i}.data)
@@ -455,11 +479,12 @@ switch operator_data
             kde_w_attenuation = 1 ;
  
             if class_exists == 0                                        
-                % initialize new class   
-                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...
-                                           vforwvargin{:}, ...
+                % initialize new class    
+                kde = executeOperatorIKDE( [], 'input_data', input_data{i}.data, 'add_input', ...                                           
                                            'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh,...
-                                           'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression) ; 
+                                           'maxNumCompsBeforeCompression', hyper_input_kde_cl.force_value_init_of_maxNumCompsBeforeCompression,...
+                                           'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting,...
+                                           vforwvargin{:}) ; 
   
                 hyper_input_kde_cl.kde_cl = horzcat(hyper_input_kde_cl.kde_cl, kde) ;                
                 hyper_input_kde_cl.class_labels = horzcat(hyper_input_kde_cl.class_labels, class) ;
@@ -500,13 +525,16 @@ switch operator_data
 %                          hyper_input_kde_cl.Params.minNumDataPointsToFormKDE + 1 > hyper_input_kde_cl.kde_cl{class}.ikdeParams.N_eff
                     sub_feats = hyper_input_kde_cl.sub_selected_features ;
                 end
+  
 %  try
+%                 msg = sprintf('Processing kde no: %d', class) ; disp(msg)
                 % update the kde
                 hyper_input_kde_cl.kde_cl{class} = ...
                                   executeOperatorIKDE( hyper_input_kde_cl.kde_cl{class}, 'input_data', ...
                                                        data, 'add_input', 'otherClasses', otherClasses,...
                                                        'selectSubDimensions', sub_feats,...
                                                        'kde_w_attenuation', kde_w_attenuation, ...
+                                                       'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting,...
                                                        vforwvargin{:},...
                                                        'compressionClusterThresh', hyper_input_kde_cl.compressionClusterThresh ) ;      
                                                    
@@ -519,11 +547,34 @@ switch operator_data
         % search for degenerate kdes and reapproximate their bandwidths
         for i = 1 : length(hyper_input_kde_cl.kde_cl)
            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ; 
-           if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+           if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{i}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE           
+               if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE') || isequal(hyper_input_kde_cl.typeRecDescr,'oKDE')
                     otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, i, 0, use_equalimportance, hyper_input_kde_cl.pair_dist_struct ) ; 
+               else
+                   otherClasses = {} ;
+               end
+               
+               if isequal(hyper_input_kde_cl.typeRecDescr,'AM') 
+                   sz = size(hyper_input_kde_cl.kde_cl{i}.pdf.Cov{1}) ;
+                   for kk = 1 : length(hyper_input_kde_cl.kde_cl{i}.pdf.w)
+                       hyper_input_kde_cl.kde_cl{i}.pdf.Cov{kk} = hyper_input_kde_cl.kde_cl{i}.pdf.Cov{kk} + eye(sz)*(1e-10) ;
+                   end
+               
+               else
+               
+               if isequal(hyper_input_kde_cl.typeRecDescr,'dKDE') || isequal(hyper_input_kde_cl.typeRecDescr,'oKDE')               
                     hyper_input_kde_cl.kde_cl{i} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'set_auxiliary_bandwidth' ,...
-                                     'otherClasses', otherClasses) ;
+                                     'otherClasses', otherClasses, ...
+                                     'turn_off_splitting', hyper_input_kde_cl.turn_off_splitting) ;
+%                else
+%                    deltaH = eye(size(hyper_input_kde_cl.kde_cl{i}.pdf.Cov{1}))*(1e-5) ;
+%                    for k = 1 : length(hyper_input_kde_cl.kde_cl{i}.pdf.w)
+%                       hyper_input_kde_cl.kde_cl{i}.pdf.Cov{k} = hyper_input_kde_cl.kde_cl{i}.pdf.Cov{k} + deltaH ;
+%                    end
+               end
+
+               end
            end
             
         end
@@ -645,23 +696,31 @@ switch operator_data
             
             if isequal(hyper_input_kde_cl.typeRecDescr,'AM') || isequal(hyper_input_kde_cl.typeRecDescr,'dAM')
                 pdf_t = input_kde_cl{i}.pdf ;
+%                 dd = size(pdf_t.Cov{1},1) ;
 %                 for ik = 1 : length(pdf_t.Cov)
-%                     pdf_t.Cov{ik} = pdf_t.Cov{ik}+1e-2 ;                           
+%                     pdf_t.Cov{ik} = pdf_t.Cov{ik}+eye(dd)*(1e-3)^2 ;                           
 %                 end
-                 reslt.evalpdf = evaluatePointsUnderPdf(pdf_t, input_data) ;        
+
+
+%                 [pdf_in, data, svdRes] = regulrMixtureIntoSubspace(pdf_t, input_data) ;
+%                 [pdf_in, data, svdRes] = projectMixtureIntoSubspace(pdf_t, input_data ) ;
+%                 if ~isempty(svdRes)
+%                     reslt.evalpdf = evaluatePointsUnderPdf(pdf_in, data) ;        
+%                 else
+                    reslt.evalpdf = evaluatePointsUnderPdf(pdf_t, input_data) ;
+%                 end
             else    
                 
                 % search for degenerate kdes and reapproximate their bandwidths
-            is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
-            tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
-            tmp_pd_Struct.use_approx = 0 ;
-            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
-                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ; 
+                is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{i}, 'test_if_kde_is_degenerated') ;
+                tmp_pd_Struct = hyper_input_kde_cl.pair_dist_struct ;
+                tmp_pd_Struct.use_approx = 0 ;
+                if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE
+                    otherClasses = makeOtherClasses( input_kde_cl, i, 0, use_equalimportance, tmp_pd_Struct  ) ;
                     input_kde_cl{i} = executeOperatorIKDE( input_kde_cl{i}, 'set_auxiliary_bandwidth' ,  'otherClasses', otherClasses) ;
-            end
-            reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
-                                             'selectSubDimensions', sub_feats) ;                
-    
+                end
+                reslt = executeOperatorIKDE( input_kde_cl{i}, 'input_data',  input_data, 'evalPdfOnData',...
+                    'selectSubDimensions', sub_feats) ;                
             end
             P(i,:) = reslt.evalpdf ; %p ;
         end
@@ -697,6 +756,7 @@ switch operator_data
         end
         
         hyper_output_kde_cl.P = P ;
+        hyper_output_kde_cl.sP = sP ;
         [vals, i_max] = max(P) ;        
         hyper_output_kde_cl.C = class_labels(i_max) ;
         
@@ -870,11 +930,14 @@ switch operator_data
         tmp_pd_Struct.use_approx = 0 ;
         for val_get = 1 : length(hyper_input_kde_cl.kde_cl)
             is_kde_degenerate = executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'test_if_kde_is_degenerated') ;            
-            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE                  
+            if is_kde_degenerate == 1 %hyper_input_kde_cl.kde_cl{val_get}.ikdeParams.N_eff < hyper_input_kde_cl.Params.minNumDataPointsToFormKDE     
+         
                     otherClasses = makeOtherClasses( hyper_input_kde_cl.kde_cl, val_get, 0, use_equalimportance, tmp_pd_Struct ) ; 
                     hyper_input_kde_cl.kde_cl{val_get} = ...
                                      executeOperatorIKDE( hyper_input_kde_cl.kde_cl{val_get}, 'set_auxiliary_bandwidth' ,...
                                      'otherClasses', otherClasses) ;
+ 
+                    
             end
         end
         hyper_output_kde_cl = hyper_input_kde_cl ;
@@ -891,11 +954,15 @@ w_other = ones(1,length(input_kde_cl)-1) ;
 w_other = w_other / sum(w_other) ;
 % otherClasses.priors = []; %(length(input_kde_cl)-1) / length(input_kde_cl) ;  
 otherClasses.inner_priors = [] ; %w_other ;
+N_eff_all = 0 ;
+N_eff_neg = 0 ;
 for i = 1 : length(input_kde_cl) 
+    N_eff_all = N_eff_all + input_kde_cl{i}.ikdeParams.N_eff ;
     if i ~= i_exclude
+        N_eff_neg = N_eff_neg + input_kde_cl{i}.ikdeParams.N_eff ;
         if pair_dist_struct.use_approx ~= 0 
-            t = test_for_overlap(input_kde_cl{i_exclude}.ikdeParams.scale.Mu, input_kde_cl{i_exclude}.ikdeParams.scale.Cov, ...
-                                 input_kde_cl{i}.ikdeParams.scale.Mu, input_kde_cl{i}.ikdeParams.scale.Cov,...
+            t = test_for_overlap(input_kde_cl{i_exclude}.ikdeParams.scale.Mu, input_kde_cl{i_exclude}.ikdeParams.scale.Cov+input_kde_cl{i_exclude}.pdf.smod.H, ...
+                                 input_kde_cl{i}.ikdeParams.scale.Mu, input_kde_cl{i}.ikdeParams.scale.Cov+input_kde_cl{i}.pdf.smod.H,...
                                  pair_dist_struct.dist_th) ;                             
             if t == 0
                continue ; 
@@ -908,9 +975,12 @@ for i = 1 : length(input_kde_cl)
     end
 end
  
-otherClasses.inner_priors = otherClasses.inner_priors / sum([otherClasses.inner_priors,input_kde_cl{i_exclude}.ikdeParams.N_eff + newadds ]) ;
+otherClasses.inner_priors = otherClasses.inner_priors / N_eff_neg ; %sum([otherClasses.inner_priors,input_kde_cl{i_exclude}.ikdeParams.N_eff + newadds ]) ;
  
-otherClasses.priors = sum(otherClasses.inner_priors) ;
+otherClasses.N_all_classes = length(input_kde_cl) ;
+% otherClasses.priors = sum(otherClasses.inner_priors) ;
+% otherClasses.priors = 1 / length(input_kde_cl) ;
+otherClasses.priors = (input_kde_cl{i_exclude}.ikdeParams.N_eff+newadds) / (N_eff_all + newadds) ;
 if use_equalimportance == 1 
     otherClasses.inner_priors = w_other ;
     otherClasses.priors = (length(input_kde_cl)-1) / length(input_kde_cl) ;     
@@ -993,3 +1063,102 @@ if isempty(class)
     class = length(hyper_input_kde_cl.class_labels ) + 1  ;
 end
  
+
+% ---------------------------------------------------------------------- %
+function [pdf_in, data, svdRes] = projectMixtureIntoSubspace(pdf_in, data )
+minVals = 0.001 ;
+
+% I = eye(size(pdf_in.Cov{1})) ;
+% for i = 1 : length(pdf_in.w)
+%     pdf_in.Cov{i} = pdf_in.Cov{i} + I*minVals ;    
+% end
+% svdRes = [] ;
+% return ;
+ 
+[new_mu, new_Cov, w_out] = momentMatchPdf(pdf_in.Mu, pdf_in.Cov, pdf_in.w) ;
+[U,S,V] = svd(new_Cov) ;
+V = U ;
+s = diag(S) ;
+ ss = s / sum(s) ;
+
+id_valid = find(ss > minVals) ;
+id_null = find(ss <= minVals) ;
+
+if isempty(id_null)
+    svdRes = [] ;
+    return ;
+end
+
+id_nullVals = s(id_null) ;
+d = size(new_Cov,1) ;
+S_inv = eye(d,d)*0 ;
+S_inv(id_valid,id_valid) = diag(diag(S(id_valid,id_valid).^(-1))) ;
+for i = 1 : length(id_nullVals)
+    try
+        tmp_val = 1 / id_nullVals(i) ;
+    catch
+        tmp_val = 1 ; %1/practicallyZero ; % doesn't matter
+    end
+    S_inv(id_null(i),id_null(i)) = tmp_val ;
+end
+F_trns = sqrt(abs(S_inv))* inv(V) ;
+
+pdf_in.Mu = F_trns*( pdf_in.Mu - repmat(new_mu,1,length(pdf_in.w))) ;
+pdf_in.Mu = pdf_in.Mu(id_valid,:) ;
+
+
+for i = 1 : length(pdf_in.w)
+    pdf_in.Cov{i} = F_trns*pdf_in.Cov{i}*F_trns' ;
+    pdf_in.Cov{i} = pdf_in.Cov{i}(id_valid,id_valid) ;
+end
+
+% forward transform the additional_data if it exists
+if ~isempty(data)
+    data = F_trns*(data - repmat(new_mu,1,size(data,2))) ;
+    data = data(id_valid,:) ;
+end
+
+svdRes.V = V ;
+svdRes.S = S ;
+svdRes.id_valid = id_valid ;
+svdRes.new_mu = new_mu ;
+svdRes.nullspace.id_null = id_null ;
+svdRes.nullspace.id_nullVals = id_nullVals ;
+svdRes.nullspace.id_valid = id_valid ;
+ 
+
+% ---------------------------------------------------------------------- %
+function [pdf_in, data, svdRes] = regulrMixtureIntoSubspace(pdf_in, data )
+minVals = 0.001 ;
+
+% I = eye(size(pdf_in.Cov{1})) ;
+% for i = 1 : length(pdf_in.w)
+%     pdf_in.Cov{i} = pdf_in.Cov{i} + I*minVals ;    
+% end
+% svdRes = [] ;
+% return ;
+ 
+[new_mu, new_Cov, w_out] = momentMatchPdf(pdf_in.Mu, pdf_in.Cov, pdf_in.w) ;
+[U,S,V] = svd(new_Cov) ;
+V = U ;
+s = diag(S) ;
+ss = s / sum(s) ;
+
+id_valid = find(ss > minVals) ;
+id_null = find(ss <= minVals) ;
+
+if isempty(id_null)
+    svdRes = [] ;
+    return ;
+end
+
+z = zeros(1, size(S,1)) ; 
+z(id_null) = (1e-3)^2 ;
+Z = U*diag(z)*V' ;
+
+ 
+for i = 1 : length(pdf_in.w)
+    pdf_in.Cov{i} =  pdf_in.Cov{i} + Z ;
+end
+ 
+svdRes.V = [] ; 

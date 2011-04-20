@@ -1,8 +1,8 @@
 function demoClassifier2()
 
 plotting_activated = 1 ;
-num_add_classes = 5 ;
-nfake_dims = 9 ;
+num_add_classes = 0 ;
+nfake_dims = 0 ;
 dim = nfake_dims + 2 ;
 
 lbl={'r', 'g', 'b', 'c', 'm', 'k', 'y', 'k'} ;
@@ -13,16 +13,17 @@ classifyWithPosterior = 1 ;                     % (1) use posterior info for cla
 typeRecDescr = 'dKDE' ;                         % 'dKDE', 'oKDE', switchess between discriminative and standard oKDE
 % minNumDataPointsToFormKDE = dim + 1 ;         % (int) minimum number of points before forming a KDE
 minNumDataPointsToFormKDE = 2 ; %(dim^2-dim)/2+dim+dim ; % (int) minimum number of points before forming a KDE
-react_compression_to_feature_selection = 1 ;    % (1) apply compression in subdimension selected by feature selection
+react_compression_to_feature_selection = 0 ;    % (1) apply compression in subdimension selected by feature selection
 min_samps_per_model_feat_sel = (dim^2-dim)/2+dim+dim ; % (int) minimum number of samples per model observed before applying feature selection
 min_th_feat_sel = 0.1 ;                         % (double) threshold on importance below which a feature is removed
 costThreshold.thReconstructive = 0.01 ;         % thresholds on reconstructive and discriminative compression
-costThreshold.thDiscriminative = 0.02 ; %0.02 ;
+costThreshold.thDiscriminative = 0.02  ; %0.02 ;
 autoUpdateThres_upper = 0.07 ;                   % in self verified mode, this is the threshold on entropy for asking
 autoUpdateThres_lower = 1e-2 ;                  % in self verified mode, this is the threshold on entropy for auto update
-random_fselect_threshold = 1 ;0.95 ;               % probability of feature selection occuring when called
+random_fselect_threshold = 1 ; 0.95 ;               % probability of feature selection occuring when called
 pair_dist_struct_use_approx = 1 ;               % switch for compression: test which classes shuld be taken into account during compression of i-th class
 force_value_init_of_maxNumCompsBeforeCompression = 2 ; % determine initial num of components before compression
+turn_off_splitting = 1 ;
 % - end of parameters
 N_init = 1 ;  
 
@@ -49,8 +50,11 @@ kde_cl = executeOperatorIKDEClsfr( [], 'init', 'compressionClusterThresh', costT
                     'autoUpdateThres_lower', autoUpdateThres_lower,...
                     'random_fselect_threshold', random_fselect_threshold,...
                     'pair_dist_struct_use_approx', pair_dist_struct_use_approx, ...
-                    'force_value_init_of_maxNumCompsBeforeCompression', force_value_init_of_maxNumCompsBeforeCompression ) ;
+                    'force_value_init_of_maxNumCompsBeforeCompression', force_value_init_of_maxNumCompsBeforeCompression,...
+                    'turn_off_splitting', turn_off_splitting) ;
  
+                
+warning off ;                
 
 Num_questions = N_init ;
 input_data = {} ;
@@ -61,7 +65,7 @@ for i_c = 1 : length(xc)
     indat.class = i_c ;
     input_data = horzcat(input_data, indat) ;
 end
-kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', input_data, 'add_input' ) ;
+kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', input_data, 'add_input', 'turn_off_splitting', turn_off_splitting ) ;
   
 c_score = [] ;
 % continue to add new data
@@ -78,7 +82,8 @@ for i = N_init+1 : 200
     tic
     kde_cl = executeOperatorIKDEClsfr( kde_cl, 'input_data', input_data, 'add_input', ...
                                         'autonomous_update', 'pure_oracle',...
-                                        'autoUpdateThres_upper', 0.15  ) ; % 'self_verified', 'oracle_verified', 'pure_oracle'
+                                        'autoUpdateThres_upper', 0.15,...
+                                        'turn_off_splitting', turn_off_splitting ) ; % 'self_verified', 'oracle_verified', 'pure_oracle'
     toc
     Num_questions = Num_questions + sum(kde_cl.answers) ;
   

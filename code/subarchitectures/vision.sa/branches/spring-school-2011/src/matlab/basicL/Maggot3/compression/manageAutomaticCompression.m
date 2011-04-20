@@ -37,9 +37,11 @@ if input_kde.otherParams.MDL_memorylimitUseComps == 0
     
     N = abs(ikdeParams.maxNumCompsBeforeCompression) ;
     if length(input_kde.pdf.w) >  N - input_kde.ikdeParams.numComponentsAbsorbed  %|| rand(1) > 0.9 
-        input_kde.ikdeParams.numComponentsAbsorbed = input_kde.ikdeParams.numComponentsAbsorbed/3 ;
+        input_kde.ikdeParams.numComponentsAbsorbed = input_kde.ikdeParams.numComponentsAbsorbed/3 ;        
+        
+%         msg = sprintf('Compressing... num comps: %d', length(input_kde.pdf.w)) ; disp( msg ) ;
         input_kde = executeOperatorIKDE( input_kde, 'compress_pdf', 'otherClasses', otherClasses, 'input_data', obs ) ;
-%         disp('Compressing...')
+%         msg = sprintf('After compression.. num comps: %d', length(input_kde.pdf.w)) ; disp( msg ) ;
         len_new = length(input_kde.pdf.w) ;
         if  ( len_new > N )
             N = N*scale_first ;

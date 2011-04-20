@@ -28,13 +28,13 @@ function demonstrations()
 demo2D1Destimation() ;
 %  
 % disp('------ Demonstrating nonstationary distribution --------');
-estimateNonstat() ;
+% estimateNonstat() ;
 % 
 % disp('----- Demonstating weighted 1D learning example ---------') ;
-demo1Destimation() ;
+% demo1Destimation() ;
 % 
 % disp('----- Draw a rabbit -------------------------------------') ;
-drawaRabbit() ;
+% drawaRabbit() ;
 
 % ----------------------------------------------------------------------- %
 function drawaRabbit()
