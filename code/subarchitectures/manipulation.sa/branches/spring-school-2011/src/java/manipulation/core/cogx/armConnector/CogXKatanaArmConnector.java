@@ -26,8 +26,16 @@ import manipulation.core.share.types.SensorData;
 import manipulation.core.share.types.SensorData.SensorPosition;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
+import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.GenConfigspaceCoord;
+import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.PlayerBridgeCloseGripperCommmand;
+import manipulation.slice.PlayerBridgeOpenGripperCommmand;
+import manipulation.slice.PlayerBridgeSendTrajectoryCommmand;
 
 import org.apache.log4j.Logger;
+
+import cast.AlreadyExistsOnWMException;
 
 /**
  * connector to the COGX arm communication system
@@ -131,6 +139,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void reach(Vector3D position, Matrix rotation)
 			throws ManipulatorException {
+
 		stopArm();
 
 		try {
@@ -165,7 +174,36 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			GenConfigspaceState[] trajectory = arm.findTrajectory(cbegin, cend);
 
 			reached = false;
-			arm.send(trajectory, 1);
+
+			if (manipulator.getConfiguration().getArmName() == ArmName.SIMULATION) {
+				PlayerBridgeSendTrajectoryCommmand cmd = new PlayerBridgeSendTrajectoryCommmand();
+
+				manipulation.slice.GenConfigspaceState[] returnVal = new manipulation.slice.GenConfigspaceState[trajectory.length];
+
+				for (int i = 0; i < trajectory.length; i++) {
+					GenConfigspaceCoord coord = new GenConfigspaceCoord();
+
+					coord.pos = trajectory[i].pos.c;
+					coord.vel = trajectory[i].vel.c;
+
+					returnVal[i].t = trajectory[i].t;
+					returnVal[i].coord = coord;
+				}
+
+				cmd.trajectory = returnVal;
+				cmd.status = ManipulationCommandStatus.NEW;
+
+				String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							id, cmd);
+				} catch (AlreadyExistsOnWMException e) {
+					logger.error(e);
+				}
+			} else {
+				arm.send(trajectory, 1);
+			}
 
 			Thread t = new Thread(new GoalReachedRunnable(manipulator));
 			t.start();
@@ -260,7 +298,17 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void closeGripper(int force) {
-		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+			PlayerBridgeCloseGripperCommmand cmd = new PlayerBridgeCloseGripperCommmand();
+			cmd.status = ManipulationCommandStatus.NEW;
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						cmd);
+			} catch (AlreadyExistsOnWMException e) {
+				logger.error(e);
+			}
+		} else {
 			KatanaSensorData[] threshold = new KatanaSensorData[4];
 
 			HashMap<SensorPosition, Integer> sensorData = null;
@@ -293,8 +341,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				logger.debug(e);
 				closed = true;
 			}
-		} else {
-			logger.info("Close Gripper not implemented yet");
 		}
 	}
 
@@ -303,8 +349,18 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void openGripper() {
+		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+			PlayerBridgeOpenGripperCommmand cmd = new PlayerBridgeOpenGripperCommmand();
+			cmd.status = ManipulationCommandStatus.NEW;
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
-		if (!(manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						cmd);
+			} catch (AlreadyExistsOnWMException e) {
+				logger.error(e);
+			}
+		} else {
 			try {
 				((KatanaArmPrx) arm).gripperOpen(5);
 				closed = false;
@@ -318,8 +374,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 					logger.error(e1);
 				}
 			}
-		} else {
-			logger.info("Open Gripper not implemented yet");
 		}
 	}
 
