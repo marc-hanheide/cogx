@@ -188,11 +188,11 @@
   </model:physical>
 
   <!-- a low table -->
-  <model:physical name="table_model">
+  <model:physical name="table1_model">
     <static>false</static>
     <xyz>3 0 0.15</xyz>
-    <body:box name="table_body">
-      <geom:box name="table_geom">
+    <body:box name="table1_body">
+      <geom:box name="table1_geom">
         <size>0.6 0.6 0.3</size>
         <mass>1</mass>
         <visual>
@@ -207,8 +207,8 @@
 
   <!-- and finally a cereal box! -->
   <model:physical name="cereals1_model">
-    <static>true</static>
-    <xyz>3 0 1.4</xyz>
+    <static>false</static>
+    <xyz>3 0 0.4</xyz>
 		<rpy>0 0 90</rpy>
 
     <include embedded="true">
