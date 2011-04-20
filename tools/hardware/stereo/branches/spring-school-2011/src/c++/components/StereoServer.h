@@ -38,6 +38,7 @@ public:
 
   virtual void getPoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&);
 
+  // returns dense point cloud, with 0 values???
   virtual void getCompletePoints(bool transformToGlobal, int imgWidth, VisionData::SurfacePointSeq& points, const Ice::Current&);
 
   virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
@@ -160,8 +161,7 @@ private:
    */
   void setupMyIceCommunication();
 
-  void configure(const std::map<std::string,std::string> & _config)
-    throw(std::runtime_error);
+  void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
 
   virtual void start();
 

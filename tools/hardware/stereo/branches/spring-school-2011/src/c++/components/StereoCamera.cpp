@@ -226,8 +226,7 @@ void StereoCamera::DistortNormalisedPoint(double x, double y,
   yd = y*t + 2.*cam[side].t2*x*y + cam[side].t1*(r2 + 2.*y2);
 }
 
-void StereoCamera::DistortPoint(double u, double v, double &ud, double &vd,
-    int side)
+void StereoCamera::DistortPoint(double u, double v, double &ud, double &vd, int side)
 {
   double x = (u - sx*cam[side].cx)/(sx*cam[side].fx);
   double y = (v - sy*cam[side].cy)/(sy*cam[side].fy);
@@ -240,8 +239,7 @@ void StereoCamera::DistortPoint(double u, double v, double &ud, double &vd,
 /**
  * gradient based method for undistortion
  */
-bool StereoCamera::UndistortPoint(double ud, double vd, double &u, double &v,
-    int side)
+bool StereoCamera::UndistortPoint(double ud, double vd, double &u, double &v, int side)
 {
   const unsigned MAX_ITER = 100;
   double error = DBL_MAX;
@@ -273,8 +271,7 @@ bool StereoCamera::UndistortPoint(double ud, double vd, double &u, double &v,
   return false;
 }
 
-void StereoCamera::RectifyPoint(double ud, double vd, double &ur, double &vr,
-    int side)
+void StereoCamera::RectifyPoint(double ud, double vd, double &ur, double &vr, int side)
 {
   double u, v;
   UndistortPoint(ud, vd, u, v, side);

@@ -10,7 +10,7 @@
 #include <string>
 #include <opencv/cv.h>
 #include <opencv/cv.hpp>
-#include <cogxmath.h>
+//#include <cogxmath.h>
 
 namespace cast
 {
@@ -90,12 +90,9 @@ public:
   StereoCamera();
   ~StereoCamera();
   void ReadSVSCalib(const std::string &calibfile);
-  void ProjectPoint(double X, double Y, double Z, double &u, double &v,
-      int side);
-  bool ReconstructPoint(double u, double v, double d, double &X, double &Y,
-      double &Z);
-  void DistortNormalisedPoint(double u, double d, double &ud, double &vd,
-      int side);
+  void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
+  bool ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
+  void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);
   void DistortPoint(double u, double d, double &ud, double &vd, int side);
   bool UndistortPoint(double ud, double vd, double &u, double &v,int side);
   void SetMaxDistortion(double err = .5) {maxDistortion = err;}
