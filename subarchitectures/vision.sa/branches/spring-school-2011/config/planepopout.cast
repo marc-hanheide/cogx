@@ -22,8 +22,8 @@ CPP TM AlwaysPositiveTaskManager
 #CPP MG  VideoServer OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/ul_test_seq_1/img%03d-L.jpg subarchitectures/vision.sa/config/ul_test_seq_1/img%03d-R.jpg" --start 30 --end 30 --framerate_ms 30
 #############################
 
-CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 7 --end 7 --framerate_ms 30
+CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 30
 
 
-CPP MG PlanePopOut PlanePopOut --videoname VideoServer --stereohost localhost --stereoname stereoserver  #--display
+CPP MG PlanePopOut PlanePopOut --videoname VideoServer --stereohost localhost --servername stereoserver --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_new.ini #--display
 
