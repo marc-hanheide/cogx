@@ -6,6 +6,10 @@
 import os, sys
 from PyQt4 import QtCore, QtGui
 
+# HACK: This object provides an interface that invokes an external editor.
+# CastControl, sets it to itself, so be careful.
+TEXT_EDITOR = None
+
 class ICustomEditorBase:
     # @param data see CTreeItem.data()
     # data = QVariant( [ string type, object property, function formatter ] )
@@ -146,10 +150,10 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
 
 
     def onEditFile(self):
-        qfd = QtGui.QFileDialog
-        fn = qfd.getOpenFileName(self, self.e.text(), "", self.filter)
-        if fn != None and len(fn) > 1:
-            # TODO: a call into castcontrol to edit(fn)
+        global TEXT_EDITOR
+        fn = "%s" % self.e.text()
+        if TEXT_EDITOR != None and fn != None and len(fn) > 1:
+            TEXT_EDITOR.editFile(fn)
             pass
 
 
