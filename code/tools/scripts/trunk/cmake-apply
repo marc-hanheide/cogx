@@ -11,8 +11,8 @@
 #    ../tools/scripts/patchcmake . <initial_cache.txt>
 
 # Absolute path and directory
-SCRIPT=$(readlink -f $0)
-SCRIPTDIR=$(dirname $SCRIPT)
+#SCRIPT=$(readlink -f $0)
+#SCRIPTDIR=$(dirname $SCRIPT)
 
 dir="$1"
 
