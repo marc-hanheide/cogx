@@ -428,6 +428,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.wAppConfig.addServers(self.serverManager.servers)
         self.wAppConfig.updateHeader();
 
+        # HACK: use CCastControlWnd as an interface for an external file editor
+        pconfig.editors.TEXT_EDITOR = self
+
         for csi in self.serverManager.servers:
             if csi.group == 'B': self.procGroupB.addProcess(csi.name)
             elif csi.group == 'C': self.procGroupC.addProcess(csi.name)
