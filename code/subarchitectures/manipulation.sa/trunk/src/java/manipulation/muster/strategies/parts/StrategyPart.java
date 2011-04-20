@@ -82,46 +82,6 @@ public abstract class StrategyPart {
 		 * 
 		 */
 		GO_TO_BEST_GRASPING_POINT,
-		/**
-		 * 
-		 */
-		WAIT_PART,
-		/**
-		 * 
-		 */
-		FAR_ARM_MOVEMENT_COMMAND_PART,
-		/**
-		 * 
-		 */
-		PUT_DOWN_COMMAND_PART,
-		/**
-		 * 
-		 */
-		LINEAR_GRASP_APPROACH_COMMAND_PART,
-		/**
-		 * 
-		 */
-		SIMULATE_GRASP_COMMAND_PART,
-		/**
-		 * 
-		 */
-		LINEAR_BASE_MOVEMENT_APPROACH_COMMAND_PART,
-		/**
-		 * 
-		 */
-		STOP_COMMAND_PART,
-		/**
-		 * 
-		 */
-		MOVE_ARM_TO_HOME_POSITION_COMMAND_PART,
-		/**
-		 * 
-		 */
-		OPEN_GRIPPER_PART,
-		/**
-		 * 
-		 */
-		CLOSE_GRIPPER_PART
 	}
 
 	/**
