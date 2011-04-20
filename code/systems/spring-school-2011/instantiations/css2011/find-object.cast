@@ -9,14 +9,14 @@ CPP MG CameraMount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiatio
 # live
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
 # simulated
-#CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --log --debug
+#CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml" --log --debug
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "cereals-schokomusli" --initpose "[0.47 0.00 0.96][0.00 0.00 1.57]" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-schokomusli" --initpose "[0.47 0.00 0.96][0.00 0.00 1.57]" --log
 
 # mode can be RECOGNIZE or LEARN
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-schokomusli" --mode RECOGNIZE --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli" --mode RECOGNIZE --log
 
 # viewing and debugging
 
