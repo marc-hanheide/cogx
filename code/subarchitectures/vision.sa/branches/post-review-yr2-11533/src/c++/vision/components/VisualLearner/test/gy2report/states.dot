@@ -1,9 +1,14 @@
 digraph G {
-	graph [layout=dot rankdir=TB]
+	graph [layout=dot rankdir=TB ranksep="0.5"]
 		// George Year 2 Automated Tutor
 
-		stStart
-		stTableEmpty
+		subgraph { 
+			rank=same
+			stStart      
+			stTableEmpty 
+		}
+
+		stFinished   
 		opLoadScene [ shape="box" ]
 		stWaitToAppear
 		stObjectOn
@@ -12,12 +17,17 @@ digraph G {
 		opSayHi    [ shape="box" ]
 		stWaitForResponse
 		stWaitForLearningTask
-		stEndOfTeaching
-		stWaitToDisappear
+
 		stFinished
 		stTimedOut
-		stUnloadScene
-		opUnloadScene [ shape="box" ]
+
+		subgraph { 
+			rank=same
+			stEndOfTeaching
+			stUnloadScene
+			opUnloadScene [ shape="box" ]
+			stWaitToDisappear
+		}
 
 
 		{ stStart } -> { stTableEmpty }
