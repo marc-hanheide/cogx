@@ -2,6 +2,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "ObjectRecognizer3D.h"
 #include <VideoUtils.h>
+#include <libplayerc++/playerc++.h>
 
 /**
  * The function called to create a new instance of our component.
@@ -20,6 +21,7 @@ using namespace cast;
 using namespace cogx;
 using namespace Math;
 using namespace std;
+using namespace PlayerCc;
 
 
 static Pose3 readPoseXML(const string &filename)
@@ -552,14 +554,39 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 	if((char)key==' '){
 
     // HACK
-		/*VisualObjectPtr obj = getMemoryEntry<VisualObject>(m_rec_cmd->visualObjectID);
+    // rotates gazebo camera sensor coord sys into "normal" camera coord sys
+    Matrix33 R;
+    setColumn(R, 0, vector3(0, -1, 0));
+    setColumn(R, 1, vector3(0, 0, -1));
+    setColumn(R, 2, vector3(1, 0, 0));
+    cout << "MATROT:" << R << endl;
+    
+    PlayerClient robot(PlayerCc::PLAYER_HOSTNAME, PlayerCc::PLAYER_PORTNUM);
+    SimulationProxy sp(&robot, 0);
+
+		//VisualObjectPtr obj = getMemoryEntry<VisualObject>(m_rec_cmd->visualObjectID);
+
+    double x, y, z, roll, pitch, yaw, time;
+    sp.GetPose3d("cereals1_model", x, y, z, roll, pitch, yaw, time);
+    //obj->pose.pos = vector3(x, y, z);
+    //fromRPY(obj->pose.rot, roll, pitch, yaw);
+
 		//Vector3 r = vector3(unifrand(-M_PI, M_PI), unifrand(-M_PI, M_PI), unifrand(-M_PI, M_PI));
 		double d = M_PI*(double)rand()/(double)RAND_MAX;
-		Vector3 r = vector3(d, d, d);
-		fromRotVector(obj->pose.rot, r);
+		//Vector3 r = vector3(d, d, d);
+		log("random rotate VisualObject '%s'", getComponentID().c_str());
+
+    //toRPY(obj->pose.rot, roll, pitch, yaw);
+    sp.SetPose3d("cereals1_model", x, y, z, d, d, d);
+
+printf("**** OVERWRITE ****\n");
+		VisualObjectPtr obj = getMemoryEntry<VisualObject>(m_rec_cmd->visualObjectID);
+		fromRPY(obj->pose.rot, d, d, d);
 		overwriteWorkingMemory(m_rec_cmd->visualObjectID, obj);
+printf("**** AFTER OVERWRITE ****\n");
+		addTrackerCommand(LOCK, m_rec_cmd->visualObjectID);
 		addTrackerCommand(OVERWRITE, m_rec_cmd->visualObjectID);
-		log("random rotate VisualObject '%s'", getComponentID().c_str());*/
+		sleepComponent(500);
 		// HACK END
 
 		// 	Lock model
