@@ -226,6 +226,11 @@ if(BUILD_CALIB)
 add_subdirectory (tools/syscalb)
 endif(BUILD_CALIB)
 
+option(BUILD_GRIPPER "Build simple player gripper tool" NO)
+if(BUILD_GRIPPER)
+add_subdirectory (tools/gripper)
+endif(BUILD_GRIPPER)
+
 add_subdirectory(tools/scripts)
 
 # Find ICE_SLICE_DIR by searching for Ice/Identity.ice
