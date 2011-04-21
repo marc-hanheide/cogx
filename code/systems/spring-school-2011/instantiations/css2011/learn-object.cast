@@ -6,10 +6,7 @@ CPP TM AlwaysPositiveTaskManager
 
 CPP MG CameraMount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
 
-# live
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
-# simulated
-#CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml" --log --debug
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
