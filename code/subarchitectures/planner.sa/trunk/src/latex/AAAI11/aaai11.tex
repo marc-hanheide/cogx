@@ -16,15 +16,17 @@
 \usepackage{helvet}
 \usepackage{courier}
 \usepackage{graphicx}
+\usepackage{tabularx}
 \graphicspath{{plots/}}
 \include{macros}%
 
-\nocopyright
+
+%%\nocopyright
 
 \pdfinfo{
 /Title (A Switching Planner for Combined Task and Observation Planning)
 % /Subject (Proceedings of the 21st International Conference on Automated Planning and Scheduling)
-/Author (NA)}
+/Author ()}
 % The file aaai.sty is the style file for AAAI Press 
 % proceedings, working notes, and technical reports.
 %
@@ -36,9 +38,14 @@
 % \title{Interleaved Serial and Decision-Theoretic Planning for High-Level Robot Control}
 
 \title{A Switching Planner for Combined Task and Observation Planning}
-\author{anonymous}
+\author{
+Moritz G{\"o}belbecker \\ University of Freiburg, Germany\\
+\{goebelbe\}@informatik.uni-freiburg.de
+\And
+Charles O. Gretton, Richard Dearden,\\
+University of Birmingham, United Kingdom\\
+\{c.gretton,R.W.Dearden\}@cs.bham.ac.uk} 
 \setcounter{secnumdepth}{0}
-
 
 \begin{document} 
 \maketitle
@@ -66,23 +73,6 @@ and decision-theoretic planning to solve small abstract subproblems where
 deeper consideration of the sensing model is both practical, and can
 significantly impact overall performance. We evaluate our approach
 in large problems from a realistic robot exploration domain.
-
-%% partial observability
-
-
-
-%% In cooperation with execution monitoring, it must perform repair
-%% and/or replanning in order to seamlessly accommodate exogenous events,
-%% changing objectives, and the underlying unpredictability of the
-%% environment.
-
-%% Realistic robot planning problems in uncertain environments often
-%% require achieving tasks while also finding out about the
-%% world. Because the world state cannot be observed directly, these
-%% problems are naturally represented as partially observable Markov
-%% decision problems (POMDPs). However, these are typically intractable
-%% for realistic problems.
-%%
 
 \end{abstract}
 
@@ -125,8 +115,8 @@ in large problems from a realistic robot exploration domain.
 \section{Introduction}
 \input{intro.tex}
 
-%% \section{Propositional Decision-Theoretic Planning}
-%% \input{prop-dtp.tex}
+\section{Propositionally Factored Decision-Theoretic Planning}
+\input{prop-dtp.tex}
 
 \section{Planning Language and Notations}
 \input{dtpddl.tex}
@@ -147,6 +137,12 @@ in large problems from a realistic robot exploration domain.
 
 \section{Concluding Remarks}
 \input{conc.tex}
+
+
+
+\textbf{Acknowledgements}: The research leading to these results has
+received funding from the European Community's Seventh Framework
+Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
 
 
 \bibliographystyle{aaai}

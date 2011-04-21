@@ -1,105 +1,50 @@
 
+\newcommand{\entropy}{\ensuremath{\mathrm{H}}}
+
+
 We now describe our {\em switching} planning system that operates
-according to the continual planning paradigm given a description of
-the current problem and domain in DTPDDL. The system {\em
-switches} in the sense that planning proceeds in interleaved
-sessions in which the base planner is either {\em sequential}/linear
-or {\em decision-theoretic}.
-%%
-The system begins in a sequential session during which it runs a
-cost-based satisficing planner which trades off action costs, goal
-rewards and determinacy. This planner generates a reward-giving
-sequence of ground actions from the DTPDDL domain which may also
-include {\em assumptions}: actions that assume the truth of some fact
-that is unknown at plan time (e.g. that a box of cornflakes is located
-on the corner bench in the kitchen). We call this sequence a {\em
-trace}. Execution of the trace proceeds by applying the actions until
-the probability of the next action being applicable falls below some
-threshold (here 95\%), at which point the planner switches to a DT session. 
+according to the continual planning paradigm. The system {\em
+switches} in the sense that planning and plan execution proceed in
+interleaved sessions in which the {\em base planner} is either {\em
+sequential} or {\em decision-theoretic}.  The first session is
+sequential, and begins when a DTPDDL description of the current
+problem and domain are posted to the system.  During a sequential
+session a serial plan is computed that corresponds to one
+execution-{\em trace} in the underlying decision-process. That trace
+is a reward-giving sequence of process actions and {\em assumptive}
+actions. Each {\em assumptive} action corresponds to an assertion
+about the truth of a fact that is unknown at plan time -- e.g. that a
+box of cornflakes is located on the corner bench in the kitchen. The
+trace specifies a plan and characterises a {\em deterministic
+approximation} (see~\cite{yoon:etal:2008}) of the underlying process
+in which that plan is valuable. Traces are computed by a
+cost-optimising classical planner which trades off action costs, goal
+rewards, and determinacy. Execution of a trace proceeds according to
+the process actions in the order that they appear in the trace. If,
+according to the underlying belief-state, the outcome of the next
+action scheduled for execution is not predetermined above a threshold
+(here 95\%), then the system switches to a DT session.
+
 
 Because online DT planning is impractical for the size of problem we
-are interested in, when a DT session begins we use the trace from the
-preceeding sequential session to restrict the state space. The state space is characterised by a limited number of propositions,
-chosen due to their {\em relevance} to the action whose scheduled
-execution triggered the switch to the DT session.
-%The state
-%space is constructed by first removing all propositions (and related
-%actions) that are not true or assumed true of states in the trace,
-%then adding them back as long as the number of states does not exceed
-%a size threshold\footnote{Our experiments are performed using a number
-%of different threshold parameters.}  Propositions to add back are
-%chosen using as a heuristic the entropy of the trace assumptions
-%conditional on the candidate proposition. 
-To allow the DT planner to
-determine the truth of the assumptions in the trace, we add {\em
-disconfirm} and {\em confirm} actions to the problem for each of
-them. These actions yield a relatively small reward/penalty if the
+are interested in, DT sessions plan in a small abstract problem
+defined in terms of the trace from the proceeding sequential
+session. This abstract state-space is characterised by a limited
+number of propositions, chosen due to their {\em relevance} to the
+action whose scheduled execution triggered the switch to the DT
+session.  To allow the DT planner to judge assumptions from the trace,
+we add {\em disconfirm} and {\em confirm} actions to the problem for
+each of them. Those yield a relatively small reward/penalty if the
 corresponding judgement is true/false. If a judgement action is
-scheduled for execution the DT session is terminated, and control is
-returned to a sequential session.
-
-%% We now describe our {\em switching} planning system that operates
-%% according to the continual planning paradigm, given a description of
-%% the current problem and domain in DTPDDL. The system {\em
-%% switches}, in the sense that planning proceeds in interleaved
-%% sessions, in which the base planner is either {\em sequential}/linear
-%% or {\em decision-theoretic}.
-%% %%
-%% During a sequential session, a rewarding {\em trace} of a possible
-%% execution is computed using a cost-optimising satisficing planner
-%% which trades action costs, goal rewards, and determinacy.
-%% %%
-%% Formatted as a linear plan, the trace specifies a sequence of actions
-%% that achieves some reachable goals following a deterministic
-%% approximation of the problem at hand.
-%% %%
-%% Structurally, a trace is a sequence of elements that are either: (i) ground
-%% actions from the DTPDDL description of the world, or (ii) atomic {\em
-%% assumptions}, modelled as deterministic actions, made about the truth
-%% value of facts that can only be determined at runtime (e.g., that a
-%% box of cornflakes is located on the corner bench in the kitchen).
-%% %%
-%% The system always begins in a sequential session, so that plan
-%% execution proceeds by applying DTPDDL actions from the trace, in
-%% sequence, until the outcome of executing the next scheduled action is
-%% too uncertain according to a threshold parameter~(here, 95\%). In that
-%% eventuality a DT session commences, which tailors sensory processing
-%% to determine whether the assumptions made in the trace hold, or which
-%% otherwise acts to achieve the goals.
-
-
-%% Because online DT planning in large problems is impractical (we seek
-%% response times in seconds), a DT session plans for an abstract process
-%% determined by the current trace and underlying belief-state. That
-%% abstract problem is characterised by a limited number of propositions,
-%% chosen due to their {\em relevance} to the action whose scheduled
-%% execution triggered the switch to the DT session.
-%% %%the subproblem the DT session is asked tosolve.
-%% % MOG: Describe this in detail in the appropriate subsection
-%% %  This
-%% % abstraction is constructed by first excluding all propositions (and
-%% % related actions) that are not true, or {\em assumed } true, of states
-%% % in the trace, then adding them back, using as an heuristic the entropy
-%% % of the trace assumptions conditional on a candidate
-%% % proposition. Propositions are added, one at a time, until the number
-%% % of states in the initial belief-state reaches a given
-%% % threshold.\footnote{Our experiments are performed using a number of
-%% % different threshold parameters.} 
-%% To that abstract model we also add {\em disconfirm} and {\em confirm}
-%% actions that the DT session can schedule in order to judge an atomic
-%% assumption in the trace. Those actions yield a relatively small reward
-%% if the corresponding judgement is true (or small penalty
-%% otherwise). If a judgement action is scheduled for execution the DT
-%% session is terminated, and control is returned to a new sequential
-%% session.
+scheduled for execution, then the DT session is terminated, and a new
+sequential session begins.
 
 Whatever the session type, our continual planner maintains a factored
-representation of successive belief-states.
-% by performing belief revision. 
-As an internal representation of the $(\pp{:init})$
-declaration, we keep a tree-shaped Bayesian network which gets updated
-whenever an action is performed, or an observation received. That
-belief-state representation is used: (1) as the source of candidate
+representation of successive belief-states.  As an internal
+representation of the $(\pp{:init})$ declaration, we keep a
+tree-shaped Bayesian network which gets updated whenever an action is
+performed, or an observation received. That belief-state
+representation is used: (1) as the source of candidate
 determinisations for sequential planning, (2) in determining when to
 switch to a DT session, and (3) as a mechanism to guide construction
 of an abstract process for DT sessions.
@@ -119,10 +64,6 @@ section, we have the following assumptions:
 \hline
 Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
 \hline
-%% .24 & kitchen & office & office \\
-%% .06 & kitchen & kitchen & office \\
-%% .56 & kitchen & office & kitchen \\
-%% .14 & kitchen & kitchen & kitchen \\
 .7 & kitchen & \# &  kitchen\\
 .3 & kitchen & \# & office \\
 .8 & kitchen & office & \# \\
@@ -185,27 +126,12 @@ $\reward(\state_i, \action_i)$ be the instantaneous reward received
 for executing action $\action_i$ in state $\state_i$. The optimal
 trace has value:
 
-%We now describe the optimisation criteria used during sequential
-%sessions. Where $\prob_i$ is the probability that the $i^{th}$
-%sequenced action, $\action_i$, from a trace of state-action pairs
-%$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
-%does not transition to $\state^\bot$, we have that the optimal trace
-%has value:
-
 \small
 \[
 V^* = \max_N \max_{\state_0, \action_0,.., \state_N} \prod_{i=1..N-1} \prob_i \sum_{i=1..N-1}
 \reward(\state_i, \action_i),
 \]
 \normalsize
-
-%\noindent  Here,  $\reward(\state_i, \action_i)$ is the instantaneous
-%reward ---i.e., can be negative for action costs, or positive for goal
-%achievement--- received for executing action $\action_i$ in state
-%$\state_i$. Finally, it is worth clarifying that in practise we do not
-%artificially limit the length of traces that the sequential planner
-%can consider. Moreover, for problems we consider there is always a
-%finite optimal trace.
 
 \subsection{DT Sessions}
 
@@ -250,12 +176,12 @@ determined.  Continuing our simplified example, if the trace is:
 \small
 \[
 \begin{array}{l}
-\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{office}));\\
-\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}));\\
-(\pp{look}~\pp{box}~\pp{office});
-(\pp{look}~\pp{cup}~\pp{kitchen});\\
-(\pp{report}~\pp{box}~\pp{office}); 
-(\pp{report}~\pp{cup}~\pp{kitchen})
+\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{kitchen}));\\
+\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{office}));\\
+(\pp{look}~\pp{box}~\pp{kitchen});
+(\pp{look}~\pp{cup}~\pp{office});\\
+(\pp{report}~\pp{box}~\pp{kitchen}); 
+(\pp{report}~\pp{cup}~\pp{office})
 \end{array}
 \]
 \normalsize
@@ -290,208 +216,123 @@ $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
 \$(x)\prob/(1-\prob)$.
 
 
+%%%% 
 
-\Omit{
+In order to guarantee fast DT sessions, those plan in an abstract
+process determined by the current trace and underlying belief-state.
 %%
-Finally, 
-If an
-assumption was rejected, we prohibit that sequential session from
-making it again.
-}
-
-
-%%  the size of the state space
-%% is determined by two factors: the number of non-zero states in the
-%% initial belief-state, and the number of actions. Determining
-%% action reachability is intractable, as is determining their relevance
-%% to goal achievement.
-
-%% As we are aiming to keep the decision theoretic session fast, we try
-%% to keep the state space of the abstract problem as small as
-%% possible. In a deterministic-action POMDP, the state space size is
-%% determined by two factors: the number of non-zero states in the
-%% initial belief-state and the number of executable actions. As
-%% determining the relevance of an action for a given goal in in general
-%% a hard problem, we concentrate on keeping the number of uncertain
-%% facts as low as possible without losing important information about
-%% the sensing goal.
-
-In order to guarantee fast DT sessions, planning occurs for a small
-abstract problem. In our setting, where the underlying decision
-process has a deterministic action model, a significant cause of
-problem largeness is due to the number of states that occur with
-non-zero probability in the underlying belief-state. In posing a small
-abstract process for a DT session, we construct an abstract
-belief-state that is chiefly characterised by facts related to the
-current trace. In that abstraction, instances of operator or sense
-declarations whose specification mentions an excluded fact are not
-available.
+The abstract process posed to the DT planner is constructed by first
+constraining as statically false all propositions except those which
+are true with probability 1, or which are the subject of {\em
+relevant} assumptions. For example, taking the above trace and
+switching action {\texttt (look~box~office)}, the underlying
+belief in Fig.~\ref{fig:beliefs}B would determine a fully
+constrained belief given by Fig.~\ref{fig:beliefs}C.
 %%
-In detail, we first construct an $(\pp{:init})$ declaration which
-contains the root term, and relevant assumptions from the trace---e.g., (Fig.\ref{fig:abstraction-b}) gives an example fragment, where
-diamonds are probabilistic terms, and circles are atomic and/or
-conjunctive.
+Next, static constraints are removed, one proposition at a time, until
+the number of states that can be true with non-zero probability in the
+initial belief of the abstract process reaches a given threshold.
 %%
-For each excluded atom, we compute the {\em entropy} of the {\em
-relevant}
-assumptions, {\em conditional} on that atom. Intuitively, lower
-entropy indicates an atom gives better information about
-assumptions. Facts are iteratively added to the belief-state in
-increasing order according to that measure until the belief space size
-reaches a predefined limit (Fig.\ref{fig:abstraction-c}).
+In detail, for each statically-false proposition we compute the {\em
+entropy} of the state assumptions of the current trace {\em
+conditional} on that proposition. 
+%%
+Let $X$ be a set of propositions and $2^X$ the powerset of $X$, then taking
 
-%%  or no more atoms that reduce the entropy
-%% can be added 
 
-\begin{figure}[h!]
-  \centering
-  \tikzstyle{tree} = [sibling distance=4.5mm]
-  \tikzstyle{toplevel} = [grow'=right, sibling distance=22mm]
-  \tikzstyle{seclevel} = [sibling distance=9mm]
-  \tikzstyle{pnode} = [diamond, draw=black, minimum size=2.5mm]
-  \tikzstyle{cnode} = [circle, draw=black, minimum size=3mm]
-  \tikzstyle{assumption} = [solid, very thick, draw=black]
-  \tikzstyle{selected} = [solid, draw=black]
-  \tikzstyle{unused} = [densely dashed, draw=black!40]
-  %% \subfloat[The initial belief-state with the assumptions made by the continual
-  %%   planner in bold.]{
-  %%     \label{fig:abstraction-a}
-  %%     \begin{tikzpicture}[
-  %%   level 3/.style={tree}]
-  %%   \node[pnode, assumption] (cat) at (1,1) {} [toplevel]
-  %%     child[seclevel] {node[cnode, assumption] (office) {}
-  %%       child {node [pnode, assumption] (box) {}
-  %%         child {node [cnode] (boxp1) {}}
-  %%         child {node [cnode, assumption] (boxp2) {}}
-  %%       }
-  %%       child {node [pnode] (cup) {} 
-  %%         child {node [cnode] (cupp1) {}}
-  %%         child {node [cnode] (cupp2) {}}
-  %%       }
-  %%     }
-  %%     child {node[cnode] (kitchen) {}
-  %%       child {node [pnode] (box2) {} 
-  %%         child {node [cnode] (box2p1) {}}
-  %%         child {node [cnode] (box2p2) {}}
-  %%       }
-  %%     };
-  %%  \tiny
-  %%  \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-  %%  \node[above=0 of cat] {$\pp{(category room1)}$};
-  %%  \node[below=0 of kitchen] {$\pp{kitchen}$};
-  %%  \node[below=0 of office] {$\pp{office}$};
-  %%  \node[below=0 of box] {$\pp{(is-in box)}$};
-  %%  \node[below=0 of box2] {$\pp{(is-in box)}$};
-  %%  \node[below=0 of cup] {$\pp{(is-in cup)}$};
-  %%  \node[right=0 of boxp1] {$\pp{place1}$};
-  %%  \node[right=0 of boxp2] {$\pp{place2}$};
-  %%  \node[right=0 of box2p1] {$\pp{place1}$};
-  %%  \node[right=0 of box2p2] {$\pp{place2}$};
-  %%  \node[right=0 of cupp1] {$\pp{place1}$};
-  %%  \node[right=0 of cupp2] {$\pp{place2}$};
-  %%   % \node[node] (kitchen) right of (cat) {};
-  %% \end{tikzpicture}}
-\qquad
-  \subfloat[Removing facts that are not part of an assumption.]{
-    \label{fig:abstraction-b}
-    \begin{tikzpicture}[
-    level 3/.style={tree}]
-    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
-      child[seclevel] {node[cnode, assumption] (office) {}
-        child {node [pnode, assumption] (box) {}
-          child {node [cnode, unused] (boxp1) {}}
-          child {node [cnode, assumption] (boxp2) {}}
-        }
-        child {node [pnode, unused] (cup) {} 
-          child {node [cnode, unused] (cupp1) {}}
-          child {node [cnode, unused] (cupp2) {}}
-        }
-      }
-      child {node[cnode, selected] (kitchen) {}
-        child {node [pnode, selected] (box2) {} 
-          child {node [cnode, unused] (box2p1) {}}
-          child {node [cnode, selected] (box2p2) {}}
-        }
-      };
-   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
-   \tiny
-   \node[above=0 of cat] {$\pp{(category room1)}$};
-   \node[below=0 of office] {$\pp{office}$};
-   \node[below=0 of box] {$\pp{(is-in box)}$};
-   \node[below=0 of box2] {$\pp{(is-in box)}$};
-   \node[right=0 of boxp2] {$\pp{place2}$};
-   \node[right=0 of box2p2] {$\pp{place2}$};
-    % \node[node] (kitchen) right of (cat) {};
-  \end{tikzpicture}}
-\vspace{2mm}
-  \subfloat[Refinement, by adding relevant facts.]{
-    \label{fig:abstraction-c}
-    \begin{tikzpicture}[
-    level 3/.style={tree}]
-    \node[pnode, assumption] (cat) at (1,1) {} [toplevel, unused]
-      child[seclevel] {node[cnode, assumption] (office) {}
-        child {node [pnode, assumption] (box) {}
-          child {node [cnode, selected] (boxp1) {}}
-          child {node [cnode, assumption] (boxp2) {}}
-        }
-        child {node [pnode, unused] (cup) {} 
-          child {node [cnode, unused] (cupp1) {}}
-          child {node [cnode, unused] (cupp2) {}}
-        }
-      }
-      child {node[cnode, selected] (kitchen) {}
-        child {node [pnode, selected] (box2) {} 
-          child {node [cnode, selected] (box2p1) {}}
-          child {node [cnode, selected] (box2p2) {}}
-        }
-      };
-   \draw[assumption] (cat) -- (office) -- (box) -- (boxp2);
-   \draw[selected] (box) -- (boxp1);
-   \draw[selected] (cat) -- (kitchen) -- (box2) -- (box2p2);
-   \draw[selected] (box2) -- (box2p1);
-   \tiny
-   \node[above=0 of cat] {$\pp{(category room1)}$};
-   \node[below=0 of office] {$\pp{office}$};
-   \node[below=0 of box] {$\pp{(is-in box)}$};
-   \node[below=0 of box2] {$\pp{(is-in box)}$};
-   \node[right=0 of boxp1] {$\pp{place1}$};
-   \node[right=0 of boxp2] {$\pp{place2}$};
-   \node[right=0 of box2p1] {$\pp{place1}$};
-   \node[right=0 of box2p2] {$\pp{place2}$};
-    % \node[node] (kitchen) right of (cat) {};
-  \end{tikzpicture}}
-  
-  \caption{Abstract belief-state, and refinement.}
-\label{fig:abstraction}
+
+\small
+\[
+\chi = \{\bigwedge_{x \in X'
+  \cap X}x \; \land \bigwedge_{x \in X \setminus X'}\neg x \;|\; X' \in 2^X\},
+\]
+\normalsize
+
+\noindent we have that $\chi$ is a set of conjunctions each of which
+corresponds to one truth assignment to elements in $X$. Where
+$p(\phi)$ gives the probability that a conjunction $\phi$ holds in the
+belief-state of the DTPDDL process, the entropy of $X$
+\emph{conditional} on a proposition $y$, written $\entropy(X|y)$, is
+given by Eq.~\ref{eq:condent}.
+
+\vspace{-1ex}
+\small
+\begin{equation}\label{eq:condent}
+  \entropy(X|y) = \sum_{x \in \chi, y' \in \{y, \neg y\}} p(x \land y') \log_2
+  \frac{p(y')}{p(x \land y')}
+\end{equation}
+\normalsize
+
+A low $\entropy(X|y)$ value suggests that knowing the truth value of
+$y$ is useful for determining whether or not some assumptions $X$
+hold. When removing a static constraint on propositions during the
+abstract process construction, $y_i$ is considered before $y_j$ if
+$\entropy(X|y_i)~<~\entropy(X|y_j)$. For example, if the serial plan
+assumes the robot is in a kitchen, then propositions about the
+contents of kitchens, e.g. {\texttt (=(is-in~cup)kitchen)}, are
+added to characterise the abstract process' states. Taking
+assumption $X$ to be {\texttt (=(is-in~box)kitchen)}, in relaxing
+static constraints the following entropies are calculated:
+
+\small
+\begin{tabtt}
+.47 \= = \entropy(\=X|(=(is-in~milk)office))\+ \\
+ = \entropy(X|(=(is-in~milk)kitchen)) \-\\
+.97 = \entropy(X|(=(is-in~cup)office))\+\\
+ = \entropy(X|(=(is-in~cup)kitchen))
+\end{tabtt}
+\normalsize
+
+\noindent Therefore, the first static constraint to be relaxed is for
+\texttt{(=(is-in~milk)office)}, or
+equivalently \texttt{(=(is-in~milk)kitchen)}, giving a refined
+abstract belief state depicted in
+Fig.~\ref{fig:beliefs}A. Summarising, if for Fig.\ref{fig:beliefs}B
+the DT session is restricted to belief-states with fewer than $8$
+elements, then the starting belief-state of the DT session does not
+mention a ``cup''.
+
+
+\begin{figure}
+\tiny
+\begin{tabularx}{\columnwidth}{XX}
+\hline
+\vspace{1ex}
+\scriptsize (A) Partially constrained abstract \mbox{\hspace{4ex}belief-state} & 
+\vspace{1ex}\scriptsize \hspace{-4ex}(B) Underlying DTPDDL belief \\
+\vspace{-2ex} 
+\begin{tabtt}
+(\=:init (=(is-in~R2D2)kitchen) \+ \\
+       (\=.6(and\=(=(is-in~box)kitchen) \+\+ \\
+        (\=.9(=(is-in~milk)~kitchen))\+\\
+         .1(=(is-in~milk)office))\-\-  \\
+       .4(and(=(is-in~box)office) \+\\
+        (.1(=(is-in~milk)kitchen))\+\\
+        .9(=(is-in~milk)office)))
+\end{tabtt} &
+\vspace{-2ex} 
+\begin{tabtt}
+\hspace{-6ex}(\=:init (=(is-in~R2D2)office) \+ \\
+       (\=.6(and\=(=(is-in~box)kitchen) \+\+ \\
+        (\=.9(=(is-in~milk)kitchen))\+\\
+         .1(=(is-in~milk)office))\-\-  \\
+       .4(and(=(is-in~box)office) \+\\
+        (.1(=(is-in~milk)kitchen))\+\\
+        .9(=(is-in~milk)office))) \-\-\-\\
+       (\=.6(=(is-in~cup)office) \+ \\
+      .4(=(is-in~cup)kitchen))) \\
+\end{tabtt} \\
+\vspace{-6ex}\scriptsize(C) Fully constrained abstract \mbox{\hspace{5ex}belief-state} & \\
+\vspace{-5ex} \begin{tabtt}
+(\=:init (=(is-in~R2D2)kitchen) \+ \\
+       (\=.6(=(is-in~box)kitchen))) \\
+\end{tabtt} & \\
+\hline
+\end{tabularx}
+\caption{Simplified examples of abstract belief-states from
+       DT sessions. \label{fig:beliefs}}
+\normalsize
 \end{figure}
-
-% When limiting the number of actions, we aim to include those that are
-% possibly required to a) reach the goal or b) to directly observe an
-% atom that is part of the abstract belief state. In general, checking
-% this for an action is \textsc{PSPACE} complete for \textsc{STRIPS}
-% planning. 
-
-% We approximate the set of relevant actions as follows: Let
-% \relevantAtoms\ be the set of atoms that either occur in the goal
-% condition \poss(\switchAction) or in a precondition \poss($a$) of an
-% action $a$ that can directly sense any atom in the abstract belief
-% state. We construct a \emph{relaxed planning graph} with
-% \relevantAtoms\ as goal atoms from which we extract a relaxed
-% plan. 
-
-
-
-%% In the first step, we remove all facts that are not part of an
-%% assumption (Fig. \ref{fig:abstraction-b}). At this point, the session
-%% would proceed in an abstraction of the environment that does not
-%% contain $\pp{place1}$, the $\pp{cup}$ or a $\pp{kitchen}$. 
-%% %%
-%% In a second step, we iteratively refine the relaxed declaration by
-%% adding terms from the original statement of $(\pp{:init})$ while the
-%% number of abstract states in $\bstate_0$ that occur with non-zero
-%% probability according to that refined declaration remains of a
-%% practicable size. In detail, 
 
 
 
