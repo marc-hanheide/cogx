@@ -123,7 +123,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				initSphere, initTime, compID, initVisualObjViewArray,
 				initGeomModel, 0, intStringArray, initDoubleArray, 0, 0,
 				intStringArray, initDoubleArray, initDoubleArray, 0, 0,
-				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "");
+				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "", initDoubleArray);
 
 		return visObj;
 	}
