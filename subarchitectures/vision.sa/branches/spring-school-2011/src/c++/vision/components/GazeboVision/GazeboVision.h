@@ -24,7 +24,7 @@ private:
   /**
    * host on which player server runs (typically localhost)
    */
-  string playerHost;
+  std::string playerHost;
   /**
    * player port number (typically 6665)
    */
