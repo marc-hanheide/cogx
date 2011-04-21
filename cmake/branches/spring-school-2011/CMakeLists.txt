@@ -183,7 +183,7 @@ endif(BUILD_HAL_VIDEO)
 #add_subdirectory (tools/hardware/stereo)
 #endif(BUILD_HAL_STEREO)
 
-option(BUILD_HAL_POINT_CLOUD "Build point cloud server/client" NO)
+option(BUILD_HAL_POINT_CLOUD "Build point cloud server/client" YES)
 if(BUILD_HAL_POINT_CLOUD)
 add_subdirectory (tools/hardware/pointCloud)
 endif(BUILD_HAL_POINT_CLOUD)
