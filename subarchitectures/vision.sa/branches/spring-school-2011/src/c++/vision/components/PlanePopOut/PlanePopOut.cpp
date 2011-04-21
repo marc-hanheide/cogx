@@ -1940,6 +1940,7 @@ void PlanePopOut::AddConvexHullinWM()
 		    {
 			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
 			  //debug("add sth into WM");
+			  deleteFromWorkingMemory(pre_id);
 			  pre_id = newDataID();
 
 			  // create a visual object from the convex hull
