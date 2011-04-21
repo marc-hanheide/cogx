@@ -13,7 +13,7 @@ link_directories (${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components/gpus
 SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-fPIC")
 
 # GPU LIBRARY for STEREO SERVER
-option(BUILD_HAL_STEREO_GPU "Build the GPU Library for Stereo Server" YES)
+option(BUILD_HAL_STEREO_GPU "Build the GPU Library for Stereo Server" NO)
 if(BUILD_HAL_STEREO_GPU)
   add_subdirectory(gpustereo)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/gpustereo)
