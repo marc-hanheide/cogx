@@ -9,7 +9,7 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --fixed --camids "0" --cam_poses "[0.260240 0.059998 1.428491][ -1.209   1.209  -1.209]" --log
+CPP MG CameraMount CameraMount --fixed --camids "0" --cam_poses "[0.100000 0.060000 1.440000][ -1.209   1.209  -1.209]" --log
 
 CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml" --log
 
