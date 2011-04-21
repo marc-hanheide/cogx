@@ -27,42 +27,42 @@
 
       <visual>
         <xyz>0 0.0205 0</xyz>
-        <scale>0.137 0.000 0.190</scale>
+        <scale>0.137 0.001 0.190</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-front</material>
       </visual>
 
       <visual>
         <xyz>0 -0.0205 0</xyz>
-        <scale>0.137 0.000 0.190</scale>
+        <scale>0.137 0.001 0.190</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-back</material>
       </visual>
 
       <visual>
         <xyz>0.0685 0 0</xyz>
-        <scale>0.000 0.041 0.190</scale>
+        <scale>0.001 0.041 0.190</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-left</material>
       </visual>
 
       <visual>
         <xyz>-0.0685 0 0</xyz>
-        <scale>0.000 0.041 0.190</scale>
+        <scale>0.001 0.041 0.190</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-right</material>
       </visual>
 
       <visual>
         <xyz>0 0 0.095</xyz>
-        <scale>0.137 0.041 0.000</scale>
+        <scale>0.137 0.041 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-top</material>
       </visual>
 
       <visual>
         <xyz>0 0 -0.095</xyz>
-        <scale>0.137 0.041 0.000</scale>
+        <scale>0.137 0.041 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-schokomusli-bottom</material>
       </visual>
