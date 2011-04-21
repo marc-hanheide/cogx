@@ -22,7 +22,6 @@
     <geom:box name="cereals-schokomusli_geom">
       <xyz>0.0 0.0 0.0.0</xyz>
       <rpy>0 0 0</rpy>
-			0.0685 0.0205 0.095 0.000000 0.000000 -1.000000 
       <size>0.137 0.041 0.190</size>
       <mass>0.1</mass>
 
