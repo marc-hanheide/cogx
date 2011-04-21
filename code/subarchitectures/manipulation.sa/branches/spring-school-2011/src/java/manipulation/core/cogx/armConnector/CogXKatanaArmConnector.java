@@ -29,9 +29,9 @@ import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.GenConfigspaceCoord;
 import manipulation.slice.ManipulationCommandStatus;
-import manipulation.slice.PlayerBridgeCloseGripperCommmand;
-import manipulation.slice.PlayerBridgeOpenGripperCommmand;
-import manipulation.slice.PlayerBridgeSendTrajectoryCommmand;
+import manipulation.slice.PlayerBridgeCloseGripperCommand;
+import manipulation.slice.PlayerBridgeOpenGripperCommand;
+import manipulation.slice.PlayerBridgeSendTrajectoryCommand;
 
 import org.apache.log4j.Logger;
 
@@ -176,7 +176,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			reached = false;
 
 			if (manipulator.getConfiguration().getArmName() == ArmName.SIMULATION) {
-				PlayerBridgeSendTrajectoryCommmand cmd = new PlayerBridgeSendTrajectoryCommmand();
+				PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommmand();
 
 				manipulation.slice.GenConfigspaceState[] returnVal = new manipulation.slice.GenConfigspaceState[trajectory.length];
 
@@ -299,7 +299,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void closeGripper(int force) {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
-			PlayerBridgeCloseGripperCommmand cmd = new PlayerBridgeCloseGripperCommmand();
+			PlayerBridgeCloseGripperCommand cmd = new PlayerBridgeCloseGripperCommmand();
 			cmd.status = ManipulationCommandStatus.NEW;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			try {
@@ -350,7 +350,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void openGripper() {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
-			PlayerBridgeOpenGripperCommmand cmd = new PlayerBridgeOpenGripperCommmand();
+			PlayerBridgeOpenGripperCommand cmd = new PlayerBridgeOpenGripperCommmand();
 			cmd.status = ManipulationCommandStatus.NEW;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
