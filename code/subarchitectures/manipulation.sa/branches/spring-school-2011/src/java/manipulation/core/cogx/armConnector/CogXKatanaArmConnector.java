@@ -176,7 +176,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			reached = false;
 
 			if (manipulator.getConfiguration().getArmName() == ArmName.SIMULATION) {
-				PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommmand();
+				PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommand();
 
 				manipulation.slice.GenConfigspaceState[] returnVal = new manipulation.slice.GenConfigspaceState[trajectory.length];
 
@@ -299,7 +299,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void closeGripper(int force) {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
-			PlayerBridgeCloseGripperCommand cmd = new PlayerBridgeCloseGripperCommmand();
+			PlayerBridgeCloseGripperCommand cmd = new PlayerBridgeCloseGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			try {
@@ -350,7 +350,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void openGripper() {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
-			PlayerBridgeOpenGripperCommand cmd = new PlayerBridgeOpenGripperCommmand();
+			PlayerBridgeOpenGripperCommand cmd = new PlayerBridgeOpenGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
