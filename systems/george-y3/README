@@ -26,15 +26,12 @@ To save the current set of components:
 Mac users
 ---------
 
-The command 'readlink -f' doesn't work on Mac. Do the following:
+The command 'readlink -f' doesn't work on Mac and there are some problems
+between sed and the shell. Do the following:
 
   mkdir BUILD
   cd BUILD
-  cmake -Wno-dev .. > /dev/null
-  ../tools/scripts/cmake-apply  .  ../sysconfig/cmakecache/george-y3.txt
-  cmake -Wno-dev .. > /dev/null
-
-cmake-apply may still report an error, but it should work.
+  ccmake -C ../sysconfig/cmakecache/george-y3.txt  ..
 
 
 Changing externals
