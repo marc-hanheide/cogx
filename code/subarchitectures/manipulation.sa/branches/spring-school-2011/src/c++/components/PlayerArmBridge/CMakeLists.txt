@@ -11,4 +11,4 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 Find_package(Player)
 
 add_cast_component(PlayerArmBridge PlayerArmBridge.cpp)
-target_link_libraries(PlayerArmBridge ManipulationData ${PLAYER_LDFLAGS})
+target_link_libraries(PlayerArmBridge ManipulationData ${PLAYER_LDFLAGS} ${VISUALIZATION_LIBRARIES} ${OPENCV_LDFLAGS})
