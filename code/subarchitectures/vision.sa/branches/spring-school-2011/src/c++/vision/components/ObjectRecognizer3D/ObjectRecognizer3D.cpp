@@ -156,10 +156,39 @@ void ObjectRecognizer3D::start(){
   if (!m_simulationOnly) {
     m_display.connectIceClient(*this);
     m_display.setClientData(this);
+    m_display.installEventReceiver();
+    for(map<string,RecEntry>::iterator it = m_recEntries.begin(); it != m_recEntries.end(); it++)
+    {
+      ostringstream id, label;
+      id << "button." << it->first;
+      label << "Recognize " << it->first;
+      m_display.addButton(getComponentID(), id.str(), label.str());
+    }
   }
 #endif
 }
 
+#ifdef FEAT_VISUALIZATION
+void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent &event)
+{
+  if(event.type == Visualization::evButtonClick)
+  {
+    for(map<string,RecEntry>::iterator it = pRec->m_recEntries.begin(); it != pRec->m_recEntries.end(); it++)
+    {
+      ostringstream id;
+      id << "button." << it->first;
+      if(event.sourceId == id.str())
+      {
+        Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand;
+        rec_cmd->cmd = RECOGNIZE;
+        rec_cmd->label = it->first;
+        rec_cmd->visualObjectID = "";
+        pRec->addToWorkingMemory(pRec->newDataID(), rec_cmd);
+      }
+    }
+  }
+}
+#endif
 
 void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
 log("Fake 3D Object Received");  
@@ -255,7 +284,7 @@ void ObjectRecognizer3D::runComponent(){
 		delete(m_detect);
 
 	if(m_showCV)
-  	cvDestroyWindow("ObjectRecognizer3D");
+  	cvDestroyWindow(getComponentID().c_str());
 
   log("stop");
 }
@@ -332,14 +361,14 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 	sift_model_learner.AddToModel(m_temp_keys, (*m_recEntries[m_label].object));
 
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+  m_display.setImage(getComponentID(), m_iplImage);
 #endif
 
 	if(m_showCV){
 		for (unsigned i=0; i<m_temp_keys.Size(); i++){
 				m_temp_keys[i]->Draw( m_iplImage,*m_temp_keys[i],CV_RGB(255,0,0) );
 		}
-		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+		cvShowImage ( getComponentID().c_str(), m_iplImage );
 	}
 
 	m_wait4data = false;
@@ -479,7 +508,7 @@ void ObjectRecognizer3D::initInStart(){
   m_delete_command_from_wm = false;
 
   if(m_showCV){
-		cvNamedWindow("ObjectRecognizer3D", 1 );
+		cvNamedWindow(getComponentID().c_str(), 1 );
 		cvWaitKey(10);
 	}
 
@@ -689,11 +718,11 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     }
 
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+  m_display.setImage(getComponentID(), m_iplImage);
 #endif
 
 	if(m_showCV){
-		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+		cvShowImage(getComponentID().c_str(), m_iplImage);
 		cvWaitKey(50);
 	}
 
