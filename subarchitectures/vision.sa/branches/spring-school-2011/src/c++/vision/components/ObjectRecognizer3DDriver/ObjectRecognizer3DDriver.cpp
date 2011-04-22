@@ -93,7 +93,7 @@ void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
 	}else{
 		m_loops = 1;
 	}
-log("BLORB");
+
   ostringstream ostr;
   for(size_t i = 0; i < m_labels.size(); i++)
     ostr << " '" << m_labels[i] << "'";
