@@ -46,8 +46,6 @@ public class WaitPart extends StrategyPart implements Observer {
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
 
-		((CogXKatanaArmConnector)getManipulator().getArmConnector()).initSimMove();
-
 		getManipulator().getWatcher().addObserver(this);
 
 		synchronized (this) {
