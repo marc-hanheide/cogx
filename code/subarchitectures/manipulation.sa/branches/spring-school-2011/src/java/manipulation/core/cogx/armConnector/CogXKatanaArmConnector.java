@@ -374,11 +374,10 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			}
 		} else {
 			KatanaSensorData[] threshold = new KatanaSensorData[4];
-
-			HashMap<SensorPosition, Integer> sensorData = null;
-			sensorData = receiveGripperSensorData();
-
 			if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
+				HashMap<SensorPosition, Integer> sensorData = null;
+				sensorData = receiveGripperSensorData();
+
 				threshold[0] = new KatanaSensorData(
 						SensorData
 								.convertSensorPositionToIndex(SensorPosition.FORCE_LEFT_FAR),
