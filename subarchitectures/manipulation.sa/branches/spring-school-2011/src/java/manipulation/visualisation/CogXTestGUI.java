@@ -123,7 +123,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				initSphere, initTime, compID, initVisualObjViewArray,
 				initGeomModel, 0, intStringArray, initDoubleArray, 0, 0,
 				intStringArray, initDoubleArray, initDoubleArray, 0, 0,
-				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "", initDoubleArray);
+				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "",
+				initDoubleArray);
 
 		return visObj;
 	}
@@ -331,14 +332,58 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("linGraspApp")) {
 			logger.error("linGraspApp pressed");
 
+			LinearGraspApproachCommand linGraspApp = new LinearGraspApproachCommand();
+
+			if (!txtItemXPosition.getText().isEmpty()) {
+				String visObjID = ((CogXRunner) manipulator.getRunner())
+						.newDataID();
+
+				Pose3 pos = new Pose3();
+
+				pos.pos = new Vector3(Double.parseDouble(txtItemXPosition
+						.getText()), Double.parseDouble(txtItemYPosition
+						.getText()), Double.parseDouble(txtItemZPosition
+						.getText()));
+
+				pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+				VisualObject visObj = initVisualObject();
+				visObj.pose = pos;
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							visObjID, visObj);
+				} catch (AlreadyExistsOnWMException e1) {
+					logger.error(e1);
+				}
+
+				linGraspApp.targetObjectAddr = new WorkingMemoryAddress(
+						visObjID,
+						((CogXRunner) manipulator.getRunner())
+								.getSubarchitectureID());
+
+			} else {
+				Item it = manipulator.getItemMemory().getItemList().getFirst();
+				try {
+					WorkingMemoryAddress wma = (WorkingMemoryAddress) it
+							.getAttribute(PropertyName.WMA_ADDRESS);
+
+					linGraspApp.targetObjectAddr = wma;
+				} catch (ItemException e1) {
+					logger.error(e1);
+				}
+
+			}
+
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
-			LinearGraspApproachCommand linGraspApproachCom = new LinearGraspApproachCommand();
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-						linGraspApproachCom);
+						linGraspApp);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
 		} else if (e.getActionCommand().equals("simulateGrasp")) {
 			logger.error("simulateGrasp pressed");
 
