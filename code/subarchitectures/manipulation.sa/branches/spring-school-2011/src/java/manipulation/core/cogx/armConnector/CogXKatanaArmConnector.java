@@ -374,6 +374,13 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			}
 		} else {
 			KatanaSensorData[] threshold = new KatanaSensorData[4];
+
+			if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA450)) {
+				for (int i = 0; i < threshold.length; i++) {
+					threshold[i] = new KatanaSensorData(0, 0);
+				}
+			}
+
 			if ((manipulator.getConfiguration().getArmName() == ArmName.KATANA300)) {
 				HashMap<SensorPosition, Integer> sensorData = null;
 				sensorData = receiveGripperSensorData();
@@ -398,6 +405,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			}
 
 			try {
+
 				((KatanaArmPrx) arm).gripperClose(threshold, 5);
 				closed = true;
 			} catch (ExTinyKatanaArm e) {
