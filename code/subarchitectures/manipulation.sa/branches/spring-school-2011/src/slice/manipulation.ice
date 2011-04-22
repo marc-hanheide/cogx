@@ -9,7 +9,8 @@ module manipulation {
 		enum ManipulationCompletion {
 			FAILED,
 			SUCCEEDED,
-			ONTHEWAY
+			ONTHEWAY,
+			INIT
 		};
 		
 		enum ManipulationCommandStatus {
@@ -34,11 +35,17 @@ module manipulation {
 			ManipulationCompletion comp;
 		};
 		
+		class ManipulationExternalCommand extends ManipulationCommand {
+		};
+
+		class ManipulationInternalCommand extends ManipulationCommand {
+		};
+		
 		/**
    		* @brief puts down a given visual object
    		* @author Torben Toeniges
    		**/
-		class PutDownCommand extends ManipulationCommand {
+		class PutDownCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress basedObjectAddr;
 		};
 		
@@ -47,7 +54,7 @@ module manipulation {
    		* @brief performs a far arm movement to place the gripper in front of the given object
    		* @author Torben Toeniges
    		**/
-		class FarArmMovementCommand extends ManipulationCommand {
+		class FarArmMovementCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 		
 			cogx::Math::Pose3 reachedPose;
@@ -58,7 +65,7 @@ module manipulation {
    		* @brief grasps a given visual object with a linear arm movement approach
    		* @author Torben Toeniges
    		**/
-		class LinearGraspApproachCommand extends ManipulationCommand {
+		class LinearGraspApproachCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			GraspingStatus graspStatus;
 		};
@@ -67,7 +74,7 @@ module manipulation {
    		* @brief simulates the grasp command
    		* @author Torben Toeniges
    		**/
-		class SimulateGraspCommand extends ManipulationCommand {
+		class SimulateGraspCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 
 			cogx::Math::Pose3 simulatedReachablePose;
@@ -77,37 +84,37 @@ module manipulation {
    		* @brief stops the manipulator movement
    		* @author Torben Toeniges
 		**/
-		class StopCommand extends ManipulationCommand {
+		class StopCommand extends ManipulationExternalCommand {
 		};
 		
 		/**
    		* @brief stops the manipulator movement
    		* @author Torben Toeniges
 		**/
-		class MoveArmToHomePositionCommand extends ManipulationCommand {
+		class MoveArmToHomePositionCommand extends ManipulationExternalCommand {
 		};
 		
 		/**
    		* @brief open gripper
    		* @author Torben Toeniges
 		**/
-		class OpenGripperCommand extends ManipulationCommand {
+		class OpenGripperCommand extends ManipulationExternalCommand {
 		};
 		
 		/**
    		* @brief close gripper
    		* @author Torben Toeniges
 		**/
-		class CloseGripperCommand extends ManipulationCommand {
+		class CloseGripperCommand extends ManipulationExternalCommand {
 			GraspingStatus graspStatus;
 		};
 		
-		class MoveArmToPose extends ManipulationCommand {
+		class MoveArmToPose extends ManipulationExternalCommand {
 			cogx::Math::Pose3 targetPose;
 			cogx::Math::Pose3 reachedPose;			
 		};
 		
-		class GetCurrentArmPose extends ManipulationCommand {
+		class GetCurrentArmPose extends ManipulationExternalCommand {
 			cogx::Math::Pose3 currentPose;
 		};
 
@@ -155,7 +162,7 @@ module manipulation {
       * trajectory could actually be reached or FAILED if the arm was blocked
       * due to a collision,
 			**/
-		class PlayerBridgeSendTrajectoryCommand extends ManipulationCommand {
+		class PlayerBridgeSendTrajectoryCommand extends ManipulationInternalCommand {
 			GenConfigspaceStateSeq trajectory;
 		};
 
@@ -167,7 +174,7 @@ module manipulation {
       * Completion status will be set to ONTHEWAY while opening the gripper.
       * Completion status will be set to SUCCEEDED once the gripper is opened.
 			**/
-		class PlayerBridgeOpenGripperCommand extends ManipulationCommand {
+		class PlayerBridgeOpenGripperCommand extends ManipulationInternalCommand {
 		};
 
 		/**
@@ -180,7 +187,7 @@ module manipulation {
 			* Grasp status will be set to GRASPING or NOTGRASPING, depending on
 			* whether the gripper fingers could fully close.
 			**/
-		class PlayerBridgeCloseGripperCommand extends ManipulationCommand {
+		class PlayerBridgeCloseGripperCommand extends ManipulationInternalCommand {
 			GraspingStatus graspStatus;
 		};
     };

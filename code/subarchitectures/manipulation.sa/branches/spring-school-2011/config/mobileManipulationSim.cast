@@ -23,19 +23,21 @@ CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-ca
 
 
 # vision ######################################################################
-CPP MG cameramount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/calib/cam-left-pose.xml"
+CPP MG cameramount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/css2011/calibration/cam-left-pose.xml"
 
-CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video2/soup-0000000%d.ppm" --start "100" --end "600" --framerate_ms "100" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
-#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/calib/cam-left-cal.xml"
-
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/frosties_small.ply" --siftfiles "instantiations/sift-models/frosties_small.sift" --labels "frosties_small" --log $V11N_STANDALONE $V11N_STANDALONE_HOST
+CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml" --log
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log $V11N_STANDALONE $V11N_STANDALONE_HOST
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.sift" --labels "example-cereals-schokomusli-sim" --initpose "[1.000000 0.000000 1.400000][0 0 1.57]" --log
+
 
 #CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST
 
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/calib/robToArm.xml" --armName "simulation"
+CPP MG manipulation.playerArmBridge PlayerArmBridge
+
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "simulation"
 
 #JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
