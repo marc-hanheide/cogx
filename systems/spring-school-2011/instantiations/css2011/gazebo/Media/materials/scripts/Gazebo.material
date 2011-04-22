@@ -1,5 +1,137 @@
 // our own textures
 
+// floors
+material cogx/tiled-floor
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture tiled-floor.jpg
+      }
+    }
+  }
+}
+
+material cogx/hardwood-floor
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture hardwood-floor.jpg
+      }
+    }
+  }
+}
+
+// walls
+material cogx/white-wall
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture white-wall.jpg
+      }
+    }
+  }
+}
+
+
+// table
+material cogx/table-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/table-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/table-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/table-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/table-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/table-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture table-bottom.jpg
+      }
+    }
+  }
+}
+
+
+// cereals-schokomusli
 material cogx/cereals-schokomusli-front
 {
   technique
@@ -79,48 +211,6 @@ material cogx/cereals-schokomusli-bottom
       texture_unit
       {
         texture cereals-schokomusli-bottom.jpg
-      }
-    }
-  }
-}
-
-material cogx/tiled-floor
-{
-  technique
-  {
-    pass
-    {
-      texture_unit
-      {
-        texture tiled-floor.jpg
-      }
-    }
-  }
-}
-
-material cogx/hardwood-floor
-{
-  technique
-  {
-    pass
-    {
-      texture_unit
-      {
-        texture hardwood-floor.jpg
-      }
-    }
-  }
-}
-
-material cogx/white-wall
-{
-  technique
-  {
-    pass
-    {
-      texture_unit
-      {
-        texture white-wall.jpg
       }
     }
   }
