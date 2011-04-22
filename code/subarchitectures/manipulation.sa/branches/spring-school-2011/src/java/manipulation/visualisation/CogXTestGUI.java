@@ -241,37 +241,53 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		if (e.getActionCommand().equals("putDown")) {
 			logger.error("putDown pressed");
 
-			String visObjID = ((CogXRunner) manipulator.getRunner())
-					.newDataID();
-			PutDownCommand putDownCommand = new PutDownCommand();
+			PutDownCommand putDownCom = new PutDownCommand();
 
-			Pose3 pos = new Pose3();
-			pos.pos = new Vector3(
-					Double.parseDouble(txtItemXPosition.getText()),
-					Double.parseDouble(txtItemYPosition.getText()),
-					Double.parseDouble(txtItemZPosition.getText()));
-			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			if (!txtItemXPosition.getText().isEmpty()) {
+				String visObjID = ((CogXRunner) manipulator.getRunner())
+						.newDataID();
 
-			VisualObject visObj = initVisualObject();
-			visObj.pose = pos;
+				Pose3 pos = new Pose3();
 
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
-						visObjID, visObj);
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
+				pos.pos = new Vector3(Double.parseDouble(txtItemXPosition
+						.getText()), Double.parseDouble(txtItemYPosition
+						.getText()), Double.parseDouble(txtItemZPosition
+						.getText()));
+
+				pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+				VisualObject visObj = initVisualObject();
+				visObj.pose = pos;
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							visObjID, visObj);
+				} catch (AlreadyExistsOnWMException e1) {
+					logger.error(e1);
+				}
+
+				putDownCom.basedObjectAddr = new WorkingMemoryAddress(visObjID,
+						((CogXRunner) manipulator.getRunner())
+								.getSubarchitectureID());
+
+			} else {
+				Item it = manipulator.getItemMemory().getItemList().getFirst();
+				try {
+					WorkingMemoryAddress wma = (WorkingMemoryAddress) it
+							.getAttribute(PropertyName.WMA_ADDRESS);
+
+					putDownCom.basedObjectAddr = wma;
+				} catch (ItemException e1) {
+					logger.error(e1);
+				}
+
 			}
-
-			putDownCommand.basedObjectAddr = new WorkingMemoryAddress(visObjID,
-					((CogXRunner) manipulator.getRunner())
-							.getSubarchitectureID());
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-						putDownCommand);
-
+						putDownCom);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
@@ -412,8 +428,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 					logger.error(e1);
 				}
 
-				simGCmd.targetObjectAddr = new WorkingMemoryAddress(
-						visObjID,
+				simGCmd.targetObjectAddr = new WorkingMemoryAddress(visObjID,
 						((CogXRunner) manipulator.getRunner())
 								.getSubarchitectureID());
 
