@@ -16,6 +16,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <opencv/cv.hpp>
 #include <cogxmath_base.h>
 #include <Vector3.h>
 #include <Matrix33.h>
@@ -276,6 +277,32 @@ inline void readText(istream &is, Pose3 &T)
 {
   readText(is, T.pos);
   readTextRotVec(is, T.rot);
+}
+
+/**
+ * Read pose from XML using OpenCV file storage.
+ * The pose contains tvec, rvec and/or rmat.
+ * If rvec and rmat are given, rvec it will take precedence over rmat.
+ */
+static void readXML(const string &filename, Pose3 &T)
+{
+  cv::FileStorage poseFile(filename, cv::FileStorage::READ);
+  CvMat *t = (CvMat*)poseFile["tvec"].readObj();
+  CvMat *r = (CvMat*)poseFile["rvec"].readObj();
+  CvMat *R = (CvMat*)poseFile["rmat"].readObj();
+  if(r == 0 && R == 0)
+    throw runtime_error("readXML(Pose3): either rvec or rmat must be given");
+  if(r != 0)
+  {
+    fromRotVector(T.rot, vector3(cvmGet(r, 0, 0), cvmGet(r, 1, 0), cvmGet(r, 2, 0)));
+  }
+  else
+  {
+    T.rot.m00 = cvmGet(R, 0, 0);  T.rot.m01 = cvmGet(R, 0, 1);  T.rot.m02 = cvmGet(R, 0, 2);
+    T.rot.m10 = cvmGet(R, 1, 0);  T.rot.m11 = cvmGet(R, 1, 1);  T.rot.m12 = cvmGet(R, 1, 2);
+    T.rot.m20 = cvmGet(R, 2, 0);  T.rot.m21 = cvmGet(R, 2, 1);  T.rot.m22 = cvmGet(R, 2, 2);
+  }
+  T.pos = vector3(cvmGet(t, 0, 0), cvmGet(t, 1, 0), cvmGet(t, 2, 0));
 }
 
 /**
