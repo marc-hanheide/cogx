@@ -306,6 +306,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			PlayerBridgeCloseGripperCommand cmd = new PlayerBridgeCloseGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
+			cmd.comp = ManipulationCompletion.INIT;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -357,6 +358,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			PlayerBridgeOpenGripperCommand cmd = new PlayerBridgeOpenGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
+			cmd.comp = ManipulationCompletion.INIT;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {
