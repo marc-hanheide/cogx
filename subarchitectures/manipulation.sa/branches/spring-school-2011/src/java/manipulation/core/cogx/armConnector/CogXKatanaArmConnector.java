@@ -28,6 +28,7 @@ import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.GenConfigspaceCoord;
+import manipulation.slice.GraspingStatus;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.PlayerBridgeCloseGripperCommand;
@@ -196,7 +197,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 				cmd.trajectory = returnVal;
 				cmd.status = ManipulationCommandStatus.NEW;
-				cmd.comp = ManipulationCompletion.INIT;
+				cmd.comp = ManipulationCompletion.COMPINIT;
 				
 				String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
@@ -306,7 +307,9 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			PlayerBridgeCloseGripperCommand cmd = new PlayerBridgeCloseGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
-			cmd.comp = ManipulationCompletion.INIT;
+			cmd.comp = ManipulationCompletion.COMPINIT;
+
+			cmd.graspStatus = GraspingStatus.GRASPINGSTATUSINIT;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -358,7 +361,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		if ((manipulator.getConfiguration().getArmName() == ArmName.SIMULATION)) {
 			PlayerBridgeOpenGripperCommand cmd = new PlayerBridgeOpenGripperCommand();
 			cmd.status = ManipulationCommandStatus.NEW;
-			cmd.comp = ManipulationCompletion.INIT;
+			cmd.comp = ManipulationCompletion.COMPINIT;
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 			try {

@@ -10,7 +10,7 @@ module manipulation {
 			FAILED,
 			SUCCEEDED,
 			ONTHEWAY,
-			INIT
+			COMPINIT
 		};
 		
 		enum ManipulationCommandStatus {
@@ -22,6 +22,7 @@ module manipulation {
 		};
 		
 		enum GraspingStatus {
+			GRASPINGSTATUSINIT,
 			GRASPING,
 			NOTGRASPING
 		};
