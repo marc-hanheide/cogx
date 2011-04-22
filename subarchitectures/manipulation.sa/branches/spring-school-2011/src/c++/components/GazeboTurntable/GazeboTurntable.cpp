@@ -56,7 +56,6 @@ void GazeboTurntable::configure(const map<string, string> &_config)
   {
     objLabel = it->second;
   }
-  printf("turning object '%s'\n", objLabel.c_str());
   log("turning object '%s'", objLabel.c_str());
 }
 
@@ -69,7 +68,6 @@ void GazeboTurntable::start()
   log(s.str());
 
 #ifdef FEAT_VISUALIZATION
-// printf("Feat_Visualization is ON!!!\n");
   display.connectIceClient(*this);
   display.installEventReceiver();
   display.addCheckBox(getComponentID(), "toggle.turntable.turning", "&Turning");
@@ -85,7 +83,6 @@ void GazeboTurntable::destroy()
 #ifdef FEAT_VISUALIZATION
 void GazeboTurntable::GTDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
-  //debug(event.data + " (received by VideoViewer)");
   if(event.type == Visualization::evCheckBoxChange)
   {
     if(event.sourceId == "toggle.turntable.turning")
