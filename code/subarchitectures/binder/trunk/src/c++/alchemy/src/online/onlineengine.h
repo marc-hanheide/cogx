@@ -282,15 +282,17 @@ class OnlineEngine
     inference_->init();
   }
   
-  void infer(vector<string>& nonZeroAtoms, vector<float>& probs)
+  void infer(vector<string> query, vector<string>& nonZeroAtoms, vector<float>& probs )
   {
+ // 	vector<float> oldProbs=probs;
     nonZeroAtoms.clear();
     probs.clear();
-    vector<float> oldProbs;
+    
     inference_->infer();
       // Fill in vectors
-// HACK
-    inference_->getChangedPreds(nonZeroAtoms, probs, oldProbs, 0.0f);
+
+//    inference_->getChangedPreds(nonZeroAtoms, probs, oldProbs, 0.0f);
+	((MCMC*) inference_)->getPredProbs(query, nonZeroAtoms, probs);
     assert(nonZeroAtoms.size() == probs.size());
   }
 
@@ -324,15 +326,50 @@ class OnlineEngine
     else if (MCSAT* ms = dynamic_cast<MCSAT*>(inference_))
     {
       ms->setMaxSteps(inferenceSteps);
-    } 
+    }
+    else if (GibbsSampler* p = dynamic_cast<GibbsSampler*>(inference_))
+    {
+      p->setMaxSteps(inferenceSteps);
+    }
   }
+  
+  void saveAllCounts(bool saveCounts=true)
+  {
+    inference_->saveAllCounts(saveCounts);
+  }
+  
+  void tallyCntsFromState()
+  {
+    inference_->tallyCntsFromState();
+  }
+  
+  void resetCnts()
+  {
+    inference_->resetCnts();
+  }
+  
+  void saveCnts()
+  {
+    inference_->saveCnts();
+  }
+  
+  void restoreCnts()
+  {
+    inference_->restoreCnts();
+  }
+  
+  int getNumSamples()
+  {
+    return inference_->getNumSamples();
+  }
+  
   
  private:
 
   void addRemoveEvidenceHelper(const vector<string>& evidence,
                                const bool& addEvidence,
                                const bool& trueEvidence)
-  {  inference_->getState()->printNetwork(cout);
+  {
     vector<string>::const_iterator it = evidence.begin();
     for (; it != evidence.end(); it++)
     {

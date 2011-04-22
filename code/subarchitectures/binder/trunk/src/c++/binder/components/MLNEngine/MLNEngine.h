@@ -38,30 +38,42 @@ class MLNEngine :  public ManagedComponent
   string m_inferenceString;
   string m_id;
   string m_resultWMId;
+  vector<string> m_query;
   /**
    * Name of the binder subarchitecture
    */
   std::string m_bindingSA;
 
-  enum EvidenceStatus {
+  enum EntryStatus {
    NEW,
-   SAMPLED};
+   USED};
   /** 
    * VisualObject data, contains also data used to evaluate VisualObject persistency
    */	
   struct EvidenceData {
    cdl::WorkingMemoryAddress addr;
-   EvidenceStatus status;
-   std::string attrBeliefId;
-   cdl::CASTTime addedTime;
-   cdl::CASTTime deleteTime;
+   org::cognitivesystems::binder::mln::EvidencePtr evidence;
+   EntryStatus status;
+//   cdl::CASTTime addedTime;
+//   cdl::CASTTime deleteTime;
   };
-
-  std::map<std::string, std::string>EvidenceMap;
   
-  std::queue<org::cognitivesystems::binder::mln::EvidencePtr> m_evidenceQueue;
+  std::queue<EvidenceData> m_evidenceQueue;  
+  
+  
+  struct QueryData {
+   cdl::WorkingMemoryAddress addr;
+   org::cognitivesystems::binder::mln::QueryPtr query;
+   EntryStatus status;
+//   cdl::CASTTime addedTime;
+//   cdl::CASTTime deleteTime;
+  };
+  
+  std::queue<QueryData> m_queryQueue;
 
   boost::interprocess::named_semaphore* m_queuesNotEmpty;
+  
+  std::queue<cdl::WorkingMemoryAddress> m_removeQueue;
 
   /**
    * callback function called whenever a Belief changes
@@ -72,6 +84,11 @@ class MLNEngine :  public ManagedComponent
    * callback function called whenever there is new evidence
    */
   void newEvidence(const cdl::WorkingMemoryChange & _wmc);
+  
+  /**
+   * callback function called whenever there is new query
+   */
+  void newQuery(const cdl::WorkingMemoryChange & _wmc);
   
   /**
    * checks if the epistemic status is T
@@ -88,7 +105,9 @@ class MLNEngine :  public ManagedComponent
 	  return false;
   };
   
-  void queueNewEvidence(org::cognitivesystems::binder::mln::EvidencePtr evd);
+  void queueNewEvidence(EvidenceData data);
+  
+  void queueNewQuery(QueryData data);
   
 
  protected:

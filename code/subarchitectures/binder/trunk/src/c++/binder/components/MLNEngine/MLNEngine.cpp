@@ -39,19 +39,21 @@ void MLNEngine::configure(const map<string,string> & _config)
   
   map<string,string>::const_iterator it;
   
-  if (_config.find("-inf") != _config.end()) {
-	m_inferenceString=_config.find("-inf")->second;
+  if ((it = _config.find("--inf")) != _config.end()) {
+	istringstream str(it->second);
+	m_inferenceString = it->second;
   } else {
-	m_inferenceString="-p -testConvergence true -i subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-out.mln -e subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-test.db -q advisedBy,student -maxSteps 1000 -burnMaxSteps 100";
+	m_inferenceString=""; //"-ms -i subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-out.mln -e subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-test.db -q student -maxSteps 1000 -burnMaxSteps 100";
   }
   
-  if (_config.find("--bsa") != _config.end()) {
-	m_bindingSA=_config.find("--bsa")->second;
+  if ((it = _config.find("--bsa")) != _config.end()) {
+	istringstream str(it->second);
+	m_bindingSA=it->second;
   } else {
    m_bindingSA="binder.sa";
   }
 
-  if((it = _config.find("--display")) != _config.end())
+  if(_config.find("--display") != _config.end())
   {
 	doDisplay = true;
   }
@@ -87,102 +89,84 @@ void MLNEngine::start()
   addChangeFilter(createGlobalTypeFilter<Evidence>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<MLNEngine>(this,
 		&MLNEngine::newEvidence));
+		
   
+  addChangeFilter(createGlobalTypeFilter<Query>(cdl::ADD),
+	  new MemberFunctionChangeReceiver<MLNEngine>(this,
+		&MLNEngine::newQuery));
+		
+
 //  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
 //	  new MemberFunctionChangeReceiver<MLNEngine>(this,
 //		&MLNEngine::updatedBelief));
 
   m_oe = new OnlineEngine(m_inferenceString);
   m_oe->init();
+  m_oe->saveAllCounts(true);
   
   m_resultWMId = newDataID();
   ResultPtr result = new Result();
   addToWorkingMemory(m_resultWMId, m_bindingSA, result);
   
   cout << "MRF initialized" << endl;
+  
+  m_query.clear();
+  m_query.push_back("student");
+  m_query.push_back("professor(Glen)");
 }
 
 void MLNEngine::runComponent()
 {
 
- /* 
-  
-  log("sumbitting a fake belief 1");
-  
-  BeliefPtr tb = new Belief();  
-  tb->ags = new AttributedAgentStatus();
-  
-  ComplexFormulaPtr cf = new ComplexFormula();
-  
-  UnionRefPropertyPtr un =  new UnionRefProperty();
-  un->beliefRef = "whatever";
-  
-  cf->formulae.push_back(un);
-  
-  ShapePropertyPtr sh = new ShapeProperty();
-  sh->shapeValue = cubic;
-  sh->polarity = true;
-  sh->prob = 1.0f;
-  sh->cstatus = assertion;
-  
-  cf->formulae.push_back(sh);
-  
-  tb->phi = cf;
-  tb->id = newDataID();
-  
-  addToWorkingMemory(tb->id, m_bindingSA, tb);
-  
-  
-  log("sumbitting a fake belief 2");
-  
-  tb = new Belief();
-  tb->ags = new AttributedAgentStatus();
-
-  cf = new ComplexFormula();
-  
-  un =  new UnionRefProperty();
-  un->beliefRef = "whatever";
-  
-  cf->formulae.push_back(un);
-  
-  ColorPropertyPtr co = new ColorProperty();
-  co->colorValue = red;
-  co->polarity = true;
-  co->prob = 1.0f;
-  co->cstatus = proposition;
-  
-  cf->formulae.push_back(co);
-  
-  tb->phi = cf;
-  tb->id = newDataID();
-  
-  addToWorkingMemory(tb->id, m_bindingSA, tb);
-  */
-
   int tstep = 0;
+  bool first = true;
   
+  ResultPtr result = new Result();
+  result->mrfId = m_id;
+ 
   while(isRunning())
   {
   
   sleep(1);
   
+  while(!m_queryQueue.empty())
+  {
+	log("A new query...");
+	QueryPtr q = m_queryQueue.front().query;
+	
+	m_query.clear();
+	m_query=q->atoms;
+	
+	m_queryQueue.front().status=USED;
+	m_removeQueue.push(m_queryQueue.front().addr);
+	m_queryQueue.pop();
+  }
+  
   while(!m_evidenceQueue.empty())
   {
 	log("Adding new evidence...");
-	EvidencePtr evd = m_evidenceQueue.front();
+	EvidencePtr evd = m_evidenceQueue.front().evidence;
 	
 	m_oe->addTrueEvidence(evd->trueEvidence);
 	m_oe->addFalseEvidence(evd->falseEvidence);
 	m_oe->removeEvidence(evd->oldEvidence);
 	
+	m_evidenceQueue.front().status=USED;
+	m_removeQueue.push(m_evidenceQueue.front().addr);
 	m_evidenceQueue.pop();
   }
   
-  ResultPtr result = new Result();
-  result->mrfId = m_id;
+//  ResultPtr result = new Result();
+//  result->mrfId = m_id;
   
-  m_oe->setMaxInferenceSteps(100);
-  m_oe->infer(result->atoms, result->probs);
+//  m_oe->setMaxInferenceSteps(5000);
+//  if(!first) m_oe->restoreCnts();
+  
+  m_oe->infer(m_query, result->atoms, result->probs);
+//  m_oe->saveCnts();
+  first=false;
+
+//  m_oe->setMaxInferenceSteps(100);
   
   if(doDisplay) {
     // Print true atoms
@@ -196,8 +180,18 @@ void MLNEngine::runComponent()
 	  probIt++;
 	}
   }
-  
+
   overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
+  
+  while(!m_removeQueue.empty())
+  {
+	debug("Removing evidence or query entry"); 
+	deleteFromWorkingMemory(m_removeQueue.front());
+	
+	m_removeQueue.pop();
+  }
+  
+  cout << "Samples: " << m_oe->getNumSamples() << endl;
   
 //	ptime t(second_clock::universal_time() + seconds(1));
 /*
@@ -386,15 +380,52 @@ void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
 	evd = getMemoryEntry<Evidence>(_wmc.address);
   }
   catch (DoesNotExistOnWMException e) {
-	log("WARNING: the entry Evidence ID %s was removed before it could be processed.", _wmc.address.id.c_str());
+	log("WARNING: the Evidence entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
 	return;
   }
   		
   debug("Got a evidence update from WM. ID: %s", _wmc.address.id.c_str());
   
   if( evd->mrfId == m_id ) {
-	queueNewEvidence(evd);
-	deleteFromWorkingMemory(_wmc.address);
+	EvidenceData data;
+	data.status=NEW;
+	data.evidence=evd;
+	data.addr= _wmc.address;
+	queueNewEvidence(data);
+	
+//	deleteFromWorkingMemory(_wmc.address);
+  }
+  else {
+	debug("Wrong MRF.");
+	return;
+  }  
+};
+
+
+
+void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("A new MRF query entry. ID: %s ", _wmc.address.id.c_str());
+  
+  QueryPtr q; 
+  
+  try {
+	q = getMemoryEntry<Query>(_wmc.address);
+  }
+  catch (DoesNotExistOnWMException e) {
+	log("WARNING: the Query entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
+	return;
+  }
+  		
+  debug("Got a query update from WM. ID: %s", _wmc.address.id.c_str());
+  
+  if( q->mrfId == m_id ) {
+	QueryData data;
+	data.status=NEW;
+	data.query=q;
+	data.addr= _wmc.address;
+	queueNewQuery(data);
+//	deleteFromWorkingMemory(_wmc.address);
   }
   else {
 	debug("Wrong MRF.");
@@ -435,9 +466,15 @@ void MLNEngine::newBelief(const cdl::WorkingMemoryChange & _wmc)
 //  }
 }
 
-void MLNEngine::queueNewEvidence(EvidencePtr evd)
+void MLNEngine::queueNewEvidence(EvidenceData data)
 {
-  m_evidenceQueue.push(evd);
+  m_evidenceQueue.push(data);
+}
+
+
+void MLNEngine::queueNewQuery(QueryData data)
+{
+  m_queryQueue.push(data);
 }
 
 /*
@@ -482,7 +519,7 @@ void MLNEngine::updatedLearningTask(const cdl::WorkingMemoryChange & _wmc)
 /*
 bool MLNEngine::pointedCASTAddr(std::string key, map<string,ProbDistribution> distibutions, cast::cdl::WorkingMemoryAddress &refWmaAddr)
 {
-  // BasicProbDistribution
+  // BasicProbDistributionresult->atoms
   map<string,ProbDistribution>::iterator bpd = distributions.find(key);
   
   if(bpd==distributions.end())
