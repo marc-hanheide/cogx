@@ -1,6 +1,7 @@
 package manipulation.core.cogx.armConnector;
 
 import golem.tinyice.ArmPrx;
+import golem.tinyice.ConfigspaceCoord;
 import golem.tinyice.ExTinyArm;
 import golem.tinyice.ExTinyKatanaArm;
 import golem.tinyice.GenConfigspaceState;
@@ -74,7 +75,61 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		} catch (ExTinyArm e) {
 			logger.error(e);
 		}
+	}
 
+	public void initSimMove() {
+		GenConfigspaceState cBegin = new GenConfigspaceState();
+		cBegin.pos = new ConfigspaceCoord();
+		cBegin.vel = new ConfigspaceCoord();
+		cBegin.pos.c = new double[homePosition.pos.c.length];
+		cBegin.vel.c = new double[homePosition.pos.c.length];
+		cBegin.t = arm.getTimeDelta();
+
+		for (int i = 0; i < homePosition.pos.c.length; i++) {
+			cBegin.pos.c[i] = 0;
+			cBegin.vel.c[i] = 0;
+		}
+
+		GenConfigspaceState cEnd = homePosition;
+
+		GenConfigspaceState[] trajectory;
+		try {
+			logger.debug("Moving to home position...");
+			trajectory = arm.findTrajectory(cBegin, cEnd);
+
+			PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommand();
+
+			manipulation.slice.GenConfigspaceState[] returnVal = new manipulation.slice.GenConfigspaceState[trajectory.length];
+
+			for (int i = 0; i < trajectory.length; i++) {
+				GenConfigspaceCoord coord = new GenConfigspaceCoord();
+
+				coord.pos = new double[trajectory[i].pos.c.length];
+				coord.vel = new double[trajectory[i].vel.c.length];
+
+				coord.pos = trajectory[i].pos.c;
+				coord.vel = trajectory[i].vel.c;
+
+				returnVal[i] = new manipulation.slice.GenConfigspaceState(
+						coord, trajectory[i].t);
+			}
+
+			cmd.trajectory = returnVal;
+			cmd.status = ManipulationCommandStatus.NEW;
+			cmd.comp = ManipulationCompletion.COMPINIT;
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						cmd);
+			} catch (AlreadyExistsOnWMException e) {
+				logger.error(e);
+			}
+
+		} catch (ExTinyArm e) {
+			logger.error(e);
+		}
 	}
 
 	/**
@@ -198,7 +253,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				cmd.trajectory = returnVal;
 				cmd.status = ManipulationCommandStatus.NEW;
 				cmd.comp = ManipulationCompletion.COMPINIT;
-				
+
 				String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 				try {

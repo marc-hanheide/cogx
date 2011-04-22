@@ -14,7 +14,6 @@ import manipulation.core.share.armConnector.ArmConnector.ArmName;
 import manipulation.core.share.types.Configuration;
 import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
-import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.strategies.CommandExecution;

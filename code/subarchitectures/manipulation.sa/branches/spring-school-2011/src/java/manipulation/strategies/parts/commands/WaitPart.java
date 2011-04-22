@@ -4,7 +4,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
+import manipulation.core.cogx.armConnector.CogXKatanaArmConnector;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.armConnector.ArmConnector.ArmName;
+import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearGraspApproachCommand;
@@ -42,6 +45,8 @@ public class WaitPart extends StrategyPart implements Observer {
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
+
+		((CogXKatanaArmConnector)getManipulator().getArmConnector()).initSimMove();
 
 		getManipulator().getWatcher().addObserver(this);
 
