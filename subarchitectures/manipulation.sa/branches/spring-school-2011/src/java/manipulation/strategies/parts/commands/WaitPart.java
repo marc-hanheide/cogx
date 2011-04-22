@@ -8,7 +8,7 @@ import manipulation.core.share.Manipulator;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearGraspApproachCommand;
-import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
@@ -76,9 +76,9 @@ public class WaitPart extends StrategyPart implements Observer {
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
-			if (arg instanceof ManipulationCommand) {
+			if (arg instanceof ManipulationExternalCommand) {
 				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
+						.setCurrentCommand((ManipulationExternalCommand) arg);
 			}
 
 			if (arg instanceof FarArmMovementCommand) {

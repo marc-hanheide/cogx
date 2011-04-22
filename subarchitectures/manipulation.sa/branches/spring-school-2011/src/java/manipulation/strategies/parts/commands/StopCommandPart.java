@@ -10,9 +10,9 @@ import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.LinearGraspApproachCommand;
-import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
+import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
@@ -110,8 +110,8 @@ public class StopCommandPart extends StrategyPart implements Observer {
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 
-			if (arg instanceof ManipulationCommand) {
-				ManipulationCommand currentCom = ((CommandExecution) getGlobalStrategy())
+			if (arg instanceof ManipulationExternalCommand) {
+				ManipulationExternalCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 				currentCom.comp = ManipulationCompletion.FAILED;
@@ -121,7 +121,7 @@ public class StopCommandPart extends StrategyPart implements Observer {
 								currentCom);
 
 				((CommandExecution) getGlobalStrategy())
-						.setCurrentCommand((ManipulationCommand) arg);
+						.setCurrentCommand((ManipulationExternalCommand) arg);
 
 			}
 

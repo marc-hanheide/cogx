@@ -29,6 +29,7 @@ import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.GenConfigspaceCoord;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.PlayerBridgeCloseGripperCommand;
 import manipulation.slice.PlayerBridgeOpenGripperCommand;
 import manipulation.slice.PlayerBridgeSendTrajectoryCommand;
@@ -195,7 +196,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 				cmd.trajectory = returnVal;
 				cmd.status = ManipulationCommandStatus.NEW;
-
+				cmd.comp = ManipulationCompletion.INIT;
+				
 				String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 
 				try {
