@@ -57,10 +57,11 @@
 
 
   <body:box name="ptu_tilt_body">
-    <xyz>0.0 0.0 0.14</xyz>
+    <xyz>0.0 0.0 0.09</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
     <geom:box name="ptu_tilt_geom">
+      <xyz>0 0 0.05</xyz>
       <rpy>0 0 0</rpy>
       <size>0.03 0.24 0.02</size>
       <mass>0.1</mass>
@@ -148,7 +149,7 @@
   <joint:hinge name="pan_joint">
     <body1>ptu_base_body</body1>
     <body2>ptu_pan_body</body2>
-    <anchor>ptu_base_body</anchor>
+    <anchor>ptu_pan_body</anchor>
     <axis>0 0 1</axis>
     <lowStop>-170</lowStop>
     <highStop>170</highStop>
@@ -157,7 +158,7 @@
   <joint:hinge name="tilt_joint">
     <body1>ptu_pan_body</body1>
     <body2>ptu_tilt_body</body2>
-    <anchor>ptu_base_body</anchor>
+    <anchor>ptu_tilt_body</anchor>
     <axis>0 1 0</axis>
     <lowStop>-60</lowStop>
     <highStop>60</highStop>
