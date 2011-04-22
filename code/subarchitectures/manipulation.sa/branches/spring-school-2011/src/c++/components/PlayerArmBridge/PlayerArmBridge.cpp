@@ -56,7 +56,7 @@ void PlayerArmBridge::start()
   robot = new PlayerCc::PlayerClient(playerHost, playerPort);
   arm = new PlayerCc::ActArrayProxy(robot, 0);
   ostringstream s;
-  s << "connected to player robot '" << robot << "'\n";
+  s << "connected to player robot '" << *robot << "'\n";
   log(s.str());
 
   addChangeFilter(createLocalTypeFilter<PlayerBridgeSendTrajectoryCommand>(cdl::ADD),
@@ -75,6 +75,7 @@ void PlayerArmBridge::destroy()
 
 void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc)
 {
+  log("received SendTrajectory");
   PlayerBridgeSendTrajectoryCommandPtr cmd = getMemoryEntry<PlayerBridgeSendTrajectoryCommand>(_wmc.address);
   // let the caller know we are executing the command
   cmd->comp = ONTHEWAY;
@@ -85,10 +86,12 @@ void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc
   else
     cmd->comp = FAILED;
   overwriteWorkingMemory(_wmc.address, cmd);
+  log("finished SendTrajectory");
 }
 
 void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
 {
+  log("received OpenGipper");
   PlayerBridgeOpenGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeOpenGripperCommand>(_wmc.address);
   // let the caller know we are executing the command
   cmd->comp = ONTHEWAY;
@@ -98,10 +101,12 @@ void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
   // let the caller know we are done
   cmd->comp = SUCCEEDED;
   overwriteWorkingMemory(_wmc.address, cmd);
+  log("finished OpenGripper");
 }
 
 void PlayerArmBridge::receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc)
 {
+  log("received CloseGripper");
   PlayerBridgeCloseGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeCloseGripperCommand>(_wmc.address);
   // let the caller know we are executing the command
   cmd->comp = ONTHEWAY;
@@ -113,6 +118,7 @@ void PlayerArmBridge::receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc)
     cmd->graspStatus = GRASPING;
   cmd->comp = SUCCEEDED;
   overwriteWorkingMemory(_wmc.address, cmd);
+  log("finished CloseGripper");
 }
 
 bool PlayerArmBridge::equals(GenConfigspaceCoord &p1, GenConfigspaceCoord &p2)
@@ -152,6 +158,8 @@ bool PlayerArmBridge::sendTrajectory(GenConfigspaceStateSeq &trajectory)
 {
   assert(trajectory.size() >= 1);
   GenConfigspaceCoord reached;
+  reached.pos.resize(NUM_JOINTS);
+  reached.vel.resize(NUM_JOINTS);
   for(size_t i = 1; i < trajectory.size(); i++)
   {
     // NOTE: MoveToMulti() did not work, so setting joints individually.
