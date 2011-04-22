@@ -43,9 +43,22 @@ void CameraMount::configure(const map<string,string> & _config)
   if((it = _config.find("--pt_zero_pose_xml")) != _config.end())
   {
     string filename = it->second;
-    Pose3 pose;
-    readXML(filename, pose);
-    camPoses.push_back(pose);
+    readXML(filename, ptZeroPose);
+  }
+  if((it = _config.find("--pt_base_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, ptBasePose);
+  }
+  if((it = _config.find("--pt_pan_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, ptPanPose);
+  }
+  if((it = _config.find("--pt_tilt_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, ptTiltPose);
   }
 
   if((it = _config.find("--camids")) != _config.end())
@@ -167,22 +180,27 @@ void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &poses)
   // robot ego system: x points forward, y points to left wheel, z points up
   // kinematic chain of poses: robot ego -> pt zero pose -> pan -> tilt ->
   // camera
-  // pan and tilt are assumed to rotate around origin of pan-tilt unit (which is
-  // not entirely true in practice)
-  Pose3 posePan, poseTilt;
-  setZero(posePan.pos);
-  fromRotZ(posePan.rot, ptz.pose.pan);
+  Pose3 panRot, tiltRot;
+  setZero(panRot.pos);
+  fromRotZ(panRot.rot, -ptz.pose.pan);
   // note: positive tilt angle is tilting "up" which is negative rotation around
   // y axis -> need minus
-  setZero(poseTilt.pos);
-  fromRotY(poseTilt.rot, -ptz.pose.tilt);
+  setZero(tiltRot.pos);
+  fromRotY(tiltRot.rot, -ptz.pose.tilt);
 
   poses.resize(camPoses.size());
   for(size_t i = 0; i < camPoses.size(); i++)
   {
-    transform(poseTilt, camPoses[i], poses[i]);
-    transform(posePan, poses[i], poses[i]);
-    transform(ptZeroPose, poses[i], poses[i]);
+    transform(tiltRot, camPoses[i], poses[i]);
+    transform(ptTiltPose, poses[i], poses[i]);
+    transform(panRot, poses[i], poses[i]);
+    transform(ptPanPose, poses[i], poses[i]);
+    transform(ptBasePose, poses[i], poses[i]);
+    
+    log(toString(poses[i]));
+    double r, p, y;
+    toRPY(poses[i].rot, r, p, y);
+    log("RPY: %f %f %f", r, p, y);
   }
 }
 

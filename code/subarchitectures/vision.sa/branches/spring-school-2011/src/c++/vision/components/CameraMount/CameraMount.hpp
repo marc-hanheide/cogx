@@ -24,6 +24,7 @@ private:
    * Pose of pan-tilt head w.r.t. to robot ego, when all angles are zero.
    */
   cogx::Math::Pose3 ptZeroPose;
+  cogx::Math::Pose3 ptBasePose, ptPanPose, ptTiltPose;
   /**
    * Poses of cameras w.r.t. to pan-tilt head.
    */
