@@ -24,17 +24,6 @@ using namespace std;
 using namespace PlayerCc;
 
 
-static Pose3 readPoseXML(const string &filename)
-{
-  cv::FileStorage poseFile(filename, cv::FileStorage::READ);
-  CvMat *t = (CvMat*)poseFile["tvec"].readObj();
-  CvMat *r = (CvMat*)poseFile["rvec"].readObj();
-  Pose3 pose;
-  fromRotVector(pose.rot, vector3(cvmGet(r, 0, 0), cvmGet(r, 1, 0), cvmGet(r, 2, 0)));
-  pose.pos = vector3(cvmGet(t, 0, 0), cvmGet(t, 1, 0), cvmGet(t, 2, 0));
-  return pose;
-}
-
 ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
@@ -106,7 +95,7 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
   if((it = _config.find("--initpose_xml")) != _config.end())
   {
     string filename = it->second;
-    initPose = readPoseXML(filename);
+    readXML(filename, initPose);
   }
 
 	std::string label, plystr, siftstr;
