@@ -1,7 +1,7 @@
 package manipulation.strategies;
 
 import manipulation.core.share.Manipulator;
-import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationExternalCommand;
 import manipulation.strategies.parts.StrategyPart.PartName;
 import manipulation.strategies.parts.commands.CloseGripperPart;
 import manipulation.strategies.parts.commands.FarArmMovementCommandPart;
@@ -15,7 +15,7 @@ import manipulation.strategies.parts.commands.WaitPart;
 
 public class CommandExecution extends Strategy {
 
-	private ManipulationCommand currentCommand = null;
+	private ManipulationExternalCommand currentCommand = null;
 
 	/**
 	 * constructor of the strategy
@@ -33,7 +33,7 @@ public class CommandExecution extends Strategy {
 	/**
 	 * @return the currentCommand
 	 */
-	public ManipulationCommand getCurrentCommand() {
+	public ManipulationExternalCommand getCurrentCommand() {
 		return currentCommand;
 	}
 
@@ -41,7 +41,7 @@ public class CommandExecution extends Strategy {
 	 * @param currentCommand
 	 *            the currentCommand to set
 	 */
-	public void setCurrentCommand(ManipulationCommand currentCommand) {
+	public void setCurrentCommand(ManipulationExternalCommand currentCommand) {
 		this.currentCommand = currentCommand;
 	}
 
