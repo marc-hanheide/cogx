@@ -94,6 +94,7 @@ private:
 	public:
 		CDisplayClient() { pRec = NULL; }
 		void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
+    void handleEvent(const Visualization::TEvent &event);
 	};
 	CDisplayClient m_display;
 #endif
