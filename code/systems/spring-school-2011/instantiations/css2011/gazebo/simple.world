@@ -190,26 +190,17 @@
   <!-- a low table -->
   <model:physical name="table1_model">
     <static>false</static>
-    <xyz>3 0 0.15</xyz>
-    <body:box name="table1_body">
-      <geom:box name="table1_geom">
-        <size>0.6 0.6 0.3</size>
-        <mass>1</mass>
-        <visual>
-          <scale>0.6 0.6 0.3</scale>
-          <mesh>unit_box</mesh>
-          <uvTile>0.5 0.5</uvTile>
-          <material>Gazebo/Grey</material>
-        </visual>
-      </geom:box>
-    </body:box>
+    <xyz>3 0 0.176</xyz>
+    <include embedded="true">
+       <xi:include href="models/table.model" />
+    </include>
   </model:physical>
 
   <!-- and finally a cereal box! -->
   <model:physical name="cereals1_model">
     <static>false</static>
-    <xyz>3 0 0.4</xyz>
-		<rpy>0 0 90</rpy>
+    <xyz>3 0 0.447</xyz>
+		<rpy>0 0 0</rpy>
 
     <include embedded="true">
        <xi:include href="models/cereals-schokomusli.model" />
