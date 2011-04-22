@@ -183,11 +183,14 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				for (int i = 0; i < trajectory.length; i++) {
 					GenConfigspaceCoord coord = new GenConfigspaceCoord();
 
+					coord.pos = new double[trajectory[i].pos.c.length];
+					coord.vel = new double[trajectory[i].vel.c.length];
+
 					coord.pos = trajectory[i].pos.c;
 					coord.vel = trajectory[i].vel.c;
 
-					returnVal[i].t = trajectory[i].t;
-					returnVal[i].coord = coord;
+					returnVal[i] = new manipulation.slice.GenConfigspaceState(
+							coord, trajectory[i].t);
 				}
 
 				cmd.trajectory = returnVal;
@@ -201,9 +204,9 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				} catch (AlreadyExistsOnWMException e) {
 					logger.error(e);
 				}
-			} else {
-				arm.send(trajectory, 1);
 			}
+
+			arm.send(trajectory, 1);
 
 			Thread t = new Thread(new GoalReachedRunnable(manipulator));
 			t.start();

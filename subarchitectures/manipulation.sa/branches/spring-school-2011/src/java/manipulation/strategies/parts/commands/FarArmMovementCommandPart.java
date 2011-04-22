@@ -219,6 +219,7 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 						.setCurrentCommand((ManipulationCommand) arg);
 
 			}
+			
 
 			if (arg instanceof FarArmMovementCommand) {
 				logger.info("far arm movement command");

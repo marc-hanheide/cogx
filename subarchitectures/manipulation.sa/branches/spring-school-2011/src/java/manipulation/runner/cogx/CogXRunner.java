@@ -16,6 +16,7 @@ import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationExternalCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.Strategy.Name;
@@ -163,13 +164,13 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 */
 	public void addManipulationListener() {
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				ManipulationCommand.class, WorkingMemoryOperation.ADD),
+				ManipulationExternalCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						logger.info("getting manipulation command (add)");
 						try {
-							ManipulationCommand command = getMemoryEntry(
-									_wmc.address, ManipulationCommand.class);
+							ManipulationExternalCommand command = getMemoryEntry(
+									_wmc.address, ManipulationExternalCommand.class);
 							watcher.setCurrentCommandAddress(_wmc.address);
 							watcher.newCommand(command);
 						} catch (DoesNotExistOnWMException e) {
@@ -181,24 +182,20 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				});
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				ManipulationCommand.class, WorkingMemoryOperation.OVERWRITE),
+				ManipulationExternalCommand.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						try {
 							logger.info("getting manipulation command (overwrite)");
 
-							ManipulationCommand command = getMemoryEntry(
-									_wmc.address, ManipulationCommand.class);
+							ManipulationExternalCommand command = getMemoryEntry(
+									_wmc.address, ManipulationExternalCommand.class);
 							if ((command.status == ManipulationCommandStatus.NEW)
 									|| (command.status == ManipulationCommandStatus.CHANGED)) {
 								watcher.setCurrentCommandAddress(_wmc.address);
 								watcher.newCommand(command);
 							} else {
-								logger.info("----------ignoring overwrite command:-------");
-								logger.info(command.status);
-								logger.info(command.comp);
-								logger.info(command.getClass());
-								logger.info("--------------------------------------------");
+								logger.debug("ignoring overwrite action");
 							}
 						} catch (DoesNotExistOnWMException e) {
 							logger.error(e);

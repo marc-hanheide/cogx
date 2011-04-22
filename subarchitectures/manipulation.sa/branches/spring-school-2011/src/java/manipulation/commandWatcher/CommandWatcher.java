@@ -6,7 +6,8 @@ import org.apache.log4j.Logger;
 
 import cast.cdl.WorkingMemoryAddress;
 
-import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationExternalCommand;
+
 
 /**
  * Watcher that takes care of the different commands which were added to the
@@ -59,7 +60,7 @@ public class CommandWatcher extends Observable {
 	 * @param cmd
 	 *            new command to set
 	 */
-	public void newCommand(ManipulationCommand cmd) {
+	public void newCommand(ManipulationExternalCommand cmd) {
 		setChanged();
 		notifyObservers(cmd);
 	}
