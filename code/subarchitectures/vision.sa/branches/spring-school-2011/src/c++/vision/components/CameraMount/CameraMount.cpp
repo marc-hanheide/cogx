@@ -29,17 +29,6 @@ extern "C"
   }
 }
 
-static Pose3 readPoseXML(const string &filename)
-{
-  cv::FileStorage poseFile(filename, cv::FileStorage::READ);
-  CvMat *t = (CvMat*)poseFile["tvec"].readObj();
-  CvMat *r = (CvMat*)poseFile["rvec"].readObj();
-  Pose3 pose;
-  fromRotVector(pose.rot, vector3(cvmGet(r, 0, 0), cvmGet(r, 1, 0), cvmGet(r, 2, 0)));
-  pose.pos = vector3(cvmGet(t, 0, 0), cvmGet(t, 1, 0), cvmGet(t, 2, 0));
-  return pose;
-}
-
 void CameraMount::configure(const map<string,string> & _config)
   throw(runtime_error)
 {
@@ -54,7 +43,9 @@ void CameraMount::configure(const map<string,string> & _config)
   if((it = _config.find("--pt_zero_pose_xml")) != _config.end())
   {
     string filename = it->second;
-    camPoses.push_back(readPoseXML(filename));
+    Pose3 pose;
+    readXML(filename, pose);
+    camPoses.push_back(pose);
   }
 
   if((it = _config.find("--camids")) != _config.end())
@@ -82,7 +73,10 @@ void CameraMount::configure(const map<string,string> & _config)
     {
       string filename;
       str >> filename;
-      camPoses.push_back(readPoseXML(filename));
+      Pose3 pose;
+      readXML(filename, pose);
+      camPoses.push_back(pose);
+      log("read pose:\n" + toString(pose));
     }
   }
 
