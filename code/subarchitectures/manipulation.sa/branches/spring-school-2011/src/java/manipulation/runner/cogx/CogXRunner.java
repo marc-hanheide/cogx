@@ -4,6 +4,7 @@ import java.util.Map;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.cogx.CogXManipulatorStore;
+import manipulation.core.cogx.armConnector.CogXKatanaArmConnector;
 import manipulation.core.cogx.baseConnector.CogXDoraBaseConnector;
 import manipulation.core.cogx.camConnector.CogXBlortConnector;
 import manipulation.core.share.Manipulator;
@@ -169,7 +170,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 						logger.info("getting manipulation command (add)");
 						try {
 							ManipulationExternalCommand command = getMemoryEntry(
-									_wmc.address, ManipulationExternalCommand.class);
+									_wmc.address,
+									ManipulationExternalCommand.class);
 							watcher.setCurrentCommandAddress(_wmc.address);
 							watcher.newCommand(command);
 						} catch (DoesNotExistOnWMException e) {
@@ -181,14 +183,16 @@ public class CogXRunner extends ManagedComponent implements Runner {
 				});
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				ManipulationExternalCommand.class, WorkingMemoryOperation.OVERWRITE),
+				ManipulationExternalCommand.class,
+				WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						try {
 							logger.info("getting manipulation command (overwrite)");
 
 							ManipulationExternalCommand command = getMemoryEntry(
-									_wmc.address, ManipulationExternalCommand.class);
+									_wmc.address,
+									ManipulationExternalCommand.class);
 							if ((command.status == ManipulationCommandStatus.NEW)
 									|| (command.status == ManipulationCommandStatus.CHANGED)) {
 								watcher.setCurrentCommandAddress(_wmc.address);
@@ -225,6 +229,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 */
 	@Override
 	public void startStrategy(Strategy.Name strategyName) {
+		((CogXKatanaArmConnector) manipulator.getArmConnector())
+				.initSimMove();
 
 		if (strategyName == Name.COMMAND_EXECUTION) {
 			Strategy strategy = new CommandExecution(manipulator);
