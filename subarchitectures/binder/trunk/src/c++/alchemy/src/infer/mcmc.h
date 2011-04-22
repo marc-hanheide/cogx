@@ -491,6 +491,45 @@ class MCMC : public Inference
       }
     }    
   }
+  
+  
+    /**
+   * Puts the predicates whose probability has changed with respect to the
+   * reference vector oldProbs by more than probDelta in string form and the
+   * corresponding probabilities of each predicate in two vectors.
+   * 
+   * @param changedPreds Predicates whose probability have changed more than
+   * probDelta are put here.
+   * @param probs The probabilities corresponding to the predicates in
+   * changedPreds are put here.
+   * @param oldProbs Reference probabilities for checking for changes.
+   * @param probDelta If probability of an atom has changed more than this
+   * value, then it is considered to have changed.
+   */
+  void getPredProbs(vector<string> query, vector<string>& preds, vector<float>& probs)
+  {
+    probs.clear();
+    preds.clear();
+    int numAtoms = state_->getNumAtoms();
+
+    for (int i = 0; i < numAtoms; i++)
+    {
+      ostringstream oss(ostringstream::out);
+      state_->printGndPred(i, oss);
+      string atom = oss.str();
+      string pred = atom.substr(0, atom.find('('));
+
+      for (int j = 0; j < query.size(); j++)
+    	if ( query[j]==atom || query[j]==pred )
+    	{
+    	  double prob = getProbTrue(i);
+           // Uniform smoothing
+          probs.push_back((prob*10000 + 1/2.0)/(10000 + 1.0));
+          preds.push_back(atom);   	  
+    	  break;
+    	}
+    }    
+  }
 
 
   double getProbabilityH(GroundPredicate* const& gndPred)
