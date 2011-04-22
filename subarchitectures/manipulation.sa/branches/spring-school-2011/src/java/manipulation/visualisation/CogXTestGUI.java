@@ -387,41 +387,49 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("simulateGrasp")) {
 			logger.error("simulateGrasp pressed");
 
-			String visObjID = ((CogXRunner) manipulator.getRunner())
-					.newDataID();
-			SimulateGraspCommand simulateGraspCommand = new SimulateGraspCommand();
+			SimulateGraspCommand simGCmd = new SimulateGraspCommand();
 
-			Pose3 pos = new Pose3();
-			pos.pos = new Vector3(
-					Double.parseDouble(txtItemXPosition.getText()),
-					Double.parseDouble(txtItemYPosition.getText()),
-					Double.parseDouble(txtItemZPosition.getText()));
-			pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+			if (!txtItemXPosition.getText().isEmpty()) {
+				String visObjID = ((CogXRunner) manipulator.getRunner())
+						.newDataID();
 
-			VisualObject visObj = initVisualObject();
-			visObj.pose = pos;
+				Pose3 pos = new Pose3();
 
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
-						visObjID, visObj);
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
+				pos.pos = new Vector3(Double.parseDouble(txtItemXPosition
+						.getText()), Double.parseDouble(txtItemYPosition
+						.getText()), Double.parseDouble(txtItemZPosition
+						.getText()));
+
+				pos.rot = new Matrix33(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+				VisualObject visObj = initVisualObject();
+				visObj.pose = pos;
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							visObjID, visObj);
+				} catch (AlreadyExistsOnWMException e1) {
+					logger.error(e1);
+				}
+
+				simGCmd.targetObjectAddr = new WorkingMemoryAddress(
+						visObjID,
+						((CogXRunner) manipulator.getRunner())
+								.getSubarchitectureID());
+
+			} else {
+				Item it = manipulator.getItemMemory().getItemList().getFirst();
+				try {
+					WorkingMemoryAddress wma = (WorkingMemoryAddress) it
+							.getAttribute(PropertyName.WMA_ADDRESS);
+
+					simGCmd.targetObjectAddr = wma;
+				} catch (ItemException e1) {
+					logger.error(e1);
+				}
+
 			}
 
-			simulateGraspCommand.targetObjectAddr = new WorkingMemoryAddress(
-					visObjID,
-					((CogXRunner) manipulator.getRunner())
-							.getSubarchitectureID());
-
-			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
-
-			try {
-				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
-						simulateGraspCommand);
-
-			} catch (AlreadyExistsOnWMException e1) {
-				logger.error(e1);
-			}
 		} else if (e.getActionCommand().equals("stopCmd")) {
 			logger.error("stopCmd pressed");
 
