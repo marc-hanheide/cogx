@@ -15,7 +15,7 @@ import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.runner.share.Runner;
 import manipulation.muster.strategies.MobileManipulation;
 import manipulation.muster.strategies.Strategy;
-import manipulation.muster.strategies.Strategy.Name;
+import manipulation.muster.visualisation.ExecutionGUI;
 import manipulation.slice.ManipulationCommand;
 
 import org.apache.log4j.Logger;
@@ -60,7 +60,7 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 				armName = ArmName.KATANA450;
 			} else if (config.get("--armName").equals("katana300")) {
 				armName = ArmName.KATANA300;
-			} else if (config.get("--armName").equals("simluation")) {
+			} else if (config.get("--armName").equals("simulation")) {
 				armName = ArmName.SIMULATION;
 			} else {
 				logger.error("Cannot parse arm name - using simulation environment");
@@ -102,9 +102,11 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 	 */
 	@Override
 	protected void runComponent() {
-		startStrategy(Name.MOBILE_MANIPULATION);
 
-		// new ExecutionGUI(manipulator);
+		new ExecutionGUI(manipulator);
+
+		//startStrategy(Name.MOBILE_MANIPULATION);
+
 	}
 
 	/**
