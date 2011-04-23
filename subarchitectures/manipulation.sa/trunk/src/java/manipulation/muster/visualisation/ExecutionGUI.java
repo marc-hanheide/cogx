@@ -6,7 +6,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,12 +24,11 @@ import manipulation.muster.core.share.types.Matrix;
 import manipulation.muster.core.share.types.PTZPosition;
 import manipulation.muster.core.share.types.Region;
 import manipulation.muster.core.share.types.Vector3D;
-import manipulation.muster.core.share.types.SensorData.SensorPosition;
 import manipulation.muster.itemMemory.Item;
-import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.itemMemory.Item.ItemIntention;
 import manipulation.muster.itemMemory.Item.ItemName;
 import manipulation.muster.itemMemory.Item.PropertyName;
+import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.math.MathOperation;
 import manipulation.muster.strategies.Strategy.Name;
 
