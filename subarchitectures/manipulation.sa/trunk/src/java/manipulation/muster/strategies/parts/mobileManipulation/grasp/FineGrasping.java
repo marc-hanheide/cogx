@@ -7,14 +7,10 @@ import manipulation.muster.core.share.exceptions.ExternalMemoryException;
 import manipulation.muster.core.share.exceptions.InternalMemoryException;
 import manipulation.muster.core.share.exceptions.ItemException;
 import manipulation.muster.core.share.exceptions.ManipulatorException;
-import manipulation.muster.core.share.exceptions.ViewPointException;
 import manipulation.muster.core.share.types.ArmError;
 import manipulation.muster.core.share.types.Matrix;
-import manipulation.muster.core.share.types.Vector3D;
-import manipulation.muster.core.share.types.ViewPoint;
-import manipulation.muster.core.share.types.ViewPoints;
 import manipulation.muster.core.share.types.SensorData.SensorPosition;
-import manipulation.muster.itemMemory.Item;
+import manipulation.muster.core.share.types.Vector3D;
 import manipulation.muster.itemMemory.Item.PropertyName;
 import manipulation.muster.math.MathOperation;
 import manipulation.muster.strategies.Strategy;
@@ -54,8 +50,8 @@ public class FineGrasping extends StrategyPart {
 
 		try {
 			currentGoalPosition = (Vector3D) getManipulator().getItemMemory()
-					.getFirstGraspItem().getAttribute(
-							PropertyName.WORLD_POSITION);
+					.getFirstGraspItem()
+					.getAttribute(PropertyName.WORLD_POSITION);
 		} catch (ItemException e4) {
 			logger.error(e4);
 		} catch (InternalMemoryException e4) {
@@ -97,8 +93,8 @@ public class FineGrasping extends StrategyPart {
 
 		try {
 			currentGoalPosition = (Vector3D) getManipulator().getItemMemory()
-					.getFirstGraspItem().getAttribute(
-							PropertyName.WORLD_POSITION);
+					.getFirstGraspItem()
+					.getAttribute(PropertyName.WORLD_POSITION);
 		} catch (ItemException e2) {
 			logger.error(e2);
 		} catch (InternalMemoryException e2) {
@@ -121,8 +117,8 @@ public class FineGrasping extends StrategyPart {
 
 				Vector3D goalVec = new Vector3D((currentArmPos.getX() + i
 						* stepsize * direction.getX()), currentArmPos.getY()
-						+ i * stepsize * direction.getY(), currentGoalPosition
-						.getZ());
+						+ i * stepsize * direction.getY(),
+						currentGoalPosition.getZ());
 
 				ArmError armError = null;
 				try {
@@ -133,7 +129,8 @@ public class FineGrasping extends StrategyPart {
 					logger.error(e);
 				}
 
-				logger.error(MathOperation.getEuclDistance(armError.getPoseError()));
+				logger.error(MathOperation.getEuclDistance(armError
+						.getPoseError()));
 
 				getManipulator().getArmConnector()
 						.reach(goalVec, currentArmRot);
@@ -194,67 +191,7 @@ public class FineGrasping extends StrategyPart {
 
 				logger.error("Try to recognize again and go on");
 
-//				try {
-//					if (getManipulator().getVirtualSceneConnector()
-//							.removeGraspingBasePoint(
-//									getManipulator().getVirtualSceneConnector()
-//											.getBestGraspingBasePoint())) {
-//						logger.error("another try");
-//						setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
-//					} else {
-//						logger.error("No more Grasping point -> go on");
-//
-//						Item firstGraspItem = null;
-//						try {
-//							firstGraspItem = getManipulator().getItemMemory()
-//									.getFirstGraspItem();
-//						} catch (InternalMemoryException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//
-//						try {
-//							if (!((ViewPoints) firstGraspItem
-//									.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
-//									.getPoints().isEmpty()) {
-//
-//								getManipulator()
-//										.getItemMemory()
-//										.deleteRotationalVP(
-//												firstGraspItem,
-//												(ViewPoint) firstGraspItem
-//														.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
-//
-//								setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
-//								synchronized (this) {
-//									notifyAll();
-//								}
-//							} else {
-//								getManipulator()
-//										.getItemMemory()
-//										.removeViewPoint(
-//												firstGraspItem,
-//												(ViewPoint) firstGraspItem
-//														.getAttribute(PropertyName.BEST_VIEW_POINT),
-//												getManipulator());
-//
-//								setNextPartName(PartName.FAR_APPROACH);
-//
-//								synchronized (this) {
-//									notifyAll();
-//								}
-//
-//							}
-//						} catch (ItemException e) {
-//							logger.error(e);
-//						} catch (InternalMemoryException e) {
-//							logger.error(e);
-//						}
-//					}
-//				} catch (ViewPointException e) {
-//					logger.error(e);
-//				}
-
+				// TODO was tun
 				return;
 
 			} catch (ManipulatorException e) {

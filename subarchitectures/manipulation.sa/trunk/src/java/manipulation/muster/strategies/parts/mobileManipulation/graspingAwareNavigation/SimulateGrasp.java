@@ -1,9 +1,6 @@
 package manipulation.muster.strategies.parts.mobileManipulation.graspingAwareNavigation;
 
 import manipulation.muster.core.share.Manipulator;
-import manipulation.muster.core.share.exceptions.ExternalMemoryException;
-import manipulation.muster.core.share.exceptions.InternalMemoryException;
-import manipulation.muster.core.share.exceptions.ItemException;
 import manipulation.muster.strategies.Strategy;
 import manipulation.muster.strategies.parts.StrategyPart;
 
@@ -21,8 +18,7 @@ public class SimulateGrasp extends StrategyPart {
 	 * @param globalStrategy
 	 *            corresponding global strategy
 	 */
-	public SimulateGrasp(Manipulator manipulator,
-			Strategy globalStrategy) {
+	public SimulateGrasp(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
 		setPartName(PartName.CALCULATE_BEST_GRASPING_POINT);
@@ -36,30 +32,9 @@ public class SimulateGrasp extends StrategyPart {
 	public void execute() {
 
 		logger.error("execute: " + this.getClass());
-		
-//		try {
-//			getManipulator().getVirtualSceneConnector()
-//					.updateBestGraspingBasePoints(
-//							getManipulator().getBaseConnector()
-//									.getCurrentPosition(),
-//							getManipulator().getItemMemory()
-//									.getFirstGraspItem());
 
-			setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
-			changeToNextPart();
-//		} catch (ItemException e) {
-//			logger.error(e);
-//			setNextPartName(PartName.GO_TO_START_POSITION);
-//			changeToNextPart();
-//		} catch (InternalMemoryException e) {
-//			logger.error(e);
-//			setNextPartName(PartName.GO_TO_START_POSITION);
-//			changeToNextPart();
-//		} catch (ExternalMemoryException e) {
-//			logger.error(e);
-//			setNextPartName(PartName.GO_TO_START_POSITION);
-//			changeToNextPart();
-//		}
+		setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
+		changeToNextPart();
 
 	}
 
