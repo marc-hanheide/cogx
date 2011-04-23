@@ -1,6 +1,6 @@
 package manipulation.muster.core.cogx.camConnector;
 
-import manipulation.muster.core.cogx.converter.ExemplarySolution;
+import manipulation.muster.core.cogx.converter.ExemplarySolutionConverter;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.camConnector.CamConnector;
 import manipulation.muster.core.share.exceptions.ExternalMemoryException;
@@ -67,7 +67,7 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 			Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
 					changedObject.pose.pos.y, changedObject.pose.pos.z);
 
-			Matrix camRot = ExemplarySolution
+			Matrix camRot = ExemplarySolutionConverter
 					.convBlortToMatrix(changedObject.pose.rot);
 
 			// TODO richtige Item updaten nicht einfach erst beste
@@ -77,7 +77,7 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 						.getItemMemory()
 						.addItemModel(
 								manipulator.getItemMemory().getFirstGraspItem(),
-								ExemplarySolution
+								ExemplarySolutionConverter
 										.convBlortGeomModelToVisionModel(changedObject.model));
 			}
 
@@ -117,7 +117,6 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 		try {
 			switch (((ItemName) item.getAttribute(PropertyName.NAME))) {
 			case FROSTIES_SMALL:
-				// TODO iwo anders machen?
 				recognizeCommand.label = "frosties_small";
 				logger.debug("try to find frosties_small");
 				break;
@@ -128,6 +127,10 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 			case PRINGLES:
 				recognizeCommand.label = "pringles";
 				logger.debug("try to find pringles");
+				break;
+			case EXAMPLE_CEREALS_SCHOKOMUSLI_SIM:
+				recognizeCommand.label = "example-cereals-schokomusli-sim";
+				logger.debug("try to find example-cereals-schokomusli-sim");
 				break;
 			default:
 				logger.error("don't know the item");

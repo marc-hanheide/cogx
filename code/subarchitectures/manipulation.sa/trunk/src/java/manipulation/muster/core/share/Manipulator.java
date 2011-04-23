@@ -1,6 +1,5 @@
 package manipulation.muster.core.share;
 
-import manipulation.muster.commandWatcher.CommandWatcher;
 import manipulation.muster.core.share.armConnector.ArmConnector;
 import manipulation.muster.core.share.baseConnector.BaseConnector;
 import manipulation.muster.core.share.baseConnector.MapAlgorithms;
@@ -9,7 +8,6 @@ import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
 import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
 import manipulation.muster.core.share.types.Configuration;
-import manipulation.muster.core.share.virtualSceneConnector.VirtualSceneConnector;
 import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.runner.share.Runner;
 
@@ -42,14 +40,12 @@ public abstract class Manipulator {
 	private BaseConnector baseConnector;
 	private CamConnector camConnector;
 	private MapConnector mapConnector;
-	private VirtualSceneConnector virtualSceneConnector;
 	private CalibrationConnector calibrationConnector;
 	private PanTiltConnector panTiltConnector;
 
 	private MapAlgorithms mapAlgorithms;
 	private Configuration configuration;
 	private ItemMemory itemMemory;
-	private CommandWatcher watcher;
 	private Runner runner;
 
 	/**
@@ -145,26 +141,6 @@ public abstract class Manipulator {
 	 */
 	public void setMapConnector(MapConnector mapConnector) {
 		this.mapConnector = mapConnector;
-	}
-
-	/**
-	 * gets the virtual-scene-connector of the current manipulator
-	 * 
-	 * @return virtual-scene-connector of the current manipulator
-	 */
-	public VirtualSceneConnector getVirtualSceneConnector() {
-		return virtualSceneConnector;
-	}
-
-	/**
-	 * sets the virtual-scene-connector of the current manipulator
-	 * 
-	 * @param virtualSceneConnector
-	 *            new virtual-scene-connector
-	 */
-	public void setVirtualSceneConnector(
-			VirtualSceneConnector virtualSceneConnector) {
-		this.virtualSceneConnector = virtualSceneConnector;
 	}
 
 	/**
@@ -274,21 +250,6 @@ public abstract class Manipulator {
 	 */
 	public void setRunner(Runner runner) {
 		this.runner = runner;
-	}
-
-	/**
-	 * @return the watcher
-	 */
-	public CommandWatcher getWatcher() {
-		return watcher;
-	}
-
-	/**
-	 * @param watcher
-	 *            the watcher to set
-	 */
-	public void setWatcher(CommandWatcher watcher) {
-		this.watcher = watcher;
 	}
 
 	/**

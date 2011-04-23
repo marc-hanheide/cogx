@@ -40,87 +40,87 @@ public class GoToBestGraspingPoint extends StrategyPart implements Observer {
 	}
 
 	public void approach() {
-		try {
+//		try {
 
-			ViewPoint bestPoint = getManipulator().getVirtualSceneConnector()
-					.getBestGraspingBasePoint();
+//			ViewPoint bestPoint = getManipulator().getVirtualSceneConnector()
+//					.getBestGraspingBasePoint();
 
-			logger.error("Best grasping point in front: " + bestPoint);
+//		logger.error("Best grasping point in front: " + bestPoint);
 			logger.error("Go to best grasping point in front");
 
-			try {
-				getManipulator().getBaseConnector().goTo(
-						bestPoint.getPosition());
-			} catch (NullPointerException e) {
-				logger.error("No more Graspingpoints - go On");
-
-				Item firstGraspItem = null;
-				try {
-					firstGraspItem = getManipulator().getItemMemory()
-							.getFirstGraspItem();
-				} catch (InternalMemoryException e1) {
-					logger.error(e1);
-				}
-
-				try {
-					if (!((ViewPoints) firstGraspItem
-							.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
-							.getPoints().isEmpty()) {
-
-						getManipulator()
-								.getItemMemory()
-								.deleteRotationalVP(
-										firstGraspItem,
-										(ViewPoint) firstGraspItem
-												.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
-
-						setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
-						logger.error("will nach GO_TO_BEST_ROTATIONAL");
-						synchronized (this) {
-							notifyAll();
-						}
-						return;
-					} else {
-						getManipulator()
-								.getItemMemory()
-								.removeViewPoint(
-										firstGraspItem,
-										(ViewPoint) firstGraspItem
-												.getAttribute(PropertyName.BEST_VIEW_POINT),
-										getManipulator());
-
-						setNextPartName(PartName.FAR_APPROACH);
-
-						logger.error("will nach FAR_APPROACH");
-						synchronized (this) {
-							notifyAll();
-						}
-						return;
-
-					}
-				} catch (ItemException e1) {
-					logger.error(e1);
-				} catch (InternalMemoryException e1) {
-					logger.error(e1);
-				}
+//			try {
+//				getManipulator().getBaseConnector().goTo(
+//						bestPoint.getPosition());
+//			} catch (NullPointerException e) {
+//				logger.error("No more Graspingpoints - go On");
+//
+//				Item firstGraspItem = null;
+//				try {
+//					firstGraspItem = getManipulator().getItemMemory()
+//							.getFirstGraspItem();
+//				} catch (InternalMemoryException e1) {
+//					logger.error(e1);
+//				}
+//
+//				try {
+//					if (!((ViewPoints) firstGraspItem
+//							.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
+//							.getPoints().isEmpty()) {
+//
+//						getManipulator()
+//								.getItemMemory()
+//								.deleteRotationalVP(
+//										firstGraspItem,
+//										(ViewPoint) firstGraspItem
+//												.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
+//
+//						setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
+//						logger.error("will nach GO_TO_BEST_ROTATIONAL");
+//						synchronized (this) {
+//							notifyAll();
+//						}
+//						return;
+//					} else {
+//						getManipulator()
+//								.getItemMemory()
+//								.removeViewPoint(
+//										firstGraspItem,
+//										(ViewPoint) firstGraspItem
+//												.getAttribute(PropertyName.BEST_VIEW_POINT),
+//										getManipulator());
+//
+//						setNextPartName(PartName.FAR_APPROACH);
+//
+//						logger.error("will nach FAR_APPROACH");
+//						synchronized (this) {
+//							notifyAll();
+//						}
+//						return;
+//
+//					}
+//				} catch (ItemException e1) {
+//					logger.error(e1);
+//				} catch (InternalMemoryException e1) {
+//					logger.error(e1);
+//				}
 
 			}
 
-		} catch (ViewPointException e) {
-			logger.error(e);
-			setNextPartName(PartName.GO_TO_START_POSITION);
-			synchronized (this) {
-				notifyAll();
-			}
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
-			setNextPartName(PartName.GO_TO_START_POSITION);
-			synchronized (this) {
-				notifyAll();
-			}
-		}
+//		} catch (ViewPointException e) {
+//			logger.error(e);
+//			setNextPartName(PartName.GO_TO_START_POSITION);
+//			synchronized (this) {
+//				notifyAll();
+//			}
+//		} catch (ExternalMemoryException e) {
+//			logger.error(e);
+//			setNextPartName(PartName.GO_TO_START_POSITION);
+//			synchronized (this) {
+//				notifyAll();
+//			}
+//		}
 
-	}
+//	}
 
 	/**
 	 * {@inheritDoc}
@@ -181,69 +181,69 @@ public class GoToBestGraspingPoint extends StrategyPart implements Observer {
 				case VP_NOT_REACHABLE:
 					logger.error("not reachable");
 
-					try {
-						if (getManipulator().getVirtualSceneConnector()
-								.removeGraspingBasePoint(
-										getManipulator()
-												.getVirtualSceneConnector()
-												.getBestGraspingBasePoint())) {
-							logger.error("another try");
-							// TODO best point neu berechnen?!?!
-							approach();
-						} else {
-							logger.error("No more Grasping point -> go on");
-
-							Item firstGraspItem = null;
-							try {
-								firstGraspItem = getManipulator()
-										.getItemMemory().getFirstGraspItem();
-							} catch (InternalMemoryException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-							try {
-								if (!((ViewPoints) firstGraspItem
-										.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
-										.getPoints().isEmpty()) {
-
-									getManipulator()
-											.getItemMemory()
-											.deleteRotationalVP(
-													firstGraspItem,
-													(ViewPoint) firstGraspItem
-															.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
-
-									setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
-									synchronized (this) {
-										notifyAll();
-									}
-								} else {
-									getManipulator()
-											.getItemMemory()
-											.removeViewPoint(
-													firstGraspItem,
-													(ViewPoint) firstGraspItem
-															.getAttribute(PropertyName.BEST_VIEW_POINT),
-													getManipulator());
-
-									setNextPartName(PartName.FAR_APPROACH);
-
-									synchronized (this) {
-										notifyAll();
-									}
-
-								}
-							} catch (ItemException e) {
-								logger.error(e);
-							} catch (InternalMemoryException e) {
-								logger.error(e);
-							}
-
-						}
-					} catch (ViewPointException e) {
-						logger.error(e);
-					}
+//					try {
+//						if (getManipulator().getVirtualSceneConnector()
+//								.removeGraspingBasePoint(
+//										getManipulator()
+//												.getVirtualSceneConnector()
+//												.getBestGraspingBasePoint())) {
+//							logger.error("another try");
+//							// TODO best point neu berechnen?!?!
+//							approach();
+//						} else {
+//							logger.error("No more Grasping point -> go on");
+//
+//							Item firstGraspItem = null;
+//							try {
+//								firstGraspItem = getManipulator()
+//										.getItemMemory().getFirstGraspItem();
+//							} catch (InternalMemoryException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//
+//							try {
+//								if (!((ViewPoints) firstGraspItem
+//										.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
+//										.getPoints().isEmpty()) {
+//
+//									getManipulator()
+//											.getItemMemory()
+//											.deleteRotationalVP(
+//													firstGraspItem,
+//													(ViewPoint) firstGraspItem
+//															.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
+//
+//									setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
+//									synchronized (this) {
+//										notifyAll();
+//									}
+//								} else {
+//									getManipulator()
+//											.getItemMemory()
+//											.removeViewPoint(
+//													firstGraspItem,
+//													(ViewPoint) firstGraspItem
+//															.getAttribute(PropertyName.BEST_VIEW_POINT),
+//													getManipulator());
+//
+//									setNextPartName(PartName.FAR_APPROACH);
+//
+//									synchronized (this) {
+//										notifyAll();
+//									}
+//
+//								}
+//							} catch (ItemException e) {
+//								logger.error(e);
+//							} catch (InternalMemoryException e) {
+//								logger.error(e);
+//							}
+//
+//						}
+//					} catch (ViewPointException e) {
+//						logger.error(e);
+//					}
 					break;
 				default:
 					break;

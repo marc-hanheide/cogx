@@ -37,29 +37,29 @@ public class CalculateBestGraspingPosition extends StrategyPart {
 
 		logger.error("execute: " + this.getClass());
 		
-		try {
-			getManipulator().getVirtualSceneConnector()
-					.updateBestGraspingBasePoints(
-							getManipulator().getBaseConnector()
-									.getCurrentPosition(),
-							getManipulator().getItemMemory()
-									.getFirstGraspItem());
+//		try {
+//			getManipulator().getVirtualSceneConnector()
+//					.updateBestGraspingBasePoints(
+//							getManipulator().getBaseConnector()
+//									.getCurrentPosition(),
+//							getManipulator().getItemMemory()
+//									.getFirstGraspItem());
 
 			setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
 			changeToNextPart();
-		} catch (ItemException e) {
-			logger.error(e);
-			setNextPartName(PartName.GO_TO_START_POSITION);
-			changeToNextPart();
-		} catch (InternalMemoryException e) {
-			logger.error(e);
-			setNextPartName(PartName.GO_TO_START_POSITION);
-			changeToNextPart();
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
-			setNextPartName(PartName.GO_TO_START_POSITION);
-			changeToNextPart();
-		}
+//		} catch (ItemException e) {
+//			logger.error(e);
+//			setNextPartName(PartName.GO_TO_START_POSITION);
+//			changeToNextPart();
+//		} catch (InternalMemoryException e) {
+//			logger.error(e);
+//			setNextPartName(PartName.GO_TO_START_POSITION);
+//			changeToNextPart();
+//		} catch (ExternalMemoryException e) {
+//			logger.error(e);
+//			setNextPartName(PartName.GO_TO_START_POSITION);
+//			changeToNextPart();
+//		}
 
 	}
 

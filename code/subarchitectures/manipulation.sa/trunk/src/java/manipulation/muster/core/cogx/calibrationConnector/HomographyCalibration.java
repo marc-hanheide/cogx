@@ -4,7 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 
-import manipulation.muster.core.cogx.converter.CogXConverter;
+import manipulation.muster.core.cogx.converter.ExemplarySolutionConverter;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.exceptions.CalibrationException;
@@ -72,9 +72,9 @@ public class HomographyCalibration implements CalibrationConnector {
 		}
 
 		// calculate mean vectors
-		Array2DRowRealMatrix sourcePointsMean = CogXConverter
+		Array2DRowRealMatrix sourcePointsMean = ExemplarySolutionConverter
 				.convertVecToRowMatrix(MathOperation.getMean3D(sourcePoints));
-		Array2DRowRealMatrix targetPointsMean = CogXConverter
+		Array2DRowRealMatrix targetPointsMean = ExemplarySolutionConverter
 				.convertVecToRowMatrix(MathOperation.getMean3D(targetPoints));
 
 		logger.info("source points mean: " + sourcePointsMean);
@@ -84,9 +84,9 @@ public class HomographyCalibration implements CalibrationConnector {
 		// calculate covariance matrix
 		Array2DRowRealMatrix K = new Array2DRowRealMatrix(3, 3);
 		for (int i = 0; i < sourcePoints.size(); i++) {
-			Array2DRowRealMatrix ai = CogXConverter
+			Array2DRowRealMatrix ai = ExemplarySolutionConverter
 					.convertVecToRowMatrix(sourcePoints.get(i));
-			Array2DRowRealMatrix bj = CogXConverter
+			Array2DRowRealMatrix bj = ExemplarySolutionConverter
 					.convertVecToRowMatrix(targetPoints.get(i));
 
 			logger.info("Calculating covariance... ");

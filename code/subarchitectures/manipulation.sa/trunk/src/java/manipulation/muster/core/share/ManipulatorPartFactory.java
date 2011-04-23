@@ -6,7 +6,6 @@ import manipulation.muster.core.share.baseConnector.MapConnector;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
 import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
-import manipulation.muster.core.share.virtualSceneConnector.VirtualSceneConnector;
 
 /**
  * factory to build the manipulator
@@ -50,15 +49,6 @@ public interface ManipulatorPartFactory {
 	 * @return created map connector
 	 */
 	public MapConnector createMapConnector(Manipulator manipulator);
-
-	/**
-	 * creates a virtual scene connector
-	 * 
-	 * @param manipulator
-	 *            corresponding manipulator
-	 * @return created virtual scene connector
-	 */
-	public VirtualSceneConnector createVirtualSceneConnector(Manipulator manipulator);
 
 	/**
 	 * creates a calibration connector
