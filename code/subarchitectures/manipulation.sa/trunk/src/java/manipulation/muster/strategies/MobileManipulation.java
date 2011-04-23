@@ -12,7 +12,7 @@ import manipulation.muster.strategies.parts.mobileManipulation.farNavigation.GoT
 import manipulation.muster.strategies.parts.mobileManipulation.farNavigation.UpdateBestViewPointPosition;
 import manipulation.muster.strategies.parts.mobileManipulation.grasp.FarGrasping;
 import manipulation.muster.strategies.parts.mobileManipulation.grasp.FineGrasping;
-import manipulation.muster.strategies.parts.mobileManipulation.graspingAwareNavigation.CalculateBestGraspingPosition;
+import manipulation.muster.strategies.parts.mobileManipulation.graspingAwareNavigation.SimulateGrasp;
 import manipulation.muster.strategies.parts.mobileManipulation.graspingAwareNavigation.GoToBestGraspingPoint;
 import manipulation.muster.strategies.parts.mobileManipulation.graspingAwareNavigation.NearRecognize;
 import manipulation.muster.strategies.parts.mobileManipulation.roationAwareNavigation.GoToBestRotationalPoint;
@@ -56,7 +56,7 @@ public class MobileManipulation extends Strategy {
 		addToPartList(new UpdateBestViewPointRotation(getManipulator(), this));
 		addToPartList(new GoToBestRotationalPoint(getManipulator(), this));
 		addToPartList(new RotationalRecognize(getManipulator(), this));
-		addToPartList(new CalculateBestGraspingPosition(getManipulator(), this));
+		addToPartList(new SimulateGrasp(getManipulator(), this));
 		addToPartList(new GoToBestGraspingPoint(getManipulator(), this));
 		addToPartList(new GoToStartPosition(getManipulator(), this));
 		addToPartList(new NearRecognize(getManipulator(), this));

@@ -9,7 +9,7 @@ import manipulation.muster.strategies.parts.StrategyPart;
 
 import org.apache.log4j.Logger;
 
-public class CalculateBestGraspingPosition extends StrategyPart {
+public class SimulateGrasp extends StrategyPart {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -21,7 +21,7 @@ public class CalculateBestGraspingPosition extends StrategyPart {
 	 * @param globalStrategy
 	 *            corresponding global strategy
 	 */
-	public CalculateBestGraspingPosition(Manipulator manipulator,
+	public SimulateGrasp(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
