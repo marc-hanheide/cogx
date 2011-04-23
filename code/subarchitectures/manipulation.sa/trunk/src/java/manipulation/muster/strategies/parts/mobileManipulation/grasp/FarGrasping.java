@@ -8,15 +8,12 @@ import manipulation.muster.core.share.exceptions.ExternalMemoryException;
 import manipulation.muster.core.share.exceptions.InternalMemoryException;
 import manipulation.muster.core.share.exceptions.ItemException;
 import manipulation.muster.core.share.exceptions.ManipulatorException;
-import manipulation.muster.core.share.exceptions.ViewPointException;
 import manipulation.muster.core.share.types.ArmError;
 import manipulation.muster.core.share.types.Matrix;
 import manipulation.muster.core.share.types.Vector3D;
-import manipulation.muster.core.share.types.ViewPoint;
-import manipulation.muster.core.share.types.ViewPoints;
 import manipulation.muster.itemMemory.Item;
-import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.itemMemory.Item.PropertyName;
+import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.math.MathOperation;
 import manipulation.muster.strategies.Strategy;
 import manipulation.muster.strategies.parts.StrategyPart;
@@ -111,71 +108,7 @@ public class FarGrasping extends StrategyPart implements Observer {
 			logger.error("greife nicht test!");
 			stopTracking();
 
-//			try {
-//				if (getManipulator().getVirtualSceneConnector()
-//						.removeGraspingBasePoint(
-//								getManipulator().getVirtualSceneConnector()
-//										.getBestGraspingBasePoint())) {
-//					logger.error("another try");
-//
-//					setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
-//					synchronized (this) {
-//						notifyAll();
-//					}
-//				} else {
-//					logger.error("No more Grasping point -> go on");
-//
-//					Item firstGraspItem = null;
-//					try {
-//						firstGraspItem = getManipulator().getItemMemory()
-//								.getFirstGraspItem();
-//					} catch (InternalMemoryException e1) {
-//						// TODO Auto-generated catch block
-//						e1.printStackTrace();
-//					}
-//
-//					try {
-//						if (!((ViewPoints) firstGraspItem
-//								.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
-//								.getPoints().isEmpty()) {
-//
-//							getManipulator()
-//									.getItemMemory()
-//									.deleteRotationalVP(
-//											firstGraspItem,
-//											(ViewPoint) firstGraspItem
-//													.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
-//
-//							setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
-//							synchronized (this) {
-//								notifyAll();
-//							}
-//						} else {
-//							getManipulator()
-//									.getItemMemory()
-//									.removeViewPoint(
-//											firstGraspItem,
-//											(ViewPoint) firstGraspItem
-//													.getAttribute(PropertyName.BEST_VIEW_POINT),
-//											getManipulator());
-//
-//							setNextPartName(PartName.FAR_APPROACH);
-//
-//							synchronized (this) {
-//								notifyAll();
-//							}
-//
-//						}
-//					} catch (ItemException e1) {
-//						logger.error(e1);
-//					} catch (InternalMemoryException e1) {
-//						logger.error(e1);
-//					}
-//
-//				}
-//			} catch (ViewPointException e1) {
-//				logger.error(e1);
-//			}
+			// TODO was tun
 		}
 	}
 
@@ -203,10 +136,8 @@ public class FarGrasping extends StrategyPart implements Observer {
 				logger.error(e);
 			}
 		}
-
 		logger.debug("we go on!");
 		changeToNextPart();
-
 	}
 
 	/**
@@ -228,7 +159,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof ItemMemory) {
 			if (arg instanceof Vector3D) {
-
 				try {
 					Item newItem = null;
 					try {
@@ -243,7 +173,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 
 					if (MathOperation.getDistance(currentGoalPosition,
 							newItemPosition) > 0.05) {
-
 						if (!(MathOperation.getDistance(lastnewItemPosition,
 								newItemPosition) > 0.002)) {
 							currentGoalPosition = newItemPosition;
@@ -252,7 +181,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 							alwaysGrasp();
 						}
 					}
-
 					if (getManipulator().getArmConnector().isReached()
 							&& !getManipulator().getArmConnector().isHome()) {
 						logger.error("Arm Position erreicht->feines greifen");
@@ -271,7 +199,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 						notifyAll();
 					}
 				}
-
 			}
 		}
 	}
