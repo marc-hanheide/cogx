@@ -34,7 +34,6 @@ public class ExemplarySolutionIntGraspingManipulator extends Manipulator {
 		logger.debug("Prepare " + this.getName().toString());
 	
 		setBaseConnector(partFactory.createBaseConnector(this));
-		setVirtualSceneConnector(partFactory.createVirtualSceneConnector(this));
 		setArmConnector(partFactory.createArmConnector(this));
 		setCamConnector(partFactory.createCamConnector(this));
 		setMapConnector(partFactory.createMapConnector(this));

@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import manipulation.muster.core.cogx.virtualSceneConnector.CogXVirtualSceneConnector;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.exceptions.ExternalMemoryException;
 import manipulation.muster.core.share.exceptions.InternalMemoryException;
@@ -38,10 +37,10 @@ import manipulation.muster.core.share.types.Vector3D;
 import manipulation.muster.core.share.types.ViewPoint;
 import manipulation.muster.core.share.types.ViewPoints;
 import manipulation.muster.itemMemory.Item;
-import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.itemMemory.Item.ItemIntention;
 import manipulation.muster.itemMemory.Item.ItemName;
 import manipulation.muster.itemMemory.Item.PropertyName;
+import manipulation.muster.itemMemory.ItemMemory;
 
 import org.apache.log4j.Logger;
 
@@ -160,7 +159,7 @@ public class MapPanel extends JPanel implements Observer {
 
 			try {
 				item = new Item();
-				item.setAttribute(PropertyName.NAME, ItemName.FROSTIES_SMALL);
+				item.setAttribute(PropertyName.NAME, ItemName.EXAMPLE_CEREALS_SCHOKOMUSLI_SIM);
 				item.setAttribute(PropertyName.WORLD_POSITION, translationData);
 				item.setAttribute(PropertyName.WORLD_ROTATION, rotationData);
 				item.setAttribute(PropertyName.INTENTION,

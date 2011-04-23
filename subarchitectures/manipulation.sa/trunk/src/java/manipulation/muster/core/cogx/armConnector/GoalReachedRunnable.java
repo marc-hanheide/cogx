@@ -43,12 +43,12 @@ public class GoalReachedRunnable implements Runnable {
 		while (!manipulator.getArmConnector().isReached()) {
 			GenConfigspaceState currentPos;
 			try {
-				currentPos = ((CogXKatanaArmConnector) manipulator
+				currentPos = ((ExemplarySolutionKatanaArmConnector) manipulator
 						.getArmConnector()).getCurrentConfigState();
 
 				Thread.sleep(500);
 
-				GenConfigspaceState currentPos1 = ((CogXKatanaArmConnector) manipulator
+				GenConfigspaceState currentPos1 = ((ExemplarySolutionKatanaArmConnector) manipulator
 						.getArmConnector()).getCurrentConfigState();
 
 				if (calculateConfigStateError(currentPos, currentPos1) == 0) {

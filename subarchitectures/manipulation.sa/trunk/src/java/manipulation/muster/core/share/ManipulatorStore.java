@@ -1,6 +1,5 @@
 package manipulation.muster.core.share;
 
-import manipulation.muster.commandWatcher.CommandWatcher;
 import manipulation.muster.core.share.types.Configuration;
 import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.runner.share.Runner;
@@ -27,14 +26,12 @@ public abstract class ManipulatorStore {
 			Manipulator.ManipulatorName name);
 
 	public Manipulator orderManipulator(Manipulator.ManipulatorName name,
-			Runner runner, ItemMemory itemMemory, CommandWatcher watcher,
-			Configuration configuration) {
+			Runner runner, ItemMemory itemMemory, Configuration configuration) {
 		Manipulator manipulator = createManipulator(name);
 		logger.debug("Making a " + manipulator.getName().toString());
 
 		manipulator.setConfiguration(configuration);
 		manipulator.setItemMemory(itemMemory);
-		manipulator.setWatcher(watcher);
 		manipulator.setRunner(runner);
 
 		manipulator.prepare();

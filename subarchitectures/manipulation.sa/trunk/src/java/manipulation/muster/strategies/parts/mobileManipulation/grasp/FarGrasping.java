@@ -111,71 +111,71 @@ public class FarGrasping extends StrategyPart implements Observer {
 			logger.error("greife nicht test!");
 			stopTracking();
 
-			try {
-				if (getManipulator().getVirtualSceneConnector()
-						.removeGraspingBasePoint(
-								getManipulator().getVirtualSceneConnector()
-										.getBestGraspingBasePoint())) {
-					logger.error("another try");
-
-					setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
-					synchronized (this) {
-						notifyAll();
-					}
-				} else {
-					logger.error("No more Grasping point -> go on");
-
-					Item firstGraspItem = null;
-					try {
-						firstGraspItem = getManipulator().getItemMemory()
-								.getFirstGraspItem();
-					} catch (InternalMemoryException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					try {
-						if (!((ViewPoints) firstGraspItem
-								.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
-								.getPoints().isEmpty()) {
-
-							getManipulator()
-									.getItemMemory()
-									.deleteRotationalVP(
-											firstGraspItem,
-											(ViewPoint) firstGraspItem
-													.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
-
-							setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
-							synchronized (this) {
-								notifyAll();
-							}
-						} else {
-							getManipulator()
-									.getItemMemory()
-									.removeViewPoint(
-											firstGraspItem,
-											(ViewPoint) firstGraspItem
-													.getAttribute(PropertyName.BEST_VIEW_POINT),
-											getManipulator());
-
-							setNextPartName(PartName.FAR_APPROACH);
-
-							synchronized (this) {
-								notifyAll();
-							}
-
-						}
-					} catch (ItemException e1) {
-						logger.error(e1);
-					} catch (InternalMemoryException e1) {
-						logger.error(e1);
-					}
-
-				}
-			} catch (ViewPointException e1) {
-				logger.error(e1);
-			}
+//			try {
+//				if (getManipulator().getVirtualSceneConnector()
+//						.removeGraspingBasePoint(
+//								getManipulator().getVirtualSceneConnector()
+//										.getBestGraspingBasePoint())) {
+//					logger.error("another try");
+//
+//					setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
+//					synchronized (this) {
+//						notifyAll();
+//					}
+//				} else {
+//					logger.error("No more Grasping point -> go on");
+//
+//					Item firstGraspItem = null;
+//					try {
+//						firstGraspItem = getManipulator().getItemMemory()
+//								.getFirstGraspItem();
+//					} catch (InternalMemoryException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
+//
+//					try {
+//						if (!((ViewPoints) firstGraspItem
+//								.getAttribute(PropertyName.ROTATIONAL_VIEWPOINT))
+//								.getPoints().isEmpty()) {
+//
+//							getManipulator()
+//									.getItemMemory()
+//									.deleteRotationalVP(
+//											firstGraspItem,
+//											(ViewPoint) firstGraspItem
+//													.getAttribute(PropertyName.BEST_ROTATIONAL_VIEWPOINT));
+//
+//							setNextPartName(PartName.GO_TO_BEST_ROTATIONAL_POINT);
+//							synchronized (this) {
+//								notifyAll();
+//							}
+//						} else {
+//							getManipulator()
+//									.getItemMemory()
+//									.removeViewPoint(
+//											firstGraspItem,
+//											(ViewPoint) firstGraspItem
+//													.getAttribute(PropertyName.BEST_VIEW_POINT),
+//											getManipulator());
+//
+//							setNextPartName(PartName.FAR_APPROACH);
+//
+//							synchronized (this) {
+//								notifyAll();
+//							}
+//
+//						}
+//					} catch (ItemException e1) {
+//						logger.error(e1);
+//					} catch (InternalMemoryException e1) {
+//						logger.error(e1);
+//					}
+//
+//				}
+//			} catch (ViewPointException e1) {
+//				logger.error(e1);
+//			}
 		}
 	}
 

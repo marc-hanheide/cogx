@@ -82,7 +82,7 @@ public class ExemplarySolutionRunner extends ManagedComponent implements Runner 
 		ItemMemory itemMemory = new ItemMemory();
 
 		manipulator = cogxManStore.orderManipulator(
-				ManipulatorName.EXEMPLARY_SOLUTION, this, itemMemory, null,
+				ManipulatorName.EXEMPLARY_SOLUTION, this, itemMemory,
 				configuration);
 	}
 

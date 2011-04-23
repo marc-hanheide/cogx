@@ -31,7 +31,7 @@ public class Item {
 		/**
 		 * small soup package
 		 */
-		SOUP, PRINGLES, GREEN_TEA
+		SOUP, PRINGLES, GREEN_TEA, EXAMPLE_CEREALS_SCHOKOMUSLI_SIM
 	}
 
 	/**

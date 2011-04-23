@@ -6,7 +6,6 @@ import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionLocalMapConn
 import manipulation.muster.core.cogx.calibrationConnector.ExemplarySolutionCalibConnector;
 import manipulation.muster.core.cogx.camConnector.ExemplarySolutionBlortConnector;
 import manipulation.muster.core.cogx.panTiltConnector.ExemplarySolutionPanTiltConnector;
-import manipulation.muster.core.cogx.virtualSceneConnector.ExemplarySolutionVirtualSceneConnector;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.ManipulatorPartFactory;
 import manipulation.muster.core.share.armConnector.ArmConnector;
@@ -15,7 +14,6 @@ import manipulation.muster.core.share.baseConnector.MapConnector;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
 import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
-import manipulation.muster.core.share.virtualSceneConnector.VirtualSceneConnector;
 
 import org.apache.log4j.Logger;
 
@@ -67,15 +65,6 @@ public class ExemplarySolutionManipulatorPartsFactory implements
 		return new ExemplarySolutionLocalMapConnector(manipulator);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public VirtualSceneConnector createVirtualSceneConnector(
-			Manipulator manipulator) {
-		logger.debug("Creating SimulationConnector: ExemplarySolutionVirtualSceneConnector");
-		return new ExemplarySolutionVirtualSceneConnector(manipulator);
-	}
 
 	/**
 	 * {@inheritDoc}
