@@ -70,7 +70,7 @@
     <rpy>0.0 0.0 0.0</rpy>
 
     <model:physical name="laser">
-      <xyz>0.21 0.00 0.24</xyz>
+      <xyz>0.14 0.00 0.24</xyz>
       <rpy>0 0 0</rpy>
       
       <attach>
