@@ -9,11 +9,13 @@ import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -109,7 +111,6 @@ public class StopCommandPart extends StrategyPart implements Observer {
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
-
 			if (arg instanceof ManipulationExternalCommand) {
 				ManipulationExternalCommand currentCom = ((CommandExecution) getGlobalStrategy())
 						.getCurrentCommand();
@@ -157,13 +158,23 @@ public class StopCommandPart extends StrategyPart implements Observer {
 				changeToNextPart();
 			} else if (arg instanceof OpenGripperCommand) {
 				logger.info("open gripper command");
-				
+
 				setNextPartName(PartName.OPEN_GRIPPER_PART);
 				changeToNextPart();
 			} else if (arg instanceof CloseGripperCommand) {
 				logger.info("close gripper command");
-				
+
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
+				changeToNextPart();
+			} else if (arg instanceof MoveArmToPose) {
+				logger.info("move arm to pose command");
+
+				setNextPartName(PartName.MOVE_ARM_TO_POSE_PART);
+				changeToNextPart();
+			} else if (arg instanceof GetCurrentArmPose) {
+				logger.info("get cureent arm pose command");
+
+				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
 				changeToNextPart();
 			}
 		}

@@ -4,15 +4,14 @@ import java.util.Observable;
 import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
-import manipulation.core.cogx.armConnector.CogXKatanaArmConnector;
 import manipulation.core.share.Manipulator;
-import manipulation.core.share.armConnector.ArmConnector.ArmName;
-import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -129,6 +128,18 @@ public class WaitPart extends StrategyPart implements Observer {
 			} else if (arg instanceof CloseGripperCommand) {
 				logger.info("close gripper command");
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof MoveArmToPose) {
+				logger.info("move arm to pose command");
+				setNextPartName(PartName.MOVE_ARM_TO_POSE_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof GetCurrentArmPose) {
+				logger.info("get current pose command");
+				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
 				synchronized (this) {
 					notifyAll();
 				}

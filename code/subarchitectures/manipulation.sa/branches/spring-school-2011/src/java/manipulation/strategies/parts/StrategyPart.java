@@ -1,6 +1,27 @@
 package manipulation.strategies.parts;
 
+import java.util.Observable;
+
+import org.apache.log4j.Logger;
+
+import manipulation.commandWatcher.CommandWatcher;
+import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.share.Manipulator;
+import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.CloseGripperCommand;
+import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
+import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
+import manipulation.slice.ManipulationExternalCommand;
+import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.MoveArmToPose;
+import manipulation.slice.OpenGripperCommand;
+import manipulation.slice.PutDownCommand;
+import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.StopCommand;
+import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 
 /**
@@ -14,6 +35,8 @@ public abstract class StrategyPart {
 	private PartName partName;
 	private Strategy globalStrategy;
 	private StrategyPart.PartName nextPartName;
+
+	private Logger logger = Logger.getLogger(this.getClass());
 
 	/**
 	 * names of the parts
@@ -61,7 +84,15 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		CLOSE_GRIPPER_PART
+		CLOSE_GRIPPER_PART,
+		/**
+		 * 
+		 */
+		MOVE_ARM_TO_POSE_PART,
+		/**
+		 * 
+		 */
+		GET_CURRENT_ARM_POSE_PART
 	}
 
 	/**
@@ -149,4 +180,5 @@ public abstract class StrategyPart {
 	 * changes to the next part of the global strategy
 	 */
 	public abstract void changeToNextPart();
+
 }
