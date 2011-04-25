@@ -25,7 +25,9 @@
     <rpy>0.0 0.0 0.0</rpy>
 
     <geom:cylinder name="hokuyo_base_geom">
-      <xyz>0.0 0.0 0.0</xyz>
+      <!-- Note: have to shift geom a little bit backward because otherwise (if
+           at 0 0 0) all rays are mysteriously blocked (probably a bug). -->
+      <xyz>-0.01 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
       <size>0.04 0.08</size>
       <mass>0.1</mass>
@@ -40,15 +42,12 @@
     <sensor:ray name="ray0">
       <rayCount>270</rayCount>
       <rangeCount>654</rangeCount>
-      <!-- Note: have to shift origin a little bit forward (though can still be
-           inside hokuyo_base_geom) because otherwise (if at 0 0 0) all rays are
-           mysteriously blocked by hokuyo_base_geom (probably a bug). -->
-      <origin>0.1 0.0 0.0</origin>
+      <origin>0 0 0</origin>
 
       <!-- Note: displayed rays are also visible in simulated cameras! So have
-           to turn this off.
+           to turn this off. -->
       <displayRays>fan</displayRays>
-      -->
+      
 
       <minAngle>-120</minAngle>
       <maxAngle>120</maxAngle>
