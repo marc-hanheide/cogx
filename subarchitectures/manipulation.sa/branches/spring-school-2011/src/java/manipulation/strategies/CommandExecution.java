@@ -60,5 +60,6 @@ public class CommandExecution extends Strategy {
 				this));
 		addToPartList(new OpenGripperPart(getManipulator(), this));
 		addToPartList(new CloseGripperPart(getManipulator(), this));
+		
 	}
 }

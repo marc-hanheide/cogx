@@ -15,11 +15,13 @@ import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateGraspCommand;
@@ -27,6 +29,7 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -240,6 +243,18 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			} else if (arg instanceof CloseGripperCommand) {
 				logger.info("close gripper command");
 				setNextPartName(PartName.CLOSE_GRIPPER_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof MoveArmToPose) {
+				logger.info("move arm to pose command");
+				setNextPartName(PartName.MOVE_ARM_TO_POSE_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof GetCurrentArmPose) {
+				logger.info("get current pose command");
+				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
 				synchronized (this) {
 					notifyAll();
 				}
