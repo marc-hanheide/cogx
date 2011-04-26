@@ -82,19 +82,19 @@ public:
 	
 	/** @brief capture texture from image */
 	void textureFromImage(	Texture* image,
-													int width, int height,
-													Pose& p_max,
-													vec3 view,
-													float minTexGrabAngle,
-													std::vector<int> faceUpdateList,
-													std::vector<Vertex> &vertices,
-													Camera* m_cam);
+							int width, int height,
+							Pose& p_max,
+							vec3 view,
+							float minTexGrabAngle,
+							std::vector<int> faceUpdateList,
+							std::vector<Vertex> &vertices,
+							Camera* m_cam);
 	
-		// gets
-	bool 			getTextured(){ return m_textured; }
+	// gets
+	bool 		getTextured(){ return m_textured; }
 	Texture* 	getTexture(){ return m_texture; }
 	Texture* 	getOriginalTexture(){ return m_tex_original; }
-	float			getBoundingSphereRadius(){ return m_boundingSphereRadius; }
+	float		getBoundingSphereRadius(){ return m_boundingSphereRadius; }
 	
 	// sets
 	void setBFC(bool bfc){ m_bfc = bfc; }
@@ -102,7 +102,7 @@ public:
 	void setOriginalTexture(Texture* tex){ m_tex_original = tex; }
 	void restoreTexture(){ m_texture=m_tex_original; }
 	
-		// generate display lists
+	// generate display lists
 	void genListTexturedFaces();
 	void genListUntexturedFaces();
 	void genListPass();

@@ -1,15 +1,16 @@
 SRCDIR = src/
 INCDIR = include/
 OBJDIR = obj/
+LIBDIR = lib/
 
 CC = g++
 CFLAGS = `pkg-config --cflags opencv sdl` -I$(INCDIR)
-LIBS = -lGL -lglut `pkg-config --libs opencv sdl` -lTracker
+LIBS = -lGL -lglut `pkg-config --libs opencv sdl` -L$(LIBDIR) -lTracker
 OUT = Tracker
 
 main: standalone.cpp
 	make -C BUILD
-	sudo make -C BUILD install
+	make -C BUILD install
 	$(CC) standalone.cpp $(CFLAGS) -o $(OUT) $(LIBS)
 	
 all: clean main

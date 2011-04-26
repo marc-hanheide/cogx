@@ -167,11 +167,11 @@ public:
 	void printStatistics();
 	
 	// set parameters for texture tracking
-  virtual void setKernelSize(int val){ }
+	virtual void setKernelSize(int val){ }
 	virtual void setEdgeShader(){ }
 	virtual void setColorShader(){ }
-  virtual void textureFromImage(bool force=false){}
-  virtual void untextureModels(){}
+	virtual void textureFromImage(bool force=false){}
+	virtual void untextureModels(){}
   	
 	// Set Parameters
 	void setFrameTime(double dTime);
