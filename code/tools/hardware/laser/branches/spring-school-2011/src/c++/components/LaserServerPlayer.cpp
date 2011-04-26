@@ -222,6 +222,12 @@ LaserServerPlayer::runComponent()
       m_Scan.ranges.resize(m_Laser->GetCount());
       for (unsigned int i = 0; i < m_Laser->GetCount(); i++) {
         m_Scan.ranges[i] = m_Laser->GetRange(i);
+        // Michael Zillich, April 2011
+        // For new Hokuyo in player 3.0.2, plus rangertolaser driver, max range
+        // measurement seem so be mapped to 0, which we don't want. So look out
+        // for very small ranges and set them to max range.
+        if(m_Scan.ranges[i] < 0.01)
+          m_Scan.ranges[i] = m_Laser->GetMaxRange();
       }
       m_Scan.startAngle = m_Laser->GetMinAngle();
       m_Scan.angleStep = (m_Laser->GetMaxAngle() - m_Laser->GetMinAngle()) / 
