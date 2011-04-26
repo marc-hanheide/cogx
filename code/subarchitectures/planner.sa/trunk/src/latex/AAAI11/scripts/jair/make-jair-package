@@ -1,0 +1,51 @@
+#! /bin/bash
+
+PAPER=$1
+PACKAGE=$2
+
+SCRIPTS=`dirname $0`
+
+make $PAPER.ps
+
+rm -rf $PACKAGE
+mkdir $PACKAGE
+mkdir $PACKAGE/$PACKAGE
+
+$SCRIPTS/expand_inputs.py $PAPER.tex $PAPER.bbl > $PACKAGE.tex
+
+latex --jobname $PACKAGE "\\AtBeginDocument{\\listfiles}\\input{$PACKAGE}"
+rm $PACKAGE.{aux,dvi}
+for input in `$SCRIPTS/parse_filelist.py < $PACKAGE.log`; do
+    mkdir -p $PACKAGE/$PACKAGE/`dirname $input`
+    cp `kpsewhich $input` $PACKAGE/$PACKAGE/$input
+done
+
+cp $PACKAGE.tex $PACKAGE/
+mv $PACKAGE.tex $PACKAGE/$PACKAGE
+mv $PAPER.bbl $PACKAGE/$PACKAGE/$PACKAGE.bbl
+
+cd $PACKAGE/$PACKAGE
+latex $PACKAGE
+latex $PACKAGE
+latex $PACKAGE
+dvips -Ppdf -G0 -tletter $PACKAGE
+## NOTE: We don't use the "no-subset" options here, because JAIR apparently
+##       doesn't mind subsetting (unlike AAAI), and subsetting can reduce the
+##       PDF file size quite a bit.
+ps2pdf -dPDFSETTINGS=/printer -dCompatibilityLevel=1.4 \
+       -dEmbedAllFonts=true \
+       -sPAPERSIZE=letter $PACKAGE.ps
+mv $PACKAGE.ps ..
+mv $PACKAGE.pdf ..
+mv $PACKAGE.log ../..
+rm $PACKAGE.{aux,dvi}
+cd ..
+tar cvf $PACKAGE.tar $PACKAGE
+rm -r $PACKAGE
+cd ..
+
+tar cvzf $PACKAGE.tgz $PACKAGE
+
+grep -i "warn\|hbox\|vbox" $PACKAGE.log
+grep -i TODO `find $PACKAGE | grep \\.tex`
+exit 0
