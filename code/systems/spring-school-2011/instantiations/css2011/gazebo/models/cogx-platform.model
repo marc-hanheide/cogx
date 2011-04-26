@@ -197,8 +197,6 @@
     <body2>chassis_body</body2>
     <anchor>left_wheel_body</anchor>
     <axis>0 1 0</axis>
-<erp>0.8</erp>
-  <cfm>10e-5</cfm>
   </joint:hinge>
 
   <joint:hinge name="right_wheel_joint">
@@ -206,8 +204,6 @@
     <body2>chassis_body</body2>
     <anchor>right_wheel_body</anchor>
     <axis>0 1 0</axis>
-<erp>0.8</erp>
-  <cfm>10e-5</cfm>
   </joint:hinge>
 
   <!-- don't need caster joints, as caster wheels simply slide frictionless
