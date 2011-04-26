@@ -411,6 +411,31 @@ void TextureTracker::textureFromImage(bool use_num_pixels){
 	}
 }
 
+// grabs texture from camera image and attaches it to faces of model
+void TextureTracker::useTexCoords(bool useTC){
+
+	for(int i=0; i<m_modellist.size(); i++){
+
+			m_modellist[i]->model.useTexCoords(useTC);
+
+	}
+}
+
+void TextureTracker::unwrapTextures(const char* name){
+
+	for(int i=0; i<m_modellist.size(); i++){
+
+			m_modellist[i]->model.unwarpTexturesBox_hacky(name);
+
+
+			swap();
+
+			usleep(1000000);
+
+	}
+
+}
+
 void TextureTracker::untextureModels(){
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i]->model.releasePassList();	

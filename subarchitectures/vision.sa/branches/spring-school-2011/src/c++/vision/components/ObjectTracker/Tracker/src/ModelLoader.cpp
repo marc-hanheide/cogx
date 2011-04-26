@@ -544,6 +544,8 @@ bool ModelLoader::SavePly(TrackerModel &model, const char* name){
 	fputs("property float nx\n", pFile);
 	fputs("property float ny\n", pFile);
 	fputs("property float nz\n", pFile);
+	fputs("property float s\n", pFile);
+	fputs("property float t\n", pFile);
 	
 	// Header of face
 	sprintf(number, "%d", model.getFaceSize());
@@ -585,9 +587,10 @@ bool ModelLoader::SavePly(TrackerModel &model, const char* name){
 	// Data of vertex
 	for(i=0; i<model.getVertexSize(); i++){
 		Vertex v = model.getVertex(i);
-		sprintf(	number, "%f %f %f %f %f %f\n",
+		sprintf(	number, "%f %f %f %f %f %f %f %f\n",
 							v.pos.x, v.pos.y, v.pos.z,
-							v.normal.x, v.normal.y, v.normal.z);
+							v.normal.x, v.normal.y, v.normal.z,
+							v.texCoord.x, v.texCoord.y);
 		fputs(number, pFile);
 	}
 	

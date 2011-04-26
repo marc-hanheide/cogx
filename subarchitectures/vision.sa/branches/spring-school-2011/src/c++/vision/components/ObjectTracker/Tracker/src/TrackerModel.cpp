@@ -418,6 +418,14 @@ void TrackerModel::textureFromImage(Texture* image,
 	newpass->y 	= y_min;
 	newpass->h 	= y_max-y_min;
 	
+	for(i=0; i<faceUpdateList.size(); i++){
+		k = faceUpdateList[i];
+		for(j=0; j<m_facelist[k].v.size(); j++){
+			m_vertexlist[m_facelist[k].v[j]].texCoord.x = (m_vertexlist[m_facelist[k].v[j]].texCoord.x-newpass->x)/newpass->w;
+			m_vertexlist[m_facelist[k].v[j]].texCoord.y = (m_vertexlist[m_facelist[k].v[j]].texCoord.y-newpass->y)/newpass->h;
+		}
+	}
+
 	// Calculate bounding rectangle in pixels
 	x_min = (x_min * width);
 	x_max = (x_max * width);
@@ -473,6 +481,84 @@ void TrackerModel::textureFromImage(Texture* image,
 		m_textured = true;
 	
 // 	UpdateDisplayLists();
+}
+
+void TrackerModel::useTexCoords(bool useTC){
+
+	m_shadeTexturing->bind();
+	m_shadeTexturing->setUniform("useTexCoords",useTC);
+	m_shadeTexturing->unbind();
+
+}
+
+void TrackerModel::unwarpTexturesBox_hacky(const char* name){
+
+	char charbuffer[8];
+	Texture tex;
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	for(unsigned p=0; p<m_passlist.size(); p++){
+
+		if(m_passlist[p]->f.size() != 1){
+			printf("[TrackerModel::unwarpTexturesBox_hacky] Warning no more than one face per pass allowed\n");
+			return;
+		}
+
+		Face* f = &m_facelist[m_passlist[p]->f[0]];
+		if(f->v.size()!=4){
+			printf("[TrackerModel::unwarpTexturesBox_hacky] Warning only quad faces allowed\n");
+			return;
+		}
+
+		ImageProcessor *ip = g_Resources->GetImageProcessor();
+		ip->setCamOrtho();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		float x = m_passlist[p]->h * ip->getHeight() * 0.5;
+		float y = m_passlist[p]->w * ip->getWidth() * 0.5;
+		float z = 0.0;
+		float nz = 1.0;
+
+		glEnable(GL_TEXTURE_2D);
+
+		m_passlist[p]->texture->bind();
+
+		glBegin(GL_QUADS);
+			unsigned j=0;
+			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+			glNormal3f(0.0, 0.0, nz);
+			glVertex3f(-x, -y, z);
+
+			j=1;
+			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+			glNormal3f(0.0, 0.0, nz);
+			glVertex3f( x, -y, z);
+
+			j=2;
+			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+			glNormal3f(0.0, 0.0, nz);
+			glVertex3f( x, y, z);
+
+			j=3;
+			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+			glNormal3f(0.0, 0.0, nz);
+			glVertex3f(-x, y, z);
+		glEnd();
+
+		int ix = (ip->getWidth() >> 1) - (int)x;
+		int iy = (ip->getHeight() >> 1) - (int)y;
+
+		tex.copyTexImage2D(ix, iy, int(x)<<1, int(y)<<1);
+
+		std::string texname = std::string(name);
+		texname.append("-unwrap-");
+		sprintf(charbuffer, "%.5d", p);
+		texname.append(charbuffer);
+		texname.append(".jpg");
+		tex.save(texname.c_str());
+
+	}
+
 }
 
 
