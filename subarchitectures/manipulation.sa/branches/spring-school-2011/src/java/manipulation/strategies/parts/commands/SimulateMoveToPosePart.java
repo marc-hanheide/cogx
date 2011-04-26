@@ -7,10 +7,7 @@ import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
 import manipulation.core.share.exceptions.ManipulatorException;
-import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Pose;
-import manipulation.core.share.types.Vector3D;
-import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -32,18 +29,9 @@ import manipulation.strategies.parts.StrategyPart;
 
 import org.apache.log4j.Logger;
 
-import VisionData.VisualObject;
-import cast.SubarchitectureComponentException;
-import cast.cdl.WorkingMemoryAddress;
+import cogx.Math.Pose3;
 
-/**
- * defines a behaviour to reach a position in front of an object with the arm
- * 
- * @author Torben Toeniges
- * 
- */
-public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
-		Observer {
+public class SimulateMoveToPosePart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -51,43 +39,21 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 
 	private Pose simulatedPose = null;
 
-	public SimulateFarArmMovGraspCommandPart(Manipulator manipulator,
+	public SimulateMoveToPosePart(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.SIMULATE_FAR_ARM_MOVEMENT_PART);
+		setPartName(PartName.SIMULATE_MOVE_TO_POSE_PART);
 	}
 
 	private void simulateArm() {
 
-		WorkingMemoryAddress wma = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
-				.getCurrentCommand()).targetObjectAddr;
-
+		Pose3 targetPose = ((SimulateMoveToPose) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).targetPose;
 		try {
-			VisualObject targetVisOb = (((CogXRunner) getManipulator()
-					.getRunner()).getMemoryEntry(wma, VisualObject.class));
-
-			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
-					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
-
-			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
-					.getRadiant(0));
-			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
-					.getRadiant(0));
-			Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
-					.getRadiant(-90));
-			Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
-					MathOperation.getMatrixMatrixMultiplication(rotation1,
-							rotation2), rotation3);
-
 			simulatedPose = getManipulator().getArmConnector()
 					.simulateArmMovement(
-							new Pose(greifRotation, currentGoalPosition));
-
-		} catch (SubarchitectureComponentException e) {
-			logger.error(e);
-			manipulationFailed = true;
-			return;
+							CogXConverter.convertPose3ToPose(targetPose));
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
@@ -95,23 +61,18 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
 
 		getManipulator().getWatcher().addObserver(this);
 
-		manipulationFailed = false;
-
 		simulateArm();
 
 		setNextPartName(PartName.WAIT_PART);
 
 		if (!manipulationFailed) {
-			SimulateFarArmMovementCommand currentCom = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+			SimulateMoveToPose currentCom = ((SimulateMoveToPose) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.FINISHED;
@@ -125,7 +86,7 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
 							.getCurrentCommandAddress(), currentCom);
 		} else {
-			SimulateFarArmMovementCommand currentCom = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+			SimulateMoveToPose currentCom = ((SimulateMoveToPose) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
@@ -139,20 +100,14 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void changeToNextPart() {
 		getManipulator().getWatcher().deleteObserver(this);
+
 		getGlobalStrategy().setNextPart(
 				getGlobalStrategy().getPart(getNextPartName()));
 	}
 
-	/**
-	 * 
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {

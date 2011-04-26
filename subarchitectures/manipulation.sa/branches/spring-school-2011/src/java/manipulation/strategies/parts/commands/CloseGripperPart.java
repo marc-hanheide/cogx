@@ -10,7 +10,7 @@ import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.GraspingStatus;
-import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
@@ -19,6 +19,7 @@ import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateFarArmMovementCommand;
+import manipulation.slice.SimulateMoveToPose;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -119,9 +120,9 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 				logger.info("put down command");
 				setNextPartName(PartName.PUT_DOWN_COMMAND_PART);
 				changeToNextPart();
-			} else if (arg instanceof LinearGraspApproachCommand) {
+			} else if (arg instanceof FineArmMovementCommand) {
 				logger.info("linear grasp approach command");
-				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+				setNextPartName(PartName.FINE_ARM_MOVEMENT_COMMAND_PART);
 				changeToNextPart();
 			} else if (arg instanceof SimulateFarArmMovementCommand) {
 				logger.info("simulate grasp command");
@@ -148,8 +149,12 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 				setNextPartName(PartName.MOVE_ARM_TO_POSE_PART);
 				changeToNextPart();
 			} else if (arg instanceof GetCurrentArmPose) {
-				logger.info("get cureent arm pose command");
+				logger.info("get current arm pose command");
 				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
+				changeToNextPart();
+			} else if (arg instanceof SimulateMoveToPose) {
+				logger.info("simulate move to pose command");
+				setNextPartName(PartName.SIMULATE_MOVE_TO_POSE_PART);
 				changeToNextPart();
 			}
 		}

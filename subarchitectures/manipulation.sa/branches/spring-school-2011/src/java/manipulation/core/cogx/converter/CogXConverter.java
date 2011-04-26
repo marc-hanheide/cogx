@@ -8,6 +8,7 @@ import java.util.List;
 
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.ModelPoint;
+import manipulation.core.share.types.Pose;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.VisionModel;
 import VisionData.GeometryModel;
@@ -116,6 +117,11 @@ public class CogXConverter {
 
 		return new Pose3(returnVec, returnMat);
 
+	}
+
+	public static Pose convertPose3ToPose(Pose3 poseIn) {
+		return new Pose(CogXConverter.convBlortToMatrix(poseIn.rot),
+				new Vector3D(poseIn.pos.x, poseIn.pos.y, poseIn.pos.z));
 	}
 
 }

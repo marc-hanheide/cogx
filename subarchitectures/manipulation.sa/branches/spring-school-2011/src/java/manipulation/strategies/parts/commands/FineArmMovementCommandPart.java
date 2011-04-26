@@ -12,9 +12,9 @@ import manipulation.core.share.types.Vector3D;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.GraspingStatus;
-import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
@@ -23,6 +23,7 @@ import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateFarArmMovementCommand;
+import manipulation.slice.SimulateMoveToPose;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -40,22 +41,22 @@ import cast.cdl.WorkingMemoryAddress;
  * @author Torben Toeniges
  * 
  */
-public class LinearGraspApproachCommandPart extends StrategyPart implements
+public class FineArmMovementCommandPart extends StrategyPart implements
 		Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean manipulationFailed = false;
 
-	public LinearGraspApproachCommandPart(Manipulator manipulator,
+	public FineArmMovementCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+		setPartName(PartName.FINE_ARM_MOVEMENT_COMMAND_PART);
 	}
 
 	private void fineApproach() {
-		WorkingMemoryAddress wma = ((LinearGraspApproachCommand) ((CommandExecution) getGlobalStrategy())
+		WorkingMemoryAddress wma = ((FineArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
 		try {
@@ -104,7 +105,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 				}
 			}
 		} else {
-			LinearGraspApproachCommand currentCom = ((LinearGraspApproachCommand) ((CommandExecution) getGlobalStrategy())
+			FineArmMovementCommand currentCom = ((FineArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
@@ -150,7 +151,7 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 					logger.info("close gripper");
 					getManipulator().getArmConnector().closeGripper(10);
 
-					LinearGraspApproachCommand currentCom = ((LinearGraspApproachCommand) ((CommandExecution) getGlobalStrategy())
+					FineArmMovementCommand currentCom = ((FineArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 							.getCurrentCommand());
 					currentCom.status = ManipulationCommandStatus.FINISHED;
 					currentCom.comp = ManipulationCompletion.SUCCEEDED;
@@ -198,9 +199,9 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 				synchronized (this) {
 					notifyAll();
 				}
-			} else if (arg instanceof LinearGraspApproachCommand) {
+			} else if (arg instanceof FineArmMovementCommand) {
 				logger.info("linear grasp approach command");
-				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+				setNextPartName(PartName.FINE_ARM_MOVEMENT_COMMAND_PART);
 				synchronized (this) {
 					notifyAll();
 				}
@@ -243,6 +244,12 @@ public class LinearGraspApproachCommandPart extends StrategyPart implements
 			} else if (arg instanceof GetCurrentArmPose) {
 				logger.info("get current pose command");
 				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof SimulateMoveToPose) {
+				logger.info("simulate move to pose command");
+				setNextPartName(PartName.SIMULATE_MOVE_TO_POSE_PART);
 				synchronized (this) {
 					notifyAll();
 				}

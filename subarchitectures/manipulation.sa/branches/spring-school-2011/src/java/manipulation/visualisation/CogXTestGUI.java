@@ -20,7 +20,7 @@ import manipulation.itemMemory.Item.PropertyName;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.LinearGraspApproachCommand;
+import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
@@ -348,7 +348,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("linGraspApp")) {
 			logger.error("linGraspApp pressed");
 
-			LinearGraspApproachCommand linGraspApp = new LinearGraspApproachCommand();
+			FineArmMovementCommand linGraspApp = new FineArmMovementCommand();
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())

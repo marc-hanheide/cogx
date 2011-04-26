@@ -41,7 +41,7 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		LINEAR_GRASP_APPROACH_COMMAND_PART,
+		FINE_ARM_MOVEMENT_COMMAND_PART,
 		/**
 		 * 
 		 */
@@ -73,7 +73,11 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		GET_CURRENT_ARM_POSE_PART
+		GET_CURRENT_ARM_POSE_PART,
+		/**
+		 * 
+		 */
+		SIMULATE_MOVE_TO_POSE_PART
 	}
 
 	/**

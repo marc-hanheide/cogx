@@ -17,8 +17,8 @@ import manipulation.itemMemory.ItemMemory;
 import manipulation.runner.share.Runner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
-import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
@@ -244,8 +244,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 
 								}
 
-								if (command instanceof LinearGraspApproachCommand) {
-									LinearGraspApproachCommand lc = (LinearGraspApproachCommand) command;
+								if (command instanceof FineArmMovementCommand) {
+									FineArmMovementCommand lc = (FineArmMovementCommand) command;
 									logger.error("LIN APP");
 									logger.error("COMP: " + lc.comp);
 									logger.error("STAT: " + lc.status);

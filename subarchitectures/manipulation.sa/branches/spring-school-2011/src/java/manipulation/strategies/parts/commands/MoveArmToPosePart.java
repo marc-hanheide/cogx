@@ -3,10 +3,6 @@ package manipulation.strategies.parts.commands;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.apache.log4j.Logger;
-
-import cogx.Math.Pose3;
-
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.cogx.converter.CogXConverter;
@@ -17,8 +13,8 @@ import manipulation.core.share.types.Vector3D;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
+import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
-import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
@@ -27,10 +23,15 @@ import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateFarArmMovementCommand;
+import manipulation.slice.SimulateMoveToPose;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+
+import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
 
 public class MoveArmToPosePart extends StrategyPart implements Observer {
 
@@ -167,9 +168,9 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 				synchronized (this) {
 					notifyAll();
 				}
-			} else if (arg instanceof LinearGraspApproachCommand) {
+			} else if (arg instanceof FineArmMovementCommand) {
 				logger.info("linear grasp approach command");
-				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
+				setNextPartName(PartName.FINE_ARM_MOVEMENT_COMMAND_PART);
 				synchronized (this) {
 					notifyAll();
 				}
@@ -212,6 +213,12 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 			} else if (arg instanceof GetCurrentArmPose) {
 				logger.info("get current pose command");
 				setNextPartName(PartName.GET_CURRENT_ARM_POSE_PART);
+				synchronized (this) {
+					notifyAll();
+				}
+			} else if (arg instanceof SimulateMoveToPose) {
+				logger.info("simulate move to pose command");
+				setNextPartName(PartName.SIMULATE_MOVE_TO_POSE_PART);
 				synchronized (this) {
 					notifyAll();
 				}
