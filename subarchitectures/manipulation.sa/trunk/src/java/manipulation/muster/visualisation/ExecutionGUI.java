@@ -393,56 +393,56 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 			}
 
 		} else if (e.getActionCommand().equals("btnArmMoveGlobal")) {
-			logger.debug("pressed btnArmMoveGlobal");
-
-			try {
-				Matrix rotation1 = MathOperation
-						.getRotationAroundX(MathOperation.getRadiant(Double
-								.parseDouble(txtGoToX.getText())));
-
-				Matrix rotation2 = MathOperation
-						.getRotationAroundY(MathOperation.getRadiant(Double
-								.parseDouble(txtGoToY.getText())));
-
-				Matrix rotation3 = MathOperation
-						.getRotationAroundZ(MathOperation.getRadiant(Double
-								.parseDouble(txtGoToAngle.getText())));
-
-				Matrix result = MathOperation.getMatrixMatrixMultiplication(
-						MathOperation.getMatrixMatrixMultiplication(rotation1,
-								rotation2), rotation3);
-
-				manipulator
-						.getArmConnector()
-						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
-								.getText()), Double
-								.parseDouble(txtItemYPosition.getText()),
-								Double.parseDouble(txtItemZPosition.getText())),
-								result);
-
-			} catch (ManipulatorException e1) {
-				logger.error(e1);
-			}
-
-			x += 0.1;
+//			logger.debug("pressed btnArmMoveGlobal");
+//
+//			try {
+//				Matrix rotation1 = MathOperation
+//						.getRotationAroundX(MathOperation.getRadiant(Double
+//								.parseDouble(txtGoToX.getText())));
+//
+//				Matrix rotation2 = MathOperation
+//						.getRotationAroundY(MathOperation.getRadiant(Double
+//								.parseDouble(txtGoToY.getText())));
+//
+//				Matrix rotation3 = MathOperation
+//						.getRotationAroundZ(MathOperation.getRadiant(Double
+//								.parseDouble(txtGoToAngle.getText())));
+//
+//				Matrix result = MathOperation.getMatrixMatrixMultiplication(
+//						MathOperation.getMatrixMatrixMultiplication(rotation1,
+//								rotation2), rotation3);
+//
+//				manipulator
+//						.getArmConnector()
+//						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
+//								.getText()), Double
+//								.parseDouble(txtItemYPosition.getText()),
+//								Double.parseDouble(txtItemZPosition.getText())),
+//								result);
+//
+//			} catch (ManipulatorException e1) {
+//				logger.error(e1);
+//			}
+//
+//			x += 0.1;
 
 		} else if (e.getActionCommand().equals("btnArmMoveStep")) {
 			logger.debug("pressed btnArmMoveStep");
 
 			Matrix rotation = MathOperation.getRotationAroundX(-Math.PI / 2);
-			try {
-				manipulator
-						.getArmConnector()
-						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
-								.getText()), Double
-								.parseDouble(txtItemYPosition.getText()),
-								Double.parseDouble(txtItemZPosition.getText())),
-								rotation);
-			} catch (NumberFormatException e1) {
-				logger.error(e1);
-			} catch (ManipulatorException e1) {
-				logger.error(e1);
-			}
+//			try {
+//				manipulator
+//						.getArmConnector()
+//						.reach(new Vector3D(Double.parseDouble(txtItemXPosition
+//								.getText()), Double
+//								.parseDouble(txtItemYPosition.getText()),
+//								Double.parseDouble(txtItemZPosition.getText())),
+//								rotation);
+//			} catch (NumberFormatException e1) {
+//				logger.error(e1);
+//			} catch (ManipulatorException e1) {
+//				logger.error(e1);
+//			}
 
 		} else if (e.getActionCommand().equals("btnArmMoveStopReactive")) {
 			logger.debug("pressed btnArmMoveStopReactive");
@@ -467,20 +467,20 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		} else if (e.getActionCommand().equals("btnArmGetPos")) {
-			logger.debug("pressed btnArmGetPos");
-			try {
-				logger.debug(manipulator.getArmConnector().getCurrentPosition());
-			} catch (ManipulatorException e1) {
-				logger.error(e1);
-			}
-		} else if (e.getActionCommand().equals("btnArmGetRot")) {
-			logger.debug("pressed btnArmGetRot");
-			try {
-				logger.debug(manipulator.getArmConnector().getCurrentRotation());
-			} catch (ManipulatorException e1) {
-				logger.error(e1);
-			}
+//		} else if (e.getActionCommand().equals("btnArmGetPos")) {
+//			logger.debug("pressed btnArmGetPos");
+//			try {
+//				logger.debug(manipulator.getArmConnector().getCurrentPosition());
+//			} catch (ManipulatorException e1) {
+//				logger.error(e1);
+//			}
+//		} else if (e.getActionCommand().equals("btnArmGetRot")) {
+//			logger.debug("pressed btnArmGetRot");
+//			try {
+//				logger.debug(manipulator.getArmConnector().getCurrentRotation());
+//			} catch (ManipulatorException e1) {
+//				logger.error(e1);
+//			}
 		} else if (e.getActionCommand().equals("execMobMan")) {
 			logger.debug("pressed btnExecuteMobileStrategy");
 			// TODO nicht so toll hier nen thread zu starten
@@ -515,7 +515,7 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 			manipulator.getArmConnector().freezeGripper();
 		} else if (e.getActionCommand().equals("btnTest")) {
 			logger.debug("pressed btnTest");
-			logger.error(manipulator.getArmConnector().isGraspingObject());
+		//	logger.error(manipulator.getArmConnector().isGraspingObject());
 
 			// HashMap<SensorPosition, Integer> sensors = manipulator
 			// .getArmConnector().receiveGripperSensorData();

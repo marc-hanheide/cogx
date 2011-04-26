@@ -39,29 +39,31 @@ public class GoalReachedRunnable implements Runnable {
 	 */
 	@Override
 	public void run() {
+		// TODO wie lösen
 
-		while (!manipulator.getArmConnector().isReached()) {
-			GenConfigspaceState currentPos;
-			try {
-				currentPos = ((ExemplarySolutionKatanaArmConnector) manipulator
-						.getArmConnector()).getCurrentConfigState();
-
-				Thread.sleep(500);
-
-				GenConfigspaceState currentPos1 = ((ExemplarySolutionKatanaArmConnector) manipulator
-						.getArmConnector()).getCurrentConfigState();
-
-				if (calculateConfigStateError(currentPos, currentPos1) == 0) {
-					manipulator.getArmConnector().setReached(true);
-				}
-			} catch (ManipulatorException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
+		// while (!manipulator.getArmConnector().isReached()) {
+		// GenConfigspaceState currentPos;
+		// try {
+		// currentPos = ((ExemplarySolutionKatanaArmConnector) manipulator
+		// .getArmConnector()).getCurrentConfigState();
+		//
+		// Thread.sleep(500);
+		//
+		// GenConfigspaceState currentPos1 =
+		// ((ExemplarySolutionKatanaArmConnector) manipulator
+		// .getArmConnector()).getCurrentConfigState();
+		//
+		// if (calculateConfigStateError(currentPos, currentPos1) == 0) {
+		// manipulator.getArmConnector().setReached(true);
+		// }
+		// } catch (ManipulatorException e1) {
+		// // TODO Auto-generated catch block
+		// e1.printStackTrace();
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		// }
 	}
 }
