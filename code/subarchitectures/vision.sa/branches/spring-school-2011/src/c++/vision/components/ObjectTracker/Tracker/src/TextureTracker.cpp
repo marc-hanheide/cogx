@@ -213,6 +213,7 @@ TextureTracker::TextureTracker(){
 	m_draw_edges = false;
 	m_tracker_initialized = false;
 	m_drawimage = false;
+	m_use_tex_coords = false;
 }
 
 TextureTracker::~TextureTracker(){
@@ -419,6 +420,8 @@ void TextureTracker::useTexCoords(bool useTC){
 			m_modellist[i]->model.useTexCoords(useTC);
 
 	}
+
+	m_use_tex_coords = useTC;
 }
 
 void TextureTracker::unwrapTextures(const char* name){
