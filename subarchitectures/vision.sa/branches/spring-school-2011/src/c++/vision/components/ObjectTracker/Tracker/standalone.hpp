@@ -74,11 +74,8 @@ bool control(Tracker* tracker, SDL_Event &event){
 					tracker->evaluatePDF(0, -0.05, -0.05, 0.05, 0.05, 256, "jasmin1.pdf", "jasmin1.xpdf");
 					break;
 				case SDLK_c:
-					tracker->useTexCoords(true);
+					tracker->useTexCoords(!tracker->useTexCoords());
 					break;
-//				case SDLK_d:
-//					tracker->unwrapTextures();
-//					break;
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;

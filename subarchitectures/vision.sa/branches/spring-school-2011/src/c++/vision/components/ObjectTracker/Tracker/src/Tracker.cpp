@@ -50,6 +50,7 @@ bool Tracker::initGL(){
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		
 	const GLubyte *str;
 	int glOcclusionQueryAvailable;

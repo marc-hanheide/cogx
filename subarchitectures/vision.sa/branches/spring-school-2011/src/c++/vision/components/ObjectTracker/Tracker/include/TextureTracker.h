@@ -27,6 +27,7 @@ private:
 	Texture* m_tex_model_ip[NUM_SPREAD_LOOPS];
 	Texture* m_tex_frame_cmp;
 	Texture* m_tex_model_cmp;
+	bool m_use_tex_coords;
 
 	
 	// Functions
@@ -65,6 +66,8 @@ public:
 	virtual void textureFromImage(bool use_num_pixels=true);
 	
 	virtual void useTexCoords(bool useTC);
+
+	virtual bool useTexCoords(){ return m_use_tex_coords; }
 
 	virtual void unwrapTextures(const char* name);
 
