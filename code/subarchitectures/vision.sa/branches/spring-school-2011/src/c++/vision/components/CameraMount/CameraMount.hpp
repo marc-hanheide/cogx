@@ -54,7 +54,7 @@ protected:
   virtual void runComponent();
 
 public:
-  CameraMount() {}
+  CameraMount() {isFixed = false;}
   virtual ~CameraMount() {}
 };
 
