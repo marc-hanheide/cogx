@@ -28,7 +28,6 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 import org.apache.log4j.Logger;
 
@@ -68,16 +67,6 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 
 			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
-
-			Vector3D currentArmPos = null;
-			try {
-				currentArmPos = getManipulator().getArmConnector()
-						.getCurrentPosition();
-			} catch (ManipulatorException e) {
-				logger.error(e);
-				manipulationFailed = true;
-				return;
-			}
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
