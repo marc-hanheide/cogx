@@ -43,19 +43,6 @@ extern "C"
   }
 }
 
-std::string sfloat(double f, int precision=6)
-{
-   std::ostringstream out;
-   out << std::fixed << std::setprecision(precision) << f;
-   return out.str();
-}
-
-double fclocks()
-{
-   return 1.0 * clock() / CLOCKS_PER_SEC;
-}
-// --------------------------
-
 
 namespace cast
 {
@@ -89,12 +76,14 @@ void CheckSystemCalibration::configure(const map<string,string> & _config)
   {
     istringstream str(it->second);
     str >> pan;
+    usePTZ = true;
   }
 
   if((it = _config.find("--tilt")) != _config.end())
   {
     istringstream str(it->second);
     str >> tilt;
+    usePTZ = true;
   }
 
 #ifdef FEAT_VISUALIZATION
@@ -116,21 +105,24 @@ void CheckSystemCalibration::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-  // register with the PTZ server
-  Ice::CommunicatorPtr ic = getCommunicator();
+  if(usePTZ)
+  {
+    // register with the PTZ server
+    Ice::CommunicatorPtr ic = getCommunicator();
 
-  Ice::Identity id;
-  id.name = "PTZServer";
-  id.category = "PTZServer";
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
 
-  std::ostringstream str;
-  str << ic->identityToString(id) 
-    << ":default"
-    << " -h localhost"
-    << " -p " << cast::cdl::CPPSERVERPORT;
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+      << ":default"
+      << " -h localhost"
+      << " -p " << cast::cdl::CPPSERVERPORT;
 
-  Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-  m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+  }
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
@@ -230,13 +222,18 @@ void CheckSystemCalibration::drawCalibrationPattern(const Video::CameraParameter
     Vector2 p2 = projectPoint(cam, vector3(xoffs - (double)(nx - 1)*dx, y, 0.));
     cvLine(iplImg, cvPoint(p1.x, p1.y), cvPoint(p2.x, p2.y), cvScalar(0, 255, 0));
   }
+  log("camera pose is:");
+  log(toString(cam.pose));
 }
 
 void CheckSystemCalibration::runComponent()
 {
   sleepComponent(1000);
-	MovePanTilt(pan, tilt, 5*M_PI/180);
-  sleepComponent(3000);
+  if(usePTZ)
+  {
+    MovePanTilt(pan, tilt, 5*M_PI/180);
+    sleepComponent(3000);
+  }
   Video::Image img;
   videoServer->getImage(camId, img);
 #ifdef FEAT_VISUALIZATION
@@ -252,8 +249,6 @@ void CheckSystemCalibration::runComponent()
   cvWaitKey(100);
   cvReleaseImage(&iplImg);
 #endif
-
 }
 
-} // namespace
-
+}
