@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.4)
 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(OPENCV REQUIRED opencv)
+#FIND_PACKAGE (OpenCV REQUIRED)
+
 set(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem signals)
-FIND_PACKAGE (OpenCV REQUIRED)
-
 
 option(BUILD_CALIB_CAM "Build single monocular camera calibration" YES)
 if(BUILD_CALIB_CAM)
