@@ -7,7 +7,6 @@ import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.exceptions.ExternalMemoryException;
 import manipulation.muster.core.share.exceptions.InternalMemoryException;
 import manipulation.muster.core.share.exceptions.ItemException;
-import manipulation.muster.core.share.types.PTZPosition;
 import manipulation.muster.core.share.types.Vector3D;
 import manipulation.muster.core.share.types.ViewPoint;
 import manipulation.muster.itemMemory.ItemMemory;
@@ -42,9 +41,6 @@ public class FarApproach extends StrategyPart implements Observer {
 		setGlobalStrategy(globalStrategy);
 		setPartName(PartName.FAR_APPROACH);
 
-		manipulator.getPanTiltConnector().setPoseDeg(
-				new PTZPosition(0, getManipulator().getConfiguration()
-						.getFixedtiltAngle()));
 	}
 
 	private void alwaysGoToPosition() {
