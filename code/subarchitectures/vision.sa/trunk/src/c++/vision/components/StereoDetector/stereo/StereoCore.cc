@@ -199,10 +199,13 @@ printf("StereoCore::ProcessStereoImage: monocular image processed.\n");
     {
       if(stereoPrinciples[i]->IsEnabled())
       {
-	if(pPara->pruning) 
-	  stereoPrinciples[i]->Process(pPara->offsetX, pPara->offsetY, pPara->scale);
-	else
-	  stereoPrinciples[i]->Process();
+        if(pPara->pruning) 
+          stereoPrinciples[i]->Process(pPara->offsetX, pPara->offsetY, pPara->scale);
+        else
+        {
+printf("  StereoCore::Processing stereo principle: %u\n", i);
+          stereoPrinciples[i]->Process();
+        }
       }
     }
   }

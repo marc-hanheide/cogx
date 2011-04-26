@@ -116,18 +116,20 @@ bool StereoCamera::ReadSVSCalib(const string &calibfile)
 
 /**
  * @brief Point (X,Y,Z) is given in coor sys of left camera. Project to image plane
- * @param X 3D-coordinate ?
- * @param Y 3D-coordinate ?
- * @param Z 3D-coordinate ?
- * @param u 2D-coordinate ?
- * @param v 2D-coordinate ?
+ * @param X 3D-coordinate x
+ * @param Y 3D-coordinate y
+ * @param Z 3D-coordinate z
+ * @param u 2D-coordinate u in image plane
+ * @param v 2D-coordinate v in image plane
  * @param side Left or right side of stereo rig.
  */
-void StereoCamera::ProjectPoint(double X, double Y, double Z, double &u, double &v, int side)
+void StereoCamera::ProjectPoint(double X, double Y, double Z, double &u, double &v, int side, int imgWidth)
 {
+  double scale = 1;
   assert(Z != 0.);
-  u = cam[side].proj[0][0]*X + cam[side].proj[0][2]*Z + cam[side].proj[0][3];
-  v = cam[side].proj[1][1]*Y + cam[side].proj[1][2]*Z;
+  if(imgWidth !=0) scale = cam[0].width / imgWidth;
+  u = cam[side].proj[0][0]*X/scale + cam[side].proj[0][2]*Z/scale + cam[side].proj[0][3]/scale;
+  v = cam[side].proj[1][1]*Y/scale + cam[side].proj[1][2]*Z/scale;
   // w = Z;
   u /= Z;
   v /= Z;
@@ -135,12 +137,12 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z, double &u, double 
 
 /**
  * @brief Given a point in the left image and its disparity, return the reconstructed 3D point.
- * @param u 2D-coordinate ?
- * @param v 2D-coordinate ?
+ * @param u 2D-coordinate u in image plane
+ * @param v 2D-coordinate v in image plane
  * @param d disparity
- * @param X 3D-coordinate ?
- * @param Y 3D-coordinate ?
- * @param Z 3D-coordinate ?
+ * @param X 3D-coordinate x
+ * @param Y 3D-coordinate y
+ * @param Z 3D-coordinate z
  */
 void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
 {

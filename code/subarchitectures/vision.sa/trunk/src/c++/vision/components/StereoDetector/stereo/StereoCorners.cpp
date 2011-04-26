@@ -567,6 +567,8 @@ printf("Calculate3DCorners: start: xxx_corners.size(): %u - %u\n", left_corners.
   TmpCorner3D tmpCorner3D[left_corners.Size()][maxSize];
   std::map<double, unsigned> new_match_map[left_corners.Size()]; 
 
+  printf("Calculate3DCorners: 1\n");
+
   for(unsigned i=0; i<left_corners.Size(); i++)
   {
     unsigned nrResults = match_map[i].size();
@@ -589,9 +591,13 @@ printf("Calculate3DCorners: start: xxx_corners.size(): %u - %u\n", left_corners.
     }
   }
 
+printf("Calculate3DCorners: 2\n");
+
   // only one to one assignments between left and right l-junctions
   BackCheck(new_match_map, left_corners.Size());
   
+printf("Calculate3DCorners: 3\n");
+
   // Create new stereo corners and store in the arrays
   for(unsigned i=0; i<left_corners.Size(); i++)
   {
@@ -600,23 +606,23 @@ printf("Calculate3DCorners: start: xxx_corners.size(): %u - %u\n", left_corners.
       it = new_match_map[i].end(); it--;
       for(unsigned k=0; k<maxSize; k++)
       {
-	if(tmpCorner3D[i][k].IsValid())
-	{
-	  if(tmpCorner3D[i][k].GetVs3ID(RIGHT) == right_corners[(*it).second].GetVs3ID())
-	  {
-	    corners3D.PushBack(tmpCorner3D[i][k]);
-	    Corner3D *corner3D = new Corner3D(tmpCorner3D[i][k].GetIsct3D());
-	      //tmpLJct3D[i][k].GetVs3ID(LEFT), (*it).second, tmpLJct3D[i][k].GetCenter(), 
-		//			     tmpLJct3D[i][k].GetRadius(), tmpLJct3D[i][k].GetSignificance());
-	    score->NewGestalt3D(corner3D);    
-	  
-// printf("Calculate3DCorners: 3Dsig: %4.3f and ids: %u, %u\n", tmpCorner3D[i][k].GetSignificance(), tmpCorner3D[i][k].GetTmpID(LEFT), tmpCorner3D[i][k].GetTmpID(RIGHT));
-	    
-	    left.PushBack(left_corners[tmpCorner3D[i][k].GetTmpID(LEFT)]);
-	    right.PushBack(right_corners[tmpCorner3D[i][k].GetTmpID(RIGHT)]);
-	    nrMatches++;
-	  }
-	}
+        if(tmpCorner3D[i][k].IsValid())
+        {
+          if(tmpCorner3D[i][k].GetVs3ID(RIGHT) == right_corners[(*it).second].GetVs3ID())
+          {
+            corners3D.PushBack(tmpCorner3D[i][k]);
+            Corner3D *corner3D = new Corner3D(tmpCorner3D[i][k].GetIsct3D());
+              //tmpLJct3D[i][k].GetVs3ID(LEFT), (*it).second, tmpLJct3D[i][k].GetCenter(), 
+          //			     tmpLJct3D[i][k].GetRadius(), tmpLJct3D[i][k].GetSignificance());
+            score->NewGestalt3D(corner3D);    
+
+          // printf("Calculate3DCorners: 3Dsig: %4.3f and ids: %u, %u\n", tmpCorner3D[i][k].GetSignificance(), tmpCorner3D[i][k].GetTmpID(LEFT), tmpCorner3D[i][k].GetTmpID(RIGHT));
+            
+            left.PushBack(left_corners[tmpCorner3D[i][k].GetTmpID(LEFT)]);
+            right.PushBack(right_corners[tmpCorner3D[i][k].GetTmpID(RIGHT)]);
+            nrMatches++;
+          }
+         }
       }
     }
   }

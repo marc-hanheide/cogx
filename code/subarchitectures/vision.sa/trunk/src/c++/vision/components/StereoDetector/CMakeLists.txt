@@ -35,6 +35,7 @@ SET(HEADERS
 )
 SET(SOURCES 
 	StereoDetector.cpp
+  #Configuration.cpp
 )
 add_cast_component(StereoDetector ${SOURCES} ${HEADERS})
 
