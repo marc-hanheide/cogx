@@ -1,0 +1,43 @@
+#! /bin/bash
+
+LATEXOPTS="--interaction nonstopmode"
+
+PAPER=$1
+PACKAGE=$2
+FAMILY_NAME=$3
+
+SCRIPTS=`dirname $0`
+
+make $PAPER.ps
+
+rm -rf $PACKAGE
+mkdir $PACKAGE
+
+$SCRIPTS/expand_inputs.py $PAPER.tex $PAPER.bbl > $FAMILY_NAME.tex || exit 1
+
+latex $LATEXOPTS --jobname $FAMILY_NAME "\\AtBeginDocument{\\listfiles}\\input{$FAMILY_NAME}" || exit 1
+for input in `$SCRIPTS/parse_filelist.py < $FAMILY_NAME.log`; do
+    mkdir -p $PACKAGE/`dirname $input`
+    cp `kpsewhich $input` $PACKAGE/$input
+done
+
+mv $FAMILY_NAME.{aux,dvi,log,tex} $PACKAGE/
+mv $PAPER.bbl $PACKAGE/$FAMILY_NAME.bbl
+cp aaai.bst $PACKAGE/
+
+cd $PACKAGE
+latex $LATEXOPTS $FAMILY_NAME || exit 1
+latex $LATEXOPTS $FAMILY_NAME || exit 1
+dvips -j0 -Ppdf -G0 -tletter $FAMILY_NAME
+ps2pdf -dPDFSETTINGS=/printer -dCompatibilityLevel=1.4 \
+       -dMaxSubsetPct=0 -dSubsetFonts=false -dEmbedAllFonts=true \
+       -sPAPERSIZE=letter $FAMILY_NAME.ps
+rm -f $FAMILY_NAME.ps
+mv $FAMILY_NAME.log ..
+cd ..
+
+tar cvzf $PACKAGE.tgz $PACKAGE
+
+grep -i "warn\|hbox\|vbox" $FAMILY_NAME.log
+grep -i TODO `find $PACKAGE | grep \\.tex`
+exit 0
