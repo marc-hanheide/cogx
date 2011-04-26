@@ -24,6 +24,7 @@ namespace cast
 using namespace std;
 using namespace PlayerCc;
 using namespace VisionData;
+using namespace cogx::Math;
 
 GazeboVision::GazeboVision()
 {
@@ -59,6 +60,18 @@ void GazeboVision::configure(const map<string,string> & _config)
       ostr << " '" << labels[i] << "'";
     log("detecting objects: %s", ostr.str().c_str());
   }
+
+  if((it = _config.find("--sizes")) != _config.end())
+  {
+    istringstream istr(it->second);
+    Vector3 size;
+    while(istr >> size)
+      sizes.push_back(size);
+  }
+
+  if(labels.size() != sizes.size())
+    throw runtime_error("number of labels must match number of sizes");
+
   objAddrs.resize(labels.size());
 }
 
@@ -93,32 +106,39 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   obj->model = new GeometryModel;
 
 	VisionData::Face face1, face2;
-	double tableSizeX = 0.6;
-	double tableSizeY = 0.6;
-	double tableSizeZ = 0.5;
+	size_t i = find(labels.begin(), labels.end(), label) - labels.begin();
+	Vector3 size = sizes[i];
   Vertex v;
 
-  v.pos = cogx::Math::vector3(tableSizeX/2., tableSizeY/2., tableSizeZ);
+  v.pos = cogx::Math::vector3(size.x/2., size.y/2., size.z);
   v.normal = cogx::Math::vector3(0., 0., 1.);
+  v.pos = transform(pose, v.pos);
+  v.normal = transformDirection(pose, v.normal);
   obj->model->vertices.push_back(v);
   // fill one face clockwise, the other counter-clockwise
   face1.vertices.push_back(0);
   face2.vertices.push_back(3);
 
-  v.pos = cogx::Math::vector3(-tableSizeX/2., tableSizeY/2., tableSizeZ);
+  v.pos = cogx::Math::vector3(-size.x/2., size.y/2., size.z);
   v.normal = cogx::Math::vector3(0., 0., 1.);
+  v.pos = transform(pose, v.pos);
+  v.normal = transformDirection(pose, v.normal);
   obj->model->vertices.push_back(v);
   face1.vertices.push_back(1);
   face2.vertices.push_back(2);
 
-  v.pos = cogx::Math::vector3(-tableSizeX/2., -tableSizeY/2., tableSizeZ);
+  v.pos = cogx::Math::vector3(-size.x/2., -size.y/2., size.z);
   v.normal = cogx::Math::vector3(0., 0., 1.);
+  v.pos = transform(pose, v.pos);
+  v.normal = transformDirection(pose, v.normal);
   obj->model->vertices.push_back(v);
   face1.vertices.push_back(3);
   face2.vertices.push_back(1);
 
-  v.pos = cogx::Math::vector3(tableSizeX/2., -tableSizeY/2., tableSizeZ);
+  v.pos = cogx::Math::vector3(size.x/2., -size.y/2., size.z);
   v.normal = cogx::Math::vector3(0., 0., 1.);
+  v.pos = transform(pose, v.pos);
+  v.normal = transformDirection(pose, v.normal);
   obj->model->vertices.push_back(v);
   face1.vertices.push_back(3);
   face2.vertices.push_back(0);
@@ -133,14 +153,13 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   // note: distribution must of course sum to 1
   obj->identDistrib.push_back(1.);
   obj->identDistrib.push_back(0.);
-  // the information gain if we know the label, just set to 1, cause we don't
-  // have any alternative thing to do
-  obj->identGain = 1.;
-  // ambiguity in the distribution: we use the distribution's entropy
-  obj->identAmbiguity = 0.;
-  for(size_t i = 0; i < obj->identDistrib.size(); i++)
-    if(fpclassify(obj->identDistrib[i]) != FP_ZERO)
-      obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
+
+	// NOTE: for now use a stupid fixed probability 
+	obj->shapeLabels.push_back("plane");
+	obj->shapeLabels.push_back("unknown");
+	obj->shapeDistrib.push_back(0.9);
+	obj->shapeDistrib.push_back(0.1);
+
   obj->pose = pose;
   obj->componentID = getComponentID();
 
