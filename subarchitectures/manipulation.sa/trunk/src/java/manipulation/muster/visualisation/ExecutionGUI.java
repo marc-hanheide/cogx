@@ -86,8 +86,6 @@ public class ExecutionGUI extends JPanel implements ActionListener {
 		btnExecuteMobileStrategy.addActionListener(this);
 
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
-		addComponent(pane, gbl, new JLabel("Goto Position:"), 0, 0, 10, 1, 0, 0);
-
 		addComponent(pane, gbl, btnExecuteMobileStrategy, 0, 9, 5, 1, 0, 0);
 
 		gui.pack();
