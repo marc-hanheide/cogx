@@ -1827,39 +1827,134 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
     return 1.0-wS*surfmacthingRatio-wC*abs(dist_histogram)-wP*sizeRatio;
 }
 
+/**
+ * Take convex hull points and a surface normal common to all points and fill the models's faces with a
+ * "triangle fan"
+ */
+static void TriangulatePolygonSimple(vector<Vector3> &points, const Vector3 &normal, GeometryModelPtr &model)
+{
+  int originIdx = model->vertices.size();
+  Vector3 origin = vector3(0., 0., 0);
+  Vertex v;
+  for(size_t i = 0; i < points.size(); i++)
+    origin += points[i];
+  origin /= (double)points.size();
+  v.pos = origin;
+  v.normal = normal;
+  model->vertices.push_back(v);
+  for(size_t i = 0; i < points.size(); i++)
+  {
+    v.pos = points[i];
+    v.normal = normal;
+    model->vertices.push_back(v);
+  }
+  for(size_t i = 0; i < points.size(); i++)
+  {
+    Face f;
+    size_t j = (i+1)%points.size();
+    f.vertices.push_back(originIdx);
+    f.vertices.push_back(i+1);
+    f.vertices.push_back(j+1);
+    model->faces.push_back(f);
+  }
+}
+
+/**
+ * Create a visual object from a convex hull.
+ * This assumes that all coordinates are a given in robot ego, and that the given convex hull is essentially
+ * parallel to the ground plane.
+ * The visual object then consists of the top plane, a bottom plane projected to the ground and side planes,
+ * resulting in a prism.
+ */
 VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label)
 {
+  assert(CHPtr->PointsSeq.size() >= 3);
+
 	VisionData::VisualObjectPtr oPtr = new VisionData::VisualObject;
 	oPtr->model = new VisionData::GeometryModel;
 
-	// object pose
-	oPtr->pose = CHPtr->center;
-
-	// geometry model
-	VisionData::Face face1, face2;
-	for(size_t i = 0; i < CHPtr->PointsSeq.size(); i++)
+	// object pose:
+	// position = center of gravity of hull points
+	// x axis is defined by longest side of convex hull polygon, z axis is defined by plane normal
+	// This should give reasonable coordinate systems for table surfaces.
+  setIdentity(oPtr->pose);
+	Vector3 x = vector3(0., 0., 0.);
+	oPtr->pose.pos = vector3(0., 0., 0.);
+ 	for(int i = 0; i < (int)CHPtr->PointsSeq.size(); i++)
 	{
-		// note: Points of a visual object are given in object local coordinates,
+	  int j = (i + 1)%(int)CHPtr->PointsSeq.size();
+    Vector3 v = CHPtr->PointsSeq[j] - CHPtr->PointsSeq[i];
+    if(length(v) > length(x))
+      x = v;
+    oPtr->pose.pos += CHPtr->PointsSeq[i];
+	}
+  oPtr->pose.pos /= (double)CHPtr->PointsSeq.size();
+  // NOTE: assuming that the detected plane is parallel to the z = 0 ground plane, position
+  // the coord sys origin in the center of the prism, which consists of the detected
+  // top plane and a bottom plane (from the top plane projected to the ground)
+  // Therefore, position the origin at z = half of height
+  oPtr->pose.pos.z /= 2.;
+  normalise(x);
+  Vector3 z = vector3(CHPtr->plane.a, CHPtr->plane.b, CHPtr->plane.c);
+  normalise(z);
+  Vector3 y = cross(z, x);
+	setColumn(oPtr->pose.rot, 0, x);
+  setColumn(oPtr->pose.rot, 1, y);
+  setColumn(oPtr->pose.rot, 2, z);
+
+	// geometry model:
+  vector<Vector3> topPoints;
+  vector<Vector3> botPoints;
+	// top plane
+	topPoints.clear();
+	for(int i = (int)CHPtr->PointsSeq.size() - 1; i >= 0; i--)
+	{
+		// NOTE:: Points of a visual object are given in object local coordinates,
 		// points of a plane convex hull are given in robot ego coordinates, so
 		// have to transform back into object local coords
-		Vertex v;
-		v.pos = transformInverse(oPtr->pose, CHPtr->PointsSeq[i]);
-		// z-direction is plane normal
-		v.normal = transformDirectionInverse(oPtr->pose, getColumn(oPtr->pose.rot, 2));
-		v.texCoord = vector2(v.pos.x, v.pos.y);
-		oPtr->model->vertices.push_back(v);
-		// fill one face clockwise, the other counter-clockwise
-		face1.vertices.push_back(i);
-		face2.vertices.push_back(CHPtr->PointsSeq.size() - 1 - i);
+		Vector3 p;
+		p = transformInverse(oPtr->pose, CHPtr->PointsSeq[i]);
+		topPoints.push_back(p);
 	}
-	oPtr->model->faces.push_back(face1);
-	oPtr->model->faces.push_back(face2);
-  computeNormalsFromFaces(oPtr->model);
-
+	TriangulatePolygonSimple(topPoints, vector3(0, 0, 1), oPtr->model);
+	// bottom plane
+	botPoints.clear();
+	for(int i = (int)CHPtr->PointsSeq.size() - 1; i >= 0; i--)
+	{
+		Vector3 p = CHPtr->PointsSeq[i];
+		// point projected to the ground plane.
+		// NOTE: this of course assumes that everything is given in proper robot ego coordinates
+		p.z = 0.;
+		p = transformInverse(oPtr->pose, p);
+		botPoints.push_back(p);
+	}
+	TriangulatePolygonSimple(botPoints, vector3(0, 0, 1), oPtr->model);
+  // side planes:
+  // NOTE: we do not add extra vertices for the side planes here, so vertec normals
+  // are those of the top and bottom plane. This might lead to slightly odd display
+  // by the VirtualScene component
+	for(int i = 0; i < topPoints.size(); i++)
+	{
+	  Face f;
+	  int j = (i + 1)%topPoints.size();
+	  // MOTE: top vertices are: center, hull point 0, hull point 1, ..
+	  // bottom vertices are: center, bottom hull point 0, botom hull point 1, ..
+	  // -> add 1 to skip center point
+	  int t1 = i + 1;
+	  int t2 = j + 1;
+	  int b1 = topPoints.size() + 1 + t1;
+	  int b2 = topPoints.size() + 1 + t2;
+	  f.vertices.push_back(t1);
+	  f.vertices.push_back(t2);
+	  f.vertices.push_back(b2);
+	  f.vertices.push_back(b1);
+	  oPtr->model->faces.push_back(f);
+	}
+	
 	// NOTE: for now use a stupid fixed probability 
 	oPtr->identLabels.push_back(label);
 	oPtr->identLabels.push_back("unknown");
-	// note: distribution must of course sum to 1
+	// NOTE: distribution must of course sum to 1
 	oPtr->identDistrib.push_back(0.9);
 	oPtr->identDistrib.push_back(0.1);
 
@@ -1930,34 +2025,36 @@ void PlanePopOut::AddConvexHullinWM()
 			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
 			  //debug("add sth into WM");
 			  deleteFromWorkingMemory(pre_id);
+			  deleteFromWorkingMemory(obj_id_map[pre_id]);
 			  pre_id = newDataID();
 
 			  // create a visual object from the convex hull
 			  // id and label for the visual object associated to that plane
-			  /*obj_id_map[pre_id] = newDataID();
+			  obj_id_map[pre_id] = newDataID();
 			  ostringstream slabel;
 			  slabel << obj_label_base << "." << obj_id_map[pre_id];
 			  obj_label_map[pre_id] = slabel.str();
-			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);*/
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 
 			  addToWorkingMemory(pre_id, CHPtr);
-			  //addToWorkingMemory(obj_id_map[pre_id], oPtr);
+			  addToWorkingMemory(obj_id_map[pre_id], oPtr);
 
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
 		    }
 		    else
 		    {
-			  //VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 			  overwriteWorkingMemory(pre_id, CHPtr);
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
-			  //overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
+			  overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
 	    else
 	    {
 		  deleteFromWorkingMemory(pre_id);
+		  deleteFromWorkingMemory(obj_id_map[pre_id]);
 		  pre_mConvexHullRadius = 0.0;
 		  pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
 	    }
