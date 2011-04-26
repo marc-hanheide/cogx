@@ -1955,6 +1955,12 @@ void PlanePopOut::AddConvexHullinWM()
 			  //overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
+	    else
+	    {
+		  deleteFromWorkingMemory(pre_id);
+		  pre_mConvexHullRadius = 0.0;
+		  pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
+	    }
 	}
 
 	mConvexHullPoints.clear();
