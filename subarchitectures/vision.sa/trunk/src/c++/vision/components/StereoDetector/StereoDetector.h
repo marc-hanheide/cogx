@@ -34,6 +34,8 @@
 #include "ObjRep.h"
 #include "TomGineThread.hh"
 
+#include "stereo/StereoCamera.hh"
+
 namespace cast
 {
 
@@ -48,7 +50,9 @@ class StereoDetector : public ManagedComponent,
 private:
   TGThread::TomGineThread *tgRenderer;            ///< 3D render engine
   std::vector<PointCloud::SurfacePoint> points;   ///< 3D point vector
-  
+  IplImage *backProjPointCloud;                   ///< Back projected point cloud
+  Z::StereoCamera *stereo_cam;                       ///< stereo camera parameters and functions
+
   int runtime;                                    ///< Overall processing runtime for one image (pair)
   Z::StereoCore *score;                           ///< Stereo core
   Z::StereoCore *p_score[3];                      ///< Processing stereo cores for three frames
@@ -59,8 +63,9 @@ private:
   
   float cannyAlpha, cannyOmega;                   ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::vector<int> camIds;                        ///< Which cameras to get images from
+  std::vector<Video::CameraParameters> camPars;   ///< Camera parameters for each camera
   std::string videoServerName;                    ///< Component ID of the video server to connect to
-  std::string camconfig;                          ///< Config name of camera config file
+  std::string stereoconfig;                          ///< Config name of stereo camera config file
   Video::VideoInterfacePrx videoServer;           ///< ICE proxy to the video server
   Video::Image image_l, image_r;                  ///< Left and right stereo image from video server. Original images.
   IplImage *iplImage_l, *iplImage_r;              ///< Converted left and right stereo images (openCV ipl-images)
@@ -129,6 +134,7 @@ private:
   void deletedROI(const cdl::WorkingMemoryChange & _wmc);
   void receiveProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void receiveConvexHull(const cdl::WorkingMemoryChange & _wmc);
+  void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
   void processImage();
   void ProcessHRImages();
   void ProcessPrunedHRImages();
