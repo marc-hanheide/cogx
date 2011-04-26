@@ -192,7 +192,7 @@ module VisionData {
    * @brief Commands for Object Tracker
    * @author Thomas Mörwald
    */
-  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
+  enum TrackingCommandType{ START, STOP, ADDMODEL, ADDMODELFROMFILE, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
     string visualObjectID;
@@ -201,6 +201,7 @@ module VisionData {
 	// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
     BoolSeq pointOnModel;
 	// pointOnModel[i] is true if points[i] hits the VisualObject
+    string plyfile;
   };
 
   /**

@@ -221,7 +221,7 @@ int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
 
 int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc){
 	if(!m_tracker_initialized){
-		printf("[Tracker::addModel()] Error tracker not initialised!\n");
+		printf("[Tracker::addModelFromFile()] Error tracker not initialised!\n");
 		return -1;
 	}
 	

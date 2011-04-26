@@ -283,6 +283,24 @@ void ObjectTracker::applyTrackingCommand(){
 		}else{
 			log("  VisionData::ADDMODEL: number of max. trackable models reached: %d", m_maxModels);
 		}
+	}else if(track_cmd->cmd == VisionData::ADDMODELFROMFILE){
+		log("  VisionData::ADDMODELFROMFILE '%s'",track_cmd->plyfile.c_str());
+		if(m_trackinglist.size()<m_maxModels){
+			if(track_cmd->plyfile.empty()){
+				log("  VisionData::ADDMODELFROMFILE: Warning, no valid ply file. (empty)");
+				return;
+			}
+			Tracking::Pose pose;
+			trackingEntry = new TrackingEntry();
+			trackingEntry->visualObjectID = track_cmd->visualObjectID;
+			trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
+			convertPose2Particle(trackingEntry->obj->pose, pose);
+			trackingEntry->id = m_tracker->addModelFromFile(track_cmd->plyfile.c_str(), pose, trackingEntry->obj->identLabels[0], true);
+			m_trackinglist.push_back(trackingEntry);
+			log("  VisionData::ADDMODELFROMFILE '%s' at (%.3f, %.3f, %.3f): ok", trackingEntry->obj->identLabels[0].c_str(), pose.t.x, pose.t.y, pose.t.z);
+		}else{
+			log("  VisionData::ADDMODELFROMFILE: number of max. trackable models reached: %d", m_maxModels);
+		}
 
 	}else if(track_cmd->cmd == VisionData::REMOVEMODEL){
 		log("  VisionData::REMOVEMODEL '%s'", track_cmd->visualObjectID.c_str());
