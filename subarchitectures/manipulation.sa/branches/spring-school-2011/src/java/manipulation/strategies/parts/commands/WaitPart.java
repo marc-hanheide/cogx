@@ -14,7 +14,7 @@ import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.SimulateFarArmMovementCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -101,9 +101,9 @@ public class WaitPart extends StrategyPart implements Observer {
 				synchronized (this) {
 					notifyAll();
 				}
-			} else if (arg instanceof SimulateGraspCommand) {
+			} else if (arg instanceof SimulateFarArmMovementCommand) {
 				logger.info("simulate grasp command");
-				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
+				setNextPartName(PartName.SIMULATE_FAR_ARM_MOVEMENT_PART);
 				synchronized (this) {
 					notifyAll();
 				}
