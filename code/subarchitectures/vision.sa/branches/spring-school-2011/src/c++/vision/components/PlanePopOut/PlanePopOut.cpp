@@ -116,7 +116,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
   useGlobalPoints = true;
   doDisplay = false;
-  AgonalTime = 30;
+  AgonalTime = 20;
   StableTime = 5;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
@@ -1950,6 +1950,8 @@ void PlanePopOut::AddConvexHullinWM()
 		    {
 			  //VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
 			  overwriteWorkingMemory(pre_id, CHPtr);
+			  pre_mConvexHullRadius = mConvexHullRadius;
+			  pre_mCenterOfHull = mCenterOfHull;
 			  //overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
