@@ -43,6 +43,7 @@ private:
   Video::VideoInterfacePrx videoServer;
 
   ptz::PTZInterfacePrx m_PTUServer;
+  bool usePTZ;
   double pan;
   double tilt;
 
@@ -83,6 +84,8 @@ protected:
 public:
   CheckSystemCalibration() : camId(0)
   {
+    usePTZ = false;
+    pan = tilt = 0;
 #ifdef FEAT_VISUALIZATION
     m_display.setClientData(this);
 #endif
