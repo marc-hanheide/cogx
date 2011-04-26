@@ -18,7 +18,7 @@ import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.SimulateFarArmMovementCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -141,10 +141,10 @@ public class StopCommandPart extends StrategyPart implements Observer {
 
 				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
 				changeToNextPart();
-			} else if (arg instanceof SimulateGraspCommand) {
+			} else if (arg instanceof SimulateFarArmMovementCommand) {
 				logger.info("simulate grasp command");
 
-				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
+				setNextPartName(PartName.SIMULATE_FAR_ARM_MOVEMENT_PART);
 				changeToNextPart();
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");

@@ -1,28 +1,9 @@
 package manipulation.strategies.parts;
 
-import java.util.Observable;
+import manipulation.core.share.Manipulator;
+import manipulation.strategies.Strategy;
 
 import org.apache.log4j.Logger;
-
-import manipulation.commandWatcher.CommandWatcher;
-import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
-import manipulation.core.share.Manipulator;
-import manipulation.runner.cogx.CogXRunner;
-import manipulation.slice.CloseGripperCommand;
-import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.GetCurrentArmPose;
-import manipulation.slice.LinearGraspApproachCommand;
-import manipulation.slice.ManipulationCommandStatus;
-import manipulation.slice.ManipulationCompletion;
-import manipulation.slice.ManipulationExternalCommand;
-import manipulation.slice.MoveArmToHomePositionCommand;
-import manipulation.slice.MoveArmToPose;
-import manipulation.slice.OpenGripperCommand;
-import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
-import manipulation.slice.StopCommand;
-import manipulation.strategies.CommandExecution;
-import manipulation.strategies.Strategy;
 
 /**
  * represent a part of the strategy (a state of the state machine)
@@ -64,7 +45,7 @@ public abstract class StrategyPart {
 		/**
 		 * 
 		 */
-		SIMULATE_GRASP_COMMAND_PART,
+		SIMULATE_FAR_ARM_MOVEMENT_PART,
 		/**
 		 * 
 		 */

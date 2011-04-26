@@ -23,7 +23,7 @@ import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.SimulateFarArmMovementCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -41,7 +41,7 @@ import cast.cdl.WorkingMemoryAddress;
  * @author Torben Toeniges
  * 
  */
-public class SimulateGraspCommandPart extends StrategyPart implements Observer {
+public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -49,16 +49,16 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 
 	private Pose simulatedPose = null;
 
-	public SimulateGraspCommandPart(Manipulator manipulator,
+	public SimulateFarArmMovGraspCommandPart(Manipulator manipulator,
 			Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
+		setPartName(PartName.SIMULATE_FAR_ARM_MOVEMENT_PART);
 	}
 
 	private void simulateArm() {
 
-		WorkingMemoryAddress wma = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+		WorkingMemoryAddress wma = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetObjectAddr;
 
 		try {
@@ -109,7 +109,7 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 		setNextPartName(PartName.WAIT_PART);
 
 		if (!manipulationFailed) {
-			SimulateGraspCommand currentCom = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+			SimulateFarArmMovementCommand currentCom = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.FINISHED;
@@ -123,7 +123,7 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
 							.getCurrentCommandAddress(), currentCom);
 		} else {
-			SimulateGraspCommand currentCom = ((SimulateGraspCommand) ((CommandExecution) getGlobalStrategy())
+			SimulateFarArmMovementCommand currentCom = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
@@ -180,9 +180,9 @@ public class SimulateGraspCommandPart extends StrategyPart implements Observer {
 				logger.info("linear grasp approach command");
 				setNextPartName(PartName.LINEAR_GRASP_APPROACH_COMMAND_PART);
 				changeToNextPart();
-			} else if (arg instanceof SimulateGraspCommand) {
+			} else if (arg instanceof SimulateFarArmMovementCommand) {
 				logger.info("simulate grasp command");
-				setNextPartName(PartName.SIMULATE_GRASP_COMMAND_PART);
+				setNextPartName(PartName.SIMULATE_FAR_ARM_MOVEMENT_PART);
 				changeToNextPart();
 			} else if (arg instanceof StopCommand) {
 				logger.info("stop command");

@@ -25,7 +25,7 @@ import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.SimulateFarArmMovementCommand;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -250,8 +250,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 										+ lc.targetObjectAddr);
 							}
 
-							if (command instanceof SimulateGraspCommand) {
-								SimulateGraspCommand sc = (SimulateGraspCommand) command;
+							if (command instanceof SimulateFarArmMovementCommand) {
+								SimulateFarArmMovementCommand sc = (SimulateFarArmMovementCommand) command;
 								logger.error("SIM APP");
 								logger.error("COMP: " + sc.comp);
 								logger.error("STAT: " + sc.status);

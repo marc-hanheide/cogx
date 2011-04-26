@@ -24,7 +24,7 @@ import manipulation.slice.LinearGraspApproachCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
-import manipulation.slice.SimulateGraspCommand;
+import manipulation.slice.SimulateFarArmMovementCommand;
 import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
@@ -403,7 +403,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("simulateGrasp")) {
 			logger.error("simulateGrasp pressed");
 
-			SimulateGraspCommand simGCmd = new SimulateGraspCommand();
+			SimulateFarArmMovementCommand simGCmd = new SimulateFarArmMovementCommand();
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
