@@ -390,7 +390,7 @@ void TextureTracker::textureFromImage(bool use_num_pixels){
 
 		m_cam_perspective.Activate();
 
-		vector<int> faceUpdateList = m_modellist[i]->model.getFaceUpdateList(m_modellist[i]->pose, 
+		vector<int> faceUpdateList = m_modellist[i]->model.getFaceUpdateList(m_modellist[i]->pose,
 					vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
 					params.minTexGrabAngle,
 					use_num_pixels);
@@ -398,13 +398,13 @@ void TextureTracker::textureFromImage(bool use_num_pixels){
 		if(!faceUpdateList.empty()){
 			vertices.clear();
 			m_modellist[i]->model.textureFromImage(	m_tex_frame,
-																							params.width, params.height,
-																							m_modellist[i]->pose,
-																							vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
-																							params.minTexGrabAngle,
-																							faceUpdateList,
-																							vertices, 
-																							&m_cam_perspective);
+													params.width, params.height,
+													m_modellist[i]->pose,
+													vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
+													params.minTexGrabAngle,
+													faceUpdateList,
+													vertices,
+													&m_cam_perspective);
 
 		}
 		faceUpdateList.clear();
