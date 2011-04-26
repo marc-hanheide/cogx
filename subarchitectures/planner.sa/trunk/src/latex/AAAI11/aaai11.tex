@@ -23,10 +23,21 @@
 
 %%\nocopyright
 
+\special{! /pdfmark where
+{pop} {userdict /pdfmark /cleartomark load put} ifelse
+[ /Author (Moritz Goebelbecker, Charles O. Gretton, Richard Dearden)
+/Title (A Switching Planner for Combined Task and Observation Planning)
+/Subject (Proceedings of the Twenty-Fifth Conference on Artificial Intelligence)
+/Keywords (planning under uncertainty)
+/DOCINFO pdfmark
+userdict /pdfmark /cleartomark load put}
+
 \pdfinfo{
 /Title (A Switching Planner for Combined Task and Observation Planning)
-% /Subject (Proceedings of the 21st International Conference on Automated Planning and Scheduling)
-/Author ()}
+/Subject (Proceedings of the Twenty-Fifth Conference on Artificial Intelligence)
+/Author (Moritz Goebelbecker, Charles O. Gretton, Richard Dearden)
+}
+
 % The file aaai.sty is the style file for AAAI Press 
 % proceedings, working notes, and technical reports.
 %
@@ -39,15 +50,15 @@
 
 \title{A Switching Planner for Combined Task and Observation Planning}
 \author{
-Moritz G{\"o}belbecker \\ University of Freiburg, Germany\\
-\{goebelbe\}@informatik.uni-freiburg.de
+Moritz G{\"o}belbecker \\ Albert-Ludwigs-Universit{\"a}t Freiburg, Germany\\
+goebelbe@informatik.uni-freiburg.de
 \And
 Charles O. Gretton, Richard Dearden,\\
 University of Birmingham, United Kingdom\\
 \{c.gretton,R.W.Dearden\}@cs.bham.ac.uk} 
 \setcounter{secnumdepth}{0}
 
-\begin{document} 
+\begin{document}
 \maketitle
 
 \begin{abstract}
@@ -132,7 +143,7 @@ in large problems from a realistic robot exploration domain.
 \input{relatex.tex}
 
 %% \section{Discussion}
-%% \input{discussion.tex}
+%% \noinput{discussion.tex}
 
 
 \section{Concluding Remarks}
@@ -140,10 +151,10 @@ in large problems from a realistic robot exploration domain.
 
 
 
-\textbf{Acknowledgements}: The research leading to these results has
+\small
+\paragraph{Acknowledgements:} The research leading to these results has
 received funding from the European Community's Seventh Framework
 Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
-
 
 \bibliographystyle{aaai}
 \bibliography{papers}
