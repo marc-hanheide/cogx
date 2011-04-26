@@ -514,8 +514,8 @@ void TrackerModel::unwarpTexturesBox_hacky(const char* name){
 		ip->setCamOrtho();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float x = m_passlist[p]->h * ip->getHeight() * 0.5;
-		float y = m_passlist[p]->w * ip->getWidth() * 0.5;
+		float x = m_passlist[p]->h * ip->getHeight() * 0.75;
+		float y = m_passlist[p]->w * ip->getWidth() * 0.75;
 		float z = 0.0;
 		float nz = 1.0;
 
