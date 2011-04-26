@@ -54,8 +54,8 @@ public:
 	
 	// Variables
 	std::vector<Edge> 		m_edgelist;			// edges of model (indices of vertexlist)
-	PassList							m_passlist;
-	std::vector<int>			m_facepixellist;
+	PassList				m_passlist;
+	std::vector<int>		m_facepixellist;
 	
 	Texture* m_tex_original;		// original texture of model (not modified by tracker)
 	Texture* m_texture;				// texture of model modified by tracker (edge-texture)
@@ -90,6 +90,10 @@ public:
 							std::vector<Vertex> &vertices,
 							Camera* m_cam);
 	
+	void useTexCoords(bool useTC);
+
+	void unwarpTexturesBox_hacky(const char* name);
+
 	// gets
 	bool 		getTextured(){ return m_textured; }
 	Texture* 	getTexture(){ return m_texture; }

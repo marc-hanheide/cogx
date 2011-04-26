@@ -64,6 +64,10 @@ public:
 	
 	virtual void textureFromImage(bool use_num_pixels=true);
 	
+	virtual void useTexCoords(bool useTC);
+
+	virtual void unwrapTextures(const char* name);
+
 	virtual void untextureModels();
 						
 	virtual void drawResult();

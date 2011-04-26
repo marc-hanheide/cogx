@@ -428,6 +428,7 @@ void Tracker::saveModels(const char* pathname){
 	while(it != m_modellist.end()){
 		name = string(pathname);
 		name.append((*it)->label);
+		(*it)->model.unwarpTexturesBox_hacky(name.c_str());
 		modelloader.SavePly((*it)->model, name.c_str());
 		it++;
 	}

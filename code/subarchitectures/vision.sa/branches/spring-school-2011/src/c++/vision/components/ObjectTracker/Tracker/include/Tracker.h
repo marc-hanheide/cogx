@@ -171,6 +171,8 @@ public:
 	virtual void setEdgeShader(){ }
 	virtual void setColorShader(){ }
 	virtual void textureFromImage(bool force=false){}
+	virtual void useTexCoords(bool useTC=true){}
+	virtual void unwrapTextures(const char* name){}
 	virtual void untextureModels(){}
   	
 	// Set Parameters
