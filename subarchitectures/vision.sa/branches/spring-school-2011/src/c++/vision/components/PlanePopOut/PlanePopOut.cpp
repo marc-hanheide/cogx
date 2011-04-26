@@ -72,18 +72,7 @@ using namespace VisionData;
 //using namespace navsa;
 using namespace cdl;
 
-int win;
 int objnumber = 0;
-double cam_trans[3];
-double cam_rot[2];
-int mouse_x, mouse_y;
-int mouse_butt;
-int butt_state;
-Vector3 view_point, view_dir, view_up, view_normal;
-GLfloat col_background[4];
-GLfloat col_surface[4];
-GLfloat col_overlay[4];
-GLfloat col_highlight[4];
 
 PointCloud::SurfacePointSeq points;
 PointCloud::SurfacePointSeq pointsN;
@@ -165,7 +154,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   
   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
-  cv::Vec3d rotCenter(0,0,0.4);
+  cv::Vec3d rotCenter(0.1,0,0.3);
 
   // Initialize 3D render engine 
   tgRenderer = new TGThread::TomGineThread(1280, 1024);
@@ -2416,7 +2405,7 @@ void PlanePopOut::Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3
 	    cp.y = 0.0;
 	    cp.z = 0.0;
     }
-    else
+    else	if (points_label.at(i) >0)	//points belong to the objects
     {
 	  cp.x = (uchar) pointsN[i].c.b;	// change rgb to bgr
 	  cp.y = (uchar) pointsN[i].c.g;
