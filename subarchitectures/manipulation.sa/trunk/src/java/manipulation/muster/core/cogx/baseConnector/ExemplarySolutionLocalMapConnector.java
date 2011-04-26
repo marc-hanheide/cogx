@@ -30,7 +30,6 @@ public class ExemplarySolutionLocalMapConnector implements MapConnector {
 	private GlobalMap map = new GlobalMap();
 
 	private LocalMapInterfacePrx localMapInterface;
-	// TODO das ist doof
 
 	private Manipulator manipulator;
 
