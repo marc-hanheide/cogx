@@ -107,7 +107,7 @@ module manipulation {
 		/**
 		* This command represents a simple grasp approach arm movement. 
 		* The manipulator will move from the current position to the midpoint of 
-		* the object.
+		* the object. The orientation of the gripper will be parallel to the floor.
 		* As long the manipulator is moving, the comp field is set to ONTHEWAY 
 		* and the status field to PENDING. 
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
@@ -116,7 +116,7 @@ module manipulation {
    		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
    		**/
-		class LinearGraspApproachCommand extends ManipulationExternalCommand {
+		class FineArmMovementCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			GraspingStatus graspStatus;
 		};
@@ -127,6 +127,9 @@ module manipulation {
 		* The field simulatedReachablePose represents the pose of the 
 		* manipulator which can be reached with the orientation of the gripper
 		* parallel to the floor. 
+		* If an error occurs or another ManipulationExternalCommand is detected,
+   		* the status filed is set to COMMANDFAILED and the comp field to FAILED. 
+		* 
    		* @author Torben Toeniges
    		**/
 		class SimulateFarArmMovementCommand extends ManipulationExternalCommand {
@@ -203,6 +206,20 @@ module manipulation {
 			cogx::Math::Pose3 targetPose;
 			cogx::Math::Pose3 reachedPose;			
 		};
+		
+		/**
+		* This command simulates the MoveArmToPose command.
+		* The field simulatedReachablePose will return the position the 
+		* manipulator would reach in real.  
+   		* If an error occurs or another ManipulationExternalCommand is detected,
+   		* the status filed is set to COMMANDFAILED and the comp field to FAILED. 
+		* 
+		**/
+		class SimulateMoveToPose extends ManipulationExternalCommand {
+			cogx::Math::Pose3 targetPose;
+			cogx::Math::Pose3 simulatedReachablePose;			
+		};
+		
 		
 		
 		/**
