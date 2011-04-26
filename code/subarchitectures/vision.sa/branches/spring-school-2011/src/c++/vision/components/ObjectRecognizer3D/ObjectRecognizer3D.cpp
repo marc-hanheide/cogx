@@ -668,7 +668,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     m_detect->SetDebugImage(m_iplImage);
     if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
     {
-      log("%s: No object detected", m_label.c_str());
+      log("Failed to find object %s", m_label.c_str());
       Math::Pose3 nonPose;
       setIdentity(nonPose);
       loadVisualModelToWM(m_recEntries[m_label], nonPose, m_label);
@@ -685,8 +685,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 
       if(m_recEntries[m_label].object->conf < m_confidence)
       {
-        log("%s: Confidence of detected object too low: %f < %f, setting confidence to 0",
-          m_label.c_str(), m_recEntries[m_label].object->conf, m_confidence);
+        log("Found object %s with below threshold conf %f at:\n%s\n",
+          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         // set confidence to 0 to indicate that we consider the object not detected
         m_recEntries[m_label].object->conf = 0.;
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
@@ -694,8 +694,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       }
       else
       {
-        log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f",
-          m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
+        log("Found object %s with conf %f at:\n%s\n",
+          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
       }
