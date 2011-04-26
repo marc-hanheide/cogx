@@ -13,10 +13,13 @@
 #include <string>
 #include <libplayerc++/playerc++.h>
 #include <cast/architecture/ManagedComponent.hpp>
+#include "cogxmath.h"
 #include <VisionData.hpp>
 
 namespace cast
 {
+
+using namespace cogx::Math;
 
 class GazeboVision : public ManagedComponent
 {
@@ -37,6 +40,10 @@ private:
    * list of objects we want to have detected
    */
   std::vector<std::string> labels;
+  /**
+   * sizes of the objects, assuming they are box-shaped 
+   */
+  std::vector<Vector3> sizes;
   /**
    * Working memory addresses of objects.
    */
