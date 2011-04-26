@@ -107,7 +107,7 @@ module manipulation {
 		/**
 		* This command represents a simple grasp approach arm movement. 
 		* The manipulator will move from the current position to the midpoint of 
-		* the object. The orientation of the gripper will be parallel to the floor.
+		* the object.
 		* As long the manipulator is moving, the comp field is set to ONTHEWAY 
 		* and the status field to PENDING. 
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
@@ -116,7 +116,7 @@ module manipulation {
    		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
    		**/
-		class FineArmMovementCommand extends ManipulationExternalCommand {
+		class LinearGraspApproachCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 			GraspingStatus graspStatus;
 		};
