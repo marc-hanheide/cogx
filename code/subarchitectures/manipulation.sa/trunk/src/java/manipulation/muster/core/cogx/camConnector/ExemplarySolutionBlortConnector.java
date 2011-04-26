@@ -81,6 +81,10 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 										.convBlortGeomModelToVisionModel(changedObject.model));
 			}
 
+			manipulator.getItemMemory().addWMStuff(
+					manipulator.getItemMemory().getFirstGraspItem(),
+					_wmc.address);
+
 			if (changedObject.identDistrib[0] > 0.08) {
 				manipulator.getItemMemory().updatePosition(
 						manipulator.getItemMemory().getFirstGraspItem(),
@@ -131,6 +135,10 @@ public class ExemplarySolutionBlortConnector implements CamConnector {
 			case EXAMPLE_CEREALS_SCHOKOMUSLI_SIM:
 				recognizeCommand.label = "example-cereals-schokomusli-sim";
 				logger.debug("try to find example-cereals-schokomusli-sim");
+				break;
+			case CEREALS_WEETABIX:
+				recognizeCommand.label = "cereals-weetabix";
+				logger.debug("try to find cereals-weetabix");
 				break;
 			default:
 				logger.error("don't know the item");

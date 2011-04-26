@@ -24,6 +24,8 @@ import manipulation.muster.math.MathOperation;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.WorkingMemoryAddress;
+
 /**
  * represents an item memory
  * 
@@ -113,6 +115,33 @@ public class ItemMemory extends Observable {
 			setChanged();
 			// TODO was soll ich den Observern sagen?
 			notifyObservers(model);
+		} else {
+			throw new InternalMemoryException(
+					"Cannot find the item in the memory");
+		}
+
+	}
+
+	public void addWMStuff(Item item, WorkingMemoryAddress wma)
+			throws InternalMemoryException {
+		Item newItem = new Item(item);
+		boolean success = false;
+
+		newItem.setAttribute(PropertyName.WMA_ADDRESS, wma);
+
+		ListIterator<Item> it = itemList.listIterator(0);
+		while (it.hasNext()) {
+			if (it.next().equals(item)) {
+				itemList.set(it.previousIndex(), newItem);
+				success = true;
+				break;
+			}
+		}
+
+		if (success) {
+			setChanged();
+			// TODO was soll ich den Observern sagen?
+			notifyObservers(wma);
 		} else {
 			throw new InternalMemoryException(
 					"Cannot find the item in the memory");
@@ -294,8 +323,8 @@ public class ItemMemory extends Observable {
 					.getAttribute(PropertyName.WORLD_POSITION))
 					.forgetThirdDimension());
 
-			ViewPoint newViewPoint = new ViewPoint(error, viewPoint
-					.getPosition());
+			ViewPoint newViewPoint = new ViewPoint(error,
+					viewPoint.getPosition());
 
 			newViewPoints.add(newViewPoint);
 		}
@@ -351,11 +380,11 @@ public class ItemMemory extends Observable {
 					.getAttribute(PropertyName.WORLD_POSITION))
 					.forgetThirdDimension());
 
-			double error = MathOperation.getDistance(bestDirection
-					.forgetThirdDimension(), currentDirecion);
+			double error = MathOperation.getDistance(
+					bestDirection.forgetThirdDimension(), currentDirecion);
 
-			ViewPoint newViewPoint = new ViewPoint(error, viewPoint
-					.getPosition());
+			ViewPoint newViewPoint = new ViewPoint(error,
+					viewPoint.getPosition());
 
 			newViewPoints.add(newViewPoint);
 		}
@@ -622,8 +651,8 @@ public class ItemMemory extends Observable {
 		List<ViewPoint> newRotVPList = new LinkedList<ViewPoint>();
 
 		for (ViewPoint viewPoint : oldRotViewpoints.getPoints()) {
-			if (viewPoint.getPosition().getPoint().equals(
-					vpToDelete.getPosition().getPoint())) {
+			if (viewPoint.getPosition().getPoint()
+					.equals(vpToDelete.getPosition().getPoint())) {
 				logger.error("delete rot vp");
 			} else {
 				newRotVPList.add(viewPoint);
