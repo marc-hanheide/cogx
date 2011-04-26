@@ -21,7 +21,7 @@ CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf
 CPP MG spatial.translation SpatialTranslation 
 CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 1.0 --min-node-separation 2.5 --hyp-path-length 2.0  #--no-placeholders --log
 CPP GD path.query PathQueryProcessor #--no-indirect-paths 
-CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 6 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 2 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
 
 #INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
