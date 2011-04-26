@@ -1,24 +1,19 @@
 package manipulation.muster.core.cogx.armConnector;
 
-import golem.tinyice.GenConfigspaceState;
-
-import java.util.HashMap;
-
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.armConnector.ArmConnector;
 import manipulation.muster.core.share.exceptions.ManipulatorException;
-import manipulation.muster.core.share.types.ArmError;
-import manipulation.muster.core.share.types.Matrix;
-import manipulation.muster.core.share.types.SensorData.SensorPosition;
-import manipulation.muster.core.share.types.Vector3D;
 import manipulation.muster.runner.cogx.ExemplarySolutionRunner;
 import manipulation.slice.CloseGripperCommand;
+import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.OpenGripperCommand;
+import manipulation.slice.SimulateGraspCommand;
 import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
 
+import VisionData.VisualObject;
 import cast.AlreadyExistsOnWMException;
 
 public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
@@ -35,18 +30,6 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 */
 	public ExemplarySolutionKatanaArmConnector(Manipulator manipulator) {
 		this.manipulator = manipulator;
-	}
-
-	/**
-	 * gets the current configuration space of the arm
-	 * 
-	 * @return current configuration space
-	 * @throws ManipulatorException
-	 */
-	public GenConfigspaceState getCurrentConfigState()
-			throws ManipulatorException {
-		logger.error("NOT USE getCurrentConfigState");
-		return null;
 	}
 
 	/**
@@ -69,27 +52,13 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void reach(Vector3D position, Matrix rotation)
-			throws ManipulatorException {
-
+	public void reach(VisualObject obj) {
+		FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public Vector3D getCurrentPosition() throws ManipulatorException {
-		logger.error("NOT USE getCurrentPosition");
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Matrix getCurrentRotation() throws ManipulatorException {
-		logger.error("NOT USE getCurrentRotation");
-		return null;
+	public void simulate(VisualObject obj) {
+		SimulateGraspCommand simGCmd = new SimulateGraspCommand();
 	}
 
 	/**
@@ -106,26 +75,6 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 		} catch (AlreadyExistsOnWMException e1) {
 			logger.error(e1);
 		}
-	}
-
-	@Override
-	public boolean isReached() {
-		logger.error("NOT USE isReached");
-		return false;
-	}
-
-	@Override
-	public boolean isHome() {
-		logger.error("NOT USE isHome");
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setReached(boolean reached) {
-		logger.error("NOT USE setReached");
 	}
 
 	/**
@@ -166,36 +115,5 @@ public class ExemplarySolutionKatanaArmConnector implements ArmConnector {
 	@Override
 	public void freezeGripper() {
 
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public HashMap<SensorPosition, Integer> receiveGripperSensorData() {
-		logger.error("NOT USE receiveGripperSensorData");
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ArmError getPosError(Vector3D targetPosition, Matrix targetRotation)
-			throws ManipulatorException {
-		return null;
-	}
-
-	@Override
-	@Deprecated
-	public boolean isClosed() {
-		logger.error("NOT USE isClosed");
-		return false;
-	}
-
-	@Override
-	public boolean isGraspingObject() {
-		logger.error("NOT USE isClosed");
-		return false;
 	}
 }

@@ -53,64 +53,7 @@ public class FarGrasping extends StrategyPart implements Observer {
 		setPartName(PartName.FAR_GRASPING);
 	}
 
-	private void alwaysGrasp() {
 
-		Vector3D currentArmPos = null;
-		try {
-			currentArmPos = getManipulator().getArmConnector()
-					.getCurrentPosition();
-		} catch (ManipulatorException e) {
-			logger.error(e);
-		}
-
-		double posInFront = 0.1;
-
-		Vector3D direction = MathOperation.getDirection(currentArmPos,
-				currentGoalPosition);
-
-		logger.error("Grasp the item!");
-
-		Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
-				.getRadiant(0));
-
-		Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
-				.getRadiant(0));
-
-		Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
-				.getRadiant(-90));
-
-		Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
-				MathOperation.getMatrixMatrixMultiplication(rotation1,
-						rotation2), rotation3);
-
-		Vector3D goalWithDistance = new Vector3D(
-				(currentGoalPosition.getX() - posInFront * direction.getX()),
-				currentGoalPosition.getY() - posInFront * direction.getY(),
-				currentGoalPosition.getZ());
-
-		ArmError armError = null;
-		try {
-			armError = getManipulator().getArmConnector().getPosError(
-					goalWithDistance, greifRotation);
-		} catch (ManipulatorException e) {
-			logger.error(e);
-		}
-
-		logger.error(MathOperation.getEuclDistance(armError.getPoseError()));
-
-		logger.error("GREIFE");
-		try {
-			getManipulator().getArmConnector().reach(goalWithDistance,
-					greifRotation);
-		} catch (ManipulatorException e) {
-			logger.error(e);
-
-			logger.error("greife nicht test!");
-			stopTracking();
-
-			// TODO was tun
-		}
-	}
 
 	private void stopTracking() {
 		try {
@@ -178,17 +121,6 @@ public class FarGrasping extends StrategyPart implements Observer {
 							currentGoalPosition = newItemPosition;
 							logger.error("not moving -> grasping");
 
-							alwaysGrasp();
-						}
-					}
-					if (getManipulator().getArmConnector().isReached()
-							&& !getManipulator().getArmConnector().isHome()) {
-						logger.error("Arm Position erreicht->feines greifen");
-
-						setNextPartName(PartName.FINE_GRASPING);
-
-						synchronized (this) {
-							notifyAll();
 						}
 					}
 				} catch (ItemException e1) {
