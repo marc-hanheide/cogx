@@ -31,7 +31,6 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
-import manipulation.strategies.parts.StrategyPart.PartName;
 
 public class MoveArmToPosePart extends StrategyPart implements Observer {
 
@@ -42,15 +41,59 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 	public MoveArmToPosePart(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.MOVE_ARM_TO_POSE_PART);	
+		setPartName(PartName.MOVE_ARM_TO_POSE_PART);
 	}
 
 	private void moveArm() {
 		Pose3 targetPose = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetPose;
 
-	
-		
+		try {
+			getManipulator().getArmConnector().reach(
+					new Vector3D(targetPose.pos.x, targetPose.pos.y,
+							targetPose.pos.z),
+					CogXConverter.convBlortToMatrix(targetPose.rot));
+		} catch (ManipulatorException e) {
+			logger.error(e);
+			manipulationFailed = true;
+			return;
+		}
+
+	}
+
+	@Override
+	public void execute() {
+		logger.debug("execute: " + this.getClass());
+
+		getManipulator().getWatcher().addObserver(this);
+
+		moveArm();
+
+		if (!manipulationFailed) {
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					logger.error(e);
+				}
+			}
+		} else {
+			MoveArmToPose currentCom = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
+					.getCurrentCommand());
+
+			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
+			currentCom.comp = ManipulationCompletion.FAILED;
+
+			((CogXRunner) (getManipulator().getRunner()))
+					.updateWorkingMemoryCommand(getManipulator().getWatcher()
+							.getCurrentCommandAddress(), currentCom);
+
+			setNextPartName(PartName.WAIT_PART);
+		}
+
+		logger.debug("we go on!");
+
+		changeToNextPart();
 	}
 
 	@Override
@@ -63,20 +106,13 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 	}
 
 	@Override
-	public void execute() {
-		logger.debug("execute: " + this.getClass());
-
-		getManipulator().getWatcher().addObserver(this);
-	}
-
-	@Override
 	public void update(Observable observable, Object arg) {
 		if (observable instanceof CommandWatcher) {
 			if (arg instanceof ArmReachingStatus) {
 				if ((ArmReachingStatus) arg == ArmReachingStatus.REACHED) {
 					logger.info("reached position with the arm");
 					setNextPartName(PartName.WAIT_PART);
-					FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+					MoveArmToPose currentCom = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
 							.getCurrentCommand());
 
 					currentCom.status = ManipulationCommandStatus.FINISHED;
