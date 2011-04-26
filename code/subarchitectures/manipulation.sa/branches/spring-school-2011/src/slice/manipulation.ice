@@ -122,10 +122,14 @@ module manipulation {
 		};
 		
 		/**
-   		* @brief simulates the grasp command
+		* This command simulate a simple grasping movement. It simulate the
+		* movement described in the FarArmMovmentCommand.
+		* The field simulatedReachablePose represents the pose of the 
+		* manipulator which can be reached with the orientation of the gripper
+		* parallel to the floor. 
    		* @author Torben Toeniges
    		**/
-		class SimulateGraspCommand extends ManipulationExternalCommand {
+		class SimulateFarArmMovementCommand extends ManipulationExternalCommand {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 
 			cogx::Math::Pose3 simulatedReachablePose;
