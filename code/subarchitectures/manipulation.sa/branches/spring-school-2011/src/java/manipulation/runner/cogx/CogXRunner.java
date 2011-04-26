@@ -26,6 +26,7 @@ import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateFarArmMovementCommand;
+import manipulation.slice.SimulateMoveToPose;
 import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
@@ -378,6 +379,38 @@ public class CogXRunner extends ManagedComponent implements Runner {
 											+ gc.currentPose.rot.m20 + " "
 											+ gc.currentPose.rot.m21 + " "
 											+ gc.currentPose.rot.m22);
+								}
+
+								if (command instanceof SimulateMoveToPose) {
+									SimulateMoveToPose sc = (SimulateMoveToPose) command;
+									logger.error("SIMULATE ARM POS");
+									logger.error("COMP: " + sc.comp);
+									logger.error("STAT: " + sc.status);
+
+									logger.error("CURRENT POS: "
+											+ sc.simulatedReachablePose.pos.x
+											+ " | "
+											+ sc.simulatedReachablePose.pos.y
+											+ " | "
+											+ sc.simulatedReachablePose.pos.z);
+									logger.error("ROT: "
+											+ sc.simulatedReachablePose.rot.m00
+											+ " "
+											+ sc.simulatedReachablePose.rot.m01
+											+ " "
+											+ sc.simulatedReachablePose.rot.m02);
+									logger.error("ROT: "
+											+ sc.simulatedReachablePose.rot.m10
+											+ " "
+											+ sc.simulatedReachablePose.rot.m11
+											+ " "
+											+ sc.simulatedReachablePose.rot.m12);
+									logger.error("ROT: "
+											+ sc.simulatedReachablePose.rot.m20
+											+ " "
+											+ sc.simulatedReachablePose.rot.m21
+											+ " "
+											+ sc.simulatedReachablePose.rot.m22);
 								}
 							}
 						} catch (DoesNotExistOnWMException e) {

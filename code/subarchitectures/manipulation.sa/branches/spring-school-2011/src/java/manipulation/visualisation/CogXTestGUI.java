@@ -21,10 +21,15 @@ import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.FineArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
+import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
+import manipulation.slice.MoveArmToPose;
 import manipulation.slice.OpenGripperCommand;
 import manipulation.slice.PutDownCommand;
 import manipulation.slice.SimulateFarArmMovementCommand;
+import manipulation.slice.SimulateMoveToPose;
 import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
@@ -62,6 +67,18 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JTextField txtItemYPosition;
 	private JTextField txtItemZPosition;
 
+	private JTextField txtrot00;
+	private JTextField txtrot01;
+	private JTextField txtrot02;
+
+	private JTextField txtrot10;
+	private JTextField txtrot11;
+	private JTextField txtrot12;
+
+	private JTextField txtrot20;
+	private JTextField txtrot21;
+	private JTextField txtrot22;
+
 	private JButton btnPutDown;
 
 	private JButton btnFarArm;
@@ -79,6 +96,12 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnOpenGripperCmd;
 
 	private JButton btnCloseGripperCmd;
+
+	private JButton btnMoveArmToPosCmd;
+
+	private JButton btnGetPosCmd;
+
+	private JButton btnSimulatePosCmd;
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -164,6 +187,18 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		txtItemYPosition = new JTextField("", 7);
 		txtItemZPosition = new JTextField("", 7);
 
+		txtrot00 = new JTextField("", 7);
+		txtrot01 = new JTextField("", 7);
+		txtrot02 = new JTextField("", 7);
+
+		txtrot10 = new JTextField("", 7);
+		txtrot11 = new JTextField("", 7);
+		txtrot12 = new JTextField("", 7);
+
+		txtrot20 = new JTextField("", 7);
+		txtrot21 = new JTextField("", 7);
+		txtrot22 = new JTextField("", 7);
+
 		btnPutDown = new JButton("put down command");
 		btnPutDown.setActionCommand("putDown");
 		btnPutDown.addActionListener(this);
@@ -200,6 +235,18 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnCloseGripperCmd.setActionCommand("closeGripper");
 		btnCloseGripperCmd.addActionListener(this);
 
+		btnMoveArmToPosCmd = new JButton("move arm to pose");
+		btnMoveArmToPosCmd.setActionCommand("btnMoveArmToPosCmd");
+		btnMoveArmToPosCmd.addActionListener(this);
+
+		btnGetPosCmd = new JButton("get pose");
+		btnGetPosCmd.setActionCommand("btnGetPosCmd");
+		btnGetPosCmd.addActionListener(this);
+		
+		btnSimulatePosCmd = new JButton("simulate move arm to pose");
+		btnSimulatePosCmd.setActionCommand("btnSimulatePosCmd");
+		btnSimulatePosCmd.addActionListener(this);
+
 		// cont, gbl, comp, x, y, width, height, weightx, weighty
 		addComponent(pane, gbl, new JLabel("x:"), 0, 0, 1, 1, 0, 0);
 		addComponent(pane, gbl, txtItemXPosition, 1, 0, 2, 1, 0, 0);
@@ -208,23 +255,50 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		addComponent(pane, gbl, new JLabel("z:"), 6, 0, 1, 1, 0, 0);
 		addComponent(pane, gbl, txtItemZPosition, 7, 0, 2, 1, 0, 0);
 
-		addComponent(pane, gbl, btnPutDown, 0, 1, 12, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r00:"), 0, 1, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot00, 1, 1, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r01:"), 3, 1, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot01, 4, 1, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r02:"), 6, 1, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot02, 7, 1, 2, 1, 0, 0);
 
-		addComponent(pane, gbl, btnFarArm, 0, 2, 12, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r10:"), 0, 2, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot10, 1, 2, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r11:"), 3, 2, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot11, 4, 2, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r12:"), 6, 2, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot12, 7, 2, 2, 1, 0, 0);
 
-		addComponent(pane, gbl, btnLinGraspApp, 0, 3, 12, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r20:"), 0, 3, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot20, 1, 3, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r21:"), 3, 3, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot21, 4, 3, 2, 1, 0, 0);
+		addComponent(pane, gbl, new JLabel("r22:"), 6, 3, 1, 1, 0, 0);
+		addComponent(pane, gbl, txtrot22, 7, 3, 2, 1, 0, 0);
 
-		addComponent(pane, gbl, btnSimGrasp, 0, 4, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnPutDown, 0, 4, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnLinBaseApp, 0, 5, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnFarArm, 0, 5, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnStopCmd, 0, 6, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnLinGraspApp, 0, 6, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnMoveHomeCmd, 0, 7, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnSimGrasp, 0, 7, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnOpenGripperCmd, 0, 8, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnLinBaseApp, 0, 8, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnCloseGripperCmd, 0, 9, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnStopCmd, 0, 9, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnMoveHomeCmd, 0, 10, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnOpenGripperCmd, 0, 11, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnCloseGripperCmd, 0, 12, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnMoveArmToPosCmd, 0, 13, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnGetPosCmd, 0, 14, 12, 1, 0, 0);
+
+		addComponent(pane, gbl, btnSimulatePosCmd, 0, 15, 12, 1, 0, 0);
 
 		gui.pack();
 		gui.setVisible(true);
@@ -242,6 +316,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			logger.error("putDown pressed");
 
 			PutDownCommand putDownCom = new PutDownCommand();
+			putDownCom.comp = ManipulationCompletion.COMPINIT;
+			putDownCom.status = ManipulationCommandStatus.NEW;
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -295,6 +371,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		} else if (e.getActionCommand().equals("farArm")) {
 			logger.error("farArm pressed");
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
+			farArmMovementCom.comp = ManipulationCompletion.COMPINIT;
+			farArmMovementCom.status = ManipulationCommandStatus.NEW;
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -349,6 +427,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			logger.error("linGraspApp pressed");
 
 			FineArmMovementCommand linGraspApp = new FineArmMovementCommand();
+			linGraspApp.comp = ManipulationCompletion.COMPINIT;
+			linGraspApp.status = ManipulationCommandStatus.NEW;
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -404,6 +484,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			logger.error("simulateGrasp pressed");
 
 			SimulateFarArmMovementCommand simGCmd = new SimulateFarArmMovementCommand();
+			simGCmd.comp = ManipulationCompletion.COMPINIT;
+			simGCmd.status = ManipulationCommandStatus.NEW;
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -450,6 +532,9 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			StopCommand stopCommand = new StopCommand();
+			stopCommand.comp = ManipulationCompletion.COMPINIT;
+			stopCommand.status = ManipulationCommandStatus.NEW;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						stopCommand);
@@ -461,6 +546,9 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
+			moveHomeCmd.comp = ManipulationCompletion.COMPINIT;
+			moveHomeCmd.status = ManipulationCommandStatus.NEW;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						moveHomeCmd);
@@ -472,6 +560,9 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+			openGripperCmd.comp = ManipulationCompletion.COMPINIT;
+			openGripperCmd.status = ManipulationCommandStatus.NEW;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						openGripperCmd);
@@ -483,9 +574,76 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
+			closeGripperCmd.comp = ManipulationCompletion.COMPINIT;
+			closeGripperCmd.status = ManipulationCommandStatus.NEW;
+
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
 						closeGripperCmd);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("btnMoveArmToPosCmd")) {
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			MoveArmToPose moveArmToPose = new MoveArmToPose();
+			moveArmToPose.comp = ManipulationCompletion.COMPINIT;
+			moveArmToPose.status = ManipulationCommandStatus.NEW;
+
+			moveArmToPose.targetPose = new Pose3(new Vector3(
+					Double.parseDouble(txtItemXPosition.getText()),
+					Double.parseDouble(txtItemYPosition.getText()),
+					Double.parseDouble(txtItemZPosition.getText())),
+					new Matrix33(Double.parseDouble(txtrot00.getText()), Double
+							.parseDouble(txtrot01.getText()), Double
+							.parseDouble(txtrot02.getText()), Double
+							.parseDouble(txtrot10.getText()), Double
+							.parseDouble(txtrot11.getText()), Double
+							.parseDouble(txtrot12.getText()), Double
+							.parseDouble(txtrot20.getText()), Double
+							.parseDouble(txtrot21.getText()), Double
+							.parseDouble(txtrot22.getText())));
+
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						moveArmToPose);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("btnGetPosCmd")) {
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			GetCurrentArmPose getPose = new GetCurrentArmPose();
+			getPose.comp = ManipulationCompletion.COMPINIT;
+			getPose.status = ManipulationCommandStatus.NEW;
+
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						getPose);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
+			}
+		} else if (e.getActionCommand().equals("btnSimulatePosCmd")) {
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+			SimulateMoveToPose simMoveToPose = new SimulateMoveToPose();
+			simMoveToPose.comp = ManipulationCompletion.COMPINIT;
+			simMoveToPose.status = ManipulationCommandStatus.NEW;
+
+			simMoveToPose.targetPose = new Pose3(new Vector3(
+					Double.parseDouble(txtItemXPosition.getText()),
+					Double.parseDouble(txtItemYPosition.getText()),
+					Double.parseDouble(txtItemZPosition.getText())),
+					new Matrix33(Double.parseDouble(txtrot00.getText()), Double
+							.parseDouble(txtrot01.getText()), Double
+							.parseDouble(txtrot02.getText()), Double
+							.parseDouble(txtrot10.getText()), Double
+							.parseDouble(txtrot11.getText()), Double
+							.parseDouble(txtrot12.getText()), Double
+							.parseDouble(txtrot20.getText()), Double
+							.parseDouble(txtrot21.getText()), Double
+							.parseDouble(txtrot22.getText())));
+
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						simMoveToPose);
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
