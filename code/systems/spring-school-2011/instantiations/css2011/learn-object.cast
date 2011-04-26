@@ -4,14 +4,14 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
+CPP MG CameraMount CameraMount --fixed --camids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
 
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-schokomusli" --initpose "[0.47 0.00 0.96][0.00 0.00 1.57]" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-weetabix.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-weetabix.sift" --labels "example-cereals-weetabix" --initpose "[0.56 0.00 0.85][0.00 0.00 1.57]" --log
 
 # mode can be RECOGNIZE or LEARN
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli" --mode LEARN --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-weetabix" --mode LEARN --log
 
