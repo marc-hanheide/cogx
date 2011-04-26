@@ -45,9 +45,9 @@
       <origin>0 0 0</origin>
 
       <!-- Note: displayed rays are also visible in simulated cameras! So have
-           to turn this off. -->
+           to turn this off.
       <displayRays>fan</displayRays>
-      
+      -->
 
       <minAngle>-120</minAngle>
       <maxAngle>120</maxAngle>
