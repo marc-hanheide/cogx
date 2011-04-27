@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<model:physical name="default_table_model"
+<model:physical name="table1_model"
   xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
   xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
   xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
@@ -13,9 +13,9 @@
   <xyz>0 0.0 0.0</xyz>
   <rpy>0 0 0</rpy>
   <static>false</static>
-  <canonicalBody>table_body</canonicalBody>
+  <canonicalBody>table1_body</canonicalBody>
 
-  <body:box name="table_body">
+  <body:box name="table1_body">
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
@@ -32,7 +32,7 @@
     <cz>0.0</cz>
 
 
-    <geom:box name="table_geom">
+    <geom:box name="table1_geom">
       <xyz>0.0 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
       <size>0.465 0.350 0.350</size>
