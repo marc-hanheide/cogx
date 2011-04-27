@@ -5,7 +5,6 @@ import manipulation.muster.core.share.baseConnector.BaseConnector;
 import manipulation.muster.core.share.baseConnector.MapConnector;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
-import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
 
 /**
  * factory to build the manipulator
@@ -60,6 +59,5 @@ public interface ManipulatorPartFactory {
 	public CalibrationConnector createCalibrationConnector(
 			Manipulator manipulator);
 
-	public PanTiltConnector createPanTiltConnector(Manipulator manipulator);
 
 }
