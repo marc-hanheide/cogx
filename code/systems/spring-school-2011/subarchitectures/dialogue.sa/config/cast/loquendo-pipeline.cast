@@ -1,0 +1,11 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	asr	de.dfki.lt.tr.cast.dialogue.LoquendoASR --serverName LoquendoASRServer --serverEndpoint "tcp -p 9021" --log true
+JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./resources/rules/abduction/intentions-basic/index.txt --log true
+JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
+JAVA MG realize	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA GD tts	de.dfki.lt.tr.cast.dialogue.MaryTTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
