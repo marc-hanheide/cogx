@@ -23,7 +23,7 @@
             <ixx>0.001</ixx>
             <ixy>0.0</ixy>
             <ixz>0.0</ixz>
-            <iyy>0.001</iyy>
+            <iyy>0.0005</iyy>
             <iyz>0.0</iyz>
             <izz>0.001</izz>
             <cx>0.0</cx>
