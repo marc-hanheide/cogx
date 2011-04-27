@@ -8,6 +8,7 @@ import manipulation.strategies.parts.commands.FarArmMovementCommandPart;
 import manipulation.strategies.parts.commands.FineArmMovementCommandPart;
 import manipulation.strategies.parts.commands.GetCurrentArmPosePart;
 import manipulation.strategies.parts.commands.MoveArmToHomePositionCommandPart;
+import manipulation.strategies.parts.commands.MoveArmToPosePart;
 import manipulation.strategies.parts.commands.OpenGripperPart;
 import manipulation.strategies.parts.commands.PutDownCommandPart;
 import manipulation.strategies.parts.commands.SimulateFarArmMovGraspCommandPart;
@@ -63,8 +64,7 @@ public class CommandExecution extends Strategy {
 				this));
 		addToPartList(new OpenGripperPart(getManipulator(), this));
 		addToPartList(new CloseGripperPart(getManipulator(), this));
-		addToPartList(new MoveArmToHomePositionCommandPart(getManipulator(),
-				this));
+		addToPartList(new MoveArmToPosePart(getManipulator(), this));
 		addToPartList(new GetCurrentArmPosePart(getManipulator(), this));
 		addToPartList(new SimulateMoveToPosePart(getManipulator(), this));
 
