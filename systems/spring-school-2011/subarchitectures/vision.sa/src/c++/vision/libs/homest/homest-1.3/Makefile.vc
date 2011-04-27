@@ -1,0 +1,60 @@
+#
+# MS Visual C Makefile for homography estimation
+#
+# At the command prompt, type
+# nmake /f Makefile.vc
+#
+# To build a DLL, type
+# nmake CFL=/DDLL_BUILD /f Makefile.vc dll
+#
+
+CC=cl /nologo
+# CHANGE THE FOLLOWING LINE TO WHERE YOUR LEVMAR lm.h is!
+LEVMARHDR_PATH=C:\levmar-2.4
+# CHANGE THE FOLLOWING TWO LINES TO WHERE YOUR COMPILED LEVMAR & LAPACK LIBS ARE!
+LEVMARLIB_PATH=C:\levmar-2.4
+LAPACKLIBS_PATH=C:\src\lib
+INCLUDES=/I. /I$(LEVMARHDR_PATH)
+# /MD COMPILES WITH MULTIPLE THREADS SUPPORT. TO DISABLE IT, SUBSTITUTE WITH /ML
+# FLAG /EHsc SUPERSEDED /GX IN MSVC'05. IF YOU HAVE AN EARLIER VERSION THAT COMPLAINS ABOUT IT, CHANGE /EHsc TO /GX
+CFLAGS=$(CFL) /D_CRT_SECURE_NO_DEPRECATE /DWIN32 $(INCLUDES) /MD /W3 /EHsc /O2 #/Wall
+LDFLAGS=/link /subsystem:console /opt:ref /libpath:. /libpath:$(LEVMARLIB_PATH) /libpath:$(LAPACKLIBS_PATH)
+AR=lib /nologo
+DLLFLAGS=/link /dll /entry:_DllMainCRTStartup@12 /subsystem:console /release /libpath:$(LEVMARLIB_PATH) /libpath:$(LAPACKLIBS_PATH)
+
+LIBOBJS=calc_2Dhomog_coeffs.obj homest.obj lqs.obj linalg.obj norm.obj buckets.obj
+LIBSRCS=calc_2Dhomog_coeffs.c homest.c lqs.c linalg.c norm.c buckets.c
+
+HOMEST_DEMO_OBJS=homest_demo.obj
+HOMEST_DEMO_SRCS=homest_demo.c
+
+LIBS=levmar.lib clapack.lib blas.lib libF77.lib libI77.lib
+
+all: homest.lib homest_demo.exe
+
+homest.lib: $(LIBOBJS)
+	$(AR) /out:homest.lib $(LIBOBJS)
+
+calc_2Dhomog_coeffs.obj: maplefuncs.h
+homest.obj: util.h homest.h maplefuncs.h lqs.h #ransac.h
+lqs.obj: lqs.h compiler.h
+linalg.obj: compiler.h util.h
+norm.obj: compiler.h util.h
+buckets.obj: util.h lqs.h
+
+homest_demo.exe: $(HOMEST_DEMO_OBJS) homest.lib
+	$(CC) $(HOMEST_DEMO_OBJS) $(LDFLAGS) /out:homest_demo.exe homest.lib $(LIBS)
+
+homest_demo.obj: homest.h
+
+# Note that when building a DLL, we make sure that we do not use any object
+# files from a previous compilation or leave such files after we are done!
+dll: clean $(LIBOBJS)
+	$(CC) $(LIBOBJS) $(DLLFLAGS) /out:libhomest.dll /implib:libhomest.lib $(LIBS)
+	-del $(LIBOBJS)
+
+clean:
+	-del $(LIBOBJS) $(HOMEST_DEMO_OBJS)
+
+cleanall: clean
+	-del homest.lib
