@@ -21,6 +21,8 @@ import manipulation.muster.itemMemory.Item.ItemIntention;
 import manipulation.muster.itemMemory.Item.ItemStatus;
 import manipulation.muster.itemMemory.Item.PropertyName;
 import manipulation.muster.math.MathOperation;
+import manipulation.slice.ManipulationCommand;
+import manipulation.slice.ManipulationCompletion;
 
 import org.apache.log4j.Logger;
 
@@ -559,13 +561,16 @@ public class ItemMemory extends Observable {
 	 * 
 	 * @param status
 	 *            new status
-	 * @throws InternalMemoryException
 	 */
-	public void updateViewPointReachingStatus(ReachingStatus status)
-			throws InternalMemoryException {
+	public void updateViewPointReachingStatus(ReachingStatus status) {
 		this.viewPointReachingStatus = status;
 		setChanged();
 		notifyObservers(status);
+	}
+
+	public void updateManipulationStatus(ManipulationCommand cmd) {
+		setChanged();
+		notifyObservers(cmd);
 	}
 
 	public enum UpdateAction {

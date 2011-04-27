@@ -21,7 +21,7 @@ public class SimulateGrasp extends StrategyPart {
 	public SimulateGrasp(Manipulator manipulator, Strategy globalStrategy) {
 		setManipulator(manipulator);
 		setGlobalStrategy(globalStrategy);
-		setPartName(PartName.CALCULATE_BEST_GRASPING_POINT);
+		setPartName(PartName.SIMULATE_GRASP);
 
 	}
 
@@ -33,6 +33,7 @@ public class SimulateGrasp extends StrategyPart {
 
 		logger.error("execute: " + this.getClass());
 
+		
 		setNextPartName(PartName.GO_TO_BEST_GRASPING_POINT);
 		changeToNextPart();
 

@@ -87,16 +87,13 @@ public class GoToBestGraspingPoint extends StrategyPart implements Observer {
 				switch (currentStatus) {
 				case VP_REACHED:
 					logger.error("reached");
-					setNextPartName(PartName.NEAR_RECOGNIZE);
+					setNextPartName(PartName.FAR_GRASPING);
 					synchronized (this) {
 						notifyAll();
 					}
 					break;
 				case VP_NOT_REACHABLE:
 					logger.error("not reachable");
-
-					//TODO was tun
-					
 					break;
 				default:
 					break;

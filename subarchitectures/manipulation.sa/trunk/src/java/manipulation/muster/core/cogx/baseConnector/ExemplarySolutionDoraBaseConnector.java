@@ -3,7 +3,6 @@ package manipulation.muster.core.cogx.baseConnector;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.baseConnector.BaseConnector;
 import manipulation.muster.core.share.exceptions.ExternalMemoryException;
-import manipulation.muster.core.share.exceptions.InternalMemoryException;
 import manipulation.muster.core.share.types.BasePositionData;
 import manipulation.muster.core.share.types.Matrix;
 import manipulation.muster.core.share.types.Vector3D;
@@ -66,7 +65,8 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 			WorkingMemoryChangeReceiver wmcr) {
 		logger.debug("navCommand Changed");
 		try {
-			NavCommand command = ((ExemplarySolutionRunner) manipulator.getRunner())
+			NavCommand command = ((ExemplarySolutionRunner) manipulator
+					.getRunner())
 					.getMemoryEntry(_wmc.address, NavCommand.class);
 			logger.error("COMPLETION::" + command.comp);
 			logger.error(command.cmd);
@@ -116,8 +116,6 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 			logger.error(e);
 		} catch (CASTException e) {
 			logger.error(e);
-		} catch (InternalMemoryException e) {
-			logger.error(e);
 		}
 
 	}
@@ -129,12 +127,9 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 	public void goTo(BasePositionData target) throws ExternalMemoryException {
 		stop();
 		logger.debug("CogXDoraBaseConnector goto");
-		try {
-			manipulator.getItemMemory().updateViewPointReachingStatus(
-					ReachingStatus.ON_THE_WAY);
-		} catch (InternalMemoryException e1) {
-			logger.error(e1);
-		}
+
+		manipulator.getItemMemory().updateViewPointReachingStatus(
+				ReachingStatus.ON_THE_WAY);
 
 		NavCommand nav = newNavCommand();
 		nav.cmd = CommandType.GOTOPOSITION;
@@ -149,11 +144,12 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 		tolerance[2] = Math.PI / 36; // 5 grad
 		nav.tolerance = tolerance;
 
-		String id = ((ExemplarySolutionRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 
 		try {
-			((ExemplarySolutionRunner) manipulator.getRunner()).addToWorkingMemory(
-					id, nav);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, nav);
 		} catch (CASTException e) {
 			throw new ExternalMemoryException(e.message);
 
@@ -191,10 +187,12 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 		// NavCommand nav = newNavCommand();
 		// nav.cmd = CommandType.EXPLORE;
 		//
-		// String id = ((MasterThesisRunner) manipulator.getRunner()).newDataID();
+		// String id = ((MasterThesisRunner)
+		// manipulator.getRunner()).newDataID();
 		//
 		// try {
-		// ((MasterThesisRunner) manipulator.getRunner()).addToWorkingMemory(id, nav);
+		// ((MasterThesisRunner) manipulator.getRunner()).addToWorkingMemory(id,
+		// nav);
 		// } catch (AlreadyExistsOnWMException e) {
 		// logger.error(e);
 		// }
@@ -212,11 +210,12 @@ public class ExemplarySolutionDoraBaseConnector implements BaseConnector {
 		NavCommand nav = newNavCommand();
 		nav.cmd = CommandType.STOP;
 
-		String id = ((ExemplarySolutionRunner) manipulator.getRunner()).newDataID();
+		String id = ((ExemplarySolutionRunner) manipulator.getRunner())
+				.newDataID();
 
 		try {
-			((ExemplarySolutionRunner) manipulator.getRunner()).addToWorkingMemory(
-					id, nav);
+			((ExemplarySolutionRunner) manipulator.getRunner())
+					.addToWorkingMemory(id, nav);
 		} catch (AlreadyExistsOnWMException e) {
 			logger.error(e);
 		}
