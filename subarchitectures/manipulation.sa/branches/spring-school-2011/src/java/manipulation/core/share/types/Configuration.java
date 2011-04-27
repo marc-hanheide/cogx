@@ -11,10 +11,13 @@ import manipulation.core.share.armConnector.ArmConnector;
 public class Configuration {
 	String configPath;
 	ArmConnector.ArmName armName;
+	boolean gui;
 
-	public Configuration(String configPath, ArmConnector.ArmName armName) {
+	public Configuration(String configPath, ArmConnector.ArmName armName,
+			boolean gui) {
 		this.configPath = configPath;
 		this.armName = armName;
+		this.gui = gui;
 	}
 
 	/**
@@ -50,4 +53,20 @@ public class Configuration {
 	public void setArmName(ArmConnector.ArmName armName) {
 		this.armName = armName;
 	}
+
+	/**
+	 * @return the gui
+	 */
+	public boolean isGui() {
+		return gui;
+	}
+
+	/**
+	 * @param gui
+	 *            the gui to set
+	 */
+	public void setGui(boolean gui) {
+		this.gui = gui;
+	}
+
 }

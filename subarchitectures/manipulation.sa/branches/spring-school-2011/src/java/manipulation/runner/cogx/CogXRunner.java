@@ -85,7 +85,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 			}
 
 			configuration = new Configuration(config.get("--configPath"),
-					armName);
+					armName, config.containsKey("--testGUI"));
 		} else {
 			logger.error("Cannot read arguments - exit");
 			System.exit(-1);
@@ -118,7 +118,9 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 */
 	@Override
 	protected void runComponent() {
-		new CogXTestGUI(manipulator);
+		if (manipulator.getConfiguration().isGui()) {
+			new CogXTestGUI(manipulator);
+		}
 
 		startStrategy(Name.COMMAND_EXECUTION);
 	}
