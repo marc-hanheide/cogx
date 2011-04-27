@@ -306,7 +306,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("putDown")) {
-			logger.error("putDown pressed");
+			logger.debug("putDown pressed");
 
 			PutDownCommand putDownCom = new PutDownCommand();
 			putDownCom.comp = ManipulationCompletion.COMPINIT;
@@ -362,7 +362,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			}
 
 		} else if (e.getActionCommand().equals("farArm")) {
-			logger.error("farArm pressed");
+			logger.debug("farArm pressed");
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 			farArmMovementCom.comp = ManipulationCompletion.COMPINIT;
 			farArmMovementCom.status = ManipulationCommandStatus.NEW;
@@ -417,7 +417,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getActionCommand().equals("linGraspApp")) {
-			logger.error("linGraspApp pressed");
+			logger.debug("linGraspApp pressed");
 
 			FineArmMovementCommand linGraspApp = new FineArmMovementCommand();
 			linGraspApp.comp = ManipulationCompletion.COMPINIT;
@@ -474,7 +474,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			}
 
 		} else if (e.getActionCommand().equals("simulateGrasp")) {
-			logger.error("simulateGrasp pressed");
+			logger.debug("simulateGrasp pressed");
 
 			SimulateFarArmMovementCommand simGCmd = new SimulateFarArmMovementCommand();
 			simGCmd.comp = ManipulationCompletion.COMPINIT;
@@ -521,7 +521,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			}
 
 		} else if (e.getActionCommand().equals("stopCmd")) {
-			logger.error("stopCmd pressed");
+			logger.debug("stopCmd pressed");
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			StopCommand stopCommand = new StopCommand();
@@ -535,7 +535,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getActionCommand().equals("moveHome")) {
-			logger.error("moveHome pressed");
+			logger.debug("moveHome pressed");
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
@@ -549,7 +549,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getActionCommand().equals("openGripper")) {
-			logger.error("openGripper pressed");
+			logger.debug("openGripper pressed");
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			OpenGripperCommand openGripperCmd = new OpenGripperCommand();
@@ -563,7 +563,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 		} else if (e.getActionCommand().equals("closeGripper")) {
-			logger.error("closeGripper pressed");
+			logger.debug("closeGripper pressed");
 
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
