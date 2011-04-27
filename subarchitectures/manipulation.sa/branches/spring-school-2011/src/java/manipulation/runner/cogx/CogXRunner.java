@@ -217,71 +217,71 @@ public class CogXRunner extends ManagedComponent implements Runner {
 							if ((command.status == ManipulationCommandStatus.FINISHED)) {
 								if (command instanceof FarArmMovementCommand) {
 									FarArmMovementCommand fc = (FarArmMovementCommand) command;
-									logger.error("FAR ARM MOVEMENT");
-									logger.error("COMP: " + fc.comp);
-									logger.error("STAT: " + fc.status);
-									logger.error("POS: " + fc.reachedPose.pos.x
+									logger.debug("FAR ARM MOVEMENT");
+									logger.debug("COMP: " + fc.comp);
+									logger.debug("STAT: " + fc.status);
+									logger.debug("POS: " + fc.reachedPose.pos.x
 											+ " | " + fc.reachedPose.pos.y
 											+ " | " + fc.reachedPose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ fc.reachedPose.rot.m00 + " "
 											+ fc.reachedPose.rot.m01 + " "
 											+ fc.reachedPose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ fc.reachedPose.rot.m10 + " "
 											+ fc.reachedPose.rot.m11 + " "
 											+ fc.reachedPose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ fc.reachedPose.rot.m20 + " "
 											+ fc.reachedPose.rot.m21 + " "
 											+ fc.reachedPose.rot.m22);
-									logger.error("ADR: " + fc.targetObjectAddr);
+									logger.debug("ADR: " + fc.targetObjectAddr);
 								}
 								if (command instanceof PutDownCommand) {
 									PutDownCommand pc = (PutDownCommand) command;
-									logger.error("PUT DOWN");
-									logger.error("COMP: " + pc.comp);
-									logger.error("STAT: " + pc.status);
-									logger.error("BASED OBJ ARD: "
+									logger.debug("PUT DOWN");
+									logger.debug("COMP: " + pc.comp);
+									logger.debug("STAT: " + pc.status);
+									logger.debug("BASED OBJ ARD: "
 											+ pc.basedObjectAddr);
 
 								}
 
 								if (command instanceof FineArmMovementCommand) {
 									FineArmMovementCommand lc = (FineArmMovementCommand) command;
-									logger.error("LIN APP");
-									logger.error("COMP: " + lc.comp);
-									logger.error("STAT: " + lc.status);
-									logger.error("GRASP STAT: "
+									logger.debug("LIN APP");
+									logger.debug("COMP: " + lc.comp);
+									logger.debug("STAT: " + lc.status);
+									logger.debug("GRASP STAT: "
 											+ lc.graspStatus);
-									logger.error("TARGET OBJ ADR"
+									logger.debug("TARGET OBJ ADR"
 											+ lc.targetObjectAddr);
 								}
 
 								if (command instanceof SimulateFarArmMovementCommand) {
 									SimulateFarArmMovementCommand sc = (SimulateFarArmMovementCommand) command;
-									logger.error("SIM APP");
-									logger.error("COMP: " + sc.comp);
-									logger.error("STAT: " + sc.status);
-									logger.error("POS: "
+									logger.debug("SIM APP");
+									logger.debug("COMP: " + sc.comp);
+									logger.debug("STAT: " + sc.status);
+									logger.debug("POS: "
 											+ sc.simulatedReachablePose.pos.x
 											+ " | "
 											+ sc.simulatedReachablePose.pos.y
 											+ " | "
 											+ sc.simulatedReachablePose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m00
 											+ " "
 											+ sc.simulatedReachablePose.rot.m01
 											+ " "
 											+ sc.simulatedReachablePose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m10
 											+ " "
 											+ sc.simulatedReachablePose.rot.m11
 											+ " "
 											+ sc.simulatedReachablePose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m20
 											+ " "
 											+ sc.simulatedReachablePose.rot.m21
@@ -291,69 +291,69 @@ public class CogXRunner extends ManagedComponent implements Runner {
 
 								if (command instanceof StopCommand) {
 									StopCommand sc = (StopCommand) command;
-									logger.error("STOP APP");
-									logger.error("COMP: " + sc.comp);
-									logger.error("STAT: " + sc.status);
+									logger.debug("STOP APP");
+									logger.debug("COMP: " + sc.comp);
+									logger.debug("STAT: " + sc.status);
 								}
 
 								if (command instanceof MoveArmToHomePositionCommand) {
 									MoveArmToHomePositionCommand mc = (MoveArmToHomePositionCommand) command;
-									logger.error("STOP APP");
-									logger.error("COMP: " + mc.comp);
-									logger.error("STAT: " + mc.status);
+									logger.debug("STOP APP");
+									logger.debug("COMP: " + mc.comp);
+									logger.debug("STAT: " + mc.status);
 								}
 
 								if (command instanceof OpenGripperCommand) {
 									OpenGripperCommand mc = (OpenGripperCommand) command;
-									logger.error("OPEN APP");
-									logger.error("COMP: " + mc.comp);
-									logger.error("STAT: " + mc.status);
+									logger.debug("OPEN APP");
+									logger.debug("COMP: " + mc.comp);
+									logger.debug("STAT: " + mc.status);
 								}
 
 								if (command instanceof CloseGripperCommand) {
 									CloseGripperCommand cc = (CloseGripperCommand) command;
-									logger.error("CLOSE APP");
-									logger.error("COMP: " + cc.comp);
-									logger.error("STAT: " + cc.status);
-									logger.error("GRASP STAT: "
+									logger.debug("CLOSE APP");
+									logger.debug("COMP: " + cc.comp);
+									logger.debug("STAT: " + cc.status);
+									logger.debug("GRASP STAT: "
 											+ cc.graspStatus);
 								}
 
 								if (command instanceof MoveArmToPose) {
 									MoveArmToPose mc = (MoveArmToPose) command;
-									logger.error("MOVE TO POSE APP");
-									logger.error("COMP: " + mc.comp);
-									logger.error("STAT: " + mc.status);
-									logger.error("TARGETPOS: "
+									logger.debug("MOVE TO POSE APP");
+									logger.debug("COMP: " + mc.comp);
+									logger.debug("STAT: " + mc.status);
+									logger.debug("TARGETPOS: "
 											+ mc.targetPose.pos.x + " | "
 											+ mc.targetPose.pos.y + " | "
 											+ mc.targetPose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.targetPose.rot.m00 + " "
 											+ mc.targetPose.rot.m01 + " "
 											+ mc.targetPose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.targetPose.rot.m10 + " "
 											+ mc.targetPose.rot.m11 + " "
 											+ mc.targetPose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.targetPose.rot.m20 + " "
 											+ mc.targetPose.rot.m21 + " "
 											+ mc.targetPose.rot.m22);
 
-									logger.error("REACHEDPOS: "
+									logger.debug("REACHEDPOS: "
 											+ mc.reachedPose.pos.x + " | "
 											+ mc.reachedPose.pos.y + " | "
 											+ mc.reachedPose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.reachedPose.rot.m00 + " "
 											+ mc.reachedPose.rot.m01 + " "
 											+ mc.reachedPose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.reachedPose.rot.m10 + " "
 											+ mc.reachedPose.rot.m11 + " "
 											+ mc.reachedPose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ mc.reachedPose.rot.m20 + " "
 											+ mc.reachedPose.rot.m21 + " "
 											+ mc.reachedPose.rot.m22);
@@ -361,23 +361,23 @@ public class CogXRunner extends ManagedComponent implements Runner {
 
 								if (command instanceof GetCurrentArmPose) {
 									GetCurrentArmPose gc = (GetCurrentArmPose) command;
-									logger.error("GET ARM POSE");
-									logger.error("COMP: " + gc.comp);
-									logger.error("STAT: " + gc.status);
+									logger.debug("GET ARM POSE");
+									logger.debug("COMP: " + gc.comp);
+									logger.debug("STAT: " + gc.status);
 
-									logger.error("CURRENT POS: "
+									logger.debug("CURRENT POS: "
 											+ gc.currentPose.pos.x + " | "
 											+ gc.currentPose.pos.y + " | "
 											+ gc.currentPose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ gc.currentPose.rot.m00 + " "
 											+ gc.currentPose.rot.m01 + " "
 											+ gc.currentPose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ gc.currentPose.rot.m10 + " "
 											+ gc.currentPose.rot.m11 + " "
 											+ gc.currentPose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ gc.currentPose.rot.m20 + " "
 											+ gc.currentPose.rot.m21 + " "
 											+ gc.currentPose.rot.m22);
@@ -385,29 +385,29 @@ public class CogXRunner extends ManagedComponent implements Runner {
 
 								if (command instanceof SimulateMoveToPose) {
 									SimulateMoveToPose sc = (SimulateMoveToPose) command;
-									logger.error("SIMULATE ARM POS");
-									logger.error("COMP: " + sc.comp);
-									logger.error("STAT: " + sc.status);
+									logger.debug("SIMULATE ARM POS");
+									logger.debug("COMP: " + sc.comp);
+									logger.debug("STAT: " + sc.status);
 
-									logger.error("CURRENT POS: "
+									logger.debug("CURRENT POS: "
 											+ sc.simulatedReachablePose.pos.x
 											+ " | "
 											+ sc.simulatedReachablePose.pos.y
 											+ " | "
 											+ sc.simulatedReachablePose.pos.z);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m00
 											+ " "
 											+ sc.simulatedReachablePose.rot.m01
 											+ " "
 											+ sc.simulatedReachablePose.rot.m02);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m10
 											+ " "
 											+ sc.simulatedReachablePose.rot.m11
 											+ " "
 											+ sc.simulatedReachablePose.rot.m12);
-									logger.error("ROT: "
+									logger.debug("ROT: "
 											+ sc.simulatedReachablePose.rot.m20
 											+ " "
 											+ sc.simulatedReachablePose.rot.m21

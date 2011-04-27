@@ -63,8 +63,6 @@ public class CogXBlortConnector implements CamConnector {
 		Vector3D camPoint = new Vector3D(changedObject.pose.pos.x,
 				changedObject.pose.pos.y, changedObject.pose.pos.z);
 
-		logger.error("OBJ-POSE: " + camPoint);
-
 		Matrix camRot = CogXConverter.convBlortToMatrix(changedObject.pose.rot);
 
 		double bestRecValue = 0;
@@ -79,8 +77,6 @@ public class CogXBlortConnector implements CamConnector {
 			}
 		}
 
-		// logger.error("BEST LABEL: " + bestLabel);
-		// logger.error("BEST VALUE: " + bestRecValue);
 
 		if (!bestLabel.equals("")) {
 			boolean alreadyInMem = false;
@@ -106,7 +102,7 @@ public class CogXBlortConnector implements CamConnector {
 					logger.error(e);
 				}
 			} else {
-				logger.error("Added obstacle with label " + bestLabel
+				logger.debug("Added obstacle with label " + bestLabel
 						+ "to arm planning");
 				Item newItem = new Item();
 				newItem.setAttribute(PropertyName.BLORT_NAME, bestLabel);
@@ -139,7 +135,7 @@ public class CogXBlortConnector implements CamConnector {
 				}
 			}
 		} else {
-			logger.error("Recognition value: " + bestRecValue
+			logger.debug("Recognition value: " + bestRecValue
 					+ "! Will not add anything to the arm planning.");
 		}
 	}
