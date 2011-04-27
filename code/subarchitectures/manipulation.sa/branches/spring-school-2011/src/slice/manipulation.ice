@@ -122,8 +122,7 @@ module manipulation {
 		};
 		
 		/**
-		* This command simulate a simple grasping movement. It simulate the
-		* movement described in the FarArmMovmentCommand.
+		* This command simulates the movement described in the FarArmMovmentCommand.
 		* The field simulatedReachablePose represents the pose of the 
 		* manipulator which can be reached with the orientation of the gripper
 		* parallel to the floor. 
