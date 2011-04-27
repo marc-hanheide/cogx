@@ -39,7 +39,6 @@ public class ExemplarySolutionIntGraspingManipulator extends Manipulator {
 		setMapConnector(partFactory.createMapConnector(this));
 		setCalibrationConnector(partFactory.createCalibrationConnector(this));
 
-		setPanTiltConnector(partFactory.createPanTiltConnector(this));
 
 	}
 

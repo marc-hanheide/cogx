@@ -6,7 +6,6 @@ import manipulation.muster.core.share.baseConnector.MapAlgorithms;
 import manipulation.muster.core.share.baseConnector.MapConnector;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
-import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
 import manipulation.muster.core.share.types.Configuration;
 import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.runner.share.Runner;
@@ -41,7 +40,6 @@ public abstract class Manipulator {
 	private CamConnector camConnector;
 	private MapConnector mapConnector;
 	private CalibrationConnector calibrationConnector;
-	private PanTiltConnector panTiltConnector;
 
 	private MapAlgorithms mapAlgorithms;
 	private Configuration configuration;
@@ -163,20 +161,6 @@ public abstract class Manipulator {
 		this.calibrationConnector = calibrationConnector;
 	}
 
-	/**
-	 * @return the panTiltConnector
-	 */
-	public PanTiltConnector getPanTiltConnector() {
-		return panTiltConnector;
-	}
-
-	/**
-	 * @param panTiltConnector
-	 *            the panTiltConnector to set
-	 */
-	public void setPanTiltConnector(PanTiltConnector panTiltConnector) {
-		this.panTiltConnector = panTiltConnector;
-	}
 
 	/**
 	 * gets the map-algorithms

@@ -5,7 +5,6 @@ import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionDoraBaseConn
 import manipulation.muster.core.cogx.baseConnector.ExemplarySolutionLocalMapConnector;
 import manipulation.muster.core.cogx.calibrationConnector.ExemplarySolutionCalibConnector;
 import manipulation.muster.core.cogx.camConnector.ExemplarySolutionBlortConnector;
-import manipulation.muster.core.cogx.panTiltConnector.ExemplarySolutionPanTiltConnector;
 import manipulation.muster.core.share.Manipulator;
 import manipulation.muster.core.share.ManipulatorPartFactory;
 import manipulation.muster.core.share.armConnector.ArmConnector;
@@ -13,7 +12,6 @@ import manipulation.muster.core.share.baseConnector.BaseConnector;
 import manipulation.muster.core.share.baseConnector.MapConnector;
 import manipulation.muster.core.share.calibrationConnector.CalibrationConnector;
 import manipulation.muster.core.share.camConnector.CamConnector;
-import manipulation.muster.core.share.panTiltConnector.PanTiltConnector;
 
 import org.apache.log4j.Logger;
 
@@ -76,13 +74,5 @@ public class ExemplarySolutionManipulatorPartsFactory implements
 		return new ExemplarySolutionCalibConnector(manipulator);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PanTiltConnector createPanTiltConnector(Manipulator manipulator) {
-		logger.debug("Creating PanTiltConnecotr: BHamPanTiltConnector");
-		return new ExemplarySolutionPanTiltConnector(manipulator);
-	}
 
 }
