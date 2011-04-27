@@ -77,18 +77,7 @@ public class FarRecognize extends StrategyPart {
 				logger.error(e1);
 			}
 
-			setNextPartName(PartName.FAR_GRASPING);
-			try {
-				((MobileManipulation) getGlobalStrategy())
-						.addToObejctSeenList(((ViewPoint) getManipulator()
-								.getItemMemory().getFirstGraspItem()
-								.getAttribute(PropertyName.BEST_VIEW_POINT))
-								.getPosition());
-			} catch (ItemException e) {
-				logger.error(e);
-			} catch (InternalMemoryException e) {
-				logger.error(e);
-			}
+			setNextPartName(PartName.SIMULATE_GRASP);
 		} else {
 			try {
 				getManipulator().getItemMemory().removeViewPoint(

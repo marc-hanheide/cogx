@@ -39,49 +39,17 @@ public abstract class StrategyPart {
 		 */
 		FINE_GRASPING,
 		/**
-		 * Name for the far update best viewpoint position part.
-		 */
-		UPDATE_BEST_VIEWPOINT_POSITION,
-		/**
-		 * Name for the far update best viewpoint rotation part.
-		 */
-		UPDATE_BEST_VIEWPOINT_ROTATION,
-		/**
 		 * Name for the go to start position part.
 		 */
 		GO_TO_START_POSITION,
 		/**
-		 * Name for the go to virtual pose in real world part.
-		 */
-		GO_TO_VIRTUAL_POSE_IN_REAL_WORLD,
-		/**
-		 * Name for the near recognize part.
-		 */
-		NEAR_RECOGNIZE,
-		/**
-		 * Name for the calculate and goto best grasping point part.
-		 */
-		CALCULATE_GOTO_BEST_GRASPING_POINT,
-		/**
-		 * Name for the calibration part.
-		 */
-		CALIBRATION,
-		/**
-		 * 
-		 */
-		GO_TO_BEST_ROTATIONAL_POINT,
-		/**
-		 * 
-		 */
-		ROTATIONAL_RECOGNIZE,
-		/**
-		 * 
-		 */
-		CALCULATE_BEST_GRASPING_POINT,
-		/**
 		 * 
 		 */
 		GO_TO_BEST_GRASPING_POINT,
+		/**
+		 * 
+		 */
+		SIMULATE_GRASP
 	}
 
 	/**

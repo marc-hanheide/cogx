@@ -1,20 +1,13 @@
 package manipulation.muster.strategies.parts.mobileManipulation.grasp;
 
-import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 
 import manipulation.muster.core.share.Manipulator;
-import manipulation.muster.core.share.exceptions.ExternalMemoryException;
-import manipulation.muster.core.share.exceptions.InternalMemoryException;
-import manipulation.muster.core.share.exceptions.ItemException;
-import manipulation.muster.core.share.exceptions.ManipulatorException;
-import manipulation.muster.core.share.types.ArmError;
-import manipulation.muster.core.share.types.Matrix;
-import manipulation.muster.core.share.types.SensorData.SensorPosition;
-import manipulation.muster.core.share.types.Vector3D;
-import manipulation.muster.itemMemory.Item.PropertyName;
-import manipulation.muster.math.MathOperation;
+import manipulation.muster.itemMemory.ItemMemory;
 import manipulation.muster.strategies.Strategy;
 import manipulation.muster.strategies.parts.StrategyPart;
+import manipulation.slice.ManipulationCommand;
 
 import org.apache.log4j.Logger;
 
@@ -25,7 +18,7 @@ import org.apache.log4j.Logger;
  * @author ttoenige
  * 
  */
-public class FineGrasping extends StrategyPart {
+public class FineGrasping extends StrategyPart implements Observer {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -44,7 +37,6 @@ public class FineGrasping extends StrategyPart {
 
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -52,6 +44,21 @@ public class FineGrasping extends StrategyPart {
 	public void execute() {
 		logger.debug("execute: " + this.getClass());
 
+		getManipulator().getItemMemory().addObserver(this);
+
+		getManipulator().getArmConnector().reachFine();
+
+		synchronized (this) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				logger.error(e);
+			}
+		}
+
+		getManipulator().getArmConnector().closeGripper(0);
+
+		getManipulator().getArmConnector().goHome();
 
 		logger.debug("we go on!");
 
@@ -64,16 +71,22 @@ public class FineGrasping extends StrategyPart {
 	 */
 	@Override
 	public void changeToNextPart() {
-		logger.error("Aufräumen fertig - weiter gehts");
-
-		try {
-			getManipulator().getCamConnector().resetTracker();
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
-		}
+		getManipulator().getItemMemory().deleteObserver(this);
 
 		getGlobalStrategy().setNextPart(
 				getGlobalStrategy().getPart(getNextPartName()));
+
+	}
+
+	@Override
+	public void update(Observable observable, Object arg) {
+		if (observable instanceof ItemMemory) {
+			if (arg instanceof ManipulationCommand) {
+				synchronized (this) {
+					notifyAll();
+				}
+			}
+		}
 
 	}
 }
