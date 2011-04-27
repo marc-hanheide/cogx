@@ -1,0 +1,413 @@
+#------------------------------------------------------------------
+# 
+# RDF(S)/OWLreasoning including ABox individuals;
+# involves use of sameAs and differentFrom, universal instantiation,
+# property characteristics, and integrity constraints in combination
+# with disjointWith, equivalentClass, subClassOf, equivalentProperty,
+# and subPropertyOf
+#
+# most of the rules can be found in the 3 papers by Herman ter Horst
+# from 2004/2005 and Patrick Hayes' W3C RDF Semantics recommendation
+#
+# all rules will act forward
+# 
+# file name: jenaabox.rules
+# author: Hans-Ulrich Krieger, DFKI
+# date: Thu Apr 10 15:37:53 CEST 2008
+# version: 1.1
+#
+#------------------------------------------------------------------
+
+#------------------------------------------------------------------
+# Tabling directives
+#------------------------------------------------------------------
+
+# no need to table triples at the moment
+# all our rules in this file fire forward !
+
+#-> tableAll().
+
+#-> table(rdf:type).
+#-> table(owl:sameAs).
+#-> table(owl:differentFrom).
+
+#------------------------------------------------------------------
+# OWL rules
+#------------------------------------------------------------------
+
+## NOTE: I have currently not formulate any rules that deal with cardinality
+##       constraints (only 0/1 possible or custom rules for specific min/max
+##       combinations)
+
+
+## might add a constraint i != j, but it is not clear whether it speeds up
+## processing;
+## and furthermore, should we allow (for what?) to have (i owl:sameAs i) ?
+
+[sameAsIsSymmetric:
+  (?i owl:sameAs ?j)
+->
+  (?j owl:sameAs ?i)
+]
+
+
+## it is important to guarantee that i != j, since otherwise the rule
+## does not have any effect and will probably fire uselessly
+
+[sameAsIsTransitive:
+  (?i owl:sameAs ?j),
+  notEqual(?i, ?j),
+  (?j owl:sameAs ?k)
+->
+  (?i owl:sameAs ?k)
+]
+
+
+## there is an integrity constraint at the very end of the file in case i = j
+
+[differentFromIsSymmetric:
+  (?i owl:differentFrom ?j)
+->
+  (?j owl:differentFrom ?i)
+]
+
+
+## again, might add a constraint i != j, but if we do NOT have triples
+## of the form "i owl:sameAs i" (see remark below), this constraint does
+## not have any effect
+
+[sameAsDomain:
+  (?i owl:sameAs ?j),
+  notEqual(?i, ?j),
+  (?i ?p ?k)
+->
+  (?j ?p ?k)
+]
+
+
+##
+
+[sameAsRange:
+  (?i owl:sameAs ?j),
+  notEqual(?i, ?j),
+  (?k ?p ?i)
+->
+  (?k ?p ?j)
+]
+
+
+##
+
+[assignDomainType:
+  (?p rdfs:domain ?d),
+  (?i ?p ?j)
+->
+  (?i rdf:type ?d)
+]
+
+
+##
+
+[assignRangeType:
+  (?p rdfs:range ?r),
+  (?i ?p ?j)
+->
+  (?j rdf:type ?r)
+]
+
+
+## note: s is always syntactically different from t (hopefully checked in
+## the TBox -- we do NOT have an integrity constraint for this here):
+## note further that it is important that i != j, since we have an
+## integrity constraint at the very end that talks about the effects
+## of i being same as j
+
+[disjointWithDifferentFrom:
+  (?s owl:disjointWith ?t),
+  (?i rdf:type ?s),
+  (?j rdf:type ?t),
+  notEqual(?i, ?j)
+->
+  (?i owl:differentFrom ?j)
+]
+
+
+## note: "s equivalentClass s" is always the case, since it is reflexive relation;
+
+[equivalentClassSameAs:
+  (?s owl:equivalentClass ?t),
+  notEqual(?s, ?t),
+  (?i rdf:type ?s),
+  (?j rdf:type ?t),
+  notEqual(?i, ?j),
+  (?i owl:sameAs ?j)
+->
+  (?j rdf:type ?s),
+  (?i rdf:type ?t)
+]
+
+
+## not sure whether equivalentClass is expanded by a TBox rule into two subClassOf
+## statements
+
+[universalInstantiationEquivalentClass1:
+  (?s owl:equivalentClass ?t),
+  notEqual(?s, ?t),
+  (?i rdf:type ?s)
+->
+  (?i rdf:type ?t)
+]
+
+
+## not sure whether we have a TBox rule that derives from (?s owl:equivalentClass ?t)
+## that (?t owl:equivalentClass ?s) is the case, so better add this rule
+
+[universalInstantiationEquivalentClass2:
+  (?s owl:equivalentClass ?t),
+  notEqual(?s, ?t),
+  (?i rdf:type ?t)
+->
+  (?i rdf:type ?s)
+]
+
+
+## should also handle owl:equivalentClass, since equivalentClass is expanded into
+## two rdfs:subClassOf statements
+
+[universalInstantiationSubClassOf:
+  (?s rdfs:subClassOf ?t),
+  notEqual(?s, ?t),
+  (?i rdf:type ?s)
+->
+  (?i rdf:type ?t)
+]
+
+
+## not sure whether equivalentProperty is expanded by a TBox rule into two subPropertyOf
+## statements
+
+[universalInstantiationEquivalentProperty1:
+  (?p owl:equivalentProperty ?q),
+  notEqual(?p, ?q),
+  (?i ?p ?j)
+->
+  (?i ?q ?j)
+]
+
+
+## not sure whether we have a TBox rule that derives from (?p owl:equivalentProperty ?q)
+## that (?q owl:equivalentProperty ?p) is the case
+
+[universalInstantiationEquivalentProperty2:
+  (?p owl:equivalentProperty ?q),
+  notEqual(?p, ?q),
+  (?i ?q ?j)
+->
+  (?i ?p ?j)
+]
+
+
+## should also handle owl:equivalentProperty, since equivalentProperty is expanded into
+## two rdfs:subPropertyOf statements
+
+[universalInstantiationSubPropertyOf:
+  (?p rdfs:subPropertyOf ?q),
+  notEqual(?p, ?q),
+  (?i ?p ?j)
+->
+  (?i ?q ?j)
+]
+
+
+
+## again, do NOT know whether a TBox rule has derived from (?p owl:inverseOf ?q)
+## that (?q owl:inverseOf ?p) is the case, so better add inverseOf2 here
+
+[inverseOf1:
+  (?p owl:inverseOf ?q),
+  (?i ?p ?j)
+->
+  (?j ?q ?i)
+]
+
+[inverseOf2:
+  (?p owl:inverseOf ?q),
+  (?i ?q ?j)
+->
+  (?j ?p ?i)
+]
+
+
+## do we really need sameAsIsTransitive from above? NO if owl:sameAs is
+## of rdf:type owl:TransitiveProperty
+## note that the constraint avoid a useless firing of the rule
+
+[transitiveProperty:
+  (?p rdf:type owl:TransitiveProperty),
+  (?i ?p ?j),
+  notEqual(?i, ?j),
+  (?j ?p ?k)
+->
+  (?i ?p ?k)
+]
+
+
+## do we really need sameAsIsSymmetric and differentFromIsSymmetric from
+## above? NO if they are of rdf:type owl:SymmetricProperty
+
+[symmetricProperty:
+  (?p rdf:type owl:SymmetricProperty),
+  (?i ?p ?j),
+  notEqual(?i, ?j)
+->
+  (?j ?p ?i)
+]
+
+
+## again, don't know whether the inequality constraint speeds up
+## rule application
+
+[inverseFunctionalProperty:
+  (?p rdf:type owl:InverseFunctionalProperty),
+  (?i ?p ?k),
+  (?j ?p ?k)
+  notEqual(?i, ?j)
+->
+  (?i owl:sameAs ?j)
+]
+
+
+## assuming that
+##   (?j owl:differentFrom ?k)
+## is true at the same time, rule sameAsDifferentFromNothing
+## derives that j and so k is of type Nothing;
+## in order to further assign the Nothing type to i, we use
+## rule backwardPropagateNothing below
+
+[FunctionalObjectProperty:
+  (?p rdf:type owl:FunctionalProperty),
+  (?p rdf:type owl:ObjectProperty),
+  (?i ?p ?j),
+  (?i ?p ?k),
+  notEqual(?j, ?k)
+->
+  (?j owl:sameAs ?k)
+]
+
+
+## I "borrowed" the next 4 rules from the OWLIM file, but their orign
+## can be traced back to the ter Horst papers;
+## the rules provide a full support for owl:hasValue and partial support
+## of owl:someValuesFrom and owl:allValuesFrom
+
+[HasValueType:
+  (?r owl:onProperty ?p),
+  (?r owl:hasValue ?v),
+  (?i ?p ?v)
+->
+  (?i rdf:type ?r)
+]
+
+[HasValueTriple:
+  (?x owl:hasValue ?y),
+  (?x owl:onProperty ?p),
+  (?u rdf:type ?x)
+->
+  (?u ?p ?y)
+]
+
+[SomeValuesFrom:
+  (?q rdf:type ?c),
+  (?r owl:onProperty ?p),
+  (?r owl:someValuesFrom ?c),
+  (?i ?p ?q)
+->
+  (?i rdf:type ?r)
+]
+
+[AllValuesFrom:
+  (?x owl:onProperty ?p),
+  (?u rdf:type ?x),
+  (?x owl:allValuesFrom ?y),
+  (?u ?p ?v)
+->
+  (?v rdf:type ?y)
+]
+
+
+## the inequality constraint here is essential, since otherwise
+## j and k might be assigned the same XSD literal, leading always
+## to the assumption that i is of type owl:Nothing
+
+[notFunctionalDatatypeProperty:
+  (?p rdf:type owl:FunctionalProperty),
+  (?p rdf:type owl:DatatypeProperty),
+  (?i ?p ?j),
+  (?i ?p ?k),
+  notEqual(?j, ?k)
+->
+  (?i rdf:type owl:Nothing)
+]
+
+
+## "backward" propagate Nothing to its domain element, i.e.,
+## individuals that point to other individuals of type Nothing,
+## are also assumed to be of type Nothing;
+## note that there is no such "forward" rule
+
+[backwardPropagateNothing:
+  (?i ?p ?j),
+  (?j rdf:type owl:Nothing)
+->
+  (?i rdf:type owl:Nothing)
+]
+
+
+## assign the bottom type to both i and j -- remember, sameAs and
+## differentFrom are symmetric properties;
+## note that I let evaluate differentFrom first; otherwise, I need
+## to have i != j to make (un)matching faster
+
+[sameAsDifferentFromNothing:
+  (?i owl:differentFrom ?j),
+  (?i owl:sameAs ?j)
+->
+  (?i rdf:type owl:Nothing),
+  (?j rdf:type owl:Nothing)
+]
+
+
+## s must be different from t (should be), since I let evaluate disjointWith first
+
+[disjointWithNothing:
+  (?s owl:disjointWith ?t),
+  (?i rdf:type ?s),
+  (?i rdf:type ?t)
+->
+  (?i rdf:type owl:Nothing)
+]
+
+
+## the follwoing rules need _not_ to appear in the rule file, since its
+## application is equivalent to the application of notSameAsAndDifferentFrom
+## to the result produced by disjointWith_differentFrom
+
+[disjointWithSameAsNothing:
+  (?s owl:disjointWith ?t),
+  (?i owl:sameAs ?j),
+  notEqual(?i, ?j),
+  (?i rdf:type ?s),
+  (?j rdf:type ?t)
+->
+  (?i rdf:type owl:Nothing),
+  (?j rdf:type owl:Nothing)
+]
+
+## probably, this integrity constraint will never fire
+
+[differentFromIntegrityConstraint:
+  (?i owl:differentFrom ?i)
+->
+  (?i rdf:type owl:Nothing)
+]
+
