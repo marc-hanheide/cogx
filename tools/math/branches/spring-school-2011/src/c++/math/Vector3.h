@@ -523,7 +523,14 @@ inline ostream& operator<<(ostream &os, const Vector3 &a)
  */
 inline istream& operator>>(istream &is, Vector3 &a)
 {
-  readText(is, a);
+  try
+  {
+    readText(is, a);
+  }
+  catch(runtime_error &e)
+  {
+    is.setstate(ios_base::failbit);
+  }
   return is;
 }
 
