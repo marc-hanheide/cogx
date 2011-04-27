@@ -178,6 +178,7 @@ void TomGineThread::SetTGCamera(unsigned width, unsigned height, double zFar, do
 void TomGineThread::DrawPointCloud()
 {
   glDisable(GL_LIGHTING);
+  glEnable(GL_DEPTH_TEST);                                    // TODO Gehört eigentlich wo anders hin!!!
   bool haveCol=false;
   bool haveColCloud = true;
   uchar *d;
