@@ -1,0 +1,21 @@
+HOST localhost
+
+# reading stored images
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-recognizer3D/img%03d.jpg" --start 0 --end 0 --framerate_ms 100 --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 10 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/can.ply instantiations/ply-models/CupRed.ply instantiations/ply-models/GuteLaune.ply instantiations/ply-models/HappyDay.ply instantiations/ply-models/jasmin.ply instantiations/ply-models/JodSalz.ply instantiations/ply-models/koala.ply instantiations/ply-models/peanuts.ply instantiations/ply-models/Digital.ply instantiations/ply-models/Visual.ply" --siftfiles "instantiations/sift-models/can.sift instantiations/sift-models/CupRed.sift instantiations/sift-models/GuteLaune.sift instantiations/sift-models/HappyDay.sift instantiations/sift-models/jasmin.sift instantiations/sift-models/JodSalz.sift instantiations/sift-models/koala.sift instantiations/sift-models/peanuts.sift instantiations/sift-models/Digital.sift instantiations/sift-models/Visual.sift" --labels "can CupRed GuteLaune HappyDay jasmin JodSalz koala peanuts Digital Visual" --log
+
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "GuteLaune" --log
+
+CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
+
+
