@@ -30,16 +30,16 @@ CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-ca
 
 
 # vision ######################################################################
-CPP MG cameramount CameraMount --fixed --cam_ids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
+CPP MG cameramount CameraMount --fixed --camids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
 
 #CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video1/frosties_small-0000000%d.ppm" --start "100" --end 620 --framerate_ms 300 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-schokomusli" --displayserver "display.srv" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/css2011/object-models/example-cereals-weetabix.ply instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-weetabix.sift instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-weetabix example-cereals-schokomusli" --displayserver "display.srv" --log
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
 
-CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
 
