@@ -44,6 +44,20 @@ material cogx/white-wall
   }
 }
 
+// checkerboard calibration pattern 
+material cogx/calibration-plate
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture calibration-plate.jpg
+      }
+    }
+  }
+}
 
 // table
 material cogx/table-front
@@ -211,6 +225,92 @@ material cogx/cereals-schokomusli-bottom
       texture_unit
       {
         texture cereals-schokomusli-bottom.jpg
+      }
+    }
+  }
+}
+
+
+// cereals-manner
+material cogx/cereals-manner-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-manner-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-manner-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-manner-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-manner-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-manner-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-manner-bottom.jpg
       }
     }
   }
