@@ -66,7 +66,7 @@
 
   <!-- robot model -->
   <model:physical name="robot">
-    <xyz>2.2 0.0 0.01</xyz>
+    <xyz>0.0 0.0 0.01</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
     <model:physical name="laser">
@@ -190,7 +190,7 @@
   <!-- a low table -->
   <model:physical name="table1_model">
     <static>false</static>
-    <xyz>3 0 0.176</xyz>
+    <xyz>1 0 0.176</xyz>
     <include embedded="true">
        <xi:include href="models/table.model" />
     </include>
@@ -199,8 +199,8 @@
   <!-- and finally a cereal box! -->
   <model:physical name="cereals1_model">
     <static>false</static>
-    <xyz>3 0 0.447</xyz>
-		<rpy>0 0 0</rpy>
+    <xyz>1 0 0.447</xyz>
+		<rpy>0 0 90</rpy>
 
     <include embedded="true">
        <xi:include href="models/cereals-schokomusli.model" />
