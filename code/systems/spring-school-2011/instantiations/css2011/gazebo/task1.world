@@ -24,7 +24,7 @@
   <verbosity>5</verbosity>
 
   <physics:ode>
-    <stepTime>0.03</stepTime>
+    <stepTime>0.003</stepTime>
     <gravity>0 0 -9.81</gravity>
     <cfm>10e-5</cfm>
     <erp>0.3</erp>
@@ -299,7 +299,7 @@
     <static>false</static>
     <xyz>2.0 1.0 .176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table1.model" />
     </include>
   </model:physical>
 
@@ -307,7 +307,7 @@
     <static>false</static>
     <xyz>2.0 -1.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table2.model" />
     </include>
   </model:physical>
 
@@ -315,7 +315,7 @@
     <static>false</static>
     <xyz>1.0 -2.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table3.model" />
     </include>
   </model:physical>
 
@@ -323,7 +323,7 @@
     <static>false</static>
     <xyz>-1.0 -2.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table4.model" />
     </include>
   </model:physical>
 
@@ -331,7 +331,7 @@
     <static>false</static>
     <xyz>-2.0 -1 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table5.model" />
     </include>
   </model:physical>
 
@@ -339,7 +339,7 @@
     <static>false</static>
     <xyz>-2.0 1.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table6.model" />
     </include>
   </model:physical>
 
@@ -347,7 +347,7 @@
     <static>false</static>
     <xyz>-1.0 2.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table7.model" />
     </include>
   </model:physical>
 
@@ -355,7 +355,7 @@
     <static>false</static>
     <xyz>1.0 2.0 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table8.model" />
     </include>
   </model:physical>
 
@@ -363,18 +363,16 @@
     <static>false</static>
     <xyz>2.0 0.9 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner1.model" />
     </include>
   </model:physical>
   <model:physical name="manner2">
     <static>false</static>
     <xyz>2.0 1.1 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner2.model" />
     </include>
   </model:physical>
 
@@ -382,18 +380,16 @@
     <static>false</static>
     <xyz>2.0 -0.9 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner3.model" />
     </include>
   </model:physical>
   <model:physical name="manner4">
     <static>false</static>
     <xyz>2.0 -1.1 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner4.model" />
     </include>
   </model:physical>
 
@@ -401,18 +397,16 @@
     <static>false</static>
     <xyz>0.9 -2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner5.model" />
     </include>
   </model:physical>
   <model:physical name="manner6">
     <static>false</static>
     <xyz>1.1 -2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner6.model" />
     </include>
   </model:physical>
 
@@ -420,18 +414,16 @@
     <static>false</static>
     <xyz>-0.9 -2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner7.model" />
     </include>
   </model:physical>
   <model:physical name="manner8">
     <static>false</static>
     <xyz>-1.1 -2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner8.model" />
     </include>
   </model:physical>
 
@@ -439,18 +431,16 @@
     <static>false</static>
     <xyz>-2.0 -0.9 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner9.model" />
     </include>
   </model:physical>
   <model:physical name="manner10">
     <static>false</static>
     <xyz>-2.0 -1.1 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner10.model" />
     </include>
   </model:physical>
 
@@ -458,36 +448,32 @@
     <static>false</static>
     <xyz>-2.0 0.9 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner11.model" />
     </include>
   </model:physical>
   <model:physical name="manner12">
     <static>false</static>
     <xyz>-2.0 1.1 0.44</xyz>
 		<rpy>0 0 0</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner12.model" />
     </include>
   </model:physical>
   <model:physical name="manner13">
     <static>false</static>
     <xyz>-0.9 2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner13.model" />
     </include>
   </model:physical>
   <model:physical name="manner14">
     <static>false</static>
     <xyz>-1.1 2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner14.model" />
     </include>
   </model:physical>
 
@@ -495,18 +481,16 @@
     <static>false</static>
     <xyz>0.9 2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner15.model" />
     </include>
-  </model:physical>
+  </model:physical>-->
   <model:physical name="manner16">
     <static>false</static>
     <xyz>1.1 2.0 0.44</xyz>
 		<rpy>0 0 90</rpy>
-
     <include embedded="true">
-       <xi:include href="models/cereals-manner.model" />
+       <xi:include href="models/cereals-manner16.model" />
     </include>
   </model:physical>
 </gazebo:world>
