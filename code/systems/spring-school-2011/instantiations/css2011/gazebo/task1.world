@@ -224,6 +224,62 @@
           <material>cogx/white-wall</material>
         </visual>
       </geom:box>
+
+      <geom:box name="poster1_geom">
+        <xyz>4.94 1 1.6</xyz>
+				<rpy>0 0 90</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_dora_y2</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster2_geom">
+        <xyz>4.94 -2.5 1.6</xyz>
+				<rpy>0 0 90</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_george_y2</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster3_geom">
+        <xyz>1 4.94 1.6</xyz>
+				<rpy>0 0 0</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_dora_y1</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster4_geom">
+        <xyz>1 -4.94 1.6</xyz>
+				<rpy>0 0 180</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_css09</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster5_geom">
+        <xyz>-4.94 1 1.6</xyz>
+				<rpy>0 0 270</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_george_y1</material>
+        </visual>
+      </geom:box>
+
 		  <!-- ceiling makes birds-eye viewing the world cumbersome
       <geom:box name="ceiling_geom">
         <xyz>0 0 2.8</xyz>

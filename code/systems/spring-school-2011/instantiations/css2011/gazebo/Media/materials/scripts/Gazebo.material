@@ -59,6 +59,77 @@ material cogx/calibration-plate
   }
 }
 
+// some posters
+material cogx/poster_dora_y1
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture poster_dora_y1.png
+      }
+    }
+  }
+}
+
+material cogx/poster_dora_y2
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture poster_dora_y2.png
+      }
+    }
+  }
+}
+
+material cogx/poster_george_y1
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture poster_george_y1.png
+      }
+    }
+  }
+}
+
+material cogx/poster_george_y2
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture poster_george_y2.png
+      }
+    }
+  }
+}
+
+material cogx/poster_css09
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture poster_css09.jpg
+      }
+    }
+  }
+}
+
 // table
 material cogx/table-front
 {
