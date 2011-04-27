@@ -29,7 +29,6 @@
     <geom:box name="chassis_geom">
       <size>0.510 0.300 0.205</size>
       <mass>3</mass>
-	 <mu1>1</mu1>
 
       <visual>
         <scale>0.510 0.300 0.205</scale>
@@ -112,7 +111,6 @@
     <geom:cylinder name="left_wheel_geom">
       <size>0.095 0.001</size>
       <mass>0.2</mass>
-   <mu1>0.5</mu1>
       <visual>
         <scale>0.190 0.190 0.050</scale>
         <mesh>unit_cylinder</mesh>
@@ -127,7 +125,6 @@
     <geom:cylinder name="right_wheel_geom">
       <size>0.095 0.001</size>
       <mass>0.2</mass>
-   <mu1>0.5</mu1>
       <visual>
         <scale>0.190 0.190 0.050</scale>
         <mesh>unit_cylinder</mesh>
