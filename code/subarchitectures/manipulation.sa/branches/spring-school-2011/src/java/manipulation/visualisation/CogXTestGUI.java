@@ -87,7 +87,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 	private JButton btnSimGrasp;
 
-	private JButton btnLinBaseApp;
 
 	private JButton btnStopCmd;
 
@@ -215,10 +214,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnSimGrasp.setActionCommand("simulateGrasp");
 		btnSimGrasp.addActionListener(this);
 
-		btnLinBaseApp = new JButton("linear base approach");
-		btnLinBaseApp.setActionCommand("linBaseApp");
-		btnLinBaseApp.addActionListener(this);
-
 		btnStopCmd = new JButton("stop arm");
 		btnStopCmd.setActionCommand("stopCmd");
 		btnStopCmd.addActionListener(this);
@@ -283,8 +278,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		addComponent(pane, gbl, btnLinGraspApp, 0, 6, 12, 1, 0, 0);
 
 		addComponent(pane, gbl, btnSimGrasp, 0, 7, 12, 1, 0, 0);
-
-		addComponent(pane, gbl, btnLinBaseApp, 0, 8, 12, 1, 0, 0);
 
 		addComponent(pane, gbl, btnStopCmd, 0, 9, 12, 1, 0, 0);
 
