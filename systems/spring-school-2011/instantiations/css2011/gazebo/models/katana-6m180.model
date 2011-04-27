@@ -200,6 +200,7 @@
 <!--
   <model:physical name = "katana_tcp_model">	
     <xyz>0.627 0.0 0.202</xyz>-
+    <canonical_body>katana_tcp_body</canonical_body>
     <attach>
       <parentBody>katana_gripper_body</parentBody>
       <myBody>katana_tcp_body</myBody>
@@ -215,8 +216,7 @@
 		    </visual>
 				</geom:sphere>
 		</body:sphere>
-  </model:physical>
--->
+  </model:physical>-->
 
   <joint:hinge name="base_link0_joint">
     <body1>katana_link0_body</body1>
