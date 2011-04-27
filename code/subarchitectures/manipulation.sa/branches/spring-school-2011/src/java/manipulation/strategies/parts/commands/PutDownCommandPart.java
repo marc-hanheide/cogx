@@ -68,8 +68,10 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 
 			double posOver = 0.05;
 
-			Vector3D goalPosition = new Vector3D(model.getAvgXvalue(),
-					model.getAvgYvalue(), model.getHighestZValue() + posOver);
+			Vector3D goalPosition = new Vector3D(targetVisOb.pose.pos.x
+					+ model.getAvgXvalue(), targetVisOb.pose.pos.y
+					+ model.getAvgYvalue(), targetVisOb.pose.pos.z
+					+ model.getHighestZValue() + posOver);
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
