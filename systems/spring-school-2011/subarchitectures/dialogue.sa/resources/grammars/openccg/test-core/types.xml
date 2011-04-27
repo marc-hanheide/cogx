@@ -1,0 +1,25 @@
+<types name="core" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../types.xsd"
+>
+
+
+<type name="types"/>
+
+<!-- NOUN RELATED TYPES -->
+
+<type name="pers-vals" parents="types"/>
+  <type name="3rd" parents="pers-vals"/>
+  <type name="non-3rd" parents="pers-vals"/>
+      <type name="1st" parents="non-3rd"/>
+      <type name="2nd" parents="non-3rd"/>
+
+<type name="num-vals" parents="types"/>   
+   <type name="sg" parents="num-vals"/>
+   <type name="pl" parents="num-vals"/>
+
+<type name="case-vals" parents="types"/>   
+   <type name="acc" parents="case-vals"/>
+   <type name="nom" parents="case-vals"/>
+   
+</types>
