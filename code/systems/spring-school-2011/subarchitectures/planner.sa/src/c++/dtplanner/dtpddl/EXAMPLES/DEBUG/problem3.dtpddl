@@ -1,0 +1,59 @@
+(define (problem cogxtask)
+
+(:domain dt-find-objects)
+
+(:objects  c3b c1b c2b - cone
+           rb - room
+           mug table oven cornflakes - label
+           p2b p1a p1b p2a - place
+           kitchen - category
+           dora - robot
+           o-mug o-tbl - visualobject
+)
+
+(:init  (room p2b rb)
+        (room p1b rb)
+        (label o-cf cornflakes)
+        (room c3b rb)
+        (room c2b rb)
+        (is-in dora p1a)
+        (room c1b rb)
+        (label o-mug mug)
+        (label o-tbl table)
+        (probabilistic  0.6000  (and  (category rb kitchen)
+                                      (probabilistic  0.8000  (and  (ex-in-room cornflakes rb true)
+                                                                    (probabilistic  0.1500  (is-in o-cf c3b)
+                                                                                    0.4000  (is-in o-cf c1b)
+                                                                                    0.2000  (is-in o-cf c2b)
+                                                                    )
+                                                              )
+                                                      0.2000  (ex-in-room cornflakes rb false)
+                                      )
+                                      (probabilistic  0.8000  (and  (ex-in-room mug rb true)
+                                                                    (probabilistic  0.1500  (is-in o-mug c3b)
+                                                                                    0.4000  (is-in o-mug c1b)
+                                                                                    0.2000  (is-in o-mug c2b)
+                                                                    )
+                                                              )
+                                                      0.2000  (ex-in-room mug rb false)
+                                      )
+                                      (probabilistic  0.9000  (and  (ex-in-room table rb true)
+                                                                    (probabilistic  0.1500  (is-in o-tbl c3b)
+                                                                                    0.4000  (is-in o-tbl c1b)
+                                                                                    0.2000  (is-in o-tbl c2b)
+                                                                    )
+                                                              )
+                                                      0.1000  (ex-in-room table rb false)
+                                      )
+                                      (probabilistic  0.8000  (ex-in-room oven rb true)
+                                                      0.2000  (ex-in-room oven rb false)
+                                      )
+                                )
+                        0.4000  (and  )
+        )
+)
+
+(:goal  (and  ))
+(:metric maximize (reward ))
+
+)
