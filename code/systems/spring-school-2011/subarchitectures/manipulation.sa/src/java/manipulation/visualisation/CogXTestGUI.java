@@ -22,6 +22,7 @@ import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
+import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
@@ -40,8 +41,12 @@ import VisionData.Vertex;
 import VisionData.VisualObject;
 import VisionData.VisualObjectView;
 import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
 import cogx.Math.Matrix33;
 import cogx.Math.Pose3;
 import cogx.Math.Rect2;
@@ -296,6 +301,53 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		gui.setVisible(true);
 	}
 
+	private WorkingMemoryChangeReceiver wmcr;
+
+	private void commandChanged(WorkingMemoryChange _wmc,
+			WorkingMemoryChangeReceiver wmcr) {
+
+		try {
+
+			ManipulationCommand cmd = ((CogXRunner) manipulator.getRunner())
+					.getMemoryEntry(_wmc.address, ManipulationCommand.class);
+
+			Pose3 pose = null;
+			if (cmd instanceof SimulateFarArmMovementCommand) {
+				pose = ((SimulateFarArmMovementCommand) cmd).simulatedReachablePose;
+			} else if (cmd instanceof SimulateMoveToPose) {
+				pose = ((SimulateMoveToPose) cmd).simulatedReachablePose;
+			} else if (cmd instanceof FarArmMovementCommand) {
+				pose = ((FarArmMovementCommand) cmd).reachedPose;
+			} else if (cmd instanceof MoveArmToPose) {
+				pose = ((MoveArmToPose) cmd).reachedPose;
+			} else if (cmd instanceof GetCurrentArmPose) {
+				pose = ((GetCurrentArmPose) cmd).currentPose;
+			}
+
+			if (cmd.comp == ManipulationCompletion.SUCCEEDED) {
+				txtItemXPosition.setText(Double.toString(pose.pos.x));
+				txtItemYPosition.setText(Double.toString(pose.pos.y));
+				txtItemZPosition.setText(Double.toString(pose.pos.z));
+
+				txtrot00.setText(Double.toString(pose.rot.m00));
+				txtrot01.setText(Double.toString(pose.rot.m01));
+				txtrot02.setText(Double.toString(pose.rot.m02));
+
+				txtrot10.setText(Double.toString(pose.rot.m10));
+				txtrot11.setText(Double.toString(pose.rot.m11));
+				txtrot12.setText(Double.toString(pose.rot.m12));
+
+				txtrot20.setText(Double.toString(pose.rot.m20));
+				txtrot21.setText(Double.toString(pose.rot.m21));
+				txtrot22.setText(Double.toString(pose.rot.m22));
+
+				((CogXRunner) manipulator.getRunner()).removeChangeFilter(wmcr);
+			}
+		} catch (CASTException e) {
+			logger.error(e);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -415,6 +467,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
+			wmcr = new WorkingMemoryChangeReceiver() {
+				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					commandChanged(_wmc, wmcr);
+				}
+			};
+
+			((CogXRunner) manipulator.getRunner()).addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id), wmcr);
 		} else if (e.getActionCommand().equals("linGraspApp")) {
 			logger.debug("linGraspApp pressed");
 
@@ -528,6 +589,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 
+			wmcr = new WorkingMemoryChangeReceiver() {
+				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					commandChanged(_wmc, wmcr);
+				}
+			};
+
+			((CogXRunner) manipulator.getRunner()).addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id), wmcr);
+
 		} else if (e.getActionCommand().equals("stopCmd")) {
 			logger.debug("stopCmd pressed");
 
@@ -610,6 +680,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
+			wmcr = new WorkingMemoryChangeReceiver() {
+				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					commandChanged(_wmc, wmcr);
+				}
+			};
+
+			((CogXRunner) manipulator.getRunner()).addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id), wmcr);
 		} else if (e.getActionCommand().equals("btnGetPosCmd")) {
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			GetCurrentArmPose getPose = new GetCurrentArmPose();
@@ -622,6 +701,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
+			wmcr = new WorkingMemoryChangeReceiver() {
+				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					commandChanged(_wmc, wmcr);
+				}
+			};
+
+			((CogXRunner) manipulator.getRunner()).addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id), wmcr);
 		} else if (e.getActionCommand().equals("btnSimulatePosCmd")) {
 			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
 			SimulateMoveToPose simMoveToPose = new SimulateMoveToPose();
@@ -648,7 +736,17 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} catch (AlreadyExistsOnWMException e1) {
 				logger.error(e1);
 			}
+
+			wmcr = new WorkingMemoryChangeReceiver() {
+				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					commandChanged(_wmc, wmcr);
+				}
+			};
+
+			((CogXRunner) manipulator.getRunner()).addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id), wmcr);
 		}
+
 	}
 
 	/**
