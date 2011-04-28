@@ -130,7 +130,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 */
 	public void addBaseMovementListener() {
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				RobotPose2d.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -139,7 +139,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 					}
 				});
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -153,7 +153,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 * add the vision listener to the CAST working memory
 	 */
 	public void addVisionListener() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				VisualObject.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -162,7 +162,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 					}
 				});
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				VisualObject.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -171,7 +171,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 					}
 				});
 		
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				VisualObject.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -185,7 +185,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 * add the manipulation listener to the CAST working memory
 	 */
 	public void addManipulationListener() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				ManipulationExternalCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -204,7 +204,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 					}
 				});
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				ManipulationExternalCommand.class,
 				WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
