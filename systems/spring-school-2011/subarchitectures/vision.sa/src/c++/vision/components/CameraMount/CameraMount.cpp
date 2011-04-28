@@ -88,7 +88,6 @@ void CameraMount::configure(const map<string,string> & _config)
       Pose3 pose;
       readXML(filename, pose);
       camPoses.push_back(pose);
-      log("read pose:\n" + toString(pose));
     }
   }
 
@@ -131,15 +130,12 @@ void CameraMount::runComponent()
     vector<Pose3> camPosesToEgo;
     ptz::PTZReading ptz;
 
-    // initial pose: pan, tilt = 0
-    ptz.pose.pan = 0.;
-    ptz.pose.tilt = 0.;
-    ptz.pose.zoom = 0.;
-    ptz.time = getCASTTime();
-    calculatePoses(ptz, camPosesToEgo);
+    // TODO: avoid code duplication here!
 
     // add camera parameters to WM, with initial poses
     camWMIds.resize(camPoses.size());
+    ptz = m_PTUServer->getPose();
+    calculatePoses(ptz, camPosesToEgo);
     for(size_t i = 0; i < camPoses.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
@@ -148,6 +144,7 @@ void CameraMount::runComponent()
       // we only know about poses
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
+      log("add cam pose in robot ego:" + toString(camParms->cam.pose));
       camParms->cam.time = ptz.time;
       camWMIds[i] = newDataID();
       addToWorkingMemory(camWMIds[i], camParms);
@@ -167,7 +164,7 @@ void CameraMount::runComponent()
         // we only know about poses
         camParms->cam.id = camIds[i];
         camParms->cam.pose = camPosesToEgo[i];
-        log("cam pose in robot ego:" + toString(camParms->cam.pose));
+        log("overwrite cam pose in robot ego:" + toString(camParms->cam.pose));
         camParms->cam.time = ptz.time;
         overwriteWorkingMemory(camWMIds[i], camParms);
       }
@@ -190,6 +187,7 @@ void CameraMount::runComponent()
       // we only know about poses
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPoses[i];
+      log("add cam pose in robot ego:" + toString(camParms->cam.pose));
       camParms->cam.time = getCASTTime();
       camWMIds[i] = newDataID();
       addToWorkingMemory(camWMIds[i], camParms);
@@ -206,7 +204,7 @@ void CameraMount::runComponent()
         // we only know about poses
         camParms->cam.id = camIds[i];
         camParms->cam.pose = camPoses[i];
-        log("cam pose in robot ego:" + toString(camParms->cam.pose));
+        log("overwrite cam pose in robot ego:" + toString(camParms->cam.pose));
         camParms->cam.time = getCASTTime();
         overwriteWorkingMemory(camWMIds[i], camParms);
       }
@@ -238,10 +236,10 @@ void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &poses)
     transform(ptPanPose, poses[i], poses[i]);
     transform(ptBasePose, poses[i], poses[i]);
     
-    log(toString(poses[i]));
+    /*log(toString(poses[i]));
     double r, p, y;
     toRPY(poses[i].rot, r, p, y);
-    log("RPY: %f %f %f", r, p, y);
+    log("RPY: %f %f %f", r, p, y);*/
   }
 }
 
