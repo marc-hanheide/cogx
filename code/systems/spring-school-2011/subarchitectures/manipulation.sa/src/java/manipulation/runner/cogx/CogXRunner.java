@@ -170,6 +170,15 @@ public class CogXRunner extends ManagedComponent implements Runner {
 								.visualObjectChanged(_wmc);
 					}
 				});
+		
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				VisualObject.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						((CogXBlortConnector) manipulator.getCamConnector())
+								.visualObjectDelete(_wmc);
+					}
+				});
 	}
 
 	/**
