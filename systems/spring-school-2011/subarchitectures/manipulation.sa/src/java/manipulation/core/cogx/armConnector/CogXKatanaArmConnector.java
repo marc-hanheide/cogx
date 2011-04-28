@@ -166,7 +166,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		}
 
 		// manipulator.getVirtualSceneConnector().clearScene();
-		homePosition.t = manipulator.getVirtualSceneConnector().getTime() + 5;
+		homePosition.t = manipulator.getVirtualSceneConnector().getTime()
+				+ arm.getTimeDeltaAsync();
 
 		try {
 			GenConfigspaceState cBegin = arm
