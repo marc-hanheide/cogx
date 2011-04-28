@@ -69,8 +69,14 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 			Matrix currentArmRot = getManipulator().getArmConnector()
 					.getCurrentRotation();
 
-			getManipulator().getArmConnector().reach(currentGoalPosition,
-					currentArmRot);
+			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
+					.getRobotToWorldTranslation(currentGoalPosition);
+
+			Matrix itemInWorldRotation = getManipulator().getBaseConnector()
+					.getRobotToWorldRotation(currentArmRot);
+
+			getManipulator().getArmConnector().reach(itemInWorldPosition,
+					itemInWorldRotation);
 
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);

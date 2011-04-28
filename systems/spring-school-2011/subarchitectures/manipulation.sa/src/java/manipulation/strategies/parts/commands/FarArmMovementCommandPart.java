@@ -64,16 +64,19 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			VisualObject targetVisOb = (((CogXRunner) getManipulator()
 					.getRunner()).getMemoryEntry(wma, VisualObject.class));
 
+			Vector3D currentArmPos = getManipulator().getArmConnector()
+					.getCurrentPosition();
+
 			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
 
-			Vector3D currentArmPos = getManipulator().getArmConnector()
-					.getCurrentPosition();
+			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
+					.getRobotToWorldTranslation(currentGoalPosition);
 
 			double posInFront = 0.1;
 
 			Vector3D direction = MathOperation.getDirection(currentArmPos,
-					currentGoalPosition);
+					itemInWorldPosition);
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
@@ -89,9 +92,9 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 							rotation2), rotation3);
 
 			Vector3D goalWithDistance = new Vector3D(
-					(currentGoalPosition.getX() - posInFront * direction.getX()),
-					currentGoalPosition.getY() - posInFront * direction.getY(),
-					currentGoalPosition.getZ());
+					(itemInWorldPosition.getX() - posInFront * direction.getX()),
+					itemInWorldPosition.getY() - posInFront * direction.getY(),
+					itemInWorldPosition.getZ());
 
 			getManipulator().getArmConnector().reach(goalWithDistance,
 					greifRotation);
