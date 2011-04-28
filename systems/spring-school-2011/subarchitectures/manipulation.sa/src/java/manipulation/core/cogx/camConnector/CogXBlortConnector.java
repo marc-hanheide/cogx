@@ -77,7 +77,6 @@ public class CogXBlortConnector implements CamConnector {
 			}
 		}
 
-
 		if (!bestLabel.equals("")) {
 			boolean alreadyInMem = false;
 			Item currentItem = null;
@@ -137,6 +136,55 @@ public class CogXBlortConnector implements CamConnector {
 		} else {
 			logger.debug("Recognition value: " + bestRecValue
 					+ "! Will not add anything to the arm planning.");
+		}
+	}
+
+	public void visualObjectDelete(WorkingMemoryChange _wmc) {
+		VisualObject changedObject = null;
+		try {
+			changedObject = ((CogXRunner) manipulator.getRunner())
+					.getMemoryEntry(_wmc.address, VisualObject.class);
+		} catch (DoesNotExistOnWMException e) {
+			logger.error(e);
+		} catch (UnknownSubarchitectureException e) {
+			logger.error(e);
+		}
+
+		double bestRecValue = 0;
+		String bestLabel = "";
+
+		for (int i = 0; i < changedObject.identLabels.length; i++) {
+			if (!changedObject.identLabels[i].equals("unknown")) {
+				if (changedObject.identDistrib[i] > bestRecValue) {
+					bestRecValue = changedObject.identDistrib[i];
+					bestLabel = changedObject.identLabels[i];
+				}
+			}
+		}
+
+		if (!bestLabel.equals("")) {
+			Item currentItem = null;
+			for (Item item : manipulator.getItemMemory().getItemList()) {
+				try {
+					if (((String) item.getAttribute(PropertyName.BLORT_NAME))
+							.equals(bestLabel)) {
+						currentItem = item;
+						break;
+					}
+				} catch (ItemException e) {
+					logger.debug(e);
+				}
+			}
+
+			try {
+				manipulator.getItemMemory().deleteItem(currentItem);
+			} catch (InternalMemoryException e) {
+				logger.error("Cannot delete the item");
+			}
+
+		} else {
+			logger.debug("Recognition value: " + bestRecValue
+					+ "! Will not delete anything.");
 		}
 	}
 }
