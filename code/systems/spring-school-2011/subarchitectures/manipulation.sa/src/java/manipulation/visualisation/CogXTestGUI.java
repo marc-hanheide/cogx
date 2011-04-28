@@ -87,7 +87,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 	private JButton btnSimGrasp;
 
-
 	private JButton btnStopCmd;
 
 	private JButton btnMoveHomeCmd;
@@ -237,7 +236,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnGetPosCmd = new JButton("get pose");
 		btnGetPosCmd.setActionCommand("btnGetPosCmd");
 		btnGetPosCmd.addActionListener(this);
-		
+
 		btnSimulatePosCmd = new JButton("simulate move arm to pose");
 		btnSimulatePosCmd.setActionCommand("btnSimulatePosCmd");
 		btnSimulatePosCmd.addActionListener(this);
@@ -518,6 +517,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 					logger.error(e1);
 				}
 
+			}
+
+			String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+
+			try {
+				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
+						simGCmd);
+			} catch (AlreadyExistsOnWMException e1) {
+				logger.error(e1);
 			}
 
 		} else if (e.getActionCommand().equals("stopCmd")) {
