@@ -1,0 +1,3 @@
+start = wait
+end = CI[Said ^ <Object>(%1)]
+end2 = CI[Said ^ <Subject>(%1) ^ <Object>(%2)]
