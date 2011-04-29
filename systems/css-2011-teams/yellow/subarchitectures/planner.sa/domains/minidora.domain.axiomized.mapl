@@ -1,0 +1,87 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :durative-actions :object-fluents)
+	
+	(:types 
+		place - object
+		robot - agent
+		place_type - object
+		place_id - object  ;; make this a number at some point 
+		place_category - object
+        place_status - object
+	)
+	
+	(:constants
+        R2D2 - robot
+        placeholder explored - place_status
+	)
+
+    (:predicates
+		(place_connectivity ?n1 - place ?id2 - place_id)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+        (connects ?p1 - place_id ?p2 - place_id)
+    )	
+
+	(:functions
+		(place_type ?n - place) - place_type
+		(place_id ?n - place) - place_id
+		(position ?r -  agent) - place_id
+		(placestatus ?n - place) - place_status
+		(place_category ?n - place) - place_category
+ 	)
+	
+    (:derived (connects ?p1 - place_id ?p2 - place_id)
+              (or (exists (?n - place) (and
+                      (= (place_id ?n) ?p1)
+                      (place_connectivity ?n ?p2)))
+                  (exists (?n - place) (and
+                      (= (place_id ?n) ?p2)
+                      (place_connectivity ?n ?p1)))))
+
+;;; actions ;;;
+
+	(:action explore_place
+	 :agent (?a - agent)
+	 :parameters (?loc - place)
+	 :variables (?loc_id - place_id)
+	 :precondition (and
+	 	(= (position ?a) ?loc_id)
+		(= (place_id ?loc) ?loc_id)
+		)
+     :effect (assign (placestatus ?loc) explored)
+    )
+
+	(:sensor categorize_place
+	 :agent (?a - agent)
+	 :parameters (?loc - place)
+	 :variables (?loc_id - place_id)
+	 :precondition (and
+	 	(= (position ?a) ?loc_id)
+		(= (place_id ?loc) ?loc_id)
+		)
+     :sense (place_category ?loc)
+    )
+
+
+	(:action move
+	 :agent (?a - agent)
+	 :parameters (?to_id - place_id)
+;	 :variables (?to - place ?from_id - place_id ?from - place)
+	 :variables (?from_id - place_id)
+	 :precondition (and
+;	    (= (place_id ?from) ?from_id)
+;	    (= (place_id ?to) ?to_id)
+		(= (position ?a) ?from_id) 
+		(connects ?from_id ?to_id)
+;       (place_connectivity ?from ?to_id)
+		)
+	 :effect (and
+		(assign (position ?a) ?to_id)
+;		(assign (explored ?to) true)
+;		(place_connectivity ?to ?from_id)   ;; now we assume we can also move back
+	))
+	
+
+)

@@ -1,0 +1,57 @@
+ \section{Event Modifier Restriction}
+As discussed in () above, the Moloko is quite promiscous when it comes to  semantic or pragmatic 'un-acceptability', notions which must be handled grammar externally. There is, however, one major exception to this design principle: verbs are able to lexically specify what kinds of event modifiers they can recieve. This is the counterpart to treating most constituents as modifiers instead of as dependencies (see section X). In this section, first, we will give some examples illustrating the utility of this design feature, and then go into detail on how this was implemented.
+\subsection{Motivation}
+Consider first this pair of sentences:
+\begin{itemize}
+\item I played in the room
+\item I walked in the room
+\end{itemize}
+Despite their similarity, these two sentences differ in that the second allows a reading which the first does not. 
+In both cases, \emph{in the room} can be a static locational modifier, specifying the place where the event occured.\footnote{for the second, imagine a person pacing.} However, only in the second can \emph{in the room} specify the dynamic 'goal' of the event, i.e., walking \emph{into} the room. There is a case for arguing that this difference in motificational behaviour is inherit in the verb 
+and should thus be lexically specified (c.f. Goldberg).  As another example, consider
+\begin{itemize}
+\item* I am a ball to the door
+\end{itemize}
+The unacceptability of this sentence can be accommodated by lexically specifying that the copular verb (be) blocks the class of 'dynamic modifiers'. Similarly, in the sentence
+\begin{itemize}
+\item* I want you to play in the room.
+\end{itemize}
+we can easily block the reading where \emph{in the room} modifies \emph{want}, i.e., the reading where it was the 'wanting' that occured within the room, instead of the true reading where it is the playing in the room that is wanted.
+
+Another, perhaps less obvious, application of this feature is the blocking of certain questions.  It can be used to correctly allow the first to have 2 readings, the second 1, and the third none. 
+\begin{itemize}
+\item where did you walk
+\item where did you play
+\item * where did you want
+\end{itemize}
+
+It is clear that we can not and should not attempt to grammatically specify every allowable type of event modification. For one, the type of information that underlies these differences certainly falls under the realm of world knowledge. More importantly, for nearly any restriction we could specify, we could most likely find a set of contexts where these restrictions would no longer apply--language is after all, a tool used by humans who have a remarkable gift for construing situations in novel and unexpected ways. However, practically, the ability to grammar-internally 'rule out' some bizarre or highly unlikely readings is a powerful one. It can eliviate a great deal of burden on parse pruning by limiting what readings we are willing to even consider within the context the task for which the grammar is being employed.
+
+\subsection{Implementation}	
+
+In fact, the restriction of event modifiers is handled almost identically to the way the combinatorial behaviour of modifiers was handled (see .. above). It is done through the use of 
+\begin{enumerate}
+\item  a pair syntatic features which are attached lexically to modifiers and verbs
+\item  the inclusion of these features within the syntactic category responsible for 'attaching' the  modifier to its modifee. This includes the type-changing rules used to handle  the modifier function of adverbs and prepositions (), and also subordinate clause modifiers.\footnote{although event modifier restriction is surely a matter of semantics and not syntax, there are two reasons why it is better handled via feature. First, OpenCCG  much better at 'accessing' syntactic features than semantic ones. In fact, once semantic content has been added the semantic representation of a parse, it is no longer 'visible' to the parsing at all. Second, as discussed above (), one of the design features for Moloko was to keep the semantic sorts as grammar external as possible. Using the event-type to control modification would violate this.}
+\end{enumerate}
+\subsubsection{Syntactic Features}
+The first syntactic feature, m-type (modifier type), is attached to the event modifier and essentially parrots the modifier's semantic sort. For example, the preposition 'into', of semantic type 'm-whereto' is assigned a mod-type value of 's-whereto', 
+
+The second feature, m-class, is attached to the verb, and specifies exactly which 'types' of modifiers can attach to it. Just like complexcat-class, this is done in the syntactic type heirarchy by grouping the mod-type values (via multiple inheritance). For example, consider this type definition:\\ 
+
+       \fv{ m-class-4     [s-frequency s-probability s-comment s-time]} \\\\
+This class is very restrictive, allowing only frequency (\emph{always}), probability (\emph{certainly}), time (\emph{on Monday}) and comment (\emph{please}) modifiers, blocking all others (location, dynamic, manner, etc.) (NOTE: m- vs s-) Both of these features are specified lexically via macro. For a full list of the current mod-types and mod-classes see types-feature.ccg
+
+\subsubsection{Syntatic Category Modification}
+In the case of prepositions and adverbs (i.e. the dual-relation words able to serve as event modifiers), we simply expanded the type-changing rules to enforce these restrictions. For each of the n different syntactic variants, we added a rule for each of the m different  m-types. Thus, instead of their being only n rules, there are now n x m rules, each specifying a particular syntactic variant and a specific modifer type. Here is an example for event modifying prepositions:\\
+
+\catg{pp \fb{ \fid{M},  cc-type=post-s , m-type=m-whereto} \$_{1} }   
+\\ \arrow 
+\catg{s\id{E} \fwdsl{} s \fb{ \fid{E},  m-class:s-whereto}  \$_{1} }  : \atsign{e1}{event}(  \diam{Modifier}(m1) ) ) \\
+
+This rule handles dynamic 'whereto' prepositions that modify a sentence on its right, e.g., the preposition \emph{into} in the sentence \emph{I went into the room}. Note as well, that the modified sentence is marked with the feature m-class:s-whereto. This insures that only those verbs which belong to a mod-class which allow (can unify with) whereto modifers can actually be modified by this.
+
+For other event modifier categories, such as subordinate clause markers (when, while, etc), again, the appropriate modifier type was assigned to the modifee's mod-class value. 
+
+It is important to remember, that because the semantic classes used for modifiers have actually been built into the grammar signature (by creating features and rules), any further modification to this portion of the semantic type heirarchy would lead to potential inconsistencies within the grammar. Thus, any such changes would need to be reflected within the grammar itself as well. See types-feature.ccg for details.
+

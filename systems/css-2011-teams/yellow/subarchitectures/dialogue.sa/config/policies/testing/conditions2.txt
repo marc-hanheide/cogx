@@ -1,0 +1,3 @@
+greetObs = CI[<state>(engagement-open ^ <agent>human ^ <agent>robot)]
+closeObs = CI[<state>(engagement-closed ^ <agent>human ^ <agent>robot)]
+recogError = E[recognition-error]

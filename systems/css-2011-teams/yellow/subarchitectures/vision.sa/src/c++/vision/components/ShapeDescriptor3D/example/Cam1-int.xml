@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<intrinsic type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+    816.039987 0. 321.454865
+    0. 816.915016 235.606299
+    0. 0. 1.
+  </data></intrinsic>
+</opencv_storage>

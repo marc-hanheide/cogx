@@ -1,0 +1,66 @@
+Log for qt3to4 on Tue Mar 17 11:18:05 2009. Number of log entries: 10
+In file /home/mz/work/vs3.changing/MainWin.hh at line 12 column 13: qmainwindow.h -> q3mainwindow.h
+In file /home/mz/work/vs3.changing/MainWin.hh at line 14 column 13: qlistview.h -> q3listview.h
+In file /home/mz/work/vs3.changing/MainWin.hh at line 17 column 13: qtextedit.h -> q3textedit.h
+In file /home/mz/work/vs3.changing/MainWin.hh at line 67 column 36: QListView -> Q3ListView
+In file /home/mz/work/vs3.changing/MainWin.hh at line 78 column 38: QListView -> Q3ListView
+In file /home/mz/work/vs3.changing/MainWin.hh at line 124 column 11: QTextEdit -> Q3TextEdit
+In file /home/mz/work/vs3.changing/MainWin.hh at line 131 column 38: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.hh at line 228 column 11: QTextEdit -> Q3TextEdit
+In file /home/mz/work/vs3.changing/MainWin.hh at line 266 column 34: QMainWindow -> Q3MainWindow
+In file /home/mz/work/vs3.changing/MainWin.hh: Added the following include directives:
+	#include <QMouseEvent> 	#include <QEvent> 
+
+Log for qt3to4 on Tue Mar 17 11:18:24 2009. Number of log entries: 50
+In file /home/mz/work/vs3.changing/MainWin.cc at line 21 column 13: qpopupmenu.h -> q3popupmenu.h
+In file /home/mz/work/vs3.changing/MainWin.cc at line 22 column 13: qfiledialog.h -> q3filedialog.h
+In file /home/mz/work/vs3.changing/MainWin.cc at line 24 column 13: qvbox.h -> q3vbox.h
+In file /home/mz/work/vs3.changing/MainWin.cc at line 25 column 13: qhbox.h -> q3hbox.h
+In file /home/mz/work/vs3.changing/MainWin.cc at line 166 column 12: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 166 column 35: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 170 column 12: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 170 column 36: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 185 column 12: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 185 column 35: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 191 column 12: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 191 column 35: QPopupMenu -> Q3PopupMenu
+In file /home/mz/work/vs3.changing/MainWin.cc at line 233 column 33: QFileDialog -> Q3FileDialog
+In file /home/mz/work/vs3.changing/MainWin.cc at line 337 column 32: QFileDialog -> Q3FileDialog
+In file /home/mz/work/vs3.changing/MainWin.cc at line 479 column 17: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 547 column 15: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 814 column 13: QListView -> Q3ListView
+In file /home/mz/work/vs3.changing/MainWin.cc at line 825 column 21: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 838 column 23: QListViewItemIterator -> Q3ListViewItemIterator
+In file /home/mz/work/vs3.changing/MainWin.cc at line 851 column 13: QListView -> Q3ListView
+In file /home/mz/work/vs3.changing/MainWin.cc at line 858 column 19: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 864 column 19: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 864 column 45: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 884 column 23: QListViewItemIterator -> Q3ListViewItemIterator
+In file /home/mz/work/vs3.changing/MainWin.cc at line 929 column 15: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 945 column 7: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 945 column 23: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 954 column 61: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 955 column 48: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 959 column 7: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 959 column 23: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 960 column 7: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 960 column 24: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 961 column 7: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 961 column 24: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 962 column 7: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 962 column 24: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1052 column 30: QTextEdit -> Q3TextEdit
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1064 column 48: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1079 column 15: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1096 column 15: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1144 column 15: QListViewItem -> Q3ListViewItem
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1165 column 7: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1165 column 23: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1178 column 7: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1178 column 23: QVBox -> Q3VBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1180 column 7: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1180 column 23: QHBox -> Q3HBox
+In file /home/mz/work/vs3.changing/MainWin.cc at line 1199 column 25: QTextEdit -> Q3TextEdit
+In file /home/mz/work/vs3.changing/MainWin.cc: Added the following include directives:
+	#include <QLabel> 	#include <QMouseEvent> 	#include <QEvent> 	#include <Q3PopupMenu> 
+

@@ -1,0 +1,10 @@
+status on 2008-02-14:
+
+vs3: last change 2007-12-11, last state of vs3 before major refactoring, stable
+
+vs3.changing: last change 20007-12-10, major refactoring in progress, does not
+              compile
+
+vs3.rcs: last change 2007-08-16, last state of vs3 before switching from RCS to
+         svn
+

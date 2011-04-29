@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+
+<model:physical name="table3_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0.0 0.0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>table3_body</canonicalBody>
+
+  <body:box name="table3_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <mass>1.00</mass>
+    <massMatrix>true</massMatrix>
+    <ixx>0.01</ixx>
+    <ixy>0.0</ixy>
+    <ixz>0.0</ixz>
+    <iyy>0.01</iyy>
+    <iyz>0.0</iyz>
+    <izz>0.01</izz>
+    <cx>0.0</cx>
+    <cy>0.0</cy>
+    <cz>0.0</cz>
+
+
+    <geom:box name="table3_geom">
+      <xyz>0.0 0.0 0.0</xyz>
+      <rpy>0 0 0</rpy>
+      <size>0.465 0.350 0.350</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <xyz>0 0.175 0</xyz>
+        <scale>0.465 0.001 0.350</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-front</material>
+      </visual>
+
+      <visual>
+        <xyz>0 -0.175 0</xyz>
+        <scale>0.465 0.001 0.350</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-back</material>
+      </visual>
+
+      <visual>
+        <xyz>0.2325 0 0</xyz>
+        <scale>0.001 0.350 0.350</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-left</material>
+      </visual>
+
+      <visual>
+        <xyz>-0.2325 0 0</xyz>
+        <scale>0.001 0.350 0.350</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-right</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 0.175</xyz>
+        <scale>0.465 0.350 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-top</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 -0.175</xyz>
+        <scale>0.465 0.350 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/table-bottom</material>
+      </visual>
+    </geom:box>
+  </body:box>
+</model:physical>
+

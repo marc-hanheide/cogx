@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<regression name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testbed.xsd">
+  <item string="box" numOfParses="1"/>
+  <item string="box@H* LL%" numOfParses="1"/>
+  <item string="green box" numOfParses="1"/>
+  <item string="green box@H* LL%" numOfParses="1"/>
+  <item string="a green box" numOfParses="1"/>
+  <item string="a green box@H* LL%" numOfParses="1"/>
+  <item string="it is a green box" numOfParses="1"/>
+  <item string="it is a green@H* box LL%" numOfParses="1"/>
+  <item string="it is a green@H* box@H* LL%" numOfParses="1"/>
+  <item string="it is a green box@H* LL%" numOfParses="1"/>
+  <item string="it@H* is@H* a green@H* box@H* LL%" numOfParses="1"/>
+  <item string="this is a blue mug" numOfParses="1"/>
+  <item string="this is a blue@H* mug LL%" numOfParses="1"/>
+  <item string="this is a blue@H* mug@H* LL%" numOfParses="1"/>
+  <item string="this is a blue mug@H* LL%" numOfParses="1"/>
+  <item string="this is a blue@H* mug@H* LL%" numOfParses="1"/>
+  <item string="this is a dark@H* blue@H* mug@H* LL%" numOfParses="1"/>
+  <item string="I see a red ball" numOfParses="1"/>
+  <item string="I see a red@H* ball LL%" numOfParses="1"/>
+  <item string="I see a red@H* ball@H* LL%" numOfParses="1"/>
+  <item string="I see a red ball@H* LL%" numOfParses="1"/>
+  <item string="the box@H* is blue@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* is blue@L+H* LL%" numOfParses="1"/>
+  <item string="it is a ball@L+H* LL%" numOfParses="1"/>
+  <item string="it is a ball@L+H* LH%" numOfParses="1"/>
+  <item string="the box is green" numOfParses="1"/>
+  <item string="the box LH% is green@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is green@H* LL%" numOfParses="1"/>
+  <item string="the ball@L+H* is LH% red@H* LL%" numOfParses="1"/>
+  <item string="the ball is LH% red@H* LL%" numOfParses="1"/>
+  <item string="the robot LH% moves@H* the box@H* LL%" numOfParses="1"/>
+  <item string="the robot@L+H* LH% moves@H* the box@H* LL%" numOfParses="1"/>
+  <item string="the robot moves LH% the box@H* LL%" numOfParses="1"/>
+  <item string="the robot@L+H* moves@L+H* LH% the box@H* LL%" numOfParses="1"/>
+  <item string="the robot@H* LL% moves the box@L+H* LH%" numOfParses="1"/>
+  <item string="the robot@H* LL% moves the box LH%" numOfParses="1"/>
+  <item string="the robot@H* LL% moves the box LL%" numOfParses="1"/>
+  <item string="the box@H* LL% is red@L+H* LH%" numOfParses="1"/>
+  <item string="the box@H* LL% is red LH%" numOfParses="1"/>
+  <item string="the box@H* LL% is red LL%" numOfParses="1"/>
+  <item string="the robot@L+H* LH% moves@H* LL% the box@L+H* LH%" numOfParses="1"/>
+  <item string="the robot LH% moves@H* LL% the box LH%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is@H* LL% green@L+H* LH%" numOfParses="1"/>
+  <item string="box@L* HH%" numOfParses="1"/>
+  <item string="green box@L* HH%" numOfParses="1"/>
+  <item string="a green box@L* HH%" numOfParses="1"/>
+  <item string="is it a green box" numOfParses="1"/>
+  <item string="is it a green box@L* HH%" numOfParses="1"/>
+  <item string="is it a green@L* box HH%" numOfParses="1"/>
+  <item string="is it a green@L* box@L* HH%" numOfParses="1"/>
+  <item string="is this a red ball" numOfParses="1"/>
+  <item string="is this a red ball@L* HH%" numOfParses="1"/>
+  <item string="is this a red@L* ball HH%" numOfParses="1"/>
+  <item string="is this a red@L* ball@L* HH%" numOfParses="1"/>
+  <item string="is it a blue mug" numOfParses="1"/>
+  <item string="is it a blue mug@L* HH%" numOfParses="1"/>
+  <item string="is it a blue@L* mug@L* HH%" numOfParses="1"/>
+  <item string="is it a large blue mug@L* HH%" numOfParses="1"/>
+  <item string="is it a large blue@L* mug HH%" numOfParses="1"/>
+  <item string="is it a large@L* blue mug HH%" numOfParses="1"/>
+  <item string="do I see a red box@L* HH%" numOfParses="1"/>
+  <item string="do I see a red@L* box HH%" numOfParses="1"/>
+  <item string="is that a red box@L* HH%" numOfParses="1"/>
+  <item string="is that a red@L* box HH%" numOfParses="1"/>
+  <item string="did you say red" numOfParses="1"/>
+  <item string="did you@L* say red HH%" numOfParses="1"/>
+  <item string="did you say red@L* HH%" numOfParses="1"/>
+  <item string="did@L* you say red HH%" numOfParses="1"/>
+  <item string="is the box LH% green@L* HH%" numOfParses="1"/>
+  <item string="is the box@L+H* LH% green@L* HH%" numOfParses="1"/>
+  <item string="is this LH% red@L* HH%" numOfParses="1"/>
+  <item string="is this@L+H* LH% red@L* HH%" numOfParses="1"/>
+  <item string="is this@L+H* LH% round@L* HH%" numOfParses="1"/>
+  <item string="is the box LH% compact@L* HH%" numOfParses="1"/>
+  <item string="is the box@L+H* LH% compact@L* HH%" numOfParses="1"/>
+  <item string="is the box LH% compact@L* and red@L* HH%" numOfParses="1"/>
+  <item string="is the box@L+H* LH% compact@L* and red@L* HH%" numOfParses="1"/>
+  <item string="is the ball LH% red@L* HH%" numOfParses="1"/>
+  <item string="is the ball@L+H* LH% red@L* HH%" numOfParses="1"/>
+  <item string="is@L+H* the ball@L+H* LH% red@L* HH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green@L+H* LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red@L+H* LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact and red LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact@L+H* and red@L+H* LH%" numOfParses="1"/>
+  <item string="is this@L* HH% a box LH%" numOfParses="1"/>
+  <item string="is this@L* HH% a box@L+H* LH%" numOfParses="1"/>
+  <item string="is the box red@L* or orange@L* HH%" numOfParses="1"/>
+  <item string="is the box compact@L* or elongated@L* HH%" numOfParses="1"/>
+  <item string="which@L* box is red HH%" numOfParses="1"/>
+  <item string="is the box LH% red@L* or orange@L* HH%" numOfParses="1"/>
+  <item string="is the box@L+H* LH% red@L* or orange@L* HH%" numOfParses="1"/>
+  <item string="what@L* is that HH%" numOfParses="1"/>
+  <item string="what@H* is that HH%" numOfParses="1"/>
+  <item string="what is that@L* HH%" numOfParses="1"/>
+  <item string="what is that@H* HH%" numOfParses="1"/>
+  <item string="what color is the mug" numOfParses="1"/>
+  <item string="what color@H* is the mug HH%" numOfParses="1"/>
+  <item string="what color@L* is the mug HH%" numOfParses="1"/>
+  <item string="what color is the mug@H* HH%" numOfParses="1"/>
+  <item string="what color@H* is this@H* mug HH%" numOfParses="1"/>
+  <item string="what color is the bigger mug@H* HH%" numOfParses="1"/>
+  <item string="what color is the bigger@H* mug HH%" numOfParses="1"/>
+  <item string="what color@H* is the bigger mug HH%" numOfParses="1"/>
+  <item string="what@H* color is the mug HH%" numOfParses="1"/>
+  <item string="is it a red@H* box@L+H* LH%" numOfParses="0"/>
+  <item string="is it a red@L+H* box@H* LH%" numOfParses="0"/>
+  <item string="is it a red box LL%" numOfParses="0"/>
+  <item string="a red box LL%" numOfParses="0"/>
+  <item string="the box@L+H* LH% is blue@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is@H* blue@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* is LH% blue@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* is@L+H* LH% blue@H* LL%" numOfParses="1"/>
+  <item string="the box@H* LL% is blue@L+H* LH%" numOfParses="1"/>
+  <item string="the box@H* LL% is@L+H* blue@L+H* LH%" numOfParses="1"/>
+  <item string="the box@H* is blue LL%" numOfParses="1"/>
+  <item string="the box is blue@H* LL%" numOfParses="1"/>
+  <item string="the box is@H* blue LL%" numOfParses="1"/>
+  <item string="the box@H* is@H* blue@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* is@L+H* blue@L+H* LH%" numOfParses="1"/>
+  <item string="the box@L+H* is blue@L+H* LH%" numOfParses="1"/>
+  <item string="the box@L+H* is blue LH%" numOfParses="1"/>
+  <item string="the box is blue@L+H* LH%" numOfParses="1"/>
+  <item string="the box is@L+H* blue LH%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is@H* LL% blue@L+H* LH%" numOfParses="1"/>
+  <item string="I@L+H* see@L+H* LH% a car@H* and a blue@H* thing@H* LL%" numOfParses="1"/>
+  <item string="what color is@H* LH% the box@L+H* LH%" numOfParses="1"/>
+  <item string="what color@H* is LH% the box@L+H* LH%" numOfParses="1"/>
+  <item string="I see" numOfParses="1"/>
+  <item string="I@H* see@H* LL%" numOfParses="1"/>
+  <item string="let me see" numOfParses="1"/>
+  <item string="let me@H* see@H* LL%" numOfParses="1"/>
+  <item string="it is red" numOfParses="1"/>
+  <item string="it is@H* red LL%" numOfParses="1"/>
+  <item string="it is red@H* LL%" numOfParses="1"/>
+  <item string="itH* is red LL%" numOfParses="1"/>
+  <item string="is@L+H* the box@L+H* LH% blue@L* HH%" numOfParses="1"/>
+  <item string="I don't know the color" numOfParses="1"/>
+  <item string="I@L+H* don't know@L+H* the color@L+H* LH%" numOfParses="1"/>
+  <item string="I don't know" numOfParses="1"/>
+  <item string="I@L+H* don't know@L+H* LH%" numOfParses="1"/>
+  <item string="it is a box" numOfParses="1"/>
+  <item string="it@L+H* is@L+H* a box@L+H* LH%" numOfParses="1"/>
+  <item string="I LL% don't know LH% the color@H* LL%" numOfParses="1"/>
+</regression>
