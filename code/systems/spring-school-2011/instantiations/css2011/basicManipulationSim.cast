@@ -52,6 +52,9 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --ply
 # this component allows to view the actual camera image in the display server
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
 #--------------------------------------------------------------------------------------------------------------------------------------------------
+# this component creats a simple GUI to access the PTZ Unit
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+#--------------------------------------------------------------------------------------------------------------------------------------------------
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
