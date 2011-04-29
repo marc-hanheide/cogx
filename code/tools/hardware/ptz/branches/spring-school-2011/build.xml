@@ -45,7 +45,7 @@
     
 
 	<target name="compile-slice" depends="slice" description="compiles the source code">
-	  <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
+	  <javac srcdir="${src.dir}/ptz" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
 	    <classpath refid="build.classpath"/> </javac>
 	</target>
 
