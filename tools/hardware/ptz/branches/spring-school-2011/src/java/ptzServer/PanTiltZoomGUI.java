@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -47,6 +48,8 @@ public class PanTiltZoomGUI extends JPanel implements ActionListener {
 
 	private JButton btnGetPTZValue;
 
+	private DecimalFormat df = new DecimalFormat("0.00");
+
 	public PanTiltZoomGUI(PanTiltZoomServer server) {
 		this.server = server;
 
@@ -75,9 +78,9 @@ public class PanTiltZoomGUI extends JPanel implements ActionListener {
 						GetPTZPoseCommand.class);
 
 				if (cmd.comp == PTZCompletion.SUCCEEDED) {
-					txtPan.setText(Double.toString(cmd.pose.pan));
-					txtTilt.setText(Double.toString(cmd.pose.tilt));
-					txtZoom.setText(Double.toString(cmd.pose.zoom));
+					txtPan.setText(df.format((cmd.pose.pan/Math.PI)*180));
+					txtTilt.setText(df.format((cmd.pose.tilt/Math.PI)*180));
+					txtZoom.setText(df.format(cmd.pose.zoom));
 
 					logger.debug("get ptz position successful");
 				}
@@ -86,9 +89,9 @@ public class PanTiltZoomGUI extends JPanel implements ActionListener {
 						SetPTZPoseCommand.class);
 
 				if (cmd.comp == PTZCompletion.SUCCEEDED) {
-					txtPan.setText(Double.toString(cmd.pose.pan));
-					txtTilt.setText(Double.toString(cmd.pose.tilt));
-					txtZoom.setText(Double.toString(cmd.pose.zoom));
+					txtPan.setText(df.format((cmd.pose.pan/Math.PI)*180));
+					txtTilt.setText(df.format((cmd.pose.tilt/Math.PI)*180));
+					txtZoom.setText(df.format(cmd.pose.zoom));
 
 					logger.debug("set ptz position successful");
 				}
@@ -163,9 +166,13 @@ public class PanTiltZoomGUI extends JPanel implements ActionListener {
 		if (e.getActionCommand().equals("move")) {
 			SetPTZPoseCommand cmd = new SetPTZPoseCommand();
 
-			PTZPose pose = new PTZPose(Double.parseDouble(txtPan.getText()),
-					Double.parseDouble(txtTilt.getText()),
-					Double.parseDouble(txtZoom.getText()));
+
+
+			PTZPose pose = new PTZPose(
+					Double.parseDouble(txtPan.getText())/180*Math.PI,
+					Double.parseDouble(txtTilt.getText())/180*Math.PI,
+					Double.parseDouble(txtZoom.getText()) 
+					);
 
 			cmd.pose = pose;
 			cmd.comp = PTZCompletion.COMPINIT;
