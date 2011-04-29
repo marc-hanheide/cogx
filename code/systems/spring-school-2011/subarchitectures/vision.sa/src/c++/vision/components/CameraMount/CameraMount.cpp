@@ -29,37 +29,28 @@ extern "C"
   }
 }
 
+static bool equals(ptz::PTZReading &a, ptz::PTZReading &b, double eps)
+{
+  return equals(a.pose.pan, b.pose.pan, eps) && equals(a.pose.tilt, b.pose.tilt, eps);
+}
+
+double CameraMount::FIXED_POSITION_TOLERANCE = 0.015;
+
+CameraMount::CameraMount()
+{
+  usePTZ = false;
+  fixedPanTilt.pose.pan = 0.;
+  fixedPanTilt.pose.tilt = 0.;
+  fixedPanTilt.pose.zoom = 0.;
+  setIdentity(ptBasePose);
+  setIdentity(ptPanPose);
+  setIdentity(ptTiltPose);
+}
+
 void CameraMount::configure(const map<string,string> & _config)
   throw(runtime_error)
 {
   map<string,string>::const_iterator it;
-
-  setIdentity(ptZeroPose);
-  if((it = _config.find("--pt_zero_pose")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> ptZeroPose;
-  }
-  if((it = _config.find("--pt_zero_pose_xml")) != _config.end())
-  {
-    string filename = it->second;
-    readXML(filename, ptZeroPose);
-  }
-  if((it = _config.find("--pt_base_xml")) != _config.end())
-  {
-    string filename = it->second;
-    readXML(filename, ptBasePose);
-  }
-  if((it = _config.find("--pt_pan_xml")) != _config.end())
-  {
-    string filename = it->second;
-    readXML(filename, ptPanPose);
-  }
-  if((it = _config.find("--pt_tilt_xml")) != _config.end())
-  {
-    string filename = it->second;
-    readXML(filename, ptTiltPose);
-  }
 
   if((it = _config.find("--camids")) != _config.end())
   {
@@ -69,16 +60,24 @@ void CameraMount::configure(const map<string,string> & _config)
       camIds.push_back(id);
   }
 
-  if((it = _config.find("--cam_poses")) != _config.end())
+  if((it = _config.find("--pt_base_xml")) != _config.end())
   {
-    istringstream str(it->second);
-    for(size_t i = 0; i < camIds.size(); i++)
-    {
-      Pose3 pose;
-      str >> pose;
-      camPoses.push_back(pose);
-    }
+    string filename = it->second;
+    readXML(filename, ptBasePose);
   }
+
+  if((it = _config.find("--pt_pan_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, ptPanPose);
+  }
+
+  if((it = _config.find("--pt_tilt_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, ptTiltPose);
+  }
+
   if((it = _config.find("--cam_poses_xml")) != _config.end())
   {
     istringstream str(it->second);
@@ -91,19 +90,42 @@ void CameraMount::configure(const map<string,string> & _config)
     }
   }
 
-  isFixed = false;
-  if((it = _config.find("--fixed")) != _config.end())
+  if((it = _config.find("--fixed_cam_poses_xml")) != _config.end())
   {
-    isFixed = true;
+    istringstream str(it->second);
+    string filename;
+    while(str >> filename)
+    {
+      Pose3 pose;
+      readXML(filename, pose);
+      camFixedPoses.push_back(pose);
+    }
   }
 
-  if(camIds.size() != camPoses.size())
+  if((it = _config.find("--fixed_pan_tilt")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> fixedPanTilt.pose.pan >> fixedPanTilt.pose.tilt;
+  }
+
+  if((it = _config.find("--use_ptz")) != _config.end())
+  {
+    usePTZ = true;
+  }
+
+  if(camIds.size() == 0)
+    throw runtime_error("no cam IDs given, need at least one");
+  if(camPoses.size() != 0 && camIds.size() != camPoses.size())
     throw runtime_error("number of camera IDs must match number of camera poses");
+  if(camFixedPoses.size() != 0 && camIds.size() != camFixedPoses.size())
+    throw runtime_error("number of camera IDs must match number of camera fixed poses");
+  if(!usePTZ && camFixedPoses.size() == 0)
+    throw runtime_error("if you are not using the PTZ you must supply fixed camera poses");
 }
 
 void CameraMount::start()
 {
-  if(!isFixed)
+  if(usePTZ)
   {
     Ice::CommunicatorPtr ic = getCommunicator();
 
@@ -124,19 +146,35 @@ void CameraMount::start()
 
 void CameraMount::runComponent()
 {
-  if(!isFixed)
+  bool camsAddedToWM = false;
+  camWMIds.resize(camIds.size());
+  for(size_t i = 0; i < camIds.size(); i++)
+    camWMIds[i] = newDataID();
+  while(isRunning())
   {
-    log("using PTU");
-    vector<Pose3> camPosesToEgo;
-    ptz::PTZReading ptz;
-
-    // TODO: avoid code duplication here!
-
-    // add camera parameters to WM, with initial poses
-    camWMIds.resize(camPoses.size());
-    ptz = m_PTUServer->getPose();
-    calculatePoses(ptz, camPosesToEgo);
-    for(size_t i = 0; i < camPoses.size(); i++)
+    debug("running");
+    vector<Pose3> camPosesToEgo(camIds.size());
+    cdl::CASTTime time;
+    if(usePTZ)
+    {
+      ptz::PTZReading ptz = m_PTUServer->getPose();
+      if(camFixedPoses.size() != 0 && equals(ptz, fixedPanTilt, FIXED_POSITION_TOLERANCE))
+      {
+        camPosesToEgo = camFixedPoses;
+        debug("reached fixed pose");
+      }
+      else
+      {
+        calculatePoses(ptz, camPosesToEgo);
+      }
+      time = ptz.time;
+    }
+    else
+    {
+      camPosesToEgo = camFixedPoses;
+      time = getCASTTime();
+    }
+    for(size_t i = 0; i < camIds.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
       initCameraParameters(camParms->cam);
@@ -144,82 +182,32 @@ void CameraMount::runComponent()
       // we only know about poses
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
-      log("add cam pose in robot ego:" + toString(camParms->cam.pose));
-      camParms->cam.time = ptz.time;
-      camWMIds[i] = newDataID();
-      addToWorkingMemory(camWMIds[i], camParms);
-    }
-
-    // continuosly (with a nasty sleep) get pan, tilt values and
-    // update poses
-    while(isRunning())
-    {
-	    ptz = m_PTUServer->getPose();
-      calculatePoses(ptz, camPosesToEgo);
-      for(size_t i = 0; i < camPoses.size(); i++)
+      camParms->cam.time = time;
+      if(camsAddedToWM)
       {
-        CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
-        initCameraParameters(camParms->cam);
-        // only fill pose and time (let video server fill the rest)
-        // we only know about poses
-        camParms->cam.id = camIds[i];
-        camParms->cam.pose = camPosesToEgo[i];
-        log("overwrite cam pose in robot ego:" + toString(camParms->cam.pose));
-        camParms->cam.time = ptz.time;
         overwriteWorkingMemory(camWMIds[i], camParms);
       }
-      // HACK: should get rid of need for sleep
-      // We will hardly be moving the pan tilt unit at first, so long update
-      // interval should not be a problem.
-      sleepComponent(1000);
-    }
-  }
-  else
-  {
-    log("using fixed cam position and no PTU");
-    // add camera parameters to WM, with initial poses
-    camWMIds.resize(camPoses.size());
-    for(size_t i = 0; i < camPoses.size(); i++)
-    {
-      CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
-      initCameraParameters(camParms->cam);
-      // only fill pose and time (let video server fill the rest)
-      // we only know about poses
-      camParms->cam.id = camIds[i];
-      camParms->cam.pose = camPoses[i];
-      log("add cam pose in robot ego:" + toString(camParms->cam.pose));
-      camParms->cam.time = getCASTTime();
-      camWMIds[i] = newDataID();
-      addToWorkingMemory(camWMIds[i], camParms);
-    }
-
-    // continuosly (with a nasty sleep) update poses
-    while(isRunning())
-    {
-      for(size_t i = 0; i < camPoses.size(); i++)
+      else
       {
-        CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
-        initCameraParameters(camParms->cam);
-        // only fill pose and time (let video server fill the rest)
-        // we only know about poses
-        camParms->cam.id = camIds[i];
-        camParms->cam.pose = camPoses[i];
-        log("overwrite cam pose in robot ego:" + toString(camParms->cam.pose));
-        camParms->cam.time = getCASTTime();
-        overwriteWorkingMemory(camWMIds[i], camParms);
+        addToWorkingMemory(camWMIds[i], camParms);
+        camsAddedToWM = true;
       }
-      // HACK: should get rid of need for sleep
-      sleepComponent(1000);
     }
+    // HACK: should get rid of need for sleep
+    // We will hardly be moving the pan tilt unit at first, so long update
+    // interval should not be a problem.
+    sleepComponent(1000);
   }
 }
 
-void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &poses)
+void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &camPosesToEgo)
 {
   // robot ego system: x points forward, y points to left wheel, z points up
   // kinematic chain of poses: robot ego -> pt zero pose -> pan -> tilt ->
   // camera
   Pose3 panRot, tiltRot;
+  vector<Pose3> poses;
+
   setZero(panRot.pos);
   fromRotZ(panRot.rot, -ptz.pose.pan);
   // note: positive tilt angle is tilting "up" which is negative rotation around
@@ -228,18 +216,14 @@ void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &poses)
   fromRotY(tiltRot.rot, -ptz.pose.tilt);
 
   poses.resize(camPoses.size());
+  camPosesToEgo.resize(camPoses.size());
   for(size_t i = 0; i < camPoses.size(); i++)
   {
     transform(tiltRot, camPoses[i], poses[i]);
     transform(ptTiltPose, poses[i], poses[i]);
     transform(panRot, poses[i], poses[i]);
     transform(ptPanPose, poses[i], poses[i]);
-    transform(ptBasePose, poses[i], poses[i]);
-    
-    /*log(toString(poses[i]));
-    double r, p, y;
-    toRPY(poses[i].rot, r, p, y);
-    log("RPY: %f %f %f", r, p, y);*/
+    transform(ptBasePose, poses[i], camPosesToEgo[i]);
   }
 }
 
