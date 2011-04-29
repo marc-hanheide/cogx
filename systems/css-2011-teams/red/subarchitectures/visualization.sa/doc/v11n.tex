@@ -1,0 +1,863 @@
+% vim:ft=tex:sw=3:ts=8:et:fileencoding=utf-8
+
+\section{Installation}
+
+To get the visualization from the svn, edit the SVN externals in the root
+of your CogX system directory:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   $ svn pe svn:externals .
+\end{Verbatim}
+
+Add the following line, save and do an svn update:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   ^/code/subarchitectures/visualization.sa/trunk subarchitectures/visualization.sa
+\end{Verbatim}
+
+The subarchitecture depends on some external libraries. If they are not
+installed, the system may still compile, but some of the features won't be
+available. The dependencies can be installed with the script in
+visualization.sa/bin: 
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   sudo visualization.sa/bin/ubuntu-install-deps.sh
+\end{Verbatim}
+
+The new subarchitecture must be added to the main CMakeLists.txt file of the 
+project. It should be added before any subarchitectures that use visualization
+so that the dependent libraries will build correctly. Add the following
+block before the first subarchitecture in CMakeLists.txt:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   include(subarchitectures/visualization.sa/cmake/v11n.cmake)
+\end{Verbatim}
+
+Finally run \code{ccmake} and set \code{BUILD\_SA\_V11N} to \code{ON} to enable
+the visualization subarchitecture.
+
+\subsection{Java client interface}
+
+To build the Java client interface add the following to the main build.xml file:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   <target name="template" depends="init">
+      ...
+      <ant target="${target}" dir="subarchitectures/visualization.sa" />
+      ...
+   </target>
+\end{Verbatim}
+
+\subsection{Python client interface}
+
+The Python client interface is installed as part of the CMake installation
+process. To enable the installation the following steps should be performed:
+
+\begin{enumerate}
+   \item Add to \verb|svn:externals| of the CogX root directory:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      ^/code/tools/python/trunk         tools/python
+   \end{Verbatim}
+
+   \item Perform an update get tools/python and cmake/PythonBuild.cmake:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      svn update
+   \end{Verbatim}
+
+   \item Add at the beginning of the main CMakeLists.txt file, \\
+   somewhere {\em after} {\scriptsize \verb|set(CMAKE_INSTALL_PREFIX ...)|}:
+
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      include(cmake/PythonBuild.cmake)
+   \end{Verbatim}
+
+   \item Check that the option \verb|BUILD_PYTHON_COMPONENTS| is ON when
+   running \verb|ccmake|.
+
+\end{enumerate}
+
+\section{General operation}
+
+The library provides a display server that displays objects created by its
+clients.  The objects that are on the display server are grouped into views.
+Initially every new object is displayed in its own view that has the same name
+as the object.
+\todo{(TODO: It will be possible to define additional views that display multiple objects)}
+The display server creates rendering contexts in which the views are displayed.
+There are three types of contexts: 2D, OpenGL and HTML.
+% (TODO: additional contexts: eg. tabular)
+
+The client that wants to display an object connects to the server and sends the
+serialized object to the server. Each object has a name. If an object with the
+same name already exists on the server it is updated with the new data. Some
+objects are composed of multiple parts where each part can be manipulated
+independently.
+
+Currently the following types of objects are supported: images, HTML documents,
+SVG graphics and OpenGL objects defined with LuaGl script or as TomGine
+render-models. 
+
+The display server can also display simple user interface elements. If a view
+is active (visible) all the UI element associated with the view are also
+displayed. When the state of a UI element changes, eg.  because of a muse
+click, the client that owns the UI element is notified and it receives the new
+state of the object.
+
+(2010-06-09: at this time only two types of UI elements are provided: a button
+and a checkbox).
+
+\subsection{CAST Configuration}
+
+The display server can run either as a component inside a CAST c++ process or
+as a standalone server. If it is used as a component it can be configured to
+redirect the clients to a standalone display server. In this case the display
+server will not create any GUI. If multiple display server components are
+created inside a c++ process, only one can be configured to create a GUI,
+otherwise the system will most likely crash during an attempt to create a
+second Qt application object. On some systems it is not possible to run the
+display server as a CAST component because the Qt implementation may require
+that the application object is created in the main thread. In this case a
+standalone display server should be used and possibly a display server
+component that will redirect the clients to the standalone server.
+
+When a display server runs as a CAST component it accepts the parameter
+\code{--redirect\--to\--host "hostname"}. When this parameter is not empty the
+server will redirect the clients that connect to it to a standalone display
+server running on the computer named \code{hostname}.
+
+Two parameters are used to configure the clients. The parameter
+\code{--displayserver "id"} takes an id of the display server component to
+connect to. The parameter \code{--standalone\--display\--host "hostname"} can
+be used to connect to a standalone display server.
+
+Wherever \code{"hostname"} is required an empty value can be used or the value
+\code{"/no"} which is translated to an empty string internally. Using an empty
+value or the equivalent \code{"/no"} has the same effect as not specifying the
+parameter at all.
+
+The preferred way to configure the use of standalone display servers is by
+using the parameters \code{--displayserver} and \code{--redirect\--to\--host
+"hostname"}. This way only one change has to be made to \code{.cast} filed when
+the location of the display server has to be changed.
+
+It is possible to configure the clients so that each client connects to a
+different display server with the parameter \code{--standalone\--display\--host
+"hostname"}. A better alternative is to define multiple display server
+components (each with a different id and possibly a different host in
+\code{--redirect\--to\--host}) and use only \code{--displayserver} for clients.
+
+\subsubsection*{Case 1: Use a standalone display server}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host localhost
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv" ...
+\end{Verbatim}
+
+The redirection is configured in the DisplayServer component. The client
+connects to the server "display.srv", obtains remote server parameters (ie
+localhost), drops the connection to "display.srv" and creates a new connection
+to the standalone display server running on "localhost".
+
+\subsubsection*{Case 2: Use a standalone display server for a component}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv"
+         --standalone-display-host localhost
+\end{Verbatim}
+
+The redirection is configured in the client component. Although the parameter
+\code{--displayserver} is used, the client doesn't try to connect to a
+component named "display.srv". Instead it uses the parameters for the
+standalone display server and tries to connect directly. In a sense
+\code{--standalone\--display\--host} takes precedence over
+\code{--redirect\--to\--host}.
+
+\subsubsection*{Case 3: use the display server as a component}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer
+   CPP MG visualization.test VisualizationTest --displayserver "display.srv" ...
+\end{Verbatim}
+
+Equivalent alternatives using the parameter --redirect-to-host:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host ""
+   CPP MG display.srv DisplayServer --redirect-to-host "/no"
+\end{Verbatim}
+
+With these two forms it is easy to configure the display with an environment
+variable:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CPP MG display.srv DisplayServer --redirect-to-host $V11N_STANDALONE_HOST
+\end{Verbatim}
+
+Set the environment variable \code{V11N\_STANDALONE\_HOST} as desired:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   export V11N_STANDALONE_HOST=localhost
+   export V11N_STANDALONE_HOST=/no
+   ...
+\end{Verbatim}
+
+\section{Sending data to the server}
+
+The C++ client library provides a client interface that enables the interaction
+with the server. It lets the programmer send objects to be dispayed to the
+server and receive notifications about the events emited by the user interface
+that was built on the server by the client component.
+\todo{TODO: add interfaces for Java and Python}
+
+For simple objects the server can be used without linking to the display client
+because the file system as a communication channel. To do this a CAST
+component FileMonitor has to be added to the cast file and configured to
+monitor certain files that are created by other componetns.
+
+\subsection{File system monitor}
+
+The File system monitor is a CAST component that monitors the file system for
+changes. Usually it observes a directory on the disk and waits for files in that
+directory that have been closed after they were modified. If the modified file
+is one of the files the monitor is waiting for, it reads the file processes it
+and sends it to the server. A single component is able to monitor multiple files
+in multiple directories.
+
+The files that the monitor can process are images, SVG files, dot files created
+for GraphWiz, LuaGl scripts, HTML chunks.
+
+Here is an example CAST setup of a DisplayServer and a FileMonitorDC. Note that
+all text after fileviewer.cli is on the same line.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   HOST localhost
+   SUBARCHITECTURE visualization.sa 
+   CPP WM SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
+
+   CPP MG display.srv DisplayServer
+
+   CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv"
+      --setvars "dir=subarchitectures/visualization.sa/src/c++/clients/fileviewer/test/xdata"
+      --monitor "
+         CurrentPlan=dot:%(dir)/{*.dot}
+         AltPlan=twopi:%(dir)/{*.dot}
+         ImageFile=%(dir)/{*.png;*.jpg;*.pnm;*.xpm}
+         SvgFile=%(dir)/{*.svg}
+         %(dir)/{*}"
+         --log true --debug true
+\end{Verbatim}
+
+The file monitor first connects to the server using the \code{--displayserver}
+parameter. If the server is not present, a display client will operate normally
+except it won't be able to display its results.
+
+The parameter \code{--setvars} sets some variables that are used later when
+the component configures the monitored files. The format of the parameter
+string is \code{"var1=value1 var2=value2 ..."}. Later in the parameter
+\code{--monitor} a variable can be inserted with \code{\%(var1)}.
+
+The most important and complex part is the definition of the files to be
+monitored, the \code{--monitor} parameter. It is composed of multiple entries
+that are separated by spaces. Each entry defines the directory where the files
+are, the names of the files to monitor, the converters for the files and the
+name of the object that will be created from the files. The general format of
+each entry is:
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   ObjectName=converter:directory/{filemasks}
+\end{Verbatim}
+
+If the converter is omitted, one of the known converters will be selected.
+If the object name is omitted, the name of the object will be the filename.
+
+We can now decode the meanings of the above definitions:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   CurrentPlan=dot:%(dir)/{*.dot}
+   AltPlan=twopi:%(dir)/{*.dot}
+\end{Verbatim}
+
+Every new dot file in the directory will be converted with two converters: dot
+and twopi. The files converted with dot will be displayed on the server as
+CurrentPlan while the files converted with twopi well be displayed as AltPlan.
+The file monitor also knows the following converters for dot: neato, circo and
+fdp.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   ImageFile=%(dir)/{*.png;*.jpg;*.pnm;*.xpm}
+   SvgFile=%(dir)/{*.svg}
+\end{Verbatim}
+
+Images and SVG files can be sent without conversion if the file extension is
+one of the known ones. If a SVG file is stored in a file with an extension
+other than \code{.svg}, the converter must be specified although no conversion
+will be performed:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   SvgFile=svg:%(dir)/{*.xml}
+\end{Verbatim}
+
+The final entry will pick up any files that change in the directory. If the
+type of the file (deduced from the extension) is one of the known types, the
+file will be sent to the server. The name of the object on the server will be
+the name of the file.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   %(dir)/{*}"
+\end{Verbatim}
+
+The converters {\em luagl}, {\em html} and {\em htmlhead} send the unprocessed
+contents of the monitored file to the server.
+
+\subsection{A Passive Display Client}\label{section:PassiveClient} 
+
+The library provides two types of clients: a passive client that only sends
+data to the server and an active client that interacts with the server using UI
+elements. We will first show how to create a passive client and then convert it
+to an active client. We will use the VideoViewer component as an example. Only
+the relevant parts of the code will be shown. Full code is in the VideoViewer
+component in vision.sa.
+
+Before we can start we need to prepare the project file to use the display server.
+For every component that is defined in CMakeLists.txt we add the following:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   include_directories(${VISUALIZATION_INCLUDE_DIRS})
+   link_cast_component(${CAST_COMPONENT_NAME} Video ${VISUALIZATION_LIBRARIES})
+\end{Verbatim}
+
+If the component uses OpenCV's IplImage we can let the client convert the image
+before it is sent to the server. To do this we need to enable the client's OpenCV
+interface with
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+\end{Verbatim}
+
+Now the component is ready to interact with the display server. The component
+will communicate with the server through a display client:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   #include <CDisplayClient.hpp>
+   #endif
+   ...
+   class VideoViewer : public ManagedComponent, public VideoClient
+   {
+   private:
+   #ifdef FEAT_VISUALIZATION
+     cogx::display::CDisplayClient m_display;
+   #endif
+   };
+\end{Verbatim}
+
+Note that all the code related to visualization.sa is enclosed in conditional
+blocks. The variable \code{FEAT\_VISUALIZATION} is defined when
+visualization.sa is being built. If the visualization.sa is not used in the
+project, the components that depend on it will continue to work, but they won't
+display their data unless an alternative is provided (see VideoViewer.cpp which
+uses OpenCV when visualization.sa is not used).
+
+The client must connect to the server and for that it needs the parameters of the
+connection (the parameter \code{--displaysever}):
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::configure(const map<string,string> & _config)
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.configureDisplayClient(_config);
+   #endif
+   }
+\end{Verbatim}
+
+The connection between the client and the server is established in the component's
+\code{start()} method:
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::start()
+   {
+   #ifdef FEAT_VISUALIZATION
+      m_display.connectIceClient(*this);
+   #endif
+   }
+\end{Verbatim}
+
+When a new image is available, the VideoServer sends the image to the VideoViewer which
+passes the image to the DisplayServer:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.setImage(getComponentID(), images[0]);
+   #endif
+   }
+\end{Verbatim}
+
+Here \code{getComponentID()} is used for the name of the object since the component
+is displaying only one object. Any other string can be used instead.
+
+
+\section{Displaying objects}
+
+The server can display various types of objects. Initially it was created to
+display images, but with time other objects (supported by Qt) were added:
+SVG images, HTML documents and OpenGL scenes.
+
+The objects can be geometrically transformed on the server when they are
+displayed. A client side interface is provided to set display transformations
+of objects and their parts.
+
+\subsection{Images}
+
+The display client can send various types of images to the server: raw images, 
+\code{Video::Image}, OpenCV's \code{IplImage} and encoded images that are
+supported by Qt. An \code{IplImage} can only be sent if OpenCV was enabled
+during compilation.
+The client-side interface for sending images is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setImage(const std::string& id, int width, int height, int channels,
+         const std::vector<unsigned char>& data);
+   void setImage(const std::string& id, const Video::Image& image); 
+   void setImage(const std::string& id, const std::vector<unsigned char>& data,
+         const std::string &format=""); 
+   #ifdef FEAT_VISUALIZATION_OPENCV
+      void setImage(const std::string& id, const IplImage* pImage); 
+   #endif
+\end{Verbatim}
+
+Raw images can have 1 or 3 channels and the specified image size must match the
+size of \code{data}. The supported formats of the compressed image are: bmp,
+gif, jpeg, jpg, png, pbm, pgm, ppm, tiff, xbm, xpm. If the format is not
+specified, Qt will try to deduce the type from \code{data}. An \code{IplImage}
+is first converted to a contiguous array of bytes and sent to the server as a
+raw image.
+ 
+Every image has an id which uniquely identifies the image on the server. This
+way the image (as any other object) can be replaced on the server.
+
+Images can only be displayed in 2D contexts. Image objects can be transformed
+by defining a $3 \times 3$ transformation matrix that is applied before
+the image is drawn.
+
+\subsection{SVG objects}
+
+SVG objects are sent to the server as XML documents which are then interpreted
+by the Qt SVG subsystem. Every SVG object can have multiple parts where each
+part is defined in a separate XML document.
+\todo{TODO: the interface to define the order of drawing for objects and parts
+is missing}
+The client-side interface for defining SVG objects is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setObject(const std::string& id, const std::string& partId,
+         const std::string& xmlData); 
+\end{Verbatim}
+
+The function is named \code{setObject} because initially it was planned that
+the server will support multiple types of objects. Currently the server
+supports only SVG and doesn't check if the SVG file is valid.
+
+SVG objects can only be displayed in 2D contexts. Every part of an object can
+be transformed by defining a $3 \times 3$ transformation matrix that is applied
+before the part is drawn.
+
+\subsection{HTML documents}
+
+The display server renders HTML documents with Qt-WebKit. It provides the
+sturcture of the HTML document while display clients provide chunks of
+HTML code that goes into the head or the body of the document.
+The client-side interface for defining HTML document chunks is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setHtml(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
+   void setHtmlHead(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
+   void setHtmlForm(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
+\end{Verbatim}
+
+Chunks for the head and the body part of a document are independent. This means
+that a chunk in the head may have the same partId as a chunk in the body of
+a document. When a part is removed from a document, the chunks for the head
+and the body with the requested partId are removed.
+\todo{TODO: ICE interface for removing (parts of) objects is still missing}
+
+For a more detailed description of HTML form chuks see section
+\ref{section:HtmlForms}.
+
+\subsection{OpenGL objects}
+
+OpenGL objects can be rendered in two ways. The more flexible option is the use
+of the GlLuaScript subsystem where normal OpenGL commands are written to a Lua
+script and sent to the server. The other option is to build TomGine models on
+the client, and send them to the server using boost serialization. 
+
+
+\subsubsection{LuaGlScript objects}
+
+A LuaGlScript objects are multipart objects where each part of the object is a
+Lua script engine into which Lua scripts are loaded. The scripts are sent to
+the server with a display client function:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setLuaGlObject(const std::string& id, const std::string& partId,
+         const std::string& script);
+\end{Verbatim}
+
+Each script has a method called \code{render()} that is called every time the
+scene needs to be rendered.  This method then calls various OpenGL functions to
+render the scene. Most of the OpenGL functions should be available (textures
+are not supported at this time). An example of a script that renders a colored
+spiral could look like this (the tables \code{tabcos} and \code{tabsin} were
+defined in another part of the same script):
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   N=36
+   function render()
+      glBegin(GL_LINES)
+      for i=1,10000 do
+         glColor(i%23/23.0,i%17/17.0,i%11/11.0)
+         glVertex(tabcos[i%N+1], tabsin[i%N+1], -i/100.0)
+      end
+      glEnd()
+   end
+\end{Verbatim}
+
+A script is loaded into the Lua script engine every time the server receives it
+from a client. This way the appearance of the object can be changed during its
+lifetime. Complex objects can use display lists to make rendering simpler and 
+faster. Lists are created for each OpenGL context separately so if an object
+is visible in multiple contexts, each context will have a copy of every
+display list defined by the object.
+\todo{VERIFY: diasplay lists are local to every LuaGlScript part}
+The following commands are available for display list management:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   DispList:newList(name)
+   DispList:endList()
+   DispList:delete(name)
+   DispList:exists(name)
+   DispList:draw(name)
+   DispList:setDirty(name)
+   DispList:getDirty(name_table)
+\end{Verbatim}
+
+In the following example we create a function that creates a display list named
+{\em myobject}. The function \code{initlists()} calls it when {\em myobject}
+doesn't exist in the current context. Finally \code{render()} intializes the
+lists before doing the rest of the rendering.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   function make_the_thing()
+      DispList:newList('myobject')
+        glBegin(GL_TRIANGLES)
+        glVertex(0.1, 0.1, 0.1)
+        glVertex(0.3, 0.1, 0.2)
+        glVertex(0.3, 0.4, 0.3)
+        glEnd()
+      DispList:endList()
+   end
+
+   function initlists()
+      local dirty = DispList:getDirty( {'myobject'} )
+      if dirty['myobject'] then
+         make_the_thing()
+      end
+   end
+
+   function render()
+      initlists()
+      DispList:draw('myobject')
+      glPushMatrix()
+         glTranslate(0.5,0.5,0.0)
+         DispList:draw('myobject')
+      glPopMatrix()
+   end
+\end{Verbatim}
+
+With this approach the lists are created only once in an OpenGL context and
+only when a context is active. When the code is loaded into the Lua script
+engine, the script is locked and the rendering of the object is not possible.
+The OpenGL context might not even be available at the time or a wrong one might
+be active. That is why all OpenGL calls should be enclosed in functions that
+are accessible only from \code{render()}.
+
+It is also possible for a programmer to change only a part of the object by
+sending a new definition for \code{make\_the\_thing()}:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   function make_the_thing()
+      DispList:create('myobject')
+        glBegin(GL_QUADS)
+        glVertex(0.1, 0.1, 0.1)
+        glVertex(0.3, 0.1, 0.2)
+        glVertex(0.3, 0.4, 0.3)
+        glVertex(0.0, 0.5, 0.4)
+        glEnd()
+      DispList:endList()
+   end
+   DispList:setDirty('myobject')
+\end{Verbatim}
+
+The function \code{setDirty()} tells the display list manager that the object
+was modified. The renderer will detect the change the next time
+\code{getDirty()} is called, in this case from \code{initlists()}.
+\code{getDirty(namelist)} returns a table with keys that represent the names of
+the objects from {\em namelist} that need to be recreated. It will contain the
+names of the objects that were not yet created and the objects that were marked
+as dirty. The list of dirty objects is reset after every call to
+\code{getDirty()}.
+
+The module \code{StdModel} defines the following functions that create simple shapes:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   StdModel:box(sx, sy, sz)
+   StdModel:cylinder(rx, ry, np)
+\end{Verbatim}
+
+The box and the cylinder are created with the center in $(0, 0, 0)$. The
+parameters for the box define the size of the box. The cylinder has an elliptic
+shape with the given radii and is approximated with {\em np} sides.
+
+
+
+\section{Interaction with the Display Server}
+
+In section \ref{section:PassiveClient} we described a simple client that is
+able to send data to the Display Server. The server also supports some simple
+user interface interaction with remote components. A client component that
+wants to interact with the Display Server and receive notifications about UI
+events can do it through an active display client. We derive a class from
+\code{"CDisplayClient"} and override a few methods:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   class VideoViewer : public ManagedComponent, public VideoClient
+   {
+   private:
+   #ifdef FEAT_VISUALIZATION
+     class CVvDisplayClient: public cogx::display::CDisplayClient
+     {
+       VideoViewer* pViewer;
+     public:
+       CVvDisplayClient() { pViewer = NULL; }
+       void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
+       void handleEvent(const Visualization::TEvent &event); /*override*/
+       std::string getControlState(const std::string& ctrlId); /*override*/
+     };
+     CVvDisplayClient m_display;
+   #endif
+   };
+\end{Verbatim}
+
+In the constructor of the VideoViewer we call \code{setClientData()} so that
+the new display client will be able to access the VideoViewer:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+  VideoViewer() : camId(0)
+  {
+#ifdef FEAT_VISUALIZATION
+    m_display.setClientData(this);
+#endif
+  }
+\end{Verbatim}
+
+The event path from the server to the client must be initialized. This is done
+right after the component connects to the client:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::start()
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.connectIceClient(*this);
+     m_display.installEventReceiver();
+   #endif
+   }
+\end{Verbatim}
+
+The flow of images from the VideoServer to the VideoViewer can be stopped at
+any time. To let the user control the flow the component has to add a UI
+element to the display server.  An appropriate type of UI element for this
+purpose is a chekcbox:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void VideoViewer::start()
+   {
+   #ifdef FEAT_VISUALIZATION
+     m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
+   #endif
+   }
+\end{Verbatim}
+
+The first parameter is the name of the {\em view} that will display the UI
+element when it is active, not the name of object. This means that the UI
+element will be displayed only when an object is displayed in its default view.
+When an object is displayed in another view, the UI element won't be available.
+\todo{TODO: user-defined views will be able to specify which UI elements to show}
+
+When the UI element is first displayed it has to obtain the current state from
+the component that created it. This is done with the method
+\code{getControlState()}:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   std::string VideoViewer::CVvDisplayClient::getControlState(
+         const std::string& ctrlId)
+   {
+     if (ctrlId == "toggle.viewer.running") {
+       return pViewer->receiving ? "1" : "0";
+     }
+     return "";
+   }
+\end{Verbatim}
+
+The method \code{handleGuiEvent()} will be called every time the UI element
+emits a known event. For the chekcbox element we need to respond to the
+\code{evCheckBoxChange} event:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   void VideoViewer::CVvDisplayClient::handleGuiEvent(
+         const Visualization::TEvent &event)
+   {
+     if (event.type == Visualization::evCheckBoxChange) {
+       if (event.sourceId == "toggle.viewer.running") {
+         bool newrcv = (event.data != "0");
+         if (newrcv != pViewer->receiving) {
+           if(pViewer->receiving) {
+             pViewer->videoServer->stopReceiveImages(getComponentID());
+           }
+           else {
+             pViewer->videoServer->startReceiveImages(getComponentID(), camIds, 0, 0);
+           }
+           pViewer->receiving = !pViewer->receiving;
+         }
+       }
+     }
+   }
+   #endif
+\end{Verbatim}
+
+Note that the data for UI elements passed between the client and the server is
+serialized into strings. The checkbox element knows only 2 values: \code{"0"}
+and everything else.
+\todo{TODO: Add more element types, define values}
+
+A UI element may be displayed in multiple views. When a UI element is first
+displayed it must be put in a state that reflects the current state of the
+component.  Since a UI element may be created at any time it wouldn't be enough
+to set the initial state of the element at creation time. Instead, we define
+the \code{getControlState()} callback function:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ctrlId)
+   {
+     if (ctrlId == "toggle.viewer.running") {
+       return pViewer->receiving ? "2" : "0";
+     }
+     return "";
+   }
+   #endif
+\end{Verbatim}
+
+When the function returns \code{""} the display server won't change the state
+of the UI element.
+
+\subsection{Support for HTML forms}\label{section:HtmlForms}
+
+The display server can present HTML forms and send data from a form to a client
+when the form is submitted. The data from a form can also be saved into a
+persistent storage and reloaded later. This way the forms can be used to
+configure the components from the user interface instead of using CAST
+configuration files.
+
+To add support for form processing in an active client we override the methods
+\code{"handleForm"} and \code{"getFormData"}. We also add a convenience
+function that will create the form and send it to the server:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   #ifdef FEAT_VISUALIZATION
+   class COrDisplayClient: public cogx::display::CDisplayClient
+   {
+      CObjectRecognizer* pRecognizer;
+   public:
+      void createForms();
+      void handleForm(const std::string& id, const std::string& partId,
+            const std::map<std::string, std::string>& fields); /*override*/
+      bool getFormData(const std::string& id, const std::string& partId,
+            std::map<std::string, std::string>& fields); /*override*/
+   };
+   #endif
+\end{Verbatim}
+
+A form can be defined with standard HTML form elements but it must not be
+enclosed in the \code{"<form>"} tag which is added by the Display Server.  The
+"submit" button will also be added by the Display Server.  It will be placed
+above the form along with the other buttons that handle form data.  If you want
+the button placed in a different location, simply add another one like in the
+example below:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void CObjectRecognizer::COrDisplayClient::createForms()
+   {
+      std::ostringstream ss;
+      ss << "Min score: <select name='minScore'>";
+      for (float f = 0.7; f <= 1.0; f += 0.01) {
+         ss << "<option>" << sfloat(f, 2) << "</option>";
+      }
+      ss << "</select>";
+      ss << "<input type=\"submit\" name=\"submit\" value=\"Apply\"/>";
+      setHtmlForm("Settings", "ObjectRecognizer", ss.str());
+   }
+   std::string sfloat(double f, int precision)
+   {
+      std::ostringstream out;
+      out << std::fixed << std::setprecision(precision) << f;
+      return out.str();
+   }
+\end{Verbatim}
+
+The getter and the setter functions pass the form parameters in a dictionary.
+If a HTML field supports multiple values (like a multivalue select field, a
+group of check boxes or radio buttons), the values are stored as a delimited
+string where the delimiter is the newline character \Verb|"\n"|.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void CObjectRecognizer::COrDisplayClient::handleForm(
+         const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields)
+   {
+      if (! pRecognizer) return;
+      if (id != "Settings" || partId != "ObjectRecognizer") retrun;
+      float f;
+      typeof(fields.begin()) it;
+      it = fields.find("minScore");
+      if (it != fields.end()) {
+         f = atof(it->second.c_str());
+         if (f < 0.7) f = 0.7;
+         if (f > 1.0) f = 1.0;
+         pRecognizer->m_minScore = f;
+      }
+   }
+
+   bool CObjectRecognizer::COrDisplayClient::getFormData(
+         const std::string& id, const std::string& partId,
+         std::map<std::string, std::string>& fields)
+   {
+      if (! pRecognizer) return false;
+      if (id != "Settings" || partId != "ObjectRecognizer") retrun false;
+      fields["minScore"] = sfloat(pRecognizer->m_minScore, 2);
+      fields["maxAmbiguity"] = sfloat(pRecognizer->m_maxAmbiguity, 2);
+      return true;
+   }
+\end{Verbatim}
+
+A form can be shown in a separate view or as a part of an HTML page composed of
+multiple chunks. When a page contains a form it is slower to display because
+some javascript has to be evaluated every time the page is reloaded. Therfore
+the forms should not be a part of a page that is changed frequently (eg. more
+than once per second).
+

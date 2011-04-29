@@ -1,0 +1,40 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+# reading stored images
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/test-stereo/img-160-000-L.jpg subarchitectures/vision.sa/config/test-stereo/img-160-000-R.jpg" --start 0 --end 1 --framerate_ms 30
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/test-stereo/img%03d-L.jpg subarchitectures/vision.sa/config/test-stereo/img%03d-R.jpg" --start 0 --end 1 --framerate_ms 30
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/stereotest2/img%03d-L.jpg subarchitectures/vision.sa/config/stereotest2/img%03d-R.jpg" --start 0 --end 26 --framerate_ms 1000
+
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
+
+SETVAR camera_config_file=subarchitectures/vision.sa/config/test-stereo/sequence/camera.ini
+SETVAR stereo_params=<multiline>
+   --videoname videoserver
+   --camids "0 1" 
+   --stereoconfig %(camera_config_file)
+   --imgsize "640 480 320 240"
+   --maxdisp "192      96"
+   --displayserver "display.srv"
+   #--display
+   #--logimages 
+</multiline>
+COMPONENT CPP stereoserver StereoServer %(stereo_params)
+
+INCLUDE visualization.incl
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+INCLUDE test-stereo/sequence/test-sequence.incl
+
+CPP MG plane.pop.out PlanePopOut --videoname videoserver --stereohost localhost --stereoname stereoserver  --displayserver "display.srv"  --minObjHeight 0.02 # --display # --log
+
+CPP MG SOI.filter SOIFilter --videoname videoserver --camid 0 --display --stereoname stereoserver --objht 23 --objdt 60 -bght 24 --bgdt 9999 --fixc 24 --displayserver "display.srv" --log # --debug
+
+CPP MG video.viewer VideoViewer --videoname videoserver --camid 0
+

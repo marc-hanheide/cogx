@@ -1,0 +1,1240 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:wn="http://www.dfki.de/cosy/wordnet#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns="http://www.dfki.de/cosy/officeenv.owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:p1="http://www.owl-ontologies.com/assert.owl#"
+  xml:base="http://www.dfki.de/cosy/officeenv.owl">
+  <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:ID="Stop">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Printer">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="PrinterroomObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ComputerPeripheral"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="ImmobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Make">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Laptop">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Computer"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Motion">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Action"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Device">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Instrumentality"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Kitchen">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="BasicLevelCat"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Furniture">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Furnishing"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Furniture"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Point">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Location"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Run">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Vessel">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Container"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Dish">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Dishware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Furniture">
+    <owl:equivalentClass rdf:resource="http://www.dfki.de/cosy/wordnet#Furniture"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Jug">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Bottle"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="IndoorsLocation">
+    <owl:disjointWith>
+      <owl:Class rdf:ID="Object"/>
+    </owl:disjointWith>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Location"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Structure">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Divider">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Structure"/>
+  </owl:Class>
+  <owl:Class rdf:ID="LivingroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Microwave">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="KitchenObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Utensil">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Implement"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Glass">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#DrinkingVessel"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Glassware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Hallway">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Passage"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Corridor"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Listen">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Perception"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Bookcase">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Furniture"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="LibraryObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ImmobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Plate">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Flatware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Teamaker">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#KitchenObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Container"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Put">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Spoon">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Cutlery"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#UpperSurface">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Side"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Passageway">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Passage"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="RecreationroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Copier">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Apparatus"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ImmobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Floor">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#HorizontalSurface"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="OfficeObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Livingroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Return">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ComputerPeripheral">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ElectronicEquipment"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Level">
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Room"/>
+    </owl:disjointWith>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Passage"/>
+    </owl:disjointWith>
+    <rdfs:subClassOf rdf:resource="#IndoorsLocation"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Location">
+    <owl:equivalentClass>
+      <owl:Class rdf:about="#Location"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PhysicalObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#AbstractEntity">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Entity"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Go">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Get">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Begin">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Entity">
+    <owl:equivalentClass>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Entity"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="CopierroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Chargingstation">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Device"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="LaboratoryObject"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Charger"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Document">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Representation"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PhysicalObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PhysicalEntity"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#LibraryObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Wall">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Divider"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Student">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Person"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ConferenceroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Implement">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Instrumentality"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Way">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Explore">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Fork">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Cutlery"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Diningroomtable">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="DiningroomObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#DiningroomFurniture"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Table"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Want">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Cognition"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Restart">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Box">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Box"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#DrinkingVessel">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Vessel"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Hate">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Cognition"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Kick">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Cognition">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Action"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#KitchenAppliance">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#HouseholdAppliance"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Follow">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Constituent">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Relation"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Oven">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#KitchenObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ImmobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Recreationroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:about="#LaboratoryObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Win">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Televisionset">
+    <rdfs:subClassOf rdf:resource="#LivingroomObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ReceivingSystem"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ImmobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ReceivingSystem">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Set"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Lift">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Passage"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#LiftingDevice"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Coffeemachine">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#KitchenObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Coffeemaker"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="Observe">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Perception"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Feel">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:about="#DiningroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Name">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#LinguisticUnit"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Look">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Perception"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Entrancehall">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Hall"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Investigate">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Non-Motion"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Glassware">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Tableware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Non-Motion">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Action"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Trashbin">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Bin"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Give">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Fridge">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#KitchenObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ImmobileObject"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Refrigerator"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:about="#KitchenObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Telephone">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ElectronicEquipment"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Phone"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="Letter">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Document"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Walk">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Printerroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Ceiling">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#UpperSurface"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Product">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Creation"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Entity">
+    <owl:equivalentClass rdf:resource="#Entity"/>
+  </owl:Class>
+  <owl:Class rdf:about="#ImmobileObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#MobileObject"/>
+    </owl:disjointWith>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Apparatus">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Equipment"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Fetch">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Action"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Book">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Publication"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Secretariat">
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Relation">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#AbstractEntity"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Office">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PlaceOfBusiness"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Copierroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#HouseholdAppliance">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Appliance"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Furnishing">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Instrumentality"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Creation">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Charger">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Device"/>
+    <rdfs:subClassOf rdf:resource="#LaboratoryObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <owl:equivalentClass rdf:resource="#Chargingstation"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Phone">
+    <owl:equivalentClass rdf:resource="#Telephone"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ElectronicEquipment"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Library">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >must be changed!</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="See">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Perception"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Eggcup">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Dishware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Tableware">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Ware"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#CookingUtensil">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#KitchenUtensil"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Location">
+    <owl:equivalentClass rdf:resource="http://www.dfki.de/cosy/wordnet#Location"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Bring">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Show">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Start">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Dishware">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Tableware"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#HorizontalSurface">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Surface"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Region">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Location"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Conferencetable">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Table"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Table"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Conferenceroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Think">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Chair">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Seat"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Bowl">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Dish"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Bin">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Container"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Mailbox">
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Letterbox"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Box"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="MailroomObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Area">
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Area"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Structure"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Find">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Coffeemaker">
+    <owl:equivalentClass rdf:resource="#Coffeemachine"/>
+    <rdfs:subClassOf rdf:resource="#KitchenObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+  </owl:Class>
+  <owl:Class rdf:about="#MailroomObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Researcher">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Person"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Mailroom">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Room"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Take">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PhysicalEntity">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Entity"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Keyboard">
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Device"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Pick">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Ware">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Article"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Turn">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Toaster">
+    <rdfs:subClassOf rdf:resource="#KitchenObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Appliance">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Durable"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Passage">
+    <owl:disjointWith rdf:resource="#Level"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Way"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Area"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Love">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#KitchenUtensil">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Utensil"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Whole">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#PhysicalObject"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Need">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Object">
+    <owl:disjointWith rdf:resource="#IndoorsLocation"/>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Thing"/>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="Saucer">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Flatware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Room">
+    <owl:disjointWith rdf:resource="#Level"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Area"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Area"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Play">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Being">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#AnimateThing"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Corridor">
+    <rdfs:subClassOf rdf:resource="#Passage"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Passageway"/>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Instrumentality">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#DiningroomFurniture">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Furniture"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Cup">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MobileObject"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#DrinkingVessel"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Dishware"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Passage">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Way"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Present">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Action">
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#AbstractEntity"/>
+  </owl:Class>
+  <owl:Class rdf:about="#MobileObject">
+    <owl:disjointWith rdf:resource="#ImmobileObject"/>
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Machine">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Device"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ConsumerGood">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Commodity"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Mug">
+    <rdfs:subClassOf rdf:resource="#MobileObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#DrinkingVessel"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Seat">
+    <owl:equivalentClass>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Seat"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf rdf:resource="#Furniture"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Memorize">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Know">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Move">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Secretary">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Person"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Have">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Librarian">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Person"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Table">
+    <owl:equivalentClass>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Table"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf rdf:resource="#Furniture"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Desk">
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <rdfs:subClassOf rdf:resource="#LaboratoryObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Table"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Like">
+    <rdfs:subClassOf rdf:resource="#Cognition"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Bottle">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Vessel"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Article">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Ball">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Toy"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#MobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Commodity">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="AnimateDevice">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#AnimateThing"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Publication">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Work"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Cooker">
+    <rdfs:subClassOf rdf:resource="#KitchenObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#CookingUtensil"/>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Container">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Instrumentality"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Thing">
+    <owl:equivalentClass rdf:resource="#Object"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Whole"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Surface">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Staircase">
+    <rdfs:subClassOf rdf:resource="#Passage"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Way"/>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Seat">
+    <owl:equivalentClass rdf:resource="#Seat"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Furniture"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Workroom">
+    <rdfs:subClassOf rdf:resource="#Room"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Workplace"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Area">
+    <owl:equivalentClass rdf:resource="http://www.dfki.de/cosy/wordnet#Area"/>
+    <rdfs:subClassOf rdf:resource="#IndoorsLocation"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#LinguisticUnit">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Constituent"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Cutlery">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Tableware"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Laboratory">
+    <rdfs:subClassOf rdf:resource="#Room"/>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Workplace"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Equipment">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Instrumentality"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#PlaceOfBusiness">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Establishment"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Set">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ElectronicEquipment"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Hall">
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+    <rdfs:subClassOf rdf:resource="#Room"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Stove">
+    <rdfs:subClassOf rdf:resource="#KitchenObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#KitchenAppliance"/>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#AnimateThing">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Whole"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Help">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Perception">
+    <rdfs:subClassOf rdf:resource="#Action"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Foyer">
+    <rdfs:subClassOf rdf:resource="#Hall"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Person">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Being"/>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf rdf:resource="#BasicLevelCat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Diningroom">
+    <rdfs:subClassOf rdf:resource="#Room"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Computer">
+    <rdfs:subClassOf rdf:resource="#LaboratoryObject"/>
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Machine"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Bottle">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Bottle"/>
+    <rdfs:subClassOf rdf:resource="#MobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Representation">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Creation"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#GeographicalPoint">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Point"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Sofa">
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Couch"/>
+    </owl:equivalentClass>
+    <rdfs:subClassOf rdf:resource="#RecreationroomObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Seat"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Janitor">
+    <rdfs:subClassOf rdf:resource="#Person"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Letterbox">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Box"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#MailroomObject"/>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+    <owl:equivalentClass rdf:resource="#Mailbox"/>
+  </owl:Class>
+  <owl:Class rdf:ID="TeaCup">
+    <rdfs:subClassOf rdf:resource="#Cup"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Kettle">
+    <rdfs:subClassOf rdf:resource="#KitchenObject"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Pot"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#MobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Platter">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Flatware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Work">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Product"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Pot">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#CookingUtensil"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Refrigerator">
+    <owl:equivalentClass rdf:resource="#Fridge"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#WhiteGoods"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Table">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Furniture"/>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+    <owl:equivalentClass rdf:resource="#Table"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Come">
+    <rdfs:subClassOf rdf:resource="#Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Stand">
+    <rdfs:subClassOf rdf:resource="#Non-Motion"/>
+  </owl:Class>
+  <owl:Class rdf:ID="CoffeeCup">
+    <rdfs:subClassOf rdf:resource="#Cup"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Couch">
+    <owl:equivalentClass rdf:resource="#Sofa"/>
+    <rdfs:subClassOf rdf:resource="#RecreationroomObject"/>
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Seat"/>
+    <rdfs:subClassOf rdf:resource="#LivingroomObject"/>
+    <rdfs:subClassOf rdf:resource="#ImmobileObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Toy">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#PrinterroomObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Durable">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#ConsumerGood"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#LiftingDevice">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Device"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Watch">
+    <rdfs:subClassOf rdf:resource="#Perception"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#WhiteGoods">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#HouseholdAppliance"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Artifact">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Whole"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#ElectronicEquipment">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Equipment"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Establishment">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Structure"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Flatware">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Tableware"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Workplace">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#GeographicalPoint"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Knife">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Cutlery"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Side">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Surface"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.dfki.de/cosy/wordnet#Box">
+    <rdfs:subClassOf rdf:resource="http://www.dfki.de/cosy/wordnet#Container"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Lobby">
+    <rdfs:subClassOf rdf:resource="#Hall"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Robot">
+    <rdfs:subClassOf rdf:resource="#AnimateDevice"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:ID="oeRelation">
+    <rdfs:domain rdf:resource="#Entity"/>
+    <rdfs:range rdf:resource="#Entity"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="in">
+    <rdfs:subPropertyOf>
+      <owl:TransitiveProperty rdf:ID="inTrans"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:TransitiveProperty rdf:about="#inTrans">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:subPropertyOf rdf:resource="#oeRelation"/>
+  </owl:TransitiveProperty>
+  <owl:SymmetricProperty rdf:ID="near">
+    <owl:inverseOf rdf:resource="#near"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:subPropertyOf rdf:resource="#oeRelation"/>
+  </owl:SymmetricProperty>
+  <owl:FunctionalProperty rdf:ID="name">
+    <rdfs:domain rdf:resource="#Entity"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:FunctionalProperty>
+  <owl:FunctionalProperty rdf:ID="isBasicLevelCat">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:FunctionalProperty>
+  <owl:FunctionalProperty rdf:ID="areaID">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="#Area"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+  </owl:FunctionalProperty>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.2.1, Build 365)  http://protege.stanford.edu -->

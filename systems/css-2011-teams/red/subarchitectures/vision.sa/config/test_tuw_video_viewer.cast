@@ -1,0 +1,18 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer
+
+##### KinectServer #####
+#CPP MG VideoServer KinectVideoServer --camids "0" --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929-2.ini" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" #--log --devnums "0"
+
+##### OpenCV Live Server #####
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE
+
+# start video viewer
+####################
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0
+CPP MG VideoViewer2 VideoViewer --videoname VideoServer --camid 1
+

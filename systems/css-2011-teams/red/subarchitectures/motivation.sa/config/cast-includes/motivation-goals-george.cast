@@ -1,0 +1,12 @@
+JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
+JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
+JAVA MG goal.generator.intention eu.cogx.goals.george.IntentionGoalGenerator
+#JAVA MG goal.generator.cannedtext eu.cogx.goals.george.CannedTextGenerator
+JAVA MG goal.generator.modelstatus eu.cogx.goals.george.ModelStatusGoalGenerator
+
+
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,GainFilter,MinAgeFilter" --min-gain 0.2 --min-age 5000
+
+#JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,GainFilter" --min-gain 0.2
+
+JAVA MG verbalisation.george verbalisation.GeorgeVerbalisation

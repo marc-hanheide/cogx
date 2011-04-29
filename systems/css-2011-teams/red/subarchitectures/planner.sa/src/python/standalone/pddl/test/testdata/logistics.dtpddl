@@ -1,0 +1,74 @@
+;; Logistics domain, PDDL 3.1 version + mapl + dtpddl
+
+(define (domain logistics-object-fluents)
+
+(:requirements :mapl :partial-observability :typing :equality :object-fluents) 
+
+(:types  truck airplane - vehicle
+         package vehicle - thing
+         airport - location
+         city location thing agent - object)
+
+(:functions  (city-of ?l - (either location vehicle)) - city
+             (location-of ?t - thing) - (either location vehicle)
+)
+
+(:action sense_package
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle ?p - package)
+         :precondition  (and )
+)
+
+;; This is what we called a "binary" sensor in MAPL. When executing
+;; the associated action (here sense_package ?a ?v ?p), we can find out the truth
+;; value of a statement (here (= (location-of ?p) (location-of ?v))
+(:observe package_location
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle ?p - package)
+         :execution     (sense_package ?a ?v ?p)
+         :effect        (when (= (location-of ?p) (location-of ?v)) 
+                          (observed (location-of ?p) (location-of ?v)))
+         )
+         
+
+(:action sense_position
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle)
+         :precondition  (and )
+)
+
+;; Here the observation result (?l) is a free variable (i.e. doesn't
+;; occur in the :execution expression. So we will know the value of
+;; (location-of ?v) after only one execution.
+(:observe vehicle_location
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle ?l - location)
+         :execution     (sense_position ?a ?v)
+         :effect        (when (= (location-of ?v) ?l)
+                          (observed (location-of ?v) ?l))
+         )
+
+(:action drive
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?to - location)
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+         :effect        (assign (location-of ?t) ?to))
+
+(:action fly
+         :agent         (?a - agent)
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
+
+(:action load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) (location-of ?v))
+         :effect        (assign (location-of ?p) ?v))
+
+(:action unload
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) ?v)
+         :effect        (assign (location-of ?p) (location-of ?v)))
+
+)
