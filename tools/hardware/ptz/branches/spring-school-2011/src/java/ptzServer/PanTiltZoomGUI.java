@@ -119,7 +119,7 @@ public class PanTiltZoomGUI extends JPanel implements ActionListener {
 	}
 
 	private void guiSetup() {
-		JFrame gui = new JFrame("PTU Test GUI");
+		JFrame gui = new JFrame("PTZ Command Test GUI");
 		gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		gui.setLocation(100, 200);
 
