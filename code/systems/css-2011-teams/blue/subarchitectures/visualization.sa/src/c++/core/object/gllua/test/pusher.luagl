@@ -1,0 +1,226 @@
+-- vim:ft=lua:sw=3:ts=8:et
+
+function loadMap(mapDef)
+   wall = {}
+   depot = {}
+   box = {}
+   pusher = { row=0, col=0 }
+   size = { rows=0, cols=0 }
+   size.rows = #mapDef
+   if size.rows < 1 then size.cols = 0
+   else size.cols = string.len(mapDef[1])
+   end
+   for y = 1, #mapDef do
+      wall[y] = {}
+      depot[y] = {}
+      box[y] = {}
+      for x = 1, string.len(mapDef[y]) do
+         iswall = false; isdepot = false; isbox = false;
+         ch = string.sub(mapDef[y], x, x)
+         if ch == '#' then iswall = true
+         elseif ch == '$' then isbox = true
+         elseif ch == '.' then isdepot = true
+         elseif ch == '*' then isbox = true; isdepot = true
+         elseif ch == '@' then pusher.col = x; pusher.row = y
+         elseif ch == '+' then pusher.col = x; pusher.row = y; isdepot = true
+         end
+         wall[y][x] = iswall
+         depot[y][x] = isdepot
+         box[y][x] = isbox
+      end
+   end
+   DispList:setDirty('pusher.the.room')
+end
+
+function empty(row, col)
+   if row < 1 or row > size.rows then return false end
+   if col < 1 or col > size.cols then return false end
+   return not wall[row][col] and not box[row][col]
+end
+
+function move(dy, dx)
+   nr = pusher.row + dy
+   nc = pusher.col + dx
+   if empty(nr, nc) then
+      pusher.row = nr
+      pusher.col = nc
+      return
+   end
+   if not box[nr][nc] then return end
+   nr2 = pusher.row + 2*dy
+   nc2 = pusher.col + 2*dx
+   if not empty(nr2, nc2) then return end
+   box[nr2][nc2] = true
+   box[nr][nc] = false
+   pusher.row = nr
+   pusher.col = nc
+end
+
+celly = 0.1
+cellx = 0.1
+brickSize  = { cx=0.10, cy=0.10, cz=0.10 }
+boxSize    = { cx=0.07, cy=0.07, cz=0.07 }
+pusherSize = { cx=0.06, cy=0.06, cz=0.12 }
+depotSize  = { cx=0.08, cy=0.08, cz=0.001 }
+boxTurn    = 0.0
+
+function make_the_brick()
+   DispList:newList('pusher.brick')
+   glColor(1.0, 0.0, 0.0)
+   StdModel:box(brickSize.cx, brickSize.cy, brickSize.cz)
+   DispList:endList()
+end
+
+function make_the_box_rotation()
+   DispList:newList('pusher.box.rotation')
+   glRotate(boxTurn, 0.0, 0.0, 1.0)
+   DispList:endList()
+end
+
+function make_the_box()
+   DispList:newList('pusher.box')
+   glColor(0.0, 0.2, 1.0)
+   -- StdModel:box(boxSize.cx, boxSize.cy, boxSize.cz)
+   StdModel:cylinder(boxSize.cx/2, boxSize.cy/3, boxSize.cz, 12)
+   DispList:endList()
+end
+
+function make_the_pusher()
+   DispList:newList('pusher.pusher')
+   glColor(0.1, 0.8, 0.6)
+   StdModel:box(pusherSize.cx, pusherSize.cy, pusherSize.cz)
+   DispList:endList()
+end
+
+function make_the_depot()
+   DispList:newList('pusher.depot')
+   glColor(1.0, 1.0, 0.0)
+   StdModel:box(depotSize.cx, depotSize.cy, depotSize.cz)
+   DispList:endList()
+end
+
+function make_the_room()
+   sy = celly * size.rows
+   sx = cellx * size.cols
+   y0 = -celly * 0.5 * size.rows
+   x0 = -cellx * 0.5 * size.cols
+   DispList:newList('pusher.the.room')
+      glPushMatrix()
+      -- bottom plane
+      glColor(1.0, 1.0, 1.0)
+      glPushMatrix()
+      glTranslate(x0, y0, -0.001)
+      glNormal(0.0, 0.0, 1.0)
+      glBegin(GL_QUADS)
+      glVertex(0.0, 0.0, 0.0)
+      glVertex( sx, 0.0, 0.0)
+      glVertex( sx,  sy, 0.0)
+      glVertex(0.0,  sy, 0.0)
+      glEnd()
+      glPopMatrix()
+      -- depot
+      glColor(1.0, 1.0, 0.0)
+      glNormal(0.0, 0.0, 1.0)
+      for y=1,#depot do
+         line = depot[y]
+         for x=1,#line do
+            if line[x] then
+               glPushMatrix()
+               glTranslate(
+                  x0 + (x-1) * cellx + 0.5*(cellx),
+                  y0 + (y-1) * celly + 0.5*(celly),
+                  0.5*depotSize.cz)
+               DispList:draw('pusher.depot')
+               glPopMatrix()
+            end
+         end
+      end
+      -- bricks
+      for y=1,#wall do
+         line = wall[y]
+         for x=1,#line do
+            if line[x] then
+               glPushMatrix()
+               glTranslate(
+                  x0 + (x-1) * cellx + 0.5*(cellx),
+                  y0 + (y-1) * celly + 0.5*(celly),
+                  0.5*boxSize.cz)
+               DispList:draw('pusher.brick')
+               glPopMatrix()
+            end
+         end
+      end
+      glPopMatrix()
+   DispList:endList()
+end
+
+function initlists() 
+   local dirty = DispList:getDirty({
+      'pusher.box', 'pusher.box.rotation', 'pusher.pusher',
+      'pusher.brick', 'pusher.depot', 'pusher.the.room' })
+   if dirty['pusher.box'] then make_the_box() end 
+   if dirty['pusher.box.rotation'] then make_the_box_rotation() end 
+   if dirty['pusher.pusher'] then make_the_pusher() end 
+   if dirty['pusher.brick'] then make_the_brick() end 
+   if dirty['pusher.depot'] then make_the_depot() end 
+   if dirty['pusher.the.room'] then make_the_room() end 
+end
+
+function render()
+   initlists()
+
+   -- STATIC OBJECTS
+   DispList:draw('pusher.the.room')
+
+   -- MOVABLE OBJECTS
+   y0 = -celly * size.rows / 2
+   x0 = -cellx * size.cols / 2
+
+   -- boxes
+   for y=1,#box do
+     line = box[y]
+     for x=1,#line do
+        if line[x] then
+           glPushMatrix()
+           glTranslate(
+               x0 + (x-1) * cellx + 0.5*(cellx),
+               y0 + (y-1) * celly + 0.5*(celly),
+               0.5*boxSize.cz)
+           DispList:draw('pusher.box.rotation')
+           DispList:draw('pusher.box')
+           glPopMatrix()
+        end
+     end
+   end
+
+   -- pusher
+   glPushMatrix()
+   glTranslate(
+      x0 + (pusher.col-1)*cellx + 0.5*(cellx),
+      y0 + (pusher.row-1)*celly + 0.5*(celly),
+      0.5*pusherSize.cz)
+   DispList:draw('pusher.pusher')
+   glPopMatrix()
+end
+
+loadMap({
+"################",
+"#....#         #",
+"#....# # ##  # #",
+"#....  $ #  #  #",
+"##  #  $   #   #",
+"#    #$$$$#  # #",
+"# ## $    $ ## #",
+"#    $ ## $$$  #",
+"# #$$$ ## $  # #",
+"# #  $    $    #",
+"#   ##$$$$#  ###",
+"#  #    $  #...#",
+"#     # $#  ...#",
+"# ## # # #  ...#",
+"#@         #...#",
+"################"})
+
+setCamera("pusher.default", 0, -2, 3, 0, 2, -3, 0, 1, 0)
+setCamera("pusher.bottom", 0, 0, -3, 0, 0, 1, 0, 1, 0)
+

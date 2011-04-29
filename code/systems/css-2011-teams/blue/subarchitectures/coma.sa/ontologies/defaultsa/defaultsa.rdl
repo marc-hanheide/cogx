@@ -1,0 +1,41 @@
+#
+# This is a rule file for putting default object-location cooccurrences
+# into the taxonomy.
+#
+# @author Hendrik Zender
+# @version Mon Oct 11, 2010
+#
+
+$default_quad_equivalence_subj
+?s1 ?p ?o ?num
+?s2 <owl:equivalentClass> ?s1
+->
+?s2 ?p ?o ?num
+@test
+?s1 != ?s2
+
+$default_quad_equivalence_obj
+?s ?p ?o1 ?num
+?o2 <owl:equivalentClass> ?o1
+->
+?s ?p ?o2 ?num
+@test
+?o1 != ?o2
+
+$default_quad_taxonomy_subj
+?s ?p ?o ?num
+->
+?s <rdfs:subClassOf> <owl:Thing>
+
+$default_quad_taxonomy_obj
+?s ?p ?o ?num
+->
+?o <rdfs:subClassOf> <owl:Thing>
+
+$default_subclass_number_inheritance_subj
+?s ?p ?o ?num
+?sub <rdfs:subClassOf> ?s
+->
+?sub ?p ?o ?num
+@test
+?s != ?sub

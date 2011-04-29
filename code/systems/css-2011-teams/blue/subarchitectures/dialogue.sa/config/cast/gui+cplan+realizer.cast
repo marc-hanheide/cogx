@@ -1,0 +1,10 @@
+HOST localhost
+SUBARCHITECTURE dialogue
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+JAVA MG	gui	de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+JAVA MG	parser	de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG	irecog	de.dfki.lt.tr.cast.dialogue.IntentionManager --ruleset ./resources/rules/abduction/intentions-basic/index.txt --log true
+JAVA MG cplan	de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
+JAVA MG realize	de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./resources/grammars/openccg/moloko.v6/grammar.xml --log true
