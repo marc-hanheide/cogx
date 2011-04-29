@@ -100,8 +100,9 @@ mary.setCommand("""
 
 
 golem = Server("Golem", label="Golem")
+golem.setVar("CMD_GOLEM", "golem")
 golem.filenameField("CONFIG", label="Configuration", filter="Golem Config (*.cfg);;All files (*)")
-golem.setCommand("golem [CONFIG]")
+golem.setCommand("${CMD_GOLEM}  [CONFIG]")
 
 
 # * An external sever must be configured to run on an agent
