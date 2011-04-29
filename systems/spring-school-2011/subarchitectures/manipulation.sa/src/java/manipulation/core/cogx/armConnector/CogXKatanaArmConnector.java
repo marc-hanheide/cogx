@@ -90,6 +90,9 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			cBegin.vel.c[i] = 0;
 		}
 
+		homePosition.t = manipulator.getVirtualSceneConnector().getTime()
+				+ arm.getTimeDeltaAsync();
+
 		GenConfigspaceState cEnd = homePosition;
 
 		GenConfigspaceState[] trajectory;
@@ -172,13 +175,46 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			GenConfigspaceState cBegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getVirtualSceneConnector().getTime());
+							.getVirtualSceneConnector().getTime()
+							+ arm.getTimeDeltaAsync());
 			GenConfigspaceState cEnd = homePosition;
 
 			GenConfigspaceState[] trajectory;
 			trajectory = arm.findTrajectory(cBegin, cEnd);
 			logger.debug("Moving to home position...");
 			reached = false;
+
+			if (manipulator.getConfiguration().getArmName() == ArmName.SIMULATION) {
+				PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommand();
+
+				manipulation.slice.GenConfigspaceState[] returnVal = new manipulation.slice.GenConfigspaceState[trajectory.length];
+
+				for (int i = 0; i < trajectory.length; i++) {
+					GenConfigspaceCoord coord = new GenConfigspaceCoord();
+
+					coord.pos = new double[trajectory[i].pos.c.length];
+					coord.vel = new double[trajectory[i].vel.c.length];
+
+					coord.pos = trajectory[i].pos.c;
+					coord.vel = trajectory[i].vel.c;
+
+					returnVal[i] = new manipulation.slice.GenConfigspaceState(
+							coord, trajectory[i].t);
+				}
+
+				cmd.trajectory = returnVal;
+				cmd.status = ManipulationCommandStatus.NEW;
+				cmd.comp = ManipulationCompletion.COMPINIT;
+
+				String id = ((CogXRunner) manipulator.getRunner()).newDataID();
+
+				try {
+					((CogXRunner) manipulator.getRunner()).addToWorkingMemory(
+							id, cmd);
+				} catch (AlreadyExistsOnWMException e) {
+					logger.error(e);
+				}
+			}
 
 			Thread t = new Thread(new GoalReachedRunnable(manipulator));
 			t.start();
