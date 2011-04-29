@@ -1,0 +1,163 @@
+\section{Using Moloko} \label{sec-Using-Moloko} 
+
+This section contains 
+\begin{enumerate}
+\item help on getting Moloko running on your machine
+\item information concerning Moloko's file structure 
+\item a general overview of the layout and organization of the grammar.
+\item instructions for adding words, or more substantial grammatical alterations
+\item instructions for compiling the grammar and testing it.
+\end{enumerate}
+
+\subsection{Getting Started}
+
+Moloko is written in \textsc{DotCCG}, the 'higher level' grammar writing language which extends \textsc{OpenCCG}.\footnote{for an introduction to \textsc{DotCCG} see, and for \textsc{OpenCCG} see} Consequently, in order 
+
+\subsection{Folder Contents}
+
+To begin, Moloko (like any \textsc{OpenCCG} grammar) consists of two types of files: \textbf{generated} and  \textbf{non-generated}. \\ 
+
+DO NOT MAKE CHANGES TO GENERATED FILES DIRECTLY. 
+
+THESE CHANGES WILL NOT BE SAVED. 
+
+FIND THE APPROPRIATE NON-GENERATED FILE AND CHANGE THAT.\\ \\
+\lab{Generated Files}
+\begin{itemize}
+\item the complete \textsc{Dot-CCG}  file:   \ \ \ \  \filename{moloko.ccg}
+\item the compiled \textsc{Open-CCG} files:   \filename{grammar.xml, rules.xml,} etc
+\end{itemize}
+\lab{Non-Generated Files}
+\begin{itemize}
+\item a batch file for compiling the grammar called \filename{build-moloko} (see below) \\
+         (this should be placed in your \textsc{OpenCCG} \filename{bin} directory)
+\item the folder \filename{ccg-files} containing:
+                  \begin{itemize}
+		\item all of the \textsc{Dot-CCG} component files forming the grammar (see below) 
+		\item a perl script \filename{merge.pl} used to combine these \filename{.ccg} files to create \filename{moloko.ccg}
+		\end{itemize}
+\end{itemize}		
+\subsection{Grammar Layout}
+
+The Moloko Grammar, contained in \filename{./ccg-files} is divided into 3 parts:
+ \begin{enumerate}   
+ \item the grammar signature \\ all of the syntactic categories, semantics, lexical families, hierarchies and rules
+ \item the dictionary \\ all of the words and their assignment to lexical families, i.e. the entries
+ \item the testbed \\ a list of examples used in testing the grammar, and illustrating its features
+\end{enumerate}
+ 	   
+\subsubsection{The Grammar Signature}
+
+The grammar proper is divided into a number of different files of the form: \\
+
+ \filename{\#\_description-of-contents.ccg}. \\ \\   
+The reason the files are numbered like this is because the \textsc{Dot-CCG} compiler is ordered, and consequently any macro-definitions that are used must be defined prior to that. 
+
+The first two files \filename{types-ontology.ccg} and \filename{types-features.ccg} contain hierarchies used in the grammar, and in the case of the ontology, for outside inferencing as well. The ontology is a hierarchy of semantic sorts (see section \ref{sec-Ontology}). The feature hierarchy contains both syntactic and semantic feature categories and a listing of their possible (hierarchically organized) values. These definitions also function as 'macros' (in the old \textsc{OpenCCG} sense of the word), i.e., values that  can be 'used' within the grammar and dictionary (i.e. lexically specified). 
+      
+For a syntactic example, it contains a feature category \textsc(vform) for verbal forms, including values like verb-ing, base, past-particple, infinitive, etc. In the grammar, this is used, for example, to create the family \textbf{v+verb-inf} i.e., the family of verbs which take a verbal compliment in infinitive form (ex. \emph{I want to go home}). It is also used in dictionary entries to specify, e.g., that the past-partiple form of \emph{sing} is \emph{sung}.
+   
+For a semantic example, it contains the feature \diam{Aspect} with values perfect and imperfect. These values are attached to events via auxillary verb entries. 
+  
+The remainder of the files in the Grammar Signature contain the syntactic and semantic categories, families, rules and  dictionary entry creating macros. Syntactic and semantic categories are combinined to make lexical families, like ditranstive verbs. They are also used in rules which are used for a variety of purposes in the grammar. Dictionary-entry creating macros are a new component of the grammar. They utilize the power of the \textsc{Dot-CCG} language to massively simplify the task of adding new words to the grammar. For example, here are some examples of noun entries from dictionary-open.ccg (see below for more details): \\
+
+         \ingram{noun-irr(man, men, person,)}
+
+         \ingram{noun(box, thing,)} 
+
+         \ingram{name(GJ, person,)} \\ \\
+These grammar components have been divided among the files according to two general organizational principles. First, encapsulation, e.g. \filename{\#\_adj.ccg} contains everything particular to adjectives. you want to find the families, rules, and dictionary macros for adjectives, see this file. That is, everything \textbf{but} the adjective words themselves, which are in the dictionary files (see the next section). Second, generality and efficiency: minimize overlap and put generalized components together, e.g., adjectives, prepositions and adverbs overlap a lot in their grammatical information (like semantics and their syntactic categories). Thus, this common info is contained in \filename{\#\_modifiers.ccg}. \\ \\
+Within any of these files, there is an order to the components. 
+\begin{enumerate}		
+\item  syntactic and semantic categories. 
+\item  def-macros used for simplifying the building of lexical families
+\item  the various families themselves
+\item  associated type-changing rules
+\item  dictionary-entry macros
+\end{enumerate}
+The syntatic and semantic categories created via def-macros are typically those used frequently within
+its file, and those used externally. For example, the noun file contains a syntactic category \ingram{n()} which corresponds to 'any old generic noun', i.e. a non-bound n . It can be further specified by
+adding feature values to its parameters, e.g. \ingram{n(3rd s-sg)}. Similarly, \ingram{ ENTITY() } is the corresponding semantic representation (both share index) . Again, features and arguments can be further specified by adding them to the parameters.
+   			 		 
+\subsubsection{The Dictionary}
+
+   The dictionary, i.e. the words in the grammar, are divided into \textbf{closed} and \textbf{open} class entries, located in \filename{X\_dictionary-open.ccg} and \filename{X\_dictionary-closed.ccg} respectively. Each of these files  contains a sorted listing of all the entries currently contained in the grammar. The vast majority are simply 'calls' to (instances of) the various dictionary entry macros specified in the grammar signiture files. For example: 
+   
+             \ingram{noun(box, thing,)}
+             
+              \ingram{verb(give, giving, gave, given, m-class-1, action-non-motion, tv dtv) }
+             
+              \ingram{pronoun(I,    1st, sg, I    , me   , my   , mine   , person,)} \\ \\
+Some of the more irregular or singular words (specifically closed class function words) are simply
+build using the default \textsc{Dot-CCG} syntax. Here, e.g., is the entry for \emph{most} as in \emph{the most ugly}:  \\
+
+\textbf{ word form: Family: \{other forms: args;\}  } 
+
+\ingram{ word most : Most-adj: superlative;} \\ \\
+Furthermore, some 'higher level' dictionary macros are located within the dictionary files themselves.
+They combine a series of other 'base level' macros to create the appropriate lexical entries. For example, the macro \ingram{number} takes the ordinal and cardinal forms of numbers ( \emph{two, second})  and then 'calls' a large number of other macros, like \ingram{adj} (\emph{those \ul{two} balls}), \ingram{context-n} (\emph{those \ul{two}}), \ingram{sgroup-np} (\emph{\ul{two} of the balls}) etc. to account for all of the 'uses' of numbers. This eliminates redundany by collecting all of these entries into a meaningful conceptual category,  instead of having them spread throughout the dictionary. 
+      
+\subsubsection{The Testbed}
+
+The testbed, contained in \filename{X\_testbed.ccg} is a listing of sample sentences used to test and to 'showcase' the grammar. Each line in the testbed consists of a sentence and the expected number of parses. This listing can  be tested for both parsing and generation using the command \textbf{ccg-test} (see below)
+   
+We have organized these test-sentences in an attempt to illustrate the capability of the grammar. See the file itself for more comments.
+
+\subsection{Modifying the Grammar}
+
+Obviously, we can only give a brief overview of some of the most common ways that the grammar is modified. 
+
+\subsubsection{Adding New Words (i.e. dictionary entries) to the grammar}
+
+The simplest and most common way of modifying the grammar is to add new words using the current dictionary-entry building macros. In most cases, simply parroting or mimicing one of the currently existing entries will suffice. However, as discussed above, these macros are defined throughout the grammar and for a full description of the parameters involved, you'll have to look into these files (or better yet section \ref{sec-Families}.)
+   
+If none of the existing dictionary macros fit your exact needs, this does not necessarily mean that you underlying lexical families, rules and features cannot support what you want. In some cases, you can overload one of the more general dictionary macros by adding extra feature values in the argument list. 
+If this still won't work you may be able to combine these appropriately by resorting to the \textsc{Dot-CCG} word entry syntax: \\
+   
+	\textbf{unique-id: families (class, pred): \{ } 
+
+          \textbf{form1: associated feature-values; }  
+          
+          \textbf{form2: associated feature-values; }  
+
+	...
+          
+          \}
+
+\subsubsection{Changing the Ontological Hierarchy}
+   
+   The semantic sorts/classes/types attached to the semantic objects produced in the semantic
+   representations used in the grammar are specified in \filename{X\_types-ontology.ccg}
+   
+   If you wish to modify this hierarchy by either collapsing, expanding, or altering its
+   components and their relations, in some cases, this can be done by simply modifying this file. 
+   In other cases, however, this will require further changes within other parts of the grammar.
+
+   See \filename{\#\_types-ontology.ccg} for specifics
+
+\subsubsection{Classes}
+
+It is relatively easy to extend the various classes defined in the grammar. See \filename{\#\_types-features.ccg} for details.
+   
+\subsubsection{Other changes (features, new lexical families, rules, etc)}
+
+We have tried to organize the grammar in such a way that it can easily be navigated and  extended. Moreover, some of the grammar files include instructions on extending the more 'open' elements of the grammar. Good Luck!
+
+\subsection{Compiling and Testing the Grammar}
+
+Compiling the grammar actually consists of 2 steps:
+\begin{enumerate}   
+\item merging all of the \filename{.ccg} files to create \filename{moloko.ccg}  (using the \filename{merge.pl} script)
+\item converting \filename{moloko.ccg} into the \textsc{OpenCCG} \filename{.xml} files   (using the \textsc{Dot-CCG} Parser \filename{ccg2xml})
+\end{enumerate}
+These have been combined into a single batch file called \filename{build-moloko}. \\
+This file should be moved to your openccg bin director. \\
+
+\smallskip
+
+There are two ways of testing the grammar. These are identical to the old \textsc{OpenCCG} methods:
+\begin{enumerate}  
+\item Command line parsing and generation using the \filename{tccg} tool
+\item Running through the testbed using the \filename{ccg-test} tool
+\end{enumerate}
+

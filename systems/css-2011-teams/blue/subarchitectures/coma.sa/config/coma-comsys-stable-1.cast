@@ -1,0 +1,65 @@
+HOST localhost
+
+COMPONENT CPP laser.server LaserServerPlayer  --player-host localhost #--rand-data --log
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host localhost #--rand-data --log
+
+SUBARCHITECTURE coma.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name marshaller --log true #--debug true
+
+JAVA MG comaverbtester coma.components.ComaVerbTester --comsys comsys --log true
+
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, comadata.ComaRoom, SpatialData.Place, SpatialProperties.ConnectivityPathProperty, SpatialProperties.GatewayPlaceProperty, comsys.datastructs.comsysEssentials.ContentPlanningGoal"
+
+
+SUBARCHITECTURE comsys
+## -------------------------------------------
+## Working memory and task manager
+## -------------------------------------------
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory #--log true --debug
+JAVA TM 		cast.architecture.AlwaysPositiveTaskManager #--log --debug
+#JAVA MG asr     comsys.components.asr.cc_ASR --src gui #--log --debug
+#JAVA GD parser  comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log true --debug
+#JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction false --discourse-level-composition true --disfluency-correction false --log true #--debug
+#
+##JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings --log
+##JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
+##JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --understandFacts ./subarchitectures/comsys/src/mercury-c++/abduction/understand.facts --understandRules ./subarchitectures/comsys/src/mercury-c++/abduction/understand.rules --generateFacts ./subarchitectures/comsys/src/mercury-c++/abduction/generate.facts --generateRules ./subarchitectures/comsys/src/mercury-c++/abduction/generate.rules --log --debug
+#
+JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx #--log
+JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log
+## other voice options: hmm-slt (female hmm voice), hmm-jmk (male hmm voice), us1 (female intonation), us2 (male intonation)
+JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice hmm-slt #--log true --debug
+
+SUBARCHITECTURE binder
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+JAVA MG monitor binder.components.BinderMonitor #--gui #--log
+JAVA MG binder binder.components.Binder #--log
+JAVA MG discretizer binder.components.UnionDiscretizer #--log
+
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation #--log #--debug
+CPP GD marshaller ProxyMarshaller -bsa binder --log
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #--log #-m tmpmap.metric --debug 
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--log #--debug --no-x-window 
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf #--log #--debug 
+
+CPP GD path.query PathQueryProcessor #--log --no-indirect-paths #--debug
+
+#CPP GD exploration.tester ExplorationTester #--log #--debug
+
+#CPP GD cure.logger CureDataLogger
+#CPP GD key.command KeyCommander --fixed-prio --auto 1 --init-sleep 15000 --no-key
+#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query #--log #--debug

@@ -1,0 +1,80 @@
+(define (domain service)
+
+	(:requirements :mapl :adl :durative-actions :object-fluents)
+
+	(:types 
+		place - object
+		room - object
+		robot human - agent
+		place_type - object
+		place_category - object
+	)
+	
+	(:constants
+	)
+
+    (:predicates
+		(connected ?n1 - place ?n2 - place)
+		(contains ?r - room ?n - place)
+    )	
+
+	(:functions
+		(place_type ?n - place) - place_type
+		(pos ?x - (either agent phys_obj)) - (either place agent)
+ 	)
+
+
+	(:action move
+	 :agent (?a - agent)
+	 :parameters (?to - place)
+	 :variables (?from - place)
+	 :precondition (and
+		(= (pos ?a) ?from)
+		(connected ?from ?to)
+		)
+	 :effect (and
+		(assign (pos ?a) ?to)
+	))
+
+
+	(:action grasp
+	 :agent (?a - agent)
+	 :parameters (?o - phys_obj)
+	 :variables (?loc - place)
+	 :precondition (and
+		(= (pos ?a) ?loc)
+		(= (pos ?o) ?loc)
+		)
+	 :effect (and
+		(assign (pos ?o) ?a)
+	))
+
+
+	(:action drop
+	 :agent (?a - agent)
+	 :parameters (?o - phys_obj)
+	 :variables (?loc - place)
+	 :precondition (and
+		(= (pos ?a) ?loc)
+		(= (pos ?o) ?a)
+		)
+	 :effect (and
+		(assign (pos ?o) ?loc)
+	))
+
+
+	(:action give
+	 :agent (?a - agent)
+	 :parameters (?a2 - agent ?o - phys_obj)
+	 :variables (?loc - place)
+	 :precondition (and
+		(= (pos ?a) ?loc)
+		(= (pos ?a2) ?loc)
+		(= (pos ?o) ?a)
+		)
+	 :effect (and
+		(assign (pos ?o) ?a2)
+	))
+
+
+)
