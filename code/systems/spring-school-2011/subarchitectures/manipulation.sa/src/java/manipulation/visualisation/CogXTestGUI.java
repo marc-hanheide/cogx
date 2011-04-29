@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -105,6 +106,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnGetPosCmd;
 
 	private JButton btnSimulatePosCmd;
+	
+	private DecimalFormat df = new DecimalFormat("0.00");
 
 	/**
 	 * constructor for the cogx test GUI, displays the GUI and can be used test
@@ -324,22 +327,24 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				pose = ((GetCurrentArmPose) cmd).currentPose;
 			}
 
+			
+
 			if (cmd.comp == ManipulationCompletion.SUCCEEDED) {
-				txtItemXPosition.setText(Double.toString(pose.pos.x));
-				txtItemYPosition.setText(Double.toString(pose.pos.y));
-				txtItemZPosition.setText(Double.toString(pose.pos.z));
+				txtItemXPosition.setText(df.format(pose.pos.x));
+				txtItemYPosition.setText(df.format(pose.pos.y));
+				txtItemZPosition.setText(df.format(pose.pos.z));
 
-				txtrot00.setText(Double.toString(pose.rot.m00));
-				txtrot01.setText(Double.toString(pose.rot.m01));
-				txtrot02.setText(Double.toString(pose.rot.m02));
+				txtrot00.setText(df.format(pose.rot.m00));
+				txtrot01.setText(df.format(pose.rot.m01));
+				txtrot02.setText(df.format(pose.rot.m02));
 
-				txtrot10.setText(Double.toString(pose.rot.m10));
-				txtrot11.setText(Double.toString(pose.rot.m11));
-				txtrot12.setText(Double.toString(pose.rot.m12));
+				txtrot10.setText(df.format(pose.rot.m10));
+				txtrot11.setText(df.format(pose.rot.m11));
+				txtrot12.setText(df.format(pose.rot.m12));
 
-				txtrot20.setText(Double.toString(pose.rot.m20));
-				txtrot21.setText(Double.toString(pose.rot.m21));
-				txtrot22.setText(Double.toString(pose.rot.m22));
+				txtrot20.setText(df.format(pose.rot.m20));
+				txtrot21.setText(df.format(pose.rot.m21));
+				txtrot22.setText(df.format(pose.rot.m22));
 
 				((CogXRunner) manipulator.getRunner()).removeChangeFilter(wmcr);
 			}
