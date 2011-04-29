@@ -1,0 +1,17 @@
+HOST localhost
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# reading stored images
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --camconfigs "subarchitectures/vision.sa/config/tm.calb" --files "subarchitectures/vision.sa/src/c++/vision/components/VisionDriver/img/00000%03d.jpg" --start 150 --end 400 --framerate_ms 20
+
+# live images
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/tm.calb"
+
+CPP MG ObjectDetector ObjectDetector --videoname VideoServer --camid 0 --log #--debug
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --maxModels 1 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --log  #--debug 
+CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
+CPP MG VisionDriver VisionDriver #--log --debug
+

@@ -1,0 +1,101 @@
+Index: ObjectRecognizer/libsiftgpu/Linux/makefile
+===================================================================
+--- ObjectRecognizer/libsiftgpu/Linux/makefile	(revision 989)
++++ ObjectRecognizer/libsiftgpu/Linux/makefile	(working copy)
+@@ -3,7 +3,7 @@
+ SRC_SIFTGPU = ../SiftGPU/src
+ SRC_DRIVER = ../TestWin/src
+ CC=gcc
+-CFLAGS=  -I$(IDIR) -L/usr/lib -L./bin -Wall -Wno-deprecated -pthread  -march=naive -mfpmath=sse
++CFLAGS=  -I$(IDIR) -L/usr/lib -L./bin -fPIC -Wall -Wno-deprecated -pthread  -mfpmath=sse # -march=native 
+ ODIR_SIFTGPU=siftgpu
+ ODIR_DRIVER=driver
+ #external header files
+@@ -93,7 +93,7 @@
+ 	rm -f $(ODIR_SIFTGPU)/*.o
+ 	rm -f $(ODIR_DRIVER)/*.o
+ 	rm -f ./bin/libsiftgpu.a
+-	fm -f ./bin/libsiftgpu.so
++	rm -f ./bin/libsiftgpu.so
+ 	rm -f ./bin/TestWinGlut
+ 	rm -f ./bin/SimpleSIFT
+ 	rm -f ./bin/speed
+Index: ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.cpp
+===================================================================
+--- ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.cpp	(revision 989)
++++ ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.cpp	(working copy)
+@@ -95,6 +95,7 @@
+ 	RandomizeColor();
+ }
+ 
++/*
+ void* SiftGPU::operator new (size_t  size){
+   void * p = malloc(size);
+   if (p == 0)  
+@@ -104,6 +105,7 @@
+   }
+   return p; 
+ }
++*/
+ 
+ void SiftGPU::SetActivePyramid(int index)
+ {
+Index: ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftMatch.cpp
+===================================================================
+--- ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftMatch.cpp	(revision 989)
++++ ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftMatch.cpp	(working copy)
+@@ -27,6 +27,8 @@
+ #include <vector>
+ #include <strstream>
+ #include <algorithm>
++#include <stdio.h>
++#include <string.h>
+ using namespace std;
+ #include "GlobalUtil.h"
+ 
+@@ -827,6 +829,7 @@
+ 	return GlobalUtil::_GoodOpenGL;
+ }
+ 
++/*
+ void* SiftMatchGPU::operator new (size_t  size){
+   void * p = malloc(size);
+   if (p == 0)  
+@@ -836,6 +839,7 @@
+   }
+   return p; 
+ }
++*/
+ 
+ 
+ 
+Index: ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.h
+===================================================================
+--- ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.h	(revision 989)
++++ ObjectRecognizer/libsiftgpu/SiftGPU/src/SiftGPU.h	(working copy)
+@@ -53,6 +53,7 @@
+ 		#define _MAX_PATH 512
+ 	#endif
+ #endif
++#include <cstddef>
+ ///////////////////////////////////////////////////////////////////
+ //clss SiftParam
+ //description: SIFT parameters
+@@ -209,7 +210,7 @@
+ 	//compiler setting of /MT and /MTd). Without the overloaded operator
+ 	//deleting a SiftGPU object will cause a heap corruption in the 
+ 	//static link case (but not for the runtime dll loading).
+-	SIFTGPU_EXPORT void* operator new (size_t size); 
++	// SIFTGPU_EXPORT void* operator new (size_t size); 
+ };
+ 
+ 
+@@ -327,7 +328,7 @@
+ 
+ public:
+ 	//overload the new operator, the same reason as SiftGPU above
+-	SIFTGPU_EXPORT void* operator new (size_t size);
++	// SIFTGPU_EXPORT void* operator new (size_t size);
+ };
+ 
+ 

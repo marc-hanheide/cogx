@@ -1,0 +1,21 @@
+in order for the CogX Dora Y1 demo to work,
+the following lines were removed and added, respectively,
+from the OMICS thingloc subset
+
+the actual file represents the review state.
+in order to re-instantiate the pre-review state (i.e., the untouched OMICS data),
+the following has to be un-done:
+
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Study_room> .
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Living_room> .
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Library> .
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Living_room> .
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Foyer> .
+-<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
++<http://dora.cogx.eu#Bookshelf> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Office> .
+
++<http://dora.cogx.eu#Juice> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
+
++<http://dora.cogx.eu#Journal> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Office> .
+
++<http://dora.cogx.eu#Teabox> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
