@@ -9,7 +9,6 @@
 #include <cast/slice/CDL.ice>
 
 module ptz {
-
   /**
    * The ptz position.
    */
@@ -56,7 +55,38 @@ module ptz {
 
   };
 
+  /**
+   * value of the completion state of the commands
+  */
+  enum PTZCompletion {
+    FAILED,
+    SUCCEEDED,
+    COMPINIT
+  };
 
+  /**
+   * This command returns the current ptz position. All fields are set by the
+   * system. The field pose represent the current pose and the field comp returns
+   * the completion status of the command. It will change to SUCCEEDED if no
+   * errors occur. 
+   * @author Torben Toeniges
+   */
+  class GetPTZPoseCommand {
+    PTZPose pose;
+    PTZCompletion comp;
+  };
+
+  /**
+   * This command can be used to set a pose of the PTZ unit.
+   * The pose field has to be set by the user and is updated after the completion
+   * of the command to the current position of the unit. 
+   * Furthermore the comp field shows the completion of the command. 
+   * @author Torben Toeniges 
+   */
+  class SetPTZPoseCommand {
+    PTZPose pose;
+    PTZCompletion comp;
+  };
 };
 
 #endif // LASER_ICE
