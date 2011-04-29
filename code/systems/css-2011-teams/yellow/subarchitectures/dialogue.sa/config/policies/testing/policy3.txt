@@ -1,0 +1,22 @@
+start acknowledge1 command1Recog
+start acknowledge2 command2Recog
+start confirm1 command1Unsure
+start confirm2 command2Unsure
+start repeat unrecog
+start repeat irrelevant
+confirm1 acknowledge1 confirmed
+confirm1 repeat unrecog
+confirm1 repeat irrelevant
+confirm1 repeat disproved
+confirm2 acknowledge2 confirmed
+confirm2 repeat unrecog
+confirm2 repeat irrelevant
+confirm2 repeat disproved
+repeat acknowledge1 command1Recog
+repeat acknowledge2 command2Recog
+repeat confirm1 command1Unsure
+repeat confirm2 command2Unsure 
+repeat failure unrecog
+acknowledge1
+acknowledge2
+failure

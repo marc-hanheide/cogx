@@ -1,0 +1,321 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+#   Wh-Words for questions ( WHO is he,  WHERE did you go, etc)
+#   Role-Defined Constituents  ( I picked up 'WHAT you wanted', I don't know 'WHO he is', etc)
+#   Relative Clauses (the ball THAT you picked up)   
+
+# For the sake of incremental parsing and early projection, all of these are treated 
+# as the semantic and syntactic head of their respective constituents. 
+
+###############
+### WH-WORDS ##
+###############
+
+  # There are two entries for most of the question words, one for copulars, 'Who am I' 
+  # and one for other verbs which must use an auxillary, 'What did you see'
+
+  # They assign mood (both syntactic and semantic), select for the clauses Subject, 
+  # and properly distribute the features dictated by the specifics of the question word
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+
+  def vp-extr(arg, item)  { ( s(VFORM:VFORM FIN:FIN POL:POL arg) +subj() item ) }
+  def WH-RESTR(arg)       { <Wh-Restr>(arg) }
+
+  # The first entry is for cases where the 'extracted' element is in the main clause (what did you want X), 
+  # The second is for when it is embedded (e.g. who did he want me to see X)
+  # 
+  def wh-auxe-entry(item, syn, sem)  {
+      entry: from-s(s-int fin-full)  / vp-extr(,item) /^ subj(nf-real) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+      entry: from-s(s-int fin-full) / (s<13>[G] $1 item) / vp-extr(, / (s<13>[G] $1) ) /^ subj(nf-real) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+  } 
+
+	 
+  # For cases where the subject is being questioned.
+  # Note that the copular entry with /np is blocked so as to not allow subject questioning, 
+  # this means what is it only gets 1 instead of '2' question forms
+  #
+  def wh-subj-entry(syn, sem){
+            entry: from-s(s-int)  / ( s(fin) \ np[F nom 3rd s-sg nf-real Questionable=yes] ) syn   
+                 : EVENT( INT() <Subject>(F) WH-RESTR(sem) );   
+  }
+ 
+  # The following three collect the appropriate entry defns to reduce redundancy below
+  # NOTE:  wh-copula-entry defined in verb-copula.ccg
+  # 
+  def wh-comp-entries(item, syn, sem){
+         wh-auxe-entry ( item, syn, sem )
+         wh-copular-entry( item, syn, sem )
+  } 
+ 
+
+  def wh-all-entries(item, syn, sem) {
+         wh-auxe-entry ( item, syn, sem )
+         wh-copular-entry( item, syn, sem )
+   	 wh-subj-entry(  syn, sem )         
+  }
+
+  def wh-no-copular-entries(item, syn, sem) { 
+         wh-auxe-entry ( item, syn, sem )
+         wh-subj-entry(  syn, sem ) 
+  }
+
+    
+  #---------------------
+  #--- The Families ----
+  #---------------------
+
+   # NOTE: 'extracted' constituent set to ^ slash mode, 
+   #        this allows, e.g. 'what object did I put on the table' to parse incrementally,
+   #        using default > mode doesnt
+    
+   family Wh-np- (Wh)              { wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , F:entity * ) }
+    
+   family Wh-np-spec- (Wh)         { wh-all-entries ( /^ np<~12>[F Questionable=yes]   , / n<12>[F s-sg]            , V * <Scope>(F:entity SG() SPECIFIC() UNIQUE() ) ) 
+				     wh-all-entries ( /^ np<~12>[F Questionable=yes]   , / n<12>[F s-pl-unsp]       , V * <Scope>(F:entity PL() UNSPECIFIC() UNIQUE() ) )  }
+	
+   family Wh-np-spec-ctxt- (Wh)    { wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V * <Scope>(F:entity context UNIQUE() ) )  }   
+     #
+     # Note: Two spec fams separated because we want 'what ball' = 'which ball', but 'which' != 'what' 	
+							   								   
+   family Wh-np-quant-count- (Wh)  { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-pl]             , V *  <Scope>(F:entity         PL() UNSPECIFIC() VARIABLE() )          )
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V *  <Scope>(F:entity context PL() UNSPECIFIC() VARIABLE() ) ) }
+   
+   family Wh-np-quant-mass- (Wh)   { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-mass]           , V *  <Scope>(F:entity          VARIABLE() UNCOUNTABLE() ) ) 
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V *  <Scope>(F:entity context  VARIABLE() UNCOUNTABLE() ) ) }
+    
+   family Wh-np-qclass- (Wh)       { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-sg no-q]  /qclass<13>[Q]        , V * <Scope>(Q <Scope>(F:entity SG() SPECIFIC() UNIQUE()) )  )
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-pl-unsp no-q]  /qclass<13>[Q]   , V * <Scope>(Q <Scope>(F:entity PL() UNSPECIFIC() UNIQUE()) )  ) }
+	
+
+   family Wh-pp- (Wh)              { wh-comp-entries ( /^ pp<12>[F]  ,                             , F:modifier * )  }
+   
+   family Wh-sent- (Wh)            { wh-auxe-entry ( /^ s<12>[F]      ,                            , F:event *)          # for sentences (what did I say)
+                                     wh-auxe-entry ( /^ (s<12>[F inf] +subj())      ,              , F:event *)    }     # for inf-vp (what did I want)
+   
+   family Wh-adj- (Wh)             { wh-comp-entries ( /^ adj<12>[F] ,                             , F:quality * ) }
+   family Wh-adj-qclass- (Wh)      { wh-comp-entries ( /^ adj<12>[F] , / qclass<12>[F]             , V * <Scope>(F:quality)  ) }
+   family Wh-adj-degree- (Wh)      { wh-comp-entries ( /^ adj<12>[F] , / adj<12>[F]                , V * <Scope>(F:quality)  ) }
+  
+   # This use for special quality words used in questions 'which color/size/shape...'
+   # 
+   family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
+   
+
+   # This is for handling the questioning of modifiers (i.e. optional adjuncts, like location, manner, etc)
+   # There are three entries: 
+   #     The first is specifically for the copula, e.g. 'when was I happy'.
+   #     The second is for scoping on the main (top level) event of other verbs, e.g. 'where am is sitting' 
+   #     The third is for embedded events , e.g. 'where did I want to sit'
+   #
+   # Attachment of these modifiers is controlled by restricting the mclass of the scoped over (i.e. the 'questioned' event)
+   # This is handled lexically, i.e. 'where' specifies that the sentence must unify with s-location
+   # (note this fact explains the messiness of the 2nd entry, id 10, the typical sentence id must be associated
+   #  with the embedded, scoped over, sentence)
+   #
+   # Note: (June 17) Since we added s-no-mood, had to change top s to <~13> instead of <13>
+   #                 b/c the mood gets changed from s-no-mood to s-int
+   #
+   family Wh-sent-modifier- (Wh) {
+
+          be-wh-sent-mod-entries()   # defined in verb-copula.ccg
+          wh-auxe-entry( , , V *  <Scope>(E:event) ) 
+          entry: s<~13>[E s-int]   / (s<~10>[F] $1 )                                                     # the 'internal' s arg#
+ 	                           / ( s<13>[E VFORM:VFORM FIN:FIN POL:POL] +subj() / (s<10>[F] $1 )  ) 
+	                           /^ subj(NUM:NUM PERS:PERS nf-real)
+			           /  aux()
+               : EVENT( INT() SUBJECT() WH-RESTR(V *  <Scope>(F:event)) ); 
+   }
+
+
+
+
+#################################
+## 'Role-Defined' Constituents ##
+#################################
+
+  #  put it 'WHERE I told you to put it __' 
+  #  I picked up 'WHAT you wanted __'
+  #  I don't know 'WHO he is'
+  #  I am going 'WHERE GJ is sleeping'
+  #  'WHAT I got __' you got to give it to your mama  
+  #   (this is assuming Left-dislocation is handled )
+  #
+  # Each of these is semantically and syntactically the entity which would be placed in the __
+  # So, in the first case, this is a pp [M:m-location], the second  np[T:entity]   
+ 
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+  def extr-subj(rslt, syn, sem) { 
+  
+     entry: rslt    / ( s(fin s-minor) \ np[F 3rd s-sg nf-real] ) syn   
+		  : F( sem ^ <Scope-in>(E:event <Subject>(F) ) ) ; 
+  }
+
+  # The first one is for cases where the fronted element is in the main clause, 
+  # The second is for when it is embedded (e.g. who he wanted me to see X)
+  #
+  def extr-comp(rslt, item, syn, sem) { 
+  
+     entry: rslt  / (s<13>[G] $1 item) / vp-extr(fin-full s-minor, / (s<13>[G] $1)) /^ subj(nf-real)  syn                   
+	      :  F( sem ^ <Scope-in>(E:event SUBJECT() ) ) ; 
+     entry: rslt  / vp-extr(fin-full s-minor, item) /^ subj(nf-real)  syn                   
+	      :  F( sem ^ <Scope-in>(E:event SUBJECT() ) ) ; 
+   }
+
+  def extr-both (rslt, item, syn, sem)  {
+
+	  extr-subj(rslt, syn, sem) 
+	  extr-comp(rslt, item, syn, sem)
+  } 
+
+  #---------------------
+  #--- The Families ----
+  #---------------------
+
+   # The indices are chosen based on underlying POS (e.g. 15 for n/np, 25 for pp)
+   # This is because we need to lexically select features (i.e. via macros)
+   # Also, the Semantic Index is always F to allow a systematic def (see above) and 
+   # also to handle subject 'extraction' properly (all set to F)   
+
+   # QUESTION: FOR EACH FAMILY, how much do we want the 'extracted' item to inherit.
+   #   e.g. should an extracted direct object be accusitive...no.
+  
+   #  What you picked up
+   #
+   family Extr-np- (Wh)              { extr-both (np<15>[F],  /^ np<16>[F Questionable=yes] ,                      , F:entity *                      ) }
+   
+ 	       
+   # which (ball) you picked up
+   #
+   family Extr-np-spec- (Wh)         { extr-both (np<15>[F ], /^ np<~16>[F Questionable=yes] , / n<16>[F s-sg]           ,  F:entity <Restr>(V * ) SG() SPECIFIC() UNIQUE()   ) 
+                                       extr-both (np<15>[F ], /^ np<~16>[F Questionable=yes] , / n<16>[F s-pl-unsp]      ,  F:entity <Restr>(V * ) PL() UNSPECIFIC() UNIQUE() ) }
+
+   family Extr-np-spec-ctxt- (Wh)    { extr-both ( np<15>[F ]  ,  /^ np<16>[F Questionable=yes]   ,    ,  F:entity  context ^ <Restr>(V * ) UNIQUE()  )  }   
+ 
+									   
+   # how many (balls) you picked up								   								   
+   #
+   family Extr-np-quant-count- (Wh)  { extr-both (np<15>[F ], /^ np<16>[F Questionable=yes] , / n<16>[F s-pl]      ,  F:entity <Restr>(V * ) UNSPECIFIC() VARIABLE()            )
+                                       extr-both (np<15>[F ], /^ np<16>[F Questionable=yes] ,                      ,  F:entity context ^ <Restr>(V * ) UNSPECIFIC() VARIABLE()  ) } 
+
+   family Extr-np-quant-mass- (Wh)  { extr-both  (np<15>[F ], /^ np<16>[F] , / n<16>[F s-mass Questionable=yes]    ,  F:entity ^ <Restr>(V * ) VARIABLE() UNCOUNTABLE()          )
+                                      extr-both (np<15>[F ], /^ np<16>[F] ,                                        ,  F:entity context ^ <Restr>(V * ) VARIABLE() UNCOUNTABLE()  ) } 
+
+
+   # what color/shape/size (ball) you picked up
+   #
+   family Extr-np-qclass- (Wh)       { extr-both (np<15>[F ], / np<16>[F] , / n<16>[F]/ qclass<13>[Q]  , F:entity ^ <Restr>(V * <Scope>(Q) )               ) 
+                                       extr-both (np<15>[F ], / np<16>[F] , / qclass<13>[Q]            , F:entity context ^ <Restr>(V * <Scope>(Q) )     ) }
+
+   # where you put it
+   #
+   family Extr-pp- (Wh)              { extr-comp (pp<25>[F] ,  /^ pp<26>[F] ,                    , F:modifier *              )}
+
+  
+   # what he says,  what you are doing
+   # NOTE: B/C we are using <10>, i.e. 'main s' for the vp-extr, using lexical macros to set vf-deictic would also change that.
+   #       so instead, we do it here.
+   # 
+   family Extr-sent- (Wh)            { extr-comp (s<20>[F VFORM=fin-deictic], /^ s<21>[F] ,     , F:event *      )}  # MARK ME!!!
+  
+   # how did you make it (big, small, etc) 
+   #  
+   family Extr-adj- (Wh)             { extr-comp (adj<25>[F],  / adj<16>[F] ,                   , F:quality *    )}
+   
+   # what size did you make it
+   #
+   family Extr-adj-qclass- (Wh)      { extr-comp (adj<25>[F],  / adj<16>[F] , / qclass<13>[Q]   , F:modifer <Restr>(V * <Scope>(Q) )    )}
+   
+   # how big did you make it
+   #
+   family Extr-adj-degree- (Wh)      { extr-comp (adj<25>[F],  / adj<16>[F] , / adj<16>[F]      , F:modifer <Restr>(V *)        )}
+  
+  
+  # where I was walking, i.e. when there is no missing arg.
+  #
+  # Two entries and controlled by event's modifier class
+  # See above in Wh-questions, or docs, for more info
+  # 
+  family Extr-pp-sent-modifier- (Wh)    { 
+  
+      entry: pp<25>[F] /^ ( s(fin s-minor) +subj() ) /^ subj()                            
+             :  F( * ^ <Scope>(E) <Scope-in>(E:event SUBJECT() ) )  ;
+
+      entry: pp<25>[F]  /^ (s<~10>[E] $1 )                                                       # the 'internal' s arg
+ 		        /^ ( s<13>[G fin NUM:NUM PERS:PERS s-minor] +subj() /^ (s<10>[E]$1 )  )  # the external 'main sentence' wanting an s arg
+	                /^ subj()
+             :  F( * <Scope>(E:event) <Scope-in>(G:event SUBJECT() ) ) ;  
+  }
+
+  family Extr-adv-sent-modifier- (Wh)    { 
+  
+      entry: adv<25>[F] /^ ( s(fin s-minor) +subj() ) /^ subj()                            
+             :  F( * ^ <Scope>(E) <Scope-in>(E:event SUBJECT() ) )  ;
+
+      entry: adv<25>[F] /^ (s<~10>[E] $1 )                                                       # the 'internal' s arg
+ 		        /^ ( s<13>[G fin NUM:NUM PERS:PERS s-minor] +subj() /^ (s<10>[E]$1 )  )  # the external 'main sentence' wanting an s arg
+	                /^ subj()
+             :  F( * <Scope>(E:event) <Scope-in>(G:event SUBJECT() ) ) ;  
+  }
+
+
+#################################
+## Relative Clause Modifiers   ##
+#################################
+
+  #        the ball 'THAT I put on the table'   
+  #
+  #  basically uses the extracted-NP from above (c.f. what I put on the table) and 'sticks' it in 
+  #  a post-noun modifier  n / ABOVE SYNTAX \ n : T( <Scope-in>(ABOVE SEMANTICS) )
+  #
+  #        the room 'WHERE books can be found'  ,   the place 'WHERE I put it earlier'
+  # 
+  #  this is actually handled 'automatically' from the role-defined stuff above.
+  #  these are turned into pps, which then get run through the pp -> post-n modifer rule (see prep.ccg)
+  #  If we decide this isn't the right kind of semantics, we will have to put a syntactic feature
+  #  on the rules above 'shutting off' this rule (basically extend CC-TYPE feature) and then
+  #  add a comparible rule here.
+
+  family Rel-Clause-np- (indexRel=Scope-in)  { 
+	
+    entry: post-n(n-2 , /^ vp-extr(fin-full s-minor, / np<16>[T 3rd] ) /^ subj() ) # blocked form being 1st part of compound
+	   : T( <Scope-in>(E  SUBJECT() ) ) ; 
+    entry: post-n( , /^ ( s(fin-full s-minor) \ np[T 3rd s-sg] ) ) 																 
+           : T( <Scope-in>(E <Subject>(T) ) ) ;
+  }
+
+ 	   
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  
+  def  wh-word (form, class, props) { _wh-word(form, form, class, props) } 
+  def _wh-word (prd, form, class, props) {
+    word form.-wh-word.class: props(class, pred=prd) { form ; }
+  }
+
+  def  wh-word+feat (form, class, props, args )  { _wh-word+feat(form, form, class, props, args )  } 
+  def _wh-word+feat (prd, form, class, props, args )  {
+    word form.-wh-word.class.props: props(class, pred=prd)  { form: args ; }
+  }
+
+  def  extr (form, class, props, args )  { _extr(form, form, class, props, args )  } 
+  def _extr (prd, form, class, props, args )  {
+    word form.-wh-comp.class.props: props(class, pred=prd)  { form: args ; }
+  }
+
+  def  quality-class (form) { _quality-class(form, form) } 
+  def _quality-class (prd, form) {
+    word form.prd.-quality-class: Quality-class(quality, pred=prd) { form; }
+  }
+
+

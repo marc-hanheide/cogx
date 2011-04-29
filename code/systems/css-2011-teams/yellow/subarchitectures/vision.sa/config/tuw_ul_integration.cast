@@ -1,0 +1,44 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+192.168.176.138 COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname VideoServer --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/alu_stereo.ini --display
+#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# live images
+192.168.176.138 CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/alu_stereo.ini:L  subarchitectures/vision.sa/config/alu_stereo.ini:R"
+
+#192.168.176.138 CPP MG PlanePopOut PlanePopOut --stereohost 192.168.176.138 --stereoname stereo --globalPoints true --log true
+
+192.168.176.138 CPP MG Filter SOIFilter --log true --videoname VideoServer --camid 0 --display --stereoname stereo
+
+CPP MG vis.learner     VisualLearner --log --debug
+CPP MG vis.analyzer    ObjectAnalyzer --log --debug
+#CPP MG vis.tester      TestVisualLearner --testmode "fake-proto" --log
+CPP MG vis.mediator		VisualMediator --log --debug
+
+SUBARCHITECTURE binder
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM binder.components.BindingWorkingMemory --log
+#CPP WM SubarchitectureWorkingMemory --log -debug
+
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log false
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
+JAVA MG translator binder.components.BeliefModelTranslator --log
+
+JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer
+JAVA MG monitor binder.components.BinderMonitor --gui
+
+
+
+
+#SUBARCHITECTURE nav.sa 
+#CPP WM SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--debug
+#CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log #--read-ptu --log #--debug 
+#CPP GD odom.process OdomLocalizer

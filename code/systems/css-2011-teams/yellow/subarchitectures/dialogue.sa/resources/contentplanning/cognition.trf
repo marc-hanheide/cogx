@@ -1,0 +1,85 @@
+// understanding and knowing
+
+// Rejection: the agent does not know a specific property for a specific object 
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(c1:entity ^ PROPERTY)), e.g. color size or shape
+// Variants: "I do not know the PROPERTY"
+
+:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(#t:entity ^ #value) ^ <Owner>(#b1:) ^ <Content> (#c1:top)
+->
+#c1 = :cognition ^ know ^ 
+                <Mood>ind ^ 
+                <Polarity>neg ^ 
+                <Tense>pres ^ 
+                <Actor>(#i1:person ^ I ^ 
+                        <Num>sg) ^ 
+                <Patient>(#t:entity ^ #value ^ 
+                          <Owner>#b1:) ^ 
+                <Subject>#i1:.
+
+
+
+// Rejection: the agent does not know a specific property
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(c1:entity ^ PROPERTY)), e.g. color size or shape
+// Variants: "I do not know the PROPERTY"
+
+:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(#t:entity ^ #value) ^ !<Owner> ^ <Content> (#c1:top)
+->
+#c1 = :cognition ^ know ^ 
+                <Mood>ind ^ 
+                <Tense>pres ^ 
+                <Actor>(#i1:person ^ I ^ 
+                        <Num>sg) ^ 
+                <Polarity>neg ^
+                <Patient>(#c:entity ^ #value ^ 
+                          <Delimitation>unique ^ 
+                          <Num>sg ^ 
+                          <Quantification>specific) ^ 
+                <Subject>#i1:.
+
+// Rejection: the agent does not know (something)
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition)
+// Variants: "I do not know" (1), "I do not know that" (2), "sorry I do not know that" (3)
+
+
+// "Sorry I do not know that" (reject)
+:dvp ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ !<Target> ^ <Content> (#c1:top)         
+-> 
+#c1 = :d-units ^ list ^ 
+        <First>(#s1:q-attitude ^ sorry) ^ 
+        <Next>(#k1:cognition ^ know ^ 
+               <Mood>ind ^ 
+               <Tense>pres ^ 
+               <Actor>(#i1:person ^ I ^ 
+                       <Num>sg) ^ 
+               <Event>(#c1:event ^ context ^ 
+                       <Delimitation>unique ^ 
+                       <Proximity>distal ^ 
+                       <Quantification>specific) ^ 
+               <Polarity>neg  ^
+               <Subject>#i1:).
+
+            
+                
+// "I know" (acknowledge)
+:dvp ^ <SpeechAct>acknowledge ^ <AcknoModality>cognition ^ <Content> (#c1:)
+->
+#c1 = :cognition ^ know ^ 
+    				<Mood>ind ^ 
+                    <Tense>pres ^ 
+                    <Actor>(#i1:person ^ I ^ 
+                            <Num>sg) ^ 
+                    <Subject>#i1:.              
+                
+                
+                
+                
+                
+// "I (don't) understand" (acknowledgement)
+:dvp ^ <SpeechAct>assertion ^ <AcknoModality>understanding ^ <Content> (#c1:)
+->
+#c1 = :cognition ^ understand ^ 
+                <Mood>ind ^ 
+                <Tense>pres ^ 
+               (<Actor>#i1:person ^ I ^ 
+                        <Num>sg) ^ 
+                <Subject>#i1:.
