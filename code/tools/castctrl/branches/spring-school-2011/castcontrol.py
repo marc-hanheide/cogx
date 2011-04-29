@@ -840,11 +840,14 @@ class CCastControlWnd(QtGui.QMainWindow):
 
                 extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
                 command = self._options.xe(csi.command, environ=extenv)
+                workdir = csi.workdir
+                if workdir != None:
+                    workdir = self._options.xe(workdir, environ=extenv)
                 params = csi.getParameters()
                 if params:
                     for k,v in params.items():
                         params[k] = self._options.xe(v, environ=extenv)
-                p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+                p.start(command=command, params=params, workdir=workdir, allowTerminate=not csi.isServer)
         finally:
             QtGui.QApplication.restoreOverrideCursor()
 
