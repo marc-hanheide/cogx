@@ -34,6 +34,9 @@ PlayerArmBridge::PlayerArmBridge()
   arm = 0;
   playerHost = PlayerCc::PLAYER_HOSTNAME;
   playerPort = PlayerCc::PLAYER_PORTNUM;
+  // NOTE: initially the gripper is closed, holding nothing
+  gripperClosed = true;
+  gripperHolding = false;
 }
 
 void PlayerArmBridge::configure(const map<string, string> &_config)
@@ -92,32 +95,69 @@ void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc
 void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
 {
   log("received OpenGipper");
-  PlayerBridgeOpenGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeOpenGripperCommand>(_wmc.address);
-  // let the caller know we are executing the command
-  cmd->comp = ONTHEWAY;
-  overwriteWorkingMemory(_wmc.address, cmd);
-  // NOTE: openGripper() blocks until fingers no longer moving
-  openGripper();
-  // let the caller know we are done
-  cmd->comp = SUCCEEDED;
-  overwriteWorkingMemory(_wmc.address, cmd);
+  if(!gripperClosed)
+  {
+    PlayerBridgeOpenGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeOpenGripperCommand>(_wmc.address);
+    // let the caller know we are executing the command
+    cmd->comp = ONTHEWAY;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    // and we are done
+    cmd->comp = SUCCEEDED;
+    overwriteWorkingMemory(_wmc.address, cmd);
+  }
+  else
+  {
+    PlayerBridgeOpenGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeOpenGripperCommand>(_wmc.address);
+    // let the caller know we are executing the command
+    cmd->comp = ONTHEWAY;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    // NOTE: openGripper() blocks until fingers no longer moving
+    openGripper();
+    // let the caller know we are done
+    cmd->comp = SUCCEEDED;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    gripperClosed = false;
+  }
   log("finished OpenGripper");
 }
 
 void PlayerArmBridge::receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc)
 {
   log("received CloseGripper");
-  PlayerBridgeCloseGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeCloseGripperCommand>(_wmc.address);
-  // let the caller know we are executing the command
-  cmd->comp = ONTHEWAY;
-  overwriteWorkingMemory(_wmc.address, cmd);
-  // NOTE: closeGripper() blocks until fingers no longer moving
-  if(closeGripper())
-    cmd->graspStatus = NOTGRASPING;
+  if(gripperClosed)
+  {
+    PlayerBridgeCloseGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeCloseGripperCommand>(_wmc.address);
+    cmd->comp = ONTHEWAY;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    if(gripperHolding)
+      cmd->graspStatus = GRASPING;
+    else
+      cmd->graspStatus = NOTGRASPING;
+    cmd->comp = SUCCEEDED;
+    overwriteWorkingMemory(_wmc.address, cmd);
+  }
   else
-    cmd->graspStatus = GRASPING;
-  cmd->comp = SUCCEEDED;
-  overwriteWorkingMemory(_wmc.address, cmd);
+  {
+    PlayerBridgeCloseGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeCloseGripperCommand>(_wmc.address);
+    // let the caller know we are executing the command
+    cmd->comp = ONTHEWAY;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    // NOTE: closeGripper() blocks until fingers no longer moving, returning
+    // true if fingers could fully close
+    if(closeGripper())
+    {
+      cmd->graspStatus = NOTGRASPING;
+      gripperHolding = false;
+    }
+    else
+    {
+      cmd->graspStatus = GRASPING;
+      gripperHolding = true;
+    }
+    cmd->comp = SUCCEEDED;
+    overwriteWorkingMemory(_wmc.address, cmd);
+    gripperClosed = true;
+  }
   log("finished CloseGripper");
 }
 

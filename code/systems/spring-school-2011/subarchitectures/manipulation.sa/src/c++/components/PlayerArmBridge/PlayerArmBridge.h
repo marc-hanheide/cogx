@@ -71,6 +71,10 @@ private:
   PlayerCc::PlayerClient *robot;
   /** interface to the arm */
   PlayerCc::ActArrayProxy *arm;
+  /** HACK: sending a close or open when the gripper is alread closed (open)
+   * freezes, so remember gripper state and don't sent command if not needed */
+  bool gripperClosed;
+  bool gripperHolding;
 
   void receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc);
   void receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc);
