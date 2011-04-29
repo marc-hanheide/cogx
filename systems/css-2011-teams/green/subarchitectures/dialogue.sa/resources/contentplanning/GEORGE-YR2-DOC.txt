@@ -1,0 +1,148 @@
+** DOCUMENTATION FOR COGX GEORGE YEAR 2 CONTENT PLANNING ** 
+
+1. SCENARIO ILLUSTRATION
+
+H: hello robot
+R: hi	@d1:dvp(c-goal ^ <SpeechAct>greeting)
+H: what do you see?
+R: sorry, what did you say?
+H: I said: what do you see?
+R: I see an object	@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>#b2:entity)
+H: what is the colour of the object? 
+R: I don't know
+H: it is blue
+R: did you say it's blue?
+H: yes
+R: ok, thanks
+H: now could you tell me what is the colour of the object?
+R: it is blue
+H: great
+R: I don't know the shape of the blue object
+H: it's compact
+R: so the blue object is compact
+H: yes
+R: ok, thanks
+
+(putting a second object)
+H: what do you see?
+R: I see the box @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(b2:thing ^ box ^ <Salient>true))
+H: what is the colour of the left object?
+R: i think it's orange 
+H: no, it's blue
+R: aha, ok
+R: thanks for the info
+H: ok, goodbye robot!
+
+2. UTTERANCE TYPES AND GOALS
+
+* Greetings
+- Variants: "hello"	
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>greeting)
+- Output: @d1:dvp(c-goal ^ <SpeechAct>greeting ^ <Content>(c1:greeting ^ hello))
+- File: <greetings.trf>
+- Trigger: [ <SpeechAct>greeting ] drives the process 
+
+* CLARIFICATION - SPEECH 
+- Variants: "sorry, what did you say?" 
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
+- File: clarification-communication.trf
+- "what did you just say": @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
+
+* CLARIFICATION - PROPERTY 
+- Variants: "what PROPERTY did you mean?"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(c1:q-PROPERTY)), e.g. q-color, q-size or q-shape
+- File: clarification-communication.trf
+- "what size did you mean": @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(c1:q-size))
+
+* CLARIFICATION - PROPERTY VALUE
+- Variants: "did you say it is VALUE?" ; "did you say the PROPERTY is VALUE?" 
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(c1:q-PROPERTY ^ VALUE))
+- File: clarification-communication.trf
+- "did you say the color is red": @d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Content>(c1:q-color ^ red))
+
+
+* CONFIRMATION OF PERCEPTION
+- Variants: "I see a THING" (1) ; "I see the THING" (2) 
+- Notes: 
+	- We require the explicit mention of the Actor in the goal
+	- Whether "a X" or "the X" is generated, depends on whether InfoStatus is set to "new" or "familiar," respectively (i.e. STATUS in Goal is either "new" or "familiar") 
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(b2:thing ^ THING ^ <InfoStatus>STATUS)
+- File: vision.trf
+- "I see a box": @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(b2:thing ^ box ^ <InfoStatus>new))
+- "I see the box" : @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>vision ^ <Actor>(i:person ^ I) ^ <Target>(b2:thing ^ box ^ <InfoStatus>familiar))
+
+
+* DISCONFIRMATION OF COGNITION -- WHOLESALE REJECT
+- Variants: "I do not know that" 
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition)
+- File: cognition.trf
+- "I don't know that" 
+                     
+* DISCONFIRMATION OF COGNITION -- SPECIFIC PROPERTY
+- Variants: "I do not know the PROP"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(c1:entity ^ PROPERTY)), e.g. color size or shape
+- File: cognition.trf
+- "I don't know the colour" @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Target>(c1:entity ^ color))
+
+
+* DISCONFIRMATION OF COGNITION -- SPECIFIC PROPERTY OF SPECIFIC OBJECT
+- Variants: "I don't know the PROP of the THING"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Owner>(T:thing ^ THING ^ <InfoStatus>familiar) ^ <Target>(P:entity ^ PROPERTY ^ <InfoStatus>familiar))
+- File: cognition.trf
+- "I don't know the color of the box" : @d1:dvp(c-goal ^ <SpeechAct>reject ^ <AcknoModality>cognition ^ <Owner>(t:thing ^ box ^ <InfoStatus>familiar) ^ <Target>(P:entity ^ color ^ <InfoStatus>familiar))
+         
+                     
+
+* GENERAL CONFIRMATION 
+- Variants: "thanks" (1), "ok" (2), "thank you for telling me that" (3) 
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>confirmation)
+- File: confirmation.trf
+- Output: "ok"
+
+* ASCRIPTION OF MATERIAL PROPERTIES - NON-PRONOMINALIZED FAMILIAR OBJECTS
+- Variants: "the THING is PROPVALUE"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:thing ^ THING ^ <InfoStatus>familiar ^ <Salient>true) ^ <PROPERTY>(b3:quality ^ PROPVALUE)))
+- File: ascription.trf 
+- "the box is red" : @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:thing ^ box ^ <InfoStatus>familiar ^ <Salient>true) ^ <Color>(b3:quality ^ red)))
+- "the box is big" : @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:thing ^ box ^ <InfoStatus>familiar ^ <Salient>true) ^ <Size>(b3:quality ^ big)))
+
+
+* ASCRIPTION OF TYPE PROPERTY - NON-PRONOMINALIZED FAMILIAR OBJECTS
+- Variants: "the [PROPERTY VALUES] THING is a THING2"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <PROPERTY>VALUE ^ <InfoStatus>familiar ^ THING) 
+		^ <Type>(b3:entity ^ <PROPERTY2>VALUE2 ^ THING2))) 
+- File: ascription.trf
+- "the red thing is a big box": @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:thing ^ thing ^ <Color>red ^ <InfoStatus>familiar ^ <Salient>true) ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Size>big ^ box))) 
+
+
+* ASCRIPTION OF MATERIAL PROPERTIES - PRONOMINALIZED FAMILIAR OBJECTS
+- Variants: "it is PROPVALUE"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ THING ^ <InfoStatus>familiar ^ <Salient>true) 
+		^ <PROPERTY>(b3:quality ^ PROPVALUE)))
+- File: ascription.trf 
+- "it is red" : @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ context ^ <InfoStatus>familiar ^ <Salient>true) ^ <Color>(b3:quality ^ red)))
+- "this is red" : @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ context ^ <Salient>true) ^ <Color>(b3:quality ^ red)))
+
+
+* ASCRIPTION OF TYPE PROPERTY - PRONOMINALIZED FAMILIAR OBJECTS
+- Variants: "it is a THING2"
+- Goal: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <PROPERTY>VALUE ^ <InfoStatus>familiar ^ <Salient>true ^ THING) 
+		^ <Type>(b3:entity ^ <PROPERTY2>VALUE2 ^ THING2))) 
+- File: ascription.trf
+- "it is a red box": @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
+
+
+* POLAR QUESTION: 
+- "is the color of the box blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+- "is this blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:entity ^ context ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+- "is it blue": @d1:dvp(<SpeechAct>clarification ^ <Modality>vision ^ <Target>(t:entity ^ context ^ <InfoStatus>familiar ^ <Salient>true) ^ <Content>(c1:q-color ^ blue))
+
+* WH-QUESTION: 
+- "what color is the box" @d1:dvp(<SpeechAct>question ^ <Modality>vision ^ <Target>(t:thing ^ box ^ <Salient>true) ^ <Content>(c1:q-color))
+
+* REQUEST: 
+- "could you show a red object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-color ^ red))
+- "could you show me a big object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-size ^ big))
+- "could you show me a round object": @d1:dvp(<SpeechAct>request ^ <Modality>vision ^ <Actor>(y1:person ^ you) ^ <Content>(c1:q-shape ^ round))
+
+

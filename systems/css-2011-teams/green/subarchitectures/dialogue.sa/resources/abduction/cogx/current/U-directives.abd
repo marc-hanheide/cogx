@@ -1,0 +1,291 @@
+%-------------------------------------------------------------------------
+% QUESTION
+%-------------------------------------------------------------------------
+
+% is X Y
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
+	understand : polar_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
+	polar_query_prop(Nom, Prop, Value),
+%	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
+	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop), hypo(Value)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% @{be1_1:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity ^ what) ^ <Subject>(context1_1:entity) ^ <Wh-Restr>(what1_1:entity))
+
+% what is X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+		i : 'rel_Cop-Scope'(Nom, WhNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
+	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+
+% do you know what X is
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Patient(Nom, PatNom),
+		i : 'rel_Scope-in'(PatNom, ScopeNom),
+			i : rel_Subject(ScopeNom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+%	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
+	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% what X is Y
+understand : event : utter(S, H, Nom) <-
+%	i : sort(Nom, ascription),  % XXX garbage
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : rel_Subject(Nom, SubjNom),
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : rel_Scope(WhNom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
+
+% what is the X of Y
+understand : event : utter(S, H, Nom) <-
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Subject(Nom, SubjNom),
+		i : rel_Owner(SubjNom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, ScopeNom),
+	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : wh_query_scope(S, H, EpSt, Int, Ref, Nom) <-
+	wh_query_prop(Nom, Prop),
+%	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
+	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% do you see the box:
+% @{see1_4:perception}(see ^ <Mood>int ^ <Tense>pres ^ <Patient>(box1_4:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Actor>(you1_4:person ^ you ^ <Num>sg) ^ <Subject>(you1_4:person))
+
+% can you see the box:
+% @{see1_3:perception}(see ^ <Mood>int ^ <Tense>pres ^ <Modifier>(can1_3:modal ^ can) ^ <Patient>(box1_3:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Actor>(you1_3:person ^ you ^ <Num>sg) ^ <Subject>(you1_3:person))
+
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : feat_Tense(Nom, pres),
+	i : feat_Mood(Nom, int),
+	i : rel_Actor(Nom, ActorNom),
+		person(S, H, ActorNom, H),
+	i : rel_Patient(Nom, PatientNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : topic(S, H, EpSt, Int, PatientNom, PatientNom),
+	get_topic_referent(S, H, EpSt, Int, PatientNom, PatientNom, BId),
+	int : post(Int, state(['question-answered', agent(H), about(BId), 'feature-defined'(about)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% what do you see
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : feat_Tense(Nom, pres),
+	i : feat_Mood(Nom, int),
+	i : rel_Actor(Nom, ActorNom),
+		person(S, H, ActorNom, H),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(['scene-description', agent(H)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+% COMMAND: ACTION-NON-MOTION
+%-------------------------------------------------------------------------
+
+% find/bring X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-non-motion'),
+%	i : 'feat_Mood'(Nom, imp),  % "could you please" is in int here
+	i : 'rel_Actor'(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),  % TODO:
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	find_patient(Nom, RefNom),
+	understand : topic(S, H, EpSt, Int, RefNom, RefNom),
+	i : prop(Nom, ActionProp),
+	nm_action_effects(S, H, EpSt, Nom, Int, RefNom, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
+	int : pre(Int, belief(Ref, EpSt, fv(inRoom, unknown))) / p(1.0),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+%	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
+	int : post(Int, state([found, agent(H), patient(BId)])) / p(1.0).
+
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, bring) <-
+	determine_recipient(RootNom, S, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
+
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, get) <-
+	determine_recipient(RootNom, H, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
+
+nm_action_effects(S, H, EpSt, RootNom, Int, Ref, give) <-
+	determine_recipient(RootNom, H, S, H, Recipient),
+	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
+	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% NOTE: this is a hack. A proper parse would be sufficiently clear.
+find_patient(Nom, RefNom) <-
+	i : 'rel_Patient'(Nom, RefNom),
+	i : sort(RefNom, thing).
+
+find_patient(Nom, RefNom) <-
+	i : 'rel_Recipient'(Nom, RefNom),
+	i : sort(RefNom, thing).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+determine_recipient(Nom, Default, _, Hearer, Default) <-
+	default_recipient(Default) / p(0.5).
+
+determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
+	i : rel_Recipient(Nom, RecpNom),
+		i : sort(RecpNom, person),
+		i : prop(RecpNom, 'I').
+
+%-------------------------------------------------------------------------
+% COMMAND: ACTION-MOTION
+%-------------------------------------------------------------------------
+
+% go to X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-motion'),
+%	i : feat_Mood(Nom, imp),
+	i : rel_Actor(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	i : rel_Modifier(Nom, ModifNom),
+		i : rel_Anchor(ModifNom, AnchorNom),
+		understand : topic(S, H, EpSt, Int, AnchorNom, AnchorNom),
+	i : prop(Nom, ActionProp),
+	m_action_effects(S, H, EpSt, Int, AnchorNom, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+m_action_effects(S, H, EpSt, Int, Ref, go) <-
+	get_topic_referent(S, H, shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+	int : post(Int, state([position, agent(H), 'location-of'(BId)])) / p(1.0).
+
+m_action_effects(S, H, EpSt, Int, Ref, move) <-
+	m_action_effect(S, H, Int, Ref, go).
+
+m_action_effects(S, H, EpSt, Int, Ref, turn) <-
+	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+	int : post(Int, state(['orientation-towards', agent(H), 'location-of'(BId)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% go DIRECTION
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, 'action-motion'),
+%	i : feat_Mood(Nom, imp),
+	i : rel_Actor(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	i : rel_Modifier(Nom, ModifNom),
+		understand : direction(ModifNom, Dir),
+	i : prop(Nom, ActionProp),
+	m_action_effects_direction(S, H, Int, Dir, ActionProp).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : direction(Nom, Dir) <-
+%	i : sort(Nom, 'm-direction'),  % m-whereto
+	i : prop(Nom, Prop),
+	valid_direction(Prop, Dir).
+
+valid_direction(forward, forward).
+valid_direction(back, back).
+valid_direction(around, back).
+valid_direction(left, left).
+valid_direction(right, right).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+m_action_effects_direction(S, H, Int, Dir, go) <-
+	int : post(Int, state([motion, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
+
+m_action_effects_direction(S, H, Int, Dir, move) <-
+	m_action_effects_direction(S, H, Int, Dir, go).
+
+m_action_effects_direction(S, H, Int, Dir, turn) <-
+	int : post(Int, state([turn, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
+
+%-------------------------------------------------------------------------
+
+% stop
+understand : event : utter(S, H, Nom) <-
+%	i : sort(Nom, 'action-motion'),
+	i : feat_Mood(Nom, imp),
+	i : prop(Nom, stop),
+%	i : rel_Actor(Nom, ActorNom),
+%		i : prop(ActorNom, addressee),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(['stop-motion', agent(H)])) / p(1.0).  % XXX
+
+%-------------------------------------------------------------------------

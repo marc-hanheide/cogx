@@ -1,0 +1,19 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP stereoserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig img_inifile/tuw_short_baseline.ini --maxdisp 32 --imgsize "320 240" --logimages #--display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "img_inifile/stereoserver-orig-L.jpg img_inifile/stereoserver-orig-R.jpg" --start 1 --end 1 --framerate_ms 50 --camconfigs "img_inifile/tuw_short_baseline.ini:L img_inifile/tuw_short_baseline.ini:R" --swapredblue
+
+# live images
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480"
+
+CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereoserver --videoname videoserver --camid 0
+
