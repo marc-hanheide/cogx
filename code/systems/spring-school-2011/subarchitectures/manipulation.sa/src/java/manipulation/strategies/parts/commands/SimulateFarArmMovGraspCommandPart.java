@@ -76,9 +76,6 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
 
-			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
-					.getRobotToWorldTranslation(currentGoalPosition);
-
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
 			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
@@ -89,12 +86,22 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			Matrix rotInWorld = getManipulator().getBaseConnector()
-					.getRobotToWorldRotation(graspRotation);
+			Pose3 pInRob = CogXConverter.convertToPose3(currentGoalPosition,
+					graspRotation);
+
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
+
+			Pose3 tRobotToWorld = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			Pose3 pInWorld = Functions.transform(tRobotToWorld, pInRob);
 
 			simulatedPose = getManipulator().getArmConnector()
 					.simulateArmMovement(
-							new Pose(rotInWorld, itemInWorldPosition));
+							CogXConverter.convertPose3ToPose(pInWorld));
 
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
@@ -104,6 +111,8 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 			logger.error(e);
 			manipulationFailed = true;
 			return;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 	}
 

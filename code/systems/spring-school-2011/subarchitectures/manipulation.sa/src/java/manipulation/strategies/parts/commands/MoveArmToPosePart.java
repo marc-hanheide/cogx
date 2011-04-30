@@ -50,27 +50,28 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 	}
 
 	private void moveArm() {
-		Pose3 targetPose = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
+		Pose3 pInRob = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetPose;
 
-		Vector3D goalInWorldPosition = getManipulator().getBaseConnector()
-				.getRobotToWorldTranslation(
-						new Vector3D(targetPose.pos.x, targetPose.pos.y,
-								targetPose.pos.z));
-
-		Matrix goalInWorldRot = getManipulator().getBaseConnector()
-				.getRobotToWorldRotation(
-						CogXConverter.convBlortToMatrix(targetPose.rot));
-
 		try {
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
+
+			Pose3 tRobotToWorld = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			Pose3 pInWorld = Functions.transform(tRobotToWorld, pInRob);
+
 			getManipulator().getArmConnector().reach(
-					new Vector3D(goalInWorldPosition.getX(),
-							goalInWorldPosition.getY(),
-							goalInWorldPosition.getZ()), goalInWorldRot);
+					CogXConverter.convertPose3ToPose(pInWorld));
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
 			return;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 
 	}

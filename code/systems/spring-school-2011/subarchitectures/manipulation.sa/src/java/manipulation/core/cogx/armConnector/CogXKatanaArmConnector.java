@@ -227,6 +227,11 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 	}
 
+	@Override
+	public void reach(Pose pose) throws ManipulatorException {
+		reach(pose.getTranslation(), pose.getRotation());
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
