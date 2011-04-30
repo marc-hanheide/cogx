@@ -78,48 +78,48 @@ public class CogXDoraBaseConnector implements BaseConnector {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Vector3D getRobotToWorldTranslation(Vector3D relativePoint) {
-		Matrix rotMatrix;
-
-		Vector3D globalPose = null;
-		try {
-			rotMatrix = MathOperation.getRotationAroundZ(getCurrentPosition()
-					.getAngle());
-
-			Vector3D newRelCoordinate = MathOperation
-					.getMatrixVectorMultiplication(rotMatrix, relativePoint);
-
-			globalPose = new Vector3D(getCurrentPosition().getPoint().getX()
-					+ newRelCoordinate.getX(), getCurrentPosition().getPoint()
-					.getY() + newRelCoordinate.getY(), newRelCoordinate.getZ());
-
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
-		}
-
-		return globalPose;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Matrix getRobotToWorldRotation(Matrix rotation) {
-		Matrix returnMatrix = null;
-		try {
-			returnMatrix = MathOperation.getMatrixMatrixMultiplication(
-					MathOperation.getRotationAroundZ(getCurrentPosition()
-							.getAngle()), rotation);
-		} catch (ExternalMemoryException e) {
-			logger.error(e);
-		}
-
-		return returnMatrix;
-
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override
+//	public Vector3D getRobotToWorldTranslation(Vector3D relativePoint) {
+//		Matrix rotMatrix;
+//
+//		Vector3D globalPose = null;
+//		try {
+//			rotMatrix = MathOperation.getRotationAroundZ(getCurrentPosition()
+//					.getAngle());
+//
+//			Vector3D newRelCoordinate = MathOperation
+//					.getMatrixVectorMultiplication(rotMatrix, relativePoint);
+//
+//			globalPose = new Vector3D(getCurrentPosition().getPoint().getX()
+//					+ newRelCoordinate.getX(), getCurrentPosition().getPoint()
+//					.getY() + newRelCoordinate.getY(), newRelCoordinate.getZ());
+//
+//		} catch (ExternalMemoryException e) {
+//			logger.error(e);
+//		}
+//
+//		return globalPose;
+//	}
+//
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override
+//	public Matrix getRobotToWorldRotation(Matrix rotation) {
+//		Matrix returnMatrix = null;
+//		try {
+//			returnMatrix = MathOperation.getMatrixMatrixMultiplication(
+//					MathOperation.getRotationAroundZ(getCurrentPosition()
+//							.getAngle()), rotation);
+//		} catch (ExternalMemoryException e) {
+//			logger.error(e);
+//		}
+//
+//		return returnMatrix;
+//
+//	}
 
 }

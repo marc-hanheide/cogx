@@ -4,16 +4,24 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Observable;
 
+import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.InternalMemoryException;
 import manipulation.core.share.exceptions.ItemException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Pose;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.VisionModel;
 import manipulation.itemMemory.Item.ItemStatus;
 import manipulation.itemMemory.Item.PropertyName;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 /**
  * represents an item memory
@@ -141,16 +149,31 @@ public class ItemMemory extends Observable {
 			newItem.setAttribute(PropertyName.ITEM_IN_ROB_ROTATION,
 					itemInRobRotation);
 
-			Vector3D itemInWorldPosition = manipulator.getBaseConnector()
-					.getRobotToWorldTranslation(itemInRobPosition);
+			Pose3 robPose = CogXConverter.convertToPose3(itemInRobPosition,
+					itemInRobRotation);
 
-			Matrix itemInWorldRotation = manipulator.getBaseConnector()
-					.getRobotToWorldRotation(itemInRobRotation);
+			try {
+				Vector2D position = manipulator.getBaseConnector()
+						.getCurrentPosition().getPoint();
 
-			newItem.setAttribute(PropertyName.WORLD_POSITION,
-					itemInWorldPosition);
-			newItem.setAttribute(PropertyName.WORLD_ROTATION,
-					itemInWorldRotation);
+				Pose3 tRobotToWorld = Functions.pose3FromEuler(new Vector3(
+						position.getX(), position.getY(), 0), 0.0, 0.0,
+						manipulator.getBaseConnector().getCurrentPosition()
+								.getAngle());
+
+				Pose3 pInWorld = Functions.transform(tRobotToWorld, robPose);
+
+				Pose pInWorldPos = CogXConverter.convertPose3ToPose(pInWorld);
+
+				newItem.setAttribute(PropertyName.WORLD_POSITION,
+						pInWorldPos.getTranslation());
+				newItem.setAttribute(PropertyName.WORLD_ROTATION,
+						pInWorldPos.getRotation());
+
+			} catch (ExternalMemoryException e) {
+				logger.error(e);
+			}
+
 		} else {
 			newItem.setAttribute(PropertyName.WORLD_POSITION, newPositionData);
 			newItem.setAttribute(PropertyName.WORLD_ROTATION, newRotationData);
