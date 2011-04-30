@@ -7,15 +7,17 @@ import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
-import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.FineArmMovementCommand;
+import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.ManipulationCommandStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.ManipulationExternalCommand;
@@ -29,12 +31,15 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
 import cast.SubarchitectureComponentException;
 import cast.cdl.WorkingMemoryAddress;
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 /**
  * defines a behaviour to reach a position in front of an object with the arm
@@ -64,19 +69,8 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			VisualObject targetVisOb = (((CogXRunner) getManipulator()
 					.getRunner()).getMemoryEntry(wma, VisualObject.class));
 
-			Vector3D currentArmPos = getManipulator().getArmConnector()
-					.getCurrentPosition();
-
 			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
-
-			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
-					.getRobotToWorldTranslation(currentGoalPosition);
-
-			double posInFront = 0.1;
-
-			Vector3D direction = MathOperation.getDirection(currentArmPos,
-					itemInWorldPosition);
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
@@ -87,17 +81,25 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
 					.getRadiant(-90));
 
-			Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
+			Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			Vector3D goalWithDistance = new Vector3D(
-					(itemInWorldPosition.getX() - posInFront * direction.getX()),
-					itemInWorldPosition.getY() - posInFront * direction.getY(),
-					itemInWorldPosition.getZ());
+			Pose3 pInRob = CogXConverter.convertToPose3(currentGoalPosition,
+					graspRotation);
 
-			getManipulator().getArmConnector().reach(goalWithDistance,
-					greifRotation);
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
+
+			Pose3 tRobotToWorld = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			Pose3 pInWorld = Functions.transform(tRobotToWorld, pInRob);
+
+			getManipulator().getArmConnector().reach(
+					CogXConverter.convertPose3ToPose(pInWorld));
 
 			FarArmMovementCommand currentCom = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
@@ -117,6 +119,8 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 			logger.error(e);
 			manipulationFailed = true;
 			return;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 	}
 
@@ -195,9 +199,26 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 						Matrix currentRot = getManipulator().getArmConnector()
 								.getCurrentRotation();
 
-						currentCom.reachedPose = CogXConverter.convertToPose3(
+						Pose3 pInWorld = CogXConverter.convertToPose3(
 								currentPos, currentRot);
+
+						Vector2D position = getManipulator().getBaseConnector()
+								.getCurrentPosition().getPoint();
+
+						Pose3 tWorldToRobot = Functions
+								.pose3FromEuler(new Vector3(position.getX(),
+										position.getY(), 0), 0.0, 0.0,
+										getManipulator().getBaseConnector()
+												.getCurrentPosition()
+												.getAngle());
+
+						Pose3 pInRobot = Functions.transformInverse(
+								tWorldToRobot, pInWorld);
+
+						currentCom.reachedPose = pInRobot;
 					} catch (ManipulatorException e) {
+						logger.error(e);
+					} catch (ExternalMemoryException e) {
 						logger.error(e);
 					}
 

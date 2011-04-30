@@ -44,6 +44,15 @@ public interface ArmConnector {
 			throws ManipulatorException;
 
 	/**
+	 * reaches a position with the arm
+	 * 
+	 * @param pose
+	 *            Position to reach
+	 * @throws ManipulatorException
+	 */
+	public void reach(Pose pose) throws ManipulatorException;
+
+	/**
 	 * sends the arm to its home position
 	 * 
 	 * @throws ManipulatorException
