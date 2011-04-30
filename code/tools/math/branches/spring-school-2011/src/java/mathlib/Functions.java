@@ -17,6 +17,9 @@ public final class Functions {
 	 * Assigns inverse to B, assuming R is orthonormal, i.e. inv(R) = R^T, i.e.
 	 * R is a rotation matrix. poses T1 = [R1, p1], T2 = [R2, p2] T2 = [R1^T, -
 	 * R1^T * p1]
+	 * 
+	 * @param T1
+	 * @return T2
 	 */
 	static public Pose3 inverse(Pose3 T1) {
 		Pose3 T2 = new Pose3();
@@ -29,29 +32,30 @@ public final class Functions {
 		return T2;
 	}
 
+	/** test routine
+	 * @param argv
+	 */
 	public static void main(String[] argv) {
 		Pose3 pInWorld = pose3FromEuler(new Vector3(0, 1, 0), Math.PI / 10,
 				0.0, 0.0);
 		// example for slam pos
-		Pose3 tWorldToRobot = pose3FromEuler(new Vector3(3, 2, 0), 0.0,
-				0.0, Math.PI / 4);
-		
+		Pose3 tWorldToRobot = pose3FromEuler(new Vector3(3, 2, 0), 0.0, 0.0,
+				Math.PI / 4);
+
 		Pose3 pInRobot = transform(tWorldToRobot, pInWorld);
 		System.out.println(toString(pInRobot));
-		Pose3 pInWorldNew = transformInverse(tWorldToRobot,pInRobot);
+		Pose3 pInWorldNew = transformInverse(tWorldToRobot, pInRobot);
 		System.out.println(toString(pInWorld));
 		System.out.println(toString(pInWorldNew));
-
-		//		
-		// Pose3 pi2=inverse(pi);
-		// System.out.println(toString(p));
-		// System.out.println(toString(pi));
-		// System.out.println(toString(pi2));
 	}
 
 	/**
 	 * Rotation matrix from Euler angles - rotation about: X (roll) -> Y(pitch)
 	 * -> Z(yaw). roll, pitch, yaw in <-PI/2, PI/2>
+	 * @param roll
+	 * @param pitch
+	 * @param yaw
+	 * @return rotation matrix
 	 */
 	static public Matrix33 matrix33FromEuler(double roll, double pitch,
 			double yaw) {
@@ -72,131 +76,13 @@ public final class Functions {
 		return a;
 	}
 
-	// /**
-	// * Set from a 4x4 float array in row major order, where the upper 3x3 part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void setRow44(Pose3 T, float m[])
-	// {
-	// setRow44(T.rot, m);
-	// set(T.pos, (double)m[3], (double)m[7], (double)m[11]);
-	// }
-	//
-	// /**
-	// * Set from a 4x4 double array in row major order, where the upper 3x3
-	// part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void setRow44(Pose3 T, double m[])
-	// {
-	// setRow44(T.rot, m);
-	// set(T.pos, m[3], m[7], m[11]);
-	// }
-	//
-	// /**
-	// * Set from a 4x4 float array in column major order, where the upper 3x3
-	// part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void setColumn44(Pose3 T, float m[])
-	// {
-	// setColumn44(T.rot, m);
-	// set(T.pos, (double)m[12], (double)m[13], (double)m[14]);
-	// }
-	//
-	// /**
-	// * Set from a 4x4 double array in column major order, where the upper 3x3
-	// part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void setColumn44(Pose3 T, double m[])
-	// {
-	// setColumn44(T.rot, m);
-	// set(T.pos, m[12], m[13], m[14]);
-	// }
-	//
-	// /**
-	// * Get to a 4x4 float array in row major order, where the upper 3x3 part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void getRow44(Pose3 &T, float m[])
-	// {
-	// getRow44(T.rot, m);
-	// m[3] = (float)T.pos.x;
-	// m[7] = (float)T.pos.y;
-	// m[11] = (float)T.pos.z;
-	// m[12] = m[13] = m[14] = 0.;
-	// m[15] = 1.;
-	// }
-	//
-	// /**
-	// * Get to a 4x4 double array in row major order, where the upper 3x3 part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void getRow44(Pose3 &T, double m[])
-	// {
-	// getRow44(T.rot, m);
-	// m[3] = T.pos.x;
-	// m[7] = T.pos.y;
-	// m[11] = T.pos.z;
-	// m[12] = m[13] = m[14] = 0.;
-	// m[15] = 1.;
-	// }
-	//
-	// /**
-	// * Get to a 4x4 float array in column major order, where the upper 3x3
-	// part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void getColumn44(Pose3 &T, float m[])
-	// {
-	// getColumn44(T.rot, m);
-	// m[12] = (float)T.pos.x;
-	// m[13] = (float)T.pos.y;
-	// m[14] = (float)T.pos.z;
-	// m[3] = m[7] = m[11] = 0.;
-	// m[15] = 1.;
-	// }
-	//
-	// /**
-	// * Get to a 4x4 double array in column major order, where the upper 3x3
-	// part
-	// * corresponds to the rotation matrix.
-	// */
-	// static void getColumn44(Pose3 &T, double m[])
-	// {
-	// getColumn44(T.rot, m);
-	// m[12] = T.pos.x;
-	// m[13] = T.pos.y;
-	// m[14] = T.pos.z;
-	// m[3] = m[7] = m[11] = 0.;
-	// m[15] = 1.;
-	// }
-	//
-	// static void setIdentity(Pose3 &T)
-	// {
-	// setIdentity(T.rot);
-	// setZero(T.pos);
-	// }
-	//
-	// static bool isIdentity(Pose3 &T)
-	// {
-	// return isIdentity(T.rot) & isZero(T.pos);
-	// }
-	//
-	// static bool isFinite(Pose3 &T)
-	// {
-	// return isFinite(T.rot) & isFinite(T.pos);
-	// }
-	//
-	// /**
-	// * Returns true if A and B's elems are within epsilon of each other.
-	// */
-	// static bool equals(Pose3 A, Pose3 B, double eps)
-	// {
-	// return equals(A.pos, B.pos, eps) & equals(A.rot, B.rot, eps);
-	// }
-
+	/**
+	 * C= A * B
+	 * 
+	 * @param A
+	 * @param B
+	 * @return C
+	 */
 	static public Matrix33 mult(Matrix33 A, Matrix33 B) {
 		// note: temps needed in case C and A or B refer to the same matrix
 		double a00 = A.m00 * B.m00 + A.m01 * B.m10 + A.m02 * B.m20;
@@ -224,6 +110,13 @@ public final class Functions {
 		return C;
 	}
 
+	/**
+	 * c = A * b
+	 * 
+	 * @param A
+	 * @param b
+	 * @return c
+	 */
 	static public Vector3 mult(Matrix33 A, Vector3 b) {
 		Vector3 c = new Vector3();
 		// note: temps needed in case b and c refer to the same vector
@@ -237,6 +130,13 @@ public final class Functions {
 		return c;
 	}
 
+	/**
+	 * C=A^T * B
+	 * 
+	 * @param A
+	 * @param B
+	 * @return C
+	 */
 	static public Matrix33 multByTranspose(Matrix33 A, Matrix33 B) {
 		Matrix33 C = new Matrix33();
 		// note: temps needed in case C and A or B refer to the same matrix
@@ -264,6 +164,13 @@ public final class Functions {
 		return C;
 	}
 
+	/**
+	 * C=transpose(A)*b
+	 * 
+	 * @param A
+	 * @param b
+	 * @return C
+	 */
 	static public Vector3 multByTranspose(Matrix33 A, Vector3 b) {
 		Vector3 c = new Vector3();
 		// note: temps needed in case b and c refer to the same vector
@@ -277,14 +184,30 @@ public final class Functions {
 		return c;
 	}
 
-	static Pose3 pose3(Vector3 pos, Matrix33 rot) {
+	/**
+	 * create pose from translation and rotation matrix
+	 * 
+	 * @param pos
+	 * @param rot
+	 * @return
+	 */
+	static public Pose3 pose3(Vector3 pos, Matrix33 rot) {
 		Pose3 T = new Pose3();
 		T.pos = pos;
 		T.rot = rot;
 		return T;
 	}
 
-	static Pose3 pose3FromEuler(Vector3 pos, double roll, double pitch,
+	/**
+	 * create pose from translation and euler angles
+	 * 
+	 * @param pos
+	 * @param roll
+	 * @param pitch
+	 * @param yaw
+	 * @return pose
+	 */
+	static public Pose3 pose3FromEuler(Vector3 pos, double roll, double pitch,
 			double yaw) {
 		Pose3 T = new Pose3();
 		T.pos = pos;
@@ -292,6 +215,13 @@ public final class Functions {
 		return T;
 	}
 
+	/**
+	 * subtract vectors c=a-b
+	 * 
+	 * @param a
+	 * @param b
+	 * @return c
+	 */
 	static public Vector3 sub(Vector3 a, Vector3 b) {
 		Vector3 c = new Vector3();
 		c.x = a.x - b.x;
@@ -300,6 +230,12 @@ public final class Functions {
 		return c;
 	}
 
+	/**
+	 * to tring
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public static String toString(Matrix33 p) {
 		String s = new String();
 		s = "[[" + Double.toString(p.m00) + ", " + Double.toString(p.m01)
@@ -312,6 +248,12 @@ public final class Functions {
 
 	}
 
+	/**
+	 * o string
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public static String toString(Pose3 p) {
 		String s = new String();
 		s = "rot=" + toString(p.rot) + "\n";
@@ -320,6 +262,12 @@ public final class Functions {
 
 	}
 
+	/**
+	 * to string
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public static String toString(Vector3 p) {
 		String s = new String();
 		s = "[" + Double.toString(p.x) + ", " + Double.toString(p.y) + ", "
@@ -331,6 +279,10 @@ public final class Functions {
 	/**
 	 * Transform pose from local to world coordinates, poses T = [R, p], T1 =
 	 * [R1, p1], T2 = [R2, p2]. T2 = [R * R1, R * p1 + p]
+	 * 
+	 * @param T
+	 * @param T1
+	 * @return T2
 	 */
 	static public Pose3 transform(Pose3 T, Pose3 T1) {
 		Pose3 T2 = new Pose3();
@@ -342,6 +294,9 @@ public final class Functions {
 	/**
 	 * Transform 3D point from local to world coordinates, pose T = [R, p]. b =
 	 * R * a + p;
+	 * @param T
+	 * @param a
+	 * @return b
 	 */
 	static public Vector3 transform(Pose3 T, Vector3 a) {
 		Vector3 b = mult(T.rot, a);
@@ -354,6 +309,10 @@ public final class Functions {
 	/**
 	 * Transform pose from global to local coordinates, poses T = [R, p], T1 =
 	 * [R1, p1], T2 = [R2, p2]. T2 = [R^T * R1, R^T * (p1 - p)]
+	 * 
+	 * @param T
+	 * @param T1
+	 * @return T2
 	 */
 	static public Pose3 transformInverse(Pose3 T, Pose3 T1) {
 		Pose3 T2 = new Pose3();
@@ -362,12 +321,26 @@ public final class Functions {
 		return T2;
 	}
 
+	/**
+	 * Transform 3D point from world to local coordinates, pose T = [R, p]. b =
+	 * R^T * (a - p)
+	 * 
+	 * @param T
+	 * @param a
+	 * @return b
+	 */
 	static public Vector3 transformInverse(Pose3 T, Vector3 a) {
 		Vector3 b = sub(a, T.pos);
 		b = multByTranspose(T.rot, b);
 		return b;
 	}
 
+	/**
+	 * transpose matrix
+	 * 
+	 * @param A
+	 * @return A^T
+	 */
 	static public Matrix33 transpose(Matrix33 A) {
 		Matrix33 B = new Matrix33();
 		B.m00 = A.m00;
