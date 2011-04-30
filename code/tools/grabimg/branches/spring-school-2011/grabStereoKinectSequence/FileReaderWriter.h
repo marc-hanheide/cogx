@@ -26,19 +26,19 @@ int writeToFile(char *filename, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point
   long coldatasize = colCloud.dataend - colCloud.datastart;
 
   if(datasize != coldatasize) 
-    cout << "FileReaderWriter: Warning: Invalid data size of clouds";
+    std::cout << "FileReaderWriter: Warning: Invalid data size of clouds";
   
-  ofstream file (filename, ios::out|ios::binary|ios::ate);
+  std::ofstream file (filename, std::ios::out|std::ios::binary|std::ios::ate);
   if (file.is_open())
   {
-    file.seekp(0, ios::beg);
+    file.seekp(0, std::ios::beg);
     file.write (row, rowsize);
     file.write (col, colsize);
     file.write (data, datasize);
     file.write (coldata, datasize);
     file.close();
   }
-  else cout << "FileReaderWriter: Warning: Unable to open file";
+  else std::cout << "FileReaderWriter: Warning: Unable to open file";
 }
 
 int readFromFile(char *filename, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud) 
@@ -48,10 +48,10 @@ int readFromFile(char *filename, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poin
   char *rowbuf = new char[rowsize];
   char *colbuf = new char[colsize];
 
-  ifstream file (filename, ios::in|ios::binary|ios::ate);
+  std::ifstream file (filename, std::ios::in|std::ios::binary|std::ios::ate);
   if (file.is_open())
   {
-    file.seekg (0, ios::beg);
+    file.seekg (0, std::ios::beg);
 
     // get size of rows/cols
     file.read (rowbuf, rowsize);
@@ -72,7 +72,7 @@ int readFromFile(char *filename, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poin
     
     file.close();
   }
-  else cout << "FileReaderWriter: Warning: Unable to open file";
+  else std::cout << "FileReaderWriter: Warning: Unable to open file";
   return 0;
 }
 
