@@ -7,8 +7,10 @@ import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
@@ -28,10 +30,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
 
 import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 public class MoveArmToPosePart extends StrategyPart implements Observer {
 
@@ -49,11 +53,20 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 		Pose3 targetPose = ((MoveArmToPose) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand()).targetPose;
 
+		Vector3D goalInWorldPosition = getManipulator().getBaseConnector()
+				.getRobotToWorldTranslation(
+						new Vector3D(targetPose.pos.x, targetPose.pos.y,
+								targetPose.pos.z));
+
+		Matrix goalInWorldRot = getManipulator().getBaseConnector()
+				.getRobotToWorldRotation(
+						CogXConverter.convBlortToMatrix(targetPose.rot));
+
 		try {
 			getManipulator().getArmConnector().reach(
-					new Vector3D(targetPose.pos.x, targetPose.pos.y,
-							targetPose.pos.z),
-					CogXConverter.convBlortToMatrix(targetPose.rot));
+					new Vector3D(goalInWorldPosition.getX(),
+							goalInWorldPosition.getY(),
+							goalInWorldPosition.getZ()), goalInWorldRot);
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
@@ -125,9 +138,26 @@ public class MoveArmToPosePart extends StrategyPart implements Observer {
 						Matrix currentRot = getManipulator().getArmConnector()
 								.getCurrentRotation();
 
-						currentCom.reachedPose = CogXConverter.convertToPose3(
+						Pose3 pInWorld = CogXConverter.convertToPose3(
 								currentPos, currentRot);
+
+						Vector2D position = getManipulator().getBaseConnector()
+								.getCurrentPosition().getPoint();
+
+						Pose3 tWorldToRobot = Functions
+								.pose3FromEuler(new Vector3(position.getX(),
+										position.getY(), 0), 0.0, 0.0,
+										getManipulator().getBaseConnector()
+												.getCurrentPosition()
+												.getAngle());
+
+						Pose3 pInRobot = Functions.transformInverse(
+								tWorldToRobot, pInWorld);
+
+						currentCom.reachedPose = pInRobot;
 					} catch (ManipulatorException e) {
+						logger.error(e);
+					} catch (ExternalMemoryException e) {
 						logger.error(e);
 					}
 

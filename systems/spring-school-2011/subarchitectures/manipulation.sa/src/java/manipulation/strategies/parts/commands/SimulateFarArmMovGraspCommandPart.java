@@ -6,9 +6,11 @@ import java.util.Observer;
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Pose;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
@@ -29,8 +31,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 import VisionData.VisualObject;
 import cast.SubarchitectureComponentException;
@@ -70,19 +76,25 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
 
+			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
+					.getRobotToWorldTranslation(currentGoalPosition);
+
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
 			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
 					.getRadiant(0));
 			Matrix rotation3 = MathOperation.getRotationAroundZ(MathOperation
 					.getRadiant(-90));
-			Matrix greifRotation = MathOperation.getMatrixMatrixMultiplication(
+			Matrix graspRotation = MathOperation.getMatrixMatrixMultiplication(
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
+			Matrix rotInWorld = getManipulator().getBaseConnector()
+					.getRobotToWorldRotation(graspRotation);
+
 			simulatedPose = getManipulator().getArmConnector()
 					.simulateArmMovement(
-							new Pose(greifRotation, currentGoalPosition));
+							new Pose(rotInWorld, itemInWorldPosition));
 
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
@@ -117,9 +129,26 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 			currentCom.status = ManipulationCommandStatus.FINISHED;
 			currentCom.comp = ManipulationCompletion.SUCCEEDED;
 
-			currentCom.simulatedReachablePose = CogXConverter
+			Pose3 pInWorld = CogXConverter
 					.convertToPose3(simulatedPose.getTranslation(),
 							simulatedPose.getRotation());
+
+			try {
+				Vector2D position = getManipulator().getBaseConnector()
+						.getCurrentPosition().getPoint();
+
+				Pose3 tWorldToRobot = Functions.pose3FromEuler(new Vector3(
+						position.getX(), position.getY(), 0), 0.0, 0.0,
+						getManipulator().getBaseConnector()
+								.getCurrentPosition().getAngle());
+
+				Pose3 pInRobot = Functions.transformInverse(tWorldToRobot,
+						pInWorld);
+
+				currentCom.simulatedReachablePose = pInRobot;
+			} catch (ExternalMemoryException e) {
+				logger.error(e);
+			}
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
