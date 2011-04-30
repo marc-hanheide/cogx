@@ -1,0 +1,12 @@
+
+HOST localhost
+
+#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 #--log
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
+CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
+CPP MG checksystemcalibration CheckSystemCalibration --videoname VideoServer --cam_ids 0 #--pan "0" --tilt "-0.70"
+

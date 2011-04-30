@@ -1,10 +1,12 @@
+# Learn a new object, in real.
+
 HOST localhost
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --fixed --camids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
+CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
 
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
 

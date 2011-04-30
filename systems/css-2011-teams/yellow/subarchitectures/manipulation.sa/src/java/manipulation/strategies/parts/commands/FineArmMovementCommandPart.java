@@ -5,9 +5,12 @@ import java.util.Observer;
 
 import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
+import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
@@ -28,8 +31,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 import VisionData.VisualObject;
 import cast.SubarchitectureComponentException;
@@ -69,14 +76,21 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 			Matrix currentArmRot = getManipulator().getArmConnector()
 					.getCurrentRotation();
 
-			Vector3D itemInWorldPosition = getManipulator().getBaseConnector()
-					.getRobotToWorldTranslation(currentGoalPosition);
+			Pose3 pInRob = CogXConverter.convertToPose3(currentGoalPosition,
+					currentArmRot);
 
-			Matrix itemInWorldRotation = getManipulator().getBaseConnector()
-					.getRobotToWorldRotation(currentArmRot);
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
 
-			getManipulator().getArmConnector().reach(itemInWorldPosition,
-					itemInWorldRotation);
+			Pose3 tRobotToWorld = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			Pose3 pInWorld = Functions.transform(tRobotToWorld, pInRob);
+
+			getManipulator().getArmConnector().reach(
+					CogXConverter.convertPose3ToPose(pInWorld));
 
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
@@ -86,6 +100,8 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 			logger.error(e);
 			manipulationFailed = true;
 			return;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 
 	}
