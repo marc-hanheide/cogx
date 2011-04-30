@@ -1,3 +1,5 @@
+# Learn a new object, in simulation.
+
 HOST localhost
 
 COMPONENT CPP ptz.server PlayerPTZServer
@@ -11,7 +13,7 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml 
+CPP MG CameraMount CameraMount --use_ptz  --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
 
 CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml"
 
@@ -21,6 +23,8 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --dis
 
 # mode can be RECOGNIZE or LEARN
 CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli-sim" --mode LEARN
+
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
 CPP MG turntable GazeboTurntable --label "cereals1_model" --displayserver "display.srv"
 

@@ -7,8 +7,10 @@ import manipulation.commandWatcher.CommandWatcher;
 import manipulation.commandWatcher.CommandWatcher.ArmReachingStatus;
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
 import manipulation.core.share.types.VisionModel;
 import manipulation.math.MathOperation;
@@ -30,8 +32,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 import VisionData.VisualObject;
 import cast.SubarchitectureComponentException;
@@ -83,8 +89,21 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			getManipulator().getArmConnector().reach(goalPosition,
+			Pose3 pInRob = CogXConverter.convertToPose3(goalPosition,
 					graspRotation);
+
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
+
+			Pose3 tRobotToWorld = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			Pose3 pInWorld = Functions.transform(tRobotToWorld, pInRob);
+
+			getManipulator().getArmConnector().reach(
+					CogXConverter.convertPose3ToPose(pInWorld));
 
 			PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
@@ -103,6 +122,8 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			logger.error(e);
 			manipulationFailed = true;
 			return;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 	}
 
