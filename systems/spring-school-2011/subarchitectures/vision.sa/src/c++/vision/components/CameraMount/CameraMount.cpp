@@ -152,7 +152,6 @@ void CameraMount::runComponent()
     camWMIds[i] = newDataID();
   while(isRunning())
   {
-    debug("running");
     vector<Pose3> camPosesToEgo(camIds.size());
     cdl::CASTTime time;
     if(usePTZ)
@@ -183,6 +182,8 @@ void CameraMount::runComponent()
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
+      debug("sending pose for cam %d:", camIds[i]);
+      debug(toString(camPosesToEgo[i]));
       if(camsAddedToWM)
       {
         overwriteWorkingMemory(camWMIds[i], camParms);
