@@ -74,7 +74,7 @@ module manipulation {
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
    		* status field to FINISHED.
    		* If an error occurs or another ManipulationExternalCommand is detected, 
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
    		**/
 		class PutDownCommand extends ManipulationExternalCommand {
@@ -85,8 +85,8 @@ module manipulation {
 		
 		/**
    		* This command represents a simple far arm movement.
-   		* It tries to reach a position in front of the object (10 cm) with a 
-   		* fixed gripper orientation (parallel to the floor)
+   		* It tries to reach the midpoint of the object with a fixed gripper 
+   		* orientation (parallel to the floor).
    		* The field reachedPose will return the position the manipulator has 
    		* reached. 
    		* As long the manipulator is moving, the comp field is set to ONTHEWAY 
@@ -94,7 +94,7 @@ module manipulation {
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
    		* status field to FINISHED.
    		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
    		**/
 		class FarArmMovementCommand extends ManipulationExternalCommand {
@@ -107,13 +107,14 @@ module manipulation {
 		/**
 		* This command represents a simple grasp approach arm movement. 
 		* The manipulator will move from the current position to the midpoint of 
-		* the object. The orientation of the gripper will be parallel to the floor.
+		* the object. The orientation will be the same orientation like the 
+		* orientation of the movement starting point of this command. 
 		* As long the manipulator is moving, the comp field is set to ONTHEWAY 
 		* and the status field to PENDING. 
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
    		* status field to FINISHED.
    		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
    		**/
 		class FineArmMovementCommand extends ManipulationExternalCommand {
@@ -127,7 +128,7 @@ module manipulation {
 		* manipulator which can be reached with the orientation of the gripper
 		* parallel to the floor. 
 		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED. 
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED. 
 		* 
    		* @author Torben Toeniges
    		**/
@@ -142,7 +143,7 @@ module manipulation {
 		* The status field will be set to FINISHED and the comp field to
 		* SUCCEEDED, if the stopping was successful.
 		* If an error occurs or another ManipulationExternalCommand is detected,
-		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
 		**/
 		class StopCommand extends ManipulationExternalCommand {
@@ -156,7 +157,7 @@ module manipulation {
    		* If a position is reached, the comp field is set to SUCCEEDED and the 
    		* status field to FINISHED.
    		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
 		**/
 		class MoveArmToHomePositionCommand extends ManipulationExternalCommand {
@@ -167,7 +168,7 @@ module manipulation {
 		* The status field will be set to FINISHED and the comp field to 
 		* SUCCEEDED, if the gripper is opened.
 		* If an error occurs or another ManipulationExternalCommand is detected,
-		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* @author Torben Toeniges
 		**/
 		class OpenGripperCommand extends ManipulationExternalCommand {
@@ -178,7 +179,7 @@ module manipulation {
 		* The status field will be set to FINISHED and the comp field to 
 		* SUCCEEDED, if the gripper is opened.
 		* If an error occurs or another ManipulationExternalCommand is detected,
-		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+		* the status field is set to COMMANDFAILED and the comp field to FAILED.
    		* If the gripper grasp something, the field graspStatus will be set to 
    		* GRASPING. Otherwise the field is set to NOTGRASPING. 
    		* @author Torben Toeniges
@@ -198,7 +199,7 @@ module manipulation {
    		* If a position is reached, the comp field is set to SUCCEEDED and the
    		* status field to FINISHED.
    		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED. 
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED. 
 		* 
 		**/
 		class MoveArmToPose extends ManipulationExternalCommand {
@@ -211,7 +212,7 @@ module manipulation {
 		* The field simulatedReachablePose will return the position the 
 		* manipulator would reach in real.  
    		* If an error occurs or another ManipulationExternalCommand is detected,
-   		* the status filed is set to COMMANDFAILED and the comp field to FAILED. 
+   		* the status field is set to COMMANDFAILED and the comp field to FAILED. 
 		* 
 		**/
 		class SimulateMoveToPose extends ManipulationExternalCommand {
@@ -226,7 +227,7 @@ module manipulation {
 		* The status field will be set to FINISHED and the comp field to 
 		* SUCCEEDED, if the pose can be obtained.
 		* If an error occurs or another ManipulationExternalCommand is detected,
-		* the status filed is set to COMMANDFAILED and the comp field to FAILED.
+		* the status field is set to COMMANDFAILED and the comp field to FAILED.
 		*/
 		class GetCurrentArmPose extends ManipulationExternalCommand {
 			cogx::Math::Pose3 currentPose;
