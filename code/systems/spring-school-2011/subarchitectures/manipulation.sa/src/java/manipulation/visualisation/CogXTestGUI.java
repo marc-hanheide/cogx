@@ -213,7 +213,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnFarArm.setActionCommand("farArm");
 		btnFarArm.addActionListener(this);
 
-		btnLinGraspApp = new JButton("linear grasping approach");
+		btnLinGraspApp = new JButton("fine arm movement");
 		btnLinGraspApp.setActionCommand("linGraspApp");
 		btnLinGraspApp.addActionListener(this);
 

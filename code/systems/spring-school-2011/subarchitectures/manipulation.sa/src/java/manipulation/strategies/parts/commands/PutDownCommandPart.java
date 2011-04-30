@@ -73,6 +73,11 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 					+ model.getAvgYvalue(), targetVisOb.pose.pos.z
 					+ model.getHighestZValue() + posOver);
 
+			Vector3D goalInWorld = getManipulator().getBaseConnector()
+					.getRobotToWorldTranslation(
+							new Vector3D(goalPosition.getX(), goalPosition
+									.getY(), goalPosition.getZ()));
+
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
 			Matrix rotation2 = MathOperation.getRotationAroundY(MathOperation
@@ -83,8 +88,8 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 					MathOperation.getMatrixMatrixMultiplication(rotation1,
 							rotation2), rotation3);
 
-			getManipulator().getArmConnector().reach(goalPosition,
-					graspRotation);
+			getManipulator().getArmConnector()
+					.reach(goalInWorld, graspRotation);
 
 			PutDownCommand currentCom = ((PutDownCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
