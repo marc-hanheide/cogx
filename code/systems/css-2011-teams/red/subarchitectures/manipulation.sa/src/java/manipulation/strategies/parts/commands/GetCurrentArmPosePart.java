@@ -5,9 +5,12 @@ import java.util.Observer;
 
 import manipulation.core.cogx.converter.CogXConverter;
 import manipulation.core.share.Manipulator;
+import manipulation.core.share.exceptions.ExternalMemoryException;
 import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
+import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
+import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -26,8 +29,12 @@ import manipulation.slice.StopCommand;
 import manipulation.strategies.CommandExecution;
 import manipulation.strategies.Strategy;
 import manipulation.strategies.parts.StrategyPart;
+import mathlib.Functions;
 
 import org.apache.log4j.Logger;
+
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 
@@ -50,15 +57,31 @@ public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 		Vector3D pos = null;
 		Matrix rot = null;
 
+		Pose3 pInRobot = null;
+
 		try {
 			pos = getManipulator().getArmConnector().getCurrentPosition();
 			rot = getManipulator().getArmConnector().getCurrentRotation();
+
+			Pose3 pInWorld = CogXConverter.convertToPose3(pos, rot);
+
+			Vector2D position = getManipulator().getBaseConnector()
+					.getCurrentPosition().getPoint();
+
+			Pose3 tWorldToRobot = Functions.pose3FromEuler(
+					new Vector3(position.getX(), position.getY(), 0), 0.0, 0.0,
+					getManipulator().getBaseConnector().getCurrentPosition()
+							.getAngle());
+
+			pInRobot = Functions.transformInverse(tWorldToRobot, pInWorld);
 
 			setNextPartName(PartName.WAIT_PART);
 
 		} catch (ManipulatorException e) {
 			logger.error(e);
 			manipulationFailed = true;
+		} catch (ExternalMemoryException e) {
+			logger.error(e);
 		}
 
 		if (!manipulationFailed) {
@@ -68,7 +91,7 @@ public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 			currentCom.status = ManipulationCommandStatus.FINISHED;
 			currentCom.comp = ManipulationCompletion.SUCCEEDED;
 
-			currentCom.currentPose = CogXConverter.convertToPose3(pos, rot);
+			currentCom.currentPose = pInRobot;
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
