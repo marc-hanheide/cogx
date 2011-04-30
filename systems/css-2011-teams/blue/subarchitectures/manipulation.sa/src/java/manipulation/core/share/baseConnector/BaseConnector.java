@@ -35,7 +35,7 @@ public interface BaseConnector {
 	 *            relative point in relation to the robot
 	 * @return world coordinates value of the relative point
 	 */
-	public Vector3D getRobotToWorldTranslation(Vector3D relativePoint);
+	//public Vector3D getRobotToWorldTranslation(Vector3D relativePoint);
 
 	/**
 	 * convert the relative rotation in relation to the robot in world
@@ -45,5 +45,5 @@ public interface BaseConnector {
 	 *            relative rotation to the robot
 	 * @return world coordinates value of the relative rotation
 	 */
-	public Matrix getRobotToWorldRotation(Matrix rotation);
+	//public Matrix getRobotToWorldRotation(Matrix rotation);
 }

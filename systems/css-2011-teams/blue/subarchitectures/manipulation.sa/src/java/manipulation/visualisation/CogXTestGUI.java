@@ -89,9 +89,9 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 	private JButton btnFarArm;
 
-	private JButton btnLinGraspApp;
+	private JButton btnFineArm;
 
-	private JButton btnSimGrasp;
+	private JButton btnSimFarArmMovement;
 
 	private JButton btnStopCmd;
 
@@ -106,7 +106,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	private JButton btnGetPosCmd;
 
 	private JButton btnSimulatePosCmd;
-	
+
 	private DecimalFormat df = new DecimalFormat("0.00");
 
 	/**
@@ -181,7 +181,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 	}
 
 	private void guiSetup() {
-		JFrame gui = new JFrame("Test GUI");
+		JFrame gui = new JFrame("Manipulation test GUI");
 		gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		gui.setLocation(100, 200);
 
@@ -213,13 +213,14 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnFarArm.setActionCommand("farArm");
 		btnFarArm.addActionListener(this);
 
-		btnLinGraspApp = new JButton("linear grasping approach");
-		btnLinGraspApp.setActionCommand("linGraspApp");
-		btnLinGraspApp.addActionListener(this);
+		btnFineArm = new JButton(
+				"fine movement + grasping");
+		btnFineArm.setActionCommand("fineArm");
+		btnFineArm.addActionListener(this);
 
-		btnSimGrasp = new JButton("simulate grasping");
-		btnSimGrasp.setActionCommand("simulateGrasp");
-		btnSimGrasp.addActionListener(this);
+		btnSimFarArmMovement = new JButton("simulate far arm movement");
+		btnSimFarArmMovement.setActionCommand("simulateFar");
+		btnSimFarArmMovement.addActionListener(this);
 
 		btnStopCmd = new JButton("stop arm");
 		btnStopCmd.setActionCommand("stopCmd");
@@ -282,9 +283,9 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 		addComponent(pane, gbl, btnFarArm, 0, 5, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnLinGraspApp, 0, 6, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnFineArm, 0, 6, 12, 1, 0, 0);
 
-		addComponent(pane, gbl, btnSimGrasp, 0, 7, 12, 1, 0, 0);
+		addComponent(pane, gbl, btnSimFarArmMovement, 0, 7, 12, 1, 0, 0);
 
 		addComponent(pane, gbl, btnStopCmd, 0, 9, 12, 1, 0, 0);
 
@@ -326,8 +327,6 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			} else if (cmd instanceof GetCurrentArmPose) {
 				pose = ((GetCurrentArmPose) cmd).currentPose;
 			}
-
-			
 
 			if (cmd.comp == ManipulationCompletion.SUCCEEDED) {
 				txtItemXPosition.setText(df.format(pose.pos.x));
@@ -481,7 +480,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 
 			((CogXRunner) manipulator.getRunner()).addChangeFilter(
 					ChangeFilterFactory.createIDFilter(id), wmcr);
-		} else if (e.getActionCommand().equals("linGraspApp")) {
+		} else if (e.getActionCommand().equals("fineArm")) {
 			logger.debug("linGraspApp pressed");
 
 			FineArmMovementCommand linGraspApp = new FineArmMovementCommand();
@@ -538,7 +537,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				logger.error(e1);
 			}
 
-		} else if (e.getActionCommand().equals("simulateGrasp")) {
+		} else if (e.getActionCommand().equals("simulateFar")) {
 			logger.debug("simulateGrasp pressed");
 
 			SimulateFarArmMovementCommand simGCmd = new SimulateFarArmMovementCommand();
