@@ -12,6 +12,7 @@
 #include <string>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <manipulation.hpp>
 
 #include "ObjectTrackerUtils.hpp"
 #include "ModelLoader.h"

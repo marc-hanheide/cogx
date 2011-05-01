@@ -458,7 +458,7 @@ void ObjectTracker::runTracker(){
 	m_tracker->drawImage(NULL);
 	m_tracker->drawResult();
 // 	m_tracker->drawCalibrationPattern();
-// 	if(m_drawcoords) m_tracker->drawCoordinates();
+ 	m_tracker->drawCoordinates();
 	m_tracker->swap();
 
 // 	fTimeDraw = m_timer.Update();
