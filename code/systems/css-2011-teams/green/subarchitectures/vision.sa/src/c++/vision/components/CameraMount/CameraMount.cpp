@@ -51,6 +51,7 @@ void CameraMount::configure(const map<string,string> & _config)
   throw(runtime_error)
 {
   map<string,string>::const_iterator it;
+  bool have_fixed_pan_tilt = false;
 
   if((it = _config.find("--camids")) != _config.end())
   {
@@ -64,18 +65,21 @@ void CameraMount::configure(const map<string,string> & _config)
   {
     string filename = it->second;
     readXML(filename, ptBasePose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--pt_pan_xml")) != _config.end())
   {
     string filename = it->second;
     readXML(filename, ptPanPose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--pt_tilt_xml")) != _config.end())
   {
     string filename = it->second;
     readXML(filename, ptTiltPose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--cam_poses_xml")) != _config.end())
@@ -88,6 +92,7 @@ void CameraMount::configure(const map<string,string> & _config)
       readXML(filename, pose);
       camPoses.push_back(pose);
     }
+    usePTZ = true;
   }
 
   if((it = _config.find("--fixed_cam_poses_xml")) != _config.end())
@@ -100,17 +105,13 @@ void CameraMount::configure(const map<string,string> & _config)
       readXML(filename, pose);
       camFixedPoses.push_back(pose);
     }
+    have_fixed_pan_tilt = true;
   }
 
   if((it = _config.find("--fixed_pan_tilt")) != _config.end())
   {
     istringstream str(it->second);
     str >> fixedPanTilt.pose.pan >> fixedPanTilt.pose.tilt;
-  }
-
-  if((it = _config.find("--use_ptz")) != _config.end())
-  {
-    usePTZ = true;
   }
 
   if(camIds.size() == 0)
@@ -121,6 +122,8 @@ void CameraMount::configure(const map<string,string> & _config)
     throw runtime_error("number of camera IDs must match number of camera fixed poses");
   if(!usePTZ && camFixedPoses.size() == 0)
     throw runtime_error("if you are not using the PTZ you must supply fixed camera poses");
+  if(camFixedPoses.size() != 0 && !have_fixed_pan_tilt)
+    throw runtime_error("if you supply fixed camera poses you also must supply a fixed pan/tilt position");
 }
 
 void CameraMount::start()
