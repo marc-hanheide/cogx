@@ -4,27 +4,26 @@
 
 We now describe our {\em switching} planning system that operates
 according to the continual planning paradigm. The system {\em
-switches} in the sense that planning and plan execution proceed in
+  switches} in the sense that planning and plan execution proceed in
 interleaved sessions in which the {\em base planner} is either {\em
-sequential} or {\em decision-theoretic}.  The first session is
+  sequential} or {\em decision-theoretic}.  The first session is
 sequential, and begins when a DTPDDL description of the current
 problem and domain are posted to the system.  During a sequential
 session a serial plan is computed that corresponds to one
 execution-{\em trace} in the underlying decision-process. That trace
 is a reward-giving sequence of process actions and {\em assumptive}
 actions. Each {\em assumptive} action corresponds to an assertion
-about the truth of a fact that is unknown at plan time -- e.g. that a
-box of cornflakes is located on the corner bench in the kitchen. The
-trace specifies a plan and characterises a {\em deterministic
-approximation} (see~\cite{yoon:etal:2008}) of the underlying process
-in which that plan is valuable. Traces are computed by a
-cost-optimising classical planner which trades off action costs, goal
-rewards, and determinacy. Execution of a trace proceeds according to
-the process actions in the order that they appear in the trace. If,
-according to the underlying belief-state, the outcome of the next
-action scheduled for execution is not predetermined above a threshold
-(here 95\%), then the system switches to a DT session.
-
+about some facts that are unknown at plan time -- e.g. that a box of
+cornflakes is located on the corner bench in the kitchen. The trace
+specifies a plan and characterises a {\em deterministic approximation}
+(see~\cite{yoon:etal:2008}) of the underlying process in which that
+plan is valuable. Traces are computed by a cost-optimising classical
+planner which trades off action costs, goal rewards, and
+determinacy. Execution of a trace proceeds according to the process
+actions in the order that they appear in the trace. If, according to
+the underlying belief-state, the outcome of the next action scheduled
+for execution is not predetermined above a threshold (here 95\%), then
+the system switches to a DT session.
 
 Because online DT planning is impractical for the size of problem we
 are interested in, DT sessions plan in a small abstract problem
@@ -51,78 +50,115 @@ of an abstract process for DT sessions.
 
 \subsection{Sequential Sessions}
 
-As we only consider deterministic-action POMDPs, all state
-uncertainty is expressed in the $(\pp{:init})$ declaration. This
-declaration is used by our approach to define the starting state for
-sequential sessions, and the set of state-assumptions available to
-sequential planning.  Writing \#\ if the value of a proposition is
-unspecified, taking the $(\pp{:init})$ example from the previous
-section, we have the following assumptions:
 
-\small
-\begin{tabular}{cccc}
-\hline
-Probability & (is-in Robot)  & (is-in box)  & (is-in cup) \\
-\hline
-.7 & kitchen & \# &  kitchen\\
-.3 & kitchen & \# & office \\
-.8 & kitchen & office & \# \\
-.2 & kitchen & kitchen & \# \\
-1.0 & kitchen & \# & \# \\
-\hline
-\end{tabular}
-\normalsize
+%% Writing \#\ if the value of a proposition is unspecified,
+%% taking the $(\pp{:init})$ example from the previous section, we have
+%% the following assumptions:
 
-\noindent Each assumption corresponds to one distinct {\em
-relaxed} visitation of the root term. Here, a conjunctive term is
-visited iff its atomic subterms are visited, and zero or one of its
-immediate probabilistic subterms are visited. For a sequential
-session, the starting state corresponds to an assumption (usually
-unique) with probability $1$.\footnote{Without a loss of generality,
-we assume conjunctive terms list atoms that are true with
-probability 1 according to a visitation, and that actions do not
-have negative preconditions.}  In our example, that starting state is:
+%% \small
+%% \begin{tabular}{cccc}
+%% \hline
+%% Probability & (is-in Robot)  & (is-in box)  & (is-in cup) \\
+%% \hline
+%% .7 & kitchen & \# &  kitchen\\
+%% .3 & kitchen & \# & office \\
+%% .8 & kitchen & office & \# \\
+%% .2 & kitchen & kitchen & \# \\
+%% 1.0 & kitchen & \# & \# \\
+%% \hline
+%% \end{tabular}
+%% \normalsize
 
-\vspace{-1ex}
+
+
+
+%% \noindent Each assumption corresponds to one distinct {\em
+%% relaxed} visitation of the root term. Here, a conjunctive term is
+%% visited iff its atomic subterms are visited, and zero or one of its
+%% immediate probabilistic subterms are visited. 
+
+
+As we only consider deterministic-action POMDPs, all state uncertainty
+is expressed in the $(\pp{:init})$ declaration. This declaration is
+used by our approach to define the starting state for sequential
+sessions, and the set of assumptive actions available to sequential
+planning. Without a loss of generality we suppose conjunctive terms
+list atoms that are true with probability 1 according to a visitation,
+and that actions do not have negative preconditions. For a sequential
+session the starting state corresponds to the set of facts that are
+true with probability $1$. Continuing our example, that starting state
+is the singleton:
 
 \small
 \[
 \begin{array}{l}
-\state_0 \equiv \{(=(\pp{is-in}~\pp{Robot})\pp{kitchen}),\\
-\;\;(=(\pp{is-in}~\pp{box})\#), (=(\pp{is-in}~\pp{cup})\#)\}.
+\state_0 \equiv \{(=(\pp{is-in}~\pp{Robot})\pp{kitchen})\}.
 \end{array}
 \]
 \normalsize
 
-\vspace{-1ex}
-
-To represent state assumptions we augment the problem posed during
-a sequential session with an \emph{assumptive action} $\assumptiveS{i}$ for
-each element $\prob_i (T_i)$, of each probabilistic term from
+To represent state assumptions we augment the problem posed during a
+sequential session with an \emph{assumptive action} $\assumptiveS{i}$
+for each element, $\prob_i (T_i)$, of each probabilistic term from
 $(\pp{:init})$. Here, $\assumptiveS{i}$ can be executed if no
 $\assumptiveS{j}$, $j \neq i$, has been executed from the same
 probabilistic term, and, either
 $(\pp{probabilistic}~..\prob_i~(T_i)..)$ is in the root conjunct, or
-it occurs in $T_k$ for some executed $\assumptiveS{k}$.
-%%
-We also add constraints that forbid scheduling of
-assumptions about facts after actions with preconditions or effects
-that mention those facts. For example, the robot cannot assume it is
-plugged into a power source immediately after it unplugs itself.
-%%
-Executing $\assumptiveS{i}$ in a state $\state$ effects a transition
-to a successor state $\state^{T_i}$ with probability $\prob_i$, and
-$\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
-the union of $\state$ with atomic terms from $T_i$. State
-$\state^\bot$ is an added sink.
+it occurs in $T_k$ for some executed $\assumptiveS{k}$.  We also add
+constraints that forbid scheduling of assumptions about facts after
+actions with preconditions or effects that mention those facts. For
+example, the robot cannot assume it is plugged into a power source
+immediately after it unplugs itself.  Executing $\assumptiveS{i}$ in a
+state $\state$ effects a transition to a successor state
+$\state^{T_i}$, the union of $\state$ with atomic terms from $T_i$.
+For example, consider the following sequential plan:
+
+\small
+\[
+\begin{array}{l}
+\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{kitchen}));\\
+\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{office}));\\
+(\pp{look}~\pp{box}~\pp{kitchen});
+(\pp{look}~\pp{cup}~\pp{office});\\
+(\pp{report}~\pp{box}~\pp{kitchen}); 
+(\pp{report}~\pp{cup}~\pp{office})
+\end{array}
+\]
+\normalsize
+
+\noindent Applying the first action in $\state_0$ yields:
 
 
-We now describe the optimisation criteria used during sequential
-sessions. Let $\prob_i$ be the probability that the $i^{th}$ sequenced
-action, $\action_i$, from a trace of state-action pairs
-$\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
-does not transition to $\state^\bot$, then the optimal
-trace has value:
+\small
+\[
+\hspace{-1ex}\begin{array}{l}
+\{(=(\pp{is-in}~\pp{Robot})\pp{kitchen}),(=(\pp{is-in}~\pp{box})\pp{kitchen})\}
+\end{array}
+\]
+\normalsize
+
+\noindent The assumed state before the scheduled execution of
+action $(\pp{look}~\pp{box}~\pp{kitchen})$ is:
+
+\small
+\[
+\hspace{-1ex}\begin{array}{l}
+\{(=(\pp{is-in}~\pp{Robot})\pp{kitchen}),
+(=(\pp{is-in}~\pp{box})\pp{kitchen}), \\\;\;(=(\pp{is-in}~\pp{cup})\pp{office})\}
+\end{array}
+ \]
+\normalsize
+
+To describe the optimisation criteria used during sequential sessions
+we model $\assumptiveS{i}$ probabilistically, supposing that its
+application in state $\state$ effects a transition to $\state^{T_i}$
+with probability $\prob_i$, and to $\state^\bot$ with probability $1 -
+\prob_i$. State $\state^\bot$ is an added sink. Now taking $\prob_i$
+be the probability that the $i^{th}$ sequenced action, $\action_i$,
+from a trace of state-action pairs $\langle \state_0,
+\action_0,\state_1, \action_1,.., \state_N \rangle$ does not
+transition to $\state^\bot$, then the optimal sequential plan has
+value:
 
 \small
 \[
@@ -157,42 +193,24 @@ action} $\assumptiveDT{i}$ so that for all states $\state$:
 
 \vspace{-1ex}
 
-\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a
-small positive (negative) numeric quantity which captures
-the utility the agent receives for correctly (incorrectly) rejecting
-an assumption.
-%%
-In terms of action physics, a disconfirm action can only be executed
-once, and otherwise is modelled as a self-transformation.
-%%
-We only consider {\em relevant} assumptions when constructing the
-abstract model.  If \switchAction\ is the action that switched the
-system to a DT session, then an assumption $\assumptiveS{i}$ is {\em
-relevant} if it is necessary for the outcome of \switchAction\ to be
-determined.  Continuing our simplified example, if the trace is:
-
-\small
-\[
-\begin{array}{l}
-\actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{kitchen}));\\
-\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{office}));\\
-(\pp{look}~\pp{box}~\pp{kitchen});
-(\pp{look}~\pp{cup}~\pp{office});\\
-(\pp{report}~\pp{box}~\pp{kitchen}); 
-(\pp{report}~\pp{cup}~\pp{office})
-\end{array}
-\]
-\normalsize
-
-\noindent Taking the switching action \switchAction\ to be
-$(\pp{look}~\pp{box}~\pp{office})$, we have that
-$\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{kitchen}))$ is not
-relevant for this session, and therefore we exclude the corresponding
-disconfirm action from the abstract decision process.
-
-Given \switchAction, we also include another once-only self-transition
-action $\actions.\poss(\switchAction)$, a \emph{confirmation action}
-with the reward property:
+\noindent where $\$(T_i)$ (resp. $\hat\$(T_i)$) is a small positive
+(negative) numeric quantity which captures the utility the agent
+receives for correctly (incorrectly) rejecting an assumption.  In
+terms of action physics, a disconfirm action can only be executed
+once, and otherwise is modelled as a self-transformation.  We only
+consider {\em relevant} assumptions when constructing the abstract
+model.  If \switchAction\ is the action that switched the system to a
+DT session, then an assumption $\assumptiveS{i}$ is {\em relevant} if
+it is necessary for the outcome of \switchAction\ to be
+determined. For example, taking the switching action \switchAction\ to
+be $(\pp{look}~\pp{box}~\pp{kitchen})$ from the example sequential
+plan, we have that
+$\actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{office}))$ is not
+relevant, and therefore we exclude the corresponding disconfirm action
+from the abstract decision process. Given \switchAction, we also
+include another once-only self-transition action
+$\actions.\poss(\switchAction)$, a \emph{confirmation action} with the
+reward property:
 
 \[
 \reward(\state, \actions.\poss(\switchAction)) = \bigg\{ \begin{array}{ll}
@@ -201,7 +219,7 @@ with the reward property:
 \end{array}
 \]
 
-Execution of either a disconfirmation or the confirmation action
+\noindent Execution of either a disconfirmation or the confirmation action
 returns control to a sequential session, which then continues from the
 underlying belief-state.
 
@@ -214,28 +232,22 @@ $\actions.\poss(\switchAction)$ actions we have $\hat\$(x)= -
 \$(x)\prob/(1-\prob)$.
 
 
-%%%% 
-
 In order to guarantee fast DT sessions, those plan in an abstract
 process determined by the current trace and underlying belief-state.
-%%
 The abstract process posed to the DT planner is constructed by first
 constraining as statically false all propositions except those which
 are true with probability 1, or which are the subject of {\em
-relevant} assumptions. For example, taking the above trace and
-switching action {\texttt (look~box~office)}, the underlying
-belief in Fig.~\ref{fig:beliefs}B would determine a fully
-constrained belief given by Fig.~\ref{fig:beliefs}C.
-%%
-Next, static constraints are removed, one proposition at a time, until
-the number of states that can be true with non-zero probability in the
-initial belief of the abstract process reaches a given threshold.
-%%
-In detail, for each statically-false proposition we compute the {\em
-entropy} of the state assumptions of the current trace {\em
-conditional} on that proposition. 
-%%
-Let $X$ be a set of propositions and $2^X$ the powerset of $X$, then taking
+  relevant} assumptions. For example, taking the above trace and
+switching action {\texttt \mbox{(look~box~office)}}, the underlying
+belief in Fig.~\ref{fig:beliefs}B would determine a fully constrained
+belief given by Fig.~\ref{fig:beliefs}A.  Next, static constraints are
+removed, one proposition at a time, until the number of states that
+can be true with non-zero probability in the initial belief of the
+abstract process reaches a given threshold.  In detail, for each
+statically-false proposition we compute the {\em entropy} of the state
+assumptions of the current trace {\em conditional} on that
+proposition.  Let $X$ be a set of propositions and $2^X$ the powerset
+of $X$, then taking
 
 
 
@@ -267,11 +279,11 @@ hold. When removing a static constraint on propositions during the
 abstract process construction, $y_i$ is considered before $y_j$ if
 $\entropy(X|y_i)~<~\entropy(X|y_j)$. For example, if the serial plan
 assumes the box is in the kitchen, then propositions about the
-contents of kitchens containing a box, e.g. {\texttt
-  (=(is-in~milk)kitchen)}, are added to characterise the abstract
-process' states. Taking a relevant assumption $X$ to be {\texttt
-  (=(is-in~box)kitchen)}, in relaxing static constraints the following
-entropies are calculated:
+contents of kitchens containing a box,
+e.g. $(=(\pp{is-in}~\pp{milk})\pp{kitchen})$, are added to
+characterise the abstract process' states. Taking a relevant
+assumption $X$ to be $(=(\pp{is-in}~\pp{box})\pp{kitchen})$, in
+relaxing static constraints the following entropies are calculated:
 
 \small
 \begin{tabtt}
@@ -286,7 +298,7 @@ entropies are calculated:
 \texttt{(=(is-in~milk)office)}, or
 equivalently \texttt{(=(is-in~milk)kitchen)}, giving a refined
 abstract belief state depicted in
-Fig.~\ref{fig:beliefs}A. Summarising, if for Fig.\ref{fig:beliefs}B
+Fig.~\ref{fig:beliefs}C. Summarising, if for Fig.\ref{fig:beliefs}B
 the DT session is restricted to belief-states with fewer than $8$
 elements, then the starting belief-state of the DT session does not
 mention a ``cup''.
@@ -296,22 +308,24 @@ mention a ``cup''.
 \tiny
 \begin{tabularx}{\columnwidth}{XX}
 \hline
-\vspace{1ex}
-\scriptsize (A) Partially constrained belief & %abstract belief-state & 
-\vspace{1ex}\scriptsize \hspace{-4ex}(B) Underlying DTPDDL belief \\
-\vspace{-2ex} 
-\begin{tabtt}\hspace{-4ex}
+\scriptsize\vspace{0.5ex}(A) Fully constrained belief & 
+\vspace{0.5ex}\hspace{-4.0ex}(C) Partially constrained belief\\
+\vspace{-3.0ex}\begin{tabtt}
 (\=:init (=(is-in~Robot)kitchen) \+ \\
+       (\=.6(=(is-in~box)kitchen))) \\
+\end{tabtt} & 
+\vspace{-3.0ex}\begin{tabtt}
+\hspace{-5.0ex}(\=:init (=(is-in~Robot)kitchen) \+ \\
        (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
         (\=.9(=(is-in~milk)~kitchen))\+\\
          .1(=(is-in~milk)office))\-\-  \\
        .4(and(=(is-in~box)office) \+\\
         (.1(=(is-in~milk)kitchen))\+\\
         .9(=(is-in~milk)office)))
-\end{tabtt} &
-\vspace{-2ex} 
-\begin{tabtt}
-\hspace{-4ex}(\=:init (=(is-in~Robot)office) \+ \\
+\end{tabtt}\\
+\vspace{-16.5ex}(B) Underlying DTPDDL belief & \\ 
+\vspace{-17.0ex}\begin{tabtt}
+(\=:init (=(is-in~Robot)office) \+ \\
        (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
         (\=.9(=(is-in~milk)kitchen))\+\\
          .1(=(is-in~milk)office))\-\-  \\
@@ -320,11 +334,6 @@ mention a ``cup''.
         .9(=(is-in~milk)office))) \-\-\-\\
        (\=.6(=(is-in~cup)office) \+ \\
       .4(=(is-in~cup)kitchen))) \\
-\end{tabtt} \\
-\vspace{-8ex}\scriptsize(C) Fully constrained belief & \\
-\vspace{-7.5ex} \begin{tabtt}
-(\=:init (=(is-in~Robot)kitchen) \+ \\
-       (\=.6(=(is-in~box)kitchen))) \\
 \end{tabtt} & \\
 \hline
 \end{tabularx}
@@ -332,6 +341,49 @@ mention a ``cup''.
        DT sessions. \label{fig:beliefs}}
 \normalsize
 \end{figure}
+
+
+
+%% \begin{figure}
+%% \tiny
+%% \begin{tabularx}{\columnwidth}{XX}
+%% \hline
+%% \vspace{1ex}
+%% \scriptsize (A) Partially constrained belief & %abstract belief-state & 
+%% \vspace{1ex}\scriptsize \hspace{-4ex}(B) Underlying DTPDDL belief \\
+%% \vspace{-2ex} 
+%% \begin{tabtt}\hspace{-4ex}
+%% (\=:init (=(is-in~Robot)kitchen) \+ \\
+%%        (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
+%%         (\=.9(=(is-in~milk)~kitchen))\+\\
+%%          .1(=(is-in~milk)office))\-\-  \\
+%%        .4(and(=(is-in~box)office) \+\\
+%%         (.1(=(is-in~milk)kitchen))\+\\
+%%         .9(=(is-in~milk)office)))
+%% \end{tabtt} &
+%% \vspace{-2ex} 
+%% \begin{tabtt}
+%% \hspace{-4ex}(\=:init (=(is-in~Robot)office) \+ \\
+%%        (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
+%%         (\=.9(=(is-in~milk)kitchen))\+\\
+%%          .1(=(is-in~milk)office))\-\-  \\
+%%        .4(and(=(is-in~box)office) \+\\
+%%         (.1(=(is-in~milk)kitchen))\+\\
+%%         .9(=(is-in~milk)office))) \-\-\-\\
+%%        (\=.6(=(is-in~cup)office) \+ \\
+%%       .4(=(is-in~cup)kitchen))) \\
+%% \end{tabtt} \\
+%% \vspace{-8ex}\scriptsize(C) Fully constrained belief & \\
+%% \vspace{-7.5ex} \begin{tabtt}
+%% (\=:init (=(is-in~Robot)kitchen) \+ \\
+%%        (\=.6(=(is-in~box)kitchen))) \\
+%% \end{tabtt} & \\
+%% \hline
+%% \end{tabularx}
+%% \caption{Simplified examples of abstract belief-states from
+%%        DT sessions. \label{fig:beliefs}}
+%% \normalsize
+%% \end{figure}
 
 
 
