@@ -62,7 +62,7 @@ section, we have the following assumptions:
 \small
 \begin{tabular}{cccc}
 \hline
-Probability & (is-in R2D2)  & (is-in box)  & (is-in cup) \\
+Probability & (is-in Robot)  & (is-in box)  & (is-in cup) \\
 \hline
 .7 & kitchen & \# &  kitchen\\
 .3 & kitchen & \# & office \\
@@ -88,8 +88,8 @@ have negative preconditions.}  In our example, that starting state is:
 \small
 \[
 \begin{array}{l}
-\state_0 \equiv \{(=(\pp{is-in}~\pp{R2D2})~\pp{kitchen}),\\
-\;\;(=(\pp{is-in}~\pp{box})~\#), (=(\pp{is-in}~\pp{cup})~\#)\}.
+\state_0 \equiv \{(=(\pp{is-in}~\pp{Robot})\pp{kitchen}),\\
+\;\;(=(\pp{is-in}~\pp{box})\#), (=(\pp{is-in}~\pp{cup})\#)\}.
 \end{array}
 \]
 \normalsize
@@ -121,9 +121,7 @@ We now describe the optimisation criteria used during sequential
 sessions. Let $\prob_i$ be the probability that the $i^{th}$ sequenced
 action, $\action_i$, from a trace of state-action pairs
 $\langle \state_0, \action_0,\state_1, \action_1,.., \state_N \rangle$
-does not transition to $\state^\bot$, and
-$\reward(\state_i, \action_i)$ be the instantaneous reward received
-for executing action $\action_i$ in state $\state_i$. The optimal
+does not transition to $\state^\bot$, then the optimal
 trace has value:
 
 \small
@@ -268,11 +266,12 @@ $y$ is useful for determining whether or not some assumptions $X$
 hold. When removing a static constraint on propositions during the
 abstract process construction, $y_i$ is considered before $y_j$ if
 $\entropy(X|y_i)~<~\entropy(X|y_j)$. For example, if the serial plan
-assumes the robot is in a kitchen, then propositions about the
-contents of kitchens, e.g. {\texttt (=(is-in~cup)kitchen)}, are
-added to characterise the abstract process' states. Taking
-assumption $X$ to be {\texttt (=(is-in~box)kitchen)}, in relaxing
-static constraints the following entropies are calculated:
+assumes the box is in the kitchen, then propositions about the
+contents of kitchens containing a box, e.g. {\texttt
+  (=(is-in~milk)kitchen)}, are added to characterise the abstract
+process' states. Taking a relevant assumption $X$ to be {\texttt
+  (=(is-in~box)kitchen)}, in relaxing static constraints the following
+entropies are calculated:
 
 \small
 \begin{tabtt}
@@ -298,12 +297,12 @@ mention a ``cup''.
 \begin{tabularx}{\columnwidth}{XX}
 \hline
 \vspace{1ex}
-\scriptsize (A) Partially constrained abstract \mbox{\hspace{4ex}belief-state} & 
+\scriptsize (A) Partially constrained belief & %abstract belief-state & 
 \vspace{1ex}\scriptsize \hspace{-4ex}(B) Underlying DTPDDL belief \\
 \vspace{-2ex} 
-\begin{tabtt}
-(\=:init (=(is-in~R2D2)kitchen) \+ \\
-       (\=.6(and\=(=(is-in~box)kitchen) \+\+ \\
+\begin{tabtt}\hspace{-4ex}
+(\=:init (=(is-in~Robot)kitchen) \+ \\
+       (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
         (\=.9(=(is-in~milk)~kitchen))\+\\
          .1(=(is-in~milk)office))\-\-  \\
        .4(and(=(is-in~box)office) \+\\
@@ -312,8 +311,8 @@ mention a ``cup''.
 \end{tabtt} &
 \vspace{-2ex} 
 \begin{tabtt}
-\hspace{-6ex}(\=:init (=(is-in~R2D2)office) \+ \\
-       (\=.6(and\=(=(is-in~box)kitchen) \+\+ \\
+\hspace{-4ex}(\=:init (=(is-in~Robot)office) \+ \\
+       (\=.6(a\=nd(=(is-in~box)kitchen) \+\+ \\
         (\=.9(=(is-in~milk)kitchen))\+\\
          .1(=(is-in~milk)office))\-\-  \\
        .4(and(=(is-in~box)office) \+\\
@@ -322,9 +321,9 @@ mention a ``cup''.
        (\=.6(=(is-in~cup)office) \+ \\
       .4(=(is-in~cup)kitchen))) \\
 \end{tabtt} \\
-\vspace{-6ex}\scriptsize(C) Fully constrained abstract \mbox{\hspace{5ex}belief-state} & \\
-\vspace{-5ex} \begin{tabtt}
-(\=:init (=(is-in~R2D2)kitchen) \+ \\
+\vspace{-8ex}\scriptsize(C) Fully constrained belief & \\
+\vspace{-7.5ex} \begin{tabtt}
+(\=:init (=(is-in~Robot)kitchen) \+ \\
        (\=.6(=(is-in~box)kitchen))) \\
 \end{tabtt} & \\
 \hline
