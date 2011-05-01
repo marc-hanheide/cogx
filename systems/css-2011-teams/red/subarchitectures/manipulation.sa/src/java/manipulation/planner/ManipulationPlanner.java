@@ -83,17 +83,8 @@ public class ManipulationPlanner extends ManagedComponent {
 			this.sleepComponent(100);
 			if (currentCommand != null) {
 				if (currentCommand.comp == ManipulationCompletion.SUCCEEDED) {
-					log("command succeeded, will execute the next one");
+					log("yay! command succeeded!");
 					removeCurrentCommand();
-
-					ManipulationCommand cmd = currentPlan.poll();
-					if (cmd != null) {
-						addCurrentCommand(cmd);
-					}
-					else {
-						log("plan empty");
-					}
-
 				}
 				else if (currentCommand.comp == ManipulationCompletion.FAILED) {
 					log("command failed, will empty the plan");
@@ -107,8 +98,11 @@ public class ManipulationPlanner extends ManagedComponent {
 			else {
 				ManipulationCommand cmd = currentPlan.poll();
 				if (cmd != null) {
-					log("starting a plan");
+					log("plan nonempty (" + currentPlan.size() + " items left)");
 					addCurrentCommand(cmd);
+				}
+				else {
+					// plan empty, do nothing
 				}
 			}
 		}
@@ -142,10 +136,7 @@ public class ManipulationPlanner extends ManagedComponent {
 	}
 
 	public void handleGripperPose(WorkingMemoryChange wmc) {
-		List<ManipulationCommand> newPlan = new LinkedList<ManipulationCommand>();
-
-		// TODO: generate the plan
-
+		List<ManipulationCommand> newPlan = PlanGenerator.generatePlan(null);
 		log("adding plan of length " + newPlan.size() + " to the overall plan");
 		currentPlan.addAll(newPlan);
 	}
