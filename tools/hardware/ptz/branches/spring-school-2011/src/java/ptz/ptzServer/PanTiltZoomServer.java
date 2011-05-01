@@ -74,7 +74,8 @@ public class PanTiltZoomServer extends ManagedComponent {
 
 			PTZPose currentPose = null;
 			PTZPose oldPose = new PTZPose(Double.MAX_VALUE, Double.MAX_VALUE, 0);
-			while (different > 0.00001) {
+			while (different > 0.001) {
+				logger.debug("Pan-Tilt motion diff: " + different);
 				currentPose = ptzInterface.getPose().pose;
 				different = ptzPosError(currentPose, oldPose);
 				try {
