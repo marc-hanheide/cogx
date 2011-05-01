@@ -25,6 +25,10 @@ class GazeboVision : public ManagedComponent
 {
 private:
   /**
+   * Name of robot model in gazebo world.
+   */
+  static const std::string robotName;
+  /**
    * host on which player server runs (typically localhost)
    */
   std::string playerHost;
