@@ -154,23 +154,25 @@ void ObjectRecognizer3DDriver::runComponent(){
 				
 			log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
 			
-			if(m_rec_cmd->confidence > 0.03){
+			if(m_mode == RECOGNIZE){
+				if(m_rec_cmd->confidence > 0.03){
 			
-				log("Add FarArmMovementCommand to Working Memory.");
+					log("Add FarArmMovementCommand to Working Memory.");
 				
-				FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
-				farArmMovementCom->comp = COMPINIT;
-				farArmMovementCom->status = NEW;
-				farArmMovementCom->targetObjectAddr = *(new cast::cdl::WorkingMemoryAddress());
-				farArmMovementCom->targetObjectAddr.id = m_rec_cmd->visualObjectID;
-				farArmMovementCom->targetObjectAddr.subarchitecture = getSubarchitectureID();
+					FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
+					farArmMovementCom->comp = COMPINIT;
+					farArmMovementCom->status = NEW;
+					farArmMovementCom->targetObjectAddr = *(new cast::cdl::WorkingMemoryAddress());
+					farArmMovementCom->targetObjectAddr.id = m_rec_cmd->visualObjectID;
+					farArmMovementCom->targetObjectAddr.subarchitecture = getSubarchitectureID();
 				
-				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
+					addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
 				
-			}else{
+				}else{
 			
-				log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
+					log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
 			
+				}
 			}
 		    
 		}
