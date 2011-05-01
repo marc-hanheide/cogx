@@ -36,7 +36,7 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # computes the frame transformations for the pan tilt.
-CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml --use_ptz
+CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # This is the PlayerVideoServer which is used only in simulation 
 # where it serves the image stream from Gazebo.
