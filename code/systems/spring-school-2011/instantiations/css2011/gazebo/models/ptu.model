@@ -172,8 +172,8 @@
     <body2>ptu_tilt_body</body2>
     <anchor>ptu_tilt_body</anchor>
     <axis>0 1 0</axis>
-    <lowStop>-60</lowStop>
-    <highStop>60</highStop>
+    <lowStop>-90</lowStop>
+    <highStop>90</highStop>
   </joint:hinge>
 
   <controller:generic_ptz name="ptu_controller">
