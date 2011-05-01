@@ -8,7 +8,6 @@
 #define MANIPULATION_PLANNER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include "Tools.h"
 #include <VisionData.hpp>
 #include "Math.hpp"
 
@@ -25,6 +24,8 @@ protected:
   virtual void configure(const std::map<std::string,std::string> & _config);
   virtual void start();
   virtual void runComponent();
+
+  void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
 public:
   ManipulationPlanner() {}
