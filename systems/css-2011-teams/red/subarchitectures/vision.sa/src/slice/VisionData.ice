@@ -432,5 +432,13 @@ module VisionData {
   };
 };
 
+  /**
+   * @brief Gripper pose for team red
+   * @author Team red
+   */
+  class GripperPose {
+    cogx::Math::Pose3 pose;
+  };
+
 #endif
 // vim:set sw=2 ts=8 et ai:
