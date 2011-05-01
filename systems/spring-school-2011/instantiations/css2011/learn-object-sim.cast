@@ -7,7 +7,7 @@ COMPONENT CPP ptz.server PlayerPTZServer
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG display.srv DisplayServer --redirect-to-host localhost --log true --debug true
+CPP MG display.srv DisplayServer --redirect-to-host localhost
 
 SUBARCHITECTURE vision.sa 
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
