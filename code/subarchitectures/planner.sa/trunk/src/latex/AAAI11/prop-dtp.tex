@@ -15,32 +15,31 @@ propositions, are satisfied in the current state -- i.e., $\poss(\stochAction) \
 \state$. We denote by $\mu_{\stochAction}(\detAction_i)$ the probability that
 nature chooses a deterministic STRIPS effect $\detAct_i$, and for
 all \stochAction\ we require
-$\sum_{\detAction_i \in \detActions(\stochAction)}
+$\sum_{\detAction_i}
 \mu_{\stochAction}(\detAction_i) = 1$.
 
 We are concerned with problems that feature partial
 observability. Although we could invoke {\em extended probabilistic
 STRIPS operators}~\cite{rintanen:01} to model actions and observations
-propositionally, we find it convenient for presentation and computation to
-separate sensing and action. Therefore, we suppose a POMDP has a
-perceptual model given in terms of a finite set of stochastic {\em
-senses} $\stochSenses$, deterministic sensing outcomes $\detSenses$,
-and perceptual propositions $\percepts$, called {\em percepts}. In
-detail, we take an observation $\observ$ to be a set of percepts
-$\observ \subseteq \percepts$, and denote by \observations\ the set of
-reachable observations. The underlying state of the process cannot be
-observed directly, rather, senses $\stochSense \in \stochSenses$
-effect an observation $\observ \in
+propositionally, we find it convenient for presentation and
+computation to separate sensing and action. Therefore, we suppose a
+POMDP has a perceptual model given in terms of a finite set of
+stochastic {\em senses} $\stochSenses$, deterministic sensing outcomes
+$\detSenses$, and perceptual propositions $\percepts$, called {\em
+percepts}. In detail, we take an observation $\observ$ to be a set of
+percepts , i.e., $\observ \subseteq \percepts$, and denote
+by \observations\ the set of \Omit{reachable} observations. The underlying
+state of the process cannot be observed directly, rather, senses
+$\stochSense \in \stochSenses$ effect an observation $\observ \in
 \observations$ that informs what should be believed about the state the
-process is in. If $\action$ is applied effecting a
+process is in. If action $\action$ is applied effecting a
 transition to a successor state $\state'$, then an observation occurs
 according to the active senses $\stochSenses(\stochAction, \state')
 \subseteq \stochSenses$. A sense $\stochSense$ is active, written
 $\stochSense \in \stochSenses(\stochAction, \state')$, if the senses'
 action-precondition, $\poss_\stochActions(\stochSense)$, is equal to
 $\stochAction$, and the state-precondition $\poss_\states(\stochSense)
-\subseteq \propositions$ is satisfied by the state $\state'$ -- In the
-usual sense that \mbox{$\poss_\states(\stochSense)\subseteq\state'$}.
+\subseteq \propositions$ is satisfied by the state $\state'$, i.e., \mbox{$\poss_\states(\stochSense)\subseteq\state'$}.
 %%
 When a sense is active, nature must choose exactly one outcome amongst
 a small set of deterministic choices $\detSenses(\stochSense)
@@ -99,9 +98,9 @@ $\langle \states, \bstate_0, \actions, \transProb, \reward,
 \observations, \obsDist \rangle$. Here, $\bstate_0$ is the initial
 belief-state, \states\ is the finite set of reachable propositional
 states, \actions\ is the finite set of actions, and \observations\ is
-the finite set of reachable observations (i.e., perceptual states).
-Where $\state, \state' \in \states$, $a \in \actions$, from $\mu$ we
-have a state transition function $\transProb(\state, \action,
+the finite set of reachable observations.  Where
+$\state, \state' \in \states$, $a \in \actions$, from $\mu$ we have a
+state transition function $\transProb(\state, \action,
 \state')$ giving the probability of a transition from state $s$ to
 $s'$ if $a$ is applied. For any $\state$ and $\action$ we have
 $\sum_{\state' \in \states} \transProb(\state, \action, \state') = 1$.
@@ -131,9 +130,9 @@ successive belief-state $\bstate'$ is:
   \sum_{\state\in \states} \transProb(\state, \action, \state') \bstate(\state) }{\pp{Pr}(\observ | \action, \bstate)}
 \end{equation}
 
-\noindent where $\pp{Pr}(\observ | \action, \bstate)$ is the
-normalising factor, that is, the probability of getting observation
-$\observ$ given we execute $\action$ in $\bstate$.
+\noindent where $\pp{Pr}(\observ | \action, \bstate)$ is a
+normalising factor, giving the probability of getting observation
+$\observ$ if $\action$ is applied to $\bstate$.
 
 \subsection{Plan Evaluation}
 
