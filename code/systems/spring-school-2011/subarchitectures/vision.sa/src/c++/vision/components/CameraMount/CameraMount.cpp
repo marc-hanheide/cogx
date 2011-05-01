@@ -65,18 +65,21 @@ void CameraMount::configure(const map<string,string> & _config)
   {
     string filename = it->second;
     readXML(filename, ptBasePose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--pt_pan_xml")) != _config.end())
   {
     string filename = it->second;
     readXML(filename, ptPanPose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--pt_tilt_xml")) != _config.end())
   {
     string filename = it->second;
     readXML(filename, ptTiltPose);
+    usePTZ = true;
   }
 
   if((it = _config.find("--cam_poses_xml")) != _config.end())
@@ -89,6 +92,7 @@ void CameraMount::configure(const map<string,string> & _config)
       readXML(filename, pose);
       camPoses.push_back(pose);
     }
+    usePTZ = true;
   }
 
   if((it = _config.find("--fixed_cam_poses_xml")) != _config.end())
@@ -108,11 +112,6 @@ void CameraMount::configure(const map<string,string> & _config)
   {
     istringstream str(it->second);
     str >> fixedPanTilt.pose.pan >> fixedPanTilt.pose.tilt;
-  }
-
-  if((it = _config.find("--use_ptz")) != _config.end())
-  {
-    usePTZ = true;
   }
 
   if(camIds.size() == 0)
