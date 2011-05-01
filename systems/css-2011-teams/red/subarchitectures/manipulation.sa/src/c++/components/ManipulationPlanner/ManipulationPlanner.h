@@ -9,6 +9,9 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include "Tools.h"
+#include <VisionData.hpp>
+#include "Math.hpp"
+
 
 namespace cast
 {
@@ -16,7 +19,7 @@ namespace cast
 class ManipulationPlanner : public ManagedComponent
 {
 private:
-
+  void calculateGripperPosition(VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
 protected:
 
   virtual void configure(const std::map<std::string,std::string> & _config);
