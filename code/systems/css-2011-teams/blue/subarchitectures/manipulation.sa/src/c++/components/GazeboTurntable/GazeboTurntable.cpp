@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <cogxmath.h>
 #include "GazeboTurntable.h"
 
 /**
@@ -23,6 +24,16 @@ namespace cogx
 
 using namespace std;
 using namespace cast;
+using namespace cogx::Math;
+
+static double normalizeAngle(double a)
+{
+  while(a >= 2.*M_PI)
+    a -= 2.*M_PI;
+  while(a < 0.)
+    a += 2.*M_PI;
+  return a;
+}
 
 GazeboTurntable::GazeboTurntable()
 {
@@ -31,9 +42,11 @@ GazeboTurntable::GazeboTurntable()
 #endif
   robot = 0;
   sim = 0;
-  rotSpeed = M_PI/6.;
+  rotSpeed = M_PI/12.;
   timeDeltaMs = 100;
-  turning = false;
+  turningR = false;
+  turningP = false;
+  turningY = false;
   playerHost = PlayerCc::PLAYER_HOSTNAME;
   playerPort = PlayerCc::PLAYER_PORTNUM;
 }
@@ -70,7 +83,9 @@ void GazeboTurntable::start()
 #ifdef FEAT_VISUALIZATION
   display.connectIceClient(*this);
   display.installEventReceiver();
-  display.addCheckBox(getComponentID(), "toggle.turntable.turning", "&Turning");
+  display.addCheckBox(getComponentID(), "toggle.turntable.rolling", "rotate x");
+  display.addCheckBox(getComponentID(), "toggle.turntable.pitching", "rotate y");
+  display.addCheckBox(getComponentID(), "toggle.turntable.yawing", "rotate z");
 #endif
 }
 
@@ -85,12 +100,28 @@ void GazeboTurntable::GTDisplayClient::handleEvent(const Visualization::TEvent &
 {
   if(event.type == Visualization::evCheckBoxChange)
   {
-    if(event.sourceId == "toggle.turntable.turning")
+    if(event.sourceId == "toggle.turntable.rolling")
     {
       bool newTurn = (event.data != "0");
-      if(newTurn != m_comp->turning)
+      if(newTurn != m_comp->turningR)
       {
-        m_comp->turning = !m_comp->turning;
+        m_comp->turningR = !m_comp->turningR;
+      }
+    }
+    else if(event.sourceId == "toggle.turntable.pitching")
+    {
+      bool newTurn = (event.data != "0");
+      if(newTurn != m_comp->turningP)
+      {
+        m_comp->turningP = !m_comp->turningP;
+      }
+    }
+    else if(event.sourceId == "toggle.turntable.yawing")
+    {
+      bool newTurn = (event.data != "0");
+      if(newTurn != m_comp->turningY)
+      {
+        m_comp->turningY = !m_comp->turningY;
       }
     }
   }
@@ -98,9 +129,17 @@ void GazeboTurntable::GTDisplayClient::handleEvent(const Visualization::TEvent &
 
 string GazeboTurntable::GTDisplayClient::getControlState(const std::string& ctrlId)
 {
-  if(ctrlId == "toggle.turntable.turning")
+  if(ctrlId == "toggle.turntable.rolling")
   {
-    return m_comp->turning ? "1" : "0";
+    return m_comp->turningR ? "1" : "0";
+  }
+  else if(ctrlId == "toggle.turntable.pitching")
+  {
+    return m_comp->turningP ? "1" : "0";
+  }
+  else if(ctrlId == "toggle.turntable.yawing")
+  {
+    return m_comp->turningY ? "1" : "0";
   }
   return "";
 }
@@ -110,15 +149,33 @@ void GazeboTurntable::runComponent()
 {
   while(isRunning())
   {
-    if(turning)
+    if(turningR || turningP || turningY)
     {
       double x, y, z, roll, pitch, yaw, time;
+      Pose3 pose;
+
       sim->GetPose3d((char*)objLabel.c_str(), x, y, z, roll, pitch, yaw, time);
-      yaw += rotSpeed*(double)timeDeltaMs/1000.;
-      while(yaw >= 2.*M_PI)
-        yaw -= 2.*M_PI;
-      while(yaw < 0)
-        yaw += 2.*M_PI;
+      pose.pos = vector3(x, y, z);
+      fromRPY(pose.rot, roll, pitch, yaw);
+      if(turningY)
+      {
+        Matrix33 R;
+        fromRotZ(R, rotSpeed*(double)timeDeltaMs/1000.);
+        mult(R, pose.rot, pose.rot);
+      }
+      if(turningP)
+      {
+        Matrix33 R;
+        fromRotY(R, rotSpeed*(double)timeDeltaMs/1000.);
+        mult(R, pose.rot, pose.rot);
+      }
+      if(turningR)
+      {
+        Matrix33 R;
+        fromRotX(R, rotSpeed*(double)timeDeltaMs/1000.);
+        mult(R, pose.rot, pose.rot);
+      }
+      toRPY(pose.rot, roll, pitch, yaw);
       sim->SetPose3d((char*)objLabel.c_str(), x, y, z, roll, pitch, yaw);
     }
 		sleepComponent(timeDeltaMs);
