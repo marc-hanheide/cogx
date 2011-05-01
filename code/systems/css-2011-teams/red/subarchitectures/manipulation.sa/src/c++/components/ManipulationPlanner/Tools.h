@@ -13,7 +13,7 @@
 namespace cast
 {
   
-  void calculateGripperPosition(VisionData::VisualObject &obj, cogx::Math::Pose3 &gripperPose);
+  bool calculateGripperPosition(VisionData::VisualObject &obj, cogx::Math::Pose3 &gripperPose);
   
 }
 

@@ -22,8 +22,8 @@ namespace cast
 {
 
 using namespace std;
-//using namespace cogx;
-//using namespace cogx::Math;
+using namespace cogx;
+using namespace cogx::Math;
 
 
 
@@ -44,6 +44,9 @@ void ManipulationPlanner::configure(const map<string,string> & _config)
  */
 void ManipulationPlanner::start()
 {
+  VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+  Pose3 pose;
+  calculateGripperPosition(obj, pose);
 }
 
 
@@ -55,5 +58,12 @@ void ManipulationPlanner::runComponent()
 
 }
 
+
+void calculateGripperPosition(VisionData::VisualObjectPtr obj, Math::Pose3 &pose){
+  /* TODO 1. Select which face to approach
+         2.  Select which orientation to approach */ 
+  
+
+}
 }
 
