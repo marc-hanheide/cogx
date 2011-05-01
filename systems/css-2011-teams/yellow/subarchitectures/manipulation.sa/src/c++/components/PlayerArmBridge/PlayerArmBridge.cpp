@@ -78,18 +78,31 @@ void PlayerArmBridge::destroy()
 
 void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc)
 {
+    try {
+  bool reachedGivenPosition = false;
   log("received SendTrajectory");
   PlayerBridgeSendTrajectoryCommandPtr cmd = getMemoryEntry<PlayerBridgeSendTrajectoryCommand>(_wmc.address);
   // let the caller know we are executing the command
   cmd->comp = ONTHEWAY;
   overwriteWorkingMemory(_wmc.address, cmd);
   // NOTE: sendTrajectory() blocks until trajectory is finished
-  if(sendTrajectory(cmd->trajectory))
+  log("sending trajectory");
+  reachedGivenPosition = sendTrajectory(cmd->trajectory);
+  log("done sending trajectory, reached given end position: %d", (int)reachedGivenPosition);
+  if(reachedGivenPosition)
     cmd->comp = SUCCEEDED;
   else
     cmd->comp = FAILED;
   overwriteWorkingMemory(_wmc.address, cmd);
   log("finished SendTrajectory");
+    }
+    catch (const std::exception& e) {
+        log("exception:",e);
+    }
+    catch (...) {
+        log("unknown exception ");
+    }
+
 }
 
 void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
