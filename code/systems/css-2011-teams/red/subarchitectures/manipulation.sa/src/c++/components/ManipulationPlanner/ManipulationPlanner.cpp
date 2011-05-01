@@ -22,8 +22,8 @@ namespace cast
 {
 
 using namespace std;
-using namespace cogx;
-using namespace cogx::Math;
+//using namespace cogx;
+//using namespace cogx::Math;
 
 
 
