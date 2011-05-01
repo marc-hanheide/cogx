@@ -10,7 +10,7 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG display.srv DisplayServer --redirect-to-host localhost --log true --debug true
 
 SUBARCHITECTURE vision.sa 
-CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 CPP MG CameraMount CameraMount --use_ptz  --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
@@ -27,5 +27,5 @@ JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
 CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0  --displayserver "display.srv" 
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
 
