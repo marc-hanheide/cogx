@@ -26,6 +26,8 @@ using namespace PlayerCc;
 using namespace VisionData;
 using namespace cogx::Math;
 
+const string GazeboVision::robotName = "robot";
+
 GazeboVision::GazeboVision()
 {
   robot = 0;
@@ -223,15 +225,24 @@ void GazeboVision::runComponent()
 {
   while(isRunning())
   {
+    double x, y, z, roll, pitch, yaw, time;
+    Pose3 robotPose;
+
+    sim->GetPose3d((char*)robotName.c_str(), x, y, z, roll, pitch, yaw, time);
+    robotPose.pos = cogx::Math::vector3(x, y, z);
+    fromRPY(robotPose.rot, roll, pitch, yaw);
+    log(robotName + " pose " + toString(robotPose));
+
     for(size_t i = 0; i < labels.size(); i++)
     {
-      double x, y, z, roll, pitch, yaw, time;
-
+      VisualObjectPtr obj;
+      Pose3 pose;
+      
       sim->GetPose3d((char*)labels[i].c_str(), x, y, z, roll, pitch, yaw, time);
-        VisualObjectPtr obj;
-      cogx::Math::Pose3 pose;
       pose.pos = cogx::Math::vector3(x, y, z);
       fromRPY(pose.rot, roll, pitch, yaw);
+      log(labels[i] + " pose in world " + toString(pose));
+      transformInverse(robotPose, pose, pose);
       if(objAddrs[i].empty())
       {
         objAddrs[i] = newDataID();
@@ -247,9 +258,9 @@ void GazeboVision::runComponent()
         obj->pose = pose;
         overwriteWorkingMemory(objAddrs[i], obj);
       }
-      debug("%s Pose3d: XYZ[%f %f %f] RPY[%f %f %f]\n", labels[i].c_str(), x, y, z, roll, pitch, yaw); 
+      log(labels[i] + " pose " + toString(pose));
     }
-    sleepComponent(100);
+    sleepComponent(1000);
   }
 }
 
