@@ -21,3 +21,5 @@ option(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE "build gazebo turn table for learn
 if(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
   add_subdirectory (src/c++/components/GazeboTurntable)
 endif(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
+add_subdirectory (src/c++/components/BlueFSM)
+
