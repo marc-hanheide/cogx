@@ -70,8 +70,12 @@ private:
   double rotSpeed;
   /** time between steps in ms */
   int timeDeltaMs;
-  /** toggles turning of object on/off */
-  bool turning;
+  /** toggles rolling of object  on/off */
+  bool turningR;
+  /** toggles pitching of object on/off */
+  bool turningP;
+  /** toggles yawing of object on/off */
+  bool turningY;
 
 protected:
   virtual void configure(const map<string, string> &_config);
