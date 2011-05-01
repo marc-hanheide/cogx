@@ -163,7 +163,7 @@ void CameraMount::runComponent()
       if(camFixedPoses.size() != 0 && equals(ptz, fixedPanTilt, FIXED_POSITION_TOLERANCE))
       {
         camPosesToEgo = camFixedPoses;
-        debug("reached fixed pose");
+        log("reached fixed pose");
       }
       else
       {
@@ -176,6 +176,7 @@ void CameraMount::runComponent()
       camPosesToEgo = camFixedPoses;
       time = getCASTTime();
     }
+    log("for %d cameras:", (int)camIds.size());
     for(size_t i = 0; i < camIds.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
@@ -185,8 +186,8 @@ void CameraMount::runComponent()
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
-      debug("sending pose for cam %d:", camIds[i]);
-      debug(toString(camPosesToEgo[i]));
+      log("sending pose for cam %d:", camIds[i]);
+      log(toString(camPosesToEgo[i]));
       if(camsAddedToWM)
       {
         overwriteWorkingMemory(camWMIds[i], camParms);
