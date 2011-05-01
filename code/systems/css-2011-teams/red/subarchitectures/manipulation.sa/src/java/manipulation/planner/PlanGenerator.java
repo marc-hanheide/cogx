@@ -27,7 +27,31 @@ import java.util.LinkedList;
 public class PlanGenerator {
 
 	public static List<ManipulationCommand> generatePlan(GripperPose gp) {
-		List<ManipulationCommand> plan = new LinkedList<ManipulationCommand>();
+
+		// Make new plan queue...
+        List<ManipulationCommand> plan = new LinkedList<ManipulationCommand>();
+        
+        // Let's start adding things to the plan queue...
+        
+
+        // 1. Open the gripper...
+        OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+        openGripperCmd.comp = ManipulationCompletion.COMPINIT;
+        openGripperCmd.status = ManipulationCommandStatus.NEW;
+
+        plan.add(openGripperCmd);
+       
+
+        // 2. Move to initial gripper pose near the object...
+        MoveArmToPose moveArmToPose = new MoveArmToPose();
+        moveArmToPose.comp = ManipulationCompletion.COMPINIT;
+        moveArmToPose.status = ManipulationCommandStatus.NEW;
+
+        moveArmToPose.targetPose = gp.pose;
+
+        plan.add(moveArmToPose);
+
+
 		return plan;
 	}
 
