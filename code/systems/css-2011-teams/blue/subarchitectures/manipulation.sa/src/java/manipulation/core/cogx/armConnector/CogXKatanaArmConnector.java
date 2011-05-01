@@ -90,14 +90,14 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			cBegin.vel.c[i] = 0;
 		}
 
-		homePosition.t = manipulator.getVirtualSceneConnector().getTime()
-				+ arm.getTimeDeltaAsync();
-
-		GenConfigspaceState cEnd = homePosition;
-
 		GenConfigspaceState[] trajectory;
 		try {
 			logger.debug("Moving to home position...");
+
+			homePosition.t = cBegin.t + arm.getTimeDeltaAsync() + 3;
+
+			GenConfigspaceState cEnd = homePosition;
+
 			trajectory = arm.findTrajectory(cBegin, cEnd);
 
 			PlayerBridgeSendTrajectoryCommand cmd = new PlayerBridgeSendTrajectoryCommand();
@@ -146,8 +146,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		GenConfigspaceState currentConfState = null;
 		try {
 			currentConfState = arm.recvGenConfigspaceState(manipulator
-					.getVirtualSceneConnector().getTime()
-					+ arm.getTimeDeltaAsync());
+					.getVirtualSceneConnector().getTime());
 		} catch (ExTinyArm e) {
 			throw new ManipulatorException(e.what);
 		}
@@ -160,27 +159,17 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	 */
 	@Override
 	public void goHome() throws ManipulatorException {
-		stopArm();
-
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e1) {
-			logger.error(e1);
-		}
-
-		// manipulator.getVirtualSceneConnector().clearScene();
-		homePosition.t = manipulator.getVirtualSceneConnector().getTime()
-				+ arm.getTimeDeltaAsync();
-
 		try {
 			GenConfigspaceState cBegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getVirtualSceneConnector().getTime()
-							+ arm.getTimeDeltaAsync());
+							.getVirtualSceneConnector().getTime());
+			homePosition.t = cBegin.t + arm.getTimeDeltaAsync() + 3;
+
 			GenConfigspaceState cEnd = homePosition;
 
 			GenConfigspaceState[] trajectory;
 			trajectory = arm.findTrajectory(cBegin, cEnd);
+
 			logger.debug("Moving to home position...");
 			reached = false;
 
@@ -238,15 +227,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	@Override
 	public void reach(Vector3D position, Matrix rotation)
 			throws ManipulatorException {
-
-		stopArm();
-
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e1) {
-			logger.error(e1);
-		}
-
 		home = false;
 
 		GenWorkspaceState genPosition = new GenWorkspaceState();
@@ -259,14 +239,13 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		genPosition.pos.R = CogXConverter.convMatrixToGolem(rotation);
 
 		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
-		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
-				+ arm.getTimeDeltaAsync();
 
 		try {
 			GenConfigspaceState cbegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getVirtualSceneConnector().getTime()
-							+ arm.getTimeDeltaAsync());
+							.getVirtualSceneConnector().getTime());
+
+			genPosition.t = cbegin.t + arm.getTimeDeltaAsync() + 3;
 
 			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
 
@@ -327,7 +306,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			armPos = arm.recvGenWorkspaceState(manipulator
 					.getVirtualSceneConnector().getTime()
-					+ arm.getTimeDeltaAsync());
+					+ arm.getTimeDeltaAsync() + 3);
 
 			returnValue = CogXConverter.convGolemToVec(armPos.pos.p);
 		} catch (ExTinyArm e) {
@@ -347,7 +326,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			armPos = arm.recvGenWorkspaceState(manipulator
 					.getVirtualSceneConnector().getTime()
-					+ arm.getTimeDeltaAsync());
+					+ arm.getTimeDeltaAsync() + 3);
 			returnValue = CogXConverter.convGolemToMatrix(armPos.pos.R);
 		} catch (ExTinyArm e) {
 			throw new ManipulatorException(e.what);
@@ -557,8 +536,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		genPosition.pos.R = CogXConverter.convMatrixToGolem(targetRotation);
 
 		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
-		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
-				+ arm.getTimeDeltaAsync();
 
 		Vector3D positionError = null;
 		double angularError;
@@ -566,8 +543,10 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			GenConfigspaceState cbegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getVirtualSceneConnector().getTime()
-							+ arm.getTimeDeltaAsync());
+							.getVirtualSceneConnector().getTime());
+
+			genPosition.t = cbegin.t + arm.getTimeDeltaAsync() + 3;
+
 			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
 			Mat34[] forwardTransArray = arm.getForwardTransform(cend.pos);
 			Mat34 forwardTrans = forwardTransArray[forwardTransArray.length - 1];
@@ -645,8 +624,6 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				.getRotation());
 
 		genPosition.vel = new Twist(new Vec3(0, 0, 0), new Vec3(0, 0, 0));
-		genPosition.t = manipulator.getVirtualSceneConnector().getTime()
-				+ arm.getTimeDeltaAsync();
 
 		Matrix newRotation;
 		Vector3D newTranslation;
@@ -654,8 +631,10 @@ public class CogXKatanaArmConnector implements ArmConnector {
 		try {
 			GenConfigspaceState cbegin = arm
 					.recvGenConfigspaceState(manipulator
-							.getVirtualSceneConnector().getTime()
-							+ arm.getTimeDeltaAsync());
+							.getVirtualSceneConnector().getTime());
+
+			genPosition.t = cbegin.t + arm.getTimeDeltaAsync() + 3;
+
 			GenConfigspaceState cend = arm.findTarget(cbegin, genPosition);
 			Mat34[] forwardTransArray = arm.getForwardTransform(cend.pos);
 			Mat34 forwardTrans = forwardTransArray[forwardTransArray.length - 1];
