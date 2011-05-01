@@ -33,6 +33,7 @@
 
 using namespace golem;
 using namespace golem::tiny;
+using namespace std;
 
 static string golemPoseToString(const Mat34 &pose) {
 	ostringstream s;
