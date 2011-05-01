@@ -19,4 +19,5 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 add_cast_component(BlueFSM BlueFSM.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES} ${PLAYER_LDFLAGS} ${OPENCV_LDFLAGS}) 
 
+target_link_libraries(BlueFSM VisionData ManipulationData)
 target_link_libraries(BlueFSM VisionData FrontierInterface)
