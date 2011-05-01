@@ -22,7 +22,7 @@ if (LIBBUILD_PYTHON_VISION)
    endif(LIBBUILD_CUDASIFT)
 endif(LIBBUILD_PYTHON_VISION)
 
-option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" OFF)
+option(LIBBUILD_LEVMAR_HOMEST "Build homest & levmar libraries required by the 3D shape detector" ON)
 if (LIBBUILD_LEVMAR_HOMEST)
    option(LIBBUILD_LEVMAR_HOMEST_DEMO "Build demos for homest & levmar" OFF)
    # some prerequisites: liblapack-dev, libf2c2-dev && dependencies
