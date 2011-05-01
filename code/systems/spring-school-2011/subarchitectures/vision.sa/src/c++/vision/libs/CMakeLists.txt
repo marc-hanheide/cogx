@@ -5,7 +5,7 @@ if (LIBBUILD_SIFTGPU)
    add_subdirectory(SiftGPU/linux)
 endif(LIBBUILD_SIFTGPU)
 
-option(LIBBUILD_CUDASIFT "Build CudaSift library" ON)
+option(LIBBUILD_CUDASIFT "Build CudaSift library" OFF)
 if (LIBBUILD_CUDASIFT)
    add_subdirectory(CudaSift)
 endif(LIBBUILD_CUDASIFT)
