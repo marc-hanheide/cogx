@@ -1,5 +1,32 @@
 
 
+%% \small
+%% \[
+%% \begin{array}{l}
+%% \actions^{\circ}(.8;(=(\pp{is-in}~\pp{box})\pp{kitchen}));\\
+%% \actions^{\circ}(.3;(=(\pp{is-in}~\pp{cup})\pp{office}));\\
+%% (\pp{look}~\pp{box}~\pp{kitchen});
+%% (\pp{look}~\pp{cup}~\pp{office});\\
+%% (\pp{report}~\pp{box}~\pp{kitchen}); 
+%% (\pp{report}~\pp{cup}~\pp{office})
+%% \end{array}
+%% \]
+%% \normalsize
+
+%%Continuing our simplified example, if the trace is:
+
+%%\noindent 
+
+
+
+
+%%  with probability $\prob_i$, and
+%% $\state^\bot$ with probability $1 - \prob_i$. Here, $\state^{T_i}$ is
+%% the union of $\state$ with atomic terms from $T_i$.
+%% 
+%% Here, $\state^{T_i}$ is the union of $\state$ with atomic
+%% terms from $T_i$
+%% State $\state^\bot$ is an added sink.
 
 
 
