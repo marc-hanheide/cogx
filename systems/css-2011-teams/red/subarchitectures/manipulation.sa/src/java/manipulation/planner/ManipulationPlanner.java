@@ -6,11 +6,6 @@ package manipulation.planner;
 
 import cast.architecture.ManagedComponent;
 
-import manipulation.core.share.Manipulator;
-import manipulation.core.share.exceptions.ItemException;
-import manipulation.itemMemory.Item;
-import manipulation.itemMemory.Item.PropertyName;
-import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
 import manipulation.slice.FineArmMovementCommand;
@@ -35,6 +30,7 @@ import VisionData.Vertex;
 import VisionData.VisualObject;
 import VisionData.VisualObjectView;
 import cast.AlreadyExistsOnWMException;
+import cast.SubarchitectureComponentException;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -42,6 +38,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTData;
 import cogx.Math.Matrix33;
 import cogx.Math.Pose3;
 import cogx.Math.Rect2;
@@ -59,6 +56,8 @@ public class ManipulationPlanner extends ManagedComponent {
 	private ManipulationCommand currentCommand = null;
 	private ConcurrentLinkedQueue<ManipulationCommand> currentPlan =
 			new ConcurrentLinkedQueue<ManipulationCommand>();
+
+	private WorkingMemoryChangeReceiver recv = null;
 
 	@Override
 	protected void configure(Map<String, String> config) {
@@ -120,7 +119,21 @@ public class ManipulationPlanner extends ManagedComponent {
 			log(ex);
 		}
 
-		// TODO: register the change filter for the cmd
+		if (recv == null) {
+
+			recv = new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleCommandOverwrite(_wmc);
+					}
+			};
+
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					id, getSubarchitectureID(), WorkingMemoryOperation.OVERWRITE),
+					recv);
+		}
+		else {
+			log("WARNING WARNING NUCLEAR ATTACK, recv != NULL (I'm not registering it) !!!");
+		}
 	}
 
 	synchronized void overwriteCurrentCommand(ManipulationCommand cmd) {
@@ -130,20 +143,44 @@ public class ManipulationPlanner extends ManagedComponent {
 	synchronized void removeCurrentCommand() {
 		log("removing current command");
 
-		// TODO: unregister the change filter
+		try {
+			removeChangeFilter(recv);
+		}
+		catch (SubarchitectureComponentException ex) {
+			log(ex);
+		}
+
+		recv = null;
 
 		currentCommand = null;
 	}
 
 	public void handleGripperPose(WorkingMemoryChange wmc) {
 		List<ManipulationCommand> newPlan = PlanGenerator.generatePlan(null);
-		log("adding plan of length " + newPlan.size() + " to the overall plan");
-		currentPlan.addAll(newPlan);
+		if (newPlan != null) {
+			log("adding plan of length " + newPlan.size() + " to the overall plan");
+			currentPlan.addAll(newPlan);
+		}
+		else {
+			log("got a NULL plan, ignoring");
+		}
 	}
 
 	public void handleCommandOverwrite(WorkingMemoryChange wmc) {
-		log("detected a change on address [" + wmc.address.id + "]");
-		// TODO: overwrite currentCommand with the newly changed object
+		log("woohoo, detected a change on address [" + wmc.address.id + "]");
+		try {
+			CASTData data = getWorkingMemoryEntry(wmc.address.id);
+			if (data.getData() instanceof ManipulationCommand) {
+				ManipulationCommand cmd = (ManipulationCommand) data.getData();
+				overwriteCurrentCommand(cmd);
+			}
+			else {
+				log("oops, got something that isn't a ManipulationCommand (ignoring this)!");
+			}
+		}
+		catch (SubarchitectureComponentException ex) {
+			log(ex);
+		}
 	}
 
 }
