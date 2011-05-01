@@ -105,13 +105,13 @@ void CameraMount::configure(const map<string,string> & _config)
       readXML(filename, pose);
       camFixedPoses.push_back(pose);
     }
-    have_fixed_pan_tilt = true;
   }
 
   if((it = _config.find("--fixed_pan_tilt")) != _config.end())
   {
     istringstream str(it->second);
     str >> fixedPanTilt.pose.pan >> fixedPanTilt.pose.tilt;
+    have_fixed_pan_tilt = true;
   }
 
   if(camIds.size() == 0)
