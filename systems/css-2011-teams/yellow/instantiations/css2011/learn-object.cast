@@ -3,7 +3,7 @@
 HOST localhost
 
 SUBARCHITECTURE vision.sa 
-CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
