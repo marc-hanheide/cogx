@@ -31,6 +31,8 @@ private:
 	std::map<std::string,int> m_sumDetections;
 	std::map<std::string,float> m_sumConfidence;
 
+	VisionData::Recognizer3DCommandPtr m_rec_cmd;
+	std::string m_manipulation_sa;
 	int m_mode;
 	int m_loops;
 	bool m_halt;

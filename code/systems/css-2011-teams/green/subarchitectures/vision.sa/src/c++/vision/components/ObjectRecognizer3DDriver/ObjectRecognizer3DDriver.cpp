@@ -87,6 +87,12 @@ void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
       m_mode = RECLEARN;
     // else mode is "RECOGNIZE"
   }
+  
+  if((it = _config.find("--manipulation_sa")) != _config.end())
+  { 
+    istringstream istr(it->second);
+    istr >> m_manipulation_sa;
+  }
 
   if((it = _config.find("--Loops")) != _config.end())
 	{
@@ -139,15 +145,33 @@ void ObjectRecognizer3DDriver::runComponent(){
 		for(int i=0; i<m_labels.size(); i++){
 		
 		   	if(m_mode == RECOGNIZE)
-				  addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+				addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
 		  	else if(m_mode = RECLEARN)
 		    	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
 		    	
 		    while(m_halt && isRunning())
 				sleepComponent(100);
 				
+			log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
+			
+			if(m_rec_cmd->confidence > 0.03){
+			
+				log("Add FarArmMovementCommand to Working Memory.");
 				
-			FarArmMovementCommand farArmMovementCommand = new FarArmMovementCommand();
+				FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
+				farArmMovementCom->comp = COMPINIT;
+				farArmMovementCom->status = NEW;
+				farArmMovementCom->targetObjectAddr = *(new cast::cdl::WorkingMemoryAddress());
+				farArmMovementCom->targetObjectAddr.id = m_rec_cmd->visualObjectID;
+				farArmMovementCom->targetObjectAddr.subarchitecture = getSubarchitectureID();
+				
+				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
+				
+			}else{
+			
+				log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
+			
+			}
 		    
 		}
 
@@ -174,19 +198,17 @@ void ObjectRecognizer3DDriver::runComponent(){
 void ObjectRecognizer3DDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-
+	log("Received Visual Object");
 }
 
 void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
-  VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
+	m_rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
 
-	log("%s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
+//	m_sumConfidence[m_rec_cmd->label] += m_rec_cmd->confidence;
+//	if(rec_cmd->confidence > 0.03)
+//		m_sumDetections[rec_cmd->label] += 1;
 
-	m_sumConfidence[rec_cmd->label] += rec_cmd->confidence;
-	if(rec_cmd->confidence > 0.03)
-		m_sumDetections[rec_cmd->label] += 1;
-
-  if(rec_cmd->label.compare(m_labels.back().c_str()) == 0)
+  if(m_rec_cmd->label.compare(m_labels.back().c_str()) == 0)
   	m_halt =false;
 }
 
