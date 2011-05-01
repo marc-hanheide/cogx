@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "BlueFSM.h"
+#include <cast/architecture/ManagedComponent.hpp>
+#include <cast/architecture.hpp>
 #include "FrontierInterface.hpp"
 #include "CureMapConversion.hpp"
 #include <float.h>
@@ -63,6 +65,35 @@ namespace cogx
       log(oss.str());
       sleep(2);
     }
+    
+    ::manipulation::slice::MoveArmToPosePtr moveArmToPose(new ::manipulation::slice::MoveArmToPose());
+    moveArmToPose->comp = ::manipulation::slice::COMPINIT;
+    moveArmToPose->status = ::manipulation::slice::NEW;
+    
+    {
+      boost::unique_lock<boost::mutex> lock(mutex_);
+      moveArmToPose->targetPose = pose_;
+    }
+    
+    try {
+      addToWorkingMemory(newDataID(), moveArmToPose);
+    } catch (std::exception &e1) {
+      log(e1.what());
+    }
+    
+    sleep(10); // Wait for changes to happen and pray that it worked.
+    
+    /*
+    wmcr = new WorkingMemoryChangeReceiver() {
+      public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+        commandChanged(_wmc, wmcr);
+      }
+    };
+    
+    ((CogXRunner) manipulator.getRunner()).addChangeFilter(
+                                                           ChangeFilterFactory.createIDFilter(id), wmcr);
+
+    */
   }
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
@@ -74,12 +105,12 @@ namespace cogx
   unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
   if (vo->identLabels.at(m_idx) == "cereals1_model")
   {
-    //boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+    boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
     //boost::unique_lock<boost::mutex> lock(mutex_);
     pose_ = vo->pose;
   }
-
-
+  
+  
   //log("finished objectPoseCallback");
 }
 

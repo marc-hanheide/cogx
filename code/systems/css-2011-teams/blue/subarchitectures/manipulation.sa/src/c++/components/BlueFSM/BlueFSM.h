@@ -3,6 +3,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <manipulation.hpp>
 #include <boost/thread/mutex.hpp>
 #include <Navigation/LocalGridMap.hh>
 #include <FrontierInterface.hpp>
