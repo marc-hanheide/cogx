@@ -3,6 +3,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace cogx
 {
@@ -22,6 +23,8 @@ namespace cogx
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
 
+    boost::mutex mutex_;
+    cogx::Math::Pose3 pose_;
     
   public:
     BlueFSM();

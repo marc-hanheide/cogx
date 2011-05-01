@@ -48,18 +48,29 @@ namespace cogx
   
   void BlueFSM::runComponent()
   {
+    while (true)
+    {
+      std::ostringstream oss;
+      oss << pose_.pos.x;
+      log(oss.str());
+      sleep(2);
+    }
   }
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
   {
   //log("received objectPoseCallback");
 
-  VisionData::VisualObjectPtr cmd = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+  VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  //unsigned m_idx = std::distance
+  unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
+  if (vo->identLabels.at(m_idx) == "cereals1_model")
+  {
+    //boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+    //boost::unique_lock<boost::mutex> lock(mutex_);
+    pose_ = vo->pose;
+  }
 
-  boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
-  //boost::unique_lock<boost::mutex> lock(mutex_);
 
   //log("finished objectPoseCallback");
 }
