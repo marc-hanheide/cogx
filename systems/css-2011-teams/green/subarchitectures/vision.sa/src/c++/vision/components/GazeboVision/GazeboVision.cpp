@@ -91,26 +91,75 @@ void GazeboVision::destroy()
 }
 
 /**
- * NOTE: This is hackishly only implemented for table objects.
+ * Create a new visual object with given pose.
+ * TODO: create proper box.
  */
 bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjectPtr &obj)
 {
-  if(label.find("table") == string::npos)
-  {
-    error("NOT IMPLEMENTED: can not get object '%s', only tables (objects with label 'table1, table2, ..) are supported",
-      label.c_str());
-    return false;
-  }
-
 	// geometry model
   obj->model = new GeometryModel;
 
-	VisionData::Face face1, face2;
 	size_t i = find(labels.begin(), labels.end(), label) - labels.begin();
 	Vector3 size = sizes[i];
   Vertex v;
+	VisionData::Face face;
 
-  v.pos = cogx::Math::vector3(size.x/2., size.y/2., size.z);
+  v.pos = cogx::Math::vector3(size.x/2., size.y/2., -size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(-size.x/2., size.y/2., -size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(-size.x/2., -size.y/2., -size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(size.x/2., -size.y/2., -size.z/2.);
+  obj->model->vertices.push_back(v);
+
+  v.pos = cogx::Math::vector3(size.x/2., size.y/2., size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(-size.x/2., size.y/2., size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(-size.x/2., -size.y/2., size.z/2.);
+  obj->model->vertices.push_back(v);
+  v.pos = cogx::Math::vector3(size.x/2., -size.y/2., size.z/2.);
+  obj->model->vertices.push_back(v);
+
+  face.vertices.clear();
+  face.vertices.push_back(0);
+  face.vertices.push_back(1);
+  face.vertices.push_back(2);
+  face.vertices.push_back(3);
+  obj->model->faces.push_back(face);
+  face.vertices.clear();
+  face.vertices.push_back(3);
+  face.vertices.push_back(7);
+  face.vertices.push_back(4);
+  face.vertices.push_back(0);
+  obj->model->faces.push_back(face);
+  face.vertices.clear();
+  face.vertices.push_back(0);
+  face.vertices.push_back(4);
+  face.vertices.push_back(5);
+  face.vertices.push_back(1);
+  obj->model->faces.push_back(face);
+  face.vertices.clear();
+  face.vertices.push_back(1);
+  face.vertices.push_back(5);
+  face.vertices.push_back(6);
+  face.vertices.push_back(2);
+  obj->model->faces.push_back(face);
+  face.vertices.clear();
+  face.vertices.push_back(2);
+  face.vertices.push_back(6);
+  face.vertices.push_back(7);
+  face.vertices.push_back(3);
+  obj->model->faces.push_back(face);
+  face.vertices.clear();
+  face.vertices.push_back(7);
+  face.vertices.push_back(6);
+  face.vertices.push_back(5);
+  face.vertices.push_back(4);
+  obj->model->faces.push_back(face);
+
+ /* v.pos = cogx::Math::vector3(size.x/2., size.y/2., size.z/2.);
   v.normal = cogx::Math::vector3(0., 0., 1.);
   v.pos = transform(pose, v.pos);
   v.normal = transformDirection(pose, v.normal);
@@ -119,7 +168,7 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   face1.vertices.push_back(0);
   face2.vertices.push_back(3);
 
-  v.pos = cogx::Math::vector3(-size.x/2., size.y/2., size.z);
+  v.pos = cogx::Math::vector3(-size.x/2., size.y/2., size.z/2.);
   v.normal = cogx::Math::vector3(0., 0., 1.);
   v.pos = transform(pose, v.pos);
   v.normal = transformDirection(pose, v.normal);
@@ -127,7 +176,7 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   face1.vertices.push_back(1);
   face2.vertices.push_back(2);
 
-  v.pos = cogx::Math::vector3(-size.x/2., -size.y/2., size.z);
+  v.pos = cogx::Math::vector3(-size.x/2., -size.y/2., size.z/2.);
   v.normal = cogx::Math::vector3(0., 0., 1.);
   v.pos = transform(pose, v.pos);
   v.normal = transformDirection(pose, v.normal);
@@ -135,7 +184,7 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   face1.vertices.push_back(3);
   face2.vertices.push_back(1);
 
-  v.pos = cogx::Math::vector3(size.x/2., -size.y/2., size.z);
+  v.pos = cogx::Math::vector3(size.x/2., -size.y/2., size.z/2.);
   v.normal = cogx::Math::vector3(0., 0., 1.);
   v.pos = transform(pose, v.pos);
   v.normal = transformDirection(pose, v.normal);
@@ -144,7 +193,8 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   face2.vertices.push_back(0);
 
 	obj->model->faces.push_back(face1);
-	obj->model->faces.push_back(face2);
+	obj->model->faces.push_back(face2);*/
+
   computeNormalsFromFaces(obj->model);
 
   // create a very simple distribution: label and unknown
@@ -154,8 +204,11 @@ bool GazeboVision::newObject(string &label, cogx::Math::Pose3 &pose, VisualObjec
   obj->identDistrib.push_back(1.);
   obj->identDistrib.push_back(0.);
 
-	// NOTE: for now use a stupid fixed probability 
-	obj->shapeLabels.push_back("plane");
+	// NOTE: for now use a stupid fixed probability
+	if(label.find("table") != string::npos)
+    obj->shapeLabels.push_back("plane");
+  else
+    obj->shapeLabels.push_back("box");
 	obj->shapeLabels.push_back("unknown");
 	obj->shapeDistrib.push_back(0.9);
 	obj->shapeDistrib.push_back(0.1);
