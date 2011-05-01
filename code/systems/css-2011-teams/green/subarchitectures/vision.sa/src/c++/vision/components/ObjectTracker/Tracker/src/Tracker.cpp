@@ -458,10 +458,12 @@ void Tracker::drawCoordinates(){
 	glDisable(GL_CULL_FACE);
 	m_cam_perspective.Activate();
 	
-	float l1 = 0.06;
-	float l2 = 0.02;
-	float b1 = 0.001;
-	float b2 = 0.003;
+	float l1 = 1.00;
+	float l2 = 0.2;
+	float b1 = 0.01;
+	float b2 = 0.03;
+	
+	glLineWidth(2.0);
 	
 	// X - Axis
 	glPushMatrix();

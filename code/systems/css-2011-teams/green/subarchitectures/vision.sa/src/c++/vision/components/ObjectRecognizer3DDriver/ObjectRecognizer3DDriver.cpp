@@ -9,8 +9,10 @@
 #include "ObjectRecognizer3DDriver.h"
 #include <VideoUtils.h>
 
+
 using namespace cogx;
 using namespace Tracking;
+using namespace manipulation::slice;
 
 /**
  * The function called to create a new instance of our component.
@@ -129,25 +131,34 @@ void ObjectRecognizer3DDriver::runComponent(){
   m_timer.Update();
 
   // trigger Recognizer3D
-  for(int j=0; j<m_loops && isRunning(); j++){
+ // for(int j=0; j<m_loops && isRunning(); j++){
 
-  	log("*** Loop %d/%d ***", j, m_loops);
+ // 	log("*** Loop %d/%d ***", j, m_loops);
 //   	addTrackingCommand(RELEASEMODELS);
 
 		for(int i=0; i<m_labels.size(); i++){
-	   	if(m_mode == RECOGNIZE)
-			  addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
-      else if(m_mode = RECLEARN)
-        addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
+		
+		   	if(m_mode == RECOGNIZE)
+				  addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+		  	else if(m_mode = RECLEARN)
+		    	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
+		    	
+		    while(m_halt && isRunning())
+				sleepComponent(100);
+				
+				
+			FarArmMovementCommand farArmMovementCommand = new FarArmMovementCommand();
+		    
 		}
 
-		while(m_halt && isRunning())
-			sleepComponent(100);
+
 
 // 		log("Taking Screenshot");
 // 		addTrackingCommand(SCREENSHOT);
 		m_halt = true;
-	}
+//	}
+	
+	
 
 	printf("Results: %f\n", m_timer.Update()/(m_loops*m_labels.size()));
 	for(int i=0; i<m_labels.size(); i++){
