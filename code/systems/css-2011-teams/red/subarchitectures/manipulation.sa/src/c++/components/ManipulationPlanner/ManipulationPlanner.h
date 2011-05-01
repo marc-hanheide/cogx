@@ -8,6 +8,8 @@
 #define MANIPULATION_PLANNER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include "Tools.h"
+
 namespace cast
 {
 
