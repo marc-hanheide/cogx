@@ -430,7 +430,6 @@ module VisionData {
     string label;
     cogx::Math::Pose3 pose;
   };
-};
 
   /**
    * @brief Gripper pose for team red
@@ -440,5 +439,6 @@ module VisionData {
     cogx::Math::Pose3 pose;
   };
 
+};
 #endif
 // vim:set sw=2 ts=8 et ai:
