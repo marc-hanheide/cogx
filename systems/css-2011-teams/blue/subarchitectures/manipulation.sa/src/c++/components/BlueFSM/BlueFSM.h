@@ -4,9 +4,12 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <boost/thread/mutex.hpp>
+#include <Navigation/LocalGridMap.hh>
+#include <FrontierInterface.hpp>
 
 namespace cogx
 {
+  typedef Cure::LocalGridMap<unsigned char> CureObstMap;
   
   using namespace std;
   using namespace cast;
@@ -26,6 +29,13 @@ namespace cogx
     boost::mutex mutex_;
     cogx::Math::Pose3 pose_;
     
+  private:
+    bool findGraspPoses(double objX, double objY, double theta, double halfLength,
+	double bestX, double bestY);
+
+    FrontierInterface::PlaceInterfacePrx m_placeInterface;
+    FrontierInterface::LocalMapInterfacePrx m_mapInterface;
+
   public:
     BlueFSM();
   };
