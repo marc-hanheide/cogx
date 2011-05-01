@@ -52,10 +52,16 @@ namespace cogx
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
   {
-  log("received objectPoseCallback");
+  //log("received objectPoseCallback");
+
   VisionData::VisualObjectPtr cmd = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  log("finished objectPoseCallback");
+  //unsigned m_idx = std::distance
+
+  boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+  //boost::unique_lock<boost::mutex> lock(mutex_);
+
+  //log("finished objectPoseCallback");
 }
 
   
