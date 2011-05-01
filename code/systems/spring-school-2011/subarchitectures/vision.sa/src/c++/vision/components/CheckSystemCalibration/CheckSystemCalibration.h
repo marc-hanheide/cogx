@@ -13,9 +13,6 @@
 #include <Video.hpp>
 #include <VisionData.hpp>
 #include <VideoClient.h>
-#include <PTZ.hpp>
-
-#undef FEAT_VISUALIZATION  // HACK?
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -41,13 +38,11 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
+  /**
+   * Whether the component is currently receiving images.
+   */
+  bool receiving;
 
-  ptz::PTZInterfacePrx m_PTUServer;
-  bool usePTZ;
-  double pan;
-  double tilt;
-
-  void MovePanTilt(double pan, double tilt, double tolerance);
   void drawCalibrationPattern(const Video::CameraParameters &cam, IplImage *iplImg);
 
 #ifdef FEAT_VISUALIZATION
@@ -57,8 +52,7 @@ private:
   public:
     CVvDisplayClient() { pComp = NULL; }
     void setClientData( CheckSystemCalibration* pc) { pComp = pc; }
-    void handleEvent(const Visualization::TEvent &event); /*override*/
-    std::string getControlState(const std::string& ctrlId); /*override*/
+    void handleEvent(const Visualization::TEvent &event);
   };
   CVvDisplayClient m_display;
 #endif
@@ -76,21 +70,17 @@ protected:
    * called by the framework upon deletion of the component
    */
   virtual void destroy();
-  /**
-   * Our run loop. Essentially just wait for key strokes.
-   */
-  virtual void runComponent();
 
 public:
-  CheckSystemCalibration() : camId(0)
+  CheckSystemCalibration()
   {
-    usePTZ = false;
-    pan = tilt = 0;
+    camId = 0;
+    receiving = false;
 #ifdef FEAT_VISUALIZATION
     m_display.setClientData(this);
 #endif
   }
-  virtual ~ CheckSystemCalibration();
+  virtual ~CheckSystemCalibration();
   /**
    * The callback function for images pushed by the image server.
    * To be overwritten by derived classes.
