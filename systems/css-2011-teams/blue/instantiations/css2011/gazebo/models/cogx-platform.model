@@ -23,10 +23,8 @@
   <canonicalBody>chassis_body</canonicalBody>
 
   <body:box name="chassis_body">
-    <xyz>-0.045 0.000 0.1375</xyz>
-    <rpy>0.0 0.0 0.0</rpy>
-
     <geom:box name="chassis_geom">
+	    <xyz>-0.045 0.000 0.1375</xyz>
       <size>0.510 0.300 0.205</size>
       <mass>3</mass>
 
