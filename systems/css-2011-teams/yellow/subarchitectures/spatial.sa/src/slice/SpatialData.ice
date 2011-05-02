@@ -13,6 +13,22 @@
 
 module SpatialData {
 
+
+    /**
+     * Enum for action state transitons.
+     */
+    enum ActionStatusYellow {
+      PENDINGY,
+      INPROGRESSY,
+      COMPLETEY
+    };
+    sequence<cast::cdl::WorkingMemoryAddress> WMAList;
+    
+    class GraspObjectTaskYellow {
+      ActionStatusYellow status;
+      WMAList targetObjects;
+    };
+
   sequence<double> DoubleOpt;
   sequence<long> PlaceIDSeq;
   sequence<long> LongOpt;
