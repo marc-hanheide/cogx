@@ -19,6 +19,8 @@ class ManipulationPlanner : public ManagedComponent
 {
 private:
   void calculateGripperPosition(VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
+  void WriteGripperPositionToWM(cogx::Math::Pose3 objPose);
+
 protected:
 
   virtual void configure(const std::map<std::string,std::string> & _config);
