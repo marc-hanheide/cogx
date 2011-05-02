@@ -1,17 +1,21 @@
 HOST localhost
 
-# spatial #####################################################################
-COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
 
+COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost
 COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 
+# visualization #####################################################################
 SUBARCHITECTURE visualization.sa 
-CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG display.srv DisplayServer --redirect-to-host localhost
 
+JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
 
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
+
+# spatial #####################################################################
 SUBARCHITECTURE spatial.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
@@ -28,23 +32,36 @@ CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --la
 #CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
 
 
-
 # vision ######################################################################
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
 CPP MG CameraMount CameraMount --camids 0 --use_ptz --cam_poses_xml "instantiations/green_css2011/calibration/cam-left/campose-left.xml" --pt_base_xml instantiations/green_css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/green_css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/green_css2011/calibration/ptu-pose-tilt-sim.xml --fixed_cam_poses_xml "instantiations/green_css2011/calibration/cam-left/campose-left.xml" --fixed_pan_tilt "0 -1.05"
 
 #CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video1/frosties_small-0000000%d.ppm" --start "100" --end 620 --framerate_ms 300 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/green_css2011/calibration/cam-left/camcalib-left.xml"
 
-#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-weetabix.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-weetabix.sift" --labels "example-cereals-weetabix" --initpose "[0.56 0.00 0.85][0.00 0.00 1.57]" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/green_css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-schokomusli" --initpose "[0.50 0.00 0.57][0.00 0.00 1.50]" --log
 
 #CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
 
 #CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
 
-CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli" --mode RECOGNIZE --log --manipulation_sa "manipulation.sa"
+
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+
+# manipulation.sa ######################################################################
+SUBARCHITECTURE manipulation.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
 
 JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/green_css2011/calibration/arm-pose.xml" --armName "katana300" --testGUI
 
-JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
-
 JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
+
+CPP MG RobotPoseCalculator RobotPoseCalculator
+
+
+
