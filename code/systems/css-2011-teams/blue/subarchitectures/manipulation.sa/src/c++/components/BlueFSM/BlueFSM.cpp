@@ -13,6 +13,7 @@
 #include <float.h>
 #include "Vector3.h"
 #include "Matrix33.h"
+#include "Pose3.h"
 
 #include "Wm5.h"
 /**
@@ -115,23 +116,64 @@ namespace cogx
           */
 	case DECIDE_GRASP:
           {
-          // shortest distance between the robot and an object.
-          double minDistance = 100000000; // very nice
-          std::string minLabel = "";
-          for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
-               i != m_poses.end(); ++i)
-            {
-              if (Math::norm(i->second.pos) < minDistance)
-                {
-                  minDistance = Math::norm(i->second.pos);
-                  minLabel = i->first;
-                }
-            }
+            // Find the label of the nearest object
 
-	  m_state = GO_TO_PREGRASP;
-	  break;
+            // shortest distance between the robot and an object.
+            double minDistance = 100000000; // very nice
+            std::string minLabel = "";
+            for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
+                 i != m_poses.end(); ++i)
+              {
+                if (Math::norm(i->second.pos) < minDistance)
+                  {
+                    minDistance = Math::norm(i->second.pos);
+                    minLabel = i->first;
+                  }
+              }
+            
+            assert(minLabel == "cereals-weetabix");
+            m::Pose objectPose;
+            objectPose.first = m::Vector3(m_poses[minLabel].pos.x,m_poses[minLabel].pos.y,m_poses[minLabel].pos.z);
+            m::Matrix3 m;
+            for (int i = 0; i < 3; ++i)
+              for (int j = 0; j < 3; ++j)
+                m(i,j) = Math::get(m_poses[minLabel].rot, i, j);
+            m.Orthonormalize();
+            objectPose.second = m::Quaternion(m);
+            objectPose.second.Normalize();
+            // Get the predefined grasps for that object
+
+            std::vector<m::Pose> g = grasps[minLabel];
+            
+            // Find the easiest grasps in there
+
+            double maxDotProduct = -1000;
+            m::Pose bestGrasp = std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY);
+            m::Pose bestBacktrackedGrasp = bestGrasp;
+            for (std::vector<m::Pose>::iterator i = g.begin(); i != g.end(); ++i)
+              {
+                m::Pose robotGrasp;
+                m::transform(robotGrasp.first, robotGrasp.second, objectPose.first, objectPose.second, i->first, i->second);
+                m::Matrix3 robotGraspOri(robotGrasp.second);
+                robotGraspOri.Orthonormalize();
+                m::Vector3 robotToGraspVector = robotGrasp.first;
+                robotToGraspVector.Normalize();
+                double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(0)));
+                if (dot > maxDotProduct)
+                  {
+                    maxDotProduct = dot;
+                    bestGrasp = robotGrasp;
+                    bestBacktrackedGrasp = bestGrasp;
+                    bestBacktrackedGrasp.first -= .01*m::Vector3(robotGraspOri.GetColumn(0));
+                  }
+              }
+
+            
+
+            m_state = GO_TO_PREGRASP;
+            break;
           }
-	case GO_TO_PREGRASP:
+        case GO_TO_PREGRASP:
 	  {
 	    bool success = movePregrasp(m_pregraspPose);
 	    if (success) {
