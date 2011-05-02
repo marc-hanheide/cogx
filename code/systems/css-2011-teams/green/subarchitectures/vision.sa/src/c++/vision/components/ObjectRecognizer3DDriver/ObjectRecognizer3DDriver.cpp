@@ -142,6 +142,10 @@ void ObjectRecognizer3DDriver::start(){
 	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 		&ObjectRecognizer3DDriver::overwriteFarArmMovementCommand));
 
+	addChangeFilter(createGlobalTypeFilter<MoveArmToPose>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+		&ObjectRecognizer3DDriver::overwriteMoveArmToPose));
+
 	addChangeFilter(createGlobalTypeFilter<CloseGripperCommand>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 		&ObjectRecognizer3DDriver::overwriteCloseGripperCommand));
@@ -157,6 +161,8 @@ void ObjectRecognizer3DDriver::runComponent(){
 	m_halt_rec = true;
 	m_halt_arm = true;
 	m_ptz = false;
+	m_obj_distance = 1000.0;
+	m_rec_objects = 0;
 
 	// Load PLY model to working memory
 	std::string modelID;
@@ -165,11 +171,11 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 	m_timer.Update();
 
-//	addPTZCommand(0.0, -1.0472);
+	addPTZCommand(0.0, -1.0472);
 //	while(!m_ptz && isRunning())
-//		sleepComponent(100);
-//	if(!isRunning())
-//		return;
+		sleepComponent(5000);
+	if(!isRunning())
+		return;
 
   // trigger Recognizer3D
  // for(int j=0; j<m_loops && isRunning(); j++){
@@ -179,16 +185,20 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 	for(int i=0; i<m_labels.size(); i++){
 
-		if(m_mode == RECOGNIZE)
+		if(m_mode == RECOGNIZE){
 			addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
-		else if(m_mode = RECLEARN)
+
+			while(m_halt_rec && isRunning())
+				sleepComponent(100);
+			m_halt_rec = true;
+			if(!isRunning())
+				return;
+
+		}else if(m_mode = RECLEARN){
 			addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
-			
-		while(m_halt_rec && isRunning())
-			sleepComponent(100);
-		m_halt_rec = true;
-		if(!isRunning())
-			return;
+		}
+
+	}
 			
 		log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
 
@@ -260,13 +270,41 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 				// Lift arm
 				log("lift object");
-				vOffset = cogx::Math::vector3(-0.05,0.0,0.1);
+				vOffset = cogx::Math::vector3(-0.05,0.0,0.2);
 				farArmMovementCom->comp = manipulation::slice::COMPINIT;
 				farArmMovementCom->status = manipulation::slice::NEW;
 				farArmMovementCom->targetObjectAddr = wma;
 				farArmMovementCom->offset = vOffset;
 				data_id = newDataID();
 				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
+					// Wait for arm to finish
+					log("Waiting for arm to finish movement");
+					while(m_halt_arm && isRunning())
+						sleepComponent(100);
+					m_halt_arm = true;
+					if(!isRunning())
+						return;
+				deleteFromWorkingMemory(data_id, m_manipulation_sa);
+
+				addPTZCommand(1.5, 0.0);
+
+				// Move to save pose
+				log("move to save pose");
+				MoveArmToPosePtr moveArmToPose = new MoveArmToPose();
+				moveArmToPose->comp = manipulation::slice::COMPINIT;
+				moveArmToPose->status = manipulation::slice::NEW;
+				moveArmToPose->targetPose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
+				moveArmToPose->targetPose.rot.m00 = 0.9;
+				moveArmToPose->targetPose.rot.m01 = 0.1;
+				moveArmToPose->targetPose.rot.m02 = -0.5;
+				moveArmToPose->targetPose.rot.m10 = -0.3;
+				moveArmToPose->targetPose.rot.m11 = 0.9;
+				moveArmToPose->targetPose.rot.m12 = -0.4;
+				moveArmToPose->targetPose.rot.m20 = 0.4;
+				moveArmToPose->targetPose.rot.m21 = 0.5;
+				moveArmToPose->targetPose.rot.m22 = 0.8;
+				data_id = newDataID();
+				addToWorkingMemory(data_id, m_manipulation_sa, moveArmToPose);
 					// Wait for arm to finish
 					log("Waiting for arm to finish movement");
 					while(m_halt_arm && isRunning())
@@ -283,9 +321,10 @@ void ObjectRecognizer3DDriver::runComponent(){
 			}
 		}
 
-	}
 
-
+	addPTZCommand(0.0, 0.0);
+//	while(!m_ptz && isRunning())
+		sleepComponent(5000);
 
 // 		log("Taking Screenshot");
 // 		addTrackingCommand(SCREENSHOT);
@@ -312,14 +351,33 @@ void ObjectRecognizer3DDriver::receiveVisualObject(const cdl::WorkingMemoryChang
 }
 
 void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
-	m_rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
+	VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
 
 //	m_sumConfidence[m_rec_cmd->label] += m_rec_cmd->confidence;
 //	if(rec_cmd->confidence > 0.03)
 //		m_sumDetections[rec_cmd->label] += 1;
 
-  if(m_rec_cmd->label.compare(m_labels.back().c_str()) == 0)
-  	m_halt_rec =false;
+	log("Receive Recognizer3DCommand update");
+	cast::cdl::WorkingMemoryAddress wma;
+	wma.subarchitecture = getSubarchitectureID();
+	wma.id = rec_cmd->visualObjectID;
+	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(wma);
+	double dist = (obj->pose.pos.x*obj->pose.pos.x + obj->pose.pos.y*obj->pose.pos.y);
+
+
+	  if(m_rec_objects==0){
+		  if(dist != 0.0){
+			  m_obj_distance = dist;
+			  m_rec_cmd = rec_cmd;
+		  }
+	  }else if(dist < m_obj_distance){
+		  if(dist != 0.0){
+			  m_obj_distance = dist;
+			  m_rec_cmd = rec_cmd;
+		  }
+	  }
+	  m_rec_objects++;
+	  m_halt_rec =false;
 }
 
 void ObjectRecognizer3DDriver::overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -331,6 +389,18 @@ void ObjectRecognizer3DDriver::overwriteFarArmMovementCommand(const cdl::Working
 		log("Arm movement finished");
 		m_halt_arm =false;
 	}
+}
+
+void ObjectRecognizer3DDriver::overwriteMoveArmToPose(const cdl::WorkingMemoryChange & _wmc){
+	m_moveto_cmd = getMemoryEntry<MoveArmToPose>(_wmc.address);
+
+	log("Got overwriteMoveArmToPoseCommand");
+
+	if(m_moveto_cmd->status == manipulation::slice::FINISHED){
+		log("Arm movement finished");
+		m_halt_arm =false;
+	}
+
 }
 
 void ObjectRecognizer3DDriver::overwriteCloseGripperCommand(const cdl::WorkingMemoryChange & _wmc){
