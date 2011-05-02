@@ -144,6 +144,9 @@ namespace cogx
             assert(minLabel == "cereals-weetabix");
             
             m::Pose objectPose;
+
+            std::cerr << m_poses[minLabel] << std::endl;
+
             objectPose.first = m::Vector3(m_poses[minLabel].pos.x,m_poses[minLabel].pos.y,m_poses[minLabel].pos.z);
             {
               m::Matrix3 m;
