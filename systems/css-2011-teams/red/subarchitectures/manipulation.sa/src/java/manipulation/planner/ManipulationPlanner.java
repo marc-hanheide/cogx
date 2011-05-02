@@ -145,7 +145,7 @@ public class ManipulationPlanner extends ManagedComponent {
 				ManipulationCommand cmd = currentPlan.poll();
 				if (cmd != null) {
 					log("plan nonempty (" + currentPlan.size() + " items left)");
-					verbalize("I will " + commandToInfString(currentCommand) + " now.");
+					verbalize("I will " + commandToInfString(cmd) + " now.");
 					addCurrentCommand(cmd);
 				}
 				else {
