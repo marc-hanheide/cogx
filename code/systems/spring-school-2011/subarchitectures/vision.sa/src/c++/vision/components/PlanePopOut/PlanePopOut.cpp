@@ -146,6 +146,11 @@ void PlanePopOut::configure(const map<string,string> & _config)
   {
     stereoconfig = it->second;
   } else printf("PointCloudViewer::configure: Warning: No stereoconfig specified!\n");
+  if((it = _config.find("--stereoWidth")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> stereoWidth;
+  }
 
   StereoCamera *stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
@@ -404,6 +409,19 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 }
 #endif
 
+void PlanePopOut::filterGroundPoints(PointCloud::SurfacePointSeq &points)
+{
+  static double groundThr = 0.010;
+  PointCloud::SurfacePointSeq aboveGroundPoints;
+
+  for(size_t i = 0; i < points.size(); i++)
+  {
+    if(points[i].p.z > groundThr)
+      aboveGroundPoints.push_back(points[i]);
+  }
+  points = aboveGroundPoints;
+}
+
 void PlanePopOut::runComponent()
 {
   sleepComponent(100);
@@ -412,7 +430,6 @@ void PlanePopOut::runComponent()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
-  int stereoWidth = 640;
 
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
@@ -424,6 +441,7 @@ void PlanePopOut::runComponent()
 	points.resize(0);
 
 	getPoints(useGlobalPoints, stereoWidth, points);
+	filterGroundPoints(points);
 	Video::Image image;
 	getRectImage(LEFT, stereoWidth, image);
 #ifdef USE_MOTION_DETECTION

@@ -76,6 +76,7 @@ private:
    * whether to use stereo points in global or left camear coord system.
    */
 	bool useGlobalPoints;
+  int stereoWidth;
 	// unit m, due to the error of stereo, >0.01 is suggested
 	double min_height_of_obj;
 	double Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &label);
@@ -91,6 +92,10 @@ private:
 	void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
 	void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
 	void RefinePlaneEstimation(vector <Vector3> lines);
+	/**
+	 * remove all points on or near the ground, assuming known camera pose.
+	 */
+  void filterGroundPoints(PointCloud::SurfacePointSeq &points);
 
 	vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
 	vector< PointCloud::SurfacePointSeq > BGPointsSeq;
@@ -204,6 +209,7 @@ public:
 		para_d = 0.0;
 		previousImg = 0;
 		min_height_of_obj = 0.04;
+		stereoWidth = 320;
 	}
   virtual ~PlanePopOut() {}
 };
