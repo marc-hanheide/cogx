@@ -67,11 +67,22 @@ public class ManipulationPlanner extends ManagedComponent {
 
 	private boolean verbalization = false;
 	private static final String verbalization_sa = "dialogue";
+	private int ncsleep = 500;
 
 	@Override
 	protected void configure(Map<String, String> config) {
 		if (config.containsKey("--verbalize")) {
 			verbalization = true;
+		}
+		if (config.containsKey("--ncsleep")) {
+			String s = config.get("--ncsleep");
+			try {
+				int i = Integer.parseInt(s);
+				ncsleep = i;
+			}
+			catch (NumberFormatException ex) {
+				log("couldn't parse \"" + s + "\"");
+			}
 		}
 	}
 
@@ -146,9 +157,16 @@ public class ManipulationPlanner extends ManagedComponent {
 	}
 
 	synchronized void addCurrentCommand(ManipulationCommand cmd) {
-		log("adding new command");
+		log("adding new command; will sleep for " + ncsleep + " ms");
 		currentCommand = cmd;
 		String id = newDataID();
+
+		try {
+			Thread.sleep(ncsleep);
+		}
+		catch (InterruptedException ex) {
+			log(ex);
+		}
 
 		try {
 			addToWorkingMemory(id, cmd);
