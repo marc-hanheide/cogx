@@ -1,0 +1,28 @@
+/**
+
+@author		Marek Kopicki,
+			<A HREF="http://www.cs.bham.ac.uk/~msk">The University Of Birmingham</A>
+
+@mainpage	Golem toolkit
+
+@section	sec_Overview Overview
+
+Golem is a C++ toolkit designed primarly for a versatile control of open-chain
+robotic manipulators. It features a bunch of interfaces which enable
+multi-level asynchronous control of a robotic manipulator:
+
+<ul>
+<li> direct control of position and velocity of the manipulator joints
+<li> control in the workspace coordinates (using inverse kinematics solver alone)
+<li> path planning with collision detection
+<li> real-time reactive control with path planning and collision detection
+</ul>
+
+Thanks to physics simulator, all robotic experiments can be performed in a virtual
+world with virtual manipulators and objects, as well as with the real ones.
+At present Golem provides drivers only to 5DOF Katana robotic arm (Neuronics), and
+to a generic virtual manipulator capable of simulating an arbitrary open-chain
+robotic manipulator. The generic virtual manipulator has two presets for a virtual
+5DOF Katana and a simple 6DOF manipulator.
+
+*/

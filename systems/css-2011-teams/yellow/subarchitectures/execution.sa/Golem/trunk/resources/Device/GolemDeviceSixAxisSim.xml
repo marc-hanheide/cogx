@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<golem>
+  <arm name="6-axis arm simulator" custom_kinematics="0">
+    <global_pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></global_pose>
+    <!-- L3 = 0.05 -->
+    <reference_pose v1="0.0" v2="0.05" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></reference_pose>
+    <rest_config c1="0.0" c2="0.0" c3="0.0" c4="0.0" c5="0.0" c6="0.0" c7="0.0"></rest_config>
+
+    <calibration cycle_num="20" cycle_dur="0.3" time_quant="0.002" delta_offs="0.002" skew_offs="0.002" delta_sync="0.001" delta_recv="0.01" delta_send="0.01"></calibration>
+    <links L0="0.2" L1="0.2" L2="0.2" L3="0.05"></links>
+
+    <joint name="Axis #1" collision="0" collision_offs="7">
+      <min pos="-2.8797932658" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+2.8797932658" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <trn v1="0.0" v2="0.0" v3="0.0" w1="0.0" w2="0.0" w3="1.0" th="0.0"></trn>
+      <trn_init v1="0.0" v2="0.0" v3="0.0" w1="0.0" w2="0.0" w3="0.0" th="0.0"></trn_init>
+
+      <bounds type="box" group="1">
+        <!-- L0/2 = 0.1 -->
+        <dimensions v1="0.03" v2="0.03" v3="0.1"/>
+        <!-- L0/2 = 0.1 -->
+        <pose v1="0.0" v2="0.0" v3="0.10001" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #2" collision="1" collision_offs="7">
+      <min pos="-4.4505895926" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+1.3089969390" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <!-- L0 = 0.2 -->
+      <trn v1="0.0" v2="-0.2" v3="0.0" w1="-1.0" w2="0.0" w3="0.0" th="0.0"></trn>
+      <!-- L0 = 0.2 -->
+      <trn_init v1="0.0" v2="0.0" v3="0.2" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <bounds type="box" group="1">
+        <!-- L1/2 = 0.1 -->
+        <dimensions v1="0.015" v2="0.1" v3="0.015"/>
+        <!-- L1/2 = 0.1 -->
+        <pose v1="0.0" v2="0.1" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.04">
+        <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #3" collision="1" collision_offs="7">
+      <min pos="-0.0" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+2.8797932658" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <!-- L0 = 0.2, L1 = 0.2 -->
+      <trn v1="0.0" v2="-0.2" v3="0.2" w1="-1.0" w2="0.0" w3="0.0" th="0.0"></trn>
+      <!-- L1 = 0.2, L0 = 0.2 -->
+      <trn_init v1="0.0" v2="0.2" v3="0.2" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <bounds type="box" group="1">
+        <!-- L2/2 = 0.1 -->
+        <dimensions v1="0.015" v2="0.1" v3="0.015"/>
+        <!-- L2/2 = 0.1 -->
+        <pose v1="0.0" v2="0.1" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.04">
+        <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #4" collision="1" collision_offs="7">
+      <min pos="-2.3561944902" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+2.3561944902" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <!-- L1 + L2 = 0.4 -->
+      <trn v1="0.4" v2="0.0" v3="0.0" w1="0.0" w2="0.0" w3="1.0" th="0.0"></trn>
+      <!-- L1 + L2 = 0.4, L0 = 0.2 -->
+      <trn_init v1="0.0" v2="0.4" v3="0.2" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+    </joint>
+    <joint name="Axis #5" collision="1" collision_offs="7">
+      <min pos="-2.3561944902" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+2.3561944902" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <!-- L0 = 0.2, L1 + L2 = 0.4 -->
+      <trn v1="0.0" v2="-0.2" v3="0.4" w1="-1.0" w2="0.0" w3="0.0" th="0.0"></trn>
+      <!-- L1 + L2 = 0.4, L0 = 0.2 -->
+      <trn_init v1="0.0" v2="0.4" v3="0.2" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+    </joint>
+    <joint name="Axis #6" collision="1" collision_offs="4">
+      <min pos="-2.8797932658" vel="-3.1415926536" acc="-6.2831853072"></min>
+      <max pos="+2.8797932658" vel="+3.1415926536" acc="+6.2831853072"></max>
+      <!-- L0 = 0.2 -->
+      <trn v1="-0.2" v2="0.0" v3="0.0" w1="0.0" w2="1.0" w3="0.0" th="0.0"></trn>
+      <!-- L0 = 0.2, L1 + L2 = 0.4 -->
+      <trn_init v1="0.0" v2="0.4" v3="0.2" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <bounds type="box" group="1">
+        <!-- L3/2 = 0.025 -->
+        <dimensions v1="0.01" v2="0.025" v3="0.01"/>
+        <!-- L3/2 = 0.025 -->
+        <pose v1="0.0" v2="0.025" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.03">
+        <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+  </arm>
+</golem>
