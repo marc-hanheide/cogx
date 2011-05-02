@@ -36,7 +36,7 @@ SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/calib01/campose-left.xml"
+CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/calib01/campose-left.xml" --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
 
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/calib01/camcalib-left.xml"
 
