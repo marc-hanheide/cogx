@@ -11,7 +11,7 @@
 #include "FrontierInterface.hpp"
 #include "CureMapConversion.hpp"
 #include <float.h>
-
+#include "Wm5.h"
 /**
  * The function called to create a new instance of our component.
  */
@@ -57,7 +57,7 @@ namespace cogx
   void BlueFSM::destroy()
   {
   }
-
+  /*
   void
   BlueFSM::simpleCallback(const cdl::WorkingMemoryChange &wmc) {
     m_waiting = false;
@@ -71,16 +71,28 @@ namespace cogx
     rec_cmd->visualObjectID = visualObjectID;
     addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
   }
-  
+  */
   void BlueFSM::runComponent()
   {
+    std::map<std::string, std::vector<m::Pose> > grasps;
+    
+    {
+      std::vector<m::Pose> v;
+      v.push_back(std::make_pair(m::Vector3(100,0,0), m::Quaternion(0,0,0,1)));
+      v.push_back(std::make_pair(m::Vector3(-100,0,0), m::Quaternion(1,0,0,0)));
+      v.push_back(std::make_pair(m::Vector3(0,0,140), m::Quaternion(0.707107,0,0.707107,0)));
+      v.push_back(std::make_pair(m::Vector3(0,0,-140), m::Quaternion(0.707107,0,-0.707107,0)));
+
+      grasps[std::string("cereals-weetabix")] = v;
+    }
+
     while (true)
     {
       switch(m_state) {
 	case INIT:
 	  m_state = LOOK_CANONICAL;
 	  break;
-
+          /*
 	case LOOK_CANONICAL:
 	  lockComponent();
 	  // Issue recognition commands
@@ -97,8 +109,22 @@ namespace cogx
 
 	  m_state = DECIDE_GRASP;
 	  break;
-
+          */
 	case DECIDE_GRASP:
+          
+          // shortest distance between the robot and an object.
+          double minDistance = 100000000; // very nice
+          std::string minLabel = "";
+          for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
+               i != m_poses.end(); ++i)
+            {
+              if (norm(i->second) < minDistance)
+                {
+                  minDistance = norm(i->second);
+                  minLabel = i->first;
+                }
+            }
+
 	  m_state = GO_TO_PREGRASP;
 	  break;
 
@@ -125,11 +151,6 @@ namespace cogx
 	default:
 	  break;
       }
-
-//      std::ostringstream oss;
-//      oss << pose_.pos.x;
-//      log(oss.str());
-//      sleep(2);
     }
     
     /*
@@ -139,7 +160,7 @@ namespace cogx
     
     {
       boost::unique_lock<boost::mutex> lock(mutex_);
-      moveArmToPose->targetPose = pose_;
+      //moveArmToPose->targetPose = pose_;
     }
     
     try {
@@ -166,7 +187,7 @@ namespace cogx
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
   {
-//    warn("received objectPoseCallback");
+    //warn("received objectPoseCallback");
 
     VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
@@ -179,7 +200,7 @@ namespace cogx
 //    }
 
 
-//    warn("finished objectPoseCallback");
+      //warn("finished objectPoseCallback");
   }
 
   void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
