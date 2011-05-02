@@ -99,7 +99,11 @@ namespace cogx
 	case INIT:
 	  m_state = LOOK_CANONICAL;
 	  break;
-          /*
+	
+	case LOOK_AROUND:
+	  m_state = LOOK_CANONICAL;
+	  break;
+          
 	case LOOK_CANONICAL:
 	  lockComponent();
 	  // Issue recognition commands
@@ -116,7 +120,7 @@ namespace cogx
 
 	  m_state = DECIDE_GRASP;
 	  break;
-          */
+          
 	case DECIDE_GRASP:
           {
             // Find the label of the nearest object
@@ -206,6 +210,12 @@ namespace cogx
 	  }
 	  break;
 
+	case VERIFY_PREGRASP:
+	  {
+	    m_state = ENVELOP;
+	    break;
+	  }
+
 	case ENVELOP:
 	  {
 	    bool success = envelop();
@@ -232,6 +242,12 @@ namespace cogx
 	    }
 	  }
 
+	case VERIFY_ENVELOP:
+	  {
+	    m_state = GRASP;
+	    break;
+	  }
+
 	case GRASP:
 	  {
 	    bool success = grasp();
@@ -249,6 +265,12 @@ namespace cogx
 		m_state = TERMINATED;
 	      }
 	    }
+	  }
+
+	case VERIFY_GRASP:
+	  {
+	    m_state = LIFT;
+	    break;
 	  }
 
 	case RETRACT:
@@ -304,6 +326,12 @@ namespace cogx
 	      log("Error! handover move failed");
 	      m_state = RELEASE;
 	    }
+	  }
+
+	case VERIFY_HANDOVER:
+	  {
+	    m_state = RELEASE;
+	    break;
 	  }
 	  
 	case GO_HOME:
