@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<model:physical name="cereals-schokomusli_model"
+<model:physical name="cereals-toppas_model"
   xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
   xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
   xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
@@ -13,9 +13,9 @@
   <xyz>0 0.0 0.0</xyz>
   <rpy>0 0 0</rpy>
   <static>false</static>
-  <canonicalBody>cereals-schokomusli_body</canonicalBody>
+  <canonicalBody>cereals-toppas_body</canonicalBody>
 
-  <body:box name="cereals-schokomusli_body">
+  <body:box name="cereals-toppas_body">
     <xyz>0.0 0.0 0.0</xyz>
     <rpy>0.0 0.0 0.0</rpy>
             <massMatrix>true</massMatrix>
@@ -30,7 +30,7 @@
             <cy>0.0</cy>
             <cz>0.0</cz>
 
-    <geom:box name="cereals-schokomusli_geom">
+    <geom:box name="cereals-toppas_geom">
       <xyz>0.0 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
       <size>0.137 0.041 0.190</size>
@@ -40,42 +40,42 @@
         <xyz>0 0.0205 0</xyz>
         <scale>0.137 0.001 0.190</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-front</material>
+        <material>cogx/cereals-toppas-front</material>
       </visual>
 
       <visual>
         <xyz>0 -0.0205 0</xyz>
         <scale>0.137 0.001 0.190</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-back</material>
+        <material>cogx/cereals-toppas-back</material>
       </visual>
 
       <visual>
         <xyz>0.0685 0 0</xyz>
         <scale>0.001 0.041 0.190</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-left</material>
+        <material>cogx/cereals-toppas-left</material>
       </visual>
 
       <visual>
         <xyz>-0.0685 0 0</xyz>
         <scale>0.001 0.041 0.190</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-right</material>
+        <material>cogx/cereals-toppas-right</material>
       </visual>
 
       <visual>
         <xyz>0 0 0.095</xyz>
         <scale>0.137 0.041 0.001</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-top</material>
+        <material>cogx/cereals-toppas-top</material>
       </visual>
 
       <visual>
         <xyz>0 0 -0.095</xyz>
         <scale>0.137 0.041 0.001</scale>
         <mesh>unit_box</mesh>
-        <material>cogx/cereals-schokomusli-bottom</material>
+        <material>cogx/cereals-toppas-bottom</material>
       </visual>
     </geom:box>
   </body:box>
