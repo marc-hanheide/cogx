@@ -17,6 +17,23 @@ namespace cogx
   
   class BlueFSM : public ManagedComponent
   {
+    enum State {INIT,
+      LOOK_CANONICAL, //Pan-tilt in calibrated position
+      LOOK_AROUND,    //Pan-tilt ambulatory
+      DETECTING,
+      DECIDE_GRASP,   //Determine which grasp to use
+      GO_TO_PREGRASP, 
+      VERIFY_PREGRASP,//Check arm's position is correct
+      ENVELOP,	      //Move arm forward
+      VERIFY_ENVELOP,
+      GRASP,	      //Close gripper
+      VERIFY_GRASP,
+      LIFT,
+      VERIFY_LIFT,
+      HANDOVER,
+      VERIFY_HANDOVER,
+      RELEASE,
+      VERIFY_RELEASE};
   private:
     
   protected:
@@ -27,9 +44,13 @@ namespace cogx
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
 
+    State m_state;
+
     boost::mutex mutex_;
-    cogx::Math::Pose3 pose_;
+
+    map<string, cogx::Math::Pose3> m_poses;
     
+//    PTZInterfacePrx m_ptzInterface;
   private:
     bool findGraspPoses(double objX, double objY, double theta, double halfLength,
 	double bestX, double bestY);
