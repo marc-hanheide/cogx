@@ -120,7 +120,7 @@ public class EpistemicObjectUtils {
 	public static Event createEvent (HashMap<dFormula,Float> events) throws DialogueException {
 		
 	    SpatioTemporalFrame frame = new SpatioTemporalFrame ("here", new TemporalInterval(),1.0f);
-		PrivateEpistemicStatus priv = new PrivateEpistemicStatus (org.cognitivesystems.binder.thisAgent.value);
+		PrivateEpistemicStatus priv = new PrivateEpistemicStatus ("self");
 		
 		List<FormulaProbPair> content = new LinkedList<FormulaProbPair>();
 		

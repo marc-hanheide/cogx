@@ -63,7 +63,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.cognitivesystems.binder.POINTERLABEL;
+//import org.cognitivesystems.binder.POINTERLABEL;
 
 public abstract class ConversionUtils {
 
@@ -496,7 +496,7 @@ public abstract class ConversionUtils {
 		// XXX we should actually check success here
 		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagementConstants.discRefModality), TermAtomFactory.term(lingRef)}), b);
 		if (usedRefs.containsKey(lingRef)) {
-			foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(POINTERLABEL.value), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
+			foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term("pointer"), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
 		}
 		foldTermAsContent(epst, lingRef, t, b);
 		bel.add(b);
