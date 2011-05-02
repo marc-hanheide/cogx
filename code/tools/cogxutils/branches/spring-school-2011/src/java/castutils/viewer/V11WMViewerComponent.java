@@ -3,9 +3,7 @@
  */
 package castutils.viewer;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -76,7 +74,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 						  logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
 						else
 						  logString += "<td>" + genericText + "</td>";
-//						getLogger().info(CASTUtils.toString(wmc) + genericText);
+						getLogger().info(CASTUtils.toString(wmc) + genericText);
 					}
 					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
 					break;
