@@ -55,6 +55,15 @@ CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 
 # this component creats a simple GUI to access the PTZ Unit
 JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
 #--------------------------------------------------------------------------------------------------------------------------------------------------
+
+# dialogue #########################################################################
+
+SUBARCHITECTURE dialogue
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM	cast.architecture.AlwaysPositiveTaskManager
+
+JAVA GD MaryTTS de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
+
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
@@ -70,7 +79,7 @@ CPP MG manipulation.playerArmBridge PlayerArmBridge --log
 JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "simulation" --testGUI
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # Manipulation planner component, added by Barry
-JAVA MG ManipulationPlanner manipulation.planner.ManipulationPlanner
+JAVA MG ManipulationPlanner manipulation.planner.ManipulationPlanner --verbalize
 ###### DEBUG OUTPUT #####################################################################
 # shows memory entries that are in working memories. Helps to identify what's going on
 #--------------------------------------------------------------------------------------------------------------------------------------------------
