@@ -26,6 +26,12 @@ module manipulation {
 			GRASPING,
 			NOTGRASPING
 		};
+
+        struct ManipulationPose {
+            cogx::Math::Vector3 graspPointAbs;
+            cogx::Math::Vector3 graspPoint;
+            cogx::Math::Vector3 robotPose;
+        };
 		
 		/**
    		* This class represents an abstract manipulation command.
