@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<golem>
+  <rand seed="0"></rand>
+  <parallels threads="0"></parallels>
+  <messages level="debug"/><!-- level="undef" level="debug" level="info" level="warning" level="error" level="crit" level="alert" level="emerg"-->
+</golem>

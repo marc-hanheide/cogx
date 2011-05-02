@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{114BD9EA-1F64-4006-B140-2148B8C862BD}</ProjectGuid>
+    <RootNamespace>Katana450</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BUILD\$(ProjectName)$(Platform)$(Configuration)\output\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BUILD\$(ProjectName)$(Platform)$(Configuration)\intermediate\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BUILD\$(ProjectName)$(Platform)$(Configuration)\output\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BUILD\$(ProjectName)$(Platform)$(Configuration)\intermediate\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionName)$(ProjectName)DEBUG</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionName)$(ProjectName)</TargetName>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(INCLUDE)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(INCLUDE)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;$(LIB)</LibraryPath>
+    <SourcePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SRC)</SourcePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;$(LIB)</LibraryPath>
+    <SourcePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SRC)</SourcePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib;$(LIBPATH)</ReferencePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib;$(LIBPATH)</ReferencePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd 4275 /wd 4251 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;GOLEM_LIBRARY_DECLDIR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>GolemCtrlDEBUG.lib;GolemToolsDEBUG.lib;GolemSysDEBUG.lib;GolemMathDEBUG.lib;GolemDefsDEBUG.lib;libexpat.lib;WinMM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /f/y $(TargetPath) ..\..\bin\vc100\$(PlatformName)\
+xcopy /f/y ..\..\resources\Device\$(SolutionName)$(ProjectName).xml ..\..\bin\vc100\$(PlatformName)\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd 4275 /wd 4251 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;GOLEM_LIBRARY_DECLDIR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>GolemCtrl.lib;GolemTools.lib;GolemSys.lib;GolemMath.lib;GolemDefs.lib;libexpat.lib;WinMM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /f/y $(TargetPath) ..\..\bin\vc100\$(PlatformName)\
+xcopy /f/y ..\..\resources\Device\$(SolutionName)$(ProjectName).xml ..\..\bin\vc100\$(PlatformName)\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\axis_controller_emcy.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\AxNI_base.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\can_bootloader_master.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\canbus_interface.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\canopen_emcy_queue.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\canopen_master.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\canopen_master_node.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\canopen_nmt_master.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\Data.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\Katana450.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\pdo_interface.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\Timer.cpp" />
+    <ClCompile Include="..\..\src\Golem\Device\Katana450\tms320f2808dsp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\axis_config.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\axis_controller_emcy.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\AxNI_base.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\bootloaderfsm.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\can_bootloader_master.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\can_bus_msg.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canBootloaderPDO.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canbus_interface.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canframe.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen_config.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen_emcy_queue.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen_master.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen_master_node.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\canopen_nmt_master.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\config_emcy.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\config_pdo.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\Data.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\direction.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\emcy.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\enum_nmt.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\enum_pdo.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\enum_pdo_data.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\Katana450.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\neuronics_version.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\pdo_interface.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\Timer.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\tms320f2808dsp.h" />
+    <ClInclude Include="..\..\include\Golem\Device\Katana450\types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\resources\Device\GolemDeviceKatana450.xml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="BufCtrl.vcxproj">
+      <Project>{6f1385e0-d9cf-42fc-9c38-76e583f88f22}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Katana.vcxproj">
+      <Project>{ee28b4a1-f601-445c-9f45-2ba9c69f7130}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
