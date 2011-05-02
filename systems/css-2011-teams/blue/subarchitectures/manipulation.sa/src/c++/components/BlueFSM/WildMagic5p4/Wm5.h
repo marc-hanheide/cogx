@@ -12,13 +12,13 @@
 
 namespace m {
 
-  typedef nuklei_wmf::Vector2<coord_t> Vector2;
-  typedef nuklei_wmf::Vector3<coord_t> Vector3;
-  typedef nuklei_wmf::GVector<coord_t> GVector;
-  typedef nuklei_wmf::Quaternion<coord_t> Quaternion;
-  typedef nuklei_wmf::Matrix3<coord_t> Matrix3;
-  typedef nuklei_wmf::GMatrix<coord_t> GMatrix;
-  typedef nuklei_wmf::Plane3<coord_t> Plane3;
+  typedef nuklei_wmf::Vector2<double> Vector2;
+  typedef nuklei_wmf::Vector3<double> Vector3;
+  typedef nuklei_wmf::GVector<double> GVector;
+  typedef nuklei_wmf::Quaternion<double> Quaternion;
+  typedef nuklei_wmf::Matrix3<double> Matrix3;
+  typedef nuklei_wmf::GMatrix<double> GMatrix;
+  typedef nuklei_wmf::Plane3<double> Plane3;
 
   typedef Vector3 Direction;
   typedef Vector3 Location;
