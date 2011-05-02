@@ -177,6 +177,24 @@ namespace cogx
 	    }
 	  }
 
+	case GRASP:
+	  {
+	    bool success = grasp();
+	    if (success) {
+	      m_state = VERIFY_GRASP;
+	    }
+	    else {
+	      log("Error! grasp failed");
+	      success = release();
+	      if (success) {
+		m_state = RETRACT;
+	      }
+	      else {
+		log("Error! Unable to release!");
+		m_state = TERMINATED;
+	      }
+	    }
+	  }
 
 	default:
 	  break;
@@ -434,6 +452,58 @@ bool BlueFSM::retract()
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
   m_currentArmPose = cmd->reachedPose;
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
+bool BlueFSM::grasp() 
+{
+  manipulation::slice::CloseGripperCommandPtr cmd = new
+    manipulation::slice::CloseGripperCommand;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->graspStatus = manipulation::slice::GRASPINGSTATUSINIT;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::CloseGripperCommand>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::CloseGripperCommand>(id);
+
+  return cmd->comp == manipulation::slice::SUCCEEDED &&
+    cmd->graspStatus == manipulation::slice::GRASPING;
+}
+
+bool BlueFSM::release() 
+{
+  manipulation::slice::OpenGripperCommandPtr cmd = new
+    manipulation::slice::OpenGripperCommand;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::OpenGripperCommand>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::OpenGripperCommand>(id);
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
