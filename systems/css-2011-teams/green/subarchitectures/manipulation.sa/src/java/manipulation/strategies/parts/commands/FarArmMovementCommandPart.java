@@ -68,9 +68,15 @@ public class FarArmMovementCommandPart extends StrategyPart implements Observer 
 		try {
 			VisualObject targetVisOb = (((CogXRunner) getManipulator()
 					.getRunner()).getMemoryEntry(wma, VisualObject.class));
+					
+			Vector3 offsetPosition = ((FarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
+				.getCurrentCommand()).offset;
 
-			Vector3D currentGoalPosition = new Vector3D(targetVisOb.pose.pos.x,
+			Vector3D visObjPosition = new Vector3D(targetVisOb.pose.pos.x,
 					targetVisOb.pose.pos.y, targetVisOb.pose.pos.z);
+					
+			Vector3D currentGoalPosition = new Vector3D(visObjPosition.getX() + offsetPosition.x,
+					visObjPosition.getY() + offsetPosition.y, visObjPosition.getZ() + offsetPosition.z);
 
 			Matrix rotation1 = MathOperation.getRotationAroundX(MathOperation
 					.getRadiant(0));
