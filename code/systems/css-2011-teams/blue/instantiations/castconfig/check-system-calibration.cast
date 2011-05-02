@@ -1,0 +1,32 @@
+
+HOST localhost
+
+COMPONENT CPP ptz.server PlayerPTZServer --player-host localhost  #--ptz-device 0
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "instantiations/cam-calibration/camcalib-left.xml"
+
+# This is how you should use CameraMount in your real robot system. 
+# Use PTZ with kinematic parameters the same as in gazebo model, but also provide fixed poses.
+# If the PTZ is at the fixed pan/tilt position, camera mount will output the fixed camera poses
+# Otherwise camera poses will be calculated based on the kinematic chain
+# base - pan joint - tilt joint - cam offset.
+#CPP MG CameraMount CameraMount --camids "0" --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -0.785398175" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
+CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml --fixed_cam_poses_xml "instantiations/cam-calibration/campose-left.xml" --fixed_pan_tilt "0 -59.97"
+
+CPP MG checksystemcalibration CheckSystemCalibration --videoname VideoServer --cam_ids 0 --displayserver "display.srv"
+
+# use the PTZ GUI to move the pan tilt to the fixed position for which the cameras were calibrated, as given
+# above in --fixed_pan_tilt and --fixed_cam_poses_xml
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0  --displayserver "display.srv" 
+
