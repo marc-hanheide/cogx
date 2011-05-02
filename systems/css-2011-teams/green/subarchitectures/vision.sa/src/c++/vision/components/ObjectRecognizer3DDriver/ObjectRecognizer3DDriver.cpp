@@ -152,6 +152,8 @@ void ObjectRecognizer3DDriver::runComponent(){
 	sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
 					   // object observations too soon.
 
+	std::string data_id;
+
 	m_halt_rec = true;
 	m_halt_arm = true;
 	m_ptz = false;
@@ -163,12 +165,12 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 	m_timer.Update();
 
-	addPTZCommand(0.0, -1.0472);
-  
-	while(!m_ptz && isRunning())
-		sleepComponent(100);
-	if(!isRunning())
-		return;
+//	addPTZCommand(0.0, -1.0472);
+//	while(!m_ptz && isRunning())
+//		sleepComponent(100);
+//	if(!isRunning())
+//		return;
+
   // trigger Recognizer3D
  // for(int j=0; j<m_loops && isRunning(); j++){
 
@@ -193,6 +195,9 @@ void ObjectRecognizer3DDriver::runComponent(){
 		if(m_mode == RECOGNIZE && !m_manipulation_sa.empty()){
 			if(m_rec_cmd->confidence > 0.03){
 
+				cogx::Math::Vector3 vOffset = cogx::Math::vector3(0.0,0.0,0.0);
+
+
 				log("Add FarArmMovementCommand to Working Memory.");
 
 				cast::cdl::WorkingMemoryAddress wma;
@@ -201,14 +206,14 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 				// Move Arm in front of visual object position
 				log("move arm to object pose -0.15");
-				VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(wma);
-				obj->pose.pos.x = obj->pose.pos.x - 0.15;
+				vOffset = cogx::Math::vector3(-0.15,0.0,0.0);
 				FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
 				farArmMovementCom->comp = manipulation::slice::COMPINIT;
 				farArmMovementCom->status = manipulation::slice::NEW;
 				farArmMovementCom->targetObjectAddr = wma;
-				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
-
+				farArmMovementCom->offset = vOffset;
+				data_id = newDataID();
+				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
 					// Wait for arm to finish
 					log("Waiting for arm to finish movement");
 					while(m_halt_arm && isRunning())
@@ -216,16 +221,17 @@ void ObjectRecognizer3DDriver::runComponent(){
 					m_halt_arm = true;
 					if(!isRunning())
 						return;
+				deleteFromWorkingMemory(data_id, m_manipulation_sa);
 
 				// Move Arm toward visual object center
 				log("move arm forward 0.1");
-				obj = getMemoryEntry<VisionData::VisualObject>(wma);
-				obj->pose.pos.x = obj->pose.pos.x + 0.1;
+				vOffset = cogx::Math::vector3(-0.05,0.0,0.0);
 				farArmMovementCom->comp = manipulation::slice::COMPINIT;
 				farArmMovementCom->status = manipulation::slice::NEW;
 				farArmMovementCom->targetObjectAddr = wma;
-				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
-
+				farArmMovementCom->offset = vOffset;
+				data_id = newDataID();
+				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
 					// Wait for arm to finish
 					log("Waiting for arm to finish movement");
 					while(m_halt_arm && isRunning())
@@ -233,6 +239,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 					m_halt_arm = true;
 					if(!isRunning())
 						return;
+				deleteFromWorkingMemory(data_id, m_manipulation_sa);
 
 				// Close Gripper
 				log("close gripper");
@@ -240,8 +247,8 @@ void ObjectRecognizer3DDriver::runComponent(){
 				closeGripperCmd->comp = manipulation::slice::COMPINIT;
 				closeGripperCmd->status = manipulation::slice::NEW;
 				closeGripperCmd->graspStatus = GRASPINGSTATUSINIT;
-				addToWorkingMemory(newDataID(), m_manipulation_sa, closeGripperCmd);
-
+				data_id = newDataID();
+				addToWorkingMemory(data_id, m_manipulation_sa, closeGripperCmd);
 					// Wait for arm to finish
 					log("Waiting for gripper to close");
 					while(m_halt_arm && isRunning())
@@ -249,16 +256,17 @@ void ObjectRecognizer3DDriver::runComponent(){
 					m_halt_arm = true;
 					if(!isRunning())
 						return;
+				deleteFromWorkingMemory(data_id, m_manipulation_sa);
 
 				// Lift arm
 				log("lift object");
-				obj = getMemoryEntry<VisionData::VisualObject>(wma);
-				obj->pose.pos.z = obj->pose.pos.z + 0.1;
+				vOffset = cogx::Math::vector3(-0.05,0.0,0.1);
 				farArmMovementCom->comp = manipulation::slice::COMPINIT;
 				farArmMovementCom->status = manipulation::slice::NEW;
 				farArmMovementCom->targetObjectAddr = wma;
-				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
-
+				farArmMovementCom->offset = vOffset;
+				data_id = newDataID();
+				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
 					// Wait for arm to finish
 					log("Waiting for arm to finish movement");
 					while(m_halt_arm && isRunning())
@@ -266,6 +274,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 					m_halt_arm = true;
 					if(!isRunning())
 						return;
+				deleteFromWorkingMemory(data_id, m_manipulation_sa);
 			
 			}else{
 
@@ -342,8 +351,12 @@ void ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemo
 
   log("Received PTZ confirmation");
 
-  if(ptz_cmd->comp == ptz::SUCCEEDED)
-  	m_ptz = true;
+  if(ptz_cmd->comp == ptz::SUCCEEDED){
+	  deleteFromWorkingMemory(_wmc.address.id);
+	  m_ptz = true;
+  }
+
+
 }
 
 
