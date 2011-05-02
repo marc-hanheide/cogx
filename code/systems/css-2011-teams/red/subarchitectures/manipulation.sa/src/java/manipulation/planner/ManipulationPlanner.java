@@ -156,13 +156,28 @@ public class ManipulationPlanner extends ManagedComponent {
 	}
 
 	public void handleGripperPose(WorkingMemoryChange wmc) {
-		List<ManipulationCommand> newPlan = PlanGenerator.generatePlan(null);
-		if (newPlan != null) {
-			log("adding plan of length " + newPlan.size() + " to the overall plan");
-			currentPlan.addAll(newPlan);
+		GripperPose gp = null;
+		try {
+			CASTData data = getWorkingMemoryEntry(wmc.address.id);
+			if (data.getData() instanceof GripperPose) {
+				gp = (GripperPose) data.getData();
+
+				List<ManipulationCommand> newPlan = PlanGenerator.generatePlan(gp);
+
+				if (newPlan != null) {
+					log("adding plan of length " + newPlan.size() + " to the overall plan");
+					currentPlan.addAll(newPlan);
+				}
+				else {
+					log("got a NULL plan, ignoring");
+				}
+			}
+			else {
+				log("oops, got something that isn't a GripperPose (ignoring this)!");
+			}
 		}
-		else {
-			log("got a NULL plan, ignoring");
+		catch (SubarchitectureComponentException ex) {
+			log(ex);
 		}
 	}
 
