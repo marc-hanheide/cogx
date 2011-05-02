@@ -195,6 +195,8 @@ namespace cogx
             
             m_pregraspPose = p;
 
+            std::cerr << m_pregraspPose << std::endl;
+
             m_state = GO_TO_PREGRASP;
             break;
           }
