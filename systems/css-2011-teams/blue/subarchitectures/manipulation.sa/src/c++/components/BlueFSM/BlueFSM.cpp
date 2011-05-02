@@ -126,6 +126,7 @@ namespace cogx
             // Find the label of the nearest object
 
             // shortest distance between the robot and an object.
+            /*
             double minDistance = 100000000; // very nice
             std::string minLabel = "";
             for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
@@ -137,7 +138,9 @@ namespace cogx
                     minLabel = i->first;
                   }
               }
-            
+            std::cout << minLabel << std::endl;
+            */
+            std::string minLabel = "cereals-weetabix";
             assert(minLabel == "cereals-weetabix");
             
             m::Pose objectPose;
