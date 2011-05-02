@@ -14,35 +14,6 @@ import manipulation.core.share.exceptions.ItemException;
  */
 public class Item {
 	/**
-	 * possible names of the item
-	 * 
-	 * @author Torben Toeniges
-	 * 
-	 */
-	public enum ItemName {
-		/**
-		 * small frosties package
-		 */
-		FROSTIES_SMALL,
-		/**
-		 * big frosties package
-		 */
-		FROSTIES,
-		/**
-		 * small soup package
-		 */
-		SOUP, 
-		/**
-		 * red pringles package
-		 */
-		PRINGLES, 
-		/**
-		 * green tea box
-		 */
-		GREEN_TEA
-	}
-
-	/**
 	 * represents the status of the item in the memory
 	 * 
 	 * @author Torben Toeniges
