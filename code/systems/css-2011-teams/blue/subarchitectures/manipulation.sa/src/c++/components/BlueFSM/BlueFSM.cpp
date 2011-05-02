@@ -29,7 +29,7 @@ namespace cogx
   using namespace std;
   using namespace cast;
   
-  BlueFSM::BlueFSM()
+  BlueFSM::BlueFSM() : m_state(INIT)
   {
   }
   
@@ -55,11 +55,46 @@ namespace cogx
   void BlueFSM::destroy()
   {
   }
+
+  void 
+    BlueFSM::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID){
+      VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+      rec_cmd->cmd = cmd;
+      rec_cmd->label = label;
+      rec_cmd->visualObjectID = visualObjectID;
+      addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+    }
   
   void BlueFSM::runComponent()
   {
     while (true)
     {
+      switch(m_state) {
+	case INIT:
+	  m_state = LOOK_CANONICAL;
+	  break;
+
+	case LOOK_CANONICAL:
+	  lockComponent();
+	  // Issue recognition commands
+	  for (std::set<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
+	    addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
+	  }
+	  unlockComponent();
+
+	  m_state = DETECTING;
+	  break;
+
+	case DETECTING:
+	  sleep(5);
+
+	  m_state = DECIDE_GRASP;
+	  break;
+
+	case DECIDE_GRASP:
+	  break;
+      }
+
       std::ostringstream oss;
       oss << pose_.pos.x;
       log(oss.str());
@@ -98,21 +133,21 @@ namespace cogx
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
   {
-  //log("received objectPoseCallback");
+    warn("received objectPoseCallback");
 
-  VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
-  if (vo->identLabels.at(m_idx) == "cereals1_model")
-  {
-    boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
-    //boost::unique_lock<boost::mutex> lock(mutex_);
-    pose_ = vo->pose;
+    unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
+//    if (vo->identLabels.at(m_idx) == "cereals1_model")
+//    {
+      boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+      //boost::unique_lock<boost::mutex> lock(mutex_);
+      m_poses[vo->identLabels.at(m_idx)] = vo->pose;
+//    }
+
+
+    warn("finished objectPoseCallback");
   }
-  
-  
-  //log("finished objectPoseCallback");
-}
 
   void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
     int lp = 0;
