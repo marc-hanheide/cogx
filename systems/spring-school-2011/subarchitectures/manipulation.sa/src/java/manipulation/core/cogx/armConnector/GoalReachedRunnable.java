@@ -65,7 +65,13 @@ public class GoalReachedRunnable implements Runnable {
 
 				double threshold = 0.000005;
 
-				if (calculateConfigStateError(currentPos, currentPos1) <= threshold) {
+				double errorValue = calculateConfigStateError(currentPos,
+						currentPos1);
+
+				logger.debug("Manipulator goal waiter error value: "
+						+ errorValue);
+
+				if (errorValue <= threshold) {
 					manipulator.getArmConnector().setReached(true);
 				}
 			} catch (ManipulatorException e) {
