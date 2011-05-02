@@ -64,10 +64,16 @@ namespace cogx
   void BlueFSM::destroy()
   {
   }
-  /*
+  
   void
   BlueFSM::simpleCallback(const cdl::WorkingMemoryChange &wmc) {
-    m_waiting = false;
+    manipulation::slice::ManipulationCommandPtr cmd =
+      getMemoryEntry<manipulation::slice::ManipulationCommand>(wmc.address.id);
+
+    if (cmd->comp == manipulation::slice::SUCCEEDED ||
+	cmd->comp == manipulation::slice::FAILED) {
+      m_waiting = false;
+    }
   }
 
   void 
@@ -78,7 +84,7 @@ namespace cogx
     rec_cmd->visualObjectID = visualObjectID;
     addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
   }
-  */
+  
   void BlueFSM::runComponent()
   {
     std::map<std::string, std::vector<m::Pose> > grasps;
@@ -97,8 +103,42 @@ namespace cogx
     {
       switch(m_state) {
 	case INIT:
-	  log("INIT");
-	  m_state = LOOK_CANONICAL;
+	  {
+	    // INIT state: Start by homing the arm, then begin searching for
+	    // objects/tables
+	    log("INIT");
+	    m_state = LOOK_CANONICAL;
+
+//	    bool success = moveHome();
+//	    if (success) {
+//	      m_state = SPINNING;
+//	    }
+//	    else {
+//	      log("Error! Unable to return to home pose!");
+//	      m_state = TERMINATED;
+//	    }
+	  }
+	  break;
+	
+	case SPINNING:
+	  {
+	    log("SPINNING");
+
+	    m_turnStep = 0;
+
+	    while (m_turnStep < 8) {
+	      lockComponent();
+	      // Issue recognition commands
+	      for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
+		addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
+	      }
+	      unlockComponent();
+
+	      sleep(5);
+
+	      m_state = DETECTING;
+	    }
+	  }
 	  break;
 	
 	case LOOK_AROUND:
@@ -556,8 +596,9 @@ bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose)
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+
+//  removeChangeFilter(receiver);
+//  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 

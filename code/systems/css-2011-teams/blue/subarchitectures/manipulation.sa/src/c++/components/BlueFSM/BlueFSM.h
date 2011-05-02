@@ -18,6 +18,8 @@ namespace cogx
   class BlueFSM : public ManagedComponent
   {
     enum State {INIT,
+      SPINNING,
+      MOVE_TO_NEW_POS,
       LOOK_CANONICAL, //Pan-tilt in calibrated position
       LOOK_AROUND,    //Pan-tilt ambulatory
       DETECTING,
@@ -59,6 +61,8 @@ namespace cogx
 
     State m_state;
     bool m_waiting;
+
+    int m_turnStep;
 
     boost::mutex mutex_;
 
