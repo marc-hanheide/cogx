@@ -70,10 +70,10 @@ public class ItemMemory extends Observable {
 		Item newItem = new Item(item);
 
 		newItem.setAttribute(PropertyName.MODEL, model);
-
+		
 		ListIterator<Item> it = itemList.listIterator(0);
 		while (it.hasNext()) {
-			if (it.next().equals(item)) {
+			if (it.next().getID().equals(item.getID())) {
 				itemList.set(it.previousIndex(), newItem);
 				success = true;
 				break;
