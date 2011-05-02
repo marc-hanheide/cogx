@@ -12,6 +12,7 @@
 #include "CureMapConversion.hpp"
 #include <float.h>
 #include "Vector3.h"
+#include "Matrix33.h"
 
 #include "Wm5.h"
 /**
@@ -149,6 +150,33 @@ namespace cogx
 	    }
 	  }
 	  break;
+
+	case ENVELOP:
+	  {
+	    bool success = envelop();
+	    if (success) {
+	      m_state = VERIFY_ENVELOP;
+	    }
+	    else {
+	      log("Error! envelop failed");
+	      success = retract();
+	      if (success) {
+		m_state = LOOK_CANONICAL;
+	      }
+	      else {
+		log("Error! Unable to retract!");
+		success = moveHome();
+		if (success) {
+		  m_state = INIT;
+		}
+		else {
+		  log("Error! Unable to return to home pose!");
+		  m_state = TERMINATED;
+		}
+	      }
+	    }
+	  }
+
 
 	default:
 	  break;
@@ -340,6 +368,72 @@ bool BlueFSM::moveHome()
   delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToHomePositionCommand>(id);
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
+bool BlueFSM::envelop() 
+{
+  cogx::Math::Pose3 targetPose;
+  cogx::Math::Vector3 direction = getColumn(m_currentArmPose.rot, 0); //Get x axis of current pose
+
+  targetPose.pos = m_currentArmPose.pos + direction * 0.05;
+
+  manipulation::slice::MoveArmToPosePtr cmd = new
+    manipulation::slice::MoveArmToPose;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->targetPose = targetPose;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
+
+  m_currentArmPose = cmd->reachedPose;
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
+bool BlueFSM::retract() 
+{
+  cogx::Math::Pose3 targetPose;
+  cogx::Math::Vector3 direction = -getColumn(m_currentArmPose.rot, 0); //Get x axis of current pose
+
+  targetPose.pos = m_currentArmPose.pos + direction * 0.05;
+
+  manipulation::slice::MoveArmToPosePtr cmd = new
+    manipulation::slice::MoveArmToPose;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->targetPose = targetPose;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
+
+  m_currentArmPose = cmd->reachedPose;
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
