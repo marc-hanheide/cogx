@@ -40,7 +40,6 @@ public class GoalReachedRunnable implements Runnable {
 	private double calculateConfigStateError(GenConfigspaceState value1,
 			GenConfigspaceState value2) {
 		double error = 0;
-
 		for (int i = 0; i < value1.pos.c.length - 1; i++) {
 			error += Math.abs(value1.pos.c[i] - value2.pos.c[i]);
 		}
@@ -64,7 +63,9 @@ public class GoalReachedRunnable implements Runnable {
 				GenConfigspaceState currentPos1 = ((CogXKatanaArmConnector) manipulator
 						.getArmConnector()).getCurrentConfigState();
 
-				if (calculateConfigStateError(currentPos, currentPos1) == 0) {
+				double threshold = 0.000005;
+
+				if (calculateConfigStateError(currentPos, currentPos1) <= threshold) {
 					manipulator.getArmConnector().setReached(true);
 				}
 			} catch (ManipulatorException e) {
