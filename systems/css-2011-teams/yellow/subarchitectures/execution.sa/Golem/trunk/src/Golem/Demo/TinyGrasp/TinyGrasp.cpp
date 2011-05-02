@@ -123,7 +123,7 @@ TinyGrasp::TinyGrasp(const char* driver) :
 
 	// get sensor data assuming no object is in the gripper
 	zero = arm->gripperRecvSensorData(numeric_const<double>::INF);
-
+	
 	// robot base
 	RigidBodyDesc* pBaseDesc = new RigidBodyDesc;
 	pBaseDesc->kinematic = true;
@@ -265,13 +265,14 @@ Mat34 TinyGrasp::moveTry(const Mat34& pose) {
 	return actual;
 }
 
-void TinyGrasp::moveExec() {
+void TinyGrasp::moveExec(Real duration) {
 	// compute trajectory using path planning with collision detection
 	GenConfigspaceStateSeq trajectory;
 	
 	for (U32 i = 0;; ++i) {
 		try {		
-			tiny->print("TinyGrasp::moveExec(): %u...", i + 1); 
+			tiny->print("TinyGrasp::moveExec(): %u...", i + 1);
+			cend.t = cbegin.t + duration;
 			trajectory = arm->findTrajectory(cbegin, cend);
 		}
 		catch (ExTiny& ex) {
@@ -398,7 +399,7 @@ GraspPose TinyGrasp::graspTry(const GraspPose& pose) {
 	return actual;
 }
 
-void TinyGrasp::graspExec() {
+void TinyGrasp::graspExec(Real duration) {
 	Mat34 actual;
 
 	arm->gripperOpen(numeric_const<double>::INF);
@@ -406,7 +407,7 @@ void TinyGrasp::graspExec() {
 	actual = moveTry(gend.approach);
 	PoseError approachError(actual, gend.approach);
 	tiny->print("TinyGrasp::graspExec(): approach error = (%f, %f)", approachError.lin, approachError.ang);
-	moveExec();
+	moveExec(duration);
 
 	actual = moveTry(gend.grasp);
 	PoseError graspError(actual, gend.grasp);

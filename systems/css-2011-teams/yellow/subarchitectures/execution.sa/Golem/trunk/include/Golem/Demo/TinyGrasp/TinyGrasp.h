@@ -72,12 +72,12 @@ public:
 	Mat34 read();
 
 	Mat34 moveTry(const Mat34& pose);
-	void moveExec();
+	void moveExec(Real duration = Real(5.0));
 
 	GraspPose::Seq getGraspPoses() const;
 	GraspPose graspTry(const GraspPose::Seq& poses, GraspPose::Seq::const_iterator& index);
 	GraspPose graspTry(const GraspPose& pose);
-	void graspExec();
+	void graspExec(Real duration = Real(5.0));
 	void graspRelease();
 
 protected:

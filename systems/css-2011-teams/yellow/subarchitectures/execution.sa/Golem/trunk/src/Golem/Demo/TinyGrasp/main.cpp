@@ -18,10 +18,10 @@ using namespace golem::tiny;
 
 int main(int argc, char *argv[]) {
 	try {
-		TinyGrasp robot("GolemDeviceKatana300");
+		TinyGrasp robot("GolemDeviceKatana300Sim");
 		
 		const Mat34 home = robot.read();
-
+		
 		Mat34 globalPose;
 		globalPose.setId();
 		//globalPose.R.rotX(2.1);
@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
 		target.R.rotZ(1.0);
 		(void)robot.moveTry(target); // ignore returned actual/best target pose
 		robot.moveExec(); // go to the last tried pose
+		PerfTimer::sleep(5.0);
 		robot.graspRelease();
 
 		(void)robot.moveTry(home); // ignore returned actual/best target pose
