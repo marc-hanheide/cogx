@@ -387,3 +387,433 @@ material cogx/cereals-manner-bottom
   }
 }
 
+
+// cereals-fruchtemusli
+material cogx/cereals-fruchtemusli-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-fruchtemusli-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-fruchtemusli-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-fruchtemusli-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-fruchtemusli-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-fruchtemusli-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-fruchtemusli-bottom.jpg
+      }
+    }
+  }
+}
+
+
+// cereals-bircher
+material cogx/cereals-bircher-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-bircher-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-bircher-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-bircher-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-bircher-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-bircher-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-bircher-bottom.jpg
+      }
+    }
+  }
+}
+
+
+// cereals-toppas
+material cogx/cereals-toppas-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-toppas-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-toppas-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-toppas-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-toppas-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-toppas-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-toppas-bottom.jpg
+      }
+    }
+  }
+}
+
+
+
+// cereals-chocos
+material cogx/cereals-chocos-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-chocos-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-chocos-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-chocos-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-chocos-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-chocos-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-chocos-bottom.jpg
+      }
+    }
+  }
+}
+
+
+// cereals-weetabix
+material cogx/cereals-weetabix-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-front.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-weetabix-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-back.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-weetabix-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-left.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-weetabix-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-right.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-weetabix-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-top.jpg
+      }
+    }
+  }
+}
+
+material cogx/cereals-weetabix-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture cereals-weetabix-bottom.jpg
+      }
+    }
+  }
+}
