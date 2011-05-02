@@ -68,6 +68,7 @@ namespace cogx
 
     cogx::Math::Pose3 m_handoverPose;
     cogx::Math::Pose3 m_pregraspPose;
+    cogx::Math::Pose3 m_envelopingPose;
     cogx::Math::Pose3 m_currentArmPose;
     
 //    PTZInterfacePrx m_ptzInterface;
