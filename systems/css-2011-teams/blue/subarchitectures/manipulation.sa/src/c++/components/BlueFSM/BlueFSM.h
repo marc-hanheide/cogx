@@ -30,11 +30,9 @@ namespace cogx
       GRASP,	      //Close gripper
       VERIFY_GRASP,
       LIFT,
-      VERIFY_LIFT,
       HANDOVER,
       VERIFY_HANDOVER,
       RELEASE,
-      VERIFY_RELEASE,
       GO_HOME,
       TERMINATED};
   private:
