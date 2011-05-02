@@ -57,6 +57,13 @@ JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "dis
 CPP MG calculate.gripperpose ManipulationPlanner --log
 
 
+# dialogue #########################################################################
+
+SUBARCHITECTURE dialogue
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM	cast.architecture.AlwaysPositiveTaskManager
+
+JAVA GD MaryTTS de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
 
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa
@@ -71,7 +78,7 @@ JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "ins
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Manipulation planner component, added by Barry
-JAVA MG ManipulationPlanner manipulation.planner.ManipulationPlanner
+JAVA MG ManipulationPlanner manipulation.planner.ManipulationPlanner --verbalize
 
 ###### DEBUG OUTPUT #####################################################################
 # shows memory entries that are in working memories. Helps to identify what's going on-
