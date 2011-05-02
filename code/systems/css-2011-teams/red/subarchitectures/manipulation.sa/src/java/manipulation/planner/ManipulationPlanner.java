@@ -87,6 +87,8 @@ public class ManipulationPlanner extends ManagedComponent {
 
 	@Override
 	protected void runComponent() {
+		verbalize("Okay. I think I'm ready.");
+
 		while (this.isRunning()) {
 			this.sleepComponent(200);
 			if (currentCommand != null) {
@@ -181,7 +183,7 @@ public class ManipulationPlanner extends ManagedComponent {
 		try {
 			CASTData data = getWorkingMemoryEntry(wmc.address.id);
 			if (data.getData() instanceof GripperPose) {
-				verbalize("There is the object.");
+				verbalize("Right. I see the object now.");
 
 				gp = (GripperPose) data.getData();
 
