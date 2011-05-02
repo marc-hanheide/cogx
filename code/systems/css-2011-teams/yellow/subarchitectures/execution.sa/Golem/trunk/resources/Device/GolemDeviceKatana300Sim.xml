@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <golem>
-  <arm name="Katana 300 (6M180) simulator" custom_kinematics="0">
+  <arm name="Katana 300 (6M180) simulator" custom_kinematics="0" gripper="1">
     <global_pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></global_pose>
     <!-- L3 = 0.1916 -->
     <reference_pose v1="0.0" v2="0.1916" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></reference_pose>

@@ -78,23 +78,23 @@ void Katana300SimArm::jacobianSpatial(Jacobian& jac, const ConfigspaceCoord& cc)
 //------------------------------------------------------------------------------
 
 bool Katana300SimArm::gripperRecvSensorData(SensorDataSet& sensorData, MSecTmU32 timeWait) {
-	return false;
+	return true;
 }
 	
 bool Katana300SimArm::gripperRecvEncoderData(GripperEncoderData& encoderData, MSecTmU32 timeWait) {
-	return false;
+	return true;
 }
 	
 bool Katana300SimArm::gripperOpen(MSecTmU32 timeWait) {
-	return false;
+	return true;
 }
 
 bool Katana300SimArm::gripperClose(const SensorDataSet& sensorThreshold, MSecTmU32 timeWait) {
-	return false;
+	return true;
 }
 	
 bool Katana300SimArm::gripperFreeze(MSecTmU32 timeWait) {
-	return false;
+	return true;
 }
 
 //------------------------------------------------------------------------------

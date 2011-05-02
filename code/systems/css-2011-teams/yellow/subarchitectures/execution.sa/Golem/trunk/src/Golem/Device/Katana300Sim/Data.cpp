@@ -26,6 +26,7 @@ void golem::XMLData(Katana300SimJoint::Desc &val, XMLContext* context, bool crea
 void golem::XMLData(Katana300SimArm::Desc &val, XMLContext* context, bool create) {
 	XMLData((BufCtrlSimArm::Desc &)val, context, create);
 	XMLData((KatanaArm::Desc &)val, context, create);
+	XMLData((KatanaGripper::Desc &)val, context, create);
 	XMLDataPtr<Katana300SimJoint::Desc>(val.joints.begin(), val.joints.end(), context, "joint", create); // repeat for Katana300SimJoint::Desc
 }
 
