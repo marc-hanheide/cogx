@@ -70,6 +70,7 @@ void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
   pose.zoom = 0;
   
   ptz_cmd->pose = pose;
+  ptz_cmd->comp = ptz::COMPINIT;
   
   addToWorkingMemory(newDataID(), ptz_cmd);
   log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
