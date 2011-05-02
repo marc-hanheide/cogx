@@ -181,8 +181,8 @@ void ObjectRecognizer3DDriver::runComponent(){
 					log("Add FarArmMovementCommand to Working Memory.");
 				
 					FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
-					farArmMovementCom->comp = COMPINIT;
-					farArmMovementCom->status = NEW;
+					farArmMovementCom->comp = manipulation::slice::COMPINIT;
+					farArmMovementCom->status = manipulation::slice::NEW;
 					farArmMovementCom->targetObjectAddr = *(new cast::cdl::WorkingMemoryAddress());
 					farArmMovementCom->targetObjectAddr.id = m_rec_cmd->visualObjectID;
 					farArmMovementCom->targetObjectAddr.subarchitecture = getSubarchitectureID();
