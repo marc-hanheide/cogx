@@ -137,72 +137,149 @@ void ObjectRecognizer3DDriver::start(){
       new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
         &ObjectRecognizer3DDriver::overwriteRecognizer3DCommand));
 
+	addChangeFilter(createGlobalTypeFilter<FarArmMovementCommand>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+		&ObjectRecognizer3DDriver::overwriteFarArmMovementCommand));
+
+	addChangeFilter(createGlobalTypeFilter<CloseGripperCommand>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+		&ObjectRecognizer3DDriver::overwriteCloseGripperCommand));
+
 }
 
 void ObjectRecognizer3DDriver::runComponent(){
-  sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
-                       // object observations too soon.
+	sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
+					   // object observations too soon.
 
-  m_halt = true;
-  m_ptz=m_obj=m_grasp=false;  
+	m_halt_rec = true;
+	m_halt_arm = true;
+	m_ptz = false;
 
-  // Load PLY model to working memory
-  std::string modelID;
-//   loadVisualModelToWM(m_plyfile, modelID, Math::Pose3());
-//   m_visualObjectIDs.push_back(modelID);
+	// Load PLY model to working memory
+	std::string modelID;
+	//   loadVisualModelToWM(m_plyfile, modelID, Math::Pose3());
+	//   m_visualObjectIDs.push_back(modelID);
 
-  m_timer.Update();
+	m_timer.Update();
+
+	addPTZCommand(0.0, -1.0472);
   
-  addPTZCommand(0.0, -45.0);
-  
-  while(!m_ptz && isRunning())
-				sleepComponent(100);
+	while(!m_ptz && isRunning())
+		sleepComponent(100);
+	if(!isRunning())
+		return;
   // trigger Recognizer3D
  // for(int j=0; j<m_loops && isRunning(); j++){
 
  // 	log("*** Loop %d/%d ***", j, m_loops);
 //   	addTrackingCommand(RELEASEMODELS);
 
-		for(int i=0; i<m_labels.size(); i++){
-		
-		   	if(m_mode == RECOGNIZE)
-				addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
-		  	else if(m_mode = RECLEARN)
-		    	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
-		    	
-		    while(m_halt && isRunning())
-				sleepComponent(100);
-				
-			log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
+	for(int i=0; i<m_labels.size(); i++){
+
+		if(m_mode == RECOGNIZE)
+			addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+		else if(m_mode = RECLEARN)
+			addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
 			
-			if(m_mode == RECOGNIZE){
-				if(m_rec_cmd->confidence > 0.03){
+		while(m_halt_rec && isRunning())
+			sleepComponent(100);
+		m_halt_rec = true;
+		if(!isRunning())
+			return;
 			
-					log("Add FarArmMovementCommand to Working Memory.");
-				
-					FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
-					farArmMovementCom->comp = manipulation::slice::COMPINIT;
-					farArmMovementCom->status = manipulation::slice::NEW;
-					farArmMovementCom->targetObjectAddr = *(new cast::cdl::WorkingMemoryAddress());
-					farArmMovementCom->targetObjectAddr.id = m_rec_cmd->visualObjectID;
-					farArmMovementCom->targetObjectAddr.subarchitecture = getSubarchitectureID();
-				
-					addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
-				
-				}else{
+		log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
+
+		if(m_mode == RECOGNIZE && !m_manipulation_sa.empty()){
+			if(m_rec_cmd->confidence > 0.03){
+
+				log("Add FarArmMovementCommand to Working Memory.");
+
+				cast::cdl::WorkingMemoryAddress wma;
+				wma.id = m_rec_cmd->visualObjectID;
+				wma.subarchitecture = getSubarchitectureID();
+
+				// Move Arm in front of visual object position
+				log("move arm to object pose -0.15");
+				VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(wma);
+				obj->pose.pos.x = obj->pose.pos.x - 0.15;
+				FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
+				farArmMovementCom->comp = manipulation::slice::COMPINIT;
+				farArmMovementCom->status = manipulation::slice::NEW;
+				farArmMovementCom->targetObjectAddr = wma;
+				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
+
+					// Wait for arm to finish
+					log("Waiting for arm to finish movement");
+					while(m_halt_arm && isRunning())
+						sleepComponent(100);
+					m_halt_arm = true;
+					if(!isRunning())
+						return;
+
+				// Move Arm toward visual object center
+				log("move arm forward 0.1");
+				obj = getMemoryEntry<VisionData::VisualObject>(wma);
+				obj->pose.pos.x = obj->pose.pos.x + 0.1;
+				farArmMovementCom->comp = manipulation::slice::COMPINIT;
+				farArmMovementCom->status = manipulation::slice::NEW;
+				farArmMovementCom->targetObjectAddr = wma;
+				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
+
+					// Wait for arm to finish
+					log("Waiting for arm to finish movement");
+					while(m_halt_arm && isRunning())
+						sleepComponent(100);
+					m_halt_arm = true;
+					if(!isRunning())
+						return;
+
+				// Close Gripper
+				log("close gripper");
+				CloseGripperCommandPtr closeGripperCmd = new CloseGripperCommand();
+				closeGripperCmd->comp = manipulation::slice::COMPINIT;
+				closeGripperCmd->status = manipulation::slice::NEW;
+				closeGripperCmd->graspStatus = GRASPINGSTATUSINIT;
+				addToWorkingMemory(newDataID(), m_manipulation_sa, closeGripperCmd);
+
+					// Wait for arm to finish
+					log("Waiting for gripper to close");
+					while(m_halt_arm && isRunning())
+						sleepComponent(100);
+					m_halt_arm = true;
+					if(!isRunning())
+						return;
+
+				// Lift arm
+				log("lift object");
+				obj = getMemoryEntry<VisionData::VisualObject>(wma);
+				obj->pose.pos.z = obj->pose.pos.z + 0.1;
+				farArmMovementCom->comp = manipulation::slice::COMPINIT;
+				farArmMovementCom->status = manipulation::slice::NEW;
+				farArmMovementCom->targetObjectAddr = wma;
+				addToWorkingMemory(newDataID(), m_manipulation_sa, farArmMovementCom);
+
+					// Wait for arm to finish
+					log("Waiting for arm to finish movement");
+					while(m_halt_arm && isRunning())
+						sleepComponent(100);
+					m_halt_arm = true;
+					if(!isRunning())
+						return;
 			
-					log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
-			
-				}
+			}else{
+
+				log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
+
 			}
-		    
 		}
+
+	}
 
 
 
 // 		log("Taking Screenshot");
 // 		addTrackingCommand(SCREENSHOT);
-		m_halt = true;
+
 //	}
 	
 	
@@ -232,8 +309,31 @@ void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMe
 //		m_sumDetections[rec_cmd->label] += 1;
 
   if(m_rec_cmd->label.compare(m_labels.back().c_str()) == 0)
-  	m_halt =false;
+  	m_halt_rec =false;
 }
+
+void ObjectRecognizer3DDriver::overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc){
+	m_arm_cmd = getMemoryEntry<FarArmMovementCommand>(_wmc.address);
+
+	log("Got overwriteFarArmMovementCommand");
+
+	if(m_arm_cmd->status == manipulation::slice::FINISHED){
+		log("Arm movement finished");
+		m_halt_arm =false;
+	}
+}
+
+void ObjectRecognizer3DDriver::overwriteCloseGripperCommand(const cdl::WorkingMemoryChange & _wmc){
+	manipulation::slice::CloseGripperCommandPtr gripper_cmd = getMemoryEntry<CloseGripperCommand>(_wmc.address);
+
+	log("Got overwriteCloseGripperCommand");
+
+	if(gripper_cmd->graspStatus == manipulation::slice::GRASPING){
+		log("gripper closed");
+		m_halt_arm =false;
+	}
+}
+
 
 
 void ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -244,7 +344,5 @@ void ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemo
   if(ptz_cmd->comp == ptz::SUCCEEDED)
   	m_ptz = true;
 }
-
-
 
 

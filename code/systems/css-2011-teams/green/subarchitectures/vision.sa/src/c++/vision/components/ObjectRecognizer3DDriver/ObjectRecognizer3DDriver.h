@@ -33,15 +33,16 @@ private:
 	std::map<std::string,float> m_sumConfidence;
 
 	VisionData::Recognizer3DCommandPtr m_rec_cmd;
+	manipulation::slice::FarArmMovementCommandPtr m_arm_cmd;
+
 	std::string m_manipulation_sa;
 	int m_mode;
 	int m_loops;
-	bool m_halt;
+	bool m_halt_rec;
+	bool m_halt_arm;
 	Timer m_timer;
 	
 	bool m_ptz;
-	bool m_obj;
-	bool m_grasp;
 
 	/** @brief receiving visual objects */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
@@ -50,6 +51,12 @@ private:
   void overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
   
   void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  /** @brief read result of a arm movement command */
+  void overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  /** @brief read result of a arm movement command */
+  void overwriteCloseGripperCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /** @brief loads ply from file and adds it into working memory */
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
