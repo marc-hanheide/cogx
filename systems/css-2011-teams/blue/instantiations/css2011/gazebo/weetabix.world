@@ -24,8 +24,8 @@
   <verbosity>5</verbosity>
 
   <physics:ode>
-    <stepTime>0.03</stepTime>
-    <gravity>0 0 0</gravity>
+    <stepTime>0.003</stepTime>
+    <gravity>0 0 -9.81</gravity>
     <cfm>10e-5</cfm>
     <erp>0.3</erp>
     <!-- cfm 10e-5 works
@@ -66,12 +66,11 @@
 
   <!-- robot model -->
   <model:physical name="robot">
-    <static>true</static>
-    <xyz>0.0 0.0 0.0</xyz>
-    <rpy>0.0 0.0 0.0</rpy>
+    <xyz>0.9 0.5 0.01</xyz>
+    <rpy>0.0 0.0 270.0</rpy>
 
     <model:physical name="laser">
-      <xyz>0.21 0.00 0.24</xyz>
+      <xyz>0.14 0.00 0.24</xyz>
       <rpy>0 0 0</rpy>
       
       <attach>
@@ -188,14 +187,23 @@
     </body:box>
   </model:physical>
 
+  <!-- a low table -->
+  <model:physical name="table1_model">
+    <static>false</static>
+    <xyz>1 0 0.176</xyz>
+    <include embedded="true">
+       <xi:include href="models/table.model" />
+    </include>
+  </model:physical>
+
   <!-- and finally a cereal box! -->
-  <model:physical name="cereals1_model">
-    <static>true</static>
-    <xyz>1 0 1.4</xyz>
-		<rpy>10 10 90</rpy>
+  <model:physical name="cereals-weetabix">
+    <static>false</static>
+    <xyz>1 0 0.447</xyz>
+		<rpy>0 0 90</rpy>
 
     <include embedded="true">
-       <xi:include href="models/cereals-schokomusli.model" />
+       <xi:include href="models/cereals-weetabix.model" />
     </include>
   </model:physical>
 
