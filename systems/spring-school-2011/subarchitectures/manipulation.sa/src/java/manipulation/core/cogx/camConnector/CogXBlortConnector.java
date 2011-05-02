@@ -106,8 +106,6 @@ public class CogXBlortConnector implements CamConnector {
 				Item newItem = new Item();
 				newItem.setAttribute(PropertyName.BLORT_NAME, bestLabel);
 				newItem.setAttribute(PropertyName.WMA_ADDRESS, _wmc.address);
-				newItem.setAttribute(PropertyName.INTENTION,
-						ItemIntention.AVOID_ME);
 				newItem.setAttribute(PropertyName.WORLD_POSITION, new Vector3D(
 						Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE));
 				newItem.setAttribute(PropertyName.WORLD_ROTATION, new Matrix(1,
@@ -130,6 +128,7 @@ public class CogXBlortConnector implements CamConnector {
 									CogXConverter
 											.convBlortGeomModelToVisionModel(changedObject.model));
 				} catch (InternalMemoryException e) {
+					logger.error("####################");
 					logger.error(e);
 				}
 			}
