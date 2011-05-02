@@ -190,21 +190,34 @@ namespace cogx
                     maxDotProduct = dot;
                     bestGrasp = robotGrasp;
                     bestBacktrackedGrasp = bestGrasp;
-                    bestBacktrackedGrasp.first -= .01*m::Vector3(robotGraspOri.GetColumn(0));
+                    bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(0));
                   }
               }
 
-            Math::Pose3 p;
-            for (int i = 0; i < 3; ++i)
-              {
-                Math::set(p.pos, i, bestBacktrackedGrasp.first[i]);
-                for (int j = 0; j < 3; ++j)
-                  Math::set(p.rot, i, j, m::matrixCopy(bestBacktrackedGrasp.second)(i,j));
-              }
-            
-            m_pregraspPose = p;
-
-            std::cerr << m_pregraspPose << std::endl;
+            {
+              Math::Pose3 p;
+              for (int i = 0; i < 3; ++i)
+                {
+                  Math::set(p.pos, i, bestBacktrackedGrasp.first[i]);
+                  for (int j = 0; j < 3; ++j)
+                    Math::set(p.rot, i, j, m::matrixCopy(bestBacktrackedGrasp.second)(i,j));
+                }
+              
+              m_pregraspPose = p;
+            }
+            std::cerr << "pregrasp: " << m_envelopingPose << std::endl;
+            {
+              Math::Pose3 p;
+              for (int i = 0; i < 3; ++i)
+                {
+                  Math::set(p.pos, i, bestGrasp.first[i]);
+                  for (int j = 0; j < 3; ++j)
+                    Math::set(p.rot, i, j, m::matrixCopy(bestGrasp.second)(i,j));
+                }
+              
+              m_envelopingPose = p;
+            }
+            std::cerr << "enveloping grasp: " << m_envelopingPose << std::endl;
 
             m_state = GO_TO_PREGRASP;
             break;
