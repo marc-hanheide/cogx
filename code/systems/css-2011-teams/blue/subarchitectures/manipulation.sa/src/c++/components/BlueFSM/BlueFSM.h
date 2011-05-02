@@ -26,6 +26,7 @@ namespace cogx
       VERIFY_PREGRASP,//Check arm's position is correct
       ENVELOP,	      //Move arm forward
       VERIFY_ENVELOP,
+      RETRACT,
       GRASP,	      //Close gripper
       VERIFY_GRASP,
       LIFT,
@@ -47,6 +48,8 @@ namespace cogx
 
     bool moveHome();
     bool movePregrasp(cogx::Math::Pose3 pregraspPose);
+    bool envelop();
+    bool retract();
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
     void simpleCallback(const cdl::WorkingMemoryChange &_wmc);
