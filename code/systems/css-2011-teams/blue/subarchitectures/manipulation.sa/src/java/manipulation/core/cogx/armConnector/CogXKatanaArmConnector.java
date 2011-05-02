@@ -607,7 +607,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 				return false;
 			}
 		} else {
-			logger.error("Receiving encoder data not implemented for simulation");
+			logger.warn("Receiving encoder data not implemented for simulation");
 			return false;
 		}
 	}
