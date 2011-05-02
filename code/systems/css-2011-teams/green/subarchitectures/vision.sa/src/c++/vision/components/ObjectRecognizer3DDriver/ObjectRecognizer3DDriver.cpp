@@ -83,6 +83,78 @@ void ObjectRecognizer3DDriver::addTrackingCommand(VisionData::TrackingCommandTyp
 	log("Add TrackingCommand");
 }
 
+void ObjectRecognizer3DDriver::doFarArmMovement(cast::cdl::WorkingMemoryAddress wma, cogx::Math::Vector3 vOffset){
+	FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
+	farArmMovementCom->comp = manipulation::slice::COMPINIT;
+	farArmMovementCom->status = manipulation::slice::NEW;
+	farArmMovementCom->targetObjectAddr = wma;
+	farArmMovementCom->offset = vOffset;
+	std::string data_id = newDataID();
+	addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
+		// Wait for arm to finish
+		log("Waiting for arm to finish movement");
+		while(m_halt_arm && isRunning())
+			sleepComponent(100);
+		m_halt_arm = true;
+		if(!isRunning())
+			return;
+	deleteFromWorkingMemory(data_id, m_manipulation_sa);
+}
+
+void ObjectRecognizer3DDriver::doMoveArmToPose(cogx::Math::Pose3 pose){
+	MoveArmToPosePtr moveArmToPose = new MoveArmToPose();
+	moveArmToPose->comp = manipulation::slice::COMPINIT;
+	moveArmToPose->status = manipulation::slice::NEW;
+	moveArmToPose->targetPose = pose;
+	std::string data_id = newDataID();
+	addToWorkingMemory(data_id, m_manipulation_sa, moveArmToPose);
+		// Wait for arm to finish
+		log("Waiting for arm to finish movement");
+		while(m_halt_arm && isRunning())
+			sleepComponent(100);
+		m_halt_arm = true;
+		if(!isRunning())
+			return;
+	deleteFromWorkingMemory(data_id, m_manipulation_sa);
+}
+
+void ObjectRecognizer3DDriver::doOpenGripper(){
+	log("open gripper");
+	OpenGripperCommandPtr openGripperCmd = new OpenGripperCommand();
+	openGripperCmd->comp = manipulation::slice::COMPINIT;
+	openGripperCmd->status = manipulation::slice::NEW;
+	std::string data_id = newDataID();
+	addToWorkingMemory(data_id, m_manipulation_sa, openGripperCmd);
+		// Wait for arm to finish
+		log("Waiting for gripper to open");
+		while(m_halt_arm && isRunning())
+			sleepComponent(100);
+		m_halt_arm = true;
+		if(!isRunning())
+			return;
+	deleteFromWorkingMemory(data_id, m_manipulation_sa);
+
+}
+
+void ObjectRecognizer3DDriver::doCloseGripper(){
+	log("close gripper");
+	CloseGripperCommandPtr closeGripperCmd = new CloseGripperCommand();
+	closeGripperCmd->comp = manipulation::slice::COMPINIT;
+	closeGripperCmd->status = manipulation::slice::NEW;
+	closeGripperCmd->graspStatus = GRASPINGSTATUSINIT;
+	std::string data_id = newDataID();
+	addToWorkingMemory(data_id, m_manipulation_sa, closeGripperCmd);
+		// Wait for arm to finish
+		log("Waiting for gripper to close");
+		while(m_halt_arm && isRunning())
+			sleepComponent(100);
+		m_halt_arm = true;
+		if(!isRunning())
+			return;
+	deleteFromWorkingMemory(data_id, m_manipulation_sa);
+
+}
+
 void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
 	map<string,string>::const_iterator it;
 
@@ -200,128 +272,62 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 	}
 			
-		log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
+	log("%s %f", m_rec_cmd->label.c_str(), m_rec_cmd->confidence);
 
-		if(m_mode == RECOGNIZE && !m_manipulation_sa.empty()){
-			if(m_rec_cmd->confidence > 0.03){
+	if(m_mode == RECOGNIZE && !m_manipulation_sa.empty()){
+		if(m_rec_cmd->confidence > 0.03){
 
-				cogx::Math::Vector3 vOffset = cogx::Math::vector3(0.0,0.0,0.0);
+			cogx::Math::Vector3 vOffset = cogx::Math::vector3(0.0,0.0,0.0);
 
 
-				log("Add FarArmMovementCommand to Working Memory.");
+			log("Add FarArmMovementCommand to Working Memory.");
 
-				cast::cdl::WorkingMemoryAddress wma;
-				wma.id = m_rec_cmd->visualObjectID;
-				wma.subarchitecture = getSubarchitectureID();
+			cast::cdl::WorkingMemoryAddress wma;
+			wma.id = m_rec_cmd->visualObjectID;
+			wma.subarchitecture = getSubarchitectureID();
 
-				// Move Arm in front of visual object position
-				log("move arm to object pose -0.15");
-				vOffset = cogx::Math::vector3(-0.15,0.0,0.0);
-				FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
-				farArmMovementCom->comp = manipulation::slice::COMPINIT;
-				farArmMovementCom->status = manipulation::slice::NEW;
-				farArmMovementCom->targetObjectAddr = wma;
-				farArmMovementCom->offset = vOffset;
-				data_id = newDataID();
-				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
-					// Wait for arm to finish
-					log("Waiting for arm to finish movement");
-					while(m_halt_arm && isRunning())
-						sleepComponent(100);
-					m_halt_arm = true;
-					if(!isRunning())
-						return;
-				deleteFromWorkingMemory(data_id, m_manipulation_sa);
+			// Move Arm in front of visual object position
+			log("move arm to object pose -0.15");
+			vOffset = cogx::Math::vector3(-0.15,0.0,0.0);
+			doFarArmMovement(wma, vOffset);
 
-				// Move Arm toward visual object center
-				log("move arm forward 0.1");
-				vOffset = cogx::Math::vector3(-0.05,0.0,0.0);
-				farArmMovementCom->comp = manipulation::slice::COMPINIT;
-				farArmMovementCom->status = manipulation::slice::NEW;
-				farArmMovementCom->targetObjectAddr = wma;
-				farArmMovementCom->offset = vOffset;
-				data_id = newDataID();
-				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
-					// Wait for arm to finish
-					log("Waiting for arm to finish movement");
-					while(m_halt_arm && isRunning())
-						sleepComponent(100);
-					m_halt_arm = true;
-					if(!isRunning())
-						return;
-				deleteFromWorkingMemory(data_id, m_manipulation_sa);
+			// Move Arm toward visual object center
+			log("move arm forward 0.1");
+			vOffset = cogx::Math::vector3(-0.05,0.0,0.0);
+			doFarArmMovement(wma, vOffset);
 
-				// Close Gripper
-				log("close gripper");
-				CloseGripperCommandPtr closeGripperCmd = new CloseGripperCommand();
-				closeGripperCmd->comp = manipulation::slice::COMPINIT;
-				closeGripperCmd->status = manipulation::slice::NEW;
-				closeGripperCmd->graspStatus = GRASPINGSTATUSINIT;
-				data_id = newDataID();
-				addToWorkingMemory(data_id, m_manipulation_sa, closeGripperCmd);
-					// Wait for arm to finish
-					log("Waiting for gripper to close");
-					while(m_halt_arm && isRunning())
-						sleepComponent(100);
-					m_halt_arm = true;
-					if(!isRunning())
-						return;
-				deleteFromWorkingMemory(data_id, m_manipulation_sa);
+			// Close Gripper
+			doCloseGripper();
 
-				// Lift arm
-				log("lift object");
-				vOffset = cogx::Math::vector3(-0.05,0.0,0.2);
-				farArmMovementCom->comp = manipulation::slice::COMPINIT;
-				farArmMovementCom->status = manipulation::slice::NEW;
-				farArmMovementCom->targetObjectAddr = wma;
-				farArmMovementCom->offset = vOffset;
-				data_id = newDataID();
-				addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
-					// Wait for arm to finish
-					log("Waiting for arm to finish movement");
-					while(m_halt_arm && isRunning())
-						sleepComponent(100);
-					m_halt_arm = true;
-					if(!isRunning())
-						return;
-				deleteFromWorkingMemory(data_id, m_manipulation_sa);
+			// Lift arm
+			log("lift object");
+			vOffset = cogx::Math::vector3(-0.05,0.0,0.2);
+			doFarArmMovement(wma, vOffset);
 
-				addPTZCommand(1.5, 0.0);
+			// look left
+			addPTZCommand(1.5, 0.0);
 
-				// Move to save pose
-				log("move to save pose");
-				MoveArmToPosePtr moveArmToPose = new MoveArmToPose();
-				moveArmToPose->comp = manipulation::slice::COMPINIT;
-				moveArmToPose->status = manipulation::slice::NEW;
-				moveArmToPose->targetPose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
-				moveArmToPose->targetPose.rot.m00 = 0.9;
-				moveArmToPose->targetPose.rot.m01 = 0.1;
-				moveArmToPose->targetPose.rot.m02 = -0.5;
-				moveArmToPose->targetPose.rot.m10 = -0.3;
-				moveArmToPose->targetPose.rot.m11 = 0.9;
-				moveArmToPose->targetPose.rot.m12 = -0.4;
-				moveArmToPose->targetPose.rot.m20 = 0.4;
-				moveArmToPose->targetPose.rot.m21 = 0.5;
-				moveArmToPose->targetPose.rot.m22 = 0.8;
-				data_id = newDataID();
-				addToWorkingMemory(data_id, m_manipulation_sa, moveArmToPose);
-					// Wait for arm to finish
-					log("Waiting for arm to finish movement");
-					while(m_halt_arm && isRunning())
-						sleepComponent(100);
-					m_halt_arm = true;
-					if(!isRunning())
-						return;
-				deleteFromWorkingMemory(data_id, m_manipulation_sa);
-			
-			}else{
+			// Move to save pose
+			log("move to save pose");
+			cogx::Math::Pose3 save_pose;
+			save_pose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
+			save_pose.rot.m00 = 0.9;	save_pose.rot.m01 = 0.1;	save_pose.rot.m02 = -0.5;
+			save_pose.rot.m10 = -0.3;	save_pose.rot.m11 = 0.9;	save_pose.rot.m12 = -0.4;
+			save_pose.rot.m20 = 0.4;	save_pose.rot.m21 = 0.5;	save_pose.rot.m22 = 0.8;
+			doMoveArmToPose(save_pose);
 
-				log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
+			// Close Gripper
+			doOpenGripper();
 
-			}
+
+		}else{
+
+			log("Confidence to low %f < 0.03", m_rec_cmd->confidence);
+
 		}
+	}
 
-
+	// look straight
 	addPTZCommand(0.0, 0.0);
 //	while(!m_ptz && isRunning())
 		sleepComponent(5000);
@@ -333,12 +339,12 @@ void ObjectRecognizer3DDriver::runComponent(){
 	
 	
 
-	printf("Results: %f\n", m_timer.Update()/(m_loops*m_labels.size()));
-	for(int i=0; i<m_labels.size(); i++){
-		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/m_loops, 100*m_sumConfidence[m_labels[i]]/m_loops);
-	}
+//	printf("Results: %f\n", m_timer.Update()/(m_loops*m_labels.size()));
+//	for(int i=0; i<m_labels.size(); i++){
+//		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/m_loops, 100*m_sumConfidence[m_labels[i]]/m_loops);
+//	}
 
-	log("Stop");
+	log("Done");
 
 }
 
@@ -410,6 +416,17 @@ void ObjectRecognizer3DDriver::overwriteCloseGripperCommand(const cdl::WorkingMe
 
 	if(gripper_cmd->graspStatus == manipulation::slice::GRASPING){
 		log("gripper closed");
+		m_halt_arm =false;
+	}
+}
+
+void ObjectRecognizer3DDriver::overwriteOpenGripperCommand(const cdl::WorkingMemoryChange & _wmc){
+	manipulation::slice::OpenGripperCommandPtr gripper_cmd = getMemoryEntry<OpenGripperCommand>(_wmc.address);
+
+	log("Got overwriteOpenGripperCommand");
+
+	if(gripper_cmd->status == manipulation::slice::FINISHED){
+		log("gripper opened");
 		m_halt_arm =false;
 	}
 }

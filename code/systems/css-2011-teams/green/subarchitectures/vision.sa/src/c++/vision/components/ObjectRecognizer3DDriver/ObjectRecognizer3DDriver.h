@@ -56,17 +56,21 @@ private:
   
   void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
 
-  /** @brief read result of a arm movement command */
   void overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc);
 
-  /** @brief read result of a arm movement command */
   void overwriteMoveArmToPose(const cdl::WorkingMemoryChange & _wmc);
 
-  /** @brief read result of a arm movement command */
   void overwriteCloseGripperCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  void overwriteOpenGripperCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /** @brief loads ply from file and adds it into working memory */
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
+
+  void doFarArmMovement(cast::cdl::WorkingMemoryAddress wma, cogx::Math::Vector3 vOffset);
+  void doMoveArmToPose(cogx::Math::Pose3 pose);
+  void doOpenGripper();
+  void doCloseGripper();
 
 	/** @brief constructs a Recognizer3DCommand and adds it into working memory */
 	void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
