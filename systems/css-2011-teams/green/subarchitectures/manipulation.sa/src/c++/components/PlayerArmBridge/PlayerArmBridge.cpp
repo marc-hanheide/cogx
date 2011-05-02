@@ -97,10 +97,10 @@ void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc
   log("finished SendTrajectory");
     }
     catch (const std::exception& e) {
-        log("exception:",e);
+        log("exception: %s",e.what());
     }
-    catch (...) {
-        log("unknown exception ");
+    catch (const PlayerCc::PlayerError& e) {
+        error("player exception %s in %s",e.GetErrorStr().c_str(),e.GetErrorFun().c_str());
     }
 
 }
@@ -108,6 +108,7 @@ void PlayerArmBridge::receiveSendTrajectory(const cdl::WorkingMemoryChange &_wmc
 void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
 {
   log("received OpenGipper");
+  try{
   if(!gripperClosed)
   {
     PlayerBridgeOpenGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeOpenGripperCommand>(_wmc.address);
@@ -132,11 +133,20 @@ void PlayerArmBridge::receiveOpenGripper(const cdl::WorkingMemoryChange &_wmc)
     gripperClosed = false;
   }
   log("finished OpenGripper");
+      }
+    catch (const std::exception& e) {
+        log("exception: %s",e.what());
+    }
+    catch (const PlayerCc::PlayerError& e) {
+        error("player exception %s in %s",e.GetErrorStr().c_str(),e.GetErrorFun().c_str());
+    }
+
 }
 
 void PlayerArmBridge::receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc)
 {
   log("received CloseGripper");
+  try{
   if(gripperClosed)
   {
     PlayerBridgeCloseGripperCommandPtr cmd = getMemoryEntry<PlayerBridgeCloseGripperCommand>(_wmc.address);
@@ -172,6 +182,14 @@ void PlayerArmBridge::receiveCloseGripper(const cdl::WorkingMemoryChange &_wmc)
     gripperClosed = true;
   }
   log("finished CloseGripper");
+    }
+    catch (const std::exception& e) {
+        log("exception: %s",e.what());
+    }
+    catch (const PlayerCc::PlayerError& e) {
+        error("player exception %s in %s",e.GetErrorStr().c_str(),e.GetErrorFun().c_str());
+    }
+
 }
 
 bool PlayerArmBridge::equals(GenConfigspaceCoord &p1, GenConfigspaceCoord &p2)
