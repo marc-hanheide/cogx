@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 		globalPose.setId();
 		globalPose.R.rotX(2.1);
 		globalPose.p.y = Real(0.55);
-		globalPose.p.z = Real(0.45);
+		globalPose.p.z = Real(0.65);
 		Vec3 dimensions(Real(0.02), Real(0.08), Real(0.11));
 		robot.setObject(globalPose, dimensions);
 
