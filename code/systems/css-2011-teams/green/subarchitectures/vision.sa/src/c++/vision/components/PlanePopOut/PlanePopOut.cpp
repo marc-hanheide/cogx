@@ -87,7 +87,7 @@ Vector3 pre_mCenterOfHull;
 double pre_mConvexHullRadius;
 string pre_id;
 string pre_obj_id;
-const std::string obj_label_base = "plane";
+const std::string obj_label_base = "table";
 map<string, string> obj_id_map;
 map<string, string> obj_label_map;
 
