@@ -24,9 +24,9 @@ int main(int argc, char *argv[]) {
 
 		Mat34 globalPose;
 		globalPose.setId();
-		globalPose.R.rotX(2.1);
-		globalPose.p.y = Real(0.55);
-		globalPose.p.z = Real(0.65);
+		//globalPose.R.rotX(2.1);
+		globalPose.p.y = Real(0.6);
+		globalPose.p.z = Real(0.6);
 		Vec3 dimensions(Real(0.02), Real(0.08), Real(0.11));
 		robot.setObject(globalPose, dimensions);
 
@@ -37,7 +37,8 @@ int main(int argc, char *argv[]) {
 		robot.graspExec(); // go to the last tried pose
 
 		Mat34 target = home;
-		target.p.set(Real(0.1), Real(0.6), Real(0.7));
+		target.p.set(Real(0.4), Real(0.5), Real(0.7));
+		target.R.rotZ(1.0);
 		(void)robot.moveTry(target); // ignore returned actual/best target pose
 		robot.moveExec(); // go to the last tried pose
 		robot.graspRelease();

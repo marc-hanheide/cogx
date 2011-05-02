@@ -122,7 +122,7 @@ TinyGrasp::TinyGrasp(const char* driver) :
 		throw ExTiny("TinyGrasp::TinyGrasp(): Katana arm driver required!");
 
 	// get sensor data assuming no object is in the gripper
-	zero = arm->gripperRecvSensorData(100.0);
+	zero = arm->gripperRecvSensorData(numeric_const<double>::INF);
 
 	// robot base
 	RigidBodyDesc* pBaseDesc = new RigidBodyDesc;
@@ -401,7 +401,7 @@ GraspPose TinyGrasp::graspTry(const GraspPose& pose) {
 void TinyGrasp::graspExec() {
 	Mat34 actual;
 
-	arm->gripperOpen(100.0);
+	arm->gripperOpen(numeric_const<double>::INF);
 
 	actual = moveTry(gend.approach);
 	PoseError approachError(actual, gend.approach);
@@ -417,17 +417,15 @@ void TinyGrasp::graspExec() {
 	grelease = toBody(pose, diff(pose, gend.approach));
 
 	KatanaSensorDataSet threshold = zero;
-	for (KatanaSensorDataSet::iterator i = zero.begin(); i != zero.end(); ++i) {
-		tiny->print("sensor = (%i, %i)", i->index, i->value);
-		i->value += 100;//sensorThreshold;
-	}
-	arm->gripperClose(threshold, 100.0);
+	for (KatanaSensorDataSet::iterator i = threshold.begin(); i != threshold.end(); ++i)
+		i->value += sensorThreshold;
+	arm->gripperClose(threshold, numeric_const<double>::INF);
 
 	attachObject();
 }
 
 void TinyGrasp::graspRelease() {
-	arm->gripperOpen(100.0);
+	arm->gripperOpen(numeric_const<double>::INF);
 
 	releaseObject();
 	
