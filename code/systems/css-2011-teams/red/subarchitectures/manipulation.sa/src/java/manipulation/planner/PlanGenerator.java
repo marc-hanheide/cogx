@@ -33,7 +33,6 @@ public class PlanGenerator {
 		
 		// Let's start adding things to the plan queue...
 		
-
 		// 1. Open the gripper...
 		OpenGripperCommand openGripperCmd = new OpenGripperCommand();
 		openGripperCmd.comp = ManipulationCompletion.COMPINIT;
@@ -47,9 +46,25 @@ public class PlanGenerator {
 		moveArmToPose.comp = ManipulationCompletion.COMPINIT;
 		moveArmToPose.status = ManipulationCommandStatus.NEW;
 
-		moveArmToPose.targetPose = gp.pose;
+		moveArmToPose.targetPose = gp.initialPose;
+		
+        plan.add(moveArmToPose);
+		
+        // 3. Move to final gripper pose near the object...
+		moveArmToPose = new MoveArmToPose();
+		moveArmToPose.comp = ManipulationCompletion.COMPINIT;
+		moveArmToPose.status = ManipulationCommandStatus.NEW;
+
+		moveArmToPose.targetPose = gp.finalPose;
 
 		plan.add(moveArmToPose);
+		
+        // 4. Close the gripper...
+        CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
+        closeGripperCmd.comp = ManipulationCompletion.COMPINIT;
+        closeGripperCmd.status = ManipulationCommandStatus.NEW;
+
+		plan.add(closeGripperCmd);
 
 
 		return plan;
