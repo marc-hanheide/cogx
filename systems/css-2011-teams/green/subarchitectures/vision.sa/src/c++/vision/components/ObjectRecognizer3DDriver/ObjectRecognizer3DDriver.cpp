@@ -13,6 +13,7 @@
 using namespace cogx;
 using namespace Tracking;
 using namespace manipulation::slice;
+using namespace ptz;
 
 /**
  * The function called to create a new instance of our component.
@@ -57,6 +58,21 @@ void ObjectRecognizer3DDriver::addRecognizer3DCommand(VisionData::Recognizer3DCo
   rec_cmd->visualObjectID = visualObjectID;
   addToWorkingMemory(newDataID(), rec_cmd);
   log("Add Recognizer3DCommand: '%s'", rec_cmd->label.c_str());
+}
+
+
+void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
+  SetPTZPoseCommandPtr ptz_cmd = new SetPTZPoseCommand;
+  
+  PTZPose pose;
+  pose.pan = pan;
+  pose.tilt = tilt;
+  pose.zoom = 0;
+  
+  ptz_cmd->pose = pose;
+  
+  addToWorkingMemory(newDataID(), ptz_cmd);
+  log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
 }
 
 void ObjectRecognizer3DDriver::addTrackingCommand(VisionData::TrackingCommandType cmd){
@@ -128,6 +144,7 @@ void ObjectRecognizer3DDriver::runComponent(){
                        // object observations too soon.
 
   m_halt = true;
+  m_ptz=m_obj=m_grasp=false;  
 
   // Load PLY model to working memory
   std::string modelID;
@@ -135,7 +152,11 @@ void ObjectRecognizer3DDriver::runComponent(){
 //   m_visualObjectIDs.push_back(modelID);
 
   m_timer.Update();
-
+  
+  addPTZCommand(0.0, -45.0);
+  
+  while(!m_ptz && isRunning())
+				sleepComponent(100);
   // trigger Recognizer3D
  // for(int j=0; j<m_loops && isRunning(); j++){
 
@@ -212,6 +233,16 @@ void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMe
 
   if(m_rec_cmd->label.compare(m_labels.back().c_str()) == 0)
   	m_halt =false;
+}
+
+
+void ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc){
+  SetPTZPoseCommandPtr ptz_cmd = getMemoryEntry<SetPTZPoseCommand>(_wmc.address);
+
+  log("Received PTZ confirmation");
+
+  if(ptz_cmd->comp == ptz::SUCCEEDED)
+  	m_ptz = true;
 }
 
 

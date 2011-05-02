@@ -13,6 +13,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <manipulation.hpp>
+#include <PTZ.hpp>
 
 #include "ObjectTrackerUtils.hpp"
 #include "ModelLoader.h"
@@ -37,12 +38,18 @@ private:
 	int m_loops;
 	bool m_halt;
 	Timer m_timer;
+	
+	bool m_ptz;
+	bool m_obj;
+	bool m_grasp;
 
 	/** @brief receiving visual objects */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
   /** @brief read result of a recognition command */
   void overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
+  
+  void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /** @brief loads ply from file and adds it into working memory */
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
@@ -52,6 +59,8 @@ private:
 
 	/** @brief constructs a TrackingCommand and adds it into working memory */
 	void addTrackingCommand(VisionData::TrackingCommandType cmd);
+	
+	void addPTZCommand(double pan, double tilt);
 
 protected:
   /**
