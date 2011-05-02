@@ -58,13 +58,40 @@ public class PlanGenerator {
 		moveArmToPose.targetPose = gp.finalPose;
 
 		plan.add(moveArmToPose);
-		
+	
+
         // 4. Close the gripper...
         CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
         closeGripperCmd.comp = ManipulationCompletion.COMPINIT;
         closeGripperCmd.status = ManipulationCommandStatus.NEW;
 
 		plan.add(closeGripperCmd);
+        
+        
+        // 5. Move to release pose...
+		moveArmToPose = new MoveArmToPose();
+		moveArmToPose.comp = ManipulationCompletion.COMPINIT;
+		moveArmToPose.status = ManipulationCommandStatus.NEW;
+
+		moveArmToPose.targetPose = gp.releasePose;
+
+		plan.add(moveArmToPose);
+
+
+		// 6. Open the gripper...
+		openGripperCmd = new OpenGripperCommand();
+		openGripperCmd.comp = ManipulationCompletion.COMPINIT;
+		openGripperCmd.status = ManipulationCommandStatus.NEW;
+
+		plan.add(openGripperCmd);
+        
+        
+        // 7. Move to home position...
+        MoveArmToHomePositionCommand moveHomeCmd = new MoveArmToHomePositionCommand();
+        moveHomeCmd.comp = ManipulationCompletion.COMPINIT;
+        moveHomeCmd.status = ManipulationCommandStatus.NEW;
+
+		plan.add(moveHomeCmd);
 
 
 		return plan;
