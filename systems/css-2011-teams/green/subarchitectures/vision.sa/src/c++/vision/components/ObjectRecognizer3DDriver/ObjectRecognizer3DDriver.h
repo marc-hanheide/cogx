@@ -34,6 +34,7 @@ private:
 
 	VisionData::Recognizer3DCommandPtr m_rec_cmd;
 	manipulation::slice::FarArmMovementCommandPtr m_arm_cmd;
+	manipulation::slice::MoveArmToPosePtr m_moveto_cmd;
 
 	std::string m_manipulation_sa;
 	int m_mode;
@@ -42,6 +43,9 @@ private:
 	bool m_halt_arm;
 	Timer m_timer;
 	
+	double m_obj_distance;
+	int m_rec_objects;
+
 	bool m_ptz;
 
 	/** @brief receiving visual objects */
@@ -54,6 +58,9 @@ private:
 
   /** @brief read result of a arm movement command */
   void overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  /** @brief read result of a arm movement command */
+  void overwriteMoveArmToPose(const cdl::WorkingMemoryChange & _wmc);
 
   /** @brief read result of a arm movement command */
   void overwriteCloseGripperCommand(const cdl::WorkingMemoryChange & _wmc);
