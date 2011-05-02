@@ -147,6 +147,8 @@ namespace cogx
 
             std::cerr << m_poses[minLabel] << std::endl;
 
+            
+
             objectPose.first = m::Vector3(m_poses[minLabel].pos.x,m_poses[minLabel].pos.y,m_poses[minLabel].pos.z);
             {
               m::Matrix3 m;
@@ -401,6 +403,7 @@ namespace cogx
     VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
     unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
+    m_idx = 0;
 //    if (vo->identLabels.at(m_idx) == "cereals1_model")
 //    {
       boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
