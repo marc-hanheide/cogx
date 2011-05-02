@@ -50,6 +50,8 @@ namespace cogx
     bool movePregrasp(cogx::Math::Pose3 pregraspPose);
     bool envelop();
     bool retract();
+    bool grasp();
+    bool release();
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
     void simpleCallback(const cdl::WorkingMemoryChange &_wmc);
