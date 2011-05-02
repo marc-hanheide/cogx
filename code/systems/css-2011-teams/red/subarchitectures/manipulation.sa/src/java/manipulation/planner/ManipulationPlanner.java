@@ -23,6 +23,9 @@ import manipulation.slice.StopCommand;
 
 import org.apache.log4j.Logger;
 
+import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
+import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
+
 import VisionData.Face;
 import VisionData.GeometryModel;
 import VisionData.GripperPose;
@@ -31,6 +34,7 @@ import VisionData.VisualObject;
 import VisionData.VisualObjectView;
 import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -59,9 +63,14 @@ public class ManipulationPlanner extends ManagedComponent {
 
 	private WorkingMemoryChangeReceiver recv = null;
 
+	private boolean verbalization = false;
+	private static final String verbalization_sa = "dialogue";
+
 	@Override
 	protected void configure(Map<String, String> config) {
-		// TODO: config
+		if (config.containsKey("--verbalize")) {
+			verbalization = true;
+		}
 	}
 
 	@Override
@@ -79,16 +88,26 @@ public class ManipulationPlanner extends ManagedComponent {
 	@Override
 	protected void runComponent() {
 		while (this.isRunning()) {
-			this.sleepComponent(100);
+			this.sleepComponent(200);
 			if (currentCommand != null) {
 				if (currentCommand.comp == ManipulationCompletion.SUCCEEDED) {
 					log("yay! command succeeded!");
 					removeCurrentCommand();
 				}
 				else if (currentCommand.comp == ManipulationCompletion.FAILED) {
-					log("command failed, will empty the plan");
+					log("command failed, will execute the fallback plan");
+					verbalize("Damn. I failed to " + commandToInfString(currentCommand) + ".");
 					removeCurrentCommand();
 					currentPlan.clear();
+
+					List<ManipulationCommand> newPlan = PlanGenerator.generateFallbackPlan();
+					if (newPlan != null) {
+						log("adding plan of length " + newPlan.size() + " to the overall plan");
+						currentPlan.addAll(newPlan);
+					}
+					else {
+						log("got a NULL plan, ignoring");
+					}
 				}
 				else {
 					// do nothing
@@ -98,10 +117,12 @@ public class ManipulationPlanner extends ManagedComponent {
 				ManipulationCommand cmd = currentPlan.poll();
 				if (cmd != null) {
 					log("plan nonempty (" + currentPlan.size() + " items left)");
+					verbalize("I will " + commandToInfString(currentCommand) + " now.");
 					addCurrentCommand(cmd);
 				}
 				else {
-					// plan empty, do nothing
+					// plan empty
+					log("Okay, I'm done.");
 				}
 			}
 		}
@@ -160,9 +181,11 @@ public class ManipulationPlanner extends ManagedComponent {
 		try {
 			CASTData data = getWorkingMemoryEntry(wmc.address.id);
 			if (data.getData() instanceof GripperPose) {
+				verbalize("There is the object.");
+
 				gp = (GripperPose) data.getData();
 
-				List<ManipulationCommand> newPlan = PlanGenerator.generatePlan(gp);
+				List<ManipulationCommand> newPlan = PlanGenerator.generateGrabPlan(gp);
 
 				if (newPlan != null) {
 					log("adding plan of length " + newPlan.size() + " to the overall plan");
@@ -196,6 +219,59 @@ public class ManipulationPlanner extends ManagedComponent {
 		catch (SubarchitectureComponentException ex) {
 			log(ex);
 		}
+	}
+
+	private void verbalize(String s) {
+		if (verbalization) {
+			try {
+				log("will try to verbalize \"" + s + "\"");
+				String id = newDataID();
+				SpokenOutputItem soi = new SpokenOutputItem(id, s, "", new NominalReference());
+				addToWorkingMemory(id, verbalization_sa, soi);
+			}
+			catch (AlreadyExistsOnWMException ex) {
+				log(ex);
+			}
+			catch (UnknownSubarchitectureException ex) {
+				log(ex);
+			}
+		}
+	}
+
+	private String commandToInfString(ManipulationCommand cmd) {
+		if (cmd instanceof CloseGripperCommand) {
+			return "close the gripper";
+		}
+		if (cmd instanceof FarArmMovementCommand) {
+			return "stretch the arm far away";
+		}
+		if (cmd instanceof FineArmMovementCommand) {
+			return "move the arm with some finesse";
+		}
+		if (cmd instanceof MoveArmToHomePositionCommand) {
+			return "return the arm to the home position";
+		}
+		if (cmd instanceof MoveArmToPose) {
+			return "move the arm";
+		}
+		if (cmd instanceof OpenGripperCommand) {
+			return "close the gripper";
+		}
+		if (cmd instanceof PutDownCommand) {
+			return "put down the object";
+		}
+		if (cmd instanceof SimulateFarArmMovementCommand) {
+			return "simulate the arm stretching";
+		}
+		if (cmd instanceof SimulateMoveToPose) {
+			return "simulate the arm move";
+		}
+		if (cmd instanceof StopCommand) {
+			return "stop the arm";
+		}
+
+		// fallback
+		return "do stuff";
 	}
 
 }
