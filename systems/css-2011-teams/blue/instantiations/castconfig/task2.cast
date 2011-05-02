@@ -1,0 +1,51 @@
+HOST localhost
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# visualisation ###
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# the visualisation server proxy to be used to display all kinds of data
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# vision ###
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml --fixed_cam_poses_xml "instantiations/cam-calibration/campose-left.xml" --fixed_pan_tilt "0 -59.97"
+CPP GD  videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "instantiations/cam-calibration/calib.ini:L instantiations/cam-calibration/calib.ini:R" #--videoname video
+CPP MG viewer0 VideoViewer --videoname videoserver --camid 0
+CPP MG Tracker ObjectTracker --videoname videoserver --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --displayserver "display.srv" # --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname videoserver --camid "0" --display --plyfiles "instantiations/css2011/object-models/cereals-chocos.ply instantiations/css2011/object-models/cereals-weetabix.ply" --siftfiles "instantiations/learnt-object-models/example-cereals-chocos.sift instantiations/learnt-object-models/example-cereals-weetabix.sift" --labels "cereals-choko cereals-weetabix" --initpose "[0.56 0.00 0.67][0.00 0.00 1.57]" --log
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# manipulation ###
+SUBARCHITECTURE manipulation.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG finiteStateMachine BlueFSM
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/cam-calibration/arm-pose.xml" --armName "katana300" --testGUI
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+###### DEBUG OUTPUT #####################################################################
+# shows memory entries that are in working memories. Helps to identify what's going on
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# display VisualObjects found in WM
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# display all ManipulationCommands found in WM
+JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# display all TrackingCommands found in WM
+JAVA MG TrackingCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.TrackingCommand"  --generic-col
+#--------------------------------------------------------------------------------------------------------------------------------------------------
