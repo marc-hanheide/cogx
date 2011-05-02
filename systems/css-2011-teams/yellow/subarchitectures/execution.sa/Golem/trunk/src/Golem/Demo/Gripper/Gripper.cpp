@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 
 		// Create arm controller description
 		// Load Katana driver
-		Arm::Desc::Ptr pDesc = Arm::Desc::load(*pContext, "GolemDeviceKatana450");
+		Arm::Desc::Ptr pDesc = Arm::Desc::load(*pContext, "GolemDeviceKatana300");
 
 		// Create arm controller
 		pContext->getMessageStream()->write(Message::LEVEL_INFO, "Initialising %s...", pDesc->name.c_str());
