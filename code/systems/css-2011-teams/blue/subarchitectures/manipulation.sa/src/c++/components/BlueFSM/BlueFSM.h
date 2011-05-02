@@ -35,6 +35,7 @@ namespace cogx
       VERIFY_HANDOVER,
       RELEASE,
       VERIFY_RELEASE,
+      GO_HOME,
       TERMINATED};
   private:
     
@@ -49,6 +50,8 @@ namespace cogx
     bool moveHome();
     bool movePregrasp(cogx::Math::Pose3 pregraspPose);
     bool envelop();
+    bool lift();
+    bool moveToHandover();
     bool retract();
     bool grasp();
     bool release();
@@ -65,6 +68,7 @@ namespace cogx
 
     vector<string> m_lookForObjects;
 
+    cogx::Math::Pose3 m_handoverPose;
     cogx::Math::Pose3 m_pregraspPose;
     cogx::Math::Pose3 m_currentArmPose;
     

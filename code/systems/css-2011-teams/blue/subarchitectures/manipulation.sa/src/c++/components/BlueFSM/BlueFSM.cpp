@@ -40,6 +40,9 @@ namespace cogx
   void BlueFSM::configure(const map<string, string> &_config)
   {
     map<string,string>::const_iterator it;
+
+    m_handoverPose.pos = Math::vector3(0.4, 0.4, 0.6);
+    fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
     
     m_lookForObjects.push_back("cereals_weetabix");
     m_lookForObjects.push_back("cereals_choco");
@@ -238,8 +241,80 @@ namespace cogx
 	    }
 	  }
 
-	default:
+	case RETRACT:
+	  {
+	    bool success = retract();
+	    if (success) {
+	      m_state = LOOK_CANONICAL;
+	    }
+	    else {
+	      log("Error! retract failed");
+	      m_state = TERMINATED;
+	    }
+	  }
+
+	case LIFT:
+	  {
+	    bool success = lift();
+	    if (success) {
+	      m_state = HANDOVER;
+	    }
+	    else {
+	      log("Error! lift failed");
+	      success = release();
+	      if (success) {
+		m_state = LOOK_CANONICAL;
+	      }
+	      else {
+		log("Error! Unable to release!");
+		  m_state = TERMINATED;
+	      }
+	    }
+	  }
+
+	case RELEASE:
+	  {
+	    bool success = release();
+	    if (success) {
+	      m_state = GO_HOME;
+	    }
+	    else {
+	      log("Error! release failed");
+	      m_state = TERMINATED;
+	    }
+	  }
+
+	case HANDOVER:
+	  {
+	    bool success = moveToHandover();
+	    if (success) {
+	      m_state = VERIFY_HANDOVER;
+	    }
+	    else {
+	      log("Error! handover move failed");
+	      m_state = RELEASE;
+	    }
+	  }
+	  
+	case GO_HOME:
+	  {
+	    bool success = moveHome();
+	    if (success) {
+	      m_state = TERMINATED;
+	    }
+	    else {
+	      log("Error! move home failed");
+	      m_state = TERMINATED;
+	    }
+	  }
+
+	case TERMINATED:
+	  log ("Terminated");
 	  break;
+      }
+
+      if (m_state == TERMINATED) {
+	break;
       }
     }
     
@@ -465,6 +540,38 @@ bool BlueFSM::envelop()
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
 
+bool BlueFSM::lift() 
+{
+  cogx::Math::Pose3 targetPose;
+
+  targetPose.pos = m_currentArmPose.pos + Math::vector3(0,0,1) * 0.15;
+
+  manipulation::slice::MoveArmToPosePtr cmd = new
+    manipulation::slice::MoveArmToPose;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->targetPose = targetPose;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
+
+  m_currentArmPose = cmd->reachedPose;
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
 bool BlueFSM::retract() 
 {
   cogx::Math::Pose3 targetPose;
@@ -546,6 +653,34 @@ bool BlueFSM::release()
   delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::OpenGripperCommand>(id);
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
+bool BlueFSM::moveToHandover() 
+{
+  manipulation::slice::MoveArmToPosePtr cmd = new
+    manipulation::slice::MoveArmToPose;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->targetPose = m_handoverPose;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
+
+  m_currentArmPose = cmd->reachedPose;
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
