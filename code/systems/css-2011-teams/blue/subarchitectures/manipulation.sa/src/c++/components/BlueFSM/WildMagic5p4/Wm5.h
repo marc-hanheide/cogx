@@ -27,6 +27,38 @@ namespace m {
   typedef Quaternion Rotation;
   typedef Rotation Orientation;
 
+  inline
+    Quaternion quaternionCopy(const Matrix3& m)
+  {
+    Quaternion q;
+    q.FromRotationMatrix(m);
+    q.Normalize();
+    return q;
+  }
+  
+  inline
+    Matrix3 matrixCopy(const Quaternion &q)
+  {
+    Matrix3 m;
+    q.ToRotationMatrix(m);
+    m.Orthonormalize();
+      return m;
+  }
+  
+  
+  inline
+    Quaternion quaternionCopy(const Quaternion& q)
+  {
+    return q;
+  }
+  
+  inline
+    Matrix3 matrixCopy(const Matrix3 &m)
+  {
+    return m;
+  }
+  
+  
   typedef std::pair< m::Vector3, m::Quaternion > Pose;
 
   /**

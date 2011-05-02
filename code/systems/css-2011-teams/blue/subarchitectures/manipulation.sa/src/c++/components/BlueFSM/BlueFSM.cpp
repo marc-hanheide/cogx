@@ -135,15 +135,18 @@ namespace cogx
               }
             
             assert(minLabel == "cereals-weetabix");
+            
             m::Pose objectPose;
             objectPose.first = m::Vector3(m_poses[minLabel].pos.x,m_poses[minLabel].pos.y,m_poses[minLabel].pos.z);
-            m::Matrix3 m;
-            for (int i = 0; i < 3; ++i)
-              for (int j = 0; j < 3; ++j)
-                m(i,j) = Math::get(m_poses[minLabel].rot, i, j);
-            m.Orthonormalize();
-            objectPose.second = m::Quaternion(m);
-            objectPose.second.Normalize();
+            {
+              m::Matrix3 m;
+              for (int i = 0; i < 3; ++i)
+                for (int j = 0; j < 3; ++j)
+                  m(i,j) = Math::get(m_poses[minLabel].rot, i, j);
+            
+              m.Orthonormalize();
+              objectPose.second = m::quaternionCopy(m);
+            }
             // Get the predefined grasps for that object
 
             std::vector<m::Pose> g = grasps[minLabel];
@@ -157,8 +160,7 @@ namespace cogx
               {
                 m::Pose robotGrasp;
                 m::transform(robotGrasp.first, robotGrasp.second, objectPose.first, objectPose.second, i->first, i->second);
-                m::Matrix3 robotGraspOri(robotGrasp.second);
-                robotGraspOri.Orthonormalize();
+                m::Matrix3 robotGraspOri(m::matrixCopy(robotGrasp.second));
                 m::Vector3 robotToGraspVector = robotGrasp.first;
                 robotToGraspVector.Normalize();
                 double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(0)));
@@ -171,7 +173,15 @@ namespace cogx
                   }
               }
 
+            Math::Pose3 p;
+            for (int i = 0; i < 3; ++i)
+              {
+                Math::set(p.pos, i, bestBacktrackedGrasp.first[i]);
+                for (int j = 0; j < 3; ++j)
+                  Math::set(p.rot, i, j, m::matrixCopy(bestBacktrackedGrasp.second)(i,j));
+              }
             
+            m_pregraspPose = p;
 
             m_state = GO_TO_PREGRASP;
             break;
