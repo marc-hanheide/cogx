@@ -56,7 +56,7 @@ private:
 
 public:
 	TinyEx(int argc, char *argv[]);
-	void render(const DebugRenderer& debugRenderer);
+	void render(const DebugRenderer* debugRenderer = NULL);
 	XMLContext* getXMLContext();
 };
 
@@ -64,27 +64,54 @@ public:
 
 class TinyGrasp {
 public:
+	/** Creates and calibrates arm, setups robot body */
 	TinyGrasp(const char* driver);
 
-	void setObject(const Mat34& pose, const Vec3& dimensions);
-	void setObstacle(const Mat34& pose, const Vec3& dimensions);
+	/** Creates box object */
+	RigidBody* createObject(const Mat34& pose, const Vec3& dimensions);
+	/** Removes object */
+	void removeObject(RigidBody*& object);
 	
+	/** Reads current arm pose */
 	Mat34 read();
-
+	/** Simulates movement to pose, returns best approximation of pose  */
 	Mat34 moveTry(const Mat34& pose);
+	/** Executes movement to a pose previously set by moveTry() */
 	void moveExec(Real duration = Real(5.0));
 
+	/** Sets graspable/moveable object */
+	void setGraspObject(RigidBody* object);
+	/** Returns a set of possible grasp poses */
 	GraspPose::Seq getGraspPoses() const;
-	GraspPose graspTry(const GraspPose::Seq& poses, GraspPose::Seq::const_iterator& index);
+	/** Returns best approximation of a grasp pose from a given set of possible grasp poses */
+	std::pair<GraspPose, GraspPose::Seq::const_iterator> graspTry(const GraspPose::Seq& poses);
+	/** Returns best approximation of a grasp pose from a given grasp pose */
 	GraspPose graspTry(const GraspPose& pose);
+	/** Executes movement and grasp to a grasp pose previously set by graspTry() */
 	void graspExec(Real duration = Real(5.0));
+	/** Releases the grasped object - creates independent object */
 	void graspRelease();
 
 protected:
 	shared_ptr<TinyEx> tiny;
 
-	void setObject(ActorDescPtr desc, RigidBody** object);
-	void setObject(const Mat34& pose, const Vec3& dimensions, RigidBody** object);
+	GenConfigspaceState cbegin, cend;
+	GenWorkspaceState end;
+	GraspPose gend;
+	Mat34 grelease;
+
+	Mat34 armPose;
+	KatanaArm* arm;
+	Shape* objectGrasped;
+	RigidBody* object;
+
+	U32 plannerTries;
+	Real approachOffset;
+	Real graspOffset;
+	PoseError graspError;
+
+	I32 sensorThreshold;
+	KatanaSensorDataSet zero;
 
 	Mat34 getToolPose();
 
@@ -97,26 +124,6 @@ protected:
 	static Mat34 toBody(const Mat34& A, const Mat34& G);
 	/** Inertial frame G from body frame H given reference pose A: G = A H A^-1 */
 	static Mat34 fromBody(const Mat34& A, const Mat34& H);
-
-private:
-	GenConfigspaceState cbegin, cend;
-	GenWorkspaceState end;
-	GraspPose gend;
-	Mat34 grelease;
-
-	Mat34 armPose;
-	KatanaArm* arm;
-	Shape* objectGrasped;
-	RigidBody* object;
-	RigidBody* obstacle;
-
-	U32 plannerTries;
-	Real approachOffset;
-	Real graspOffset;
-	PoseError graspError;
-
-	I32 sensorThreshold;
-	KatanaSensorDataSet zero;
 };
 
 //------------------------------------------------------------------------------

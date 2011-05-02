@@ -232,7 +232,7 @@ bool GraphPlanner::optimize(OptWaypoint::Seq &optimisedPath, const GenConfigspac
 	static SecTmReal tt = SEC_TM_REAL_ZERO;
 #endif //SA_PERFMON
 
-	const U32 numOfIterations = ((U32)optimisedPath.size() - 2)*pathOptimiserDesc.numOfIterations;
+	const U32 numOfIterations = optimisedPath.size() <= 2 ? 0 : (U32)optimisedPath.size()*pathOptimiserDesc.numOfIterations;
 	for (U32 s = 0; s < numOfIterations; s++) {
 		// select random waypoint
 		const U32 index = 1 + rand.next()%((U32)optimisedPath.size() - 2);

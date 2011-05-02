@@ -131,10 +131,10 @@ public:
 		/** Sets the parameters to the default values */
 		void setToDefault() {
 			pGlobalPathFinderDesc.reset(new PathFinder::Desc);
-			pGlobalPathFinderDesc->graphSearchDesc.size = 1000;
+			pGlobalPathFinderDesc->graphSearchDesc.size = 2000;
 			
 			pLocalPathFinderDesc.reset(new PathFinder::Desc);
-			pLocalPathFinderDesc->graphSearchDesc.size = 600;
+			pLocalPathFinderDesc->graphSearchDesc.size = 1000;
 
 			distScaleFac = Real(0.75);
 			rangeFac = Real(0.5);
@@ -197,7 +197,7 @@ public:
 			Tinit = Real(0.1);
 			Tfinal = Real(0.01);
 			Enorm = Real(3.0e4);
-			crossProb = Real(0.7);
+			crossProb = Real(0.3);
 			searchProb = Real(0.4);
 			combFac = Real(0.2);
 			memFac = Real(0.2);

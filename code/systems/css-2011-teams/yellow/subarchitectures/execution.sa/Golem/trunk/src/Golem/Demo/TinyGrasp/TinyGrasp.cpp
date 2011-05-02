@@ -68,9 +68,12 @@ public:
 		CREATE_FROM_OBJECT_DESC1(Debug, Object::Ptr, Scene&)
 	};
 
-	void render(const DebugRenderer& debugRenderer) {
+	void render(const DebugRenderer* debugRenderer = NULL) {
 		CriticalSectionWrapper csw(cs);
-		this->debugRenderer = debugRenderer;
+		if (debugRenderer)
+			this->debugRenderer = *debugRenderer;
+		else
+			this->debugRenderer.reset();
 	}
 };
 
@@ -81,7 +84,7 @@ TinyEx::TinyEx(int argc, char *argv[]) : Tiny(argc, argv) {
 	Debug::Desc desc; 
 	debug = dynamic_cast<Debug*>(pScene->createObject(desc));
 }
-void TinyEx::render(const DebugRenderer& debugRenderer) {
+void TinyEx::render(const DebugRenderer* debugRenderer) {
 	debug->render(debugRenderer);
 }
 
@@ -93,8 +96,7 @@ XMLContext* TinyEx::getXMLContext() {
 
 TinyGrasp::TinyGrasp(const char* driver) :
 	objectGrasped(NULL),
-	object(NULL),
-	obstacle(NULL)
+	object(NULL)
 {
 	int argc = 1;
 	char* argv [] = {"TinyGrasp"};
@@ -102,7 +104,7 @@ TinyGrasp::TinyGrasp(const char* driver) :
 
 	// XML data
 	XMLContext* context = tiny->getXMLContext()->getContextFirst("robot");	
-	XMLData(armPose, context->getContextFirst("arm global_pose"));
+	XMLData(armPose, context->getContextFirst("arm pose"));
 	XMLData("planner_tries", plannerTries, context->getContextFirst("arm"));
 	XMLData("approach_offset", approachOffset, context->getContextFirst("arm grasping"));
 	XMLData("grasp_offset", graspOffset, context->getContextFirst("arm grasping"));
@@ -170,40 +172,25 @@ TinyGrasp::TinyGrasp(const char* driver) :
 
 //------------------------------------------------------------------------------
 
-Mat34 TinyGrasp::getToolPose() {
-	return arm->recvGenWorkspaceState(tiny->getTime()).pos;
-}
-
-void TinyGrasp::setObject(ActorDescPtr desc, RigidBody** object) {
-	if (*object) {
-		tiny->releaseActor(*object);
-		*object = NULL;
-	}
-	if (desc != NULL) {
-		RigidBodyDesc* pRigidBodyDesc = dynamic_cast<RigidBodyDesc*>(desc.get());
-		if (pRigidBodyDesc == NULL)
-			throw ExTiny("TinyGrasp::setObject(): Rigid body description required!");
-		pRigidBodyDesc->kinematic = true;
-		*object = dynamic_cast<RigidBody*>(tiny->createActor(desc));
-	}
-}
-
-void TinyGrasp::setObject(const Mat34& pose, const Vec3& dimensions, RigidBody** object) {
+RigidBody* TinyGrasp::createObject(const Mat34& pose, const Vec3& dimensions) {
 	RigidBodyDesc* pObjectDesc = new RigidBodyDesc;
 	pObjectDesc->kinematic = true;
 	pObjectDesc->globalPose = pose;
 	BoxShapeDesc* pObjectShapeDesc = new BoxShapeDesc;
 	pObjectShapeDesc->dimensions = dimensions;
 	pObjectDesc->shapes.push_back(ShapeDescPtr(pObjectShapeDesc));
-	setObject(ActorDescPtr(pObjectDesc), object);
+
+	RigidBody* object = dynamic_cast<RigidBody*>(tiny->createActor(ActorDescPtr(pObjectDesc)));
+	if (object == NULL)
+		throw ExTiny("TinyGrasp::createObject(): Oops");
+	return object;
 }
 
-void TinyGrasp::setObstacle(const Mat34& pose, const Vec3& dimensions) {
-	setObject(pose, dimensions, &obstacle);
-}
-
-void TinyGrasp::setObject(const Mat34& pose, const Vec3& dimensions) {
-	setObject(pose, dimensions, &object);
+void TinyGrasp::removeObject(tiny::RigidBody*& object) {
+	if (object) {
+		tiny->releaseActor(object);
+		object = NULL;
+	}
 }
 
 void TinyGrasp::attachObject() {
@@ -225,28 +212,31 @@ void TinyGrasp::attachObject() {
 	Joint* effector = arm->getJoints().back();
 	objectGrasped = effector->createShape(ShapeDescPtr(pBoxShapeDesc));
 
-	tiny->releaseActor(object);
-	object = NULL;
+	// HACK: move object pose to infinity
+	Mat34 pose;
+	pose.setId();
+	pose.p.z = 1e6;
+	object->setGlobalPose(pose);
 }
 
 void TinyGrasp::releaseObject() {
-	if (objectGrasped == NULL)
+	if (objectGrasped == NULL || object == NULL)
 		throw ExTiny("TinyGrasp::releaseObject(): Object has not been attached");
-	if (object)
-		throw ExTiny("TinyGrasp::releaseObject(): Too many objects");
 
 	// objectPose = toolPose * localPose
-	Mat34 globalPose = arm->getForwardTransform(arm->recvGenConfigspaceState(tiny->getTime()).pos).back();
-	globalPose.multiply(globalPose, objectGrasped->getLocalPose());
-	BoxShapeDesc* pBoxShapeDesc = dynamic_cast<BoxShapeDesc*>(objectGrasped->getDesc().get());
-	if (pBoxShapeDesc == NULL)
-		throw ExTinyShape("TinyGrasp::releaseObject(): Must be box shape");
-	setObject(globalPose, pBoxShapeDesc->dimensions);
+	Mat34 pose = arm->getForwardTransform(arm->recvGenConfigspaceState(tiny->getTime()).pos).back();
+	pose.multiply(pose, objectGrasped->getLocalPose());
 
+	// remove shape
 	Joint* effector = arm->getJoints().back();
 	effector->releaseShape(objectGrasped);
 	objectGrasped = NULL;
+
+	// restore object pose
+	object->setGlobalPose(pose);
 }
+
+//------------------------------------------------------------------------------
 
 Mat34 TinyGrasp::read() {
 	return TinyGrasp::getToolPose();
@@ -287,6 +277,12 @@ void TinyGrasp::moveExec(Real duration) {
 	arm->send(trajectory, numeric_const<double>::INF);
 }
 
+//------------------------------------------------------------------------------
+
+void TinyGrasp::setGraspObject(RigidBody* object) {
+	this->object = object;
+}
+
 GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	if (object == NULL)
 		throw ExTiny("TinyGrasp::getGraspPoses(): No object");
@@ -298,58 +294,51 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	const Mat34 pose = object->getGlobalPose();
 	const Vec3 dimensions = pObjectShapeDesc->dimensions;
 
-	GraspPose g[2][2];
+	GraspPose g[3][2];
 	Real min = numeric_const<Real>::MAX;
 	for (U32 i = 0; i < 3; ++i) {
 		if (min > dimensions[i]) {
 			min = dimensions[i];
 			
 			for (U32 j = 0; j < 2; ++j) {
+				// object approach axis index
 				const U32 k = (i + j + 1)%3;
 
-				// rotation
+				// local poses: 0 - approach from positive to negative, 1 - from negative to positive
+				GraspPose* gp = g[j];
 				Mat33 rot[2];
 				switch (k) {
-				case 0:	// X, Y
-					rot[0].rotZ(+REAL_PI_2);
-					rot[1].rotZ(-REAL_PI_2);
+				case 0:	// X
+					gp[0].approach.R.rotZ(+REAL_PI_2);
+					gp[1].approach.R.rotZ(-REAL_PI_2);
 					break;
-				case 1:	// Y 
-					rot[0].rotX(REAL_PI);
-					rot[1].setId();
+				case 1:	// Y
+					gp[0].approach.R.rotX(REAL_PI);
+					gp[1].approach.R.setId();
 					break;
-				case 2:	// Z, Y
+				case 2:	// Z
 					rot[0].rotX(-REAL_PI_2);
-					rot[1].rotX(+REAL_PI_2);
+					rot[1].rotY(-REAL_PI_2);
+					gp[0].approach.R.multiply(rot[0], rot[1]);
+					rot[0].rotX(+REAL_PI_2);
+					rot[1].rotY(+REAL_PI_2);
+					gp[1].approach.R.multiply(rot[0], rot[1]);
 					break;
 				}
 
-				// translation
-				Vec3 p[2];
+				gp[0].approach.p.setZero();
+				gp[0].grasp = gp[0].approach;
+				gp[0].approach.p[k] = +(dimensions[k] + approachOffset);
+				gp[0].grasp.p[k] = +(dimensions[k] + graspOffset);
+				gp[0].approach.multiply(pose, gp[0].approach);
+				gp[0].grasp.multiply(pose, gp[0].grasp);
 
-				p[0].setZero();
-				p[0][k] = +(dimensions[k] + approachOffset);
-				pose.R.multiply(p[0], p[0]);
-				p[1].setZero();
-				p[1][k] = -(dimensions[k] + approachOffset);
-				pose.R.multiply(p[1], p[1]);
-
-				g[j][0].approach.R.multiply(rot[0], pose.R);
-				g[j][0].approach.p.add(p[0], pose.p);
-				g[j][1].approach.R.multiply(rot[1], pose.R);
-				g[j][1].approach.p.add(p[1], pose.p);
-
-				p[0].setZero();
-				p[0][k] = +(dimensions[k] + graspOffset);
-				pose.R.multiply(p[0], p[0]);
-				p[1].setZero();
-				p[1][k] = -(dimensions[k] + graspOffset);
-				pose.R.multiply(p[1], p[1]);
-
-				g[j][0].grasp.R.multiply(rot[0], pose.R);
-				g[j][0].grasp.p.add(p[0], pose.p);
-				g[j][1].grasp.R.multiply(rot[1], pose.R);
-				g[j][1].grasp.p.add(p[1], pose.p);
+				gp[1].approach.p.setZero();
+				gp[1].grasp = gp[1].approach;
+				gp[1].approach.p[k] = -(dimensions[k] + approachOffset);
+				gp[1].grasp.p[k] = -(dimensions[k] + graspOffset);
+				gp[1].approach.multiply(pose, gp[1].approach);
+				gp[1].grasp.multiply(pose, gp[1].grasp);
 			}
 		}
 	}
@@ -369,13 +358,17 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	debugRenderer.addAxes(g[1][0].grasp, Vec3(0.05));
 	debugRenderer.addAxes(g[1][1].approach, Vec3(0.05));
 	debugRenderer.addAxes(g[1][1].grasp, Vec3(0.05));
-	tiny->render(debugRenderer);
+	//debugRenderer.addAxes(g[2][0].approach, Vec3(0.05));
+	//debugRenderer.addAxes(g[2][0].grasp, Vec3(0.05));
+	//debugRenderer.addAxes(g[2][1].approach, Vec3(0.05));
+	//debugRenderer.addAxes(g[2][1].grasp, Vec3(0.05));
+	tiny->render(&debugRenderer);
 
 	return poses;
 }
 
-GraspPose TinyGrasp::graspTry(const GraspPose::Seq& poses, GraspPose::Seq::const_iterator& index) {	
-	index = poses.begin();
+std::pair<GraspPose, GraspPose::Seq::const_iterator> TinyGrasp::graspTry(const GraspPose::Seq& poses) {	
+	GraspPose::Seq::const_iterator index = poses.begin();
 	PoseError errorMin(moveTry(index->grasp), index->grasp);
 
 	for (GraspPose::Seq::const_iterator i = ++poses.begin(); i != poses.end(); ++i) {
@@ -386,7 +379,7 @@ GraspPose TinyGrasp::graspTry(const GraspPose::Seq& poses, GraspPose::Seq::const
 		}
 	}
 
-	return graspTry(*index);
+	return std::pair<GraspPose, GraspPose::Seq::const_iterator>(graspTry(*index), index);
 }
 
 GraspPose TinyGrasp::graspTry(const GraspPose& pose) {
@@ -423,6 +416,8 @@ void TinyGrasp::graspExec(Real duration) {
 	arm->gripperClose(threshold, numeric_const<double>::INF);
 
 	attachObject();
+
+	tiny->render();
 }
 
 void TinyGrasp::graspRelease() {
@@ -435,16 +430,19 @@ void TinyGrasp::graspRelease() {
 
 	DebugRenderer debugRenderer;
 	debugRenderer.addAxes(pose, Vec3(0.1));
-	tiny->render(debugRenderer);
+	tiny->render(&debugRenderer);
 
 	(void)moveTry(pose);
 	moveExec();
 
-	debugRenderer.reset();
-	tiny->render(debugRenderer);
+	tiny->render();
 }
 
 //------------------------------------------------------------------------------
+
+Mat34 TinyGrasp::getToolPose() {
+	return arm->recvGenWorkspaceState(tiny->getTime()).pos;
+}
 
 Mat34 TinyGrasp::diff(const Mat34& a, const Mat34& b) {
 	Mat34 ab;
