@@ -255,6 +255,7 @@ void ObjectRecognizer3DDriver::runComponent(){
  // 	log("*** Loop %d/%d ***", j, m_loops);
 //   	addTrackingCommand(RELEASEMODELS);
 
+	// Recognize all objects
 	for(int i=0; i<m_labels.size(); i++){
 
 		if(m_mode == RECOGNIZE){
