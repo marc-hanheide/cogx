@@ -33,47 +33,47 @@
     <geom:box name="cereals-weetabix_geom">
       <xyz>0.0 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
-      <size>0.137 0.041 0.190</size>
+      <size>0.190 0.052 0.250</size>
       <mass>0.1</mass>
 
       <visual>
-        <xyz>0 0.0205 0</xyz>
-        <scale>0.137 0.001 0.190</scale>
+        <xyz>0 0.026 0</xyz>
+        <scale>0.190 0.001 0.250</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-front</material>
       </visual>
 
       <visual>
-        <xyz>0 -0.0205 0</xyz>
-        <scale>0.137 0.001 0.190</scale>
+        <xyz>0 -0.026 0</xyz>
+        <scale>0.190 0.001 0.250</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-back</material>
       </visual>
 
       <visual>
-        <xyz>0.0685 0 0</xyz>
-        <scale>0.001 0.041 0.190</scale>
+        <xyz>0.095 0 0</xyz>
+        <scale>0.001 0.052 0.250</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-left</material>
       </visual>
 
       <visual>
-        <xyz>-0.0685 0 0</xyz>
-        <scale>0.001 0.041 0.190</scale>
+        <xyz>-0.095 0 0</xyz>
+        <scale>0.001 0.052 0.250</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-right</material>
       </visual>
 
       <visual>
-        <xyz>0 0 0.095</xyz>
-        <scale>0.137 0.041 0.001</scale>
+        <xyz>0 0 0.125</xyz>
+        <scale>0.190 0.052 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-top</material>
       </visual>
 
       <visual>
-        <xyz>0 0 -0.095</xyz>
-        <scale>0.137 0.041 0.001</scale>
+        <xyz>0 0 -0.125</xyz>
+        <scale>0.190 0.052 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-weetabix-bottom</material>
       </visual>
