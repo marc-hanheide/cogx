@@ -94,23 +94,36 @@ public class ManipulationPlanner extends ManagedComponent {
 		while (this.isRunning()) {
 			this.sleepComponent(200);
 			if (currentCommand != null) {
-				if (currentCommand.comp == ManipulationCompletion.SUCCEEDED) {
-					log("yay! command succeeded!");
-					removeCurrentCommand();
-				}
-				else if (currentCommand.comp == ManipulationCompletion.FAILED) {
-					log("command failed, will execute the fallback plan");
-					verbalize("Damn. I failed to " + commandToInfString(currentCommand) + ".");
-					removeCurrentCommand();
-					currentPlan.clear();
+				boolean fail = false;
 
-					List<ManipulationCommand> newPlan = PlanGenerator.generateFallbackPlan();
-					if (newPlan != null) {
-						log("adding plan of length " + newPlan.size() + " to the overall plan");
-						currentPlan.addAll(newPlan);
+				if (currentCommand.comp == ManipulationCompletion.SUCCEEDED
+						|| currentCommand.comp == ManipulationCompletion.FAILED) {
+					
+					if (currentCommand.comp == ManipulationCompletion.SUCCEEDED) {
+						if (currentCommand instanceof MoveArmToPose) {
+							MoveArmToPose matp = (MoveArmToPose) currentCommand;
+							fail = !isPoseFine(matp.targetPose, matp.reachedPose);
+							log("failed to reached the target position");
+						}
+						if (!fail) {
+							log("yay! command succeeded!");
+							removeCurrentCommand();
+						}
 					}
-					else {
-						log("got a NULL plan, ignoring");
+					if (fail || currentCommand.comp == ManipulationCompletion.FAILED) {
+						log("command failed, will execute the fallback plan");
+						verbalize("Damn. I failed to " + commandToInfString(currentCommand) + ".");
+						removeCurrentCommand();
+						currentPlan.clear();
+
+						List<ManipulationCommand> newPlan = PlanGenerator.generateFallbackPlan();
+						if (newPlan != null) {
+							log("adding plan of length " + newPlan.size() + " to the overall plan");
+							currentPlan.addAll(newPlan);
+						}
+						else {
+							log("got a NULL plan, ignoring");
+						}
 					}
 				}
 				else {
@@ -281,6 +294,10 @@ public class ManipulationPlanner extends ManagedComponent {
 
 		// fallback
 		return "do stuff";
+	}
+
+	private static boolean isPoseFine(Pose3 intended, Pose3 reached) {
+		return true;
 	}
 
 }
