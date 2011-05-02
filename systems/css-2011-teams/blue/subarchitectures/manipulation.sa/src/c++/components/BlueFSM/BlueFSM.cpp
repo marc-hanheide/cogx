@@ -97,14 +97,17 @@ namespace cogx
     {
       switch(m_state) {
 	case INIT:
+	  log("INIT");
 	  m_state = LOOK_CANONICAL;
 	  break;
 	
 	case LOOK_AROUND:
+	  log("LOOK_AROUND");
 	  m_state = LOOK_CANONICAL;
 	  break;
           
 	case LOOK_CANONICAL:
+	  log("LOOK_CANONICAL");
 	  lockComponent();
 	  // Issue recognition commands
 	  for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
@@ -116,12 +119,14 @@ namespace cogx
 	  break;
 
 	case DETECTING:
+	  log("DETECTING");
 	  sleep(5);
 
 	  m_state = DECIDE_GRASP;
 	  break;
           
 	case DECIDE_GRASP:
+	  log("DECIDE_GRASP");
           {
             // Find the label of the nearest object
 
@@ -205,6 +210,7 @@ namespace cogx
             break;
           }
         case GO_TO_PREGRASP:
+	  log("GO_TO_PREGRASP");
 	  {
 	    bool success = movePregrasp(m_pregraspPose);
 	    if (success) {
@@ -225,12 +231,14 @@ namespace cogx
 	  break;
 
 	case VERIFY_PREGRASP:
+	  log("VERIFY_PREGRASP");
 	  {
 	    m_state = ENVELOP;
 	    break;
 	  }
 
 	case ENVELOP:
+	  log("ENVELOP");
 	  {
 	    bool success = envelop();
 	    if (success) {
@@ -257,12 +265,14 @@ namespace cogx
 	  }
 
 	case VERIFY_ENVELOP:
+	  log("VERIFY_ENVELOP");
 	  {
 	    m_state = GRASP;
 	    break;
 	  }
 
 	case GRASP:
+	  log("GRASP");
 	  {
 	    bool success = grasp();
 	    if (success) {
@@ -282,12 +292,14 @@ namespace cogx
 	  }
 
 	case VERIFY_GRASP:
+	  log("VERIFY_GRASP");
 	  {
 	    m_state = LIFT;
 	    break;
 	  }
 
 	case RETRACT:
+	  log("RETRACT");
 	  {
 	    bool success = retract();
 	    if (success) {
@@ -300,6 +312,7 @@ namespace cogx
 	  }
 
 	case LIFT:
+	  log("LIFT");
 	  {
 	    bool success = lift();
 	    if (success) {
@@ -319,6 +332,7 @@ namespace cogx
 	  }
 
 	case RELEASE:
+	  log("RELEASE");
 	  {
 	    bool success = release();
 	    if (success) {
@@ -331,6 +345,7 @@ namespace cogx
 	  }
 
 	case HANDOVER:
+	  log("HANDOVER");
 	  {
 	    bool success = moveToHandover();
 	    if (success) {
@@ -343,12 +358,14 @@ namespace cogx
 	  }
 
 	case VERIFY_HANDOVER:
+	  log("VERIFY_HANDOVER");
 	  {
 	    m_state = RELEASE;
 	    break;
 	  }
 	  
 	case GO_HOME:
+	  log("GO_HOME");
 	  {
 	    bool success = moveHome();
 	    if (success) {
@@ -361,6 +378,7 @@ namespace cogx
 	  }
 
 	case TERMINATED:
+	  log("TERMINATED");
 	  log ("Terminated");
 	  break;
       }
