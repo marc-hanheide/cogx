@@ -11,6 +11,8 @@
 #include "FrontierInterface.hpp"
 #include "CureMapConversion.hpp"
 #include <float.h>
+#include "Vector3.h"
+
 #include "Wm5.h"
 /**
  * The function called to create a new instance of our component.
@@ -111,23 +113,23 @@ namespace cogx
 	  break;
           */
 	case DECIDE_GRASP:
-          
+          {
           // shortest distance between the robot and an object.
           double minDistance = 100000000; // very nice
           std::string minLabel = "";
           for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
                i != m_poses.end(); ++i)
             {
-              if (norm(i->second) < minDistance)
+              if (Math::norm(i->second.pos) < minDistance)
                 {
-                  minDistance = norm(i->second);
+                  minDistance = Math::norm(i->second.pos);
                   minLabel = i->first;
                 }
             }
 
 	  m_state = GO_TO_PREGRASP;
 	  break;
-
+          }
 	case GO_TO_PREGRASP:
 	  {
 	    bool success = movePregrasp(m_pregraspPose);
