@@ -210,7 +210,7 @@ void ManipulationPlanner::WriteGripperPositionToWM(Pose3 objPose)
   std::string objectID = newDataID();
 //   objectIDs.push_back(objectID);
 
-  addToWorkingMemory(objectID, grPose);
+  addToWorkingMemory(objectID, "manipulation.sa", grPose);
   
   sleepComponent(200);       // HACK Write slow to WM
   log("Added new gripper position to working memory: %s", objectID.c_str());
