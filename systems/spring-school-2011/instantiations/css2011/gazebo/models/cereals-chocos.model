@@ -33,47 +33,47 @@
     <geom:box name="cereals-chocos_geom">
       <xyz>0.0 0.0 0.0</xyz>
       <rpy>0 0 0</rpy>
-      <size>0.137 0.041 0.190</size>
+      <size>0.193 0.056 0.252</size>
       <mass>0.1</mass>
 
       <visual>
-        <xyz>0 0.0205 0</xyz>
-        <scale>0.137 0.001 0.190</scale>
+        <xyz>0 0.028 0</xyz>
+        <scale>0.193 0.001 0.252</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-front</material>
       </visual>
 
       <visual>
-        <xyz>0 -0.0205 0</xyz>
-        <scale>0.137 0.001 0.190</scale>
+        <xyz>0 -0.028 0</xyz>
+        <scale>0.193 0.001 0.252</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-back</material>
       </visual>
 
       <visual>
-        <xyz>0.0685 0 0</xyz>
-        <scale>0.001 0.041 0.190</scale>
+        <xyz>0.0965 0 0</xyz>
+        <scale>0.001 0.056 0.252</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-left</material>
       </visual>
 
       <visual>
-        <xyz>-0.0685 0 0</xyz>
-        <scale>0.001 0.041 0.190</scale>
+        <xyz>-0.0965 0 0</xyz>
+        <scale>0.001 0.056 0.252</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-right</material>
       </visual>
 
       <visual>
-        <xyz>0 0 0.095</xyz>
-        <scale>0.137 0.041 0.001</scale>
+        <xyz>0 0 0.126</xyz>
+        <scale>0.193 0.056 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-top</material>
       </visual>
 
       <visual>
-        <xyz>0 0 -0.095</xyz>
-        <scale>0.137 0.041 0.001</scale>
+        <xyz>0 0 -0.126</xyz>
+        <scale>0.193 0.056 0.001</scale>
         <mesh>unit_box</mesh>
         <material>cogx/cereals-chocos-bottom</material>
       </visual>
