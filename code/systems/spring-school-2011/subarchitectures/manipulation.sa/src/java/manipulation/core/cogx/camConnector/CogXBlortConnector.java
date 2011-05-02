@@ -128,7 +128,6 @@ public class CogXBlortConnector implements CamConnector {
 									CogXConverter
 											.convBlortGeomModelToVisionModel(changedObject.model));
 				} catch (InternalMemoryException e) {
-					logger.error("####################");
 					logger.error(e);
 				}
 			}
