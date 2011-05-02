@@ -58,7 +58,7 @@ public class YellowExecutor extends ManagedComponent {
 			this.m_visionsaID = args.get("--visionsa");
 		}
 		if (args.containsKey("--objects")) {
-			this.m_objLabels=args.get("--objLabels").split(",");
+			this.m_objLabels=args.get("--objects").split(",");
 		}
 		//m_visualObjects = new HashMap<String, Pose3>();
 		m_newObjs = new LinkedList<WorkingMemoryAddress>();
@@ -66,6 +66,7 @@ public class YellowExecutor extends ManagedComponent {
 	
 	
 	public void start() {
+		log("start() called.");
 		
 		// register the monitoring change filters
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(VisualObject.class, WorkingMemoryOperation.ADD), 
@@ -79,6 +80,7 @@ public class YellowExecutor extends ManagedComponent {
 	
 	@Override
 	protected void runComponent() {
+		log("runComponent() called.");
 		switch (m_competitionTask) {
 		case 1:
 			log("Competition 1 not implemented!");
@@ -98,6 +100,7 @@ public class YellowExecutor extends ManagedComponent {
 	}
 	
 	private void handMeTheCereals() {
+		log("handMeTheCererals() called.");
 		say("Hello. I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do."); // I will collect the cornflakes for you. Stay here! Do not move! I will be back!");
 
 
@@ -170,6 +173,7 @@ public class YellowExecutor extends ManagedComponent {
 	
 	
 	private void dispatchDetectionCommand() {
+		log("dispatchDetectionCommand() called.");
 		DetectionCommand detCmd = new DetectionCommand(m_objLabels);
 		try {
 			addToWorkingMemory(newDataID(), detCmd);
@@ -180,6 +184,7 @@ public class YellowExecutor extends ManagedComponent {
 	}
 	
 	private void dispatchGrabbingTask(WorkingMemoryAddress[] _newObjects) {
+		log("dispatchGrabbingTask("+_newObjects.length+") called.");
 		GraspObjectTaskYellow _newTask = new GraspObjectTaskYellow();
 		_newTask.status = ActionStatusYellow.PENDINGY;
 		_newTask.targetObjects = _newObjects;
@@ -210,6 +215,7 @@ public class YellowExecutor extends ManagedComponent {
 	
 	
 	private void say(String stringToSay) {
+		log("say("+stringToSay+") called.");
 		String soiadd = newDataID();
 		SpokenOutputItem greeting = new SpokenOutputItem(newDataID(), stringToSay, "", new NominalReference("", new dFormula(0)));
 		try {
@@ -277,13 +283,15 @@ public class YellowExecutor extends ManagedComponent {
 	}
 	
 	private void onVisualObjectAdded(WorkingMemoryChange _wmc) {
+		log("onVisualObjectAdded("+_wmc.address.toString()+") called.");
 		synchronized(this) {
+			log("oVOA1");
 			m_newObjs.add(_wmc.address);
 			m_newObjsDeteced = true;
 			this.notifyAll();
 		}
 		say("I found an object!");
-		
+
 		if (true) return;
 		VisualObject _newVisObj = null;
 		try {
