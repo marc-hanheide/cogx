@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 
+import mathlib.Functions;
+
 import VisionData.Face;
 import VisionData.GeometryModel;
 import VisionData.GripperPose;
@@ -186,6 +188,8 @@ public class ManipulationPlanner extends ManagedComponent {
 				verbalize("Right. I see the object now.");
 
 				gp = (GripperPose) data.getData();
+
+				log("got the following gripper pose:\ninitial = " + Functions.toString(gp.initialPose) + "\nfinal   = " + Functions.toString(gp.finalPose));
 
 				List<ManipulationCommand> newPlan = PlanGenerator.generateGrabPlan(gp);
 
