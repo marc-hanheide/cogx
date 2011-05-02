@@ -72,19 +72,6 @@ void CheckSystemCalibration::configure(const map<string,string> & _config)
     istringstream istr(it->second);
     istr >> camId;
   }
-  if((it = _config.find("--pan")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> pan;
-    usePTZ = true;
-  }
-
-  if((it = _config.find("--tilt")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> tilt;
-    usePTZ = true;
-  }
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -105,29 +92,10 @@ void CheckSystemCalibration::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-  if(usePTZ)
-  {
-    // register with the PTZ server
-    Ice::CommunicatorPtr ic = getCommunicator();
-
-    Ice::Identity id;
-    id.name = "PTZServer";
-    id.category = "PTZServer";
-
-    std::ostringstream str;
-    str << ic->identityToString(id) 
-      << ":default"
-      << " -h localhost"
-      << " -p " << cast::cdl::CPPSERVERPORT;
-
-    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-    m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
-  }
-
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
   m_display.installEventReceiver();
-  m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
+  m_display.addCheckBox(getComponentID(), "toggle.checksyscalib.running", "&Streaming");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif
@@ -139,13 +107,27 @@ void CheckSystemCalibration::start()
 #ifdef FEAT_VISUALIZATION
 void CheckSystemCalibration::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
-  //debug(event.data + " (received by CheckSystemCalibration)");
+  if (event.type == Visualization::evCheckBoxChange) {
+    if (event.sourceId == "toggle.checksyscalib.running") {
+      //debug(std::string("Time: ") + sfloat (fclocks()));
+      bool newrcv = (event.data != "0");
+      if (newrcv != pComp->receiving) {
+        if(pComp->receiving) {
+          pComp->videoServer->stopReceiveImages(pComp->getComponentID());
+          pComp->log("Stopped receiving images");
+        }
+        else {
+          vector<int> camIds;
+          camIds.push_back(pComp->camId);
+          pComp->videoServer->startReceiveImages(pComp->getComponentID(), camIds, 0, 0);
+          pComp->log("Started receiving images");
+        }
+        pComp->receiving = !pComp->receiving;
+      }
+    }
+  }
 }
 
-std::string CheckSystemCalibration::CVvDisplayClient::getControlState(const std::string& ctrlId)
-{
-  return "";
-}
 #endif
 
 void CheckSystemCalibration::destroy()
@@ -157,48 +139,17 @@ void CheckSystemCalibration::destroy()
 
 void CheckSystemCalibration::receiveImages(const std::vector<Video::Image>& images)
 {
+  IplImage *iplImg = convertImageToIpl(images[0]);
+  drawCalibrationPattern(images[0].camPars, iplImg);
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage(getComponentID(), images[0]);
+  Video::Image img;
+  convertImageFromIpl(iplImg, img);
+  m_display.setImage(getComponentID(), img);
 #else
-  IplImage *iplImage = Video::convertImageToIpl(images[0]);
-  cvShowImage(getComponentID().c_str(), iplImage);
-  cvReleaseImage(&iplImage);
+  cvShowImage(getComponentID().c_str(), iplImg);
+  cvWaitKey(10);
 #endif
-}
-
-void CheckSystemCalibration::MovePanTilt(double pan, double tilt, double tolerance)
-{
-	log("Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
-  ptz::PTZPose p;
-  ptz::PTZReading ptuPose;
-  p.pan = pan ;
-  p.tilt = tilt;
-  p.zoom = 0;
-  m_PTUServer->setPose(p);
-  bool run = true;
-  ptuPose = m_PTUServer->getPose();
-  double actualpose = ptuPose.pose.pan;
-  while(run){
-    m_PTUServer->setPose(p);
-    ptuPose = m_PTUServer->getPose();
-    actualpose = ptuPose.pose.pan;
-    log("actualpose is: %f", actualpose);
-    if (pan > actualpose){
-      if (actualpose > abs(pan) - tolerance){
-        log("false actualpose is: %f, %f", actualpose, abs(pan) + tolerance);
-        run = false;
-      }
-        }
-    if (actualpose > pan){
-      if (actualpose < abs(pan) + tolerance)
-        run = false;
-        }
-      if(pan == actualpose)
-      run = false;
-    
-    usleep(10000);
-  }
-  log("Moved.");
+  cvReleaseImage(&iplImg);
 }
 
 void CheckSystemCalibration::drawCalibrationPattern(const Video::CameraParameters &cam, IplImage *iplImg)
@@ -224,31 +175,6 @@ void CheckSystemCalibration::drawCalibrationPattern(const Video::CameraParameter
   }
   log("camera pose is:");
   log(toString(cam.pose));
-}
-
-void CheckSystemCalibration::runComponent()
-{
-  sleepComponent(1000);
-  if(usePTZ)
-  {
-    MovePanTilt(pan, tilt, 5*M_PI/180);
-    sleepComponent(3000);
-  }
-  Video::Image img;
-  videoServer->getImage(camId, img);
-#ifdef FEAT_VISUALIZATION
-  m_display.setImage(getComponentID(), img);
-#else
-  IplImage *iplImg = convertImageToIpl(img);
-  drawCalibrationPattern(img.camPars, iplImg);
-  cvShowImage(getComponentID().c_str(), iplImg);
-  cvWaitKey(100);
-  cvShowImage(getComponentID().c_str(), iplImg);
-  cvWaitKey(100);
-  cvShowImage(getComponentID().c_str(), iplImg);
-  cvWaitKey(100);
-  cvReleaseImage(&iplImg);
-#endif
 }
 
 }
