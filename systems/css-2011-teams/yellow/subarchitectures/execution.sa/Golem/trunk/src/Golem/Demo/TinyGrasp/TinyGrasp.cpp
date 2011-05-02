@@ -108,16 +108,21 @@ TinyGrasp::TinyGrasp(const char* driver) :
 	XMLData("grasp_offset", graspOffset, context->getContextFirst("arm grasping"));
 	XMLData("error_lin", graspError.lin, context->getContextFirst("arm grasping"));
 	XMLData("error_ang", graspError.lin, context->getContextFirst("arm grasping"));
+	XMLData("sensor_threshold", sensorThreshold, context->getContextFirst("arm grasping"));
 
 	// create arm
 	KatanaArmDesc* pArmDesc = new KatanaArmDesc; // specialised Katana 300/450 description
 	//ArmDesc* pArmDesc = new ArmDesc; // generic description
 	pArmDesc->globalPose = armPose;
 	pArmDesc->path = driver; // specify driver path
+	pArmDesc->bGripper = true;
 	tiny->print("Creating the arm...");
 	arm = dynamic_cast<KatanaArm*>(tiny->createActor(ActorDescPtr(pArmDesc)));
 	if (arm == NULL)
 		throw ExTiny("TinyGrasp::TinyGrasp(): Katana arm driver required!");
+
+	// get sensor data assuming no object is in the gripper
+	zero = arm->gripperRecvSensorData(numeric_const<double>::INF);
 
 	// robot base
 	RigidBodyDesc* pBaseDesc = new RigidBodyDesc;
@@ -396,6 +401,8 @@ GraspPose TinyGrasp::graspTry(const GraspPose& pose) {
 void TinyGrasp::graspExec() {
 	Mat34 actual;
 
+	arm->gripperOpen(numeric_const<double>::INF);
+
 	actual = moveTry(gend.approach);
 	PoseError approachError(actual, gend.approach);
 	tiny->print("TinyGrasp::graspExec(): approach error = (%f, %f)", approachError.lin, approachError.ang);
@@ -409,10 +416,17 @@ void TinyGrasp::graspExec() {
 	Mat34 pose = read();
 	grelease = toBody(pose, diff(pose, gend.approach));
 
+	KatanaSensorDataSet threshold = zero;
+	for (KatanaSensorDataSet::iterator i = zero.begin(); i != zero.end(); ++i)
+		i->value += sensorThreshold;
+	arm->gripperClose(threshold, numeric_const<double>::INF);
+
 	attachObject();
 }
 
 void TinyGrasp::graspRelease() {
+	arm->gripperOpen(numeric_const<double>::INF);
+
 	releaseObject();
 	
 	Mat34 pose = read();

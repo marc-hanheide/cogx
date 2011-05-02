@@ -11,7 +11,6 @@
 #define _GOLEM_DEMO_TINY_GRASP_H_
 
 #include <Golem/Tiny/Tiny.h>
-#include <Golem/Demo/TinyGrasp/TinyGrasp.h>
 #include <Golem/Math/Quat.h>
 
 //------------------------------------------------------------------------------
@@ -115,6 +114,9 @@ private:
 	Real approachOffset;
 	Real graspOffset;
 	PoseError graspError;
+
+	I32 sensorThreshold;
+	KatanaSensorDataSet zero;
 };
 
 //------------------------------------------------------------------------------

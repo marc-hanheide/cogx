@@ -18,7 +18,7 @@ using namespace golem::tiny;
 
 int main(int argc, char *argv[]) {
 	try {
-		TinyGrasp robot("GolemDeviceKatana300Sim");
+		TinyGrasp robot("GolemDeviceKatana300");
 		
 		const Mat34 home = robot.read();
 
