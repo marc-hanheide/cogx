@@ -438,6 +438,7 @@ module VisionData {
   class GripperPose {
     cogx::Math::Pose3 initialPose;
     cogx::Math::Pose3 finalPose;
+    cogx::Math::Pose3 releasePose;
   };
 
 };
