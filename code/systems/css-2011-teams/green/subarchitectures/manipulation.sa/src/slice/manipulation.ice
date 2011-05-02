@@ -107,6 +107,8 @@ module manipulation {
 			cast::cdl::WorkingMemoryAddress targetObjectAddr;
 		
 			cogx::Math::Pose3 reachedPose;
+			
+			cogx::Math::Vector3 offset;
 		
 		};
 		
