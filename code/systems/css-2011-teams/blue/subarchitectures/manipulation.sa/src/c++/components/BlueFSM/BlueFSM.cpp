@@ -37,6 +37,8 @@ namespace cogx
   {
     map<string,string>::const_iterator it;
     
+    m_lookForObjects.push_back("cereals_weetabix");
+    m_lookForObjects.push_back("cereals_choco");
   }
   
   void BlueFSM::start()
@@ -56,14 +58,19 @@ namespace cogx
   {
   }
 
+  void
+  BlueFSM::simpleCallback(const cdl::WorkingMemoryChange &wmc) {
+    m_waiting = false;
+  }
+
   void 
-    BlueFSM::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID){
-      VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
-      rec_cmd->cmd = cmd;
-      rec_cmd->label = label;
-      rec_cmd->visualObjectID = visualObjectID;
-      addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
-    }
+  BlueFSM::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID){
+    VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+    rec_cmd->cmd = cmd;
+    rec_cmd->label = label;
+    rec_cmd->visualObjectID = visualObjectID;
+    addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+  }
   
   void BlueFSM::runComponent()
   {
@@ -77,7 +84,7 @@ namespace cogx
 	case LOOK_CANONICAL:
 	  lockComponent();
 	  // Issue recognition commands
-	  for (std::set<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
+	  for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
 	    addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
 	  }
 	  unlockComponent();
@@ -92,15 +99,40 @@ namespace cogx
 	  break;
 
 	case DECIDE_GRASP:
+	  m_state = GO_TO_PREGRASP;
+	  break;
+
+	case GO_TO_PREGRASP:
+	  {
+	    bool success = movePregrasp(m_pregraspPose);
+	    if (success) {
+	      m_state = VERIFY_PREGRASP;
+	    }
+	    else {
+	      log("Error! move pregrasp failed");
+	      success = moveHome();
+	      if (success) {
+		m_state = INIT;
+	      }
+	      else {
+		log("Error! Unable to return to home pose!");
+		m_state = TERMINATED;
+	      }
+	    }
+	  }
+	  break;
+
+	default:
 	  break;
       }
 
-      std::ostringstream oss;
-      oss << pose_.pos.x;
-      log(oss.str());
-      sleep(2);
+//      std::ostringstream oss;
+//      oss << pose_.pos.x;
+//      log(oss.str());
+//      sleep(2);
     }
     
+    /*
     ::manipulation::slice::MoveArmToPosePtr moveArmToPose(new ::manipulation::slice::MoveArmToPose());
     moveArmToPose->comp = ::manipulation::slice::COMPINIT;
     moveArmToPose->status = ::manipulation::slice::NEW;
@@ -117,6 +149,7 @@ namespace cogx
     }
     
     sleep(10); // Wait for changes to happen and pray that it worked.
+    */
     
     /*
     wmcr = new WorkingMemoryChangeReceiver() {
@@ -133,7 +166,7 @@ namespace cogx
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
   {
-    warn("received objectPoseCallback");
+//    warn("received objectPoseCallback");
 
     VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
@@ -146,7 +179,7 @@ namespace cogx
 //    }
 
 
-    warn("finished objectPoseCallback");
+//    warn("finished objectPoseCallback");
   }
 
   void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
@@ -234,5 +267,58 @@ bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad){
     }
     return true;
   }
+
+bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
+{
+  manipulation::slice::MoveArmToPosePtr cmd = new
+    manipulation::slice::MoveArmToPose;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+  cmd->targetPose = pregraspPose;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
+
+  m_currentArmPose = cmd->reachedPose;
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+
+bool BlueFSM::moveHome() 
+{
+  manipulation::slice::MoveArmToHomePositionCommandPtr cmd = new
+    manipulation::slice::MoveArmToHomePositionCommand;
+
+  cmd->status = manipulation::slice::NEW;
+  cmd->comp = manipulation::slice::COMPINIT;
+
+  m_waiting = true;
+  string id = newDataID();
+  MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
+  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
+  addToWorkingMemory<manipulation::slice::MoveArmToHomePositionCommand>(id, cmd);
+
+  while (m_waiting) {
+    usleep(50000);
+  }
+  removeChangeFilter(receiver);
+  delete receiver;
+
+  cmd = getMemoryEntry<manipulation::slice::MoveArmToHomePositionCommand>(id);
+
+  return cmd->comp == manipulation::slice::SUCCEEDED;
+}
   
 }

@@ -33,7 +33,8 @@ namespace cogx
       HANDOVER,
       VERIFY_HANDOVER,
       RELEASE,
-      VERIFY_RELEASE};
+      VERIFY_RELEASE,
+      TERMINATED};
   private:
     
   protected:
@@ -41,14 +42,26 @@ namespace cogx
     virtual void start();
     virtual void destroy();
     virtual void runComponent();
+
+    void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
+
+    bool moveHome();
+    bool movePregrasp(cogx::Math::Pose3 pregraspPose);
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
+    void simpleCallback(const cdl::WorkingMemoryChange &_wmc);
 
     State m_state;
+    bool m_waiting;
 
     boost::mutex mutex_;
 
     map<string, cogx::Math::Pose3> m_poses;
+
+    vector<string> m_lookForObjects;
+
+    cogx::Math::Pose3 m_pregraspPose;
+    cogx::Math::Pose3 m_currentArmPose;
     
 //    PTZInterfacePrx m_ptzInterface;
   private:
