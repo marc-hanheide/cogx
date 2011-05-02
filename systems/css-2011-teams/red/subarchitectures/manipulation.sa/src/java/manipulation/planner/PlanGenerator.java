@@ -26,32 +26,53 @@ import java.util.LinkedList;
 
 public class PlanGenerator {
 
-	public static List<ManipulationCommand> generatePlan(GripperPose gp) {
+	public static List<ManipulationCommand> generateGrabPlan(GripperPose gp) {
 
 		// Make new plan queue...
-        List<ManipulationCommand> plan = new LinkedList<ManipulationCommand>();
-        
-        // Let's start adding things to the plan queue...
-        
+		List<ManipulationCommand> plan = new LinkedList<ManipulationCommand>();
+		
+		// Let's start adding things to the plan queue...
+		
 
-        // 1. Open the gripper...
-        OpenGripperCommand openGripperCmd = new OpenGripperCommand();
-        openGripperCmd.comp = ManipulationCompletion.COMPINIT;
-        openGripperCmd.status = ManipulationCommandStatus.NEW;
+		// 1. Open the gripper...
+		OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+		openGripperCmd.comp = ManipulationCompletion.COMPINIT;
+		openGripperCmd.status = ManipulationCommandStatus.NEW;
 
-        plan.add(openGripperCmd);
-       
+		plan.add(openGripperCmd);
+	       
 
-        // 2. Move to initial gripper pose near the object...
-        MoveArmToPose moveArmToPose = new MoveArmToPose();
-        moveArmToPose.comp = ManipulationCompletion.COMPINIT;
-        moveArmToPose.status = ManipulationCommandStatus.NEW;
+		// 2. Move to initial gripper pose near the object...
+		MoveArmToPose moveArmToPose = new MoveArmToPose();
+		moveArmToPose.comp = ManipulationCompletion.COMPINIT;
+		moveArmToPose.status = ManipulationCommandStatus.NEW;
 
-        moveArmToPose.targetPose = gp.pose;
+		moveArmToPose.targetPose = gp.pose;
 
-        plan.add(moveArmToPose);
+		plan.add(moveArmToPose);
 
 
+		return plan;
+	}
+
+	public static List<ManipulationCommand> generateFallbackPlan() {
+
+		// Make new plan queue...
+		List<ManipulationCommand> plan = new LinkedList<ManipulationCommand>();
+
+		// 1. Open the gripper...
+		OpenGripperCommand openGripperCmd = new OpenGripperCommand();
+		openGripperCmd.comp = ManipulationCompletion.COMPINIT;
+		openGripperCmd.status = ManipulationCommandStatus.NEW;
+
+		plan.add(openGripperCmd);
+		
+		// 2. Return to home position
+		MoveArmToHomePositionCommand cmd = new MoveArmToHomePositionCommand();
+		cmd.comp = ManipulationCompletion.COMPINIT;
+		cmd.status = ManipulationCommandStatus.NEW;
+		plan.add(cmd);
+	       
 		return plan;
 	}
 
