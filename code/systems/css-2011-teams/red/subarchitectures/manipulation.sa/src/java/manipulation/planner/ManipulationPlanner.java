@@ -189,7 +189,10 @@ public class ManipulationPlanner extends ManagedComponent {
 
 				gp = (GripperPose) data.getData();
 
-				log("got the following gripper pose:\ninitial = " + Functions.toString(gp.initialPose) + "\nfinal   = " + Functions.toString(gp.finalPose));
+				log("got the following gripper pose:\n" 
+						+ "initial = " + Functions.toString(gp.initialPose) + "\n"
+						+ "final   = " + Functions.toString(gp.finalPose) + "\n"
+						+ "release = " + Functions.toString(gp.releasePose));
 
 				List<ManipulationCommand> newPlan = PlanGenerator.generateGrabPlan(gp);
 
