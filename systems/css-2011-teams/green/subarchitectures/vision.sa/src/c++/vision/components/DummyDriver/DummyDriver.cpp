@@ -75,7 +75,7 @@ void DummyDriver::start()
 
 void DummyDriver::runComponent()
 {
-  sleepProcess(10000);  // HACK: the nav visualisation might crash if we send it
+  sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   // and initiate detection
   
@@ -91,6 +91,7 @@ void DummyDriver::runComponent()
   	m_best_pose = bestPose(m_poses);
   	log("issuing mover command");
   	addNavCommand(m_best_pose->robotPose);
+  	addGraspCommand(m_best_pose->label);
   }
 }
 
