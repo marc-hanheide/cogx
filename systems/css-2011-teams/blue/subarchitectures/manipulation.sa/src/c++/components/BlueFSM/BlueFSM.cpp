@@ -513,10 +513,10 @@ log("%i", __LINE__);
 	    }
 	    else {
 	      double bestX, bestY, bestTheta;
-	      m_globalPoses.erase(bestObject);
 log("%i", __LINE__);
 	      bool success = findBestGraspPose(bestObject, bestX, bestY, bestTheta);
 log("%i", __LINE__);
+	      m_globalPoses.erase(bestObject);
 	      if (!success) {
 		log("Error: Unable to find grasp pose for %s", bestObject.c_str());
 		m_state = MOVE_TO_NEW_POS;
