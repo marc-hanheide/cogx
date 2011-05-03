@@ -4,14 +4,10 @@ CATEGORIES = bootstrap
 MAINTAINER = hanheidm
 DISTFILES = $(GARNAME)-$(GARVERSION).run
 
-#MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
-
 
 #CONFIGURE_SCRIPTS = $(WORKSRC)/configure
 #BUILD_SCRIPTS = $(WORKSRC)/Makefile
 #INSTALL_SCRIPTS = 
-
-CONFIGURE_ARGS = $(DIRPATHS) --disable-sicklms400 --disable-mricp
 
 include ../../gar.mk
 
