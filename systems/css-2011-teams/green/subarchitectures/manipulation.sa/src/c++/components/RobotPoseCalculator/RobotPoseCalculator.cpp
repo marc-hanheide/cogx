@@ -178,8 +178,13 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   s << "rotation:" << getColumn(rot,0) << " " << getColumn(rot,1) << " " << getColumn(rot,2) << endl;
   s << "dimensions:" << dim << endl;
   log(s.str());
+
+  if (abs(getColumn(rot, short_axis).z) > 0.5) {
+      log("object is lying on the side, no grasping is possible");
+      return;
+  }
   
-  //Grasp vector is orthogonal to object x-axis
+  //Grasp vector is orthogonal to object short-axis
   Vector3 grasp_dir = cross(vector3(0.0, 0.0, 1.0), getColumn(rot, short_axis));
   log("grasp direction:" + toString(grasp_dir));
   vector<Vector3> grasp_offsets;
