@@ -127,10 +127,10 @@ namespace cogx
 //      v.push_back(std::make_pair(m::Vector3(0,0,.140), m::Quaternion(0.707107,0,0.707107,0)));
 //      v.push_back(std::make_pair(m::Vector3(0,0,-.140), m::Quaternion(0.707107,0,-0.707107,0)));
 
-      v.push_back(std::make_pair(m::Vector3(100,0,0), m::Quaternion(0.707107,0,0,0.707107)));
-      v.push_back(std::make_pair(m::Vector3(-100,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
-      v.push_back(std::make_pair(m::Vector3(0,0,-130), m::Quaternion(0.5,0.5,0.5,0.5)));
-      v.push_back(std::make_pair(m::Vector3(0,0,130), m::Quaternion(0.5,-0.5,-0.5,0.5)));
+      v.push_back(std::make_pair(m::Vector3(.100,0,0), m::Quaternion(0.707107,0,0,0.707107)));
+      v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
+      v.push_back(std::make_pair(m::Vector3(0,0,-.130), m::Quaternion(0.5,0.5,0.5,0.5)));
+      v.push_back(std::make_pair(m::Vector3(0,0,.130), m::Quaternion(0.5,-0.5,-0.5,0.5)));
 
       grasps[std::string("cereals-weetabix")] = v;
     }
