@@ -33,6 +33,15 @@ extern "C"
 namespace cogx
 {
 
+  bool validPose(const Math::Pose3& p)
+  {
+    double sum = 0;
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        sum += std::abs(Math::get(p.rot, i, j));
+    return sum > 1e-6;
+  }
+  
   Math::Pose3 convertPose(const m::Pose& in)
   {
     Math::Pose3 p;
@@ -300,11 +309,19 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     
     }
 
+    if (!validPose(inObjectPose) || !validPose(inRobotPose))
+    {
+      std::cerr << "nameless: invalid input poses (check in /tmp)" << std::endl;
+      log("nameless: invalid input poses (check in /tmp)");
+      std::terminate();
+    }
+    
     log("nameless: converting data to m::");
     
     outputToFile("/tmp/grasp-inObjectPose", inObjectPose);
     outputToFile("/tmp/grasp-inRobotPose", inRobotPose);
   
+    
     
     m::Pose objectPose = convertPose(inObjectPose);
     m::Pose robotPose = convertPose(inRobotPose);
@@ -930,7 +947,7 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
 
   bool BlueFSM::moveToSafePose()
   {
-    movePregrasp(convertPose(std::make_pair(m::Vector3(.2,0,1), m::Quaternion::IDENTITY)));
+    return movePregrasp(convertPose(std::make_pair(m::Vector3(.2,0,1), m::Quaternion::IDENTITY)));
   }
 
 bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
