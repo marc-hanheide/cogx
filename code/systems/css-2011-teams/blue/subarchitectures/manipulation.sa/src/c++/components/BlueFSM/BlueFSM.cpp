@@ -822,6 +822,7 @@ log("MOVE_TO_NEW_POS");
           moveTo(0, 0, 0);
           moveToHandover();
 	  release();
+	  moveHome();
 	  m_state = INIT;
         }
 	break;
