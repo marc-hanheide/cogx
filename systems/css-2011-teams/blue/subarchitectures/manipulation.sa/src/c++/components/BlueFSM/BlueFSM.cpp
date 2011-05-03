@@ -113,7 +113,8 @@ namespace cogx
   void outputToFile(const std::string& s, const m::Pose& p)
   {
     std::ofstream ofs(s.c_str());
-    ofs << p.first << " " << p.second << std::endl;
+    ofs << p.first.X() << " " << p.first.Y() << " " << p.first.Z() << " " <<
+    p.second.W() << " " << p.second.X() << " " << p.second.Y() << " " << p.second.Z() << std::endl;
   }
   
   std::pair<Math::Pose3, double> BlueFSM::nameless(const Math::Pose3& inRobotPose,
