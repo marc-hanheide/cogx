@@ -32,6 +32,7 @@ module manipulation {
             cogx::Math::Vector3 offset;
             double distance;
             string label;
+            string id;
         };
 		
 		/**
