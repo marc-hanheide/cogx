@@ -99,19 +99,18 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   string label = "";
   for (size_t i = 0; i < object->identLabels.size(); ++i) {
       if (object->identDistrib[i] > CONFIDENCE_THRESHOLD) {
-          label = object->identLabels[i];
-          break;
+          for (int j = 0; j < label_count; ++j) {
+              if (object->identLabels[i] == labels[j]) {
+                  label = labels[j];
+                  break;
+              }
+          }
+          if (label != "")
+              break;
       }
   }
 
-  bool acceptLabel = false;
-  for (int i = 0; i < label_count; ++i) {
-      if (label == labels[i]) {
-          acceptLabel = true;
-          break;
-      }
-  }
-  if (!acceptLabel) 
+  if (label == "") 
       return;
 
   // Delete poses
