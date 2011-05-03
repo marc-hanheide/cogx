@@ -1119,7 +1119,7 @@ bool BlueFSM::lift()
 {
   cogx::Math::Pose3 targetPose;
 
-  targetPose.pos = m_currentArmPose.pos + Math::vector3(-1,0,1) * 0.15;
+  targetPose.pos = m_currentArmPose.pos + Math::vector3(-.5,0,1) * 0.15;
   targetPose.rot = m_currentArmPose.rot;
   
   manipulation::slice::MoveArmToPosePtr cmd = new
