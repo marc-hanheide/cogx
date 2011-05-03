@@ -88,7 +88,7 @@ void DummyDriver::runComponent()
     int step = 0;
     int maxStep = 5;
     log("scanning for an object");
-    while (step == maxStep){
+    while (step < maxStep){
         addLook4ObjCommand(pan, tilt);
         pan += delta;
         step++;
