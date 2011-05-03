@@ -354,7 +354,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
     
     bool objectLyingFlat = false;
-    if (m::Vector3(0, 0, 1).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1))) > .5)
+    if (m::Vector3(0, 0, 1).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1))) > .707)
     {
       log("Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
       objectLyingFlat = true;
@@ -591,12 +591,38 @@ log("MOVE_TO_NEW_POS");
             
             if (m_poses.begin() == m_poses.end())
             {
-              log("Error: m_poses map is empty.");
-              m_state = TERMINATED;
+              log("Error: m_poses map is empty. We will now move to a new position.");
+              m_state = MOVE_TO_NEW_POS;
               break;
             }
             
-            std::string minLabel = m_poses.begin()->first;
+            std::map<std::string, cogx::Math::Pose3>::iterator bestPoseToGoTo = m_poses.begin();
+            double bestPoseQuality = 0;
+            for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
+                 i != m_poses.end(); ++i)
+            {
+              Math::Pose3 trash;
+              double quality = -1000;
+              nameless(convertPose(std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY)),
+                       m_poses[i->first],
+                       i->first,
+                       trash,
+                       trash,
+                       quality);
+              if (quality > bestPoseQuality)
+              {
+                bestPoseQuality = quality;
+                bestPoseToGoTo = i;
+              }
+            }
+
+            if (bestPoseQuality < .707)
+            {
+              log("We're going to grasp a horrible grasp (quality = %f)", );
+              std::cerr << "We're going to grasp a horrible grasp (quality = " << bestPoseQuality << ")" << std::endl;
+            }
+            
+            std::string minLabel = bestPoseToGoTo->first;
             
             std::cerr << m_poses[minLabel] << std::endl;
 
