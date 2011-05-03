@@ -237,6 +237,8 @@ module VisionData {
    */
    class LookForObjectCommand{
    		WorkingMemoryAddressSeq foundVisualObjects;
+   		double pan;
+   		double tilt;
    		CommandCompletion comp;
    		CommandStatus status;
    		

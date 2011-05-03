@@ -55,6 +55,8 @@ private:
 	int m_rec_objects;
 
 	bool m_halt_ptz;
+	double m_pan;
+	double m_tilt;
 
 	/** @brief looks for objects in a certain area */
 	void receiveLookForObjectCommand(const cdl::WorkingMemoryChange & _wmc);

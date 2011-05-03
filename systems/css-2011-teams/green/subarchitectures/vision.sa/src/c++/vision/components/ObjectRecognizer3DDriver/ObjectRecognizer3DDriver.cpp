@@ -34,6 +34,9 @@ void ObjectRecognizer3DDriver::receiveLookForObjectCommand(const cdl::WorkingMem
 	m_look_cmd = getMemoryEntry<VisionData::LookForObjectCommand>(_wmc.address);
 	log("received LookForObject command");
 
+	m_pan = m_look_cmd->pan;
+	m_tilt = m_look_cmd->tilt;
+
 	m_look = true;
 
 //	look_cmd->status = VisionData::PENDING;
@@ -43,8 +46,16 @@ void ObjectRecognizer3DDriver::receiveLookForObjectCommand(const cdl::WorkingMem
 
 void ObjectRecognizer3DDriver::doLooking(){
 
-	addPTZCommand(0.0, -1.0472);
-	if(!isRunning()) return;
+	if(	m_pan >  1.57 ||
+		m_pan < -1.57 ||
+		m_tilt >  0.0 ||
+		m_tilt < -1.1 )
+	{
+		error("look pose for PTZ unit out of range!");
+	}else{
+		addPTZCommand(m_pan, m_tilt);
+		if(!isRunning()) return;
+	}
 
 //	m_rec_visualObjectIDs.clear();
 
