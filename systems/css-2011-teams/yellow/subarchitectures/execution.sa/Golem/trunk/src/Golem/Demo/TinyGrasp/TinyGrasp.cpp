@@ -119,9 +119,10 @@ TinyGrasp::TinyGrasp(const char* driver) :
 	pArmDesc->path = driver; // specify driver path
 	pArmDesc->bGripper = true;
 	tiny->print("Creating the arm...");
-	arm = dynamic_cast<KatanaArm*>(tiny->createActor(ActorDescPtr(pArmDesc)));
-	if (arm == NULL)
-		throw ExTiny("TinyGrasp::TinyGrasp(): Katana arm driver required!");
+	arm = (KatanaArm*)tiny->createActor(ActorDescPtr(pArmDesc));
+	//arm = dynamic_cast<KatanaArm*>(tiny->createActor(ActorDescPtr(pArmDesc)));
+	//if (arm == NULL)
+	//	throw ExTiny("TinyGrasp::TinyGrasp(): Katana arm driver required!");
 
 	// get sensor data assuming no object is in the gripper
 	zero = arm->gripperRecvSensorData(numeric_const<double>::INF);
