@@ -421,6 +421,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 			farArmMovementCom.comp = ManipulationCompletion.COMPINIT;
 			farArmMovementCom.status = ManipulationCommandStatus.NEW;
+            farArmMovementCom.offset = new Vector3(0,0,0);
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
