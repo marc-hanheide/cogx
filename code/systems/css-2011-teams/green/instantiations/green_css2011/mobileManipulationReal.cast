@@ -28,6 +28,7 @@ CPP MG spatial.translation SpatialTranslation
 CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 1.0 --min-node-separation 2.5 --hyp-path-length 2.0  #--no-placeholders --log
 CPP GD path.query PathQueryProcessor #--no-indirect-paths 
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 2 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
+JAVA MG ManualNavGUI spatial.manual.ManualNavControl
 
 #INCLUDE includes/spatial.sa/spatial-peekabot.cast
 #CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
@@ -38,7 +39,7 @@ SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG CameraMount CameraMount --camids 0 --use_ptz --cam_poses_xml "instantiations/green_css2011/calibration/cam-left/campose-left.xml" --pt_base_xml instantiations/green_css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/green_css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/green_css2011/calibration/ptu-pose-tilt-sim.xml --fixed_cam_poses_xml "instantiations/green_css2011/calibration/cam-left/campose-left.xml" --fixed_pan_tilt "0 -1.05"
+CPP MG CameraMount CameraMount --camids 0 --use_ptz --cam_poses_xml instantiations/green_css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/green_css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/green_css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/green_css2011/calibration/ptu-pose-tilt-sim.xml --fixed_cam_poses_xml "instantiations/green_css2011/calibration/cam-left/campose-left.xml" --fixed_pan_tilt "0 -1.05"
 
 #CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video1/frosties_small-0000000%d.ppm" --start "100" --end 620 --framerate_ms 300 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/green_css2011/calibration/cam-left/camcalib-left.xml"
@@ -47,13 +48,15 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "
 
 #CPP MG pointcloudviewer PointCloudViewer --servername pcserver --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-fruchtemusli.ply instantiations/green_css2011/object-models/cereals-bircher.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-fruchtemusli.sift instantiations/green_css2011/object-models/cereals-bircher.sift" --labels "cereals-fruchtemusli cereals-bircher" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-bircher.ply instantiations/green_css2011/object-models/cereals-chocos.ply instantiations/green_css2011/object-models/cereals-fruchtemusli.ply instantiations/green_css2011/object-models/cereals-toppas.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-bircher.sift instantiations/green_css2011/object-models/cereals-chocos.sift instantiations/green_css2011/object-models/cereals-fruchtemusli.sift instantiations/green_css2011/object-models/cereals-toppas.sift" --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --log
 
 #CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
 
 #CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
 
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-fruchtemusli cereals-bircher" --mode LOOKGRASP --log --manipulation_sa "manipulation.sa"
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --mode LOOKGRASP --log --manipulation_sa "manipulation.sa"
+
+CPP MG DummyDriver DummyDriver
 
 JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
@@ -62,11 +65,11 @@ SUBARCHITECTURE manipulation.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-#JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/green_css2011/calibration/arm-pose.xml" --armName "katana300" --testGUI
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/green_css2011/calibration/arm-pose.xml" --armName "katana300" --testGUI
 
-#JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
+JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
 
-CPP MG RobotPoseCalculator RobotPoseCalculator --labels "cereals-fruchtemusli cereals-bircher" --log
+CPP MG RobotPoseCalculator RobotPoseCalculator --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --log
 
 
 
