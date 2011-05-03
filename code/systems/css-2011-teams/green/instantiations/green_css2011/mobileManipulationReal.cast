@@ -43,6 +43,10 @@ CPP MG CameraMount CameraMount --camids 0 --use_ptz --cam_poses_xml "instantiati
 #CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video1/frosties_small-0000000%d.ppm" --start "100" --end 620 --framerate_ms 300 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/green_css2011/calibration/cam-left/camcalib-left.xml"
 
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --camconfigs "subarchitectures/vision.sa/config/camPose/camcalib-kinect.xml" --log
+
+CPP MG pointcloudviewer PointCloudViewer --servername pcserver --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini
+
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/example-cereals-schokomusli.ply instantiations/green_css2011/object-models/cereals-bircher.ply" --siftfiles "instantiations/green_css2011/object-models/example-cereals-schokomusli.sift instantiations/green_css2011/object-models/cereals-bircher.sift" --labels "example-cereals-schokomusli cereals-bircher" --log
 
 #CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
