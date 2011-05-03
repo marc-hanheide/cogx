@@ -54,7 +54,7 @@ private:
 	double m_obj_distance;
 	int m_rec_objects;
 
-	bool m_ptz;
+	bool m_halt_ptz;
 
 	/** @brief looks for objects in a certain area */
 	void receiveLookForObjectCommand(const cdl::WorkingMemoryChange & _wmc);

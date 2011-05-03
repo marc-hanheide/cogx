@@ -44,6 +44,7 @@ void ObjectRecognizer3DDriver::receiveLookForObjectCommand(const cdl::WorkingMem
 void ObjectRecognizer3DDriver::doLooking(){
 
 	addPTZCommand(0.0, -1.0472);
+	if(!isRunning()) return;
 
 //	m_rec_visualObjectIDs.clear();
 
@@ -94,6 +95,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	}
 
 	addPTZCommand(0.0, -1.0472);
+	if(!isRunning()) return;
 
 	cogx::Math::Vector3 vOffset = cogx::Math::vector3(0.0,0.0,0.0);
 
@@ -150,6 +152,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	// look left
 	addPTZCommand(1.5, 0.0);
+	if(!isRunning()) return;
 
 	// Move to save pose
 	log("move to save pose");
@@ -167,6 +170,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	// look straight
 	addPTZCommand(0.0, 0.0);
+	if(!isRunning()) return;
 
 	log("Cannot recognize object for grasping");
 	m_grasp_cmd->comp = VisionData::SUCCEEDED;
@@ -206,9 +210,15 @@ void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
 	ptz_cmd->pose = pose;
 	ptz_cmd->comp = ptz::COMPINIT;
 
-	addToWorkingMemory(newDataID(), ptz_cmd);
 	log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
-	sleepComponent(3000);
+	std::string data_id = newDataID();
+	addToWorkingMemory(data_id, ptz_cmd);
+	log("Waiting for arm to finish movement");
+		while(m_halt_ptz && isRunning())
+			sleepComponent(100);
+		m_halt_ptz = true;
+	deleteFromWorkingMemory(data_id);
+
 }
 
 void ObjectRecognizer3DDriver::addTrackingCommand(VisionData::TrackingCommandType cmd){
@@ -368,6 +378,10 @@ void ObjectRecognizer3DDriver::start(){
 	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 		&ObjectRecognizer3DDriver::overwriteCloseGripperCommand));
 
+	addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+		&ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand));
+
 }
 
 void ObjectRecognizer3DDriver::runComponent(){
@@ -377,7 +391,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 	m_halt_arm = true;
 	m_grasp = false;
 	m_look = false;
-	m_ptz = false;
+	m_halt_ptz = false;
 	m_repeat_arm_movement = false;
 	m_obj_distance = 1000.0;
 	m_rec_objects = 0;
@@ -414,12 +428,12 @@ void ObjectRecognizer3DDriver::runComponent(){
 	}
 
 	if(m_mode == VisionData::RECOGNIZE){
-		for(unsigned i=0; i<m_labels.size(); i++)
+		for(unsigned i=0; i<m_labels.size() && isRunning(); i++)
 			addRecognizer3DCommand(VisionData::RECOGNIZE, m_labels[i], modelID);
 	}
 
 	if(m_mode == VisionData::RECLEARN){
-		for(unsigned i=0; i<m_labels.size(); i++)
+		for(unsigned i=0; i<m_labels.size() && isRunning(); i++)
 			addRecognizer3DCommand(VisionData::RECLEARN, m_labels[i], modelID);
 	}
 	
@@ -507,12 +521,7 @@ void ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemo
 
   log("Received PTZ confirmation");
 
-  if(ptz_cmd->comp == ptz::SUCCEEDED){
-	  deleteFromWorkingMemory(_wmc.address.id);
-	  m_ptz = true;
-  }
-
-
+  m_halt_ptz = false;
 }
 
 
