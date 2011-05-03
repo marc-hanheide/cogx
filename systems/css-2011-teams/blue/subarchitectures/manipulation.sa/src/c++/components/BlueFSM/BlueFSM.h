@@ -74,6 +74,7 @@ namespace cogx
     boost::mutex mutex_;
 
     map<string, cogx::Math::Pose3> m_poses;
+    map<string, double> m_pose_confs;
 
     vector<string> m_lookForObjects;
 
