@@ -98,7 +98,7 @@ protected:
 	GenConfigspaceState cbegin, cend;
 	GenWorkspaceState end;
 	GraspPose gend;
-	Mat34 grelease;
+	Mat34 gapproach;
 
 	Mat34 armPose;
 	KatanaArm* arm;
