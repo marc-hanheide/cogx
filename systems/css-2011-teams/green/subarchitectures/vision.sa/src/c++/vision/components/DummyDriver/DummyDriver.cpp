@@ -87,6 +87,15 @@ void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj =
     getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    
+  if(obj->identLabels.empty() && obj->identLabels[0].substr(0, 5) == "table.")
+  {
+  	string lbl = obj->identLabels[0];
+  	
+  }
+  else
+  	return;
+/*  
   if(obj->detectionConfidence >= 0.5)
     log("ok, detected '%s'", obj->identLabels[0].c_str());
   else
@@ -95,6 +104,7 @@ void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
   cmd->labels.push_back(obj->identLabels[0]);
   addToWorkingMemory(newDataID(), cmd);
+  */
 }
 
 // Move PTZ
@@ -134,12 +144,14 @@ void DummyDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _w
 }
 
 // Look4Obj functions	
-bool DummyDriver::addLook4ObjCommand() {
+bool DummyDriver::addLook4ObjCommand(double pan, double tilt) {
   LookForObjectCommandPtr cmd = new LookForObjectCommand;
   
   
   cmd->status = VisionData::NEW;
   cmd->comp = VisionData::COMPINIT;
+  cmd->pan = pan;
+  cmd->tilt = tilt;
   
   m_viscomp = VisionData::COMPINIT;
   
@@ -244,6 +256,27 @@ void DummyDriver::overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc) {
 
   deleteFromWorkingMemory(_wmc.address.id);
 }
+
+vector<ManipulationPosePtr> DummyDriver::getGraspPoses() {
+
+	vector<ManipulationPosePtr> wmposes;
+	getMemoryEntries(wmposes, string("manipulation.sa") );
+  		
+	return wmposes;
+}
+
+vector<ManipulationPosePtr> DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
+	
+	vector<ManipulationPosePtr> purged;
+//	vector<ManipulationPosePtr>::iterator it;
+	for (int it=0 ; it < poses.size(); it++ ) {
+		if(poses[it]->label != label)
+  			purged.push_back(poses[it]);
+  	}
+  	
+  	return purged;
+}
+
 
 }
 
