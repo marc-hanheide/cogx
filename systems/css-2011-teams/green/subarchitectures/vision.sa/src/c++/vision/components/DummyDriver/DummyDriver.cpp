@@ -3,6 +3,8 @@
  * @date February 2009
  */
 
+#include <cstdlib>
+
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "DummyDriver.h"
 
@@ -77,13 +79,14 @@ void DummyDriver::runComponent()
 {
     sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
+
+  while (true) {
     // and initiate detection
     double pan = -1.4;
     double delta = 0.7;
     double tilt = -0.5;
     int step = 0;
     int maxStep = 5;
-
     log("scanning for an object");
     while (step == maxStep){
         addLook4ObjCommand(pan, tilt);
@@ -94,17 +97,49 @@ void DummyDriver::runComponent()
     log("looking for the best object");
     getGraspPoses(m_poses);
 
-    if(m_poses.size() > 0){
+    while (m_poses.size() > 0){
         log("found the best pose");
         m_best_pose = bestPose(m_poses);
         addNavCommand(m_best_pose->robotPose);
-        addGraspCommand(m_best_pose->label);
+        if (addGraspCommand(m_best_pose->label)) {
+            purgePoses(m_best_pose->label, m_poses);
+        }
+        addNavCommand(0);
     }
-    else{
-      log("no poses available");
-      //todo return a failure flag
+    // else{
+    //   log("no poses available");
+    //   //todo return a failure flag
+    // }
+
+    doExplore();
+  }
+}
+
+void DummyDriver::doExplore() {
+    log("exploring...");
+    bool explored = false;
+
+    while (!explored) {
+
+        vector<PlacePtr> places;
+        getMemoryEntries(places, "spatial.sa");
+        long place = -1;
+        for (vector<PlacePtr>::iterator it = places.begin(); it != places.end(); ++it) {
+            if ((*it)->status == PLACEHOLDER) {
+                place = (*it)->id;
+                break;
+            }
+        }
+
+        if (place == -1) { // chose a random node
+            int pos = rand() % places.size();
+            place = places[pos]->id;
+        }
+
+        explored = addNavCommand(place);
     }
 }
+
 
 void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
