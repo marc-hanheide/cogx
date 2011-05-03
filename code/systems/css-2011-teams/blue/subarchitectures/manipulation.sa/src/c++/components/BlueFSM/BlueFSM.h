@@ -49,6 +49,8 @@ namespace cogx
       VERIFY_HANDOVER,
       RELEASE,
       GO_HOME,
+      DELIVER_TO_HOME_POSITION,
+      DELIVER_TO_DROPOFF_TABLE,
       TERMINATED};
   private:
     
@@ -61,6 +63,7 @@ namespace cogx
     void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
 
     bool moveHome();
+    bool moveToSafePose();
     bool movePregrasp(cogx::Math::Pose3 pregraspPose);
     bool envelop();
     bool lift();
