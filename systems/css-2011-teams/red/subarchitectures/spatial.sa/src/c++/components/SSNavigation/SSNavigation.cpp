@@ -4,7 +4,7 @@
  * @brief Vision system for the spring school system
  */
 
-#include "SSVision.h"
+#include "SSNavigation.h"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "cogxmath.h"
 
