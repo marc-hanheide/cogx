@@ -624,6 +624,8 @@ log("MOVE_TO_NEW_POS");
             
             std::string minLabel = bestPoseToGoTo->first;
             
+            log("We're off to grasp %s", minLabel.c_str());
+            
             std::cerr << m_poses[minLabel] << std::endl;
 
             double trash;
