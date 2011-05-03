@@ -102,7 +102,7 @@ public class SimpleRunner extends ManagedComponent {
 				objectPose.pos.x=vo.pose.pos.x;
 				objectPose.pos.y=vo.pose.pos.y;
 				objectPose.pos.z=vo.pose.pos.z;
-				// normalise Y vector
+				// try to grasp from above...
 				objectPose.rot.m00=vo.pose.rot.m01;
 				objectPose.rot.m10=vo.pose.rot.m11;
 				objectPose.rot.m20=vo.pose.rot.m21;
