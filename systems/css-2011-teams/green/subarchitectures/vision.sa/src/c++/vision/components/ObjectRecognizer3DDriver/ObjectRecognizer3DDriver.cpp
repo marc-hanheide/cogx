@@ -161,7 +161,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	// Move Arm toward visual object center
 	log("move arm forward 0.1");
-	vOffset = cogx::Math::vector3(-0.05,0.0,0.0);
+	vOffset = cogx::Math::vector3(-0.08,0.0,0.0);
 	addFarArmMovementCommand(wma, vOffset);
 	if(!isRunning()) return;
 
@@ -189,12 +189,8 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	// Lift arm
 	log("lift object");
-	vOffset = cogx::Math::vector3(-0.05,0.0,0.2);
+	vOffset = cogx::Math::vector3(-0.08,0.0,0.2);
 	addFarArmMovementCommand(wma, vOffset);
-	if(!isRunning()) return;
-
-	// look left
-	addPTZCommand(1.5, 0.0);
 	if(!isRunning()) return;
 
 	// Move to save pose
@@ -205,10 +201,6 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
 	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
 	addMoveArmToPoseCommand(save_pose);
-	if(!isRunning()) return;
-
-	// look straight
-	addPTZCommand(0.0, 0.0);
 	if(!isRunning()) return;
 
 	log("grasping finished");
