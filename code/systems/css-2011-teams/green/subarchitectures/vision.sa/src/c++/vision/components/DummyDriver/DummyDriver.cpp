@@ -108,9 +108,9 @@ void DummyDriver::runComponent()
         if (addGraspCommand(m_best_pose->label)) {
             purgePoses(m_best_pose->label, m_poses);
             m_done.insert(m_best_pose->label);
+            addNavCommand(0);
+            addDropCommand();
         }
-        addNavCommand(0);
-        addDropCommand();
     }
     // else{
     //   log("no poses available");
