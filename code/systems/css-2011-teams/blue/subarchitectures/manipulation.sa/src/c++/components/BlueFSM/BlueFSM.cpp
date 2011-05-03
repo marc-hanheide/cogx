@@ -110,6 +110,12 @@ namespace cogx
     addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
   }
 
+  void outputToFile(const std::string& s, const m::Pose& p)
+  {
+    std::ofstream ofs(s.c_str());
+    ofs << p.first << " " << p.second << std::endl;
+  }
+  
   std::pair<Math::Pose3, double> BlueFSM::nameless(const Math::Pose3& inRobotPose,
                                                    const Math::Pose3& inObjectPose,
                                                    const std::string& inObjectLabel,
@@ -142,6 +148,11 @@ namespace cogx
                robotPose.first, robotPose.second,
                objectPose.first, objectPose.second);
     
+    
+    outputToFile("/tmp/grasp-objectPose", objectPose);
+    outputToFile("/tmp/grasp-robotPose", robotPose);
+    outputToFile("/tmp/grasp-robotRelObjectPose", robotRelObjectPose);
+    
     // Get the predefined grasps for that object
     
     std::vector<m::Pose> objectRelGrasps = grasps[inObjectLabel];
@@ -162,15 +173,19 @@ namespace cogx
       
       robotToGraspVector.Z() = 0;
       
-      double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(0)));
+      double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(1)));
       if (dot > maxDotProduct)
       {
         maxDotProduct = dot;
         bestGrasp = robotGrasp;
         bestBacktrackedGrasp = bestGrasp;
-        bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(0));
+        bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(1));
       }
     }
+    
+    outputToFile("/tmp/grasp-bestGrasp", bestGrasp);
+    outputToFile("/tmp/grasp-bestBacktrackedGrasp", bestBacktrackedGrasp);
+
     
     outPregraspPose = convertPose(bestBacktrackedGrasp);
     std::cerr << "pregrasp: " << outPregraspPose << std::endl;
