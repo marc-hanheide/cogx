@@ -57,6 +57,7 @@ public class YellowExecutor extends ManagedComponent {
 	LinkedList<Long> m_placesQueue;
 
 	private WorkingMemoryAddress m_currentNavCommandWMA = null;
+	private boolean m_lastGraspActionResult = false;
 	
 	public void configure(Map<String, String> args) {
 		log("configure() called");
@@ -196,6 +197,7 @@ public class YellowExecutor extends ManagedComponent {
 
 	private void cleanUpTheKitchen() {
 		log("cleanUpTheKitchen() called.");
+		kickStartMappingBlocking();
 		
 		// start planepopout detection!
 		// planePopOut has detected a table surface
@@ -224,11 +226,11 @@ public class YellowExecutor extends ManagedComponent {
 		while (isRunning()) {
 			// 1) look around for objects
 			say("I am looking for cereal boxes!");
-			boolean _grabbing = false;
+			boolean _grabbingSuccess = false;
 			WorkingMemoryAddress[] _newObjectsArray = lookForObjectsBlocking();
 			if (_newObjectsArray.length>0) {
 				log("found " + _newObjectsArray.length + " new objects. gonna issue grabbing task!");
-				_grabbing = executeGrabbingTaskBlocking(_newObjectsArray);
+				_grabbingSuccess = executeGrabbingTaskBlocking(_newObjectsArray);
 			} else {
 				log("no objects found. will go and search...");
 				try {
@@ -248,18 +250,11 @@ public class YellowExecutor extends ManagedComponent {
 				}
 			}
 		
-			log("TODO: check whether or not to kick start mapping!");
-			if (_grabbing) {
-			//	log("going back to home base.");
-			//	say("acknowledged. will move to base.");
-			//	gotoXYABlocking(0.0, 0.0, -1.0 * (Math.PI/2.0));
-			//	log("arrived at base.");
-			//	say("here you go!");
-			//	log("TODO: release grasp!");
-			//	log("TODO: determine where to continue!");
-			//	continue;
+			if (!_grabbingSuccess) {
+				log("grasp was not successful. trying to look again!");
+				continue;
 			} else {
-				log("did not try grasping an object here. going to the next place.");
+				log("grasp successful. going to the next place...");
 				visitNextPlace();
 				// now start over:
 				continue;
@@ -337,7 +332,7 @@ public class YellowExecutor extends ManagedComponent {
 		return gotoPlaceBlocking(_nextPlace);
 	}
 	
-	private boolean kickStartMapping() {
+	private boolean kickStartMappingBlocking() {
 		log("kickStartMapping() called");
 		synchronized(this) {
 			m_navCmdSuccess = false;
@@ -408,9 +403,23 @@ public class YellowExecutor extends ManagedComponent {
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(taskWMA), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-					synchronized (this) {
-						m_grabbingFinished = true;
-						this.notifyAll();
+					try {
+						GraspObjectTaskYellow currTask = getMemoryEntry(_wmc.address, GraspObjectTaskYellow.class);
+						synchronized (this) {
+							if (currTask.status.equals(ActionStatusYellow.COMPLETEY)) {
+								m_lastGraspActionResult = true;
+							} else {
+								m_lastGraspActionResult = false;
+							}
+							m_grabbingFinished = true;
+							this.notifyAll();
+						}
+					} catch (DoesNotExistOnWMException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownSubarchitectureException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				};
 			});
@@ -437,7 +446,11 @@ public class YellowExecutor extends ManagedComponent {
 			}
 		}
 		log("TODO: return whether grasp was successful or not.");
-		return true;
+		boolean taskSuccess = false;
+		synchronized (this) {
+			taskSuccess = m_lastGraspActionResult;
+		}
+		return taskSuccess;
 	}
 	
 	
