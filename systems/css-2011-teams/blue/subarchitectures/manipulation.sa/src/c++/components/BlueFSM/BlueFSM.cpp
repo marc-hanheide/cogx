@@ -462,16 +462,16 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
 	    m_turnStep = 0;
 
-	    while (m_turnStep < 3) {
-	      lockComponent();
+	    while (m_turnStep < 8) {
+//	      lockComponent();
 	      // Issue recognition commands
 	      for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
-		addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
+		detect(it->c_str());
 	      }
-	      unlockComponent();
+//	      unlockComponent();
 
-	      sleep(5);
-	      if(m_turnStep < 2)
+//	      sleep(5);
+	      if(m_turnStep < 7)
 	      {
 		turn45Degrees();
 	      }
@@ -513,6 +513,7 @@ log("%i", __LINE__);
 	    }
 	    else {
 	      double bestX, bestY, bestTheta;
+	      m_globalPoses.erase(bestObject);
 log("%i", __LINE__);
 	      bool success = findBestGraspPose(bestObject, bestX, bestY, bestTheta);
 log("%i", __LINE__);
@@ -567,12 +568,13 @@ log("MOVE_TO_NEW_POS");
 	      m_state = TERMINATED;
 	    }
 	    else {
-	      lockComponent();
+	      //lockComponent();
 	      // Issue recognition commands
 	      for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
-		addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
+		detect(it->c_str());
+//		addRecognizer3DCommand(VisionData::RECOGNIZE, it->c_str(), "");
 	      }
-	      unlockComponent();
+	      //unlockComponent();
 
 	      m_state = DETECTING;
 	    }
@@ -581,7 +583,6 @@ log("MOVE_TO_NEW_POS");
 
 	case DETECTING:
 	  log("DETECTING");
-	  sleep(10);
 
 	  m_state = DECIDE_GRASP;
 	  break;
@@ -920,6 +921,7 @@ m_globalPoses[vo->identLabels.at(i)].pos.z);
       m_pose_confs[vo->identLabels.at(i)] = vo->identDistrib.at(i);
     }
       //warn("finished objectPoseCallback");
+    m_waiting = false;
   }
 
   void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
@@ -1410,6 +1412,23 @@ log("movePTZ %f, %f", pan, tilt);
   cmd = getMemoryEntry<ptz::SetPTZPoseCommand>(id);
 
   return cmd->comp == ptz::SUCCEEDED;
+}
+
+bool
+BlueFSM::detect(const string &label)
+{
+  m_waiting = true;
+  addRecognizer3DCommand(VisionData::RECOGNIZE, label, "");
+
+  int waitCycles = 0;
+  while (m_waiting && waitCycles < 500) {
+    usleep(50000);
+    waitCycles++;
+  }
+  if (waitCycles == 500) {
+    return false;
+  }
+  return true;
 }
   
 }
