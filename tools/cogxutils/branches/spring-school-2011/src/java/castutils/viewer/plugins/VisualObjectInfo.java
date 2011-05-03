@@ -21,23 +21,4 @@ public class VisualObjectInfo extends DefaultXMLInfo {
 		return extraInfo;
 	}
 
-	// /**
-	// * @param fv
-	// * @return
-	// */
-	// public static String toString(FeatureValue fv) {
-	// String featStr="*";
-	// if (fv instanceof IntegerValue)
-	// featStr=Integer.toString(((IntegerValue) fv).val);
-	// if (fv instanceof PointerValue)
-	// featStr=CASTUtils.toString(((PointerValue) fv).beliefId);
-	// if (fv instanceof StringValue)
-	// featStr=((StringValue) fv).val;
-	// if (fv instanceof FloatValue)
-	// featStr= Double.toString(((FloatValue) fv).val);
-	// if (fv instanceof BooleanValue)
-	// featStr=Boolean.toString(((BooleanValue) fv).val);
-	// return featStr;
-	// }
-
 }
