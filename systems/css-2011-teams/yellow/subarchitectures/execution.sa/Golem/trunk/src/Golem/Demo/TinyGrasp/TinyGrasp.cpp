@@ -397,7 +397,7 @@ bool TinyGrasp::graspTry(const GraspPose& pose) {
 bool TinyGrasp::graspExec(Real duration) {
 	Mat34 actual;
 
-	arm->gripperOpen(numeric_const<double>::INF);
+	gripperOpen();
 
 	actual = moveTry(gend.approach);
 	PoseError approachError(actual, gend.approach);
@@ -412,14 +412,11 @@ bool TinyGrasp::graspExec(Real duration) {
 	Mat34 pose = read();
 	gapproach = toBody(pose, diff(pose, gend.approach));
 
-	KatanaSensorDataSet threshold = zero;
-	for (KatanaSensorDataSet::iterator i = threshold.begin(); i != threshold.end(); ++i)
-		i->value += sensorThreshold;
-	arm->gripperClose(threshold, numeric_const<double>::INF);
+	gripperClose();
 
 	const KatanaGripperEncoderData data = arm->gripperRecvEncoderData(numeric_const<double>::INF);
 	const I32 error = Math::abs(data.closed - data.current);
-	if (error < encoderThreshold) {
+	if (error < encoderThreshold && data.open != data.closed) {
 		tiny->print("TinyGrasp::graspExec(): FAILED: error = %i", error);
 		return false;
 	}
@@ -435,7 +432,7 @@ bool TinyGrasp::graspExec(Real duration) {
 }
 
 void TinyGrasp::graspRelease() {
-	arm->gripperOpen(numeric_const<double>::INF);
+	gripperOpen();
 
 	releaseObject();
 	
@@ -489,6 +486,19 @@ Mat23Seq TinyGrasp::getRobotPoses(const GraspPose::Seq& poses) const {
 	robotPoses.push_back(Mat23(a[0], p[0]));
 	robotPoses.push_back(Mat23(a[1], p[1]));
 	return robotPoses;
+}
+
+//------------------------------------------------------------------------------
+
+void TinyGrasp::gripperOpen() {
+	arm->gripperOpen(numeric_const<double>::INF);
+}
+
+void TinyGrasp::gripperClose() {
+	KatanaSensorDataSet threshold = zero;
+	for (KatanaSensorDataSet::iterator i = threshold.begin(); i != threshold.end(); ++i)
+		i->value += sensorThreshold;
+	arm->gripperClose(threshold, numeric_const<double>::INF);
 }
 
 //------------------------------------------------------------------------------
