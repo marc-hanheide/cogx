@@ -440,7 +440,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    // objects/tables
 	    log("INIT");
 	    m_state = LOOK_CANONICAL;
-
+//break;
 	      bool success = movePTZ(0, -M_PI/6);
 	      if (true) {
 		m_state = SPINNING;
@@ -558,7 +558,7 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = movePTZ(0, -M_PI/3);
 
-	    if (!success) {
+	    if (false) { //!success) {
 	      log("Error! Couldn't move the PTZ to canonical!") ;
 	      m_state = TERMINATED;
 	    }
@@ -577,7 +577,7 @@ log("MOVE_TO_NEW_POS");
 
 	case DETECTING:
 	  log("DETECTING");
-	  sleep(5);
+	  sleep(10);
 
 	  m_state = DECIDE_GRASP;
 	  break;
@@ -984,9 +984,8 @@ log("%i", __LINE__);
   double bestAlignment = -FLT_MAX;
 
   vector<pair<double, double> > coordinates;
-log("%i", __LINE__);
-  for (int attempt = 0; attempt < 1000; attempt++) {
-    const double r = 0.3 + 1*((double)rand())/RAND_MAX;
+  for (int attempt = 0; attempt < 10000; attempt++) {
+    const double r = 0.2 + 0.5*((double)rand())/RAND_MAX;
     const double phi = 2*M_PI*((double)rand())/RAND_MAX;
     double dx = r*cos(phi);
     double dy = r*sin(phi);
@@ -994,7 +993,6 @@ log("%i", __LINE__);
     double y = objY + dy;
 
     if (isCircleFree(*m_lgm, x, y, 0.3, true))  {
-log("%i", __LINE__);
       double alignment;
       Math::Pose3 outPregraspPose;
       Math::Pose3 outEnvelopingPose;
@@ -1015,7 +1013,6 @@ log("%i", __LINE__);
       }
     }
 else {
-log ("obstructed at %f,%f", x, y);
 } 
   }
 log("bestAlignment %f", bestAlignment);
@@ -1301,11 +1298,11 @@ void
 BlueFSM::findRandomPosition(double &x, double &y)
 {
   bool finished = false;
-  double minX = -5, maxX = 5;
-  double minY = -5, maxY = 5;
+  double minX = -1, maxX = 3;
+  double minY = -1, maxY = 3;
   while (!finished) {
-    x = (maxX-minX)/RAND_MAX*rand();
-    y = (maxY-minY)/RAND_MAX*rand();
+    x = minX+(maxX-minX)/RAND_MAX*rand();
+    y = minY+(maxY-minY)/RAND_MAX*rand();
 
     if (isCircleFree(*m_lgm, x, y, 0.3, false)) {
       finished = true;
