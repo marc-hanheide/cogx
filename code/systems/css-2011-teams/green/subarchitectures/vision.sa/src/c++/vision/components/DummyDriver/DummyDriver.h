@@ -32,6 +32,7 @@ private:
   std::vector<std::string> labels;
   
   std::vector<manipulation::slice::ManipulationPosePtr> m_poses;
+  manipulation::slice::ManipulationPosePtr m_best_pose;
 
   /**
    * callback function called whenever a new object appears ore an object
