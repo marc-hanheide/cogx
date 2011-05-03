@@ -12,6 +12,8 @@
 #include <string>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <manipulation.hpp>
+#include <PTZ.hpp>
 
 namespace cast
 {
@@ -19,6 +21,8 @@ namespace cast
 class DummyDriver : public ManagedComponent
 {
 private:
+
+  ptz::PTZCompletion m_ptz;
   /**
    * list of objects we want to have detected
    */
@@ -29,6 +33,11 @@ private:
    * changes
    */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  
+  // PTZ functions	
+  bool addPTZCommand(double pan, double tilt);
+  
+  void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
   /**

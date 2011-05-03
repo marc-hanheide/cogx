@@ -21,6 +21,10 @@ namespace cast
 {
 
 using namespace std;
+using namespace cast;
+using namespace manipulation::slice;
+using namespace ptz;
+using namespace VisionData;
 
 void DummyDriver::configure(const map<string,string> & _config)
 {
@@ -50,6 +54,10 @@ void DummyDriver::start()
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::receiveVisualObject));
+        
+  addChangeFilter(createLocalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DummyDriver>(this,
+        &DummyDriver::overwriteSetPTZPoseCommand));
 }
 
 void DummyDriver::runComponent()
@@ -76,5 +84,40 @@ void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   addToWorkingMemory(newDataID(), cmd);
 }
 
+// Move PTZ
+
+bool DummyDriver::addPTZCommand(double pan, double tilt) {
+  SetPTZPoseCommandPtr ptz_cmd = new SetPTZPoseCommand;
+  
+  PTZPose pose;
+  pose.pan = pan;
+  pose.tilt = tilt;
+  pose.zoom = 0;
+  
+  ptz_cmd->pose = pose;
+  ptz_cmd->comp = ptz::COMPINIT;
+  
+  m_ptz = ptz::COMPINIT;
+  
+  addToWorkingMemory(newDataID(), ptz_cmd);
+  log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
+  
+  while(m_ptz == ptz::COMPINIT)
+		sleepComponent(50);
+		
+  return (m_ptz == ptz::SUCCEEDED);
+}
+
+// Receive PTZ completion signal
+
+void DummyDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc){
+  SetPTZPoseCommandPtr ptz_cmd = getMemoryEntry<SetPTZPoseCommand>(_wmc.address);
+
+  log("Received PTZ confirmation");
+
+  m_ptz = ptz_cmd->comp;
+  deleteFromWorkingMemory(_wmc.address.id);
+
+}
 }
 
