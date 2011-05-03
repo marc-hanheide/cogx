@@ -17,7 +17,7 @@ multiple operators. In detail, DTPDDL has perceptual analogues of
 fluent and predicate symbols. For example, a simple {\em object
 search} domain would have:
 
-\vspace{-1ex}
+% \vspace{-1ex}
 \small
 \begin{tabtt}
 (\=:functions\\
@@ -26,7 +26,7 @@ search} domain would have:
   \> (o-is-in ?v - visual-object) - location )
 \end{tabtt}
 \normalsize
-\vspace{-1ex}
+% \vspace{-1ex}
 
 \noindent Where the first fluent symbol models the actual location of
 objects, and the second the instantaneous sensing of objects
@@ -39,7 +39,7 @@ example, where {\em look-for-object} is the operator that applies an
 object detection algorithm at a specific place, an {\em
 object search} task will have:
 
-\vspace{-1ex}
+% \vspace{-1ex}
 \small
 \begin{tabtt}
 (\= :sense vision  :parameters \+ \\
@@ -53,14 +53,13 @@ object search} task will have:
     \>(probabilistic .1 (= (o-is-in ?v) ?l))))) \\
 \end{tabtt}
 \normalsize
-\vspace{-3ex}
+\vspace{-1ex}
 
 \noindent I.e., there is a 10\% {\em false positive} rate, and 20\%
   probability of a {\em false negative}. This representation allows us to represent actions that have multiple independent observational effects.
 
-We now review the DTPDDL syntax for describing an initial state
-distribution, taken verbatim from PPDDL, in order to aid us in
-discussing our planner. That distribution is expressed in a tree-like
+The DTPDDL syntax for describing an initial state
+distribution is taken verbatim from PPDDL. That distribution is expressed in a tree-like
 structure of terms. Each term is either: (1) atomic, e.g., a state
 proposition such as $(=(\pp{is-in}~\pp{box})\pp{office})$, (2)
 probabilistic, e.g., $(\pp{probabilistic}~\prob_1 (T_1) .. \prob_n
@@ -73,7 +72,7 @@ $(\pp{and}~T_1..T_n)$. Also, we shall write $\prop$, rather than
 $(\pp{and}~\prop)$, for conjunctive terms that contain a single atomic
 subterm.}
 
-\vspace{-1ex}
+% \vspace{-1ex}
 \small
 \begin{tabtt}
 (\=:init (= (is-in Robot) kitchen) \+ \\
@@ -84,7 +83,7 @@ subterm.}
 \end{tabtt}
 \normalsize
 
-\vspace{-3ex}
+\vspace{-1ex}
 
 \noindent The interpretation is given
 by a {\em visitation} of terms: An atom is {\em visited} iff
