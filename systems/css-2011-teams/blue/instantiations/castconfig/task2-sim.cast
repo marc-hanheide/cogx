@@ -21,66 +21,17 @@ CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --la
 CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
 JAVA MG ManualNavGUI spatial.manual.ManualNavControl
 CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10  
-
 #--------------------------------------------------------------------------------------------------------------------------------------------------
-# visualisation #####################################################################
+# visualisation ###
 SUBARCHITECTURE visualization.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-# the visualisation server proxy to be used to display all kinds of data
+
 CPP MG display.srv DisplayServer --redirect-to-host localhost
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # vision ######################################################################
 SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# computes the frame transformations for the pan tilt.
-CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# This is the PlayerVideoServer which is used only in simulation 
-# where it serves the image stream from Gazebo.
-CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml" --log
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# the ObjectTracker receives VisionData.TrackingCommand and tracks VisualObject.
-# This is required to have an accurate object pose for manipulation.
-CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" # --log
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# run the recognizer on pre-trained objects, given by ply and sift files
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/cereals-chocos.ply instantiations/css2011/object-models/cereals-weetabix.ply" --siftfiles "instantiations/learnt-object-models/example-cereals-chocos.sift instantiations/learnt-object-models/example-cereals-weetabix.sift" --labels "cereals-choko cereals-weetabix" --initpose "[0.56 0.00 0.67][0.00 0.00 1.57]" --log
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# this component allows to view the actual camera image in the display server
-CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# this component creats a simple GUI to access the PTZ Unit
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# manipulation #####################################################################
-SUBARCHITECTURE manipulation.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
 
-CPP MG finiteStateMachine BlueFSM
-
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# the PlayerArmBridge is only required for Gazebo, hence in simulation settings
-CPP MG manipulation.playerArmBridge PlayerArmBridge --log
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# this is the component that receives ManipulationExternalCommand 
-# as discussed in the tutorial and controls the arm. 
-# Here you have to give the correct clibration file
-# with "--testGUI" you can try out the different commands
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "simulation" --testGUI
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-###### DEBUG OUTPUT #####################################################################
-# shows memory entries that are in working memories. Helps to identify what's going on
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# display VisualObjects found in WM
-JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# display all ManipulationCommands found in WM
-JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# display all TrackingCommands found in WM
-JAVA MG TrackingCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.TrackingCommand"  --generic-col
-#--------------------------------------------------------------------------------------------------------------------------------------------------
+	
