@@ -18,8 +18,19 @@ namespace cast
 class SSVision : public ManagedComponent
 {
 private:
-//   void calculateGripperPosition(VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
-//   void WriteGripperPositionToWM(VisionData::GripperPosePtr  grPose);
+  bool stopRecognizeObjects;
+  bool stopDetectingTables;
+  
+  bool objectFound;                   ///< set to true if new object was recognized
+  std::string objectFoundID;               ///< ID of the visual object in working memory
+  std::vector<std::string> labels;    ///< labels of the objects (same than in Recognizer3D cast-file) 
+
+  void receivedVisionCommand(const cdl::WorkingMemoryChange & _wmc);
+  void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void RecognizeObject();
+  void DetectTable();
+  void WriteCommandToWM(int cmd, bool success, std::string id);
+
 
 protected:
 
@@ -27,10 +38,8 @@ protected:
   virtual void start();
   virtual void runComponent();
 
-//   void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
 public:
-  SSVision() {}
+  SSVision();
   virtual ~SSVision() {}
 };
 
