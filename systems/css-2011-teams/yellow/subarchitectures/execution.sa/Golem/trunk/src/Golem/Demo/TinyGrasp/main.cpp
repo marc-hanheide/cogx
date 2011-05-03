@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 		// setup object
 		Mat34 objectPose;
 		objectPose.setId();
-		objectPose.R.rotZ(0.1);
+		objectPose.R.rotY(0.3);
 		objectPose.p.x = Real(0.55);
 		objectPose.p.z = Real(0.6);
 		Vec3 objectDimensions(Real(0.08), Real(0.02), Real(0.11));

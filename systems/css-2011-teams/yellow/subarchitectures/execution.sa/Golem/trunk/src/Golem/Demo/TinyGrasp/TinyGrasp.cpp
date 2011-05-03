@@ -293,7 +293,7 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	const Mat34 pose = object->getGlobalPose();
 	const Vec3 dimensions = pObjectShapeDesc->dimensions;
 
-	GraspPose graspPoses[3][2];
+	GraspPose graspPoses[2][4];
 	Real min = numeric_const<Real>::MAX;
 	for (U32 i = 0; i < 3; ++i) {
 		if (min > dimensions[i]) {
@@ -303,9 +303,88 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 				// object approach axis index
 				const U32 k = (i + j + 1)%3;
 
+				// debug info
+				const char* coords [] = {"X", "Y", "Z"};
+				tiny->print("dim[%s] -> %s", coords[i], coords[k]);
+
 				// local poses: 0 - approach from positive to negative, 1 - from negative to positive
 				GraspPose* gp = graspPoses[j];
-				Mat33 rot[2];
+				Mat33 rot[4];
+				switch (k) {
+				case 0:	// X
+					gp[0].approach.R = i == 1 ? rotAxis(2, +REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, +REAL_PI_2);
+					gp[1].approach.R = i == 1 ? rotAxis(2, -REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, -REAL_PI_2);
+					break;
+				case 1:	// Y
+					gp[0].approach.R = i == 0 ? rotAxis(0, +REAL_PI) : rotAxis(1, -REAL_PI_2, 0, +REAL_PI);
+					gp[1].approach.R = i == 0 ? rotAxis(0, +REAL_ZERO) : rotAxis(1, -REAL_PI_2);
+					break;
+				case 2:	// Z
+					gp[0].approach.R = i == 0 ? rotAxis(0, -REAL_PI_2) : rotAxis(2, -REAL_PI_2, 0, -REAL_PI_2);
+					gp[1].approach.R = i == 0 ? rotAxis(2, +REAL_PI, 0, +REAL_PI_2) : rotAxis(2, +REAL_PI_2, 0, +REAL_PI_2);
+					break;
+				}
+
+				gp[0].approach.p.setZero();
+				gp[0].grasp = gp[0].approach;
+				gp[0].approach.p[k] = +(dimensions[k] + approachOffset);
+				gp[0].grasp.p[k] = +(dimensions[k] + graspOffset);
+				gp[0].approach.multiply(pose, gp[0].approach);
+				gp[0].grasp.multiply(pose, gp[0].grasp);
+
+				gp[1].approach.p.setZero();
+				gp[1].grasp = gp[1].approach;
+				gp[1].approach.p[k] = -(dimensions[k] + approachOffset);
+				gp[1].grasp.p[k] = -(dimensions[k] + graspOffset);
+				gp[1].approach.multiply(pose, gp[1].approach);
+				gp[1].grasp.multiply(pose, gp[1].grasp);
+			}
+		}
+	}
+
+	GraspPose::Seq poses;
+	poses.push_back(graspPoses[0][0]);
+	poses.push_back(graspPoses[0][1]);
+	poses.push_back(graspPoses[1][0]);
+	poses.push_back(graspPoses[1][1]);
+
+	DebugRenderer debugRenderer;
+	debugRenderer.addAxes(graspPoses[0][0].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][0].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][1].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][1].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][0].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][0].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][1].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][1].grasp, Vec3(0.05));
+	tiny->render(&debugRenderer);
+
+	return poses;
+}
+
+/*
+GraspPose::Seq TinyGrasp::getGraspPoses() const {
+	BoxShapeDesc* pObjectShapeDesc = getObjectBoxDesc(object);
+	const Mat34 pose = object->getGlobalPose();
+	const Vec3 dimensions = pObjectShapeDesc->dimensions;
+
+	GraspPose graspPoses[2][4];
+	Real min = numeric_const<Real>::MAX;
+	for (U32 i = 0; i < 3; ++i) {
+		if (min > dimensions[i]) {
+			min = dimensions[i];
+			
+			for (U32 j = 0; j < 2; ++j) {
+				// object approach axis index
+				const U32 k = (i + j + 1)%3;
+
+				// debug info
+				const char* coords [] = {"X", "Y", "Z"};
+				tiny->print("dim[%s] -> %s", coords[i], coords[k]);
+
+				// local poses: 0 - approach from positive to negative, 1 - from negative to positive
+				GraspPose* gp = graspPoses[j];
+				Mat33 rot[4];
 				switch (k) {
 				case 0:	// X
 					gp[0].approach.R.rotZ(+REAL_PI_2);
@@ -361,6 +440,7 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 
 	return poses;
 }
+*/
 
 bool TinyGrasp::graspTry(const GraspPose::Seq& poses) {	
 	GraspPose::Seq::const_iterator index = poses.begin();
@@ -516,6 +596,23 @@ BoxShapeDesc* TinyGrasp::getObjectBoxDesc(RigidBody* object) const {
 		throw ExTinyShape("TinyGrasp::getObjectBoxDesc(): No box shape");
 
 	return pObjectShapeDesc;
+}
+
+Mat33 TinyGrasp::rotAxis(U32 axis, Real angle) {
+	Mat33 R;
+	switch (axis) {
+	case 0: R.rotX(angle); break;
+	case 1: R.rotY(angle); break;
+	default: R.rotZ(angle); break;
+	}
+	return R;
+}
+
+Mat33 TinyGrasp::rotAxis(U32 axis1, Real angle1, U32 axis2, Real angle2) {
+	Mat33 R1 = rotAxis(axis1, angle1);
+	Mat33 R2 = rotAxis(axis2, angle2);
+	R1.multiply(R1, R2);
+	return R1;
 }
 
 Mat34 TinyGrasp::diff(const Mat34& a, const Mat34& b) {
