@@ -403,7 +403,7 @@ public class YellowExecutor extends ManagedComponent {
 			log("5");
 			addToWorkingMemory(taskWMA, _newTask);
 			log("6");
-			addChangeFilter(ChangeFilterFactory.createAddressFilter(taskWMA), 
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(taskWMA,WorkingMemoryOperation.OVERWRITE), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					log("WME changed for the GraspObjectTask struct.");
@@ -460,6 +460,7 @@ public class YellowExecutor extends ManagedComponent {
 						break;
 					}
 					this.wait();
+					continue;
 				}
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
