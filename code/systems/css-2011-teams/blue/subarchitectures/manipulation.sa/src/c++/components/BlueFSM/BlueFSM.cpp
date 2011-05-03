@@ -555,16 +555,22 @@ namespace cogx
 
     VisionData::VisualObjectPtr vo = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-    unsigned m_idx = std::distance(vo->identDistrib.begin(), std::max_element(vo->identDistrib.begin(), vo->identDistrib.end()));
-    m_idx = 0;
-//    if (vo->identLabels.at(m_idx) == "cereals1_model")
-//    {
-      boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
-      //boost::unique_lock<boost::mutex> lock(mutex_);
-      m_poses[vo->identLabels.at(m_idx)] = vo->pose;
-//    }
+    for (unsigned i = 0; i < vo->identDistrib.size(); i++)
+    {
+      if (vo->identLabels.at(i).find("cereals") == std::string::npos)
+        continue;
 
+      if (vo->identDistrib.at(i) < .03)
+        continue;
 
+      //boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+      std::cerr << "Waiting for mutex_" << std::endl;
+      boost::unique_lock<boost::mutex> lock(mutex_);
+      std::cerr << "Have mutex_" << std::endl;
+      
+      m_poses[vo->identLabels.at(i)] = vo->pose;
+      m_pose_confs[vo->identLabels.at(i)] = vo->identDistrib.at(i);
+    }
       //warn("finished objectPoseCallback");
   }
 
