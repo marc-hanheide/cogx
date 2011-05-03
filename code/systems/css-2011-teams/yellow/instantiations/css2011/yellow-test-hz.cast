@@ -19,7 +19,7 @@ CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP GD path.query PathQueryProcessor 
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 2 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
 CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
-JAVA MG ManualNavGUI spatial.manual.ManualNavControl
+# JAVA MG ManualNavGUI spatial.manual.ManualNavControl
 CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10  
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --ply
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # this component creats a simple GUI to access the PTZ Unit
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer # --testGUI
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa
@@ -69,7 +69,7 @@ CPP MG manipulation.playerArmBridge PlayerArmBridge --log
 # as discussed in the tutorial and controls the arm. 
 # Here you have to give the correct clibration file
 # with "--testGUI" you can try out the different commands
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "simulation" --testGUI
+# JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "simulation" --testGUI
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 ###### DEBUG OUTPUT #####################################################################
 # shows memory entries that are in working memories. Helps to identify what's going on

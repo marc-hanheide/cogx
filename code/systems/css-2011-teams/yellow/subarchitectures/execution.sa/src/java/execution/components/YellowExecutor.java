@@ -38,7 +38,7 @@ public class YellowExecutor extends ManagedComponent {
 	private static final int TIME_TO_WAIT_TO_INIT = 16500;
 	
 	
-	int m_competitionTask = 2;
+	int m_competitionTask = 3;
 	String m_navsaID = "spatial.sa";
 	String m_visionsaID = "vision.sa";
 	String m_dsaID = "dialogue";
@@ -129,7 +129,7 @@ public class YellowExecutor extends ManagedComponent {
 			handMeTheCereals();
 			break;
 		case 3:
-			log("Competition 3: Cleaning the kitchen. ...not yet implemented...");
+			log("Competition 3: Cleaning the kitchen.");
 			cleanUpTheKitchen();
 			break;
 		default:
@@ -138,6 +138,7 @@ public class YellowExecutor extends ManagedComponent {
 			visitAllPlacesBlocking();
 			break;
 		}
+		say("I am done. My existence is futile now.");
 	}
 	
 	private void handMeTheCereals() {
@@ -234,6 +235,8 @@ public class YellowExecutor extends ManagedComponent {
 			} else {
 				log("no objects found. will go and search...");
 				try {
+					planePopOutMonitorReadyWME = getMemoryEntry(_kinectStatusWMA, KinectPlanePopOut.class);
+					planePopOutMonitorReadyWME.status=PlaneDetectionStatus.READY;
 					overwriteWorkingMemory(_kinectStatusWMA, planePopOutMonitorReadyWME);
 				} catch (DoesNotExistOnWMException e) {
 					// TODO Auto-generated catch block
@@ -338,7 +341,7 @@ public class YellowExecutor extends ManagedComponent {
 			m_navCmdSuccess = false;
 			this.notifyAll();
 		}
-		gotoXYABlocking(1.0, 1.0, Math.PI/4.0);
+		gotoXYABlocking(1.0, 0.0, 0.0);
 		return true;
 	}
 	
@@ -445,7 +448,6 @@ public class YellowExecutor extends ManagedComponent {
 				}
 			}
 		}
-		log("TODO: return whether grasp was successful or not.");
 		boolean taskSuccess = false;
 		synchronized (this) {
 			taskSuccess = m_lastGraspActionResult;
