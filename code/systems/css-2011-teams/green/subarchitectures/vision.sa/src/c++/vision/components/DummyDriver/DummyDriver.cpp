@@ -243,7 +243,7 @@ void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc
 bool DummyDriver::addGraspCommand(string label) {
   GraspForObjectCommandPtr cmd = new GraspForObjectCommand;
 
-
+  cmd->label = label;
   cmd->status = VisionData::NEW;
   cmd->comp = VisionData::COMPINIT;
 
