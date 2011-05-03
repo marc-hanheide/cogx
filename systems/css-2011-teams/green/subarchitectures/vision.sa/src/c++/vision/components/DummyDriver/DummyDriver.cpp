@@ -78,9 +78,13 @@ void DummyDriver::runComponent()
   sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   // and initiate detection
-  VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-  cmd->labels = labels;
-  addToWorkingMemory(newDataID(), cmd);
+  
+  addLook4ObjCommand(0, -0.5);
+  
+  m_poses =  getGraspPoses();
+  
+  if(m_poses.size() > 0)
+  	addNavCommand(m_poses[0]->robotPose.x, m_poses[0]->robotPose.y, m_poses[0]->robotPose.z);
 }
 
 void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
