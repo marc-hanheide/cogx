@@ -55,19 +55,19 @@ void DummyDriver::start()
   addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::receiveVisualObject));
-        
+
   addChangeFilter(createGlobalTypeFilter<NavCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteNavCommand));
-        
+
 //  addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
 //      new MemberFunctionChangeReceiver<DummyDriver>(this,
 //        &DummyDriver::overwriteSetPTZPoseCommand));
-        
+
   addChangeFilter(createGlobalTypeFilter<GraspForObjectCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteGraspCommand));
-        
+
   addChangeFilter(createGlobalTypeFilter<LookForObjectCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteLook4ObjCommand));
@@ -75,41 +75,50 @@ void DummyDriver::start()
 
 void DummyDriver::runComponent()
 {
-  sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
+    sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
-  // and initiate detection
-  
-  addLook4ObjCommand(0, -0.5);
-  log("executed ptz");
-  
-  sleepProcess(5000);
-  
-  getGraspPoses(m_poses);
+    // and initiate detection
+    double pan = -1.4;
+    double delta = 0.7;
+    double tilt = -0.5;
+    int step = 0;
+    int maxStep = 5;
 
-  if(m_poses.size() > 0)
-  {	
-  	m_best_pose = bestPose(m_poses);
-  	log("issuing mover command");
-  	addNavCommand(m_best_pose->robotPose);
-  	addGraspCommand(m_best_pose->label);
-  }else{
-	  log("no poses available");
-  }
+    log("scanning for an object");
+    while (step == maxStep){
+        addLook4ObjCommand(pan, tilt);
+        pan += delta;
+        step++;
+        sleepProcess(1000);
+    }
+    log("looking for the best object");
+    getGraspPoses(m_poses);
+
+    if(m_poses.size() > 0){
+        log("found the best pose");
+        m_best_pose = bestPose(m_poses);
+        addNavCommand(m_best_pose->robotPose);
+        addGraspCommand(m_best_pose->label);
+    }
+    else{
+      log("no poses available");
+      //todo return a failure flag
+    }
 }
 
 void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj =
     getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-    
+
   if(obj->identLabels.empty() && obj->identLabels[0].substr(0, 5) == "table.")
   {
   	string lbl = obj->identLabels[0];
-  	
+
   }
   else
   	return;
-/*  
+/*
   if(obj->detectionConfidence >= 0.5)
     log("ok, detected '%s'", obj->identLabels[0].c_str());
   else
@@ -125,23 +134,23 @@ void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
 bool DummyDriver::addPTZCommand(double pan, double tilt) {
   SetPTZPoseCommandPtr ptz_cmd = new SetPTZPoseCommand;
-  
+
   PTZPose pose;
   pose.pan = pan;
   pose.tilt = tilt;
   pose.zoom = 0;
-  
+
   ptz_cmd->pose = pose;
   ptz_cmd->comp = ptz::COMPINIT;
-  
+
   m_ptz = ptz::COMPINIT;
-  
+
   addToWorkingMemory(newDataID(), ptz_cmd);
   log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
-  
+
   while(m_ptz == ptz::COMPINIT)
 		sleepComponent(60);
-		
+
   return (m_ptz == ptz::SUCCEEDED);
 }
 
@@ -157,28 +166,28 @@ void DummyDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _w
 //  deleteFromWorkingMemory(_wmc.address.id);
 }
 
-// Look4Obj functions	
+// Look4Obj functions
 bool DummyDriver::addLook4ObjCommand(double pan, double tilt) {
   LookForObjectCommandPtr cmd = new LookForObjectCommand;
-  
-  
+
+
   cmd->status = VisionData::NEW;
   cmd->comp = VisionData::COMPINIT;
   cmd->pan = pan;
   cmd->tilt = tilt;
-  
+
   m_viscomp = VisionData::COMPINIT;
-  
+
   addToWorkingMemory(newDataID(), cmd);
   log("Added LookForObjects command");
-  
+
   while(m_viscomp == VisionData::COMPINIT)
 		sleepComponent(50);
-		
+
   return (m_viscomp == VisionData::SUCCEEDED);
 
 }
-  
+
 void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc) {
   LookForObjectCommandPtr cmd = getMemoryEntry<LookForObjectCommand>(_wmc.address);
 
@@ -188,23 +197,23 @@ void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc
   assert(m_viscomp != VisionData::COMPINIT);
 //  deleteFromWorkingMemory(_wmc.address.id);
 }
-  
-// Grasp functions	
+
+// Grasp functions
 bool DummyDriver::addGraspCommand(string label) {
   GraspForObjectCommandPtr cmd = new GraspForObjectCommand;
-  
-  
+
+
   cmd->status = VisionData::NEW;
   cmd->comp = VisionData::COMPINIT;
-  
+
   m_viscomp = VisionData::COMPINIT;
-  
+
   addToWorkingMemory(newDataID(), cmd);
   log("Added GraspForObject command");
-  
+
   while(m_viscomp == VisionData::COMPINIT)
 		sleepComponent(50);
-		
+
   return (m_viscomp == VisionData::SUCCEEDED);
 }
 
@@ -218,7 +227,7 @@ void DummyDriver::overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc) {
 //  deleteFromWorkingMemory(_wmc.address.id);
 }
 
-// Nav Commands	
+// Nav Commands
 bool DummyDriver::addNavCommand(double x, double y, double angle) {
 
 	NavCommandPtr nc = new NavCommand();
@@ -226,30 +235,30 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	   nc->pose.push_back(x);
  	   nc->pose.push_back(y);
 	   nc->pose.push_back(angle);
-	
+
 //	                nc->tolerance=new vector<double>;
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.175);
-	   
+
 	   nc->destId.push_back(0);
 	   nc->distance.push_back(0);
 	   nc->angle.push_back(0);
-	   
+
 	   nc->cmd = SpatialData::GOTOPOSITION;
 	   nc->comp = SpatialData::COMMANDPENDING;
 	   nc->prio = SpatialData::URGENT;
 	   nc->status = SpatialData::NONE;
-	
+
 	m_nav = SpatialData::COMMANDPENDING;
 	addToWorkingMemory(newDataID(), string("spatial.sa"), nc);
 	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
 		sleepComponent(50);
-		
+
 	return (m_nav == SpatialData::COMMANDSUCCEEDED);
 }
 
-bool DummyDriver::addNavCommand(cogx::Math::Vector3 pose) {		
+bool DummyDriver::addNavCommand(cogx::Math::Vector3 pose) {
 	return addNavCommand(pose.x, pose.y, pose.z);
 }
 
@@ -260,26 +269,26 @@ bool DummyDriver::addNavCommand(long place) {
 	   nc->pose.push_back(0);
  	   nc->pose.push_back(0);
 	   nc->pose.push_back(0);
-	
+
 //	                nc->tolerance=new vector<double>;
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.175);
-	   
+
 	   nc->destId.push_back(place);
 	   nc->distance.push_back(0);
 	   nc->angle.push_back(0);
-	   
+
 	   nc->cmd = SpatialData::GOTOPLACE;
 	   nc->comp = SpatialData::COMMANDPENDING;
 	   nc->prio = SpatialData::URGENT;
 	   nc->status = SpatialData::NONE;
-	
+
 	m_nav = SpatialData::COMMANDPENDING;
 	addToWorkingMemory(newDataID(), string("spatial.sa"), nc);
 	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
 		sleepComponent(50);
-		
+
 	return (m_nav == SpatialData::COMMANDSUCCEEDED);
 }
 
@@ -304,26 +313,26 @@ ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr> poses) {
 	double min=56565444;
 	ManipulationPosePtr best;
 	int pos;
-	
+
 	for (int it=0 ; it < poses.size(); it++ )
 		if(poses[it]->distance < min) {
   			best = poses[it];
   			pos=it;
   		}
-  		
+
   	poses.erase(poses.begin()+pos);
   	return best;
 }
 
 vector<ManipulationPosePtr> DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
-	
+
 	vector<ManipulationPosePtr> purged;
 //	vector<ManipulationPosePtr>::iterator it;
 	for (int it=0 ; it < poses.size(); it++ ) {
 		if(poses[it]->label != label)
   			purged.push_back(poses[it]);
   	}
-  	
+
   	return purged;
 }
 
