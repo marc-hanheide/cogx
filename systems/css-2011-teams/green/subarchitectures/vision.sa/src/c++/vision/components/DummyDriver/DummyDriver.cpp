@@ -80,13 +80,17 @@ void DummyDriver::runComponent()
   // and initiate detection
   
   addLook4ObjCommand(0, -0.5);
+  log("executed ptz");
   
   sleepProcess(4000);
   
   m_poses =  getGraspPoses();
-  
+  log("got poses");
   if(m_poses.size() > 0)
+  {	
+  	log("issuing mover command");
   	addNavCommand(m_poses[0]->robotPose.x, m_poses[0]->robotPose.y, m_poses[0]->robotPose.z);
+  }
 }
 
 void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
