@@ -102,6 +102,7 @@ double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
 bool doDisplay;
+bool HorizontalRestriction;
 Vector3 v3dmax;
 Vector3 v3dmin;
 
@@ -118,6 +119,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   doDisplay = false;
   AgonalTime = 20;
   StableTime = 5;
+  HorizontalRestriction = false;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
@@ -126,6 +128,10 @@ void PlanePopOut::configure(const map<string,string> & _config)
   if((it = _config.find("--display")) != _config.end())
   {
 	doDisplay = true;
+  }
+  if((it = _config.find("--OnlyHorizontalPlane")) != _config.end())
+  {
+	HorizontalRestriction = true;
   }
   if((it = _config.find("--minObjHeight")) != _config.end())
   {
@@ -146,11 +152,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
   {
     stereoconfig = it->second;
   } else printf("PointCloudViewer::configure: Warning: No stereoconfig specified!\n");
-  if((it = _config.find("--stereoWidth")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> stereoWidth;
-  }
 
   StereoCamera *stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
@@ -167,7 +168,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   tgRenderer->SetCamera(R, t, rotCenter);
   tgRenderer->SetCoordinateFrame(0.5);
   
-  println("use global points: %d", (int)useGlobalPoints);
+  log("use global points: %d", (int)useGlobalPoints);
   mConvexHullDensity = 0.0;
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
   pre_mConvexHullRadius = 0.0;
@@ -409,19 +410,6 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 }
 #endif
 
-void PlanePopOut::filterGroundPoints(PointCloud::SurfacePointSeq &points)
-{
-  static double groundThr = 0.010;
-  PointCloud::SurfacePointSeq aboveGroundPoints;
-
-  for(size_t i = 0; i < points.size(); i++)
-  {
-    if(points[i].p.z > groundThr)
-      aboveGroundPoints.push_back(points[i]);
-  }
-  points = aboveGroundPoints;
-}
-
 void PlanePopOut::runComponent()
 {
   sleepComponent(100);
@@ -430,6 +418,7 @@ void PlanePopOut::runComponent()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
+  int stereoWidth = 640;
 
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
@@ -441,7 +430,6 @@ void PlanePopOut::runComponent()
 	points.resize(0);
 
 	getPoints(useGlobalPoints, stereoWidth, points);
-	filterGroundPoints(points);
 	Video::Image image;
 	getRectImage(LEFT, stereoWidth, image);
 #ifdef USE_MOTION_DETECTION
@@ -483,7 +471,7 @@ void PlanePopOut::runComponent()
 		}
 		 for debug */
 		for (PointCloud::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
-		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<20 && (*it).p.x*(*it).p.x!=0)
+		    if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<20 && (*it).p.x*(*it).p.x!=0 && (*it).p.z>0.3 )
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -499,7 +487,7 @@ void PlanePopOut::runComponent()
 		if (USE_PSO == 0)		executeflag = RANSAC(pointsN,points_label);
 		else if (USE_PSO == 1)		executeflag = PSO_Label(pointsN,points_label);
 		//log("parameters of plane: A, B, C = (%f, %f, %f)", A, B, C);
-		if (executeflag == true && A!=0 && B!=0 && C!=0)
+		if (executeflag == true && C!=0)
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
@@ -1539,7 +1527,7 @@ bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> 
 			if (norm(v3Normal) != 0)
 				normalise(v3Normal);
 			else v3Normal = 99999.9*v3Normal;
-		} while ( fabs(v3Normal.x) < 0.00001); //the plane should parallel with the initialisation motion of camera  fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01 ||
+		} while ( fabs(v3Normal.z) < 0.95 ); //the plane should parallel with the initialisation motion of camera  fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01 ||
 
 		Vector3 v3Mean = 0.33333333 * (R_points.at(nA).p + R_points.at(nB).p + R_points.at(nC).p);
 		//log("v3Normal (%f, %f, %f)",v3Normal.x,v3Normal.y,v3Normal.z);
@@ -1600,42 +1588,7 @@ bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> 
 		C = para_c;
 		D = para_d;
 	}
-// refine the RANSAC result
-/*
-	std::vector < double > vddis;
-	vddis.assign(nPoints, 0.0);
-	for(unsigned int i=0; i<nPoints; i++)
-	{
-	    Vector3 v3Diff = R_points.at(i).p - v3BestMean;
-	    double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-	    vddis.at(i) = dNormDist;
-	}
-	sort(vddis.begin(),vddis.end());
-	double step_density = 0.0;
-	double step = 0.001;
-	double thre = 0.0;
-	double max_density= 0.0;
-	for (double d=0.5*min_height_of_obj; d<3.0*min_height_of_obj; d=d+step)
-	{
-	    int num= 0; double tmp = 0;
-	    for (unsigned int i=0; i<vddis.size(); i++)
-		if (vddis.at(i)>d+step) {num = i; break;}
-		else	tmp = vddis.at(i)+tmp;
-	    tmp = num/(d+step); 
-	    if (tmp>max_density) max_density = tmp;
-	    //log("the density of window = %f, the num is %d, the previous density is %f", tmp, num, step_density);
-	    //log("Now the d = %f", d);
-	    if (step_density == 0.0 || tmp>step_density)	step_density = tmp;
-	    else
-	    {
-		if ((max_density-tmp)/max_density>1-1/sqrt(3))
-		{thre = d+step; break;}
-		else step_density = tmp;
-	    }
-	}
-	if (thre<min_height_of_obj) thre=min_height_of_obj;
-	//log("the refined min_height_of_obj = %f", thre);
-*/
+
 //----------------------- now collect the supposed inlier set-----------------//
 	double dmin = 9999.0;
 	double dmax = 0.0;
@@ -1655,11 +1608,20 @@ bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> 
 			}
 			else
 			{
+			    if (HorizontalRestriction == false)
+			    {
 				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -2; // objects
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -1; // cannot distingush
+			    }
+			    else
+			    {
+				double parameter = D+A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z;
+				if ( parameter > 0)
+					labels.at(i) = -2; // objects
+			    }
 			}
 		}
 	}
@@ -1682,7 +1644,7 @@ void PlanePopOut::SplitPoints(PointCloud::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	obj_number_threshold = 100;
+	obj_number_threshold = 50;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
@@ -1884,12 +1846,18 @@ static void TriangulatePolygonSimple(vector<Vector3> &points, const Vector3 &nor
  * The visual object then consists of the top plane, a bottom plane projected to the ground and side planes,
  * resulting in a prism.
  */
-VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label)
+VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label, bool &isOK)
 {
-  assert(CHPtr->PointsSeq.size() >= 3);
-
 	VisionData::VisualObjectPtr oPtr = new VisionData::VisualObject;
 	oPtr->model = new VisionData::GeometryModel;
+
+  if(CHPtr->PointsSeq.size() < 3)
+  {
+    isOK = false;
+    return oPtr;
+  }
+
+  isOK = true;
 
 	// object pose:
 	// position = center of gravity of hull points
@@ -2010,14 +1978,18 @@ void PlanePopOut::AddConvexHullinWM()
 
     // create a visual object from the convex hull
 		// id and label for the visual object associated to that plane
-		obj_id_map[pre_id] = newDataID();
-		ostringstream slabel;
-		slabel << obj_label_base << "." << obj_id_map[pre_id];
-		obj_label_map[pre_id] = slabel.str();
-		VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
-
+		bool isOK = false;
+		string newID = newDataID();
+    ostringstream slabel;
+    slabel << obj_label_base << "." << newID;
+		VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, slabel.str(), isOK);
+		if(isOK)
+		{
+      obj_id_map[pre_id] = newID;
+      obj_label_map[pre_id] = slabel.str();
+      addToWorkingMemory(obj_id_map[pre_id], oPtr);
+		}
 		addToWorkingMemory(pre_id, CHPtr);
-		addToWorkingMemory(obj_id_map[pre_id], oPtr);
 
 		pre_mConvexHullRadius = mConvexHullRadius;
 		pre_mCenterOfHull = mCenterOfHull;
@@ -2043,36 +2015,47 @@ void PlanePopOut::AddConvexHullinWM()
 			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
 			  //debug("add sth into WM");
 			  deleteFromWorkingMemory(pre_id);
-			  deleteFromWorkingMemory(obj_id_map[pre_id]);
+			  if(obj_id_map.find(pre_id) != obj_id_map.end())
+			    deleteFromWorkingMemory(obj_id_map[pre_id]);
 			  pre_id = newDataID();
 
 			  // create a visual object from the convex hull
 			  // id and label for the visual object associated to that plane
-			  obj_id_map[pre_id] = newDataID();
-			  ostringstream slabel;
-			  slabel << obj_label_base << "." << obj_id_map[pre_id];
-			  obj_label_map[pre_id] = slabel.str();
-			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+        bool isOK = false;
+        string newID = newDataID();
+        ostringstream slabel;
+        slabel << obj_label_base << "." << newID;
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, slabel.str(), isOK);
+			  if(isOK)
+			  {
+          obj_id_map[pre_id] = newID;
+          obj_label_map[pre_id] = slabel.str();
+          addToWorkingMemory(obj_id_map[pre_id], oPtr);
+			  }
 
 			  addToWorkingMemory(pre_id, CHPtr);
-			  addToWorkingMemory(obj_id_map[pre_id], oPtr);
 
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
 		    }
 		    else
 		    {
-			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id]);
+			  bool isOK = false;
+			  VisionData::VisualObjectPtr oPtr = ConvexHullToVisualObject(CHPtr, obj_label_map[pre_id], isOK);
+			  if(isOK)
+			  {
+          overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
+			  }
 			  overwriteWorkingMemory(pre_id, CHPtr);
 			  pre_mConvexHullRadius = mConvexHullRadius;
 			  pre_mCenterOfHull = mCenterOfHull;
-			  overwriteWorkingMemory(obj_id_map[pre_id], oPtr);
 		    }
 	    }
 	    else
 	    {
 		  deleteFromWorkingMemory(pre_id);
-		  deleteFromWorkingMemory(obj_id_map[pre_id]);
+      if(obj_id_map.find(pre_id) != obj_id_map.end())
+        deleteFromWorkingMemory(obj_id_map[pre_id]);
 		  pre_mConvexHullRadius = 0.0;
 		  pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
 	    }
