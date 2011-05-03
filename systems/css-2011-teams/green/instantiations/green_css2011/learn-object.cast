@@ -14,9 +14,9 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-bircher.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-bircher.sift" --labels "cereals-bircher" --initpose "[0.50 0.00 0.57][0.00 0.00 1.50]" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-fruchtemusli.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-fruchtemusli.sift" --labels "cereals-fruchtemusli" --initpose "[0.50 0.00 0.57][0.00 0.00 1.50]" --log
 
 # mode can be RECOGNIZE or LEARN
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-bircher" --mode LEARN --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-fruchtemusli" --mode LEARN --log
 
 JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
