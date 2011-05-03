@@ -243,7 +243,7 @@ bool DummyDriver::addNavCommand(long place) {
 	   nc->comp = SpatialData::COMMANDPENDING;
 	
 	m_nav = SpatialData::COMMANDPENDING;
-	addToWorkingMemory(newDataID(), nc);
+	addToWorkingMemory(newDataID(), string("spatial.sa"), nc);
 	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
 		sleepComponent(50);
 		
