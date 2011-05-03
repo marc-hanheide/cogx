@@ -35,9 +35,10 @@ private:
 	manipulation::slice::FarArmMovementCommandPtr m_arm_cmd;
 	manipulation::slice::MoveArmToPosePtr m_moveto_cmd;
 
-	cast::cdl::WorkingMemoryAddress m_grasp_wma, m_look_wma;
+	cast::cdl::WorkingMemoryAddress m_grasp_wma, m_look_wma, m_drop_wma;
 	VisionData::GraspForObjectCommandPtr m_grasp_cmd;
 	VisionData::LookForObjectCommandPtr m_look_cmd;
+	VisionData::DropObjectCommandPtr m_drop_cmd;
 
 	std::string m_latest_visualObjectID;
 
@@ -45,6 +46,7 @@ private:
 	int m_mode;
 	int m_loops;
 	bool m_grasp;
+	bool m_grasp_success;
 	bool m_drop;
 	bool m_repeat_arm_movement;
 	bool m_look;
