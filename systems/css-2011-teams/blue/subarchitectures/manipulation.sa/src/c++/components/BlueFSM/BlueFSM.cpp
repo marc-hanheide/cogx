@@ -699,10 +699,19 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	  }
 	  break;
 
+        case DELIVER_TO_HOME_POSITION:
+        {
+          moveHome();
+          moveTo(0, 0, 0);
+          moveToHandover();
+        }
 	case TERMINATED:
 	  log("TERMINATED");
 	  log ("Terminated");
 	  break;
+        default:
+          log("Error: unknown state hence terminated");
+          m_state = TERMINATED;
       }
 
       if (m_state == TERMINATED) {
@@ -864,6 +873,11 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
   }
   return true;
 }
+
+  bool BlueFSM::moveToSafePose()
+  {
+    movePregrasp(convertPose(std::make_pair(m::Vector3(.2,0,1), m::Quaternion::IDENTITY)));
+  }
 
 bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
 {
