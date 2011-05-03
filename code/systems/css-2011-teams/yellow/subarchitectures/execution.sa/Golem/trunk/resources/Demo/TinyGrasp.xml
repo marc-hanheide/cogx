@@ -26,8 +26,8 @@
   <robot>
     <arm planner_tries="1000">
       <pose v1="0.03" v2="0.0" v3="0.24" roll="0.0" pitch="0.0" yaw="-1.5707963268"/>
-      <gripper length="0.08" diam="0.015" gap="0.1"/>
-      <grasping approach_offset="0.08" grasp_offset="0.02" error_lin="0.02" error_ang="0.07" sensor_threshold="100"/>
+      <gripper length="0.05" diam="0.015" gap="0.1"/>
+      <grasping approach_offset="0.08" grasp_offset="0.02" error_lin="0.01" error_ang="0.005" sensor_threshold="100" encoder_threshold="30000"/>
     </arm>
     <base>
       <pose v1="-0.04" v2="0.0" v3="0.12" roll="0.0" pitch="0.0" yaw="0.0"/>

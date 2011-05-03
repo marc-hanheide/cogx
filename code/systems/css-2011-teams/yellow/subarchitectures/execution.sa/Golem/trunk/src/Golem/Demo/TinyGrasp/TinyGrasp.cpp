@@ -109,8 +109,9 @@ TinyGrasp::TinyGrasp(const char* driver) :
 	XMLData("approach_offset", approachOffset, context->getContextFirst("arm grasping"));
 	XMLData("grasp_offset", graspOffset, context->getContextFirst("arm grasping"));
 	XMLData("error_lin", graspError.lin, context->getContextFirst("arm grasping"));
-	XMLData("error_ang", graspError.lin, context->getContextFirst("arm grasping"));
+	XMLData("error_ang", graspError.ang, context->getContextFirst("arm grasping"));
 	XMLData("sensor_threshold", sensorThreshold, context->getContextFirst("arm grasping"));
+	XMLData("encoder_threshold", encoderThreshold, context->getContextFirst("arm grasping"));
 
 	// create arm
 	KatanaArmDesc* pArmDesc = new KatanaArmDesc; // specialised Katana 300/450 description
@@ -370,7 +371,7 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	return poses;
 }
 
-std::pair<GraspPose, GraspPose::Seq::const_iterator> TinyGrasp::graspTry(const GraspPose::Seq& poses) {	
+bool TinyGrasp::graspTry(const GraspPose::Seq& poses) {	
 	GraspPose::Seq::const_iterator index = poses.begin();
 	PoseError errorMin(moveTry(index->grasp), index->grasp);
 
@@ -382,20 +383,27 @@ std::pair<GraspPose, GraspPose::Seq::const_iterator> TinyGrasp::graspTry(const G
 		}
 	}
 
-	return std::pair<GraspPose, GraspPose::Seq::const_iterator>(graspTry(*index), index);
+	return graspTry(*index);
 }
 
-GraspPose TinyGrasp::graspTry(const GraspPose& pose) {
+bool TinyGrasp::graspTry(const GraspPose& pose) {
 	gend = pose;
 
 	GraspPose actual;
 	actual.grasp = moveTry(gend.grasp);
 	actual.approach = moveTry(gend.approach);
 
-	return actual;
+	PoseError error(actual.grasp, gend.grasp);
+
+	if (error.lin > graspError.lin || error.ang > graspError.ang) {
+		tiny->print("TinyGrasp::graspTry(): FAILED: error = (%f, %f)", error.lin, error.ang);
+		return false;
+	}
+
+	return true;
 }
 
-void TinyGrasp::graspExec(Real duration) {
+bool TinyGrasp::graspExec(Real duration) {
 	Mat34 actual;
 
 	arm->gripperOpen(numeric_const<double>::INF);
@@ -418,9 +426,21 @@ void TinyGrasp::graspExec(Real duration) {
 		i->value += sensorThreshold;
 	arm->gripperClose(threshold, numeric_const<double>::INF);
 
-	attachObject();
+	const KatanaGripperEncoderData data = arm->gripperRecvEncoderData(numeric_const<double>::INF);
+	const I32 error = Math::abs(data.closed - data.current);
+	if (error < encoderThreshold) {
+		tiny->print("TinyGrasp::graspExec(): FAILED: error = %i", error);
+		return false;
+	}
 
+	// OBJECT: open=31000, closed=-16768, current=19300
+	// NO OBJECT: open=31000, closed=-16768, current=11493
+	//tiny->print("TinyGrasp::graspExec(): SUCCESS: (open=%i, closed=%i, current=%i)", data.open, data.closed, data.current);
+
+	attachObject();
 	tiny->render();
+
+	return true;
 }
 
 void TinyGrasp::graspRelease() {
