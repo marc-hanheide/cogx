@@ -37,7 +37,9 @@ LIBDEPS = 	contrib/peekabot \
 		contrib/player-3.0.2 \
 		contrib/physx_x64 \
 		contrib/gazebo \
-		cogx/golem_katana450_x64
+		cogx/golem_katana450_x64 \
+		contrib/openNI \
+		contrib/avin2-SensorKinect
 
 DESCRIPTION = agai-distro
 
