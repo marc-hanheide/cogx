@@ -27,10 +27,11 @@ module manipulation {
 			NOTGRASPING
 		};
 
-        struct ManipulationPose {
-            cogx::Math::Vector3 graspPointAbs;
-            cogx::Math::Vector3 graspPoint;
+        class ManipulationPose {
             cogx::Math::Vector3 robotPose;
+            cogx::Math::Vector3 offset;
+            double distance;
+            string label;
         };
 		
 		/**

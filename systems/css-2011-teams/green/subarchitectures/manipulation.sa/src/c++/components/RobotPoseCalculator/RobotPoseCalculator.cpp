@@ -3,6 +3,7 @@
  * @date April 2011
 */
 
+#include <string>
 #include <iostream>
 #include <cmath>
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -10,6 +11,8 @@
 
 #include "Vector3.h"
 #include "Matrix33.h"
+
+const double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
 
 const double MAX_GRASP_WIDTH = 0.05;
 const double MAX_JOINT_HEIGHT = 0.8;
@@ -19,6 +22,9 @@ const double MIN_GRASP_DISTANCE = 0.2;
 const double MAX_GRASP_DISTANCE = 0.6;
 const double GRASP_DISTANCE = 0.4;
 const double INIT_DISTANCE = 1.0;
+
+const int label_count = 1;
+const string labels[] = { "cereals1_model" };
 
 /**
  * The function called to create a new instance of our component.
@@ -36,6 +42,7 @@ namespace cogx
 
 using namespace std;
 using namespace cast;
+using namespace cast::cdl;
 using namespace manipulation::slice;
 using namespace NavData;
 using namespace VisionData;
@@ -82,11 +89,28 @@ void RobotPoseCalculator::receiveRobotPose(const cdl::WorkingMemoryChange &_wmc)
   m_theta = pose->theta;
 }
 
-
 void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_wmc)
 {
   log("received VisualObject");
   VisualObjectPtr object = getMemoryEntry<VisualObject>(_wmc.address);
+
+  string label = "";
+  for (int i = 0; i < object->identLabels.size(); ++i) {
+      if (object->identDistrib[i] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+          label = object->identLabels[i];
+          break;
+      }
+  }
+
+  bool acceptLabel = false;
+  for (int i = 0; i < label_count; ++i) {
+      if (label == labels[i]) {
+          acceptLabel = true;
+          break;
+      }
+  }
+  if (!acceptLabel) 
+      return;
 
   Vector3 pos = object->pose.pos;
   Matrix33 rot = object->pose.rot;
@@ -139,13 +163,17 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   grasp_offsets.push_back(getColumn(rot, a2) * get(dim)[a2]/2);
   grasp_offsets.push_back(-getColumn(rot, a2) * get(dim)[a2]/2);
 
-  vector<ManipulationPose> results;
+  vector<ManipulationPosePtr> results;
   for (vector<Vector3>::iterator it = grasp_offsets.begin(); it != grasp_offsets.end(); ++it) {
       checkGraspPosition(pos, *it, grasp_dir, results);
   }
+  for (vector<ManipulationPosePtr>::iterator it = results.begin(); it != results.end(); ++it) {
+      (*it)->label = object->identLabels[0];
+      addToWorkingMemory(newDataID(), *it);
+  }
 }
 
-void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& dir, const Vector3& grasp_dir, std::vector<ManipulationPose>& results) {
+void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& dir, const Vector3& grasp_dir, std::vector<ManipulationPosePtr>& results) {
     Vector3 grasp_pos = pos + dir;
     Vector3 norm_dir = dir / norm(dir);
     Vector3 joint_pos = grasp_pos + norm_dir * ROBOT_HAND_OFFSET; // position of the robot hand
@@ -157,20 +185,20 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
         cout << "pos too high" << endl;
         return;
     }
-    if (norm_dir.z < -0.2) { // normal is pointing down
+    if (norm_dir.z < -0.5) { // normal is pointing down
         cout << "pointing down" << endl;
         return;
     }
-    if (norm_dir.z > 0.2) { // normal is pointing up
+    if (norm_dir.z > 0.5) { // normal is pointing up
         cout << "pointing up" << endl;
         return;
     }
     Vector3 xy_pos = vector3(grasp_pos.x, grasp_pos.y, 0.0);
     Vector3 im_pos;
     Vector3 base_pos;
-    double theta = acos(dot(vector3(1.0, 0.0, 0.0), -norm_dir));
-    if (-norm_dir.y < 0)
-        theta = -theta;
+    double theta = atan2(-norm_dir.y, -norm_dir.x);
+    // if (-norm_dir.y < 0)
+    //     theta = -theta;
 
     double grasp_distance = GRASP_DISTANCE + ROBOT_ARM_X_OFFSET;
     if (dot(grasp_dir, norm_dir) > 0) {
@@ -184,25 +212,46 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
     base_pos.z = theta;
     im_pos.z = theta;
 
+    ManipulationPosePtr p = new ManipulationPose;
+    Vector3 global_base = toGlobal(base_pos);
+    std::cout << "base pose:" << base_pos << endl;
+    std::cout << "global:" << global_base << endl;
+    cout << "theta: " <<  global_base.z / M_PI * 180 << endl;
+    std::cout << "init pose:" << im_pos << " / " << toGlobal(im_pos) <<  endl;
+    p->robotPose = global_base;
+    p->offset = dir;
+
     cout << "xypos = " << xy_pos << "  <xypos, -norm_dir> = " <<  dot(xy_pos/norm(xy_pos), -norm_dir) << "  |xypos| = " << norm(xy_pos) << endl;
     if (dot(xy_pos/norm(xy_pos), -norm_dir) > 0.95 && norm(xy_pos) <= MAX_GRASP_DISTANCE && norm(xy_pos) >= MIN_GRASP_DISTANCE) {
         std::cout << "object is graspable!" << endl;
         Vector3 pos1 = grasp_pos + norm_dir * 0.1;
         std::cout << "move to " << pos1 << " first" << endl;
         std::cout << "then to " << grasp_pos << endl;
+
+        p->distance = dist(global_base, vector3(m_x, m_y, 0.0));
+    }
+    else {
+        p->distance = 0.0;
     }
     
-    Vector3 global_base = toGlobal(base_pos);
-    global_base.z = global_base.z / M_PI * 180;
-    std::cout << "base pose:" << base_pos << endl;
-    std::cout << "global:" << global_base << endl;
-    std::cout << "init pose:" << im_pos << " / " << toGlobal(im_pos) <<  endl;
-    ManipulationPose p;
-    p.robotPose = global_base;
-    p.graspPoint = grasp_pos;
-    p.graspPointAbs = toGlobal(grasp_pos);
+    // p.graspPoint = grasp_pos;
+    // p.graspPointAbs = toGlobal(grasp_pos);
+    // computePoseDistance(p);
+    // std::cout << "angle-dist: " << p.angle << ", movement dist:" << p.dist << endl;
+    
     results.push_back(p);
 }
+
+void RobotPoseCalculator::computePoseDistance(ManipulationPose& pose) {
+    // Vector3 path = vector3(pose.robotPose.x, pose.robotPose.y, 0.0)  - vector3(m_x, m_y, 0.0);
+    // Vector3 curr = vector3(cos(m_theta), sin(m_theta), 0.0);
+    // Vector3 goal = vector3(cos(pose.robotPose.z), sin(pose.robotPose.z), 0.0);
+    // cout << path << curr << goal << endl;
+    // pose.dist = norm(path);
+    // normalise(path);
+    // pose.angle = acos(dot(path, curr)) + acos(dot(path, goal));
+}
+
 
 Vector3 RobotPoseCalculator::toGlobal(const Vector3& pos) {
     // z = theta
@@ -210,7 +259,7 @@ Vector3 RobotPoseCalculator::toGlobal(const Vector3& pos) {
     r.x = m_x + pos.x * cos(m_theta) - pos.y * sin(m_theta);
     r.y = m_y + pos.x * sin(m_theta) + pos.y * cos(m_theta);
     r.z = pos.z + m_theta;
-    if (r.z >= 2*M_PI)
+    if (r.z > M_PI)
         r.z -= 2*M_PI;
     return r;
 }
