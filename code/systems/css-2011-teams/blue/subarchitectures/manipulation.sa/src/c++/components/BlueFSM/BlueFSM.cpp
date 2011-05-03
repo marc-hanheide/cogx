@@ -128,18 +128,42 @@ namespace cogx
     std::map<std::string, std::vector<m::Pose> > grasps;
     
     {
+      std::map<std::string, std::pair<double,double> > sizes;
+      
+      sizes[std::string("cereals-bircher")] = std::make_pair(0.0655,0.1005);
+      sizes[std::string("cereals-chocos")] = std::make_pair(0.0965,0.126);
+      sizes[std::string("cereals-fruchtemusli")] = std::make_pair(0.0685,0.095);
+      sizes[std::string("cereals-toppas")] = std::make_pair(0.073,0.1155);
+      sizes[std::string("cereals-weetabix")] = std::make_pair(0.095,0.125);
+      sizes[std::string("cereals-schokomusli")] = std::make_pair(0.0685,0.095);
+      
       std::vector<m::Pose> v;
+      // These are wrong - from when we thought that the forward gripper axis was X.
 //      v.push_back(std::make_pair(m::Vector3(.100,0,0), m::Quaternion(0,0,0,1)));
 //      v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(1,0,0,0)));
 //      v.push_back(std::make_pair(m::Vector3(0,0,.140), m::Quaternion(0.707107,0,0.707107,0)));
 //      v.push_back(std::make_pair(m::Vector3(0,0,-.140), m::Quaternion(0.707107,0,-0.707107,0)));
+//      grasps[std::string("cereals-weetabix")] = v;
 
-      v.push_back(std::make_pair(m::Vector3(.100,0,0), m::Quaternion(0.707107,0,0,0.707107)));
-      v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
-      v.push_back(std::make_pair(m::Vector3(0,0,-.130), m::Quaternion(0.5,0.5,0.5,0.5)));
-      v.push_back(std::make_pair(m::Vector3(0,0,.130), m::Quaternion(0.5,-0.5,-0.5,0.5)));
+      // Hand-written grasps for the weetabix
+//      v.push_back(std::make_pair(m::Vector3(.100,0,0), m::Quaternion(0.707107,0,0,0.707107)));
+//      v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
+//      v.push_back(std::make_pair(m::Vector3(0,0,-.130), m::Quaternion(0.5,0.5,0.5,0.5)));
+//      v.push_back(std::make_pair(m::Vector3(0,0,.130), m::Quaternion(0.5,-0.5,-0.5,0.5)));
+//      grasps[std::string("cereals-weetabix")] = v;
 
-      grasps[std::string("cereals-weetabix")] = v;
+      for (std::map<std::string, std::pair<double,double> >::const_iterator i = sizes.begin();
+           i != sizes.end(); ++i)
+      {
+        v.push_back(std::make_pair(m::Vector3(i->second.first,0,0), m::Quaternion(0.707107,0,0,0.707107)));
+        v.push_back(std::make_pair(m::Vector3(-i->second.first,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
+        v.push_back(std::make_pair(m::Vector3(0,0,-i->second.second), m::Quaternion(0.5,0.5,0.5,0.5)));
+        v.push_back(std::make_pair(m::Vector3(0,0,i->second.second), m::Quaternion(0.5,-0.5,-0.5,0.5)));
+        
+        grasps[i->first] = v;
+      }
+
+    
     }
 
     m::Pose objectPose = convertPose(inObjectPose);
@@ -180,7 +204,7 @@ namespace cogx
         maxDotProduct = dot;
         bestGrasp = robotGrasp;
         bestBacktrackedGrasp = bestGrasp;
-        bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(1));
+        bestBacktrackedGrasp.first -= .02*m::Vector3(robotGraspOri.GetColumn(1));
       }
     }
     
