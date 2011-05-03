@@ -233,6 +233,30 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	return (m_nav == SpatialData::COMMANDSUCCEEDED);
 }
 
+bool DummyDriver::addNavCommand(cogx::Math::Vector3 pose) {
+
+	NavCommandPtr nc = new NavCommand();
+//	                nc->pose = new vector<double>;
+	   nc->pose.push_back(pose.x);
+ 	   nc->pose.push_back(pose.y);
+	   nc->pose.push_back(pose.z);
+	
+//	                nc->tolerance=new vector<double>;
+	   nc->tolerance.push_back(0.1);
+	   nc->tolerance.push_back(0.1);
+	   nc->tolerance.push_back(0.175);
+	   
+	   nc->cmd = SpatialData::GOTOPOSITION;
+	   nc->comp = SpatialData::COMMANDPENDING;
+	
+	m_nav = SpatialData::COMMANDPENDING;
+	addToWorkingMemory(newDataID(), nc);
+	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
+		sleepComponent(50);
+		
+	return (m_nav == SpatialData::COMMANDSUCCEEDED);
+}
+
 bool DummyDriver::addNavCommand(long place) {
 
 	NavCommandPtr nc = new NavCommand();
