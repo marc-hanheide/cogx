@@ -73,7 +73,7 @@ JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "ins
 # shows memory entries that are in working memories. Helps to identify what's going on
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # display VisualObjects found in WM
-JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  #--generic-col
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # display all ManipulationCommands found in WM
 JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
