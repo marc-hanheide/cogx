@@ -12,7 +12,7 @@
 #include "Vector3.h"
 #include "Matrix33.h"
 
-const double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
+const double CONFIDENCE_THRESHOLD = 0.03;
 
 const double MAX_GRASP_WIDTH = 0.05;
 const double MAX_JOINT_HEIGHT = 0.8;
@@ -96,7 +96,7 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
 
   string label = "";
   for (int i = 0; i < object->identLabels.size(); ++i) {
-      if (object->identDistrib[i] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+      if (object->identDistrib[i] > CONFIDENCE_THRESHOLD) {
           label = object->identLabels[i];
           break;
       }
