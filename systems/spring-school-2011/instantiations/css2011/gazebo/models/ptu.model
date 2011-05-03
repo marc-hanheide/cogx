@@ -162,7 +162,7 @@
     <body1>ptu_base_body</body1>
     <body2>ptu_pan_body</body2>
     <anchor>ptu_pan_body</anchor>
-    <axis>0 0 1</axis>
+    <axis>0 0 -1</axis>
     <lowStop>-170</lowStop>
     <highStop>170</highStop>
   </joint:hinge>
