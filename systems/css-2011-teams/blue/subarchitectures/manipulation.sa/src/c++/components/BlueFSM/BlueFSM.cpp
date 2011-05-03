@@ -69,8 +69,8 @@ namespace cogx
     m_handoverPose.pos = Math::vector3(0.4, 0.4, 0.6);
     fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
     
-    m_lookForObjects.push_back("cereals_weetabix");
-    m_lookForObjects.push_back("cereals_choco");
+    m_lookForObjects.push_back("cereals-weetabix");
+    //m_lookForObjects.push_back("cereals-choco");
   }
   
   void BlueFSM::start()
@@ -80,7 +80,7 @@ namespace cogx
     addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
                     new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::objectPoseCallback));
 
-    if (!false) {
+    if (false) {
       m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
       m_mapInterface = getIceServer<FrontierInterface::LocalMapInterface>("map.manager");
     }
@@ -379,6 +379,7 @@ namespace cogx
 	      }
 	    }
 	  }
+	  break;
 
 	case VERIFY_ENVELOP:
 	  log("VERIFY_ENVELOP");
@@ -406,6 +407,7 @@ namespace cogx
 	      }
 	    }
 	  }
+	  break;
 
 	case VERIFY_GRASP:
 	  log("VERIFY_GRASP");
@@ -426,6 +428,7 @@ namespace cogx
 	      m_state = TERMINATED;
 	    }
 	  }
+	  break;
 
 	case LIFT:
 	  log("LIFT");
@@ -446,6 +449,7 @@ namespace cogx
 	      }
 	    }
 	  }
+	  break;
 
 	case RELEASE:
 	  log("RELEASE");
@@ -459,6 +463,7 @@ namespace cogx
 	      m_state = TERMINATED;
 	    }
 	  }
+	  break;
 
 	case HANDOVER:
 	  log("HANDOVER");
@@ -472,6 +477,7 @@ namespace cogx
 	      m_state = RELEASE;
 	    }
 	  }
+	  break;
 
 	case VERIFY_HANDOVER:
 	  log("VERIFY_HANDOVER");
@@ -492,6 +498,7 @@ namespace cogx
 	      m_state = TERMINATED;
 	    }
 	  }
+	  break;
 
 	case TERMINATED:
 	  log("TERMINATED");
@@ -687,8 +694,8 @@ bool BlueFSM::moveHome()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToHomePositionCommand>(id);
 
@@ -697,17 +704,13 @@ bool BlueFSM::moveHome()
 
 bool BlueFSM::envelop() 
 {
-  cogx::Math::Pose3 targetPose;
-  cogx::Math::Vector3 direction = getColumn(m_currentArmPose.rot, 0); //Get x axis of current pose
-
-  targetPose.pos = m_currentArmPose.pos + direction * 0.05;
-
+  
   manipulation::slice::MoveArmToPosePtr cmd = new
     manipulation::slice::MoveArmToPose;
 
   cmd->status = manipulation::slice::NEW;
   cmd->comp = manipulation::slice::COMPINIT;
-  cmd->targetPose = targetPose;
+  cmd->targetPose = m_envelopingPose;
 
   m_waiting = true;
   string id = newDataID();
@@ -718,8 +721,8 @@ bool BlueFSM::envelop()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
@@ -750,8 +753,8 @@ bool BlueFSM::lift()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
@@ -783,8 +786,8 @@ bool BlueFSM::retract()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
@@ -811,8 +814,8 @@ bool BlueFSM::grasp()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::CloseGripperCommand>(id);
 
@@ -837,8 +840,8 @@ bool BlueFSM::release()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::OpenGripperCommand>(id);
 
@@ -863,8 +866,8 @@ bool BlueFSM::moveToHandover()
   while (m_waiting) {
     usleep(50000);
   }
-  removeChangeFilter(receiver);
-  delete receiver;
+  //  removeChangeFilter(receiver);
+  //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
