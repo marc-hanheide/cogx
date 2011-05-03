@@ -221,7 +221,13 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     ofs << p.first.X() << " " << p.first.Y() << " " << p.first.Z() << " " <<
     p.second.W() << " " << p.second.X() << " " << p.second.Y() << " " << p.second.Z() << std::endl;
   }
-  
+
+  void outputToFile(const std::string& s, const Math::Pose3& p)
+  {
+    std::ofstream ofs(s.c_str());
+    ofs << p << std::endl;
+  }
+
   void BlueFSM::nameless(const Math::Pose3& inRobotPose,
                                                    const Math::Pose3& inObjectPose,
                                                    const std::string& inObjectLabel,
@@ -272,6 +278,10 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     }
 
     log("nameless: converting data to m::");
+    
+    outputToFile("/tmp/grasp-inObjectPose", inObjectPose);
+    outputToFile("/tmp/grasp-inRobotPose", inRobotPose);
+
     
     m::Pose objectPose = convertPose(inObjectPose);
     m::Pose robotPose = convertPose(inRobotPose);
