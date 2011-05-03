@@ -9,6 +9,11 @@
 
 module VisionData {
 
+  enum PlaneDetectionStatus { READY, STOPROBOT };
+  struct KinectPlanePopOut {
+    PlaneDetectionStatus status;
+  };
+
   sequence<cogx::Math::Vector3> Vector3Seq;
   sequence<string> StringSeq;
   sequence<double> DoubleSeq;
