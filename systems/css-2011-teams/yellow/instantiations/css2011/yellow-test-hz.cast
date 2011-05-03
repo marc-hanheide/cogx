@@ -93,4 +93,4 @@ JAVA GD mary-tts	de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost localhost --se
 SUBARCHITECTURE execution
 JAVA WM			cast.architecture.SubarchitectureWorkingMemory
 JAVA TM			cast.architecture.AlwaysPositiveTaskManager
-JAVA MG executor-yellow	execution.components.YellowExecutor  --navsa "spatial.sa" --visionsa "vision.sa" --dsa "dialogue" --objects "cereals-weetabix,cereals-fruchtemusli,cereals-bircher" --log true --debug true --task 2
+JAVA MG executor-yellow	execution.components.YellowExecutor  --navsa "spatial.sa" --visionsa "vision.sa" --dsa "dialogue" --objects "cereals-weetabix,cereals-fruchtemusli,cereals-bircher" --log true --debug true --task 3

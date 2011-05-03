@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import cogx.Math.Pose3;
-
 import SpatialData.ActionStatusYellow;
 import SpatialData.CommandType;
 import SpatialData.Completion;
@@ -15,9 +13,13 @@ import SpatialData.Place;
 import SpatialData.Priority;
 import SpatialData.StatusError;
 import VisionData.DetectionCommand;
+import VisionData.KinectPlanePopOut;
+import VisionData.PlaneDetectionStatus;
 import VisionData.VisualObject;
 import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -33,7 +35,7 @@ import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 public class YellowExecutor extends ManagedComponent {
 	
 	private static final int TIME_TO_WAIT_TO_SETTLE = 5000;
-	private static final int TIME_TO_WAIT_TO_INIT = 15000;
+	private static final int TIME_TO_WAIT_TO_INIT = 16500;
 	
 	
 	int m_competitionTask = 2;
@@ -54,7 +56,7 @@ public class YellowExecutor extends ManagedComponent {
 	HashMap<Long, Boolean> m_placeExplored;
 	LinkedList<Long> m_placesQueue;
 
-	
+	private WorkingMemoryAddress m_currentNavCommandWMA = null;
 	
 	public void configure(Map<String, String> args) {
 		log("configure() called");
@@ -101,6 +103,7 @@ public class YellowExecutor extends ManagedComponent {
 				onPlaceCallback(_wmc);
 			};
 		});
+		
 	}
 	
 	@Override
@@ -138,7 +141,7 @@ public class YellowExecutor extends ManagedComponent {
 	
 	private void handMeTheCereals() {
 		log("handMeTheCererals() called.");
-	
+		
 		while (isRunning()) {
 			say("I am looking for cereal boxes!");
 			/* 
@@ -194,6 +197,30 @@ public class YellowExecutor extends ManagedComponent {
 	private void cleanUpTheKitchen() {
 		log("cleanUpTheKitchen() called.");
 		
+		// start planepopout detection!
+		// planePopOut has detected a table surface
+		KinectPlanePopOut planePopOutMonitorReadyWME = new KinectPlanePopOut(PlaneDetectionStatus.READY);
+		WorkingMemoryAddress _kinectStatusWMA = new WorkingMemoryAddress(newDataID(), this.m_visionsaID);
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(KinectPlanePopOut.class,WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				onKinectChanged(_wmc);
+			};
+		});
+		try {
+			addToWorkingMemory(_kinectStatusWMA, planePopOutMonitorReadyWME);
+		} catch (AlreadyExistsOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		while (isRunning()) {
 			// 1) look around for objects
 			say("I am looking for cereal boxes!");
@@ -204,18 +231,33 @@ public class YellowExecutor extends ManagedComponent {
 				_grabbing = executeGrabbingTaskBlocking(_newObjectsArray);
 			} else {
 				log("no objects found. will go and search...");
+				try {
+					overwriteWorkingMemory(_kinectStatusWMA, planePopOutMonitorReadyWME);
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ConsistencyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (PermissionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		
 			log("TODO: check whether or not to kick start mapping!");
 			if (_grabbing) {
-				log("going back to home base.");
-				say("acknowledged. will move to base.");
-				gotoXYABlocking(0.0, 0.0, -1.0 * (Math.PI/2.0));
-				log("arrived at base.");
-				say("here you go!");
-				log("TODO: release grasp!");
-				log("TODO: determine where to continue!");
-				continue;
+			//	log("going back to home base.");
+			//	say("acknowledged. will move to base.");
+			//	gotoXYABlocking(0.0, 0.0, -1.0 * (Math.PI/2.0));
+			//	log("arrived at base.");
+			//	say("here you go!");
+			//	log("TODO: release grasp!");
+			//	log("TODO: determine where to continue!");
+			//	continue;
 			} else {
 				log("did not try grasping an object here. going to the next place.");
 				visitNextPlace();
@@ -430,12 +472,17 @@ public class YellowExecutor extends ManagedComponent {
 		WorkingMemoryAddress navadd = new WorkingMemoryAddress(newDataID(), this.m_navsaID);
 		NavCommand nc = createNavCommand(x, y, theta);
 		nc.cmd=CommandType.GOTOPOSITION;
+		synchronized (this) {
+			this.m_currentNavCommandWMA = navadd;
+			this.notifyAll();
+		}
 		try {		
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					synchronized (this) {
 						m_navCmdSuccess = true;
+						m_currentNavCommandWMA = null;
 						notifyAll();
 					}
 				};
@@ -483,12 +530,17 @@ public class YellowExecutor extends ManagedComponent {
 		nc.tolerance[0]=0.1;
 		nc.tolerance[1]=0.1;
 		nc.tolerance[2]=Math.PI*10.0/180.0;
+		synchronized (this) {
+			this.m_currentNavCommandWMA = navadd;
+			this.notifyAll();
+		}
 		try {		
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					synchronized (this) {
 						m_navCmdSuccess = true;
+						m_currentNavCommandWMA = null;
 						notifyAll();
 					}
 				};
@@ -545,7 +597,7 @@ public class YellowExecutor extends ManagedComponent {
 		nc.angle=new double[0];
 		return nc;
 	}
-	
+		
 	/* private void onVisualObjectChanged(WorkingMemoryChange _wmc) {
 		VisualObject _newVisObj = null; 
 		try {
@@ -614,11 +666,13 @@ public class YellowExecutor extends ManagedComponent {
 			this.notifyAll();
 		}
 		say("I found an object!");
-
-		if (true) return;
-		VisualObject _newVisObj = null;
+	}	
+	
+	private void onKinectChanged(WorkingMemoryChange _wmc) {
+		log("onKinectCallback("+_wmc.address.toString()+") called.");
+		KinectPlanePopOut _kinectStatus = null;
 		try {
-			_newVisObj = getMemoryEntry(_wmc.address, VisualObject.class);
+			_kinectStatus = getMemoryEntry(_wmc.address, KinectPlanePopOut.class);
 		} catch (DoesNotExistOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -626,21 +680,37 @@ public class YellowExecutor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (_newVisObj==null) return;
-		else {
-			Pose3 objPose = _newVisObj.pose;
-			log("spotted new object at " + mathlib.Functions.toString(objPose));
-			//m_visualObjects.put(_wmc.address, objPose);
-			
-			// register the monitoring change filters
-			//addChangeFilter(ChangeFilterFactory.createAddressFilter(_wmc.address, WorkingMemoryOperation.OVERWRITE), 
-			//		new WorkingMemoryChangeReceiver() {
-			//	public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-			//		onVisualObjectChanged(_wmc);
-			//	};
-			//});
-		}	
-	}	
+		if (_kinectStatus.status.equals(PlaneDetectionStatus.STOPROBOT)) {
+			log("STOOOOOP! Found a table!");
+			synchronized (this) {
+				if (m_currentNavCommandWMA==null) {
+					log("we do not have to do anything because we currently do not have a nav command...");
+					return;
+				} else {
+					try {
+						NavCommand _currentNavCommand = getMemoryEntry(m_currentNavCommandWMA, NavCommand.class);
+						_currentNavCommand.comp = Completion.COMMANDABORTED;
+						overwriteWorkingMemory(m_currentNavCommandWMA, _currentNavCommand);
+						log("sending COMMANDABORTED to current nav command!");
+					} catch (DoesNotExistOnWMException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownSubarchitectureException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ConsistencyException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (PermissionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					say("I found a table!");
+					notifyAll();
+				}
+			}
+		} 
+	}
 	
 	private void onPlaceCallback(WorkingMemoryChange _wmc) {
 		log("onPlaceCallback("+_wmc.address.toString()+") with WMO "+_wmc.operation.toString()+"called.");
