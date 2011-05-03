@@ -69,7 +69,7 @@ namespace cogx
     m_handoverPose.pos = Math::vector3(0.4, 0.4, 0.6);
     fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
     
-    m_lookForObjects.push_back("cereals-weetabix");
+    //m_lookForObjects.push_back("cereals-weetabix");
     m_lookForObjects.push_back("cereals-chocos");
   }
   
@@ -656,29 +656,36 @@ bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad){
 
 bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
 {
+log("MovePregrasp: %i", __LINE__);
   manipulation::slice::MoveArmToPosePtr cmd = new
     manipulation::slice::MoveArmToPose;
 
+log("MovePregrasp: %i", __LINE__);
   cmd->status = manipulation::slice::NEW;
   cmd->comp = manipulation::slice::COMPINIT;
   cmd->targetPose = pregraspPose;
 
+log("MovePregrasp: %i", __LINE__);
   m_waiting = true;
   string id = newDataID();
   MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
   addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
   addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
 
+log("MovePregrasp: %i, %s", __LINE__, id.c_str());
   while (m_waiting) {
     usleep(50000);
   }
 
+log("MovePregrasp: %i", __LINE__);
 //  removeChangeFilter(receiver);
 //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
+log("MovePregrasp: %i", __LINE__);
   m_currentArmPose = cmd->reachedPose;
+log("MovePregrasp: %i", __LINE__);
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
