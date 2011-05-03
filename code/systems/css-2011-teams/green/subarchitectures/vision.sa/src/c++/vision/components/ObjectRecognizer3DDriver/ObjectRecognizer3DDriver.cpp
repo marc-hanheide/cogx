@@ -413,16 +413,18 @@ void ObjectRecognizer3DDriver::runComponent(){
 	sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
 						 // object observations too soon.
 
+	addPTZCommand(0.01, -0.01);
+
 	m_timer.Update();
 
 	if(m_mode == VisionData::LOOKGRASP){
 
-		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
-		look_cmd->comp = VisionData::COMPINIT;
-		look_cmd->status = VisionData::NEW;
-		look_cmd->pan = 0.0;
-		look_cmd->tilt = 0.0; // -1.0472
-		addToWorkingMemory(newDataID(), look_cmd);
+//		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
+//		look_cmd->comp = VisionData::COMPINIT;
+//		look_cmd->status = VisionData::NEW;
+//		look_cmd->pan = 0.00001;
+//		look_cmd->tilt = -1.0472;
+//		addToWorkingMemory(newDataID(), look_cmd);
 
 //		VisionData::GraspForObjectCommandPtr grasp_cmd = new VisionData::GraspForObjectCommand();
 //		grasp_cmd->comp = VisionData::COMPINIT;
