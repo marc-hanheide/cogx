@@ -9,6 +9,7 @@
 #define DUMMY_DRIVER_H
 
 #include <vector>
+#include <set>
 #include <string>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
@@ -30,6 +31,7 @@ private:
    * list of objects we want to have detected
    */
   std::vector<std::string> labels;
+  std::set<std::string> m_done;
   
   std::vector<manipulation::slice::ManipulationPosePtr> m_poses;
   manipulation::slice::ManipulationPosePtr m_best_pose;
