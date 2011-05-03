@@ -984,7 +984,10 @@ log("%i", __LINE__);
       double alignment;
       Math::Pose3 outPregraspPose;
       Math::Pose3 outEnvelopingPose;
-      nameless(m_CurrPose,
+      Math::Pose3 inputPose;
+      setIdentity(inputPose);
+      inputPose.pos = Math::vector3(x,y,0);
+      nameless(inputPose,
 	  objPose,
 	  obj,
 	  outPregraspPose,
