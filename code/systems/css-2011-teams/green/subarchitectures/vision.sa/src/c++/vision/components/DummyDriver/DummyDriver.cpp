@@ -110,6 +110,7 @@ void DummyDriver::runComponent()
             m_done.insert(m_best_pose->label);
         }
         addNavCommand(0);
+        addDropCommand();
     }
     // else{
     //   log("no poses available");
@@ -265,6 +266,33 @@ void DummyDriver::overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc) {
   m_viscomp = cmd->comp;
   assert(m_viscomp != VisionData::COMPINIT);
 //  deleteFromWorkingMemory(_wmc.address.id);
+}
+
+bool DummyDriver::addDropCommand() {
+    DropObjectCommandPtr cmd = new DropObjectCommand;
+
+  cmd->status = VisionData::NEW;
+  cmd->comp = VisionData::COMPINIT;
+
+  m_viscomp = VisionData::COMPINIT;
+
+  addToWorkingMemory(newDataID(), cmd);
+  log("Added DropObjectCommand command");
+
+  while(m_viscomp == VisionData::COMPINIT)
+      sleepComponent(50);
+
+  return (m_viscomp == VisionData::SUCCEEDED);
+}
+
+void DummyDriver::overwriteDropCommand(const cdl::WorkingMemoryChange & _wmc) {
+  DropObjectCommandPtr cmd = getMemoryEntry<DropObjectCommand>(_wmc.address);
+
+  log("Received DropObjectCommand confirmation");
+
+  m_viscomp = cmd->comp;
+  assert(m_viscomp != VisionData::COMPINIT);
+
 }
 
 // Nav Commands
