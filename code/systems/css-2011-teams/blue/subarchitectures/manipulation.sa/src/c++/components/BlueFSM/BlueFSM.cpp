@@ -832,7 +832,7 @@ log("MOVE_TO_NEW_POS");
 
         case DELIVER_TO_HOME_POSITION:
         {
-          moveHome();
+          moveToSafePose();
           moveTo(0, 0, 0);
           moveToHandover();
         }
