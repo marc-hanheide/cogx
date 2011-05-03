@@ -760,7 +760,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
       std::cerr << "Have mutex_" << std::endl;
       
       //Transform from vo->pose (local) into global and store
-      transform(m_CurrPose, vo->pose, m_globalPoses[vo->identLabels.at(m_idx)]);
+      transform(m_CurrPose, vo->pose, m_globalPoses[vo->identLabels.at(i)]);
 
       m_poses[vo->identLabels.at(i)] = vo->pose;
       m_pose_confs[vo->identLabels.at(i)] = vo->identDistrib.at(i);
