@@ -1,6 +1,6 @@
 diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/EngineLibMakefile avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/EngineLibMakefile
 --- avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/EngineLibMakefile	2011-01-07 01:57:10.000000000 +0100
-+++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/EngineLibMakefile	2011-05-03 14:44:02.000000000 +0200
++++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/EngineLibMakefile	2011-05-03 15:32:52.000000000 +0200
 @@ -14,12 +14,12 @@
  #############################################################################
  
@@ -18,7 +18,7 @@ diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/
  
 diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/Utils/EngineUtilMakefile avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/Utils/EngineUtilMakefile
 --- avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/Utils/EngineUtilMakefile	2011-01-07 01:57:10.000000000 +0100
-+++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/Utils/EngineUtilMakefile	2011-05-03 14:45:40.000000000 +0200
++++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/Utils/EngineUtilMakefile	2011-05-03 15:32:52.000000000 +0200
 @@ -14,11 +14,11 @@
  #############################################################################
  
@@ -33,3 +33,28 @@ diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/
  
 -include /usr/include/ni/CommonMakefile
 +include /usr/local/include/ni/CommonMakefile
+diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/CreateRedist/install.sh avin2-SensorKinect-0124bd2/Platform/Linux-x86/CreateRedist/install.sh
+--- avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/CreateRedist/install.sh	2011-01-07 01:57:10.000000000 +0100
++++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/CreateRedist/install.sh	2011-05-03 15:33:48.000000000 +0200
+@@ -2,9 +2,9 @@
+ 
+ SCRIPT_DIR=`pwd`/`dirname $0`
+ 
+-INSTALL_LIB=/usr/lib
+-INSTALL_BIN=/usr/bin
+-INSTALL_ETC=/usr/etc/primesense
++INSTALL_LIB=$2/lib
++INSTALL_BIN=$2/bin
++INSTALL_ETC=$2/etc/primesense
+ INSTALL_RULES=/etc/udev/rules.d
+ 
+ if [ "`uname -s`" == "Darwin" ]; then
+@@ -27,7 +27,7 @@
+ 		INSTALL="0"
+ 		;;
+ 	*)
+-		echo "Usage: $0 [options]"
++		echo "Usage: $0 [options] [install-path]"
+ 		echo "Available options:"
+ 		printf "\t-i\tInstall (default)\n"
+ 		printf "\t-u\tUninstall\n"
