@@ -57,6 +57,7 @@ private:
   
   bool addNavCommand(long place);
   bool addNavCommand(double x, double y, double angle);
+  bool addNavCommand(cogx::Math::Vector3 pose);
   void overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc);
   
   std::vector<manipulation::slice::ManipulationPosePtr> getGraspPoses();
