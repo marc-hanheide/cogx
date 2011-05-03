@@ -74,7 +74,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 						  logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
 						else
 						  logString += "<td>" + genericText + "</td>";
-						getLogger().info(CASTUtils.toString(wmc) + genericText);
+						getLogger().debug(CASTUtils.toString(wmc) + genericText);
 					}
 					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
 					break;
