@@ -726,6 +726,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 // 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 
 	// Send result to WM
+	log("overwrite Recoginzer3DCommand '%s'", m_rec_cmd->label.c_str());
 	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 
 	m_task = RECSTOP;
