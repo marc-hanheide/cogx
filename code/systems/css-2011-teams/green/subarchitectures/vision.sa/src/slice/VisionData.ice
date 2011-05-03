@@ -248,6 +248,11 @@ module VisionData {
 		CommandCompletion comp;
    		CommandStatus status;
    };
+   class DropObjectCommand{
+   		string label;
+		CommandCompletion comp;
+   		CommandStatus status;
+   };
 
   /**
    * @brief Object Detector Commands

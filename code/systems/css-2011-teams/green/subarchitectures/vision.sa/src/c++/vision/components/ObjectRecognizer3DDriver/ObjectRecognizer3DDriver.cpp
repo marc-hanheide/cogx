@@ -32,7 +32,7 @@ using namespace VisionData;
 
 void ObjectRecognizer3DDriver::receiveLookForObjectCommand(const cdl::WorkingMemoryChange & _wmc){
 	m_look_cmd = getMemoryEntry<VisionData::LookForObjectCommand>(_wmc.address);
-
+	m_look_wma = _wmc.address;
 	m_pan = m_look_cmd->pan;
 	m_tilt = m_look_cmd->tilt;
 
@@ -67,7 +67,7 @@ void ObjectRecognizer3DDriver::doLooking(){
 
 //	// put found objects into LookForObjectCommand
 //	look_cmd->foundVisualObjects.clear();
-//	cast::cdl::WorkingMemoryAddress wma;
+	cast::cdl::WorkingMemoryAddress wma;
 //	wma.subarchitecture = getSubarchitectureID();
 //	for(unsigned i=0; i<m_rec_visualObjectIDs.size(); i++){
 //		wma.id = m_rec_visualObjectIDs[i];
@@ -80,9 +80,13 @@ void ObjectRecognizer3DDriver::doLooking(){
 //	else
 //		look_cmd->comp = VisionData::SUCCEEDED;
 //
-//	look_cmd->status = VisionData::FINISHED;
-//
-//	overwriteWorkingMemory(_wmc.address, look_cmd);
+	m_look_cmd->foundVisualObjects = std::vector<cast::cdl::WorkingMemoryAddress>();
+	m_look_cmd->pan = m_pan;
+	m_look_cmd->tilt = m_tilt;
+	m_look_cmd->status = VisionData::FINISHED;
+	m_look_cmd->comp = VisionData::SUCCEEDED;
+
+	overwriteWorkingMemory(m_look_wma, m_look_cmd);
 //
 //	addPTZCommand(0.0, 0.0);
 
@@ -96,6 +100,13 @@ void ObjectRecognizer3DDriver::receiveGraspForObjectCommand(const cdl::WorkingMe
 	log("received GraspForObject command");
 
 	m_grasp = true;
+
+}
+
+void ObjectRecognizer3DDriver::receiveDropObjectCommand(const cdl::WorkingMemoryChange & _wmc){
+
+	log("received DropObject command");
+	m_drop = true;
 
 }
 
@@ -176,10 +187,6 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	addMoveArmToPoseCommand(save_pose);
 	if(!isRunning()) return;
 
-	// open gripper
-	addOpenGripperCommand();
-	if(!isRunning()) return;
-
 	// look straight
 	addPTZCommand(0.0, 0.0);
 	if(!isRunning()) return;
@@ -190,6 +197,26 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
 
 	m_grasp = false;
+
+}
+
+void ObjectRecognizer3DDriver::doDropping(){
+
+	// Move to save pose
+	log("move to drop pose");
+	cogx::Math::Pose3 save_pose;
+	save_pose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
+	save_pose.rot.m00 = 0.9;	save_pose.rot.m01 = 0.1;	save_pose.rot.m02 = -0.5;
+	save_pose.rot.m10 = -0.3;	save_pose.rot.m11 = 0.9;	save_pose.rot.m12 = -0.4;
+	save_pose.rot.m20 = 0.4;	save_pose.rot.m21 = 0.5;	save_pose.rot.m22 = 0.8;
+	addMoveArmToPoseCommand(save_pose);
+	if(!isRunning()) return;
+
+	// open gripper
+	addOpenGripperCommand();
+	if(!isRunning()) return;
+
+	m_drop = false;
 
 }
 
@@ -229,7 +256,7 @@ void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
 		while(m_halt_ptz && isRunning())
 			sleepComponent(100);
 		m_halt_ptz = true;
-	deleteFromWorkingMemory(data_id);
+//	deleteFromWorkingMemory(data_id);
 
 }
 
@@ -371,8 +398,11 @@ void ObjectRecognizer3DDriver::start(){
          &ObjectRecognizer3DDriver::receiveLookForObjectCommand));
 
    addChangeFilter(createLocalTypeFilter<VisionData::GraspForObjectCommand>(cdl::ADD),
-          new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
-            &ObjectRecognizer3DDriver::receiveGraspForObjectCommand));
+             new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+               &ObjectRecognizer3DDriver::receiveGraspForObjectCommand));
+   addChangeFilter(createLocalTypeFilter<VisionData::DropObjectCommand>(cdl::ADD),
+             new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+               &ObjectRecognizer3DDriver::receiveDropObjectCommand));
 
 	addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
@@ -405,6 +435,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 	m_halt_ptz = true;
 	m_grasp = false;
 	m_look = false;
+	m_drop = false;
 	m_repeat_arm_movement = false;
 	m_obj_distance = 1000.0;
 	m_rec_objects = 0;
@@ -439,6 +470,9 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 			if(m_look)
 				doLooking();
+
+			if(m_drop)
+				doDropping();
 
 			sleepComponent(100);
 		}

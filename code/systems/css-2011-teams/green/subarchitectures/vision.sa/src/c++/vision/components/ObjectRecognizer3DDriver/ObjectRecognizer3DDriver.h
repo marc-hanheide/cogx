@@ -35,7 +35,7 @@ private:
 	manipulation::slice::FarArmMovementCommandPtr m_arm_cmd;
 	manipulation::slice::MoveArmToPosePtr m_moveto_cmd;
 
-	cast::cdl::WorkingMemoryAddress m_grasp_wma;
+	cast::cdl::WorkingMemoryAddress m_grasp_wma, m_look_wma;
 	VisionData::GraspForObjectCommandPtr m_grasp_cmd;
 	VisionData::LookForObjectCommandPtr m_look_cmd;
 
@@ -45,6 +45,7 @@ private:
 	int m_mode;
 	int m_loops;
 	bool m_grasp;
+	bool m_drop;
 	bool m_repeat_arm_movement;
 	bool m_look;
 	bool m_halt_rec;
@@ -62,6 +63,7 @@ private:
 	void receiveLookForObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
 	void receiveGraspForObjectCommand(const cdl::WorkingMemoryChange & _wmc);
+	void receiveDropObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
 	/** @brief read result of a recognition command */
 	void overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
@@ -83,6 +85,7 @@ private:
 
 	void doLooking();
 	void doGrasping();
+	void doDropping();
 
 	/** @brief constructs a Recognizer3DCommand and adds it into working memory */
 	void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
