@@ -132,11 +132,12 @@ protected:
 	KatanaSensorDataSet zero;
 
 	Mat34 getToolPose();
-
 	void attachObject();
 	void releaseObject();
 	BoxShapeDesc* getObjectBoxDesc(RigidBody* object) const;
 
+	static Mat33 rotAxis(U32 axis, Real angle);
+	static Mat33 rotAxis(U32 axis1, Real angle1, U32 axis2, Real angle2);
 	/** Relative transformation: ab*a = b => ab = b*a^-1 */
 	static Mat34 diff(const Mat34& a, const Mat34& b);
 	/** Inertial frame G to body frame H given reference pose A: H = A^-1 G A */
