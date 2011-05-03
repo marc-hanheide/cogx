@@ -76,6 +76,7 @@ private:
    * whether to use stereo points in global or left camear coord system.
    */
 	bool useGlobalPoints;
+  int stereoWidth;
 	// unit m, due to the error of stereo, >0.01 is suggested
 	double min_height_of_obj;
 	double Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &label);
@@ -86,11 +87,16 @@ private:
 	float Compare2SOI(ObjPara obj1, ObjPara obj2);
 	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
 	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
-	VisionData::VisualObjectPtr ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label);
+	VisionData::VisualObjectPtr ConvexHullToVisualObject(VisionData::ConvexHullPtr &CHPtr, const string &label, bool &isOK);
 	void AddConvexHullinWM();
 	void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
 	void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
 	void RefinePlaneEstimation(vector <Vector3> lines);
+	/**
+	 * remove all points on or near the ground, assuming known camera pose.
+	 */
+  void filterGroundPoints(PointCloud::SurfacePointSeq &points);
+  void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 
 	vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
 	vector< PointCloud::SurfacePointSeq > BGPointsSeq;
@@ -110,6 +116,7 @@ private:
   
 	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
 	void DisplayInTG();
+	void ReRANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -204,6 +211,7 @@ public:
 		para_d = 0.0;
 		previousImg = 0;
 		min_height_of_obj = 0.04;
+		stereoWidth = 320;
 	}
   virtual ~PlanePopOut() {}
 };
