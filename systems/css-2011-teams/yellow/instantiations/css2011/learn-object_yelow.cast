@@ -25,8 +25,7 @@ CPP MG CameraMount CameraMount --camids "0" --fixed_cam_poses_xml "instantiation
 
 #CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
 
-CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devclass FIREWIRE --devnums "1 0" --camconfigs "instantiations/calibration/camcalib-left.xml instantiations/calibration/camcalib-right.xml"
-
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devclass FIREWIRE --devnums "1 0" --camconfigs "instantiations/calibration/camcalib-left.xml instantiations/calibration/camcalib-right.xml
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
 
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/cereals-toppas.ply" --siftfiles "instantiations/css2011/object-models/cereals-toppas.sift" --labels "cereals-toppas" --initpose "[0.60 0.00 0.60][0.00 0.00 1.57]" --displayserver "display.srv" --log
