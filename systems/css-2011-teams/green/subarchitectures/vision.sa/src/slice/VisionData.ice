@@ -242,7 +242,7 @@ module VisionData {
    		
    };
    class GraspForObjectCommand{
-   		cast::cdl::WorkingMemoryAddress visualObjectToGrasp;
+   		string label;
 		CommandCompletion comp;
    		CommandStatus status;
    };
