@@ -179,6 +179,11 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   s << "dimensions:" << dim << endl;
   log(s.str());
 
+  if (pos.z < 0.3 || pos.z > 0.8) {
+      log("what is this? I'm hallucinating (or the object is lying on the floor).");
+      return;
+  }
+
   if (abs(getColumn(rot, short_axis).z) > 0.8) {
       log("object is lying on the side, no grasping is possible");
       return;
