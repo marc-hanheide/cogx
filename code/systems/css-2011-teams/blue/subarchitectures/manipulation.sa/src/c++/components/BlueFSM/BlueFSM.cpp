@@ -69,7 +69,7 @@ namespace cogx
     m_handoverPose.pos = Math::vector3(0.4, 0.4, 0.6);
     fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
     
-    //m_lookForObjects.push_back("cereals-weetabix");
+    m_lookForObjects.push_back("cereals-weetabix");
     m_lookForObjects.push_back("cereals-chocos");
   }
   
