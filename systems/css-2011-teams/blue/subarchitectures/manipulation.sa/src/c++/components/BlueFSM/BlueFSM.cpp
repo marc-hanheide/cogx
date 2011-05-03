@@ -114,6 +114,14 @@ namespace cogx
     m_lgm = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
     m_Glrt  = new CharGridLineRayTracer(*m_lgm);
 
+  if (_config.find("--no-x-window") == _config.end()) {
+    m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
+    println("Will use X window to show the exploration map");
+  } else {
+    m_Displaylgm = 0;
+    println("Will NOT use X window to show the exploration map");
+  }
+
     m_lookForObjects.push_back("cereals-weetabix");
     m_lookForObjects.push_back("cereals-chocos");
   }
@@ -124,6 +132,8 @@ namespace cogx
 	new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::objectPoseCallback));
     addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
 	new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::objectPoseCallback));
+    addChangeFilter(createGlobalTypeFilter<NavData::RobotPose2d>(cdl::WILDCARD),
+	new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::newRobotPose));
 
     if (false) {
       m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
@@ -142,6 +152,7 @@ namespace cogx
 
     if (cmd->comp == manipulation::slice::SUCCEEDED ||
 	cmd->comp == manipulation::slice::FAILED) {
+	    log ("simpleCallback: m_waiting was %i, now 0", m_waiting);
       m_waiting = false;
     }
   }
@@ -149,7 +160,7 @@ namespace cogx
   void
   BlueFSM::navCallback(const cdl::WorkingMemoryChange &wmc) {
     SpatialData::NavCommandPtr cmd =
-      getMemoryEntry<SpatialData::NavCommand>(wmc.address.id);
+      getMemoryEntry<SpatialData::NavCommand>(wmc.address.id, wmc.address.subarchitecture);
 
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED ||
 	cmd->comp == SpatialData::COMMANDFAILED) {
@@ -398,6 +409,14 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
     while (true)
     {
+
+    if (m_Displaylgm) {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      m_Displaylgm->updateDisplay(&currentPose);
+//                                  &m_NavGraph, 
+//                                  &m_Explorer->m_Fronts);
+    }
+
       switch(m_state) {
 	case INIT:
 	  {
@@ -406,21 +425,14 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    log("INIT");
 	    m_state = LOOK_CANONICAL;
 
-	    bool success = moveHome();
-	    if (success) {
-	      success = movePTZ(0, -M_PI/6);
-	      if (success) {
+	      bool success = movePTZ(0, -M_PI/6);
+	      if (true) {
 		m_state = SPINNING;
 	      }
 	      else {
 		log("Error! Unable to move PTZ to shallow position!");
 		m_state = TERMINATED;
 	      }
-	    }
-	    else {
-	      log("Error! Unable to return to home pose!");
-	      m_state = TERMINATED;
-	    }
 	  }
 	  break;
 	
@@ -430,7 +442,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
 	    m_turnStep = 0;
 
-	    while (m_turnStep < 8) {
+	    while (m_turnStep < 3) {
 	      lockComponent();
 	      // Issue recognition commands
 	      for (std::vector<string>::iterator it = m_lookForObjects.begin(); it != m_lookForObjects.end(); it++) {
@@ -439,7 +451,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	      unlockComponent();
 
 	      sleep(5);
-	      if(m_turnStep < 7)
+	      if(m_turnStep < 2)
 	      {
 		turn45Degrees();
 	      }
@@ -459,6 +471,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	  {
 	    log("DECIDE_POSITION");
 
+log("%i", __LINE__);
 	    string bestObject;
 	    double bestSqDist = DBL_MAX;
 	    for (map<string, Math::Pose3>::iterator it = m_globalPoses.begin();
@@ -472,6 +485,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 		bestObject = it->first;
 	      }
 	    }
+log("%i", __LINE__);
 
 	    if (bestObject == "") {
 	      log("Error: No objects to move to!");
@@ -479,7 +493,9 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    }
 	    else {
 	      double bestX, bestY, bestTheta;
+log("%i", __LINE__);
 	      bool success = findBestGraspPose(bestObject, bestX, bestY, bestTheta);
+log("%i", __LINE__);
 	      if (!success) {
 		log("Error: Unable to find grasp pose for %s", bestObject.c_str());
 		m_state = MOVE_TO_NEW_POS;
@@ -500,6 +516,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	
 	case MOVE_TO_NEW_POS:
 	  {
+log("MOVE_TO_NEW_POS");
 	    double x, y;
 	    findRandomPosition(x, y);
 
@@ -846,6 +863,10 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
       
       //Transform from vo->pose (local) into global and store
       transform(m_CurrPose, vo->pose, m_globalPoses[vo->identLabels.at(i)]);
+log("local: %f, %f, %f -- global: %f, %f, %f", vo->pose.pos.x, vo->pose.pos.y, vo->pose.pos.z,
+m_globalPoses[vo->identLabels.at(i)].pos.x,
+m_globalPoses[vo->identLabels.at(i)].pos.y,
+m_globalPoses[vo->identLabels.at(i)].pos.z);
 
       m_poses[vo->identLabels.at(i)] = vo->pose;
       m_pose_confs[vo->identLabels.at(i)] = vo->identDistrib.at(i);
@@ -863,7 +884,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     }
   }
 
-bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad){
+bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad, bool unknownIsObstacle){
   int xiC,yiC;
   if (cmap.worldCoords2Index(xW,yW,xiC,yiC)!= 0)
     return false;
@@ -875,7 +896,12 @@ bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad){
     for (int y = yiC-wi; y <= yiC+wi; y++) {
       if (x >= -cmap.getSize() && x <= cmap.getSize() && y >= -cmap.getSize() && y <= cmap.getSize()) {
 	if (hypot(x-xiC,y-yiC) < w) {
-	  if (cmap(x,y) == '1' or cmap(x,y) == '2') return false;
+		if (unknownIsObstacle) {
+			if (cmap(x,y) == '1' or cmap(x,y) == '2') return false;
+		}
+		else {
+			if (cmap(x,y) == '1' ) return false;
+		}
 	}
       }
     }
@@ -900,6 +926,7 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
   //    CureObstMap clgm(combined_lgm.size, 0.05, '2', CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
 
   //    IcetoCureLGM(combined_lgm,&clgm);
+log("%i", __LINE__);
   if (m_globalPoses.count(obj) == 0) {
     log("Error! Trying to find grasp pose for unknown object %s", obj.c_str());
     return false;
@@ -912,15 +939,17 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
   double bestAlignment = -FLT_MAX;
 
   vector<pair<double, double> > coordinates;
+log("%i", __LINE__);
   for (int attempt = 0; attempt < 1000; attempt++) {
-    const double r = 0.3 + 0.5*(double)(rand())/RAND_MAX;
-    const double phi = 2*M_PI*(double)(rand())/RAND_MAX;
+    const double r = 0.3 + 1*((double)rand())/RAND_MAX;
+    const double phi = 2*M_PI*((double)rand())/RAND_MAX;
     double dx = r*cos(phi);
     double dy = r*sin(phi);
     double x = objX + dx;
     double y = objY + dy;
 
-    if (isCircleFree(*m_lgm, x, y, 0.3))  {
+    if (isCircleFree(*m_lgm, x, y, 0.3, true))  {
+log("%i", __LINE__);
       double alignment;
       Math::Pose3 outPregraspPose;
       Math::Pose3 outEnvelopingPose;
@@ -938,11 +967,12 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
       }
     }
   }
+log("%i", __LINE__);
 
   if (bestAlignment > -FLT_MAX) {
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
   bool BlueFSM::moveToSafePose()
@@ -952,42 +982,36 @@ bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
 
 bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
 {
-log("MovePregrasp: %i", __LINE__);
   manipulation::slice::MoveArmToPosePtr cmd = new
     manipulation::slice::MoveArmToPose;
 
-log("MovePregrasp: %i", __LINE__);
   cmd->status = manipulation::slice::NEW;
   cmd->comp = manipulation::slice::COMPINIT;
   cmd->targetPose = pregraspPose;
 
-log("MovePregrasp: %i", __LINE__);
   m_waiting = true;
   string id = newDataID();
   MemberFunctionChangeReceiver<BlueFSM> *receiver = new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::simpleCallback);
   addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
   addToWorkingMemory<manipulation::slice::MoveArmToPose>(id, cmd);
 
-log("MovePregrasp: %i, %s", __LINE__, id.c_str());
   while (m_waiting) {
     usleep(50000);
   }
 
-log("MovePregrasp: %i", __LINE__);
 //  removeChangeFilter(receiver);
 //  delete receiver;
 
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
-log("MovePregrasp: %i", __LINE__);
   m_currentArmPose = cmd->reachedPose;
-log("MovePregrasp: %i", __LINE__);
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
 }
 
 bool BlueFSM::moveHome() 
 {
+	log ("moveHome");
   manipulation::slice::MoveArmToHomePositionCommandPtr cmd = new
     manipulation::slice::MoveArmToHomePositionCommand;
 
@@ -1188,6 +1212,7 @@ bool BlueFSM::moveToHandover()
 bool
 BlueFSM::turn45Degrees()
 {
+log("turn45Degrees");
   m_poses.clear();
   SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
   cmd->status = SpatialData::NONE;
@@ -1197,19 +1222,25 @@ BlueFSM::turn45Degrees()
   cmd->angle.resize(1);
   cmd->angle[0] = M_PI/4;
 
+log("turn45Degrees, %i",__LINE__);
   m_waiting = true;
   string id = newDataID();
+log("turn45Degrees, %i",__LINE__);
   MemberFunctionChangeReceiver<BlueFSM> *receiver = 
     new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::navCallback);
-  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
-  addToWorkingMemory<SpatialData::NavCommand>(id, cmd);  
+  addChangeFilter(createAddressFilter(id, "spatial.sa", cdl::OVERWRITE), receiver);
+log("turn45Degrees, %i",__LINE__);
+  addToWorkingMemory<SpatialData::NavCommand>(id,"spatial.sa",cmd);  
 
+log("turn45Degrees, %i",__LINE__);
   while (m_waiting) {
     usleep(50000);
   }
+log("turn45Degrees, %i",__LINE__);
   //  removeChangeFilter(receiver);
   //  delete receiver;
-  cmd = getMemoryEntry<SpatialData::NavCommand>(id);
+  cmd = getMemoryEntry<SpatialData::NavCommand>(id, "spatial.sa");
+log("turn45Degrees, %i",__LINE__);
 
   return cmd->comp == SpatialData::COMMANDSUCCEEDED;
 }
@@ -1224,7 +1255,7 @@ BlueFSM::findRandomPosition(double &x, double &y)
     x = (maxX-minX)/RAND_MAX*rand();
     y = (maxY-minY)/RAND_MAX*rand();
 
-    if (isCircleFree(*m_lgm, x, y, 0.3)) {
+    if (isCircleFree(*m_lgm, x, y, 0.3, false)) {
       finished = true;
     }
   }
@@ -1233,6 +1264,7 @@ BlueFSM::findRandomPosition(double &x, double &y)
 bool
 BlueFSM::moveTo(double x, double y, double theta)
 {
+log("moveTo(%f,%f,%f)", x, y, theta);
   m_poses.clear();
   SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
   cmd->prio = SpatialData::URGENT;
@@ -1258,15 +1290,15 @@ BlueFSM::moveTo(double x, double y, double theta)
   string id = newDataID();
   MemberFunctionChangeReceiver<BlueFSM> *receiver = 
     new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::navCallback);
-  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
-  addToWorkingMemory<SpatialData::NavCommand>(id, cmd);  
+  addChangeFilter(createAddressFilter(id, "spatial.sa", cdl::OVERWRITE), receiver);
+  addToWorkingMemory<SpatialData::NavCommand>(id, "spatial.sa", cmd);  
 
   while (m_waiting) {
     usleep(50000);
   }
   //  removeChangeFilter(receiver);
   //  delete receiver;
-  cmd = getMemoryEntry<SpatialData::NavCommand>(id);
+  cmd = getMemoryEntry<SpatialData::NavCommand>(id, "spatial.sa");
 
   return cmd->comp == SpatialData::COMMANDSUCCEEDED;
 }
@@ -1287,15 +1319,15 @@ BlueFSM::turnTo(double theta)
   string id = newDataID();
   MemberFunctionChangeReceiver<BlueFSM> *receiver = 
     new MemberFunctionChangeReceiver<BlueFSM>(this, &BlueFSM::navCallback);
-  addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
-  addToWorkingMemory<SpatialData::NavCommand>(id, cmd);  
+  addChangeFilter(createAddressFilter(id, "spatial.sa", cdl::OVERWRITE), receiver);
+  addToWorkingMemory<SpatialData::NavCommand>(id, "spatial.sa", cmd);  
 
   while (m_waiting) {
     usleep(50000);
   }
   //  removeChangeFilter(receiver);
   //  delete receiver;
-  cmd = getMemoryEntry<SpatialData::NavCommand>(id);
+  cmd = getMemoryEntry<SpatialData::NavCommand>(id, "spatial.sa");
 
   return cmd->comp == SpatialData::COMMANDSUCCEEDED;
 }
@@ -1303,6 +1335,7 @@ BlueFSM::turnTo(double theta)
 bool
 BlueFSM::movePTZ(double pan, double tilt)
 {
+log("movePTZ %f, %f", pan, tilt);
   ptz::SetPTZPoseCommandPtr cmd = new ptz::SetPTZPoseCommand();
   cmd->comp = ptz::COMPINIT;
   cmd->pose.pan = pan;

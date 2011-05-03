@@ -11,6 +11,7 @@
 #include <OdometryReceiver.hpp>
 #include <Navigation/LocalMap.hh>
 #include <Navigation/GridLineRayTracer.hh>
+#include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <SensorData/LaserScan2d.hh>
 #include <CureHWUtils.hpp>
@@ -116,6 +117,7 @@ namespace cogx
     Cure::TransformedOdomPoseProvider m_TOPP;
     CharMap* m_lgm;
     CharGridLineRayTracer* m_Glrt;
+    Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
     Cure::Pose3D m_SlamRobotPose;
     Math::Pose3 m_CurrPose;
 
