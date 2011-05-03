@@ -744,20 +744,24 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
     for (unsigned i = 0; i < vo->identDistrib.size(); i++)
     {
-      if (vo->identLabels.at(i).find("cereals") == std::string::npos)
+      if (vo->identLabels.at(i) == "unknown")
         continue;
 
+      log("objectPoseCallback: Studying %s", vo->identLabels.at(i).c_str());
+      
       if (vo->identDistrib.at(i) < .03)
         continue;
 
-      //Transform from vo->pose (local) into global and store
-      transform(m_CurrPose, vo->pose, m_globalPoses[vo->identLabels.at(m_idx)]);
-      //boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
+      log("objectPoseCallback: %s has a high conf!", vo->identLabels.at(i).c_str());
 
+      //boost::unique_lock<boost::mutex> lock(mutex_, boost::try_to_lock_t());
       std::cerr << "Waiting for mutex_" << std::endl;
       boost::unique_lock<boost::mutex> lock(mutex_);
       std::cerr << "Have mutex_" << std::endl;
       
+      //Transform from vo->pose (local) into global and store
+      transform(m_CurrPose, vo->pose, m_globalPoses[vo->identLabels.at(m_idx)]);
+
       m_poses[vo->identLabels.at(i)] = vo->pose;
       m_pose_confs[vo->identLabels.at(i)] = vo->identDistrib.at(i);
     }
