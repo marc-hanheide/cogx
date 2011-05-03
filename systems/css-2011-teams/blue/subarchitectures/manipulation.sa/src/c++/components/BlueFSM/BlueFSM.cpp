@@ -30,6 +30,31 @@ extern "C"
 namespace cogx
 {
 
+  Math::Pose3 convertPose(const m::Pose& in)
+  {
+    Math::Pose3 p;
+    for (int i = 0; i < 3; ++i)
+    {
+      Math::set(p.pos, i, in.first[i]);
+      for (int j = 0; j < 3; ++j)
+        Math::set(p.rot, i, j, m::matrixCopy(in.second)(i,j));
+    }
+    return p;
+  }
+  m::Pose convertPose(const Math::Pose3& in)
+  {
+    m::Pose p;
+    p.first = m::Vector3(in.pos.x,in.pos.y,in.pos.z);
+    m::Matrix3 m;
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        m(i,j) = Math::get(in.rot, i, j);
+    
+    m.Orthonormalize();
+    p.second = m::quaternionCopy(m);
+    return p;
+  }
+  
   using namespace std;
   using namespace cast;
   
@@ -84,9 +109,15 @@ namespace cogx
     rec_cmd->visualObjectID = visualObjectID;
     addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
   }
-  
-  void BlueFSM::runComponent()
+
+  std::pair<Math::Pose3, double> BlueFSM::nameless(const Math::Pose3& inRobotPose,
+                                                   const Math::Pose3& inObjectPose,
+                                                   const std::string& inObjectLabel,
+                                                   Math::Pose3& outPregraspPose,
+                                                   Math::Pose3& outEnvelopingPose,
+                                                   double& outQuality) const
   {
+    
     std::map<std::string, std::vector<m::Pose> > grasps;
     
     {
@@ -95,9 +126,56 @@ namespace cogx
       v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(1,0,0,0)));
       v.push_back(std::make_pair(m::Vector3(0,0,.140), m::Quaternion(0.707107,0,0.707107,0)));
       v.push_back(std::make_pair(m::Vector3(0,0,-.140), m::Quaternion(0.707107,0,-0.707107,0)));
-
+      
       grasps[std::string("cereals-weetabix")] = v;
     }
+
+    m::Pose objectPose = convertPose(inObjectPose);
+    m::Pose robotPose = convertPose(inRobotPose);
+    m::Pose robotRelObjectPose;
+    m::project(robotRelObjectPose.first, robotRelObjectPose.second,
+               robotPose.first, robotPose.second,
+               objectPose.first, objectPose.second);
+    
+    // Get the predefined grasps for that object
+    
+    std::vector<m::Pose> objectRelGrasps = grasps[inObjectLabel];
+    
+    // Find the easiest grasps in there
+    
+    double maxDotProduct = -1000;
+    m::Pose bestGrasp = std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY);
+    m::Pose bestBacktrackedGrasp = bestGrasp;
+    for (std::vector<m::Pose>::iterator i = objectRelGrasps.begin(); i != objectRelGrasps.end(); ++i)
+    {
+      m::Pose robotGrasp;
+      m::transform(robotGrasp.first, robotGrasp.second, robotRelObjectPose.first, robotRelObjectPose.second, i->first, i->second);
+      m::Matrix3 robotGraspOri(m::matrixCopy(robotGrasp.second));
+      m::Vector3 robotToGraspVector = robotGrasp.first;
+      
+      robotToGraspVector.Normalize();
+      
+      robotToGraspVector.Z() = 0;
+      
+      double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(0)));
+      if (dot > maxDotProduct)
+      {
+        maxDotProduct = dot;
+        bestGrasp = robotGrasp;
+        bestBacktrackedGrasp = bestGrasp;
+        bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(0));
+      }
+    }
+    
+    outPregraspPose = convertPose(bestBacktrackedGrasp);
+    std::cerr << "pregrasp: " << outPregraspPose << std::endl;
+    outEnvelopingPose = convertPose(bestGrasp);
+    std::cerr << "enveloping grasp: " << outEnvelopingPose << std::endl;
+    outQuality = maxDotProduct;
+  }
+  
+  void BlueFSM::runComponent()
+  {
 
     while (true)
     {
@@ -188,76 +266,16 @@ namespace cogx
             std::string minLabel = "cereals-weetabix";
             assert(minLabel == "cereals-weetabix");
             
-            m::Pose objectPose;
-
             std::cerr << m_poses[minLabel] << std::endl;
 
-            
-
-            objectPose.first = m::Vector3(m_poses[minLabel].pos.x,m_poses[minLabel].pos.y,m_poses[minLabel].pos.z);
-            {
-              m::Matrix3 m;
-              for (int i = 0; i < 3; ++i)
-                for (int j = 0; j < 3; ++j)
-                  m(i,j) = Math::get(m_poses[minLabel].rot, i, j);
-            
-              m.Orthonormalize();
-              objectPose.second = m::quaternionCopy(m);
-            }
-            // Get the predefined grasps for that object
-
-            std::vector<m::Pose> g = grasps[minLabel];
-            
-            // Find the easiest grasps in there
-
-            double maxDotProduct = -1000;
-            m::Pose bestGrasp = std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY);
-            m::Pose bestBacktrackedGrasp = bestGrasp;
-            for (std::vector<m::Pose>::iterator i = g.begin(); i != g.end(); ++i)
-              {
-                m::Pose robotGrasp;
-                m::transform(robotGrasp.first, robotGrasp.second, objectPose.first, objectPose.second, i->first, i->second);
-                m::Matrix3 robotGraspOri(m::matrixCopy(robotGrasp.second));
-                m::Vector3 robotToGraspVector = robotGrasp.first;
-                
-                robotToGraspVector.Normalize();
-                
-                robotToGraspVector.Z() = 0;
-
-                double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(0)));
-                if (dot > maxDotProduct)
-                  {
-                    maxDotProduct = dot;
-                    bestGrasp = robotGrasp;
-                    bestBacktrackedGrasp = bestGrasp;
-                    bestBacktrackedGrasp.first -= .015*m::Vector3(robotGraspOri.GetColumn(0));
-                  }
-              }
-
-            {
-              Math::Pose3 p;
-              for (int i = 0; i < 3; ++i)
-                {
-                  Math::set(p.pos, i, bestBacktrackedGrasp.first[i]);
-                  for (int j = 0; j < 3; ++j)
-                    Math::set(p.rot, i, j, m::matrixCopy(bestBacktrackedGrasp.second)(i,j));
-                }
-              
-              m_pregraspPose = p;
-            }
-            std::cerr << "pregrasp: " << m_envelopingPose << std::endl;
-            {
-              Math::Pose3 p;
-              for (int i = 0; i < 3; ++i)
-                {
-                  Math::set(p.pos, i, bestGrasp.first[i]);
-                  for (int j = 0; j < 3; ++j)
-                    Math::set(p.rot, i, j, m::matrixCopy(bestGrasp.second)(i,j));
-                }
-              
-              m_envelopingPose = p;
-            }
-            std::cerr << "enveloping grasp: " << m_envelopingPose << std::endl;
+            double trash;
+                        
+            nameless(convertPose(std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY)),
+                     m_poses[minLabel],
+                     minLabel,
+                     m_pregraspPose,
+                     m_envelopingPose,
+                     trash);
 
             m_state = GO_TO_PREGRASP;
             break;
