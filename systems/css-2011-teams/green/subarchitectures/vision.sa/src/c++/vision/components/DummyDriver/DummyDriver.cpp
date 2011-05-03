@@ -85,7 +85,7 @@ void DummyDriver::runComponent()
   sleepProcess(4000);
 // addNavCommand(5, 5, 1);
    log("move");
-  m_poses =  getGraspPoses();
+  getGraspPoses(m_poses);
   log("got poses");
   if(m_poses.size() > 0)
   {	
@@ -246,38 +246,31 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	return (m_nav == SpatialData::COMMANDSUCCEEDED);
 }
 
-bool DummyDriver::addNavCommand(cogx::Math::Vector3 pose) {
+bool DummyDriver::addNavCommand(cogx::Math::Vector3 pose) {		
+	return addNavCommand(pose.x, pose.y, pose.z);
+}
+
+bool DummyDriver::addNavCommand(long place) {
 
 	NavCommandPtr nc = new NavCommand();
 //	                nc->pose = new vector<double>;
-	   nc->pose.push_back(pose.x);
- 	   nc->pose.push_back(pose.y);
-	   nc->pose.push_back(pose.z);
+	   nc->pose.push_back(0);
+ 	   nc->pose.push_back(0);
+	   nc->pose.push_back(0);
 	
 //	                nc->tolerance=new vector<double>;
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.175);
 	   
-	   nc->cmd = SpatialData::GOTOPOSITION;
-	   nc->comp = SpatialData::COMMANDPENDING;
-	
-	m_nav = SpatialData::COMMANDPENDING;
-	addToWorkingMemory(newDataID(), nc);
-	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
-		sleepComponent(50);
-		
-	return (m_nav == SpatialData::COMMANDSUCCEEDED);
-}
-
-bool DummyDriver::addNavCommand(long place) {
-
-	NavCommandPtr nc = new NavCommand();
-
 	   nc->destId.push_back(place);
+	   nc->distance.push_back(0);
+	   nc->angle.push_back(0);
 	   
 	   nc->cmd = SpatialData::GOTOPLACE;
 	   nc->comp = SpatialData::COMMANDPENDING;
+	   nc->prio = SpatialData::URGENT;
+	   nc->status = SpatialData::NONE;
 	
 	m_nav = SpatialData::COMMANDPENDING;
 	addToWorkingMemory(newDataID(), string("spatial.sa"), nc);
@@ -298,15 +291,28 @@ void DummyDriver::overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc) {
 //  deleteFromWorkingMemory(_wmc.address.id);
 }
 
-vector<ManipulationPosePtr> DummyDriver::getGraspPoses() {
+void DummyDriver::getGraspPoses(vector<ManipulationPosePtr> wmposes) {
 
-	vector<ManipulationPosePtr> wmposes;
-	getMemoryEntries(wmposes, string("manipulation.sa") );
-  		
-	return wmposes;
+	wmposes.clear();
+	getMemoryEntries(wmposes, string("manipulation.sa"));
 }
 
-vector<ManipulationPosePtr> DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
+ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr> poses) {
+	double min=56565444;
+	ManipulationPosePtr best;
+	int pos;
+	
+	for (int it=0 ; it < poses.size(); it++ )
+		if(poses[it]->distance < min) {
+  			best = poses[it]);
+  			pos=it;
+  		}
+  		
+  	poses.erase(pos);
+  	return best;
+}
+
+ DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
 	
 	vector<ManipulationPosePtr> purged;
 //	vector<ManipulationPosePtr>::iterator it;
