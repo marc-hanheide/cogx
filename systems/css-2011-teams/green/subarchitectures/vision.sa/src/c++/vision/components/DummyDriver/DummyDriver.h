@@ -13,6 +13,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <manipulation.hpp>
+#include <SpatialData.hpp>
 #include <PTZ.hpp>
 
 namespace cast
@@ -23,6 +24,8 @@ class DummyDriver : public ManagedComponent
 private:
 
   ptz::PTZCompletion m_ptz;
+  VisionData::CommandCompletion m_viscomp;
+  SpatialData::Completion m_nav;
   /**
    * list of objects we want to have detected
    */
@@ -38,7 +41,21 @@ private:
   bool addPTZCommand(double pan, double tilt);
   
   void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
-
+  
+    // Look4Obj functions	
+  bool addLook4ObjCommand();
+  
+  void overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc);
+  
+    // PTZ functions	
+  bool addGraspCommand(std::string label);
+  
+  void overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc);
+  
+  
+  bool addNavCommand(long place);
+  bool addNavCommand(double x, double y, double angle);
+  void overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc);
 protected:
   /**
    * called by the framework to configure our component
