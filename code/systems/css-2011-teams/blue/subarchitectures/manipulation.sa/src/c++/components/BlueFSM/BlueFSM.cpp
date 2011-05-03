@@ -264,6 +264,14 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     p.second.W() << " " << p.second.X() << " " << p.second.Y() << " " << p.second.Z() << std::endl;
   }
 
+  void addToOutputFile(const std::string& s, const m::Pose& p)
+  {
+    std::ofstream ofs(s.c_str(), std::ios::app);
+    ofs << p.first.X() << " " << p.first.Y() << " " << p.first.Z() << " " <<
+    p.second.W() << " " << p.second.X() << " " << p.second.Y() << " " << p.second.Z() << std::endl;
+  }
+
+  
   void outputToFile(const std::string& s, const Math::Pose3& p)
   {
     std::ofstream ofs(s.c_str());
@@ -396,6 +404,12 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     outputToFile("/tmp/grasp-bestGrasp", bestGrasp);
     outputToFile("/tmp/grasp-bestBacktrackedGrasp", bestBacktrackedGrasp);
 
+    addToOutputFile("/tmp/grasp-all-robotRelObjectPose", robotRelObjectPose);
+    addToOutputFile("/tmp/grasp-all-bestGrasp", bestGrasp);
+    {
+      std::ofstream ofs("/tmp/grasp-all-quality", std::ios::app);
+      ofs << maxDotProduct << std::endl;
+    }
     
     outPregraspPose = convertPose(bestBacktrackedGrasp);
     std::cerr << "pregrasp: " << outPregraspPose << std::endl;
