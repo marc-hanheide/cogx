@@ -27,3 +27,8 @@ if(BUILD_TEAM_RED)
   add_subdirectory (src/c++/components/ManipulationPlanner)
 endif(BUILD_TEAM_RED)
 
+option(BUILD_SS_MANIPULATION "build spring school manipulation system" YES)
+if(BUILD_SS_MANIPULATION)
+  add_subdirectory (src/c++/components/SSManipulation)
+endif(BUILD_SS_MANIPULATION)
+
