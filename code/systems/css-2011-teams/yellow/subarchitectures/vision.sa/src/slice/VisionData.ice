@@ -10,7 +10,7 @@
 module VisionData {
 
   enum PlaneDetectionStatus { READY, STOPROBOT };
-  struct KinectPlanePopOut {
+  class KinectPlanePopOut {
     PlaneDetectionStatus status;
   };
 
