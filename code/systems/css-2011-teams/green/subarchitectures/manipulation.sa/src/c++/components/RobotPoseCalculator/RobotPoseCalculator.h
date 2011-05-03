@@ -66,8 +66,9 @@ private:
   /* void movementCommandChanged(const cdl::WorkingMemoryChange &_wmc); */
 
   Math::Vector3 getObjectDimensions(const VisionData::VisualObject& object);
-  void checkGraspPosition(const Math::Vector3& pos, const Math::Vector3& dir, const Math::Vector3& grasp_dir, std::vector<ManipulationPose>& results);
+  void checkGraspPosition(const Math::Vector3& pos, const Math::Vector3& dir, const Math::Vector3& grasp_dir, std::vector<ManipulationPosePtr>& results);
   Math::Vector3 toGlobal(const Math::Vector3& pos);
+  void computePoseDistance(ManipulationPose& pose);
 
 protected:
   virtual void configure(const map<string, string> &_config);
