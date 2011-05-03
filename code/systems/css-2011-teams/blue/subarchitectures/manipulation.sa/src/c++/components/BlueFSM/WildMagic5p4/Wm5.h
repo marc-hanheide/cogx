@@ -42,7 +42,7 @@ namespace m {
     Matrix3 m;
     q.ToRotationMatrix(m);
     m.Orthonormalize();
-      return m;
+    return m;
   }
   
   
@@ -58,6 +58,33 @@ namespace m {
     return m;
   }
   
+  inline
+  Vector3 normalized(const Vector3 &v)
+  {
+    Vector3 unit = v;
+    assert(unit.Length() > 1e-12);;
+    unit.Normalize();
+    return unit;
+  }
+  
+  inline
+  Quaternion normalized(const Quaternion &q)
+  {
+    Quaternion n = q;
+    assert(n.Length() > 1e-12);
+    n.Normalize();
+    return n;
+  }
+  
+  inline
+  Matrix3 normalized(const Matrix3 &m)
+  {
+    Matrix3 n = m;
+    n.Orthonormalize();
+    return n;
+  }
+  
+
   
   typedef std::pair< m::Vector3, m::Quaternion > Pose;
 

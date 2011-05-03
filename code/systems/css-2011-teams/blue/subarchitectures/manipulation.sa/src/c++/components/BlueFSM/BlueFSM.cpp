@@ -287,6 +287,14 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     
     std::vector<m::Pose> objectRelGrasps = grasps[inObjectLabel];
     
+    
+    bool objectLyingFlat = false;
+    if (Vector3(0, 0, 1).Dot(m::normalized(objectPose.second.GetColumn(1))) > .5)
+    {
+      log("Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
+      objectLyingFlat = true;
+    }
+    
     // Find the easiest grasps in there
     
     double maxDotProduct = -1000;
@@ -294,6 +302,10 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     m::Pose bestBacktrackedGrasp = bestGrasp;
     for (std::vector<m::Pose>::iterator i = objectRelGrasps.begin(); i != objectRelGrasps.end(); ++i)
     {
+      if (objectLyingFlat)
+      {
+        if (std::distance(objectRelGrasps.begin(), i) <= 1) continue;
+      }
       m::Pose robotGrasp;
       m::transform(robotGrasp.first, robotGrasp.second, robotRelObjectPose.first, robotRelObjectPose.second, i->first, i->second);
       m::Matrix3 robotGraspOri(m::matrixCopy(robotGrasp.second));
