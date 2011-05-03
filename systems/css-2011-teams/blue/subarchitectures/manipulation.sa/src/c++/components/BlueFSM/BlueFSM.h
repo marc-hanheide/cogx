@@ -77,6 +77,7 @@ namespace cogx
     bool movePTZ(double pan, double tilt);
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
+    void newRobotPose(const cdl::WorkingMemoryChange &objID);
 
     void simpleCallback(const cdl::WorkingMemoryChange &_wmc);
     void navCallback(const cdl::WorkingMemoryChange &_wmc);
@@ -115,6 +116,7 @@ namespace cogx
     Cure::TransformedOdomPoseProvider m_TOPP;
     CharMap* m_lgm;
     CharGridLineRayTracer* m_Glrt;
+    Cure::Pose3D m_SlamRobotPose;
     Math::Pose3 m_CurrPose;
 
   private:

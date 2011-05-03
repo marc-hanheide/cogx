@@ -159,6 +159,25 @@ namespace cogx
     }
   }
 
+void BlueFSM::newRobotPose(const cdl::WorkingMemoryChange &objID) 
+{
+  try {
+    NavData::RobotPose2dPtr lastRobotPose =
+      getMemoryEntry<NavData::RobotPose2d>(objID.address);
+    m_SlamRobotPose.setX(lastRobotPose->x);
+    m_SlamRobotPose.setY(lastRobotPose->y);
+    m_SlamRobotPose.setTheta(lastRobotPose->theta);
+
+    Cure::Pose3D cp = m_SlamRobotPose;
+    m_TOPP.defineTransform(cp);
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("Error! robotPose missing on WM!");
+    return;
+  }
+
+}
+
   void BlueFSM::receiveOdometry(const Robotbase::Odometry &castOdom)
   {
     lockComponent(); //Don't allow any interface calls while processing a callback
@@ -407,7 +426,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	      m_turnStep++;
 	    }
 
-	    if ((!m_useDropoff || m_dropTableDetected) && !m_poses.empty()) {
+	    if ((!m_useDropoff || m_dropTableDetected) && !m_globalPoses.empty()) {
 	      m_state = DECIDE_POSITION;
 	    }
 	    else {
@@ -847,6 +866,7 @@ bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad){
 bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
   double &bestTheta)
 {
+  log ("findBestGraspPose");
   //    int currentPlaceID = m_placeInterface->getCurrentPlace()->id;
   //    SpatialData::PlaceIDSeq vec;
   //    vec.push_back(currentPlaceID);
