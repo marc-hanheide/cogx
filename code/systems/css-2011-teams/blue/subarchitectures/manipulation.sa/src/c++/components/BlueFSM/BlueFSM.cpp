@@ -124,6 +124,10 @@ namespace cogx
 
     m_lookForObjects.push_back("cereals-weetabix");
     m_lookForObjects.push_back("cereals-chocos");
+    m_lookForObjects.push_back("cereals-bircher");
+    m_lookForObjects.push_back("cereals-fruchtemusli");
+    m_lookForObjects.push_back("cereals-schokomusli");
+    m_lookForObjects.push_back("cereals-toppas");
   }
 
   void BlueFSM::start()
