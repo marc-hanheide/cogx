@@ -43,7 +43,7 @@ private:
   void overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _wmc);
   
     // Look4Obj functions	
-  bool addLook4ObjCommand();
+  bool addLook4ObjCommand(double pan, double tilt);
   
   void overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc);
   
@@ -56,6 +56,9 @@ private:
   bool addNavCommand(long place);
   bool addNavCommand(double x, double y, double angle);
   void overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc);
+  
+  std::vector<manipulation::slice::ManipulationPosePtr> getGraspPoses();
+  std::vector<manipulation::slice::ManipulationPosePtr> purgePoses(std::string label, std::vector<manipulation::slice::ManipulationPosePtr> poses);
 protected:
   /**
    * called by the framework to configure our component
