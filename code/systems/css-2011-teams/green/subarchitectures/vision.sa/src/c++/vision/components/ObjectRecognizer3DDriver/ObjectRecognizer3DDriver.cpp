@@ -104,6 +104,8 @@ void ObjectRecognizer3DDriver::receiveGraspForObjectCommand(const cdl::WorkingMe
 }
 
 void ObjectRecognizer3DDriver::receiveDropObjectCommand(const cdl::WorkingMemoryChange & _wmc){
+	m_drop_cmd = getMemoryEntry<VisionData::DropObjectCommand>(_wmc.address);
+	m_drop_wma = _wmc.address;
 
 	log("received DropObject command");
 	m_drop = true;
@@ -166,6 +168,24 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	// Close Gripper
 	addCloseGripperCommand();
 	if(!isRunning()) return;
+	if(!m_grasp_success){
+		log("cannot grasp object");
+
+		// Move to save pose
+		log("move to save pose");
+		cogx::Math::Pose3 save_pose;
+		save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
+		save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
+		save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
+		save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
+		addMoveArmToPoseCommand(save_pose);
+		if(!isRunning()) return;
+
+		m_grasp_cmd->comp = VisionData::FAILED;
+		m_grasp_cmd->status = VisionData::FINISHED;
+		overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
+		return;
+	}
 
 	// Lift arm
 	log("lift object");
@@ -180,10 +200,10 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	// Move to save pose
 	log("move to save pose");
 	cogx::Math::Pose3 save_pose;
-	save_pose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
-	save_pose.rot.m00 = 0.9;	save_pose.rot.m01 = 0.1;	save_pose.rot.m02 = -0.5;
-	save_pose.rot.m10 = -0.3;	save_pose.rot.m11 = 0.9;	save_pose.rot.m12 = -0.4;
-	save_pose.rot.m20 = 0.4;	save_pose.rot.m21 = 0.5;	save_pose.rot.m22 = 0.8;
+	save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
+	save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
+	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
+	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
 	addMoveArmToPoseCommand(save_pose);
 	if(!isRunning()) return;
 
@@ -191,7 +211,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	addPTZCommand(0.0, 0.0);
 	if(!isRunning()) return;
 
-	log("Cannot recognize object for grasping");
+	log("grasping finished");
 	m_grasp_cmd->comp = VisionData::SUCCEEDED;
 	m_grasp_cmd->status = VisionData::FINISHED;
 	overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
@@ -202,19 +222,33 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 void ObjectRecognizer3DDriver::doDropping(){
 
-	// Move to save pose
+	// Move to drop pose
 	log("move to drop pose");
 	cogx::Math::Pose3 save_pose;
-	save_pose.pos = cogx::Math::vector3(0.0, 0.4, 0.9);
-	save_pose.rot.m00 = 0.9;	save_pose.rot.m01 = 0.1;	save_pose.rot.m02 = -0.5;
-	save_pose.rot.m10 = -0.3;	save_pose.rot.m11 = 0.9;	save_pose.rot.m12 = -0.4;
-	save_pose.rot.m20 = 0.4;	save_pose.rot.m21 = 0.5;	save_pose.rot.m22 = 0.8;
+	save_pose.pos = cogx::Math::vector3(0.35, 0.0, 0.35);
+	save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.2;	save_pose.rot.m02 = 1.0;
+	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = 0.0;
+	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = -1.0;	save_pose.rot.m22 = 0.2;
 	addMoveArmToPoseCommand(save_pose);
 	if(!isRunning()) return;
 
 	// open gripper
 	addOpenGripperCommand();
 	if(!isRunning()) return;
+
+	// Move to save pose
+	log("move to save pose");
+	save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
+	save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
+	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
+	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
+	addMoveArmToPoseCommand(save_pose);
+	if(!isRunning()) return;
+
+	log("dropping object finished");
+	m_drop_cmd->comp = VisionData::SUCCEEDED;
+	m_drop_cmd->status = VisionData::FINISHED;
+	overwriteWorkingMemory(m_drop_wma, m_drop_cmd);
 
 	m_drop = false;
 
@@ -551,8 +585,11 @@ void ObjectRecognizer3DDriver::overwriteCloseGripperCommand(const cdl::WorkingMe
 
 	if(gripper_cmd->graspStatus == manipulation::slice::GRASPING){
 		log("gripper closed");
-		m_halt_arm =false;
+		m_grasp_success = true;
+	}else{
+		m_grasp_success = false;
 	}
+	m_halt_arm =false;
 }
 
 void ObjectRecognizer3DDriver::overwriteOpenGripperCommand(const cdl::WorkingMemoryChange & _wmc){

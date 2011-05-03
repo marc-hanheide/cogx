@@ -249,7 +249,6 @@ module VisionData {
    		CommandStatus status;
    };
    class DropObjectCommand{
-   		string label;
 		CommandCompletion comp;
    		CommandStatus status;
    };
