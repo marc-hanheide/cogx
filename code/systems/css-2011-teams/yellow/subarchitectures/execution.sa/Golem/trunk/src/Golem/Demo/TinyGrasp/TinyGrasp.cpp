@@ -205,17 +205,17 @@ void TinyGrasp::attachObject() {
 	BoxShapeDesc* pBoxShapeDesc = new BoxShapeDesc(*pObjectShapeDesc);
 
 	// objectPose = toolPose * localPose => localPose = toolPose^-1 * objectPose
-	Mat34 toolPose = arm->getForwardTransform(arm->recvGenConfigspaceState(tiny->getTime()).pos).back();
-	pBoxShapeDesc->localPose.setInverseRT(toolPose);
+	Mat34 pose = arm->getForwardTransform(arm->recvGenConfigspaceState(tiny->getTime()).pos).back();
+	pBoxShapeDesc->localPose.setInverseRT(pose);
 	pBoxShapeDesc->localPose.multiply(pBoxShapeDesc->localPose, object->getGlobalPose());
 
 	Joint* effector = arm->getJoints().back();
 	objectGrasped = effector->createShape(ShapeDescPtr(pBoxShapeDesc));
 
 	// HACK: move object pose to infinity
-	Mat34 pose;
 	pose.setId();
-	pose.p.z = 1e6;
+	pose.p.z = 1e2; // not too high
+	pose.p.x = 1e2; // not too high
 	object->setGlobalPose(pose);
 }
 
@@ -280,12 +280,14 @@ void TinyGrasp::moveExec(Real duration) {
 //------------------------------------------------------------------------------
 
 void TinyGrasp::setGraspObject(RigidBody* object) {
+	if (object == NULL)
+		throw ExTiny("TinyGrasp::setGraspObject(): Null pointer");
 	this->object = object;
 }
 
 GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	if (object == NULL)
-		throw ExTiny("TinyGrasp::getGraspPoses(): No object");
+		throw ExTiny("TinyGrasp::getGraspPoses(): No objects to process");
 
 	BoxShapeDesc* pObjectShapeDesc = dynamic_cast<BoxShapeDesc*>(object->getShapes().back()->getDesc().get());
 	if (pObjectShapeDesc == NULL)
@@ -408,7 +410,7 @@ void TinyGrasp::graspExec(Real duration) {
 	moveExec();
 
 	Mat34 pose = read();
-	grelease = toBody(pose, diff(pose, gend.approach));
+	gapproach = toBody(pose, diff(pose, gend.approach));
 
 	KatanaSensorDataSet threshold = zero;
 	for (KatanaSensorDataSet::iterator i = threshold.begin(); i != threshold.end(); ++i)
@@ -426,7 +428,7 @@ void TinyGrasp::graspRelease() {
 	releaseObject();
 	
 	Mat34 pose = read();
-	pose.multiply(fromBody(pose, grelease), pose);
+	pose.multiply(fromBody(pose, gapproach), pose);
 
 	DebugRenderer debugRenderer;
 	debugRenderer.addAxes(pose, Vec3(0.1));

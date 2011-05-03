@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 		target.p.set(Real(0.4), -Real(0.4), Real(0.7));
 		(void)robot.moveTry(target); // ignore returned actual/best target pose
 		robot.moveExec(); // go to the last tried pose
-		PerfTimer::sleep(5.0); // wait for a while
+		//PerfTimer::sleep(5.0); // wait for a while
 		robot.graspRelease(); // and release the object
 
 		(void)robot.moveTry(home); // ignore returned actual/best target pose
