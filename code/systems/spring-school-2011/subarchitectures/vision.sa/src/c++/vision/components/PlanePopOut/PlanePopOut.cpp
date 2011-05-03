@@ -1851,7 +1851,7 @@ VisionData::VisualObjectPtr PlanePopOut::ConvexHullToVisualObject(VisionData::Co
 	VisionData::VisualObjectPtr oPtr = new VisionData::VisualObject;
 	oPtr->model = new VisionData::GeometryModel;
 
-  if(CHPtr->PointsSeq.size() < 3)
+  if(CHPtr->PointsSeq.size() < 4)
   {
     isOK = false;
     return oPtr;
