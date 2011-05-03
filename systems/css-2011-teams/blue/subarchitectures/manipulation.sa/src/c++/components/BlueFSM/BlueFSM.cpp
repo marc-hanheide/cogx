@@ -751,7 +751,7 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = lift();
 	    if (success) {
-	      m_state = HANDOVER;
+	      m_state = DELIVER_TO_HOME_POSITION;
 	    }
 	    else {
 	      log("Error! lift failed");
