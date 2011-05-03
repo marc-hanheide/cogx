@@ -99,6 +99,7 @@ namespace cogx
     map<string, cogx::Math::Pose3> m_globalPoses;
     map<string, double> m_pose_confs;
 
+    bool m_useDropoff;
     vector<string> m_lookForObjects;
 
     cogx::Math::Pose3 m_handoverPose;

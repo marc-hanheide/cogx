@@ -92,6 +92,11 @@ namespace cogx
       std::abort();
     } 
 
+    m_useDropoff = false;
+    if (_config.count("--use-dropoff")) {
+      m_useDropoff = true;
+    }
+
     m_handoverPose.pos = Math::vector3(0.4, 0.4, 0.6);
     fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
 
@@ -368,9 +373,10 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	      {
 		turn45Degrees();
 	      }
+	      m_turnStep++;
 	    }
 
-	    if (m_dropTableDetected && !m_poses.empty()) {
+	    if ((!m_useDropoff || m_dropTableDetected) && !m_poses.empty()) {
 	      m_state = DECIDE_POSITION;
 	    }
 	    else {
