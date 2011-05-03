@@ -289,7 +289,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     
     
     bool objectLyingFlat = false;
-    if (Vector3(0, 0, 1).Dot(m::normalized(objectPose.second.GetColumn(1))) > .5)
+    if (m::Vector3(0, 0, 1).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1))) > .5)
     {
       log("Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
       objectLyingFlat = true;
