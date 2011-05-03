@@ -26,7 +26,20 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
-// static double FIRST_GRIPPER_DISTANCE = 0.01;
+static double CONFIDENCE_THRESHOLD = 0.2;
+
+SSVision::SSVision()                  /// TODO Add the other labels!
+{
+  stopRecognizeObjects = false;
+  stopDetectingTables = false;
+  objectFound = false;
+  objectFoundID = "";
+  
+  std::string label = "chocos";
+  labels.push_back(label);
+  label = "weetabix";
+  labels.push_back(label);
+}
 
 /**
  * @brief Configure
@@ -43,202 +56,124 @@ void SSVision::configure(const map<string,string> & _config)
  */
 void SSVision::start()
 {
-//   // add change filter for ProtoObject changes
-//   addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-//     new MemberFunctionChangeReceiver<ManipulationPlanner>(this, &SSVision::newVisualObject));
+  // add change filter for vision commands
+  addChangeFilter(createLocalTypeFilter<VisionData::SSVisionCommand>(cdl::ADD),
+    new MemberFunctionChangeReceiver<SSVision>(this, &SSVision::receivedVisionCommand));
+
+  // add change filter for ProtoObject changes
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+    new MemberFunctionChangeReceiver<SSVision>(this, &SSVision::newVisualObject));
+
 //   // add change filter for ProtoObject changes
 //   addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
 //     new MemberFunctionChangeReceiver<ManipulationPlanner>(this, &SSVision::newVisualObject));
 }
 
-
 /**
  * @brief runComponent
  */
 void SSVision::runComponent()
-{
+{}
 
+void SSVision::receivedVisionCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("detection command received");
+
+  VisionData::SSVisionCommandPtr command = getMemoryEntry< VisionData::SSVisionCommand>(_wmc.address);
+  
+  if(command->cmd == VisionData::SSVRECOGNIZE)
+    RecognizeObject();
+  
+  if(command->cmd == VisionData::SSVDETECTTABLE)
+    stopRecognizeObjects = true;
+
+  if(command->cmd == VisionData::SSVDETECTTABLE)
+    DetectTable();
 }
 
-// void SSVision::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
-// {
-//   log("new visual object received: calculating gripper position ...");
-//   VisionData::VisualObjectPtr newobj = getMemoryEntry< VisionData::VisualObject>(_wmc.address);
-//   Pose3 pose;
-//   calculateGripperPosition(newobj, pose);
-// }
-// 
-// 
-// void SSVision::calculateGripperPosition(VisionData::VisualObjectPtr obj, Math::Pose3 &pose)
-// {
-//   log("calculate gripper position started.");
-//   /* TODO 1. Select which face to approach
-//               1.1 Eliminate top and bottom surfaces
-//               1.2 Eliminate two biggest surfaces
-//               1.3 Eliminate the surface furthest from us
-//          2.  Select which orientation to approach */ 
-//   
-//   bool goodFaces[6] = {1, 1, 1, 1, 1, 1};  
-//   Pose3 finalPose, firstPose;
-//   int bestFace;
-// 
-//   firstPose.rot = obj->pose.rot;
-//   finalPose.rot = obj->pose.rot;
-// 
-//   // 1.1
-//   for (unsigned int i = 0; i < obj->model->faces.size(); i++)
-//   {
-//     Vector3 v0 = obj->model->vertices[obj->model->faces[i].vertices[0]].pos;
-//     Vector3 v1 = obj->model->vertices[obj->model->faces[i].vertices[1]].pos;
-//     Vector3 v2 = obj->model->vertices[obj->model->faces[i].vertices[2]].pos;
-//     Vector3 normal = cross(v0-v1, v1-v2);
-//     normalise(normal);
-//     double z = fabs(normal.z);
-//     
-// log("normal: %4.3f", z);
-// 
-//     if(z > 0.8) // 1cm threshold
-//     {
-//       goodFaces[i] = false;
-// log("eliminating surface %d!", i);
-//     }
-//   }
-//   
-//   // 1.2
-//   list<double> area;
-//   map<int,double> maparea;
-//   for (unsigned int i = 0; i < obj->model->faces.size(); i++)
-//   {
-//     if(goodFaces[i])
-//     {
-// log("eliminate 2 biggest areas");
-//        Vector3 v0 = obj->model->vertices[obj->model->faces[i].vertices[0]].pos;
-//        Vector3 v1 = obj->model->vertices[obj->model->faces[i].vertices[1]].pos;
-//        Vector3 v2 = obj->model->vertices[obj->model->faces[i].vertices[2]].pos;
-// 
-//        double len0 = length(v0 - v1);
-//        double len1 = length(v1 - v2);
-//        area.push_back(len0 * len1); 
-//        log("area for surface %d is: %4.2f", i,len0 * len1 );
-// 
-//        maparea.insert(make_pair<int, double>(i, len0*len1));
-//     }
-//   }  
-//  
-//  // find biggest area in list
-//  double maxarea = -1;
-//  int maxindex = -1;
-//  map<int,double>::iterator biggestit;
-//  for(map<int,double>::iterator it = maparea.begin(); it != maparea.end(); it++){
-//    if (it->second > maxarea){
-//      maxindex = it->first;
-//      maxarea = it->second;
-//      biggestit = it;
-//    }
-//  }
-//  log("First big surface index: %d with area: %4.2f", maxindex, maxarea);
-//  goodFaces[maxindex] = false;
-//  maparea.erase(biggestit);
-// 
-//  log("Now calculating second biggest area");
-//  maxarea = -1;
-//  maxindex = -1;
-//  for(map<int,double>::iterator it = maparea.begin(); it != maparea.end(); it++){
-//    if (it->second > maxarea){
-//      maxindex = it->first;
-//      maxarea = it->second;
-//    }
-//  }
-//  log("Second big surface index: %d with area: %4.2f", maxindex, maxarea);
-//  goodFaces[maxindex] = false;
-//  maparea.erase(maparea[maxindex]);
-// 
-//   // 1.3
-//   Vector3 pos[2];
-//   int posi = 0;
-//   int goodOnes[2];
-//   for (unsigned int i = 0; i < obj->model->faces.size(); i++)
-//   {
-//     if(goodFaces[i])
-//     {
-//       Vector3 v0 = obj->model->vertices[obj->model->faces[i].vertices[0]].pos + obj->pose.pos;
-//       Vector3 v1 = obj->model->vertices[obj->model->faces[i].vertices[1]].pos + obj->pose.pos;
-//       Vector3 v2 = obj->model->vertices[obj->model->faces[i].vertices[2]].pos + obj->pose.pos;
-//       Vector3 v3 = obj->model->vertices[obj->model->faces[i].vertices[3]].pos + obj->pose.pos;
-// 
-// log("We have a pos!");
-//       pos[posi] = (v0+v1+v2+v3)/4.;
-// log("pos: %4.2f / %4.2f / %4.2f", pos[posi].x, pos[posi].y, pos[posi].z);
-//       goodOnes[posi] = i;
-//       posi++;
-//     }
-//   }
-//   
-//   // check, which one is nearer to the robot?
-//   if (length(pos[0]) < length(pos[1]))
-//   {
-//     finalPose.pos = pos[0];
-//     bestFace = goodOnes[0];
-//   }  
-//   else
-//   {
-//     finalPose.pos = pos[1];
-//     bestFace = goodOnes[1];
-//   }
-// 
-//   Vector3 dir = finalPose.pos - obj->pose.pos;
-//   normalise(dir);
-//   firstPose.pos = finalPose.pos + dir * FIRST_GRIPPER_DISTANCE;
-//   
-//   log("first pose:\n%s", toString(firstPose).c_str());
-//   log("final pose:\n%s", toString(finalPose).c_str());
-//   
-//   Vector3 z_coord; 
-//   z_coord.x = 0;
-//   z_coord.y = 0;
-//   z_coord.z = 1;
-//   
-//   Vector3 dir2 = cross(dir, z_coord);
-// 
-//   double col[9];
-//   col[0] = -dir2.x;
-//   col[1] = -dir2.y;
-//   col[2] = -dir2.z;
-//   col[3] = -dir.x;
-//   col[4] = -dir.y;
-//   col[5] = -dir.z;
-//   col[6] = 0;
-//   col[7] = 0;
-//   col[8] = 1;
-//   setColumn33(firstPose.rot, col);
-//   
-//   log("rotation matrix:\n%s", toString(firstPose.rot).c_str());
-// 
-//   VisionData::GripperPosePtr  grPose = new VisionData::GripperPose;
-//    grPose->initialPose = firstPose;
-//    grPose->finalPose = finalPose;
-//  
-//    Pose3 releasePose = finalPose;
-//    releasePose.pos.z += 0.10; // just list 10cm
-//    grPose->releasePose = releasePose;
-//    
-//   WriteGripperPositionToWM(grPose);
-// //   sleepComponent(200);       // HACK Write slow to WM
-// 
-// }
+
+void SSVision::RecognizeObject()
+{
+  log("recognize objects start");
+  while(!objectFound || stopRecognizeObjects)
+  {
+    // start objectrecognizer and wait for object???
+    std::string objectID = newDataID();
+    VisionData::DetectionCommandPtr command = new VisionData::DetectionCommand;
+    command->labels = labels;
+    addToWorkingMemory(objectID, "vision.sa", command);
+    sleepComponent(1000);
+  }  
+  
+  log("recognition ended: send command back");
+  if(stopRecognizeObjects) WriteCommandToWM(0, false, objectFoundID);
+  else WriteCommandToWM(0, true, objectFoundID);
+}
 
 
-// void ManipulationPlanner::WriteGripperPositionToWM(VisionData::GripperPosePtr  grPose)
-// {
-//   // add visual object to working memory
-//   std::string objectID = newDataID();
-// //   objectIDs.push_back(objectID);
-// 
-//   addToWorkingMemory(objectID, "manipulation.sa", grPose);
-//   
-//   sleepComponent(200);       // HACK Write slow to WM
-//   log("Added new gripper position to working memory: %s", objectID.c_str());
-// }
+void SSVision::DetectTable()
+{
+  log("detect now a table");
+  
+  // start planePopOut and wait for SOI???
+
+  
+  log("detection ended: send command back");
+  WriteCommandToWM(0, true, objectFoundID);
+}
+
+
+void SSVision::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("new visual object received: check if correct one?");
+  VisionData::VisualObjectPtr newobj = getMemoryEntry< VisionData::VisualObject>(_wmc.address);
+
+  if(newobj->detectionConfidence > CONFIDENCE_THRESHOLD)
+  {
+    log("object recognized");
+    objectFound = true;
+    objectFoundID = _wmc.address.id;
+  }
+  else
+  {
+    // delete visual object
+    log("delete visual object: confidence value is too low");
+    deleteFromWorkingMemory(_wmc.address.id);
+  }
+}
+
+
+/**
+ * @brief Send command back
+ * cmd 0 ... SSVRECOGNIZEEND
+ * cmd 1 ... SSVDETECTTABLEEND
+ */
+void SSVision::WriteCommandToWM(int cmd, bool succeed, std::string id)
+{
+  log("write command to wm: %i", cmd);
+  
+  if (cmd == 0) // Recognition ended
+  {
+    std::string objectID = newDataID();
+    VisionData::SSVisionCommandPtr command = new VisionData::SSVisionCommand;
+    command->cmd = VisionData::SSVRECOGNIZEEND;
+    command->succeed = succeed;
+    command->objID = id;
+    addToWorkingMemory(objectID, "vision.sa", command);
+  }
+  else if (cmd == 1) // Table detection ended
+  {
+    std::string objectID = newDataID();
+    VisionData::SSVisionCommandPtr command = new VisionData::SSVisionCommand;
+    command->cmd = VisionData::SSVDETECTTABLEEND;
+    command->succeed = succeed;
+    command->objID = id;
+    addToWorkingMemory(objectID, "vision.sa", command);
+  }
+  sleepComponent(200);
+
+  log("wrote command to wm");
+}
 
 }
 
