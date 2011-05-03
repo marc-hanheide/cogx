@@ -187,7 +187,7 @@ void CameraMount::runComponent()
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
       //log("sending pose for cam %d:", camIds[i]);
-      log(toString(camPosesToEgo[i]));
+      //log(toString(camPosesToEgo[i]));
       if(camsAddedToWM)
       {
         overwriteWorkingMemory(camWMIds[i], camParms);
