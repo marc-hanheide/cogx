@@ -236,6 +236,7 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	   nc->cmd = SpatialData::GOTOPOSITION;
 	   nc->comp = SpatialData::COMMANDPENDING;
 	   nc->prio = SpatialData::URGENT;
+	   nc->status = SpatialData::NONE;
 	
 	m_nav = SpatialData::COMMANDPENDING;
 	addToWorkingMemory(newDataID(), nc);
