@@ -12,6 +12,7 @@
 
 #include <Golem/Tiny/Tiny.h>
 #include <Golem/Math/Quat.h>
+#include <Golem/Math/Mat23.h>
 
 //------------------------------------------------------------------------------
 
@@ -20,6 +21,12 @@ namespace golem {
 class DebugRenderer;
 
 namespace tiny {
+
+//------------------------------------------------------------------------------
+
+typedef std::vector<Vec2> Vec2Seq;
+typedef std::vector<Mat22> Mat22Seq;
+typedef std::vector<Mat23> Mat23Seq;
 
 //------------------------------------------------------------------------------
 
@@ -81,7 +88,8 @@ public:
 
 	/** Sets graspable/moveable object */
 	void setGraspObject(RigidBody* object);
-	/** Returns a set of possible grasp poses */
+
+	/** Returns a set of possible grasp poses for a given grasp object */
 	GraspPose::Seq getGraspPoses() const;
 	/** Returns grasp success for a given set of possible grasp poses */
 	bool graspTry(const GraspPose::Seq& poses);
@@ -91,6 +99,9 @@ public:
 	bool graspExec(Real duration = Real(5.0));
 	/** Releases the grasped object - creates independent object */
 	void graspRelease();
+
+	/** Returns a set of possible robot poses for a given grasp object */
+	Mat23Seq getRobotPoses() const;
 
 protected:
 	shared_ptr<TinyEx> tiny;
