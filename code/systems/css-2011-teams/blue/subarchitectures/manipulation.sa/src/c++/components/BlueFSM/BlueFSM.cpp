@@ -70,7 +70,7 @@ namespace cogx
     fromAngleAxis(m_handoverPose.rot, M_PI/4, Math::vector3(0,0,1));
     
     m_lookForObjects.push_back("cereals-weetabix");
-    //m_lookForObjects.push_back("cereals-choco");
+    m_lookForObjects.push_back("cereals-chocos");
   }
   
   void BlueFSM::start()
