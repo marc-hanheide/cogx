@@ -700,6 +700,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
           m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
+
       }
 
       // if(first time recognition)
