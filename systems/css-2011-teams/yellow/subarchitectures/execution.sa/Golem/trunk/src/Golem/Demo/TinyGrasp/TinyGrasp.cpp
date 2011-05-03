@@ -451,14 +451,20 @@ void TinyGrasp::graspRelease() {
 	Mat34 pose = read();
 	pose.multiply(fromBody(pose, gapproach), pose);
 
-	DebugRenderer debugRenderer;
-	debugRenderer.addAxes(pose, Vec3(0.1));
-	tiny->render(&debugRenderer);
-
 	(void)moveTry(pose);
 	moveExec();
 
 	tiny->render();
+}
+
+//------------------------------------------------------------------------------
+
+Mat23Seq TinyGrasp::getRobotPoses() const {
+	Mat23Seq poses;
+
+	// TODO
+
+	return poses;
 }
 
 //------------------------------------------------------------------------------
