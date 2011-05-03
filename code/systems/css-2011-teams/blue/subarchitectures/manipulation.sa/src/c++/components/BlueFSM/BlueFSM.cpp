@@ -226,6 +226,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
   {
     std::ofstream ofs(s.c_str());
     ofs << p << std::endl;
+    writeTextMatrix(ofs, p.rot);
   }
 
   void BlueFSM::nameless(const Math::Pose3& inRobotPose,
@@ -281,7 +282,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     
     outputToFile("/tmp/grasp-inObjectPose", inObjectPose);
     outputToFile("/tmp/grasp-inRobotPose", inRobotPose);
-
+  
     
     m::Pose objectPose = convertPose(inObjectPose);
     m::Pose robotPose = convertPose(inRobotPose);
