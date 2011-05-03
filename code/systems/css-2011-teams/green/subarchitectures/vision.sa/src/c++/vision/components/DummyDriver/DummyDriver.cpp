@@ -75,7 +75,7 @@ void DummyDriver::start()
 
 void DummyDriver::runComponent()
 {
-  sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
+  sleepProcess(10000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   // and initiate detection
   
@@ -83,8 +83,8 @@ void DummyDriver::runComponent()
   log("executed ptz");
   
   sleepProcess(4000);
-//  addNavCommand(5, 5, 1);
-//  log("move");
+// addNavCommand(5, 5, 1);
+   log("move");
   m_poses =  getGraspPoses();
   log("got poses");
   if(m_poses.size() > 0)
@@ -235,6 +235,7 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	   
 	   nc->cmd = SpatialData::GOTOPOSITION;
 	   nc->comp = SpatialData::COMMANDPENDING;
+	   nc->prio = SpatialData::URGENT;
 	
 	m_nav = SpatialData::COMMANDPENDING;
 	addToWorkingMemory(newDataID(), nc);
