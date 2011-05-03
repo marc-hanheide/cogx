@@ -6,7 +6,7 @@ DISTFILES = $(DISTNAME).tar.gz
 
 MAINTAINER = ttoenige
 
-#PATCHFILES= gar-base.diff
+PATCHFILES= gar-base.diff
 
 LIBDEPS = contrib/openNI
 
