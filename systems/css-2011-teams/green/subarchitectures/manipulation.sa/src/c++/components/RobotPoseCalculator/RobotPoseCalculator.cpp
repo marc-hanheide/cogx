@@ -27,9 +27,6 @@ const double MAX_GRASP_DISTANCE = 0.6;
 const double GRASP_DISTANCE = 0.4;
 const double INIT_DISTANCE = 1.0;
 
-const int label_count = 3;
-const string labels[] = { "cereals1_model", "cereals-fruchtemusli", "cereals-bircher" };
-
 /**
  * The function called to create a new instance of our component.
  */
@@ -63,7 +60,19 @@ RobotPoseCalculator::RobotPoseCalculator()
 
 void RobotPoseCalculator::configure(const map<string, string> &_config)
 {
+    map<string,string>::const_iterator it;
+    istringstream labeliss;
 
+    if((it = _config.find("--labels")) != _config.end()){
+		labeliss.str(it->second);
+	} else {
+		throw runtime_error(exceptionMessage(__HERE__, "No labels given"));
+	}
+
+    string label;
+	while(labeliss >> label) {
+        m_labels.insert(label);
+	}
 }
 
 void RobotPoseCalculator::start()
@@ -100,16 +109,11 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   string label = "";
   for (size_t i = 0; i < object->identLabels.size(); ++i) {
       if (object->identDistrib[i] > CONFIDENCE_THRESHOLD) {
-          for (int j = 0; j < label_count; ++j) {
-              if (object->identLabels[i].compare(labels[j]) == 0) {
-                  label = labels[j];
-                  log("object identified: " + object->identLabels[i]);
-                  break;
-              }
-          }
-          if (!label.empty())
+          if (m_labels.find(object->identLabels[i]) != m_labels.end()) {
+              label = object->identLabels[i];
+              log("object identified: " + object->identLabels[i]);
               break;
-          else
+          } else
               log("unknown label: " + object->identLabels[i]);
       }
   }
@@ -257,7 +261,7 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
     s.str("");
     s << "xypos = " << xy_pos << "  <xypos, -norm_dir> = " <<  dot(xy_pos/norm(xy_pos), -norm_dir) << "  |xypos| = " << norm(xy_pos);
     log(s.str());
-    if (dot(xy_pos/norm(xy_pos), -norm_dir) > 0.95 && norm(xy_pos) <= MAX_GRASP_DISTANCE && norm(xy_pos) >= MIN_GRASP_DISTANCE) {
+    if (dot(xy_pos/norm(xy_pos), -norm_dir) > 0.9 && norm(xy_pos) <= MAX_GRASP_DISTANCE && norm(xy_pos) >= MIN_GRASP_DISTANCE) {
         s.str("");
         s << "object is graspable!" << endl;
         Vector3 pos1 = grasp_pos + norm_dir * 0.1;

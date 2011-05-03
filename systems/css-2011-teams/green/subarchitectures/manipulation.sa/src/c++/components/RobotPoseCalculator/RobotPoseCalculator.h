@@ -59,6 +59,7 @@ private:
     double m_x;
     double m_y;
     double m_theta;
+  std::set<std::string> m_labels;
 
   void receiveVisualObject(const cdl::WorkingMemoryChange &_wmc);
   void receiveRobotPose(const cdl::WorkingMemoryChange &_wmc);
