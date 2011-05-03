@@ -59,6 +59,13 @@ namespace cogx
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
     void simpleCallback(const cdl::WorkingMemoryChange &_wmc);
 
+    std::pair<Math::Pose3, double> nameless(const Math::Pose3& inRobotPose,
+                                            const Math::Pose3& inObjectPose,
+                                            const std::string& inObjectLabel,
+                                            Math::Pose3& outPregraspPose,
+                                            Math::Pose3& outEnvelopingPose,
+                                            double& outQuality) const;
+
     State m_state;
     bool m_waiting;
 
