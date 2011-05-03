@@ -55,7 +55,7 @@ private:
   
   void overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc);
   
-  
+  void doExplore();
   bool addNavCommand(long place);
   bool addNavCommand(double x, double y, double angle);
   bool addNavCommand(cogx::Math::Vector3 pose);
