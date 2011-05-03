@@ -306,6 +306,18 @@ module manipulation {
 			GraspingStatus graspStatus;
 		};
     };
+
+  /**
+   * @brief Spring School Vision Commands
+   * @author Team red
+   */
+  enum SSManipulationCommandType{ SSMGRAB, SSMGRABEND };
+  class SSManipulationCommand {
+    SSManipulationCommandType cmd;
+    bool succeed;
+    string objID;
+    string gripperPoseID;
+  };
 };
 
 #endif
