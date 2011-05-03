@@ -83,12 +83,12 @@ public:
 	void setGraspObject(RigidBody* object);
 	/** Returns a set of possible grasp poses */
 	GraspPose::Seq getGraspPoses() const;
-	/** Returns best approximation of a grasp pose from a given set of possible grasp poses */
-	std::pair<GraspPose, GraspPose::Seq::const_iterator> graspTry(const GraspPose::Seq& poses);
-	/** Returns best approximation of a grasp pose from a given grasp pose */
-	GraspPose graspTry(const GraspPose& pose);
+	/** Returns grasp success for a given set of possible grasp poses */
+	bool graspTry(const GraspPose::Seq& poses);
+	/** Returns grasp success for a given grasp pose */
+	bool graspTry(const GraspPose& pose);
 	/** Executes movement and grasp to a grasp pose previously set by graspTry() */
-	void graspExec(Real duration = Real(5.0));
+	bool graspExec(Real duration = Real(5.0));
 	/** Releases the grasped object - creates independent object */
 	void graspRelease();
 
@@ -111,6 +111,7 @@ protected:
 	PoseError graspError;
 
 	I32 sensorThreshold;
+	I32 encoderThreshold;
 	KatanaSensorDataSet zero;
 
 	Mat34 getToolPose();
