@@ -30,8 +30,8 @@
       <grasping approach_offset="0.08" grasp_offset="0.02" error_lin="0.02" error_ang="0.07" sensor_threshold="100"/>
     </arm>
     <base>
-      <pose v1="0.0" v2="0.0" v3="0.12" roll="0.0" pitch="0.0" yaw="0.0"/>
-      <dimensions v1="0.2" v2="0.15" v3="0.11"/>
+      <pose v1="-0.04" v2="0.0" v3="0.12" roll="0.0" pitch="0.0" yaw="0.0"/>
+      <dimensions v1="0.22" v2="0.19" v3="0.11"/>
     </base>
     <beam>
       <pose v1="-0.14" v2="0.0" v3="0.74" roll="0.0" pitch="0.0" yaw="0.0"/>
