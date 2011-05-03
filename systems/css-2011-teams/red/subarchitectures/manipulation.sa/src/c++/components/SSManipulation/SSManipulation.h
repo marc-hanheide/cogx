@@ -9,6 +9,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <manipulation.hpp>
 #include "Math.hpp"
 
 
@@ -18,16 +19,18 @@ namespace cast
 class SSManipulation : public ManagedComponent
 {
 private:
+  std::string gripperPoseID;      // The gripper pose id of the working memory
+    
   void calculateGripperPosition(VisionData::VisualObjectPtr obj, cogx::Math::Pose3 &pose);
   void WriteGripperPositionToWM(VisionData::GripperPosePtr  grPose);
+  void WriteCommandToWM(cast::cdl::WorkingMemoryAddress addr, int cmd, bool succeed, std::string id);
 
 protected:
-
   virtual void configure(const std::map<std::string,std::string> & _config);
   virtual void start();
   virtual void runComponent();
 
-  void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void receivedManipulationCommand(const cdl::WorkingMemoryChange & _wmc);
 
 public:
   SSManipulation() {}
