@@ -304,15 +304,15 @@ ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr> poses) {
 	
 	for (int it=0 ; it < poses.size(); it++ )
 		if(poses[it]->distance < min) {
-  			best = poses[it]);
+  			best = poses[it];
   			pos=it;
   		}
   		
-  	poses.erase(pos);
+  	poses.erase(poses.begin()+pos);
   	return best;
 }
 
- DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
+vector<ManipulationPosePtr> DummyDriver::purgePoses(string label, vector<ManipulationPosePtr> poses) {
 	
 	vector<ManipulationPosePtr> purged;
 //	vector<ManipulationPosePtr>::iterator it;
