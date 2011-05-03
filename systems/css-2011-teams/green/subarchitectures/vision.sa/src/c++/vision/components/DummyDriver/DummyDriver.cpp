@@ -294,7 +294,7 @@ void DummyDriver::overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc) {
 //  deleteFromWorkingMemory(_wmc.address.id);
 }
 
-void DummyDriver::getGraspPoses(vector<ManipulationPosePtr> wmposes) {
+void DummyDriver::getGraspPoses(vector<ManipulationPosePtr> & wmposes) {
 
 	wmposes.clear();
 	getMemoryEntries(wmposes, string("manipulation.sa"));
