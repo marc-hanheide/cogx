@@ -193,11 +193,15 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
       checkGraspPosition(pos, *it, grasp_dir, results);
   }
   for (vector<ManipulationPosePtr>::iterator it = results.begin(); it != results.end(); ++it) {
-      (*it)->label = object->identLabels[0];
+      (*it)->label = label;
       Matrix33 inv_rot;
       assert(inverse(rot, inv_rot));
       (*it)->offset = inv_rot * (*it)->offset;
-      addToWorkingMemory(newDataID(), *it);
+      string id = newDataID();
+      addToWorkingMemory(id, *it);
+      s.str("");
+      s << "added pose for " << label << " with distance " << (*it)->distance << ": " << id;
+      log(s.str());
   }
 }
 
