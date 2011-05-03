@@ -406,16 +406,24 @@ public class YellowExecutor extends ManagedComponent {
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(taskWMA), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+					log("WME changed for the GraspObjectTask struct.");
 					try {
+						log("GOTCB1");
 						GraspObjectTaskYellow currTask = getMemoryEntry(_wmc.address, GraspObjectTaskYellow.class);
+						log("GOTCB2");
 						synchronized (this) {
+							log("GOTCB3");
 							if (currTask.status.equals(ActionStatusYellow.COMPLETEY)) {
+								log("GOTCB4a");
 								m_lastGraspActionResult = true;
 							} else {
+								log("GOTCB4b");
 								m_lastGraspActionResult = false;
 							}
+							log("GOTCB5");
 							m_grabbingFinished = true;
 							this.notifyAll();
+							log("GOTCB6");
 						}
 					} catch (DoesNotExistOnWMException e) {
 						// TODO Auto-generated catch block
@@ -438,10 +446,14 @@ public class YellowExecutor extends ManagedComponent {
 			e.printStackTrace();
 		}
 		
+		log("1");
 		while(isRunning()) {
+			log("2");
 			log("waiting for grabbing task to finish.");
 			try {
-				synchronized (this) {
+				log("3");
+				synchronized(this) {
+					log("4");
 					if (this.m_grabbingFinished) {
 						log("grabbing finished!");
 						m_grabbingFinished=false;
