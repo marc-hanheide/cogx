@@ -76,6 +76,7 @@ namespace cogx
     bool turnTo(double theta);
     bool moveTo(double x, double y, double theta = FLT_MAX);
     bool movePTZ(double pan, double tilt);
+    bool detect(const string &label);
     
     void objectPoseCallback(const cdl::WorkingMemoryChange &_wmc);
     void newRobotPose(const cdl::WorkingMemoryChange &objID);
