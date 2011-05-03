@@ -63,6 +63,14 @@ void DummyDriver::start()
   addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteSetPTZPoseCommand));
+        
+  addChangeFilter(createGlobalTypeFilter<GraspForObjectCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DummyDriver>(this,
+        &DummyDriver::overwriteGraspCommand));
+        
+  addChangeFilter(createGlobalTypeFilter<LookForObjectCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DummyDriver>(this,
+        &DummyDriver::overwriteLook4ObjCommand));
 }
 
 void DummyDriver::runComponent()
@@ -155,13 +163,33 @@ void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc
   deleteFromWorkingMemory(_wmc.address.id);
 }
   
-// PTZ functions	
+// Grasp functions	
 bool DummyDriver::addGraspCommand(string label) {
-
+  GraspForObjectCommandPtr cmd = new GraspForObjectCommand;
+  
+  
+  cmd->status = VisionData::NEW;
+  cmd->comp = VisionData::COMPINIT;
+  
+  m_viscomp = VisionData::COMPINIT;
+  
+  addToWorkingMemory(newDataID(), cmd);
+  log("Added GraspForObject command");
+  
+  while(m_viscomp == VisionData::COMPINIT)
+		sleepComponent(50);
+		
+  return (m_viscomp == VisionData::SUCCEEDED);
 }
 
 void DummyDriver::overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc) {
+  GraspForObjectCommandPtr cmd = getMemoryEntry<GraspForObjectCommand>(_wmc.address);
 
+  log("Received GraspForObject confirmation");
+
+  m_viscomp = cmd->comp;
+  assert(m_viscomp != VisionData::COMPINIT);
+  deleteFromWorkingMemory(_wmc.address.id);
 }
 
 // Nav Commands	
