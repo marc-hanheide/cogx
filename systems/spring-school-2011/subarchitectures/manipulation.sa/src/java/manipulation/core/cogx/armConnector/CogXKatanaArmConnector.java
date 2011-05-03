@@ -583,6 +583,18 @@ public class CogXKatanaArmConnector implements ArmConnector {
 	/**
 	 * {@inheritDoc}
 	 */
+	public KatanaGripperEncoderData getEncoderData()
+			throws ManipulatorException {
+		try {
+			return ((KatanaArmPrx) arm).gripperRecvEncoderData(5);
+		} catch (ExTinyKatanaArm e) {
+			throw new ManipulatorException("Cannot get Encoder Data: " + e.what);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isGraspingObject() {
 
@@ -590,8 +602,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 			KatanaGripperEncoderData data = null;
 
 			try {
-				data = ((KatanaArmPrx) arm).gripperRecvEncoderData(5);
-			} catch (ExTinyKatanaArm e) {
+				data = getEncoderData();
+			} catch (ManipulatorException e) {
 				logger.debug(e);
 			}
 

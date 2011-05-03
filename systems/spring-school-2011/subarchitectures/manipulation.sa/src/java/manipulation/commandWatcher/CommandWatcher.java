@@ -4,10 +4,13 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 
+import manipulation.runner.cogx.CogXRunner;
+import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationExternalCommand;
-
 
 /**
  * Watcher that takes care of the different commands which were added to the
@@ -32,26 +35,37 @@ public class CommandWatcher extends Observable {
 	/**
 	 * external memory address of the current command
 	 */
-	public WorkingMemoryAddress currentCommandAddress;
+	public WorkingMemoryAddress newCommandAddress = null;
+
+	public WorkingMemoryAddress lastCommandAddress = null;
 
 	/**
-	 * gets the external memory address of the current command
+	 * gets the external memory address of the new command
 	 * 
-	 * @return the currentCommandAddress
+	 * @return newCommandAddress
 	 */
-	public WorkingMemoryAddress getCurrentCommandAddress() {
-		return currentCommandAddress;
+	public WorkingMemoryAddress getNewCommandAddress() {
+		return newCommandAddress;
+	}
+
+	public WorkingMemoryAddress getLastCommandAddress() {
+		return lastCommandAddress;
 	}
 
 	/**
-	 * sets the current command external memory address
+	 * sets the new command external memory address
 	 * 
-	 * @param currentCommandAddress
-	 *            the currentCommandAddress to set
+	 * @param newCommandAddressNew
+	 *            the newCommandAddressNew to set
 	 */
 	public void setCurrentCommandAddress(
-			WorkingMemoryAddress currentCommandAddress) {
-		this.currentCommandAddress = currentCommandAddress;
+			WorkingMemoryAddress newCommandAddressNew) {
+		this.lastCommandAddress = this.newCommandAddress;
+		this.newCommandAddress = newCommandAddressNew;
+
+		logger.error("Last Command Address: " + this.lastCommandAddress);
+		logger.error("Current Command Address: " + this.newCommandAddress);
+
 	}
 
 	/**

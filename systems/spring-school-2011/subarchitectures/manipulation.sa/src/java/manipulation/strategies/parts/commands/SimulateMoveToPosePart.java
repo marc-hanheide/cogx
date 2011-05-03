@@ -34,6 +34,8 @@ import mathlib.Functions;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.WorkingMemoryAddress;
+
 import cogx.Math.Pose3;
 import cogx.Math.Vector3;
 
@@ -120,16 +122,28 @@ public class SimulateMoveToPosePart extends StrategyPart implements Observer {
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		} else {
 			SimulateMoveToPose currentCom = ((SimulateMoveToPose) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
 
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 			currentCom.comp = ManipulationCompletion.FAILED;
-			((CogXRunner) (getManipulator().getRunner()))
-					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+
+			WorkingMemoryAddress address = getManipulator().getWatcher()
+					.getLastCommandAddress();
+
+			if (address != null) {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getLastCommandAddress(),
+								currentCom);
+			} else {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getNewCommandAddress(),
+								currentCom);
+			}
 		}
 		logger.debug("we go on!");
 		changeToNextPart();
@@ -154,7 +168,7 @@ public class SimulateMoveToPosePart extends StrategyPart implements Observer {
 				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
+								.getWatcher().getLastCommandAddress(),
 								currentCom);
 
 				((CommandExecution) getGlobalStrategy())

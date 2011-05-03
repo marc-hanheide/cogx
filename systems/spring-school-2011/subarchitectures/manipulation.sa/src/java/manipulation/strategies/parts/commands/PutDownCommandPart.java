@@ -113,7 +113,7 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		} catch (SubarchitectureComponentException e) {
 			logger.error(e);
 			manipulationFailed = true;
@@ -154,9 +154,20 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 			currentCom.comp = ManipulationCompletion.FAILED;
 
-			((CogXRunner) (getManipulator().getRunner()))
-					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+			WorkingMemoryAddress address = getManipulator().getWatcher()
+					.getLastCommandAddress();
+
+			if (address != null) {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getLastCommandAddress(),
+								currentCom);
+			} else {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getNewCommandAddress(),
+								currentCom);
+			}
 
 			setNextPartName(PartName.WAIT_PART);
 		}
@@ -200,7 +211,7 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 
 					((CogXRunner) (getManipulator().getRunner()))
 							.updateWorkingMemoryCommand(getManipulator()
-									.getWatcher().getCurrentCommandAddress(),
+									.getWatcher().getLastCommandAddress(),
 									currentCom);
 
 					synchronized (this) {
@@ -215,7 +226,7 @@ public class PutDownCommandPart extends StrategyPart implements Observer {
 				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
+								.getWatcher().getLastCommandAddress(),
 								currentCom);
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationExternalCommand) arg);

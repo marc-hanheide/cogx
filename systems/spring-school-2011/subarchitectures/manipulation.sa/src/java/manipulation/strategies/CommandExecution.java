@@ -1,5 +1,7 @@
 package manipulation.strategies;
 
+import org.apache.log4j.Logger;
+
 import manipulation.core.share.Manipulator;
 import manipulation.slice.ManipulationExternalCommand;
 import manipulation.strategies.parts.StrategyPart.PartName;
@@ -17,6 +19,8 @@ import manipulation.strategies.parts.commands.StopCommandPart;
 import manipulation.strategies.parts.commands.WaitPart;
 
 public class CommandExecution extends Strategy {
+
+	private Logger logger = Logger.getLogger(this.getClass());
 
 	private ManipulationExternalCommand currentCommand = null;
 
@@ -45,6 +49,7 @@ public class CommandExecution extends Strategy {
 	 *            the currentCommand to set
 	 */
 	public void setCurrentCommand(ManipulationExternalCommand currentCommand) {
+		logger.error("CURRENT COMMAND STRATEǴY" + currentCommand.getClass());
 		this.currentCommand = currentCommand;
 	}
 
