@@ -79,6 +79,7 @@ void ObjectRecognizer3DDriver::doLooking(){
 
 void ObjectRecognizer3DDriver::receiveGraspForObjectCommand(const cdl::WorkingMemoryChange & _wmc){
 	m_grasp_cmd = getMemoryEntry<VisionData::GraspForObjectCommand>(_wmc.address);
+	m_grasp_wma = _wmc.address;
 	log("received GraspForObject command");
 
 	m_grasp = true;
@@ -96,27 +97,56 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	cogx::Math::Vector3 vOffset = cogx::Math::vector3(0.0,0.0,0.0);
 
-	cast::cdl::WorkingMemoryAddress wma = m_grasp_cmd->visualObjectToGrasp;
+	// Delete all visual objects so far ...
+	log("delete all visual objects recognized so far");
+	cast::cdl::WorkingMemoryAddress wma;
+	wma.subarchitecture = getSubarchitectureID();
+	for(unsigned i=0; i>m_visualObjectIDs.size(); i++){
+		wma.id = m_visualObjectIDs[i];
+		deleteFromWorkingMemory(wma);
+	}
+	m_visualObjectIDs.clear();
+
+	// ... and recognize object to grasp
+	log("recognizing object to grasp");
+	std::string modelID;
+	addRecognizer3DCommand(VisionData::RECOGNIZE, m_grasp_cmd->label, modelID);
+	wma.id = m_latest_visualObjectID;
+	wma.subarchitecture = getSubarchitectureID();
+	if(!isRunning()) return;
+
+	log("get visual object from working memory");
 	VisionData::VisualObjectPtr visObj = getMemoryEntry<VisionData::VisualObject>(wma);
-	addRecognizer3DCommand(VisionData::RECOGNIZE, visObj->identLabels[0], wma.id);
+	if(visObj->identDistrib[0] < 0.03){
+		log("cannot recognize object for grasping");
+		m_grasp_cmd->comp = VisionData::FAILED;
+		m_grasp_cmd->status = VisionData::COMMANDFAILED;
+		overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
+		return;
+	}
+
 
 	// Move Arm in front of visual object position
 	log("move arm to object pose -0.15");
 	vOffset = cogx::Math::vector3(-0.15,0.0,0.0);
 	addFarArmMovementCommand(wma, vOffset);
+	if(!isRunning()) return;
 
 	// Move Arm toward visual object center
 	log("move arm forward 0.1");
 	vOffset = cogx::Math::vector3(-0.05,0.0,0.0);
 	addFarArmMovementCommand(wma, vOffset);
+	if(!isRunning()) return;
 
 	// Close Gripper
 	addCloseGripperCommand();
+	if(!isRunning()) return;
 
 	// Lift arm
 	log("lift object");
 	vOffset = cogx::Math::vector3(-0.05,0.0,0.2);
 	addFarArmMovementCommand(wma, vOffset);
+	if(!isRunning()) return;
 
 	// look left
 	addPTZCommand(1.5, 0.0);
@@ -129,12 +159,19 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	save_pose.rot.m10 = -0.3;	save_pose.rot.m11 = 0.9;	save_pose.rot.m12 = -0.4;
 	save_pose.rot.m20 = 0.4;	save_pose.rot.m21 = 0.5;	save_pose.rot.m22 = 0.8;
 	addMoveArmToPoseCommand(save_pose);
+	if(!isRunning()) return;
 
 	// open gripper
 	addOpenGripperCommand();
+	if(!isRunning()) return;
 
 	// look straight
 	addPTZCommand(0.0, 0.0);
+
+	log("Cannot recognize object for grasping");
+	m_grasp_cmd->comp = VisionData::SUCCEEDED;
+	m_grasp_cmd->status = VisionData::FINISHED;
+	overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
 
 	m_grasp = false;
 
@@ -188,15 +225,19 @@ void ObjectRecognizer3DDriver::addFarArmMovementCommand(cast::cdl::WorkingMemory
 	farArmMovementCom->targetObjectAddr = wma;
 	farArmMovementCom->offset = vOffset;
 	std::string data_id = newDataID();
-	addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
-		// Wait for arm to finish
-		log("Waiting for arm to finish movement");
-		while(m_halt_arm && isRunning())
-			sleepComponent(100);
-		m_halt_arm = true;
-		if(!isRunning())
-			return;
-	deleteFromWorkingMemory(data_id, m_manipulation_sa);
+	m_repeat_arm_movement = true;
+	while(m_repeat_arm_movement){
+		m_repeat_arm_movement = false;
+		addToWorkingMemory(data_id, m_manipulation_sa, farArmMovementCom);
+			// Wait for arm to finish
+			log("Waiting for arm to finish movement");
+			while(m_halt_arm && isRunning())
+				sleepComponent(100);
+			m_halt_arm = true;
+			if(!isRunning())
+				return;
+		deleteFromWorkingMemory(data_id, m_manipulation_sa);
+	}
 }
 
 void ObjectRecognizer3DDriver::addMoveArmToPoseCommand(cogx::Math::Pose3 pose){
@@ -337,6 +378,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 	m_grasp = false;
 	m_look = false;
 	m_ptz = false;
+	m_repeat_arm_movement = false;
 	m_obj_distance = 1000.0;
 	m_rec_objects = 0;
 	std::string modelID;
@@ -348,13 +390,14 @@ void ObjectRecognizer3DDriver::runComponent(){
 
 	if(m_mode == VisionData::LOOKGRASP){
 
-//		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
-//		look_cmd->comp = VisionData::COMPINIT;
-//		look_cmd->status = VisionData::NEW;
-//		addToWorkingMemory(newDataID(), look_cmd);
+		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
+		look_cmd->comp = VisionData::COMPINIT;
+		look_cmd->status = VisionData::NEW;
+		addToWorkingMemory(newDataID(), look_cmd);
 //		VisionData::GraspForObjectCommandPtr grasp_cmd = new VisionData::GraspForObjectCommand();
 //		grasp_cmd->comp = VisionData::COMPINIT;
 //		grasp_cmd->status = VisionData::NEW;
+//		grasp_cmd->label = m_labels[0];
 //		addToWorkingMemory(newDataID(), grasp_cmd);
 
 		while(isRunning()){
@@ -391,6 +434,18 @@ void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMe
 
 	m_rec_objects++;
 
+	// add to visual object list if it is not contained already
+	bool push = true;
+	for(unsigned i=0; i<m_visualObjectIDs.size(); i++){
+		if(rec_cmd->visualObjectID.compare(m_visualObjectIDs[i]) == 0)
+			push = false;
+	}
+	if(push)
+		m_visualObjectIDs.push_back(rec_cmd->visualObjectID);
+
+	log("overwriteRecognizer3DCommand testing");
+	m_latest_visualObjectID = rec_cmd->visualObjectID;
+
 	m_halt_rec = false;
 
 }
@@ -403,6 +458,11 @@ void ObjectRecognizer3DDriver::overwriteFarArmMovementCommand(const cdl::Working
 	if(m_arm_cmd->status == manipulation::slice::FINISHED){
 		log("Arm movement finished");
 		m_halt_arm =false;
+	}
+	if(m_arm_cmd->status == manipulation::slice::COMMANDFAILED){
+		log("Arm movement failed");
+		m_halt_arm =false;
+		m_repeat_arm_movement = true;
 	}
 }
 

@@ -32,17 +32,20 @@ private:
 	std::map<std::string,int> m_sumDetections;
 	std::map<std::string,float> m_sumConfidence;
 
-	VisionData::Recognizer3DCommandPtr m_rec_cmd;
 	manipulation::slice::FarArmMovementCommandPtr m_arm_cmd;
 	manipulation::slice::MoveArmToPosePtr m_moveto_cmd;
 
+	cast::cdl::WorkingMemoryAddress m_grasp_wma;
 	VisionData::GraspForObjectCommandPtr m_grasp_cmd;
 	VisionData::LookForObjectCommandPtr m_look_cmd;
+
+	std::string m_latest_visualObjectID;
 
 	std::string m_manipulation_sa;
 	int m_mode;
 	int m_loops;
 	bool m_grasp;
+	bool m_repeat_arm_movement;
 	bool m_look;
 	bool m_halt_rec;
 	bool m_halt_arm;
