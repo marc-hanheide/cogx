@@ -170,6 +170,9 @@ void BlueFSM::newRobotPose(const cdl::WorkingMemoryChange &objID)
 
     Cure::Pose3D cp = m_SlamRobotPose;
     m_TOPP.defineTransform(cp);
+
+    m_CurrPose.pos = Math::vector3(lastRobotPose->x, lastRobotPose->y, 0);
+    Math::fromAngleAxis(m_CurrPose.rot, lastRobotPose->theta, Math::vector3(0,0,1));
   }
   catch (DoesNotExistOnWMException e) {
     log("Error! robotPose missing on WM!");
@@ -194,8 +197,8 @@ void BlueFSM::newRobotPose(const cdl::WorkingMemoryChange &objID)
     double x[3];
     currentPose.getXYTheta(x);
 
-    m_CurrPose.pos = Math::vector3(x[0], x[1], 0);
-    fromAngleAxis(m_CurrPose.rot, x[2], Math::vector3(0,0,1));
+//    m_CurrPose.pos = Math::vector3(x[0], x[1], 0);
+//    fromAngleAxis(m_CurrPose.rot, x[2], Math::vector3(0,0,1));
     unlockComponent();
   }
 
