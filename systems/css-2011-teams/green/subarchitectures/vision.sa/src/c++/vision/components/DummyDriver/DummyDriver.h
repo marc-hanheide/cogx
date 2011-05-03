@@ -52,10 +52,13 @@ private:
   
   void overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc);
   
-    // PTZ functions	
+    // Grasp functions	
   bool addGraspCommand(std::string label);
   
   void overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  bool addDropCommand();
+  void overwriteDropCommand(const cdl::WorkingMemoryChange & _wmc);
   
   void doExplore();
   bool addNavCommand(long place);
