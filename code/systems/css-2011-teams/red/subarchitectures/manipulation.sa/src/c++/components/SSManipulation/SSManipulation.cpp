@@ -26,7 +26,7 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
-static double FIRST_GRIPPER_DISTANCE = 0.01;
+static double FIRST_GRIPPER_DISTANCE = 0.05;    /// We define the distance of the gripper to the finalposition: 5 cm
 
 /**
  * @brief Configure
@@ -43,12 +43,9 @@ void SSManipulation::configure(const map<string,string> & _config)
  */
 void SSManipulation::start()
 {
-  // add change filter for ProtoObject changes
-  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-    new MemberFunctionChangeReceiver<SSManipulation>(this, &SSManipulation::newVisualObject));
-  // add change filter for ProtoObject changes
-  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
-    new MemberFunctionChangeReceiver<SSManipulation>(this, &SSManipulation::newVisualObject));
+  // add change filter for vision commands
+  addChangeFilter(createLocalTypeFilter<manipulation::SSManipulationCommand>(cdl::ADD),
+    new MemberFunctionChangeReceiver<SSManipulation>(this, &SSManipulation::receivedManipulationCommand));
 }
 
 
@@ -58,15 +55,32 @@ void SSManipulation::start()
 void SSManipulation::runComponent()
 {}
 
-void SSManipulation::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
+/**
+ * @brief receivedManipulationCommand
+ */
+void SSManipulation::receivedManipulationCommand(const cdl::WorkingMemoryChange & _wmc)
 {
-  log("new visual object received: calculating gripper position ...");
-  VisionData::VisualObjectPtr newobj = getMemoryEntry< VisionData::VisualObject>(_wmc.address);
-  Pose3 pose;
-  calculateGripperPosition(newobj, pose);
+  log("new manipulation command received");
+  
+  manipulation::SSManipulationCommandPtr command = getMemoryEntry<manipulation::SSManipulationCommand>(_wmc.address);
+  
+  if(command->cmd == manipulation::SSMGRAB)
+  {
+    cast::cdl::WorkingMemoryAddress addr;                                                                                                                           // = new cast::cdl::WorkingMemoryAddress();
+    addr.subarchitecture = "vision.sa";
+    addr.id = command->objID;
+    VisionData::VisualObjectPtr newobj = getMemoryEntry<VisionData::VisualObject>(addr);
+    
+    Pose3 pose;
+    calculateGripperPosition(newobj, pose);      
+    WriteCommandToWM(_wmc.address, 1, true, addr.id);         /// we succeeded
+  }
+  WriteCommandToWM(_wmc.address, 0, false, "");               /// we failed
 }
 
-
+/**
+ * @brief calculateGripperPosition
+ */
 void SSManipulation::calculateGripperPosition(VisionData::VisualObjectPtr obj, Math::Pose3 &pose)
 {
   log("calculate gripper position started.");
@@ -221,21 +235,40 @@ void SSManipulation::calculateGripperPosition(VisionData::VisualObjectPtr obj, M
    grPose->releasePose = releasePose;
    
   WriteGripperPositionToWM(grPose);
-//   sleepComponent(200);       // HACK Write slow to WM
+}
 
+/**
+ * @brief WriteGripperPositionToWM
+ */
+void SSManipulation::WriteGripperPositionToWM(VisionData::GripperPosePtr  grPose)
+{
+  gripperPoseID = newDataID();
+  addToWorkingMemory(gripperPoseID, "manipulation.sa", grPose);
+  sleepComponent(200);
+  log("Added new gripper position to working memory: %s", gripperPoseID.c_str());
 }
 
 
-void SSManipulation::WriteGripperPositionToWM(VisionData::GripperPosePtr  grPose)
+/**
+ * @brief Send command back
+ * cmd 0 ... SSMGRABEND
+ */
+void SSManipulation::WriteCommandToWM(cast::cdl::WorkingMemoryAddress addr, int cmd, bool succeed, std::string id)
 {
-  // add visual object to working memory
-  std::string objectID = newDataID();
-//   objectIDs.push_back(objectID);
-
-  addToWorkingMemory(objectID, "manipulation.sa", grPose);
+  log("write command to wm: %i", cmd);
   
-  sleepComponent(200);       // HACK Write slow to WM
-  log("Added new gripper position to working memory: %s", objectID.c_str());
+  if (cmd == 0) // Manipulation ended
+  {
+    manipulation::SSManipulationCommandPtr command = new manipulation::SSManipulationCommand;
+    command->cmd = manipulation::SSMGRABEND;
+    command->succeed = succeed;
+    command->objID = id;    
+    command->gripperPoseID = gripperPoseID;
+    overwriteWorkingMemory(addr.id, command);
+  }
+  sleepComponent(200);
+
+  log("wrote command to wm");
 }
 
 }
