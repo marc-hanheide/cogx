@@ -335,7 +335,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
       std::terminate();
     }
     
-    log("nameless: converting data to m::");
+    //log("nameless: converting data to m::");
     
     outputToFile("/tmp/grasp-inObjectPose", inObjectPose);
     outputToFile("/tmp/grasp-inRobotPose", inRobotPose);
@@ -358,19 +358,19 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     
     std::vector<m::Pose> objectRelGrasps = grasps[inObjectLabel];
 
-    log("nameless: checking if object lies flat");
+    //log("nameless: checking if object lies flat");
 
     
     bool objectLyingFlat = false;
     if (m::Vector3(0, 0, 1).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1))) > .707)
     {
-      log("Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
+      log("nameless: Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
       objectLyingFlat = true;
     }
     
     // Find the easiest grasps in there
     
-    log("nameless: Finding the easiest grasps in there");
+    //log("nameless: Finding the easiest grasps in there");
 
     double maxDotProduct = -1000;
     m::Pose bestGrasp = std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY);
@@ -395,11 +395,11 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
         maxDotProduct = dot;
         bestGrasp = robotGrasp;
         bestBacktrackedGrasp = bestGrasp;
-        bestBacktrackedGrasp.first -= .02*m::Vector3(robotGraspOri.GetColumn(1));
+        bestBacktrackedGrasp.first -= .1*m::Vector3(robotGraspOri.GetColumn(1));
       }
     }
     
-    log("nameless: outputing things");
+    //log("nameless: outputing things");
     
     outputToFile("/tmp/grasp-bestGrasp", bestGrasp);
     outputToFile("/tmp/grasp-bestBacktrackedGrasp", bestBacktrackedGrasp);
