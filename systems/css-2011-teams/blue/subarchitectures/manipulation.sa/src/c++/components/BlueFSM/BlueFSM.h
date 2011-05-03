@@ -126,6 +126,9 @@ namespace cogx
     void receiveOdometry(const Robotbase::Odometry &castOdom);
     bool findBestGraspPose(const string &obj, double &bestX, double &bestY, 
 	double &bestTheta);
+
+		    bool 
+		    isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad, bool unknownIsObstacle);
     void findRandomPosition(double &x, double &y);
 
     FrontierInterface::PlaceInterfacePrx m_placeInterface;

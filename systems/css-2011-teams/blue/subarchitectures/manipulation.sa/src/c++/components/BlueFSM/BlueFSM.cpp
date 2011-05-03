@@ -406,6 +406,8 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
   
   void BlueFSM::runComponent()
   {
+	  setupPushScan2d(*this, 0.1);
+	  setupPushOdometry(*this);
 
     while (true)
     {
@@ -884,7 +886,8 @@ m_globalPoses[vo->identLabels.at(i)].pos.z);
     }
   }
 
-bool isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad, bool unknownIsObstacle){
+bool 
+BlueFSM::isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad, bool unknownIsObstacle){
   int xiC,yiC;
   if (cmap.worldCoords2Index(xW,yW,xiC,yiC)!= 0)
     return false;
@@ -966,10 +969,13 @@ log("%i", __LINE__);
 	bestTheta = atan2(-dy,-dx);
       }
     }
+else {
+log ("obstructed at %f,%f", x, y);
+} 
   }
-log("%i", __LINE__);
+log("bestAlignment %f", bestAlignment);
 
-  if (bestAlignment > -FLT_MAX) {
+  if (bestAlignment > 0.707) {
     return true;
   }
   return false;
