@@ -318,6 +318,7 @@ public class ManipulationPlanner extends ManagedComponent {
 
         if (Math.sqrt(Math.pow(intended.pos.x - reached.pos.x, 2) + Math.pow(intended.pos.y - reached.pos.y, 2) +  Math.pow(intended.pos.z - reached.pos.z, 2)) > 0.05) {
             return false;
+        }
         else {
             return true;
         }
