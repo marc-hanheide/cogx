@@ -32,10 +32,11 @@ using namespace VisionData;
 
 void ObjectRecognizer3DDriver::receiveLookForObjectCommand(const cdl::WorkingMemoryChange & _wmc){
 	m_look_cmd = getMemoryEntry<VisionData::LookForObjectCommand>(_wmc.address);
-	log("received LookForObject command");
 
 	m_pan = m_look_cmd->pan;
 	m_tilt = m_look_cmd->tilt;
+
+	log("received LookForObject command at %e %e", m_pan, m_tilt);
 
 	m_look = true;
 
@@ -51,7 +52,7 @@ void ObjectRecognizer3DDriver::doLooking(){
 		m_tilt >  0.0 ||
 		m_tilt < -1.1 )
 	{
-		error("look pose for PTZ unit out of range!");
+		log("WARNING: look pose for PTZ unit out of range!");
 	}else{
 		addPTZCommand(m_pan, m_tilt);
 		if(!isRunning()) return;
@@ -221,7 +222,7 @@ void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
 	ptz_cmd->pose = pose;
 	ptz_cmd->comp = ptz::COMPINIT;
 
-	log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
+	log("Add SetPTZPoseCommand: %e, %e, 0", pan, tilt);
 	std::string data_id = newDataID();
 	addToWorkingMemory(data_id, ptz_cmd);
 	log("Waiting for arm to finish movement");
@@ -397,7 +398,8 @@ void ObjectRecognizer3DDriver::start(){
 
 void ObjectRecognizer3DDriver::runComponent(){
 
-
+	m_pan = 0.0;
+	m_tilt = 0.0;
 	m_halt_rec = true;
 	m_halt_arm = true;
 	m_grasp = false;
@@ -418,6 +420,9 @@ void ObjectRecognizer3DDriver::runComponent(){
 		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
 		look_cmd->comp = VisionData::COMPINIT;
 		look_cmd->status = VisionData::NEW;
+		look_cmd->pan = 0.5;
+		look_cmd->tilt = -0.5;
+		log("add to working memory: look_cmd %e %e", look_cmd->pan, look_cmd->tilt);
 		addToWorkingMemory(newDataID(), look_cmd);
 //		VisionData::GraspForObjectCommandPtr grasp_cmd = new VisionData::GraspForObjectCommand();
 //		grasp_cmd->comp = VisionData::COMPINIT;
