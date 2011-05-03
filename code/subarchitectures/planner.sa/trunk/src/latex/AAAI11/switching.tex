@@ -36,7 +36,7 @@ are interested in, DT sessions plan in a small abstract problem
 defined in terms of the trace from the proceeding sequential session.
 This abstract state-space is characterised by a limited number of
 propositions, chosen because they relate evidence about assumptions
-in the trace.  To allow the DT planner to judge {\em relevant}
+in the trace.  To allow the DT planner to judge
 assumptions from the trace, we add {\em disconfirm} and {\em confirm}
 actions to the problem for each of them. Those yield a relatively
 small reward/penalty if the corresponding judgement is true/false. If
@@ -87,9 +87,7 @@ As we only consider deterministic-action POMDPs, all state uncertainty
 is expressed in the $(\pp{:init})$ declaration. This declaration is
 used by our approach to define the starting state for sequential
 sessions, and the set of assumptive actions available to sequential
-planning. Without a loss of generality we suppose conjunctive terms
-list atoms that are true with probability 1 according to a visitation,
-and that actions do not have negative preconditions. For a sequential
+planning. Without a loss of generality we also suppose that actions do not have negative preconditions. For a sequential
 session the starting state corresponds to the set of facts that are
 true with probability $1$. Continuing our example, that starting state
 is the singleton:
@@ -142,8 +140,8 @@ For example, consider the following sequential plan:
 \]
 \normalsize
 
-\noindent The assumed state before the scheduled execution of
-action $(\pp{look}~\pp{box}~\pp{kitchen})$ is:
+\noindent with a probability of $0.8$. The assumed state before the
+scheduled execution of action $(\pp{look}~\pp{box}~\pp{kitchen})$ is:
 
 \small
 \[
@@ -153,6 +151,8 @@ action $(\pp{look}~\pp{box}~\pp{kitchen})$ is:
 \end{array}
  \]
 \normalsize
+
+and has a probability of $0.24$.
 
 To describe the optimisation criteria used during sequential sessions
 we model $\assumptiveS{i}$ probabilistically, supposing that its
