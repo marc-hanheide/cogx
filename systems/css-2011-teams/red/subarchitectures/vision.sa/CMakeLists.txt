@@ -221,3 +221,7 @@ if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
 
+option(BUILD_SS_VISION "build spring school vision system" YES)
+if(BUILD_SS_VISION)
+   add_subdirectory (src/c++/vision/components/SSVision)
+endif(BUILD_SS_VISION)

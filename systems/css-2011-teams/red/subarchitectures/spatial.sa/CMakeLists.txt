@@ -46,4 +46,8 @@ add_subdirectory(src/c++/)
 #endif(BUILD_SA_SPATIAL_XXX)
 
 
+option(BUILD_SS_NAVIGATION "build spring school navigation system" YES)
+if(BUILD_SS_NAVIGATION)
+  add_subdirectory (src/c++/components/SSNavigation)
+endif(BUILD_SS_NAVIGATION)
 
