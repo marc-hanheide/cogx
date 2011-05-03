@@ -245,10 +245,10 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
         std::cout << "move to " << pos1 << " first" << endl;
         std::cout << "then to " << grasp_pos << endl;
 
-        p->distance = dist(global_base, vector3(m_x, m_y, 0.0));
+        p->distance = 0.0;
     }
     else {
-        p->distance = 0.0;
+        p->distance = dist(global_base, vector3(m_x, m_y, 0.0));
     }
     
     // p.graspPoint = grasp_pos;
