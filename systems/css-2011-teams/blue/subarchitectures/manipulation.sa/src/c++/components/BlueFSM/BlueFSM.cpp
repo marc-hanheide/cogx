@@ -193,11 +193,10 @@ namespace cogx
       m::transform(robotGrasp.first, robotGrasp.second, robotRelObjectPose.first, robotRelObjectPose.second, i->first, i->second);
       m::Matrix3 robotGraspOri(m::matrixCopy(robotGrasp.second));
       m::Vector3 robotToGraspVector = robotGrasp.first;
-      
-      robotToGraspVector.Normalize();
-      
+            
       robotToGraspVector.Z() = 0;
-      
+      robotToGraspVector.Normalize();
+
       double dot = robotToGraspVector.Dot(m::Vector3(robotGraspOri.GetColumn(1)));
       if (dot > maxDotProduct)
       {
