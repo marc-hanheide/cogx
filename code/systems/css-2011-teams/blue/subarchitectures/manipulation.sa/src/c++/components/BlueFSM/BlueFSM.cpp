@@ -618,7 +618,7 @@ log("MOVE_TO_NEW_POS");
 
             if (bestPoseQuality < .707)
             {
-              log("We're going to grasp a horrible grasp (quality = %f)", );
+              log("We're going to grasp a horrible grasp (quality = %f)", bestPoseQuality);
               std::cerr << "We're going to grasp a horrible grasp (quality = " << bestPoseQuality << ")" << std::endl;
             }
             
