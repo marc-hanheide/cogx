@@ -423,6 +423,8 @@ public class CogXKatanaArmConnector implements ArmConnector {
 						SensorData
 								.convertSensorPositionToIndex(SensorPosition.FORCE_RIGHT_NEAR),
 						(sensorData.get(SensorPosition.FORCE_RIGHT_NEAR) + force));
+
+				logger.info("FORCE: " + threshold[0].value + " " + threshold[1].value + " " + threshold[2].value + " " + threshold[3].value);
 			}
 
 			try {
