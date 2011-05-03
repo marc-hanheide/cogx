@@ -25,6 +25,7 @@ using namespace cast;
 using namespace manipulation::slice;
 using namespace ptz;
 using namespace VisionData;
+using namespace SpatialData;
 
 void DummyDriver::configure(const map<string,string> & _config)
 {
@@ -47,15 +48,19 @@ void DummyDriver::configure(const map<string,string> & _config)
 void DummyDriver::start()
 {
   // we want to receive detected objects
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::receiveVisualObject));
   // .. and when they change
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::receiveVisualObject));
         
-  addChangeFilter(createLocalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
+  addChangeFilter(createGlobalTypeFilter<NavCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DummyDriver>(this,
+        &DummyDriver::overwriteNavCommand));
+        
+  addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteSetPTZPoseCommand));
 }
@@ -103,7 +108,7 @@ bool DummyDriver::addPTZCommand(double pan, double tilt) {
   log("Add SetPTZPoseCommand: %d, %d, 0", pan, tilt);
   
   while(m_ptz == ptz::COMPINIT)
-		sleepComponent(50);
+		sleepComponent(60);
 		
   return (m_ptz == ptz::SUCCEEDED);
 }
@@ -116,8 +121,102 @@ void DummyDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _w
   log("Received PTZ confirmation");
 
   m_ptz = ptz_cmd->comp;
+  assert(m_ptz != ptz::COMPINIT);
   deleteFromWorkingMemory(_wmc.address.id);
+}
+
+// Look4Obj functions	
+bool DummyDriver::addLook4ObjCommand() {
+  LookForObjectCommandPtr cmd = new LookForObjectCommand;
+  
+  
+  cmd->status = VisionData::NEW;
+  cmd->comp = VisionData::COMPINIT;
+  
+  m_viscomp = VisionData::COMPINIT;
+  
+  addToWorkingMemory(newDataID(), cmd);
+  log("Added LookForObjects command");
+  
+  while(m_viscomp == VisionData::COMPINIT)
+		sleepComponent(50);
+		
+  return (m_viscomp == VisionData::SUCCEEDED);
 
 }
+  
+void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc) {
+  LookForObjectCommandPtr cmd = getMemoryEntry<LookForObjectCommand>(_wmc.address);
+
+  log("Received LookForObject confirmation");
+
+  m_viscomp = cmd->comp;
+  assert(m_viscomp != VisionData::COMPINIT);
+  deleteFromWorkingMemory(_wmc.address.id);
 }
+  
+// PTZ functions	
+bool DummyDriver::addGraspCommand(string label) {
+
+}
+
+void DummyDriver::overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc) {
+
+}
+
+// Nav Commands	
+bool DummyDriver::addNavCommand(double x, double y, double angle) {
+
+	NavCommandPtr nc = new NavCommand();
+//	                nc->pose = new vector<double>;
+	   nc->pose.push_back(x);
+ 	   nc->pose.push_back(y);
+	   nc->pose.push_back(angle);
+	
+//	                nc->tolerance=new vector<double>;
+	   nc->tolerance.push_back(0.1);
+	   nc->tolerance.push_back(0.1);
+	   nc->tolerance.push_back(0.175);
+	   
+	   nc->cmd = SpatialData::GOTOPOSITION;
+	   nc->comp = SpatialData::COMMANDPENDING;
+	
+	m_nav = SpatialData::COMMANDPENDING;
+	addToWorkingMemory(newDataID(), nc);
+	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
+		sleepComponent(50);
+		
+	return (m_nav == SpatialData::COMMANDSUCCEEDED);
+}
+
+bool DummyDriver::addNavCommand(long place) {
+
+	NavCommandPtr nc = new NavCommand();
+
+	   nc->destId.push_back(place);
+	   
+	   nc->cmd = SpatialData::GOTOPLACE;
+	   nc->comp = SpatialData::COMMANDPENDING;
+	
+	m_nav = SpatialData::COMMANDPENDING;
+	addToWorkingMemory(newDataID(), nc);
+	while(m_nav == SpatialData::COMMANDINPROGRESS || m_nav == SpatialData::COMMANDPENDING)
+		sleepComponent(50);
+		
+	return (m_nav == SpatialData::COMMANDSUCCEEDED);
+}
+
+
+void DummyDriver::overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc) {
+	NavCommandPtr cmd = getMemoryEntry<NavCommand>(_wmc.address);
+
+  log("Received Nav confirmation");
+
+  m_nav = cmd->comp;
+
+  deleteFromWorkingMemory(_wmc.address.id);
+}
+
+}
+
 
