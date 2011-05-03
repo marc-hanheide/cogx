@@ -217,15 +217,15 @@ void ObjectRecognizer3DDriver::addPTZCommand(double pan, double tilt) {
 	PTZPose pose;
 	pose.pan = pan;
 	pose.tilt = tilt;
-	pose.zoom = 0;
+	pose.zoom = 0.0;
 
 	ptz_cmd->pose = pose;
 	ptz_cmd->comp = ptz::COMPINIT;
 
-	log("Add SetPTZPoseCommand: %e, %e, 0", pan, tilt);
+	log("Add SetPTZPoseCommand: %e, %e, %e", pan, tilt, 0.0);
 	std::string data_id = newDataID();
 	addToWorkingMemory(data_id, ptz_cmd);
-	log("Waiting for arm to finish movement");
+	log("Waiting for PTZ to finish movement");
 		while(m_halt_ptz && isRunning())
 			sleepComponent(100);
 		m_halt_ptz = true;
@@ -402,9 +402,9 @@ void ObjectRecognizer3DDriver::runComponent(){
 	m_tilt = 0.0;
 	m_halt_rec = true;
 	m_halt_arm = true;
+	m_halt_ptz = true;
 	m_grasp = false;
 	m_look = false;
-	m_halt_ptz = false;
 	m_repeat_arm_movement = false;
 	m_obj_distance = 1000.0;
 	m_rec_objects = 0;
@@ -420,10 +420,10 @@ void ObjectRecognizer3DDriver::runComponent(){
 		VisionData::LookForObjectCommandPtr look_cmd = new VisionData::LookForObjectCommand();
 		look_cmd->comp = VisionData::COMPINIT;
 		look_cmd->status = VisionData::NEW;
-		look_cmd->pan = 0.5;
-		look_cmd->tilt = -0.5;
-		log("add to working memory: look_cmd %e %e", look_cmd->pan, look_cmd->tilt);
+		look_cmd->pan = 0.0;
+		look_cmd->tilt = 0.0; // -1.0472
 		addToWorkingMemory(newDataID(), look_cmd);
+
 //		VisionData::GraspForObjectCommandPtr grasp_cmd = new VisionData::GraspForObjectCommand();
 //		grasp_cmd->comp = VisionData::COMPINIT;
 //		grasp_cmd->status = VisionData::NEW;
