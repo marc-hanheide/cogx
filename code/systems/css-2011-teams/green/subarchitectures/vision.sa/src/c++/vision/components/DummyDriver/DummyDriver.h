@@ -30,6 +30,8 @@ private:
    * list of objects we want to have detected
    */
   std::vector<std::string> labels;
+  
+  std::vector<manipulation::slice::ManipulationPosePtr> m_poses;
 
   /**
    * callback function called whenever a new object appears ore an object
