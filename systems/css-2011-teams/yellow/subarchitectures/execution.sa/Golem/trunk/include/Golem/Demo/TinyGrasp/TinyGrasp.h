@@ -101,7 +101,7 @@ public:
 	void graspRelease();
 
 	/** Returns a set of possible robot poses for a given grasp object */
-	Mat23Seq getRobotPoses() const;
+	Mat23Seq getRobotPoses(const GraspPose::Seq& poses) const;
 
 protected:
 	shared_ptr<TinyEx> tiny;
@@ -120,6 +120,7 @@ protected:
 	Real approachOffset;
 	Real graspOffset;
 	PoseError graspError;
+	Real robotDistance;
 
 	I32 sensorThreshold;
 	I32 encoderThreshold;
@@ -129,6 +130,7 @@ protected:
 
 	void attachObject();
 	void releaseObject();
+	BoxShapeDesc* getObjectBoxDesc(RigidBody* object) const;
 
 	/** Relative transformation: ab*a = b => ab = b*a^-1 */
 	static Mat34 diff(const Mat34& a, const Mat34& b);

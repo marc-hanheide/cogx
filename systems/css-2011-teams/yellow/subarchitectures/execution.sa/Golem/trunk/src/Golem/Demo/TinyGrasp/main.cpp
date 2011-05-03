@@ -42,14 +42,17 @@ int main(int argc, char *argv[]) {
 		robot.setGraspObject(object); // set object to be grasped
 		GraspPose::Seq graspPoses = robot.getGraspPoses(); // read all grasp poses
 		if (robot.graspTry(graspPoses)) { // try the best one
-			// TODO before execution, test here how good is the best grasp pose
-			if (robot.graspExec()) { // go to the last tried pose
+			if (robot.graspExec()) { // test is the object is graspable
 				Mat34 target = robot.read();
 				target.p.set(Real(0.4), -Real(0.4), Real(0.7));
 				(void)robot.moveTry(target); // ignore returned actual/best target pose
 				robot.moveExec(); // go to the last tried pose
 				//PerfTimer::sleep(5.0); // wait for a while
 				robot.graspRelease(); // and release the object
+			}
+			else {
+				Mat23Seq robotPoses = robot.getRobotPoses(graspPoses);
+				// TODO move the robot to robotPoses
 			}
 		}
 
