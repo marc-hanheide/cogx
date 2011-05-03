@@ -446,7 +446,7 @@ module VisionData {
    * @brief Spring School Vision Commands
    * @author Team red
    */
-  enum SSVisionCommandType{ SSVRECOGNIZE, SSVRECOGNIZESTOP, SSVRECOGNIZEEND, SSVDETECTTABLE, SSVDETECTTABLEEND };
+  enum SSVisionCommandType{ SSVRECOGNIZE, SSVRECOGNIZESTOP, SSVDETECTTABLE, SSVDETECTTABLESTOP };
   class SSVisionCommand {
     SSVisionCommandType cmd;
     bool succeed;
