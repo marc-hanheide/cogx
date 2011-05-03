@@ -39,6 +39,7 @@ public class YellowExecutor extends ManagedComponent {
 	int m_competitionTask = 2;
 	String m_navsaID = "spatial.sa";
 	String m_visionsaID = "vision.sa";
+	String m_dsaID = "dialogue";
 	// HashMap<String,Pose3> m_visualObjects;
 	
 	String[] m_objLabels;
@@ -66,6 +67,9 @@ public class YellowExecutor extends ManagedComponent {
 		}
 		if (args.containsKey("--visionsa")) {
 			this.m_visionsaID = args.get("--visionsa");
+		}
+		if (args.containsKey("--dsa")) {
+			this.m_dsaID = args.get("--dsa");
 		}
 		if (args.containsKey("--objects")) {
 			this.m_objLabels=args.get("--objects").split(",");
@@ -101,7 +105,16 @@ public class YellowExecutor extends ManagedComponent {
 	
 	@Override
 	protected void runComponent() {
-		log("runComponent() called.");
+		say("Hello. I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do."); 
+		// I will collect the cornflakes for you. Stay here! Do not move! I will be back!");
+		log("runComponent() called. waiting for some time (" + TIME_TO_WAIT_TO_INIT + "msec) to finish the init phase...");
+		try {
+			Thread.sleep(TIME_TO_WAIT_TO_INIT);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		log("done waiting.");
 					
 		switch (m_competitionTask) {
 		case 1:
@@ -118,204 +131,14 @@ public class YellowExecutor extends ManagedComponent {
 		default:
 			log("You have to specify a competition using the --task command line argument!");
 			log("running visitAllPlaces() instead");
-			visitAllPlaces();
+			visitAllPlacesBlocking();
 			break;
 		}
 	}
 	
-	private void visitAllPlaces() {
-		log("visitAllPlaces() called. waiting for some time first.");
-		try {
-			Thread.sleep(TIME_TO_WAIT_TO_INIT);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		log("done waiting.");
-		
-		gotoXYA(1.0, 1.0, Math.PI/4.0);
-		// wait for completion
-		while (isRunning()) {
-			log("wait for nav command completion.");
-			try {
-				synchronized (this) {
-					if (m_navCmdSuccess) {
-						m_navCmdSuccess = false;
-						break;
-					} else {
-						this.wait();
-						continue;
-					}
-				}
-			}catch (InterruptedException e) {
-				logException(e);
-			}
-		}
-		log("nav command successful.");
-		
-		while (isRunning()) {
-			synchronized (this) {
-				try {
-					if (m_placesQueue.isEmpty()) {
-						log("no places yet");
-						this.wait();
-						continue;
-					} else {
-						break;
-					}
-				}
-				catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-		Long _currPlace = -1L;
-		while (isRunning()) {
-			synchronized (this) {
-				if (m_placesQueue.isEmpty()) {
-					log("no more places to visit. aborting.");
-					break;
-				}
-				_currPlace = m_placesQueue.removeFirst();
-				notifyAll();
-			}
-			log ("issuing new command for going to place " + _currPlace);
-			gotoPlace(_currPlace);
-
-			// wait for completion
-			while (isRunning()) {
-				log("wait for nav command completion.");
-				try {
-					synchronized (this) {
-						if (m_navCmdSuccess) {
-							m_navCmdSuccess = false;
-							break;
-						} else {
-							this.wait();
-							continue;
-						}
-					}
-				}catch (InterruptedException e) {
-					logException(e);
-				}
-			}
-			log("nav command successful.");
-		}
-	}
-	
-	private void cleanUpTheKitchen() {
-		log("cleanUpTheKitchen() called.");
-		say("Hello. I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do."); // I will collect the cornflakes for you. Stay here! Do not move! I will be back!");
-
-		debug("waiting for arm init...");
-		try {
-			Thread.sleep(TIME_TO_WAIT_TO_INIT);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		debug("done waiting for arm init...");
-		
-		// 1) look around for objects
-		
-		while (isRunning()) {
-			say("I am looking for cereal boxes!");
-			/* 
-			 * 1) look for objects
-			 */
-			// send detection command to Recognizer3D
-			dispatchDetectionCommand();
-			// detection will be served as individual WMEs, 
-			// there is not explicit feedback to the detection command 
-			boolean _continue = true;
-			boolean _waitForSettle = false;
-			while (isRunning()) {
-				try {
-					// waiting initially
-					if (!_waitForSettle) Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
-					synchronized (this) {
-						if (this.m_newObjsDeteced) {
-							log("detected an object, but waiting for more...");
-							// ok we already have a detection
-							// we need to wait if there are more
-						} else {
-							log("no object detection yet...");
-							// we do not have a detection
-							// it is possible that we get one, or not
-							// wait just once more -- if there is nothing afterwards, we
-							// assume we cannot see any object in the current pose
-							if (!_continue && !_waitForSettle) {
-								log("waited long enough... there is no new object...");
-								break;
-							} else {
-								log("trying once more.");
-								_continue = false;
-								continue;
-							}
-						}
-					}
-						
-					synchronized (this) {
-						// log("new detected objects. acknowledged.");
-						this.m_newObjsDeteced = false;
-					}
-					// wait for another change
-					log("wait for some time to let it settle.");
-					Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
-					synchronized (this) {			
-						// if there were no more changes
-						if (this.m_newObjsDeteced) {
-							log("ok. got fresh detections. not yet processing it.");
-							_waitForSettle = true;
-							continue;
-						}
-					}
-					log("waited long enough. no more fresh object detections for a while. gonna process them!");
-					this.lockComponent();
-					WorkingMemoryAddress[] _newObjectsArray = new WorkingMemoryAddress[m_newObjs.size()];
-					for (int i = 0; i < _newObjectsArray.length; i++) {
-						_newObjectsArray[i] = m_newObjs.removeFirst();
-					}
-					/*
-					 * found new objects, dispatch grabbing task!
-					 */
-					dispatchGrabbingTask(_newObjectsArray);
-					this.unlockComponent();
-				}  catch (InterruptedException e) {
-					logException(e);
-				}
-			}
-
-			while(isRunning()) {
-				synchronized (this) {
-					if (this.m_grabbingFinished) {
-						log("grabbing finished!");
-						m_grabbingFinished=false;
-						break;
-					}
-				}
-			}
-			say("here you go!");
-		}
-		
-		
-		
-	}
-	
 	private void handMeTheCereals() {
 		log("handMeTheCererals() called.");
-		say("Hello. I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do."); // I will collect the cornflakes for you. Stay here! Do not move! I will be back!");
-
-
-		try {
-			Thread.sleep(TIME_TO_WAIT_TO_INIT);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+	
 		while (isRunning()) {
 			say("I am looking for cereal boxes!");
 			/* 
@@ -355,27 +178,163 @@ public class YellowExecutor extends ManagedComponent {
 					/*
 					 * found new objects, dispatch grabbing task!
 					 */
-					dispatchGrabbingTask(_newObjectsArray);
+					executeGrabbingTaskBlocking(_newObjectsArray);
 					this.unlockComponent();
 				}  catch (InterruptedException e) {
 					logException(e);
 				}
 			}
-
-			while(isRunning()) {
-				synchronized (this) {
-					if (this.m_grabbingFinished) {
-						log("grabbing finished!");
-						m_grabbingFinished=false;
-						break;
-					}
-				}
-			}
+	
+		
 			say("here you go!");
 		}
 	}
 
+
+	private void cleanUpTheKitchen() {
+		log("cleanUpTheKitchen() called.");
+		
+		while (isRunning()) {
+			// 1) look around for objects
+			say("I am looking for cereal boxes!");
+			boolean _grabbing = false;
+			WorkingMemoryAddress[] _newObjectsArray = lookForObjectsBlocking();
+			if (_newObjectsArray.length>0) {
+				log("found " + _newObjectsArray.length + " new objects. gonna issue grabbing task!");
+				_grabbing = executeGrabbingTaskBlocking(_newObjectsArray);
+			} else {
+				log("no objects found. will go and search...");
+			}
+		
+			log("TODO: check whether or not to kick start mapping!");
+			if (_grabbing) {
+				log("going back to home base.");
+				say("acknowledged. will move to base.");
+				gotoXYABlocking(0.0, 0.0, -1.0 * (Math.PI/2.0));
+				log("arrived at base.");
+				say("here you go!");
+				log("TODO: release grasp!");
+				log("TODO: determine where to continue!");
+				continue;
+			} else {
+				log("did not try grasping an object here. going to the next place.");
+				visitNextPlace();
+				// now start over:
+				continue;
+			}
+		}
+	}
+
+
+	private WorkingMemoryAddress[] lookForObjectsBlocking() {
+			dispatchDetectionCommand();
+			try {
+				Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	//		boolean waitLonger = false;
+	//		synchronized (this) {
+	//			if (this.m_newObjsDeteced) {
+	//				log("detected an object, but waiting for more...");
+	//				// this.m_newObjsDeteced = false;
+	//			} else {
+	//				waitLonger = true;
+	//			}
+	//		}
+	//		if (waitLonger) Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
+			while (isRunning()) {
+				try {
+					Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
+					synchronized (this) {
+						if(!this.m_newObjsDeteced) {
+							log("no new objects detected.");
+							break;
+						}
+					}
+					log("wait for some time to let it settle.");
+					synchronized (this) {			
+						if (this.m_newObjsDeteced) {
+							log("ok. got fresh detections.");
+							continue;
+						} else {
+							break;
+						}
+					}
+	 			} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			log("waited long enough. no more fresh object detections for a while. gonna process them!");
+			this.lockComponent();
+			WorkingMemoryAddress[] _newObjectsArray = new WorkingMemoryAddress[m_newObjs.size()];
+			for (int i = 0; i < _newObjectsArray.length; i++) {
+				_newObjectsArray[i] = m_newObjs.removeFirst();
+			}
+			this.unlockComponent();
+			return _newObjectsArray;
+		}
+
+
+	private boolean visitNextPlace() {
+		Long _nextPlace = -1L;
+		synchronized (this) {
+			if (m_placesQueue.isEmpty()) {
+				log("no next place to visit. exiting");
+				return false;
+			} else {
+				_nextPlace = m_placesQueue.removeFirst();
+				m_navCmdSuccess = false;
+				notifyAll();
+			}
+		}
+		log ("issuing new command for going to place " + _nextPlace);
+		return gotoPlaceBlocking(_nextPlace);
+	}
 	
+	private boolean kickStartMapping() {
+		log("kickStartMapping() called");
+		synchronized(this) {
+			m_navCmdSuccess = false;
+			this.notifyAll();
+		}
+		gotoXYABlocking(1.0, 1.0, Math.PI/4.0);
+		return true;
+	}
+	
+	private void visitAllPlacesBlocking() {
+		log("visitAllPlaces() called.");
+		
+		while (isRunning()) {
+			synchronized (this) {
+				try {
+					if (m_placesQueue.isEmpty()) {
+						log("no places yet");
+						this.wait();
+						continue;
+					} else {
+						break;
+					}
+				}
+				catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		while (isRunning()) {
+			synchronized (this) {
+				if (m_placesQueue.isEmpty()) {
+					log("no more places to visit. aborting.");
+					break;
+				}
+			}
+			visitNextPlace();
+		}
+	}
 	
 	private void dispatchDetectionCommand() {
 		log("dispatchDetectionCommand() called.");
@@ -388,14 +347,21 @@ public class YellowExecutor extends ManagedComponent {
 		}
 	}
 	
-	private void dispatchGrabbingTask(WorkingMemoryAddress[] _newObjects) {
-		log("dispatchGrabbingTask("+_newObjects.length+") called.");
+	private boolean executeGrabbingTaskBlocking(WorkingMemoryAddress[] _newObjects) {
+		log("executeGrabbingTaskBlocking("+_newObjects.length+") called.");
 		GraspObjectTaskYellow _newTask = new GraspObjectTaskYellow();
+		log("1");
 		_newTask.status = ActionStatusYellow.PENDINGY;
+		log("2");
 		_newTask.targetObjects = _newObjects;
+		log("3");
 		WorkingMemoryAddress taskWMA = new WorkingMemoryAddress(newDataID(), m_navsaID);
+		log("4 WMA = " + taskWMA.id + "::" + taskWMA.subarchitecture);
+		debug("done constructing the GraspObjectTask struct.");
 		try {
+			log("5");
 			addToWorkingMemory(taskWMA, _newTask);
+			log("6");
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(taskWMA), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -405,6 +371,7 @@ public class YellowExecutor extends ManagedComponent {
 					}
 				};
 			});
+			log("added GraspObjectTask to WM.");
 		} catch (AlreadyExistsOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -415,6 +382,19 @@ public class YellowExecutor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		log("waiting for grabbing task to finish.");
+		while(isRunning()) {
+			synchronized (this) {
+				if (this.m_grabbingFinished) {
+					log("grabbing finished!");
+					m_grabbingFinished=false;
+					break;
+				}
+			}
+		}
+		log("TODO: return whether grasp was successful or not.");
+		return true;
 	}
 	
 	
@@ -422,10 +402,17 @@ public class YellowExecutor extends ManagedComponent {
 	private void say(String stringToSay) {
 		log("say("+stringToSay+") called.");
 		String soiadd = newDataID();
+		WorkingMemoryAddress soiwma = new WorkingMemoryAddress(soiadd, m_dsaID);
 		SpokenOutputItem greeting = new SpokenOutputItem(newDataID(), stringToSay, "", new NominalReference("", new dFormula(0)));
 		try {
-			addToWorkingMemory(soiadd, greeting);
+			addToWorkingMemory(soiwma, greeting);
 		} catch (AlreadyExistsOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -439,7 +426,7 @@ public class YellowExecutor extends ManagedComponent {
 		//});
 	}
 	
-	private WorkingMemoryAddress gotoXYA(double x, double y, double theta) {
+	private boolean gotoXYABlocking(double x, double y, double theta) {
 		WorkingMemoryAddress navadd = new WorkingMemoryAddress(newDataID(), this.m_navsaID);
 		NavCommand nc = createNavCommand(x, y, theta);
 		nc.cmd=CommandType.GOTOPOSITION;
@@ -447,13 +434,14 @@ public class YellowExecutor extends ManagedComponent {
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-					onGotoTaskChangeEvent(_wmc);
+					synchronized (this) {
+						m_navCmdSuccess = true;
+						notifyAll();
+					}
 				};
 			});
 			
 			addToWorkingMemory(navadd, nc);
-			// say("Going to a different position.");
-			return navadd;
 		} catch (AlreadyExistsOnWMException e1) {
 			logException(e1);
 		} catch (DoesNotExistOnWMException e) {
@@ -463,27 +451,50 @@ public class YellowExecutor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		
+		// wait for completion
+		while (isRunning()) {
+			log("wait for nav command completion.");
+			try {
+				synchronized (this) {
+					if (m_navCmdSuccess) {
+						m_navCmdSuccess = false;
+						break;
+					} else {
+						this.wait();
+						continue;
+					}
+				}
+			}catch (InterruptedException e) {
+				logException(e);
+			}
+		}
+		return true;
 	}
 	
-	private WorkingMemoryAddress gotoPlace(long placeID) {
+	private boolean gotoPlaceBlocking(long placeID) {
 		WorkingMemoryAddress navadd = new WorkingMemoryAddress(newDataID(), this.m_navsaID);
 		NavCommand nc = new NavCommand(CommandType.GOTOPLACE,
 				Priority.NORMAL, null, null, null, null, null, StatusError.NONE,
 				Completion.COMMANDPENDING);
 		long[] targetPlaces = {placeID};
 		nc.destId=targetPlaces;
+		nc.tolerance=new double[3];
+		nc.tolerance[0]=0.1;
+		nc.tolerance[1]=0.1;
+		nc.tolerance[2]=Math.PI*10.0/180.0;
 		try {		
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-					onGotoTaskChangeEvent(_wmc);
+					synchronized (this) {
+						m_navCmdSuccess = true;
+						notifyAll();
+					}
 				};
 			});
 			
 			addToWorkingMemory(navadd, nc);
-			// say("Going to a different position.");
-			return navadd;
 		} catch (AlreadyExistsOnWMException e1) {
 			logException(e1);
 		} catch (DoesNotExistOnWMException e) {
@@ -493,7 +504,25 @@ public class YellowExecutor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+
+		// wait for completion
+		while (isRunning()) {
+			log("wait for nav command completion.");
+			try {
+				synchronized (this) {
+					if (m_navCmdSuccess) {
+						m_navCmdSuccess = false;
+						break;
+					} else {
+						this.wait();
+						continue;
+					}
+				}
+			}catch (InterruptedException e) {
+				logException(e);
+			}
+		}
+		return true;	
 	}
 	
 	private NavCommand createNavCommand(double x, double y, double theta) {
@@ -517,6 +546,65 @@ public class YellowExecutor extends ManagedComponent {
 		return nc;
 	}
 	
+	/* private void onVisualObjectChanged(WorkingMemoryChange _wmc) {
+		VisualObject _newVisObj = null; 
+		try {
+			_newVisObj = getMemoryEntry(_wmc.address, VisualObject.class);
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (_newVisObj==null) return;
+		else {
+			Pose3 objPose = _newVisObj.pose;
+			Pose3 oldPose = m_visualObjects.get(_wmc.address.id);
+			
+			//mathlib.Functions.
+			
+			log("overwritten object at " + mathlib.Functions.toString(objPose));
+			m_visualObjects.put(_wmc.address.id, objPose);
+		}	
+	} */
+	
+	
+	/* private void onGotoTaskChangeEvent(WorkingMemoryChange _wmc) {
+		log("onGotoTaskChangeEvent() received with WMO " + _wmc.operation.toString());
+		if ((_wmc.operation.equals(WorkingMemoryOperation.OVERWRITE))) {
+			NavCommand nc = null;
+			try {
+				nc = getMemoryEntry(_wmc.address, NavCommand.class);
+			} catch (DoesNotExistOnWMException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnknownSubarchitectureException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			log("onGotoTaskChangeEvent() received with completion status " + nc.comp.toString());
+			synchronized (this) {
+				if (nc.comp.equals(Completion.COMMANDSUCCEEDED) || 
+						nc.comp.equals(Completion.COMMANDFAILED)) m_navCmdSuccess=true;
+				this.notifyAll();
+			}
+			// m_navCmdSuccess=true;
+		} else return;
+	
+		//if (_newVisObj==null) return;
+		//else {
+			//Pose3 objPose = _newVisObj.pose;
+			//Pose3 oldPose = m_visualObjects.get(_wmc.address.id);
+			
+			//mathlib.Functions.
+			
+		//	log("overwritten object at " + mathlib.Functions.toString(objPose));
+		//	m_visualObjects.put(_wmc.address.id, objPose);
+		//}	
+	} */
+
+
 	private void onVisualObjectAdded(WorkingMemoryChange _wmc) {
 		log("onVisualObjectAdded("+_wmc.address.toString()+") called.");
 		synchronized(this) {
@@ -587,63 +675,5 @@ public class YellowExecutor extends ManagedComponent {
 			} 
 			this.notifyAll();
 		}
-	}
-	
-	/* private void onVisualObjectChanged(WorkingMemoryChange _wmc) {
-		VisualObject _newVisObj = null; 
-		try {
-			_newVisObj = getMemoryEntry(_wmc.address, VisualObject.class);
-		} catch (DoesNotExistOnWMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnknownSubarchitectureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (_newVisObj==null) return;
-		else {
-			Pose3 objPose = _newVisObj.pose;
-			Pose3 oldPose = m_visualObjects.get(_wmc.address.id);
-			
-			//mathlib.Functions.
-			
-			log("overwritten object at " + mathlib.Functions.toString(objPose));
-			m_visualObjects.put(_wmc.address.id, objPose);
-		}	
-	} */
-	
-	
-	private void onGotoTaskChangeEvent(WorkingMemoryChange _wmc) {
-		log("onGotoTaskChangeEvent() received with WMO " + _wmc.operation.toString());
-		if ((_wmc.operation.equals(WorkingMemoryOperation.OVERWRITE))) {
-			NavCommand nc = null;
-			try {
-				nc = getMemoryEntry(_wmc.address, NavCommand.class);
-			} catch (DoesNotExistOnWMException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnknownSubarchitectureException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			log("onGotoTaskChangeEvent() received with completion status " + nc.comp.toString());
-			synchronized (this) {
-				if (nc.comp.equals(Completion.COMMANDSUCCEEDED) || 
-						nc.comp.equals(Completion.COMMANDFAILED)) m_navCmdSuccess=true;
-				this.notifyAll();
-			}
-			// m_navCmdSuccess=true;
-		} else return;
-
-		//if (_newVisObj==null) return;
-		//else {
-			//Pose3 objPose = _newVisObj.pose;
-			//Pose3 oldPose = m_visualObjects.get(_wmc.address.id);
-			
-			//mathlib.Functions.
-			
-		//	log("overwritten object at " + mathlib.Functions.toString(objPose));
-		//	m_visualObjects.put(_wmc.address.id, objPose);
-		//}	
 	}
 }
