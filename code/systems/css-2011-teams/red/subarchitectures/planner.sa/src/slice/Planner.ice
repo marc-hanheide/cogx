@@ -184,4 +184,43 @@ module autogen {
   };
 };
 
+module css11 {
+module red {
+module planning {
+module slice {
+
+	enum Completion {
+		NOTFINISHED,
+		SUCCESS,
+		FAILURE
+	};
+
+	class Action {
+		Completion comp;
+	};
+
+	sequence<Action> ActionSeq;
+
+	class Plan {
+		Completion comp;
+		ActionSeq actions;
+	};
+
+	class NavigationAction extends Action { };
+	class VisionAction extends Action { };
+	class ManipulationAction extends Action { };
+
+	class VisionRecognizeAction extends VisionAction {
+		string objID;
+	};
+
+	class ManipulationGrabAction extends ManipulationAction {
+		string objID;
+	};
+
+};
+};
+};
+};
+
 #endif
