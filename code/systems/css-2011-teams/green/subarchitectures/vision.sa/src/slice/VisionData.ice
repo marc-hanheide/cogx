@@ -12,6 +12,21 @@ module VisionData {
   sequence<cogx::Math::Vector3> Vector3Seq;
   sequence<string> StringSeq;
   sequence<double> DoubleSeq;
+  sequence<cast::cdl::WorkingMemoryAddress> WorkingMemoryAddressSeq;
+  
+	enum CommandCompletion {
+		FAILED,
+		SUCCEEDED,
+		COMPINIT
+	};
+	
+	enum CommandStatus {
+		NEW,
+		CHANGED,
+		PENDING,
+		FINISHED,
+		COMMANDFAILED
+	};
 
   /**
    * @brief A convex hull discribes
@@ -208,13 +223,29 @@ module VisionData {
    * @brief Commands for ObjectRecognizer3D
    * @author Thomas Mörwald
    */
-  enum Recognizer3DCommandType{ RECSTOP, RECLEARN, RECOGNIZE };
+  enum Recognizer3DCommandType{ RECSTOP, RECLEARN, RECOGNIZE, LOOKGRASP };
   class Recognizer3DCommand{
   	Recognizer3DCommandType cmd;
   	string label;
   	string visualObjectID;
   	double confidence;
   };
+  
+  /**
+   * @brief Commands for ObjectRecognizer3DDriver (also miss-using as grasp driver)
+   * @author Thomas Mörwald
+   */
+   class LookForObjectCommand{
+   		WorkingMemoryAddressSeq foundVisualObjects;
+   		CommandCompletion comp;
+   		CommandStatus status;
+   		
+   };
+   class GraspForObjectCommand{
+   		cast::cdl::WorkingMemoryAddress visualObjectToGrasp;
+		CommandCompletion comp;
+   		CommandStatus status;
+   };
 
   /**
    * @brief Object Detector Commands
