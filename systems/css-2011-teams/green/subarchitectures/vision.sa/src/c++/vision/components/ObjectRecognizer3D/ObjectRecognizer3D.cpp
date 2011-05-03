@@ -365,11 +365,12 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 }
 
 // *** Tracking Commands ***
-void ObjectRecognizer3D::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID){
+void ObjectRecognizer3D::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID, std::string plyfile){
 	log("Send tracking command: %d '%s'", cmd, modelID.c_str());
 	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = cmd;
   track_cmd->visualObjectID = modelID;
+  track_cmd->plyfile = plyfile;
   addToWorkingMemory(newDataID(), track_cmd);
 }
 
@@ -441,7 +442,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
-		addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
+		addTrackerCommand(ADDMODELFROMFILE, rec_entry.visualObjectID, rec_entry.plyfile);
 		log("Add model to working memory: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
 	}else{
 		overwriteWorkingMemory(rec_entry.visualObjectID, obj);

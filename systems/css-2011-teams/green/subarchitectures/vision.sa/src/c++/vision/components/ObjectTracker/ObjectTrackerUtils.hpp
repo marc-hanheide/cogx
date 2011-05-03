@@ -217,7 +217,7 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 			case SDL_KEYDOWN:
     	switch(event.key.keysym.sym){
 				case SDLK_ESCAPE:
-					return false;
+					//return false;
 					break;
 				case SDLK_1:
 					tracker->setKernelSize(0);
@@ -265,7 +265,7 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					tracker->saveModels("instantiations/css2011/object-models/");
+					tracker->saveModels("instantiations/green_css2011/object-models/");
 // 					tracker->saveScreenshot("screenshot.jpg");
 					break;
 				case SDLK_t:

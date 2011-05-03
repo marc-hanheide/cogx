@@ -27,8 +27,8 @@ const double MAX_GRASP_DISTANCE = 0.6;
 const double GRASP_DISTANCE = 0.4;
 const double INIT_DISTANCE = 1.0;
 
-const int label_count = 1;
-const string labels[] = { "cereals1_model", "example-cereals-schokomusli", "cereals-bircher" };
+const int label_count = 3;
+const string labels[] = { "cereals1_model", "cereals-fruchtemusli", "cereals-bircher" };
 
 /**
  * The function called to create a new instance of our component.
@@ -101,20 +101,20 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   for (size_t i = 0; i < object->identLabels.size(); ++i) {
       if (object->identDistrib[i] > CONFIDENCE_THRESHOLD) {
           for (int j = 0; j < label_count; ++j) {
-              if (object->identLabels[i] == labels[j]) {
+              if (object->identLabels[i].compare(labels[j]) == 0) {
                   label = labels[j];
-                  log("object identified: " + label);
+                  log("object identified: " + object->identLabels[i]);
                   break;
               }
           }
-          if (label != "")
+          if (!label.empty())
               break;
           else
-              log("unknown label: " + label);
+              log("unknown label: " + object->identLabels[i]);
       }
   }
 
-  if (label == "") {
+  if (label.empty()) {
       log("object is unknown, aborting");
       return;
   }

@@ -384,7 +384,7 @@ void ObjectRecognizer3DDriver::runComponent(){
 	std::string modelID;
 
 	sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
-						   // object observations too soon.
+						 // object observations too soon.
 
 	m_timer.Update();
 
