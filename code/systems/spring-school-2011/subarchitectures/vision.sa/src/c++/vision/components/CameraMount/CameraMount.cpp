@@ -176,7 +176,7 @@ void CameraMount::runComponent()
       camPosesToEgo = camFixedPoses;
       time = getCASTTime();
     }
-    log("for %d cameras:", (int)camIds.size());
+    //log("for %d cameras:", (int)camIds.size());
     for(size_t i = 0; i < camIds.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
@@ -186,7 +186,7 @@ void CameraMount::runComponent()
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
-      log("sending pose for cam %d:", camIds[i]);
+      //log("sending pose for cam %d:", camIds[i]);
       log(toString(camPosesToEgo[i]));
       if(camsAddedToWM)
       {
@@ -195,9 +195,9 @@ void CameraMount::runComponent()
       else
       {
         addToWorkingMemory(camWMIds[i], camParms);
-        camsAddedToWM = true;
       }
     }
+    camsAddedToWM = true;
     // HACK: should get rid of need for sleep
     // We will hardly be moving the pan tilt unit at first, so long update
     // interval should not be a problem.
