@@ -113,6 +113,15 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   if (!acceptLabel) 
       return;
 
+  // Delete poses
+  vector<CASTData<ManipulationPose> > poses;
+  getMemoryEntriesWithData(poses);
+  for(vector<CASTData<ManipulationPose> >::iterator it = poses.begin(); it != poses.end(); ++it) {
+      if (it->getData()->label == label) {
+          deleteFromWorkingMemory(it->getID());
+      }
+  }
+
   Vector3 pos = object->pose.pos;
   Matrix33 rot = object->pose.rot;
 
