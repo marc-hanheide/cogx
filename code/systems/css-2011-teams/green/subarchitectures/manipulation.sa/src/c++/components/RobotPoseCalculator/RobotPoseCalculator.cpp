@@ -4,6 +4,7 @@
 */
 
 #include <string>
+#include <cassert>
 #include <iostream>
 #include <cmath>
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -95,7 +96,7 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   VisualObjectPtr object = getMemoryEntry<VisualObject>(_wmc.address);
 
   string label = "";
-  for (int i = 0; i < object->identLabels.size(); ++i) {
+  for (size_t i = 0; i < object->identLabels.size(); ++i) {
       if (object->identDistrib[i] > CONFIDENCE_THRESHOLD) {
           label = object->identLabels[i];
           break;
@@ -169,6 +170,9 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   }
   for (vector<ManipulationPosePtr>::iterator it = results.begin(); it != results.end(); ++it) {
       (*it)->label = object->identLabels[0];
+      Matrix33 inv_rot;
+      assert(inverse(rot, inv_rot));
+      (*it)->offset = inv_rot * (*it)->offset;
       addToWorkingMemory(newDataID(), *it);
   }
 }
