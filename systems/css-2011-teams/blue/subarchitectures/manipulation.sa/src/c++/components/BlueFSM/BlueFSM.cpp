@@ -433,8 +433,6 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     if (m_Displaylgm) {
       Cure::Pose3D currentPose = m_TOPP.getPose();
       m_Displaylgm->updateDisplay(&currentPose);
-//                                  &m_NavGraph, 
-//                                  &m_Explorer->m_Fronts);
     }
 
       switch(m_state) {
@@ -491,7 +489,6 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	  {
 	    log("DECIDE_POSITION");
 
-log("%i", __LINE__);
 	    string bestObject;
 	    double bestSqDist = DBL_MAX;
 	    for (map<string, Math::Pose3>::iterator it = m_globalPoses.begin();
@@ -505,7 +502,6 @@ log("%i", __LINE__);
 		bestObject = it->first;
 	      }
 	    }
-log("%i", __LINE__);
 
 	    if (bestObject == "") {
 	      log("Error: No objects to move to!");
@@ -513,9 +509,7 @@ log("%i", __LINE__);
 	    }
 	    else {
 	      double bestX, bestY, bestTheta;
-log("%i", __LINE__);
 	      bool success = findBestGraspPose(bestObject, bestX, bestY, bestTheta);
-log("%i", __LINE__);
 	      m_globalPoses.erase(bestObject);
 	      if (!success) {
 		log("Error: Unable to find grasp pose for %s", bestObject.c_str());
@@ -563,7 +557,7 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = movePTZ(0, -M_PI/3);
 
-	    if (false) { //!success) {
+	    if (false) {
 	      log("Error! Couldn't move the PTZ to canonical!") ;
 	      m_state = TERMINATED;
 	    }
@@ -590,23 +584,6 @@ log("MOVE_TO_NEW_POS");
 	case DECIDE_GRASP:
 	  log("DECIDE_GRASP");
           {
-            // Find the label of the nearest object
-
-            // shortest distance between the robot and an object.
-            /*
-            double minDistance = 100000000; // very nice
-            std::string minLabel = "";
-            for (std::map<std::string, cogx::Math::Pose3>::iterator i = m_poses.begin();
-                 i != m_poses.end(); ++i)
-              {
-                if (Math::norm(i->second.pos) < minDistance)
-                  {
-                    minDistance = Math::norm(i->second.pos);
-                    minLabel = i->first;
-                  }
-              }
-            std::cout << minLabel << std::endl;
-            */
             
             if (m_poses.begin() == m_poses.end())
             {
@@ -826,7 +803,7 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = moveHome();
 	    if (success) {
-	      m_state = TERMINATED;
+	      m_state = INIT;
 	    }
 	    else {
 	      log("Error! move home failed");
@@ -840,7 +817,11 @@ log("MOVE_TO_NEW_POS");
           moveToSafePose();
           moveTo(0, 0, 0);
           moveToHandover();
+	  release();
+	  m_state = INIT;
         }
+	break;
+
 	case TERMINATED:
 	  log("TERMINATED");
 	  log ("Terminated");
@@ -853,38 +834,9 @@ log("MOVE_TO_NEW_POS");
       if (m_state == TERMINATED) {
 	break;
       }
-    }
-    
-    /*
-    ::manipulation::slice::MoveArmToPosePtr moveArmToPose(new ::manipulation::slice::MoveArmToPose());
-    moveArmToPose->comp = ::manipulation::slice::COMPINIT;
-    moveArmToPose->status = ::manipulation::slice::NEW;
-    
-    {
-      boost::unique_lock<boost::mutex> lock(mutex_);
-      //moveArmToPose->targetPose = pose_;
-    }
-    
-    try {
-      addToWorkingMemory(newDataID(), moveArmToPose);
-    } catch (std::exception &e1) {
-      log(e1.what());
-    }
-    
-    sleep(10); // Wait for changes to happen and pray that it worked.
-    */
-    
-    /*
-    wmcr = new WorkingMemoryChangeReceiver() {
-      public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-        commandChanged(_wmc, wmcr);
-      }
-    };
-    
-    ((CogXRunner) manipulator.getRunner()).addChangeFilter(
-                                                           ChangeFilterFactory.createIDFilter(id), wmcr);
 
-    */
+    }
+
   }
   
   void BlueFSM::objectPoseCallback(const cdl::WorkingMemoryChange &_wmc)
