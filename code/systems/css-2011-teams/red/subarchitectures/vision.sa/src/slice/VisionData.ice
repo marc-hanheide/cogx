@@ -441,6 +441,16 @@ module VisionData {
     cogx::Math::Pose3 releasePose;
   };
 
+
+  /**
+   * @brief Spring School Vision Commands
+   * @author Team red
+   */
+  enum SSVisionCommandType{ SSVRECOGNIZE, SSVRECOGNIZEEND, SSVDETECTTABLE, SSVDETECTTABLEEND };
+  class SSVisionCommand {
+    SSVisionCommandType cmd;
+  };
+
 };
 #endif
 // vim:set sw=2 ts=8 et ai:
