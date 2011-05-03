@@ -60,8 +60,9 @@ private:
   bool addNavCommand(cogx::Math::Vector3 pose);
   void overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc);
   
-  std::vector<manipulation::slice::ManipulationPosePtr> getGraspPoses();
+  void getGraspPoses(std::vector<manipulation::slice::ManipulationPosePtr>);
   std::vector<manipulation::slice::ManipulationPosePtr> purgePoses(std::string label, std::vector<manipulation::slice::ManipulationPosePtr> poses);
+  manipulation::slice::ManipulationPosePtr bestPose(vector<manipulation::slice::ManipulationPosePtr> poses);
 protected:
   /**
    * called by the framework to configure our component
