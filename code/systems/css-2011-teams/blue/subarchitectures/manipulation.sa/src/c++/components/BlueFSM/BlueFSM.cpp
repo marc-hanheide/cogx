@@ -362,7 +362,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 
     
     bool objectLyingFlat = false;
-    if (m::Vector3(0, 0, 1).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1))) > .707)
+    if (std::abs((m::Vector3::UNIT_Z).Dot(m::normalized(m::matrixCopy(objectPose.second).GetColumn(1)))) > .707)
     {
       log("nameless: Object %s is lying flat like a cow on the table", inObjectLabel.c_str());
       objectLyingFlat = true;
@@ -375,6 +375,10 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     double maxDotProduct = -1000;
     m::Pose bestGrasp = std::make_pair(m::Vector3::ZERO, m::Quaternion::IDENTITY);
     m::Pose bestBacktrackedGrasp = bestGrasp;
+    if (objectRelGrasps.size() != 4)
+    {
+      log("Waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarning: wrong number of grasps in grasp vector");
+    }
     for (std::vector<m::Pose>::iterator i = objectRelGrasps.begin(); i != objectRelGrasps.end(); ++i)
     {
       if (objectLyingFlat)
