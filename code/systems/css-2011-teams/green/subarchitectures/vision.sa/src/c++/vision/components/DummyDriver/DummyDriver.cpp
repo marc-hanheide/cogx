@@ -81,6 +81,8 @@ void DummyDriver::runComponent()
   
   addLook4ObjCommand(0, -0.5);
   
+  sleepProcess(4000);
+  
   m_poses =  getGraspPoses();
   
   if(m_poses.size() > 0)
