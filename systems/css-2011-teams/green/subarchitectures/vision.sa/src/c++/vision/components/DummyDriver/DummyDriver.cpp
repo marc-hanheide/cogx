@@ -60,9 +60,9 @@ void DummyDriver::start()
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteNavCommand));
         
-  addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<DummyDriver>(this,
-        &DummyDriver::overwriteSetPTZPoseCommand));
+//  addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
+//      new MemberFunctionChangeReceiver<DummyDriver>(this,
+//        &DummyDriver::overwriteSetPTZPoseCommand));
         
   addChangeFilter(createGlobalTypeFilter<GraspForObjectCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
@@ -83,7 +83,8 @@ void DummyDriver::runComponent()
   log("executed ptz");
   
   sleepProcess(4000);
-  
+//  addNavCommand(5, 5, 1);
+//  log("move");
   m_poses =  getGraspPoses();
   log("got poses");
   if(m_poses.size() > 0)
@@ -227,6 +228,10 @@ bool DummyDriver::addNavCommand(double x, double y, double angle) {
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.1);
 	   nc->tolerance.push_back(0.175);
+	   
+	   nc->destId.push_back(0);
+	   nc->distance.push_back(0);
+	   nc->angle.push_back(0);
 	   
 	   nc->cmd = SpatialData::GOTOPOSITION;
 	   nc->comp = SpatialData::COMMANDPENDING;
