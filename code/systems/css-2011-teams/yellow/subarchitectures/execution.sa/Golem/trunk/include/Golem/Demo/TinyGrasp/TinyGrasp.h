@@ -103,6 +103,11 @@ public:
 	/** Returns a set of possible robot poses for a given grasp object */
 	Mat23Seq getRobotPoses(const GraspPose::Seq& poses) const;
 
+	/** Opens gripper */
+	void gripperOpen();
+	/** Closes gripper */
+	void gripperClose();
+
 protected:
 	shared_ptr<TinyEx> tiny;
 

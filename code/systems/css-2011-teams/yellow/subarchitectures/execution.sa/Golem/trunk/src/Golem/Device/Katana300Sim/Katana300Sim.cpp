@@ -82,6 +82,9 @@ bool Katana300SimArm::gripperRecvSensorData(SensorDataSet& sensorData, MSecTmU32
 }
 	
 bool Katana300SimArm::gripperRecvEncoderData(GripperEncoderData& encoderData, MSecTmU32 timeWait) {
+	encoderData.closed = 0;
+	encoderData.open = 0;
+	encoderData.current = 0;
 	return true;
 }
 	
