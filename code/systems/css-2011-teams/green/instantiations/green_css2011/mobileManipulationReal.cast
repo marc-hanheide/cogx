@@ -12,6 +12,7 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG display.srv DisplayServer --redirect-to-host localhost
 
 JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+JAVA MG ManipulationPoses castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationPose"  --generic-col
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
 
