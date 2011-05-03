@@ -25,7 +25,7 @@ const double GRASP_DISTANCE = 0.4;
 const double INIT_DISTANCE = 1.0;
 
 const int label_count = 1;
-const string labels[] = { "cereals1_model" };
+const string labels[] = { "cereals1_model", "example-cereals-schokomusli", "cereals-bircher" };
 
 /**
  * The function called to create a new instance of our component.
@@ -194,8 +194,12 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
     std::cout << "grasp pos:" << grasp_pos << endl;
     std::cout << "joint pos:" << joint_pos << endl;
 
+    if (grasp_pos.z < 0.2) { 
+        cout << "grasp pos too low" << endl;
+        return;
+    }
     if (joint_pos.z > MAX_JOINT_HEIGHT) { // grasping position is too high
-        cout << "pos too high" << endl;
+        cout << "grasp pos too high" << endl;
         return;
     }
     if (norm_dir.z < -0.5) { // normal is pointing down
