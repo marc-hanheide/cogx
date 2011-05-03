@@ -79,6 +79,7 @@ void SSVision::receivedVisionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   log("detection command received");
 
+  addr = _wmc.address;
   VisionData::SSVisionCommandPtr command = getMemoryEntry< VisionData::SSVisionCommand>(_wmc.address);
   
   if(command->cmd == VisionData::SSVRECOGNIZE)
@@ -106,8 +107,8 @@ void SSVision::RecognizeObject()
   }  
   
   log("recognition ended: send command back");
-  if(stopRecognizeObjects) WriteCommandToWM(0, false, objectFoundID);
-  else WriteCommandToWM(0, true, objectFoundID);
+  if(stopRecognizeObjects) WriteCommandToWM(addr, 0, false, objectFoundID);
+  else WriteCommandToWM(addr, 0, true, objectFoundID);
 }
 
 
@@ -119,7 +120,7 @@ void SSVision::DetectTable()
 
   
   log("detection ended: send command back");
-  WriteCommandToWM(0, true, objectFoundID);
+  WriteCommandToWM(addr, 0, true, objectFoundID);
 }
 
 
@@ -145,30 +146,28 @@ void SSVision::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
 /**
  * @brief Send command back
- * cmd 0 ... SSVRECOGNIZEEND
- * cmd 1 ... SSVDETECTTABLEEND
+ * cmd 0 ... SSVRECOGNIZESTOP
+ * cmd 1 ... SSVDETECTTABLESTOP
  */
-void SSVision::WriteCommandToWM(int cmd, bool succeed, std::string id)
+void SSVision::WriteCommandToWM(cast::cdl::WorkingMemoryAddress addr, int cmd, bool succeed, std::string id)
 {
   log("write command to wm: %i", cmd);
   
-  if (cmd == 0) // Recognition ended
+  if (cmd == 0) // Recognition stopped
   {
-    std::string objectID = newDataID();
     VisionData::SSVisionCommandPtr command = new VisionData::SSVisionCommand;
-    command->cmd = VisionData::SSVRECOGNIZEEND;
+    command->cmd = VisionData::SSVRECOGNIZESTOP;
     command->succeed = succeed;
     command->objID = id;
-    addToWorkingMemory(objectID, "vision.sa", command);
+    overwriteWorkingMemory(addr.id, command);
   }
-  else if (cmd == 1) // Table detection ended
+  else if (cmd == 1) // Table detection stopped
   {
-    std::string objectID = newDataID();
     VisionData::SSVisionCommandPtr command = new VisionData::SSVisionCommand;
-    command->cmd = VisionData::SSVDETECTTABLEEND;
+    command->cmd = VisionData::SSVDETECTTABLESTOP;
     command->succeed = succeed;
     command->objID = id;
-    addToWorkingMemory(objectID, "vision.sa", command);
+    overwriteWorkingMemory(addr.id, command);
   }
   sleepComponent(200);
 
