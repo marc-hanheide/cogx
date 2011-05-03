@@ -79,5 +79,14 @@ JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "dis
 JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # display all TrackingCommands found in WM
-JAVA MG TrackingCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.TrackingCommand"  --generic-col
+JAVA MG NavCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "SpatialData.NavCommand"  --generic-col
 #--------------------------------------------------------------------------------------------------------------------------------------------------
+# display all TrackingCommands found in WM
+JAVA MG RobotPose2ds castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "NavData.RobotPose2d"  --generic-col
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# display all TrackingCommands found in WM
+JAVA MG Places castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "SpatialData.Place"  --generic-col
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
