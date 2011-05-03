@@ -70,7 +70,7 @@ private:
   void computePoseDistance(ManipulationPose& pose);
 
 protected:
-  virtual void configure(const map<string, string> &_config);
+  virtual void configure(const map<std::string, std::string> &_config);
   virtual void start();
   virtual void destroy();
 
