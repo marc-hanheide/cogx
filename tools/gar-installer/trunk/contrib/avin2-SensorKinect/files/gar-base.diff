@@ -1,0 +1,35 @@
+diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/EngineLibMakefile avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/EngineLibMakefile
+--- avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/EngineLibMakefile	2011-01-07 01:57:10.000000000 +0100
++++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/EngineLibMakefile	2011-05-03 14:44:02.000000000 +0200
+@@ -14,12 +14,12 @@
+ #############################################################################
+ 
+ INC_DIRS += \
+-	/usr/include/ni \
++	/usr/local/include/ni \
+ 	../../../../Include \
+ 	../../../../Source \
+ 	../../../../Source/XnCommon
+ 
+ BIN_DIR = ../../Bin
+ 
+-include /usr/include/ni/CommonMakefile
++include /usr/local/include/ni/CommonMakefile
+ 
+diff --speed-large-files --minimal -ru avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/Utils/EngineUtilMakefile avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/Utils/EngineUtilMakefile
+--- avin2-SensorKinect-0124bd2.orig/Platform/Linux-x86/Build/Utils/EngineUtilMakefile	2011-01-07 01:57:10.000000000 +0100
++++ avin2-SensorKinect-0124bd2/Platform/Linux-x86/Build/Utils/EngineUtilMakefile	2011-05-03 14:45:40.000000000 +0200
+@@ -14,11 +14,11 @@
+ #############################################################################
+ 
+ INC_DIRS += \
+-	/usr/include/ni \
++	/usr/local/include/ni \
+ 	../../../../../Include \
+ 	../../../../../Source \
+ 	../../../../../Source/XnCommon
+ 
+ BIN_DIR = ../../../Bin
+ 
+-include /usr/include/ni/CommonMakefile
++include /usr/local/include/ni/CommonMakefile

@@ -1,7 +1,7 @@
 GARNAME = player
 GARVERSION = 3.0.2
 CATEGORIES = bootstrap
-MAINTAINER = fsiepman
+MAINTAINER = ttoenige
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MASTER_SITES = http://downloads.sourceforge.net/project/playerstage/Player/${GARVERSION}/
