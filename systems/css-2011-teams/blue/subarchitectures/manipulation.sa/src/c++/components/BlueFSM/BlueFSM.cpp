@@ -308,8 +308,15 @@ namespace cogx
               }
             std::cout << minLabel << std::endl;
             */
-            std::string minLabel = "cereals-weetabix";
-            assert(minLabel == "cereals-weetabix");
+            
+            if (m_poses.begin() == m_poses.end())
+            {
+              log("Error: m_poses map is empty.");
+              m_state = TERMINATED;
+              break;
+            }
+            
+            std::string minLabel = m_poses.begin()->first;
             
             std::cerr << m_poses[minLabel] << std::endl;
 
