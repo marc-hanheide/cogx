@@ -4,6 +4,7 @@
 */
 
 #include <string>
+#include <sstream>
 #include <cassert>
 #include <iostream>
 #include <cmath>
@@ -102,16 +103,21 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
           for (int j = 0; j < label_count; ++j) {
               if (object->identLabels[i] == labels[j]) {
                   label = labels[j];
+                  log("object identified: " + label);
                   break;
               }
           }
           if (label != "")
               break;
+          else
+              log("unknown label: " + label);
       }
   }
 
-  if (label == "") 
+  if (label == "") {
+      log("object is unknown, aborting");
       return;
+  }
 
   // Delete poses
   vector<CASTData<ManipulationPose> > poses;
@@ -126,10 +132,13 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   Matrix33 rot = object->pose.rot;
 
   if (isZero(getColumn(rot, 0))) {
+      log("rotation matrix is zero, aborting");
       return;
   }
 
-  cout << "robot position: " << m_x << " " << m_y << " / " << m_theta << endl;
+  ostringstream s;
+  s << "robot position: " << m_x << " " << m_y << " / " << m_theta;
+  log(s.str());
 
   Vector3 dim = getObjectDimensions(*object);
   int short_axis = 0;
@@ -160,13 +169,15 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
       a2 = 1;
   }
 
-  std::cout << "center:" << pos << endl;
-  std::cout << "rotation:" << getColumn(rot,0) << " " << getColumn(rot,1) << " " << getColumn(rot,2) << endl;
-  std::cout << "dimensions:" << dim << endl;
+  s.str("");
+  s << "center:" << pos << endl;
+  s << "rotation:" << getColumn(rot,0) << " " << getColumn(rot,1) << " " << getColumn(rot,2) << endl;
+  s << "dimensions:" << dim << endl;
+  log(s.str());
   
   //Grasp vector is orthogonal to object x-axis
   Vector3 grasp_dir = cross(vector3(0.0, 0.0, 1.0), getColumn(rot, short_axis));
-  std::cout << "grasp direction:" << grasp_dir << endl;
+  log("grasp direction:" + toString(grasp_dir));
   vector<Vector3> grasp_offsets;
   grasp_offsets.push_back(getColumn(rot, a1) * get(dim)[a1]/2);
   grasp_offsets.push_back(-getColumn(rot, a1) * get(dim)[a1]/2);
@@ -190,24 +201,26 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
     Vector3 grasp_pos = pos + dir;
     Vector3 norm_dir = dir / norm(dir);
     Vector3 joint_pos = grasp_pos + norm_dir * ROBOT_HAND_OFFSET; // position of the robot hand
-    std::cout << "\nnormal:" << norm_dir << endl;
-    std::cout << "grasp pos:" << grasp_pos << endl;
-    std::cout << "joint pos:" << joint_pos << endl;
+    ostringstream s;
+    s << "\nnormal:" << norm_dir << endl;
+    s << "grasp pos:" << grasp_pos << endl;
+    s << "joint pos:" << joint_pos << endl;
+    log(s.str());
 
     if (grasp_pos.z < 0.2) { 
-        cout << "grasp pos too low" << endl;
+        log("grasp pos too low");
         return;
     }
     if (joint_pos.z > MAX_JOINT_HEIGHT) { // grasping position is too high
-        cout << "grasp pos too high" << endl;
+        log("grasp pos too high");
         return;
     }
     if (norm_dir.z < -0.5) { // normal is pointing down
-        cout << "pointing down" << endl;
+        log("pointing down");
         return;
     }
     if (norm_dir.z > 0.5) { // normal is pointing up
-        cout << "pointing up" << endl;
+        log("pointing up");
         return;
     }
     Vector3 xy_pos = vector3(grasp_pos.x, grasp_pos.y, 0.0);
@@ -231,20 +244,26 @@ void RobotPoseCalculator::checkGraspPosition(const Vector3& pos, const Vector3& 
 
     ManipulationPosePtr p = new ManipulationPose;
     Vector3 global_base = toGlobal(base_pos);
-    std::cout << "base pose:" << base_pos << endl;
-    std::cout << "global:" << global_base << endl;
-    cout << "theta: " <<  global_base.z / M_PI * 180 << endl;
-    std::cout << "init pose:" << im_pos << " / " << toGlobal(im_pos) <<  endl;
+    s.str("");
+    s << "base pose:" << base_pos << endl;
+    s << "global:" << global_base << endl;
+    s << "theta: " <<  global_base.z / M_PI * 180 << endl;
+    s << "init pose:" << im_pos << " / " << toGlobal(im_pos) <<  endl;
+    log(s.str());
+
     p->robotPose = global_base;
     p->offset = dir;
 
-    cout << "xypos = " << xy_pos << "  <xypos, -norm_dir> = " <<  dot(xy_pos/norm(xy_pos), -norm_dir) << "  |xypos| = " << norm(xy_pos) << endl;
+    s.str("");
+    s << "xypos = " << xy_pos << "  <xypos, -norm_dir> = " <<  dot(xy_pos/norm(xy_pos), -norm_dir) << "  |xypos| = " << norm(xy_pos);
+    log(s.str());
     if (dot(xy_pos/norm(xy_pos), -norm_dir) > 0.95 && norm(xy_pos) <= MAX_GRASP_DISTANCE && norm(xy_pos) >= MIN_GRASP_DISTANCE) {
-        std::cout << "object is graspable!" << endl;
+        s.str("");
+        s << "object is graspable!" << endl;
         Vector3 pos1 = grasp_pos + norm_dir * 0.1;
-        std::cout << "move to " << pos1 << " first" << endl;
-        std::cout << "then to " << grasp_pos << endl;
-
+        s << "move to " << pos1 << " first" << endl;
+        s << "then to " << grasp_pos << endl;
+        log(s.str());
         p->distance = 0.0;
     }
     else {
