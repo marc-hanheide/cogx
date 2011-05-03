@@ -299,6 +299,7 @@ public class YellowExecutor extends ManagedComponent {
 					synchronized (this) {			
 						if (this.m_newObjsDeteced) {
 							log("ok. got fresh detections.");
+							this.m_newObjsDeteced=false;
 							continue;
 						} else {
 							break;
