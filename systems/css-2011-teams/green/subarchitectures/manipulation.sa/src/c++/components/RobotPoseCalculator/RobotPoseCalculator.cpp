@@ -13,6 +13,8 @@
 #include "Vector3.h"
 #include "Matrix33.h"
 
+using namespace std;
+
 const double CONFIDENCE_THRESHOLD = 0.03;
 
 const double MAX_GRASP_WIDTH = 0.05;
@@ -41,7 +43,6 @@ extern "C"
 namespace cogx
 {
 
-using namespace std;
 using namespace cast;
 using namespace cast::cdl;
 using namespace manipulation::slice;
