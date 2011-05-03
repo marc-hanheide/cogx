@@ -19,6 +19,6 @@ post-build:
 
 
 post-install:
-	(cd $(WORKSRC)/Platform/Linux-x86/Redist/; sudo ./install.sh -i $(prefix);)
+	(cd $(WORKSRC)/Platform/Linux-x86/Redist/; sudo ./install.sh -i;)
 	@$(MAKECOOKIE)
 
