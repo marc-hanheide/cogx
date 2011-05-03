@@ -10,7 +10,6 @@ import manipulation.core.share.exceptions.ManipulatorException;
 import manipulation.core.share.types.Matrix;
 import manipulation.core.share.types.Vector2D;
 import manipulation.core.share.types.Vector3D;
-import manipulation.math.MathOperation;
 import manipulation.runner.cogx.CogXRunner;
 import manipulation.slice.CloseGripperCommand;
 import manipulation.slice.FarArmMovementCommand;
@@ -33,6 +32,7 @@ import mathlib.Functions;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.WorkingMemoryAddress;
 import cogx.Math.Pose3;
 import cogx.Math.Vector3;
 
@@ -95,7 +95,7 @@ public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		} else {
 			GetCurrentArmPose currentCom = ((GetCurrentArmPose) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
@@ -104,7 +104,7 @@ public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 			currentCom.comp = ManipulationCompletion.FAILED;
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		}
 
 		logger.debug("we go on!");
@@ -127,9 +127,21 @@ public class GetCurrentArmPosePart extends StrategyPart implements Observer {
 					.getCurrentCommand();
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 			currentCom.comp = ManipulationCompletion.FAILED;
-			((CogXRunner) (getManipulator().getRunner()))
-					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+
+			WorkingMemoryAddress address = getManipulator().getWatcher()
+					.getLastCommandAddress();
+
+			if (address != null) {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getLastCommandAddress(),
+								currentCom);
+			} else {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getNewCommandAddress(),
+								currentCom);
+			}
 
 			((CommandExecution) getGlobalStrategy())
 					.setCurrentCommand((ManipulationExternalCommand) arg);

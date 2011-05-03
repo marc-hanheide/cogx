@@ -27,6 +27,8 @@ import manipulation.strategies.parts.StrategyPart;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.WorkingMemoryAddress;
+
 /**
  * defines a behaviour to stop the arm movement
  * 
@@ -72,7 +74,7 @@ public class StopCommandPart extends StrategyPart implements Observer {
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 
 		} else {
 			StopCommand currentCom = ((StopCommand) ((CommandExecution) getGlobalStrategy())
@@ -81,10 +83,20 @@ public class StopCommandPart extends StrategyPart implements Observer {
 			currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 			currentCom.comp = ManipulationCompletion.FAILED;
 
-			((CogXRunner) (getManipulator().getRunner()))
-					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+			WorkingMemoryAddress address = getManipulator().getWatcher()
+					.getLastCommandAddress();
 
+			if (address != null) {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getLastCommandAddress(),
+								currentCom);
+			} else {
+				((CogXRunner) (getManipulator().getRunner()))
+						.updateWorkingMemoryCommand(getManipulator()
+								.getWatcher().getNewCommandAddress(),
+								currentCom);
+			}
 		}
 
 		setNextPartName(PartName.WAIT_PART);
@@ -119,9 +131,8 @@ public class StopCommandPart extends StrategyPart implements Observer {
 				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
+								.getWatcher().getLastCommandAddress(),
 								currentCom);
-
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationExternalCommand) arg);
 

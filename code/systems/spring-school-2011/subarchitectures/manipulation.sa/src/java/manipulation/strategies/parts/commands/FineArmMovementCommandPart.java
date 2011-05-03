@@ -136,7 +136,7 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 
 			setNextPartName(PartName.WAIT_PART);
 		}
@@ -188,7 +188,7 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 
 					((CogXRunner) (getManipulator().getRunner()))
 							.updateWorkingMemoryCommand(getManipulator()
-									.getWatcher().getCurrentCommandAddress(),
+									.getWatcher().getNewCommandAddress(),
 									currentCom);
 
 					synchronized (this) {
@@ -201,10 +201,22 @@ public class FineArmMovementCommandPart extends StrategyPart implements
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 				currentCom.comp = ManipulationCompletion.FAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
+
+				WorkingMemoryAddress address = getManipulator().getWatcher()
+						.getLastCommandAddress();
+
+				if (address != null) {
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getLastCommandAddress(),
+									currentCom);
+				} else {
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getNewCommandAddress(),
+									currentCom);
+				}
+
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationExternalCommand) arg);
 			}

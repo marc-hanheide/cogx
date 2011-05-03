@@ -161,7 +161,7 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		} else {
 			SimulateFarArmMovementCommand currentCom = ((SimulateFarArmMovementCommand) ((CommandExecution) getGlobalStrategy())
 					.getCurrentCommand());
@@ -170,7 +170,7 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 			currentCom.comp = ManipulationCompletion.FAILED;
 			((CogXRunner) (getManipulator().getRunner()))
 					.updateWorkingMemoryCommand(getManipulator().getWatcher()
-							.getCurrentCommandAddress(), currentCom);
+							.getNewCommandAddress(), currentCom);
 		}
 		logger.debug("we go on!");
 		changeToNextPart();
@@ -201,7 +201,7 @@ public class SimulateFarArmMovGraspCommandPart extends StrategyPart implements
 				currentCom.comp = ManipulationCompletion.FAILED;
 				((CogXRunner) (getManipulator().getRunner()))
 						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
+								.getWatcher().getLastCommandAddress(),
 								currentCom);
 
 				((CommandExecution) getGlobalStrategy())

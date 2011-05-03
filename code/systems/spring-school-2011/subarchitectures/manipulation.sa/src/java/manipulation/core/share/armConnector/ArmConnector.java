@@ -1,5 +1,7 @@
 package manipulation.core.share.armConnector;
 
+import golem.tinyice.KatanaGripperEncoderData;
+
 import java.util.HashMap;
 
 import manipulation.core.share.exceptions.ManipulatorException;
@@ -139,4 +141,5 @@ public interface ArmConnector {
 
 	public Pose simulateArmMovement(Pose target) throws ManipulatorException;
 
+	public KatanaGripperEncoderData getEncoderData() throws ManipulatorException;
 }

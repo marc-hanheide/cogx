@@ -213,8 +213,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		btnFarArm.setActionCommand("farArm");
 		btnFarArm.addActionListener(this);
 
-		btnFineArm = new JButton(
-				"fine movement + grasping");
+		btnFineArm = new JButton("fine movement + grasping");
 		btnFineArm.setActionCommand("fineArm");
 		btnFineArm.addActionListener(this);
 
@@ -316,6 +315,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 					.getMemoryEntry(_wmc.address, ManipulationCommand.class);
 
 			Pose3 pose = null;
+
 			if (cmd instanceof SimulateFarArmMovementCommand) {
 				pose = ((SimulateFarArmMovementCommand) cmd).simulatedReachablePose;
 			} else if (cmd instanceof SimulateMoveToPose) {
@@ -328,7 +328,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 				pose = ((GetCurrentArmPose) cmd).currentPose;
 			}
 
-			if (cmd.comp == ManipulationCompletion.SUCCEEDED) {
+			if (cmd.comp == ManipulationCompletion.SUCCEEDED && pose != null) {
 				txtItemXPosition.setText(df.format(pose.pos.x));
 				txtItemYPosition.setText(df.format(pose.pos.y));
 				txtItemZPosition.setText(df.format(pose.pos.z));

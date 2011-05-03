@@ -26,6 +26,8 @@ import manipulation.strategies.parts.StrategyPart;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.WorkingMemoryAddress;
+
 /**
  * defines a behaviour to open the gripper
  * 
@@ -61,7 +63,7 @@ public class OpenGripperPart extends StrategyPart implements Observer {
 
 		((CogXRunner) (getManipulator().getRunner()))
 				.updateWorkingMemoryCommand(getManipulator().getWatcher()
-						.getCurrentCommandAddress(), currentCom);
+						.getNewCommandAddress(), currentCom);
 
 		setNextPartName(PartName.WAIT_PART);
 
@@ -94,10 +96,21 @@ public class OpenGripperPart extends StrategyPart implements Observer {
 						.getCurrentCommand();
 				currentCom.status = ManipulationCommandStatus.COMMANDFAILED;
 				currentCom.comp = ManipulationCompletion.FAILED;
-				((CogXRunner) (getManipulator().getRunner()))
-						.updateWorkingMemoryCommand(getManipulator()
-								.getWatcher().getCurrentCommandAddress(),
-								currentCom);
+
+				WorkingMemoryAddress address = getManipulator().getWatcher()
+						.getLastCommandAddress();
+
+				if (address != null) {
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getLastCommandAddress(),
+									currentCom);
+				} else {
+					((CogXRunner) (getManipulator().getRunner()))
+							.updateWorkingMemoryCommand(getManipulator()
+									.getWatcher().getNewCommandAddress(),
+									currentCom);
+				}
 
 				((CommandExecution) getGlobalStrategy())
 						.setCurrentCommand((ManipulationExternalCommand) arg);
