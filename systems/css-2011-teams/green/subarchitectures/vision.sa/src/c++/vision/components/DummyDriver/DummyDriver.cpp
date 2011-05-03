@@ -144,7 +144,7 @@ void DummyDriver::overwriteSetPTZPoseCommand(const cdl::WorkingMemoryChange & _w
 
   m_ptz = ptz_cmd->comp;
   assert(m_ptz != ptz::COMPINIT);
-  deleteFromWorkingMemory(_wmc.address.id);
+//  deleteFromWorkingMemory(_wmc.address.id);
 }
 
 // Look4Obj functions	
@@ -176,7 +176,7 @@ void DummyDriver::overwriteLook4ObjCommand(const cdl::WorkingMemoryChange & _wmc
 
   m_viscomp = cmd->comp;
   assert(m_viscomp != VisionData::COMPINIT);
-  deleteFromWorkingMemory(_wmc.address.id);
+//  deleteFromWorkingMemory(_wmc.address.id);
 }
   
 // Grasp functions	
@@ -205,7 +205,7 @@ void DummyDriver::overwriteGraspCommand(const cdl::WorkingMemoryChange & _wmc) {
 
   m_viscomp = cmd->comp;
   assert(m_viscomp != VisionData::COMPINIT);
-  deleteFromWorkingMemory(_wmc.address.id);
+//  deleteFromWorkingMemory(_wmc.address.id);
 }
 
 // Nav Commands	
@@ -282,7 +282,7 @@ void DummyDriver::overwriteNavCommand(const cdl::WorkingMemoryChange & _wmc) {
 
   m_nav = cmd->comp;
 
-  deleteFromWorkingMemory(_wmc.address.id);
+//  deleteFromWorkingMemory(_wmc.address.id);
 }
 
 vector<ManipulationPosePtr> DummyDriver::getGraspPoses() {
