@@ -25,7 +25,6 @@
 namespace cogx
 {
 
-using namespace std;
 using namespace cast;
 using namespace manipulation::slice;
 
