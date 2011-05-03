@@ -203,6 +203,7 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
       assert(inverse(rot, inv_rot));
       (*it)->offset = inv_rot * (*it)->offset;
       string id = newDataID();
+      (*it)->id = id;
       addToWorkingMemory(id, *it);
       s.str("");
       s << "added pose for " << label << " with distance " << (*it)->distance << ": " << id;
