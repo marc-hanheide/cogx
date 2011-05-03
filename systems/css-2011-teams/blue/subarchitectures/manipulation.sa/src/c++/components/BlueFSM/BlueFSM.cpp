@@ -1028,7 +1028,7 @@ log("bestAlignment %f", bestAlignment);
 
   bool BlueFSM::moveToSafePose()
   {
-    return movePregrasp(convertPose(std::make_pair(m::Vector3(.2,0,1), m::Quaternion::IDENTITY)));
+    return movePregrasp(convertPose(std::make_pair(m::Vector3(.2,0,1), m::Quaternion(0.5, 0.5, 0.5, 0.5))));
   }
 
 bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose) 
