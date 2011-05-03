@@ -309,7 +309,6 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 
 				// local poses: 0 - approach from positive to negative, 1 - from negative to positive
 				GraspPose* gp = graspPoses[j];
-				Mat33 rot[4];
 				switch (k) {
 				case 0:	// X
 					gp[0].approach.R = i == 1 ? rotAxis(2, +REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, +REAL_PI_2);
@@ -329,26 +328,49 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 				gp[0].grasp = gp[0].approach;
 				gp[0].approach.p[k] = +(dimensions[k] + approachOffset);
 				gp[0].grasp.p[k] = +(dimensions[k] + graspOffset);
+				
+				gp[2].approach = gp[0].approach;
+				gp[2].approach.R.multiply(rotAxis(k, REAL_PI), gp[2].approach.R);
+				gp[2].grasp = gp[0].grasp;
+				gp[2].grasp.R.multiply(rotAxis(k, REAL_PI), gp[2].grasp.R);
+
 				gp[0].approach.multiply(pose, gp[0].approach);
 				gp[0].grasp.multiply(pose, gp[0].grasp);
+				gp[2].approach.multiply(pose, gp[2].approach);
+				gp[2].grasp.multiply(pose, gp[2].grasp);
 
 				gp[1].approach.p.setZero();
 				gp[1].grasp = gp[1].approach;
 				gp[1].approach.p[k] = -(dimensions[k] + approachOffset);
 				gp[1].grasp.p[k] = -(dimensions[k] + graspOffset);
+
+				gp[3].approach = gp[1].approach;
+				gp[3].approach.R.multiply(rotAxis(k, REAL_PI), gp[3].approach.R);
+				gp[3].grasp = gp[1].grasp;
+				gp[3].grasp.R.multiply(rotAxis(k, REAL_PI), gp[3].grasp.R);
+
 				gp[1].approach.multiply(pose, gp[1].approach);
 				gp[1].grasp.multiply(pose, gp[1].grasp);
+				gp[3].approach.multiply(pose, gp[3].approach);
+				gp[3].grasp.multiply(pose, gp[3].grasp);
 			}
 		}
 	}
 
 	GraspPose::Seq poses;
+	
 	poses.push_back(graspPoses[0][0]);
 	poses.push_back(graspPoses[0][1]);
 	poses.push_back(graspPoses[1][0]);
 	poses.push_back(graspPoses[1][1]);
+	
+	poses.push_back(graspPoses[0][2]);
+	poses.push_back(graspPoses[0][3]);
+	poses.push_back(graspPoses[1][2]);
+	poses.push_back(graspPoses[1][3]);
 
 	DebugRenderer debugRenderer;
+	
 	debugRenderer.addAxes(graspPoses[0][0].approach, Vec3(0.05));
 	debugRenderer.addAxes(graspPoses[0][0].grasp, Vec3(0.05));
 	debugRenderer.addAxes(graspPoses[0][1].approach, Vec3(0.05));
@@ -357,6 +379,16 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 	debugRenderer.addAxes(graspPoses[1][0].grasp, Vec3(0.05));
 	debugRenderer.addAxes(graspPoses[1][1].approach, Vec3(0.05));
 	debugRenderer.addAxes(graspPoses[1][1].grasp, Vec3(0.05));
+
+	debugRenderer.addAxes(graspPoses[0][2].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][2].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][3].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[0][3].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][2].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][2].grasp, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][3].approach, Vec3(0.05));
+	debugRenderer.addAxes(graspPoses[1][3].grasp, Vec3(0.05));
+	
 	tiny->render(&debugRenderer);
 
 	return poses;
