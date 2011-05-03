@@ -82,15 +82,15 @@ void DummyDriver::runComponent()
   addLook4ObjCommand(0, -0.5);
   log("executed ptz");
   
-  sleepProcess(4000);
-// addNavCommand(5, 5, 1);
-   log("move");
+  sleepProcess(3000);
+  
   getGraspPoses(m_poses);
-  log("got poses");
+
   if(m_poses.size() > 0)
   {	
+  	m_best_pose = bestPose(m_poses);
   	log("issuing mover command");
-  	addNavCommand(m_poses[0]->robotPose.x, m_poses[0]->robotPose.y, m_poses[0]->robotPose.z);
+  	addNavCommand(m_best_pose->robotPose);
   }
 }
 
