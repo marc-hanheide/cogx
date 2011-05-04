@@ -341,7 +341,7 @@ public class YellowExecutor extends ManagedComponent {
 			m_navCmdSuccess = false;
 			this.notifyAll();
 		}
-		gotoXYABlocking(1.0, 0.0, 0.0);
+		gotoXYABlocking(0.1, 0.0, 0.0);
 		return true;
 	}
 	
@@ -422,8 +422,9 @@ public class YellowExecutor extends ManagedComponent {
 							}
 							log("GOTCB5");
 							m_grabbingFinished = true;
-							this.notifyAll();
 							log("GOTCB6");
+							this.notifyAll();
+							return;
 						}
 					} catch (DoesNotExistOnWMException e) {
 						// TODO Auto-generated catch block
@@ -458,9 +459,10 @@ public class YellowExecutor extends ManagedComponent {
 						log("grabbing finished!");
 						m_grabbingFinished=false;
 						break;
+					} else {
+						this.wait();
+						continue;
 					}
-					this.wait();
-					continue;
 				}
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -512,7 +514,7 @@ public class YellowExecutor extends ManagedComponent {
 			this.notifyAll();
 		}
 		try {		
-			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd,WorkingMemoryOperation.OVERWRITE), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					synchronized (this) {
@@ -570,7 +572,7 @@ public class YellowExecutor extends ManagedComponent {
 			this.notifyAll();
 		}
 		try {		
-			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd), 
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(navadd,WorkingMemoryOperation.OVERWRITE), 
 					new WorkingMemoryChangeReceiver() {
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 					synchronized (this) {
