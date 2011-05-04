@@ -255,9 +255,11 @@ public class YellowExecutor extends ManagedComponent {
 		
 			if (!_grabbingSuccess) {
 				log("grasp was not successful. trying to look again!");
+				say("grasp was not successful. trying to look again!");
 				continue;
 			} else {
 				log("grasp successful. going to the next place...");
+				say("grasp successful. going to the next place...");
 				visitNextPlace();
 				// now start over:
 				continue;
@@ -451,7 +453,7 @@ public class YellowExecutor extends ManagedComponent {
 		while(isRunning()) {
 			log("2");
 			log("waiting for grabbing task to finish.");
-			//try {
+			try {
 				log("3");
 				synchronized(this) {
 					log("4");
@@ -460,16 +462,16 @@ public class YellowExecutor extends ManagedComponent {
 						m_grabbingFinished=false;
 						break;
 					} else {
-						//log("grabbing not finished. waiting.");
-						// this.wait();
-						//log("done waiting. continuing.");
+						log("grabbing not finished. waiting for 200.");
+						wait(200);
+						log("done waiting. continuing.");
 						continue;
 					}
 				}
-			//} catch (InterruptedException e) {
-			//	// TODO Auto-generated catch block
-			//	e.printStackTrace();
-			//}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		boolean taskSuccess = false;
 		synchronized (this) {
