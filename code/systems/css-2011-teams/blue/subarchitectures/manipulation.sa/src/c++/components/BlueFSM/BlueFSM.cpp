@@ -70,7 +70,7 @@ namespace cogx
   using namespace std;
   using namespace cast;
   
-  BlueFSM::BlueFSM() : m_state(INIT)
+  BlueFSM::BlueFSM() : m_state(INIT), m_graspAttempts(0)
   {
   }
 
@@ -111,6 +111,7 @@ namespace cogx
 
     double CellSize = 0.1;
     int MapSize = 70;
+    m_graspAttempts = 0;
     m_lgm = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
     m_Glrt  = new CharGridLineRayTracer(*m_lgm);
 
@@ -497,6 +498,25 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    double bestSqDist = DBL_MAX;
 	    for (map<string, Math::Pose3>::iterator it = m_globalPoses.begin();
 		it != m_globalPoses.end(); it++) {
+        
+        
+        // Skipping objects that lie like a cow
+        
+        if (!validPose(it->second))
+        {
+          log("DECIDE_POSITION: invalid global pose!");
+        }
+        
+        if (m_globalPoses.size() > 1 &&
+            std::abs((m::Vector3::UNIT_Z).Dot(m::normalized(m::matrixCopy(convertPose(it->second).second).GetColumn(1)))) > .707 &&
+            m_graspAttempts < 5)
+        {
+          log("DECIDE_POSITION: Object %s is lying like a cow, and we have only %i trials, so we skip that object",
+              it->first.c_str(), m_graspAttempts);
+          continue;
+        }
+        
+        
 	      double x = it->second.pos.x;
 	      double y = it->second.pos.y;
 	      double distsq = (m_CurrPose.pos.x-x)*(m_CurrPose.pos.x-x)+
@@ -559,6 +579,7 @@ log("MOVE_TO_NEW_POS");
 	case LOOK_CANONICAL:
 	  log("LOOK_CANONICAL");
 	  {
+      m_graspAttempts++;
 	    bool success = movePTZ(0, -M_PI/3);
 
 	    if (false) {

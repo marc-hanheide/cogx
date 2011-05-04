@@ -99,6 +99,8 @@ namespace cogx
 
     int m_turnStep;
 
+    int m_graspAttempts;
+    
     boost::mutex mutex_;
 
     map<string, cogx::Math::Pose3> m_poses;
