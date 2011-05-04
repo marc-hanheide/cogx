@@ -341,7 +341,7 @@ public class YellowExecutor extends ManagedComponent {
 			m_navCmdSuccess = false;
 			this.notifyAll();
 		}
-		gotoXYABlocking(0.1, 0.0, 0.0);
+		gotoXYABlocking(0.2, 0.0, 0.0);
 		return true;
 	}
 	
@@ -460,7 +460,9 @@ public class YellowExecutor extends ManagedComponent {
 						m_grabbingFinished=false;
 						break;
 					} else {
-						this.wait();
+						//log("grabbing not finished. waiting.");
+						// this.wait();
+						//log("done waiting. continuing.");
 						continue;
 					}
 				}
