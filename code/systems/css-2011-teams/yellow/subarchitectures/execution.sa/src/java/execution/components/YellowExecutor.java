@@ -451,7 +451,7 @@ public class YellowExecutor extends ManagedComponent {
 		while(isRunning()) {
 			log("2");
 			log("waiting for grabbing task to finish.");
-			try {
+			//try {
 				log("3");
 				synchronized(this) {
 					log("4");
@@ -466,10 +466,10 @@ public class YellowExecutor extends ManagedComponent {
 						continue;
 					}
 				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			//} catch (InterruptedException e) {
+			//	// TODO Auto-generated catch block
+			//	e.printStackTrace();
+			//}
 		}
 		boolean taskSuccess = false;
 		synchronized (this) {
