@@ -543,7 +543,12 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	      bool success = moveTo(goalX, goalY, goalTheta);
 	      if (!success) {
 		log("Error: Unable to move to (%f, %f)", goalX, goalY);
-		m_state = MOVE_TO_NEW_POS;
+		if (m_globalPoses.empty()) {
+		  m_state = MOVE_TO_NEW_POS;
+		}
+		else {
+		  m_state = DECIDE_POSITION;
+		}
 	      }
 	      else {
 		m_state = LOOK_CANONICAL;
@@ -612,7 +617,12 @@ log("MOVE_TO_NEW_POS");
             if (m_poses.begin() == m_poses.end())
             {
               log("Error: m_poses map is empty. We will now move to a new position.");
-              m_state = MOVE_TO_NEW_POS;
+	      if (m_globalPoses.empty()) {
+		m_state = MOVE_TO_NEW_POS;
+	      }
+	      else {
+		m_state = DECIDE_POSITION;
+	      }
               break;
             }
             
@@ -827,7 +837,12 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = moveHome();
 	    if (success) {
-	      m_state = MOVE_TO_NEW_POS;
+	      if (m_globalPoses.empty()) {
+		m_state = MOVE_TO_NEW_POS;
+	      }
+	      else {
+		m_state = DECIDE_POSITION;
+	      }
 	    }
 	    else {
 	      log("Error! move home failed");
