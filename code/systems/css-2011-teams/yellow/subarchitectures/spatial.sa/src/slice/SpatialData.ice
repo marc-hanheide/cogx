@@ -19,8 +19,8 @@ module SpatialData {
      */
     enum ActionStatusYellow {
       PENDINGY,
-      INPROGRESSY,
-      COMPLETEY
+      COMPLETEY,
+      FAILUREY
     };
     sequence<cast::cdl::WorkingMemoryAddress> WMAList;
     
@@ -395,6 +395,10 @@ class ProcessViewPointCommand {
 	cast::cdl::StringSeq objectModels;
 
   };
+
+   class Announcement {
+        string message;
+    };
 
 };
 

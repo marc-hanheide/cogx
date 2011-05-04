@@ -262,7 +262,7 @@ public class YellowExecutor extends ManagedComponent {
 				continue;
 			} else {
 				log("going to the next place...");
-				say("grasp successful. going to the next place...");
+				say("going to the next place...");
 				visitNextPlace();
 				// now start over:
 				continue;
@@ -274,6 +274,7 @@ public class YellowExecutor extends ManagedComponent {
 	private WorkingMemoryAddress[] lookForObjectsBlocking() {
 			dispatchDetectionCommand();
 			try {
+				log("waiting now...");
 				Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
@@ -291,6 +292,7 @@ public class YellowExecutor extends ManagedComponent {
 	//		if (waitLonger) Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 			while (isRunning()) {
 				try {
+					log("waiting again");
 					Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 					synchronized (this) {
 						if(!this.m_newObjsDeteced) {
@@ -299,6 +301,7 @@ public class YellowExecutor extends ManagedComponent {
 						}
 					}
 					log("wait for some time to let it settle.");
+					Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 					synchronized (this) {			
 						if (this.m_newObjsDeteced) {
 							log("ok. got fresh detections.");
@@ -383,14 +386,21 @@ public class YellowExecutor extends ManagedComponent {
 	}
 	
 	private void dispatchDetectionCommand() {
-		log("dispatchDetectionCommand() called.");
+		log("dispatchDetectionCommand("+m_objLabels[0]+") called.");
+		//synchronized(this) {
 		DetectionCommand detCmd = new DetectionCommand(m_objLabels);
 		try {
-			addToWorkingMemory(newDataID(), detCmd);
+			addToWorkingMemory(new WorkingMemoryAddress(newDataID(),m_visionsaID), detCmd);
 		} catch (AlreadyExistsOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		//m_objLabels = new String[0];
+		//this.notifyAll(); 
+		//}
 	}
 	
 	private boolean executeGrabbingTaskBlocking(WorkingMemoryAddress[] _newObjects) {
@@ -576,6 +586,7 @@ public class YellowExecutor extends ManagedComponent {
 		nc.tolerance[2]=Math.PI*10.0/180.0;
 		synchronized (this) {
 			this.m_currentNavCommandWMA = navadd;
+			this.m_navCmdSuccess = false;
 			this.notifyAll();
 		}
 		try {		
@@ -705,6 +716,7 @@ public class YellowExecutor extends ManagedComponent {
 		log("onVisualObjectAdded("+_wmc.address.toString()+") called.");
 		synchronized(this) {
 			log("oVOA1");
+			
 			m_newObjs.add(_wmc.address);
 			m_newObjsDeteced = true;
 			this.notifyAll();
