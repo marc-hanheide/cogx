@@ -127,7 +127,7 @@ namespace cogx
   private:
     void receiveScan2d(const Laser::Scan2d &castScan);
     void receiveOdometry(const Robotbase::Odometry &castOdom);
-    bool findBestGraspPose(const string &obj, double &bestX, double &bestY, 
+    double findBestGraspPose(const string &obj, double &bestX, double &bestY, 
 	double &bestTheta);
 
 		    bool 
