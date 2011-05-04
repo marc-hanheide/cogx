@@ -1029,11 +1029,17 @@ bool BlueFSM::movePregrasp(cogx::Math::Pose3 pregraspPose)
 //  removeChangeFilter(receiver);
 //  delete receiver;
 
+try {
   cmd = getMemoryEntry<manipulation::slice::MoveArmToPose>(id);
 
   m_currentArmPose = cmd->reachedPose;
 
   return cmd->comp == manipulation::slice::SUCCEEDED;
+}
+catch (IceUtil::NullHandleException e) {
+log("Error! Null handle getting command state!");
+return false;
+}
 }
 
 bool BlueFSM::moveHome() 
@@ -1377,8 +1383,14 @@ log("movePTZ %f, %f", pan, tilt);
   addChangeFilter(createIDFilter(id, cdl::OVERWRITE), receiver);
   addToWorkingMemory<ptz::SetPTZPoseCommand>(id, cmd);  
 
-  while (m_waiting) {
+  int waitCycles = 0;
+  while (m_waiting && waitCycles < 500) {
     usleep(50000);
+    waitCycles++;
+  }
+  if (waitCycles == 500) {
+    log("Error! PTZ failed to move!");
+    return false;
   }
   //  removeChangeFilter(receiver);
   //  delete receiver;
