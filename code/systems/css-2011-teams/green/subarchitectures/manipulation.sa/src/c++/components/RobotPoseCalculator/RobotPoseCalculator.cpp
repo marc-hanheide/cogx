@@ -123,15 +123,6 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
       return;
   }
 
-  // Delete poses
-  vector<CASTData<ManipulationPose> > poses;
-  getMemoryEntriesWithData(poses);
-  for(vector<CASTData<ManipulationPose> >::iterator it = poses.begin(); it != poses.end(); ++it) {
-      if (it->getData()->label == label) {
-          deleteFromWorkingMemory(it->getID());
-      }
-  }
-
   Vector3 pos = object->pose.pos;
   Matrix33 rot = object->pose.rot;
 
@@ -182,6 +173,15 @@ void RobotPoseCalculator::receiveVisualObject(const cdl::WorkingMemoryChange &_w
   if (pos.z < 0.3 || pos.z > 0.8) {
       log("what is this? I'm hallucinating (or the object is lying on the floor).");
       return;
+  }
+
+  // Delete poses
+  vector<CASTData<ManipulationPose> > poses;
+  getMemoryEntriesWithData(poses);
+  for(vector<CASTData<ManipulationPose> >::iterator it = poses.begin(); it != poses.end(); ++it) {
+      if (it->getData()->label == label) {
+          deleteFromWorkingMemory(it->getID());
+      }
   }
 
   if (abs(getColumn(rot, short_axis).z) > 0.8) {

@@ -99,12 +99,20 @@ void DummyDriver::runComponent()
     getGraspPoses(m_poses);
     for (set<string>::iterator it = m_done.begin(); it != m_done.end(); ++it) {
         purgePoses(*it, m_poses);
+        log("remove all poses for finished object " + *it);
+    }
+
+    if (m_poses.empty()) {
+        log("no poses found");
     }
 
     while (m_poses.size() > 0){
         log("found the best pose");
         m_best_pose = bestPose(m_poses);
-        addNavCommand(m_best_pose->robotPose);
+        if (m_best_pose->distance > 0) {
+            addNavCommand(m_best_pose->robotPose);
+            sleepProcess(1000);
+        }
         if (addGraspCommand(m_best_pose->label)) {
             purgePoses(m_best_pose->label, m_poses);
             m_done.insert(m_best_pose->label);
