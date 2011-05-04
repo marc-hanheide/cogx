@@ -312,82 +312,48 @@ GraspPose::Seq TinyGrasp::getGraspPoses() const {
 				switch (k) {
 				case 0:	// X
 					gp[0].approach.R = i == 1 ? rotAxis(2, +REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, +REAL_PI_2);
-					gp[1].approach.R = i == 1 ? rotAxis(2, -REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, -REAL_PI_2);
+					gp[2].approach.R = i == 1 ? rotAxis(2, -REAL_PI_2) : rotAxis(0, -REAL_PI_2, 2, -REAL_PI_2);
 					break;
 				case 1:	// Y
 					gp[0].approach.R = i == 0 ? rotAxis(0, +REAL_PI) : rotAxis(1, -REAL_PI_2, 0, +REAL_PI);
-					gp[1].approach.R = i == 0 ? rotAxis(0, +REAL_ZERO) : rotAxis(1, -REAL_PI_2);
+					gp[2].approach.R = i == 0 ? rotAxis(0, +REAL_ZERO) : rotAxis(1, -REAL_PI_2);
 					break;
 				case 2:	// Z
 					gp[0].approach.R = i == 0 ? rotAxis(0, -REAL_PI_2) : rotAxis(2, -REAL_PI_2, 0, -REAL_PI_2);
-					gp[1].approach.R = i == 0 ? rotAxis(2, +REAL_PI, 0, +REAL_PI_2) : rotAxis(2, +REAL_PI_2, 0, +REAL_PI_2);
+					gp[2].approach.R = i == 0 ? rotAxis(2, +REAL_PI, 0, +REAL_PI_2) : rotAxis(2, +REAL_PI_2, 0, +REAL_PI_2);
 					break;
 				}
 
-				gp[0].approach.p.setZero();
-				gp[0].grasp = gp[0].approach;
-				gp[0].approach.p[k] = +(dimensions[k] + approachOffset);
-				gp[0].grasp.p[k] = +(dimensions[k] + graspOffset);
+				for (U32 l = 0; l < 2; ++l) {
+					const U32 m = 2*l;
+
+					gp[m].approach.p.setZero();
+					gp[m].grasp = gp[m].approach;
+					gp[m].approach.p[k] = (dimensions[k] + approachOffset)*(Real(1) - m);
+					gp[m].grasp.p[k] = (dimensions[k] + graspOffset)*(Real(1) - m);
 				
-				gp[2].approach = gp[0].approach;
-				gp[2].approach.R.multiply(rotAxis(k, REAL_PI), gp[2].approach.R);
-				gp[2].grasp = gp[0].grasp;
-				gp[2].grasp.R.multiply(rotAxis(k, REAL_PI), gp[2].grasp.R);
+					gp[m + 1].approach = gp[m].approach;
+					gp[m + 1].approach.R.multiply(rotAxis(k, REAL_PI), gp[m + 1].approach.R);
+					gp[m + 1].grasp = gp[m].grasp;
+					gp[m + 1].grasp.R.multiply(rotAxis(k, REAL_PI), gp[m + 1].grasp.R);
 
-				gp[0].approach.multiply(pose, gp[0].approach);
-				gp[0].grasp.multiply(pose, gp[0].grasp);
-				gp[2].approach.multiply(pose, gp[2].approach);
-				gp[2].grasp.multiply(pose, gp[2].grasp);
-
-				gp[1].approach.p.setZero();
-				gp[1].grasp = gp[1].approach;
-				gp[1].approach.p[k] = -(dimensions[k] + approachOffset);
-				gp[1].grasp.p[k] = -(dimensions[k] + graspOffset);
-
-				gp[3].approach = gp[1].approach;
-				gp[3].approach.R.multiply(rotAxis(k, REAL_PI), gp[3].approach.R);
-				gp[3].grasp = gp[1].grasp;
-				gp[3].grasp.R.multiply(rotAxis(k, REAL_PI), gp[3].grasp.R);
-
-				gp[1].approach.multiply(pose, gp[1].approach);
-				gp[1].grasp.multiply(pose, gp[1].grasp);
-				gp[3].approach.multiply(pose, gp[3].approach);
-				gp[3].grasp.multiply(pose, gp[3].grasp);
+					gp[m].approach.multiply(pose, gp[m].approach);
+					gp[m].grasp.multiply(pose, gp[m].grasp);
+					gp[m + 1].approach.multiply(pose, gp[m + 1].approach);
+					gp[m + 1].grasp.multiply(pose, gp[m + 1].grasp);
+				}
 			}
 		}
 	}
 
 	GraspPose::Seq poses;
-	
-	poses.push_back(graspPoses[0][0]);
-	poses.push_back(graspPoses[0][1]);
-	poses.push_back(graspPoses[1][0]);
-	poses.push_back(graspPoses[1][1]);
-	
-	poses.push_back(graspPoses[0][2]);
-	poses.push_back(graspPoses[0][3]);
-	poses.push_back(graspPoses[1][2]);
-	poses.push_back(graspPoses[1][3]);
-
 	DebugRenderer debugRenderer;
-	
-	debugRenderer.addAxes(graspPoses[0][0].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][0].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][1].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][1].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][0].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][0].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][1].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][1].grasp, Vec3(0.05));
 
-	debugRenderer.addAxes(graspPoses[0][2].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][2].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][3].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[0][3].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][2].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][2].grasp, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][3].approach, Vec3(0.05));
-	debugRenderer.addAxes(graspPoses[1][3].grasp, Vec3(0.05));
+	for (U32 i = 0; i < 2*4; ++i) {
+		poses.push_back(graspPoses[i/4][i%4]);
+		debugRenderer.addAxes(graspPoses[i/4][i%4].approach, Vec3(0.05));
+		debugRenderer.addAxes(graspPoses[i/4][i%4].grasp, Vec3(0.05));
+	}
 	
 	tiny->render(&debugRenderer);
 
