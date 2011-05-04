@@ -3,7 +3,10 @@
  * @date February 2009
  */
 
+#include <sstream>
 #include <cstdlib>
+
+#include "Vector3.h"
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "DummyDriver.h"
@@ -111,8 +114,10 @@ void DummyDriver::runComponent()
     }
 
     while (m_poses.size() > 0){
-        log("found the best pose");
         m_best_pose = bestPose(m_poses);
+        ostringstream s;
+        s << "found the best pose: " << m_best_pose->robotPose << ", dist: " << m_best_pose->distance << ", label: " << m_best_pose->label;
+        log(s.str());
         if (m_best_pose->distance > 0) {
             addNavCommand(m_best_pose->robotPose);
             sleepProcess(1000);
