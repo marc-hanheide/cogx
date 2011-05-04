@@ -304,7 +304,6 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
       sizes[std::string("cereals-weetabix")] = std::make_pair(0.095,0.125);
       sizes[std::string("cereals-schokomusli")] = std::make_pair(0.0685,0.095);
       
-      std::vector<m::Pose> v;
       // These are wrong - from when we thought that the forward gripper axis was X.
 //      v.push_back(std::make_pair(m::Vector3(.100,0,0), m::Quaternion(0,0,0,1)));
 //      v.push_back(std::make_pair(m::Vector3(-.100,0,0), m::Quaternion(1,0,0,0)));
@@ -322,6 +321,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
       for (std::map<std::string, std::pair<double,double> >::const_iterator i = sizes.begin();
            i != sizes.end(); ++i)
       {
+        std::vector<m::Pose> v;
         v.push_back(std::make_pair(m::Vector3(i->second.first,0,0), m::Quaternion(0.707107,0,0,0.707107)));
         v.push_back(std::make_pair(m::Vector3(-i->second.first,0,0), m::Quaternion(-0.707107,0,0,0.707107)));
         v.push_back(std::make_pair(m::Vector3(0,0,-i->second.second), m::Quaternion(0.5,0.5,0.5,0.5)));
@@ -382,7 +382,8 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
     m::Pose bestBacktrackedGrasp = bestGrasp;
     if (objectRelGrasps.size() != 4)
     {
-      log("Waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarning: wrong number of grasps in grasp vector");
+      log("Waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarning: wrong number of grasps in grasp vector (%i)",
+          objectRelGrasps.size());
     }
     for (std::vector<m::Pose>::iterator i = objectRelGrasps.begin(); i != objectRelGrasps.end(); ++i)
     {
