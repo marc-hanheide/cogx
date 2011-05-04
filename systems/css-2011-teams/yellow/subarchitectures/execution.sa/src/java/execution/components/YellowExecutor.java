@@ -465,8 +465,8 @@ public class YellowExecutor extends ManagedComponent {
 						m_grabbingFinished=false;
 						break;
 					} else {
-						log("grabbing not finished. waiting for 200.");
-						wait(200);
+						log("grabbing not finished. waiting for 500.");
+						wait(500);
 						log("done waiting. continuing.");
 						continue;
 					}
@@ -552,7 +552,7 @@ public class YellowExecutor extends ManagedComponent {
 						m_navCmdSuccess = false;
 						break;
 					} else {
-						this.wait();
+						Thread.sleep(500);
 						continue;
 					}
 				}
@@ -610,7 +610,7 @@ public class YellowExecutor extends ManagedComponent {
 						m_navCmdSuccess = false;
 						break;
 					} else {
-						this.wait();
+						Thread.sleep(500);
 						continue;
 					}
 				}
