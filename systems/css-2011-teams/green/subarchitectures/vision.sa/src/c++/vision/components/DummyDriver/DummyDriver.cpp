@@ -70,6 +70,10 @@ void DummyDriver::start()
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteGraspCommand));
 
+  addChangeFilter(createGlobalTypeFilter<DropObjectCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DummyDriver>(this,
+        &DummyDriver::overwriteDropCommand));
+
   addChangeFilter(createGlobalTypeFilter<LookForObjectCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
         &DummyDriver::overwriteLook4ObjCommand));
