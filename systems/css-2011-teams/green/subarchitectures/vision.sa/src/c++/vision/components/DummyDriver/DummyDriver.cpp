@@ -402,6 +402,7 @@ ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr>& poses) {
 	for (int it=0 ; it < poses.size(); it++ )
 		if(poses[it]->distance < min) {
   			best = poses[it];
+            min = best->distance;
   			pos=it;
   		}
 
