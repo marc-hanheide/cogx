@@ -427,7 +427,7 @@ public class CogXKatanaArmConnector implements ArmConnector {
 
 			try {
 
-				((KatanaArmPrx) arm).gripperClose(threshold, 7);
+				((KatanaArmPrx) arm).gripperClose(threshold, 10);
 				closed = true;
 			} catch (ExTinyKatanaArm e) {
 				logger.debug(e);

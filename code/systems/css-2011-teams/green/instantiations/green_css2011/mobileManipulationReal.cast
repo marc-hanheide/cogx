@@ -48,13 +48,13 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "
 
 #CPP MG pointcloudviewer PointCloudViewer --servername pcserver --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-bircher.ply instantiations/green_css2011/object-models/cereals-chocos.ply instantiations/green_css2011/object-models/cereals-fruchtemusli.ply instantiations/green_css2011/object-models/cereals-toppas.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-bircher.sift instantiations/green_css2011/object-models/cereals-chocos.sift instantiations/green_css2011/object-models/cereals-fruchtemusli.sift instantiations/green_css2011/object-models/cereals-toppas.sift" --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/green_css2011/object-models/cereals-bircher.ply instantiations/green_css2011/object-models/cereals-chocos.ply instantiations/green_css2011/object-models/cereals-fruchtemusli.ply instantiations/green_css2011/object-models/cereals-toppas.ply instantiations/green_css2011/object-models/cereals-weetabix.ply" --siftfiles "instantiations/green_css2011/object-models/cereals-bircher.sift instantiations/green_css2011/object-models/cereals-chocos.sift instantiations/green_css2011/object-models/cereals-fruchtemusli.sift instantiations/green_css2011/object-models/cereals-toppas.sift instantiations/green_css2011/object-models/cereals-weetabix.sift" --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas cereals-weetabix" --log
 
 #CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
 
 #CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
 
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --mode LOOKGRASP --log --manipulation_sa "manipulation.sa"
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "cereals-bircher cereals-chocos cereals-weetabix" --mode LOOKGRASP --log --manipulation_sa "manipulation.sa"
 
 CPP MG DummyDriver DummyDriver
 
@@ -69,7 +69,7 @@ JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "ins
 
 JAVA MG ManipulationCommands castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "manipulation.slice.ManipulationExternalCommand"  --generic-col
 
-CPP MG RobotPoseCalculator RobotPoseCalculator --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas" --log
+CPP MG RobotPoseCalculator RobotPoseCalculator --labels "cereals-bircher cereals-chocos cereals-fruchtemusli cereals-toppas cereals-weetabix" --log
 
 
 
