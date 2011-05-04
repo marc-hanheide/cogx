@@ -827,7 +827,7 @@ log("MOVE_TO_NEW_POS");
 	  {
 	    bool success = moveHome();
 	    if (success) {
-	      m_state = INIT;
+	      m_state = MOVE_TO_NEW_POS;
 	    }
 	    else {
 	      log("Error! move home failed");
