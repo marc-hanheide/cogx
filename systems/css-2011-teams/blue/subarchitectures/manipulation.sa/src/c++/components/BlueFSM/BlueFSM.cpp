@@ -512,7 +512,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
         
         if (m_globalPoses.size() > 1 &&
             std::abs((m::Vector3::UNIT_Z).Dot(m::normalized(m::matrixCopy(convertPose(it->second).second).GetColumn(1)))) > .707 &&
-            m_graspAttempts < 5)
+            m_graspAttempts < 4)
         {
           log("DECIDE_POSITION: Object %s is lying like a cow, and we have only %i trials, so we skip that object",
               it->first.c_str(), m_graspAttempts);
