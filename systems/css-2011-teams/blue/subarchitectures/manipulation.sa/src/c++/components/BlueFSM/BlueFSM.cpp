@@ -464,6 +464,7 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    log("SPINNING");
 
 	    bool success = movePTZ(0, -M_PI/6);
+      m_graspAttempts++;
 
 	    m_turnStep = 0;
 
@@ -583,7 +584,6 @@ log("MOVE_TO_NEW_POS");
 	case LOOK_CANONICAL:
 	  log("LOOK_CANONICAL");
 	  {
-      m_graspAttempts++;
 	    bool success = movePTZ(0, -M_PI/3);
 
 	    if (false) {
