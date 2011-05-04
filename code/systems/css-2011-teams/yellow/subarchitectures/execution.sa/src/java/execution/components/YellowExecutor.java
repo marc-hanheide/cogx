@@ -228,11 +228,14 @@ public class YellowExecutor extends ManagedComponent {
 			// 1) look around for objects
 			say("I am looking for cereal boxes!");
 			boolean _grabbingSuccess = false;
+			boolean _objectsFound = false;
 			WorkingMemoryAddress[] _newObjectsArray = lookForObjectsBlocking();
 			if (_newObjectsArray.length>0) {
 				log("found " + _newObjectsArray.length + " new objects. gonna issue grabbing task!");
+				_objectsFound = true;
 				_grabbingSuccess = executeGrabbingTaskBlocking(_newObjectsArray);
 			} else {
+				_objectsFound = false;
 				log("no objects found. will go and search...");
 				try {
 					planePopOutMonitorReadyWME = getMemoryEntry(_kinectStatusWMA, KinectPlanePopOut.class);
@@ -253,12 +256,12 @@ public class YellowExecutor extends ManagedComponent {
 				}
 			}
 		
-			if (!_grabbingSuccess) {
+			if (!_grabbingSuccess && _objectsFound) {
 				log("grasp was not successful. trying to look again!");
 				say("grasp was not successful. trying to look again!");
 				continue;
 			} else {
-				log("grasp successful. going to the next place...");
+				log("going to the next place...");
 				say("grasp successful. going to the next place...");
 				visitNextPlace();
 				// now start over:
