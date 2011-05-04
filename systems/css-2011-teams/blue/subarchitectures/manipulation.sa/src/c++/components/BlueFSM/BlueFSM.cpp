@@ -969,7 +969,7 @@ log("%i", __LINE__);
 
   vector<pair<double, double> > coordinates;
   for (int attempt = 0; attempt < 10000; attempt++) {
-    const double r = 0.2 + 0.5*((double)rand())/RAND_MAX;
+    const double r = 0.25 + 0.45*((double)rand())/RAND_MAX;
     const double phi = 2*M_PI*((double)rand())/RAND_MAX;
     double dx = r*cos(phi);
     double dy = r*sin(phi);
