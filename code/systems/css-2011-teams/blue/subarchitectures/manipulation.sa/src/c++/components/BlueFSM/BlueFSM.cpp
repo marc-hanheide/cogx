@@ -448,7 +448,6 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	    log("INIT");
 	    m_state = LOOK_CANONICAL;
 //break;
-	      bool success = movePTZ(0, -M_PI/6);
 	      if (true) {
 		m_state = SPINNING;
 	      }
@@ -462,6 +461,8 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	case SPINNING:
 	  {
 	    log("SPINNING");
+
+	    bool success = movePTZ(0, -M_PI/6);
 
 	    m_turnStep = 0;
 
@@ -494,12 +495,13 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
 	  {
 	    log("DECIDE_POSITION");
 
-	    string bestObject;
-	    double bestSqDist = DBL_MAX;
+	    string bestObject = "";
+	    double bestAlignment = -FLT_MAX;
+	    double goalX, goalY, goalTheta;
 	    for (map<string, Math::Pose3>::iterator it = m_globalPoses.begin();
 		it != m_globalPoses.end(); it++) {
-        
-        
+//	      double x = it->second.pos.x;
+//	      double y = it->second.pos.y;
         // Skipping objects that lie like a cow
         
         if (!validPose(it->second))
@@ -515,39 +517,35 @@ BlueFSM::receiveScan2d(const Laser::Scan2d &castScan)
               it->first.c_str(), m_graspAttempts);
           continue;
         }
-        
-        
-	      double x = it->second.pos.x;
-	      double y = it->second.pos.y;
-	      double distsq = (m_CurrPose.pos.x-x)*(m_CurrPose.pos.x-x)+
-		(m_CurrPose.pos.y-y)*(m_CurrPose.pos.y-y);
-	      if (distsq < bestSqDist) {
-		bestSqDist = distsq;
+	      
+	      double bestX, bestY, bestTheta;
+
+	      double bestAlignmentForObject = 
+		findBestGraspPose(it->first, bestX, bestY, bestTheta);
+
+	      if (bestAlignmentForObject > 0.707 &&
+		  bestAlignmentForObject > bestAlignment) {
+		goalX = bestX;
+		goalY = bestY;
+		goalTheta = bestTheta;
 		bestObject = it->first;
 	      }
 	    }
-
+		 
 	    if (bestObject == "") {
-	      log("Error: No objects to move to!");
+	      log("Error; unable to find object to go to!");
+
 	      m_state = MOVE_TO_NEW_POS;
 	    }
 	    else {
-	      double bestX, bestY, bestTheta;
-	      bool success = findBestGraspPose(bestObject, bestX, bestY, bestTheta);
 	      m_globalPoses.erase(bestObject);
+	      bool success = moveTo(goalX, goalY, goalTheta);
 	      if (!success) {
-		log("Error: Unable to find grasp pose for %s", bestObject.c_str());
+		log("Error: Unable to move to (%f, %f)", goalX, goalY);
 		m_state = MOVE_TO_NEW_POS;
 	      }
 	      else {
-		success = moveTo(bestX, bestY, bestTheta);
-		if (!success) {
-		  log("Error: Unable to move to (%f, %f)", bestX, bestY);
-		  m_state = MOVE_TO_NEW_POS;
-		}
-		else {
-		  m_state = LOOK_CANONICAL;
-		}
+		m_state = LOOK_CANONICAL;
 	      }
 	    }
 	  }
@@ -938,27 +936,13 @@ BlueFSM::isCircleFree(const CureObstMap &cmap, double xW, double yW, double rad,
   return true;
 }
 
-bool BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
+double BlueFSM::findBestGraspPose(const string &obj, double &bestX, double &bestY,
   double &bestTheta)
 {
   log ("findBestGraspPose");
-  //    int currentPlaceID = m_placeInterface->getCurrentPlace()->id;
-  //    SpatialData::PlaceIDSeq vec;
-  //    vec.push_back(currentPlaceID);
-
-  //    FrontierInterface::LocalGridMap combined_lgm;
-  //    log("getting combined lgm");
-  //    combined_lgm = m_mapInterface->getCombinedGridMap(vec);
-  //    log("have combined lgm");
-
-
-  //    CureObstMap clgm(combined_lgm.size, 0.05, '2', CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
-
-  //    IcetoCureLGM(combined_lgm,&clgm);
-log("%i", __LINE__);
   if (m_globalPoses.count(obj) == 0) {
     log("Error! Trying to find grasp pose for unknown object %s", obj.c_str());
-    return false;
+    return -FLT_MAX;
   }
 
   Math::Pose3 objPose = m_globalPoses[obj];
@@ -996,15 +980,10 @@ log("%i", __LINE__);
 	bestTheta = atan2(-dy,-dx);
       }
     }
-else {
-} 
   }
-log("bestAlignment %f", bestAlignment);
 
-  if (bestAlignment > 0.707) {
-    return true;
-  }
-  return false;
+  log("bestAlignment %f", bestAlignment);
+  return bestAlignment;
 }
 
   bool BlueFSM::moveToSafePose()
