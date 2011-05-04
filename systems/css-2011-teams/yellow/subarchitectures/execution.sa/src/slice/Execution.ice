@@ -7,6 +7,12 @@
 
 
 module execution {
+
+  class Announcement {
+        string message;
+    };
+
+
   module slice {
 
     /**

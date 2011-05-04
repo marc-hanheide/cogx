@@ -56,6 +56,13 @@ if(DISPLAY_COMA_PB)
 endif(DISPLAY_COMA_PB)
 endif(BUILD_SA_SPATIAL_PEEKABOT)
 
+option(BUILD_32_BIT "compile for 32 instead of 64 bit" NO)
+if(BUILD_32_BIT)
+  SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-O2 -m32 -DLINUX -DNX32")
+else(BUILD_32_BIT)
+  SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-O2 -fPIC -DLINUX -DNX64")
+endif(BUILD_32_BIT)
+
 # add_cast_component(PeekabotControl PeekabotControl.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData FrontierInterface)
 # link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
@@ -176,4 +183,34 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialPropert
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 endif(BUILD_AVS)
+
+#add_cast_component(HelloWriter HelloWriter.cpp)
+#link_cast_component(${CAST_COMPONENT_NAME} SpatialData)
+
+#add_cast_component(HelloReader HelloReader.cpp)
+#link_cast_component(${CAST_COMPONENT_NAME} SpatialData)
+SET(PHYSX_INCLUDE /usr/include/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX include")
+SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.3 CACHE PATH "Path prefix for PhysX library")
+
+INCLUDE_DIRECTORIES(
+	/usr/local/include
+	${PHYSX_INCLUDE}/SDKs/Physics/include
+	${PHYSX_INCLUDE}/SDKs/Foundation/include
+	${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
+	${PHYSX_INCLUDE}/SDKs/Cooking/include
+	${COGX_ROOT}/subarchitectures/execution.sa/Golem/trunk/include
+)
+
+link_directories(
+	/usr/local/lib/Golem
+)
+
+add_cast_component(GraspPlanner GraspPlanner.cpp TinyGrasp.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData GolemTiny NavData)
+
+#add_cast_component(GraspInvoke GraspInvoke.cpp TinyGrasp.cpp)
+#link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData GolemTiny)
+
+
+
 

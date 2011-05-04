@@ -236,6 +236,11 @@ void PlanePopOut::start()
   addChangeFilter(createLocalTypeFilter<VisionData::KinectPlanePopOut>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlanePopOut>(this,
         &PlanePopOut::receiveDetectionCommand));
+
+      // overwrite change filter for plane pop out trigger commands
+  addChangeFilter(createLocalTypeFilter<VisionData::KinectPlanePopOut>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlanePopOut>(this,
+        &PlanePopOut::receiveDetectionCommand));
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -431,8 +436,9 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
   //SendOverlays(m_display, this);
 #endif
-//   while(isRunning())
-if (cmd_run_component = true)
+   while(isRunning())
+{
+if (cmd_run_component == true)
   {
 	long long t0 = gethrtime();
 	PointCloud::SurfacePointSeq tempPoints = points;
@@ -564,6 +570,7 @@ if (hei >0.28)
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
+}
 }
 
 bool PlanePopOut::IsMoving(IplImage * subimg)
@@ -2588,7 +2595,7 @@ void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vecto
 
 void PlanePopOut::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
-    KinectPlanePopOutPtr detect_cmd = getMemoryEntry<KinectPlanePopOut>(_wmc.address);
+    KinectPlanePopOutPtr detect_cmd = getMemoryEntry<VisionData::KinectPlanePopOut>(_wmc.address);
     Command_id = _wmc.address.id.c_str();
     switch(detect_cmd->status){
 		case VisionData::READY:
