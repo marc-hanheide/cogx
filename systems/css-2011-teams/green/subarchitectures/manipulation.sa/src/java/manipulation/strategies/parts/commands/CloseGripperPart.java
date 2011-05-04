@@ -52,7 +52,7 @@ public class CloseGripperPart extends StrategyPart implements Observer {
 
 		getManipulator().getWatcher().addObserver(this);
 
-		getManipulator().getArmConnector().closeGripper(30);
+		getManipulator().getArmConnector().closeGripper(100);
 
 		CloseGripperCommand currentCom = ((CloseGripperCommand) ((CommandExecution) getGlobalStrategy())
 				.getCurrentCommand());

@@ -116,6 +116,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 
 	if(m_manipulation_sa.empty()){
 		error("No manipulation.sa given in cast file!");
+		m_grasp = false;
 		return;
 	}
 
@@ -149,6 +150,7 @@ void ObjectRecognizer3DDriver::doGrasping(){
 		m_grasp_cmd->comp = VisionData::FAILED;
 		m_grasp_cmd->status = VisionData::COMMANDFAILED;
 		overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
+		m_grasp = false;
 		return;
 	}
 
@@ -174,16 +176,17 @@ void ObjectRecognizer3DDriver::doGrasping(){
 		// Move to save pose
 		log("move to save pose");
 		cogx::Math::Pose3 save_pose;
-		save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
-		save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
+		save_pose.pos = cogx::Math::vector3(0.1, 0.0, 0.9);
+		save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.7;	save_pose.rot.m02 = -0.7;
 		save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
-		save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
+		save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.7;	save_pose.rot.m22 =  0.7;
 		addMoveArmToPoseCommand(save_pose);
 		if(!isRunning()) return;
 
 		m_grasp_cmd->comp = VisionData::FAILED;
 		m_grasp_cmd->status = VisionData::FINISHED;
 		overwriteWorkingMemory(m_grasp_wma, m_grasp_cmd);
+		m_grasp = false;
 		return;
 	}
 
@@ -198,8 +201,8 @@ void ObjectRecognizer3DDriver::doGrasping(){
 	cogx::Math::Pose3 save_pose;
 	save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
 	save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
-	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
-	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
+	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 =  0.0;
+	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 =  0.9;
 	addMoveArmToPoseCommand(save_pose);
 	if(!isRunning()) return;
 
@@ -231,10 +234,10 @@ void ObjectRecognizer3DDriver::doDropping(){
 	// Move to save pose
 	log("move to save pose");
 	save_pose.pos = cogx::Math::vector3(0.25, 0.0, 0.9);
-	save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
-	save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 = -0.0;
-	save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 = 0.9;
-	addMoveArmToPoseCommand(save_pose);
+		save_pose.rot.m00 = 0.0;	save_pose.rot.m01 = 0.9;	save_pose.rot.m02 = -0.4;
+		save_pose.rot.m10 = -1.0;	save_pose.rot.m11 = 0.0;	save_pose.rot.m12 =  0.0;
+		save_pose.rot.m20 = 0.0;	save_pose.rot.m21 = 0.4;	save_pose.rot.m22 =  0.9;
+		addMoveArmToPoseCommand(save_pose);
 	if(!isRunning()) return;
 
 	log("dropping object finished");
@@ -446,6 +449,10 @@ void ObjectRecognizer3DDriver::start(){
 	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 		&ObjectRecognizer3DDriver::overwriteCloseGripperCommand));
 
+	addChangeFilter(createGlobalTypeFilter<OpenGripperCommand>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
+		&ObjectRecognizer3DDriver::overwriteOpenGripperCommand));
+
 	addChangeFilter(createGlobalTypeFilter<SetPTZPoseCommand>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<ObjectRecognizer3DDriver>(this,
 		&ObjectRecognizer3DDriver::overwriteSetPTZPoseCommand));
@@ -591,8 +598,9 @@ void ObjectRecognizer3DDriver::overwriteOpenGripperCommand(const cdl::WorkingMem
 
 	if(gripper_cmd->status == manipulation::slice::FINISHED){
 		log("gripper opened");
-		m_halt_arm =false;
+
 	}
+	m_halt_arm =false;
 }
 
 
