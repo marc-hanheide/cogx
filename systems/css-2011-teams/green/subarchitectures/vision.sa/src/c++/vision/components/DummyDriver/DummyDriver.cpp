@@ -105,7 +105,7 @@ void DummyDriver::runComponent()
 
     getGraspPoses(m_poses);
     for (set<string>::iterator it = m_done.begin(); it != m_done.end(); ++it) {
-        purgePoses(*it, m_poses);
+        m_poses = purgePoses(*it, m_poses);
         log("remove all poses for finished object " + *it);
     }
 
@@ -123,7 +123,7 @@ void DummyDriver::runComponent()
             sleepProcess(1000);
         }
         if (addGraspCommand(m_best_pose->label)) {
-            purgePoses(m_best_pose->label, m_poses);
+            m_poses = purgePoses(m_best_pose->label, m_poses);
             m_done.insert(m_best_pose->label);
             addNavCommand(0);
             addDropCommand();
@@ -394,7 +394,7 @@ void DummyDriver::getGraspPoses(vector<ManipulationPosePtr> & wmposes) {
 	getMemoryEntries(wmposes, string("manipulation.sa"));
 }
 
-ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr> poses) {
+ManipulationPosePtr DummyDriver::bestPose(vector<ManipulationPosePtr>& poses) {
 	double min=56565444;
 	ManipulationPosePtr best;
 	int pos;

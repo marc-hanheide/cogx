@@ -68,7 +68,7 @@ private:
   
   void getGraspPoses(std::vector<manipulation::slice::ManipulationPosePtr> & poses);
   std::vector<manipulation::slice::ManipulationPosePtr> purgePoses(std::string label, std::vector<manipulation::slice::ManipulationPosePtr> poses);
-  manipulation::slice::ManipulationPosePtr bestPose(std::vector<manipulation::slice::ManipulationPosePtr> poses);
+  manipulation::slice::ManipulationPosePtr bestPose(std::vector<manipulation::slice::ManipulationPosePtr>& poses);
 protected:
   /**
    * called by the framework to configure our component
