@@ -96,6 +96,12 @@ public class YellowExecutor extends ManagedComponent {
 				onVisualObjectAdded(_wmc);
 			};
 		});
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(VisualObject.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				onVisualObjectAdded(_wmc);
+			};
+		});
 		
 		// places
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class), 
@@ -714,6 +720,18 @@ public class YellowExecutor extends ManagedComponent {
 
 	private void onVisualObjectAdded(WorkingMemoryChange _wmc) {
 		log("onVisualObjectAdded("+_wmc.address.toString()+") called.");
+		try {
+			VisualObject visobj = getMemoryEntry(_wmc.address, VisualObject.class);
+			double conf = visobj.identDistrib[0];
+			if (!(conf > 0.005)) return;
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		synchronized(this) {
 			log("oVOA1");
 			
