@@ -24,7 +24,7 @@ const double ROBOT_HAND_OFFSET = 0.2;
 const double ROBOT_ARM_X_OFFSET = 0.0;
 const double MIN_GRASP_DISTANCE = 0.2;
 const double MAX_GRASP_DISTANCE = 0.6;
-const double GRASP_DISTANCE = 0.3;
+const double GRASP_DISTANCE = 0.4;
 const double INIT_DISTANCE = 1.0;
 
 /**
