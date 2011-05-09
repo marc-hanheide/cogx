@@ -62,7 +62,7 @@ struct CSequenceInfo
 class KinectStereoSeqServer : public PointCloudServer
 {
 private:
-  
+  bool noContinousGrabing;                      ///< grab the frames not continously with framerateMillis: new frame after every call to getPoints()
   bool haveImages;                              ///< we have already images (point clouds)
   std::vector<std::string> filenames;           ///< filenames of the stored images
 
