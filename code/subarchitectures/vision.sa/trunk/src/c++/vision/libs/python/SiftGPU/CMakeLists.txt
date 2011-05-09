@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 project(PythonSiftGpu)
 
 find_package(PythonLibs)
+
 if (LIBBUILD_CUDASIFT)
    find_package(Cuda)
+
+   link_directories(
+      ${CUDA_INSTALLROOT}/lib
+   )
 endif (LIBBUILD_CUDASIFT)
 
 
@@ -54,9 +59,6 @@ include_directories(
   /usr/include/GL
   ../../../../libs/SiftGPU/src/SiftGPU
   )
-link_directories(
-   ${CUDA_INSTALLROOT}/lib
-   )
 
 add_library(PySiftGpu SHARED
    ${LIB_SOURCES}
