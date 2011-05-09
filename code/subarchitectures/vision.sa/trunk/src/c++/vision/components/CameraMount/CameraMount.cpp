@@ -149,7 +149,11 @@ void CameraMount::start()
 
 void CameraMount::runComponent()
 {
-  bool camsAddedToWM = false;
+printf("CameraMount: runComponent!\n");
+  int size = camIds.size();
+  bool camsAddedToWM[size];
+    for(unsigned i=0; i<size; i++)
+      camsAddedToWM[i] = false;
   camWMIds.resize(camIds.size());
   for(size_t i = 0; i < camIds.size(); i++)
     camWMIds[i] = newDataID();
@@ -186,16 +190,21 @@ void CameraMount::runComponent()
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
-      log("sending pose for cam %d:", camIds[i]);
+      printf("sending pose for cam %d:", camIds[i]);
       log(toString(camPosesToEgo[i]));
-      if(camsAddedToWM)
+      if(camsAddedToWM[i])
       {
+        printf("CameraMount: overwrite new values on wm!\n");
         overwriteWorkingMemory(camWMIds[i], camParms);
+        printf("CameraMount: overwrite new camParms values: id= %i\n", camParms->cam.id);
       }
       else
       {
+        printf("CameraMount: add new values to wm.\n");
         addToWorkingMemory(camWMIds[i], camParms);
-        camsAddedToWM = true;
+        printf("CameraMount: added new camParms values: id= %i\n", camParms->cam.id);
+        printf("CameraMount: added new camParms pose: %4.2f / %4.2f / %4.2f\n", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
+        camsAddedToWM[i] = true;
       }
     }
     // HACK: should get rid of need for sleep
