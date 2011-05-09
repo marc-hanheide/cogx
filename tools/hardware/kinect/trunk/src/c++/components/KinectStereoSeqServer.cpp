@@ -114,8 +114,8 @@ void CSequenceInfo::parseConfig(const std::string& _configStr)
   vector<string>::iterator it, itnx;
   istringstream iss(_configStr);
   copy(istream_iterator<string>(iss),
-      istream_iterator<string>(),
-      back_inserter<vector<string> >(tokens));
+       istream_iterator<string>(),
+       back_inserter<vector<string> >(tokens));
 
   // Fix quoted parameters (escape sequences are not handled)
   for(it = tokens.begin(); it != tokens.end(); it++) {
@@ -217,8 +217,9 @@ KinectStereoSeqServer::KinectStereoSeqServer()
 KinectStereoSeqServer::~KinectStereoSeqServer()
 {
   #ifdef HAVE_GPU_STEREO
-  delete census;
-#endif
+    delete census;
+  #endif
+  
   for(size_t i = 0; i < stereoCams.size(); i++)
     delete stereoCams[i];
 
@@ -410,11 +411,19 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
+    log("do display.");
   }
 
+  if((it = _config.find("--noCont")) != _config.end())
+  {
+    noContinousGrabing = true;
+    log("no continous grabbing of frames active.");
+  }
+  
   if((it = _config.find("--logimages")) != _config.end())
   {
     logImages = true;
+    log("log images.");
   }
   
   // if no image size was specified, use the original image size as given by the stereo config
@@ -478,8 +487,11 @@ void KinectStereoSeqServer::runComponent()
 {
   while(isRunning())
   {
-    grabFramesInternal();
-    sleepComponent(framerateMillis);
+    if(!noContinousGrabing)
+    {
+      grabFramesInternal();
+      sleepComponent(framerateMillis);
+    }
   }
 }
 
@@ -560,9 +572,8 @@ void KinectStereoSeqServer::grabFramesInternal()
     frameCnt++;
   }
   
-  // read point cloud from file
+  // read kinect point cloud from file
   AR::readFromFile(ptCloudFileName.c_str(), cloud, colCloud);
-  
   haveImages = true;
 
   unlockComponent();
@@ -682,6 +693,8 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
 { 
   if(imgWidth >= 640) log("getPoints: Warning: Point clouds >= 640x480 may exceed memory limit of ice streams."); 
   
+  if(noContinousGrabing) grabFramesInternal();
+
   while(!haveImages)
   {
     sleepComponent(100);
@@ -745,66 +758,13 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
   stereoCam->CalculateDisparity(rectifiedGrayStereoImages[LEFT], rectifiedGrayStereoImages[RIGHT], disparityImg);
 #endif
 
-  if(logImages)
-  {
-    for(int i = LEFT; i <= RIGHT; i++)
-    {
-      cvSaveImage(i == LEFT ? "KinectStereoSeqServer-orig-L.jpg" : "KinectStereoSeqServer-orig-R.jpg", grabbedImages[i]);
-      cvSaveImage(i == LEFT ? "KinectStereoSeqServer-rect-L.jpg" : "KinectStereoSeqServer-rect-R.jpg", rectifiedStereoImages[i]);
-    }
-    cvSaveImage("KinectStereoSeqServer-disp.png", disparityImg);
-  }
-
-  if(doDisplay)
-  {
-    cvShowImage("left", rectifiedStereoImages[LEFT]);
-    cvShowImage("right", rectifiedStereoImages[RIGHT]);
-    cvShowImage("disparity", disparityImg);
-    cvWaitKey(10);
-  }
   
-  // transform global
-  Pose3 global_left_pose;
-  if(transformToGlobal)
-    // get from relative left pose to global left pose (O=LEFT)
-    transform(stereoCam->pose, stereoCam->cam[0].pose, global_left_pose);
-
-  // get stereo point cloud with the color from the left RECTIFIED image!!!       /// TODO We need the rectified image
+  // ######################## kinect procesing ######################## //
   points.resize(0);
-  for(int y = 0; y < disparityImg->height; y++)
-    for(int x = 0; x < disparityImg->width; x++)
-    {
-      float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
-      PointCloud::SurfacePoint p;
-      if(stereoCam->ReconstructPoint((double)x, (double)y, (double)d, p.p.x, p.p.y, p.p.z))
-      {
-        if(transformToGlobal)
-          // now get from left cam coord sys to global coord sys
-          p.p = transform(global_left_pose, p.p);
-      
-        cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*)Video::cvAccessImageData(rectifiedStereoImages[0], x, y);
-        p.c = *c;
-        points.push_back(p);
-      }
-      else if(complete)
-      {
-        /*stereoCam->ReconstructPoint((double)x, (double)y, 64,
-           p.p.x, p.p.y, p.p.z);
-        if(transformToGlobal)
-          // now get from left cam coord sys to global coord sys
-          p.p = transform(global_left_pose, p.p);*/
-        p.p = vector3(0., 0., 0.);
-        cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*) Video::cvAccessImageData(rectifiedStereoImages[0], x, y);
-        p.c = *c;
-        points.push_back(p);
-      }  
-    }
-
-  // Kinect: copy clouds to points-vector (dense!)
   Pose3 global_kinect_pose;
   if(transformToGlobal)
     transform(camPars[2].pose, stereoCam->cam[0].pose, global_kinect_pose);    /// TODO stereoCam->cam[0].pose ??? is left stereo!!!
-
+    
   int scale = (int) cloud.size().width / imgWidth;        // scale down to imageWidth (in full steps)
   for(unsigned row=0; row< cloud.size().height; row+=scale)                /// TODO SLOW!!!
   {
@@ -823,6 +783,61 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
       points.push_back(pt);
     }
   }
+  
+  // ######################## stereo procesing ######################## //
+  Pose3 global_left_pose;
+  if(transformToGlobal)
+    // get from relative left pose to global left pose (O=LEFT)
+    transform(stereoCam->pose, stereoCam->cam[0].pose, global_left_pose);
+
+  // get stereo point cloud with the color from the left RECTIFIED image!!!       /// TODO We need the rectified image
+  for(int y = 0; y < disparityImg->height; y++)
+    for(int x = 0; x < disparityImg->width; x++)
+    {
+      float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
+      PointCloud::SurfacePoint p;
+      if(stereoCam->ReconstructPoint((double)x, (double)y, (double)d, p.p.x, p.p.y, p.p.z))
+      {
+        if(transformToGlobal)
+          // now get from left cam coord sys to global coord sys
+          p.p = transform(global_left_pose, p.p);
+      
+        cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*)Video::cvAccessImageData(rectifiedStereoImages[0], x, y);
+        p.c = *c;
+        points.push_back(p);
+      }
+      else if(complete)
+      {
+printf("KinectStereoSeqServer::getPoints: get complete stereo points: not yet implemented?\n");
+        stereoCam->ReconstructPoint((double)x, (double)y, 64, p.p.x, p.p.y, p.p.z);
+        if(transformToGlobal)
+          // now get from left cam coord sys to global coord sys
+          p.p = transform(global_left_pose, p.p);
+//         p.p = vector3(0., 0., 0.);
+        cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*) Video::cvAccessImageData(rectifiedStereoImages[0], x, y);
+        p.c = *c;
+        points.push_back(p);
+      }  
+    }
+    
+  if(logImages)
+  {
+    for(int i = LEFT; i <= RIGHT; i++)
+    {
+      cvSaveImage(i == LEFT ? "KinectStereoSeqServer-orig-L.jpg" : "KinectStereoSeqServer-orig-R.jpg", grabbedImages[i]);
+      cvSaveImage(i == LEFT ? "KinectStereoSeqServer-rect-L.jpg" : "KinectStereoSeqServer-rect-R.jpg", rectifiedStereoImages[i]);
+    }
+    cvSaveImage("KinectStereoSeqServer-disp.png", disparityImg);
+  }
+
+  if(doDisplay)
+  {
+    cvShowImage("left", rectifiedStereoImages[LEFT]);
+    cvShowImage("right", rectifiedStereoImages[RIGHT]);
+    cvShowImage("disparity", disparityImg);
+    cvWaitKey(10);
+  }
+  
   unlockComponent();
 }
 
@@ -839,7 +854,7 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
     sleepComponent(100);
     log("getRectImage: Warning: wait for images.\n");
   }
-    
+  
   assert(side == LEFT || side == RIGHT || side == 2);
   lockComponent();
 

@@ -387,6 +387,8 @@ void KinectStereoServer::configure(const map<string,string> & _config) throw(run
 
 void KinectStereoServer::start()
 {
+  PointCloudServer::start();
+  
   // get connection to the video server
  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
@@ -427,29 +429,59 @@ void KinectStereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<
   lockComponent();
   
   // ########################### stereo processing ########################### //
-    int res = findClosestResolution(imgWidth);
+  int res = findClosestResolution(imgWidth);
   StereoCamera *stereoCam = stereoCams[res];
   ImageSet &imgSet = imgSets[res];
 
   vector<Video::Image> images;
-//   double t1 = gethrtime_d();
-  // HACK: we should actually send the list of cam ids and not just assume
-  // that the video server has precisely two cameras in the right order
-  videoServer->getScaledImages(stereoSizes[res].width, stereoSizes[res].height, images);
  
   // get next kinect frame
+  cv::Mat_<cv::Point3f> cloud;
+  cv::Mat_<cv::Point3f> colCloud;
   kinect->NextFrame();
+  kinect->Get3dWorldPointCloud(cloud, colCloud);
+  videoServer->getScaledImages(stereoSizes[res].width, stereoSizes[res].height, images);
 
-//   double t2 = gethrtime_d();
+
+  // ######################## kinect procesing ######################## //
+  points.resize(0);
+  Pose3 global_kinect_pose, zeroPose;
+  setIdentity(zeroPose);
+  if(transformToGlobal)
+    transform(camPars[2].pose, zeroPose, global_kinect_pose);
+
+if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", global_kinect_pose.pos.x, global_kinect_pose.pos.y, global_kinect_pose.pos.z);
+if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", camPars[2].pose.pos.x, camPars[2].pose.pos.y, camPars[2].pose.pos.z);
+
+  // copy clouds to points-vector (dense!)
+  for(unsigned row=0; row< cloud.size().height; row++)    /// TODO SLOW!!!
+  {
+    for(unsigned col=0; col < cloud.size().width; col++)
+    {
+      PointCloud::SurfacePoint pt;
+      pt.p.x = cloud.at<cv::Point3f>(row, col).x;
+      pt.p.y = cloud.at<cv::Point3f>(row, col).y;
+      pt.p.z = cloud.at<cv::Point3f>(row, col).z;
+      pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
+      pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
+      pt.c.b = colCloud.at<cv::Point3f>(row, col).x;
+
+      if(transformToGlobal)
+        pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
+
+      points.push_back(pt);
+    }
+  }
+  
+  //######################## stereo procesing ######################## //
   stereoProcessing(stereoCam, imgSet, images);
-//   double t3 = gethrtime_d();
-
   Pose3 global_left_pose;
   if(transformToGlobal)
-    // get from relative left pose to global left pose (O=LEFT)
     transform(stereoCam->pose, stereoCam->cam[0].pose, global_left_pose);
 
-  points.resize(0);
+if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", camPars[0].pose.pos.x, camPars[0].pose.pos.y, camPars[0].pose.pos.z);
+if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", global_left_pose.pos.x, global_left_pose.pos.y, global_left_pose.pos.z);
+
   for(int y = 0; y < imgSet.disparityImg->height; y++)
     for(int x = 0; x < imgSet.disparityImg->width; x++)
     {
@@ -479,40 +511,6 @@ void KinectStereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<
         points.push_back(p);
       }  
     }
-    
-//   double t4 = gethrtime_d();
-  /*log("run time: get images: %lf, stereo: %lf, reconstruct: %lf - total: %lf / frame rate: %lf",
-    t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));*/
-  
-  // ######################## kinect procesing ######################## //
-  cv::Mat_<cv::Point3f> cloud;
-  cv::Mat_<cv::Point3f> colCloud;
-  kinect->Get3dWorldPointCloud(cloud, colCloud);
-
-  Pose3 global_kinect_pose, zeroPose;
-  setIdentity(zeroPose);
-  if(transformToGlobal)
-    transform(camPars[2].pose, zeroPose, global_kinect_pose);
-
-  // copy clouds to points-vector (dense!)
-  for(unsigned row=0; row< cloud.size().height; row++)    /// TODO SLOW!!!
-  {
-    for(unsigned col=0; col < cloud.size().width; col++)
-    {
-      PointCloud::SurfacePoint pt;
-      pt.p.x = cloud.at<cv::Point3f>(row, col).x;
-      pt.p.y = cloud.at<cv::Point3f>(row, col).y;
-      pt.p.z = cloud.at<cv::Point3f>(row, col).z;
-      pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
-      pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
-      pt.c.b = colCloud.at<cv::Point3f>(row, col).x;
-
-      if(transformToGlobal)
-        pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
-
-      points.push_back(pt);
-    }
-  }
   unlockComponent();
 }
 
