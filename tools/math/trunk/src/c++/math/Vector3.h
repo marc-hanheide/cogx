@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <cast/core/CASTUtils.hpp>
 #include <cogxmath_base.h>
@@ -261,6 +262,24 @@ inline bool isFinite(const Vector3 &a)
   return isfinite(a.x) && isfinite(a.y) && isfinite(a.z);
 }
 
+/**
+ * Returns true if a and b's elems are within epsilon of each other.
+ */
+inline bool equals(const Vector3& a, const Vector3& b, double eps)
+{
+  return equals(a.x, b.x, eps) &&
+         equals(a.y, b.y, eps) &&
+         equals(a.z, b.z, eps);
+}
+
+/**
+ * legacy function.
+ */
+inline bool vequals(const Vector3& a, const Vector3& b, double eps)
+{
+  return equals(a, b, eps);
+}
+
 inline Vector3& operator += (Vector3 &a, const Vector3 &b)
 {
   a.x += b.x;
@@ -294,81 +313,6 @@ inline Vector3& operator /= (Vector3 &a, double f) throw(runtime_error)
   a.z /= f;
   return a;
 }
-
-/**
- * Print a vector in text form to a stream: '[x y z]`
- */
-inline void writeText(ostream &os, const Vector3 &a)
-{
-  os << '[' << a.x << ' ' << a.y << ' ' << a.z << ']';
-}
-
-/**
- * Read a vector in text from a stream.
- * The expected format is: '[x y z]', white spaces are ignored.
- */
-inline void readText(istream &is, Vector3 &a) throw(runtime_error)
-{
-  char c;
-  is >> c;
-  if(c == '[')
-  {
-    is >> a.x >> a.y >> a.z >> c;
-    if(c != ']')
-      throw runtime_error(cast::exceptionMessage(__HERE__,
-            "error reading Vector3: ']' expected"));
-  }
-  else
-    throw runtime_error(cast::exceptionMessage(__HERE__,
-          "error reading Vector3: '[' expected"));
-}
-
-
-/**
- * Writing to a stream is taken to be a textual output, rather than a
- * serialisation of the actual binary data.
- */
-inline ostream& operator<<(ostream &os, const Vector3 &a)
-{
-  writeText(os, a);
-  return os;
-}
-
-/**
- * Reading from a stream is taken to read a textual input, rather than
- * de-serialising the actual binary data.
- */
-inline istream& operator>>(istream &is, Vector3 &a)
-{
-  readText(is, a);
-  return is;
-}
-
-/**
- * Returns true if the two vectors are exactly equal.
- */
-//inline bool operator == (const Vector3& a, const Vector3& b)
-//{
-//  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
-//}
-
-/**
- * Returns true if a and b's elems are within epsilon of each other.
- */
-inline bool vequals(const Vector3& a, const Vector3& b, double eps)
-{
-  return equals(a.x, b.x, eps) &&
-         equals(a.y, b.y, eps) &&
-         equals(a.z, b.z, eps);
-}
-
-///**
-// * Returns true if the two vectors are not exactly equal.
-// */
-//inline bool operator != (const Vector3& a, const Vector3& b)
-//{
-//  return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
-//}
 
 inline Vector3 operator - (const Vector3 &v)
 {
@@ -528,6 +472,76 @@ inline double distPointToLine(const Vector3 &q, const Vector3 &p,
 {
   Vector3 pq = q - p;
   return dist(d*dot(pq, d), pq);
+}
+
+/**
+ * Print a vector in text form to a stream: '[x y z]`
+ */
+inline void writeText(ostream &os, const Vector3 &a)
+{
+  const streamsize w = 7;
+  streamsize prec = os.precision(3);
+  ios::fmtflags flags = os.setf(ios::fixed, ios::floatfield);
+  os << '[' << setw(w) << a.x << ' ' << setw(w) << a.y << ' ' << setw(w) << a.z << ']';
+  os.precision(prec);
+  os.setf(flags, ios::floatfield);
+}
+
+/**
+ * Read a vector in text from a stream.
+ * The expected format is: '[x y z]', white spaces are ignored.
+ */
+inline void readText(istream &is, Vector3 &a) throw(runtime_error)
+{
+  char c;
+  is >> c;
+  if(c == '[')
+  {
+    is >> a.x >> a.y >> a.z >> c;
+    if(c != ']')
+      throw runtime_error(cast::exceptionMessage(__HERE__,
+            "error reading Vector3: ']' expected"));
+  }
+  else
+    throw runtime_error(cast::exceptionMessage(__HERE__,
+          "error reading Vector3: '[' expected"));
+}
+
+/**
+ * Writing to a stream is taken to be a textual output, rather than a
+ * serialisation of the actual binary data.
+ */
+inline ostream& operator<<(ostream &os, const Vector3 &a)
+{
+  writeText(os, a);
+  return os;
+}
+
+/**
+ * Reading from a stream is taken to read a textual input, rather than
+ * de-serialising the actual binary data.
+ */
+inline istream& operator>>(istream &is, Vector3 &a)
+{
+  try
+  {
+    readText(is, a);
+  }
+  catch(runtime_error &e)
+  {
+    is.setstate(ios_base::failbit);
+  }
+  return is;
+}
+
+/**
+ * Returns a convenient string representation of a pose.
+ */
+inline string toString(const Vector3& a)
+{
+  ostringstream s;
+  writeText(s, a);
+  return s.str();
 }
 
 }
