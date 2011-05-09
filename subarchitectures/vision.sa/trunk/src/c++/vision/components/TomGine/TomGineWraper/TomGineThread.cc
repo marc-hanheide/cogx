@@ -178,6 +178,7 @@ void TomGineThread::SetTGCamera(unsigned width, unsigned height, double zFar, do
 void TomGineThread::DrawPointCloud()
 {
   glDisable(GL_LIGHTING);
+  glEnable(GL_DEPTH_TEST);                                    // TODO Gehört eigentlich wo anders hin!!!
   bool haveCol=false;
   bool haveColCloud = true;
   uchar *d;
@@ -204,8 +205,8 @@ void TomGineThread::DrawPointCloud()
     {
       cv::Point3f &pt = mCloud(v,u);
       cv::Point3f &col = cCloud(v,u);
-//      if (pt[0]==pt[0] && pt[1]==pt[1] && pt[2]==pt[2])		/// TODO sinnlos?
-//       {
+     if (pt.x == pt.x && pt.y==pt.y && pt.z==pt.z)
+      {
         if (haveCol)
         {
 //           glColor4ub(d[2],d[1],d[0],255);
@@ -218,7 +219,7 @@ void TomGineThread::DrawPointCloud()
 	}
         else
           glVertex3f(pt.x, pt.y, pt.z);
-//       }
+      }
       if (haveCol) d+=3;
     }
   }
