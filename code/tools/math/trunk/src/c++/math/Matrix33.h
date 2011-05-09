@@ -275,6 +275,16 @@ inline bool isFinite(const Matrix33 &a)
     isfinite(a.m20) && isfinite(a.m21) && isfinite(a.m22);
 }
 
+/**
+ * Returns true if A and B's elems are within epsilon of each other.
+ */
+inline bool equals(const Matrix33& A, const Matrix33& B, double eps)
+{
+  return equals(A.m00, B.m00, eps) && equals(A.m01, B.m01, eps) && equals(A.m02, B.m02, eps) &&
+         equals(A.m10, B.m10, eps) && equals(A.m11, B.m11, eps) && equals(A.m12, B.m12, eps) &&
+         equals(A.m20, B.m20, eps) && equals(A.m21, B.m21, eps) && equals(A.m22, B.m22, eps);
+}
+
 inline void setZero(Matrix33 &a)
 {
   a.m00 = REAL_ZERO;   a.m01 = REAL_ZERO;   a.m02 = REAL_ZERO;
