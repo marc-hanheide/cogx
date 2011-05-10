@@ -16,6 +16,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <cast/core/CASTUtils.hpp>
 #include <cogxmath_base.h>
@@ -737,6 +738,41 @@ inline void fromRotZ(Matrix33 &a, double angle)
   a.m20 = REAL_ZERO; a.m21 = REAL_ZERO; a.m22 = REAL_ONE;
 }
 
+/** 
+ * Rotation matrix from Euler angles - rotation about: X (roll) -> Y(pitch) -> Z(yaw).
+ *   roll, pitch, yaw  in <-PI/2, PI/2>
+ */
+inline void fromEuler(Matrix33 &a, double roll, double pitch, double yaw)
+{
+  double sg = sin(roll), cg = cos(roll);
+  double sb = sin(pitch), cb = cos(pitch);
+  double sa = sin(yaw), ca = cos(yaw);
+
+  a.m00 = ca*cb;  a.m01 = ca*sb*sg - sa*cg;   a.m02 = ca*sb*cg + sa*sg;
+  a.m10 = sa*cb;  a.m11 = sa*sb*sg + ca*cg;   a.m12 = sa*sb*cg - ca*sg;
+  a.m20 = -sb;    a.m21 = cb*sg;              a.m22 = cb*cg;
+}
+
+inline void fromRPY(Matrix33 &a, double roll, double pitch, double yaw)
+{
+  fromEuler(a, roll, pitch, yaw);
+}
+
+/**
+ * Rotation matrix to Euler angles - rotation about: X (roll) -> Y(pitch) -> Z(yaw).
+ */
+inline void toEuler(const Matrix33 &a, double &roll, double &pitch, double &yaw)
+{
+  roll = atan2(a.m21, a.m22);
+  pitch = atan2(-a.m20, sqrt(a.m21*a.m21 + a.m22*a.m22));
+  yaw = atan2(a.m10, a.m00);
+}
+
+inline void toRPY(const Matrix33 &a, double &roll, double &pitch, double &yaw)
+{
+  toEuler(a, roll, pitch, yaw);
+}
+
 /**
  * Print as rotation vector in text form to a stream,
  */
@@ -762,9 +798,14 @@ inline void readTextRotVec(istream &is, Matrix33 &m)
  */
 inline void writeTextMatrix(ostream &os, const Matrix33 &a)
 {
-  os << '|' << a.m00 << ' ' << a.m01 << ' ' << a.m02 << '|' << endl;
-  os << '|' << a.m10 << ' ' << a.m11 << ' ' << a.m12 << '|' << endl;
-  os << '|' << a.m20 << ' ' << a.m21 << ' ' << a.m22 << '|' << endl;
+  const streamsize w = 7;
+  streamsize prec = os.precision(3);
+  ios::fmtflags flags = os.setf(ios::fixed, ios::floatfield);
+  os << '[' << setw(w) << a.m00 << ' ' << setw(w) << a.m01 << ' ' << setw(w) << a.m02 << endl;
+  os << ' ' << setw(w) << a.m10 << ' ' << setw(w) << a.m11 << ' ' << setw(w) << a.m12 << endl;
+  os << ' ' << setw(w) << a.m20 << ' ' << setw(w) << a.m21 << ' ' << setw(w) << a.m22 << ']';
+  os.precision(prec);
+  os.setf(flags, ios::floatfield);
 }
 
 /**
@@ -785,6 +826,16 @@ inline istream& operator >> (istream &is, Matrix33 &m)
 {
   readTextRotVec(is, m);
   return is;
+}
+
+/**
+ * Returns a convenient string representation of a matrix.
+ */
+inline string toString(const Matrix33& m)
+{
+  ostringstream s;
+  writeTextMatrix(s, m);
+  return s.str();
 }
 
 }
