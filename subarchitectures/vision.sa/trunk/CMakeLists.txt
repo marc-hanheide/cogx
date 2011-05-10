@@ -207,6 +207,11 @@ if(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
 add_subdirectory (src/c++/vision/components/ShapeDescriptor3D)
 endif(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
 
+option(BUILD_SA_VISION_GAZEBO "build gazebo simulated vision" NO)
+if (BUILD_SA_VISION_GAZEBO)
+add_subdirectory (src/c++/vision/components/GazeboVision)
+endif (BUILD_SA_VISION_GAZEBO)
+
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
