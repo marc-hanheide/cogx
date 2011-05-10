@@ -6,7 +6,7 @@ include_directories(../include)
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_PATH})
 
-find_package(CG REQUIRED)
+find_package(Cg REQUIRED)
 include_directories(${CG_INCLUDE_PATH})
 
 find_package(X11 REQUIRED)
