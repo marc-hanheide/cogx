@@ -18,32 +18,17 @@ using namespace std;
 
 PointCloudClient::PointCloudClient()
 {
-//   stereoServerHost = "localhost";
   pointCloudServerName = "";
-//  stereoServerPort = cdl::CPPSERVERPORT;
 }
 
 void PointCloudClient::configureServerCommunication(const map<string,string> & _config) throw(runtime_error)
 {
   map<string,string>::const_iterator it;
-
-  //if((it = _config.find("--stereohost")) != _config.end())
-  //{
-  //  stereoServerHost = it->second;
-  //}
   
   if((it = _config.find("--servername")) != _config.end())
   {
     pointCloudServerName = it->second;
-  }
-
-  // sanity checks: Have all important things be configured? Is the
-  // configuration consistent?
-  //if(stereoServerHost.empty())
-  //  throw runtime_error(exceptionMessage(__HERE__, "no stereo server host given"));
-  
-  if(pointCloudServerName.empty())
-    throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
+  } else throw runtime_error(exceptionMessage(__HERE__, "no point cloud server name given"));
 }
 
 void PointCloudClient::startPCCServerCommunication(CASTComponent &owner) throw(runtime_error)
