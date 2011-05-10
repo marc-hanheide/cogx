@@ -37,6 +37,22 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
+
+#ifdef __APPLE__ //nah: OS X doesn't have CLOCK_MONOTONIC
+
+static double gethrtime_d()
+{
+	timeval tv;
+	int ret = gettimeofday(&tv, NULL);  
+	if(ret != 0) {
+    	return 0;
+	}
+	return (double)tv.tv_sec + 1e-6*(double)tv.tv_usec;
+}
+
+
+#else
+
 static double gethrtime_d()
 {
   struct timespec ts;
@@ -51,6 +67,7 @@ static double gethrtime_d()
   return (double)ts.tv_sec + 1e-9*(double)ts.tv_nsec;
 }
 
+#endif
 
 /// ************** Point Cloud Server Interface ************** ///
 void PointCloudServerI::getPoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&)
