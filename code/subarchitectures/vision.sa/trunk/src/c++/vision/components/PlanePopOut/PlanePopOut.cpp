@@ -3,7 +3,13 @@
  * @date June 2009
  */
 
+#ifdef __APPLE__
+#include <GL/glut.h> //nah: glut is installed via MacPorts and thus preferred
+#else
 #include <GL/freeglut.h>
+#endif
+
+
 #include <cogxmath.h>
 #include "PlanePopOut.h"
 #include <stack>
@@ -14,6 +20,23 @@
 #include <time.h>
 #include "StereoCamera.h"
 #include <cast/architecture/ChangeFilterFactory.hpp>
+
+#ifdef __APPLE__
+
+long long gethrtime(void)
+{
+  timeval tv;
+  int ret;
+  long long v;
+  ret = gettimeofday(&tv, NULL);
+  if(ret!=0) return 0;  
+  v=1000000000LL; /* seconds->nanonseconds */
+  v*=tv.tv_sec;
+  v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
+  return v;
+}
+
+#else
 
 long long gethrtime(void)
 {
@@ -31,6 +54,8 @@ long long gethrtime(void)
   v+=sp.tv_nsec;
   return v;
 }
+
+#endif
 
 //#define USE_MOTION_DETECTION
 //#define SAVE_SOI_PATCH  //todo: fix that !crop the ROI may cause the crash since the size of the ROI may exceeds the boundaries of img  

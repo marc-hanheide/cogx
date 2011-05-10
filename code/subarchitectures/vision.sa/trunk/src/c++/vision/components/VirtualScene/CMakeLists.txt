@@ -2,7 +2,9 @@ project(VirtualScene)
 
 include_directories(.)
 include_directories(TomGine/include)
-include_directories(/usr/include/freetype2)
+
+FIND_PACKAGE( Freetype REQUIRED )
+INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
 
 add_subdirectory(TomGine)
 

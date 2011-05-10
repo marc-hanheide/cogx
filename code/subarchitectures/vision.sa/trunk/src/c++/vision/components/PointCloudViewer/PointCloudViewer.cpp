@@ -5,7 +5,6 @@
  */
 
 #include <limits.h>
-#include <GL/freeglut.h>
 #include <opencv/highgui.h>
 #include <cogxmath.h>
 #include "PointCloudViewer.h"

@@ -7,14 +7,17 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/compo
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIR})
 link_directories(${OPENGL_LIBRARY_DIRS})
+
 find_package(GLU REQUIRED)
-include_directories(${GLU_INCLUDE_DIRS})
+include_directories(${GLU_INCLUDE_DIR})
 link_directories(${GLU_LIBRARY_DIRS})
+
 find_package(GLUT REQUIRED)
-include_directories(${GLUT_INCLUDE_DIRS})
+include_directories(${GLUT_INCLUDE_DIR})
 link_directories(${GLUT_LIBRARY_DIRS})
+
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 SET(HEADERS

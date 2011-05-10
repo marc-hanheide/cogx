@@ -8,7 +8,13 @@
 #define P_DETECT_SIFT_HH
 
 #include <limits.h>
+
+#ifdef __APPLE__
+#include <sys/wait.h>
+#else 
 #include <wait.h>
+#endif
+
 #include "PNamespace.hh"
 #include "KeypointDescriptor.hh"
 #include "Array.hh"
