@@ -1,23 +1,31 @@
 #!/bin/sh
-echo "\n----------Linux info\n"
+echo ""
+echo "----------Linux info"
 lsb_release -id --release --codename
 echo "Kernel:        " $(getconf LONG_BIT) "bit"
-echo "\n----------BASH\n"
+echo ""
+echo "----------BASH"
 bash --version
-echo "\n----------GCC, CMAKE\n"
+echo ""
+echo "----------GCC, CMAKE"
 gcc --version
 cmake --version
-echo "\n----------JAVA, ANT\n"
+echo ""
+echo "----------JAVA, ANT"
 java -version
 ant -version
-echo "\n----------CUDA\n"
+echo ""
+echo "----------CUDA"
 which nvcc
 nvcc --version
-echo "\n----------PYTHON\n"
+echo ""
+echo "----------PYTHON"
 python --version
 python -c "import opencv; print 'OpenCv %d.%d' %(opencv.CV_MAJOR_VERSION, opencv.CV_MINOR_VERSION)"
-echo "\nPYTHON Qt4"
+echo ""
+echo "PYTHON Qt4"
 python -c "import PyQt4.QtCore as qt; print 'PyQt4 version', qt.PYQT_VERSION_STR"
-echo "\n----------COGX CODE\n"
+echo ""
+echo "----------COGX CODE"
 pwd
 svn info
