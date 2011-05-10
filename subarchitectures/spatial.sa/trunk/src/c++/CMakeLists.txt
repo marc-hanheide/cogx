@@ -43,12 +43,17 @@ endif(DISPLAY_COMA_PB)
 option(BUILD_SA_SPATIAL_PEEKABOT "Build spatial.sa PeekaBot components" YES)
 if(BUILD_SA_SPATIAL_PEEKABOT)
 
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
+
+
 add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver SpatialProbabilities SpatialProperties)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
+
 if(DISPLAY_COMA_PB)
   link_cast_component(${CAST_COMPONENT_NAME} ComaData)
 endif(DISPLAY_COMA_PB)
