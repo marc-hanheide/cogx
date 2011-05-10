@@ -35,9 +35,9 @@ inline bool pointInsideSOI(const VisionData::SOI &soi, const cogx::Math::Vector3
 }
 
 /**
-* @brief Compute normal vectors of vertices by using the face normal
+* @brief Compute normal vectors of vertices from face normals
 */
-inline void computeNormalsByFaces(VisionData::GeometryModelPtr model)
+inline void computeNormalsFromFaces(VisionData::GeometryModelPtr model)
 {
 	int i,j;
 	VisionData::Face* f;
