@@ -185,6 +185,7 @@ void PointCloudServer::start()
  */
 void PointCloudServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
 {
+//   log("received camera parameters\n");
   Video::CameraParametersWrapperPtr newCam = getMemoryEntry<Video::CameraParametersWrapper>(_wmc.address);
   // find the camera paramters that need updating and update pose and time stamp
   // Note that we don't change any other (instrinsic) parameters yet as we
@@ -198,6 +199,7 @@ void PointCloudServer::receiveCameraParameters(const cdl::WorkingMemoryChange & 
     {
       camPars[i].pose = newCam->cam.pose;
       camPars[i].time = newCam->cam.time;
+//       log("transformToGlobal with pose.pos: %4.4f / %4.4f / %4.4f\n",  camPars[i].pose.pos.x,  camPars[i].pose.pos.y,  camPars[i].pose.pos.z);
       break;
     }
   }
