@@ -3,13 +3,19 @@ PROJECT(TomGine)
 FIND_PACKAGE( OpenCV REQUIRED )
 #INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
 
+FIND_PACKAGE( Freetype REQUIRED )
+INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
+
+FIND_PACKAGE( OpenGL REQUIRED )
+
+
 ADD_DEFINITIONS(-DGL_GLEXT_PROTOTYPES)
 ADD_DEFINITIONS(-DUSE_FTGL_FONT)
 #SET(TRUETYPE_FONT "/usr/share/fonts/truetype/freefont/FreeSans.ttf")
 SET(TRUETYPE_FONT "./comic.ttf")
 ADD_DEFINITIONS(-DTTF_FONT="${TRUETYPE_FONT}")
 
-INCLUDE_DIRECTORIES(/usr/include/freetype2)
+
 
 SET(SOURCES ply.c
 	tgQuaternion.cpp
@@ -37,7 +43,16 @@ SET(SOURCES ply.c
 	tgVector3.cpp
 	tgTimer.cpp)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
-LINK_LIBRARIES(ftgl GLWindow rt)
+
+target_link_libraries(${PROJECT_NAME} ftgl GLWindow)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OPENCV_LIBRARIES})
+
+IF (NOT APPLE)
+	target_link_libraries(${PROJECT_NAME} ftgl rt)
+ENDIF (NOT APPLE)
+
+
 #target_link_libraries(${PROJECT_NAME} SDGLWindow)
 #target_link_libraries(${PROJECT_NAME} ${OPENCV_LDFLAGS})
 #LINK_LIBRARIES(SDGLWindow)

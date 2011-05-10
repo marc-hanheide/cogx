@@ -3,6 +3,9 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 FIND_PACKAGE( OpenCV REQUIRED )
 
+find_package(CG REQUIRED)
+include_directories(${CG_INCLUDE_PATH})
+
 include_directories(.)
 include_directories(./ODetect3D)
 include_directories(./matrix)
@@ -42,5 +45,6 @@ add_cast_component(ObjectRecognizer3D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix siftgpu)
-link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} Cg CgGL GLEW glut IL)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} GLEW glut IL)
+link_cast_component(${CAST_COMPONENT_NAME} ${CG_LIBRARY} ${CG_GL_LIBRARY})
 

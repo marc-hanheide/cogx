@@ -2,7 +2,19 @@
 project(siftgpu)
 
 include_directories(../include)
-include_directories(/usr/include/Cg)
+
+find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_PATH})
+
+find_package(CG REQUIRED)
+include_directories(${CG_INCLUDE_PATH})
+
+find_package(X11 REQUIRED)
+
+find_package(IL REQUIRED)
+include_directories(${IL_INCLUDE_DIRS})
+
+find_package(OpenGL REQUIRED)
 
 if(LIBBUILD_SIFTGPU_WITH_CUDA)
    find_package(Cuda)
@@ -52,12 +64,19 @@ SET(SOURCES
    )
 
 set(LIBRARY_NAME ${PROJECT_NAME})
+
 add_library(${LIBRARY_NAME} SHARED ${SOURCES})
-target_link_libraries(${PROJECT_NAME}
-   Cg CgGL GLEW IL
-   ${CUDA_LIBRARIES}
-   # glut
-   )
+
+target_link_libraries(${PROJECT_NAME} ${X11_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${CG_LIBRARY} ${CG_GL_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${GLEW_LIBRARY})	
+target_link_libraries(${PROJECT_NAME} ${CUDA_LIBRARIES})	
+target_link_libraries(${PROJECT_NAME} ${IL_LIBRARIES})	
+# why does this not work here? target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
+# have to do this instead:
+target_link_libraries(${PROJECT_NAME} GL)
+
+
 if (LIBBUILD_SIFTGPU_WITH_CUDA)
    add_dependencies(${LIBRARY_NAME} SiftProgramCU)
    set_target_properties(${LIBRARY_NAME}

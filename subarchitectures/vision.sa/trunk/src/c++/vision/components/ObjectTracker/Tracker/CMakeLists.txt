@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 project(Tracker)
 
 FIND_PACKAGE( OpenCV REQUIRED )
+FIND_PACKAGE( OpenGL REQUIRED )
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
@@ -39,7 +40,11 @@ SET(SOURCES
 	src/TM_Vector3.cpp
 	src/Tracker.cpp)
 
-link_libraries(${OPENCV_LDFLAGS} SDL GLU glut)
+
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME} ${OPENCV_LDFLAGS} SDL GLU glut)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
+
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
