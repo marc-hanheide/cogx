@@ -16,13 +16,12 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "GCoptimization.h"
 #include <boost/interprocess/sync/named_semaphore.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
-#include <StereoClient.h>
+#include <PointCloudClient.h>
 #include <../../VisionUtils.h>
 #include <ConvertImage.h>
 
@@ -32,13 +31,14 @@
 #include <CDisplayClient.hpp>
 #endif
 
+#include "GraphCutSegmenter.h"
+#include "Snapper.h"
 
 namespace cast
 {
 
 class SOIFilter : public ManagedComponent,
-		  public VideoClient,
-      	  public StereoClient
+  public VideoClient, public PointCloudClient
 {
 private:
 
@@ -68,24 +68,9 @@ private:
   * Segmentation tolerances for distance and hsl
   *(gaussian dispersion)
   */
-  float objHueTolerance;
-  float objDistTolerance;
-  float bgHueTolerance;
-  float bgDistTolerance;
-  int lblFixCost;
-  int smoothCost;
-  
-  IplImage *colorFiltering; //HACK
-  bool filterFlag; //HACK
-  std::vector<CvScalar> filterList;
+  GraphCutSegmenter m_segmenter;
+  Snapper m_snapper;
 
-  // snapshot support: save video images when -v flag active
-  Video::Image m_LeftImage;
-  Video::Image m_RightImage;
-  int m_idLeftImage;
-  int m_idRightImage;
-  bool m_bAutoSnapshot;
-  
   /**
    * status of SOI persistency
    */
@@ -135,14 +120,8 @@ private:
   };
   CSfDisplayClient m_display;
 #endif
-  VisionData::ProtoObjectPtr m_LastProtoObject; // We may want to save it
-  Video::Image m_ImageLeft;
-  Video::Image m_ImageRight;
-  Video::Image m_ImageRectLeft;
-  std::string m_snapshotFiles;
-  std::string m_snapshotFlags; // A:ll, p:oints, l:eft, r:ight, s:segmented, m:mask, L:eftRect, R:ightRect
-  void saveSnapshot();
-  bool hasSnapFlag(char ch);
+  //void saveSnapshot();
+  //bool hasSnapFlag(char ch);
 
 private:
   /**
@@ -162,51 +141,6 @@ private:
 
   void updatedProtoObject(const cdl::WorkingMemoryChange & _wmc);
   
-  /**
-   * segment out object roi
-   */
-  bool segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask, std::vector<VisionData::SurfacePoint> &segPoints, VisionData::ProtoObjectPtr& pProto);
-  
-  
-  void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
-					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const float ratio,
-					const Video::CameraParameters &cam);
-
-				
-  void project3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints, const VisionData::ROI &roi,
-                    const float ratio, const Video::CameraParameters &cam,
-                    std::vector<CvPoint> &projPoints, std::vector<int> &hull);
-                    
-  std::vector<VisionData::SurfacePoint>  filter3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints,
-  					std::vector<CvPoint> &projPoints, std::vector<CvPoint> &errProjPoints, const VisionData::SegmentMask segMask);
-  					
-  std::vector<VisionData::SurfacePoint> sample3DPoints(std::vector<VisionData::SurfacePoint> points, int newSize);
-
-					   
-  void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
-  					const std::vector<CvPoint> errProjPoints, const std::vector<int> hull);
-
-  					
-  void drawPoints(IplImage *img, const std::vector<CvPoint> projPoints);
-
-  
-  void drawHull(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<int> hull);
-
-  
-  std::vector<CvScalar> getSortedHlsList(std::vector<VisionData::SurfacePoint> surfPoints);
-
-  
-  std::vector<unsigned char> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
-  
-  int getHlsDiff(std::vector<CvScalar> hlsList, CvScalar hls, int k);
-
-  std::vector<int> getHueDiffList(std::vector<CvScalar> hslList, int k);
-
-  
-  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
-                    std::vector<VisionData::SurfacePoint> surfPoints, float hslmod, float distmod, bool distcost);
-
-  std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors, std::vector<CvScalar> filterColors, int k, int tolerance);
 
 protected:
   /**
@@ -227,7 +161,7 @@ public:
   virtual ~SOIFilter() {}
 };
 
-}
+} // namespace
 
 #endif
-
+/* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
