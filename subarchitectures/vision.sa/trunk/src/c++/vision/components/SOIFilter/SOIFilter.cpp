@@ -94,6 +94,30 @@ void SOIFilter::configure(const map<string,string> & _config)
     doDisplay = true;
   }
 
+  if((it = _config.find("--camid")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> camId;
+  }
+
+  if((it = _config.find("--coarseSource")) != _config.end())
+  {
+    m_coarseSource = it->second;
+  }
+
+  if((it = _config.find("--fineSource")) != _config.end())
+  {
+    m_fineSource = it->second;
+  }
+
+  if (m_fineSource.size() == 0 && m_coarseSource.size() != 0)
+    m_fineSource = m_coarseSource;
+
+  if (m_coarseSource.size() == 0 && m_fineSource.size() != 0)
+    m_coarseSource = m_fineSource;
+
+  m_bSameSource = m_coarseSource == m_fineSource;
+
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
 #endif
@@ -180,106 +204,16 @@ void SOIFilter::runComponent()
         m_TaskQueue.pop_front();
       }
 #endif
-#if 0
-      if (tasks.size() < 1)
-        log("Timeout");
-#endif
-
       // SYNC: unlock the monitor when going out of scope
     }
+
+    // if (tasks.empty()) debug("Timeout");
 
     while (!tasks.empty())
     { 
       WmTask op = tasks.front();
       tasks.pop_front();
-
-      if (op.operation == WMO_ADD) {
-
-        log("An add proto-object instruction");
-        SOIData &soi = SOIMap[op.soi_id];
-
-        log("SOI retrieved");
-
-        if(soi.status == STABLE)
-        {
-          soi.status = OBJECT;
-          try
-          { 
-            SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
-
-            ProtoObjectPtr pobj = new ProtoObject;
-            m_snapper.m_LastProtoObject = pobj;
-            if(m_segmenter.segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points, pobj))
-            {
-              pobj->time = getCASTTime();
-              pobj->SOIList.push_back(soi.addr.id);
-
-              //m_LastProtoObject = pobj;
-              if (! pobj.get()) {
-                println(" *********** WTF ************");
-              }
-
-              string objId = newDataID();
-              addToWorkingMemory(objId, pobj);
-
-              soi.objectTime = getCASTTime();
-              soi.objId = objId;
-
-              log("A proto-object added ID %s",
-                  objId.c_str(), soi.updCount);
-            }
-            else
-              log("Nothing segmented, no proto-object added");
-
-          }
-          catch (DoesNotExistOnWMException e)
-          {
-            log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
-          }
-        }
-        else if(soi.status == DELETED) {
-          log("SOI was removed before it could be processed");
-          try
-          { 
-            SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
-          }
-          catch (DoesNotExistOnWMException e)
-          {
-            log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
-          }
-        }
-      }
-      else if (op.operation == WMO_DELETE) {
-        log("A delete proto-object instruction");
-        SOIData &soi = SOIMap[op.soi_id];
-
-        //		if(soi.status == OBJECT)
-        //		{
-        soi.status = DELETED;
-        try
-        {
-          if (soi.objId.size()>0 && existsOnWorkingMemory(soi.objId)) {
-            deleteFromWorkingMemory(soi.objId);
-
-            log("A proto-object deleted ID: %s ", soi.objId.c_str());
-          }
-          else
-            log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
-
-          //			SOIMap.erase(objToDelete.front());	  	
-        }
-        catch (DoesNotExistOnWMException e)
-        {
-          log("WARNING: Proto-object ID %s not in WM (exception)", soi.objId.c_str());
-        }
-        //		}
-        //		else if(soi.status == STABLE)
-        //		{
-        //		  log("Have to wait until the object is processed");
-        //		  objToDelete.push(soi.objId);
-        //		  queuesNotEmpty->post();
-        //		}
-      }
+      op.execute();
     }
   }
 
@@ -292,6 +226,96 @@ void SOIFilter::runComponent()
     cvDestroyWindow("Color Filtering");
   }
 #endif
+}
+
+void SOIFilter::WmTask::exec_add()
+{
+  pSoiFilter->log("An add proto-object instruction");
+  SOIData &soi = pSoiFilter->SOIMap[soi_id];
+
+  pSoiFilter->log("SOI retrieved");
+
+  if(soi.status == STABLE)
+  {
+    soi.status = OBJECT;
+    try
+    { 
+      SOIPtr soiPtr = pSoiFilter->getMemoryEntry<VisionData::SOI>(soi.addr);
+
+      ProtoObjectPtr pobj = new ProtoObject;
+      pSoiFilter->m_snapper.m_LastProtoObject = pobj;
+      if(pSoiFilter->m_segmenter.segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points, pobj))
+      {
+        pobj->time = pSoiFilter->getCASTTime();
+        pobj->SOIList.push_back(soi.addr.id);
+
+        //m_LastProtoObject = pobj;
+        if (! pobj.get()) {
+          pSoiFilter->println(" *********** WTF ************");
+        }
+
+        string objId = pSoiFilter->newDataID();
+        pSoiFilter->addToWorkingMemory(objId, pobj);
+
+        soi.objectTime = pSoiFilter->getCASTTime();
+        soi.objId = objId;
+
+        pSoiFilter->log("A proto-object added ID %s",
+            objId.c_str(), soi.updCount);
+      }
+      else
+        pSoiFilter->log("Nothing segmented, no proto-object added");
+
+    }
+    catch (DoesNotExistOnWMException e)
+    {
+      pSoiFilter->log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
+    }
+  }
+  else if(soi.status == DELETED) {
+    pSoiFilter->log("SOI was removed before it could be processed");
+    try
+    { 
+      SOIPtr soiPtr = pSoiFilter->getMemoryEntry<VisionData::SOI>(soi.addr);
+    }
+    catch (DoesNotExistOnWMException e)
+    {
+      pSoiFilter->log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
+    }
+  }
+}
+
+void SOIFilter::WmTask::exec_delete()
+{
+  pSoiFilter->log("A delete proto-object instruction");
+  SOIData &soi = pSoiFilter->SOIMap[soi_id];
+
+  //		if(soi.status == OBJECT)
+  //		{
+  soi.status = DELETED;
+  try
+  {
+    if (soi.objId.size()>0 && pSoiFilter->existsOnWorkingMemory(soi.objId)) {
+      pSoiFilter->deleteFromWorkingMemory(soi.objId);
+
+      pSoiFilter->log("A proto-object deleted ID: %s ", soi.objId.c_str());
+    }
+    else
+      pSoiFilter->log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
+
+    //			SOIMap.erase(objToDelete.front());	  	
+  }
+  catch (DoesNotExistOnWMException e)
+  {
+    pSoiFilter->log("WARNING: Proto-object ID %s not in WM (exception)", soi.objId.c_str());
+  }
+  //		}
+  //		else if(soi.status == STABLE)
+  //		{
+  //		  log("Have to wait until the object is processed");
+  //		  objToDelete.push(soi.objId);
+  //		  queuesNotEmpty->post();
+  //		}
 }
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
@@ -317,7 +341,7 @@ void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
   {
     // SYNC: Lock the monitor
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-    m_TaskQueue.push_back(WmTask(WMO_ADD, data.addr.id));
+    m_TaskQueue.push_back(WmTask(this, WMO_ADD, data.addr.id));
   }
   m_TaskQueueMonitor.notify();
 }
@@ -343,7 +367,7 @@ void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
       {
         // SYNC: Lock the monitor
         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-        m_TaskQueue.push_back(WmTask(WMO_ADD, soi.addr.id));
+        m_TaskQueue.push_back(WmTask(this, WMO_ADD, soi.addr.id));
       }
       m_TaskQueueMonitor.notify();
 
@@ -371,7 +395,7 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
     {
       // SYNC: Lock the monitor
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-      m_TaskQueue.push_back(WmTask(WMO_DELETE, soi.addr.id));
+      m_TaskQueue.push_back(WmTask(this, WMO_DELETE, soi.addr.id));
     }
     m_TaskQueueMonitor.notify();
   }
