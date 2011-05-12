@@ -1,6 +1,12 @@
 /**
  * @author Alen Vrecko
  * @date July 2009
+ *
+ * Changes:
+ *   - May 2011 Marko Mahnic:
+ *     Refactored into multiple classes/files.
+ *   - May 2011 Marko Mahnic:
+ *     Refactored the task queue.
  */
 
 #include "SOIFilter.h"
@@ -19,7 +25,7 @@ extern "C"
 {
   cast::CASTComponentPtr newComponent()
   {
-	return new cast::SOIFilter();
+    return new cast::SOIFilter();
   }
 }
 
@@ -31,7 +37,6 @@ using namespace cdl;
 using namespace VisionData;
 using namespace Video;
 
-using namespace boost::interprocess;
 using namespace boost::posix_time;
 
 SOIFilter::SOIFilter()
@@ -210,7 +215,7 @@ void SOIFilter::runComponent()
               pobj->SOIList.push_back(soi.addr.id);
 
               //m_LastProtoObject = pobj;
-              if (pobj == NULL) {
+              if (! pobj.get()) {
                 println(" *********** WTF ************");
               }
 
@@ -378,6 +383,6 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
       soi.addr.id.c_str(), soi.updCount, time.s, time.us);		 
 }
 
-}
+} // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
 
