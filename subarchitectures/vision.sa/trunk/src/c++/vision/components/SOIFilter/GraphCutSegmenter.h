@@ -80,9 +80,7 @@ private:
   void drawHull(IplImage *img, const std::vector<CvPoint> projPoints,
       const std::vector<int> hull);
 
-
   std::vector<CvScalar> getSortedHlsList(std::vector<PointCloud::SurfacePoint> surfPoints);
-
 
   std::vector<unsigned char> graphCut(int width, int height, int num_labels,
       IplImage* costImg, IplImage* bgCostImg);
@@ -90,7 +88,6 @@ private:
   int getHlsDiff(std::vector<CvScalar> hlsList, CvScalar hls, int k);
 
   std::vector<int> getHueDiffList(std::vector<CvScalar> hslList, int k);
-
 
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
       std::vector<PointCloud::SurfacePoint> surfPoints, float hslmod,
