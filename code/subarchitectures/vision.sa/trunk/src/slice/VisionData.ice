@@ -18,10 +18,10 @@ module VisionData {
    * @author Kai Zhou
    */
   struct OneObj {
+    // 3D vector sequence, describing the plane ???
     Vector3Seq pPlane;
-	// 3D vector sequence, describing the plane ???
+    // 3D vector sequence, describing the object top surface ???
     Vector3Seq pTop;
-	// 3D vector sequence, describing the object top surface ???
   };
   sequence<OneObj> ObjSeq;
 
@@ -30,22 +30,22 @@ module VisionData {
    * @author Kai Zhou
    */
   class ConvexHull {
+    // Pose of the center of the convex hull
     cogx::Math::Pose3 center;
-	// Pose of the center of the convex hull
 
+    // points forming convex hull (stereo based) in camera coordinates
     Vector3Seq PointsSeq;
-	// points forming convex hull (stereo based) in camera coordinates
+    // cast time
     cast::cdl::CASTTime time;
-	// cast time
 
+    // distance between center and farthest point from center
     double radius;
-	// distance between center and farthest point from center
+    // ~ number of points in volume
     double density;
-	// ~ number of points in volume
+    // Objects on this plane
     ObjSeq Objects;
-	// Objects on this plane
+    // The estimated plane
     cogx::Math::Plane3 plane;
-	// The estimated plane
  };
 
   sequence<string> IdSeq;
@@ -195,12 +195,12 @@ module VisionData {
   enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
+    // for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
     string visualObjectID;
-	// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
+    // GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
     VertexSeq points;
-	// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
+    // pointOnModel[i] is true if points[i] hits the VisualObject
     BoolSeq pointOnModel;
-	// pointOnModel[i] is true if points[i] hits the VisualObject
   };
 
   /**
@@ -268,6 +268,10 @@ module VisionData {
    * characterisation.
    */
   class SOI {
+    // @attr sourceId identifies the hardware setup from which the SOI was generated.
+    // Currently PPO sets it to component-id.
+    string sourceId;
+
     cogx::Math::Sphere3 boundingSphere;
     cogx::Math::Box3 boundingBox;
     // time the SOI was last changed
@@ -359,6 +363,17 @@ module VisionData {
     DoubleSeq angleHistogram;
   };
 
+  // TODO: use SpatialData.ViewPoint instead
+  // (a constant height is assumed in SpatialData.ViewPoint; pose.z is interpreted as orientation)
+  class ViewPoint {
+    cogx::Math::Vector3 pose;
+    double tilt;
+    double probability;
+    string label;
+    int closestPlaceId;
+    int areaId;
+  };
+
   /**
    * Proto Object
    */
@@ -366,6 +381,9 @@ module VisionData {
 
     // List of source SOIs
     IdSeq SOIList;
+
+    // Position of the camera 
+    ViewPoint cameraLocation;
 
     // 2D image patch
     Video::Image image;

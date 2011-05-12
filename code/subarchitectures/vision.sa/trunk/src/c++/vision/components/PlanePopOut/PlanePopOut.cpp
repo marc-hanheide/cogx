@@ -1758,6 +1758,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Point
 {
 	//debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
 	VisionData::SOIPtr obs = new VisionData::SOI;
+	obs->sourceId = getComponentID();
 	obs->status = 0;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
 	obs->boundingBox.pos.y = obs->boundingSphere.pos.y = center.y;
