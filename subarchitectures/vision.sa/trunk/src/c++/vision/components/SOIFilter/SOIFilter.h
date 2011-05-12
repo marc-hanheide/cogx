@@ -8,16 +8,8 @@
 #ifndef SOI_FILTER_H
 #define SOI_FILTER_H
 
-#include <vector>
-#include <string>
-#include <queue>
-#include <map>
-#include <algorithm>
-
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <boost/interprocess/sync/named_semaphore.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "GraphCutSegmenter.h"
+#include "Snapper.h"
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
@@ -31,9 +23,17 @@
 #include <CDisplayClient.hpp>
 #endif
 
-#include "GraphCutSegmenter.h"
-#include "Snapper.h"
+#include <vector>
+#include <string>
+#include <queue>
+#include <map>
+#include <algorithm>
 
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <IceUtil/IceUtil.h>
 namespace cast
 {
 
@@ -103,10 +103,19 @@ private:
   
   std::map<std::string, SOIData> SOIMap;
   
-  std::queue<std::string> objToAdd;
-  std::queue<std::string> objToDelete;
-
-  boost::interprocess::named_semaphore* queuesNotEmpty;
+  enum WmOperation { WMO_ADD, WMO_DELETE };
+  struct WmTask
+  {
+    WmOperation operation;
+    std::string soi_id;
+    WmTask(WmOperation op, std::string wmid)
+    {
+      operation = op;
+      soi_id = wmid; // Current SA is implied
+    }
+  };
+  std::deque<WmTask> m_TaskQueue;
+  IceUtil::Monitor<IceUtil::Mutex> m_TaskQueueMonitor;
 
 private:
 #ifdef FEAT_VISUALIZATION
@@ -120,8 +129,6 @@ private:
   };
   CSfDisplayClient m_display;
 #endif
-  //void saveSnapshot();
-  //bool hasSnapFlag(char ch);
 
 private:
   /**
