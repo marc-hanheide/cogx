@@ -101,10 +101,6 @@ void SOIFilter::start()
 
   startPCCServerCommunication(*this);
 
-  char *name = "filterSemaphore";
-  named_semaphore(open_or_create, name, 0);
-  queuesNotEmpty = new named_semaphore(open_only, name);
-
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
@@ -156,17 +152,46 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-    ptime t(second_clock::universal_time() + seconds(2));
-
-    if (queuesNotEmpty->timed_wait(t))
+    std::deque<WmTask> tasks;
+    tasks.clear();
     {
-      log("Got something in my queues");
+      // SYNC: Lock the monitor
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
 
-      if(!objToAdd.empty())
-      { 
+      // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
+      if (m_TaskQueue.size() < 1)
+        m_TaskQueueMonitor.timedWait(IceUtil::Time::seconds(2));
+
+      // SYNC: Continue with a locked monitor
+
+#if 0
+      // Process whole queue at once
+      tasks = m_TaskQueue;
+      m_TaskQueue.clear();
+#else
+      // Process queued items one by one
+      if (m_TaskQueue.size() > 0) {
+        tasks.push_back(m_TaskQueue.front());
+        m_TaskQueue.pop_front();
+      }
+#endif
+#if 0
+      if (tasks.size() < 1)
+        log("Timeout");
+#endif
+
+      // SYNC: unlock the monitor when going out of scope
+    }
+
+    while (!tasks.empty())
+    { 
+      WmTask op = tasks.front();
+      tasks.pop_front();
+
+      if (op.operation == WMO_ADD) {
 
         log("An add proto-object instruction");
-        SOIData &soi = SOIMap[objToAdd.front()];
+        SOIData &soi = SOIMap[op.soi_id];
 
         log("SOI retrieved");
 
@@ -218,13 +243,10 @@ void SOIFilter::runComponent()
             log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
           }
         }
-
-        objToAdd.pop();
       }
-      else if(!objToDelete.empty())
-      {
+      else if (op.operation == WMO_DELETE) {
         log("A delete proto-object instruction");
-        SOIData &soi = SOIMap[objToDelete.front()];
+        SOIData &soi = SOIMap[op.soi_id];
 
         //		if(soi.status == OBJECT)
         //		{
@@ -252,18 +274,9 @@ void SOIFilter::runComponent()
         //		  objToDelete.push(soi.objId);
         //		  queuesNotEmpty->post();
         //		}
-
-        objToDelete.pop(); 
       }
-      else
-        log("Timeout"); 
     }
-    //      
   }
-
-  log("Removing semaphore ...");
-  queuesNotEmpty->remove("filterSemaphore");
-  delete queuesNotEmpty;
 
 #ifndef FEAT_VISUALIZATION
   if (doDisplay)
@@ -296,10 +309,12 @@ void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
   log("An object candidate ID %s at %u",
       data.addr.id.c_str(), data.addTime.s, data.addTime.us);
 
-  objToAdd.push(data.addr.id);  
-
-  queuesNotEmpty->post();
-
+  {
+    // SYNC: Lock the monitor
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+    m_TaskQueue.push_back(WmTask(WMO_ADD, data.addr.id));
+  }
+  m_TaskQueueMonitor.notify();
 }
 
 void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
@@ -317,12 +332,16 @@ void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
     {  	  
       soi.status= STABLE;
       soi.stableTime = time;
-      objToAdd.push(soi.addr.id);
 
       log("An object candidate ID %s count %u at %u ",
           soi.addr.id.c_str(), soi.updCount, soi.stableTime.s, soi.stableTime.us);
+      {
+        // SYNC: Lock the monitor
+        IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+        m_TaskQueue.push_back(WmTask(WMO_ADD, soi.addr.id));
+      }
+      m_TaskQueueMonitor.notify();
 
-      queuesNotEmpty->post();
     }
 }
 
@@ -344,8 +363,12 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
 
   if(soi.status == OBJECT) // || soi.status == STABLE)
   {
-    objToDelete.push(soi.addr.id);
-    queuesNotEmpty->post();
+    {
+      // SYNC: Lock the monitor
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+      m_TaskQueue.push_back(WmTask(WMO_DELETE, soi.addr.id));
+    }
+    m_TaskQueueMonitor.notify();
   }
   else
     soi.status= DELETED;
