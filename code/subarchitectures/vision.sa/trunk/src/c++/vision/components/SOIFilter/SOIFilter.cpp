@@ -3,10 +3,10 @@
  * @date July 2009
  *
  * Changes:
- *   - May 2011 Marko Mahnic:
- *     Refactored into multiple classes/files.
- *   - May 2011 Marko Mahnic:
- *     Refactored the task queue.
+ *   * May 2011 Marko Mahnic:
+ *     - Refactored into multiple classes/files.
+ *     - Refactored the task queue.
+ *     - Two-layered vision (coarse + precise).
  */
 
 #include "SOIFilter.h"
@@ -38,6 +38,9 @@ using namespace VisionData;
 using namespace Video;
 
 using namespace boost::posix_time;
+
+long long SOIFilter::g_order = 0;
+IceUtil::Monitor<IceUtil::Mutex> SOIFilter::g_OrderMonitor;
 
 SOIFilter::SOIFilter()
 {
@@ -179,84 +182,29 @@ void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  SOIPtr obj =
-    getMemoryEntry<VisionData::SOI>(_wmc.address);
-
-  SOIData data;
-
-  data.addr = _wmc.address;
-  data.addTime = obj->time;
-  data.stableTime = getCASTTime();
-  data.updCount = 0;
-  data.status = STABLE;
-  //  data.objId = "";
-
-  SOIMap.insert(make_pair(data.addr.id, data));
-
-  debug("A new SOI ID %s ", data.addr.id.c_str());
-  log("An object candidate ID %s at %u",
-      data.addr.id.c_str(), data.addTime.s, data.addTime.us);
-
   {
-    // SYNC: Lock the monitor
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-    m_TaskQueue.push_back(new WmTask(this, WMO_ADD, data.addr.id));
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+    m_EventQueue.push_back(new WmEvent(cdl::ADD, _wmc));
   }
-  m_TaskQueueMonitor.notify();
+  m_EventQueueMonitor.notify();
 }
 
 void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
 {
-
-  SOIData &soi = SOIMap[_wmc.address.id];
-
-  CASTTime time=getCASTTime();
-  soi.deleteTime = time;
-
-  if(soi.status == OBJECT) // || soi.status == STABLE)
   {
-    {
-      // SYNC: Lock the monitor
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-      m_TaskQueue.push_back(new WmTask(this, WMO_DELETE, soi.addr.id));
-    }
-    m_TaskQueueMonitor.notify();
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+    m_EventQueue.push_back(new WmEvent(cdl::DELETE, _wmc));
   }
-  else
-    soi.status= DELETED;
-
-
-  debug("Detected SOI deletion ID %s count %u at %u:%u",
-      soi.addr.id.c_str(), soi.updCount, time.s, time.us);		 
+  m_EventQueueMonitor.notify();
 }
 
-// Y2: unused, PPO generates only stable SOIs, well ... it should ...
 void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisionData::SOIPtr obj =
-    getMemoryEntry<VisionData::SOI>(_wmc.address);
-
-  SOIData &soi = SOIMap[_wmc.address.id];
-  soi.updCount++;
-
-  CASTTime time=getCASTTime();
-
-  if(soi.status == CANDIDATE)
-    if(soi.updCount >= updateThr && time.s > soi.addTime.s) // a very rudimental check for now
-    {  	  
-      soi.status= STABLE;
-      soi.stableTime = time;
-
-      log("An object candidate ID %s count %u at %u ",
-          soi.addr.id.c_str(), soi.updCount, soi.stableTime.s, soi.stableTime.us);
-      {
-        // SYNC: Lock the monitor
-        IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-        m_TaskQueue.push_back(new WmTask(this, WMO_ADD, soi.addr.id));
-      }
-      m_TaskQueueMonitor.notify();
-
-    }
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+    m_EventQueue.push_back(new WmEvent(cdl::OVERWRITE, _wmc));
+  }
+  m_EventQueueMonitor.notify();
 }
 
 // XXX: Added to saveSnapshot with SurfacePatches
@@ -269,29 +217,31 @@ void SOIFilter::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::runComponent()
 {
+  WmTaskExecutor worker(this);
+
   while(isRunning())
   {
-    std::deque<WmTask*> tasks;
+    std::deque<WmEvent*> tasks;
     tasks.clear();
     {
       // SYNC: Lock the monitor
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
 
       // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
-      if (m_TaskQueue.size() < 1)
-        m_TaskQueueMonitor.timedWait(IceUtil::Time::seconds(2));
+      if (m_EventQueue.size() < 1)
+        m_EventQueueMonitor.timedWait(IceUtil::Time::seconds(2));
 
       // SYNC: Continue with a locked monitor
 
 #if 0
       // Process whole queue at once
-      tasks = m_TaskQueue;
-      m_TaskQueue.clear();
+      tasks = m_EventQueue;
+      m_EventQueue.clear();
 #else
       // Process queued items one by one
-      if (m_TaskQueue.size() > 0) {
-        tasks.push_back(m_TaskQueue.front());
-        m_TaskQueue.pop_front();
+      if (m_EventQueue.size() > 0) {
+        tasks.push_back(m_EventQueue.front());
+        m_EventQueue.pop_front();
       }
 #endif
       // SYNC: unlock the monitor when going out of scope
@@ -301,10 +251,10 @@ void SOIFilter::runComponent()
 
     while (!tasks.empty())
     { 
-      WmTask* ptask = tasks.front();
+      WmEvent* pevent = tasks.front();
       tasks.pop_front();
-      ptask->execute();
-      delete ptask;
+      worker.handle(pevent);
+      delete pevent;
     }
   }
 
@@ -327,103 +277,67 @@ void SOIFilter::runComponent()
  *      to (SOI matching by position), then we update the PO and create the VO.
  * TODO: Decide how to process stuff when there is only a single source ...
  */
-void SOIFilter::WmTask::exec_add()
+void SOIFilter::WmTaskExecutor::handle_add_soi(WmEvent* pEvent)
 {
-}
+  SOIPtr psoi =
+    pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
 
-void SOIFilter::WmTask::exec_delete()
-{
-}
+  SOIData soi;
+  soi.addr = pEvent->wmc.address;
+  soi.addTime = psoi->time;
+  soi.status = STABLE;
+  soi.stableTime = pSoiFilter->getCASTTime();
+  soi.updCount = 0;
+  pSoiFilter->SOIMap.insert(make_pair(soi.addr.id, soi));
 
-
-void SOIFilter::WmTask_Year2::exec_add()
-{
-  pSoiFilter->log("An add proto-object instruction");
-  SOIData &soi = pSoiFilter->SOIMap[soi_id];
-
-  pSoiFilter->log("SOI retrieved");
-
-  if(soi.status == STABLE)
+  if (psoi->sourceId == pSoiFilter->m_coarseSource)
   {
-    soi.status = OBJECT;
-    try
-    { 
-      SOIPtr soiPtr = pSoiFilter->getMemoryEntry<VisionData::SOI>(soi.addr);
+    ProtoObjectPtr pobj = new ProtoObject();
+    pSoiFilter->m_snapper.m_LastProtoObject = pobj;
+    string objId = pSoiFilter->newDataID();
 
-      ProtoObjectPtr pobj = new ProtoObject;
-      pSoiFilter->m_snapper.m_LastProtoObject = pobj;
-      if(pSoiFilter->m_segmenter.segmentObject(soiPtr, pobj->image, pobj->mask, pobj->points, pobj))
-      {
-        pobj->time = pSoiFilter->getCASTTime();
-        pobj->SOIList.push_back(soi.addr.id);
+    // TODO: Calculate the current and the desired View Cone
 
-        //m_LastProtoObject = pobj;
-        if (! pobj.get()) {
-          pSoiFilter->println(" *********** WTF ************");
-        }
+    pSoiFilter->addToWorkingMemory(objId, pobj);
 
-        string objId = pSoiFilter->newDataID();
-        pSoiFilter->addToWorkingMemory(objId, pobj);
+    // Now it is up to the planner to create a plan to move the robot
+    // The task contains: PO, target VC
 
-        soi.objectTime = pSoiFilter->getCASTTime();
-        soi.objId = objId;
-
-        pSoiFilter->log("A proto-object added ID %s",
-            objId.c_str(), soi.updCount);
-      }
-      else
-        pSoiFilter->log("Nothing segmented, no proto-object added");
-
-    }
-    catch (DoesNotExistOnWMException e)
-    {
-      pSoiFilter->log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
-    }
+    // Simulation of the plan:
+    // TODO: Post MovementTask(PO, VC)
+    // onMovementTask_Complete:
+    //    TODO: Post VisualAnalysisTask(PO)
+    //
+    // Actual work performed here:
+    //    onVisualAnalysisTask_Accepted: -- this is implemented in SOIF
+    //       TODO: Remember the PO, the desired VC
+    //       TODO: calculate the position of actual VC in relation to desired VC
+    //       on_handle_FineSoi:
+    //          TODO: wait for SOI(s) at the location of the *desired* VC center
+    //          TODO: update PO with data from SOI(s)
+    //
+    // When the PO is updated, another component may create a VO
   }
-  else if(soi.status == DELETED) {
-    pSoiFilter->log("SOI was removed before it could be processed");
-    try
-    { 
-      SOIPtr soiPtr = pSoiFilter->getMemoryEntry<VisionData::SOI>(soi.addr);
-    }
-    catch (DoesNotExistOnWMException e)
-    {
-      pSoiFilter->log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
-    }
+  else if (psoi->sourceId == pSoiFilter->m_fineSource)
+  {
+    // If the SOI is in center of screen, find the PO we want to analyze and 
+    // 'promote' the PO. Then somebody will have to generate a VO.
+    //   - check if we have a pending recognition task
+    //   - check if the robot is in the desired position
+    //   - assume the PO is in the center of the screen <-- the desired position is reached
   }
 }
 
-void SOIFilter::WmTask_Year2::exec_delete()
+void SOIFilter::WmTaskExecutor::handle_delete_soi(WmEvent* pEvent)
 {
-  pSoiFilter->log("A delete proto-object instruction");
-  SOIData &soi = pSoiFilter->SOIMap[soi_id];
-
-  //		if(soi.status == OBJECT)
-  //		{
+  const WorkingMemoryChange &wmc = pEvent->wmc;
+  SOIData &soi = pSoiFilter->SOIMap[wmc.address.id];
   soi.status = DELETED;
-  try
-  {
-    if (soi.objId.size()>0 && pSoiFilter->existsOnWorkingMemory(soi.objId)) {
-      pSoiFilter->deleteFromWorkingMemory(soi.objId);
 
-      pSoiFilter->log("A proto-object deleted ID: %s ", soi.objId.c_str());
-    }
-    else
-      pSoiFilter->log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
-
-    //			SOIMap.erase(objToDelete.front());	  	
-  }
-  catch (DoesNotExistOnWMException e)
+  if (soi.objId.size() > 0)
   {
-    pSoiFilter->log("WARNING: Proto-object ID %s not in WM (exception)", soi.objId.c_str());
+    // TODO: We have to load the PO and save it again. A lot of transfer !!!
   }
-  //		}
-  //		else if(soi.status == STABLE)
-  //		{
-  //		  log("Have to wait until the object is processed");
-  //		  objToDelete.push(soi.objId);
-  //		  queuesNotEmpty->post();
-  //		}
 }
 
 

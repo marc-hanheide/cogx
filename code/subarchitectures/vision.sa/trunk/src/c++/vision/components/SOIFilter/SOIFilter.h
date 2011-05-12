@@ -83,8 +83,9 @@ private:
    * status of SOI persistency
    */
   enum SOIStatus {
-    CANDIDATE, //
+    CANDIDATE, // Used only in Y1
     STABLE,
+    PROTOOBJECT,
     OBJECT,
     DELETED
   };
@@ -98,6 +99,7 @@ private:
     // 	VisionData::SurfacePointsSeq points;
     int updCount;
     std::string objId;
+    std::string sourceId;
     cdl::CASTTime addTime;
     cdl::CASTTime stableTime;
     cdl::CASTTime objectTime;
@@ -112,47 +114,47 @@ private:
 
   std::map<std::string, SOIData> SOIMap;
 
-  enum WmOperation { WMO_ADD, WMO_DELETE };
-  // internally queued task
-  class WmTask
+  static long long g_order;
+  static IceUtil::Monitor<IceUtil::Mutex> g_OrderMonitor;
+  static long long getEventOrder()
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(g_OrderMonitor);
+    ++g_order;
+    return g_order;
+  }
+  struct WmEvent
+  {
+    int  change; // One of cdl ADD, OVERWRITE, DELETE
+    long long order;
+    cdl::WorkingMemoryChange wmc;
+    WmEvent(int changeType, const cdl::WorkingMemoryChange& _wmc)
+    {
+      change = changeType;
+      wmc = wmc;
+      order = SOIFilter::getEventOrder();
+    }
+  };
+  std::deque<WmEvent*> m_EventQueue;
+  IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
+
+  class WmTaskExecutor
   {
   protected:
     SOIFilter* pSoiFilter;
-    WmOperation operation;
-    std::string soi_id;
-    virtual void exec_add();
-    virtual void exec_delete();
+    virtual void handle_add_soi(WmEvent *pEvent);
+    virtual void handle_delete_soi(WmEvent *pEvent);
   public:
-    WmTask(SOIFilter* soif, WmOperation op, std::string wmid)
+    WmTaskExecutor(SOIFilter* soif)
     {
       pSoiFilter = soif;
-      operation = op;
-      soi_id = wmid; // Current SA is implied
     }
-    virtual void execute()
+    virtual void handle(WmEvent *pEvent)
     {
-      if (operation == WMO_ADD) exec_add();
-      else if (operation == WMO_DELETE) exec_delete();
+      if (pEvent->change == cdl::ADD) handle_add_soi(pEvent);
+      else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
     }
   };
  
-  // In Year 2 there was only a single source of SOIs. We can use a similar
-  // strategy when all the SOIs come from a single source.
-  class WmTask_Year2: public WmTask
-  {
-  protected:
-    virtual void exec_add();
-    virtual void exec_delete();
-  public:
-    WmTask_Year2(SOIFilter* soif, WmOperation op, std::string wmid)
-      : WmTask(soif, op, wmid)
-    {
-    }
-  };
-
-  std::deque<WmTask*> m_TaskQueue;
-  IceUtil::Monitor<IceUtil::Mutex> m_TaskQueueMonitor;
-
 private:
 #ifdef FEAT_VISUALIZATION
   class CSfDisplayClient: public cogx::display::CDisplayClient
