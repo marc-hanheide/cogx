@@ -476,7 +476,7 @@ void VisualLearner::updateWmModelStatus()
       static void writeWmStatus(VisualLearner* pComponent,
             VisualConceptModelStatusPtr& pStatus, cdl::WorkingMemoryAddress& addr)
       {
-         if (pStatus == NULL) {
+         if (! pStatus) {
             pComponent->log("Trying to write NULL VisualConceptModelStatusPtr to WM ... %s",
                   descAddr(addr).c_str());
             return;
