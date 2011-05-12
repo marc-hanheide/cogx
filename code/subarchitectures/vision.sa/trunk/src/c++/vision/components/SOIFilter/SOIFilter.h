@@ -43,31 +43,39 @@ class SOIFilter : public ManagedComponent,
 private:
 
   /**
-  * Which camera to get images from
-  */
+   * Which camera to get images from
+   */
   int camId;
   /**
    * component ID of the video server to connect to
    */
   std::string videoServerName;
   std::string stereoServerName;
+
+  /**
+   * Identifiers of SOI sources.
+   */
+  std::string m_coarseSource;  // periferial vision (eg. Kinect)
+  std::string m_fineSource;    // detailed vision (eg. stereo gear)
+  bool m_bSameSource;
+
   /**
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
-  
+
   /**
-  * Time and update thresholds
-  *(part of the ROI persistency criteria)
-  */
+   * Time and update thresholds
+   *(part of the ROI persistency criteria)
+   */
   unsigned timeThr;
   int updateThr;
   bool doDisplay;
-  
+
   /**
-  * Segmentation tolerances for distance and hsl
-  *(gaussian dispersion)
-  */
+   * Segmentation tolerances for distance and hsl
+   *(gaussian dispersion)
+   */
   GraphCutSegmenter m_segmenter;
   Snapper m_snapper;
 
@@ -75,43 +83,55 @@ private:
    * status of SOI persistency
    */
   enum SOIStatus {
-  	CANDIDATE, //
-  	STABLE,
-  	OBJECT,
-  	DELETED };
-  
+    CANDIDATE, //
+    STABLE,
+    OBJECT,
+    DELETED
+  };
+
   /** 
    * SOI data, contains also data used to evaluate SOI persistency
    */	
   struct SOIData {
-  	cdl::WorkingMemoryAddress addr;
-  	SOIStatus status;
- // 	VisionData::SurfacePointsSeq points;
-  	int updCount;
-  	std::string objId;
-  	cdl::CASTTime addTime;
-  	cdl::CASTTime stableTime;
-  	cdl::CASTTime objectTime;
-  	cdl::CASTTime deleteTime;
+    cdl::WorkingMemoryAddress addr;
+    SOIStatus status;
+    // 	VisionData::SurfacePointsSeq points;
+    int updCount;
+    std::string objId;
+    cdl::CASTTime addTime;
+    cdl::CASTTime stableTime;
+    cdl::CASTTime objectTime;
+    cdl::CASTTime deleteTime;
   };
-  
+
   struct colorHLS {
-  int h;
-  float l;
-  float s;
+    int h;
+    float l;
+    float s;
   };
-  
+
   std::map<std::string, SOIData> SOIMap;
-  
+
   enum WmOperation { WMO_ADD, WMO_DELETE };
-  struct WmTask
+  // internally queued task
+  class WmTask
   {
+    SOIFilter* pSoiFilter;
     WmOperation operation;
     std::string soi_id;
-    WmTask(WmOperation op, std::string wmid)
+  public:
+    WmTask(SOIFilter* soif, WmOperation op, std::string wmid)
     {
+      pSoiFilter = soif;
       operation = op;
       soi_id = wmid; // Current SA is implied
+    }
+    void exec_add();
+    void exec_delete();
+    void execute()
+    {
+      if (operation == WMO_ADD) exec_add();
+      else if (operation == WMO_DELETE) exec_delete();
     }
   };
   std::deque<WmTask> m_TaskQueue;
@@ -135,19 +155,19 @@ private:
    * callback function called whenever a new SOI appears
    */
   void newSOI(const cdl::WorkingMemoryChange & _wmc);
-  
+
   /**
    * callback function called whenever a SOI changes
    */
   void updatedSOI(const cdl::WorkingMemoryChange & _wmc);
-  
+
   /**
    * callback function called whenever a SOI is deleted
    */
   void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
 
   void updatedProtoObject(const cdl::WorkingMemoryChange & _wmc);
-  
+
 
 protected:
   /**
@@ -162,7 +182,7 @@ protected:
    * called by the framework to start compnent run loop
    */
   virtual void runComponent();
- 
+
 public:
   SOIFilter();
   virtual ~SOIFilter() {}
