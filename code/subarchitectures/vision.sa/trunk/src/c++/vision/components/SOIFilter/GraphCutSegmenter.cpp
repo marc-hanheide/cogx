@@ -130,7 +130,7 @@ void GraphCutSegmenter::project3DPoints(const vector<SurfacePoint> surfPoints, c
   // calculate projected points
   for(size_t i = 0; i < n; i++)
   {
-    cogx::Math::Vector2 p = pPcClient->projectPoint(cam, surfPoints[i].p);
+    cogx::Math::Vector2 p = projectPoint(cam, surfPoints[i].p);
 
     /// HACK: artificially shrink cloud point
     //int x = (p.x - roi.rect.pos.x)*ratio*0.8 + roi.rect.width/2;
@@ -836,7 +836,7 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
     rectLarge.width  = segMask.width;  // == rect.width  * inputScale
     rectLarge.height = segMask.height; // == rect.height * inputScale
 
-    if (pProto != NULL) { // (review2010)
+    if (pProto.get()) { // (review2010)
       pProto->sourceImageSize.x = imageLarge.width;
       pProto->sourceImageSize.y = imageLarge.height;
       pProto->imageOrigin.x = rectLarge.x;
