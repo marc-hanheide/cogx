@@ -116,9 +116,12 @@ private:
   // internally queued task
   class WmTask
   {
+  protected:
     SOIFilter* pSoiFilter;
     WmOperation operation;
     std::string soi_id;
+    virtual void exec_add();
+    virtual void exec_delete();
   public:
     WmTask(SOIFilter* soif, WmOperation op, std::string wmid)
     {
@@ -126,15 +129,28 @@ private:
       operation = op;
       soi_id = wmid; // Current SA is implied
     }
-    void exec_add();
-    void exec_delete();
-    void execute()
+    virtual void execute()
     {
       if (operation == WMO_ADD) exec_add();
       else if (operation == WMO_DELETE) exec_delete();
     }
   };
-  std::deque<WmTask> m_TaskQueue;
+ 
+  // In Year 2 there was only a single source of SOIs. We can use a similar
+  // strategy when all the SOIs come from a single source.
+  class WmTask_Year2: public WmTask
+  {
+  protected:
+    virtual void exec_add();
+    virtual void exec_delete();
+  public:
+    WmTask_Year2(SOIFilter* soif, WmOperation op, std::string wmid)
+      : WmTask(soif, op, wmid)
+    {
+    }
+  };
+
+  std::deque<WmTask*> m_TaskQueue;
   IceUtil::Monitor<IceUtil::Mutex> m_TaskQueueMonitor;
 
 private:

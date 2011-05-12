@@ -177,11 +177,101 @@ void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event
 }
 #endif
 
+void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
+{
+  SOIPtr obj =
+    getMemoryEntry<VisionData::SOI>(_wmc.address);
+
+  SOIData data;
+
+  data.addr = _wmc.address;
+  data.addTime = obj->time;
+  data.stableTime = getCASTTime();
+  data.updCount = 0;
+  data.status = STABLE;
+  //  data.objId = "";
+
+  SOIMap.insert(make_pair(data.addr.id, data));
+
+  debug("A new SOI ID %s ", data.addr.id.c_str());
+  log("An object candidate ID %s at %u",
+      data.addr.id.c_str(), data.addTime.s, data.addTime.us);
+
+  {
+    // SYNC: Lock the monitor
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+    m_TaskQueue.push_back(new WmTask(this, WMO_ADD, data.addr.id));
+  }
+  m_TaskQueueMonitor.notify();
+}
+
+void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
+{
+
+  SOIData &soi = SOIMap[_wmc.address.id];
+
+  CASTTime time=getCASTTime();
+  soi.deleteTime = time;
+
+  if(soi.status == OBJECT) // || soi.status == STABLE)
+  {
+    {
+      // SYNC: Lock the monitor
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+      m_TaskQueue.push_back(new WmTask(this, WMO_DELETE, soi.addr.id));
+    }
+    m_TaskQueueMonitor.notify();
+  }
+  else
+    soi.status= DELETED;
+
+
+  debug("Detected SOI deletion ID %s count %u at %u:%u",
+      soi.addr.id.c_str(), soi.updCount, time.s, time.us);		 
+}
+
+// Y2: unused, PPO generates only stable SOIs, well ... it should ...
+void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
+{
+  VisionData::SOIPtr obj =
+    getMemoryEntry<VisionData::SOI>(_wmc.address);
+
+  SOIData &soi = SOIMap[_wmc.address.id];
+  soi.updCount++;
+
+  CASTTime time=getCASTTime();
+
+  if(soi.status == CANDIDATE)
+    if(soi.updCount >= updateThr && time.s > soi.addTime.s) // a very rudimental check for now
+    {  	  
+      soi.status= STABLE;
+      soi.stableTime = time;
+
+      log("An object candidate ID %s count %u at %u ",
+          soi.addr.id.c_str(), soi.updCount, soi.stableTime.s, soi.stableTime.us);
+      {
+        // SYNC: Lock the monitor
+        IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
+        m_TaskQueue.push_back(new WmTask(this, WMO_ADD, soi.addr.id));
+      }
+      m_TaskQueueMonitor.notify();
+
+    }
+}
+
+// XXX: Added to saveSnapshot with SurfacePatches
+void SOIFilter::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  // XXX: ASSUME it's the same protoobject
+  m_snapper.m_LastProtoObject = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  m_snapper.saveSnapshot();
+}
+
 void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-    std::deque<WmTask> tasks;
+    std::deque<WmTask*> tasks;
     tasks.clear();
     {
       // SYNC: Lock the monitor
@@ -211,9 +301,10 @@ void SOIFilter::runComponent()
 
     while (!tasks.empty())
     { 
-      WmTask op = tasks.front();
+      WmTask* ptask = tasks.front();
       tasks.pop_front();
-      op.execute();
+      ptask->execute();
+      delete ptask;
     }
   }
 
@@ -228,7 +319,24 @@ void SOIFilter::runComponent()
 #endif
 }
 
+/*
+ * TODO: 2 step VisualObject generation.
+ *   1. If the SOI comes from coarseSource, create a proto-object with the
+ *      desired ViewCones
+ *   2. If the SOI comes from fineSource, we need to know which PO it belongs
+ *      to (SOI matching by position), then we update the PO and create the VO.
+ * TODO: Decide how to process stuff when there is only a single source ...
+ */
 void SOIFilter::WmTask::exec_add()
+{
+}
+
+void SOIFilter::WmTask::exec_delete()
+{
+}
+
+
+void SOIFilter::WmTask_Year2::exec_add()
 {
   pSoiFilter->log("An add proto-object instruction");
   SOIData &soi = pSoiFilter->SOIMap[soi_id];
@@ -285,7 +393,7 @@ void SOIFilter::WmTask::exec_add()
   }
 }
 
-void SOIFilter::WmTask::exec_delete()
+void SOIFilter::WmTask_Year2::exec_delete()
 {
   pSoiFilter->log("A delete proto-object instruction");
   SOIData &soi = pSoiFilter->SOIMap[soi_id];
@@ -318,94 +426,6 @@ void SOIFilter::WmTask::exec_delete()
   //		}
 }
 
-void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
-{
-  SOIPtr obj =
-    getMemoryEntry<VisionData::SOI>(_wmc.address);
-
-  SOIData data;
-
-  data.addr = _wmc.address;
-  data.addTime = obj->time;
-  data.stableTime = getCASTTime();
-  data.updCount = 0;
-  data.status = STABLE;
-  //  data.objId = "";
-
-  SOIMap.insert(make_pair(data.addr.id, data));
-
-  debug("A new SOI ID %s ", data.addr.id.c_str());
-  log("An object candidate ID %s at %u",
-      data.addr.id.c_str(), data.addTime.s, data.addTime.us);
-
-  {
-    // SYNC: Lock the monitor
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-    m_TaskQueue.push_back(WmTask(this, WMO_ADD, data.addr.id));
-  }
-  m_TaskQueueMonitor.notify();
-}
-
-void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
-{
-  VisionData::SOIPtr obj =
-    getMemoryEntry<VisionData::SOI>(_wmc.address);
-
-  SOIData &soi = SOIMap[_wmc.address.id];
-  soi.updCount++;
-
-  CASTTime time=getCASTTime();
-
-  if(soi.status == CANDIDATE)
-    if(soi.updCount >= updateThr && time.s > soi.addTime.s) // a very rudimental check for now
-    {  	  
-      soi.status= STABLE;
-      soi.stableTime = time;
-
-      log("An object candidate ID %s count %u at %u ",
-          soi.addr.id.c_str(), soi.updCount, soi.stableTime.s, soi.stableTime.us);
-      {
-        // SYNC: Lock the monitor
-        IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-        m_TaskQueue.push_back(WmTask(this, WMO_ADD, soi.addr.id));
-      }
-      m_TaskQueueMonitor.notify();
-
-    }
-}
-
-// XXX: Added to saveSnapshot with SurfacePatches
-void SOIFilter::updatedProtoObject(const cdl::WorkingMemoryChange & _wmc)
-{
-  // XXX: ASSUME it's the same protoobject
-  m_snapper.m_LastProtoObject = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  m_snapper.saveSnapshot();
-}
-
-void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
-{
-
-  SOIData &soi = SOIMap[_wmc.address.id];
-
-  CASTTime time=getCASTTime();
-  soi.deleteTime = time;
-
-  if(soi.status == OBJECT) // || soi.status == STABLE)
-  {
-    {
-      // SYNC: Lock the monitor
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_TaskQueueMonitor);
-      m_TaskQueue.push_back(WmTask(this, WMO_DELETE, soi.addr.id));
-    }
-    m_TaskQueueMonitor.notify();
-  }
-  else
-    soi.status= DELETED;
-
-
-  debug("Detected SOI deletion ID %s count %u at %u:%u",
-      soi.addr.id.c_str(), soi.updCount, time.s, time.us);		 
-}
 
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
