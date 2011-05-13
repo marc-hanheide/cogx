@@ -10,13 +10,12 @@
 #include <string>
 #include <opencv/cv.h>
 #include <opencv/cv.hpp>
-//#include <cogxmath.h>
+#include <cogxmath.h>
 
 namespace cast
 {
 
 using namespace std;
-using namespace cogx::Math;
 
 /**
  * | u |     | X |
@@ -55,7 +54,7 @@ public:
     double k1, k2, k3, t1, t2;
     double proj[3][4];
     double rect[3][3];
-    Pose3 pose;
+    cogx::Math::Pose3 pose;
     MonoParam()
     {
       width = height = 0;
@@ -71,7 +70,7 @@ public:
   };
   /// parameters specific to LEFT and RIGHT camera
   MonoParam cam[2];
-  Pose3 pose;
+  cogx::Math::Pose3 pose;
   /// remaping images for simultaneous undistortion and rectification
   IplImage *mapx[2], *mapy[2];
   double maxDistortion;
@@ -89,8 +88,9 @@ public:
 public:
   StereoCamera();
   ~StereoCamera();
+  void ReadFromXML(const string &filename, int side, bool usePose);
   bool ReadSVSCalib(const std::string &calibfile);
-  void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
+  void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side, int imgWidth = 0);
   bool ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
   void DistortNormalisedPoint(double u, double d, double &ud, double &vd, int side);
   void DistortPoint(double u, double d, double &ud, double &vd, int side);
@@ -104,7 +104,6 @@ public:
   void SetInputImageSize(CvSize size);
   void SetMatchingAlgoritm(MatchingAlgorithm algo);
   void CalculateDisparity(const IplImage *left, const IplImage *right, IplImage *disp);
-  
   cv::Mat GetIntrinsic(unsigned side);
 };
 
