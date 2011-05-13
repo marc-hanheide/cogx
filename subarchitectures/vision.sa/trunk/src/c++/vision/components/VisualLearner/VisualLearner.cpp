@@ -458,7 +458,7 @@ void VisualLearner::updateWmModelStatus()
          if (addr.id.length() != 0 && addr.subarchitecture.length() != 0) {
             try{
                pStatus = pComponent->getMemoryEntry<VisualConceptModelStatus>(addr);
-               if (pStatus != NULL) {
+               if (pStatus.get()) {
                   pComponent->debug("VisualConceptModelStatus read ... %s", descAddr(addr).c_str());
                   return;
                }
