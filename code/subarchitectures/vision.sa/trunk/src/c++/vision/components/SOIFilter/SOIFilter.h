@@ -10,30 +10,32 @@
 
 #include "GraphCutSegmenter.h"
 #include "Snapper.h"
+#include "../../VisionUtils.h"
 
-#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <PointCloudClient.h>
-#include <../../VisionUtils.h>
 #include <ConvertImage.h>
-
-#include <VisionData.hpp>
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
 #endif
 
-#include <vector>
-#include <string>
-#include <queue>
-#include <map>
-#include <algorithm>
+#include <VisionData.hpp>
+#include <NavData.hpp>
+#include <PTZServer.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 
+#include <IceUtil/IceUtil.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <IceUtil/IceUtil.h>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include <queue>
+#include <map>
+
 namespace cast
 {
 
@@ -51,6 +53,7 @@ private:
    */
   std::string videoServerName;
   std::string stereoServerName;
+  std::string ptzServerName;
 
   /**
    * Identifiers of SOI sources.
@@ -63,6 +66,7 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
+  ptz::PTZInterfacePrx ptzServer;
 
   /**
    * Time and update thresholds
@@ -172,20 +176,32 @@ private:
   /**
    * callback function called whenever a new SOI appears
    */
-  void newSOI(const cdl::WorkingMemoryChange & _wmc);
+  void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
 
   /**
    * callback function called whenever a SOI changes
    */
-  void updatedSOI(const cdl::WorkingMemoryChange & _wmc);
+  void onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc);
 
   /**
    * callback function called whenever a SOI is deleted
    */
-  void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
+  void onDelete_SOI(const cdl::WorkingMemoryChange & _wmc);
 
-  void updatedProtoObject(const cdl::WorkingMemoryChange & _wmc);
+  void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
 
+  IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;
+  // Use this as an anchor to define target view cones
+  struct _RobotPose {
+    double x;
+    double y;
+    double theta;
+    double pan;
+    double tilt;
+  };
+  _RobotPose m_RobotPose;
+  void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
+  void connectPtz();
 
 protected:
   /**

@@ -363,15 +363,62 @@ module VisionData {
     DoubleSeq angleHistogram;
   };
 
-  // TODO: use SpatialData.ViewPoint instead
-  // (a constant height is assumed in SpatialData.ViewPoint; pose.z is interpreted as orientation)
-  class ViewPoint {
-    cogx::Math::Vector3 pose;
+  class ViewCone {
+    // An anchor is a known position of the robot.
+    // The robot should be able to return to the anchor. In principle the
+    // anchor doesn't have world coordinates, it's just a configuration in
+    // space we can return to. While we have an anchor we can move the robot in
+    // the relative coordinate system defined by the anchor.
+    // ATM the anchor is represented as an absolute position in the world
+    // coordinate system: x, y, theta. DON'T COUNT ON IT, it is very likely to
+    // change.
+    cogx::Math::Vector3 anchor;
+
+    // all values are relative to the anchor
+    double x;
+    double y;
+
+    // viewDirection is parallel to x-y plane
+    double viewDirection;
+
+    // the vertical angle of the Pan-Tilt unit where the cameras are mounted
     double tilt;
-    double probability;
-    string label;
-    int closestPlaceId;
-    int areaId;
+  };
+
+  // A command to move the robot and the PTU so that the target ViewCone is
+  // reached. The movements are performed in local coordinate frame relative
+  // to target.anchor.
+  class CmdMoveToViewCone {
+    ViewCone target;
+
+    // eg. look-at-object; maybe use enum instd of string
+    string reason;
+
+    // arbitrary callers reference; depends on reason; maybe use (also) WorkingMemoryAddress
+    string objectId;
+
+    // the result passed on overwrite
+    int status;
+  };
+
+  // A command to analyze the proto-object that came into the visual field of
+  // the precise stereo (after CmdMoveToViewCone). The command should wait for
+  // precise SOIs to be generated.
+  class CmdAnalyzeProtoObject {
+    // which proto object
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+
+    // where in the visual field is it? This should be (approx.) the same as the target
+    // of the CmdMoveToViewCone command. If the target could not be reached, a new
+    // view cone is generated from the desired and the reached VCs and passed to
+    // CmdAnalyzeProtoObject. The anchor must be the same in all 3 VCs. The (x,y) location
+    // of viewCone is the current location of the robot. The viewDirection and tilt of
+    // viewCone are used to find the SOIs for the ProtoObject in the scene.
+    // (maybe it would be enough to use panDelta and tiltDelta instead of a ViewCone)
+    ViewCone whereToLook;
+
+    // the result passed on overwrite
+    int status;
   };
 
   /**
@@ -383,7 +430,7 @@ module VisionData {
     IdSeq SOIList;
 
     // Position of the camera 
-    ViewPoint cameraLocation;
+    ViewCone cameraLocation;
 
     // 2D image patch
     Video::Image image;
