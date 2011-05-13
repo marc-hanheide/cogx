@@ -149,7 +149,6 @@ void CameraMount::start()
 
 void CameraMount::runComponent()
 {
-printf("CameraMount: runComponent!\n");
   int size = camIds.size();
   bool camsAddedToWM[size];
     for(unsigned i=0; i<size; i++)
@@ -190,20 +189,27 @@ printf("CameraMount: runComponent!\n");
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
-      printf("sending pose for cam %d:", camIds[i]);
+      log("sending pose for cam %d:", camIds[i]);
       log(toString(camPosesToEgo[i]));
       if(camsAddedToWM[i])
       {
-        printf("CameraMount: overwrite new values on wm!\n");
+        log("CameraMount: overwrite new values on wm!");
+        log("CameraMount: overwrite new camParms values: id= %i", camParms->cam.id);
+        log("CameraMount: overwrite new camParms pose.pos: %4.4f / %4.4f / %4.4f", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
+        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m00, camParms->cam.pose.rot.m01, camParms->cam.pose.rot.m02);
+        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m10, camParms->cam.pose.rot.m11, camParms->cam.pose.rot.m12);
+        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m20, camParms->cam.pose.rot.m21, camParms->cam.pose.rot.m22);
         overwriteWorkingMemory(camWMIds[i], camParms);
-        printf("CameraMount: overwrite new camParms values: id= %i\n", camParms->cam.id);
       }
       else
       {
-        printf("CameraMount: add new values to wm.\n");
+        log("CameraMount: add new values to wm.");
+        log("CameraMount: added new camParms values: id= %i", camParms->cam.id);
+        log("CameraMount: added new camParms pose.pos: %4.4f / %4.4f / %4.4f", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
+        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m00, camParms->cam.pose.rot.m01, camParms->cam.pose.rot.m02);
+        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m10, camParms->cam.pose.rot.m11, camParms->cam.pose.rot.m12);
+        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m20, camParms->cam.pose.rot.m21, camParms->cam.pose.rot.m22);
         addToWorkingMemory(camWMIds[i], camParms);
-        printf("CameraMount: added new camParms values: id= %i\n", camParms->cam.id);
-        printf("CameraMount: added new camParms pose: %4.2f / %4.2f / %4.2f\n", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
         camsAddedToWM[i] = true;
       }
     }
