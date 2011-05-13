@@ -15,7 +15,7 @@
 #include "math/Vector.hh"
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Corner3D.h"
 
 namespace Z
@@ -43,7 +43,7 @@ public:
   TmpCorner() {}
   TmpCorner(Corner *corner);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   unsigned GetVs3ID() {return vs3ID;}
@@ -67,7 +67,7 @@ private:
 public:
   TmpCorner3D();
   
-  bool Reconstruct(StereoCamera *stereo_cam, TmpCorner &left, TmpCorner &right, double significance2D);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, TmpCorner &left, TmpCorner &right, double significance2D);
   double GetSignificance() {return sig;}
   Vertex3D GetIsct3D() {return isct3D;}
   void SetValidation(bool v) {valid = v;}
@@ -103,7 +103,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoCorners(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoCorners(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoCorners() {}
 
   int NumCorners2D(int side) {return vcore[side]->NumGestalts(Gestalt::CORNER);}      ///< Return number of corners in 2D

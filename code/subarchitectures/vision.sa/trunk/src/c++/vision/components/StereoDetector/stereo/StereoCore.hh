@@ -11,20 +11,20 @@
 
 #include <stdexcept>
 
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "StereoBase.h"
 #include "Gestalt3D.h"
 
-#include "math/Math.hh"
-#include "math/Vector.hh"
-#include "utils/Draw.hh"
+#include "Math.hh"
+#include "Vector.hh"
+#include "Draw.hh"
 
-#include "vs3/VisionCore.hh"
-#include "vs3/Gestalt.hh"
-#include "vs3/Closure.hh"
-#include "vs3/Flap.hh"
-#include "vs3/Corner.hh"
-#include "vs3/Line.hh"
+#include "VisionCore.hh"
+#include "Gestalt.hh"
+#include "Closure.hh"
+#include "Flap.hh"
+#include "Corner.hh"
+#include "Line.hh"
 
 namespace Z
 {
@@ -38,7 +38,7 @@ public:
   VisionCore *vcore[2];                                         ///< left and right vision core
 
 private:
-  StereoCamera *stereo_cam;                                     ///< stereo camera parameters and functions
+  cast::StereoCamera *stereo_cam;                                     ///< stereo camera parameters and functions
   IplImage *img_l, *img_r;                                      ///< current left and right image
   StereoBase* stereoPrinciples[StereoBase::MAX_TYPE];           ///< Stereo gestalt principle list.
   Array<Gestalt3D*> stereoGestalts[Gestalt3D::MAX_TYPE];        ///< Stereo gestalt list 
@@ -55,7 +55,7 @@ private:
   void SetActiveDrawAreaSide(int side);
   void SetImages(IplImage *iIl, IplImage *iIr);
   void InitStereoPrinciples();
-  const StereoCamera* GetCamera() {return stereo_cam;}          ///< Return stereo camera parameters
+  const cast::StereoCamera* GetCamera() {return stereo_cam;}          ///< Return stereo camera parameters
 
 public:
   StereoCore(const string &stereocal_file) throw(std::runtime_error);

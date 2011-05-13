@@ -9,7 +9,7 @@
 #ifndef Z_STEREO_TYPES_HH
 #define Z_STEREO_TYPES_HH
 
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 
 #include <vector>
 #include "Vector.hh"
@@ -25,6 +25,7 @@
 namespace Z
 {
 
+ 
 /// TODO Was für Thresholds sind das genau: Beschreiben und alle anderen herausziehen: Surf u. Point
 /// Gehören die hier wirklich her => Es sind auch matching thresholds in der StereoBase.h
 // These are some tuning parameters to filter "bad" surface hypotheses.
@@ -94,7 +95,7 @@ public:
   Vector2 pr;            ///< rectified point
 
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   void Draw();
@@ -128,7 +129,7 @@ public:
 
   void ShiftPointsLeft(unsigned offs);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   void Draw(unsigned detail);
@@ -150,7 +151,7 @@ private:
   bool SanityOK();
 
 public:
-  bool Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right);
   double Distance(Vertex3D point);
 };
 
@@ -173,7 +174,7 @@ private:
   void RefineVertices();
 
 public:
-  bool Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine);
 };
 
 

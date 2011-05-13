@@ -34,7 +34,7 @@
 #include "ObjRep.h"
 #include "TomGineThread.hh"
 
-#include "stereo/StereoCamera.hh"
+#include "StereoCamera.h"
 
 namespace cast
 {
@@ -51,7 +51,7 @@ private:
   TGThread::TomGineThread *tgRenderer;            ///< 3D render engine
   std::vector<PointCloud::SurfacePoint> points;   ///< 3D point vector
   IplImage *backProjPointCloud;                   ///< Back projected point cloud
-  Z::StereoCamera *stereo_cam;                       ///< stereo camera parameters and functions
+  cast::StereoCamera *stereo_cam;                       ///< stereo camera parameters and functions
 
   int runtime;                                    ///< Overall processing runtime for one image (pair)
   Z::StereoCore *score;                           ///< Stereo core

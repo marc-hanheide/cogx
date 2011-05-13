@@ -10,7 +10,7 @@
 #define Z_STEREO_CUBES_HH
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Cube.hh"
 
 
@@ -28,7 +28,7 @@ public:
   TmpCube() {}
   TmpCube(Cube *cube);
 	void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   void Fuddle(unsigned off0, unsigned off1, unsigned off2, unsigned ass0, unsigned ass1, unsigned ass2);
@@ -45,7 +45,7 @@ public:
   Surf3D surf_vis[3];								///< The visible 3D surfaces (ordered clockwise)			/// TODO TomGine needs the vertices counter clockwise
   Surf3D surf_hid[3];								///< The hidden 3D surfaces (ordered counter-clockwise)
 
-  bool Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, TmpCube &left, TmpCube &right);
 };
 
 
@@ -74,7 +74,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoCubes(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoCubes(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoCubes() {}
 
   int NumCubes2D(int side);   /// Sollte NumCubes2D(int LEFT/RIGHT) nicht anders ersetzt werden "NumGestalts(type, side)", dann überall gleich???

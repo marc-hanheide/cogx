@@ -44,7 +44,7 @@ void TmpCube::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpCube::Rectify(StereoCamera *stereo_cam, int side)
+void TmpCube::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   surf[0].Rectify(stereo_cam, side);
   surf[1].Rectify(stereo_cam, side);
@@ -121,7 +121,7 @@ void TmpCube::Fuddle(unsigned off0, unsigned off1, unsigned off2, unsigned ass0,
  * @return Return true for success.
  * TODO Hier wird surf3D direkt angelegt => sollte eigentlich über Reconstruct() aus surf2D erstellt werden.
  */
-bool Cube3D::Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right)
+bool Cube3D::Reconstruct(cast::StereoCamera *stereo_cam, TmpCube &left, TmpCube &right)
 {
   bool ok0 = surf_vis[0].Reconstruct(stereo_cam, left.surf[0], right.surf[0], true);
   bool ok1 = surf_vis[1].Reconstruct(stereo_cam, left.surf[1], right.surf[1], true);
@@ -158,7 +158,7 @@ bool Cube3D::Reconstruct(StereoCamera *stereo_cam, TmpCube &left, TmpCube &right
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoCubes::StereoCubes(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoCubes::StereoCubes(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

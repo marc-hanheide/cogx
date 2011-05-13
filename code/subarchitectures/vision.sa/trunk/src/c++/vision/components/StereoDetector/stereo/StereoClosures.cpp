@@ -40,7 +40,7 @@ void TmpClosure::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpClosure::Rectify(StereoCamera *stereo_cam, int side)
+void TmpClosure::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   surf.Rectify(stereo_cam, side);
 }
@@ -85,7 +85,7 @@ void TmpClosure::Fuddle(unsigned off0)
  * @brief Constructor of StereoClosures: Calculate stereo matching of closures
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoClosures::StereoClosures(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoClosures::StereoClosures(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

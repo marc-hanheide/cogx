@@ -10,7 +10,7 @@
 #define Z_STEREO_FLAPS_ARI_HH
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "FlapAri.hh"
 #include "Flap3D.h"
 
@@ -31,7 +31,7 @@ public:
   TmpFlapAri(){surf[0].is_valid = false;}
   TmpFlapAri(FlapAri *flap);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   void Fuddle(unsigned off0, unsigned off1, bool swap);
@@ -64,7 +64,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoFlapsAri(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoFlapsAri(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoFlapsAri() {}
 
   int NumFlaps2D(int side);

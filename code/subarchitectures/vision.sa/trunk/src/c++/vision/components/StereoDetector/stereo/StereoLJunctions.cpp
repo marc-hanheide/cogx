@@ -52,7 +52,7 @@ void TmpLJunction::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpLJunction::Rectify(StereoCamera *stereo_cam, int side)
+void TmpLJunction::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   isct2D.Rectify(stereo_cam, side);
 }
@@ -92,7 +92,7 @@ TmpLJunction3D::TmpLJunction3D()
  * @param left Tmp. ellipse from the left image
  * @param numPoints Defines the number of hull points for later 3D matching
  */
-bool TmpLJunction3D::Reconstruct(StereoCamera *stereo_cam, TmpLJunction &left, TmpLJunction &right, double significance2D)
+bool TmpLJunction3D::Reconstruct(cast::StereoCamera *stereo_cam, TmpLJunction &left, TmpLJunction &right, double significance2D)
 {
   vs3ID[LEFT] = left.vs3ID;
   vs3ID[RIGHT] = right.vs3ID;
@@ -116,7 +116,7 @@ bool TmpLJunction3D::Reconstruct(StereoCamera *stereo_cam, TmpLJunction &left, T
  * @brief Constructor of StereoLJunctions: Calculate stereo matching of L-junctions
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoLJunctions::StereoLJunctions(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoLJunctions::StereoLJunctions(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

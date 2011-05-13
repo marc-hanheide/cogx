@@ -11,10 +11,10 @@
 
 #include <vector>
 #include <cstdio>
-#include "math/Math.hh"
+#include "Math.hh"
 #include "Node.h"
 #include "Link.h"
-#include "stereo/StereoCore.hh"
+#include "StereoCore.hh"
 
 namespace Z
 {

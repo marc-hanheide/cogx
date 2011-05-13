@@ -20,7 +20,7 @@
 #include "math/Math.hh"
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Line3D.h"
 
 
@@ -44,7 +44,7 @@ public:
   TmpLine(Line *line);
   void Draw(int detail);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   bool IsValid() {return true;}                         // TODO is always valid
@@ -79,7 +79,7 @@ private:
   void GetUnsplitedLines();
 
 public:
-  StereoLines(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoLines(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoLines() {}
 
   int NumLines2D(int side) {return lines[side].Size();}                  ///< Return number of tmp. 2D lines

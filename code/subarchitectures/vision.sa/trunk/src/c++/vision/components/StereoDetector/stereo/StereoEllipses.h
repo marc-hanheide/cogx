@@ -11,7 +11,7 @@
 
 #include <map>
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Ellipse3D.h"
 #include "Ellipse.hh"
 
@@ -36,7 +36,7 @@ public:
   TmpEllipse() {valid = false;}
   TmpEllipse(Ellipse *ellipse);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   bool IsValid() {return valid;}        /// TODO Wenn nach initialisieren valid, dann wird zu ellipses[2] hinzugefügt
 };
 
@@ -79,7 +79,7 @@ private:
   void FitRectifiedEllipse(TmpEllipse &tmpEllLeft, unsigned numPoints);
   void SolveEllipseLineIntersection(TmpEllipse &right);
   bool CheckReliabilityOfResults();
-  void CalculateCirclePoints(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right);
+  void CalculateCirclePoints(cast::StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right);
   bool CheckCircleGeometry();
   void RefineVertices();
   void CalculateCircleProperties();
@@ -89,7 +89,7 @@ private:
 public:
   TmpEllipse3D() {significance = 0.0; valid = false;}
   
-  bool Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D);
   
   double GetSignificance(){return significance;}
   unsigned GetVs3ID(unsigned side){return vs3ID[side];}
@@ -125,7 +125,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoEllipses(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoEllipses(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoEllipses() {}
 
   int NumEllipsesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE);}		///< TODO Rename: NumEllipses2D(unsigned side)

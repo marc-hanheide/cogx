@@ -96,7 +96,7 @@ void TmpCorner::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpCorner::Rectify(StereoCamera *stereo_cam, int side)
+void TmpCorner::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   isct2D.Rectify(stereo_cam, side);
   armPoint[0].Rectify(stereo_cam, side);
@@ -163,7 +163,7 @@ TmpCorner3D::TmpCorner3D()
  * @param right Tmp. corner from the right image
  * @param significance2D Calculated 2D significance
  */
-bool TmpCorner3D::Reconstruct(StereoCamera *stereo_cam, TmpCorner &left, TmpCorner &right, double significance2D)
+bool TmpCorner3D::Reconstruct(cast::StereoCamera *stereo_cam, TmpCorner &left, TmpCorner &right, double significance2D)
 {
   vs3ID[LEFT] = left.GetVs3ID();
   vs3ID[RIGHT] = right.GetVs3ID();
@@ -184,7 +184,7 @@ bool TmpCorner3D::Reconstruct(StereoCamera *stereo_cam, TmpCorner &left, TmpCorn
  * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoCorners::StereoCorners(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoCorners::StereoCorners(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

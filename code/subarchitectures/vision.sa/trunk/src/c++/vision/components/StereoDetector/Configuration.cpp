@@ -192,7 +192,8 @@ void StereoDetector::configure(const map<string,string> & _config)
 //   reasoner = new Z::Reasoner();
 
   // initialize stereo camera
-  stereo_cam = new Z::StereoCamera();
+  stereo_cam = new cast::StereoCamera();
+  printf("Configuration::configure:: TODO Change stereocalib from svscalib to opencv xml-style!!!\n");
   if(!stereo_cam->ReadSVSCalib(stereoconfig)) throw (std::runtime_error("StereoDetector::StereoDetector: Cannot open calibration file for stereo camera."));
   
   // initialize tgRenderer
