@@ -46,7 +46,7 @@ private:
 
     ImageSet()
     {
-      for(int i = LEFT; i <= RIGHT; i++)
+      for(int i = cogx::Math::LEFT; i <= cogx::Math::RIGHT; i++)
       {
         colorImg[i] = 0;
         rectColorImg[i] = 0;
@@ -56,7 +56,7 @@ private:
     }
     ~ImageSet()
     {
-      for(int i = LEFT; i <= RIGHT; i++)
+      for(int i = cogx::Math::LEFT; i <= cogx::Math::RIGHT; i++)
       {
         cvReleaseImage(&colorImg[i]);
         cvReleaseImage(&rectColorImg[i]);
@@ -69,7 +69,7 @@ private:
      */
     void init(CvSize size, int dispFormat)
     {
-      for(int i = LEFT; i <= RIGHT; i++)
+      for(int i = cogx::Math::LEFT; i <= cogx::Math::RIGHT; i++)
       {
         colorImg[i] = cvCreateImage(size, IPL_DEPTH_8U, 3);
         rectColorImg[i] = cvCreateImage(size, IPL_DEPTH_8U, 3);
