@@ -213,10 +213,10 @@ void TomGineThread::DrawPointCloud()
           glVertex3f(pt.x, pt.y, pt.z);
         }
         else if (haveColCloud)
-	{
-	  glColor4ub((int) col.x, (int) col.y, (int) col.z, 255);
-          glVertex3f(pt.x, pt.y, pt.z);
-	}
+        {
+          glColor4ub((int) col.x, (int) col.y, (int) col.z, 255);
+                glVertex3f(pt.x, pt.y, pt.z);
+        }
         else
           glVertex3f(pt.x, pt.y, pt.z);
       }
