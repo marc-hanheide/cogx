@@ -8,8 +8,8 @@
 
 
 #include "ObjRep.h"
-#include "stereo/Gestalt3D.h"
-#include "math/GraphLink.h"
+#include "Gestalt3D.h"
+#include "GraphLink.h"
 
 namespace Z
 {

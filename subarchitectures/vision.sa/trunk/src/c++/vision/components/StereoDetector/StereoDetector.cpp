@@ -21,8 +21,6 @@
 #include "Receiver.cpp"
 #include "GetImages.cpp"
 
-#include "stereo/StereoCamera.hh"
-
 
 using namespace std;
 using namespace VisionData;
@@ -277,7 +275,7 @@ void StereoDetector::DrawIntoTomGine()
 //   
 //   
 //   /// reproject the kinect point (and stereo point) cloud into a openCV image
-//   Z::StereoCamera *sc = new Z::StereoCamera();
+//   cast::StereoCamera *sc = new cast::StereoCamera();
 //   sc->ReadSVSCalib(stereoconfig);
 //   sc->SetInputImageSize(cvSize(pointCloudWidth, pointCloudHeight));  // now set the input image size
 //   sc->SetupImageRectification();

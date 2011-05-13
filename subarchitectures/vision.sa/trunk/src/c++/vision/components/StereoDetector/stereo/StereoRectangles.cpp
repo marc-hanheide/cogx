@@ -41,7 +41,7 @@ void TmpRectangle::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpRectangle::Rectify(StereoCamera *stereo_cam, int side)
+void TmpRectangle::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   surf.Rectify(stereo_cam, side);
 }
@@ -85,7 +85,7 @@ void TmpRectangle::Fuddle(unsigned off0)
  * @brief Constructor of StereoFlaps: Calculate stereo matching of flaps
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoRectangles::StereoRectangles(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoRectangles::StereoRectangles(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

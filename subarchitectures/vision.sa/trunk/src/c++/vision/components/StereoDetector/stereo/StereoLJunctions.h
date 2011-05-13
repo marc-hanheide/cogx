@@ -15,7 +15,7 @@
 #include "utils/Color.hh"
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "LJunction3D.h"
 
 namespace Z
@@ -35,7 +35,7 @@ public:
   TmpLJunction() {}
   TmpLJunction(LJunction *ljct);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
   bool IsValid() {return true;}									// TODO is always valid
@@ -58,7 +58,7 @@ private:
 public:
   TmpLJunction3D();
   
-  bool Reconstruct(StereoCamera *stereo_cam, TmpLJunction &left, TmpLJunction &right, double significance2D);
+  bool Reconstruct(cast::StereoCamera *stereo_cam, TmpLJunction &left, TmpLJunction &right, double significance2D);
   double GetSignificance() {return sig;}
   Vertex3D GetIsct3D() {return isct3D;}
   void SetValidation(bool v) {valid = v;}
@@ -90,7 +90,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoLJunctions(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoLJunctions(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoLJunctions() {}
 
   int NumLJunctions2D(int side) {return vcore[side]->NumGestalts(Gestalt::L_JUNCTION);}         ///< Return number of 2D junctions

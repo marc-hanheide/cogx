@@ -60,7 +60,7 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
   }
 
   // init stereo camera calibration parameters
-  stereo_cam = new StereoCamera();
+  stereo_cam = new cast::StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (std::runtime_error("StereoCore::StereoCore: Cannot open calibration file for stereo camera."));
 
   InitStereoPrinciples();

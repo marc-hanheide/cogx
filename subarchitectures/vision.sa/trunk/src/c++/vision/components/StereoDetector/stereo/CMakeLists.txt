@@ -14,7 +14,7 @@ SET(HEADERS
 	LJunction3D.h
 	Rectangle3D.h
 	StereoBase.h
-	StereoCamera.hh
+#	StereoCamera.hh
 	StereoClosures.h
 	StereoCore.hh
 	StereoCorners.h
@@ -38,7 +38,7 @@ SET(SOURCES
 	LJunction3D.cpp
 	Rectangle3D.cpp
 	StereoBase.cpp
-	StereoCamera.cc
+#	StereoCamera.cc
 	StereoClosures.cpp
 	StereoCore.cc
 	StereoCorners.cpp

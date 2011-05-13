@@ -11,7 +11,7 @@
 
 #include "StereoCore.hh"
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Rectangle3D.h"
 #include "Rectangle.hh"
 
@@ -30,7 +30,7 @@ public:
   TmpRectangle() {}
   TmpRectangle(Rectangle *rectangle);
   void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;                 /// TODO weg damit? oder braucht man noch?
   void Fuddle(unsigned off0);
@@ -58,7 +58,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoRectangles(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoRectangles(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoRectangles() {}
 
   int NumRectangles2D(int side) {return vcore[side]->NumGestalts(Gestalt::RECTANGLE);};

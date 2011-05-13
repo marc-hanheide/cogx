@@ -10,7 +10,7 @@
 #define Z_STEREO_CLOS_HH
 
 #include "StereoBase.h"
-#include "StereoCamera.hh"
+#include "StereoCamera.h"
 #include "Closure3D.h"
 #include "Closure.hh"
 
@@ -33,7 +33,7 @@ public:
   TmpClosure() {}
   TmpClosure(Closure *closure);
 	void RePrune(int oX, int oY, int sc);
-  void Rectify(StereoCamera *stereo_cam, int side);
+  void Rectify(cast::StereoCamera *stereo_cam, int side);
   void Refine();
 //   bool IsAtPosition(int x, int y) const;
   void Fuddle(unsigned off0);
@@ -63,7 +63,7 @@ private:
   void DrawSingleMatched(int side, int id, int detail);
 
 public:
-  StereoClosures(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc);
+  StereoClosures(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc);
   ~StereoClosures() {}
 
   int NumClosures2D(int side);

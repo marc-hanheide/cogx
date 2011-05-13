@@ -91,7 +91,7 @@ void Vertex2D::RePrune(int oX, int oY, int sc)
  * @param stereo_cam Stereo camera paramters and functions.
  * @param side LEFT/RIGHT side of stereo rig.
  */
-void Vertex2D::Rectify(StereoCamera *stereo_cam, int side)
+void Vertex2D::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   stereo_cam->RectifyPoint(p.x, p.y, pr.x, pr.y, side);
   rectified_valid = true;
@@ -322,7 +322,7 @@ void Surf2D::RePrune(int oX, int oY, int sc)
  * @param stereo_cam Stereo camera with paramters and functions.
  * @param side LEFT/RIGHT side of stereo rig.
  */
-void Surf2D::Rectify(StereoCamera *stereo_cam, int side)
+void Surf2D::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   for(unsigned i = 0; i < p.size(); i++)
     stereo_cam->RectifyPoint(p[i].x, p[i].y, pr[i].x, pr[i].y, side);
@@ -414,7 +414,7 @@ bool Vertex3D::SanityOK()
  * @param right Right tmp. surface
  * @return Return true for success.
  */
-bool Vertex3D::Reconstruct(StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right)
+bool Vertex3D::Reconstruct(cast::StereoCamera *stereo_cam, Vertex2D &left, Vertex2D &right)
 {
   stereo_cam->ReconstructPoint(left.pr.x, left.pr.y, left.pr.x - right.pr.x, p.x, p.y, p.z);
 
@@ -570,7 +570,7 @@ void Surf3D::RefineVertices()
  * but only the first four will be considered.
  * @return Return true for success.
  */
-bool Surf3D::Reconstruct(StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine)
+bool Surf3D::Reconstruct(cast::StereoCamera *stereo_cam, Surf2D &left, Surf2D &right, bool refine)
 {
   assert(left.pr.size() == right.pr.size());
   unsigned n = left.pr.size();

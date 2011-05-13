@@ -54,7 +54,7 @@ void TmpEllipse::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpEllipse::Rectify(StereoCamera *stereo_cam, int side)
+void TmpEllipse::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   center.Rectify(stereo_cam, side);
   for(unsigned i=0; i<6; i++)
@@ -180,7 +180,7 @@ bool TmpEllipse3D::CheckReliabilityOfResults()
  * @param left Left tmp. ellipse
  * @param right Right tmp. ellipse
  */
-void TmpEllipse3D::CalculateCirclePoints(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right)
+void TmpEllipse3D::CalculateCirclePoints(cast::StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right)
 {
   center3D.Reconstruct(stereo_cam, left.center, right.center);
   for(unsigned i=0; i<6; i++)
@@ -387,7 +387,7 @@ bool TmpEllipse3D::SanityOK()
  * @param y_dist Distance between the center points
  * @return Return true, if reconstruction was ok.
  */
-bool TmpEllipse3D::Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D)
+bool TmpEllipse3D::Reconstruct(cast::StereoCamera *stereo_cam, TmpEllipse &left, TmpEllipse &right, double significance2D)
 {
   vs3ID[LEFT] = left.vs3ID;
   vs3ID[RIGHT] = right.vs3ID;
@@ -411,7 +411,7 @@ bool TmpEllipse3D::Reconstruct(StereoCamera *stereo_cam, TmpEllipse &left, TmpEl
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera paramters and functions.
  */
-StereoEllipses::StereoEllipses(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoEllipses::StereoEllipses(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

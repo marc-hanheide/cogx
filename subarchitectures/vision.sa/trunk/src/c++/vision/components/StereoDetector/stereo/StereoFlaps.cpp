@@ -41,7 +41,7 @@ void TmpFlap::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpFlap::Rectify(StereoCamera *stereo_cam, int side)
+void TmpFlap::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   surf[0].Rectify(stereo_cam, side);
   surf[1].Rectify(stereo_cam, side);
@@ -97,7 +97,7 @@ void TmpFlap::Fuddle(unsigned off0, unsigned off1, bool swap)
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  * @param sc Stereo camera parameters
  */
-StereoFlaps::StereoFlaps(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoFlaps::StereoFlaps(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];

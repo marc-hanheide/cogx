@@ -54,7 +54,7 @@ void TmpLine::RePrune(int oX, int oY, int sc)
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
  */
-void TmpLine::Rectify(StereoCamera *stereo_cam, int side)
+void TmpLine::Rectify(cast::StereoCamera *stereo_cam, int side)
 {
   if(rectified)
   {
@@ -99,7 +99,7 @@ bool TmpLine::IsAtPosition(int x, int y) const
  * @brief Constructor of StereoLines: Calculate stereo matching of Lines
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-StereoLines::StereoLines(StereoCore *sco, VisionCore *vc[2], StereoCamera *sc) : StereoBase(sco)
+StereoLines::StereoLines(StereoCore *sco, VisionCore *vc[2], cast::StereoCamera *sc) : StereoBase(sco)
 {
   vcore[LEFT] = vc[LEFT];
   vcore[RIGHT] = vc[RIGHT];
@@ -324,8 +324,8 @@ void StereoLines::ExtendDescriptors(unsigned idx, std::map<float, unsigned> &mat
   for(unsigned j=0; j<nrMatches; j++)
   {
     // Get the normalized angle (0-1) between the two lines
-    double angleSig = SmallestAngle(lines[LEFT][idx].point2D[0].p - lines[LEFT][idx].point2D[1].p,
-	lines[RIGHT][it->second].point2D[0].p - lines[RIGHT][it->second].point2D[1].p) / (M_PI/2.);
+    double angleSig = SmallestAngle(lines[LEFT][idx].point2D[0].p - lines[LEFT][idx].point2D[1].p, 
+                                    lines[RIGHT][it->second].point2D[0].p - lines[RIGHT][it->second].point2D[1].p) / (M_PI/2.);
 
     // normalization to a value between 0.5(good) and 0.7(worse)
     angleSig = angleSig/5. + 0.5;
@@ -344,7 +344,7 @@ void StereoLines::ExtendDescriptors(unsigned idx, std::map<float, unsigned> &mat
  * @param matches A vector of index pairs of matches between left and right image lines (tmpLines) 
  */
 void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left, 
-			     std::vector< std::vector<float> > descr_right, 
+                             std::vector< std::vector<float> > descr_right, 
                              std::vector< std::pair<unsigned, unsigned> > &matches)
 {
   float dist;                                             // Calculted descriptor distance
@@ -408,26 +408,26 @@ void StereoLines::MatchLines(std::vector< std::vector<float> > descr_left,
     {    
       for(unsigned j=0; j<nrLinesLeft; j++)
       {
-	if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
-	{
-	  it_i = best_matches[i].begin();
-	  it_j = best_matches[j].begin();
-	  
-	  if((*it_i).second == (*it_j).second)
-	  {
-	    solved = false;
-	    if((*it_i).first < (*it_j).first)  // lösche den größeren Eintrag => es ist ja die Distanz
-	    {
-	      best_matches[j].erase(it_j++);
-	      nrMatches[j]--;
-	    }
-	    else
-	    {
-	      best_matches[i].erase(it_i++);
-	      nrMatches[i]--;
-	    }
-	  }
-	}
+        if(i != j && nrMatches[i] > 0 && nrMatches[j] > 0)
+        {
+          it_i = best_matches[i].begin();
+          it_j = best_matches[j].begin();
+          
+          if((*it_i).second == (*it_j).second)
+          {
+            solved = false;
+            if((*it_i).first < (*it_j).first)  // lösche den größeren Eintrag => es ist ja die Distanz
+            {
+              best_matches[j].erase(it_j++);
+              nrMatches[j]--;
+            }
+            else
+            {
+              best_matches[i].erase(it_i++);
+              nrMatches[i]--;
+            }
+          }
+        }
       }
     }
   }
@@ -574,18 +574,18 @@ void StereoLines::Calculate3DLines(Array<TmpLine> &left_lines, Array<TmpLine> &r
 
     Line3D *line3d = new Line3D(left_lines[i].vs3ID, right_lines[i].vs3ID);
     if (line3d->isct3D[0].Reconstruct(stereo_cam, isctPointLeft[0], isctPointRight[0]) &&
-	line3d->isct3D[1].Reconstruct(stereo_cam, isctPointLeft[1], isctPointRight[1]))
+        line3d->isct3D[1].Reconstruct(stereo_cam, isctPointLeft[1], isctPointRight[1]))
     {
       if(!Prune3DLines(line3d))
       {
-	score->NewGestalt3D(line3d);
+        score->NewGestalt3D(line3d);
         i++;
       }
       else
       {
-	left_lines.Swap(i, u-1);
-	right_lines.Swap(i, u-1);
-	u--;
+        left_lines.Swap(i, u-1);
+        right_lines.Swap(i, u-1);
+        u--;
       }
     }
     else    // move unacceptable points to the end
