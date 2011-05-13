@@ -28,6 +28,7 @@ extern void SetActiveDrawArea(IplImage *iI);
  */
 StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
 {
+  printf("StereoCore::StereoCore: Warning: Antiquated: Use initialisation with openCV xml-files!\n");
   pPara = new PruningParameter;
   pPara->pruning = false;
 
@@ -63,6 +64,52 @@ StereoCore::StereoCore(const string &stereocal_file) throw(std::runtime_error)
   stereo_cam = new cast::StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (std::runtime_error("StereoCore::StereoCore: Cannot open calibration file for stereo camera."));
 
+  InitStereoPrinciples();
+}
+
+/**
+ * @brief Constructor of Stereo Core with openCV calibration files
+ * @param stereocal_file Stereo calibration file
+ */
+StereoCore::StereoCore(const string &stereocal_file_xml_left, const string &stereocal_file_xml_right) throw(std::runtime_error)
+{
+  pPara = new PruningParameter;
+  pPara->pruning = false;
+
+  for(int side = LEFT; side <= RIGHT; side++)
+  {
+    // create vision core, don't specify config file, we'll configure ourselves
+    vcore[side] = new VisionCore();
+
+    // hardwire the gestalt principles we need, saves loading a config file
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SEGMENTS);
+
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CIRCLES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);                 /// TODO Wenn E-junctions deaktiviert und ellipsen aktiviert, dann array fehler bei search lines im vote image!
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
+
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_JUNCTIONS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CORNERS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS_ARI);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
+  }
+
+  // init stereo camera calibration parameters
+  stereo_cam = new cast::StereoCamera();
+  stereo_cam->ReadFromXML(stereocal_file_xml_left, 0, true);  
+  stereo_cam->ReadFromXML(stereocal_file_xml_right, 1, true);
+  stereo_cam->SetupImageRectification();
+  
   InitStereoPrinciples();
 }
 

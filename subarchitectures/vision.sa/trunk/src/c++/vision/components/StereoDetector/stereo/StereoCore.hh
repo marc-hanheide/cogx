@@ -59,6 +59,7 @@ private:
 
 public:
   StereoCore(const string &stereocal_file) throw(std::runtime_error);
+  StereoCore(const string &stereocal_file_xml_left, const string &stereocal_file_xml_right) throw(std::runtime_error);
   ~StereoCore();
 
   VisionCore* GetMonoCore(int side) {return vcore[side];}                                               ///< Return single vision core [LEFT/RIGHT]
