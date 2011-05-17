@@ -46,6 +46,7 @@ public:
   void getRectImage(int side, int imgWidth, Video::Image& image);
   void getDisparityImage(int imgWidth, Video::Image& image);
   void receiveImages(const std::vector<Video::Image>& images);
+  bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
 };
 
 }
