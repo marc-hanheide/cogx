@@ -357,6 +357,29 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
   unlockComponent();
 }
 
+bool StereoServer::getCameraParameters(Ice::Int side, Video::CameraParameters& camPars)
+{
+  lockComponent(); // TODO: CASTComponent::Lock lock(this);
+
+  StereoCamera *stereoCam = stereoCams[0];
+  camPars.id = side;
+  camPars.width = stereoCam->cam[side].width;
+  camPars.height = stereoCam->cam[side].height;
+  camPars.fx = stereoCam->cam[side].proj[0][0];
+  camPars.fy = stereoCam->cam[side].proj[1][1];
+  camPars.cx = stereoCam->cam[side].proj[0][2];
+  camPars.cy = stereoCam->cam[side].proj[1][2];
+
+  Pose3 global_pose;
+  transform(stereoCam->pose, stereoCam->cam[side].pose, global_pose);
+  camPars.pose = global_pose;
+  camPars.time = getCASTTime();
+
+  unlockComponent(); // TODO: remove
+
+  return true;
+}
+
 void StereoServer::getDisparityImage(int imgWidth, Video::Image& image)
 {
   throw runtime_error(exceptionMessage(__HERE__, "not implemented"));

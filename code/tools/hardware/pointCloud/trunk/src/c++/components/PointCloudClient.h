@@ -48,6 +48,7 @@ public:
   void getCompletePoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points);
   void getRectImage(int side, int imgWidth, Video::Image& image);
   void getDisparityImage(int imgWidth, Video::Image& image);
+  bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);
 };
 
 }
