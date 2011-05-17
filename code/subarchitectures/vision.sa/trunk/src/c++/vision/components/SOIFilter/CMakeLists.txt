@@ -7,6 +7,13 @@ include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/components)
 include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
+find_package(LibPlot)
+set(HAS_LIBPLOT ${LIBPLOT_FOUND})
+if(HAS_LIBPLOT)
+   add_definitions(-DHAS_LIBPLOT)
+   set(LIBPLOT_LIBS plotter)
+endif(HAS_LIBPLOT)
+
 # Set the sources.
 SET(SOURCES SOIFilter.cpp
    Snapper.cpp
@@ -19,4 +26,5 @@ link_cast_component(${CAST_COMPONENT_NAME}
    PointCloud PointCloudClient
    PTZ NavData
    ${VISUALIZATION_LIBRARIES}
+   ${LIBPLOT_LIBS}
    )

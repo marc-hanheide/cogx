@@ -384,6 +384,7 @@ module VisionData {
     // the vertical angle of the Pan-Tilt unit where the cameras are mounted
     double tilt;
   };
+  sequence<ViewCone> ViewConeSeq;
 
   // A command to move the robot and the PTU so that the target ViewCone is
   // reached. The movements are performed in local coordinate frame relative
@@ -431,6 +432,7 @@ module VisionData {
 
     // Position of the camera 
     ViewCone cameraLocation;
+    ViewConeSeq desiredLocations;
 
     // 2D image patch
     Video::Image image;

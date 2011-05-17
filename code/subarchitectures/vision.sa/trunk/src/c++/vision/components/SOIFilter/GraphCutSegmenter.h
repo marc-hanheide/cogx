@@ -1,3 +1,11 @@
+/**
+ * @author Alen Vrecko
+ * @date July 2009
+ *
+ * Changes:
+ *   * May 2011 Marko Mahnic: Packed into a class
+ */
+
 #ifndef GRAPHCUTSEGMENTER_DQUT67JC
 #define GRAPHCUTSEGMENTER_DQUT67JC
 
