@@ -284,7 +284,7 @@ inline void readText(istream &is, Pose3 &T)
  * The pose contains tvec, rvec and/or rmat.
  * If rvec and rmat are given, rvec it will take precedence over rmat.
  */
-static void readXML(const string &filename, Pose3 &T)
+inline void readXML(const string &filename, Pose3 &T)
 {
   cv::FileStorage poseFile(filename, cv::FileStorage::READ);
   CvMat *t = (CvMat*)poseFile["tvec"].readObj();
