@@ -1,18 +1,15 @@
 /**
- * @author Alen Vrecko
- * @date July 2009
+ * @author Marko Mahnič
+ * @date May 2011
  *
- * Changes:
- *   * May 2011 Marko Mahnic: Complete rewrite
  */
 
 #include "SOIFilter.h"
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
+#include <cmath>
 
-#define TIME_THR_DEFAULT 500
-#define UPD_THR_DEFAULT 5
 #define CAM_ID_DEFAULT 0
 
 /**
@@ -25,6 +22,13 @@ extern "C"
     return new cast::SOIFilter();
   }
 }
+
+#if defined(FEAT_VISUALIZATION) && HAS_LIBPLOT
+#include <CSvgPlotter.hpp>
+
+// The same ID as in VirtualScene2D, part of the VirtualScene2D View
+#define OBJ_VISUAL_OBJECTS "scene2d.VisualObjects"
+#endif
 
 namespace cast
 {
@@ -41,7 +45,7 @@ IceUtil::Monitor<IceUtil::Mutex> SOIFilter::g_OrderMonitor;
 
 SOIFilter::SOIFilter()
 {
-  m_segmenter.pPcClient = this;
+  m_segmenter.pPcClient = &m_finePointCloud;
   m_snapper.logger = this;
   m_snapper.videoServer = videoServer;
 
@@ -56,27 +60,43 @@ void SOIFilter::configure(const map<string,string> & _config)
   map<string,string>::const_iterator it;
 
   // first let the base classes configure themselves
-  configureServerCommunication(_config);
-
   m_segmenter.configure(_config);
 
-  updateThr = UPD_THR_DEFAULT;
-  timeThr = TIME_THR_DEFAULT;
+  m_coarseSource = "";
+  m_fineSource = "";
+
+  if((it = _config.find("--coarse-pointcloud")) != _config.end()) {
+    m_coarseSource = it->second;
+  }
+  if((it = _config.find("--fine-pointcloud")) != _config.end()) {
+    m_fineSource = it->second;
+  }
+
+  string serverParam("--servername");
+  if (m_coarseSource == "") {
+    if (m_fineSource != "")
+      m_coarseSource = m_fineSource;
+    else if((it = _config.find(serverParam)) != _config.end())
+      m_coarseSource = it->second;
+  }
+  if (m_fineSource == "") {
+    if (m_coarseSource != "")
+      m_fineSource = m_coarseSource;
+    else if((it = _config.find(serverParam)) != _config.end())
+      m_fineSource = it->second;
+  }
+  if (m_coarseSource == "" || m_fineSource == "") {
+    throw runtime_error(exceptionMessage(__HERE__, "No point cloud server name given"));
+  }
+
+  map<string, string> configPcc;
+  configPcc[serverParam] = m_coarseSource;
+  m_coarsePointCloud.configureServerCommunication(configPcc); 
+  configPcc[serverParam] = m_fineSource;
+  m_finePointCloud.configureServerCommunication(configPcc); 
+
   camId = CAM_ID_DEFAULT;
   doDisplay = false;
-
-  if((it = _config.find("--upd")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> updateThr;
-  }
-
-  if((it = _config.find("--time")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> timeThr;
-  }
-  timeThr*= 1000;
 
   if((it = _config.find("--videoname")) != _config.end())
   {
@@ -92,12 +112,6 @@ void SOIFilter::configure(const map<string,string> & _config)
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
-  }
-
-  if((it = _config.find("--camid")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> camId;
   }
 
   if((it = _config.find("--coarseSource")) != _config.end())
@@ -146,7 +160,8 @@ void SOIFilter::start()
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
   m_snapper.videoServer = videoServer;
 
-  startPCCServerCommunication(*this);
+  m_coarsePointCloud.startPCCServerCommunication(*this);
+  m_finePointCloud.startPCCServerCommunication(*this);
 
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
@@ -342,34 +357,64 @@ void SOIFilter::WmTaskExecutor::handle_add_soi(WmEvent* pEvent)
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
     string objId = pSoiFilter->newDataID();
 
-    // TODO: Calculate the current and the desired View Cone
+    // Calculate the current and the desired View Cone
     //    We don't (shouldn't?) know an absolute position of the robot so we
     //    can only use relative coordinates. We should keep track of the robot
     //    movements from the time we calculate the VCs to the time the desired
     //    VC is reached. We could use anchors for that, but are they currently
     //    implemented?
     //    Current VC is at anchor. Desired VC(s) are relative to the anchor.
-    /*
-      vc = new ViewCone();
-      vc->anchor = anchor_from(m_RobotPose); // x, y, theta; no PTZ
-      vc->setXY(0, 0);
-      vc->viewDirection = (0 + m_RobotPose.pan);
-      vc->tilt = m_RobotPose.tilt;
-      pobj->CurrentViewCone = vc;
+    ViewConePtr pCurVc = new ViewCone();
+    pCurVc->anchor.x = pSoiFilter->m_RobotPose.x;
+    pCurVc->anchor.y = pSoiFilter->m_RobotPose.y;
+    pCurVc->anchor.z = pSoiFilter->m_RobotPose.theta;
+    pCurVc->x = 0;
+    pCurVc->y = 0;
+    pCurVc->viewDirection = pSoiFilter->m_RobotPose.pan;
+    pCurVc->tilt = pSoiFilter->m_RobotPose.tilt;
+    pobj->cameraLocation = pCurVc;
 
-      (dirDelta, tiltDelta) = {
-         - dx, dy: distance from SOI center to scene center (-0.5 .. 0.5)
-         - fovX, fovY: camera viewing angles
-         - dirDelta = f(dx, fovX), tiltDelta = f(dy, fovY)
-      }
+    double dirDelta = 0;
+    double tiltDelta = 0;
+    CameraParameters camPars;
+    if (pSoiFilter->m_coarsePointCloud.getCameraParameters(LEFT, camPars)) {
+      ROIPtr roiPtr = projectSOI(camPars, *psoi);
 
-      vc2 = new ViewCone();
-      vc2->anchor = vc.anchor;
-      vc2->setXY(0, 0);
-      vc2->viewDirection = vc->viewDirection + dirDelta
-      vc2->tilt = vc->tilt + tiltDelta;
-      pobj->desiredViewCones.push_back(vc2);
-      */
+      // Center of the projected SOI
+      double rcx = roiPtr->rect.pos.x + roiPtr->rect.width  / 2;
+      double rcy = roiPtr->rect.pos.y + roiPtr->rect.height / 2;
+
+      // how far from the center of the LEFT image is the SOI
+      dirDelta  = atan( (rcx - camPars.cx) / camPars.fx);
+      tiltDelta = atan( (rcy - camPars.cy) / camPars.fy);
+
+#if defined(FEAT_VISUALIZATION) && HAS_LIBPLOT
+      // draw the thing
+      std::ostringstream ssvg;
+      cogx::display::CSvgStringPlotter p(ssvg);
+      p.openpl();
+      p.flinewidth (2.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+
+      p.line(camPars.cx, camPars.cy, rcx, rcy);
+      p.line(camPars.cx, camPars.cy, camPars.cx + dirDelta * 10, camPars.cy);
+      p.line(camPars.cx, camPars.cy, camPars.cx, camPars.cy + tiltDelta * 10);
+
+      p.closepl();
+
+      string s = p.getScreenSvg();
+
+      pSoiFilter->m_display.setObject(OBJ_VISUAL_OBJECTS, "soif-last-move", s);
+#endif
+    }
+
+    ViewConePtr pBetterVc = new ViewCone();
+    pBetterVc->anchor = pCurVc->anchor;
+    pBetterVc->x = 0;
+    pBetterVc->y = 0;
+    pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
+    pBetterVc->tilt = pCurVc->tilt + tiltDelta;
+    pobj->desiredLocations.push_back(pBetterVc);
 
     pSoiFilter->addToWorkingMemory(objId, pobj);
 

@@ -1,3 +1,10 @@
+/**
+ * @author Alen Vrecko
+ * @date July 2009
+ *
+ * Changes:
+ *   * May 2011 Marko Mahnic: Packed into a class
+ */
 #include "GCoptimization.h"
 #include "LinkedBlockList.h"
 #include <stdio.h>

@@ -176,11 +176,17 @@ void PlanePopOut::configure(const map<string,string> & _config)
    if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
   {
     stereoconfig = it->second;
-  } else printf("PointCloudViewer::configure: Warning: No stereoconfig specified!\n");
+  } else printf("PlanePopOut::configure: Warning: No stereoconfig specified!\n");
+
+  bWriteSoisToWm = true;
+  if((it = _config.find("--generate-sois")) != _config.end())
+  {
+    bWriteSoisToWm = ! (it->second == "0" || it->second == "false" || it->second == "off");
+  }
 
   StereoCamera *stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
-    throw (std::runtime_error("PointCloudViewer::configure: Warning: Cannot open calibration file for stereo camera."));
+    throw (std::runtime_error("PlanePopOut::configure: Warning: Cannot open calibration file for stereo camera."));
   cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
   
   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
@@ -690,8 +696,11 @@ void PlanePopOut::SOIManagement()
 		if(PreviousObjList.at(j).count > StableTime-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
 		else
 		{
+		 if (bWriteSoisToWm)
+		 {
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-// 		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		  //  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		 }
 		}
 	    }
 	    else
@@ -749,9 +758,12 @@ void PlanePopOut::SOIManagement()
 		if(PreviousObjList.at(j).count > StableTime-AgonalTime) Pre2CurrentList.push_back(PreviousObjList.at(j));
 		else
 		{
-		  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
+		 if (bWriteSoisToWm)
+		 {
+		  // cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-// 		  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		  // cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+		 }
 		}
 	    }
 	    else
@@ -772,9 +784,12 @@ void PlanePopOut::SOIManagement()
 		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
 		{
 		    int i = matchingResult;
-		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-		    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-		    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+		    if (bWriteSoisToWm)
+		    {
+		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		     overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+		     //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+		    }
 		}
 		else
 		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
@@ -786,9 +801,12 @@ void PlanePopOut::SOIManagement()
 		if (CurrentObjList.at(i).count >= StableTime)
 		{
 		    CurrentObjList.at(i).bInWM =true;
-		    CurrentObjList.at(i).id = newDataID();
-		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-		    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+		    if (bWriteSoisToWm)
+		    {
+		     CurrentObjList.at(i).id = newDataID();
+		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		     addToWorkingMemory(CurrentObjList.at(i).id, obj);
+		    }
 		    #ifdef SAVE_SOI_PATCH
 		    std::string path = CurrentObjList.at(i).id;
 		    SaveHistogramImg(CurrentObjList.at(i).hist, path);
@@ -833,6 +851,25 @@ void PlanePopOut::SOIManagement()
 	vSOIonImg.push_back(PreviousObjList.at(i).rect);
 	vSOIid.push_back(PreviousObjList.at(i).id);
     }
+}
+
+// @author: mmarko
+void PlanePopOut::GetStableSOIs(std::vector<SOIPtr>& soiList)
+{
+  // The component doesn't have any locking. We copy the object list to *reduce*
+  // the amount of concurrent access from multiple threads to CurrentObjList.
+  // TODO: implement locking of CurrentObjList.
+  vector<ObjPara> allpars = CurrentObjList;
+
+  for (int i = 0; i < allpars.size(); i++)
+  {
+    ObjPara& par = allpars.at(i);
+    if (par.count >= StableTime)
+    {
+      SOIPtr obj = createObj(par.c, par.s, par.r, par.pointsInOneSOI, par.BGInOneSOI, par.EQInOneSOI);
+      soiList.push_back(obj);
+    }
+  }
 }
 
 CvHistogram* PlanePopOut::GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)

@@ -106,6 +106,12 @@ private:
 	bool bVerticalOn;
 	std::string stereoconfig;                         ///< Config name of the stereo configuration file
 	TGThread::TomGineThread *tgRenderer;              ///< 3D render engine
+
+	/// When multiple point cloud servers are used one may want SOIs from only some of them.
+	/// To disable SOI generation, add the parameter --generate-sois 0.
+	/// The SOIs can still be obtained through a filter/wm-call (GetStableSOIs).
+	/// Default: true.
+	bool bWriteSoisToWm;
   
 	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
 	void DisplayInTG();
@@ -172,6 +178,7 @@ public:
 	void CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points);
 	CvHistogram* GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
 	void SOIManagement();
+	void GetStableSOIs(std::vector<VisionData::SOIPtr>& soiList);
 	void SaveHistogramImg(CvHistogram* hist, std::string str);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
@@ -203,6 +210,7 @@ public:
 		para_d = 0.0;
 		previousImg = 0;
 		min_height_of_obj = 0.04;
+		bWriteSoisToWm = true;
 	}
   virtual ~PlanePopOut() {}
 };

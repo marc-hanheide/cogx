@@ -1,6 +1,6 @@
 /**
- * @author Alen Vrecko
- * @date July 2009
+ * @author Marko Mahnič
+ * @date May 2011
  *
  * A component the filters out persistent SOIs.
  */
@@ -39,8 +39,15 @@
 namespace cast
 {
 
+class SOIPointCloudClient: public PointCloudClient
+{
+  public:
+    using PointCloudClient::configureServerCommunication;
+    using PointCloudClient::startPCCServerCommunication;
+};
+
 class SOIFilter : public ManagedComponent,
-  public VideoClient, public PointCloudClient
+  public VideoClient
 {
 private:
 
@@ -52,8 +59,11 @@ private:
    * component ID of the video server to connect to
    */
   std::string videoServerName;
-  std::string stereoServerName;
+  std::string stereoServerName; /* PointCloudServer! */
   std::string ptzServerName;
+
+  SOIPointCloudClient m_coarsePointCloud;
+  SOIPointCloudClient m_finePointCloud;
 
   /**
    * Identifiers of SOI sources.
@@ -68,12 +78,6 @@ private:
   Video::VideoInterfacePrx videoServer;
   ptz::PTZInterfacePrx ptzServer;
 
-  /**
-   * Time and update thresholds
-   *(part of the ROI persistency criteria)
-   */
-  unsigned timeThr;
-  int updateThr;
   bool doDisplay;
 
   /**
@@ -82,6 +86,16 @@ private:
    */
   GraphCutSegmenter m_segmenter;
   Snapper m_snapper;
+
+#if 0
+  UNUSED
+  /**
+   * Time and update thresholds
+   *(part of the ROI persistency criteria)
+   */
+  unsigned timeThr;
+  int updateThr;
+#endif
 
   /**
    * status of SOI persistency
