@@ -45,6 +45,7 @@ public:
   virtual void getCompletePoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&);
   virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
   virtual void getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&);
+  virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars, const Ice::Current&);
 };
 
 
@@ -100,6 +101,7 @@ public:
   virtual void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete) {}
   virtual void getRectImage(int side, int imgWidth, Video::Image& image) {}
   virtual void getDisparityImage(int imgWidth, Video::Image& image) {}
+  virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars) { return false; }
 
   /**
    * The callback function for images pushed by the image server.

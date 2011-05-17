@@ -63,4 +63,9 @@ void PointCloudClient::getDisparityImage(int imgWidth, Video::Image& image)
   pointCloudServer->getDisparityImage(imgWidth, image);
 }
 
+bool PointCloudClient::getCameraParameters(Ice::Int side, Video::CameraParameters& camPars)
+{
+  return pointCloudServer->getCameraParameters(side, camPars);
+}
+
 }

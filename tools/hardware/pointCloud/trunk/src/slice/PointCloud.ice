@@ -26,6 +26,7 @@ module PointCloud {
     void getCompletePoints(bool transformToGlobal, int imgWidth, out PointCloud::SurfacePointSeq points);
     void getRectImage(int side, int imgWidth, out Video::Image img);
     void getDisparityImage(int imgWidth, out Video::Image img);
+    bool getCameraParameters(int side, out Video::CameraParameters camPars);
   };
 
 };
