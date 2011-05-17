@@ -568,10 +568,10 @@ bool KinectStereoServer::getCameraParameters(Ice::Int side, Video::CameraParamet
   _camPars.id = camIds[side];
   _camPars.width  = camPars[side].width;
   _camPars.height = camPars[side].height;
-  _camPars.fx = camPars[side].fx/scaleFactor;
-  _camPars.fy = camPars[side].fy/scaleFactor;
-  _camPars.cx = camPars[side].cx/scaleFactor;
-  _camPars.cy = camPars[side].cy/scaleFactor;
+  _camPars.fx = camPars[side].fx; // /scaleFactor;
+  _camPars.fy = camPars[side].fy; // /scaleFactor;
+  _camPars.cx = camPars[side].cx; // /scaleFactor;
+  _camPars.cy = camPars[side].cy; // /scaleFactor;
 
   Pose3 global_pose, zeroPose;
   setIdentity(zeroPose);
