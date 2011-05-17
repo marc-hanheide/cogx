@@ -25,6 +25,8 @@ namespace cast
 {
 
 using namespace std;
+using namespace cogx;
+using namespace cogx::Math;
 
 
 KinectPCServer::KinectPCServer()
@@ -176,6 +178,38 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   image.camPars.time = getCASTTime();
 
   unlockComponent();
+}
+
+bool KinectPCServer::getCameraParameters(Ice::Int side /*not used*/, Video::CameraParameters& _camPars)
+{
+  double scaleFactor = 1.0;
+
+  lockComponent(); // TODO: CASTComponent::Lock lock(this);
+
+  // TODO: we don't need the image! This is an expensive way to obtain the width
+  IplImage *rgbImage;
+  kinect->GetColorImage(&rgbImage);
+  int width = rgbImage->width;
+  cvReleaseImage(&rgbImage);
+
+  initCameraParameters(_camPars);
+  _camPars.id = camIds[0];
+  _camPars.width  = width;
+  _camPars.height = width * 3/4;
+  _camPars.fx = camPars[0].fx/scaleFactor;
+  _camPars.fy = camPars[0].fy/scaleFactor;
+  _camPars.cx = camPars[0].cx/scaleFactor;
+  _camPars.cy = camPars[0].cy/scaleFactor;
+
+  Pose3 global_pose, zeroPose;
+  setIdentity(zeroPose);
+  transform(camPars[0].pose, zeroPose, global_pose);
+  _camPars.pose = global_pose;
+  _camPars.time = getCASTTime();
+
+  unlockComponent(); // TODO: remove
+
+  return true;
 }
 
 void KinectPCServer::getDisparityImage(int imgWidth, Video::Image& image)
