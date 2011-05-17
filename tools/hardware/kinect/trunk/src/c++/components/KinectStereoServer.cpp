@@ -560,6 +560,33 @@ void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& imag
   unlockComponent();
 }
 
+bool KinectStereoServer::getCameraParameters(Ice::Int side, Video::CameraParameters& _camPars)
+{
+  int res = 0;
+  double scaleFactor = 1.0;
+
+  lockComponent(); // TODO: CASTComponent::Lock lock(this);
+
+  initCameraParameters(_camPars);
+  _camPars.id = camIds[side];
+  _camPars.width  = stereoSizes[res].width;
+  _camPars.height = stereoSizes[res].height;
+  _camPars.fx = camPars[side].fx/scaleFactor;
+  _camPars.fy = camPars[side].fy/scaleFactor;
+  _camPars.cx = camPars[side].cx/scaleFactor;
+  _camPars.cy = camPars[side].cy/scaleFactor;
+
+  Pose3 global_pose, zeroPose;
+  setIdentity(zeroPose);
+  transform(camPars[side].pose, zeroPose, global_pose);
+  _camPars.pose = global_pose;
+  _camPars.time = getCASTTime();
+
+  unlockComponent(); // TODO: remove
+
+  return true;
+}
+
 /**
  * @brief Get the disparity image from the stereo calculation
  * @param imgWidth TODO not implemented!
