@@ -25,7 +25,8 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 set(SOURCES TestComponent.cpp)
 
-set(HAS_LIBPLOT 1)
+find_package(LibPlot)
+set(HAS_LIBPLOT ${LIBPLOT_FOUND})
 if(HAS_LIBPLOT)
    add_definitions(-DHAS_LIBPLOT)
    set(LIBPLOT_LIBS plotter)
