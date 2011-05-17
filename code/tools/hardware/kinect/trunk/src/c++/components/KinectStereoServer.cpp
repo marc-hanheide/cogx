@@ -562,15 +562,12 @@ void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& imag
 
 bool KinectStereoServer::getCameraParameters(Ice::Int side, Video::CameraParameters& _camPars)
 {
-  int res = 0;
-  double scaleFactor = 1.0;
-
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   initCameraParameters(_camPars);
   _camPars.id = camIds[side];
-  _camPars.width  = stereoSizes[res].width;
-  _camPars.height = stereoSizes[res].height;
+  _camPars.width  = camPars[side].width;
+  _camPars.height = camPars[side].height;
   _camPars.fx = camPars[side].fx/scaleFactor;
   _camPars.fy = camPars[side].fy/scaleFactor;
   _camPars.cx = camPars[side].cx/scaleFactor;

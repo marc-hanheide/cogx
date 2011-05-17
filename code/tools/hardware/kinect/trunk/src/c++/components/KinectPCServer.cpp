@@ -182,20 +182,20 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 
 bool KinectPCServer::getCameraParameters(Ice::Int side /*not used*/, Video::CameraParameters& _camPars)
 {
-  double scaleFactor = 1.0;
 
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   // TODO: we don't need the image! This is an expensive way to obtain the width
   IplImage *rgbImage;
   kinect->GetColorImage(&rgbImage);
-  int width = rgbImage->width;
+  int imgWidth = rgbImage->width;
+  double scaleFactor = camPars[0].width / imgWidth;
   cvReleaseImage(&rgbImage);
 
   initCameraParameters(_camPars);
   _camPars.id = camIds[0];
-  _camPars.width  = width;
-  _camPars.height = width * 3/4;
+  _camPars.width  = imgWidth;
+  _camPars.height = imgWidth * 3/4;
   _camPars.fx = camPars[0].fx/scaleFactor;
   _camPars.fy = camPars[0].fy/scaleFactor;
   _camPars.cx = camPars[0].cx/scaleFactor;
