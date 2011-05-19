@@ -1,0 +1,33 @@
+# CAST Configuration File
+HOST localhost
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# live images
+# CPP MG VideoServer OpenCvLiveServer --camids 0 --devnums 0
+
+# reading stored images
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --devnums "0" --files "subarchitectures/vision.sa/config/test-objrecognizer/video/SwGreenTea/smaller40/image_%d.jpg" --start 0 --end 15 --framerate_ms 300
+
+#CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid "0"
+
+#CPP MG vis.recognizer ObjectRecognizer --videohost localhost --videoname VideoServer --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --models "SwGreenTea ShelcoreCube TwLemonTea" --matcher-cuda --log true
+
+CPP MG vis.learner     VisualLearner --log --debug
+CPP MG vis.analyzer    ObjectAnalyzer --log --debug
+CPP MG vis.tester      TestVisualLearner --testmode "fake-proto" --log
+CPP MG vis.mediator		VisualMediator --log --debug
+
+SUBARCHITECTURE binder
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM binder.components.BindingWorkingMemory --log
+#CPP WM SubarchitectureWorkingMemory --log -debug
+
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log false
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
+JAVA MG translator binder.components.BeliefModelTranslator --log
+
+JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer
+JAVA MG monitor binder.components.BinderMonitor --gui
+

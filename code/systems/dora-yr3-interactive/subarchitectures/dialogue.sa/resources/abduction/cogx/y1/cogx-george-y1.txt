@@ -1,0 +1,8 @@
+../resources/rules/abduction/understand-lib.abd
+../resources/rules/abduction/understand-engagement.abd
+../resources/rules/abduction/understand.abd
+../resources/rules/abduction/generate-lib.abd
+../resources/rules/abduction/generate-engagement.abd
+../resources/rules/abduction/generate.abd
+../resources/rules/abduction/dummy-nominals.abd
+../resources/rules/abduction/debug.abd

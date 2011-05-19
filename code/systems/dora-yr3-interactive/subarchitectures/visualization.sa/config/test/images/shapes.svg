@@ -1,0 +1,49 @@
+<?xml version='1.0' standalone='no'?>
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN'
+  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+
+   <title>Referencing Metadata</title>
+
+   <desc>
+      This sample uses declarative syntax and the 'tref' element to display the contents of the 'title' and 'desc' elements of the shapes. Written by Doug Schepers, December 2004.
+   </desc>
+
+
+   <polygon points='112.5,50 140,50 152.5,72.75 140,95.5 112.5,95.5 100,72.75' fill='pink' stroke='violet' stroke-width='3' >
+      <title id='hexTitle'>Hexagon</title>
+      <desc id='hexDesc'>This is a hexagon, spinning around a centerpoint of '126.25, 72.75'</desc>
+      <animateTransform attributeType='XML' attributeName='transform' type='rotate' from='0,126.25,72.75' to='-360,126.25,72.75' begin='0s' dur='5s' repeatCount='indefinite'/>
+      <set xlink:href='#title' attributeType='XML' attributeName='xlink:href' to='#hexTitle' begin='mouseover' end='mouseout'/>
+      <set xlink:href='#desc' attributeType='XML' attributeName='xlink:href' to='#hexDesc' begin='mouseover' end='mouseout'/>
+   </polygon>
+
+
+   <polygon id='triangle' points='50,20 75,65 25,65' fill='dodgerblue' stroke='navy'>
+      <title id='triTitle'>Triangle</title>
+      <desc id='triDesc'>This is an equilateral triangle, spinning around a centerpoint of '50, 55'</desc>
+      <animateTransform attributeType='XML' attributeName='transform' type='rotate' from='0,50,55' to='-360,50,42.5' begin='0s' dur='3s' repeatCount='indefinite'/>
+      <set xlink:href='#title' attributeType='XML' attributeName='xlink:href' to='#triTitle' begin='mouseover' end='mouseout'/>
+      <set xlink:href='#desc' attributeType='XML' attributeName='xlink:href' to='#triDesc' begin='mouseover' end='mouseout'/>
+   </polygon>
+
+   <circle id='circle' cx='235' cy='120' r='20' fill='orange'>
+      <title id='circleTitle'>Circle</title>
+      <desc id='circleDesc'>This is a circle, spinning around a offset of '235, 100'</desc>
+      <animateTransform attributeType='XML' attributeName='transform' type='rotate' from='0,235,100' to='360,235,100' begin='0s' dur='5s' repeatCount='indefinite'/>
+      <set xlink:href='#title' attributeType='XML' attributeName='xlink:href' to='#circleTitle' begin='mouseover' end='mouseout'/>
+      <set xlink:href='#desc' attributeType='XML' attributeName='xlink:href' to='#circleDesc' begin='mouseover' end='mouseout'/>
+   </circle>
+
+   <rect id='rectangle' x='55' y='155' width='40' height='40' rx='5' ry='5' fill='crimson'>
+      <title id='rectTitle'>Rectangle</title>
+      <desc id='rectDesc'>This is a rectangle with round corners, spinning around its top-right corner</desc>
+      <animateTransform attributeType='XML' attributeName='transform' type='rotate' from='0,92,158' to='-360,92,158' begin='0s' dur='5s' repeatCount='indefinite'/>
+      <set xlink:href='#title' attributeType='XML' attributeName='xlink:href' to='#rectTitle' begin='mouseover' end='mouseout'/>
+      <set xlink:href='#desc' attributeType='XML' attributeName='xlink:href' to='#rectDesc' begin='mouseover' end='mouseout'/>
+   </rect>
+
+   <text x='10' y='230' font-size='18px' fill='crimson'><tref id='title' xlink:href='#'></tref></text>
+   <text x='10' y='250' font-size='16px' fill='blue'><tref id='desc' xlink:href='#'></tref></text>
+
+</svg>

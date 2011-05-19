@@ -1,0 +1,59 @@
+This file contains the conventions used for indexes and feature structure ID's within the NEW-CORE grammar
+
+##### Generic Categories ###### 
+
+These categories are not bound or controlled by any other elements. They are also assumed to be self-contained
+
+	    
+n:            1         T
+np:           1         T
+s:            10        E0
+adj           25        M    (this is as basic cat, not complex n/n form which is handled via unary-rule)
+part          26        PR
+
+word          50        W
+
+##### Bound Categories #####
+
+
+The main sentence : 11      E
+
+VERB COMPLIMENTS   
+
+Note: These slots have to do with their POSITION. Therefore, an oblique or np object will have the same index & ID
+
+
+subject         2        X
+object          3        Y
+indirect obj.   4        Z
+verb/s comp     5        EC           (Event Compliment)  
+particle        6        PC     
+
+fronted element 7       same as extracted element (e.g. T)
+
+MODIFIER COMPLIMENTS
+
+np/obl comp  30       TMA           (entiTy  Modifier Argument)   
+s/vp comp    31       TME
+
+
+COORDINATION
+
+1st conjunct   20       C1
+2nd conjunct   21       C2
+result         22       CR
+
+MWE
+
+slot 1         51       W1
+slot 2         52       W2
+slot 3         53       W3
+
+OTHER
+
+n - second	   8        T2        used in deictics, whnp mods (what colour), see noun.xsl
+np - second    8        T2
+
+property       -        P         -
+owner & quantity -                - used in dets for possessive pronouns & measure words
+region         -        L		  -used in place modifiers with anchors (but currently not working...... overwritten by mod type)

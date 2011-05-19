@@ -1,0 +1,46 @@
+** DOCUMENTATION FOR COGX DORA YEAR 2 CONTENT PLANNING **
+
+1. SCENARIO ILLUSTRATION
+H: hi robot!
+R: hi!
+H: robot, please find the cornflakes box!
+R (uncertain): sorry, did you say I should search for the cornflakes box?
+H: yes!
+R: ok, I'll search for it.  Goodbye!	
+R: Excuse me, I need some help.  Could you tell me which room this is?
+H: This is the kitchen.
+R: Thanks a lot!  Goodbye	
+
+2. UTTERANCE TYPES AND GOALS
+GREETING
+hi | hello
+@d1:dvp(c-goal ^ <SpeechAct>greeting)
+
+CLARIFICATION - SPEECH
+sorry I didn't understand (what you said)
+@d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
+
+could you repeat please? -- same goal as above (NOTE: "repeat" not in lexicon)
+@d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech)
+
+did you say I should search for the (cornflakes) box?
+@d1:dvp(c-goal ^ <SpeechAct>clarification ^ <Modality>speech ^ <Goal>find ^ <Target>(b2:thing ^ <InfoStatus>familiar ^ box))
+
+ACKNOWLEDGEMENT OF ACTION
+ok, I'll search for it
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Goal>(find ^ <Complete>false ^ <Active>true) ^ <Target>(t1:thing ^ <InfoStatus>familiar ^ <Salient>true) )
+
+REQUEST EXTRA HELP/INFO
+excuse me, I need some help
+@d:dvp(<SpeechAct>directive ^ <Goal>(:cognition ^ need) ^ <Target>(h1:entity ^ help))
+
+could you tell me which room this is?
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object ^ <InfoStatus>familiar) ^ <Type>(r1:e-place ^ <Questioned>true ^ room )) )
+
+sorry, did you say this is the kitchen / hallway / office / lab / corridor?
+thanks a lot!
+@d1:dvp(c-goal ^ <SpeechAct>thanking)
+
+goodbye
+@d1:dvp(c-goal ^ <SpeechAct>closing)
+

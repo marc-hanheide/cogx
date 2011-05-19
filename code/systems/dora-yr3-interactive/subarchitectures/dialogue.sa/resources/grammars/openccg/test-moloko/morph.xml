@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<morph xmlns:xalan2="http://xml.apache.org/xslt" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../morph.xsd" name="moloko">
+  <entry pos="COORD" word="and" stem="and__coord"/>
+  <entry pos="MOD" word="not" stem="not__coord"/>
+  <entry pos="N" word="ball" macros="@num.sg"/>
+  <entry pos="N" word="balls" stem="ball" macros="@num.pl"/>
+  <entry pos="N" word="mug" macros="@num.sg"/>
+  <entry pos="N" word="mugs" stem="mug" macros="@num.pl"/>
+  <entry pos="N" word="table" macros="@num.sg"/>
+  <entry pos="N" word="tables" stem="table" macros="@num.pl"/>
+  <entry pos="N" word="I" macros="@num.sg @nom"/>
+  <entry pos="N" word="me" stem="I" macros="@num.sg @acc"/>
+  <entry pos="N" word="he" macros="@num.sg @nom"/>
+  <entry pos="N" word="him" stem="he" macros="@num.sg @acc"/>
+  <entry pos="PREP" word="on" class="to"/>
+  <entry pos="PREP" word="in"/>
+  <entry pos="PREP" word="from" class="from"/>
+  <entry pos="PREP" word="here"/>
+  <entry pos="PREP" word="there"/>
+  <entry pos="MOD" word="over"/>
+  <entry pos="MOD" word="up"/>
+  <entry pos="ADJ" word="big"/>
+  <entry pos="ADJ" word="blue"/>
+  <entry pos="ADJ" word="red"/>
+  <entry pos="MOD" word="really"/>
+  <entry pos="MOD" word="very"/>
+  <entry pos="DET" word="the"/>
+  <entry pos="DET" word="that"/>
+  <entry pos="DET" word="this"/>
+  <entry pos="DET" word="five"/>
+  <entry pos="DET" word="a"/>
+  <entry pos="MOD" word="around"/>
+  <entry pos="MOD" word="nearly"/>
+  <entry pos="V" word="is" stem="be"/>
+  <entry pos="V" word="am" stem="be"/>
+  <entry pos="V" word="hit"/>
+  <entry pos="V" word="put"/>
+  <entry pos="V" word="move"/>
+  <entry pos="V" word="made"/>
+  <macro name="@num.sg">
+    <fs val="sg" attr="num" id="30"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="sg"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.pl">
+    <fs val="pl" attr="num" id="30"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="pl"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@nom">
+    <fs val="nom" attr="case" id="30"/>
+  </macro>
+  <macro name="@acc">
+    <fs val="acc" attr="case" id="30"/>
+  </macro>
+</morph>

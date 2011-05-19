@@ -1,0 +1,56 @@
+;; Logistics domain, PDDL 3.1 version.
+
+(define (domain logistics-object-fluents)
+
+(:requirements :mapl :typing :equality :object-fluents :action-costs) 
+
+(:types  truck airplane - vehicle
+         package vehicle - thing
+         airport - location
+         city location thing agent - object)
+
+(:functions  (city-of ?l - (either location vehicle)) - city
+             (location-of ?t - thing) - (either location vehicle)
+)
+
+(:action sense_package
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?p - package)
+         :sense         (= (location-of ?p) (location-of ?t)))
+
+(:action sense_position
+         :agent         (?a - agent)
+         :parameters    (?t - truck)
+         :sense         (location-of ?t))
+
+(:action drive
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?to - location)
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+         :effect        (and (assign (location-of ?t) ?to)
+                             (increase (total-cost) 10))
+)                            
+
+(:action fly
+         :agent         (?a - agent)
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
+
+(:action load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) (location-of ?v))
+         :effect        (and (assign (location-of ?p) ?v)
+                             (update (location-of ?p) ?v)
+                             (update-failed (location-of ?p) ?v)
+                             (increase (total-cost) 5))
+)
+
+
+(:action unload
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) ?v)
+         :effect        (assign (location-of ?p) (location-of ?v)))
+
+)
