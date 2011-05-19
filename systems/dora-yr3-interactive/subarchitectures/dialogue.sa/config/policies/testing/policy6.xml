@@ -1,0 +1,27 @@
+
+<policy>
+
+	<nodes>
+		<node id="startNode" isInitial="true" isFinal="false"/>
+		<node id="engagedNode" isFinal="false" isInitial="false" action="greetingAction"/>
+		<node id="closedNode" isFinal="true" isInitial="false" action="closingAction"/>
+
+	</nodes>
+
+	<edges>
+		<edge id="greetingEdge" source="startNode" target="engagedNode" condition="greetingCond"/>
+		<edge id="closingEdge" condition="closingCond" source="engagedNode" target="closedNode"/>
+	</edges>
+    
+	<conditions>
+        <condition type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0" id="greetingCond"/>
+        <condition content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0" id="closingCond"/>
+    </conditions>
+    
+	<actions>
+        <action id="greetingAction" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)"/>
+        <action id="closingAction" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)">
+</action>
+	</actions>
+
+</policy>

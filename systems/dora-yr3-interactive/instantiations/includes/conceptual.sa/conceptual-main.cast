@@ -1,0 +1,5 @@
+CPP GD conceptual.queryhandler ConceptualQueryHandler
+CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.1 --appearance-threshold 0.1
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --defaultchaingraphinferencer default.chaingraphinferencer --save-graph conceptual.fg --save-graph-info conceptual.info
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+

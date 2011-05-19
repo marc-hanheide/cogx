@@ -1,0 +1,5 @@
+# Recognize objects using CUDA; map labels to object types
+
+CPP MG vis.recognizer ObjectRecognizer --videohost localhost --videoname VideoServer --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --models "SwGreenTea ShelcoreCube TwLemonTea" --matcher-cuda --log true
+
+CPP MG ObjAnalyzer ObjectAnalyzer --usetypemap "yes" --typemap "ShelcoreCube:cube SwGreenTea:box TwLemonTea:box" --log true 

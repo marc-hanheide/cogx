@@ -1,0 +1,14 @@
+function displayArrayOfpdfs(pdf_array, fignum)
+
+for i = 1 : num_pdfs
+    p = pdf_array{i} ;
+    min(p.mu
+end
+
+
+num_pdfs = length(pdf_array) ;
+for i = 1 : num_pdfs
+    showPdfNonNorm( bounds, N,centers, covariances, weights, color ) ;
+end
+
+

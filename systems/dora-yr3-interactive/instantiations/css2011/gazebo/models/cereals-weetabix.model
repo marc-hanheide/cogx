@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+
+<model:physical name="cereals-weetabix_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0.0 0.0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>cereals-weetabix_body</canonicalBody>
+
+  <body:box name="cereals-weetabix_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+            <massMatrix>true</massMatrix>
+            <mass>0.05</mass>
+            <ixx>0.001</ixx>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyy>0.0005</iyy>
+            <iyz>0.0</iyz>
+            <izz>0.001</izz>
+            <cx>0.0</cx>
+            <cy>0.0</cy>
+            <cz>0.0</cz>
+
+    <geom:box name="cereals-weetabix_geom">
+      <xyz>0.0 0.0 0.0</xyz>
+      <rpy>0 0 0</rpy>
+      <size>0.190 0.052 0.250</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <xyz>0 0.026 0</xyz>
+        <scale>0.190 0.001 0.250</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-front</material>
+      </visual>
+
+      <visual>
+        <xyz>0 -0.026 0</xyz>
+        <scale>0.190 0.001 0.250</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-back</material>
+      </visual>
+
+      <visual>
+        <xyz>0.095 0 0</xyz>
+        <scale>0.001 0.052 0.250</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-left</material>
+      </visual>
+
+      <visual>
+        <xyz>-0.095 0 0</xyz>
+        <scale>0.001 0.052 0.250</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-right</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 0.125</xyz>
+        <scale>0.190 0.052 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-top</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 -0.125</xyz>
+        <scale>0.190 0.052 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/cereals-weetabix-bottom</material>
+      </visual>
+    </geom:box>
+  </body:box>
+</model:physical>
+
