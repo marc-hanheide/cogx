@@ -363,6 +363,10 @@ class OnlineEngine
     return inference_->getNumSamples();
   }
   
+  void printNetwork(ostream& out)
+  {
+  	inference_->printNetwork(out);
+  }
   
  private:
 
@@ -381,7 +385,7 @@ class OnlineEngine
         inference_->getState()->setAsQuery(p);}
     }
 //HACK
-//   inference_->getState()->reinit();
+//   inference_->getState()->init();
  }
  
   void parseGroundPredicate(const string& predicateAsString,
@@ -435,7 +439,7 @@ class OnlineEngine
   void appendConstantToPredicate(Predicate*& pred, const string& constant)
   {
     const char* name = constant.c_str();
-    if (isupper(name[0]) || name[0] == '"')  // if is a constant
+    if (isupper(name[0]) || name[0] == '"' || isdigit(name[0]) )  // if is a constant
     {
       const Domain* domain = inference_->getState()->getDomain();
       int constId = domain->getConstantId(name);

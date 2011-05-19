@@ -208,6 +208,17 @@ class GroundClause
 	else
 	  itr->second.first += increment;
   }
+  
+  int getSumOfClauseFrequencies()
+  {
+    int sum = 0;
+
+    IntBoolPairItr itr;
+    for (itr = foClauseFrequencies_->begin();
+         	itr != foClauseFrequencies_->end(); itr++)
+  	  sum+=itr->second.first;
+  	return sum;
+  }
 
   /**
    * Removes a ground predicate from this ground clause. The ground predicate
@@ -227,6 +238,19 @@ class GroundClause
         break;
       }
     }
+  }
+  
+  /**
+   * Adds a ground predicate to this ground clause. The new ground predicate
+   * is appended and the new hash code is stored.
+   *
+   * @param gndPred The ground predicate to be removed.
+   */
+  void appendGndPred(const int& gndPred)
+  {
+    gndPredIndexes_->append(gndPred);
+    gndPredIndexes_->compress();
+    rehash();
   }
 
   /**

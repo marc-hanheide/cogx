@@ -2771,6 +2771,7 @@ class Clause
     return;
   }
 
+public:
   /**
    * get Active Clauses unifying with the given predicate - if ignoreActivePreds 
    * is true, this is equivalent to getting all the unsatisfied clauses

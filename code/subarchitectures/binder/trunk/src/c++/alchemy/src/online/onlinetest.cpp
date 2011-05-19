@@ -95,8 +95,8 @@ int main(int argc, char* argv[])
 
     // Change evidence / query
   trueEvidence.push_back("inPhase(Gail, Pre_Quals)");
-  trueEvidence.push_back("student(Gail)");
-  falseEvidence.push_back("professor(Gail)");
+//  trueEvidence.push_back("student(Gail)");
+//  falseEvidence.push_back("professor(Gail)");
   oldEvidence.push_back("hasPosition(Gail, Faculty)");
   oe->addTrueEvidence(trueEvidence);
   oe->addFalseEvidence(falseEvidence);

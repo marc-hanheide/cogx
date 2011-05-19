@@ -1292,7 +1292,7 @@ int buildInference(Inference*& inference, Domain*& domain,
   {
       // Create inference algorithm and state based on queries and mln / domain
     bool markHardGndClauses = true;
-    bool trackParentClauseWts = false;
+    bool trackParentClauseWts = true; // HACK: original value false. Need parent wts for restoring grounded clauses when evidence is removed
     if (aHybrid)
     {
         // Create inference algorithm and state based on queries and mln / domain
