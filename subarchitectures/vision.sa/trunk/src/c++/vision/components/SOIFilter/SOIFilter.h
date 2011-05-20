@@ -2,7 +2,6 @@
  * @author Marko Mahnič
  * @date May 2011
  *
- * A component the filters out persistent SOIs.
  */
 
 #ifndef SOI_FILTER_H
@@ -140,13 +139,19 @@ private:
     ++g_order;
     return g_order;
   }
+
+  enum {
+    TYPE_SOI = 1, TYPE_CMD_LOOK = 2, TYPE_CMD_ANALYZE = 3
+  };
   struct WmEvent
   {
+    int  objectType;
     int  change; // One of cdl ADD, OVERWRITE, DELETE
     long long order;
     cdl::WorkingMemoryChange wmc;
-    WmEvent(int changeType, const cdl::WorkingMemoryChange& _wmc)
+    WmEvent(int wmType, int changeType, const cdl::WorkingMemoryChange& _wmc)
     {
+      objectType = wmType;
       change = changeType;
       wmc = wmc;
       order = SOIFilter::getEventOrder();
@@ -159,18 +164,57 @@ private:
   {
   protected:
     SOIFilter* pSoiFilter;
-    virtual void handle_add_soi(WmEvent *pEvent);
-    virtual void handle_delete_soi(WmEvent *pEvent);
   public:
     WmTaskExecutor(SOIFilter* soif)
     {
       pSoiFilter = soif;
     }
+    virtual void handle(WmEvent *pEvent) = 0;
+  };
+
+  class WmTaskExecutor_Soi: public WmTaskExecutor
+  {
+  protected:
+    virtual void handle_add_soi(WmEvent *pEvent);
+    virtual void handle_delete_soi(WmEvent *pEvent);
+  public:
+    WmTaskExecutor_Soi(SOIFilter* soif) : WmTaskExecutor(soif) {}
+
     virtual void handle(WmEvent *pEvent)
     {
       if (pEvent->change == cdl::ADD) handle_add_soi(pEvent);
       else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
     }
+  };
+
+  class WmTaskExecutor_Analyze: public WmTaskExecutor
+  {
+  protected:
+    virtual void handle_add_task(WmEvent *pEvent);
+  public:
+    WmTaskExecutor_Analyze(SOIFilter* soif) : WmTaskExecutor(soif) {}
+
+    virtual void handle(WmEvent *pEvent)
+    {
+      if (pEvent->change == cdl::ADD) handle_add_task(pEvent);
+    }
+  };
+
+  // An implementation of a RPC call through WM that completes on WM-overwrite.
+  class GetSoisCommandRcv:
+    public cast::WorkingMemoryChangeReceiver
+  {
+  protected:
+    SOIFilter* pSoiFilter;
+    bool m_complete;
+    IceUtil::Monitor<IceUtil::Mutex> m_CompletionMonitor;
+  public:
+    VisionData::GetStableSoisCommandPtr m_pcmd;
+  public:
+    GetSoisCommandRcv(SOIFilter* psoif, std::string component_id);
+    void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
+    bool waitForCompletion(double seconds);
+    void getSois(std::vector<VisionData::SOIPtr>& sois);
   };
  
 private:

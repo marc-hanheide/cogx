@@ -7,7 +7,7 @@ include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/components)
 include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-find_package(LibPlot)
+find_package(LibPlot) # for visualization
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})
 if(HAS_LIBPLOT)
    add_definitions(-DHAS_LIBPLOT)
