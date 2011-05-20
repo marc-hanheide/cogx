@@ -23,6 +23,10 @@
 #include <binder.hpp>
 #include <onlineengine.h>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 using namespace de::dfki::lt::tr::beliefs::slice;
 
 namespace cast
@@ -110,7 +114,7 @@ class MLNEngine :  public ManagedComponent
   void queueNewQuery(QueryData data);
   
 
- protected:
+protected:
   /**
    * called by the framework to configure our component
    */
@@ -124,8 +128,22 @@ class MLNEngine :  public ManagedComponent
    */
   virtual void runComponent();
 
- public:
+public:
   virtual ~MLNEngine() {}
+  
+private:
+#ifdef FEAT_VISUALIZATION
+  class CMlnDisplayClient: public cogx::display::CDisplayClient
+  {
+    MLNEngine* _pEngine;
+  public:
+    CMlnDisplayClient() { _pEngine = NULL; }
+    void setClientData(MLNEngine* pEng) { _pEngine = pEng; }
+//    void handleEvent(const Visualization::TEvent &event); /*override*/
+  };
+  
+  CMlnDisplayClient m_display;
+#endif  
 };
 
 }

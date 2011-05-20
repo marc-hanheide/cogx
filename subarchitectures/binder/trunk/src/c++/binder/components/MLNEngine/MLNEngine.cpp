@@ -40,14 +40,13 @@ void MLNEngine::configure(const map<string,string> & _config)
   map<string,string>::const_iterator it;
   
   if ((it = _config.find("--inf")) != _config.end()) {
-	istringstream str(it->second);
+//	istringstream str(it->second);
 	m_inferenceString = it->second;
   } else {
 	m_inferenceString=""; //"-ms -i subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-out.mln -e subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-test.db -q student -maxSteps 1000 -burnMaxSteps 100";
   }
   
   if ((it = _config.find("--bsa")) != _config.end()) {
-	istringstream str(it->second);
 	m_bindingSA=it->second;
   } else {
    m_bindingSA="binder.sa";
@@ -59,9 +58,15 @@ void MLNEngine::configure(const map<string,string> & _config)
   }
   else
 	doDisplay = false;
-  
-  m_id="mrf";
-  
+	
+  if ((it = _config.find("--rid")) != _config.end()) {
+	m_id=it->second;
+  } else {
+   m_id="mrf";
+  }
+  #ifdef FEAT_VISUALIZATION
+	m_display.configureDisplayClient(_config);
+  #endif
 }
 
 void MLNEngine::start()
@@ -111,8 +116,11 @@ void MLNEngine::start()
   cout << "MRF initialized" << endl;
   
   m_query.clear();
-  m_query.push_back("student");
-  m_query.push_back("professor(Glen)");
+  
+#ifdef FEAT_VISUALIZATION
+	m_display.connectIceClient(*this);
+    m_display.setClientData(this);
+#endif  
 }
 
 void MLNEngine::runComponent()
@@ -147,13 +155,23 @@ void MLNEngine::runComponent()
 	log("Adding new evidence...");
 	EvidencePtr evd = m_evidenceQueue.front().evidence;
 	
-	m_oe->addTrueEvidence(evd->trueEvidence);
-	m_oe->addFalseEvidence(evd->falseEvidence);
-	m_oe->removeEvidence(evd->oldEvidence);
+	vector<string> trueEvd = evd->trueEvidence;
+	vector<string> falseEvd = evd->falseEvidence;
+	vector<string> oldEvd = evd->removeEvidence;
+	
+	m_oe->addTrueEvidence(trueEvd);
+	m_oe->addFalseEvidence(falseEvd);
+	m_oe->removeEvidence(oldEvd);
 	
 	m_evidenceQueue.front().status=USED;
 	m_removeQueue.push(m_evidenceQueue.front().addr);
 	m_evidenceQueue.pop();
+	
+#ifdef FEAT_VISUALIZATION
+  ostringstream v11out;
+  m_oe->printNetwork(v11out);
+  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+#endif
   }
   
 //  ResultPtr result = new Result();
