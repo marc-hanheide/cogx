@@ -259,12 +259,12 @@ void TomGineThread::DrawLines3D()
     {
       if(lineProbs3D[i] > 0.95)
       {
-	glLineWidth(lineProbs3D[i]*5.0f);
-	glBegin(GL_LINES);
-	glColor3f(lineCols3D[i][2],lineCols3D[i][1],lineCols3D[i][0]);
-	glVertex3f(lines3D[i].first[0],lines3D[i].first[1],lines3D[i].first[2]);
-	glVertex3f(lines3D[i].second[0],lines3D[i].second[1],lines3D[i].second[2]);
-	glEnd( );
+        glLineWidth(lineProbs3D[i]*5.0f);
+        glBegin(GL_LINES);
+        glColor3f(lineCols3D[i][2],lineCols3D[i][1],lineCols3D[i][0]);
+        glVertex3f(lines3D[i].first[0],lines3D[i].first[1],lines3D[i].first[2]);
+        glVertex3f(lines3D[i].second[0],lines3D[i].second[1],lines3D[i].second[2]);
+        glEnd( );
       }
     }
     else
@@ -285,6 +285,7 @@ void TomGineThread::DrawLines3D()
  */
 void TomGineThread::DrawLabels3D(TomGine::tgEngine &render)
 {
+  printf("TomGineThread::DrawLabels3D: This function wont work!\n");
 //   for(unsigned i=0; i<vLabel.size(); i++)
 //   {
 //     if(vLabel[i].render)
@@ -326,7 +327,7 @@ void TomGineThread::DrawLabels3D(TomGine::tgEngine &render)
 //     p.t.x = 0.0;
 //     p.t.y = 0.0;
 //     p.t.z = 0.0;
-    render.PrintText2D("Andison", vec2(10, 10));
+//     render.PrintText2D("Andison", vec2(10, 10));
 //   }
 }
   
@@ -528,12 +529,8 @@ void TomGineThread::AddGraphModel(std::vector<cv::Point3d> first, std::vector<cv
     return;
   }
   
-//   for(unsigned i=0; i< first.size(); i++)
-//     printf("TomGineThread: %s - %s - %s\n", link[i].c_str(), node_0[i].c_str(), node_1[i].c_str());
-  
   for(unsigned i=0; i< first.size(); i++)
     AddLine3D(first[i], second[i], (float) probability[i], link[i], node_0[i], node_1[i], r, g, b);
-//     AddLine3D(first[i], second[i], (float) probability[i], "a", "b", "c", r, g, b);
 }
 
 /**
@@ -552,6 +549,8 @@ void TomGineThread::Clear()
   colPolygons3D.clear();
   filledPolygon3D.clear();
   vLabel.clear();
+  mCloud.resize(0);
+  cCloud.resize(0);
   pthread_mutex_unlock(&dataMutex);
   
   // set coordinate frame

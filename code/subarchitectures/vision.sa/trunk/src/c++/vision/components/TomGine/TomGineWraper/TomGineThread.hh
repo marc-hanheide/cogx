@@ -122,9 +122,9 @@ public:
   void SetCoordinateFrame(double size = 0.5);
   void AddPoint3D(double x, double y, double z, uchar r=0, uchar g=0, uchar b=0, double size=1);
   void AddLine3D(double x1, double y1, double z1, double x2, double y2, double z2, uchar r=0, uchar g=0, uchar b=0, 
-		 float probability = 1.0, string lLabel = "a", string lLabelS = "b", string lLabelE = "c");
-  void AddLine3D(cv::Point3d p0, cv::Point3d p1, float probability = 1.0, string lLabel = "", string lLabelS = "",
-		 string lLabelE = "", uchar r=0, uchar g=0, uchar b=0);
+		 float probability = 1.0, string lLabel = "l", string lLabelS = "s", string lLabelE = "e");
+  void AddLine3D(cv::Point3d p0, cv::Point3d p1, float probability = 1.0, string lLabel = "l", string lLabelS = "s",
+		 string lLabelE = "e", uchar r=0, uchar g=0, uchar b=0);
   void AddGraphModel(std::vector<cv::Point3d> first, std::vector<cv::Point3d> second, std::vector<double> probability, 
 		      std::vector<std::string> link, std::vector<std::string> node_0, std::vector<std::string> node_1,
 		      uchar r=0, uchar g=0, uchar b=0);
