@@ -223,7 +223,7 @@ void SOIFilter::onAdd_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(cdl::ADD, _wmc));
+    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::ADD, _wmc));
   }
   m_EventQueueMonitor.notify();
 }
@@ -232,7 +232,7 @@ void SOIFilter::onDelete_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(cdl::DELETE, _wmc));
+    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::DELETE, _wmc));
   }
   m_EventQueueMonitor.notify();
 }
@@ -241,7 +241,7 @@ void SOIFilter::onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(cdl::OVERWRITE, _wmc));
+    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
   }
   m_EventQueueMonitor.notify();
 }
@@ -278,7 +278,7 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::runComponent()
 {
-  WmTaskExecutor worker(this);
+  WmTaskExecutor_Soi soiProcessor(this);
 
   while(isRunning())
   {
@@ -314,7 +314,14 @@ void SOIFilter::runComponent()
     { 
       WmEvent* pevent = tasks.front();
       tasks.pop_front();
-      worker.handle(pevent);
+      switch (pevent->objectType)
+      {
+        case TYPE_SOI:
+          soiProcessor.handle(pevent);
+          break;
+        default:
+          error(" ***** Event with an unknown type of object '%d'", pevent->objectType);
+      };
       delete pevent;
     }
   }
@@ -338,10 +345,16 @@ void SOIFilter::runComponent()
  *      to (SOI matching by position), then we update the PO and create the VO.
  * TODO: Decide how to process stuff when there is only a single source ...
  */
-void SOIFilter::WmTaskExecutor::handle_add_soi(WmEvent* pEvent)
+void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
-  SOIPtr psoi =
-    pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
+  SOIPtr psoi;
+  try {
+    psoi = pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
+  }
+  catch(cast::DoesNotExistOnWMException){
+    pSoiFilter->debug("SOIFilter.add_soi: SOI deleted while working...");
+    return;
+  }
 
   SOIData soi;
   soi.addr = pEvent->wmc.address;
@@ -452,7 +465,7 @@ void SOIFilter::WmTaskExecutor::handle_add_soi(WmEvent* pEvent)
   }
 }
 
-void SOIFilter::WmTaskExecutor::handle_delete_soi(WmEvent* pEvent)
+void SOIFilter::WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 {
   const WorkingMemoryChange &wmc = pEvent->wmc;
   SOIData &soi = pSoiFilter->SOIMap[wmc.address.id];
@@ -464,6 +477,105 @@ void SOIFilter::WmTaskExecutor::handle_delete_soi(WmEvent* pEvent)
   }
 }
 
+void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
+{
+  AnalyzeProtoObjectCommandPtr pcmd;
+  try {
+    pcmd = pSoiFilter->getMemoryEntry<VisionData::AnalyzeProtoObjectCommand>(pEvent->wmc.address);
+  }
+  catch(cast::DoesNotExistOnWMException){
+    pSoiFilter->debug("SOIFilter.analyze_task: AnalyzeProtoObjectCommand deleted while working.");
+    return;
+  }
+
+  // pobj - The proto object to segment
+  ProtoObjectPtr pobj;
+  try {
+    pobj = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(pcmd->protoObjectAddr);
+  }
+  catch(cast::DoesNotExistOnWMException){
+    pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject deleted while working. Aborting task.");
+    pcmd->status = 0;
+    try {
+      pSoiFilter->overwriteWorkingMemory(pEvent->wmc.address, pcmd);
+    }
+    catch(cast::DoesNotExistOnWMException){
+      pSoiFilter->debug("SOIFilter.analyze_task: Failed to acknowledge an AnalyzeProtoObjectCommand.");
+    }
+    return;
+  }
+
+  /* A WorkingMemoryChangeReceiver is created on the heap. We wait for it to complete
+   * then we remove the it from change filters, but we DON'T DELETE it. It will be
+   * moved to a deletion queue in the framework and deleted later. */
+  GetSoisCommandRcv* pGetSois;
+  vector<SOIPtr> sois;
+  pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
+  bool bCompleted = false;
+  bCompleted = pGetSois->waitForCompletion(20.0);
+  bCompleted = bCompleted && pGetSois->m_pcmd->status == 0;
+  if (bCompleted)
+    pGetSois->getSois(sois);
+  pSoiFilter->removeChangeFilter(pGetSois, cdl::DELETERECEIVER);
+
+  if (! bCompleted || sois.size() < 1)
+  {
+      pSoiFilter->debug("SOIFilter.analyze_task: No SOIs. Aborting task.");
+      return;
+  }
+
+  // psoi - The fine SOI that represents the proto object
+  SOIPtr psoi;
+  /* 
+   * - Get the stable SOIs
+   * - Match the SOIs with the PO, find the best match
+   */
+  if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
+  {
+    pSoiFilter->overwriteWorkingMemory(pcmd->protoObjectAddr, pobj);
+  }
+}
+
+SOIFilter::GetSoisCommandRcv::GetSoisCommandRcv(SOIFilter* psoif, std::string component_id)
+{
+  m_complete = false;
+  pSoiFilter = psoif;
+  m_pcmd = new GetStableSoisCommand();
+  m_pcmd->componentId = component_id;
+  string id = pSoiFilter->newDataID();
+  pSoiFilter->addChangeFilter(createIDFilter(id, cdl::OVERWRITE), this);  
+  pSoiFilter->addToWorkingMemory(id, m_pcmd);  
+}
+
+void SOIFilter::GetSoisCommandRcv::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc)
+{
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
+    try {
+      GetStableSoisCommandPtr pcmd = pSoiFilter->getMemoryEntry<GetStableSoisCommand>(_wmc.address);
+      m_pcmd = pcmd;
+    }
+    catch (...) {
+      pSoiFilter->debug("SOIFilter.GetSoisCommand: Failed to get the results.");
+      m_pcmd->status = 0; /* complete, but failed */
+    }
+    m_complete = true;
+  }
+  m_CompletionMonitor.notify();
+}
+
+void SOIFilter::GetSoisCommandRcv::getSois(std::vector<VisionData::SOIPtr>& sois)
+{
+  sois = m_pcmd->sois;
+}
+
+bool SOIFilter::GetSoisCommandRcv::waitForCompletion(double seconds)
+{
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
+    if (m_complete) return true;
+    m_CompletionMonitor.timedWait(IceUtil::Time::seconds(seconds));
+    return m_complete;
+}
 
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
