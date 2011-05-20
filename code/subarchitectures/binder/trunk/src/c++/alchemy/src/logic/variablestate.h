@@ -2957,8 +2957,7 @@ class VariableState
       	cout << "*se*****************************************************************" << endl;
       	printNetwork(cout);
       	cout << "*******************************************************************" << endl;
-      }  
-//    }
+      }
   }
 
   /**
@@ -2985,6 +2984,7 @@ class VariableState
     {	
         // Evidence -> query
         // Add predicate to query set, modify existing and get new grounded clauses
+      
       bool truthval = db->getValue(predicate);
       int predId = predicate->getId();
       const Array<IndexClause*>* indexClauses = mln_->getClausesContainingPred(predId);
@@ -2992,9 +2992,11 @@ class VariableState
       gndPredHashArray_.append((GroundPredicate*)predicate);
       int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
       Predicate* p = predicate->createEquivalentPredicate(domain_);
-              
-      newClauses_.clear();        
-      Array<GroundClause*>* newClauses = new Array<GroundClause*>;
+      
+      GroundClauseHashArray clauseHashArray;        
+      clauseHashArray.clear();        
+      Array<GroundClause*>* candClauses = new Array<GroundClause*>;
+      db->setEvidenceStatus(p, false);
              
       for(int i=0; i<indexClauses->size(); i++)
       {
@@ -3008,78 +3010,94 @@ class VariableState
         	cout << endl;
       	}
       	
-      	newClauses->clear();
+      	candClauses->clear();
       	int cnt=0;
-      	
-		
+/*      			
       	if(fclause->getNumPredicates() == 1)
-      	{
-      		db->setEvidenceStatus(p, false);
-      		
+      	{	
       		if (stillActivating_)
       			stillActivating_ =
-      			 	fclause->getActiveClausesAndCnt(p, domain_, newClauses, cnt, &gndPredHashArray_, true, true);
-      			 	
-      		db->setEvidenceStatus(p, true);
+      			 	fclause->getActiveClausesAndCnt(p, domain_, candClauses, cnt, &gndPredHashArray_, true, true);     			 	
       		
-      		assert(newClauses->size() <= 1);
-      		if(newClauses->size() == 1) {
-      			GroundClause* newClause =  (*newClauses)[0];
+      		assert(candClauses->size() <= 1);
+      		if(candClauses->size() == 1) {
+      			GroundClause* newClause =  (*candClauses)[0];
       			newClause->incrementClauseFrequency(clauseId, 1, false);
       			newClause->setWtToSumOfParentWts(mln_); //setWt(fclause->getWt());
-      			newClauses_.append(newClause);
+      			clauseHashArray.append(newClause);
       		}		
 	
       		continue;
       	}	
-      	
-
+*/
+		
       	if (stillActivating_)
       		 stillActivating_ =
-      		 	fclause->getActiveClausesAndCnt(p, domain_, newClauses, cnt, &gndPredHashArray_, true, true);
+      		 	fclause->getActiveClausesAndCnt(p, domain_, candClauses, cnt, &gndPredHashArray_, true, false);
     
       		 	
-      	for (int j = 0; j < newClauses->size(); j++)
+      	for (int j = 0; j < cnt; j++)
       	{
-      		GroundClause* newClause = (*newClauses)[j];
-      		cout << "newclause # " << j << ": ";
-        	newClause->print(cout, domain_, &gndPredHashArray_);
-        	cout << endl;			
-			        	
-        	int pos = gndClauses_->find(newClause);
-        	GroundClause* oldClause = (*gndClauses_)[pos];
-        	
-        	if(pos>=0 && oldClause->getClauseFrequency(clauseId)>0)
-        		if(oldClause->getSumOfClauseFrequencies() > 1)
-        		{
-        			oldClause->incrementClauseFrequency(clauseId, -1, false);
-        			oldClause->setWtToSumOfParentWts(mln_);
-        			truthval= -truthval;
-        		}
-        		else
-        		{
-		    		if(truthval)
-		    			oldClause->appendGndPred(-(atomIdx + 1));
+      		GroundClause* clause = (*candClauses)[j];
+      		
+      		cout << "clause # " << j << ": ";
+        	clause->print(cout, domain_, &gndPredHashArray_);
+        	cout << endl;
+			
+			int pos=-1;
+			int idx = atomIdx + 1;
+      		if(truthval && clause->containsGndPred(-idx)) {
+      			clause->removeGndPred(-idx);		    		
+      			pos = gndClauses_->find(clause);
+      			clause->appendGndPred(-idx);
+		    }
+		    if(!truthval && clause->containsGndPred(idx)) {
+      			clause->removeGndPred(idx);		    		
+      			pos = gndClauses_->find(clause);
+      			clause->appendGndPred(idx);
+		    }
+		  			
+			if(pos>=0)
+			{
+		    	GroundClause* oldClause = (*gndClauses_)[pos];
+		    	
+		    	if(pos>=0 && oldClause->getClauseFrequency(clauseId)>0)
+		    	{
+		    		if(oldClause->getSumOfClauseFrequencies() > 1)
+		    		{
+		    			oldClause->incrementClauseFrequency(clauseId, -1, false);
+		    			oldClause->setWtToSumOfParentWts(mln_);
+		    		}
 		    		else
-		    			oldClause->appendGndPred(atomIdx + 1);
-		    		continue;
-        		}
-
-    		if(truthval)
-    			newClause->appendGndPred(atomIdx + 1);
-    		else
-    			newClause->appendGndPred(-(atomIdx + 1));
-    			
-    		newClause->incrementClauseFrequency(clauseId, 1, false);
-  			newClause->setWtToSumOfParentWts(mln_); //setWt(fclause->getWt());
-    		newClauses_.append(newClause);
+		    		{
+						if(truthval)
+							oldClause->appendGndPred(-(atomIdx + 1));
+						else
+							oldClause->appendGndPred(atomIdx + 1);
+						continue;
+		    		}
+		    	}
+        	}
+    		
+    		if((pos = clauseHashArray.find(clause)) >=0)	{
+    			clauseHashArray[pos]->incrementClauseFrequency(clauseId, 1, false);
+	   			clauseHashArray[pos]->setWtToSumOfParentWts(mln_);
+    		}
+    		else {	
+				clause->incrementClauseFrequency(clauseId, 1, false);
+	  			clause->setWtToSumOfParentWts(mln_); //setWt(fclause->getWt());
+				clauseHashArray.append(clause);
+    		}
     	}
 	  }
+	  
+	  newClauses_.clear();
+	  for (int i = 0; i < clauseHashArray.size(); i++)
+        newClauses_.append(clauseHashArray[i]);
       
-      newClauses->clear();
-	  delete newClauses;
-
-      db->setEvidenceStatus(p, false);
+      clauseHashArray.clear();
+      candClauses->clear();
+	  delete candClauses;
 	}
 	
 	if (true) //(vsdebug)

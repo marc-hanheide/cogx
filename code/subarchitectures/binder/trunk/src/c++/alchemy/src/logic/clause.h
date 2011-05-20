@@ -2096,9 +2096,10 @@ class Clause
               // 2. negative weight and partially gnded clause is satisfied
             bool proceed = true;
             if (wt_ >= 0 && !getSatisfied)
-              proceed = isUnsatisfiedGivenActivePreds(lit, ivg->subseqGndLits,
-                                                      db, ignoreActivePreds);
-
+            	proceed = isSatisfiedGivenActivePreds(db, ignoreActivePreds);
+//              proceed = isUnsatisfiedGivenActivePreds(lit, ivg->subseqGndLits,
+//                                                      db, ignoreActivePreds);
+// HACK!!!!! (it works for me, but I dont know what other side effects might it have)
             if (clausedebug >= 2)
             {
               cout << " proceed " << proceed << endl;

@@ -252,6 +252,20 @@ class GroundClause
     gndPredIndexes_->compress();
     rehash();
   }
+  
+    /**
+   * Tests if a ground predicate is part ofthis ground clause.
+   *
+   * @param gndPred The ground predicate to be removed.
+   */
+  bool containsGndPred(const int& gndPred)
+  {
+    for (int i = 0; i < gndPredIndexes_->size(); i++)
+      if (gndPred == (*gndPredIndexes_)[i])
+		return true;
+    return false;
+  }
+  
 
   /**
    * Changes the index of a ground predicate in this ground clause. The new hash
