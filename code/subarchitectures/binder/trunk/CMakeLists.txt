@@ -6,6 +6,11 @@ if (BUILD_SA_BINDING_MLNENGINE)
 add_subdirectory (src/c++/binder/components/MLNEngine)
 endif (BUILD_SA_BINDING_MLNENGINE)
 
+option(BUILD_SA_BINDING_MLNTESTER "build MLN tester" NO)
+if (BUILD_SA_BINDING_MLNTESTER)
+add_subdirectory (src/c++/binder/components/MLNTester)
+endif (BUILD_SA_BINDING_MLNTESTER)
+
 add_subdirectory(src/c++/binder/autogen)
 
 #a safer way of finding your own stuff
