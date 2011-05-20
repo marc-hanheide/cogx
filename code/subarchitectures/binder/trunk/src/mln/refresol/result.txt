@@ -1,0 +1,3 @@
+resolution(P1) 0.0010499
+resolution(P2) 0.493601
+resolution(P3) 0.430407
