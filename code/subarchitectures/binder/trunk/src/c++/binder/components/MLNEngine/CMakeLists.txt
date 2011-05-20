@@ -2,6 +2,10 @@ include_directories(.)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/cpp/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder.sa/src/c++/binder/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
+include_directories(${OPENCV_INCLUDE_DIRS})
+include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 SET(ALCHEMY_ROOT ${COGX_ROOT}/subarchitectures/binder.sa/src/c++/alchemy)
 SET(ALCHEMY_SRC ${ALCHEMY_ROOT}/src)
@@ -22,6 +26,7 @@ include_directories(${RRF})
 include_directories(${UTIL})
 include_directories(${LEARNWTS})
 
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 #link_directories(${ALCHEMY_ROOT}/bin/obj)
 
 # Set the sources.
@@ -56,7 +61,7 @@ SET(ALCHEMY_SOURCES  ${UTIL}/arguments.cpp ${UTIL}/powerset.cpp ${UTIL}/random.c
 add_cast_component(MLNEngine ${SOURCES} ${ALCHEMY_SOURCES})
 
 add_dependencies(MLNEngine alchemy) 
-link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder)
+link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder ${VISUALIZATION_LIBRARIES})
 
 
 
