@@ -1,25 +1,29 @@
-GARNAME = stage
-GARVERSION = 2.1.1
+GARNAME = Stage
+GARVERSION = 4.0.0-src
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
+
 MAINTAINER = mhanheid
 
-MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
+MASTER_SITES = http://github.com/downloads/rtv/Stage/
+# http://dfn.dl.sourceforge.net/sourceforge/playerstage/
 
-LIBDEPS = contrib/player-2.1.2
+#LIBDEPS = contrib/player-2.1.2
+
+MFLAGS=-j4#$(MFLAGS_NUMCPU)
 
 DESCRIPTION = stage
 define BLURB
   stagedef
 endef
 
-CONFIGURE_SCRIPTS = $(WORKSRC)/configure
+CONFIGURE_SCRIPTS = cmake
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
 INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
-CONFIGURE_ARGS = $(DIRPATHS)
+CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix)
 
-include ../../gar.mk
+include ../../gar.extend.mk
 
 CONFIGURE_ARGS = $(DIRPATHS)  --with-color=/etc/X11/rgb.txt
 
