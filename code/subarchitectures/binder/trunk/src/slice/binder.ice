@@ -43,7 +43,7 @@ module mln {
 		string mrfId;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
-		PredStrSeq oldEvidence;
+		PredStrSeq removeEvidence;
 		PredStrSeq probEvidence;
 		WeightSeq weights;
 	};
