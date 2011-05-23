@@ -1,0 +1,11 @@
+HOST localhost
+COMPONENT CPP laser.server LaserServerPlayer --log 
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG  video OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP MG people-detector PeopleDetector --log --videohost localhost --videoname video --camid 0 --deinterlace 0 --sleepForSync 0 --faceCascade "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml" --fullbodyCascade "/usr/share/opencv/haarcascades/haarcascade_fullbody.xml" --continuous
+
+
+CPP MG people-test PeopleDetectorTest --log --videohost localhost --videoname video --camid 0 
