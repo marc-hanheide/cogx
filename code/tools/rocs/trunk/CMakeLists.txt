@@ -67,6 +67,8 @@ endif("${ROCS_MAX_DEBUG_LEVEL}" STREQUAL "")
 set(ROCS_MAX_DEBUG_LEVEL ${ROCS_MAX_DEBUG_LEVEL} CACHE STRING "Maximal debug level compiled into ROCS (0-3).")
 add_definitions(-DROCS_MAX_DEBUG_LEVEL=${ROCS_MAX_DEBUG_LEVEL})
 
+set(ROCS_BUILD_GPL YES)
+
 # Includes
 ## General purpose macros
 include(BasicMacros) 
