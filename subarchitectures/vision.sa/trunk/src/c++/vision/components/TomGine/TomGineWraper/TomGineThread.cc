@@ -549,8 +549,8 @@ void TomGineThread::Clear()
   colPolygons3D.clear();
   filledPolygon3D.clear();
   vLabel.clear();
-  mCloud.resize(0);
-  cCloud.resize(0);
+  mCloud.release();
+  cCloud.release();
   pthread_mutex_unlock(&dataMutex);
   
   // set coordinate frame
