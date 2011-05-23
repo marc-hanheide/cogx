@@ -82,11 +82,12 @@ define p3dx_with_urg p3dx
 define p3dx_with_urg_and_blobfinder p3dx_with_urg
 (
   blobfinder( 
-    channel_count 6 
-    channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
-    range_max 2.0
-  )
-  ptz [0 0 90]
+    colors_count 6 
+    colors [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+    range 2.0
+    pan 0.0  
+)
+  
 
 )
 

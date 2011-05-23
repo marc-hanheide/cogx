@@ -1,5 +1,5 @@
 include "../common/map.inc"
-include "../common/p3dx_with_urg.inc"
+include "../common/p3dx.inc"
 
 window
 (
@@ -16,7 +16,7 @@ floorplan
 	size [50.625 35.29 1.5]
 )
 
-p3dx_with_urg (
+p3dx_with_urg_and_blobfinder (
 	name "dora"
 	pose [0 0 0 0]
 	color "red"
