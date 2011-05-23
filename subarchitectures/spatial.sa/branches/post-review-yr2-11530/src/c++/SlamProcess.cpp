@@ -203,7 +203,7 @@ void SlamProcess::runComponent()
 void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
   if (castOdom.odompose.empty()) {
-    println("WARNING: Odometry struct contained no odompose which si needed");
+    println("WARNING: Odometry struct contained no odompose which is needed");
     return;
   }
 
