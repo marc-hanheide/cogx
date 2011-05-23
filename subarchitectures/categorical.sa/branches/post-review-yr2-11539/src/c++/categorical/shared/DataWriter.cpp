@@ -25,6 +25,9 @@
  * \date 2008-08-15
  */
 
+#define BOOST_FILESYSTEM_VERSION 2 
+
+
 #include "DataWriter.h"
 #include "ConfigFile.h"
 #include <cast/core/CASTTimer.hpp>

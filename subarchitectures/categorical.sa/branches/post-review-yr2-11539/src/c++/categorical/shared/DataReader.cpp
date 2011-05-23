@@ -94,8 +94,9 @@ bool DataReader::readDataConfigFile(std::string filePath)
   {
     _imageFileNames.clear();
     for (directory_iterator itr(_imageDir); itr!=directory_iterator(); ++itr)
-      if (is_regular(itr->status()))
+      if (is_regular(itr->status())) {
         _imageFileNames.push_back(itr->path().leaf());
+	}
     _imageFileNames.sort();
     _nextImageFileName = _imageFileNames.begin();
   }
