@@ -32,6 +32,7 @@ public class ComaRoomTransferFunction extends
 
 	public static final String ROOM_ID = "RoomId";
 	public static final String CATEGORY_ID = "category";
+
 	public ComaRoomTransferFunction(ManagedComponent component) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class),
 				GroundedBelief.class);
@@ -43,9 +44,7 @@ public class ComaRoomTransferFunction extends
 			WorkingMemoryChange wmc, ComaRoom from) throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
-		result
-				.put(ROOM_ID, IntFormula.create((int) from.roomId)
-						.getAsFormula());
+		result.put(ROOM_ID, IntFormula.create((int) from.roomId).getAsFormula());
 
 		// BoolFormula isExplored =
 		// BoolFormula.create(from.status==PlaceStatus.TRUEPLACE);
@@ -73,8 +72,15 @@ public class ComaRoomTransferFunction extends
 			logger.info("adding " + value + " (" + jp.probability + ")");
 			fd.add(value, jp.probability);
 		}
-		assert (fd.size() > 0);
-		distr.put(CATEGORY_ID, fd);
+		// seems like some assumption has changed
+		// assert (fd.size() > 0);
+		if (fd.size() > 0) {
+			distr.put(CATEGORY_ID, fd);
+		}
+		else {
+			component.getLogger().info(
+			"Coma room with empty formula distribution, not mediating!");
+		}
 	}
 
 }
