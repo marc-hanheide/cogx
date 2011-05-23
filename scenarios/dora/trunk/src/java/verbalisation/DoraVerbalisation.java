@@ -133,11 +133,21 @@ public class DoraVerbalisation extends ManagedComponent implements
 	private static final TextGenerator<VisualObject> VISUAL_OBJECT_GENERATOR = new TextGenerator<VisualObject>() {
 		@Override
 		public String toText(VisualObject _i) {
-			if (_i.detectionConfidence > 0.08) {
-				return "That looks like " + _i.identLabels[0];
-			} else {
-				return "";
+			for (int i=0; i<_i.identLabels.length; i++) {
+				if (_i.identLabels[i].equals("unknown")) {
+					if (_i.identDistrib[i]>=1-0.08) {
+						return "There is no " + _i.identLabels[0] + " here";
+					} else {
+						return "That looks like " + _i.identLabels[0];
+					}
+				}
 			}
+			return "something is wrong in " + DoraVerbalisation.class.getSimpleName();
+//			if (_i.detectionConfidence > 0.08) {
+//				return "That looks like " + _i.identLabels[0];
+//			} else {
+//				return "";
+//			}
 		}
 	};
 
@@ -249,6 +259,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 		// when an object is recognised at all -> is this every positive
 		// recognition result
 		m_verbals.verbaliseOnAddition(VisualObject.class,
+				VISUAL_OBJECT_GENERATOR);
+		m_verbals.verbaliseOnOverwrite(VisualObject.class,
 				VISUAL_OBJECT_GENERATOR);
 
 		// m_verbals.verbaliseOnOverwrite(ComaRoom.class,

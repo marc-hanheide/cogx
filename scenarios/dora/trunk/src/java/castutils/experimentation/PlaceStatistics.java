@@ -1,12 +1,10 @@
 /**
  * 
  */
-package experimentation;
+package castutils.experimentation;
 
 import java.util.Map;
 
-import castutils.castextensions.WMView;
-import castutils.castextensions.WMView.ChangeHandler;
 import NavData.NavGraph;
 import SpatialData.Place;
 import cast.CASTException;
@@ -15,6 +13,8 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.logging.ComponentLogger;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMView.ChangeHandler;
 
 /**
  * @author marc

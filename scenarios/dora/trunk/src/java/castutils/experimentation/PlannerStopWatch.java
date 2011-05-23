@@ -1,7 +1,7 @@
 /**
  * 
  */
-package experimentation;
+package castutils.experimentation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,6 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import castutils.experimentation.StopWatch;
 
 /**
  * @author marc
@@ -55,10 +54,26 @@ public class PlannerStopWatch extends ManagedComponent {
 
 				switch (wmc.operation) {
 				case ADD:
+					watch.info(plan.id + "/"
+							+ plan.planningStatus.toString() + "/"
+							+ plan.executionStatus.toString() + "/"
+							+ plan.planningRetries + "/"
+							+ plan.goals[0].goalString + "/"
+							+ plan.plan.length);
 					watch.tic();
 					break;
 				case OVERWRITE:
 					switch (plan.planningStatus) {
+					case INPROGRESS:
+					case PENDING:
+						watch.info(plan.id + "/"
+									+ plan.planningStatus.toString() + "/"
+									+ plan.executionStatus.toString() + "/"
+									+ plan.planningRetries + "/"
+									+ plan.goals[0].goalString + "/"
+									+ plan.plan.length);
+						watch.tic();
+						break;
 					case ABORTED:
 					case FAILED:
 					case SUCCEEDED:

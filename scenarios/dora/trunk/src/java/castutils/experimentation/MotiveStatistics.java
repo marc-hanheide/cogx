@@ -1,7 +1,7 @@
 /**
  * 
  */
-package experimentation;
+package castutils.experimentation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +16,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.core.logging.ComponentLogger;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMView.ChangeHandler;
+
 
 /**
  * @author marc

@@ -51,6 +51,8 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 	protected void start() {
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				PerceptBelief.class, WorkingMemoryOperation.ADD), this);
+		addChangeFilter(ChangeFilterFactory.createTypeFilter(
+				PerceptBelief.class, WorkingMemoryOperation.OVERWRITE), this);
 		super.start();
 	}
 
@@ -76,9 +78,13 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 		if (wmaGroundedSet == null) {
 			label2AddrMap
 					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
+			log("this is an entirely new object with label " + perceptLabel
+					+ "that we haven't seen before");
 			newBelief(pb, perceptLabel, event);
 			return;
 		} else {
+			log("we have seen an object of " + perceptLabel
+					+ " before, so check if we have to update at all");
 			boolean newNeeded = true;
 			for (WorkingMemoryAddress wmaGrounded : wmaGroundedSet) {
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
@@ -86,7 +92,11 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 								wmaGrounded, GroundedBelief.class));
 				float existingProb = sumProb(gb.getContent().get(
 						VisualObjectTransferFunction.IS_IN));
+				log("the current existingProb of the GroundedBelief is "
+						+ existingProb + ", the perceptIsInProb is "
+						+ perceptIsInProb);
 				if (perceptIsInProb < 0.5) {
+					log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
 					setIsInProb(gb.getContent().get(
 							VisualObjectTransferFunction.IS_IN),
 							perceptPointer, (float) perceptIsInProb);
@@ -94,6 +104,7 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 					overwriteWorkingMemory(wmaGrounded, gb.get());
 					newNeeded = false;
 				} else if (existingProb < 0.5) {
+					log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
 					setIsInProb(gb.getContent().get(
 							VisualObjectTransferFunction.IS_IN),
 							perceptPointer, (float) perceptIsInProb);
