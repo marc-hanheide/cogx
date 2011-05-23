@@ -60,7 +60,7 @@ set(BUILD_SA_V11N_CLIENT_FILE_MONITOR ON CACHE BOOL "Build file monitor visualis
 set(BUILD_SA_V11N_DEBUG_TRACE OFF CACHE BOOL "Output a lot of debugging information")
 set(BUILD_SA_V11N_SERVER ON CACHE BOOL "Build the visualisation display server")
 set(BUILD_SA_V11N_STANDALONE ON CACHE BOOL "Build the standalone display server for V11N")
-set(BUILD_SA_V11N_TESTS ON CACHE BOOL "Build the test component for V11N (requires the client library)")
+set(BUILD_SA_V11N_TESTS OFF CACHE BOOL "Build the test component for V11N (requires the client library)")
 set(BUILD_SA_V11N_USE_LUAGL ON CACHE BOOL "Build with LuaGl script support (requres lua51 and tolua++51)")
 set(BUILD_SA_V11N_USE_TOMGINE OFF CACHE BOOL "Build with support for TomGine models (requires vision.sa)")
 set(BUILD_SA_V11N_USE_WEBKIT ON CACHE BOOL "Build with HTML support (Qt-WebKit)")
