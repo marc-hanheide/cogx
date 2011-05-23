@@ -32,12 +32,12 @@ p3dx_with_urg_and_blobfinder (
 # 
 # 
 # #create two green boxs
-# box2d
-# (
-# name "greenbox1"
-# color "green"
-# pose [-2 2.3 0.000 0]
-# )
+ box2d
+ (
+ name "greenbox1"
+ color "green"
+ pose [-2 2.3 0.000 0]
+ )
 # 
 # box2d
 # (
