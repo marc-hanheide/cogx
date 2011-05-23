@@ -81,12 +81,13 @@ define p3dx_with_urg p3dx
 # create a robot
 define p3dx_with_urg_and_blobfinder p3dx_with_urg
 (
-  blobfinder( 
-    channel_count 6 
-    channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
-    range_max 2.0
+  actuator (  
+    blobfinder( 
+      channel_count 6 
+      channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+      range_max 2.0
+    )
   )
-  ptz [0 0 90]
 
 )
 
