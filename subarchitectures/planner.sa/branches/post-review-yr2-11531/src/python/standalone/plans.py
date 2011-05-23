@@ -225,14 +225,14 @@ class MAPLPlan(networkx.MultiDiGraph):
         return result
 
     def to_dot(self, name="plan", ranks=[]):
-        from pygraphviz import AGraph
+        import pygraphviz
         def declare_rank(same_rank_list):
             same_rank_list = ['"%s"' % r for r in same_rank_list]
             return '{rank=same; %s}' % " ".join(same_rank_list)
 
         self.compute_depths()
         ranks = defaultdict(list)
-        G = AGraph(directed=True, strict=False)
+        G = pygraphviz.AGraph(directed=True, strict=False)
         for n, data in self.nodes_iter(data=True):
             if n == self.init_node:
                 continue
