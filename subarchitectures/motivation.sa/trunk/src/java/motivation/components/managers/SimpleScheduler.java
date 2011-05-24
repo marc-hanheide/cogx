@@ -214,7 +214,7 @@ public class SimpleScheduler extends ManagedComponent implements
 						}
 
 						setStatus(possibleGoals, MotiveStatus.ACTIVE);
-						log("start extecuting for " + possibleGoals.size()
+						log("start executing for " + possibleGoals.size()
 								+ " possible goals");
 						executionFuture = executor
 								.execute(plan.getEvent().address);
@@ -439,11 +439,16 @@ public class SimpleScheduler extends ManagedComponent implements
 
 	private void lockSet(Map<WorkingMemoryAddress, Motive> set)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		getLogger().debug("lockSet(): locking component");
 		lockComponent();
+		getLogger().debug("lockSet(): component locked");
 		for (WorkingMemoryAddress wma : set.keySet()) {
+			getLogger().debug("lockSet(): locking entry "+wma.id);
 			lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+			getLogger().debug("lockSet(): entry "+wma.id+" is locked");
 		}
 		unlockComponent();
+		getLogger().debug("lockSet(): component unlocked");
 	}
 
 	private void unlockSet(Map<WorkingMemoryAddress, Motive> set) {
