@@ -8,7 +8,7 @@
 #
 # Example:
 #    cd BUILD
-#    ../tools/scripts/patchcmake . <initial_cache.txt>
+#    ../tools/scripts/cmake-apply . <initial_cache.txt>
 
 # Absolute path and directory
 #SCRIPT=$(readlink -f $0)

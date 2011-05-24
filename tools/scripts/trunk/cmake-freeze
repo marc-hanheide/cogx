@@ -12,7 +12,7 @@
 #
 # Example:
 #    cd BUILD
-#    ../tools/scripts/freezecmake > frozen_settings.txt
+#    ../tools/scripts/cmake-freeze > frozen_settings.txt
 
 # Absolute path and directory
 #SCRIPT=$(readlink -f $0)
