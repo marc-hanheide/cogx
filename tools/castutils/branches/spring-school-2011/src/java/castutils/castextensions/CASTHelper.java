@@ -17,7 +17,7 @@ import cast.architecture.ManagedComponent;
 public class CASTHelper {
 	protected ManagedComponent component;
 	protected String name;
-	protected Logger logger;
+	private Logger logger = null;
 
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
@@ -25,15 +25,21 @@ public class CASTHelper {
 		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 	}
 
+	protected Logger getLogger() {
+		if (logger == null)
+			logger = Logger.getLogger(component.getLoggerName() + "." + name);
+		return logger;
+	}
+
 	protected void println(Object o) {
-		logger.info(name + ": " + o);
+		getLogger().info(name + ": " + o);
 	}
 
 	protected void log(Object o) {
-		logger.debug(name + ": " + o);
+		getLogger().debug(name + ": " + o);
 	}
 
 	protected void debug(Object o) {
-		logger.trace(name + ": " + o);
+		getLogger().trace(name + ": " + o);
 	}
 }
