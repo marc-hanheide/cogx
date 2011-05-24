@@ -60,10 +60,10 @@ public abstract class DependentLinkingDiscreteTransferFunction<From extends Ice.
 	protected WorkingMemoryAddress getReferredBelief(
 			ContentMatchingFunction<? super LinkedTo> contentMatchingFunction)
 			throws InterruptedException {
-		logger.debug("trying to find referred belief");
+		getLogger().debug("trying to find referred belief");
 		Entry<WorkingMemoryAddress, LinkedTo> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
-		logger.debug("got it: " + entry.getKey().id);
+		getLogger().debug("got it: " + entry.getKey().id);
 		return entry.getKey();
 	}
 
