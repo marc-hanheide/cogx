@@ -48,7 +48,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 
 INCLUDE includes/motivation.sa/motivation.cast
 INCLUDE includes/motivation.sa/motivation-goals-dora.cast
-JAVA MG motiv.patrol spatial.motivation.PatrolPlaceGenerator
+#JAVA MG motiv.patrol spatial.motivation.PatrolPlaceGenerator
 
 # exection ####################################################################
 #JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cereal_box,filing_box,matchbox,table_for_meal
