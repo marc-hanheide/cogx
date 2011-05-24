@@ -1503,7 +1503,27 @@ PlaceManager::deletePlaceProperties(int placeID)
   }
 
   {
-    //TODO: Delete connectivity properties
+    //Delete connectivity properties
+    for (map<int, set<int> >::iterator it = m_connectivities.begin();
+	it != m_connectivities.end(); it++) {
+      if (it->second.count(placeID) > 0) {
+	pair<int, int> objPair(it->first, placeID);
+	if (m_connectivityToWMIDMap.count(objPair) > 0) {
+	  try {
+	    deleteFromWorkingMemory(m_connectivityToWMIDMap[objPair]);
+	  }
+	  catch (Exception e) {
+	    log("Connectivity property could not be deleted; already missing on line %i!", __LINE__);
+	  }
+	  m_connectivityToWMIDMap.erase(objPair);
+	}
+	else {
+	  log("Warning: expected connectivity property missing from map on line %i",
+	      __LINE__);
+	}
+	break;
+      }
+    }
   }
   log("deletePlaceProperties exited");
 }
@@ -1688,6 +1708,9 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
 
     string newID = newDataID();
     addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
+
+    pair<int, int> objPair(place1ID, place2ID);
+    m_connectivityToWMIDMap[objPair] = newID;
 
     set<int> &place1Connectivities = m_connectivities[place1ID];
     place1Connectivities.insert(place2ID); 

@@ -160,6 +160,7 @@ class PlaceManager : public cast::ManagedComponent
     				   // thought it was going
     std::map<int, std::set<int> > m_connectivities; // Keeps track of the
     					// connectivity properties maintained
+    std::map<std::pair<int, int>, std::string> m_connectivityToWMIDMap;
     std::map<int, std::string> m_gatewayProperties;
     std::map<int, std::string> m_freeSpaceProperties; // Keeps track of the
     					// freespace placeholder properties maintained
