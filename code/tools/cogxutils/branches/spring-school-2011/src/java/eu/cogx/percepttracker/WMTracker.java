@@ -281,7 +281,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 									+ " (" + toWMA.id + ")");
 							wm2wmMap.put(ev.address, toWMA);
 						} else {
-							logger
+							getLogger()
 									.warn("failed to create a corresponding belief for "
 											+ from.type);
 						}
@@ -313,13 +313,13 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 								// component.unlockEntry(matchingWMA);
 							}
 						} catch (InterruptedException e) {
-							logger.error("interrupted: ", e);
+							getLogger().error("interrupted: ", e);
 						}
 					}
 				} catch (IncompatibleAssignmentException e) {
-					logger.error("during update:", e);
+					getLogger().error("during update:", e);
 				} catch (CASTException e) {
-					logger.error("during update:", e);
+					getLogger().error("during update:", e);
 				}
 			}
 		});
@@ -358,11 +358,11 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 						unlock(matchingWMA);
 					}
 				} catch (IncompatibleAssignmentException e) {
-					logger.error("during update:", e);
+					getLogger().error("during update:", e);
 				} catch (InterruptedException e) {
-					logger.error("during update:", e);
+					getLogger().error("during update:", e);
 				} catch (CASTException e) {
-					logger.error("during update:", e);
+					getLogger().error("during update:", e);
 					// } finally {
 					// try {
 					// try {
@@ -372,7 +372,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 					// component.unlockComponent();
 					// }
 					// } catch (CASTException e) {
-					// logger.error("during unlock of " + matchingWMA, e);
+					// getLogger().error("during unlock of " + matchingWMA, e);
 					// }
 				}
 			}
@@ -429,7 +429,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		try {
 			allTrackedBeliefs.start();
 		} catch (UnknownSubarchitectureException e1) {
-			logger.fatal("cannot start WMView", e1);
+			getLogger().fatal("cannot start WMView", e1);
 			return;
 		}
 
@@ -475,19 +475,19 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 					}
 					}
 				} catch (CASTException e) {
-					logger.error("in run: ", e);
+					getLogger().error("in run: ", e);
 				} catch (IncompatibleAssignmentException e) {
-					logger.error("in run", e);
+					getLogger().error("in run", e);
 				}
 			}
 		} catch (InterruptedException e) {
-			logger.warn("interrupted in run, leaving thread: ", e);
+			getLogger().warn("interrupted in run, leaving thread: ", e);
 			return;
 		} finally {
 			try {
 				component.removeChangeFilter(entryQueue);
 			} catch (SubarchitectureComponentException e) {
-				logger.error("while removing change filter: ", e);
+				getLogger().error("while removing change filter: ", e);
 			}
 		}
 	}
