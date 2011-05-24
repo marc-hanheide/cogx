@@ -22,7 +22,9 @@
 #include <algorithm>
 #include <cv.h>
 
+#if defined(HAS_LIBPLOT)
 #include <CSvgPlotter.hpp> // libplot-dev, wrapper
+#endif
 
 extern "C"
 {
@@ -119,6 +121,7 @@ void releaseWrappedImage(IplImage** pImagePtr)
 #else
 #define YY(y) y
 #endif
+#if defined(HAS_LIBPLOT)
 void drawContours(Plotter& p, double x0, double y0, vector<vector<cv::Point> >&contours)
 {
    vector<vector<cv::Point> >::iterator itpart;
@@ -140,10 +143,12 @@ void drawContours(Plotter& p, double x0, double y0, vector<vector<cv::Point> >&c
    }
    p.endpath();
 }
+#endif
 
 void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pVisObj,
       const ProtoObjectPtr& pProtoObj)
 {
+#if defined(HAS_LIBPLOT)
    struct _local_ {
       static std::string getBestLabel(std::vector<std::string>& labels, std::vector<double>& values)
       {
@@ -221,6 +226,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    std::string svg = p.getScreenSvg();
 
    m_display.setObject(OBJ_VISUAL_OBJECTS, id, svg);
+#endif
 }
 
 void CScene2D::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
