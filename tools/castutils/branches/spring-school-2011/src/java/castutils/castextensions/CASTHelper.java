@@ -22,12 +22,16 @@ public class CASTHelper {
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
 		name = this.getClass().getSimpleName();
-		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 	}
 
 	protected Logger getLogger() {
-		if (logger == null)
-			logger = Logger.getLogger(component.getLoggerName() + "." + name);
+		if (logger == null) {
+			if (component.getLoggerName().equals("null.null"))
+				return Logger.getLogger(name);
+			else
+				logger = Logger.getLogger(component.getLoggerName() + "."
+						+ name);
+		} 
 		return logger;
 	}
 
