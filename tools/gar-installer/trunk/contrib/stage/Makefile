@@ -3,6 +3,8 @@ GARVERSION = 3.2.2-Source
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
+#PATCHFILES = macosx-fltk-patch.diff
+
 MAINTAINER = mhanheid
 
 MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
@@ -24,6 +26,5 @@ CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix)
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = $(DIRPATHS)  --with-color=/etc/X11/rgb.txt
 
 
