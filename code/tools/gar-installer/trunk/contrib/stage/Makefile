@@ -1,14 +1,13 @@
 GARNAME = Stage
-GARVERSION = 4.0.0-src
+GARVERSION = 3.2.2-Source
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MAINTAINER = mhanheid
 
-MASTER_SITES = http://github.com/downloads/rtv/Stage/
-# http://dfn.dl.sourceforge.net/sourceforge/playerstage/
+MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
 
-#LIBDEPS = contrib/player-2.1.2
+LIBDEPS = contrib/player-3.0.2
 
 MFLAGS=-j4#$(MFLAGS_NUMCPU)
 
