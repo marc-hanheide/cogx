@@ -21,9 +21,9 @@ import facades.SpatialFacade;
 
 /**
  * @author marc
- * 
+ * @deprecated
  */
-public class HomingGenerator extends AbstractMotiveGenerator {
+public class DeprecatedHomingGenerator extends AbstractMotiveGenerator {
 	/** add a really low gain to homing */
 	private static final double HOMING_GAIN = 0.01;
 	Place homeBase = null;

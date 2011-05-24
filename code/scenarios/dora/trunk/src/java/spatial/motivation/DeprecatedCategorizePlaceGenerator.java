@@ -10,9 +10,6 @@ import motivation.slice.Motive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
@@ -21,9 +18,9 @@ import cast.core.CASTUtils;
 
 /**
  * @author marc
- *
+ * @deprecated
  */
-public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
+public class DeprecatedCategorizePlaceGenerator extends AbstractMotiveGenerator {
 
 	/* (non-Javadoc)
 	 * @see motivation.generators.Generator#updateMotive(cast.cdl.WorkingMemoryAddress, cast.cdl.WorkingMemoryAddress)
