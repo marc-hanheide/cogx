@@ -50,7 +50,7 @@ public class ExecutorFacade extends CASTHelper {
 			// only
 			// listen for deletion
 			planProxyQueue.take();
-			component.log("plan proxy deletion seen");
+			getLogger().debug("plan proxy deletion seen");
 			component.removeChangeFilter(planProxyQueue);
 			for (Callable<?> c : listeners) {
 				c.call();
@@ -86,16 +86,16 @@ public class ExecutorFacade extends CASTHelper {
 		PlanningTask pt = component.getMemoryEntry(planID, PlanningTask.class);
 		if (!pt.executePlan) {
 			pt.executePlan = true;
-			logger.info("setting planning task active");
+			getLogger().info("setting planning task active");
 			component.overwriteWorkingMemory(planID, pt);
 		}
 		try {
-			logger.info("waiting a second as part of a big HACK!");
+			getLogger().info("waiting a second as part of a big HACK!");
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
-		logger.info("starting execution for planID "
+		getLogger().info("starting execution for planID "
 				+ CASTUtils.toString(planID));
 		FutureExecutionTask futureExecution = new FutureExecutionTask(planID);
 		executorService.execute(futureExecution);
