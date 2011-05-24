@@ -155,7 +155,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			map.map.clear();
 			write();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 		} finally {
 			unlock();
 		}
@@ -171,7 +171,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.containsKey(key);
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return false;
 		}
 	}
@@ -186,7 +186,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.containsValue(value);
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return false;
 		}
 	}
@@ -200,7 +200,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.entrySet();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		}
 	}
@@ -215,7 +215,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.equals(o);
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return false;
 		}
 	}
@@ -223,24 +223,24 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 	public WorkingMemoryAddress waitFor(WorkingMemoryAddress key) throws InterruptedException, ValueNotAvailableException {
 		WorkingMemoryAddress result = null;
 		while (result == null) {
-			//logger.debug("content " + this.toString());
+			//getLogger().debug("content " + this.toString());
 			result = get(key);
 			if (result == null) {
-				logger.debug("have to wait for key "
+				getLogger().debug("have to wait for key "
 						+ CASTUtils.toString((WorkingMemoryAddress) key));
 
 				synchronized (addr) {
 					long ms=System.currentTimeMillis();
 					addr.wait(11000);
 					if (System.currentTimeMillis()-ms>10000) {
-						logger.warn("already for more than 10 seconds for a value for "+CASTUtils.toString(key));
+						getLogger().warn("already for more than 10 seconds for a value for "+CASTUtils.toString(key));
 						throw(new ValueNotAvailableException());
 					}
 				}
 
 			}
 		}
-		logger.debug("got value for key "
+		getLogger().debug("got value for key "
 				+ CASTUtils.toString((WorkingMemoryAddress) key) + ": "
 				+ CASTUtils.toString((WorkingMemoryAddress) result));
 		return result;
@@ -256,7 +256,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.get(key);
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		}
 
@@ -271,7 +271,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.hashCode();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return 0;
 		}
 	}
@@ -285,7 +285,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.isEmpty();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return true;
 		}
 	}
@@ -299,7 +299,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.keySet();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		}
 	}
@@ -319,7 +319,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			write();
 			return result;
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		} finally {
 			unlock();
@@ -338,7 +338,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			map.map.putAll(m);
 			write();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 		} finally {
 			unlock();
 		}
@@ -357,7 +357,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			write();
 			return result;
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		} finally {
 			unlock();
@@ -373,7 +373,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.size();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return 0;
 		}
 	}
@@ -387,7 +387,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 			read();
 			return map.map.values();
 		} catch (CASTException e) {
-			logger.error("error in PointerMap ", e);
+			getLogger().error("error in PointerMap ", e);
 			return null;
 		}
 	}
@@ -407,7 +407,7 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 
 						@Override
 						public void workingMemoryChanged(WorkingMemoryChange wmc) {
-							logger.debug("MAP changed, notify waiting threads");
+							getLogger().debug("MAP changed, notify waiting threads");
 							synchronized (addr) {
 								addr.notifyAll();
 							}
@@ -420,10 +420,10 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 
 	private void lock() throws CASTException {
 		init();
-		logger.debug("wait for lock " + addr.id);
+		getLogger().debug("wait for lock " + addr.id);
 		component.lockComponent();
 		component.lockEntry(addr, WorkingMemoryPermissions.LOCKEDOD);
-		logger.debug("have lock " + addr.id);
+		getLogger().debug("have lock " + addr.id);
 	}
 
 	private void read() throws CASTException {
@@ -435,9 +435,9 @@ public class PointerMap<T extends WMMap> extends CASTHelper implements
 		try {
 			component.unlockEntry(addr);
 			component.unlockComponent();
-			logger.debug("unlocked " + addr.id + "size: " + map.map.size());
+			getLogger().debug("unlocked " + addr.id + "size: " + map.map.size());
 		} catch (CASTException e) {
-			logger.error("error in unlocking PointerMap ", e);
+			getLogger().error("error in unlocking PointerMap ", e);
 		}
 	}
 
