@@ -1,7 +1,8 @@
-package motivation.components.generators;
+package coma.motivation;
 
 import java.util.Map;
 
+import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.CategorizeRoomMotive;
 import autogen.Planner.Goal;
 import cast.cdl.WorkingMemoryAddress;
@@ -13,7 +14,7 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
-public class ComaBeliefGoalGenerator extends
+public class CategorizeRoomGoalGenerator extends
 		AbstractBeliefMotiveGenerator<CategorizeRoomMotive, GroundedBelief> {
 
 	private static final String COMATYPE = SimpleDiscreteTransferFunction
@@ -25,7 +26,7 @@ public class ComaBeliefGoalGenerator extends
 	 */
 	private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
-	public ComaBeliefGoalGenerator() {
+	public CategorizeRoomGoalGenerator() {
 		super(COMATYPE, CategorizeRoomMotive.class, GroundedBelief.class);
 	}
 

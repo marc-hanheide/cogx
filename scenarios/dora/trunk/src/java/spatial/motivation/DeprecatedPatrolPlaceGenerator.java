@@ -25,9 +25,9 @@ import facades.SpatialFacade;
 
 /**
  * @author marc
- * 
+ * @deprecated
  */
-public class PatrolPlaceGenerator extends AbstractMotiveGenerator {
+public class DeprecatedPatrolPlaceGenerator extends AbstractMotiveGenerator {
 
 	/**
 	 * amount of milliseconds that corresponds to information gain of 0.5. If
@@ -37,7 +37,7 @@ public class PatrolPlaceGenerator extends AbstractMotiveGenerator {
 	private static final long EXP_NORM = 30000;
 	private HashMap<Long, WorkingMemoryAddress> m_placeIDtoMotiveWMA;
 
-	public PatrolPlaceGenerator() {
+	public DeprecatedPatrolPlaceGenerator() {
 		super();
 		m_placeIDtoMotiveWMA = new HashMap<Long, WorkingMemoryAddress>();
 	}
