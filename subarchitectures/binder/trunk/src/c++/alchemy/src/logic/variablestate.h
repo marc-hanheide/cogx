@@ -2876,13 +2876,28 @@ class VariableState
             cout << "Removing gnd pred " << -(atomIdx + 1)
                  << " from ground clause " << gndClauseIndexes[i] << endl;
           }
-          (*gndClauses_)[gndClauseIndexes[i] - deleted]->removeGndPred(-(atomIdx + 1));
-/*          
+//          (*gndClauses_)[gndClauseIndexes[i] - deleted]->removeGndPred(-(atomIdx + 1));
+          
           GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
           gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
           gc->removeGndPred(-(atomIdx + 1));
-          gndClauses_->append(gc);
-          deleted++; */
+          deleted++;
+          
+          int pos = gndClauses_->find(gc);
+          if(pos >=0)	{
+          	IntBoolPair *flist = gc->getClauseFrequencies();
+          	int freq;
+          	for(int id=0; id < flist->size(); id++) {
+          	  freq=(*flist)[id].first;
+          	  if(freq > 0)	
+    			(*gndClauses_)[pos]->incrementClauseFrequency(id, freq, false);
+    		}
+	   		(*gndClauses_)[pos]->setWtToSumOfParentWts(mln_);
+	   		delete gc;
+    	  }
+    	  else {
+    		gndClauses_->append(gc);	
+    	  }  
         }
       }
      
@@ -2921,14 +2936,29 @@ class VariableState
             cout << "Removing gnd pred " << -(atomIdx + 1)
                  << " from ground clause " << gndClauseIndexes[i] << endl;
           }
-          (*gndClauses_)[gndClauseIndexes[i] - deleted]->removeGndPred(atomIdx + 1);
-/*         
+//          (*gndClauses_)[gndClauseIndexes[i] - deleted]->removeGndPred(atomIdx + 1);
+         
           GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
           gndClauses_->removeItem(gndClauseIndexes[i] - deleted);
           gc->removeGndPred(atomIdx + 1);
-          gndClauses_->append(gc);
           deleted++;
-*/
+          
+          int pos = gndClauses_->find(gc);
+          if(pos >=0)	{
+          	IntBoolPair *flist = gc->getClauseFrequencies();
+          	int freq;
+          	for(int id=0; id < flist->size(); id++) {
+          	  freq=(*flist)[id].first;
+          	  if(freq > 0)	
+    			(*gndClauses_)[pos]->incrementClauseFrequency(id, freq, false);
+    		}
+	   		(*gndClauses_)[pos]->setWtToSumOfParentWts(mln_);
+	   		delete gc;
+    	  }
+    	  else {
+    		gndClauses_->append(gc);	
+    	  }
+
         }
       }
 
