@@ -1,0 +1,115 @@
+
+                       +-------------------------------+
+                       |         LogMX v2.1.1          |
+                       |         (23 May 2011)         |
+                       |                               |
+                       | The universal log file viewer |
+                       +-------------------------------+
+
+
+  What is it? 
+  -----------
+
+LogMX is an easy-to-use cross platform tool for developers and administrators 
+working with log & trace files.
+
+Using a nice graphical interface, LogMX displays log & trace files content, 
+allowing filters on levels (e.g. INFO, WARNING, ...) and emitters (e.g. classes,
+packages, function, process, ...)
+
+LogMX was designed to read all log & trace formats from local or remote files: 
+user can learn LogMX how to read new file formats using GUI configuration or
+easy-to-write plugins, and learn it new log levels directly through 
+application options (LogMX is delivered with common parser-plugins for user 
+convenience, such as Log4J and LogFactor5 formats).
+
+LogMX provides many other useful features such as: Search (regular expression 
+or not), Export, Auto-refresh, Elapsed time computation, File deletion or flush, 
+Alerts, Console mode,...
+
+
+  Install / Uninstall
+  -------------------
+  
+There is nothing to do to install LogMX: you only have to unzip the downloaded
+ZIP file in the directory of your choice and start LogMX the way described in 
+next section.
+Note: you need Java 6 or later to run LogMX (to get it, go to www.java.com).
+
+To uninstall it, simply delete the LogMX directory.
+
+
+  Execution
+  ---------
+  
+Here is how to start LogMX, depending on you Operating System:
+ 
+  * UNIX/Linux/Mac: 
+    
+    Simply type  ./logmx.sh  from LogMX directory, or type  <LogMXDir>/logmx.sh
+    from any directory.
+    If you get an error like "Cannot execute", type  chmod +x logmx.sh  from 
+    LogMX directory.
+    You may choose to add LogMX directory to your $PATH environment variable 
+    so that you can start LogMX from anywhere.
+    To start LogMX to view a specific file, simply use  ./logmx.sh <file>
+    
+  * Windows:
+  
+    Simply double-click on the LogMX icon in the LogMX directory 
+    (file 'LogMX.exe').
+    If you have trouble starting LogMX this way, use 'LogMX.bat' to get 
+    some more detailed information on this error.
+    Note: you can start LogMX using the command-line (above chapter for 
+    UNIX/Linux/Mac applies by replacing 'logmx.sh' with 'LogMX.bat')
+    Note: you can add an item "Open with LogMX" in Windows Explorer's popup
+    menus by clicking on the button "Integrate to Windows Explorer..."
+    in "Options" dialog box.
+
+
+  The Latest Version
+  ------------------
+
+Details of the latest version can be found on the LogMX web site:
+http://www.logmx.com
+
+
+  Free evaluation version / Profesional version
+  ---------------------------------------------
+
+This software comes in two different versions:
+ - A free evaluation version (some features disabled, and commercial use limited
+   to 30 days)
+ - A Professional version including more features.
+
+To know which features are included in a version, please visit:
+   http://www.logmx.com/p_download.php
+
+To purchase a Professional version, please visit:
+   http://www.logmx.com/p_buy.php
+
+
+  Support
+  -------
+
+If you have any question or problem:
+
+  * for parser development support, please visit our Parser Development page:
+    http://www.logmx.com/p_parser_dev.php
+    
+  * you can use our forum:
+    http://www.logmx.com/forum
+  
+  * or send an e-mail to:
+    support@logmx.com
+
+
+  Licensing
+  ---------
+
+This software is licensed under the terms you may find in the file named 
+"License.txt" in this directory.
+ 
+
+  Thanks for using LogMX.
+                                                             LightySoft

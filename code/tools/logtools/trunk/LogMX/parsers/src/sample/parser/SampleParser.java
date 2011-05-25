@@ -1,7 +1,10 @@
 package sample.parser;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +34,13 @@ public class SampleParser extends LogFileParser {
 
     /** Buffer for Entry message (improves performance for multi-lines entries)  */
     private StringBuilder entryMsgBuffer = null;
+
+    /** Key of user-defined field "timestamp" */
+    private static final String EXTRA_TIMESTAMP_FIELD_KEY = "Timestamp";
+
+    /** User-defined fields names (here, only one) */
+    private static final List<String> EXTRA_FIELDS_KEYS = Arrays
+        .asList(EXTRA_TIMESTAMP_FIELD_KEY);
 
 
     /** 
@@ -64,30 +74,41 @@ public class SampleParser extends LogFileParser {
         if (matcher.matches()) {
             // Record previous found entry if exists, then create a new one
             prepareNewEntry();
-            
+
             String[] fields = line.split("\\|");
 
             entry.setDate(fields[0].trim());
             entry.setLevel(fields[1].trim());
             entry.setEmitter(fields[2].trim());
             entryMsgBuffer.append(fields[3].trim());
-            entry.setExtraInfo(matcher.group(1)); // save entry timestamp (ex: T0+1546ms)
+            entry.getUserDefinedFields().put(EXTRA_TIMESTAMP_FIELD_KEY, matcher.group(1)); // save entry timestamp (ex: T0+1546ms)
         } else if (entry != null) {
-            entryMsgBuffer.append("\n").append(line); // appends this line to previous entry's text
+            entryMsgBuffer.append('\n').append(line); // appends this line to previous entry's text
         }
     }
 
+    /** 
+     * Returns the ordered list of user-defined fields to display (given by their key), for each entry.
+     * @see com.lightysoft.logmx.mgr.LogFileParser#getUserDefinedFields()
+     */
+    @Override
+    public List<String> getUserDefinedFields() {
+        return EXTRA_FIELDS_KEYS;
+    }
+
     /**
-     * Returns the relative timestamp of given entry (if entry's ExtraInfo contains "1265", 
+     * Returns a relative Date for the given entry (if entry's ExtraInfo contains "1265", 
      * it means "T0 + 1265 ms", so simply return "new Date(1265)")
      * @see com.lightysoft.logmx.mgr.LogFileParser#getRelativeEntryDate(com.lightysoft.logmx.business.ParsedEntry)
      */
     public Date getRelativeEntryDate(ParsedEntry pEntry) throws Exception {
-        return new Date(Integer.parseInt(pEntry.getExtraInfo().toString()));
+        final String strTimeStamp = pEntry.getUserDefinedFields().get(EXTRA_TIMESTAMP_FIELD_KEY)
+            .toString();
+        return new Date(Integer.parseInt(strTimeStamp));
     }
 
     /**
-     * Returns the Date object for the given entry 
+     * Returns the absolute Date for the given entry 
      * @see com.lightysoft.logmx.mgr.LogFileParser#getAbsoluteEntryDate(com.lightysoft.logmx.business.ParsedEntry)
      */
     public Date getAbsoluteEntryDate(ParsedEntry pEntry) throws Exception {
@@ -112,6 +133,7 @@ public class SampleParser extends LogFileParser {
     private void prepareNewEntry() throws Exception {
         recordPreviousEntryIfExists();
         entry = createNewEntry();
-        entryMsgBuffer = new StringBuilder("");
+        entryMsgBuffer = new StringBuilder(80);
+        entry.setUserDefinedFields(new HashMap<String, Object>(1)); // Create an empty Map with only one element allocated
     }
 }

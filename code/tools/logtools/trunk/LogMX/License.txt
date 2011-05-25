@@ -71,13 +71,13 @@ License fee
 -----------
 License fee are based on the number of copies of Software licensed. You shall place order in 
 accordance with the Quotation and Order Form. The Order Form shall include the number of copies 
-and the corresponding price. License fee will be paid by credit card. You can download the Software
-only after payment of the License fee. Prices, as stated in the Quotation, are subject to change
-without notice. In such case, a new Quotation shall be placed in the Licensor's web site. All
-payments shall be in Euros or in Dollar.The stated price is exclusive of any taxes, fees and
-duties. You shall pay any taxes related to the Software licensed pursuant to this Software License
-Agreement. If you are exempt from such taxes, you shall provide to the Licensor, upon Licensor's
-request, a valid tax exemption certificate acceptable to the taxing authority. 
+and the corresponding price. License fee will be paid by credit card or PayPal account. You can 
+download the Software only after payment of the License fee. Prices, as stated in the Quotation, are
+subject to change without notice. In such case, a new Quotation shall be placed in the Licensor's 
+web site. All payments shall be in Euros or in Dollar. The stated price is exclusive of any taxes, 
+fees and duties. You shall pay any taxes related to the Software licensed pursuant to this Software 
+License Agreement. If you are exempt from such taxes, you shall provide to the Licensor, upon 
+Licensor's request, a valid tax exemption certificate acceptable to the taxing authority. 
 
 An invoice will be e-mailed to the address specified in the Order Form.
 
