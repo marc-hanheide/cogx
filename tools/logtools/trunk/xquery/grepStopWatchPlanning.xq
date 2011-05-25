@@ -8,5 +8,5 @@ declare namespace log4j="http://jakarta.apache.org/log4j/";
 
   where fn:starts-with($e/@logger,"StopWatch.tictoc.PlanningTask") and fn:starts-with($extrainfo[2],"SUCCEEDED")
 
-  return fn:concat($ts," ",$tokenized[2]," ",$extrainfo[1]," ",$extrainfo[4]," ",$extrainfo[6])
+  return fn:concat($ts," ",$tokenized[2]," ",$extrainfo[1]," ",$extrainfo[4]," ",$extrainfo[6],"\n")
   
