@@ -281,8 +281,17 @@ void StereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointC
 
   Pose3 global_left_pose;
   if(transformToGlobal)
+  {
+    Pose3 ideal_pose, rel_pose;
+    setIdentity(ideal_pose);
+    // pose of ideal left camera w.r.t. to real left camera
+    // the pose is a rotation given by the rectification matrix
+    setRow33(ideal_pose.rot, stereoCam->cam[LEFT].rect);
+    // get from ideal left pose to real left pose
+    transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
     // get from relative left pose to global left pose
-    transform(stereoCam->pose, stereoCam->cam[LEFT].pose, global_left_pose);
+    transform(stereoCam->pose, rel_pose, global_left_pose);
+  }
 
   points.resize(0);
   for(int y = 0; y < imgSet.disparityImg->height; y++)
@@ -348,10 +357,18 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
   image.camPars.cx = stereoCam->cam[side].proj[0][2];
   image.camPars.cy = stereoCam->cam[side].proj[1][2];
   changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
-  // get from relative left pose to global left pose
-  Pose3 global_pose;
-  transform(stereoCam->pose, stereoCam->cam[side].pose, global_pose);
+
+  Pose3 ideal_pose, rel_pose, global_pose;
+  setIdentity(global_pose);
+  // pose of ideal left/right camera w.r.t. to actual left/right camera
+  // the pose is a rotation given by the rectification matrix
+  setRow33(ideal_pose.rot, stereoCam->cam[side].rect);
+  // get from ideal left/right pose to real left/right pose
+  transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
+  // get from relative left/right pose to global left/right pose
+  transform(stereoCam->pose, rel_pose, global_pose);
   image.camPars.pose = global_pose;
+
   image.camPars.time = getCASTTime();
 
   unlockComponent();
