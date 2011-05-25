@@ -477,7 +477,17 @@ if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: 
   stereoProcessing(stereoCam, imgSet, images);
   Pose3 global_left_pose;
   if(transformToGlobal)
-    transform(stereoCam->pose, stereoCam->cam[0].pose, global_left_pose);
+  {
+    Pose3 ideal_pose, rel_pose;
+    setIdentity(ideal_pose);
+    // pose of ideal left camera w.r.t. to real left camera
+    // the pose is a rotation given by the rectification matrix
+    setRow33(ideal_pose.rot, stereoCam->cam[LEFT].rect);
+    // get from ideal left pose to real left pose
+    transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
+    // get from relative left pose to global left pose
+    transform(stereoCam->pose, rel_pose, global_left_pose);
+  }
 
 if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", camPars[0].pose.pos.x, camPars[0].pose.pos.y, camPars[0].pose.pos.z);
 if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", global_left_pose.pos.x, global_left_pose.pos.y, global_left_pose.pos.z);
@@ -541,21 +551,46 @@ void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& imag
     convertImageFromIpl(kinectIpl, image);
   }
   
-  double scaleFactor = (double) image.width / (double) imgWidth;
-  initCameraParameters(image.camPars);
-  image.camPars.id = camIds[side];
-  image.camPars.width = imgWidth;         // actual width
-  image.camPars.height = imgWidth*3/4;    // actual height
-  image.camPars.fx = camPars[side].fx/scaleFactor;
-  image.camPars.fy = camPars[side].fy/scaleFactor;
-  image.camPars.cx = camPars[side].cx/scaleFactor;
-  image.camPars.cy = camPars[side].cy/scaleFactor;
- 
-  Pose3 global_pose, zeroPose;
-  setIdentity(zeroPose);
-  transform(camPars[side].pose, zeroPose, global_pose);
-  image.camPars.pose = global_pose;
-  image.camPars.time = getCASTTime();
+  if(side == LEFT || side ==RIGHT)
+  {
+    initCameraParameters(image.camPars);
+    image.camPars.id = side;
+    image.camPars.width = imgWidth;
+    image.camPars.height = imgWidth*3/4;
+
+    image.camPars.fx = stereoCam->cam[side].proj[0][0];
+    image.camPars.fy = stereoCam->cam[side].proj[1][1];
+    image.camPars.cx = stereoCam->cam[side].proj[0][2];
+    image.camPars.cy = stereoCam->cam[side].proj[1][2];
+//       changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
+
+    Pose3 ideal_pose, rel_pose, global_pose;
+    setIdentity(global_pose);
+    // pose of ideal left/right camera w.r.t. to actual left/right camera
+    // the pose is a rotation given by the rectification matrix
+    setRow33(ideal_pose.rot, stereoCam->cam[side].rect);
+    // get from ideal left/right pose to real left/right pose
+    transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
+    // get from relative left/right pose to global left/right pose
+    transform(stereoCam->pose, rel_pose, global_pose);
+    image.camPars.pose = global_pose;
+
+    image.camPars.time = getCASTTime();
+  }
+  else if(side == 2)
+  {
+    initCameraParameters(image.camPars);
+    image.camPars.id = side;
+    image.camPars.width = imgWidth;
+    image.camPars.height = imgWidth*3/4;
+    image.camPars = camPars[2];
+
+    Pose3 global_pose, zeroPose;
+    setIdentity(zeroPose);
+    transform(camPars[side].pose, zeroPose, global_pose);
+    image.camPars.pose = global_pose;
+    image.camPars.time = getCASTTime();
+  }
 
   unlockComponent();
 }
