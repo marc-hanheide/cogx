@@ -62,21 +62,21 @@ public class ViewPointTransferFunction extends
 		try {
 			WorkingMemoryAddress placeBelAdr = getReferredBelief(new PlaceMatchingFunction(
 					closestPlace));
-			logger.debug("looking for place with belief address " + CASTUtils.toString(placeBelAdr));
+			getLogger().debug("looking for place with belief address " + CASTUtils.toString(placeBelAdr));
 			GroundedBelief placeBelRaw = allBeliefs.get(placeBelAdr);
-			logger.debug("looking up the belief returned " + placeBelRaw);
+			getLogger().debug("looking up the belief returned " + placeBelRaw);
 			CASTIndependentFormulaDistributionsBelief<dBelief> placeBel = CASTIndependentFormulaDistributionsBelief
 					.create(dBelief.class, placeBelRaw);
-			logger.info("  placeBel=" + placeBel.toString());
+			getLogger().info("  placeBel=" + placeBel.toString());
 			result.put(RoomMembershipMediator.ROOM_PROPERTY, placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely());
-			logger.info("  roommember=" + placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely().toString());
+			getLogger().info("  roommember=" + placeBel.getContent().get(RoomMembershipMediator.ROOM_PROPERTY).getDistribution().getMostLikely().toString());
 			result.put(LocalizedAgentTransferFunction.IS_IN, WMPointer.create(placeBelAdr, CASTUtils.typeName(this.beliefClass)).getAsFormula());
-//			logger.info("  generate for view cone: " + IceXMLSerializer.toXMLString(result));
+//			getLogger().info("  generate for view cone: " + IceXMLSerializer.toXMLString(result));
 		} catch (InterruptedException e) {
-			logger.error(e);
+			getLogger().error(e);
 			return null;
 		} catch (NullPointerException e) {
-			logger.error(e);
+			getLogger().error(e);
 			return null;
 			
 		}
