@@ -362,13 +362,6 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
       framerateMillis = 1000;
   } else log("configure: warning: framerate_ms set to 1000ms = 1s.\n");
 
-  
-  if((it = _config.find("--stereoconfig")) != _config.end())
-  {
-    stereoCalibFile = it->second;
-  }
-  else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file specified"));
-
   if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
@@ -426,25 +419,40 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
     log("log images.");
   }
   
-  // if no image size was specified, use the original image size as given by the stereo config
-  if(stereoSizes.empty())
+//   if((it = _config.find("--stereoconfig")) != _config.end())
+//   {
+//     stereoCalibFile = it->second;
+//   }
+//   else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file specified"));
+  
+  if((it = _config.find("--stereoconfig_xml")) != _config.end())
   {
-    StereoCamera *sc = new StereoCamera();
-    sc->ReadSVSCalib(stereoCalibFile);
-    sc->SetupImageRectification();
-    stereoCams.push_back(sc);
-    stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
-  }
-  else  // else: we have a set of resolutions, create a stereo camera for each
-  {
-    for(size_t i = 0; i < stereoSizes.size(); i++)
+    istringstream str(it->second);
+    string fileLeft, fileRight;
+    str >> fileLeft;
+    str >> fileRight;
+      
+    // if no image size was specified, use the original image size as given by the stereo config
+    if(stereoSizes.empty())
     {
       StereoCamera *sc = new StereoCamera();
-      sc->ReadSVSCalib(stereoCalibFile);
-      // now set the input image size to be used by stereo matching
-      sc->SetInputImageSize(stereoSizes[i]);
+      sc->ReadFromXML(fileLeft, 0, false);    // 0 = left
+      sc->ReadFromXML(fileRight, 1, false);   // 1 = right
       sc->SetupImageRectification();
       stereoCams.push_back(sc);
+      stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
+    }
+    else  // else: we have a set of resolutions, create a stereo camera for each
+    {
+      for(size_t i = 0; i < stereoSizes.size(); i++)
+      {
+        StereoCamera *sc = new StereoCamera();
+        sc->ReadFromXML(fileLeft, 0, true);    // 0 = left
+        sc->ReadFromXML(fileRight, 1, true);   // 1 = right
+        sc->SetInputImageSize(stereoSizes[i]);
+        sc->SetupImageRectification();
+        stereoCams.push_back(sc);
+      }
     }
   }
 
