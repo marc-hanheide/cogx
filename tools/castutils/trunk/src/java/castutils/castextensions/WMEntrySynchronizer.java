@@ -326,16 +326,16 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 
 					}
 				} catch (CASTException e) {
-					logger.error("in run: ", e);
+					getLogger().error("in run: ", e);
 				}
 			}
 		} catch (InterruptedException e) {
-			logger.warn("interrupted in run: ", e);
+			getLogger().warn("interrupted in run: ", e);
 		} finally {
 			try {
 				component.removeChangeFilter(entryQueue);
 			} catch (SubarchitectureComponentException e) {
-				logger.error("while removing change filter: ", e);
+				getLogger().error("while removing change filter: ", e);
 			}
 		}
 	}
