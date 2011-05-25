@@ -43,6 +43,16 @@ inline void setRow33(Matrix33 &a, const float m[])
 }
 
 /**
+ * Set from a 3x3 float array in row major order.
+ */
+inline void setRow33(Matrix33 &a, const float m[3][3])
+{
+  a.m00 = (double)m[0][0]; a.m01 = (double)m[0][1]; a.m02 = (double)m[0][2];
+  a.m10 = (double)m[1][0]; a.m11 = (double)m[1][1]; a.m12 = (double)m[1][2];
+  a.m20 = (double)m[2][0]; a.m21 = (double)m[2][1]; a.m22 = (double)m[2][2];
+}
+
+/**
  * Set from a 3x3 double array in row major order.
  */
 inline void setRow33(Matrix33 &a, const double m[])
@@ -50,6 +60,16 @@ inline void setRow33(Matrix33 &a, const double m[])
   a.m00 = m[0]; a.m01 = m[1]; a.m02 = m[2];
   a.m10 = m[3]; a.m11 = m[4]; a.m12 = m[5];
   a.m20 = m[6]; a.m21 = m[7]; a.m22 = m[8];
+}
+
+/**
+ * Set from a 3x3 double array in row major order.
+ */
+inline void setRow33(Matrix33 &a, const double m[3][3])
+{
+  a.m00 = m[0][0]; a.m01 = m[0][1]; a.m02 = m[0][2];
+  a.m10 = m[1][0]; a.m11 = m[1][1]; a.m12 = m[1][2];
+  a.m20 = m[2][0]; a.m21 = m[2][1]; a.m22 = m[2][2];
 }
 
 /**
