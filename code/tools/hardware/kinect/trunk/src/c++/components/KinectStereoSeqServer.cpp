@@ -787,8 +787,17 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
   // ######################## stereo procesing ######################## //
   Pose3 global_left_pose;
   if(transformToGlobal)
-    // get from relative left pose to global left pose (O=LEFT)
-    transform(stereoCam->pose, stereoCam->cam[0].pose, global_left_pose);
+  {
+    Pose3 ideal_pose, rel_pose;
+    setIdentity(ideal_pose);
+    // pose of ideal left camera w.r.t. to real left camera
+    // the pose is a rotation given by the rectification matrix
+    setRow33(ideal_pose.rot, stereoCam->cam[LEFT].rect);
+    // get from ideal left pose to real left pose
+    transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
+    // get from relative left pose to global left pose
+    transform(stereoCam->pose, rel_pose, global_left_pose);
+  }
 
   // get stereo point cloud with the color from the left RECTIFIED image!!!       /// TODO We need the rectified image
   for(int y = 0; y < disparityImg->height; y++)
@@ -900,11 +909,18 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
     image.camPars.cy = stereoCam->cam[side].proj[1][2];
 //       changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
 
-    stereoCam->pose = camPars[0].pose;  // get actual stereoCam pose        /// TODO stereoCam->pose is pose of left camera?
-    Pose3 global_pose;
-    transform(stereoCam->pose, stereoCam->cam[side].pose, global_pose);
-    
+    stereoCam->pose = camPars[0].pose;  // get actual stereoCam pose
+    Pose3 ideal_pose, rel_pose, global_pose;
+    setIdentity(global_pose);
+    // pose of ideal left/right camera w.r.t. to actual left/right camera
+    // the pose is a rotation given by the rectification matrix
+    setRow33(ideal_pose.rot, stereoCam->cam[side].rect);
+    // get from ideal left/right pose to real left/right pose
+    transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
+    // get from relative left/right pose to global left/right pose
+    transform(stereoCam->pose, rel_pose, global_pose);
     image.camPars.pose = global_pose;
+
     image.camPars.time = getCASTTime();
   }
   else if(side == 2)
