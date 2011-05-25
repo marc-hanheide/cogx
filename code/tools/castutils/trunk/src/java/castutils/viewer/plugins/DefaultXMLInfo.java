@@ -27,7 +27,7 @@ public class DefaultXMLInfo implements Plugin {
 		return extraInfo;
 	}
 	
-	String toXML(Ice.Object o) {
+	public static String toXML(Object o) {
 		return escapeString(IceXMLSerializer.toXMLString(o));
 	}
 
