@@ -120,10 +120,10 @@ public abstract class AugmentDiscreteTransferFunction<From extends Ice.ObjectImp
 	protected WorkingMemoryAddress getReferredBelief(
 			ContentMatchingFunction<PerceptBelief> contentMatchingFunction)
 			throws InterruptedException {
-		logger.debug("trying to find referred belief");
+		getLogger().debug("trying to find referred belief");
 		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
-		logger.debug("got it: " + entry.getKey().id);
+		getLogger().debug("got it: " + entry.getKey().id);
 		return entry.getKey();
 	}
 
