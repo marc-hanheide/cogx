@@ -7,10 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import VisionData.VisualObject;
 import cast.AlreadyExistsOnWMException;
@@ -31,6 +29,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.util.ProbFormula;
 import edu.ksu.cis.bnj.ver3.core.BeliefNetwork;
 import edu.ksu.cis.bnj.ver3.core.BeliefNode;
 import edu.ksu.cis.bnj.ver3.core.CPF;
@@ -109,7 +108,12 @@ public class DoraBayesianVisualObjectTracker extends ManagedComponent implements
 		// iterate all observations for this label
 		for (String placeId : placeIds) {
 
-			List<Double> obs = observations.get(label).get(placeId);
+			Map<String, List<Double>> obsMap = observations.get(label);
+			if (obsMap==null) { 
+				obsMap=new HashMap<String, List<Double>>();
+				observations.put(label, obsMap);
+			}
+			List<Double> obs = obsMap.get(placeId);
 
 			// create existence node for the place (with its id as name)
 			BeliefNode existenceNode = new BeliefNode(placeId, new Discrete(
@@ -160,32 +164,13 @@ public class DoraBayesianVisualObjectTracker extends ManagedComponent implements
 		DoraBayesianVisualObjectTracker obj = new DoraBayesianVisualObjectTracker();
 
 		obj.storeNewObservation("place1", "obj1", 1.0);
-		obj.storeNewObservation("place1", "obj1", 1.0);
-		obj.storeNewObservation("place1", "obj1", 1.0);
-		obj.storeNewObservation("place2", "obj1", 1.0);
-		obj.storeNewObservation("place2", "obj1", 0.0);
-		obj.storeNewObservation("place2", "obj1", 0.0);
-		obj.storeNewObservation("place2", "obj1", 0.0);
+//		obj.storeNewObservation("place1", "obj1", 1.0);
+//		obj.storeNewObservation("place1", "obj1", 1.0);
+//		obj.storeNewObservation("place2", "obj1", 1.0);
+//		obj.storeNewObservation("place2", "obj1", 0.0);
+//		obj.storeNewObservation("place2", "obj1", 0.0);
+//		obj.storeNewObservation("place2", "obj1", 0.0);
 
-		// BeliefNetwork bn = obj
-		// .createExistenceNodeWithObservations("obj1", Arrays.asList(
-		// "place1", "place2", "place3", "place4", "place5"));
-		// // System.out.println(IceXMLSerializer.toXMLString(bn.getGraph()));
-		//
-		// edu.ksu.cis.bnj.ver3.inference.Inference ls = new
-		// edu.ksu.cis.bnj.ver3.inference.exact.LS();
-		// ls.run(bn);
-		// BeliefNode locationNode = bn.findNode("location_obj1");
-		// CPF res = ls.queryMarginal(locationNode);
-		//
-		// for (int i = 0; i < res.size(); i++) {
-		// if (res.get(i) instanceof ValueDouble)
-		// System.out.println("res(" + locationNode.getDomain().getName(i)
-		// + ")=" + ((ValueDouble) res.get(i)).getValue());
-		// else
-		// System.out.println("res(" + i + ") is "
-		// + res.get(i).getClass().getName());
-		// }
 
 		FormulaDistribution df = obj
 				.inferProbabilitiesForIsIn("obj1", "hurga", Arrays.asList(
@@ -194,6 +179,11 @@ public class DoraBayesianVisualObjectTracker extends ManagedComponent implements
 		System.out.println("computed FormulaDistribution for object obj1: "
 				+ IceXMLSerializer.toXMLString(df.get().values));
 
+		for (ProbFormula s : df) {
+			System.out.println("for "+ ((PointerFormula) s.getFormula().get()).pointer.id + " => " + s.getProbability());
+			
+		}
+		
 		// BeliefNetwork g = new BeliefNetwork("Test");
 		// BeliefNode locationNode = new BeliefNode("location", new Discrete(
 		// new String[] { "place1", "place2", "placeUNKNOWN" }));
