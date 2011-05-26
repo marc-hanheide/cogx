@@ -13,6 +13,7 @@ import Ice.ObjectImpl;
 import SpatialData.PathQueryStatus;
 import SpatialData.PathTransitionCostRequest;
 import SpatialData.Place;
+import SpatialProperties.PlaceContainmentAgentProperty;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -46,6 +47,7 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		 */
 		@Override
 		public void run() {
+			getLogger().debug("entering run()");
 			try {
 				places.start();
 //				rooms.start();
@@ -54,25 +56,36 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 				e1.printStackTrace();
 			}
 			WMEventQueue agentChangeEventQueue = new WMEventQueue();
-			// TODO reintroduce handling of place changing
-//			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
-//					PlaceContainmentAgentProperty, WorkingMemoryOperation.ADD), agentChangeEventQueue);
-//			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
-//					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.OVERWRITE), agentChangeEventQueue);
+
+			getLogger().debug("register on " + PlaceContainmentAgentProperty.class.getName());
+			component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.ADD), agentChangeEventQueue);
+			component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.OVERWRITE), agentChangeEventQueue);
 
 			
 			// initialize current place
-			while (currentPlace == null && !interrupted())
-				currentPlace = getPlaceInterface().getCurrentPlace();
-			setPlace(currentPlace);
+			getLogger().debug("initialise current place (wait for it to become not null)");
+			Place cPlace=null;
+			while (cPlace == null && !interrupted())
+				cPlace = getPlaceInterface().getCurrentPlace();
+			getLogger().debug("current place is " + cPlace.id);
+			setPlace(cPlace);
 
+			getLogger().debug("entering main loop");
 			while (!interrupted()) {
 				try {
 					// wait for the next change
+					getLogger().debug("wait for event");
 					agentChangeEventQueue.take();
-
+					getLogger().debug("agent changed");
+					
 					Place place = getPlaceInterface().getCurrentPlace();
-
+					if (place!=null)
+						getLogger().debug("current place is " + place.id);
+					else
+						getLogger().warn("cannot obtain current place");
+					
 					if (place == null || place.id != currentPlace.id) {
 						setPlace(place);
 						for (PlaceChangedHandler c : placeCheckerCallables) {
@@ -80,11 +93,9 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 						}
 					}
 				} catch (InterruptedException e) {
-					break;
+					getLogger().error("InterruptedException in SpatialFacade::run", e);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
+					getLogger().error("error in SpatialFacade::run", e);
 				}
 			}
 		}
@@ -153,11 +164,19 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 	 * @throws InterruptedException
 	 */
 	public synchronized Place getPlace() throws InterruptedException {
-		if (!spatialCheckThread.isAlive())
-			spatialCheckThread.start();
+		
+		if (!spatialCheckThread.isAlive()) {
+			getLogger().debug("checker thread not running yet, starting it");
 
-		if (currentPlace == null)
+			spatialCheckThread.start();
+		}
+		
+		if (currentPlace == null) {
+			getLogger().debug("current place not yet there, have to wait for it");
 			wait();
+			getLogger().debug("current place is now " + currentPlace.id);
+			
+		}
 		return currentPlace;
 	}
 
