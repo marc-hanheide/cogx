@@ -4,11 +4,13 @@ import java.util.Map;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.ExploreMotive;
+import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import autogen.Planner.Goal;
+import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -16,7 +18,9 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator;
 import eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator;
+import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import facades.SpatialFacade;
 
 public class ExplorePlaceGenerator extends
 		AbstractBeliefMotiveGenerator<ExploreMotive, GroundedBelief> {
@@ -108,6 +112,29 @@ public class ExplorePlaceGenerator extends
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see motivation.components.generators.AbstractBeliefMotiveGenerator#start()
+	 */
+	@Override
+	protected void start() {
+		super.start();
+		try {
+			SpatialFacade.get(this).registerPlaceChangedCallback(
+					new SpatialFacade.PlaceChangedHandler() {
+						@Override
+						public synchronized void update(Place p) {
+							log("explicitly scheduling all motives to be checked due to place change. new place is "
+									+ p.id);
+							recheckAllMotives();
+						}
+					});
+		} catch (CASTException e1) {
+			println("exception when registering placeChangedCallbacks");
+			e1.printStackTrace();
+		}
+
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -126,21 +153,25 @@ public class ExplorePlaceGenerator extends
 		motive.updated = getCASTTime();
 		// initially this costs are taken as -1, corresponding to an ultimate
 		// goal.
-		motive.costs = -1;
+
+		FormulaDistribution pIdFD = belief.getContent().get(
+				PlaceTransferFunction.PLACE_ID_ID);
+		motive.placeID = pIdFD.getDistribution().getMostLikely().getInteger();
+
 		FormulaDistribution borderFeature = belief.getContent().get(
 				AssociatedBorderPropertyMediator.ASSOCIATEDBORDER_FEATURENAME);
 		FormulaDistribution spaceFeature = belief.getContent().get(
 				AssociatedSpacePropertyMediator.ASSOCIATEDSPACE_FEATURENAME);
 		if (borderFeature != null && spaceFeature != null) {
-			log("we have geometrical features that we can use to compute the gain");
+			debug("we have geometrical features that we can use to compute the gain");
 			double border = borderFeature.getDistribution().getMostLikely()
 					.getDouble()
 					/ borderNormalizeFactor;
 			double space = spaceFeature.getDistribution().getMostLikely()
 					.getDouble()
 					/ spaceNormalizeFactor;
-			log("  border=" + border);
-			log("  space=" + space);
+			debug("  border=" + border);
+			debug("  space=" + space);
 			motive.informationGain = (space * m_spaceMeasureConstant)
 					+ (border * m_borderMeasureConstant) + m_constantGain;
 			log("  gain=" + motive.informationGain);
@@ -148,7 +179,37 @@ public class ExplorePlaceGenerator extends
 
 		motive.goal = new Goal(computeImportance(motive), "(= (placestatus '"
 				+ belief.getId() + "') trueplace)", false);
-		log("updated goal to " + motive.goal.goalString);
+		log("goal is " + motive.goal.goalString);
+		assignCosts(motive);
+
+	}
+
+	/**
+	 * assigns costs to the motive
+	 * 
+	 * @param motive
+	 * 
+	 */
+	@Override
+	protected void assignCosts(Motive motive) {
+
+		try {
+			Place currentPlace;
+			currentPlace = SpatialFacade.get(this).getPlace();
+			log("compute cost from current place " + currentPlace.id
+					+ " to place " + ((ExploreMotive) motive).placeID);
+			if (currentPlace != null) {
+				double costs = SpatialFacade.get(this).queryCosts(
+						currentPlace.id, ((ExploreMotive) motive).placeID);
+				if (costs < Double.MAX_VALUE) {
+					motive.costs = (float) costs;
+				}
+			}
+		} catch (CASTException e) {
+			logException(e);
+		} catch (InterruptedException e) {
+			logException(e);
+		}
 	}
 
 	float computeImportance(ExploreMotive m) {
