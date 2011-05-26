@@ -1,4 +1,5 @@
 JAVA MG goal.generator.explore spatial.motivation.ExplorePlaceGenerator
+JAVA MG goal.generator.patrol spatial.motivation.PatrolPlaceGenerator
 #JAVA MG goal.generator.human motivation.components.generators.DoraIntentionGoalGenerator 
 
 #JAVA MG goal.generator.manual motivation.components.generators.ManualGoalComponent

@@ -56,7 +56,7 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 	}
 
 	protected WorkingMemoryAddress getRobotBeliefAddr() {
-		if (robotBeliefAddr == null) {
+		while (robotBeliefAddr == null) {
 			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
 			try {
 				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
