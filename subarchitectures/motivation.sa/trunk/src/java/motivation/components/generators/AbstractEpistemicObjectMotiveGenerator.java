@@ -79,13 +79,4 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 		return robotBeliefAddr;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see motivation.components.generators.AbstractMotiveGenerator#start()
-	 */
-	@Override
-	protected void start() {
-	}
-
 }

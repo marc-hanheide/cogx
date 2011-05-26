@@ -3,10 +3,6 @@
  */
 package motivation.factories;
 
-import autogen.Planner.Goal;
-import cast.cdl.CASTTime;
-import cast.cdl.WorkingMemoryAddress;
-import cast.core.CASTUtils;
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
@@ -17,6 +13,10 @@ import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PatrolMotive;
 import motivation.slice.TestMotive;
+import autogen.Planner.Goal;
+import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTUtils;
 
 /**
  * @author marc
