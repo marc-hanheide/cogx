@@ -75,7 +75,7 @@ define urg_04LX laser
 # create a robot
 define p3dx_with_urg p3dx
 (
-  urg_04LX( pose [0.14 0 0.215 0])
+  urg_04LX( pose [0.14 0 0.0 0])
 )
 
 # create a robot
