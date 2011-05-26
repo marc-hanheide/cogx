@@ -1,30 +1,28 @@
 package spatial.motivation;
 
-import java.util.Map;
-
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
-import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
+import motivation.slice.PatrolMotive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import autogen.Planner.Goal;
 import cast.CASTException;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
+import castutils.CASTTimeUtil;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator;
-import eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import facades.SpatialFacade;
 
-public class ExplorePlaceGenerator extends
-		AbstractBeliefMotiveGenerator<ExploreMotive, GroundedBelief> {
-
+public class PatrolPlaceGenerator extends
+		AbstractBeliefMotiveGenerator<PatrolMotive, GroundedBelief> {
+	private static final long EXP_NORM = 30000;
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
 	private static final int MAX_EXECUTION_TIME = 60 * 5;
@@ -36,32 +34,12 @@ public class ExplorePlaceGenerator extends
 	 */
 	private static final double MAX_COSTS_TO_DROP = 50;
 
-	/**
-	 * normalize borderproperties // normalization: Kristoffer Sjöö
-	 * (21.10.2009): the maximum border value should be around(*) 2*pi*d/s where
-	 * d is the maximum allowed scan range (currently 5m) and s is the grid cell
-	 * size (currently 0.1m, I think). Free space max is pi*d2/s2.
-	 * 
-	 * 
-	 * 
-	 */
-	final double borderNormalizeFactor = 2 * Math.PI * (5 / 0.1);
-	/**
-	 * normalize space property factor
-	 * 
-	 */
-	final double spaceNormalizeFactor = Math.PI
-			* (Math.pow(5.0, 2) / Math.pow(0.1, 2));
-	private double m_spaceMeasureConstant;
-	private double m_borderMeasureConstant;
-	private double m_constantGain;
-
-	public ExplorePlaceGenerator() {
-		super(PLACETYPE, ExploreMotive.class, GroundedBelief.class);
+	public PatrolPlaceGenerator() {
+		super(PLACETYPE, PatrolMotive.class, GroundedBelief.class);
 	}
 
 	@Override
-	protected ExploreMotive checkForAddition(WorkingMemoryAddress adr,
+	protected PatrolMotive checkForAddition(WorkingMemoryAddress adr,
 			GroundedBelief newEntry) {
 		assert (newEntry.type.equals(PLACETYPE));
 		log("checkForAddition(): check belief " + newEntry.id + " for addition");
@@ -75,9 +53,9 @@ public class ExplorePlaceGenerator extends
 				+ belief.getContent().get("placestatus").getDistribution()
 						.getMostLikely().getProposition());
 		// if that is a place holder
-		if (!isExplored) {
-			log("place is not yet explored, so it is a goal");
-			ExploreMotive result = new ExploreMotive();
+		if (isExplored) {
+			log("place is explored, so it is a goal to patrol");
+			PatrolMotive result = new PatrolMotive();
 			result.created = getCASTTime();
 			result.correspondingUnion = "";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
@@ -92,8 +70,8 @@ public class ExplorePlaceGenerator extends
 	}
 
 	@Override
-	protected ExploreMotive checkForUpdate(GroundedBelief newEntry,
-			ExploreMotive motive) {
+	protected PatrolMotive checkForUpdate(GroundedBelief newEntry,
+			PatrolMotive motive) {
 		assert (newEntry.type.equals(PLACETYPE));
 		log("check goal " + CASTUtils.toString(motive.thisEntry)
 				+ " for update");
@@ -103,8 +81,8 @@ public class ExplorePlaceGenerator extends
 				.getDistribution().getMostLikely().getProposition()
 				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
 		// if that is a place holder
-		if (!isExplored) {
-			log("place is not yet explored, so it is a goal");
+		if (isExplored) {
+			log("place is explored, so it is a goal to patrol");
 			fillValues(belief, motive);
 			return motive;
 		} else {
@@ -112,8 +90,11 @@ public class ExplorePlaceGenerator extends
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see motivation.components.generators.AbstractBeliefMotiveGenerator#start()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * motivation.components.generators.AbstractBeliefMotiveGenerator#start()
 	 */
 	@Override
 	protected void start() {
@@ -135,55 +116,58 @@ public class ExplorePlaceGenerator extends
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#configure(java.util.Map)
-	 */
-	@Override
-	protected void configure(Map<String, String> config) {
-		m_spaceMeasureConstant = 0.0;
-		m_borderMeasureConstant = 0.9;
-		m_constantGain = 0.1;
-	}
-
 	private void fillValues(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
-			ExploreMotive motive) {
+			PatrolMotive motive) {
 		motive.updated = getCASTTime();
-		// initially this costs are taken as -1, corresponding to an ultimate
-		// goal.
 
 		FormulaDistribution pIdFD = belief.getContent().get(
 				PlaceTransferFunction.PLACE_ID_ID);
 		motive.placeID = pIdFD.getDistribution().getMostLikely().getInteger();
+		Place currentPlace;
+		try {
+			currentPlace = SpatialFacade.get(this).getPlace();
 
-		FormulaDistribution borderFeature = belief.getContent().get(
-				AssociatedBorderPropertyMediator.ASSOCIATEDBORDER_FEATURENAME);
-		FormulaDistribution spaceFeature = belief.getContent().get(
-				AssociatedSpacePropertyMediator.ASSOCIATEDSPACE_FEATURENAME);
-		if (borderFeature != null && spaceFeature != null) {
-			debug("we have geometrical features that we can use to compute the gain");
-			double border = borderFeature.getDistribution().getMostLikely()
-					.getDouble()
-					/ borderNormalizeFactor;
-			double space = spaceFeature.getDistribution().getMostLikely()
-					.getDouble()
-					/ spaceNormalizeFactor;
-			debug("  border=" + border);
-			debug("  space=" + space);
-			motive.informationGain = (space * m_spaceMeasureConstant)
-					+ (border * m_borderMeasureConstant) + m_constantGain;
-			log("  gain=" + motive.informationGain);
+			if (currentPlace != null) {
+				log("we are currently at place " + currentPlace.id);
+				// if we currently are at the place of this motive we update
+				// the last visited time stamp
+				CASTTime now = this.getCASTTime();
+				if (((PatrolMotive) motive).lastVisisted == null)
+					((PatrolMotive) motive).lastVisisted = now;
+				else {
+					if (currentPlace.id == ((PatrolMotive) motive).placeID) {
+						((PatrolMotive) motive).lastVisisted = now;
+						// reset the number of tries to zero, as we succeeded to
+						// patrol here
+						motive.tries = 0;
+					}
+				}
+				long timediff = CASTTimeUtil.diff(now,
+						((PatrolMotive) motive).lastVisisted);
+				motive.informationGain = 1 - (1. / Math
+						.exp((timediff / EXP_NORM) * Math.log(2)));
+				double costs = SpatialFacade.get(this).queryCosts(
+						currentPlace.id, ((PatrolMotive) motive).placeID);
+				if (costs < Double.MAX_VALUE) {
+					motive.costs = (float) costs;
+				}
+
+			}
+
+			motive.goal = new Goal(computeImportance(motive), "(= (is-in "
+					+ this.getRobotBeliefAddr().id + ") " + belief.getId()
+					+ ")", false);
+			log("goal is " + motive.goal.goalString + " with inf-gain "
+					+ motive.informationGain);
+		} catch (CASTException e) {
+			logException(e);
+		} catch (InterruptedException e) {
+			logException(e);
 		}
 
-		motive.goal = new Goal(computeImportance(motive), "(= (placestatus '"
-				+ belief.getId() + "') trueplace)", false);
-		log("goal is " + motive.goal.goalString);
-		//assignCosts(motive);
-
 	}
-
+	
 	/**
 	 * assigns costs to the motive
 	 * 
@@ -196,10 +180,10 @@ public class ExplorePlaceGenerator extends
 			Place currentPlace;
 			currentPlace = SpatialFacade.get(this).getPlace();
 			log("compute cost from current place " + currentPlace.id
-					+ " to place " + ((ExploreMotive) motive).placeID);
+					+ " to place " + ((PatrolMotive) motive).placeID);
 			if (currentPlace != null) {
 				double costs = SpatialFacade.get(this).queryCosts(
-						currentPlace.id, ((ExploreMotive) motive).placeID);
+						currentPlace.id, ((PatrolMotive) motive).placeID);
 				if (costs < Double.MAX_VALUE) {
 					motive.costs = (float) costs;
 				}
@@ -211,7 +195,8 @@ public class ExplorePlaceGenerator extends
 		}
 	}
 
-	float computeImportance(ExploreMotive m) {
+
+	float computeImportance(PatrolMotive m) {
 		if (m.informationGain < 0)
 			return -1.0f;
 		else
