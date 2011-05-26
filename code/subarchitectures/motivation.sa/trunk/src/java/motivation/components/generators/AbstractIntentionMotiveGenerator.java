@@ -3,23 +3,18 @@
  */
 package motivation.components.generators;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import motivation.slice.Motive;
 import cast.CASTException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
-import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.planner.facade.PlannerFacade;
 
 /**
