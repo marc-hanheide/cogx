@@ -1273,7 +1273,7 @@ int buildInference(Inference*& inference, Domain*& domain,
     }
   }
 
-  bool trackClauseTrueCnts = false;
+  bool trackClauseTrueCnts = true;
   VariableState* state = NULL;
   HVariableState* hstate = NULL;
   FactorGraph* factorGraph = NULL;

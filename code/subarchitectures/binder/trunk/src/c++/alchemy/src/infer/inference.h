@@ -215,9 +215,6 @@ class Inference
                                vector<float>& probs,
                                vector<float>& oldProbs,
                                const float& probDelta) = 0;
-                               
-//  virtual void getPredProbs(vector<string>& preds,
-//							vector<float>& probs) = 0;
 
   
   /**
@@ -388,14 +385,14 @@ class Inference
 
 
   void resetCnts() 
-  {cout << "check0" << endl;
+  {
     for (int clauseno = 0; clauseno < clauseTrueCnts_->size(); clauseno++)
-    {cout << "check1 " <<  clauseno << endl;
+    {
       (*clauseTrueCnts_)[clauseno]   = 0;
       (*clauseTrueSqCnts_)[clauseno] = 0;
     }
     numSamples_ = 0;
-cout << "check2" << endl;
+    
     if (saveAllCounts_)
     {
       delete allClauseTrueCnts_;
@@ -424,22 +421,22 @@ cout << "check2" << endl;
 
 
   void restoreCnts()
-  {cout << "ok1" << endl;
+  {
     if (!saveAllCounts_)
       return;
-cout << "ok2" << endl;
+
     resetCnts();
-cout << "ok3" << endl;
-    *allClauseTrueCnts_ = *oldAllClauseTrueCnts_;cout << "ok4" << endl;
+
+    *allClauseTrueCnts_ = *oldAllClauseTrueCnts_;
     for (int i = 0; i < allClauseTrueCnts_->size(); i++) 
     {
-      int numcounts = (*allClauseTrueCnts_)[i].size();cout << "ok5" << endl;
+      int numcounts = (*allClauseTrueCnts_)[i].size();
       for (int j = 0; j < numcounts; j++)
       {
         double currcount = (*allClauseTrueCnts_)[i][j];
         (*clauseTrueCnts_)[j]   += currcount;
         (*clauseTrueSqCnts_)[j] += currcount * currcount;
-      }cout << "ok6" << endl;
+      }
       numSamples_++;
     }
 
