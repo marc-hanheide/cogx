@@ -1,5 +1,5 @@
 GARNAME = peekabot
-GARVERSION = 0.8.4
+GARVERSION = 0.8.5
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 MAINTAINER = mhanheid
