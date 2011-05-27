@@ -166,11 +166,14 @@ class MCSAT : public MCMC
   /**
    * Performs MC-SAT inference.
    */
+  
   void infer()
   {
   	Timer timer1;
 
     initNumTrue();
+    adaptNumAll();
+    
     Timer timer;
       // Burn-in only if burnMaxSteps positive
     bool burningIn = (burnMaxSteps_ > 0) ? true : false;
@@ -265,7 +268,8 @@ class MCSAT : public MCMC
       // Update gndPreds probability that it is true
     for (int i = 0; i < state_->getNumAtoms(); i++)
     {
-      setProbTrue(i, numTrue_[i] / numSamplesPerPred);
+      numAll_[i] += numSamplesPerPred;
+      setProbTrue(i, numTrue_[i] / numAll_[i]);
     }
     
       // Update query formula probs

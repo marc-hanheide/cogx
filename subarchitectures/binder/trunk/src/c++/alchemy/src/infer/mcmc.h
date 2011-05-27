@@ -587,6 +587,11 @@ class MCMC : public Inference
   {
      maxSteps_ = maxSteps;
   }
+  
+  void adaptProbs(int maxn)
+  {
+  	adaptNumAll(maxn);
+  }
 
 
  protected:
@@ -628,8 +633,46 @@ class MCMC : public Inference
   {
     int numPreds = state_->getNumAtoms();
     numTrue_.growToSize(numPreds);
-    for (int i = 0; i < numTrue_.size(); i++)
+    
+    for (int i = 0; i < numAll_.size(); i++)
+      numTrue_[i] *= numAll_[i];
+
+    for (int i = numAll_.size(); i < numTrue_.size(); i++)
       numTrue_[i] = 0;
+  }
+  
+  void initNumAll()
+  {
+    int numPreds = state_->getNumAtoms();
+    numAll_.growToSize(numPreds);
+    for (int i = 0; i < numTrue_.size(); i++)
+      numAll_[i] = 0;
+  }
+  
+  
+  /**
+   * Initializes structures for holding number of times a predicate was set
+   * to true. It preserves or adapts numbers from previous inferences.
+   */  
+  void adaptNumAll()
+  {
+  	adaptNumAll(-1);
+  }
+  
+  
+  void adaptNumAll(int maxn)
+  {
+  	if(maxn >= 0)
+  		for (int i = 0; i < numAll_.size(); i++)
+  			if(numAll_[i] > maxn)
+  				numAll_[i] = maxn;
+  								
+    int numPreds = state_->getNumAtoms();
+    int oldNumPreds = numAll_.size();
+    	 	
+    numAll_.growToSize(numPreds);
+    for (int i = oldNumPreds; i < numAll_.size(); i++)
+      numAll_[i] = 0;
   }
 
   /**
@@ -1440,6 +1483,7 @@ class MCMC : public Inference
     // Number of times each ground predicate is set to true
     // overloaded to hold probability that ground predicate is true
   Array<double> numTrue_; // numTrue_[p]
+  Array<double> numAll_;
 
     // Num. of satisfying literals in each chain for each groud predicate
     // numTrueLits_[clause][chain]

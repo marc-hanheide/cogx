@@ -128,6 +128,7 @@ void MLNEngine::runComponent()
 
   int tstep = 0;
   bool first = true;
+  m_oe->setMaxInferenceSteps(200);
   
   ResultPtr result = new Result();
   result->mrfId = m_id;
@@ -135,7 +136,7 @@ void MLNEngine::runComponent()
   while(isRunning())
   {
   
-  sleep(1);
+  sleep(0.1);
   
   while(!m_queryQueue.empty())
   {
@@ -167,6 +168,8 @@ void MLNEngine::runComponent()
 	m_removeQueue.push(m_evidenceQueue.front().addr);
 	m_evidenceQueue.pop();
 	
+	m_oe->adaptProbs(400);
+	m_oe->setMaxInferenceSteps(400);
 #ifdef FEAT_VISUALIZATION
   ostringstream v11out;
   m_oe->printNetwork(v11out);
@@ -178,13 +181,13 @@ void MLNEngine::runComponent()
 //  result->mrfId = m_id;
   
 //  m_oe->setMaxInferenceSteps(5000);
-//  if(!first) m_oe->restoreCnts();
+  if(!first) m_oe->restoreCnts();
   
   m_oe->infer(m_query, result->atoms, result->probs);
-//  m_oe->saveCnts();
+  m_oe->saveCnts();
   first=false;
 
-//  m_oe->setMaxInferenceSteps(100);
+  m_oe->setMaxInferenceSteps(200);
   
   if(doDisplay) {
     // Print true atoms
@@ -210,6 +213,7 @@ void MLNEngine::runComponent()
   }
   
   cout << "Samples: " << m_oe->getNumSamples() << endl;
+  cout << "Num true cnts: " << m_oe->getClauseTrueCnts(0) << endl;
   
 //	ptime t(second_clock::universal_time() + seconds(1));
 /*

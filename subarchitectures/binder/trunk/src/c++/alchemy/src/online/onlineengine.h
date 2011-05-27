@@ -363,6 +363,17 @@ class OnlineEngine
     return inference_->getNumSamples();
   }
   
+  double getClauseTrueCnts(int i)
+  {
+    return (*inference_->getClauseTrueCnts())[i];
+  }
+  
+  void adaptProbs(int maxn)
+  {
+  	if (MCSAT* ms = dynamic_cast<MCSAT*>(inference_))
+  		ms->adaptProbs(maxn);
+  }
+  
   void printNetwork(ostream& out)
   {
   	inference_->printNetwork(out);
@@ -512,6 +523,8 @@ class OnlineEngine
       else if (string(inferArgv[i]) == "-p") agibbsInfer = true;
       else if (string(inferArgv[i]) == "-ms") amcsatInfer = true;
       else if (string(inferArgv[i]) == "-simtp") asimtpInfer = true;
+      else if (string(inferArgv[i]) == "-bp") abpInfer = true;
+      else if (string(inferArgv[i]) == "-efbp") aefbpInfer = true;
     }
       // Delete memory allocated for args
     for (int i = 0; i < 200; i++)

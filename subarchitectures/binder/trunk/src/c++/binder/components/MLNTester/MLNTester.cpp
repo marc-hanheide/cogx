@@ -83,7 +83,7 @@ void MLNTester::start()
 
 void MLNTester::runComponent()
 {
-  sleep(2);
+  sleep(3);
   
   // init MRF
   // leave the .db file from command line empty, because it does
@@ -155,7 +155,7 @@ void MLNTester::runComponent()
 	
 
 	// we now see another red object
-	if(tstep == 11)
+	if(tstep == 25)
 	{
 	  EvidencePtr evd = new Evidence();
 	  evd->mrfId = m_id;
@@ -167,7 +167,7 @@ void MLNTester::runComponent()
 	}
 	
 	// and another red object
-	if(tstep == 15)
+	if(tstep == 50)
 	{
 	  EvidencePtr evd = new Evidence();
 	  evd->mrfId = m_id;
@@ -178,7 +178,7 @@ void MLNTester::runComponent()
 	}
 	
 	// one of the red objects is removed
-	if(tstep == 25)
+	if(tstep == 75)
 	{
 	  EvidencePtr evd = new Evidence();
 	  evd->mrfId = m_id;
