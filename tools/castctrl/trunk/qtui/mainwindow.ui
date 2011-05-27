@@ -350,6 +350,12 @@
                   <property name="statusTip">
                    <string>CAST configuration file </string>
                   </property>
+                  <property name="sizeAdjustPolicy">
+                   <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+                  </property>
+                  <property name="minimumContentsLength">
+                   <number>32</number>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -436,6 +442,12 @@
                   </property>
                   <property name="statusTip">
                    <string>CAST configuration file </string>
+                  </property>
+                  <property name="sizeAdjustPolicy">
+                   <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+                  </property>
+                  <property name="minimumContentsLength">
+                   <number>32</number>
                   </property>
                  </widget>
                 </item>

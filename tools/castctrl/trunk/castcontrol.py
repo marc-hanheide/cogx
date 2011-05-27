@@ -215,9 +215,11 @@ class CCastControlWnd(QtGui.QMainWindow):
         for fn in self._options.mruCfgCast:
             if fn.strip() == "": continue
             self.ui.clientConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.clientConfigCmbx.setToolTip(self._clientConfig)
         for fn in self._options.mruCfgHosts:
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.hostConfigCmbx.setToolTip(self._hostConfig)
 
         self.updateCbLog4jHosts()
         val = self._options.getOption("log4jServerHost")
@@ -1070,12 +1072,14 @@ class CCastControlWnd(QtGui.QMainWindow):
             fn = self.makeConfigFileRelPath(fn)
             self._ComboBox_AddMru(self.ui.clientConfigCmbx,
                     self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.clientConfigCmbx.setToolTip(self._clientConfig)
 
     def onClientConfigChanged(self, index):
         if index < 1: return
         fn = self._clientConfig
         self._ComboBox_SelectMru(self.ui.clientConfigCmbx, index,
                 self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.clientConfigCmbx.setToolTip(self._clientConfig)
 
     def onBrowseHostConfig(self):
         qfd = QtGui.QFileDialog
@@ -1090,6 +1094,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             fn = self.makeConfigFileRelPath(fn)
             self._ComboBox_AddMru(self.ui.hostConfigCmbx,
                     self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.hostConfigCmbx.setToolTip(self._hostConfig)
 
     def onHostConfigChanged(self, index):
         if index < 1: return
@@ -1099,6 +1104,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         else:
             self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
                     self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.hostConfigCmbx.setToolTip(self._hostConfig)
 
     def _ComboBox_AddMru(self, uiCmbx, title, varData):
         uiCmbx.blockSignals(True)
