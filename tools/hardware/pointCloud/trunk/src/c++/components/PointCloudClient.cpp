@@ -25,7 +25,7 @@ void PointCloudClient::configureServerCommunication(const map<string,string> & _
 {
   map<string,string>::const_iterator it;
   
-  if((it = _config.find("--servername")) != _config.end())
+  if((it = _config.find("--pcserver")) != _config.end())
   {
     pointCloudServerName = it->second;
   } else throw runtime_error(exceptionMessage(__HERE__, "no point cloud server name given"));
