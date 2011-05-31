@@ -6,6 +6,7 @@ include_directories(.)
 SET(HEADERS
 	CDataFile.h
 	Color.hh
+  ColorHistogram.h
 	Config.hh
 	ConfigFile.hh
 	Draw.hh
@@ -20,6 +21,7 @@ SET(HEADERS
 SET(SOURCES 
 	CDataFile.cpp
 	Color.cc
+  ColorHistogram.cpp
 	Config.cc
 	ConfigFile.cc
 	Draw.cc
