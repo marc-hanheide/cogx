@@ -233,8 +233,6 @@ class CCastConfig:
                 last = i+1
                 self._cast_hostnames[mo.group(1)] = mo.group(2)
 
-        if first < 0: return # Remove for cast 2.1.13
-
         # add localhost definition
         if not "localhost" in self._cast_hostnames:
             self._cast_hostnames["localhost"] = self.hostMap.fixLocalhost("localhost")
