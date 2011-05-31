@@ -286,6 +286,8 @@ module VisionData {
     PointCloud::SurfacePointSeq EQpoints;
     int status;
   };
+  sequence<SOI> SOISeq;
+
 
   /**
    * 2D rectangular image Region Of Interest (ROI).
@@ -337,6 +339,7 @@ module VisionData {
     // concepts: red, compact, box
     StringSeq labels;
     DoubleSeq gains;
+    BoolSeq askedFor;
   };
 
 
@@ -363,6 +366,7 @@ module VisionData {
     DoubleSeq angleHistogram;
   };
 
+  // @author mmarko
   class ViewCone {
     // An anchor is a known position of the robot.
     // The robot should be able to return to the anchor. In principle the
@@ -389,13 +393,14 @@ module VisionData {
   // A command to move the robot and the PTU so that the target ViewCone is
   // reached. The movements are performed in local coordinate frame relative
   // to target.anchor.
-  class CmdMoveToViewCone {
+  // @author mmarko
+  class MoveToViewConeCommand {
     ViewCone target;
 
     // eg. look-at-object; maybe use enum instd of string
     string reason;
 
-    // arbitrary callers reference; depends on reason; maybe use (also) WorkingMemoryAddress
+    // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
     string objectId;
 
     // the result passed on overwrite
@@ -403,22 +408,33 @@ module VisionData {
   };
 
   // A command to analyze the proto-object that came into the visual field of
-  // the precise stereo (after CmdMoveToViewCone). The command should wait for
-  // precise SOIs to be generated.
-  class CmdAnalyzeProtoObject {
+  // the precise stereo (after MoveToViewConeCommand). The command should wait
+  // for precise SOIs to be generated.
+  // @author mmarko
+  class AnalyzeProtoObjectCommand {
     // which proto object
     cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
-    // where in the visual field is it? This should be (approx.) the same as the target
-    // of the CmdMoveToViewCone command. If the target could not be reached, a new
-    // view cone is generated from the desired and the reached VCs and passed to
-    // CmdAnalyzeProtoObject. The anchor must be the same in all 3 VCs. The (x,y) location
-    // of viewCone is the current location of the robot. The viewDirection and tilt of
-    // viewCone are used to find the SOIs for the ProtoObject in the scene.
+    // where in the visual field is it? This should be (approx.) the same as
+    // the target of the MoveToViewConeCommand command. If the target could not
+    // be reached, a new view cone is generated from the desired and the
+    // reached VCs and passed to AnalyzeProtoObjectCommand. The anchor must be
+    // the same in all 3 VCs. The (x,y) location of viewCone is the current
+    // location of the robot. The viewDirection and tilt of viewCone are used
+    // to find the SOIs for the ProtoObject in the scene.
     // (maybe it would be enough to use panDelta and tiltDelta instead of a ViewCone)
     ViewCone whereToLook;
 
-    // the result passed on overwrite
+    // the result passed on overwrite (0 - failed, 1 - ok)
+    int status;
+  };
+
+  class GetStableSoisCommand {
+    // ID of the component that should provide the SOIs
+    string componentId;
+    SOISeq sois;
+
+    // the result passed on overwrite (0 - failed, 1 - ok)
     int status;
   };
 
