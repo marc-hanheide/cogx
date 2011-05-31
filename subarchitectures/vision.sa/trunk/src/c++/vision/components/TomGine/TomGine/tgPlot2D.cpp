@@ -10,6 +10,7 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 #endif
+#include <stdio.h>
 
 using namespace TomGine;
 
