@@ -12,7 +12,7 @@ tgFont::tgFont(){
 	m_font = new FTPixmapFont(TTF_FONT);
 	if(m_font->Error()){
 		char err[64];
-		sprintf(err, "[tgFont::tgFont()] Cannot create font '%s'", ttf_filename);
+		sprintf(err, "[tgFont::tgFont()] Cannot create font '%s'", TTF_FONT);
 		throw std::runtime_error(err);
 	}
 #else
