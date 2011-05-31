@@ -12,6 +12,21 @@
 namespace TGThread 
 {
 
+/**
+ * @brief RGBValue of point clouds, accessable as float or long value.
+ */
+typedef union
+{
+  struct
+  {
+    unsigned char Blue;   // Blue channel
+    unsigned char Green;  // Green channel
+    unsigned char Red;    // Red channel
+    unsigned char Alpha;  // Alpha channel
+  };
+  float float_value;
+  long long_value;
+} RGBValue;
 
 /**
  * ThreadDrawing
@@ -55,7 +70,7 @@ void* ThreadDrawing(void* c)
  */
 TomGineThread::TomGineThread(int w, int h)
   : width(w), height(h), mode(1), stopTomGineThread(false), 
-    drawImage(false), draw3D(true), drawPointCloud(true), drawLabels(false), useProbLevel(false), showCoordinateFrame(false)
+    drawImage(false), draw3D(true), drawPointCloud(true), drawVPointCloud(true), drawLabels(false), useProbLevel(false), showCoordinateFrame(false)
 {
   pthread_mutex_init(&dataMutex,NULL);
   pthread_create(&thread, NULL, ThreadDrawing, this);
@@ -227,7 +242,60 @@ void TomGineThread::DrawPointCloud()
 }
 
 /**
- * DrawPoints3D
+ * @brief DrawVPointCloud
+ */
+void TomGineThread::DrawVPointCloud()
+{
+  glDisable(GL_LIGHTING);
+  glEnable(GL_DEPTH_TEST);                                    // TODO Gehört eigentlich wo anders hin!!!
+  uchar *d;
+
+  RGBValue color;
+  
+  if(!vCloud.empty())
+  {
+    glBegin(GL_POINTS);
+    for (int v = 0; v < (int)vCloud.rows; ++v)
+    {
+      for (int u = 0; u < (int)vCloud.cols; ++u)
+      {
+        cv::Vec4f &pt = vCloud(v,u);
+        if (pt[0] == pt[0] && pt[1]==pt[1] && pt[2]==pt[2])
+        {
+          color.float_value = pt[3];
+          glColor4ub((int) color.Blue, (int) color.Green, (int) color.Red, 255);
+          glVertex3f(pt[0], pt[1], pt[2]);
+        }
+      }
+    glEnd( );
+    }  
+  }
+  else return;
+  
+  if(!vClouds.empty())
+  {
+    glBegin(GL_POINTS);
+    for (int v = 0; v < (int)vClouds.rows; ++v)
+    {
+      for (int u = 0; u < (int)vClouds.cols; ++u)
+      {
+        cv::Vec4f &pt = vClouds(v,u);
+        if (pt[0] == pt[0] && pt[1]==pt[1] && pt[2]==pt[2])
+        {
+          color.float_value = pt[3];
+          glColor4ub((int) color.Blue, (int) color.Green, (int) color.Red, 255);
+          glVertex3f(pt[0], pt[1], pt[2]);
+        }
+      }
+    }
+    glEnd( );
+  } 
+  else return;
+}
+
+
+/**
+ * @brief  DrawPoints3D
  */
 void TomGineThread::DrawPoints3D()
 {
@@ -246,7 +314,7 @@ void TomGineThread::DrawPoints3D()
 }
 
 /**
- * DrawLines3D
+ * @brief DrawLines3D
  */
 void TomGineThread::DrawLines3D()
 {
@@ -333,7 +401,7 @@ void TomGineThread::DrawLabels3D(TomGine::tgEngine &render)
   
   
 /**
- * Draw3D
+ * @brief Draw3D
  */
 void TomGineThread::Draw3D(TomGine::tgEngine &render)
 {
@@ -363,7 +431,11 @@ void TomGineThread::Draw3D(TomGine::tgEngine &render)
   }
   if (drawPointCloud) // draw point cloud
   {
-    DrawPointCloud(/*mCloud*/);
+    DrawPointCloud();
+  }
+  if (drawVPointCloud)
+  {
+    DrawVPointCloud();
   }
   if (drawLabels)
   {
@@ -378,7 +450,7 @@ void TomGineThread::Draw3D(TomGine::tgEngine &render)
 /***************************** PUBLIC *****************************/
 
 /**
- * Set intrinsic camera parameter
+ * @brief Set intrinsic camera parameter
  */
 void TomGineThread::SetParameter(cv::Mat &_intrinsic)
 {
@@ -388,7 +460,7 @@ void TomGineThread::SetParameter(cv::Mat &_intrinsic)
 }
 
 /**
- * Set camera (viewing direction)
+ * @brief Set camera (viewing direction)
  */
 void TomGineThread::SetCamera(cv::Mat &R, cv::Mat &t, cv::Vec3d &_rotCenter)
 {
@@ -401,7 +473,7 @@ void TomGineThread::SetCamera(cv::Mat &R, cv::Mat &t, cv::Vec3d &_rotCenter)
 }
 
 /**
- * Set rotation center
+ * @brief Set rotation center
  */
 void TomGineThread::SetRotationCenter(cv::Vec3d &_rotCenter)
 {
@@ -412,7 +484,7 @@ void TomGineThread::SetRotationCenter(cv::Vec3d &_rotCenter)
 }
 
 /**
- * SetShapeModel (TomGine-model)
+ * @brief SetShapeModel (TomGine-model)
  */
 void TomGineThread::SetShapeModel(TomGine::tgModel &tgmodel)
 {
@@ -421,19 +493,9 @@ void TomGineThread::SetShapeModel(TomGine::tgModel &tgmodel)
   pthread_mutex_unlock(&dataMutex);
 }
 
-/**
- * SetPointCloud
- */
-void TomGineThread::SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::Point3f> &colCloud)
-{
-  pthread_mutex_lock(&dataMutex);
-  matCloud.copyTo(mCloud);
-  colCloud.copyTo(cCloud);
-  pthread_mutex_unlock(&dataMutex);
-}
 
 /**
- * Set image
+ * @brief Set image
  */
 void TomGineThread::SetImage(cv::Mat &_img)
 {
@@ -446,7 +508,7 @@ void TomGineThread::SetImage(cv::Mat &_img)
 }
 
 /**
- * Set coordinate frame
+ * @brief Set coordinate frame
  */
 void TomGineThread::SetCoordinateFrame(double size)
 {
@@ -456,7 +518,7 @@ void TomGineThread::SetCoordinateFrame(double size)
 
 
 /**
- * AddPoint3D
+ * @brief AddPoint3D
  */
 void TomGineThread::AddPoint3D(double x, double y, double z, uchar r, uchar g, uchar b, double size)
 {
@@ -468,7 +530,7 @@ void TomGineThread::AddPoint3D(double x, double y, double z, uchar r, uchar g, u
 }
 
 /**
- * AddLine3D
+ * @brief AddLine3D
  */
 void TomGineThread::AddLine3D(double x1, double y1, double z1, double x2, double y2, double z2, uchar r, uchar g, uchar b, 
 			      float probability, string lLabel, string lLabelS, string lLabelE)
@@ -483,7 +545,7 @@ void TomGineThread::AddLine3D(double x1, double y1, double z1, double x2, double
 }
 
 /**
- * AddLine3D
+ * @brief AddLine3D
  */
 void TomGineThread::AddLine3D(cv::Point3d p0, cv::Point3d p1, float probability, string lLabel, string lLabelS, string lLabelE, uchar r, uchar g, uchar b)
 {
@@ -534,6 +596,124 @@ void TomGineThread::AddGraphModel(std::vector<cv::Point3d> first, std::vector<cv
 }
 
 /**
+ * @brief SetPointCloud
+ */
+void TomGineThread::SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::Point3f> &colCloud)
+{
+  pthread_mutex_lock(&dataMutex);
+  matCloud.copyTo(mCloud);
+  colCloud.copyTo(cCloud);
+  pthread_mutex_unlock(&dataMutex);
+}
+
+/**
+ * @brief AddPointCloud
+ * @param vecCloud Cloud of points in openCV vector format.
+ */
+void TomGineThread::AddPointCloud(cv::Mat_<cv::Vec4f> &vecCloud)
+{
+  pthread_mutex_lock(&dataMutex);
+
+  unsigned vCloudSize = 0;
+  if(!vCloud.empty()) 
+    vCloudSize = vCloud.cols;
+  unsigned cloudSize = vecCloud.cols*vecCloud.rows + vCloudSize;
+  
+  cv::Mat_<cv::Vec4f> newCloud;
+  newCloud = cv::Mat_<cv::Vec4f>(1, cloudSize);
+  unsigned z=0;
+  for(unsigned idx=0; idx < vecCloud.cols*vecCloud.rows; idx++, z++)
+    newCloud(0, idx) = (vecCloud(0, idx)); 
+  
+  if(!vCloud.empty())
+    for(unsigned idx=0; idx < vCloud.cols; idx++)
+      newCloud(0, z+idx) = (vCloud(0, idx)); 
+  
+  newCloud.copyTo(vCloud);
+  pthread_mutex_unlock(&dataMutex);
+}
+
+/**
+ * @brief Set several point clouds in cv::Vec4f format.
+ * @param vecClouds Point clouds with Vec4f format
+ */
+void TomGineThread::AddPointClouds(vector< cv::Mat_<cv::Vec4f> > &vecClouds)
+{
+  unsigned cloudSize = 0;
+  for(unsigned i=0; i < vecClouds.size(); i++)
+    cloudSize += vecClouds[i].cols*vecClouds[i].rows;
+
+  pthread_mutex_lock(&dataMutex);
+  cv::Mat_<cv::Vec4f> newCloud;
+  newCloud = cv::Mat_<cv::Vec4f>(1, cloudSize);
+  
+  for(unsigned i=0, z=0; i < vecClouds.size(); i++)
+    for(unsigned idx=0; idx < vecClouds[i].cols*vecClouds[i].rows; idx++, z++)
+      newCloud(0, z) = (vecClouds[i](0, idx));
+    
+  newCloud.copyTo(vClouds);
+  pthread_mutex_unlock(&dataMutex);
+}
+
+/**
+ * @brief Add a convex hulls. (Matrix with one row of points!)
+ * @param vecHull Convex hull with Vec4f point format (x, y, z, rgb)
+ */
+void TomGineThread::AddConvexHull(cv::Mat_<cv::Vec4f> &vecHull)
+{
+  RGBValue color;
+  if(vecHull.rows != 1)
+  {
+    printf("TomGineThread::AddConvexHull: Warning: Convex hull represented as matrix with more than one row!\n");
+    return;
+  }
+  for(unsigned j=0; j < vecHull.cols-1; j++)
+  {
+    // How to access each point?
+    cv::Vec4f s = vecHull(0, j);
+    cv::Vec4f e = vecHull(0, j+1);
+    color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+  }
+  // add line from first to last matrix element
+  cv::Vec4f s = vecHull(0, 0);
+  cv::Vec4f e = vecHull(0, vecHull.cols-1);
+  color.float_value = s[3];
+  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+}
+
+/**
+ * @brief Add several convex hulls. (Matrix with one row of points!)
+ * @param vecHulls Convex hulls with Vec4f point format (x, y, z, rgb)
+ */
+void TomGineThread::AddConvexHulls(vector< cv::Mat_<cv::Vec4f> > &vecHulls)
+{
+  RGBValue color;
+  for(unsigned i=0; i < vecHulls.size(); i++)
+  {
+    if(vecHulls[i].rows != 1)
+    {
+      printf("TomGineThread::AddConvexHulls: Warning: Convex hull represented as matrix with more than one row!\n");
+      return;
+    }
+    for(unsigned j=0; j < vecHulls[i].cols-1; j++)
+    {
+      // How to access each point?
+      cv::Vec4f s = vecHulls[i](0, j);
+      cv::Vec4f e = vecHulls[i](0, j+1);
+      color.float_value = s[3];
+      AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+    }
+    // add line from first to last matrix element
+    cv::Vec4f s = vecHulls[i](0, 0);
+    cv::Vec4f e = vecHulls[i](0, vecHulls[i].cols-1);
+    color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+  }
+}
+
+
+/**
  * @brief Clear the TomGine Thread
  */
 void TomGineThread::Clear()
@@ -551,6 +731,8 @@ void TomGineThread::Clear()
   vLabel.clear();
   mCloud.release();
   cCloud.release();
+  vCloud.release();
+  vClouds.release();
   pthread_mutex_unlock(&dataMutex);
   
   // set coordinate frame
