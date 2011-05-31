@@ -1014,6 +1014,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         if ip != None:
             self.ui.txtLocalHost.setText(ip.strip())
             self._options.setOption("localhost", ip.strip())
+            # TODO: setLocalhost should also be called onEditChanged()
+            self.configuredHosts.setLocalhost(ip.strip())
 
     def on_btDiscoverRemote_clicked(self, valid=True):
         if not valid: return
