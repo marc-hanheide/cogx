@@ -244,16 +244,17 @@ printf("StereoCore::ProcessStereoImage: monocular image processed.\n");
   {
     for(int i = 0; i < StereoBase::MAX_TYPE; i++)
     {
-      if(stereoPrinciples[i]->IsEnabled())
-      {
-        if(pPara->pruning) 
-          stereoPrinciples[i]->Process(pPara->offsetX, pPara->offsetY, pPara->scale);
-        else
+      if(stereoPrinciples[i] != 0)
+        if(stereoPrinciples[i]->IsEnabled())
         {
+          if(pPara->pruning) 
+            stereoPrinciples[i]->Process(pPara->offsetX, pPara->offsetY, pPara->scale);
+          else
+          {
 printf("  StereoCore::Processing stereo principle: %u\n", i);
-          stereoPrinciples[i]->Process();
+            stereoPrinciples[i]->Process();
+          }
         }
-      }
     }
   }
   catch (exception &e)
@@ -385,10 +386,10 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
     for(int i=0; i<numGestalts; i++)
     {
       if(masked)
-	vcore[side]->Gestalts(type, i)->Draw(detail);	
+        vcore[side]->Gestalts(type, i)->Draw(detail);	
       else
-	if (vcore[side]->Gestalts(type, i)->IsUnmasked())
-	  vcore[side]->Gestalts(type, i)->Draw(detail);	
+        if (vcore[side]->Gestalts(type, i)->IsUnmasked())
+          vcore[side]->Gestalts(type, i)->Draw(detail);	
     }
   }
 
@@ -403,10 +404,10 @@ bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
     if(id < numGestalts && id >= 0)
     {
       if(masked)
-	vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
+        vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
       else
-	if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
-	  vcore[singleSide]->Gestalts(type, id)->Draw(detail);
+        if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
+          vcore[singleSide]->Gestalts(type, id)->Draw(detail);
     }
   }
 
@@ -431,19 +432,19 @@ void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImag
     {
       for(int side = LEFT; side <= RIGHT; side++)
       {
-	SetActiveDrawAreaSide(side);
-	stereoPrinciples[type]->DrawMatched(side, single, id, detail);
+        SetActiveDrawAreaSide(side);
+        stereoPrinciples[type]->DrawMatched(side, single, id, detail);
       }
     }
     else // show all stereo matched features
     {
       for(int i=0; i< StereoBase::MAX_TYPE; i++)
       {
-	for(int side = LEFT; side <= RIGHT; side++)
-	{
-	  SetActiveDrawAreaSide(side);
-	  stereoPrinciples[i]->DrawMatched(side, single, id, detail);
-	}
+        for(int side = LEFT; side <= RIGHT; side++)
+        {
+          SetActiveDrawAreaSide(side);
+          stereoPrinciples[i]->DrawMatched(side, single, id, detail);
+        }
       }
     }
   }

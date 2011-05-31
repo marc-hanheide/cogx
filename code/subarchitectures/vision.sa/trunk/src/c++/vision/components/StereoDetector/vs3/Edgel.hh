@@ -18,12 +18,12 @@ namespace Z
 class Edgel
 {
 public:
-  Vector2 p;								///< Point (x,y)
+  VEC::Vector2 p;								///< Point (x,y)
   double dir;								///< Direction
 
   Edgel() {}
-  Edgel(const Vector2 &p_in) {p = p_in;}
-  Edgel(const Vector2 &p_in, double d_in) {p = p_in; dir = d_in;}
+  Edgel(const VEC::Vector2 &p_in) {p = p_in;}
+  Edgel(const VEC::Vector2 &p_in, double d_in) {p = p_in; dir = d_in;}
 };
 
 }

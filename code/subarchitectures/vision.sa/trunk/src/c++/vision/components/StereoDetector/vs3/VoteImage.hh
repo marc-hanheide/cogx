@@ -139,22 +139,22 @@ public:                                                  /// TODO Alle Funktione
   void CreateIntersection(Elem *e, unsigned id, Array<Elem> &iscts);
   Elem *Pixel(int x, int y) {return data[y*width + x];}
   void InitLine(int x1, int y1, int x2, int y2, unsigned id);
-  void InitLine(const Vector2 &a, const Vector2 &b, unsigned id)
+  void InitLine(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id)
   {
     InitLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id);
   }
   int ExtendLine(unsigned id, Array<Elem> &iscts);
-  void DrawLine(const Vector2 &a, const Vector2 &b, unsigned id)
+  void DrawLine(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id)
   {
     DrawLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id);
   }
   void DrawLine(int x1, int y1, int x2, int y2, unsigned id);
-  void CheckLine(const Vector2 &a, const Vector2 &b, unsigned id, Array<Elem> &iscts)
+  void CheckLine(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id, Array<Elem> &iscts)
   {
     CheckLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id, iscts);
   }
   void CheckLine(int x1, int y1, int x2, int y2, unsigned id, Array<Elem> &iscts);
-  void DrawAndCheckLine(const Vector2 &a, const Vector2 &b, unsigned id, Array<Elem> &iscts)
+  void DrawAndCheckLine(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id, Array<Elem> &iscts)
   {
     DrawAndCheckLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id, iscts);
   }

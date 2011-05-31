@@ -39,17 +39,17 @@ public:
   {
     return x >= 0 && x < width && y >= 0 && y < height;
   }
-  void DrawBresenhamLine(const Vector2 &a, const Vector2 &b, unsigned id)
+  void DrawBresenhamLine(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id)
   {
     DrawBresenhamLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id);
   }
   void DrawBresenhamLine(int x1, int y1, int x2, int y2, unsigned id);
-  void FindIntersections(const Vector2 &a, const Vector2 &b, unsigned id)
+  void FindIntersections(const VEC::Vector2 &a, const VEC::Vector2 &b, unsigned id)
   {
     FindIntersections(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y), id);
   }
   void FindIntersections(int x1, int y1, int x2, int y2, unsigned id);
-  bool CheckBresenhamLine(const Vector2 &a, const Vector2 &b)
+  bool CheckBresenhamLine(const VEC::Vector2 &a, const VEC::Vector2 &b)
   {
     return CheckBresenhamLine(lrint(a.x), lrint(a.y), lrint(b.x), lrint(b.y));
   }

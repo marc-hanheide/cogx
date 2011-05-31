@@ -30,6 +30,8 @@
 namespace Z
 {
 
+using namespace VEC;
+
 /**
  * @class VisionCore Representing the perceptual grouping system.
  * @brief Representing the perceptual grouping system.

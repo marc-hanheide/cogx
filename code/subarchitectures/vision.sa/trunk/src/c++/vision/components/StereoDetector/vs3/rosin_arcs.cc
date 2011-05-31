@@ -718,7 +718,7 @@ void FitArcsToSegment(Z::VisionCore *vcore, Z::Segment *seg)
               if(arc_finish[j] - arc_start[j] + 1 >= 7 &&
                   radii[j] > MIN_RADIUS && radii[j] < MAX_RADIUS)
               {
-                Vector2 cent(arc_centre_x[j], arc_centre_y[j]);
+                VEC::Vector2 cent(arc_centre_x[j], arc_centre_y[j]);
                 // note Rosin/West start arrays at 1, I start at 0
                 new_arc = new Z::Arc(vcore, seg,
                         (unsigned)arc_start[j] - 1,

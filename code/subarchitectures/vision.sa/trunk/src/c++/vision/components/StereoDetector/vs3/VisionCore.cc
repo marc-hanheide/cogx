@@ -45,7 +45,7 @@
 
 namespace Z
 {
-
+  
 #ifdef DEBUG_CHECKINDEX
 /**
  * HACK: this must be a non-inline, non-template function, otherwise the
