@@ -24,7 +24,7 @@ private:
 	FTFont* m_font;
 #endif
 public:
-	tgFont(const char* ttf_filename);
+	tgFont();
 	~tgFont();
 	
 	void Print(const char* text, int size, int pos_x, int pos_y);
