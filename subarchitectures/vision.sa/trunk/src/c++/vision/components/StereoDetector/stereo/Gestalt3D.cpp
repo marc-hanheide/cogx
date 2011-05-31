@@ -13,7 +13,10 @@ namespace Z
 
 static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
-  "LJUNCTION"
+  "PATCH",
+  "SEGMENT",
+  "COLLINEARITY",
+  "LJUNCTION",
   "CORNER",
   "LINE",
   "CLOSURE",
@@ -22,7 +25,7 @@ static const char type_names[][NAME_LENGTH] = {
   "ELLIPSE",
   "UNDEF"
 };
-static const int type_names_length[] = {9, 6, 4, 7, 9, 4, 7, 5};
+static const int type_names_length[] = {5, 7, 12, 9, 6, 4, 7, 9, 4, 7, 5};
  
 
 /**
@@ -60,12 +63,14 @@ Gestalt3D::Type Gestalt3D::EnumType(const char *type_name)
 
 /**
  * @brief 3D Gestalt constructor.
- * @param t Type of 3D Gestalt
+ * @param _type Type of 3D Gestalt
+ * @param _id Unique ID of the Gestalt3D
  */
-Gestalt3D::Gestalt3D(Type t)
+Gestalt3D::Gestalt3D(Type _type)
 {
-  type = t;
+  type = _type;
   sig = 0.;
+  id = -1;
 }
 
 }

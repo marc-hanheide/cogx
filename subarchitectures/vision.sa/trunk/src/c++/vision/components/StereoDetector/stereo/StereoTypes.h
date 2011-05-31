@@ -144,8 +144,8 @@ public:
 class Vertex3D
 {
 public:
-  Vector3 p;            ///< position vector
-  Vector3 n;            ///< normal vector
+  VEC::Vector3 p;            ///< position vector
+  VEC::Vector3 n;            ///< normal vector
 
 private:
   bool SanityOK();

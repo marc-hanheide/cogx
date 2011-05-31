@@ -4,8 +4,9 @@ include_directories(.)
 
 # Set the sources.
 SET(HEADERS
-	../math/Vector2.hh
+#	../math/Vector2.hh
 	Closure3D.h
+  Collinearity3D.h
 	Corner3D.h
 	Ellipse3D.h
 	Flap3D.h
@@ -13,6 +14,7 @@ SET(HEADERS
 	Line3D.h
 	LJunction3D.h
 	Rectangle3D.h
+  Segment3D.h
 	StereoBase.h
 #	StereoCamera.hh
 	StereoClosures.h
@@ -30,6 +32,7 @@ SET(HEADERS
 
 SET(SOURCES 
 	Closure3D.cpp
+  Collinearity3D.cpp
 	Corner3D.cpp
 	Ellipse3D.cpp
 	Flap3D.cpp
@@ -37,6 +40,7 @@ SET(SOURCES
 	Line3D.cpp
 	LJunction3D.cpp
 	Rectangle3D.cpp
+  Segment3D.cpp
 	StereoBase.cpp
 #	StereoCamera.cc
 	StereoClosures.cpp
