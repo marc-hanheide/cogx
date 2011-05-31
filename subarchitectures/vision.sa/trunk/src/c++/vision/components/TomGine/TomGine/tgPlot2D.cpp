@@ -13,7 +13,7 @@
 
 using namespace TomGine;
 
-tgPlot2D::tgPlot2D(int x, int y, unsigned w, unsigned h) : font(TTF_FONT)
+tgPlot2D::tgPlot2D(int x, int y, unsigned w, unsigned h)
 {
 	this->x = x;
 	this->y = y;

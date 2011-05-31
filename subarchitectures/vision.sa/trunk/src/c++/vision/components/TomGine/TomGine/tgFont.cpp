@@ -7,9 +7,9 @@
 
 using namespace TomGine;
 
-tgFont::tgFont(const char* ttf_filename){
+tgFont::tgFont(){
 #ifdef USE_FTGL_FONT
-	m_font = new FTPixmapFont(ttf_filename);
+	m_font = new FTPixmapFont(TTF_FONT);
 	if(m_font->Error()){
 		char err[64];
 		sprintf(err, "[tgFont::tgFont()] Cannot create font '%s'", ttf_filename);
