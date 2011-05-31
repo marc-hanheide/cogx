@@ -15,6 +15,23 @@ namespace Z
 {
 
 /**
+ * @brief RGBValue of point clouds, accessable as float or long value.
+ */
+typedef union
+{
+  struct
+  {
+    unsigned char b; // Blue channel
+    unsigned char g; // Green channel
+    unsigned char r; // Red channel
+    unsigned char a; // Alpha channel
+  };
+  float float_value;
+  long long_value;
+} RGBValue;
+
+
+/**
  * @brief Enum ColorFormat
  */
 enum ColorFormat
