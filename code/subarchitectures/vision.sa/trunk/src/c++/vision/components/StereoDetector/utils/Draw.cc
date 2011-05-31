@@ -151,15 +151,15 @@ void DrawLine2D(double x1, double y1, double x2, double y2, unsigned char transp
  * @param end End point of line.
  * @param color Color of Arrow.
  */
-void DrawArrow(Vector2 start, Vector2 end, RGBColor col)
+void DrawArrow(VEC::Vector2 start, VEC::Vector2 end, RGBColor col)
 {
   double len_2 = 4.;
   double wid_2 = 3.;
-	Vector2 dir = end - start;
+	VEC::Vector2 dir = end - start;
 	dir = Normalise(dir);
-  Vector2 tip = (start + end)/2. + dir*len_2;
-  Vector2 left = (start + end)/2. - dir*len_2 + dir.NormalAntiClockwise()*wid_2;
-  Vector2 right = (start + end)/2. - dir*len_2 + dir.NormalClockwise()*wid_2;
+  VEC::Vector2 tip = (start + end)/2. + dir*len_2;
+  VEC::Vector2 left = (start + end)/2. - dir*len_2 + dir.NormalAntiClockwise()*wid_2;
+  VEC::Vector2 right = (start + end)/2. - dir*len_2 + dir.NormalClockwise()*wid_2;
   DrawLine2D(left.x, left.y, tip.x, tip.y, col);
   DrawLine2D(right.x, right.y, tip.x, tip.y, col);
 }
