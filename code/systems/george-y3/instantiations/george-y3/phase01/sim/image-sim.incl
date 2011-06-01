@@ -1,0 +1,10 @@
+# CAST config file
+
+SETVAR PlayerVideoServer_Params=<multiline>
+   --camids  "0 1"
+   --devnums "0 1"
+   --imgsize "640 480"
+   --framerate_fps 3
+   --camconfigs "%(camera_config_file):L %(camera_config_file):R"
+</multiline>
+CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)

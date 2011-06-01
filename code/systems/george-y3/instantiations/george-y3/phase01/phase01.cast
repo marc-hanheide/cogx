@@ -1,0 +1,36 @@
+# CAST config file
+
+# Host names can be used instead of raw IPs to distribute components eg. [Main].
+# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
+HOSTNAME  localhost      192.168.33.101
+HOSTNAME  Main           localhost
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+
+HOST     [Main]
+INCLUDE  config-sim.incl
+
+COMPONENT CPP ptz.server PlayerPTZServer
+
+####################################################################################################################
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+INCLUDE  includes/visualization.sa/v11n-base-p.cast
+
+####################################################################################################################
+INCLUDE  includes/vision.sa/vision-base.cast
+INCLUDE  georgeY3-vision-srv.incl
+INCLUDE  georgeY3-vision.incl
+
+# Select the video input; change the camera_config_file accordingly
+INCLUDE  sim/image-sim.incl
+INCLUDE  sim/camera-mount-sim.incl
+
+#JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+
+####################################################################################################################
+# Monitors
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
+
+
