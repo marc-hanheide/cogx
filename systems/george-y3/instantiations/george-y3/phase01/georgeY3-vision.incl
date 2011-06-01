@@ -1,0 +1,80 @@
+# CAST config file
+# Part of the SUBARCHITECTURE "vision.sa"
+
+# NOTE: camera_config_file is set in config-XXX.incl or in the main cast file
+
+SETVAR FinePlanePopOut_Params=<multiline>
+   --generate-sois "false"
+   --videoname "videoserver"
+   --pcserver "stereoserver"
+   --stereoconfig %(camera_config_file)
+   --minObjHeight 0.015
+   --totalPoints 8000
+   --LeastPointsInOneObj 40
+   --agonalTime 10
+   --stableTime 5 
+   --displayserver "display.srv"
+   #--display
+   # --log
+</multiline>
+CPP MG vis.planepopout.fine PlanePopOut %(FinePlanePopOut_Params) 
+
+SETVAR CoarsePlanePopOut_Params=<multiline>
+   --generate-sois "true"
+   --videoname "videoserver"
+   --pcserver "stereoserver"
+   --stereoconfig %(camera_config_file)
+   --minObjHeight 0.015
+   --totalPoints 8000
+   --LeastPointsInOneObj 40
+   --agonalTime 10
+   --stableTime 5 
+   --displayserver "display.srv"
+   #--display
+   # --log
+</multiline>
+CPP MG vis.planepopout.coarse PlanePopOut %(CoarsePlanePopOut_Params)
+
+SETVAR wmBlocking=--blocking false
+SETVAR SOIFilter_Params=<multiline>
+   --camid 0
+   --videoname videoserver
+   --coarse-pointcloud "stereoserver"
+   --objht 23
+   --objdt 60
+   --bght 24
+   --bgdt 9999
+   --fixc 24
+   --displayserver "display.srv"
+   %(wmBlocking)
+   # --display 
+   # --log --debug
+</multiline>
+CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
+
+#CPP MG vis.analyzer ObjectAnalyzer  %(wmBlocking)  --log --debug
+
+#INCLUDE ../includes/vision.sa/vision-visual-learner.cast
+
+# ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
+# Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
+# the ProtoObject.
+#CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
+
+# INCLUDE ../includes/vision.sa/vision-recognizer-3d.cast
+
+##### Monitors
+
+#JAVA MG percepts castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
+#JAVA MG beliefs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
+#JAVA MG visual.objects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
+JAVA MG proto.objectrs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.ProtoObject"
+#JAVA MG SOIs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.SOI"
+JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
+JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.WMRemoteProcedureCall"
+
+CPP MG video.viewer VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
+#CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
+
+#CPP MG scene.2d VirtualScene2D  --log --debug
+
