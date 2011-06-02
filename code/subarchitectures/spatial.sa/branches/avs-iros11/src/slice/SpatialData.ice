@@ -347,20 +347,29 @@ module SpatialData {
   
   class RelationalViewPointGenerationCommand {
   	string searchedObjectCategory;
-  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see below
-  	string supportObject; // this is "" if we're looking directly, i.e. "mug in room1"
+  	// INOBJECT if we are looking indirectly, INROOM if directly, see below
+  	SpatialRelation relation;
+  	// this is "" if we're looking directly, i.e. "mug in room1"
+  	string supportObject; 
   	string supportObjectCategory;
-  	int roomId; // always (and I mean always) fill this
+  	// always (and I mean always) fill this
+  	int roomId; 
     AVSStatus status;
   };
 
  class ObjectSearchResult{
-  	string searchedObjectCategory; // this is really "mug", "table" etc.
-  	SpatialRelation relation; // INOBJECT if we are looking indirectly, INROOM if directly, see enum:SpatialRelation
-  	string supportObjectCategory; // this is "" if we're looking directly, i.e. "mug in sroom1"
-  	string supportObjectId; // this is "" if we're looking directly, i.e. "mug in room1"
-  	int roomId; // always (and I mean always) fill this
-  	double beta; // The percentage of the relation probability mass that was already explored.
+	// this is really "mug", "table" etc.
+  	string searchedObjectCategory;
+  	// INOBJECT if we are looking indirectly, INROOM if directly, see enum:SpatialRelation
+  	SpatialRelation relation; 
+  	// this is "" if we're looking directly, i.e. "mug in sroom1"
+  	string supportObjectCategory; 
+  	// this is "" if we're looking directly, i.e. "mug in room1"
+  	string supportObjectId; 
+  	// always (and I mean always) fill this
+  	int roomId; 
+  	// The percentage of the relation probability mass that was already explored.
+  	double beta; 
   };
   
   class ProcessConeGroup {
