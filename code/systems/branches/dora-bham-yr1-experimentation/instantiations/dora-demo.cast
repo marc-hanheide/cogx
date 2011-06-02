@@ -16,6 +16,8 @@ INCLUDE includes/vision.sa/vision-objects.cast
 INCLUDE includes/vision.sa/vision-live.cast
 #CPP MG dummy.objrecog DummyDriver --labels "Poster Phone"
 #INCLUDE includes/vision.sa/vision-viewer.cast
+# video viewer test
+#CPP MG viewer VideoViewer --videoname VideoServer --camid 0 
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -29,7 +31,7 @@ INCLUDE includes/coma.sa/coma.cast
 # comsys ######################################################################
 # COMMENT BACK IN BELOW TO HAVE SPEECH
 INCLUDE includes/comsys.sa/comsys-base.cast
-INCLUDE includes/comsys.sa/comsys.cast
+INCLUDE includes/comsys.sa/comsys-w-mary.cast
 
 
 # planning and motivation #####################################################
@@ -37,9 +39,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/motivation.sa/motivation.cast
 
-
-
-JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom"
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, VisionData.VisualObject"
 
 #JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialProperties.ObjectPlaceProperty, SpatialProperties.GatewayPlaceProperty, SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, binder.autogen.core.UnionConfiguration"
 

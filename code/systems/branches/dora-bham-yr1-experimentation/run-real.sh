@@ -57,7 +57,7 @@ camerareturn=$?
 
 if [[ $camerareturn != 0 ]]; then
 	echo "Camera setup failed"
-	exit 3
+#	exit 3
 fi
 
 echo "Start Log4J"
