@@ -76,7 +76,8 @@ JAVA MG SOIs castutils.viewer.V11WMViewerComponent --displayserver "display.srv"
 # JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.WMRemoteProcedureCall"
 
-CPP MG video.viewer VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
+CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
+CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"
 #CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
 
 #CPP MG scene.2d VirtualScene2D  --log --debug
