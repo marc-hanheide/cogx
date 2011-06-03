@@ -73,6 +73,14 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 					.get(wmc.address);
 			if (correspondingWMA == null) {
 				motive = checkForAddition(wmc.address, newEntry);
+				if (motive != null) {
+					motive.thisEntry = new WorkingMemoryAddress(newDataID(),
+							getSubarchitectureID());
+					assignCosts(motive);
+					addToWorkingMemory(motive.thisEntry, motive);
+					bel2motiveMap.put(wmc.address, motive.thisEntry);
+				}
+
 			} else {
 				try {
 					getLogger().debug(

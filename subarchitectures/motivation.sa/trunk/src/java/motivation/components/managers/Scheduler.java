@@ -22,17 +22,7 @@ import eu.cogx.planner.facade.PlannerFacade;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class Scheduler extends SimpleScheduler {
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#configure(java.util.Map)
-	 */
-	@Override
-	protected void configure(Map<String, String> config) {
-		super.configure(config);
-	}
+public class Scheduler extends AbstractScheduler {
 
 	/*
 	 * (non-Javadoc)
@@ -122,8 +112,7 @@ public class Scheduler extends SimpleScheduler {
 							// make sure that high prioritiy goals are always
 							// planned for.
 							getLogger()
-									.warn(
-											"there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
+									.warn("there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
 						}
 
 						setStatus(possibleGoals, MotiveStatus.ACTIVE);
