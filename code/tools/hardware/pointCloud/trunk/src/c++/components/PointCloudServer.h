@@ -101,7 +101,7 @@ public:
   virtual void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete) {}
   virtual void getRectImage(int side, int imgWidth, Video::Image& image) {}
   virtual void getDisparityImage(int imgWidth, Video::Image& image) {}
-  virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars) { return false; }
+  virtual bool getCameraParameters(int side, Video::CameraParameters& camPars) { return false; }
 
   /**
    * The callback function for images pushed by the image server.

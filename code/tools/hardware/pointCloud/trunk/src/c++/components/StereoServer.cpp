@@ -374,8 +374,11 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
   unlockComponent();
 }
 
-bool StereoServer::getCameraParameters(Ice::Int side, Video::CameraParameters& camPars)
+bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPars)
 {
+  if (side != LEFT && side != RIGHT)
+    return false;
+
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   StereoCamera *stereoCam = stereoCams[0];
