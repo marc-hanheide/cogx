@@ -2,4 +2,7 @@
   <qresource prefix="/toolButton">
     <file>camera-photo.png</file>
   </qresource>
+  <qresource prefix="/appIcon">
+    <file>cogxViewer_icon.png</file>
+  </qresource>
 </RCC>
