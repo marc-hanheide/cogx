@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>CAST Viewer</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="images.qrc">
+    <normaloff>:/appIcon/cogxViewer_icon.png</normaloff>:/appIcon/cogxViewer_icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
