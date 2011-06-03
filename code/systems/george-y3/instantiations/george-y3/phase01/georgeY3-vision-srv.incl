@@ -15,11 +15,12 @@ SETVAR StereoServer_Params=<multiline>
    --videoname videoserver
    --camids "0 1"
    --stereoconfig "%(camera_config_file)""
+   --camconfigs "%(camera_config_file):L %(camera_config_file):R"
    --imgsize "640 480 320 240"
    --maxdisp "192 96"
    --displayserver "display.srv"
    # --logimages
-   # --display
+   #--display
 </multiline>
 CPP MG stereoserver StereoServer %(StereoServer_Params)
 
