@@ -73,7 +73,7 @@ public class ComaRoomTransferFunction extends
 //			logger.info("adding " + value + " (" + jp.probability + ")");
 			fd.add(value, jp.probability);
 		}
-		assert (fd.size() > 0);
+		//assert (fd.size() > 0);
 		distr.put(CATEGORY_ID, fd);
 	}
 
