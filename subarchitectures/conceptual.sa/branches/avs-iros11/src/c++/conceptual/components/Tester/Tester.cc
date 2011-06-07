@@ -176,8 +176,10 @@ void Tester::runComponent()
 	sort (_appearances.begin(), _appearances.end());
 
 	QCoreApplication *app = QApplication::instance();
-	if (!app)
-		app = new QApplication(0,0);
+	if (!app) {
+		int argc=0;
+		app = new QApplication(argc,new char*[0]);
+	}
 	MainDialog *mainDialog = new MainDialog(this);
 	_mainDialog = mainDialog;
 	mainDialog->exec();
