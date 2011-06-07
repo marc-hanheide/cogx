@@ -138,7 +138,7 @@ public class SerialPlanExecutor extends Thread {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 				if (_wmc.src.equals(m_component.getComponentID())) {
-					m_component.log("action changed by me");
+					m_component.log("	 by me");
 				} else {
 					m_component.log("action changed by " + _wmc.src);
 				}
@@ -238,7 +238,9 @@ public class SerialPlanExecutor extends Thread {
 
 				// wait for the component to receive changes
 				m_component.waitForChanges();
-
+				
+				m_component.lockComponent();
+				
 				while (m_component.isPaused()) {
 					m_component.log("we are paused... let's wait");
 					try {
@@ -279,6 +281,9 @@ public class SerialPlanExecutor extends Thread {
 						}
 					}
 				}
+			
+				m_component.unlockComponent();
+				
 			}
 		} catch (CASTException e) {
 			m_component.logException(e);
@@ -329,7 +334,8 @@ public class SerialPlanExecutor extends Thread {
 		m_component.log("plan complete");
 		try {
 			m_component.deleteFromWorkingMemory(m_planProxyAddress);
-			m_component.log("plan deleted proxy");
+//			m_component.log("plan deleted proxy");
+			m_component.log("executor deleted proxy");
 		} catch (DoesNotExistOnWMException e) {
 			m_component
 					.println("plan proxy was deleted before we could remove it: "
