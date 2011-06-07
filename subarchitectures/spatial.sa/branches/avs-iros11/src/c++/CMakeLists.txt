@@ -219,7 +219,7 @@ if(BUILD_SA_SPATIAL_RELATIONMANAGER)
   link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
   link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
-  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp)# InferRelations.cpp) 
+  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp InferRelations.cpp) 
   set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
   link_cast_component(${CAST_COMPONENT_NAME} peekabot)
   link_cast_component(${CAST_COMPONENT_NAME} dai rocs_core rocs_ml rocs_concept)
