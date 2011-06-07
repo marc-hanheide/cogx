@@ -49,7 +49,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     add_executable(event-visualizer event-visualizer.cc ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                     ConceptualWidget/AddGroundtruthDialog.cc ConceptualWidget/EventView.cc
                                     ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} ${RC_SOURCES})
-    link_cast_component(event-visualizer ConceptualData QtGui QtSvg)
+    link_cast_component(event-visualizer ConceptualData QtCore QtGui QtSvg)
     install(TARGETS event-visualizer RUNTIME DESTINATION bin ARCHIVE DESTINATION bin)
 
 
