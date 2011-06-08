@@ -17,6 +17,8 @@ static const char type_names[][NAME_LENGTH] = {
   "KINECT_SEGMENTS",
   "KINECT_LINES",
   "KINECT_COLLINEARITIES",
+  "KINECT_CLOSURES",
+  "KINECT_RECTANGLES",
   "UNDEF"
   };
 

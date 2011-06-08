@@ -33,6 +33,8 @@ public:
     KINECT_SEGMENTS,
     KINECT_LINES,
     KINECT_COLLINEARITIES,
+    KINECT_CLOSURES,
+    KINECT_RECTANGLES,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };                                          ///< Type of Kinect Gestalts

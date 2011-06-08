@@ -3,7 +3,7 @@
  * @author Andreas Richtsfeld
  * @date May 2011
  * @version 0.1
- * @brief Kalculate 3D segments from Kinect data.
+ * @brief Calculate 3D segments from Kinect data.
  */
 
 #include "KinectCore.h"

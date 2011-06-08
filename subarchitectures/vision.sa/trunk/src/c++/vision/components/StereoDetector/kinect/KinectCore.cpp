@@ -13,6 +13,8 @@
 #include "KinectSegments.h"
 #include "KinectLines.h"
 #include "KinectCollinearities.h"
+#include "KinectClosures.h"
+#include "KinectRectangles.h"
 
 namespace Z
 {
@@ -64,12 +66,16 @@ void KinectCore::InitKinectPrinciples()
   kinectPrinciples[KinectBase::KINECT_SEGMENTS] = new KinectSegments(this, vcore, iplImg, points);
   kinectPrinciples[KinectBase::KINECT_LINES] = new KinectLines(this, vcore, iplImg, points);
   kinectPrinciples[KinectBase::KINECT_COLLINEARITIES] = new KinectCollinearities(this, vcore, iplImg, points);
+  kinectPrinciples[KinectBase::KINECT_CLOSURES] = new KinectClosures(this, vcore, iplImg, points);
+  kinectPrinciples[KinectBase::KINECT_RECTANGLES] = new KinectRectangles(this, vcore, iplImg, points);
   
   // set principles enabled or disabled
   kinectPrinciples[KinectBase::KINECT_PATCHES]->EnablePrinciple(true);
   kinectPrinciples[KinectBase::KINECT_SEGMENTS]->EnablePrinciple(true);
   kinectPrinciples[KinectBase::KINECT_LINES]->EnablePrinciple(true);
   kinectPrinciples[KinectBase::KINECT_COLLINEARITIES]->EnablePrinciple(true);
+  kinectPrinciples[KinectBase::KINECT_CLOSURES]->EnablePrinciple(true);
+  kinectPrinciples[KinectBase::KINECT_RECTANGLES]->EnablePrinciple(true);
   
   initialized = true;
 }
@@ -160,6 +166,9 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
   /// TODO Initialisierung sollte eigentlich nur einmal sein, danach, dann immer Clear()
   InitKinectPrinciples();
 
+  struct timespec start, current;
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  
   try 
   {
     for(int i = 0; i < KinectBase::MAX_TYPE; i++)
@@ -169,6 +178,11 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
         {
           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u\n", i);
           kinectPrinciples[i]->Process();
+
+          clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+          printf("Runtime for processing the kinect principle %u: %4.3f\n", i, timespec_diff(&current, &start));
+          start = current;
+
           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u ended\n", i);
         }
     }
@@ -178,6 +192,7 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
     printf("KinectCore::ProcessKinectData: Exception during processing of kinect data.");
     std::cout << e.what() << std::endl;
   }
+  
   printf("KinectCore::ProcessKinectData: ended\n");
 }
 
@@ -218,7 +233,7 @@ const char* KinectCore::GetKinectTypeName(KinectBase::Type type)
 
 
 /**
- * @brief Get the Gestalt list with found Gestalts on mono image.
+ * @brief Get the Gestalt list with Gestalts3D from kinect data.
  * @return Returns the information as character array.
  */
 const char* KinectCore::GetGestaltListInfo()
@@ -228,11 +243,11 @@ const char* KinectCore::GetGestaltListInfo()
   int n = 0;
 
   n += snprintf(info_text + n, info_size - n, 
-    "  GESTALT LIST\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    "  KINECT GESTALT LIST\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
   for(int i=0; i < Z::Gestalt3D::MAX_TYPE; i++)
   {
-    n += snprintf(info_text + n, info_size - n, "  %s", vcore->GetGestaltTypeName((Gestalt::Type) i));
-    n += snprintf(info_text + n, info_size - n, "	%i\n", NumMonoGestalts((Gestalt::Type) i));
+    n += snprintf(info_text + n, info_size - n, "  %s", GetGestaltTypeName((Gestalt3D::Type) i));
+    n += snprintf(info_text + n, info_size - n, "	%i\n", NumGestalts3D((Gestalt3D::Type) i));
   }
 //   n += snprintf(info_text + n, info_size - n, "\n  STEREO LIST		STEREO\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");           /// TODO Wie siehts mit den Gestalts3D aus?
 //   for(unsigned i=0; i< KinectBase::MAX_TYPE; i++)
@@ -242,6 +257,26 @@ const char* KinectCore::GetGestaltListInfo()
 //   }
   return info_text;
 }
+
+/**
+ * @brief Get the name of a Gestalt3D type.  
+ * @param type Gestalt3D type
+ * @return Returns the information as string.
+ */
+const char* KinectCore::GetGestaltTypeName(Z::Gestalt3D::Type type)
+{
+  const unsigned info_size = 10000;
+  static char name_text[info_size] = "";
+  int n = 0;
+
+  n += snprintf(name_text + n, info_size - n, "%s: ", Z::Gestalt3D::TypeName(type));
+
+  for(int i=0; i< (18 - Z::Gestalt3D::TypeNameLength(type)); i++)
+    n += snprintf(name_text + n, info_size -n, " ");
+  
+  return name_text;
+}
+
 
 /**
  * @brief Draw the mono results into a iplImage
