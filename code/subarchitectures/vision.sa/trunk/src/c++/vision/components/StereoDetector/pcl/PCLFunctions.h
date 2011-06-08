@@ -135,8 +135,15 @@ bool GetConvexHulls(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_c
                     std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_convex_hulls);
                            
                            
-                         
-                         
+/**
+ * @brief Project a point cloud to the model (SAC plane).
+ * @param pcl_clouds Planes as projected points.
+ * @param model_coefficients Model coefficients of the planes.
+ * @param pcl_clouds_projected Projected point cloud
+ */                            
+bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds, 
+                        std::vector< pcl::ModelCoefficients::Ptr > model_coefficients,
+                        std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds_projected);                         
                          
                          
                          

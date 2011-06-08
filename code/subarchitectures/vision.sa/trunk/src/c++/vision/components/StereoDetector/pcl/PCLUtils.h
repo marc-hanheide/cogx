@@ -33,6 +33,14 @@ typedef union
 
 
 /**
+ * @brief Convert openCV vector points to pcl point cloud.
+ * @param cv_cloud Point cloud in openCV vector format
+ * @param pcl_cloud PCL style point cloud
+ */
+void Cv2PCLCloud(std::vector<cv::Vec4f> cv_cloud,
+                 pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud);
+                 
+/**
  * @brief Convert openCV matrix points to pcl point cloud.
  * @param cv_cloud Point cloud in openCV matrix format
  * @param pcl_cloud PCL style point cloud
@@ -59,12 +67,32 @@ void Points2PCLCloud(const std::vector<PointCloud::SurfacePoint> points,
 
 
 /**
- * @brief Convert a point cloud from pcl-format to opencv matrix format.
- * @param points Points cloud in pcl-format.
- * @param cloud Point cloud in openCV format.
+ * @brief Convert a point cloud from pcl-format to opencv vector format.
+ * @param cloud Point cloud in pcl-format.
+ * @param cvCloud Point cloud as openCV vector.
  * @param random_color Convert cloud with random color.
  */
-void PCLCloud2CvCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud, 
+void PCLCloud2CvVec(pcl::PointCloud<pcl::PointXYZRGB> pcl_cloud, 
+                      std::vector<cv::Vec4f> &cvCloud,
+                      bool random_colors = false);
+                      
+/**
+ * @brief Convert point clouds from pcl-format to opencv vector format.
+ * @param pcl_clouds Point clouds in pcl-format.
+ * @param cv_clouds Point clouds as openCV vector.
+ * @param random_color Convert cloud with random color.
+ */              
+void PCLClouds2CvVecs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
+                      std::vector< std::vector<cv::Vec4f> > &cv_clouds,
+                      bool random_colors = false);
+                      
+/**
+ * @brief Convert a point cloud from pcl-format to opencv matrix format.
+ * @param cloud Points cloud in pcl-format.
+ * @param cvCloud Point cloud in openCV format.
+ * @param random_color Convert cloud with random color.
+ */
+void PCLCloud2CvMat(pcl::PointCloud<pcl::PointXYZRGB> cloud, 
                       cv::Mat_<cv::Vec4f> &cvCloud,
                       bool random_colors = false);
 
@@ -74,7 +102,7 @@ void PCLCloud2CvCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud,
  * @param pcl_clouds Points clouds in pcl-format.
  * @param cv_clouds Point clouds in openCV format.
  */
-void PCLClouds2CvClouds(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
+void PCLClouds2CvMats(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
                         std::vector< cv::Mat_<cv::Vec4f> > &cv_clouds,
                         bool random_colors = false);
 

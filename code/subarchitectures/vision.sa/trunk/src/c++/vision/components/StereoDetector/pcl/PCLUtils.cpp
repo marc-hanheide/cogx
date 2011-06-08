@@ -11,6 +11,22 @@
 namespace pclU
 {
   
+  
+void Cv2PCLCloud(std::vector<cv::Vec4f> cv_cloud,
+                 pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud)
+{
+  pcl_cloud.width = cv_cloud.size();
+  pcl_cloud.height = 1;
+  pcl_cloud.points.resize(cv_cloud.size());                  
+  for(unsigned idx = 0; idx < cv_cloud.size(); idx++)
+  {
+    pcl_cloud.points[idx].x = (float) cv_cloud[idx][0];
+    pcl_cloud.points[idx].y = (float) cv_cloud[idx][1];
+    pcl_cloud.points[idx].z = (float) cv_cloud[idx][2];
+    pcl_cloud.points[idx].rgb = (float) cv_cloud[idx][3];
+  }
+}                 
+  
 void Cv2PCLCloud(cv::Mat_<cv::Vec4f> cv_cloud,
                  pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud)
 {
@@ -86,7 +102,54 @@ void Points2PCLCloud(const std::vector<PointCloud::SurfacePoint> points,
 }
 
 
-void PCLCloud2CvCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud, 
+void PCLCloud2CvVec(pcl::PointCloud<pcl::PointXYZRGB> pcl_cloud, 
+                    std::vector<cv::Vec4f> &cvCloud,
+                    bool random_colors)
+{
+  unsigned pcWidth = pcl_cloud.width;
+  unsigned pcHeight = pcl_cloud.height;
+  unsigned position = 0;
+  
+  RGBValue color;
+  if(random_colors)
+  {
+    color.Red = rand()%255;
+    color.Green = rand()%255;
+    color.Blue = rand()%255;
+    color.Alpha = 0;
+  }
+  for(unsigned row = 0; row < pcHeight; row++)
+  {
+    for(unsigned col = 0; col < pcWidth; col++)
+    {
+      cv::Vec4f p;
+      position = row*pcWidth + col;
+      p[0] = pcl_cloud.points[position].x;
+      p[1] = pcl_cloud.points[position].y;
+      p[2] = pcl_cloud.points[position].z;
+      if(random_colors)
+        p[3] = color.float_value;
+      else
+        p[3] = pcl_cloud.points[position].rgb;
+      cvCloud.push_back(p);
+    }
+  } 
+}
+
+void PCLClouds2CvVecs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
+                      std::vector< std::vector<cv::Vec4f> > &cv_clouds,
+                      bool random_colors)
+{
+  std::vector<cv::Vec4f> cv_cloud;
+  for(unsigned idx=0; idx< pcl_clouds.size(); idx++)
+  {
+    PCLCloud2CvVec(*pcl_clouds[idx], cv_cloud, random_colors); 
+    cv_clouds.push_back(cv_cloud);
+    cv_cloud.clear();
+  }
+}
+
+void PCLCloud2CvMat(pcl::PointCloud<pcl::PointXYZRGB> cloud, 
                       cv::Mat_<cv::Vec4f> &cvCloud, 
                       bool random_colors)
 {
@@ -122,14 +185,14 @@ void PCLCloud2CvCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud,
   }
 }
 
-void PCLClouds2CvClouds(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
+void PCLClouds2CvMats(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds,
                         std::vector< cv::Mat_<cv::Vec4f> > &cv_clouds,
                         bool random_colors)
 {
   cv::Mat_<cv::Vec4f> cv_cloud;
   for(unsigned idx=0; idx< pcl_clouds.size(); idx++)
   {
-    PCLCloud2CvCloud(*pcl_clouds[idx], cv_cloud, random_colors); 
+    PCLCloud2CvMat(*pcl_clouds[idx], cv_cloud, random_colors); 
     cv_clouds.push_back(cv_cloud);
   }
 }

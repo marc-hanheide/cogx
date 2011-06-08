@@ -237,6 +237,7 @@ bool GetConvexHulls(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_c
     // Create a Convex Hull representation of the projected inliers
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZRGB>);
     pcl::ConvexHull<pcl::PointXYZRGB> chull;
+    chull.setKeepInformation(true);   // keep information about point (color)!
     chull.setInputCloud (cloud_projected);
     chull.reconstruct (*cloud_hull);
 
@@ -245,11 +246,30 @@ bool GetConvexHulls(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_c
 }
 
 
+bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds, 
+                        std::vector< pcl::ModelCoefficients::Ptr > model_coefficients,
+                        std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds_projected)
 
-
-
-
-
+{
+  if(pcl_clouds.size() != model_coefficients.size())
+  {
+    printf("PCLFunctions::GetConvexHulls: Warning: Cloud and coefficient size do not match!\n");
+    return false;
+  }
+  
+  for(unsigned i=0; i<pcl_clouds.size(); i++)
+  {
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::ProjectInliers<pcl::PointXYZRGB> proj;
+    proj.setModelType(pcl::SACMODEL_PLANE);
+    proj.setModelCoefficients(model_coefficients[i]);
+    proj.setInputCloud(pcl_clouds[i]);
+    proj.setCopyAllData(true);      // copy all data, not only inliers!
+    proj.filter(*cloud_projected);
+    
+    pcl_clouds_projected.push_back(cloud_projected);
+  }
+}
 
 
 
