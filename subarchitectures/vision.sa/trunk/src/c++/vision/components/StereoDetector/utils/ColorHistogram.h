@@ -10,6 +10,7 @@
 #define Z_COLOR_HISTOGRAM_HH
 
 #include <cv.h>
+#include <vector>
 #include "Color.hh"
 
 namespace Z
@@ -24,15 +25,16 @@ class ColorHistogram
 private:
   int nr_points;
   int nr_bins;
-  cv::Mat_<cv::Vec4f> points;
+//   cv::Mat_<cv::Vec4f> points;                               // TODO Change to vector<cv::Vec4f>
+  std::vector<cv::Vec4f> points;
   
   double *redHist, *greenHist, *blueHist;
   
 public:
-  ColorHistogram(int _nr_bins, cv::Mat_<cv::Vec4f> _p);
+  ColorHistogram(int _nr_bins, std::vector<cv::Vec4f> _p);
   
+  double Compare(ColorHistogram *ch);
   void PrintHistogram();
-
 };
 
 }
