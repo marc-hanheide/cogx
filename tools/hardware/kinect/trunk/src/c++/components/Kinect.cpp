@@ -250,6 +250,20 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 }
 
 
+const DepthMetaData* Kinect::getNextDepthMD()
+{
+  if(!kinect::isCapturing())
+  {
+    printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
+    return 0;
+  }
+    
+  kinect::readFrame();  // read next frame
+
+  // get depth image
+  return kinect::getDepthMetaData();
+}
+
 /**
  * @brief Get the next frame from the Kinect sensor and copy to openCV matrices.
  * @return Return true, if both images are captured successful.

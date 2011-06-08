@@ -59,10 +59,11 @@ public:
   void StartCapture(int delay);
   void StopCapture();
   bool GetFrame(IplImage **iplImg, IplImage **iplDepthImg);
-  bool NextFrame();
+  bool NextFrame();  
   bool GetColorImage(IplImage **rgbIplImg);
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
 
+	const DepthMetaData* getNextDepthMD();
   cv::Point3f Get3dWorldPoint(unsigned x, unsigned y);
   cv::Point3f WorldToColor(unsigned x, unsigned y);
   void Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud, int scale = 1);
