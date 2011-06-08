@@ -132,6 +132,44 @@ const char* Rectangle::GetInfo()
 }
 
 /**
+ * @brief Checks whether point p is inside closure. \n
+ * Uses the Jordan curve theorem. Note that points on the boundary are undefined.
+ * Code thanks to
+ *  W Randolph Franklin (WRF)
+ *  http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+ *  int pnpoly(int npol, float *xp, float *yp, float x, float y)
+ *  {
+ *    int i, j, c = 0;
+ *    for (i = 0, j = npol-1; i < npol; j = i++) {
+ *      if ((((yp[i]<=y) && (y<yp[j])) ||
+ *           ((yp[j]<=y) && (y<yp[i]))) &&
+ *          (x < (xp[j] - xp[i]) * (y - yp[i]) / (yp[j] - yp[i]) + xp[i]))
+ *
+ *        c = !c;
+ *    }
+ *    return c;
+ *  }
+ * @param p Point to be checkt.
+ */
+bool Rectangle::Inside(Vector2 p)
+{
+  int i, j, npol = 4;
+  bool c = false;
+  Vector2 pi, pj;
+  for(i = 0, j = npol-1; i < npol; j = i++)
+  {
+    pi = isct[i];
+    pj = isct[j];
+    if((((pi.y <= p.y) && (p.y < pj.y)) ||
+        ((pj.y <= p.y) && (p.y < pi.y))) &&
+       (p.x < (pj.x - pi.x) * (p.y - pi.y) / (pj.y - pi.y) + pi.x))
+
+      c = !c;
+  }
+  return c;
+}
+
+/**
  * @brief Returns true, if the rectangle center point is inside another rectangle radius.
  * @param rectangle Index of rectangle to compare.
  */
