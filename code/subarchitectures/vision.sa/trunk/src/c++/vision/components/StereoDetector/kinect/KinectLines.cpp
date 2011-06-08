@@ -77,8 +77,6 @@ void KinectLines::ClearResults()
  */
 void KinectLines::Process()
 {
-  printf("KinectLines::Process(): Jetzt kanns losgehen!\n");
-
   cv::Vec4f last_point;
   int point_cloud_width = points.cols;
   int point_cloud_height = points.rows;

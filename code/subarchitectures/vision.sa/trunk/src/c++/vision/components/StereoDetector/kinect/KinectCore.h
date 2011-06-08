@@ -18,10 +18,6 @@
 #include "KinectBase.h"
 #include "Gestalt3D.h"
 
-#include "KinectSegments.h"
-// #include "KinectLines.h"
-
-// #include "Math.hh"
 #include "Vector.hh"
 
 namespace Z
@@ -66,6 +62,7 @@ public:
   void ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);
 
   const char* GetGestaltListInfo();
+  const char* GetGestaltTypeName(Z::Gestalt3D::Type type);
   int NumMonoGestalts(Gestalt::Type type) {return vcore->Gestalts(type).Size();}
   void PrintVCoreStatistics();
 };

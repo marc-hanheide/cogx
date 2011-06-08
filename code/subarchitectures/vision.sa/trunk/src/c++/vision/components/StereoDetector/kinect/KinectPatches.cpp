@@ -44,8 +44,8 @@ void KinectPatches::ClearResults()
  */
 void KinectPatches::Process()
 {
-  struct timespec start, current;
-  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+//   struct timespec start, current;
+//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 
   pcl::PointCloud<pcl::PointXYZRGB> cloud;
   pclU::Cv2PCLCloud(points, cloud);
@@ -72,23 +72,24 @@ void KinectPatches::Process()
 //   pclF::FitPlanesRecursiveWithNormals(cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
 //                            sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
 
-  /// calculate convex hulls
+  // calculate convex hulls
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_hulls;
   pclF::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_hulls);
 
-  /// convert pcl point clouds to cv matrices
-  std::vector< cv::Mat_<cv::Vec4f> > cv_planes, cv_hulls;
-  pclU::PCLClouds2CvClouds(pcl_plane_clouds, cv_planes);
-  pclU::PCLClouds2CvClouds(pcl_hulls, cv_hulls, true);
+  // convert pcl point clouds to cv matrices
+  std::vector< std::vector<cv::Vec4f> > cv_vec_planes;
+  std::vector< std::vector<cv::Vec4f> > cv_vec_hulls;
+  pclU::PCLClouds2CvVecs(pcl_plane_clouds, cv_vec_planes);
+  pclU::PCLClouds2CvVecs(pcl_hulls, cv_vec_hulls, true);
         
-  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-  printf("Runtime for processing the point cloud: %4.3f\n", timespec_diff(&current, &start));
-  start=current;
+//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+//   printf("Runtime for processing the point cloud: %4.3f\n", timespec_diff(&current, &start));
+//   start=current;
 
-  /// now create Patch3D´s
-  for(unsigned i=0; i<cv_planes.size(); i++)
+  // create Patch3D´s
+  for(unsigned i=0; i<cv_vec_planes.size(); i++)
   {
-    Z::Patch3D *p3d = new Z::Patch3D(cv_planes[i], cv_hulls[i]);
+    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], cv_vec_hulls[i]);
     kcore->NewGestalt3D(p3d);
     numPatches++;
   }
