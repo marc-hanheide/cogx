@@ -19,10 +19,10 @@ typedef union
 {
   struct
   {
-    unsigned char Blue;   // Blue channel
-    unsigned char Green;  // Green channel
-    unsigned char Red;    // Red channel
-    unsigned char Alpha;  // Alpha channel
+    unsigned char b;  // Blue channel
+    unsigned char g;  // Green channel
+    unsigned char r;  // Red channel
+    unsigned char a;  // Alpha channel
   };
   float float_value;
   long long_value;
@@ -263,7 +263,7 @@ void TomGineThread::DrawVPointCloud()
         if (pt[0] == pt[0] && pt[1]==pt[1] && pt[2]==pt[2])
         {
           color.float_value = pt[3];
-          glColor4ub((int) color.Blue, (int) color.Green, (int) color.Red, 255);
+          glColor4ub((int) color.b, (int) color.g, (int) color.r, 255);
           glVertex3f(pt[0], pt[1], pt[2]);
         }
       }
@@ -283,7 +283,7 @@ void TomGineThread::DrawVPointCloud()
         if (pt[0] == pt[0] && pt[1]==pt[1] && pt[2]==pt[2])
         {
           color.float_value = pt[3];
-          glColor4ub((int) color.Blue, (int) color.Green, (int) color.Red, 255);
+          glColor4ub((int) color.b, (int) color.g, (int) color.r, 255);
           glVertex3f(pt[0], pt[1], pt[2]);
         }
       }
@@ -610,20 +610,47 @@ void TomGineThread::SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::
  * @brief AddPointCloud
  * @param vecCloud Cloud of points in openCV vector format.
  */
-void TomGineThread::AddPointCloud(cv::Mat_<cv::Vec4f> &vecCloud)
+void TomGineThread::AddPointCloud(cv::Mat_<cv::Vec4f> &matCloud)
 {
   pthread_mutex_lock(&dataMutex);
 
   unsigned vCloudSize = 0;
   if(!vCloud.empty()) 
     vCloudSize = vCloud.cols;
-  unsigned cloudSize = vecCloud.cols*vecCloud.rows + vCloudSize;
+  unsigned cloudSize = matCloud.cols*matCloud.rows + vCloudSize;
   
   cv::Mat_<cv::Vec4f> newCloud;
   newCloud = cv::Mat_<cv::Vec4f>(1, cloudSize);
   unsigned z=0;
-  for(unsigned idx=0; idx < vecCloud.cols*vecCloud.rows; idx++, z++)
-    newCloud(0, idx) = (vecCloud(0, idx)); 
+  for(unsigned idx=0; idx < matCloud.cols*matCloud.rows; idx++, z++)
+    newCloud(0, idx) = (matCloud(0, idx)); 
+  
+  if(!vCloud.empty())
+    for(unsigned idx=0; idx < vCloud.cols; idx++)
+      newCloud(0, z+idx) = (vCloud(0, idx)); 
+  
+  newCloud.copyTo(vCloud);
+  pthread_mutex_unlock(&dataMutex);
+}
+
+/**
+ * @brief AddPointCloud
+ * @param vecCloud Cloud of points in openCV vector format.
+ */
+void TomGineThread::AddPointCloud(std::vector<cv::Vec4f> &vecCloud)
+{
+  pthread_mutex_lock(&dataMutex);
+
+  unsigned vCloudSize = 0;
+  if(!vCloud.empty()) 
+    vCloudSize = vCloud.cols;
+  unsigned cloudSize = vecCloud.size() + vCloudSize;
+  
+  cv::Mat_<cv::Vec4f> newCloud;
+  newCloud = cv::Mat_<cv::Vec4f>(1, cloudSize);
+  unsigned z=0;
+  for(unsigned idx=0; idx < vecCloud.size(); idx++, z++)
+    newCloud(0, idx) = (vecCloud[idx]); 
   
   if(!vCloud.empty())
     for(unsigned idx=0; idx < vCloud.cols; idx++)
@@ -673,15 +700,42 @@ void TomGineThread::AddConvexHull(cv::Mat_<cv::Vec4f> &vecHull)
     cv::Vec4f s = vecHull(0, j);
     cv::Vec4f e = vecHull(0, j+1);
     color.float_value = s[3];
-    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
   }
   // add line from first to last matrix element
   cv::Vec4f s = vecHull(0, 0);
   cv::Vec4f e = vecHull(0, vecHull.cols-1);
   color.float_value = s[3];
-  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
 }
 
+/**
+ * @brief Add a convex hulls. (Matrix with one row of points!)
+ * @param vecHull Convex hull with Vec4f point format (x, y, z, rgb)
+ */
+void TomGineThread::AddConvexHull(std::vector<cv::Vec4f> &vecHull)
+{  
+  if(vecHull.size() < 3)
+  {
+    printf("TomGineThread::AddConvexHull: Warning: Convex hull with less than three points.!\n");
+    return;
+  }
+  
+  RGBValue color;
+  for(unsigned j=0; j < vecHull.size()-1; j++)
+  {
+    // How to access each point?
+    cv::Vec4f s = vecHull[j];
+    cv::Vec4f e = vecHull[j+1];
+    color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
+  }
+  // add line from first to last matrix element
+  cv::Vec4f s = vecHull[0];
+  cv::Vec4f e = vecHull[vecHull.size()-1];
+  color.float_value = s[3];
+  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
+}
 /**
  * @brief Add several convex hulls. (Matrix with one row of points!)
  * @param vecHulls Convex hulls with Vec4f point format (x, y, z, rgb)
@@ -702,13 +756,13 @@ void TomGineThread::AddConvexHulls(vector< cv::Mat_<cv::Vec4f> > &vecHulls)
       cv::Vec4f s = vecHulls[i](0, j);
       cv::Vec4f e = vecHulls[i](0, j+1);
       color.float_value = s[3];
-      AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+      AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
     }
     // add line from first to last matrix element
     cv::Vec4f s = vecHulls[i](0, 0);
     cv::Vec4f e = vecHulls[i](0, vecHulls[i].cols-1);
     color.float_value = s[3];
-    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.Blue, color.Green, color.Red);
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
   }
 }
 

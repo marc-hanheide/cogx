@@ -134,9 +134,12 @@ public:
 		      uchar r=0, uchar g=0, uchar b=0);
           
   void SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::Point3f> &colCloud);       // TODO  Remove this command => Use AddPointCloud instead!
-  void AddPointCloud(cv::Mat_<cv::Vec4f> &vecCloud);                                          // TODO Das sind Set Functionen, weil sie nur einmal verwendet werden können: Ändern
+  void AddPointCloud(cv::Mat_<cv::Vec4f> &matCloud);                                          // TODO Das sind Set Functionen, weil sie nur einmal verwendet werden können: Ändern
+  void AddPointCloud(std::vector<cv::Vec4f> &vecCloud);
   void AddPointClouds(vector< cv::Mat_<cv::Vec4f> > &vecClouds);                              // TODO Nur mehr eine Repräsentation für Punkte und die wird vergrößert!!
+  
   void AddConvexHull(cv::Mat_<cv::Vec4f> &vecHull);
+  void AddConvexHull(std::vector<cv::Vec4f> &vecHull);
   void AddConvexHulls(vector< cv::Mat_<cv::Vec4f> > &vecHulls);
   
   void Clear();
