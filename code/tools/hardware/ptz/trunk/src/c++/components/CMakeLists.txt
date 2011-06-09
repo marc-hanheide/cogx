@@ -19,4 +19,9 @@ if(BUILD_HAL_PTZ_PLAYER)
   add_cast_component(PlayerPTZServer PlayerPTZServer.cpp PlayerPTZServer.hpp)
   link_cast_component(${CAST_COMPONENT_NAME} PTZUtils)
   link_cast_component(${CAST_COMPONENT_NAME} m ${PLAYER_LIBRARIES})
+
+  add_cast_component(PlayerActServer PlayerActServer.cpp PlayerActServer.hpp)
+  link_cast_component(${CAST_COMPONENT_NAME} PTZUtils)
+  link_cast_component(${CAST_COMPONENT_NAME} m ${PLAYER_LIBRARIES})
+
 endif(BUILD_HAL_PTZ_PLAYER)
