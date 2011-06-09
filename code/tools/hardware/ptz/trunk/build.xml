@@ -1,5 +1,8 @@
 <!-- Inner build file for a module in the CogX system -->
 <project name="ptz" default="compile" basedir=".">
+	<property name="projectroot.dir" value="${basedir}/../../.." />
+	<property file="${projectroot.dir}/build.properties" />
+
     <!-- =================================================================== -->
     <!-- Add JAR files to classpath                                          -->
     <!-- =================================================================== -->
