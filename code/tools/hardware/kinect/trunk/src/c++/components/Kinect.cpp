@@ -199,54 +199,54 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 {
   printf("Kinect::GetFrame: Warning: depricated.\n");
 
-   if(!kinect::isCapturing())
-   {
-     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
-     return false;
-   }
-
-//    kinect::captureFrame();	//captureFrame muss nicht aufgerufen werden (nur für Recorder?)
-   kinect::readFrame();       //  read the next frame into the data field "CapturingData"					/ TODO wer soll read frame ausführen?
-
- //   get depth meta data
-   const DepthMetaData* pDepthMD = kinect::getDepthMetaData();
-   if (kinect::isDepthOn())
-     DepthMetaData2IplImage(pDepthMD, iplDepthImg);
-   else
-     printf("Kinect::GetFrame: Warning: No depth data available!\n");
-
-   // get image data (color or ir image data)
-   const MapMetaData* pImageMD = NULL;
-   if (kinect::isImageOn())
-   {
-     pImageMD = kinect::getImageMetaData();
-
-     if(*iplImg != 0)
-       if((*iplImg)->width != pImageMD->FullXRes() || (*iplImg)->height != pImageMD->FullYRes())
- 	cvReleaseImage(iplImg);
-     if(*iplImg == 0)
-       *iplImg = cvCreateImage(cvSize(pImageMD->FullXRes(), pImageMD->FullYRes()), IPL_DEPTH_8U, 3);
-     assert(*iplImg != 0);
-
-     IplImage *grayImg = cvCreateImage(cvSize(pImageMD->FullXRes(), pImageMD->FullYRes()), IPL_DEPTH_8U, 1);
-     if (pImageMD != NULL)
-       MapMetaData2IplImage(pImageMD, &grayImg);
-     if(grayImg->nChannels == 1)
-       cvCvtColor(grayImg, *iplImg, CV_BayerGB2RGB);   //convert Bayer image to RGB color image
-     cvReleaseImage(&grayImg);
-     return true;
-   }
-   else if (kinect::isIROn())
-   {
-        pImageMD = kinect::getIRMetaData();
-     printf("Kinect::GetFrame: Warning: request for IR-image data: not yet implemented!\n");
-     return false;
-   }
-   else
-   {
-     printf("Kinect::GetFrame: Warning: No image data available!\n");
-     return false;
-   }
+//   if(!kinect::isCapturing())
+//   {
+//     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
+//     return false;
+//   }
+//
+// //   kinect::captureFrame();	/// captureFrame muss nicht aufgerufen werden (nur für Recorder?)
+//   kinect::readFrame();        // read the next frame into the data field "CapturingData"					/// TODO wer soll read frame ausführen?
+//
+//   // get depth meta data
+//   const DepthMetaData* pDepthMD = kinect::getDepthMetaData();
+//   if (kinect::isDepthOn())
+//     DepthMetaData2IplImage(pDepthMD, iplDepthImg);
+//   else
+//     printf("Kinect::GetFrame: Warning: No depth data available!\n");
+//
+//   // get image data (color or ir image data)
+//   const MapMetaData* pImageMD = NULL;
+//   if (kinect::isImageOn())
+//   {
+//     pImageMD = kinect::getImageMetaData();
+//
+//     if(*iplImg != 0)
+//       if((*iplImg)->width != pImageMD->FullXRes() || (*iplImg)->height != pImageMD->FullYRes())
+// 	cvReleaseImage(iplImg);
+//     if(*iplImg == 0)
+//       *iplImg = cvCreateImage(cvSize(pImageMD->FullXRes(), pImageMD->FullYRes()), IPL_DEPTH_8U, 3);
+//     assert(*iplImg != 0);
+//
+//     IplImage *grayImg = cvCreateImage(cvSize(pImageMD->FullXRes(), pImageMD->FullYRes()), IPL_DEPTH_8U, 1);
+//     if (pImageMD != NULL)
+//       MapMetaData2IplImage(pImageMD, &grayImg);
+//     if(grayImg->nChannels == 1)
+//       cvCvtColor(grayImg, *iplImg, CV_BayerGB2RGB);  // convert Bayer image to RGB color image
+//     cvReleaseImage(&grayImg);
+//     return true;
+//   }
+//   else if (kinect::isIROn())
+//   {
+// //       pImageMD = kinect::getIRMetaData();
+//     printf("Kinect::GetFrame: Warning: request for IR-image data: not yet implemented!\n");
+//     return false;
+//   }
+//   else
+//   {
+//     printf("Kinect::GetFrame: Warning: No image data available!\n");
+//     return false;
+//   }
 }
 
 
