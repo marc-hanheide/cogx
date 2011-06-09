@@ -31,6 +31,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
 	public boolean addGenericCol = false;
+	public boolean compactGenericCol = false;
+	private boolean foundLargeGeneric = false;
 	private final DefaultXMLInfo genericPlugin = new DefaultXMLInfo();
 
 	private class MyDisplayClient extends DisplayClient implements
@@ -70,10 +72,18 @@ public class V11WMViewerComponent extends ManagedComponent {
 					if (addGenericCol) {
 						String genericText = (String) genericPlugin.toVector(
 								newEntry).get(0);
-						if (genericText.length() > 500)
-						  logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
-						else
+						if (genericText.length() < 500)
 						  logString += "<td>" + genericText + "</td>";
+						else {
+							logString += "<td class='largeinfo'><div class='top'>" + genericText + "</div></td>";
+							if (!foundLargeGeneric) {
+								foundLargeGeneric = true;
+								if (addGenericCol && !compactGenericCol) {
+									setHtml(v11nObject, "999_info",
+											"(use the --compact option to reduce the size of the generic column)");
+								}
+							}
+						}
 						getLogger().debug(CASTUtils.toString(wmc) + genericText);
 					}
 					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
@@ -98,11 +108,13 @@ public class V11WMViewerComponent extends ManagedComponent {
 		private void initDisplay() {
  			v11nObject = "wm." + getComponentID();
 
-			String style = "<style>"
-				+ "td.largeinfo { height: 20em; }"
-				+ "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
-				+ "</style>";
-			setHtmlHead(v11nObject, "000_table-style", style);
+			if (compactGenericCol) {
+				String style = "<style>"
+					+ "td.largeinfo { height: 20em; }"
+					+ "td.largeinfo div.top { height: 100%; overflow: auto; background: lightgray; font-size: 90%; }"
+					+ "</style>";
+				setHtmlHead(v11nObject, "000_table-style", style);
+			}
 
 			String tableHdr = "<table frame=\"border\" border=\"1\" rules=\"all\">"
 				+ "<tr><th>NEW?</th><th>address</th><th>type</th>"
@@ -110,6 +122,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 
 			setHtml(v11nObject, "010_table-header", tableHdr);
 			setHtml(v11nObject, "100_table-end", "</table>");
+
 		}
 	}
 
@@ -173,6 +186,9 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 		if (arg0.get("--generic-col") != null) {
 			addGenericCol = true;
+		}
+		if (arg0.get("--compact") != null) {
+			compactGenericCol = true;
 		}
 		displayClient.configureDisplayClient(arg0);
 	}
