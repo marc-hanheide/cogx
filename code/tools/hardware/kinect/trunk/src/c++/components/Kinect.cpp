@@ -280,6 +280,7 @@ bool Kinect::NextFrame()
 
   // get depth image
   const DepthMetaData* pDepthMD = kinect::getDepthMetaData();
+  frameNumber =pDepthMD->FrameID();
   if (kinect::isDepthOn())
   {
     depImage = cv::Mat(depHeight, depWidth, CV_16S);

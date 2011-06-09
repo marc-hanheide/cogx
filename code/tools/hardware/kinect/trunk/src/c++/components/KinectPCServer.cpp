@@ -113,17 +113,13 @@ sleep(0.5);
 }
 
 void KinectPCServer::saveDepthToFile() {
-//std::pair<const DepthMetaData*, const ImageGenerator*> nextKinectFrame = kinect->getNextFrame();
 kinect->NextFrame();
 IplImage* rgb_data = new IplImage(kinect->rgbImage);
 IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3); //new IplImage(kinect->depImage);
 char buf[256];
-sprintf(buf, "data/frame_rgb.bmp");
+sprintf(buf, "data/frame_%d_rgb.bmp", kinect->frameNumber);
 cvSaveImage(buf, rgb_data);
-sprintf(buf, "data/frame_depth.bmp");
-cvSaveImage(buf, depth_data);
 
-// Save only the Z value per pixel as an image for quick visualization of depth
 short*d = kinect->depImage.ptr<short>(0);	
 for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
 	{
@@ -135,49 +131,8 @@ for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
 		depth_data->imageData[3*i+2]=(char)value;
 	}
 		char buf2[256];
-		sprintf(buf2,"data/frame_depth.bmp");
+		sprintf(buf2,"data/frame_%d_depth.bmp", kinect->frameNumber);
 		cvSaveImage(buf2, depth_data);
-//depthGenerator->GetMetaData(depthMD);
-//imageGenerator->GetMetaData(imageMD);
-//const XnRGB24Pixel* pImageMap = imageGenerator->GetRGB24ImageMap();
-//IplImage* rgb_data=cvCreateImage(cvSize(imageMD.XRes(),imageMD.YRes()),IPL_DEPTH_8U,3);
-//captureRGB(pImageMap, rgb_data);
-
-/*    cast::cdl::CASTTime time = getCASTTime();
-
-    // Save only the Z value per pixel as an image for quick visualization of depth
-    IplImage* tmp_depth =cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
-    IplImage* tmp_img = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
-
-   const XnDepthPixel* pDepthMap = nextKinectFrame.first->Data();
-   for(int i = 0; i < nextKinectFrame.first->XRes()*nextKinectFrame.first->YRes();i++)
-    	{
-    		unsigned short val= pDepthMap[i];
-    		char value_pt1 = pDepthMap[i]>>8;
-    		char value_pt2 = pDepthMap[i]&0xFF;
-    		tmp_depth->imageData[3*i+0]=(char)value_pt1;
-    		tmp_depth->imageData[3*i+1]=(char)value_pt2;
-    		tmp_depth->imageData[3*i+2]=(char)0;
-
-    	}
-    		char buf2[256];
-          		sprintf(buf2,"data/frame%d_depth_%ld.bmp", nextKinectFrame.first->FrameID(),time.us);
-          		cvSaveImage(buf2, tmp_depth);
-
-          		const XnRGB24Pixel* pImageMap = nextKinectFrame.second->GetRGB24ImageMap();
-
-          		for(int i = 0; i < nextKinectFrame.first->XRes()*nextKinectFrame.first->YRes();i++)
-          			{
-          			tmp_img->imageData[3*i+0]=pImageMap[i].nBlue;
-          				tmp_img->imageData[3*i+1]=pImageMap[i].nGreen;
-          				tmp_img->imageData[3*i+2]=pImageMap[i].nRed;
-          			}
-
-          		char buf[256];
-          				sprintf(buf, "data/frame%d_rgb_%ld.bmp", nextKinectFrame.first->FrameID(),time.us);
-          				cvSaveImage(buf, tmp_img);*/
-
-
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
