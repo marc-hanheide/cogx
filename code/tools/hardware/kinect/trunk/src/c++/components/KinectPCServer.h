@@ -36,6 +36,11 @@ private:
   void getResolution(int camIdx, CvSize &size);
   bool setResolution(int camIdx, CvSize &size);
 
+  DepthGenerator* depthGenerator;
+  ImageGenerator* imageGenerator;
+  DepthMetaData depthMD;
+  ImageMetaData imageMD;
+
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void start();
@@ -52,6 +57,7 @@ public:
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   void saveDepthToFile();
+  void captureRGB(const XnRGB24Pixel* pImageMap, IplImage* tmp_img);
 };
 
 }

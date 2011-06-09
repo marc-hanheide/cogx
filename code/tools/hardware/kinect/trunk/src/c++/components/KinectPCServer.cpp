@@ -88,31 +88,55 @@ void KinectPCServer::configure(const map<string, string> & _config)
    }
 
   kinect->StartCapture(0); 	// start capturing
+  depthGenerator = kinect::getDepthGenerator();
+  imageGenerator = kinect::getImageGenerator();
+
   log("Capturing from kinect sensor started.");
 }
 
-						/**
-						 * @brief Configure the component
-						 */
-						void KinectPCServer::start()
-						{
-							PointCloudServer::start();
-						}
+/**
+* @brief Configure the component
+*/
+void KinectPCServer::start()
+{
+PointCloudServer::start();
+}
 
-						void KinectPCServer::runComponent() {
-							log("I am running");
-							while(isRunning()) {
-								if (saveDepth) {
-									saveDepthToFile();
-									sleep(0.5);
-								}
-							}
-						}
+void KinectPCServer::runComponent() {
+log("I am running");
+while(isRunning()) {
+if (saveDepth) {
+saveDepthToFile();
+sleep(0.5);
+}
+}
+}
 
-						void KinectPCServer::saveDepthToFile() {
-							std::pair<const DepthMetaData*, const ImageGenerator*> nextKinectFrame = kinect->getNextFrame();
+void KinectPCServer::captureRGB(const XnRGB24Pixel* pImageMap, IplImage* tmp_img){
 
-    cast::cdl::CASTTime time = getCASTTime();
+	// Convert to IplImage 24 bit, 3 channels
+	for(int i = 0; i < imageMD.XRes()*imageMD.YRes();i++)
+	{
+		tmp_img->imageData[3*i+0]=pImageMap[i].nBlue;
+		tmp_img->imageData[3*i+1]=pImageMap[i].nGreen;
+		tmp_img->imageData[3*i+2]=pImageMap[i].nRed;
+	}
+
+		char buf[256];
+		sprintf(buf, "data/frame%d_rgb.bmp",depthMD.FrameID());
+		cvSaveImage(buf, tmp_img);
+}
+
+void KinectPCServer::saveDepthToFile() {
+std::pair<const DepthMetaData*, const ImageGenerator*> nextKinectFrame = kinect->getNextFrame();
+
+depthGenerator->GetMetaData(depthMD);
+imageGenerator->GetMetaData(imageMD);
+const XnRGB24Pixel* pImageMap = imageGenerator->GetRGB24ImageMap();
+IplImage* rgb_data=cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+captureRGB(pImageMap, rgb_data);
+
+/*    cast::cdl::CASTTime time = getCASTTime();
 
     // Save only the Z value per pixel as an image for quick visualization of depth
     IplImage* tmp_depth =cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
@@ -141,11 +165,10 @@ void KinectPCServer::configure(const map<string, string> & _config)
           				tmp_img->imageData[3*i+1]=pImageMap[i].nGreen;
           				tmp_img->imageData[3*i+2]=pImageMap[i].nRed;
           			}
-cvShowImage("lala",tmp_img);
-cvWaitKey(0);
+
           		char buf[256];
           				sprintf(buf, "data/frame%d_rgb_%ld.bmp", nextKinectFrame.first->FrameID(),time.us);
-          				cvSaveImage(buf, tmp_img);
+          				cvSaveImage(buf, tmp_img);*/
 
 
 }
