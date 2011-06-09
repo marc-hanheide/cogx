@@ -29,7 +29,7 @@ private:
   int rgbHeight;                        ///< Heigth of color image
   int depWidth;                         ///< Width of depth image
   int depHeight;                        ///< Heigth of depth image
-  
+
   
   float centerX, centerY;               ///< center of the image -0.5f
   double pixel_size;                    ///< pixel size of the kinect camera
@@ -63,6 +63,8 @@ public:
   cv::Mat grayImage;                    ///< captured gray image (bayer pattered)
   cv::Mat rgbImage;                     ///< captured rgb image
   cv::Mat depImage;                     ///< captured depth image
+  int frameNumber;
+
  std::pair<const DepthMetaData*, const ImageGenerator*> getNextFrame();
   cv::Point3f Get3dWorldPoint(unsigned x, unsigned y);
   cv::Point3f WorldToColor(unsigned x, unsigned y);
