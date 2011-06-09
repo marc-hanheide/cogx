@@ -70,7 +70,7 @@ void Learner::LearnClosenessBetweenPatches()
     }
   }
   
-  hist = new Histogram(data);
+  hist = new Histogram(10, data);
 }
 
 
