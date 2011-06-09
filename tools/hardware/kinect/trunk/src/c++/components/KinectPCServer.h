@@ -57,7 +57,6 @@ public:
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   void saveDepthToFile();
-  void captureRGB(const XnRGB24Pixel* pImageMap, IplImage* tmp_img);
 };
 
 }
