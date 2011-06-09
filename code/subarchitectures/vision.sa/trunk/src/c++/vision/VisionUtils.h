@@ -168,5 +168,54 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv:
   }
 }
 
+/**
+ * @brief RGBValue of point clouds, accessable as float or long value.
+ */
+typedef union
+{
+  struct
+  {
+    unsigned char Blue; // Blue channel
+    unsigned char Green; // Green channel
+    unsigned char Red; // Red channel
+    unsigned char Alpha; // Alpha channel
+  };
+  float float_value;
+  long long_value;
+} RGBValue;
+
+
+/**
+ * @brief Convert points from point cloud server to opencv matrix.
+ * @param points Points from the point cloud as vector
+ * @param cloud Point cloud
+ */
+inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Vec4f> &cloud)
+{
+  unsigned pcWidth = sqrt(points.size()*4/3);
+  unsigned pcHeight = pcWidth *3/4;
+  unsigned position = 0;
+  
+  cloud = cv::Mat_<cv::Vec4f>(pcHeight, pcWidth);    // rows = height / cols = width
+  RGBValue color;
+  color.Alpha = 0;
+  
+  for(unsigned row = 0; row < pcHeight; row++)
+  {
+    for(unsigned col = 0; col < pcWidth; col++)
+    {
+      cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
+      position = row*pcWidth + col;
+      p[0] = (float) points[position].p.x;
+      p[1] = (float) points[position].p.y;
+      p[2] = (float) points[position].p.z;
+      color.Red = points[position].c.r;
+      color.Green = points[position].c.g;
+      color.Blue = points[position].c.b;
+      p[3] = color.float_value;
+    }
+  }
+}
+
 #endif
 
