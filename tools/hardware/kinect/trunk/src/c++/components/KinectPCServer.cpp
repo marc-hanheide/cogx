@@ -130,11 +130,15 @@ void KinectPCServer::captureRGB(const XnRGB24Pixel* pImageMap, IplImage* tmp_img
 void KinectPCServer::saveDepthToFile() {
 std::pair<const DepthMetaData*, const ImageGenerator*> nextKinectFrame = kinect->getNextFrame();
 
-depthGenerator->GetMetaData(depthMD);
-imageGenerator->GetMetaData(imageMD);
-const XnRGB24Pixel* pImageMap = imageGenerator->GetRGB24ImageMap();
-IplImage* rgb_data=cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
-captureRGB(pImageMap, rgb_data);
+//depthGenerator->GetMetaData(depthMD);
+//imageGenerator->GetMetaData(imageMD);
+//const XnRGB24Pixel* pImageMap = imageGenerator->GetRGB24ImageMap();
+IplImage** rgb_data; //=cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+IplImage** depth_data;
+kinect->GetFrame(rgb_data, depth_data);
+char buf[256];
+		sprintf(buf, "data/frame%d_rgb.bmp",depthMD.FrameID());
+		cvSaveImage(buf, *rgb_data);
 
 /*    cast::cdl::CASTTime time = getCASTTime();
 
