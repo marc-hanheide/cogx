@@ -1,0 +1,8 @@
+HOST localhost
+
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "KinectConfig.xml" --camconfigs "camcalib-kinect.xml" --save-depth --log
+
