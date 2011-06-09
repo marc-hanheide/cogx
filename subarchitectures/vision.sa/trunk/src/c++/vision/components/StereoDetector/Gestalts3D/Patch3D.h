@@ -12,7 +12,7 @@
 #include <vector>
 #include "Gestalt3D.h"
 #include "StereoTypes.h"
-#include "StereoCore.hh"
+#include "StereoCore.h"
 // #include "VisionUtils.h"
 #include "ColorHistogram.h"
 
@@ -38,7 +38,9 @@ public:
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
   bool GetLinks(vector<GraphLink> &links);
   
-  double Compare(Patch3D *p);
+  // Learning functions
+  double CompareColor(Patch3D *p);
+  double IsClose(Patch3D *p);
   
   void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true);
   void PrintGestalt3D();

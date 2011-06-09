@@ -8,7 +8,7 @@ SET(HEADERS
   StereoBase.h
 #	StereoCamera.hh
   StereoClosures.h
-  StereoCore.hh
+  StereoCore.h
   StereoCorners.h
   StereoCubes.h
   StereoEllipses.h
@@ -24,7 +24,7 @@ SET(SOURCES
 	StereoBase.cpp
 #	StereoCamera.cc
   StereoClosures.cpp
-  StereoCore.cc
+  StereoCore.cpp
   StereoCorners.cpp
   StereoCubes.cpp
   StereoEllipses.cpp

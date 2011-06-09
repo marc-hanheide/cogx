@@ -7,6 +7,7 @@
  */
 
 #include "Patch3D.h"
+#include "MathUtils.h"
 
 namespace Z
 {
@@ -19,7 +20,7 @@ Patch3D::Patch3D(std::vector<cv::Vec4f> _p, std::vector<cv::Vec4f> _h_p) : Gesta
   points = _p;
   hull_points = _h_p;
   
-  int nr_bins = 10;
+  int nr_bins = 10;                                                  /// TODO Its not neccessary to calculate, if we do not learn? Right? => No, we need also later, when we have learned it.
   hist = new ColorHistogram(nr_bins, points);
 }
 
@@ -46,9 +47,33 @@ void Patch3D::CalculateSignificance(double angle2Dleft, double angle2Dright, dou
  * @brief Compare histogram of patch with another patch's histogram.
  * @param p Patch to compare with
  */
-double Patch3D::Compare(Patch3D *p)
+double Patch3D::CompareColor(Patch3D *p)
 {
   return hist->Compare(p->hist);
+}
+
+/**
+ * @brief Are the patches close? How to measure closeness?
+ * Defined closeness: Minimum distance between two hull points.
+ * Normalisation to one meter: All distances above delivering value 1.
+ * @param p Patch to compare with
+ */
+double Patch3D::IsClose(Patch3D *p)
+{
+  double distance = 1.;
+  for(unsigned i=0; i<hull_points.size(); i++)
+  {
+    for(unsigned j=0; j<p->hull_points.size(); j++)
+    {
+      cv::Vec4f v0 = hull_points[i];
+      cv::Vec4f v1 = p->hull_points[j];
+      double current_distance = Distance(v0, v1);
+      
+      if(current_distance < distance)
+        distance = current_distance;
+    }    
+  }
+  return (1.-distance);
 }
 
 /**
@@ -88,7 +113,7 @@ void Patch3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColo
  */
 void Patch3D::PrintGestalt3D()
 {
-  printf("\Patch3D: %u\n", id);
+  printf("Patch3D: %u\n", id);
   printf(" points.size: %u\n", points.size());
   
   for(unsigned idx=0; idx<points.size(); idx++)

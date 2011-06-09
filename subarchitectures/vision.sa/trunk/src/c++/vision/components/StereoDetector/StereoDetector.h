@@ -24,7 +24,7 @@
 #include <VideoUtils.h>
 #include <../../VisionUtils.h>
 
-#include "StereoCore.hh"
+#include "StereoCore.h"
 #include "Pose3.h"
 #include "StereoBase.h"
 #include "Gestalt.hh"
