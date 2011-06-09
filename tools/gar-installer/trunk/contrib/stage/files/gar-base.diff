@@ -1,0 +1,12 @@
+diff --speed-large-files --minimal -ru Stage-3.2.2-Source.orig/libstage/model_actuator.cc Stage-3.2.2-Source/libstage/model_actuator.cc
+--- Stage-3.2.2-Source.orig/libstage/model_actuator.cc	2009-10-28 20:48:05.000000000 +0000
++++ Stage-3.2.2-Source/libstage/model_actuator.cc	2011-06-09 11:29:21.000000000 +0100
+@@ -77,6 +77,8 @@
+   // sensible position defaults
+   this->SetVelocity( Velocity(0,0,0,0) );
+   this->SetBlobReturn(true);  
++  // Allow the models to move
++  VelocityEnable();
+ }
+ 
+ 
