@@ -14,11 +14,10 @@
 #include <VisionData.hpp>
 
 #include "Vector.hh"
-#include "StereoCore.hh"
+#include "StereoCore.h"
 #include "Plane.h"
 #include "Object.h"
 
-#include "StereoCore.hh"
 #include "StereoBase.h"
 #include "StereoEllipses.h"
 

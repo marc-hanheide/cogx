@@ -14,7 +14,7 @@
 #include "Math.hh"
 #include "Node.h"
 #include "Link.h"
-#include "StereoCore.hh"
+#include "StereoCore.h"
 
 namespace Z
 {

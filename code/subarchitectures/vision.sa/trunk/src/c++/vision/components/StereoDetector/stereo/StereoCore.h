@@ -1,5 +1,5 @@
 /**
- * @file StereoCore.hh
+ * @file StereoCore.h
  * @author Andreas Richtsfeld
  * @date October 2009
  * @version 0.2

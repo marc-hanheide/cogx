@@ -1,12 +1,12 @@
 /**
- * @file StereoCore.cpp // TODO TODO TODO TODO Rename
+ * @file StereoCore.cpp
  * @author Andreas Richtsfeld
  * @date October 2009
  * @version 0.2
  * @brief Managment of stereo object detection with two vs3 vision cores.
  */
 
-#include "StereoCore.hh"
+#include "StereoCore.h"
 #include "StereoLJunctions.h"
 #include "StereoCorners.h"
 #include "StereoEllipses.h"

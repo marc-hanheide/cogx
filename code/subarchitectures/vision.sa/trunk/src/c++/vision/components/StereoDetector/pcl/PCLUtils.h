@@ -54,7 +54,8 @@ void Cv2PCLCloud(cv::Mat_<cv::Vec4f> cv_cloud,
  * @param points Point cloud in cogX framework format
  * @param cloud PCL style point cloud
  */
-void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
+void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, 
+                        pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 
 
 /**

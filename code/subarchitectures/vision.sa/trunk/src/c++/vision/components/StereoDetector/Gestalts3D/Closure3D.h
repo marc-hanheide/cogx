@@ -12,7 +12,7 @@
 #include "cv.h"
 #include "Gestalt3D.h"
 #include "StereoTypes.h"
-#include "StereoCore.hh"
+#include "StereoCore.h"
 #include "ColorHistogram.h"
 
 namespace Z

@@ -9,7 +9,7 @@
 #ifndef Z_STEREO_RECTS_HH
 #define Z_STEREO_RECTS_HH
 
-#include "StereoCore.hh"
+#include "StereoCore.h"
 #include "StereoBase.h"
 #include "StereoCamera.h"
 #include "Rectangle3D.h"
