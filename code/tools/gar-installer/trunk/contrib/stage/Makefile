@@ -7,6 +7,8 @@ DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MAINTAINER = mhanheid
 
+PATCHFILES= gar-base.diff
+
 MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
 
 LIBDEPS = contrib/player-3.0.2
