@@ -1,5 +1,4 @@
 project (Kinect)
-
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 

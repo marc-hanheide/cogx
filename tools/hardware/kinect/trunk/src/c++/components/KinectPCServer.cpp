@@ -13,29 +13,24 @@
 /**
  * The function called to create a new instance of our component.
  */
-extern "C"
-{
-  cast::CASTComponentPtr newComponent()
-  {
-    return new cast::KinectPCServer();
-  }
+extern "C" {
+cast::CASTComponentPtr newComponent() {
+	return new cast::KinectPCServer();
+}
 }
 
-namespace cast
-{
+namespace cast {
 
 using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 
-
-KinectPCServer::KinectPCServer()
-{
+KinectPCServer::KinectPCServer() {
+	log("I am created.");
 }
 
-KinectPCServer::~KinectPCServer()
-{
-  delete kinect;
+KinectPCServer::~KinectPCServer() {
+	delete kinect;
 }
 
 /**
@@ -43,11 +38,9 @@ KinectPCServer::~KinectPCServer()
  * @param camIdx which camera
  * @param size video resolution
  */
-void KinectPCServer::getResolution(int camIdx, CvSize &size)
-{
-  kinect->GetColorVideoSize(size);
+void KinectPCServer::getResolution(int camIdx, CvSize &size) {
+	kinect->GetColorVideoSize(size);
 }
-
 
 /**
  * @brief Set resolution for a given camera
@@ -57,50 +50,106 @@ void KinectPCServer::getResolution(int camIdx, CvSize &size)
  * @return true if the requested resolution could be set, false if another
  *        reslution was chosen
  */
-bool KinectPCServer::setResolution(int camIdx, CvSize &size)
-{
-  log("setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
-  return false;
+bool KinectPCServer::setResolution(int camIdx, CvSize &size) {
+	log(
+			"setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
+	return false;
 }
 
 /**
  * @brief Configure the component
  */
-void KinectPCServer::configure(const map<string,string> & _config) throw(runtime_error)
-{
-  // configure the point cloud server
-  PointCloudServer::configure(_config);
+void KinectPCServer::configure(const map<string, string> & _config)
+		throw (runtime_error) {
+	// configure the point cloud server
+	PointCloudServer::configure(_config);
 
-  map<string,string>::const_iterator it;
-    
-  if((it = _config.find("--kconfig")) != _config.end())
-  {  
-    istringstream str(it->second);
-    str >> kinectConfig;
-  }
-  else throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
+	map<string, string>::const_iterator it;
 
-  // init kinect hardware driver
-  CvSize size;
-  const char* name = kinectConfig.c_str();
-  kinect = new Kinect::Kinect(name);
-  kinect->GetColorVideoSize(size);
-  captureSize.width = size.width;
-  captureSize.height = size.height;
-  
+	if ((it = _config.find("--kconfig")) != _config.end()) {
+		istringstream str(it->second);
+		str >> kinectConfig;
+	} else
+		throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
+
+		// init kinect hardware driver
+				CvSize size;
+				const char* name = kinectConfig.c_str();
+				kinect = new Kinect::Kinect(name);
+				kinect->GetColorVideoSize(size);
+				captureSize.width = size.width;
+				captureSize.height = size.height;
+
+				saveDepth = false;
+				if((it = _config.find("--save-depth")) != _config.end())
+   {
+	  saveDepth = true;
+	  log("Saving Kinect depth map");
+   }
+
   kinect->StartCapture(0); 	// start capturing
   log("Capturing from kinect sensor started.");
 }
 
+						/**
+						 * @brief Configure the component
+						 */
+						void KinectPCServer::start()
+						{
+							PointCloudServer::start();
+						}
 
-/**
- * @brief Configure the component
- */
-void KinectPCServer::start()
-{
-  PointCloudServer::start(); 
+						void KinectPCServer::runComponent() {
+							log("I am running");
+							while(isRunning()) {
+								if (saveDepth) {
+									saveDepthToFile();
+									sleep(0.5);
+								}
+							}
+						}
+
+						void KinectPCServer::saveDepthToFile() {
+							std::pair<const DepthMetaData*, const ImageGenerator*> nextKinectFrame = kinect->getNextFrame();
+
+    cast::cdl::CASTTime time = getCASTTime();
+
+    // Save only the Z value per pixel as an image for quick visualization of depth
+    IplImage* tmp_depth =cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+    IplImage* tmp_img = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+
+   const XnDepthPixel* pDepthMap = nextKinectFrame.first->Data();
+   for(int i = 0; i < nextKinectFrame.first->XRes()*nextKinectFrame.first->YRes();i++)
+    	{
+    		unsigned short val= pDepthMap[i];
+    		char value_pt1 = pDepthMap[i]>>8;
+    		char value_pt2 = pDepthMap[i]&0xFF;
+    		tmp_depth->imageData[3*i+0]=(char)value_pt1;
+    		tmp_depth->imageData[3*i+1]=(char)value_pt2;
+    		tmp_depth->imageData[3*i+2]=(char)0;
+
+    	}
+    		char buf2[256];
+          		sprintf(buf2,"data/frame%d_depth_%ld.bmp", nextKinectFrame.first->FrameID(),time.us);
+          		cvSaveImage(buf2, tmp_depth);
+
+          		const XnRGB24Pixel* pImageMap = nextKinectFrame.second->GetRGB24ImageMap();
+
+          		for(int i = 0; i < nextKinectFrame.first->XRes()*nextKinectFrame.first->YRes();i++)
+          			{
+          			tmp_img->imageData[3*i+0]=pImageMap[i].nBlue;
+          				tmp_img->imageData[3*i+1]=pImageMap[i].nGreen;
+          				tmp_img->imageData[3*i+2]=pImageMap[i].nRed;
+          			}
+cvShowImage("lala",tmp_img);
+cvWaitKey(0);
+          		char buf[256];
+          				sprintf(buf, "data/frame%d_rgb_%ld.bmp", nextKinectFrame.first->FrameID(),time.us);
+          				cvSaveImage(buf, tmp_img);
+
+
 }
-  
+
 // ########################## Point Cloud Server Implementations ########################## //
 void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
 {
