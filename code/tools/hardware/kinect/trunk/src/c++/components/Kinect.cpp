@@ -250,18 +250,18 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 }
 
 
-const DepthMetaData* Kinect::getNextDepthMD()
+std::pair<const DepthMetaData*, const ImageGenerator*> Kinect::getNextFrame()
 {
   if(!kinect::isCapturing())
   {
     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
-    return 0;
+   // return 0;
   }
     
   kinect::readFrame();  // read next frame
 
   // get depth image
-  return kinect::getDepthMetaData();
+  return std::make_pair(kinect::getDepthMetaData(), kinect::getImageGenerator());
 }
 
 /**
