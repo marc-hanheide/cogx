@@ -7,6 +7,7 @@
  */
 
 #include "Segment3D.h"
+//#include "VisionUtils.h"
 
 namespace Z
 {

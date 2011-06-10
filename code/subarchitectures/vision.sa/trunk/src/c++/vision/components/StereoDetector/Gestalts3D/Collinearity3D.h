@@ -12,7 +12,6 @@
 #include "Gestalt3D.h"
 #include "StereoTypes.h"
 #include "StereoCore.h"
-#include "VisionUtils.h"
 #include "Line3D.h"
 
 namespace Z

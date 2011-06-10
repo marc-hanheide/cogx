@@ -47,7 +47,6 @@ void Learner::Process(KinectCore *kc)
 void Learner::LearnClosenessBetweenPatches()
 {
   std::vector<double> data;
-  Histogram *hist;
   
   printf("Learner::LearnClosenessBetweenPatches: TODO: Time to implement!\n");
   /// Get all pairs of patches
@@ -69,8 +68,9 @@ void Learner::LearnClosenessBetweenPatches()
       data.push_back(closeness);
     }
   }
-  
-  hist = new Histogram(10, data);
+  Histogram hist(10, data);
+
+printf("Passiert hier der Fehler bevor das histogram geprinted wird?\n");
 }
 
 
@@ -79,6 +79,8 @@ void Learner::LearnClosenessBetweenPatches()
  */
 void Learner::LearnColorSimilarityBetweenPatches()
 {
+  std::vector<double> data;
+  
   printf("Learner::LearnColorSimilarityBetweenPatches: TODO: Time to finish implementation!\n");
   
   /// Get all pairs of patches
@@ -96,8 +98,12 @@ void Learner::LearnColorSimilarityBetweenPatches()
       /// Calculate the color similarity value
       double colorSimilarity = p0->CompareColor(p1);
       printf("colorSimilarity[%u][%u]: %4.2f\n", i, j, colorSimilarity);
+      
+      data.push_back(colorSimilarity);
     }
   }
+  Histogram hist(10, data);
+printf("Passiert hier der Fehler bevor das histogram geprinted wird?\n");
 }
 
 } 
