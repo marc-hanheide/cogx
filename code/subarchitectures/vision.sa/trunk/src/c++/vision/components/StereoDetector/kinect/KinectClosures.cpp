@@ -8,7 +8,7 @@
 
 #include "KinectCore.h"
 #include "KinectClosures.h"
-#include "VisionUtils.h"
+//#include "VisionUtils.h"
 
 #include "PCLCommonHeaders.h"
 #include "Closure3D.h"
