@@ -459,7 +459,7 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
       cvSaveImage(i == LEFT ? "stereoserver-orig-L.jpg" : "stereoserver-orig-R.jpg", imgSet.colorImg[i]);
       cvSaveImage(i == LEFT ? "stereoserver-rect-L.jpg" : "stereoserver-rect-R.jpg", imgSet.rectColorImg[i]);
     }
-    cvSaveImage("stereoserver-disp.png", imgSet.disparityImg);
+    cvSaveImage("stereoserver-disp.jpg", imgSet.disparityImg);
   }
 
   if(doDisplay)
