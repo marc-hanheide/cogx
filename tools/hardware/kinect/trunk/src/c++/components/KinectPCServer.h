@@ -15,7 +15,7 @@
 #include "PointCloudServer.h"
 #include "Kinect.h"
 #include "VideoUtils.h"
-
+#include <cast/core/CASTTimer.hpp>
 #include "cv.h"
 
 namespace cast
@@ -56,7 +56,7 @@ public:
   void getDisparityImage(int imgWidth, Video::Image& image);
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
-  void saveDepthToFile();
+  void saveNextFrameToFile();
 };
 
 }

@@ -24,7 +24,7 @@ namespace cast {
 using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
-
+using namespace cast::cdl;
 KinectPCServer::KinectPCServer() {
 	log("I am created.");
 }
@@ -106,18 +106,19 @@ void KinectPCServer::runComponent() {
 log("I am running");
 while(isRunning()) {
 if (saveDepth) {
-saveDepthToFile();
-sleep(0.5);
+	saveNextFrameToFile();
 }
 }
 }
 
-void KinectPCServer::saveDepthToFile() {
+void KinectPCServer::saveNextFrameToFile() {
 kinect->NextFrame();
 IplImage* rgb_data = new IplImage(kinect->rgbImage);
-IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3); //new IplImage(kinect->depImage);
+// Doing this (new IplImage(kinect->depImage);) actually causes the depth map stored as a binary image for some reason
+IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
 char buf[256];
-sprintf(buf, "data/frame_%d_rgb.bmp", kinect->frameNumber);
+long int timeNow = getCASTTime().us;
+sprintf(buf, "data/frame_%d_rgb_%ld.bmp", kinect->frameNumber,timeNow);
 cvSaveImage(buf, rgb_data);
 
 short*d = kinect->depImage.ptr<short>(0);	
@@ -131,7 +132,7 @@ for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
 		depth_data->imageData[3*i+2]=(char)value;
 	}
 		char buf2[256];
-		sprintf(buf2,"data/frame_%d_depth.bmp", kinect->frameNumber);
+		sprintf(buf2,"data/frame_%d_depth_%ld.bmp", kinect->frameNumber,timeNow);
 		cvSaveImage(buf2, depth_data);
 }
 
