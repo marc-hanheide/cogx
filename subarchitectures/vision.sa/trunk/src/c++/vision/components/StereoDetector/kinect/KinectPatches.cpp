@@ -8,7 +8,7 @@
 
 #include "KinectCore.h"
 #include "KinectPatches.h"
-#include "VisionUtils.h"
+//#include "VisionUtils.h"
 
 #include "PCLCommonHeaders.h"
 #include "Patch3D.h"

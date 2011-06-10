@@ -8,7 +8,7 @@
 
 #include "KinectCore.h"
 #include "KinectRectangles.h"
-#include "VisionUtils.h"
+//#include "VisionUtils.h"
 
 #include "PCLCommonHeaders.h"
 #include "Rectangle3D.h"

@@ -8,7 +8,7 @@
 
 #include "KinectCore.h"
 #include "KinectSegments.h"
-#include "VisionUtils.h"
+//#include "VisionUtils.h"
 #include "Segment3D.h"
 
 namespace Z
