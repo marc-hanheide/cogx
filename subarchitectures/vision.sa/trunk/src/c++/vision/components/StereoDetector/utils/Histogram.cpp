@@ -33,7 +33,7 @@ Histogram::Histogram(int _nr_bins, std::vector<double> _p)
   for(unsigned i=0; i<nr_bins; i++)
     histogram[i] /= points.size();
   
-PrintHistogram();  /// TODO Print histogram
+  PrintHistogram();  /// TODO Print histogram
 }
 
 
