@@ -121,6 +121,7 @@ protected:
   Laser::Scan2d m_Scan;
 
   cast::cdl::CASTTime m_TimeOffset;
+  void saveScanToFile(Laser::Scan2d scan);
 
   /// If this variable is > 0 it means that we want to force a certain
   /// discretization on the range data. This can be used to simulate

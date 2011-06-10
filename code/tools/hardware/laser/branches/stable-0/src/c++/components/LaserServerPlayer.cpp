@@ -16,7 +16,7 @@
 
 #include <cstdlib>
 #include <sstream>
-
+#include <fstream>
 #include <cast/core/CASTUtils.hpp>
 
 using namespace Laser;
@@ -163,6 +163,17 @@ void
 LaserServerPlayer::stop()
 {}
 
+void LaserServerPlayer::saveScanToFile(Laser::Scan2d scan){
+	char buf[256];
+	 sprintf(buf,"laserscan_%ld", scan.time.us);
+	 std::ofstream scanfile;
+
+	 scanfile.open (buf);
+
+	 scanfile << "";
+	 scanfile.close();
+
+}
 void 
 LaserServerPlayer::runComponent()
 {
@@ -286,7 +297,7 @@ LaserServerPlayer::runComponent()
       }
     }
 
-      
+    saveScanToFile(m_Scan);
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       if ( isRunning() && 
