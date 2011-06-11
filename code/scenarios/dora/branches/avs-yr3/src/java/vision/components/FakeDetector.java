@@ -12,6 +12,7 @@ import NavData.RobotPose2d;
 import Video.CameraParameters;
 import Video.CameraParametersWrapper;
 import VisionData.DetectionCommand;
+import VisionData.Post3DObject;
 import VisionData.VisualObject;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
@@ -62,10 +63,13 @@ public class FakeDetector extends ManagedComponent implements
 				for (String label : dc.labels) {
 					if (knowObjects.containsKey(label)) {
 						VisualObject fakeDetection = knowObjects.get(label);
-						if (checkVisibility(fakeDetection)) {
+						Pose3 objPose = checkVisibility(fakeDetection);
+						if (objPose != null) {
 							log("fake object " + label
 									+ " is visible. submitting to WM.");
-							VisionUtils.newVisualObject();
+							Post3DObject postCmd = new Post3DObject(label,
+									objPose);
+							addToWorkingMemory(newDataID(), postCmd);
 						}
 					}
 				}
@@ -77,15 +81,19 @@ public class FakeDetector extends ManagedComponent implements
 		}
 	}
 
-	private boolean checkVisibility(VisualObject fakeDetection)
+	private Pose3 checkVisibility(VisualObject fakeDetection)
 			throws InterruptedException {
 		RobotPose2d robotPose = getCurrentRobotPose();
 		Pose3 robPose3D = Functions.pose3FromEuler(new Vector3(robotPose.x,
 				robotPose.y, 0.0), 0.0, 0.0, robotPose.theta);
 		Pose3 objInRobotCoord = Functions.transformInverse(robPose3D,
 				fakeDetection.pose);
-		return VisionUtils.isVisible(getCurrentCameraParameters(),
-				objInRobotCoord.pos);
+		if (VisionUtils.isVisible(getCurrentCameraParameters(),
+				objInRobotCoord.pos)) {
+			return objInRobotCoord;
+		} else {
+			return null;
+		}
 	}
 
 	private synchronized RobotPose2d getCurrentRobotPose()
