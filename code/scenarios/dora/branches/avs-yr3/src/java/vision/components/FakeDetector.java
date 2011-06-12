@@ -22,6 +22,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMEventQueue;
+import cogx.Math.Matrix33;
 import cogx.Math.Pose3;
 import cogx.Math.Vector3;
 
@@ -34,7 +35,7 @@ public class FakeDetector extends ManagedComponent implements
 
 	private WMEventQueue recognitionCommandEvents = new WMEventQueue();
 	private CameraParameters currentCameraParameters;
-	private Map<String, VisualObject> knowObjects = new HashMap<String, VisualObject>();
+	private Map<String, Post3DObject> knowObjects = new HashMap<String, Post3DObject>();
 	private RobotPose2d currentRobotPose;
 
 	/*
@@ -44,8 +45,9 @@ public class FakeDetector extends ManagedComponent implements
 	 */
 	@Override
 	protected void configure(Map<String, String> _config) {
-		// TODO Auto-generated method stub
-		super.configure(_config);
+		Pose3 pose = new Pose3(new Vector3(0, 0, 0), new Matrix33(1, 0, 0, 0,
+				1, 0, 0, 0, 1));
+		knowObjects.put("table", new Post3DObject("table", pose));
 	}
 
 	/*
@@ -58,11 +60,13 @@ public class FakeDetector extends ManagedComponent implements
 		while (isRunning()) {
 			try {
 				WorkingMemoryChange event = recognitionCommandEvents.take();
+				log("received detection command: " + CASTUtils.toString(event));
 				DetectionCommand dc = getMemoryEntry(event.address,
 						DetectionCommand.class);
 				for (String label : dc.labels) {
 					if (knowObjects.containsKey(label)) {
-						VisualObject fakeDetection = knowObjects.get(label);
+						log("checking detection of known object " + label);
+						Post3DObject fakeDetection = knowObjects.get(label);
 						Pose3 objPose = checkVisibility(fakeDetection);
 						if (objPose != null) {
 							log("fake object " + label
@@ -81,13 +85,21 @@ public class FakeDetector extends ManagedComponent implements
 		}
 	}
 
-	private Pose3 checkVisibility(VisualObject fakeDetection)
+	private Pose3 checkVisibility(Post3DObject fakeDetection)
 			throws InterruptedException {
 		RobotPose2d robotPose = getCurrentRobotPose();
+		log("checkVisibility: current robotPose is " + robotPose.x + ", "
+				+ robotPose.y);
 		Pose3 robPose3D = Functions.pose3FromEuler(new Vector3(robotPose.x,
 				robotPose.y, 0.0), 0.0, 0.0, robotPose.theta);
+		log("checkVisibility: robot in world coords "
+				+ Functions.toString(robPose3D));
 		Pose3 objInRobotCoord = Functions.transformInverse(robPose3D,
 				fakeDetection.pose);
+		log("checkVisibility: object in robot coords is "
+				+ Functions.toString(objInRobotCoord));
+		log("checkVisibility: getCurrentCameraParameters().pose "
+				+ Functions.toString(getCurrentCameraParameters().pose));
 		if (VisionUtils.isVisible(getCurrentCameraParameters(),
 				objInRobotCoord.pos)) {
 			return objInRobotCoord;
@@ -98,7 +110,7 @@ public class FakeDetector extends ManagedComponent implements
 
 	private synchronized RobotPose2d getCurrentRobotPose()
 			throws InterruptedException {
-		if (currentRobotPose == null) {
+		while (currentRobotPose == null) {
 			wait();
 		}
 		return currentRobotPose;
@@ -115,14 +127,11 @@ public class FakeDetector extends ManagedComponent implements
 				DetectionCommand.class, WorkingMemoryOperation.ADD),
 				recognitionCommandEvents);
 
-		addChangeFilter(
-				ChangeFilterFactory.createGlobalTypeFilter(RobotPose2d.class),
-				this);
+		addChangeFilter(ChangeFilterFactory
+				.createGlobalTypeFilter(RobotPose2d.class), this);
 
-		addChangeFilter(
-				ChangeFilterFactory
-						.createGlobalTypeFilter(CameraParametersWrapper.class),
-				this);
+		addChangeFilter(ChangeFilterFactory
+				.createGlobalTypeFilter(CameraParametersWrapper.class), this);
 
 	}
 
@@ -156,7 +165,7 @@ public class FakeDetector extends ManagedComponent implements
 
 	protected synchronized CameraParameters getCurrentCameraParameters()
 			throws InterruptedException {
-		if (currentCameraParameters == null) {
+		while (currentCameraParameters == null) {
 			wait();
 		}
 		return currentCameraParameters;

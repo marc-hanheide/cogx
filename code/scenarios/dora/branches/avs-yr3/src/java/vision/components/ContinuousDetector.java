@@ -44,6 +44,7 @@ public class ContinuousDetector extends ManagedComponent {
 	 */
 	@Override
 	protected void runComponent() {
+		sleepComponent(5000); // sleep some time before start cracking
 		while (isRunning()) {
 			String id = newDataID();
 			String[] labelsArr = new String[labels.size()];
@@ -54,7 +55,7 @@ public class ContinuousDetector extends ManagedComponent {
 				addToWorkingMemory(id, dc);
 				sleepComponent(1000);
 				// remove it again
-				deleteFromWorkingMemory(id);
+				//deleteFromWorkingMemory(id);
 			} catch (CASTException e) {
 				logException(e);
 			}
