@@ -439,6 +439,7 @@ sequence<OneObj> ObjSeq;
   class Post3DObject{
     string label;
     cogx::Math::Pose3 pose;
+    bool isDetected;
   };
 
   // A gerenic RPC call that uses WM filters.
