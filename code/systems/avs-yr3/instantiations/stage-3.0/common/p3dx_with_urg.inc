@@ -81,12 +81,26 @@ define p3dx_with_urg p3dx
 # create a robot
 define p3dx_with_urg_and_blobfinder p3dx_with_urg
 (
+ actuator
+ (
+  # actuator properties
+  pose [0.0 0 0.90 0]
+  type "rotational"
+  #axis [0 0 1]
+
+  min_position -3.14
+  max_position 3.14
+  #max_speed 0.5
+  #max_speed 1.0
+  color "green"
+  size [ 0.32 0.19 0.19 ]
   blobfinder( 
     colors_count 6 
     colors [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
     range 2.0
-    pan 0.0  
-)
+    #pan 0.0  
+ )
+) 
   
 
 )
