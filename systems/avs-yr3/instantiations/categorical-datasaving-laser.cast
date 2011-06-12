@@ -4,14 +4,26 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-ptz.cast
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
 
 # Categorical.SA ############################################################
 INCLUDE includes/categorical.sa/categorical-saving.cast
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Fake Vision ###############################################################
 INCLUDE includes/vision.sa/vision-base.cast
