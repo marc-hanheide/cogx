@@ -1636,6 +1636,7 @@ log("filled");
 	sleep(10);
 	log("Posting a fake table.");
 	VisionData::Post3DObjectPtr obj3D = new VisionData::Post3DObject;
+	obj3D->isDetected=true;
 	obj3D->label = m_tablelabel;
 	Pose3 p;
 	p.pos.x = tablepose.getX();

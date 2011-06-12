@@ -118,6 +118,8 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
       str >> buf;
 
       if (buf == "or") {
+    	    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
 	m_forbiddenZones.push_back(newZone);
 	newZone.minX = -DBL_MAX;
 	newZone.maxX = DBL_MAX;
@@ -126,10 +128,10 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
       }
       else if (buf == "x") {
 	str >> buf;
-	if (buf == "<") {
+	if (buf == ">") {
 	  str >> newZone.maxX;
 	}
-	else if (buf == ">") {
+	else if (buf == "<") {
 	  str >> newZone.minX;
 	}
 	else {
@@ -139,10 +141,10 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
       }
       else if (buf == "y") {
 	str >> buf;
-	if (buf == "<") {
+	if (buf == ">") {
 	  str >> newZone.maxY;
 	}
-	else if (buf == ">") {
+	else if (buf == "<") {
 	  str >> newZone.minY;
 	}
 	else {
@@ -155,6 +157,8 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 	break;
       }
     }
+    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
     m_forbiddenZones.push_back(newZone);
   }
 
@@ -756,8 +760,10 @@ PlaceManager::evaluateUnexploredPaths()
       bool excluded = false;
       for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
 	  fbIt != m_forbiddenZones.end(); fbIt++) {
-	if (newX <= fbIt->maxX && newX >= fbIt->minX &&
-	    newY <= fbIt->maxY && newY >= fbIt->minY) {
+//    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+//    	  log("checking against: %.02g, %.02g", newX, newY);
+	if (!(newX <= fbIt->maxX && newX >= fbIt->minX &&
+	    newY <= fbIt->maxY && newY >= fbIt->minY)) {
 	  log("Placeholder in forbidden zone excluded");
 	  excluded = true;
 	  break;
