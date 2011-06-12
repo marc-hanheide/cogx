@@ -1,5 +1,7 @@
 package vision;
 
+import org.apache.log4j.Logger;
+
 import mathlib.Functions;
 import Video.CameraParameters;
 import VisionData.Face;
@@ -64,6 +66,7 @@ public class VisionUtils {
 	 */
 	static public boolean isVisible(CameraParameters cam, Vector3 w) {
 		Vector2 imgCoords = projectPoint(cam, w);
+		Logger.getLogger(VisionUtils.class).debug("projected coords=["+imgCoords.x+", "+imgCoords.y+"]");
 		return (imgCoords.x >= 0 && imgCoords.x < cam.width && imgCoords.y >= 0 && imgCoords.y < cam.height);
 	}
 
