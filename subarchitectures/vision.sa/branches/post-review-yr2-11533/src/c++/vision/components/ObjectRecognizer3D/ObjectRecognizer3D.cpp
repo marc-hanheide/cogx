@@ -127,10 +127,14 @@ void ObjectRecognizer3D::start(){
 }
 
 
-void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
-log("Fake 3D Object Received");  
-Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
-  loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label,true);
+void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc) {
+	log("Fake 3D Object Received");
+	Post3DObjectPtr f = getMemoryEntry<Post3DObject> (_wmc.address);
+	if (f->isDetected) {
+		loadVisualModelToWM(m_recEntries[f->label], f->pose, f->label, false);
+	} else {
+		loadEmptyVisualModelToWM(f->label);
+	}
 }
 
 
