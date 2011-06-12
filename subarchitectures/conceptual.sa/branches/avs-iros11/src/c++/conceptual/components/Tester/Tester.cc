@@ -302,7 +302,11 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 	try
 	{
 		SpatialData::NavCommandPtr navCommandPtr;
+		lockEntry(wmChange.address, cast::cdl::LOCKEDOD);
 		navCommandPtr = getMemoryEntry<SpatialData::NavCommand>(wmChange.address);
+		if (holdsLock(wmChange.address.id, wmChange.address.subarchitecture)) {
+			unlockEntry(wmChange.address.id, wmChange.address.subarchitecture);
+		}
 
 		if (navCommandPtr)
 		{
@@ -313,6 +317,9 @@ void Tester::newNavCommand(const cast::cdl::WorkingMemoryChange &wmChange)
 	catch(...)
 	{
 		log("Exception while reading nav command from the WM!");
+		if (holdsLock(wmChange.address.id, wmChange.address.subarchitecture)) {
+			unlockEntry(wmChange.address.id, wmChange.address.subarchitecture);
+		}
 	}
 }
 
