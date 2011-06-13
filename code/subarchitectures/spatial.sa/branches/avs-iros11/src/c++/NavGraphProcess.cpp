@@ -1198,7 +1198,9 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
 	string category = visualObjectPtr->identLabels[0];
 	double probability = visualObjectPtr->identDistrib[0];
 	log("Observed object of category \"%s\" with probability %f", category.c_str(), probability);
-
+	// FIXME: this threshold is magic be Michi Zillich
+	if (probability<0.08)
+		return;
     Cure::Timestamp t(visualObjectPtr->time.s, visualObjectPtr->time.us);
 
     // As a first approximation we use the last robot pose as the robot

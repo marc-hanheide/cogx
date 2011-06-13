@@ -774,7 +774,7 @@ ObjectRelationManager::newObject(const cdl::WorkingMemoryAddress &wmAddress)
 	double angle;
 	Vector3 axis;
 	toAngleAxis(pose.rot, angle, axis);
-	debug("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+	log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
 	    pose.pos.x, pose.pos.y, pose.pos.z, angle, 
 	    axis.x, axis.y, axis.z);
 	theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
@@ -1165,7 +1165,7 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
 
   Pose3 cameraInWorld;
   transform(robotTransform, cameraOnRobot, cameraInWorld);
-  return cameraInWorld;
+  return robotTransform;
 } 
 
 void 
