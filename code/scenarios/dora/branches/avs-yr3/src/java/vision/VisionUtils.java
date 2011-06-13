@@ -46,9 +46,9 @@ public class VisionUtils {
 				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
 				CASTUtils.getTimeServer().getCASTTime(), null,
 				new VisualObjectView[0], new GeometryModel(new Vertex[0],
-						new Face[0]),
-				0d, new String[0], new double[0], 0, 0, new String[0], 
-				new double[0], new double[0], 0, 0, new String[0], new double[0],  new double[0], 0, 0, "","");
+						new Face[0]), 0d, new String[0], new double[0], 0, 0,
+				new String[0], new double[0], new double[0], 0, 0,
+				new String[0], new double[0], new double[0], 0, 0, "", "");
 		return obj;
 	}
 
@@ -66,7 +66,8 @@ public class VisionUtils {
 	 */
 	static public boolean isVisible(CameraParameters cam, Vector3 w) {
 		Vector2 imgCoords = projectPoint(cam, w);
-		Logger.getLogger(VisionUtils.class).debug("projected coords=["+imgCoords.x+", "+imgCoords.y+"]");
+		Logger.getLogger(VisionUtils.class).debug(
+				"projected coords=[" + imgCoords.x + ", " + imgCoords.y + "]");
 		return (imgCoords.x >= 0 && imgCoords.x < cam.width && imgCoords.y >= 0 && imgCoords.y < cam.height);
 	}
 
@@ -79,6 +80,12 @@ public class VisionUtils {
 	 */
 	static public Vector2 projectPoint(CameraParameters cam, Vector3 w) {
 		Vector3 p = Functions.transformInverse(cam.pose, w);
+		Logger.getLogger(VisionUtils.class).debug(
+				"in cam coords: [" + p.x + ", " + p.y + ", " + p.z + "]");
+		Logger.getLogger(VisionUtils.class).debug(
+				"cam params: [" + cam.fx + ", " + cam.fy + ", " + cam.cx + ", "
+						+ cam.cy + "]");
+
 		return new Vector2(cam.fx * p.x / p.z + cam.cx, cam.fy * p.y / p.z
 				+ cam.cy);
 	}

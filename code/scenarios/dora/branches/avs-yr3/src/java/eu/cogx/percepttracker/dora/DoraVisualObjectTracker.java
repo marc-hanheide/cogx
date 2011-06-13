@@ -59,38 +59,32 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange event)
 			throws CASTException {
-			  log("1");
+
 		PerceptBelief from = getMemoryEntry(event.address, PerceptBelief.class);
-			  log("2");
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
 
-        if (pb.getContent().get(VisualObjectTransferFunction.LABEL_ID) == null) {
-            log("belief is empty, returning.");
-            return;
-        }
+		if (pb.getContent().get(VisualObjectTransferFunction.LABEL_ID) == null) {
+			log("belief is empty, returning.");
+			return;
+		}
 
-			  log("3");
 		String perceptLabel = pb.getContent().get(
 				VisualObjectTransferFunction.LABEL_ID).getDistribution()
 				.getMostLikely().getProposition();
-			  log("4");
 
-		WorkingMemoryAddress perceptPointer = ((PointerFormula) pb.getContent()
-				.get(VisualObjectTransferFunction.IS_IN).getDistribution()
-				.get().values.get(0).val).pointer;
-		WorkingMemoryAddress conePointer = ((PointerFormula) pb.getContent()
-				.get(VisualObjectTransferFunction.CONE).getDistribution()
-				.get().values.get(0).val).pointer;
-			  log("5");
-		double perceptIsInProb = pb.getContent().get(
-				VisualObjectTransferFunction.IS_IN).getDistribution().get().values
-				.get(0).prob;
-			  log("6");
+		FormulaDistribution coneFormulaDistribution = pb.getContent().get(
+				VisualObjectTransferFunction.CONE);
+		if (coneFormulaDistribution==null) {
+			getLogger().error("could not find fomulas for " + VisualObjectTransferFunction.CONE+"! From here on, it will not work as expected!");
+			return;
+		}
+		WorkingMemoryAddress conePointer = ((PointerFormula) coneFormulaDistribution
+				.getDistribution().get().values.get(0).val).pointer;
 
 		Set<WorkingMemoryAddress> wmaGroundedSet = label2AddrMap
 				.get(perceptLabel);
-			  log("7");
+
 		if (wmaGroundedSet == null) {
 			label2AddrMap
 					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
@@ -107,40 +101,41 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 						.create(GroundedBelief.class, getMemoryEntry(
 								wmaGrounded, GroundedBelief.class));
 
-                WorkingMemoryAddress gbConePointer = ((PointerFormula) gb.getContent()
-                                                      .get(VisualObjectTransferFunction.CONE).getDistribution()
-                                                      .get().values.get(0).val).pointer;
+				WorkingMemoryAddress gbConePointer = ((PointerFormula) gb
+						.getContent().get(VisualObjectTransferFunction.CONE)
+						.getDistribution().get().values.get(0).val).pointer;
 
-                if (conePointer.equals(gbConePointer)) {
-                    log("we have found an object in the same viewcone, " + conePointer.id);
-                    newNeeded = false;
+				if (conePointer.equals(gbConePointer)) {
+					log("we have found an object in the same viewcone, "
+							+ conePointer.id);
+					newNeeded = false;
 					manageHistory(event, from, gb.get());
 					overwriteWorkingMemory(wmaGrounded, gb.get());
-                    break;
-                }
+					break;
+				}
 
 				// float existingProb = sumProb(gb.getContent().get(
-				// 		VisualObjectTransferFunction.IS_IN));
+				// VisualObjectTransferFunction.IS_IN));
 				// log("the current existingProb of the GroundedBelief is "
-				// 		+ existingProb + ", the perceptIsInProb is "
-				// 		+ perceptIsInProb);
+				// + existingProb + ", the perceptIsInProb is "
+				// + perceptIsInProb);
 				// if (perceptIsInProb < 0.5) {
-				// 	log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-				// 	setIsInProb(gb.getContent().get(
-				// 			VisualObjectTransferFunction.IS_IN),
-				// 			perceptPointer, (float) perceptIsInProb);
-				// 	manageHistory(event, from, gb.get());
-				// 	overwriteWorkingMemory(wmaGrounded, gb.get());
-				// 	newNeeded = false;
+				// log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// setIsInProb(gb.getContent().get(
+				// VisualObjectTransferFunction.IS_IN),
+				// perceptPointer, (float) perceptIsInProb);
+				// manageHistory(event, from, gb.get());
+				// overwriteWorkingMemory(wmaGrounded, gb.get());
+				// newNeeded = false;
 				// } else if (existingProb < 0.5) {
-				// 	log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-				// 	setIsInProb(gb.getContent().get(
-				// 			VisualObjectTransferFunction.IS_IN),
-				// 			perceptPointer, (float) perceptIsInProb);
-				// 	manageHistory(event, from, gb.get());
-				// 	overwriteWorkingMemory(wmaGrounded, gb.get());
-				// 	newNeeded = false;
-				// 	break;
+				// log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// setIsInProb(gb.getContent().get(
+				// VisualObjectTransferFunction.IS_IN),
+				// perceptPointer, (float) perceptIsInProb);
+				// manageHistory(event, from, gb.get());
+				// overwriteWorkingMemory(wmaGrounded, gb.get());
+				// newNeeded = false;
+				// break;
 				// }
 
 			}
