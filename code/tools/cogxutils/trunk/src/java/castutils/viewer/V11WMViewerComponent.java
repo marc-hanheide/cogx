@@ -31,6 +31,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 	final private MyDisplayClient displayClient = new MyDisplayClient();
 	final Map<Class<?>, Plugin> objectDispatcherMap = new HashMap<Class<?>, Plugin>();
 	public boolean addGenericCol = false;
+	public boolean logGenericCol = false;
 	public boolean compactGenericCol = false;
 	private boolean foundLargeGeneric = false;
 	private final DefaultXMLInfo genericPlugin = new DefaultXMLInfo();
@@ -84,7 +85,8 @@ public class V11WMViewerComponent extends ManagedComponent {
 								}
 							}
 						}
-						getLogger().debug(CASTUtils.toString(wmc) + genericText);
+						if (logGenericCol)
+						  getLogger().debug(CASTUtils.toString(wmc) + genericText);
 					}
 					setHtml(v11nObject, v11part, "<tr>" + logString + "</tr>");
 					break;
@@ -189,6 +191,9 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 		if (arg0.get("--compact") != null) {
 			compactGenericCol = true;
+		}
+		if (arg0.get("--log-generic-col") != null) {
+			logGenericCol = true;
 		}
 		displayClient.configureDisplayClient(arg0);
 	}
