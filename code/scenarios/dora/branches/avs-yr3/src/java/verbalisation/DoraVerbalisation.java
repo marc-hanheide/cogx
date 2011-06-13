@@ -8,14 +8,16 @@ import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PatrolMotive;
+import motivation.slice.PlanProxy;
 import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.ProcessViewPointCommand;
 import SpatialData.ViewPointGenerationCommand;
 import SpatialProperties.GatewayPlaceProperty;
-import SpatialProperties.ObjectPlaceProperty;
 import VisionData.DetectionCommand;
+import VisionData.Recognizer3DCommand;
+import VisionData.Recognizer3DCommandType;
 import VisionData.VisualObject;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
@@ -25,7 +27,12 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.castextensions.Accessor;
-import de.dfki.lt.hfc.operators.FProduct;
+
+import comadata.ComaRoom;
+
+import execution.slice.actions.CreateRelationalConesForModel;
+import execution.slice.actions.ProcessConeGroupAction;
+import execution.slice.actions.ReportPosition;
 
 /**
  * - found new place N - found new placeholder N - found new room N - seen
@@ -100,14 +107,24 @@ public class DoraVerbalisation extends ManagedComponent implements
 			return DETECTION_COMMAND_SAYINGS[m_sayingIndex++];
 		}
 	};
+	private static final TextGenerator<Recognizer3DCommand> RECOGNIZER_COMMAND_GENERATOR = new TextGenerator<Recognizer3DCommand>() {
+		@Override
+		public String toText(Recognizer3DCommand _i) {
+			if (_i.cmd == Recognizer3DCommandType.RECOGNIZE) {
+				return "looking for object " + _i.label;
+			}
+			return "";
+		}
+	};
 
-//	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
-//		@Override
-//		public String toText(ObjectPlaceProperty _i) {
-//			return "Found an object of type "
-//					+ ((SpatialProperties.StringValue) _i.mapValue).value;
-//		}
-//	};
+	// private static final TextGenerator<ObjectPlaceProperty>
+	// OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
+	// @Override
+	// public String toText(ObjectPlaceProperty _i) {
+	// return "Found an object of type "
+	// + ((SpatialProperties.StringValue) _i.mapValue).value;
+	// }
+	// };
 
 	private static final TextGenerator<ViewPointGenerationCommand> VIEW_POINT_CMD_GENERATOR = new TextGenerator<ViewPointGenerationCommand>() {
 		@Override
@@ -195,6 +212,41 @@ public class DoraVerbalisation extends ManagedComponent implements
 		}
 	};
 
+	private static TextGenerator<ReportPosition> REPORT_OBJECTFOUND_GENERATOR = new TextGenerator<ReportPosition>() {
+		@Override
+		public String toText(ReportPosition _i) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("I found the object");
+			return sb.toString();
+		}
+	};
+
+	private static TextGenerator<CreateRelationalConesForModel> GENERATE_VIEWCONES = new TextGenerator<CreateRelationalConesForModel>() {
+		@Override
+		public String toText(CreateRelationalConesForModel _i) {
+			StringBuilder sb = new StringBuilder();
+			if (_i.relation.equals("inroom")) {
+				sb.append("creating view cones for " + _i.model + " in room "
+						+ _i.roomID);
+			} else {
+				sb.append("creating view cones for " + _i.model + " on "
+						+ _i.supportObjectCategory);
+			}
+
+			return sb.toString();
+		}
+	};
+
+	private static TextGenerator<ProcessConeGroupAction> PROCESS_VIEWCONES = new TextGenerator<ProcessConeGroupAction>() {
+		@Override
+		public String toText(ProcessConeGroupAction _i) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("searching view cones");
+
+			return sb.toString();
+		}
+	};
+
 	private final VerbalisationFacade m_verbals;
 
 	private final HashMap<Long, PlaceStatus> m_placeIDToStatus;
@@ -222,35 +274,47 @@ public class DoraVerbalisation extends ManagedComponent implements
 		// m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
 
 		// when places are explored
-		// m_verbals.verbaliseOnStateTransition(Place.class,
-		// PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
-		// PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
+		m_verbals.verbaliseOnStateTransition(Place.class,
+				PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
+				PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
 		//
 		// // when places are deleted (i.e. exploration could be carried out)
 		// m_verbals.verbaliseOnDeletion(Place.class,
 		// PLACE_EXPLORATION_FAILED_GENERATOR);
 
 		// // when navigation is told to move the robot
-		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
+		// m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
+
+		m_verbals.verbaliseOnAddition(CreateRelationalConesForModel.class,
+				GENERATE_VIEWCONES);
+		m_verbals.verbaliseOnAddition(ProcessConeGroupAction.class,
+				PROCESS_VIEWCONES);
+
+		m_verbals.verbaliseOnAddition(ReportPosition.class,
+				REPORT_OBJECTFOUND_GENERATOR);
 
 		// // when plan execution is triggered
-		// m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
-		// "Starting plan execution.");
+		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
+				"Starting plan execution.");
 
 		// when a recognition command is triggered�
-		// m_verbals.verbaliseOnAddition(DetectionCommand.class,
-		// DETECTION_COMMAND_GENERATOR);
+		m_verbals.verbaliseOnAddition(DetectionCommand.class,
+				DETECTION_COMMAND_GENERATOR);
+		m_verbals.verbaliseOnAddition(Recognizer3DCommand.class,
+				RECOGNIZER_COMMAND_GENERATOR);
 
-//		// when an object is added to the spatial model -> this is once per
-//		// object class in place
-//		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
-//				OBJECT_PROPERTY_GENERATOR);
+		// // when an object is added to the spatial model -> this is once per
+		// // object class in place
+		// m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
+		// OBJECT_PROPERTY_GENERATOR);
 
 		// when an object is recognised at all -> is this every positive
 		// recognition result
 		m_verbals.verbaliseOnAddition(VisualObject.class,
 				VISUAL_OBJECT_GENERATOR);
 
+		m_verbals.verbaliseCannedTextOnAddition(ComaRoom.class,
+				"I discovered a new room");
 		// m_verbals.verbaliseOnOverwrite(ComaRoom.class,
 		// new RoomCategoryTextGenerator());
 
