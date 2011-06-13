@@ -36,13 +36,14 @@ module Math {
    * space [pos.x - width/2, pos.x + width/2] etc.
    */
   struct Rect2 {
-    Vector2 pos;  
     // position of the center
+    Vector2 pos;  
     double width;
     double height;
   };
 
   struct Sphere3 {
+    // position of the center
     Vector3 pos;
     double rad;
   };
@@ -53,10 +54,10 @@ module Math {
    * [pos.x - size.x/2, pos.x + size.x/2] etc.
    */
   struct Box3 {
+    // position of the center
     Vector3 pos;  
-     // position of the center
-    Vector3 size;  
     // sizes in x, y and z direction
+    Vector3 size;  
   };
 
   // 3D pose consisting of position vector and rotation matrix
