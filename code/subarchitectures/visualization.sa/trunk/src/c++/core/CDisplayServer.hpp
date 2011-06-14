@@ -182,10 +182,6 @@ public:
       m_pDisplayServer->setObject(id, partId, xmlData);
    }
 
-   virtual void setImage(const std::string& id, const Video::Image& image, const Ice::Current&) {
-      m_pDisplayServer->setRawImage(id, image.width, image.height, 3, image.data);
-   }
-
    virtual void setRawImage(const std::string& id, int width, int height, int channels,
          const std::vector<unsigned char>& data, const Ice::Current&)
    {

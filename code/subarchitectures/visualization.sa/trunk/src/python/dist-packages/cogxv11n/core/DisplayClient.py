@@ -134,7 +134,7 @@ class CDisplayClient:
 
     def setImage(self, id, videoImage):
         if self.m_Server == None: return
-        self.m_Server.setImage(id, videoImage)
+        self.m_Server.setRawImage(id, videoImage.width, videoImage.height, 3, videoImage.data)
 
     def setRawImage(self, id, width, height, channels, data):
         if self.m_Server == None: return

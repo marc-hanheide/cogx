@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <cast/core/CASTComponent.hpp>
 #include <DisplayServer.hpp> // generated from ice
+#include <Video.hpp> // generated from ice
 
 // convenient classes for clients
 #include "CFormValues.hpp"
