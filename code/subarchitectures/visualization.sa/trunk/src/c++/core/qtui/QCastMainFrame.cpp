@@ -29,6 +29,8 @@
 #endif
 #include "../convenience.hpp"
 
+#define EMPTY_LAYOUT  "<none>"
+
 static void addToMru(QString mruName, QString value)
 {
    QSettings settings("CogX", "CastDisplayServer");
@@ -147,6 +149,23 @@ void QCastFrameManager::getWindowListNames(QStringList& names, bool bMru)
    settings.endGroup(); // WindowLayout
    if (bMru)
       applyMru("WindowLayout", names);
+}
+
+QString QCastFrameManager::getStartupLayout()
+{
+   QSettings settings("CogX", "CastDisplayServer");
+   settings.beginGroup("Startup");
+   QString val = settings.value("WindowLayout", EMPTY_LAYOUT).toString();
+   settings.endGroup(); // Startup
+   return val;
+}
+
+void QCastFrameManager::setStartupLayout(QString name)
+{
+   QSettings settings("CogX", "CastDisplayServer");
+   settings.beginGroup("Startup");
+   settings.setValue("WindowLayout",name);
+   settings.endGroup(); // Startup
 }
 
 // Make sure that exactly one of the windows is the main window (a m_isMainWindow)
@@ -299,6 +318,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.actRestoreWindowLayout, SIGNAL(triggered()),
          this, SLOT(onRestoreWindowLayout()));
 
+   connect(ui.actSetStartupLayout, SIGNAL(triggered()),
+         this, SLOT(onSetStartupLayout()));
+
    connect(ui.actShowCustomControls, SIGNAL(triggered()),
          this, SLOT(onShowCustomControls()));
 
@@ -337,6 +359,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 
    QWebSettings::globalSettings()->setFontSize(QWebSettings::DefaultFontSize, 12);
 #endif
+
 }
 
 QCastMainFrame::~QCastMainFrame()
@@ -573,7 +596,8 @@ void QCastMainFrame::onSaveWindowList()
    if (rv != QDialog::Accepted)
       return;
    val = dlg.textValue().trimmed();
-   if (val == "") val = "Default";
+   if (val == "")
+      val = "Default";
 
    FrameManager.saveWindowList(val);
 }
@@ -611,6 +635,42 @@ void QCastMainFrame::onRestoreWindowLayout()
    FrameManager.loadWindowList(val);
    FrameManager.createMissingWindows(this, m_pModel);
 }
+
+void QCastMainFrame::onSetStartupLayout()
+{
+   QInputDialog dlg(this);
+   QStringList names;
+   QString val;
+
+   FrameManager.getWindowListNames(names, true);
+   val = FrameManager.getStartupLayout();
+   names.removeOne(val);
+   names.insert(0, val);
+   if (names.indexOf(EMPTY_LAYOUT) < 0)
+      names.insert(1, EMPTY_LAYOUT);
+
+   dlg.setWindowTitle("Display Server - Startup Window Layout");
+   dlg.setLabelText("Startup layout name");
+   dlg.setComboBoxItems(names);
+   dlg.setComboBoxEditable(false);
+
+   int rv = dlg.exec();
+   if (rv != QDialog::Accepted)
+      return;
+   val = dlg.textValue().trimmed();
+   if (val == "")
+      val = names[0];
+
+   FrameManager.setStartupLayout(val);
+}
+
+void QCastMainFrame::loadStartupLayout()
+{
+   QString val = FrameManager.getStartupLayout().trimmed();
+   if (val != "" && val != EMPTY_LAYOUT)
+     FrameManager.loadWindowList(val);
+}
+
 
 void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
 {
