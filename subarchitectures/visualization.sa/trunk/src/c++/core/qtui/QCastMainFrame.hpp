@@ -49,8 +49,9 @@ private:
 
 public:
    QCastFrameManager();
-   void saveWindowList();
-   void loadWindowList();
+   void saveWindowList(QString listName);
+   void loadWindowList(QString listName);
+   void getWindowListNames(QStringList& names, bool bMru=false);
    void createMissingWindows(QCastMainFrame* pSomeFrame, cogx::display::CDisplayModel *pModel);
    void closeChildWindows();
 
