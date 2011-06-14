@@ -180,7 +180,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         
         # A multi-part HTML document.
         # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
-        self.setHtml(TASKS_ID, id, html);
+        self.setHtml(TASKS_ID, "0000", html);
 
         # Test of gui elements
         # Messages will be added to the document when events happen (see handleEvent).
