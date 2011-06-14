@@ -125,7 +125,7 @@ public:
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,
-         const Math::Vector3& position, const Visualization::Quaternion& rotation);
+         double x, double y, double z, const Visualization::Quaternion& rotation);
 
    void removeObject(const std::string& id);
    void removePart(const std::string& id, const std::string& partId);
@@ -253,9 +253,9 @@ public:
    }
 
    virtual void setObjectPose3D(const std::string& id, const std::string& partId,
-         const Math::Vector3& position, const Visualization::Quaternion& rotation, const Ice::Current&)
+         double x, double y, double z, const Visualization::Quaternion& rotation, const Ice::Current&)
    {
-      m_pDisplayServer->setObjectPose3D(id, partId, position, rotation);
+      m_pDisplayServer->setObjectPose3D(id, partId, x, y, z, rotation);
    }
 
    virtual void removeObject(const std::string& id, const Ice::Current&)

@@ -554,16 +554,16 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
 }
 
 void CDisplayServer::setObjectPose3D(const std::string& id, const std::string& partId,
-      const Math::Vector3& position, const Visualization::Quaternion& rotation)
+      double x, double y, double z, const Visualization::Quaternion& rotation)
 {
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
    std::vector<double> pos, rot;
    pos.reserve(3); rot.reserve(4);
-   pos.push_back(position.x);
-   pos.push_back(position.y);
-   pos.push_back(position.z);
+   pos.push_back(x);
+   pos.push_back(y);
+   pos.push_back(z);
    rot.push_back(rotation.x);
    rot.push_back(rotation.y);
    rot.push_back(rotation.z);
