@@ -19,6 +19,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QInputDialog>
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
@@ -27,6 +28,39 @@
 // #undef DEBUG_TRACE
 #endif
 #include "../convenience.hpp"
+
+static void addToMru(QString mruName, QString value)
+{
+   QSettings settings("CogX", "CastDisplayServer");
+   settings.beginGroup("MRU");
+   QStringList list = settings.value(mruName, QStringList()).toStringList();
+   list.removeOne(value);
+   list.insert(0, value);
+   settings.setValue(mruName, list);
+   settings.endGroup();
+}
+
+static void applyMru(QString mruName, QStringList &list)
+{
+   QSettings settings("CogX", "CastDisplayServer");
+   settings.beginGroup("MRU");
+   QStringList mru = settings.value(mruName, QStringList()).toStringList();
+   settings.endGroup();
+   QStringList tmp(list);
+   list.clear();
+   for (int i = 0; i < mru.size(); i++) {
+      if (mru[i].trimmed().size() < 1)
+         continue;
+      if (tmp.indexOf(mru[i]) >= 0) {
+         list << mru[i].trimmed();
+         tmp.removeOne(mru[i]);
+      }
+   }
+   for (int i = 0; i < tmp.size(); i++) {
+      if (tmp[i].trimmed().size() > 0)
+         list << tmp[i].trimmed();
+   }
+}
 
 QCastFrameManager::QCastFrameManager()
 {
@@ -44,13 +78,17 @@ QList<QCastMainFrame*> QCastFrameManager::getCastFrames()
    return frames;
 }
 
-void QCastFrameManager::saveWindowList()
+void QCastFrameManager::saveWindowList(QString listName)
 {
    QList<QCastMainFrame*> frames = getCastFrames();
 
+   listName = listName.trimmed();
+   if (listName == "")
+      listName = "Default";
+
    QSettings settings("CogX", "CastDisplayServer");
    settings.beginGroup("WindowLayout");
-   settings.beginGroup("Default");
+   settings.beginGroup(listName);
    settings.remove(""); // remove settings in current group
    int i = 0;
    foreach(QCastMainFrame* pFrame, frames) {
@@ -64,18 +102,23 @@ void QCastFrameManager::saveWindowList()
       settings.setValue("pos", pFrame->pos());
       settings.endGroup(); // frame
    }
-   settings.endGroup(); // Default
+   settings.endGroup(); // listName
    settings.endGroup(); // WindowLayout
+   addToMru("WindowLayout", listName);
 }
 
-void QCastFrameManager::loadWindowList()
+void QCastFrameManager::loadWindowList(QString listName)
 {
    DTRACE("QCastMainFrame::loadWindowList");
+
+   listName = listName.trimmed();
+   if (listName == "")
+      listName = "Default";
 
    m_frameList.clear();
    QSettings settings("CogX", "CastDisplayServer");
    settings.beginGroup("WindowLayout");
-   settings.beginGroup("Default");
+   settings.beginGroup(listName);
    QStringList frames = settings.childGroups();
    foreach(QString frameid, frames) {
       DMESSAGE(frameid.toStdString());
@@ -88,8 +131,22 @@ void QCastFrameManager::loadWindowList()
       settings.endGroup();
       m_frameList << info;
    }
-   settings.endGroup(); // Default
+   settings.endGroup(); // listName
    settings.endGroup(); // WindowLayout
+   addToMru("WindowLayout", listName);
+}
+
+void QCastFrameManager::getWindowListNames(QStringList& names, bool bMru)
+{
+   QSettings settings("CogX", "CastDisplayServer");
+   settings.beginGroup("WindowLayout");
+   QStringList regnames = settings.childGroups();
+   foreach(QString name, regnames) {
+      names << name;
+   }
+   settings.endGroup(); // WindowLayout
+   if (bMru)
+      applyMru("WindowLayout", names);
 }
 
 // Make sure that exactly one of the windows is the main window (a m_isMainWindow)
@@ -500,12 +557,25 @@ void QCastMainFrame::onNewWindow()
 // Save window list to registry (conf)
 void QCastMainFrame::onSaveWindowList()
 {
-   QMessageBox::StandardButton rv =
-      QMessageBox::question(
-            this, "Display Server", "Save window layout for later use.",
-            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-   if (rv != QMessageBox::Yes) return;
-   FrameManager.saveWindowList();
+   QInputDialog dlg(this);
+   QStringList names;
+   QString val;
+   dlg.setWindowTitle("Display Server - Save Window Layout");
+   dlg.setLabelText("Layout name");
+   FrameManager.getWindowListNames(names, true);
+   if (names.size() < 1)
+      names << "Default";
+   dlg.setComboBoxItems(names);
+   dlg.setComboBoxEditable(true);
+   dlg.setOkButtonText("Save");
+
+   int rv = dlg.exec();
+   if (rv != QDialog::Accepted)
+      return;
+   val = dlg.textValue().trimmed();
+   if (val == "") val = "Default";
+
+   FrameManager.saveWindowList(val);
 }
 
 // Close all windows except the main one
@@ -516,8 +586,29 @@ void QCastMainFrame::onCloseSomeWindows()
 
 void QCastMainFrame::onRestoreWindowLayout()
 {
+   QInputDialog dlg(this);
+   QStringList names;
+   QString val;
+
+   FrameManager.getWindowListNames(names, true);
+   if (names.size() < 1)
+      return;
+
+   dlg.setWindowTitle("Display Server - Restore Window Layout");
+   dlg.setLabelText("Layout name");
+   dlg.setComboBoxItems(names);
+   dlg.setComboBoxEditable(false);
+   dlg.setOkButtonText("Restore");
+
+   int rv = dlg.exec();
+   if (rv != QDialog::Accepted)
+      return;
+   val = dlg.textValue().trimmed();
+   if (val == "")
+      val = names[0];
+
    FrameManager.closeChildWindows();
-   FrameManager.loadWindowList();
+   FrameManager.loadWindowList(val);
    FrameManager.createMissingWindows(this, m_pModel);
 }
 
