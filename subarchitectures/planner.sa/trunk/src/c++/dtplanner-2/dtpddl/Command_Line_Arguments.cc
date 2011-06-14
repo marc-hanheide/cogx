@@ -93,6 +93,14 @@ Command_Line_Arguments::~Command_Line_Arguments()
 {
 }
 
+bool Command_Line_Arguments::got_guard(string& str)
+{
+    assert(str != "");
+    lastGuardTest = str;
+    
+    return (assignments.find(str) != assignments.end());
+}
+
 bool Command_Line_Arguments::got_guard(string&& str)
 {
     assert(str != "");
