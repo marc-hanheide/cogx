@@ -210,7 +210,7 @@ public class DisplayClient {
 	public final void setImage(String id, Video.Image image) {
 		if (m_Server == null)
 			return;
-		m_Server.setImage(id, image);
+		m_Server.setRawImage(id, image.width, image.height, 3, image.data);
 	}
 
 	public final void setCompressedImage(String id, byte[] data, String format) {

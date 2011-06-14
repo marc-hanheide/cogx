@@ -3,7 +3,6 @@
 
 #include <Ice/Identity.ice>
 #include <cast/slice/CDL.ice>
-#include <Video.ice>
 #include <Math.ice>
 
 module Visualization
@@ -53,8 +52,6 @@ module Visualization
       // Create objects in the display server
       void setObject(string id, string partId, string svgObject);
       void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
-
-      void setImage(string id, Video::Image image);
 
       // 3 channels for RGB, 1 channel for GS
       void setRawImage(string id, int width, int height, int channels, ByteSeq data);
