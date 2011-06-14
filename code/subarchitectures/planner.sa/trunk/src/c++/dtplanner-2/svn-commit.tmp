@@ -1,0 +1,10 @@
+
+New features for grounding POMDPs
+
+--This line, and those below, will be ignored--
+
+M    dtpddl/partially_observable_markov_decision_process_state.cc
+M    dtpddl/markov_decision_process_state.hh
+M    dtpddl/Makefile
+M    dtpddl/partially_observable_markov_decision_process_state.hh
+M    dtpddl/main.cpp
