@@ -435,7 +435,7 @@ void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& p
       const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
 {
    if (! m_pServer) return;
-   m_pServer->setObjectPose3D(id, partId, position, rotation);
+   m_pServer->setObjectPose3D(id, partId, position.x, position.y, position.z, rotation);
 }
 
 void CDisplayClient::removeObject(const std::string& id)

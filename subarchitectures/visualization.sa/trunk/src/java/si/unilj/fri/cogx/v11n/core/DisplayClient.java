@@ -241,7 +241,7 @@ public class DisplayClient {
 			cogx.Math.Vector3 position, Quaternion rotation) {
 		if (m_Server == null)
 			return;
-		m_Server.setObjectPose3D(id, partId, position, rotation);
+		m_Server.setObjectPose3D(id, partId, position.x, position.y, position.z, rotation);
 	}
 
 	public final void setObjectTransform2D(String id, String partId,

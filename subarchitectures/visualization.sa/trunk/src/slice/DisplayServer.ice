@@ -3,7 +3,6 @@
 
 #include <Ice/Identity.ice>
 #include <cast/slice/CDL.ice>
-#include <Math.ice>
 
 module Visualization
 {
@@ -61,7 +60,7 @@ module Visualization
 
       // Set a serialized tgRenderModel
       void setTomGineObject(string id, string partId, ByteSeq data);
-      void setObjectPose3D(string id, string partId, cogx::Math::Vector3 position, Quaternion rotation);
+      void setObjectPose3D(string id, string partId, double x, double y, double z, Quaternion rotation);
 
       // Set a LuaGL script
       void setLuaGlObject(string id, string partId, string script);
