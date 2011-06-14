@@ -152,6 +152,7 @@ void CDisplayServer::run()
       pMainFrame->setModel(&m_Model);
       pMainFrame->setControlDataProxy(this);
       pMainFrame->show();
+      pMainFrame->loadStartupLayout();
       pMainFrame = NULL; // Owned by QApplication
       app.exec();
 

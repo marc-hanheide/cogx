@@ -52,6 +52,8 @@ public:
    void saveWindowList(QString listName);
    void loadWindowList(QString listName);
    void getWindowListNames(QStringList& names, bool bMru=false);
+   QString getStartupLayout();
+   void setStartupLayout(QString name);
    void createMissingWindows(QCastMainFrame* pSomeFrame, cogx::display::CDisplayModel *pModel);
    void closeChildWindows();
 
@@ -79,6 +81,7 @@ public:
    ~QCastMainFrame();
    void setModel(cogx::display::CDisplayModel* pDisplayModel);
    void setControlDataProxy(cogx::display::COwnerDataProxy *pProxy);
+   void loadStartupLayout();
 
    void notifyObjectAdded(cogx::display::CDisplayObject *pObject);
 
@@ -96,6 +99,7 @@ private slots:
    void onSaveWindowList();
    void onCloseSomeWindows();
    void onRestoreWindowLayout();
+   void onSetStartupLayout();
 
 private:
    cogx::display::CDisplayView* getView();

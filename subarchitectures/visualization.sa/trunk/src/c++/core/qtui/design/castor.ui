@@ -70,6 +70,7 @@
     <addaction name="separator"/>
     <addaction name="actSaveWindowLayout"/>
     <addaction name="actRestoreWindowLayout"/>
+    <addaction name="actSetStartupLayout"/>
    </widget>
    <addaction name="menuQuit"/>
    <addaction name="menu_View"/>
@@ -218,7 +219,7 @@
   </action>
   <action name="actSaveWindowLayout">
    <property name="text">
-    <string>&amp;Save window layout</string>
+    <string>&amp;Save window layout ...</string>
    </property>
   </action>
   <action name="actCloseSomeWindows">
@@ -226,17 +227,14 @@
     <string>Close some windows</string>
    </property>
   </action>
-  <action name="actRestoreLayoutStartup">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
+  <action name="actSetStartupLayout">
    <property name="text">
-    <string>Restore Layout at Startup</string>
+    <string>Set startup layout ...</string>
    </property>
   </action>
   <action name="actRestoreWindowLayout">
    <property name="text">
-    <string>&amp;Restore window layout</string>
+    <string>&amp;Restore window layout ...</string>
    </property>
   </action>
   <action name="actViewSelectSubmenu">
