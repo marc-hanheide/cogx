@@ -1,0 +1,2417 @@
+-----------------------------------------------------------------
+
+ -- int main(int, char**) -- :: 
+**	
+main.cpp
+777
+ ** WARNING -- 
+Using --beta 0.95
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- int main(int, char**) -- :: 
+**	
+main.cpp
+783
+ ** WARNING -- 
+Using --beta-mdp 0.95
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Parsing::Types_Data::commit__types() -- :: 
+**	
+dtp_pddl_parsing_data_types.cc
+57
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 31001 -- 
+Unwinding type hirarchy.
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Parsing::Constants_Data::commit__constants() -- :: 
+**	
+dtp_pddl_parsing_data_constants.cc
+39
+ ** WARNING -- 
+ :: Committing constants(/objects) dtp_parser functionality is redundant :: 
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Parsing::Problem_Data::reset__domain_Data(const Planning::Domain_Name&) -- :: 
+**	
+dtp_pddl_parsing_data_problem.cc
+571
+ ** WARNING -- 
+No change occurred when re-specifying problem associated to a domain.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Parsing::Constants_Data::commit__constants() -- :: 
+**	
+dtp_pddl_parsing_data_constants.cc
+39
+ ** WARNING -- 
+ :: Committing constants(/objects) dtp_parser functionality is redundant :: 
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_action_schema(const Planning::Action_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__actions.cc
+340
+ ** WARNING -- 
+For action ::cancel we could not show a preference in what
+ order to make assignments to argument variables for grounding...
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_action_schema(const Planning::Action_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__actions.cc
+340
+ ** WARNING -- 
+For action ::commit-obj1 we could not show a preference in what
+ order to make assignments to argument variables for grounding...
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_action_schema(const Planning::Action_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__actions.cc
+375
+ ** WARNING -- 
+Could not make a preference for when to make an assignment to :: ?p
+during action grounding.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::interpret__as_double_valued_ground_state_function(Planning::Formula::State_Ground_Function&) -- :: 
+**	
+domain_action_to_problem_action.cc
+1137
+ ** WARNING -- 
+Hope (reward )
+ is supposed to be a referenced read to a dynamic
+double-valued number. If it is not, we're stuffed.
+0
+0
+1
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+514
+ ** WARNING -- 
+Constant :: obj1 was not owned by the problem_data.
+Expecting :: 172070952
+But got :: 172061000
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_derived_perceptions() -- :: 
+**	
+problem_grounding.cc
+335
+ ** WARNING -- 
+Grounding of derived perception predicates is being called, but is redundant.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.1
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.7
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.2
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.8
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.1
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.1
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Domain_Action__to__Problem_Action::operator()(const Planning::Formula::Subformula&) -- :: 
+**	
+domain_action_to_problem_action.cc
+757
+ ** WARNING -- 
+Was expecting ground state function, but got :: 0.5
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_observation_schema(const Planning::Observation_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__observations.cc
+422
+ ** WARNING -- 
+Could not make a preference for when to make an assignment to :: ?o
+during observation grounding.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_observation_schema(const Planning::Observation_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__observations.cc
+422
+ ** WARNING -- 
+Could not make a preference for when to make an assignment to :: ?p
+during observation grounding.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+ -- void Planning::Problem_Grounding::ground_observation_schema(const Planning::Observation_Name&, Planning::Formula::Subformula&, Planning::Assignment&, const std::map<Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> >, std::less<Planning::Variable>, std::allocator<std::pair<const Planning::Variable, std::set<Planning::Constant, std::less<Planning::Constant>, std::allocator<Planning::Constant> > > > >&, const Planning::Argument_List&, Planning::Formula::Subformula, Planning::Formula::Subformula) -- :: 
+**	
+problem_grounding__observations.cc
+422
+ ** WARNING -- 
+Could not make a preference for when to make an assignment to :: ?a
+during observation grounding.
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 14
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 18
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTFFFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 21
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 25
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 29
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTFFTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 32
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 36
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 40
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTTFFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFTFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFTFFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTFTFTFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTFFFTFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFFFFFTTTTTTTTFFFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFFFFFTTTTTTTTFFFTFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFTFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFTFFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTFTTFFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTFFTFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFFFFFTTTTTTTTFFTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFFFFFTTTTTTTTFFTFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFTFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFTFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFTFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFTFFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFTFFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTTFFFFTTTTTTTTTTFFFFFFFFFFFFFF
+0 := 100; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 FFTFFFFTTTTFFFFFFFTTTTTTTTTFFFFFFFFFFFFFFF
+0 := -3; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFFFFFFFTTTTTTTTTFFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+1 TFTFFFFTTTTFTFFFFFTTTTTTTTTFFFFFFFFFFFFFFF
+0 := 0; 
+
+
+-----------------------------------------------------------------
+
+ -- int flatten() -- :: 
+**	
+main.cpp
+743
+ ** INFO -- 
+ -- DEBUG_LEVEL :: 19000 -- 
+MDP state expansion :: 43
+
+-----------------------------------------------------------------
+ sum :: 1
+T: a5 : s1 : s1   1.0
+T: a5 : s2 : s2   1.0
+T: a5 : s3 : s3   1.0
+T: a5 : s4 : s4   1.0
+T: a5 : s5 : s5   1.0
+T: a5 : s6 : s6   1.0
+T: a5 : s7 : s7   1.0
+T: a5 : s8 : s8   1.0
+T: a5 : s9 : s9   1.0
+T: a5 : s10 : s10   1.0
+T: a5 : s11 : s11   1.0
+T: a5 : s12 : s12   1.0
+T: a5 : s13 : s13   1.0
+T: a5 : s14 : s14   1.0
+T: a5 : s15 : s15   1.0
+T: a5 : s16 : s16   1.0
+T: a5 : s17 : s17   1.0
+T: a5 : s18 : s18   1.0
+T: a5 : s19 : s19   1.0
+T: a5 : s20 : s20   1.0
+T: a5 : s21 : s21   1.0
+T: a5 : s22 : s22   1.0
+T: a5 : s23 : s23   1.0
+T: a5 : s24 : s24   1.0
+T: a5 : s25 : s25   1.0
+T: a5 : s26 : s26   1.0
+T: a5 : s27 : s27   1.0
+T: a5 : s28 : s28   1.0
+T: a5 : s29 : s29   1.0
+T: a5 : s30 : s30   1.0
+T: a5 : s31 : s31   1.0
+T: a5 : s32 : s32   1.0
+T: a5 : s33 : s33   1.0
+T: a5 : s34 : s34   1.0
+T: a5 : s35 : s35   1.0
+T: a5 : s36 : s36   1.0
+T: a5 : s37 : s37   1.0
+T: a5 : s38 : s38   1.0
+T: a5 : s39 : s39   1.0
+T: a5 : s40 : s40   1.0
+T: a5 : s41 : s41   1.0
+T: a5 : s42 : s42   1.0
+T: a11 : s1 : s1   1.0
+T: a11 : s2 : s2   1.0
+T: a11 : s3 : s3   1.0
+T: a11 : s4 : s4   1.0
+T: a11 : s5 : s5   1.0
+T: a11 : s6 : s6   1.0
+T: a11 : s7 : s7   1.0
+T: a11 : s8 : s8   1.0
+T: a11 : s9 : s9   1.0
+T: a11 : s10 : s10   1.0
+T: a11 : s11 : s11   1.0
+T: a11 : s12 : s12   1.0
+T: a11 : s13 : s13   1.0
+T: a11 : s14 : s14   1.0
+T: a11 : s15 : s15   1.0
+T: a11 : s16 : s16   1.0
+T: a11 : s17 : s17   1.0
+T: a11 : s18 : s18   1.0
+T: a11 : s19 : s19   1.0
+T: a11 : s20 : s20   1.0
+T: a11 : s21 : s21   1.0
+T: a11 : s22 : s22   1.0
+T: a11 : s23 : s23   1.0
+T: a11 : s24 : s24   1.0
+T: a11 : s25 : s25   1.0
+T: a11 : s26 : s26   1.0
+T: a11 : s27 : s27   1.0
+T: a11 : s28 : s28   1.0
+T: a11 : s29 : s29   1.0
+T: a11 : s30 : s30   1.0
+T: a11 : s31 : s31   1.0
+T: a11 : s32 : s32   1.0
+T: a11 : s33 : s33   1.0
+T: a11 : s34 : s34   1.0
+T: a11 : s35 : s35   1.0
+T: a11 : s36 : s36   1.0
+T: a11 : s37 : s37   1.0
+T: a11 : s38 : s38   1.0
+T: a11 : s39 : s39   1.0
+T: a11 : s40 : s40   1.0
+T: a11 : s41 : s41   1.0
+T: a11 : s42 : s42   1.0
+T: a17 : s1 : s1   1.0
+T: a17 : s2 : s2   1.0
+T: a17 : s3 : s3   1.0
+T: a17 : s4 : s4   1.0
+T: a17 : s5 : s5   1.0
+T: a17 : s6 : s6   1.0
+T: a17 : s7 : s7   1.0
+T: a17 : s8 : s8   1.0
+T: a17 : s9 : s9   1.0
+T: a17 : s10 : s10   1.0
+T: a17 : s11 : s11   1.0
+T: a17 : s12 : s12   1.0
+T: a17 : s13 : s13   1.0
+T: a17 : s14 : s14   1.0
+T: a17 : s15 : s15   1.0
+T: a17 : s16 : s16   1.0
+T: a17 : s17 : s17   1.0
+T: a17 : s18 : s18   1.0
+T: a17 : s19 : s19   1.0
+T: a17 : s20 : s20   1.0
+T: a17 : s21 : s21   1.0
+T: a17 : s22 : s22   1.0
+T: a17 : s23 : s23   1.0
+T: a17 : s24 : s24   1.0
+T: a17 : s25 : s25   1.0
+T: a17 : s26 : s26   1.0
+T: a17 : s27 : s27   1.0
+T: a17 : s28 : s28   1.0
+T: a17 : s29 : s29   1.0
+T: a17 : s30 : s30   1.0
+T: a17 : s31 : s31   1.0
+T: a17 : s32 : s32   1.0
+T: a17 : s33 : s33   1.0
+T: a17 : s34 : s34   1.0
+T: a17 : s35 : s35   1.0
+T: a17 : s36 : s36   1.0
+T: a17 : s37 : s37   1.0
+T: a17 : s38 : s38   1.0
+T: a17 : s39 : s39   1.0
+T: a17 : s40 : s40   1.0
+T: a17 : s41 : s41   1.0
+T: a17 : s42 : s42   1.0
+T: a23 : s1 : s1   1.0
+T: a23 : s2 : s2   1.0
+T: a23 : s3 : s3   1.0
+T: a23 : s4 : s4   1.0
+T: a23 : s5 : s5   1.0
+T: a23 : s6 : s6   1.0
+T: a23 : s7 : s7   1.0
+T: a23 : s8 : s8   1.0
+T: a23 : s9 : s9   1.0
+T: a23 : s10 : s10   1.0
+T: a23 : s11 : s11   1.0
+T: a23 : s12 : s12   1.0
+T: a23 : s13 : s13   1.0
+T: a23 : s14 : s14   1.0
+T: a23 : s15 : s15   1.0
+T: a23 : s16 : s16   1.0
+T: a23 : s17 : s17   1.0
+T: a23 : s18 : s18   1.0
+T: a23 : s19 : s19   1.0
+T: a23 : s20 : s20   1.0
+T: a23 : s21 : s21   1.0
+T: a23 : s22 : s22   1.0
+T: a23 : s23 : s23   1.0
+T: a23 : s24 : s24   1.0
+T: a23 : s25 : s25   1.0
+T: a23 : s26 : s26   1.0
+T: a23 : s27 : s27   1.0
+T: a23 : s28 : s28   1.0
+T: a23 : s29 : s29   1.0
+T: a23 : s30 : s30   1.0
+T: a23 : s31 : s31   1.0
+T: a23 : s32 : s32   1.0
+T: a23 : s33 : s33   1.0
+T: a23 : s34 : s34   1.0
+T: a23 : s35 : s35   1.0
+T: a23 : s36 : s36   1.0
+T: a23 : s37 : s37   1.0
+T: a23 : s38 : s38   1.0
+T: a23 : s39 : s39   1.0
+T: a23 : s40 : s40   1.0
+T: a23 : s41 : s41   1.0
+T: a23 : s42 : s42   1.0
+T: a24 : s1 : s1   1.0
+T: a24 : s2 : s2   1.0
+T: a24 : s3 : s3   1.0
+T: a24 : s4 : s4   1.0
+T: a24 : s5 : s5   1.0
+T: a24 : s6 : s6   1.0
+T: a24 : s7 : s7   1.0
+T: a24 : s8 : s8   1.0
+T: a24 : s9 : s9   1.0
+T: a24 : s10 : s10   1.0
+T: a24 : s11 : s11   1.0
+T: a24 : s12 : s12   1.0
+T: a24 : s13 : s13   1.0
+T: a24 : s14 : s14   1.0
+T: a24 : s15 : s15   1.0
+T: a24 : s16 : s16   1.0
+T: a24 : s17 : s17   1.0
+T: a24 : s18 : s18   1.0
+T: a24 : s19 : s19   1.0
+T: a24 : s20 : s20   1.0
+T: a24 : s21 : s21   1.0
+T: a24 : s22 : s22   1.0
+T: a24 : s23 : s23   1.0
+T: a24 : s24 : s24   1.0
+T: a24 : s25 : s25   1.0
+T: a24 : s26 : s26   1.0
+T: a24 : s27 : s27   1.0
+T: a24 : s28 : s28   1.0
+T: a24 : s29 : s29   1.0
+T: a24 : s30 : s30   1.0
+T: a24 : s31 : s31   1.0
+T: a24 : s32 : s32   1.0
+T: a24 : s33 : s33   1.0
+T: a24 : s34 : s34   1.0
+T: a24 : s35 : s35   1.0
+T: a24 : s36 : s36   1.0
+T: a24 : s37 : s37   1.0
+T: a24 : s38 : s38   1.0
+T: a24 : s39 : s39   1.0
+T: a24 : s40 : s40   1.0
+T: a24 : s41 : s41   1.0
+T: a24 : s42 : s42   1.0
+T: a27 : s1 : s1   1.0
+T: a27 : s2 : s2   1.0
+T: a27 : s3 : s3   1.0
+T: a27 : s4 : s4   1.0
+T: a27 : s5 : s5   1.0
+T: a27 : s6 : s6   1.0
+T: a27 : s7 : s7   1.0
+T: a27 : s8 : s8   1.0
+T: a27 : s9 : s9   1.0
+T: a27 : s10 : s10   1.0
+T: a27 : s11 : s11   1.0
+T: a27 : s12 : s12   1.0
+T: a27 : s13 : s13   1.0
+T: a27 : s14 : s14   1.0
+T: a27 : s15 : s15   1.0
+T: a27 : s16 : s16   1.0
+T: a27 : s17 : s17   1.0
+T: a27 : s18 : s18   1.0
+T: a27 : s19 : s19   1.0
+T: a27 : s20 : s20   1.0
+T: a27 : s21 : s21   1.0
+T: a27 : s22 : s22   1.0
+T: a27 : s23 : s23   1.0
+T: a27 : s24 : s24   1.0
+T: a27 : s25 : s25   1.0
+T: a27 : s26 : s26   1.0
+T: a27 : s27 : s27   1.0
+T: a27 : s28 : s28   1.0
+T: a27 : s29 : s29   1.0
+T: a27 : s30 : s30   1.0
+T: a27 : s31 : s31   1.0
+T: a27 : s32 : s32   1.0
+T: a27 : s33 : s33   1.0
+T: a27 : s34 : s34   1.0
+T: a27 : s35 : s35   1.0
+T: a27 : s36 : s36   1.0
+T: a27 : s37 : s37   1.0
+T: a27 : s38 : s38   1.0
+T: a27 : s39 : s39   1.0
+T: a27 : s40 : s40   1.0
+T: a27 : s41 : s41   1.0
+T: a27 : s42 : s42   1.0
+T: a30 : s1 : s1   1.0
+T: a30 : s2 : s2   1.0
+T: a30 : s3 : s3   1.0
+T: a30 : s4 : s4   1.0
+T: a30 : s5 : s5   1.0
+T: a30 : s6 : s6   1.0
+T: a30 : s7 : s7   1.0
+T: a30 : s8 : s8   1.0
+T: a30 : s9 : s9   1.0
+T: a30 : s10 : s10   1.0
+T: a30 : s11 : s11   1.0
+T: a30 : s12 : s12   1.0
+T: a30 : s13 : s13   1.0
+T: a30 : s14 : s14   1.0
+T: a30 : s15 : s15   1.0
+T: a30 : s16 : s16   1.0
+T: a30 : s17 : s17   1.0
+T: a30 : s18 : s18   1.0
+T: a30 : s19 : s19   1.0
+T: a30 : s20 : s20   1.0
+T: a30 : s21 : s21   1.0
+T: a30 : s22 : s22   1.0
+T: a30 : s23 : s23   1.0
+T: a30 : s24 : s24   1.0
+T: a30 : s25 : s25   1.0
+T: a30 : s26 : s26   1.0
+T: a30 : s27 : s27   1.0
+T: a30 : s28 : s28   1.0
+T: a30 : s29 : s29   1.0
+T: a30 : s30 : s30   1.0
+T: a30 : s31 : s31   1.0
+T: a30 : s32 : s32   1.0
+T: a30 : s33 : s33   1.0
+T: a30 : s34 : s34   1.0
+T: a30 : s35 : s35   1.0
+T: a30 : s36 : s36   1.0
+T: a30 : s37 : s37   1.0
+T: a30 : s38 : s38   1.0
+T: a30 : s39 : s39   1.0
+T: a30 : s40 : s40   1.0
+T: a30 : s41 : s41   1.0
+T: a30 : s42 : s42   1.0
+T: a33 : s1 : s1   1.0
+T: a33 : s2 : s2   1.0
+T: a33 : s3 : s3   1.0
+T: a33 : s4 : s4   1.0
+T: a33 : s5 : s5   1.0
+T: a33 : s6 : s6   1.0
+T: a33 : s7 : s7   1.0
+T: a33 : s8 : s8   1.0
+T: a33 : s9 : s9   1.0
+T: a33 : s10 : s10   1.0
+T: a33 : s11 : s11   1.0
+T: a33 : s12 : s12   1.0
+T: a33 : s13 : s13   1.0
+T: a33 : s14 : s14   1.0
+T: a33 : s15 : s15   1.0
+T: a33 : s16 : s16   1.0
+T: a33 : s17 : s17   1.0
+T: a33 : s18 : s18   1.0
+T: a33 : s19 : s19   1.0
+T: a33 : s20 : s20   1.0
+T: a33 : s21 : s21   1.0
+T: a33 : s22 : s22   1.0
+T: a33 : s23 : s23   1.0
+T: a33 : s24 : s24   1.0
+T: a33 : s25 : s25   1.0
+T: a33 : s26 : s26   1.0
+T: a33 : s27 : s27   1.0
+T: a33 : s28 : s28   1.0
+T: a33 : s29 : s29   1.0
+T: a33 : s30 : s30   1.0
+T: a33 : s31 : s31   1.0
+T: a33 : s32 : s32   1.0
+T: a33 : s33 : s33   1.0
+T: a33 : s34 : s34   1.0
+T: a33 : s35 : s35   1.0
+T: a33 : s36 : s36   1.0
+T: a33 : s37 : s37   1.0
+T: a33 : s38 : s38   1.0
+T: a33 : s39 : s39   1.0
+T: a33 : s40 : s40   1.0
+T: a33 : s41 : s41   1.0
+T: a33 : s42 : s42   1.0
+T: a36 : s1 : s1   1.0
+T: a36 : s2 : s2   1.0
+T: a36 : s3 : s3   1.0
+T: a36 : s4 : s4   1.0
+T: a36 : s5 : s5   1.0
+T: a36 : s6 : s6   1.0
+T: a36 : s7 : s7   1.0
+T: a36 : s8 : s8   1.0
+T: a36 : s9 : s9   1.0
+T: a36 : s10 : s10   1.0
+T: a36 : s11 : s11   1.0
+T: a36 : s12 : s12   1.0
+T: a36 : s13 : s13   1.0
+T: a36 : s14 : s14   1.0
+T: a36 : s15 : s15   1.0
+T: a36 : s16 : s16   1.0
+T: a36 : s17 : s17   1.0
+T: a36 : s18 : s18   1.0
+T: a36 : s19 : s19   1.0
+T: a36 : s20 : s20   1.0
+T: a36 : s21 : s21   1.0
+T: a36 : s22 : s22   1.0
+T: a36 : s23 : s23   1.0
+T: a36 : s24 : s24   1.0
+T: a36 : s25 : s25   1.0
+T: a36 : s26 : s26   1.0
+T: a36 : s27 : s27   1.0
+T: a36 : s28 : s28   1.0
+T: a36 : s29 : s29   1.0
+T: a36 : s30 : s30   1.0
+T: a36 : s31 : s31   1.0
+T: a36 : s32 : s32   1.0
+T: a36 : s33 : s33   1.0
+T: a36 : s34 : s34   1.0
+T: a36 : s35 : s35   1.0
+T: a36 : s36 : s36   1.0
+T: a36 : s37 : s37   1.0
+T: a36 : s38 : s38   1.0
+T: a36 : s39 : s39   1.0
+T: a36 : s40 : s40   1.0
+T: a36 : s41 : s41   1.0
+T: a36 : s42 : s42   1.0
+T: a39 : s1 : s1   1.0
+T: a39 : s2 : s2   1.0
+T: a39 : s3 : s3   1.0
+T: a39 : s4 : s4   1.0
+T: a39 : s5 : s5   1.0
+T: a39 : s6 : s6   1.0
+T: a39 : s7 : s7   1.0
+T: a39 : s8 : s8   1.0
+T: a39 : s9 : s9   1.0
+T: a39 : s10 : s10   1.0
+T: a39 : s11 : s11   1.0
+T: a39 : s12 : s12   1.0
+T: a39 : s13 : s13   1.0
+T: a39 : s14 : s14   1.0
+T: a39 : s15 : s15   1.0
+T: a39 : s16 : s16   1.0
+T: a39 : s17 : s17   1.0
+T: a39 : s18 : s18   1.0
+T: a39 : s19 : s19   1.0
+T: a39 : s20 : s20   1.0
+T: a39 : s21 : s21   1.0
+T: a39 : s22 : s22   1.0
+T: a39 : s23 : s23   1.0
+T: a39 : s24 : s24   1.0
+T: a39 : s25 : s25   1.0
+T: a39 : s26 : s26   1.0
+T: a39 : s27 : s27   1.0
+T: a39 : s28 : s28   1.0
+T: a39 : s29 : s29   1.0
+T: a39 : s30 : s30   1.0
+T: a39 : s31 : s31   1.0
+T: a39 : s32 : s32   1.0
+T: a39 : s33 : s33   1.0
+T: a39 : s34 : s34   1.0
+T: a39 : s35 : s35   1.0
+T: a39 : s36 : s36   1.0
+T: a39 : s37 : s37   1.0
+T: a39 : s38 : s38   1.0
+T: a39 : s39 : s39   1.0
+T: a39 : s40 : s40   1.0
+T: a39 : s41 : s41   1.0
+T: a39 : s42 : s42   1.0
+T: a42 : s1 : s1   1.0
+T: a42 : s2 : s2   1.0
+T: a42 : s3 : s3   1.0
+T: a42 : s4 : s4   1.0
+T: a42 : s5 : s5   1.0
+T: a42 : s6 : s6   1.0
+T: a42 : s7 : s7   1.0
+T: a42 : s8 : s8   1.0
+T: a42 : s9 : s9   1.0
+T: a42 : s10 : s10   1.0
+T: a42 : s11 : s11   1.0
+T: a42 : s12 : s12   1.0
+T: a42 : s13 : s13   1.0
+T: a42 : s14 : s14   1.0
+T: a42 : s15 : s15   1.0
+T: a42 : s16 : s16   1.0
+T: a42 : s17 : s17   1.0
+T: a42 : s18 : s18   1.0
+T: a42 : s19 : s19   1.0
+T: a42 : s20 : s20   1.0
+T: a42 : s21 : s21   1.0
+T: a42 : s22 : s22   1.0
+T: a42 : s23 : s23   1.0
+T: a42 : s24 : s24   1.0
+T: a42 : s25 : s25   1.0
+T: a42 : s26 : s26   1.0
+T: a42 : s27 : s27   1.0
+T: a42 : s28 : s28   1.0
+T: a42 : s29 : s29   1.0
+T: a42 : s30 : s30   1.0
+T: a42 : s31 : s31   1.0
+T: a42 : s32 : s32   1.0
+T: a42 : s33 : s33   1.0
+T: a42 : s34 : s34   1.0
+T: a42 : s35 : s35   1.0
+T: a42 : s36 : s36   1.0
+T: a42 : s37 : s37   1.0
+T: a42 : s38 : s38   1.0
+T: a42 : s39 : s39   1.0
+T: a42 : s40 : s40   1.0
+T: a42 : s41 : s41   1.0
+T: a42 : s42 : s42   1.0
+T: a5 : s1 : o1   1.0
+T: a5 : s2 : o1   1.0
+T: a5 : s3 : o1   1.0
+T: a5 : s4 : o1   1.0
+T: a5 : s5 : o1   1.0
+T: a5 : s6 : o1   1.0
+T: a5 : s7 : o1   1.0
+T: a5 : s8 : o1   1.0
+T: a5 : s9 : o1   1.0
+T: a5 : s10 : o1   1.0
+T: a5 : s11 : o1   1.0
+T: a5 : s12 : o1   1.0
+T: a5 : s13 : o1   1.0
+T: a5 : s14 : o1   1.0
+T: a5 : s15 : o1   1.0
+T: a5 : s16 : o1   1.0
+T: a5 : s17 : o1   1.0
+T: a5 : s18 : o1   1.0
+T: a5 : s19 : o1   1.0
+T: a5 : s20 : o1   1.0
+T: a5 : s21 : o1   1.0
+T: a5 : s22 : o1   1.0
+T: a5 : s23 : o1   1.0
+T: a5 : s24 : o1   1.0
+T: a5 : s25 : o1   1.0
+T: a5 : s26 : o1   1.0
+T: a5 : s27 : o1   1.0
+T: a5 : s28 : o1   1.0
+T: a5 : s29 : o1   1.0
+T: a5 : s30 : o1   1.0
+T: a5 : s31 : o1   1.0
+T: a5 : s32 : o1   1.0
+T: a5 : s33 : o1   1.0
+T: a5 : s34 : o1   1.0
+T: a5 : s35 : o1   1.0
+T: a5 : s36 : o1   1.0
+T: a5 : s37 : o1   1.0
+T: a5 : s38 : o1   1.0
+T: a5 : s39 : o1   1.0
+T: a5 : s40 : o1   1.0
+T: a5 : s41 : o1   1.0
+T: a5 : s42 : o1   1.0
+T: a11 : s1 : o1   1.0
+T: a11 : s2 : o1   1.0
+T: a11 : s3 : o1   1.0
+T: a11 : s4 : o1   1.0
+T: a11 : s5 : o1   1.0
+T: a11 : s6 : o1   1.0
+T: a11 : s7 : o1   1.0
+T: a11 : s8 : o1   1.0
+T: a11 : s9 : o1   1.0
+T: a11 : s10 : o1   1.0
+T: a11 : s11 : o1   1.0
+T: a11 : s12 : o1   1.0
+T: a11 : s13 : o1   1.0
+T: a11 : s14 : o1   1.0
+T: a11 : s15 : o1   1.0
+T: a11 : s16 : o1   1.0
+T: a11 : s17 : o1   1.0
+T: a11 : s18 : o1   1.0
+T: a11 : s19 : o1   1.0
+T: a11 : s20 : o1   1.0
+T: a11 : s21 : o1   1.0
+T: a11 : s22 : o1   1.0
+T: a11 : s23 : o1   1.0
+T: a11 : s24 : o1   1.0
+T: a11 : s25 : o1   1.0
+T: a11 : s26 : o1   1.0
+T: a11 : s27 : o1   1.0
+T: a11 : s28 : o1   1.0
+T: a11 : s29 : o1   1.0
+T: a11 : s30 : o1   1.0
+T: a11 : s31 : o1   1.0
+T: a11 : s32 : o1   1.0
+T: a11 : s33 : o1   1.0
+T: a11 : s34 : o1   1.0
+T: a11 : s35 : o1   1.0
+T: a11 : s36 : o1   1.0
+T: a11 : s37 : o1   1.0
+T: a11 : s38 : o1   1.0
+T: a11 : s39 : o1   1.0
+T: a11 : s40 : o1   1.0
+T: a11 : s41 : o1   1.0
+T: a11 : s42 : o1   1.0
+T: a17 : s1 : o1   1.0
+T: a17 : s2 : o1   1.0
+T: a17 : s3 : o1   1.0
+T: a17 : s4 : o1   1.0
+T: a17 : s5 : o1   1.0
+T: a17 : s6 : o1   1.0
+T: a17 : s7 : o1   1.0
+T: a17 : s8 : o1   1.0
+T: a17 : s9 : o1   1.0
+T: a17 : s10 : o1   1.0
+T: a17 : s11 : o1   1.0
+T: a17 : s12 : o1   1.0
+T: a17 : s13 : o1   1.0
+T: a17 : s14 : o1   1.0
+T: a17 : s15 : o1   1.0
+T: a17 : s16 : o1   1.0
+T: a17 : s17 : o1   1.0
+T: a17 : s18 : o1   1.0
+T: a17 : s19 : o1   1.0
+T: a17 : s20 : o1   1.0
+T: a17 : s21 : o1   1.0
+T: a17 : s22 : o1   1.0
+T: a17 : s23 : o1   1.0
+T: a17 : s24 : o1   1.0
+T: a17 : s25 : o1   1.0
+T: a17 : s26 : o1   1.0
+T: a17 : s27 : o1   1.0
+T: a17 : s28 : o1   1.0
+T: a17 : s29 : o1   1.0
+T: a17 : s30 : o1   1.0
+T: a17 : s31 : o1   1.0
+T: a17 : s32 : o1   1.0
+T: a17 : s33 : o1   1.0
+T: a17 : s34 : o1   1.0
+T: a17 : s35 : o1   1.0
+T: a17 : s36 : o1   1.0
+T: a17 : s37 : o1   1.0
+T: a17 : s38 : o1   1.0
+T: a17 : s39 : o1   1.0
+T: a17 : s40 : o1   1.0
+T: a17 : s41 : o1   1.0
+T: a17 : s42 : o1   1.0
+T: a23 : s1 : o1   1.0
+T: a23 : s2 : o1   1.0
+T: a23 : s3 : o1   1.0
+T: a23 : s4 : o1   1.0
+T: a23 : s5 : o1   1.0
+T: a23 : s6 : o1   1.0
+T: a23 : s7 : o1   1.0
+T: a23 : s8 : o1   1.0
+T: a23 : s9 : o1   1.0
+T: a23 : s10 : o1   1.0
+T: a23 : s11 : o1   1.0
+T: a23 : s12 : o1   1.0
+T: a23 : s13 : o1   1.0
+T: a23 : s14 : o1   1.0
+T: a23 : s15 : o1   1.0
+T: a23 : s16 : o1   1.0
+T: a23 : s17 : o1   1.0
+T: a23 : s18 : o1   1.0
+T: a23 : s19 : o1   1.0
+T: a23 : s20 : o1   1.0
+T: a23 : s21 : o1   1.0
+T: a23 : s22 : o1   1.0
+T: a23 : s23 : o1   1.0
+T: a23 : s24 : o1   1.0
+T: a23 : s25 : o1   1.0
+T: a23 : s26 : o1   1.0
+T: a23 : s27 : o1   1.0
+T: a23 : s28 : o1   1.0
+T: a23 : s29 : o1   1.0
+T: a23 : s30 : o1   1.0
+T: a23 : s31 : o1   1.0
+T: a23 : s32 : o1   1.0
+T: a23 : s33 : o1   1.0
+T: a23 : s34 : o1   1.0
+T: a23 : s35 : o1   1.0
+T: a23 : s36 : o1   1.0
+T: a23 : s37 : o1   1.0
+T: a23 : s38 : o1   1.0
+T: a23 : s39 : o1   1.0
+T: a23 : s40 : o1   1.0
+T: a23 : s41 : o1   1.0
+T: a23 : s42 : o1   1.0
+T: a24 : s1 : o1   1.0
+T: a24 : s2 : o1   1.0
+T: a24 : s3 : o1   1.0
+T: a24 : s4 : o1   1.0
+T: a24 : s5 : o1   1.0
+T: a24 : s6 : o1   1.0
+T: a24 : s7 : o1   1.0
+T: a24 : s8 : o1   1.0
+T: a24 : s9 : o1   1.0
+T: a24 : s10 : o1   1.0
+T: a24 : s11 : o1   1.0
+T: a24 : s12 : o1   1.0
+T: a24 : s13 : o1   1.0
+T: a24 : s14 : o1   1.0
+T: a24 : s15 : o1   1.0
+T: a24 : s16 : o1   1.0
+T: a24 : s17 : o1   1.0
+T: a24 : s18 : o1   1.0
+T: a24 : s19 : o1   1.0
+T: a24 : s20 : o1   1.0
+T: a24 : s21 : o1   1.0
+T: a24 : s22 : o1   1.0
+T: a24 : s23 : o1   1.0
+T: a24 : s24 : o1   1.0
+T: a24 : s25 : o1   1.0
+T: a24 : s26 : o1   1.0
+T: a24 : s27 : o1   1.0
+T: a24 : s28 : o1   1.0
+T: a24 : s29 : o1   1.0
+T: a24 : s30 : o1   1.0
+T: a24 : s31 : o1   1.0
+T: a24 : s32 : o1   1.0
+T: a24 : s33 : o1   1.0
+T: a24 : s34 : o1   1.0
+T: a24 : s35 : o1   1.0
+T: a24 : s36 : o1   1.0
+T: a24 : s37 : o1   1.0
+T: a24 : s38 : o1   1.0
+T: a24 : s39 : o1   1.0
+T: a24 : s40 : o1   1.0
+T: a24 : s41 : o1   1.0
+T: a24 : s42 : o1   1.0
+T: a27 : s1 : o1   1.0
+T: a27 : s2 : o1   1.0
+T: a27 : s3 : o1   1.0
+T: a27 : s4 : o1   1.0
+T: a27 : s5 : o1   1.0
+T: a27 : s6 : o1   1.0
+T: a27 : s7 : o1   1.0
+T: a27 : s8 : o1   1.0
+T: a27 : s9 : o1   1.0
+T: a27 : s10 : o1   1.0
+T: a27 : s11 : o1   1.0
+T: a27 : s12 : o1   1.0
+T: a27 : s13 : o1   1.0
+T: a27 : s14 : o1   1.0
+T: a27 : s15 : o1   1.0
+T: a27 : s16 : o1   1.0
+T: a27 : s17 : o1   1.0
+T: a27 : s18 : o1   1.0
+T: a27 : s19 : o1   1.0
+T: a27 : s20 : o1   1.0
+T: a27 : s21 : o1   1.0
+T: a27 : s22 : o1   1.0
+T: a27 : s23 : o1   1.0
+T: a27 : s24 : o1   1.0
+T: a27 : s25 : o1   1.0
+T: a27 : s26 : o1   1.0
+T: a27 : s27 : o1   1.0
+T: a27 : s28 : o1   1.0
+T: a27 : s29 : o1   1.0
+T: a27 : s30 : o1   1.0
+T: a27 : s31 : o1   1.0
+T: a27 : s32 : o1   1.0
+T: a27 : s33 : o1   1.0
+T: a27 : s34 : o1   1.0
+T: a27 : s35 : o1   1.0
+T: a27 : s36 : o1   1.0
+T: a27 : s37 : o1   1.0
+T: a27 : s38 : o1   1.0
+T: a27 : s39 : o1   1.0
+T: a27 : s40 : o1   1.0
+T: a27 : s41 : o1   1.0
+T: a27 : s42 : o1   1.0
+T: a30 : s1 : o1   1.0
+T: a30 : s2 : o1   1.0
+T: a30 : s3 : o1   1.0
+T: a30 : s4 : o1   1.0
+T: a30 : s5 : o1   1.0
+T: a30 : s6 : o1   1.0
+T: a30 : s7 : o1   1.0
+T: a30 : s8 : o1   1.0
+T: a30 : s9 : o1   1.0
+T: a30 : s10 : o1   1.0
+T: a30 : s11 : o1   1.0
+T: a30 : s12 : o1   1.0
+T: a30 : s13 : o1   1.0
+T: a30 : s14 : o1   1.0
+T: a30 : s15 : o1   1.0
+T: a30 : s16 : o1   1.0
+T: a30 : s17 : o1   1.0
+T: a30 : s18 : o1   1.0
+T: a30 : s19 : o1   1.0
+T: a30 : s20 : o1   1.0
+T: a30 : s21 : o1   1.0
+T: a30 : s22 : o1   1.0
+T: a30 : s23 : o1   1.0
+T: a30 : s24 : o1   1.0
+T: a30 : s25 : o1   1.0
+T: a30 : s26 : o1   1.0
+T: a30 : s27 : o1   1.0
+T: a30 : s28 : o1   1.0
+T: a30 : s29 : o1   1.0
+T: a30 : s30 : o1   1.0
+T: a30 : s31 : o1   1.0
+T: a30 : s32 : o1   1.0
+T: a30 : s33 : o1   1.0
+T: a30 : s34 : o1   1.0
+T: a30 : s35 : o1   1.0
+T: a30 : s36 : o1   1.0
+T: a30 : s37 : o1   1.0
+T: a30 : s38 : o1   1.0
+T: a30 : s39 : o1   1.0
+T: a30 : s40 : o1   1.0
+T: a30 : s41 : o1   1.0
+T: a30 : s42 : o1   1.0
+T: a33 : s1 : o1   1.0
+T: a33 : s2 : o1   1.0
+T: a33 : s3 : o1   1.0
+T: a33 : s4 : o1   1.0
+T: a33 : s5 : o1   1.0
+T: a33 : s6 : o1   1.0
+T: a33 : s7 : o1   1.0
+T: a33 : s8 : o1   1.0
+T: a33 : s9 : o1   1.0
+T: a33 : s10 : o1   1.0
+T: a33 : s11 : o1   1.0
+T: a33 : s12 : o1   1.0
+T: a33 : s13 : o1   1.0
+T: a33 : s14 : o1   1.0
+T: a33 : s15 : o1   1.0
+T: a33 : s16 : o1   1.0
+T: a33 : s17 : o1   1.0
+T: a33 : s18 : o1   1.0
+T: a33 : s19 : o1   1.0
+T: a33 : s20 : o1   1.0
+T: a33 : s21 : o1   1.0
+T: a33 : s22 : o1   1.0
+T: a33 : s23 : o1   1.0
+T: a33 : s24 : o1   1.0
+T: a33 : s25 : o1   1.0
+T: a33 : s26 : o1   1.0
+T: a33 : s27 : o1   1.0
+T: a33 : s28 : o1   1.0
+T: a33 : s29 : o1   1.0
+T: a33 : s30 : o1   1.0
+T: a33 : s31 : o1   1.0
+T: a33 : s32 : o1   1.0
+T: a33 : s33 : o1   1.0
+T: a33 : s34 : o1   1.0
+T: a33 : s35 : o1   1.0
+T: a33 : s36 : o1   1.0
+T: a33 : s37 : o1   1.0
+T: a33 : s38 : o1   1.0
+T: a33 : s39 : o1   1.0
+T: a33 : s40 : o1   1.0
+T: a33 : s41 : o1   1.0
+T: a33 : s42 : o1   1.0
+T: a36 : s1 : o1   1.0
+T: a36 : s2 : o1   1.0
+T: a36 : s3 : o1   1.0
+T: a36 : s4 : o1   1.0
+T: a36 : s5 : o1   1.0
+T: a36 : s6 : o1   1.0
+T: a36 : s7 : o1   1.0
+T: a36 : s8 : o1   1.0
+T: a36 : s9 : o1   1.0
+T: a36 : s10 : o1   1.0
+T: a36 : s11 : o1   1.0
+T: a36 : s12 : o1   1.0
+T: a36 : s13 : o1   1.0
+T: a36 : s14 : o1   1.0
+T: a36 : s15 : o1   1.0
+T: a36 : s16 : o1   1.0
+T: a36 : s17 : o1   1.0
+T: a36 : s18 : o1   1.0
+T: a36 : s19 : o1   1.0
+T: a36 : s20 : o1   1.0
+T: a36 : s21 : o1   1.0
+T: a36 : s22 : o1   1.0
+T: a36 : s23 : o1   1.0
+T: a36 : s24 : o1   1.0
+T: a36 : s25 : o1   1.0
+T: a36 : s26 : o1   1.0
+T: a36 : s27 : o1   1.0
+T: a36 : s28 : o1   1.0
+T: a36 : s29 : o1   1.0
+T: a36 : s30 : o1   1.0
+T: a36 : s31 : o1   1.0
+T: a36 : s32 : o1   1.0
+T: a36 : s33 : o1   1.0
+T: a36 : s34 : o1   1.0
+T: a36 : s35 : o1   1.0
+T: a36 : s36 : o1   1.0
+T: a36 : s37 : o1   1.0
+T: a36 : s38 : o1   1.0
+T: a36 : s39 : o1   1.0
+T: a36 : s40 : o1   1.0
+T: a36 : s41 : o1   1.0
+T: a36 : s42 : o1   1.0
+T: a39 : s1 : o1   1.0
+T: a39 : s2 : o1   1.0
+T: a39 : s3 : o1   1.0
+T: a39 : s4 : o1   1.0
+T: a39 : s5 : o1   1.0
+T: a39 : s6 : o1   1.0
+T: a39 : s7 : o1   1.0
+T: a39 : s8 : o1   1.0
+T: a39 : s9 : o1   1.0
+T: a39 : s10 : o1   1.0
+T: a39 : s11 : o1   1.0
+T: a39 : s12 : o1   1.0
+T: a39 : s13 : o1   1.0
+T: a39 : s14 : o1   1.0
+T: a39 : s15 : o1   1.0
+T: a39 : s16 : o1   1.0
+T: a39 : s17 : o1   1.0
+T: a39 : s18 : o1   1.0
+T: a39 : s19 : o1   1.0
+T: a39 : s20 : o1   1.0
+T: a39 : s21 : o1   1.0
+T: a39 : s22 : o1   1.0
+T: a39 : s23 : o1   1.0
+T: a39 : s24 : o1   1.0
+T: a39 : s25 : o1   1.0
+T: a39 : s26 : o1   1.0
+T: a39 : s27 : o1   1.0
+T: a39 : s28 : o1   1.0
+T: a39 : s29 : o1   1.0
+T: a39 : s30 : o1   1.0
+T: a39 : s31 : o1   1.0
+T: a39 : s32 : o1   1.0
+T: a39 : s33 : o1   1.0
+T: a39 : s34 : o1   1.0
+T: a39 : s35 : o1   1.0
+T: a39 : s36 : o1   1.0
+T: a39 : s37 : o1   1.0
+T: a39 : s38 : o1   1.0
+T: a39 : s39 : o1   1.0
+T: a39 : s40 : o1   1.0
+T: a39 : s41 : o1   1.0
+T: a39 : s42 : o1   1.0
+T: a42 : s1 : o1   1.0
+T: a42 : s2 : o1   1.0
+T: a42 : s3 : o1   1.0
+T: a42 : s4 : o1   1.0
+T: a42 : s5 : o1   1.0
+T: a42 : s6 : o1   1.0
+T: a42 : s7 : o1   1.0
+T: a42 : s8 : o1   1.0
+T: a42 : s9 : o1   1.0
+T: a42 : s10 : o1   1.0
+T: a42 : s11 : o1   1.0
+T: a42 : s12 : o1   1.0
+T: a42 : s13 : o1   1.0
+T: a42 : s14 : o1   1.0
+T: a42 : s15 : o1   1.0
+T: a42 : s16 : o1   1.0
+T: a42 : s17 : o1   1.0
+T: a42 : s18 : o1   1.0
+T: a42 : s19 : o1   1.0
+T: a42 : s20 : o1   1.0
+T: a42 : s21 : o1   1.0
+T: a42 : s22 : o1   1.0
+T: a42 : s23 : o1   1.0
+T: a42 : s24 : o1   1.0
+T: a42 : s25 : o1   1.0
+T: a42 : s26 : o1   1.0
+T: a42 : s27 : o1   1.0
+T: a42 : s28 : o1   1.0
+T: a42 : s29 : o1   1.0
+T: a42 : s30 : o1   1.0
+T: a42 : s31 : o1   1.0
+T: a42 : s32 : o1   1.0
+T: a42 : s33 : o1   1.0
+T: a42 : s34 : o1   1.0
+T: a42 : s35 : o1   1.0
+T: a42 : s36 : o1   1.0
+T: a42 : s37 : o1   1.0
+T: a42 : s38 : o1   1.0
+T: a42 : s39 : o1   1.0
+T: a42 : s40 : o1   1.0
+T: a42 : s41 : o1   1.0
+T: a42 : s42 : o1   1.0
