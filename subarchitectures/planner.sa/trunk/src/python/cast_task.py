@@ -201,6 +201,7 @@ class CASTTask(object):
         if total_prob < self.component.min_p:
             log.warning("total probability %.4f below threshold %.4f. Task failed", total_prob, self.component.min_p)
             self.plan_history.append(plan)
+            self.cp_task.set_plan(None)
             self.update_status(TaskStateEnum.FAILED)
             return
         
