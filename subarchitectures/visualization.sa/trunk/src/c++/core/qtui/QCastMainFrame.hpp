@@ -21,6 +21,7 @@
 #include <QSettings>
 #include <QMutex>
 #include <QTreeWidgetItem>
+#include <QToolBar>
 #include "../Model.hpp"
 
 class QCastMainFrame;
@@ -71,6 +72,7 @@ private:
    Ui::MainWindow ui;
    QString m_winText;
    bool m_isMainWindow;
+   QList<QToolBar*> m_customToolbars;
 
 private:
    cogx::display::CDisplayModel* m_pModel;
@@ -93,6 +95,7 @@ public slots:
 
 private slots:
    void onShowViewListChanged();
+   void onShowToolbarsChanged();
    void onShowCustomControls();
    void onRefreshViewList();
    void onNewWindow();
@@ -106,6 +109,7 @@ private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();
    void updateViewMenu();
+   void updateToolBars();
    void syncViewListItem();
    void updateObjectList(cogx::display::CDisplayView *pView);
    QWidgetList getCastFrames();
@@ -115,7 +119,7 @@ private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void setView(cogx::display::CDisplayView *pView);
-   void setChildMode();
+   void setChildMode(QCastMainFrame* pCreator = NULL);
    void closeEvent(QCloseEvent *event);
    QCastMainFrame* createChildWindow();
 

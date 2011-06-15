@@ -137,7 +137,8 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
    CPtrVector<cogx::display::CDisplayCamera> cameras;
    pView->getCameras(cameras);
    if (cameras.size() < 1) return;
-   QToolBar *pBar = new QToolBar(this); // parent will be reset in QViewContainer
+   // pBar->parent will be reset in QViewContainer
+   QToolBar *pBar = new QToolBar(QString::fromStdString(pView->m_id), this);
    if (pBar) {
       int nc = cameras.size();
       if (nc > 3) nc = 3;

@@ -20,13 +20,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QViewContainer" name="drawingArea">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
+     <widget class="QViewContainer" name="drawingArea" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QCastView" name="_cast_view_unused" native="true">
@@ -59,6 +53,7 @@
     <addaction name="actViewSelectSubmenu"/>
     <addaction name="separator"/>
     <addaction name="actShowViewList"/>
+    <addaction name="actShowToolbars"/>
     <addaction name="actRefreshViewList"/>
    </widget>
    <widget class="QMenu" name="menuQuit">
@@ -253,6 +248,17 @@
     <string>Show custom controls</string>
    </property>
   </action>
+  <action name="actShowToolbars">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;toolbars</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -269,7 +275,7 @@
   </customwidget>
   <customwidget>
    <class>QViewContainer</class>
-   <extends>QFrame</extends>
+   <extends>QWidget</extends>
    <header>qtui/QViewContainer.hpp</header>
    <container>1</container>
   </customwidget>

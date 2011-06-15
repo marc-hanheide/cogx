@@ -14,6 +14,7 @@
  * GNU General Public License for more details.
  */
 #include "QCastMainFrame.hpp"
+#include "QCastViewBase.hpp"
 #include "../ptrvector.hpp"
 #include "../HtmlElements.hpp"
 #include <QSettings>
@@ -23,6 +24,7 @@
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
+#include <QMdiArea>
 
 #ifdef DEBUG_TRACE
 // #undef DEBUG_TRACE
@@ -95,7 +97,7 @@ void QCastFrameManager::saveWindowList(QString listName)
    int i = 0;
    foreach(QCastMainFrame* pFrame, frames) {
       i++;
-      cogx::display::CDisplayView *pView = pFrame->ui.drawingArea->getView();
+      cogx::display::CDisplayView *pView = pFrame->ui.drawingArea->getActiveView();
       settings.beginGroup(QString("frame%1").arg(i));
       settings.setValue("main", pFrame->m_isMainWindow);
       if (pView)
@@ -303,6 +305,10 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
          this, SLOT(onShowViewListChanged()));
    ui.actShowViewList->setChecked(Qt::Checked);
 
+   connect(ui.actShowToolbars, SIGNAL(triggered()),
+         this, SLOT(onShowToolbarsChanged()));
+   ui.actShowToolbars->setChecked(Qt::Checked);
+
    connect(ui.actRefreshViewList, SIGNAL(triggered()),
          this, SLOT(onRefreshViewList()));
 
@@ -360,6 +366,17 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    QWebSettings::globalSettings()->setFontSize(QWebSettings::DefaultFontSize, 12);
 #endif
 
+   setCentralWidget(ui.drawingArea);
+
+#if 0
+   QMdiArea* mdiArea = new QMdiArea();
+   mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+   mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+   setCentralWidget(mdiArea);
+   mdiArea->addSubWindow(ui.drawingArea);
+   //ui.drawingArea->setAttribute(Qt::WA_DeleteOnClose);
+   ui.drawingArea->showMaximized();
+#endif
 }
 
 QCastMainFrame::~QCastMainFrame()
@@ -424,7 +441,7 @@ void QCastMainFrame::updateViewList()
 void QCastMainFrame::syncViewListItem()
 {
    //if (! ui.listWidget->isVisible()) return;
-   cogx::display::CDisplayView *pView = ui.drawingArea->getView();
+   cogx::display::CDisplayView *pView = ui.drawingArea->getActiveView();
    if (pView == NULL) {
       ui.listWidget->setCurrentItem(NULL);
       return;
@@ -440,6 +457,30 @@ void QCastMainFrame::syncViewListItem()
       if (pCurrent != NULL && pCurrent->text().toStdString() == pView->m_id) {
          ui.listWidget->setCurrentItem(pCurrent);
          break;
+      }
+   }
+}
+
+void QCastMainFrame::updateToolBars()
+{
+   QCastViewBase *pDisplay = ui.drawingArea->getDisplayWidget();
+
+   foreach(QToolBar* pbar, m_customToolbars) {
+      pbar->deleteLater();
+   }
+   m_customToolbars.clear();
+
+   if (!pDisplay)
+      return;
+
+   CPtrVector<QToolBar> bars;
+   pDisplay->getToolbars(bars);
+   QToolBar *pBar;
+   FOR_EACH(pBar, bars) {
+      if (pBar) {
+         pBar->setVisible(ui.actShowToolbars->isChecked());
+         addToolBar(pBar);
+         m_customToolbars << pBar;
       }
    }
 }
@@ -543,6 +584,13 @@ void QCastMainFrame::onShowViewListChanged()
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
 }
 
+void QCastMainFrame::onShowToolbarsChanged()
+{
+   foreach(QToolBar* pbar, m_customToolbars) {
+      pbar->setVisible(ui.actShowToolbars->isChecked());
+   }
+}
+
 void QCastMainFrame::onShowCustomControls()
 {
    ui.wgCustomGui->setVisible(ui.ckCustomControls->isChecked() && ui.wgCustomGui->controlCount() > 0);
@@ -554,17 +602,19 @@ void QCastMainFrame::onRefreshViewList()
    updateViewMenu();
 }
 
-void QCastMainFrame::setChildMode()
+void QCastMainFrame::setChildMode(QCastMainFrame* pCreator)
 {
    m_isMainWindow = false;
    ui.actShowViewList->setChecked(Qt::Unchecked);
+   ui.actShowToolbars->setChecked(
+         pCreator ? pCreator->ui.actShowToolbars->isChecked() : Qt::Checked);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
 }
 
 QCastMainFrame* QCastMainFrame::createChildWindow()
 {
    QCastMainFrame* pchild = new QCastMainFrame();
-   pchild->setChildMode();
+   pchild->setChildMode(this);
    pchild->setModel(m_pModel);
    pchild->setControlDataProxy(m_pControlDataProxy);
    return pchild;
@@ -573,7 +623,7 @@ QCastMainFrame* QCastMainFrame::createChildWindow()
 void QCastMainFrame::onNewWindow()
 {
    QCastMainFrame* pchild = createChildWindow();
-   pchild->setView(ui.drawingArea->getView());
+   pchild->setView(ui.drawingArea->getActiveView());
    pchild->show();
 }
 
@@ -716,12 +766,13 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    }
 
    syncViewListItem();
+   updateToolBars();
 }
 
 cogx::display::CDisplayView* QCastMainFrame::getView()
 {
    if (ui.drawingArea)
-      return ui.drawingArea->getView();
+      return ui.drawingArea->getActiveView();
    return 0;
 }
 
