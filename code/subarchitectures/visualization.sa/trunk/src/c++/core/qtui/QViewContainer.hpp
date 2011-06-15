@@ -24,7 +24,7 @@
 #include <QString>
 #include <vector>
 
-class QViewContainer: public QFrame
+class QViewContainer: public QWidget
 {
    Q_OBJECT
 private:
@@ -38,7 +38,8 @@ public:
 
    // TODO: multiple views in a grid? -> setView(index, pView)
    void setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView);
-   cogx::display::CDisplayView* getView();
+   cogx::display::CDisplayView* getActiveView();
+   QCastViewBase* getDisplayWidget() { return m_pDisplay; }
 
 private:
    void removeUi();

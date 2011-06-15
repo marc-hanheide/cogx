@@ -33,7 +33,7 @@
 #include "../convenience.hpp"
 
 QViewContainer::QViewContainer( QWidget* parent, Qt::WindowFlags flags)
-   : QFrame(parent, flags)
+   : QWidget(parent, flags)
 {
    m_pDisplay = NULL;
 }
@@ -51,7 +51,7 @@ void QViewContainer::removeUi()
 
    if (layout()) delete layout();
 
-   // Remove the current widgets; they should be deleted when todelete goes out of scope.
+   // Remove the current widgets
    QObject *pobj;
    QList<QObject*> wdgts = (QObjectList) children();
    DMESSAGE("Count: " << wdgts.size());
@@ -85,9 +85,9 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    // TODO: check if the current widget supports view's m_preferredContext
    // otherwise delete the view
    removeUi();
-   QVBoxLayout *pLayout = new QVBoxLayout();
+   QBoxLayout *pLayout = new QVBoxLayout();
    pLayout->setSpacing(2);
-   pLayout->setContentsMargins(2, 2, 2, 2);
+   pLayout->setContentsMargins(4, 0, 4, 4);
    setLayout(pLayout);
 
    // TODO: Also create toolbars for active views!
@@ -134,6 +134,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       if (ivp != m_viewPosMap.end()) 
          m_pDisplay->setViewPosition(ivp.value());
 
+#if 0 // Moved to QCastMainFrame
       // Toolbars are created after setModel and setView
       CPtrVector<QToolBar> bars;
       m_pDisplay->getToolbars(bars);
@@ -144,10 +145,11 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
             pLayout->insertWidget(0, pBar);
          }
       }
+#endif
    }
 }
 
-cogx::display::CDisplayView* QViewContainer::getView()
+cogx::display::CDisplayView* QViewContainer::getActiveView()
 {
    if (! m_pDisplay) return NULL;
    return m_pDisplay->getView();

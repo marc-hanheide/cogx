@@ -297,7 +297,8 @@ void QCastViewHtml::onToggleBlockUpdates(bool checked)
 void QCastViewHtml::getToolbars(CPtrVector<QToolBar>& toolbars)
 {
    if (! pView) return;
-   QToolBar *pBar = new QToolBar(this); // parent will be reset in QViewContainer
+   // pBar->parent will be reset in QViewContainer
+   QToolBar *pBar = new QToolBar(QString::fromStdString(pView->m_id), this);
    if (pBar) {
       QToolButton *pBut = new QToolButton(pBar);
       QString text = "Block updates";
