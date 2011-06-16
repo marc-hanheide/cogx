@@ -166,7 +166,6 @@ void CameraMount::runComponent()
       if(camFixedPoses.size() != 0 && equals(ptz, fixedPanTilt, FIXED_POSITION_TOLERANCE))
       {
         camPosesToEgo = camFixedPoses;
-        log("reached fixed pose");
       }
       else
       {
@@ -179,7 +178,6 @@ void CameraMount::runComponent()
       camPosesToEgo = camFixedPoses;
       time = getCASTTime();
     }
-    log("for %d cameras:", (int)camIds.size());
     for(size_t i = 0; i < camIds.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
@@ -189,26 +187,12 @@ void CameraMount::runComponent()
       camParms->cam.id = camIds[i];
       camParms->cam.pose = camPosesToEgo[i];
       camParms->cam.time = time;
-      log("sending pose for cam %d:", camIds[i]);
-      log(toString(camPosesToEgo[i]));
       if(camsAddedToWM[i])
       {
-        log("CameraMount: overwrite new values on wm!");
-        log("CameraMount: overwrite new camParms values: id= %i", camParms->cam.id);
-        log("CameraMount: overwrite new camParms pose.pos: %4.4f / %4.4f / %4.4f", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
-        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m00, camParms->cam.pose.rot.m01, camParms->cam.pose.rot.m02);
-        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m10, camParms->cam.pose.rot.m11, camParms->cam.pose.rot.m12);
-        log("CameraMount:                            .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m20, camParms->cam.pose.rot.m21, camParms->cam.pose.rot.m22);
         overwriteWorkingMemory(camWMIds[i], camParms);
       }
       else
       {
-        log("CameraMount: add new values to wm.");
-        log("CameraMount: added new camParms values: id= %i", camParms->cam.id);
-        log("CameraMount: added new camParms pose.pos: %4.4f / %4.4f / %4.4f", camParms->cam.pose.pos.x, camParms->cam.pose.pos.y, camParms->cam.pose.pos.z);
-        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m00, camParms->cam.pose.rot.m01, camParms->cam.pose.rot.m02);
-        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m10, camParms->cam.pose.rot.m11, camParms->cam.pose.rot.m12);
-        log("CameraMount:                        .rot: %4.4f / %4.4f / %4.4f", camParms->cam.pose.rot.m20, camParms->cam.pose.rot.m21, camParms->cam.pose.rot.m22);
         addToWorkingMemory(camWMIds[i], camParms);
         camsAddedToWM[i] = true;
       }
