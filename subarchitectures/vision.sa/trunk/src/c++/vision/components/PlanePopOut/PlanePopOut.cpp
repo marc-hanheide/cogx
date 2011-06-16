@@ -148,7 +148,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   useGlobalPoints = true;
   doDisplay = false;
   AgonalTime = 30;
-  StableTime = 5;
+  StableTime = 2;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
@@ -193,12 +193,15 @@ void PlanePopOut::configure(const map<string,string> & _config)
   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
   cv::Vec3d rotCenter(0,0,0.4);
 
-  // Initialize 3D render engine 
-  tgRenderer = new TGThread::TomGineThread(1280, 1024);
-  tgRenderer->SetParameter(intrinsic);
-  tgRenderer->SetCamera(R, t, rotCenter);
-  tgRenderer->SetCoordinateFrame(0.5);
-  
+  if(doDisplay)
+  {
+    // Initialize 3D render engine 
+    tgRenderer = new TGThread::TomGineThread(1280, 1024);
+    tgRenderer->SetParameter(intrinsic);
+    tgRenderer->SetCamera(R, t, rotCenter);
+    tgRenderer->SetCoordinateFrame(0.5);
+  }
+
   println("use global points: %d", (int)useGlobalPoints);
   mConvexHullDensity = 0.0;
   pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
@@ -565,8 +568,8 @@ void PlanePopOut::runComponent()
 	{
 		//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 		CurrentObjList.clear();
-		Pre2CurrentList.clear();
-		//log("v3center.size() = %d",v3center.size());	
+		//Pre2CurrentList.clear();
+		log("v3center.size() = %d",v3center.size());	
 		for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 		{
 			ObjPara OP;
@@ -674,7 +677,7 @@ int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
 
 void PlanePopOut::SOIManagement()
 {
-//     log("There are %d SOI in the Current scene", CurrentObjList.size());
+     //log("There are %d SOI in the Current scene", CurrentObjList.size());
     Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
@@ -729,7 +732,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-// 		log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
+ 		//log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
 		if (probability > max_matching_probability)
 		{
 		    max_matching_probability = probability;
@@ -737,7 +740,7 @@ void PlanePopOut::SOIManagement()
 		}
 	    }
 	}
-// 	log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
+ 	//log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
 	if (max_matching_probability>Treshold_Comp2SOI)
 	{
 	    SOIMatch SOIm;
@@ -788,7 +791,7 @@ void PlanePopOut::SOIManagement()
 		    {
 		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 		     overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-		     //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+		//     cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
 		    }
 		}
 		else
@@ -806,6 +809,7 @@ void PlanePopOut::SOIManagement()
 		     CurrentObjList.at(i).id = newDataID();
 		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 		     addToWorkingMemory(CurrentObjList.at(i).id, obj);
+//log("11111111111 Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 		    }
 		    #ifdef SAVE_SOI_PATCH
 		    std::string path = CurrentObjList.at(i).id;
@@ -819,9 +823,9 @@ void PlanePopOut::SOIManagement()
 		    cvReleaseImage(&cropped);
 
 		    #endif
-// 		    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
-// 		    log("objects number = %u",objnumber);
-// 			    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+ 	//	    log("222222222 Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+ 		//    log("objects number = %u",objnumber);
+ 		//	    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 		}
 	    }
 	}
@@ -1696,6 +1700,7 @@ bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> 
 		{
 			Vector3 v3Diff = R_points.at(i).p - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
+			double DominantPlaneHeight=fabs(D)/sqrt(A*A+B*B+C*C);
 			if(dNormDist < min_height_of_obj)
 			{
 				labels.at(i) = 0; // dominant plane
@@ -1705,11 +1710,19 @@ bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> 
 			}
 			else
 			{
-				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
+/*				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -2; // objects
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -1; // cannot distingush
+*/
+
+					double distance_point_plane =
+			fabs(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z+D)/ sqrt(A*A+B*B+C*C);
+					if (R_points.at(i).p.z>DominantPlaneHeight)	//over the dominant plane
+						labels.at(i) = -2; // objects
+					if (distance_point_plane <0.01 && R_points.at(i).p.z>DominantPlaneHeight)
+						labels.at(i) = -1; // cannot distingush
 			}
 		}
 	}
@@ -2423,8 +2436,11 @@ void PlanePopOut::DisplayInTG()
 	cv::Mat_<cv::Point3f> cloud;
 	cv::Mat_<cv::Point3f> colCloud;
 	Points2Cloud(cloud, colCloud);
-	tgRenderer->Clear();
-	tgRenderer->SetPointCloud(cloud, colCloud);
+  if(doDisplay)
+  {
+    tgRenderer->Clear();
+    tgRenderer->SetPointCloud(cloud, colCloud);
+  }
 }
 
 }
