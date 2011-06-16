@@ -95,7 +95,7 @@ namespace ptz {
     reading.pose.tilt = m_ptzProxy->tilt;
     reading.pose.zoom = m_ptzProxy->zoom;
     unlockComponent();
-    debug("PlayerPTZServer::getPose %f %f %f",reading.pose.pan,reading.pose.tilt,reading.pose.zoom);
+    //debug("PlayerPTZServer::getPose %f %f %f",reading.pose.pan,reading.pose.tilt,reading.pose.zoom);
     return reading;      
   }
   
@@ -107,7 +107,7 @@ namespace ptz {
 //     //m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
      //playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, _pose.zoom, 0.5, 0.5);
 
-     debug("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
+     //debug("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
      lockComponent();
      playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, 0.5, 0.5);
 
