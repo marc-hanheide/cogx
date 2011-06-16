@@ -179,6 +179,7 @@ public:
 	CvHistogram* GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
 	void SOIManagement();
 	void GetStableSOIs(std::vector<VisionData::SOIPtr>& soiList);
+	void onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc);
 	void SaveHistogramImg(CvHistogram* hist, std::string str);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
 	bool IsMoving(IplImage * subimg);
