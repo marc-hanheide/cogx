@@ -254,14 +254,20 @@ void PlanePopOut::start()
   //m_display.setImage(ID_OBJECT_IMAGE, image);
 #endif
 
-	// we want to receive detected VisualObject
-	addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-		new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		  &PlanePopOut::newVisualObject));
-	// when VisualObject is deleted
-	addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
-		new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		  &PlanePopOut::deleteVisualObject));
+  // we want to receive detected VisualObject
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PlanePopOut>(this,
+	&PlanePopOut::newVisualObject));
+  // when VisualObject is deleted
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<PlanePopOut>(this,
+	&PlanePopOut::deleteVisualObject));
+
+  // @author: mmarko
+  // we want to receive GetStableSoisCommand-s
+  addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PlanePopOut>(this,
+	&PlanePopOut::onAdd_GetStableSoisCommand));
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -874,6 +880,35 @@ void PlanePopOut::GetStableSOIs(std::vector<SOIPtr>& soiList)
       soiList.push_back(obj);
     }
   }
+}
+
+// @author: mmarko
+void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc)
+{
+  GetStableSoisCommandPtr pcmd;
+  try {
+    pcmd = getMemoryEntry<VisionData::GetStableSoisCommand>(_wmc.address);
+  }
+  catch(cast::DoesNotExistOnWMException){
+    debug("PlanePopOut: GetStableSoisCommand deleted while working...");
+    return;
+  }
+
+  // TODO: getComponentID || stereoServer->componentId
+  if (pcmd->componentId != getComponentID())
+    return;
+
+  debug("PlanePopOut: Will handle a GetStableSoisCommand.");
+
+  /* TODO: the command should be handled in runComponent, where it would wait until
+   * the sois are stable */
+  GetStableSOIs(pcmd->sois);
+  pcmd->status = 1;
+
+  // TODO: abort if the entry was overwritten by someone else
+  overwriteWorkingMemory(_wmc.address, pcmd);
+
+  debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", pcmd->sois.size());
 }
 
 CvHistogram* PlanePopOut::GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
