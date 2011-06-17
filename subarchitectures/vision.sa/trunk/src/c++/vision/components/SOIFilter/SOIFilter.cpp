@@ -23,7 +23,7 @@ extern "C"
   }
 }
 
-#if defined(FEAT_VISUALIZATION) && HAS_LIBPLOT
+#if defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
 #include <CSvgPlotter.hpp>
 
 // The same ID as in VirtualScene2D, part of the VirtualScene2D View
@@ -65,34 +65,36 @@ void SOIFilter::configure(const map<string,string> & _config)
   m_coarseSource = "";
   m_fineSource = "";
 
-  if((it = _config.find("--coarse-pointcloud")) != _config.end()) {
-    m_coarseSource = it->second;
+  // TODO: we only need the image source from the fine PointCloudServer/StereoServer
+  // TODO: we need the identifier of the Fine SOI
+  if((it = _config.find("--coarse-pcserver")) != _config.end()) {
+    m_coarsePcServer = it->second;
   }
-  if((it = _config.find("--fine-pointcloud")) != _config.end()) {
-    m_fineSource = it->second;
+  if((it = _config.find("--fine-pcserver")) != _config.end()) {
+    m_finePcServer = it->second;
   }
 
-  string serverParam("--servername");
-  if (m_coarseSource == "") {
-    if (m_fineSource != "")
-      m_coarseSource = m_fineSource;
+  string serverParam("--pcserver");
+  if (m_coarsePcServer == "") {
+    if (m_finePcServer != "")
+      m_coarsePcServer = m_finePcServer;
     else if((it = _config.find(serverParam)) != _config.end())
-      m_coarseSource = it->second;
+      m_coarsePcServer = it->second;
   }
-  if (m_fineSource == "") {
-    if (m_coarseSource != "")
-      m_fineSource = m_coarseSource;
+  if (m_finePcServer == "") {
+    if (m_coarsePcServer != "")
+      m_finePcServer = m_coarsePcServer;
     else if((it = _config.find(serverParam)) != _config.end())
-      m_fineSource = it->second;
+      m_finePcServer = it->second;
   }
-  if (m_coarseSource == "" || m_fineSource == "") {
+  if (m_coarsePcServer == "" || m_finePcServer == "") {
     throw runtime_error(exceptionMessage(__HERE__, "No point cloud server name given"));
   }
 
   map<string, string> configPcc;
-  configPcc[serverParam] = m_coarseSource;
+  configPcc[serverParam] = m_coarsePcServer;
   m_coarsePointCloud.configureServerCommunication(configPcc); 
-  configPcc[serverParam] = m_fineSource;
+  configPcc[serverParam] = m_finePcServer;
   m_finePointCloud.configureServerCommunication(configPcc); 
 
   camId = CAM_ID_DEFAULT;
@@ -114,12 +116,12 @@ void SOIFilter::configure(const map<string,string> & _config)
     doDisplay = true;
   }
 
-  if((it = _config.find("--coarseSource")) != _config.end())
+  if((it = _config.find("--coarse-source")) != _config.end())
   {
     m_coarseSource = it->second;
   }
 
-  if((it = _config.find("--fineSource")) != _config.end())
+  if((it = _config.find("--fine-source")) != _config.end())
   {
     m_fineSource = it->second;
   }
@@ -163,11 +165,16 @@ void SOIFilter::start()
   m_coarsePointCloud.startPCCServerCommunication(*this);
   m_finePointCloud.startPCCServerCommunication(*this);
 
+  connectPtz();
+
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "take.snapshot", "&Snapshot");
+#ifdef FEAT_GENERATE_FAKE_SOIS
+  m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "fake.soi", "&Fake SOI");
+#endif
 #else
   if (doDisplay)
   {
@@ -189,6 +196,10 @@ void SOIFilter::start()
   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::DELETE),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onDelete_SOI));
+
+  addChangeFilter(createLocalTypeFilter<VisionData::MoveToViewConeCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onAdd_MoveToVcCommand));
 
   // XXX: added to save SurfacePatches with saveSnapshot
   if (m_snapper.m_bAutoSnapshot) {
@@ -215,7 +226,47 @@ void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event
     if (event.sourceId == "take.snapshot") {
       pFilter->m_snapper.saveSnapshot();
     }
+#ifdef FEAT_GENERATE_FAKE_SOIS
+    if (event.sourceId == "fake.soi") {
+      pFilter->addFakeSoi();
+    }
+#endif
   }
+}
+#endif
+
+#ifdef FEAT_GENERATE_FAKE_SOIS
+#define SOURCE_FAKE_SOI   "--fake.soi"
+void SOIFilter::addFakeSoi()
+{
+  VisionData::SOIPtr psoi = new VisionData::SOI;
+  psoi->sourceId = SOURCE_FAKE_SOI;
+  psoi->status = 0;
+  double x, y, z, r;
+  // SOURCE_FAKE_SOI coordinates are in % of image size (top-left = 0.0) , (bottom-right = 1.0)
+  x = 0.7; /* TODO rand */
+  y = 0.7; /* TODO rand */
+  z = 0.18;
+  r = 0.05;
+
+  psoi->boundingBox.pos.x = x;
+  psoi->boundingBox.pos.y = y;
+  psoi->boundingBox.pos.z = z;
+  psoi->boundingBox.size.x = r;
+  psoi->boundingBox.size.y = r;
+  psoi->boundingBox.size.z = r;
+
+  psoi->boundingSphere.pos.x = x;
+  psoi->boundingSphere.pos.y = y;
+  psoi->boundingSphere.pos.z = z;
+  psoi->boundingSphere.rad = r;
+
+  psoi->time = getCASTTime();
+  //obs->points = psIn1SOI;
+  //obs->BGpoints = BGpIn1SOI;
+  //obs->EQpoints = EQpIn1SOI;
+
+  addToWorkingMemory(newDataID(), psoi);
 }
 #endif
 
@@ -242,6 +293,15 @@ void SOIFilter::onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc)
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
     m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
+  }
+  m_EventQueueMonitor.notify();
+}
+
+void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+    m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
   }
   m_EventQueueMonitor.notify();
 }
@@ -274,11 +334,13 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
       m_RobotPose.tilt = ptup.pose.tilt;
     }
   }
+  log("Got robot pose");
 }
 
 void SOIFilter::runComponent()
 {
   WmTaskExecutor_Soi soiProcessor(this);
+  WmTaskExecutor_MoveToViewCone moveProcessor(this);
 
   while(isRunning())
   {
@@ -319,6 +381,9 @@ void SOIFilter::runComponent()
         case TYPE_SOI:
           soiProcessor.handle(pevent);
           break;
+        case TYPE_CMD_LOOK:
+          moveProcessor.handle(pevent);
+          break;
         default:
           error(" ***** Event with an unknown type of object '%d'", pevent->objectType);
       };
@@ -337,6 +402,20 @@ void SOIFilter::runComponent()
 #endif
 }
 
+#if 1
+#define YY(y) -(y)
+#else
+#define YY(y) y
+#endif
+
+ProtoObjectPtr SOIFilter::WmTaskExecutor_Soi::findProtoObjectAt(SOIPtr psoi)
+{
+  if (!psoi.get()) 
+    return NULL;
+
+  return NULL; // TODO: find the proto object; PO DB as a class
+}
+
 /*
  * TODO: 2 step VisualObject generation.
  *   1. If the SOI comes from coarseSource, create a proto-object with the
@@ -347,13 +426,23 @@ void SOIFilter::runComponent()
  */
 void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
+  pSoiFilter->debug("SOIFilter::handle_add_soi");
   SOIPtr psoi;
   try {
     psoi = pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->debug("SOIFilter.add_soi: SOI deleted while working...");
+    pSoiFilter->log("SOIFilter.add_soi: SOI deleted while working...");
     return;
+  }
+
+  if (pSoiFilter->ptzServer.get()) {
+    // XXX: update the "anchor" to the most recent location.
+    // We need this here because onChange_RobotPose doesn't get executed if the robot doesn't move.
+    ptz::PTZReading ptup;
+    ptup = pSoiFilter->ptzServer->getPose();
+    pSoiFilter->m_RobotPose.pan = ptup.pose.pan;
+    pSoiFilter->m_RobotPose.tilt = ptup.pose.tilt;
   }
 
   SOIData soi;
@@ -364,11 +453,22 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   soi.updCount = 0;
   pSoiFilter->SOIMap.insert(make_pair(soi.addr.id, soi));
 
-  if (psoi->sourceId == pSoiFilter->m_coarseSource)
+  if (psoi->sourceId == pSoiFilter->m_coarseSource || psoi->sourceId == SOURCE_FAKE_SOI)
   {
-    ProtoObjectPtr pobj = new ProtoObject();
+    // TODO: Verify all known proto objects if they are at the same location as the SOI;
+    // In this case, we are looking at a known PO and don't have to do
+    // anything, except if we want to analyze the object in the center.
+
+    ProtoObjectPtr pobj;
+    pobj = findProtoObjectAt(psoi);
+    if (pobj.get())
+     return;
+
+    pobj = new ProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
     string objId = pSoiFilter->newDataID();
+
+    pobj->position = psoi->boundingSphere.pos;
 
     // Calculate the current and the desired View Cone
     //    We don't (shouldn't?) know an absolute position of the robot so we
@@ -383,25 +483,35 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pCurVc->anchor.z = pSoiFilter->m_RobotPose.theta;
     pCurVc->x = 0;
     pCurVc->y = 0;
-    pCurVc->viewDirection = pSoiFilter->m_RobotPose.pan;
+    pCurVc->viewDirection = pSoiFilter->m_RobotPose.theta + pSoiFilter->m_RobotPose.pan;
     pCurVc->tilt = pSoiFilter->m_RobotPose.tilt;
     pobj->cameraLocation = pCurVc;
 
     double dirDelta = 0;
     double tiltDelta = 0;
     CameraParameters camPars;
-    if (pSoiFilter->m_coarsePointCloud.getCameraParameters(LEFT, camPars)) {
-      ROIPtr roiPtr = projectSOI(camPars, *psoi);
+    if (! pSoiFilter->m_coarsePointCloud.getCameraParameters(LEFT, camPars)) {
+      pSoiFilter->println("FAILED to get the camera parameters from '%s'",
+          pSoiFilter->m_coarsePcServer.c_str());
+    }
+    else {
+      pobj->image.camPars = camPars;
 
-      // Center of the projected SOI
-      double rcx = roiPtr->rect.pos.x + roiPtr->rect.width  / 2;
-      double rcy = roiPtr->rect.pos.y + roiPtr->rect.height / 2;
+      ROIPtr roiPtr = projectSOI(camPars, *psoi);
+      if (psoi->sourceId == SOURCE_FAKE_SOI) {
+        roiPtr->rect.pos.x = 640 * psoi->boundingBox.pos.x;
+        roiPtr->rect.pos.y = 480 * psoi->boundingBox.pos.y;
+      }
+
+      // Center of the projected SOI ... Math::Rect2.pos IS the center
+      double rcx = roiPtr->rect.pos.x;
+      double rcy = roiPtr->rect.pos.y;
 
       // how far from the center of the LEFT image is the SOI
-      dirDelta  = atan( (rcx - camPars.cx) / camPars.fx);
-      tiltDelta = atan( (rcy - camPars.cy) / camPars.fy);
+      dirDelta  = -atan( (rcx - camPars.cx) / camPars.fx); // negative pan is to the right
+      tiltDelta = -atan( (rcy - camPars.cy) / camPars.fy); // y is inverted between image and tilt
 
-#if defined(FEAT_VISUALIZATION) && HAS_LIBPLOT
+#if defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
       // draw the thing
       std::ostringstream ssvg;
       cogx::display::CSvgStringPlotter p(ssvg);
@@ -409,27 +519,38 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       p.flinewidth (2.0);        // line thickness in user coordinates
       p.pencolorname ("red");    // path will be drawn in red
 
-      p.line(camPars.cx, camPars.cy, rcx, rcy);
-      p.line(camPars.cx, camPars.cy, camPars.cx + dirDelta * 10, camPars.cy);
-      p.line(camPars.cx, camPars.cy, camPars.cx, camPars.cy + tiltDelta * 10);
+      p.line(camPars.cx, YY(camPars.cy), rcx, YY(rcy));
+      p.line(camPars.cx, YY(camPars.cy), camPars.cx - dirDelta * 180 / 3.14, YY(camPars.cy));
+      p.line(camPars.cx, YY(camPars.cy), camPars.cx, YY(camPars.cy - tiltDelta * 180 / 3.14));
 
       p.closepl();
 
       string s = p.getScreenSvg();
 
       pSoiFilter->m_display.setObject(OBJ_VISUAL_OBJECTS, "soif-last-move", s);
+      pSoiFilter->m_display.setHtml("KrNeki", "soif-last-move-text", s);
 #endif
     }
 
+    // New view cone for turning the head
     ViewConePtr pBetterVc = new ViewCone();
     pBetterVc->anchor = pCurVc->anchor;
-    pBetterVc->x = 0;
-    pBetterVc->y = 0;
+    pBetterVc->x = pCurVc->x;
+    pBetterVc->y = pCurVc->y;
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
     pobj->desiredLocations.push_back(pBetterVc);
 
     pSoiFilter->addToWorkingMemory(objId, pobj);
+
+    // This should be done by the executor
+    MoveToViewConeCommandPtr pMoveCmd = new MoveToViewConeCommand();
+    pMoveCmd->reason = "find-fine-soi";
+    pMoveCmd->target = pBetterVc;
+    pMoveCmd->objectId = objId;
+    pMoveCmd->status = 0;
+    string moveId = pSoiFilter->newDataID();
+    pSoiFilter->addToWorkingMemory(moveId, pMoveCmd);
 
     // Now it is up to the planner to create a plan to move the robot
     // The task contains: PO, target VC
@@ -505,14 +626,16 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     return;
   }
 
-  /* A WorkingMemoryChangeReceiver is created on the heap. We wait for it to complete
-   * then we remove the it from change filters, but we DON'T DELETE it. It will be
-   * moved to a deletion queue in the framework and deleted later. */
+  /* Asynchronous call throug a working memory entry.
+   *
+   * A WorkingMemoryChangeReceiver is created on the heap. We wait for it to
+   * complete then we remove the it from the change filter list, but we DON'T
+   * DELETE it. It will be moved to a deletion queue by the framework and
+   * deleted later. */
   GetSoisCommandRcv* pGetSois;
   vector<SOIPtr> sois;
   pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
-  bool bCompleted = false;
-  bCompleted = pGetSois->waitForCompletion(20.0);
+  bool bCompleted = pGetSois->waitForCompletion(20e3/*ms*/);
   bCompleted = bCompleted && pGetSois->m_pcmd->status == 0;
   if (bCompleted)
     pGetSois->getSois(sois);
@@ -521,19 +644,23 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   if (! bCompleted || sois.size() < 1)
   {
       pSoiFilter->debug("SOIFilter.analyze_task: No SOIs. Aborting task.");
+      /* TODO: overwrite command with status FAILED */
       return;
   }
+
+  pSoiFilter->debug("SOIFilter.analyze_task: Got some SOIs.");
 
   // psoi - The fine SOI that represents the proto object
   SOIPtr psoi;
   /* 
-   * - Get the stable SOIs
-   * - Match the SOIs with the PO, find the best match
+   * TODO: Match the SOIs with the PO, find the best match
    */
+  psoi = sois[0];
   if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
   {
     pSoiFilter->overwriteWorkingMemory(pcmd->protoObjectAddr, pobj);
   }
+  /* TODO: overwrite command with status SUCCESS */
 }
 
 SOIFilter::GetSoisCommandRcv::GetSoisCommandRcv(SOIFilter* psoif, std::string component_id)
@@ -569,13 +696,38 @@ void SOIFilter::GetSoisCommandRcv::getSois(std::vector<VisionData::SOIPtr>& sois
   sois = m_pcmd->sois;
 }
 
-bool SOIFilter::GetSoisCommandRcv::waitForCompletion(double seconds)
+bool SOIFilter::GetSoisCommandRcv::waitForCompletion(double milliSeconds)
 {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
     if (m_complete) return true;
-    m_CompletionMonitor.timedWait(IceUtil::Time::seconds(seconds));
+    m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
     return m_complete;
 }
+
+void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
+{
+  MoveToViewConeCommandPtr pcmd;
+  try {
+    pcmd = pSoiFilter->getMemoryEntry<VisionData::MoveToViewConeCommand>(pEvent->wmc.address);
+    pSoiFilter->debug("SOIFilter.move_to: GOT A MoveToViewConeCommand");
+  }
+  catch(cast::DoesNotExistOnWMException){
+    pSoiFilter->debug("SOIFilter.move_to: MoveToViewConeCommand deleted while working.");
+    return;
+  }
+
+  // XXX: This command only moves the PTU, but should also move the robot
+  if (pSoiFilter->ptzServer.get()) {
+    ptz::PTZReading ptup;
+    ViewConePtr pBetterVc = pcmd->target;
+    ptup.pose.pan = pBetterVc->viewDirection - pBetterVc->anchor.z;
+    ptup.pose.tilt = pBetterVc->tilt;
+    ptup.pose.zoom = 0;
+    pSoiFilter->log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
+    pSoiFilter->ptzServer->setPose(ptup.pose);
+  }
+}
+
 
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */

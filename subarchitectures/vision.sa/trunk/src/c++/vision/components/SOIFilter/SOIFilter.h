@@ -35,6 +35,8 @@
 #include <queue>
 #include <map>
 
+#define FEAT_GENERATE_FAKE_SOIS
+
 namespace cast
 {
 
@@ -61,11 +63,13 @@ private:
   std::string stereoServerName; /* PointCloudServer! */
   std::string ptzServerName;
 
+  std::string m_coarsePcServer;  // periferial vision (eg. Kinect)
+  std::string m_finePcServer;    // detailed vision (eg. stereo gear)
   SOIPointCloudClient m_coarsePointCloud;
   SOIPointCloudClient m_finePointCloud;
 
   /**
-   * Identifiers of SOI sources.
+   * Identifiers of SOI sources. (plane pop-out)
    */
   std::string m_coarseSource;  // periferial vision (eg. Kinect)
   std::string m_fineSource;    // detailed vision (eg. stereo gear)
@@ -153,7 +157,7 @@ private:
     {
       objectType = wmType;
       change = changeType;
-      wmc = wmc;
+      wmc = _wmc;
       order = SOIFilter::getEventOrder();
     }
   };
@@ -177,6 +181,7 @@ private:
   protected:
     virtual void handle_add_soi(WmEvent *pEvent);
     virtual void handle_delete_soi(WmEvent *pEvent);
+    VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
   public:
     WmTaskExecutor_Soi(SOIFilter* soif) : WmTaskExecutor(soif) {}
 
@@ -186,6 +191,10 @@ private:
       else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
     }
   };
+
+  // The planner/executor is responsible for the correct ordering of Analyze
+  // and MoveToViewCone tasks. While an Analyze task is active, a
+  // MoveToViewCone should not be executed.
 
   class WmTaskExecutor_Analyze: public WmTaskExecutor
   {
@@ -200,7 +209,25 @@ private:
     }
   };
 
+  class WmTaskExecutor_MoveToViewCone: public WmTaskExecutor
+  {
+  protected:
+    virtual void handle_add_task(WmEvent *pEvent);
+  public:
+    WmTaskExecutor_MoveToViewCone(SOIFilter* soif) : WmTaskExecutor(soif) {}
+
+    virtual void handle(WmEvent *pEvent)
+    {
+      if (pEvent->change == cdl::ADD) handle_add_task(pEvent);
+    }
+  };
+
   // An implementation of a RPC call through WM that completes on WM-overwrite.
+  /*
+   * A WorkingMemoryChangeReceiver should be created on the heap. We wait for
+   * it to complete then we remove the it from the change filter list with
+   * removeChangeFilter(*, cdl::DELETERECEIVER), but we DON'T DELETE it. It
+   * will be moved to a deletion queue by the framework and deleted later. */
   class GetSoisCommandRcv:
     public cast::WorkingMemoryChangeReceiver
   {
@@ -213,7 +240,7 @@ private:
   public:
     GetSoisCommandRcv(SOIFilter* psoif, std::string component_id);
     void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
-    bool waitForCompletion(double seconds);
+    bool waitForCompletion(double milliSeconds);
     void getSois(std::vector<VisionData::SOIPtr>& sois);
   };
  
@@ -228,6 +255,9 @@ private:
     void handleEvent(const Visualization::TEvent &event); /*override*/
   };
   CSfDisplayClient m_display;
+#endif
+#ifdef FEAT_GENERATE_FAKE_SOIS
+  void addFakeSoi();
 #endif
 
 private:
@@ -248,14 +278,22 @@ private:
 
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
 
+  void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
+
   IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;
   // Use this as an anchor to define target view cones
-  struct _RobotPose {
+  struct _RobotPose
+  {
     double x;
     double y;
     double theta;
     double pan;
     double tilt;
+    _RobotPose()
+    {
+      x = y = theta = 0;
+      pan = tilt = 0;
+    }
   };
   _RobotPose m_RobotPose;
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
