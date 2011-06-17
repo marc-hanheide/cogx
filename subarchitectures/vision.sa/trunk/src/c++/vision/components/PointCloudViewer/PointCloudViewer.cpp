@@ -70,22 +70,16 @@ void PointCloudViewer::configure(const map<string,string> & _config)
   // first let the base classes configure themselves
   configureServerCommunication(_config);
 
-  if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
-  {
-    stereoconfig = it->second;
-  } else printf("PointCloudViewer::configure: Warning: No stereoconfig specified!\n");
-
-  StereoCamera *stereo_cam = new StereoCamera();
-  if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
-    throw (std::runtime_error("PointCloudViewer::configure: Warning: Cannot open calibration file for stereo camera."));
-  cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
-  
+  // startup window size
+  int winWidth = 640, winHeight = 480;
+  // virtual camera has focal length of winwidt, resulting in roughly 53 degree horizontal field of view
+  cv::Mat intrinsic = (cv::Mat_<double>(3,3) << winWidth,0,winWidth/2, 0,winWidth,winHeight/2, 0,0,1);
   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
   cv::Vec3d rotCenter(0,0,0.4);
 
   // Initialize 3D render engine 
-  tgRenderer = new TGThread::TomGineThread(1280, 1024);
+  tgRenderer = new TGThread::TomGineThread(winWidth, winHeight);
   tgRenderer->SetParameter(intrinsic);
   tgRenderer->SetCamera(R, t, rotCenter);
   tgRenderer->SetCoordinateFrame(0.5);
