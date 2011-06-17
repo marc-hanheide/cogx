@@ -83,6 +83,38 @@ void QCastViewGL::selectCamera(cogx::display::CDisplayCamera* pCamera)
    //std::cout << " *** Camera set to " << pCamera->name << std::endl;
 }
 
+void QCastViewGL::getViewPosition(std::vector<double>& matrix)
+{
+   matrix.clear();
+   matrix.push_back(m_camera.eye.x);
+   matrix.push_back(m_camera.eye.y);
+   matrix.push_back(m_camera.eye.z);
+   matrix.push_back(m_camera.view.x);
+   matrix.push_back(m_camera.view.y);
+   matrix.push_back(m_camera.view.z);
+   matrix.push_back(m_camera.up.x);
+   matrix.push_back(m_camera.up.y);
+   matrix.push_back(m_camera.up.z);
+   // XXX: Extra scene rotation
+   matrix.push_back(xRot);
+   matrix.push_back(yRot);
+   matrix.push_back(zRot);
+}
+
+void QCastViewGL::setViewPosition(const std::vector<double>& matrix)
+{
+   if (matrix.size() == 12) {
+      m_camera.eye.set(matrix[0], matrix[1], matrix[2]);
+      m_camera.view.set(matrix[3], matrix[4], matrix[5]);
+      m_camera.up.set(matrix[6], matrix[7], matrix[8]);
+      // XXX: Extra scene rotation
+      xRot = matrix[9];
+      yRot = matrix[10];
+      zRot = matrix[11];
+      update();
+   }
+}
+
 void QCastViewGL::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    if (pView == this->pView) update();
