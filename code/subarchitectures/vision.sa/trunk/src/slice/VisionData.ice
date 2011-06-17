@@ -372,17 +372,16 @@ module VisionData {
     // The robot should be able to return to the anchor. In principle the
     // anchor doesn't have world coordinates, it's just a configuration in
     // space we can return to. While we have an anchor we can move the robot in
-    // the relative coordinate system defined by the anchor.
-    // ATM the anchor is represented as an absolute position in the world
-    // coordinate system: x, y, theta. DON'T COUNT ON IT, it is very likely to
-    // change.
+    // the relative coordinate system defined by the anchor.  ATM the anchor is
+    // represented as an absolute position in the world coordinate system: x,
+    // y, z=theta. DON'T COUNT ON IT, it is very likely to change.
     cogx::Math::Vector3 anchor;
 
     // all values are relative to the anchor
     double x;
     double y;
 
-    // viewDirection is parallel to x-y plane
+    // viewDirection is parallel to x-y plane; relative to anchor.z (theta)
     double viewDirection;
 
     // the vertical angle of the Pan-Tilt unit where the cameras are mounted
@@ -403,7 +402,7 @@ module VisionData {
     // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
     string objectId;
 
-    // the result passed on overwrite
+    // the result passed on overwrite (0 - failed, 1 - ok)
     int status;
   };
 
@@ -448,7 +447,13 @@ module VisionData {
 
     // Position of the camera 
     ViewCone cameraLocation;
+
+    // The desired positions of the camera should have the same anchor as the cameraLocation
     ViewConeSeq desiredLocations;
+
+    // The position of the object relative to the anchor (the position of the robot)
+    // in cameraLocation. The center of a SOI is used.
+    cogx::Math::Vector3 position;
 
     // 2D image patch
     Video::Image image;
