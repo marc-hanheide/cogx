@@ -623,6 +623,8 @@ QCastMainFrame* QCastMainFrame::createChildWindow()
 void QCastMainFrame::onNewWindow()
 {
    QCastMainFrame* pchild = createChildWindow();
+   ui.drawingArea->saveViewInfo();
+   pchild->ui.drawingArea->initFrom(ui.drawingArea);
    pchild->setView(ui.drawingArea->getActiveView());
    pchild->show();
 }
