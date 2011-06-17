@@ -36,6 +36,12 @@ public:
    QViewContainer( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
    ~QViewContainer ();
 
+   // copy information from pContainer (eg. last view positions)
+   void initFrom(QViewContainer* pContainer);
+
+   // save information about the current vie (eg. the view position)
+   void saveViewInfo();
+
    // TODO: multiple views in a grid? -> setView(index, pView)
    void setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView);
    cogx::display::CDisplayView* getActiveView();

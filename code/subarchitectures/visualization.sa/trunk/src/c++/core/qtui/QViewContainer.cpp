@@ -45,6 +45,30 @@ QViewContainer::~QViewContainer ()
    m_pDisplay = NULL;
 }
 
+void QViewContainer::initFrom(QViewContainer* pContainer)
+{
+   if (!pContainer || pContainer == this) return;
+
+   QHashIterator<QString, std::vector<double> > i(pContainer->m_viewPosMap);
+   while (i.hasNext()) {
+      i.next();
+      m_viewPosMap[i.key()] = i.value();
+   }
+}
+
+void QViewContainer::saveViewInfo()
+{
+   if (! m_pDisplay) return;
+   cogx::display::CDisplayView* pView = m_pDisplay->getView();
+   if (pView) {
+      std::vector<double> data;
+      m_pDisplay->getViewPosition(data);
+      if (data.size() > 0)
+         m_viewPosMap[QString::fromStdString(pView->m_id)] = data;
+   }
+
+}
+
 void QViewContainer::removeUi()
 {
    DTRACE("QViewContainer::removeUi, mainthread:" << (QObject().thread() == qApp->thread()));
@@ -62,7 +86,7 @@ void QViewContainer::removeUi()
         cogx::display::CDisplayView* pView = pViewWin->getView();
         if (pView) {
            pView->viewObservers.removeObserver(pViewWin);
-           std::vector<double>data;
+           std::vector<double> data;
            pViewWin->getViewPosition(data);
            if (data.size() > 0)
               m_viewPosMap[QString::fromStdString(pView->m_id)] = data;
