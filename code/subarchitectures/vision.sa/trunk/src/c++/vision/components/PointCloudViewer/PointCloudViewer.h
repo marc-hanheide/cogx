@@ -21,7 +21,6 @@ class PointCloudViewer : public PointCloudClient,
 {
 private:
   std::vector<PointCloud::SurfacePoint> points;     ///< 3D point vector
-  std::string stereoconfig;                         ///< Config name of the stereo configuration file
   TGThread::TomGineThread *tgRenderer;              ///< 3D render engine
   
   void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
@@ -33,8 +32,8 @@ protected:
   virtual void runComponent();
 
 public:
-  PointCloudViewer() {}
-  virtual ~PointCloudViewer() {}
+  PointCloudViewer() {tgRenderer = 0;}
+  virtual ~PointCloudViewer() {delete tgRenderer;}
 };
 
 }
