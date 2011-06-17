@@ -28,7 +28,7 @@ CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FI
 ############ POINT CLOUD VIEWER ##############
 ## --servername pcserver => a point cloud server
 ## --stereoconfig => File for configuring tomGine-Window!
-CPP MG pointcloudviewer PointCloudViewer --servername pcserver --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini
+CPP MG pointcloudviewer PointCloudViewer --servername pcserver
 
 
 
