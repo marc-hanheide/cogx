@@ -18,17 +18,6 @@
    sodipodi:docname="v11nicons.svg">
   <defs
      id="defs3215">
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient3158"
-       id="radialGradient3986"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.6797867,0.03688543,-0.07249802,3.3015877,-97.892447,-172.76625)"
-       cx="95.644524"
-       cy="65.450218"
-       fx="95.644524"
-       fy="65.450218"
-       r="47.948242" />
     <linearGradient
        id="linearGradient3158">
       <stop
@@ -915,9 +904,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="213.29725"
-     inkscape:cy="866.52433"
+     inkscape:zoom="2"
+     inkscape:cx="279.9054"
+     inkscape:cy="680.21528"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -925,7 +914,9 @@
      inkscape:window-height="1004"
      inkscape:window-x="-2"
      inkscape:window-y="-3"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true" />
   <metadata
      id="metadata3218">
     <rdf:RDF>
@@ -957,7 +948,7 @@
          inkscape:export-ydpi="15.2"
          inkscape:export-xdpi="15.2"
          inkscape:export-filename="./cogx_icon.png"
-         style="fill:url(#radialGradient3986);fill-opacity:1;fill-rule:nonzero;stroke:none"
+         style="fill:#cbcffa;fill-opacity:1;fill-rule:nonzero;stroke:none"
          d="m 61.102596,16.847281 -2.542578,4.256396 c -0.815194,-0.01838 -1.635911,0.0037 -2.462121,0.0644 l -2.872466,-4.103514 c -0.226323,0.03609 -0.449279,0.07135 -0.675882,0.11264 -1.010157,0.184256 -1.994684,0.421734 -2.960975,0.700012 L 48.86442,22.76122 c -0.829707,0.312244 -1.631861,0.663487 -2.41384,1.054039 l -4.240316,-2.687406 c -1.023443,0.627346 -2.003881,1.305608 -2.936845,2.043711 l 1.20692,4.779398 c -0.706454,0.654815 -1.376514,1.340951 -2.003486,2.067851 l -4.932287,-0.868977 c -0.668887,0.923324 -1.289344,1.887157 -1.850608,2.880513 l 2.928791,3.942596 c -0.442173,0.94619 -0.824954,1.914345 -1.150595,2.912698 l -4.884005,1.094286 c -0.247134,1.052015 -0.430435,2.118448 -0.563232,3.202347 l 4.208133,2.518441 c -0.04894,1.110834 -0.02653,2.231492 0.07238,3.363278 l -4.079395,2.864425 c 0.01912,0.111882 0.04397,0.217941 0.0644,0.329888 0.168328,0.922828 0.372563,1.833242 0.619557,2.719582 l 4.867918,0.716118 c 0.407625,1.118483 0.884541,2.194273 1.432211,3.226488 l -2.655229,4.183983 c 0.548335,0.85573 1.134799,1.679998 1.762109,2.47017 l 4.779407,-1.198884 c 0.826062,0.887531 1.708728,1.701833 2.647176,2.462126 l -0.852891,4.867899 c 0.828826,0.569202 1.684662,1.100446 2.566718,1.585086 l 3.966755,-2.944873 c 1.093716,0.49185 2.227568,0.90254 3.387425,1.239102 l 1.062085,4.811574 c 0.993545,0.205303 2.005362,0.354684 3.025344,0.458634 l 2.550631,-4.256396 c 1.152573,0.02184 2.319575,-0.04735 3.492022,-0.185062 l 2.81615,4.031106 c 1.04267,-0.204169 2.0708,-0.459863 3.065581,-0.764381 l 0.724145,-4.932277 c 1.031795,-0.41309 2.030843,-0.890118 2.985125,-1.424165 l 4.13572,2.631083 c 0.918901,-0.612712 1.807127,-1.274821 2.647174,-1.979342 l -1.223016,-4.851821 c 0.724491,-0.720561 1.411051,-1.478239 2.043723,-2.277054 l 4.843778,0.836803 c 0.64485,-0.957918 1.229804,-1.950411 1.762098,-2.977066 l -2.985116,-4.031106 c 0.357188,-0.862124 0.670642,-1.746064 0.933348,-2.647179 l 4.811593,-1.070136 c 0.243947,-1.175343 0.421491,-2.36892 0.523003,-3.580525 l -4.304676,-2.574767 c -0.0028,-0.853152 -0.05541,-1.719035 -0.144834,-2.5828 L 87.62267,41.379943 C 87.392476,40.131016 87.086391,38.91598 86.713462,37.735059 l -4.956427,-0.732206 c -0.308869,-0.747721 -0.656447,-1.48181 -1.02991,-2.188544 l 2.663281,-4.183984 c -0.6918,-1.083477 -1.444089,-2.11196 -2.260971,-3.089707 l -4.859865,1.223006 c -0.546722,-0.552149 -1.113066,-1.093546 -1.705783,-1.593131 l 0.86898,-4.908145 c -1.05273,-0.747955 -2.150112,-1.427061 -3.290863,-2.035666 l -3.998939,2.977066 c -0.716373,-0.309459 -1.443751,-0.584663 -2.188549,-0.82875 L 64.86819,17.482953 c -1.233498,-0.291235 -2.489093,-0.502246 -3.765594,-0.635634 z m -2.775913,10.138117 c 10.964074,0 19.865908,8.901815 19.865908,19.865877 0,10.964072 -8.901834,19.857835 -19.865908,19.857835 -10.964083,0 -19.857874,-8.893763 -19.857874,-19.857835 0,-10.964062 8.893791,-19.865877 19.857874,-19.865877 z"
          id="path2351"
          inkscape:connector-curvature="0" />
@@ -1508,7 +1499,7 @@
        y="0"
        xlink:href="#g3598"
        id="use4829"
-       transform="translate(217.1828,118.18785)"
+       transform="translate(186.46851,181.04499)"
        width="744.09448"
        height="1052.3622"
        inkscape:export-filename="cogxViewer_icon.png"
@@ -1545,7 +1536,7 @@
        y="0"
        xlink:href="#g4871"
        id="use4876"
-       transform="matrix(0.8232989,0,0,0.8232989,-38.62291,130.39406)"
+       transform="matrix(0.8232989,0,0,0.8232989,-69.337196,193.2512)"
        width="744.09448"
        height="1052.3622"
        inkscape:export-filename="cogxViewer_icon.png"
@@ -1556,7 +1547,7 @@
        y="0"
        xlink:href="#g3598"
        id="use4829-9"
-       transform="translate(308.54767,116.32046)"
+       transform="translate(-0.02375857,177.74903)"
        width="744.09448"
        height="1052.3622"
        inkscape:export-filename="cogxViewer_icon.png"
@@ -1567,11 +1558,279 @@
        y="0"
        xlink:href="#g4871"
        id="use4876-8"
-       transform="matrix(0.8232989,0,0,0.8232989,31.165456,125.87348)"
+       transform="matrix(0.8232989,0,0,0.8232989,-277.40597,187.30205)"
        width="744.09448"
        height="1052.3622"
        inkscape:export-filename="cogxViewer_icon.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="202.14287"
+       y="283.79077"
+       id="text3248"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3250"
+         x="202.14287"
+         y="283.79077">cogxViewer</tspan></text>
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g3598"
+       id="use4030"
+       transform="translate(301.02546,179.80715)"
+       width="744.09448"
+       height="1052.3622"
+       inkscape:export-filename="cogxDialog_icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       id="g4042"
+       transform="translate(29.285714,-122.85714)">
+      <path
+         sodipodi:nodetypes="sscccccss"
+         inkscape:connector-curvature="0"
+         id="path3252"
+         d="m 406.4375,165.04911 c -10.74155,0 -19.46875,5.04507 -19.46875,11.25 0,6.13834 7.56053,10.3981 18.14286,10.50446 l 3.73061,0.0874 9.28954,9.49037 -0.81715,-10.39692 4.43539,-2.81027 c 2.57455,-1.90535 4.125,-4.27066 4.125,-6.875 0,-6.20493 -8.69594,-11.25 -19.4375,-11.25 z"
+         style="fill:#f4f90e;fill-opacity:1;stroke:#f3351a;stroke-width:0.817828;stroke-miterlimit:4;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4034"
+         y="178.32899"
+         x="397.93637"
+         style="font-size:6px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:10px"
+           y="178.32899"
+           x="397.93637"
+           id="tspan4036"
+           sodipodi:role="line">(...)</tspan></text>
+    </g>
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g4042"
+       id="use4047"
+       transform="translate(-94.538252,157.77421)"
+       width="744.09448"
+       height="1052.3622"
+       style="opacity:0.7"
+       inkscape:export-filename="cogxDialog_icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="312.79755"
+       y="284.24414"
+       id="text3248-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3250-9"
+         x="312.79755"
+         y="284.24414">cogxDialog</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="91.837753"
+       y="374.50507"
+       id="text3260"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3262"
+         x="91.837753"
+         y="374.50507">tools (48-&gt;22)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="117.28644"
+       y="236.65508"
+       id="text3264"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3266"
+         x="117.28644"
+         y="236.65508">icons (64)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="204.94043"
+       y="420.67273"
+       id="text3248-4"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3250-95"
+         x="204.94043"
+         y="420.67273">tbDialogs</tspan></text>
+    <g
+       id="g4059"
+       inkscape:export-filename="tbDialogs.png"
+       inkscape:export-xdpi="41.25"
+       inkscape:export-ydpi="41.25">
+      <use
+         height="1052.3622"
+         width="744.09448"
+         transform="translate(-207.14286,319.28571)"
+         id="use3258"
+         xlink:href="#g4042"
+         y="0"
+         x="0" />
+      <rect
+         ry="0"
+         y="352.20169"
+         x="204.80334"
+         height="48"
+         width="48"
+         id="rect3289"
+         style="opacity:0.7;fill:none;stroke:none" />
+    </g>
+    <rect
+       style="opacity:0.09628019;fill:#0614c3;stroke:none;stroke-opacity:1;fill-opacity:1"
+       id="rect4063"
+       width="48"
+       height="48"
+       x="14"
+       y="348.36218" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="21"
+       y="422.36218"
+       id="text4065"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4067"
+         x="21"
+         y="422.36218">blank 48</tspan></text>
+    <g
+       id="g4162"
+       inkscape:export-filename="tbToolbars.png"
+       inkscape:export-xdpi="41.25"
+       inkscape:export-ydpi="41.25">
+      <rect
+         y="352.36218"
+         x="288"
+         height="48"
+         width="48"
+         id="rect4063-7"
+         style="opacity:0;fill:#0614c3;fill-opacity:1;stroke:none" />
+      <g
+         id="g4156">
+        <rect
+           style="fill:#c8ccf7;fill-opacity:0.98823529000000021;stroke:#000000;stroke-width:0.74789464000000005;stroke-miterlimit:4;stroke-opacity:0.54901963;stroke-dasharray:none"
+           id="rect4087"
+           width="46.813908"
+           height="11.811362"
+           x="288.60794"
+           y="369.2645" />
+        <rect
+           style="fill:#212678;fill-opacity:1;stroke:none"
+           id="rect4109"
+           width="10.081475"
+           height="8.8314753"
+           x="290.97446"
+           y="370.77927" />
+        <use
+           x="0"
+           y="0"
+           xlink:href="#rect4109"
+           id="use4136"
+           transform="translate(12.4375,-0.0625)"
+           width="744.09448"
+           height="1052.3622" />
+        <use
+           x="0"
+           y="0"
+           xlink:href="#rect4109"
+           id="use4136-4"
+           transform="translate(25.359806,-0.08282244)"
+           width="744.09448"
+           height="1052.3622" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="282.24023"
+       y="422.17273"
+       id="text3248-4-7"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3250-95-5"
+         x="282.24023"
+         y="422.17273">tbToolbars</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="375.81882"
+       y="424.68234"
+       id="text3248-4-7-2"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3250-95-5-8"
+         x="375.81882"
+         y="424.68234">tbViews</tspan></text>
+    <g
+       id="g4321"
+       inkscape:export-filename="tbViews.png"
+       inkscape:export-xdpi="41.25"
+       inkscape:export-ydpi="41.25">
+      <rect
+         y="356.61072"
+         x="374.10114"
+         height="48"
+         width="48"
+         id="rect4063-6"
+         style="opacity:0;fill:#0614c3;fill-opacity:1;stroke:none" />
+      <g
+         id="g4312">
+        <rect
+           style="fill:#fdfdfe;fill-opacity:1;stroke:#737373;stroke-width:1.56165802000000009;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect4230"
+           width="44.960884"
+           height="42.780582"
+           x="375.64578"
+           y="358.86688" />
+        <rect
+           style="fill:#737373;fill-opacity:1;stroke:none"
+           id="rect4232"
+           width="45.254837"
+           height="6.3639612"
+           x="375.38528"
+           y="358.9556" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.18151379px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 379.0173,373.48718 22.29197,0"
+           id="path4234"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.18151379px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 379.00924,377.7309 22.29198,0"
+           id="path4234-1"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.18151379px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 379.00924,381.58301 22.29198,0"
+           id="path4234-1-2"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.18151379px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 379.00924,385.4809 22.29198,0"
+           id="path4234-1-2-0"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.18151379px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 379.00924,389.4809 22.29197,0"
+           id="path4234-1-2-0-3"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+      </g>
+    </g>
   </g>
 </svg>

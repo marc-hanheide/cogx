@@ -464,6 +464,14 @@ void CDisplayClient::addButton(const std::string& viewId, const std::string& ctr
    m_pServer->addButton(id, viewId, ctrlId, label);
 }
 
+void CDisplayClient::addDialog(const std::string& dialogId, const std::string& uiCode, const std::string& jsCode,
+      const std::string& ctorName)
+{
+   if (! m_pServer) return;
+   Ice::Identity id = getEventClientId();
+   m_pServer->addDialog(id, dialogId, uiCode, jsCode, ctorName);
+}
+
 
 #if 0
    void CActiveDisplayClient::installEventReceiver()

@@ -45,7 +45,6 @@ class CDisplayServer:
 {
 private:
    CDisplayModel m_Model;
-   QCastMainFrame *pMainFrame;
    CDisplayServerIPtr hIceDisplayServer;
    
    // Standalone Display Server TCP/IP host name.
@@ -134,6 +133,9 @@ public:
          const std::string& ctrlId, const std::string& label);
    void addButton(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label);
+   void addDialog(const Ice::Identity& ident, const std::string& dialogId,
+         const std::string& designCode, const std::string& scriptCode,
+         const std::string& constructorName);
 
 private:
    void startIceServer();
@@ -291,6 +293,13 @@ public:
          bool enable, const Ice::Current&)
    {
       // TODO m_pDisplayServer->enableMouseEvents(ident, viewId, ctrlId, enable);
+   }
+
+   virtual void addDialog(const Ice::Identity& ident, const std::string& dialogId,
+         const std::string& designCode, const std::string& scriptCode,
+         const std::string& constructorName, const Ice::Current&)
+   {
+      m_pDisplayServer->addDialog(ident, dialogId, designCode, scriptCode, constructorName);
    }
 
    virtual void getStandaloneHost(std::string& hostname, const Ice::Current&)

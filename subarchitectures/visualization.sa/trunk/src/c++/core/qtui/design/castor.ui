@@ -54,6 +54,7 @@
     <addaction name="separator"/>
     <addaction name="actShowViewList"/>
     <addaction name="actShowToolbars"/>
+    <addaction name="actShowDialogWindow"/>
     <addaction name="actRefreshViewList"/>
    </widget>
    <widget class="QMenu" name="menuQuit">
@@ -191,9 +192,27 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actShowViewList"/>
+   <addaction name="actShowToolbars"/>
+   <addaction name="actShowDialogWindow"/>
+  </widget>
   <action name="actShowViewList">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/toolButton/tbViews.png</normaloff>:/toolButton/tbViews.png</iconset>
    </property>
    <property name="text">
     <string>Show list of &amp;views</string>
@@ -255,8 +274,27 @@
    <property name="checked">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/toolButton/tbToolbars.png</normaloff>:/toolButton/tbToolbars.png</iconset>
+   </property>
    <property name="text">
     <string>Show &amp;toolbars</string>
+   </property>
+  </action>
+  <action name="actShowDialogWindow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/toolButton/tbDialogs.png</normaloff>:/toolButton/tbDialogs.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show &amp;dialog window</string>
    </property>
   </action>
  </widget>

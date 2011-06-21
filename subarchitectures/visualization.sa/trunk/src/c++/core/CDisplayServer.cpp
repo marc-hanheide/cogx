@@ -57,14 +57,12 @@ namespace cogx { namespace display {
 
 CDisplayServer::CDisplayServer()
 {
-   pMainFrame = NULL;
    hIceDisplayServer = NULL;
    m_standaloneHost = "";
 }
 
 CDisplayServer::~CDisplayServer()
 {
-   pMainFrame = NULL; // don't delete
    printf("Destroying CDisplayServer\n");
 }
 
@@ -608,6 +606,21 @@ void CDisplayServer::addButton(const Ice::Identity& ident, const std::string& vi
    }
 }
 
+void CDisplayServer::addDialog(const Ice::Identity& ident, const std::string& dialogId,
+      const std::string& designCode, const std::string& scriptCode,
+      const std::string& constructorName)
+{
+   DTRACE("CDisplayServer::addDialog");
+   CGuiDialog* pDialog = new CGuiDialog();
+   pDialog->m_id = dialogId;
+   pDialog->m_designCode = designCode;
+   pDialog->m_scriptCode = scriptCode;
+   pDialog->m_ctorName = constructorName;
+   if (!m_Model.addGuiDialog(pDialog))
+      delete pDialog;
+}
+
+
 class CUiDataChangeOperation: public CDisplayServerI::CQueuedOperation
 {
 public:
@@ -807,7 +820,6 @@ std::string CDisplayServer::getPersistentStorageName()
    // TODO: add config parameter for DisplayServerData.ini
    return "DisplayServerData.ini";
 }
-
 
 // -----------------------------------------------------------------
 // CDisplayServerI

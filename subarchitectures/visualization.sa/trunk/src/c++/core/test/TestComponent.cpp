@@ -36,6 +36,8 @@ namespace cogx { namespace test {
 using namespace std;
 using namespace VisionData;
 
+#include "res/test_calc.inc"
+
 void VideoViewer::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
@@ -102,6 +104,9 @@ void VideoViewer::start()
       "A real test</td><td> <input type='button' value='Click me!' @@ONCLICK@@('i.am.the.ctrl') />\n"
       "</td></tr></table>"
       );
+
+  m_display.addDialog("Calculator 1", res_calculator_ui, res_calculator_js, "Calculator");
+  m_display.addDialog("Calculator 2", res_calculator_ui, res_calculator_js, "Calculator");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif

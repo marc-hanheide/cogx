@@ -22,6 +22,7 @@
 #include <QMutex>
 #include <QTreeWidgetItem>
 #include <QToolBar>
+#include "QCastDialogFrame.hpp"
 #include "../Model.hpp"
 
 class QCastMainFrame;
@@ -47,9 +48,11 @@ private:
    QList<QCastMainFrame*> getCastFrames();
    QMutex m_creatorMutex;
    QMutex m_closerMutex;
+   QCastDialogFrame *m_pDialogFrame;
 
 public:
    QCastFrameManager();
+   ~QCastFrameManager();
    void saveWindowList(QString listName);
    void loadWindowList(QString listName);
    void getWindowListNames(QStringList& names, bool bMru=false);
@@ -57,6 +60,7 @@ public:
    void setStartupLayout(QString name);
    void createMissingWindows(QCastMainFrame* pSomeFrame, cogx::display::CDisplayModel *pModel);
    void closeChildWindows();
+   QCastDialogFrame* getDialogManager();
 
 public slots:
    void frameDestroyed(QObject *pobj);
@@ -118,6 +122,7 @@ private:
 private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   void onDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog);
    void setView(cogx::display::CDisplayView *pView);
    void setChildMode(QCastMainFrame* pCreator = NULL);
    void closeEvent(QCloseEvent *event);
@@ -131,9 +136,11 @@ private slots:
 signals: 
    void signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*);
    void signalViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*);
+   void signalDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog);
 private slots:
    void doViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void doViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   void doDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog);
 };
 
 

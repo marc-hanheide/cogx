@@ -57,6 +57,7 @@ public:
    virtual void onViewRemoved(CDisplayModel *pModel, const std::string& id) {}
    virtual void onUiDataChanged(CDisplayModel *pModel, CDisplayView *pSourceView,
          CGuiElement *pElement, const std::string& newValue) {}
+   virtual void onDialogAdded(CDisplayModel *pModel, CGuiDialog *pDialog) {}
 };
 
 class COwnerDataProxy
@@ -123,6 +124,7 @@ private:
    CGarbage m_garbage;
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
+   CPtrVector<CGuiDialog> m_GuiDialogs;
    std::map<std::string, bool> m_DisabledDefaultViews;
    // TODO: locking for m_Objects, m_Views, m_GuiElements
 
@@ -150,6 +152,8 @@ public:
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
    int getGuiElements(const std::string &viewId, CPtrVector<CGuiElement>& elements);
+   bool addGuiDialog(CGuiDialog* pGuiDialog);
+   int getDialogs(CPtrVector<CGuiDialog>& dialogs);
 
 public:
    CObserverList<CDisplayModelObserver> modelObservers;

@@ -86,6 +86,22 @@ public:
    void syncControlState(const std::string& newValue, bool notify=false);
 };
 
+
+class CGuiDialog
+{
+public:
+   std::string m_id;
+   std::string m_designCode; // design of the UI
+   std::string m_scriptCode; // script that controls the UI
+   std::string m_ctorName;   // constructor for the UI object, defined in script
+
+   bool isSameDialog(CGuiDialog *pGuiDialog) {
+      if (! pGuiDialog) return false;
+      if (m_id != pGuiDialog->m_id) return false;
+      return true;
+   }
+};
+
 }} // namespace
 #endif /* end of include guard: GUIELEMENTS_6I8U02AA */
 // vim:sw=3:ts=8:et

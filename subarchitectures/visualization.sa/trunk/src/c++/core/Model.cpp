@@ -17,7 +17,7 @@
 #include "HtmlElements.hpp"
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -42,6 +42,10 @@ CDisplayModel::~CDisplayModel()
    CGuiElement* pgel;
    FOR_EACH(pgel, m_GuiElements) if (pgel) delete pgel;
    m_GuiElements.clear();
+
+   CGuiDialog* pdlg;
+   FOR_EACH(pdlg, m_GuiDialogs) if (pdlg) delete pdlg;
+   m_GuiDialogs.clear();
 }
 
 void CDisplayModel::createView(const std::string& id, ERenderContext context,
@@ -359,6 +363,40 @@ int CDisplayModel::getGuiElements(const std::string &viewId, CPtrVector<CGuiElem
    FOR_EACH(pgel, m_GuiElements) {
       if (pgel && pgel->m_viewId == viewId) {
          elements.push_back(pgel);
+         count++;
+      }
+   }
+   return count;
+}
+
+bool CDisplayModel::addGuiDialog(CGuiDialog* pGuiDialog)
+{
+   DTRACE("CDisplayModel::addGuiDialog");
+   if (!pGuiDialog) return false;
+
+   CGuiDialog *pdlg;
+   FOR_EACH(pdlg, m_GuiDialogs) {
+      if (pdlg && pdlg->isSameDialog(pGuiDialog)) return false;
+   }
+   m_GuiDialogs.push_back(pGuiDialog);
+
+   CDisplayModelObserver *pobsrvr;
+   CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+   FOR_EACH(pobsrvr, modelObservers) {
+      if (pobsrvr) pobsrvr->onDialogAdded(this, pGuiDialog);
+   }
+
+   return true;
+}
+
+int CDisplayModel::getDialogs(CPtrVector<CGuiDialog>& dialogs)
+{
+   CGuiDialog *pdlg;
+   int count = 0;
+   dialogs.clear();
+   FOR_EACH(pdlg, m_GuiDialogs) {
+      if (pdlg) {
+         dialogs.push_back(pdlg);
          count++;
       }
    }
