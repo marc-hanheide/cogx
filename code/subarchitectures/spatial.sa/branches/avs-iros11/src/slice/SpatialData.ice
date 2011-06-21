@@ -415,6 +415,10 @@ class ProcessViewPointCommand {
   	void simulateViewCones(RelationalViewPointGenerationCommand cmd);
   };
   
+  interface MapInterface {
+    /* More to be added when necessary */
+    bool isCircleObstacleFree(double x, double y, double radius);
+  };
 
 };
 

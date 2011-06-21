@@ -180,6 +180,8 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
   registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
+
+  registerIceServer<SpatialData::MapInterface, SpatialData::MapInterface>(new MapServer(this));
 } 
 
 void SpatialControl::start() 
@@ -302,6 +304,11 @@ void SpatialControl::explorationDone(int taskId, int status)
     m_taskStatus = TaskFinished;
   }
   m_taskStatusMutex.unlock();
+}
+
+const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
+{
+  return *m_lgm;
 }
 
 void SpatialControl::runComponent() 

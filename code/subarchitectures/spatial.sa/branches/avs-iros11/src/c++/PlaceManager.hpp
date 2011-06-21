@@ -152,6 +152,7 @@ class PlaceManager : public cast::ManagedComponent
     // hypothetical nodes generated at a place
     double m_hypPathLength;     // How far to try and move in the direction of the
     // frontier
+    double m_minPlaceholderToWallDistance; // Don't place placeholders closer to a wall than this
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
