@@ -170,6 +170,14 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_hypPathLength = 1.5;
   }
 
+  if(_config.find("--min-placeholder-to-wall-distance") != _config.end()) {
+    std::istringstream str(_config.find("--min-placeholder-to-wall-distance")->second);
+    str >> m_minPlaceholderToWallDistance;
+  }
+  else {
+    m_minPlaceholderToWallDistance = 0.0;
+  }
+
   FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
   registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
 }
@@ -808,106 +816,111 @@ PlaceManager::evaluateUnexploredPaths()
 	  if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
 	    // Consider only frontiers of sufficient size
 	    if (frontierPt->mWidth > m_minFrontierLength) {
-	      double minDistanceSq = FLT_MAX;
-	      int minDistID = -1;
+        SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
+        if(map->isCircleObstacleFree(frontierPt->x, frontierPt->y, m_minPlaceholderToWallDistance)) {
+          //Consider only frontiers where the placeholder will not be placed too close to a wall
 
-	      // Check already-rejected hypotheses for this node
-	      if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
-		for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
-		    m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
-		  double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
-		  log ("distanceSq = %f", distanceSq);
-		  if (distanceSq < minDistanceSq) {
-		    minDistanceSq = distanceSq;
-		  }
-		}
-	      }
-	      // Compare distance to all other hypotheses created for this node
-	      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
-	      	hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
-		FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
-		try {
-		 // if (extantHyp->originPlaceID == currentPlaceID) {
-		    double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
-		    debug("2distanceSq = %f", distanceSq);
-		    if (distanceSq < minDistanceSq) {
-		      minDistanceSq = distanceSq;
-		      minDistID = extantHyp->hypID;
-		    }
-		  //}
-		}
-		catch (IceUtil::NullHandleException e) {
-		  log("Error: hypothesis suddenly disappeared!");
-		}
-	      }
+          double minDistanceSq = FLT_MAX;
+          int minDistID = -1;
 
-	      if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
-		// Create new hypothetical node in the direction of the frontier
-		FrontierInterface::NodeHypothesisPtr newHyp = 
-		  new FrontierInterface::NodeHypothesis;
-		newHyp->x = newX;
-		newHyp->y = newY;
-		newHyp->hypID = m_hypIDCounter;
-		newHyp->originPlaceID = currentPlaceID;
-
-		log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-		    newHyp->y, newHyp->hypID);
-
-		string newID = newDataID();
-		m_HypIDToWMIDMap[newHyp->hypID]=newID;
-		hypotheses.push_back(newHyp);
-		relevantHyps.push_back(newHyp);
-
-		// Create the Place struct corresponding to the hypothesis
-		PlaceHolder p;
-		p.m_data = new SpatialData::Place;   
-		//p.m_data->id = oobj->getData()->nodeId;
-
-		int newPlaceID = m_placeIDCounter;
-		m_placeIDCounter++;
-		p.m_data->id = newPlaceID;
-		m_PlaceIDToHypMap[newPlaceID] = newHyp;
-		m_hypIDCounter++;
-
-		// Add connectivity property (one-way)
-		createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
-		p.m_data->status = SpatialData::PLACEHOLDER;
-		p.m_WMid = newDataID();
-		log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-		addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
-		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
-
-		m_Places[newPlaceID]=p;
-	      }
-	      else if (minDistID != -1) {
-		// Modify the extant hypothesis that best matched the
-		// new position indicated by the frontier
-		try {
-		  FrontierInterface::NodeHypothesisPtr updatedHyp = 
-		    getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
-
-      // Remove the hypothesis from our local list so we don't move
-      // it back again in the next iteration...
-      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator iter =
-          hypotheses.begin(); iter != hypotheses.end(); iter++) {
-        if ((*iter)->hypID == minDistID) {
-          hypotheses.erase(iter);
-          break;
+          // Check already-rejected hypotheses for this node
+          if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
+      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
+          m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
+        double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
+        log ("distanceSq = %f", distanceSq);
+        if (distanceSq < minDistanceSq) {
+          minDistanceSq = distanceSq;
         }
       }
+          }
+          // Compare distance to all other hypotheses created for this node
+          for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
+            hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
+      FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
+      try {
+       // if (extantHyp->originPlaceID == currentPlaceID) {
+          double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
+          debug("2distanceSq = %f", distanceSq);
+          if (distanceSq < minDistanceSq) {
+            minDistanceSq = distanceSq;
+            minDistID = extantHyp->hypID;
+          }
+        //}
+      }
+      catch (IceUtil::NullHandleException e) {
+        log("Error: hypothesis suddenly disappeared!");
+      }
+          }
 
-		  updatedHyp->x = newX;
-		  updatedHyp->y = newY;
+          if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
+      // Create new hypothetical node in the direction of the frontier
+      FrontierInterface::NodeHypothesisPtr newHyp = 
+        new FrontierInterface::NodeHypothesis;
+      newHyp->x = newX;
+      newHyp->y = newY;
+      newHyp->hypID = m_hypIDCounter;
+      newHyp->originPlaceID = currentPlaceID;
 
-		  log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
-		      updatedHyp->y, updatedHyp->hypID);
+      log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
+          newHyp->y, newHyp->hypID);
 
-		  overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
-		}
-		catch (DoesNotExistOnWMException) {
-		  log("Error! Could not update hypothesis on WM - entry missing!");
-		}
-	      }
+      string newID = newDataID();
+      m_HypIDToWMIDMap[newHyp->hypID]=newID;
+      hypotheses.push_back(newHyp);
+      relevantHyps.push_back(newHyp);
+
+      // Create the Place struct corresponding to the hypothesis
+      PlaceHolder p;
+      p.m_data = new SpatialData::Place;   
+      //p.m_data->id = oobj->getData()->nodeId;
+
+      int newPlaceID = m_placeIDCounter;
+      m_placeIDCounter++;
+      p.m_data->id = newPlaceID;
+      m_PlaceIDToHypMap[newPlaceID] = newHyp;
+      m_hypIDCounter++;
+
+      // Add connectivity property (one-way)
+      createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
+      p.m_data->status = SpatialData::PLACEHOLDER;
+      p.m_WMid = newDataID();
+      log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+      addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+      addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
+
+      m_Places[newPlaceID]=p;
+          }
+          else if (minDistID != -1) {
+      // Modify the extant hypothesis that best matched the
+      // new position indicated by the frontier
+      try {
+        FrontierInterface::NodeHypothesisPtr updatedHyp = 
+          getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
+
+        // Remove the hypothesis from our local list so we don't move
+        // it back again in the next iteration...
+        for (vector<FrontierInterface::NodeHypothesisPtr>::iterator iter =
+            hypotheses.begin(); iter != hypotheses.end(); iter++) {
+          if ((*iter)->hypID == minDistID) {
+            hypotheses.erase(iter);
+            break;
+          }
+        }
+
+        updatedHyp->x = newX;
+        updatedHyp->y = newY;
+
+        log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
+            updatedHyp->y, updatedHyp->hypID);
+
+        overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
+      }
+      catch (DoesNotExistOnWMException) {
+        log("Error! Could not update hypothesis on WM - entry missing!");
+      }
+          }
+        }
 	    }
 	  }
 	}
