@@ -66,6 +66,8 @@ static void applyMru(QString mruName, QStringList &list)
    }
 }
 
+QCastFrameManager FrameManager;
+
 QCastFrameManager::QCastFrameManager()
 {
    m_pDialogFrame = NULL;
@@ -79,8 +81,11 @@ QCastFrameManager::~QCastFrameManager()
 
 QCastDialogFrame* QCastFrameManager::getDialogManager()
 {
-   if (!m_pDialogFrame)
+   if (!m_pDialogFrame) {
       m_pDialogFrame = new QCastDialogFrame(0, 0);
+      connect(m_pDialogFrame, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(dialogWindowHidden(QObject*)));
+   }
    return m_pDialogFrame;
 }
 
@@ -118,7 +123,18 @@ void QCastFrameManager::saveWindowList(QString listName)
          settings.setValue("view", QString::fromStdString(pView->m_id));
       settings.setValue("size", pFrame->size());
       settings.setValue("pos", pFrame->pos());
+      settings.setValue("geometry", pFrame->saveGeometry());
+      settings.setValue("state", pFrame->saveState());
       settings.endGroup(); // frame
+   }
+   {
+      settings.beginGroup(QString("dialogFrame"));
+      settings.setValue("visible", m_pDialogFrame && m_pDialogFrame->isVisible());
+      if (m_pDialogFrame) {
+         settings.setValue("geometry", m_pDialogFrame->saveGeometry());
+         //settings.setValue("state", m_pDialogFrame->saveState());
+      }
+      settings.endGroup(); // dialogFrame
    }
    settings.endGroup(); // listName
    settings.endGroup(); // WindowLayout
@@ -144,10 +160,28 @@ void QCastFrameManager::loadWindowList(QString listName)
       settings.beginGroup(frameid);
       info.main = settings.value("main", false).toBool();
       info.viewid = settings.value("view", "").toString();
-      info.size = settings.value("size", QSize(400, 400)).toSize();
-      info.pos = settings.value("pos", QPoint(200, 200)).toPoint();
+      info.geometry = settings.value("geometry", QByteArray()).toByteArray();
+      info.state = settings.value("state", QByteArray()).toByteArray();
       settings.endGroup();
       m_frameList << info;
+   }
+   {
+      settings.beginGroup(QString("dialogFrame"));
+      bool bVisible = settings.value("visible", false).toBool();
+      FrameInfo info;
+      info.geometry = settings.value("geometry", QByteArray()).toByteArray();
+      //info.state = settings.value("state", QByteArray()).toByteArray();
+
+      getDialogManager(); // should create m_pDialogFrame
+      if (m_pDialogFrame) {
+         m_pDialogFrame->setVisible(bVisible);
+         if (info.geometry.size() > 0)
+            m_pDialogFrame->restoreGeometry(info.geometry);
+         //if (info.state.size() > 0)
+         //   m_pDialogFrame->restoreState(info.state);
+      }
+
+      settings.endGroup(); // dialogFrame
    }
    settings.endGroup(); // listName
    settings.endGroup(); // WindowLayout
@@ -230,6 +264,14 @@ QCastMainFrame* QCastFrameManager::checkMainWindow(QCastMainFrame* pSkip)
    return pMain;
 }
 
+void QCastFrameManager::updateControlStateForAll()
+{
+   QList<QCastMainFrame*> frames = getCastFrames();
+   foreach(QCastMainFrame* pFrame, frames) {
+      pFrame->updateControlState();
+   }
+}
+
 void QCastFrameManager::frameDestroyed(QObject *pObj)
 {
    DTRACE("QCastFrameManager::frameDestroyed");
@@ -238,6 +280,11 @@ void QCastFrameManager::frameDestroyed(QObject *pObj)
    if (pFrame->m_isMainWindow) {
       checkMainWindow(pFrame);
    }
+}
+
+void QCastFrameManager::dialogWindowHidden(QObject *pObj)
+{
+   updateControlStateForAll();
 }
 
 void QCastFrameManager::createMissingWindows(QCastMainFrame* pFrame, cogx::display::CDisplayModel *pModel)
@@ -269,10 +316,13 @@ void QCastFrameManager::createMissingWindows(QCastMainFrame* pFrame, cogx::displ
       if (pchild) {
          pinfo->pFrame = pchild;
          pchild->setView(pView);
-         pchild->resize(pinfo->size);
-         pchild->move(pinfo->pos);
+         if (pinfo->geometry.size() > 0)
+            pchild->restoreGeometry(pinfo->geometry);
+         if (pinfo->state.size() > 0) {
+            pchild->restoreState(pinfo->state);
+            // TODO: update actions to reflect the visibility state of toolbars & contents
+         }
          pchild->show();
-         // usleep(200);
       }
    }
 
@@ -295,8 +345,6 @@ void QCastFrameManager::closeChildWindows()
       if (pFrame != pMain) pFrame->close();
    }
 }
-
-static QCastFrameManager FrameManager;
 
 QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    : QMainWindow(parent, flags)
@@ -322,6 +370,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.actShowToolbars, SIGNAL(triggered()),
          this, SLOT(onShowToolbarsChanged()));
    ui.actShowToolbars->setChecked(Qt::Checked);
+
+   connect(ui.actShowDialogWindow, SIGNAL(triggered()),
+         this, SLOT(onShowDialogWindow()));
 
    connect(ui.actRefreshViewList, SIGNAL(triggered()),
          this, SLOT(onRefreshViewList()));
@@ -576,6 +627,13 @@ void QCastMainFrame::updateObjectList(cogx::display::CDisplayView *pView)
    ui.treeObjects->blockSignals(false);
 }
 
+void QCastMainFrame::updateControlState()
+{
+   bool hasDlgs = FrameManager.hasDialogs();
+   ui.actShowDialogWindow->setEnabled(hasDlgs);
+   ui.actShowDialogWindow->setChecked(hasDlgs && FrameManager.getDialogManager()->isVisible());
+}
+
 // This should only happen when the checkbox in column 0 changes.
 // We update the object/part state in CDisplayView to reflect the value of the checkbox.
 // TODO: The view should be redrawn!
@@ -632,6 +690,20 @@ void QCastMainFrame::onShowCustomControls()
    ui.wgCustomGui->setVisible(ui.ckCustomControls->isChecked() && ui.wgCustomGui->controlCount() > 0);
 }
 
+void QCastMainFrame::onShowDialogWindow()
+{
+   if (! FrameManager.hasDialogs())
+      return;
+
+   QWidget* pw = FrameManager.getDialogManager();
+   if (pw) {
+      pw->setVisible(ui.actShowDialogWindow->isChecked());
+      if (pw->isVisible())
+         pw->setFocus();
+      FrameManager.updateControlStateForAll();
+   }
+}
+
 void QCastMainFrame::onRefreshViewList()
 {
    updateViewList();
@@ -663,6 +735,7 @@ void QCastMainFrame::onNewWindow()
    pchild->ui.drawingArea->initFrom(ui.drawingArea);
    pchild->setView(ui.drawingArea->getActiveView());
    pchild->show();
+   FrameManager.updateControlStateForAll();
 }
 
 // Save window list to registry (conf)
@@ -722,6 +795,7 @@ void QCastMainFrame::onRestoreWindowLayout()
    FrameManager.closeChildWindows();
    FrameManager.loadWindowList(val);
    FrameManager.createMissingWindows(this, m_pModel);
+   FrameManager.updateControlStateForAll();
 }
 
 void QCastMainFrame::onSetStartupLayout()
@@ -895,6 +969,6 @@ void QCastMainFrame::doDialogAdded(cogx::display::CDisplayModel *pModel, cogx::d
    QCastDialogFrame* pdlgwin = FrameManager.getDialogManager();
    if (pdlgwin) {
       pdlgwin->addDialog(pDialog);
-      pdlgwin->show();
    }
+   FrameManager.updateControlStateForAll();
 }
