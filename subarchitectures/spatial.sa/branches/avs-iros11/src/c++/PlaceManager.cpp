@@ -745,6 +745,36 @@ PlaceManager::evaluateUnexploredPaths()
       }
     }
 
+    // Remove old rejected hypotheses that are no longer in the vicinity of
+    // any frontiers.
+    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
+        m_rejectedHypotheses[curNodeId].begin(); hypIt != m_rejectedHypotheses[curNodeId].end(); hypIt++) {
+      bool shouldBeRejected = false;
+      for (FrontierInterface::FrontierPtSeq::iterator frontierIt = points.begin();
+          frontierIt != points.end(); frontierIt++) {
+        double frontierX = (*frontierIt)->x;
+        double frontierY = (*frontierIt)->y;
+        double hypX = (*hypIt)->x;
+        double hypY = (*hypIt)->y;
+        double distanceSq = (hypX - frontierX)*(hypX - frontierX) + (hypY - frontierY)*(hypY - frontierY);
+        double epsilon = 1e-10;
+        if (distanceSq <= epsilon) {
+          shouldBeRejected = true;
+          break;
+        }
+        if (shouldBeRejected)
+          log("hypothesis ID %d at (%f, %f) is close enough (dist %f) to frontier at (%f, %f)", (*hypIt)->hypID, hypX, hypY, distanceSq, frontierX, frontierY);
+      }
+      if (!shouldBeRejected) {
+        int hypID = (*hypIt)->hypID;
+        log("removing rejected hypothesis ID %d at (%f, %f) since no frontier is close by", hypID, (*hypIt)->x, (*hypIt)->y);
+        hypIt = m_rejectedHypotheses[curNodeId].erase(hypIt);
+        if (hypIt == m_rejectedHypotheses[curNodeId].end())
+          break;
+      }
+    }
+    
+
     // Loop over currently observed frontiers
     for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
 	points.begin(); frontierIt != points.end(); frontierIt++) {
@@ -855,6 +885,16 @@ PlaceManager::evaluateUnexploredPaths()
 		try {
 		  FrontierInterface::NodeHypothesisPtr updatedHyp = 
 		    getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
+
+      // Remove the hypothesis from our local list so we don't move
+      // it back again in the next iteration...
+      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator iter =
+          hypotheses.begin(); iter != hypotheses.end(); iter++) {
+        if ((*iter)->hypID == minDistID) {
+          hypotheses.erase(iter);
+          break;
+        }
+      }
 
 		  updatedHyp->x = newX;
 		  updatedHyp->y = newY;
