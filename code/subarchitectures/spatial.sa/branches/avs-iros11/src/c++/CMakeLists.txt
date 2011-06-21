@@ -236,3 +236,6 @@ if(BUILD_AVS_PLANNER)
  link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
    link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 endif(BUILD_AVS_PLANNER)
+
+add_cast_component(PlaceholderExplorer PlaceholderExplorer.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
