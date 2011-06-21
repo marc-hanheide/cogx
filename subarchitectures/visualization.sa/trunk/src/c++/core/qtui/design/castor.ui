@@ -205,6 +205,7 @@
    <addaction name="actShowViewList"/>
    <addaction name="actShowToolbars"/>
    <addaction name="actShowDialogWindow"/>
+   <addaction name="actNewWindow"/>
   </widget>
   <action name="actShowViewList">
    <property name="checkable">
@@ -227,6 +228,10 @@
    </property>
   </action>
   <action name="actNewWindow">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/toolButton/tbNewWindow.png</normaloff>:/toolButton/tbNewWindow.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New window</string>
    </property>
