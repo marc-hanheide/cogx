@@ -1421,24 +1421,32 @@ PlaceManager::processPlaceArrival(bool failed)
 	  //Stop moving, upgrade the placeholder we were heading for and connect it
 	  //to this new node, and delete the NodeHypotheses
 	  log("  CASE 1: New node discovered while exploring");
-	  map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 
-	  if (it2 != m_Places.end()) {
-	    //Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
-	    //make the Place refer to node curNode
-	    upgradePlaceholder(wasHeadingForPlace, it2->second, curNode, goalHyp->hypID);
+		/* Only upgrade the goal hypothesis if we are actually close to it */
+		double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
+		if (goalHyp != 0 && distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation) {
+			map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 
-	    if (curNodeGateway == 1) {
-	      addNewGatewayProperty(wasHeadingForPlace);
-	    }
-	  }
-	  else {
-	    log("Missing Placeholder placeholder!");
-	    m_goalPlaceForCurrentPath = -1;
-	    m_isPathFollowing = false;
-	    debug("processPlaceArrival exited");
-	    return;
-	  }
+			if (it2 != m_Places.end()) {
+				//Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
+				//make the Place refer to node curNode
+				upgradePlaceholder(wasHeadingForPlace, it2->second, curNode, goalHyp->hypID);
+
+				if (curNodeGateway == 1) {
+					addNewGatewayProperty(wasHeadingForPlace);
+				}
+			}
+			else {
+				log("Missing Placeholder placeholder!");
+				m_goalPlaceForCurrentPath = -1;
+				m_isPathFollowing = false;
+				debug("processPlaceArrival exited");
+				return;
+			}
+		}
+		else { /* If we are not close enought we came to a new node with no place, so we add one */
+			addPlaceForNode(curNode);
+		}
 	}
 
 	else if (!failed && curNodeId != wasComingFromNode) {
@@ -1449,39 +1457,45 @@ PlaceManager::processPlaceArrival(bool failed)
 	  //Remove the NodeHypothesis and its Placeholder, and
 	  //send the Place merge message
 
+    /* Only remove and merge if we are actually close to the goal */
+    double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
+    if (goalHyp != 0 && distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation) {
+      log("  CASE 2: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
 
-	  log("  CASE 2: Exploration action failed - place already known. Deleting Place %i",
-	      wasHeadingForPlace);
+      deletePlaceProperties(wasHeadingForPlace);
 
-	  deletePlaceProperties(wasHeadingForPlace);
+      m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
+      deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
+      m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
+      m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
 
-	  m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-	  deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
-	  m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
-	  m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
+      //Delete Place struct and entry in m_Places
+      map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
+      if (it2 != m_Places.end()) {
+        deleteFromWorkingMemory(it2->second.m_WMid);
+        m_Places.erase(it2);
+      }
+      else {
+        log("Could not find Place to delete!");
+      }
 
-	  //Delete Place struct and entry in m_Places
-	  map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
-	  if (it2 != m_Places.end()) {
-	    deleteFromWorkingMemory(it2->second.m_WMid);
-	    m_Places.erase(it2);
-	  }
-	  else {
-	    log("Could not find Place to delete!");
-	  }
+      //Prepare and send merge notification
+      SpatialData::PlaceMergeNotificationPtr newNotify = new
+        SpatialData::PlaceMergeNotification;
+      newNotify->mergedPlaces.push_back(wasHeadingForPlace);
+      newNotify->mergedPlaces.push_back(currentPlaceID);
+      newNotify->resultingPlace = currentPlaceID;
+      log("Sending merge notification between places %i and %i", 
+          currentPlaceID, wasHeadingForPlace);
 
-	  //Prepare and send merge notification
-	  SpatialData::PlaceMergeNotificationPtr newNotify = new
-	    SpatialData::PlaceMergeNotification;
-	  newNotify->mergedPlaces.push_back(wasHeadingForPlace);
-	  newNotify->mergedPlaces.push_back(currentPlaceID);
-	  newNotify->resultingPlace = currentPlaceID;
-	  log("Sending merge notification between places %i and %i", 
-	      currentPlaceID, wasHeadingForPlace);
-
-	  addToWorkingMemory<SpatialData::PlaceMergeNotification>(newDataID(), newNotify);
-	  //TODO:delete notifications sometime
-
+      addToWorkingMemory<SpatialData::PlaceMergeNotification>(newDataID(), newNotify);
+      //TODO:delete notifications sometime
+    }
+    else {
+      /* If we are not close to the goal we do nothing (ie. allow travelling
+       * over already visited places */
+      log("   CASE 2: travelling over known place distant from goal, ignoring.");
+    }
 	}
 
 	else {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
@@ -1955,4 +1969,29 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
     set<int> &place1Connectivities = m_connectivities[place1ID];
     place1Connectivities.insert(place2ID); 
   }
+}
+
+int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
+	PlaceHolder p;
+	p.m_data = new SpatialData::Place;   
+
+	int newPlaceID = m_placeIDCounter;
+	m_placeIDCounter++;
+	p.m_data->id = newPlaceID;
+	m_PlaceIDToNodeMap[newPlaceID] = node;
+
+	p.m_data->status = SpatialData::TRUEPLACE;
+	p.m_WMid = newDataID();
+	log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+	addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+	checkUnassignedEdges(newPlaceID);
+
+	m_Places[newPlaceID] = p;
+
+	//Write the Gateway property if present
+	if (node->gateway == 1) {
+		addNewGatewayProperty(newPlaceID);
+	}
+
+	return newPlaceID;
 }

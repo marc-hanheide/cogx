@@ -134,6 +134,9 @@ class PlaceManager : public cast::ManagedComponent
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
 
+    /* Helper function for adding a place to a node */
+    int addPlaceForNode(NavData::FNodePtr node);
+
     // Abort any movement commands
     void cancelMovement();
 
