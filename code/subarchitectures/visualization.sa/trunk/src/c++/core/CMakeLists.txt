@@ -130,6 +130,7 @@ set(SERVER_CPP
 set(GUI_CPP
    qtui/QCastApplication.cpp
    qtui/QCastMainFrame.cpp
+   qtui/QCastDialogFrame.cpp
    qtui/QCastView.cpp
    qtui/QCastViewScene.cpp
    qtui/QCustomGuiPanel.cpp
@@ -139,6 +140,7 @@ set(GUI_CPP
 set(SERVER_MOC_HEADERS
    qtui/QCastApplication.hpp
    qtui/QCastMainFrame.hpp
+   qtui/QCastDialogFrame.hpp
    qtui/QCastView.hpp
    qtui/QCastViewScene.hpp
    qtui/ChangeSlot.hpp
@@ -148,6 +150,7 @@ set(SERVER_MOC_HEADERS
    )
 set(SERVER_UI_FILES
    qtui/design/castor.ui
+   qtui/design/dialogwin.ui
    )
 set(SERVER_RESOURCE_FILES
    qtui/design/jquery.qrc
@@ -169,6 +172,9 @@ qt4_add_resources (SERVER_RESOURCE_OUTFILES ${SERVER_RESOURCE_FILES})
 include_directories( .  #./object
    ${VisualizationCore_BINARY_DIR}
    ${QT_QTSVG_INCLUDE_DIR}
+   ${QT_QTSCRIPT_INCLUDE_DIR}
+   ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
+   ${QT_QTUITOOLS_INCLUDE_DIR}
    ${QT_QTOPENGL_INCLUDE_DIR}
    /usr/include/GL
    /usr/include/freetype2
@@ -187,6 +193,9 @@ link_cast_component(${CAST_COMPONENT_NAME}
    # CogxIceAutogen   
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
+   ${QT_QTSCRIPT_LIBRARY}
+   ${QT_QTSCRIPTTOOLS_LIBRARY}
+   ${QT_QTUITOOLS_LIBRARY}
    ${TOMGINE_LIBS}
    ${LUAGL_EXPERIMENT_LIB} 
    ${WEBKIT_EXPERIMENT_LIB} 

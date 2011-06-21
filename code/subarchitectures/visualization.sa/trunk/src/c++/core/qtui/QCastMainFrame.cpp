@@ -68,6 +68,20 @@ static void applyMru(QString mruName, QStringList &list)
 
 QCastFrameManager::QCastFrameManager()
 {
+   m_pDialogFrame = NULL;
+}
+
+QCastFrameManager::~QCastFrameManager()
+{
+   if (m_pDialogFrame)
+      m_pDialogFrame->close();
+}
+
+QCastDialogFrame* QCastFrameManager::getDialogManager()
+{
+   if (!m_pDialogFrame)
+      m_pDialogFrame = new QCastDialogFrame(0, 0);
+   return m_pDialogFrame;
 }
 
 QList<QCastMainFrame*> QCastFrameManager::getCastFrames()
@@ -342,6 +356,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    qRegisterMetaType<cogx::display::CDisplayModel*>("cogx::display::CDisplayModel*");
    qRegisterMetaType<cogx::display::CDisplayView*>("cogx::display::CDisplayView*");
    qRegisterMetaType<cogx::display::CGuiElement*>("cogx::display::CGuiElement*"); // Custom UI
+   qRegisterMetaType<cogx::display::CGuiDialog*>("cogx::display::CGuiDialog*"); // Custom UI
    connect(this, 
       SIGNAL(signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
       this,
@@ -351,6 +366,11 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
       SIGNAL(signalViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
       this,
       SLOT(doViewChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
+      Qt::QueuedConnection);
+   connect(this, 
+      SIGNAL(signalDialogAdded(cogx::display::CDisplayModel*, cogx::display::CGuiDialog*)),
+      this,
+      SLOT(doDialogAdded(cogx::display::CDisplayModel*, cogx::display::CGuiDialog*)),
       Qt::QueuedConnection);
 
    QStatusBar *pBar = statusBar();
@@ -393,6 +413,19 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
 
    updateViewList();
    updateViewMenu();
+
+   // XXX: Quick & Ugly hack. On model change, the old dialogs should be removed and
+   // the new ones created. Here we assume that we only have one model.
+   CPtrVector<cogx::display::CGuiDialog> dialogs;
+   if (m_pModel) {
+      m_pModel->getDialogs(dialogs);
+      cogx::display::CGuiDialog *pdlg;
+      FOR_EACH(pdlg, dialogs) {
+         if (pdlg) {
+            doDialogAdded(m_pModel, pdlg);
+         }
+      }
+   }
 }
 
 void QCastMainFrame::setControlDataProxy(cogx::display::COwnerDataProxy *pProxy)
@@ -472,6 +505,8 @@ void QCastMainFrame::updateToolBars()
 
    if (!pDisplay)
       return;
+
+   ui.mainToolBar->setVisible(ui.actShowToolbars->isChecked());
 
    CPtrVector<QToolBar> bars;
    pDisplay->getToolbars(bars);
@@ -589,6 +624,7 @@ void QCastMainFrame::onShowToolbarsChanged()
    foreach(QToolBar* pbar, m_customToolbars) {
       pbar->setVisible(ui.actShowToolbars->isChecked());
    }
+   ui.mainToolBar->setVisible(ui.actShowToolbars->isChecked());
 }
 
 void QCastMainFrame::onShowCustomControls()
@@ -842,4 +878,23 @@ void QCastMainFrame::doViewChanged(cogx::display::CDisplayModel *pModel, cogx::d
    DTRACE("QCastMainFrame::doViewChanged");
    if (pView == getView())
       updateObjectList(pView);
+}
+
+void QCastMainFrame::onDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog)
+{
+   emit signalDialogAdded(pModel, pDialog); // connection to doDialogAdded has to be of type 'queued' or 'auto'
+}
+
+void QCastMainFrame::doDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog)
+{
+   DTRACE("QCastMainFrame::doDialogAdded");
+   // let the FrameManager do the work (dialogs are all in one frame, tabbed)
+   // GetDialogFrame()
+   // FindDialog(pDialog)
+   // if NULL: add tab, create ui, add to tab
+   QCastDialogFrame* pdlgwin = FrameManager.getDialogManager();
+   if (pdlgwin) {
+      pdlgwin->addDialog(pDialog);
+      pdlgwin->show();
+   }
 }

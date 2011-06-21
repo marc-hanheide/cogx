@@ -103,6 +103,10 @@ module Visualization
 
       void addToolButton(Ice::Identity ident, string viewId, string ctrlId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
+
+      // Create a Qt dialog
+      void addDialog(Ice::Identity ident, string dialogId, string designCode,
+            string scriptCode, string constructorName);
    };
 
    enum EEventType
