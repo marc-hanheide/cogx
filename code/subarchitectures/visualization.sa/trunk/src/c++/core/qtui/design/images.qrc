@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/toolButton">
+    <file>tbNewWindow.png</file>
     <file>tbViews.png</file>
     <file>tbToolbars.png</file>
     <file>tbDialogs.png</file>
