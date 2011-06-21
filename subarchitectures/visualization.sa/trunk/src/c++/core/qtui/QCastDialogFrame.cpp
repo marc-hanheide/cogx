@@ -14,24 +14,16 @@
  * GNU General Public License for more details.
  */
 #include "QCastDialogFrame.hpp"
+#include "QCastMainFrame.hpp"
 
 #ifdef DEBUG_TRACE
-// #undef DEBUG_TRACE
+#undef DEBUG_TRACE
 #endif
 #include "../convenience.hpp"
 
 #include <QUiLoader>
-#include <QScriptEngine>
 #include <QBuffer>
 #include <QByteArray>
-
-struct qpack
-{
-   cogx::display::CGuiDialog *pDialog;
-   QWidget* parent;
-   QScriptEngine engine;  // one per dialog?
-   QScriptValue uiobject; // interaction
-};
 
 QCastDialogFrame::QCastDialogFrame( QWidget * parent, Qt::WindowFlags flags )
    : QTabWidget(parent)
@@ -44,22 +36,47 @@ QCastDialogFrame::QCastDialogFrame( QWidget * parent, Qt::WindowFlags flags )
    }
 }
 
+QCastDialogFrame::~QCastDialogFrame()
+{
+   while (count() > 0) {
+      QWidget* pw = widget(0);
+      removeTab(0);
+      if (pw) delete pw;
+   }
+   foreach(qpack* ppack, m_dialogs) {
+      delete ppack;
+   }
+   m_dialogs.clear();
+}
+
+void QCastDialogFrame::closeEvent(QCloseEvent *event)
+{
+   DTRACE("QCastDialogFrame::closeEvent");
+   setVisible(false);
+   FrameManager.dialogWindowHidden(this);
+   event->accept();
+}
+
 void QCastDialogFrame::addDialog(cogx::display::CGuiDialog *pDialog)
 {
    DTRACE("QCastDialogFrame::addDialog");
    if (!pDialog)
       return;
 
+   foreach(qpack* ppack, m_dialogs) {
+      if (ppack->pDialog == pDialog)
+         return;
+   }
+
    qpack* pqpack = new qpack();
    pqpack->pDialog = pDialog;
 
-   DMESSAGE("addDialog ui");
    QUiLoader loader;
    QByteArray ba(pDialog->m_designCode.c_str());
    QBuffer uiBuf(&ba);
    QWidget *wui = loader.load(&uiBuf);
+   pqpack->wdialog = wui;
 
-   DMESSAGE("addDialog script");
    pqpack->engine.evaluate(QString::fromStdString(pDialog->m_scriptCode));
 
    QScriptValue ctor = pqpack->engine.evaluate(QString::fromStdString(pDialog->m_ctorName));
@@ -67,6 +84,7 @@ void QCastDialogFrame::addDialog(cogx::display::CGuiDialog *pDialog)
    pqpack->uiobject = ctor.construct(QScriptValueList() << scriptUi);
 
    int idx = addTab(wui, QString::fromStdString(pDialog->m_id));
-   wui->show();
+
+   m_dialogs << pqpack;
 }
 

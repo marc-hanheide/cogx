@@ -18,10 +18,10 @@
 
 #include "ui_dialogwin.h"
 #include <QTabWidget>
+#include <QScriptEngine>
+#include <QCloseEvent>
 #include "../Model.hpp"
 
-#include <QBuffer>
-#include <QByteArray>
 
 class QCastDialogFrame:
    public QTabWidget,
@@ -30,9 +30,22 @@ class QCastDialogFrame:
    Q_OBJECT
 private:
    Ui::DialogWin ui;
+
+private:
+   struct qpack
+   {
+      cogx::display::CGuiDialog *pDialog;
+      QWidget* wdialog;
+      QScriptEngine engine;  // one per dialog
+      QScriptValue uiobject; // interaction?
+   };
+   QList<qpack*> m_dialogs;
+
 public:
    QCastDialogFrame( QWidget * parent = 0, Qt::WindowFlags flags = 0 /* unused */ );
+   ~QCastDialogFrame();
    void addDialog(cogx::display::CGuiDialog *pDialog);
+   void closeEvent(QCloseEvent *event);
 };
 
 #endif

@@ -19,6 +19,7 @@
 #include "ui_castor.h"
 #include <QMainWindow>
 #include <QSettings>
+#include <QByteArray>
 #include <QMutex>
 #include <QTreeWidgetItem>
 #include <QToolBar>
@@ -34,8 +35,8 @@ private:
    {
       QCastMainFrame *pFrame;
       QString viewid;
-      QSize size;
-      QPoint pos;
+      QByteArray geometry;
+      QByteArray state;
       bool main;
       FrameInfo()
       {
@@ -48,6 +49,7 @@ private:
    QList<QCastMainFrame*> getCastFrames();
    QMutex m_creatorMutex;
    QMutex m_closerMutex;
+
    QCastDialogFrame *m_pDialogFrame;
 
 public:
@@ -60,11 +62,19 @@ public:
    void setStartupLayout(QString name);
    void createMissingWindows(QCastMainFrame* pSomeFrame, cogx::display::CDisplayModel *pModel);
    void closeChildWindows();
+   void updateControlStateForAll();
    QCastDialogFrame* getDialogManager();
+   bool hasDialogs()
+   {
+      return m_pDialogFrame != NULL;
+   }
 
 public slots:
    void frameDestroyed(QObject *pobj);
+   void dialogWindowHidden(QObject *pobj);
 };
+
+extern QCastFrameManager FrameManager;
 
 class QCastMainFrame:
    public QMainWindow,
@@ -100,6 +110,7 @@ public slots:
 private slots:
    void onShowViewListChanged();
    void onShowToolbarsChanged();
+   void onShowDialogWindow();
    void onShowCustomControls();
    void onRefreshViewList();
    void onNewWindow();
@@ -114,6 +125,7 @@ private:
    void updateViewList();
    void updateViewMenu();
    void updateToolBars();
+   void updateControlState();
    void syncViewListItem();
    void updateObjectList(cogx::display::CDisplayView *pView);
    QWidgetList getCastFrames();
