@@ -25,9 +25,14 @@ INCLUDE  sim/cameras-sim.incl
 # Include othere vision components
 INCLUDE  georgeY3-vision.incl
 
+# mediators, execution
+JAVA MG vision.mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent #--debug
 
 ####################################################################################################################
 INCLUDE  includes/spatial.sa/spatial-base.cast
+
+####################################################################################################################
+# INCLUDE  includes/binder.sa/spatial-base.cast
 
 ####################################################################################################################
 # Monitors
