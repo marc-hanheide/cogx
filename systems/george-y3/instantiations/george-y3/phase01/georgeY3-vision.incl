@@ -1,13 +1,13 @@
 # CAST config file
 # Part of the SUBARCHITECTURE "vision.sa"
 
-# NOTE: camera_config_file is set in config-XXX.incl or in the main cast file
+# NOTE: stereo_config_file is set in config-X.incl or in the main cast file
 
+VARDEFAULT finePointCloud=stereoserver
 SETVAR FinePlanePopOut_Params=<multiline>
-   --generate-sois "false"
-   --videoname "videoserver"
-   --pcserver "stereoserver"
-   --stereoconfig %(camera_config_file)
+   --generate-sois false
+   --pcserver "%(finePointCloud)"
+   --stereoconfig %(stereo_config_file)
    --minObjHeight 0.015
    --totalPoints 8000
    --LeastPointsInOneObj 40
@@ -19,16 +19,16 @@ SETVAR FinePlanePopOut_Params=<multiline>
 </multiline>
 CPP MG vis.planepopout.fine PlanePopOut %(FinePlanePopOut_Params) 
 
+VARDEFAULT coarsePointCloud=stereoserver
 SETVAR CoarsePlanePopOut_Params=<multiline>
-   --generate-sois "true"
-   --videoname "videoserver"
-   --pcserver "stereoserver"
-   --stereoconfig %(camera_config_file)
-   --minObjHeight 0.015
-   --totalPoints 8000
-   --LeastPointsInOneObj 40
-   --agonalTime 10
-   --stableTime 5 
+   --generate-sois true
+   --pcserver "%(coarsePointCloud)"
+   --stereoconfig %(stereo_config_file)
+   #--minObjHeight 0.015
+   #--totalPoints 8000
+   #--LeastPointsInOneObj 40
+   #--agonalTime 10
+   #--stableTime 2 
    --displayserver "display.srv"
    #--display
    # --log
@@ -37,17 +37,22 @@ CPP MG vis.planepopout.coarse PlanePopOut %(CoarsePlanePopOut_Params)
 
 SETVAR wmBlocking=--blocking false
 SETVAR SOIFilter_Params=<multiline>
-   --camid 0
-   --videoname videoserver
-   --coarse-pointcloud "stereoserver"
-   --fine-pointcloud "stereoserver"
-   --coarse-source "vis.planepopout.coarse"
-   --fine-source "vis.planepopout.fine"
+   # point cloud servers
+   --coarse-pcserver    "%(coarsePointCloud)"
+   --fine-pcserver      "%(finePointCloud)"
+   # SOI sources (plane popout)
+   --coarse-source      "vis.planepopout.coarse"
+   --fine-source        "vis.planepopout.fine"
+   # Parameters for graph-cut
    --objht 23
    --objdt 60
    --bght 24
    --bgdt 9999
    --fixc 24
+   # Left camera from the fine point cloud server; used by the internal grabber for debugging
+   --camid 0
+   --videoname videoserver
+   # stuff
    --displayserver "display.srv"
    %(wmBlocking)
    # --display 
@@ -71,14 +76,14 @@ CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 #JAVA MG percepts castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.PerceptBelief"
 #JAVA MG beliefs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
 #JAVA MG visual.objects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
-JAVA MG proto.objectrs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.ProtoObject" --generic-col
-JAVA MG SOIs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.SOI"
+JAVA MG proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact
+JAVA MG SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col #  --compact
 # JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.WMRemoteProcedureCall"
 
 CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
-CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"
+#CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"
 #CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
 
-#CPP MG scene.2d VirtualScene2D  --log --debug
+CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 

@@ -1,10 +1,11 @@
 HOST  Main   localhost
 
 ID stereoserver           [Main] 1
-ID vis.planepopout.fine   [Main] 1
-ID vis.planepopout.coarse [Main] 0
-ID vis.SOI.filter         [Main] 0
+ID vis.planepopout.fine   [Main] 0
+ID vis.planepopout.coarse [Main] 1
+ID vis.SOI.filter         [Main] 1
 
 ID videoserver            [Main] 1
 ID video.viewer.0         [Main] 1
-ID video.viewer.1         [Main] 1
+ID video.viewer.1         [Main] 0
+ID laser.server           [Main]

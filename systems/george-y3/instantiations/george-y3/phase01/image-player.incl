@@ -1,5 +1,0 @@
-# CAST config file
-CPP MG videoserver PointGreyServer --camids "0 1" --camconfigs "%(camera_config_file):L  %(camera_config_file):R" --imgsize "640 480"  --framerate_fps "15" --swapredblue
-
-#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/bham_stereo.ini:L  subarchitectures/vision.sa/config/bham_stereo.ini:R" --imgsize "640 480"
-

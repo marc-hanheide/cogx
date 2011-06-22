@@ -9,9 +9,8 @@ HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 
 HOST     [Main]
-INCLUDE  config-sim.incl
 
-COMPONENT CPP ptz.server PlayerPTZServer
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
 
 ####################################################################################################################
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
@@ -19,14 +18,16 @@ INCLUDE  includes/visualization.sa/v11n-base-p.cast
 
 ####################################################################################################################
 INCLUDE  includes/vision.sa/vision-base.cast
-INCLUDE  georgeY3-vision-srv.incl
+
+# Configure the cameras (internal, external parameters; stereo config; position)
+INCLUDE  sim/cameras-sim.incl
+
+# Include othere vision components
 INCLUDE  georgeY3-vision.incl
 
-# Select the video input; change the camera_config_file accordingly
-INCLUDE  sim/image-sim.incl
-INCLUDE  sim/camera-mount-sim.incl
 
-#JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+####################################################################################################################
+INCLUDE  includes/spatial.sa/spatial-base.cast
 
 ####################################################################################################################
 # Monitors

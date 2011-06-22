@@ -66,11 +66,11 @@
 
   <!-- robot model -->
   <model:physical name="robot">
-    <xyz>0.0 0.0 0.01</xyz>
+    <xyz>-1.0 0.0 0.001</xyz>
     <rpy>0.0 0.0 0.0</rpy>
 
     <model:physical name="laser">
-      <xyz>0.14 0.00 0.24</xyz>
+      <xyz>0.21 0.00 0.24</xyz>
       <rpy>0 0 0</rpy>
       
       <attach>
@@ -173,6 +173,62 @@
           <material>cogx/white-wall</material>
         </visual>
       </geom:box>
+
+      <geom:box name="poster1_geom">
+        <xyz>4.94 1 1.6</xyz>
+				<rpy>0 0 90</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_dora_y2</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster2_geom">
+        <xyz>4.94 -2.5 1.6</xyz>
+				<rpy>0 0 90</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_george_y2</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster3_geom">
+        <xyz>1 4.94 1.6</xyz>
+				<rpy>0 0 0</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_dora_y1</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster4_geom">
+        <xyz>1 -4.94 1.6</xyz>
+				<rpy>0 0 180</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_css09</material>
+        </visual>
+      </geom:box>
+
+      <geom:box name="poster5_geom">
+        <xyz>-4.94 1 1.6</xyz>
+				<rpy>0 0 270</rpy>
+        <size>1.24 0.01 1.0</size>
+        <visual>
+          <size>1.24 0.01 1.0</size>
+          <mesh>unit_box</mesh>
+          <material>cogx/poster_george_y1</material>
+        </visual>
+      </geom:box>
+
 		  <!-- ceiling makes birds-eye viewing the world cumbersome
       <geom:box name="ceiling_geom">
         <xyz>0 0 2.8</xyz>
@@ -190,36 +246,52 @@
   <!-- a low table -->
   <model:physical name="table1_model">
     <static>false</static>
-    <xyz>1 0 0.176</xyz>
+    <xyz>0.233 0.175 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/table.model" />
+       <xi:include href="models/table1.model" />
     </include>
   </model:physical>
+
   <model:physical name="table2_model">
     <static>false</static>
-    <xyz>1 -0.350 0.176</xyz>
+    <xyz>0.233 -0.175 0.176</xyz>
     <include embedded="true">
        <xi:include href="models/table2.model" />
     </include>
   </model:physical>
+
   <model:physical name="table3_model">
     <static>false</static>
-    <xyz>1 0.350 0.176</xyz>
+    <xyz>-0.233 0.175 0.176</xyz>
     <include embedded="true">
        <xi:include href="models/table3.model" />
     </include>
   </model:physical>
 
-  <!-- and finally a cereal box! -->
-  <model:physical name="cereals1_model">
+  <model:physical name="table4_model">
     <static>false</static>
-    <xyz>0.9 -0.2 0.447</xyz>
-		<rpy>0 0 90</rpy>
-
+    <xyz>-0.233 -0.175 0.176</xyz>
     <include embedded="true">
-       <xi:include href="models/cereals-schokomusli.model" />
+       <xi:include href="models/table4.model" />
     </include>
   </model:physical>
 
+  <model:physical name="manner1">
+    <static>false</static>
+    <xyz>0.233 0.175 0.44</xyz>
+		<rpy>0 0 0</rpy>
+    <include embedded="true">
+       <xi:include href="models/cereals-manner1.model" />
+    </include>
+  </model:physical>
+
+  <model:physical name="manner2">
+    <static>false</static>
+    <xyz>-0.233 -0.175 0.44</xyz>
+		<rpy>0 0 90</rpy>
+    <include embedded="true">
+       <xi:include href="models/cereals-manner2.model" />
+    </include>
+  </model:physical>-->
 </gazebo:world>
 
