@@ -1,37 +1,37 @@
 # CAST config file
 # Part of the SUBARCHITECTURE "vision.sa"
 
-# NOTE: stereo_config_file is set in config-X.incl or in the main cast file
+# NOTE: stereo_config_file is set in cameras-X.incl
 
 VARDEFAULT finePointCloud=stereoserver
 SETVAR FinePlanePopOut_Params=<multiline>
    --generate-sois false
    --pcserver "%(finePointCloud)"
    --stereoconfig %(stereo_config_file)
+   --displayserver "display.srv"
    --minObjHeight 0.015
    --totalPoints 8000
    --LeastPointsInOneObj 40
    --agonalTime 10
    --stableTime 5 
-   --displayserver "display.srv"
    #--display
    # --log
 </multiline>
-CPP MG vis.planepopout.fine PlanePopOut %(FinePlanePopOut_Params) 
+# CPP MG vis.planepopout.fine PlanePopOut %(FinePlanePopOut_Params) 
 
 VARDEFAULT coarsePointCloud=stereoserver
 SETVAR CoarsePlanePopOut_Params=<multiline>
    --generate-sois true
    --pcserver "%(coarsePointCloud)"
    --stereoconfig %(stereo_config_file)
+   --displayserver "display.srv"
    #--minObjHeight 0.015
    #--totalPoints 8000
    #--LeastPointsInOneObj 40
    #--agonalTime 10
    #--stableTime 2 
-   --displayserver "display.srv"
    #--display
-   # --log
+   #--log
 </multiline>
 CPP MG vis.planepopout.coarse PlanePopOut %(CoarsePlanePopOut_Params)
 
