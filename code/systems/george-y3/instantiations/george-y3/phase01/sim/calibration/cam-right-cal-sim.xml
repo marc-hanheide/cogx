@@ -25,7 +25,7 @@
   <cols>4</cols>
   <dt>d</dt>
   <data>
-    772.55    0.00  320.00   0.00
+    772.55    0.00  320.00   -92706.00
       0.00  772.55  240.00   0.00
       0.00    0.00    1.00   0.00</data></projection>
 <rotation type_id="opencv-matrix">
@@ -41,7 +41,7 @@
   <cols>1</cols>
   <dt>d</dt>
   <data>
-    0. 0. 0.</data></tvec>
+    -0.120 0. 0.</data></tvec>
 <rmat type_id="opencv-matrix">
   <rows>3</rows>
   <cols>3</cols>

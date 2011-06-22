@@ -1,5 +1,0 @@
-# CAST Config file include
-# Set confiugration varibles that are used by multiple components
-
-SETVAR camera_config_dir=%(CURRENT_DIR)/sim/calibration
-SETVAR camera_config_file=%(camera_config_dir)/cam-left-cal-sim.xml
