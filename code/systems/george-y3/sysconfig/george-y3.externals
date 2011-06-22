@@ -49,6 +49,7 @@
 ^/code/tools/python/trunk                         tools/python
 ^/code/tools/rocs/trunk                           tools/rocs
 ^/code/tools/scripts/trunk                        tools/scripts
+^/code/tools/syscalb/trunk                        tools/syscalb
 ^/code/tools/testing/trunk                        tools/testing
 
 # Obsolete
