@@ -48,7 +48,8 @@ public class ProtoObjectTransferFunction extends
 		result.put(PROTO_OBJECT_ID, PropositionFormula.create(wmc.address.id)
 			 .getAsFormula());
 
-		// TODO: add the desired view cone if necessary for fine-stereo processing
+		// Add the desired view cone if necessary for fine-stereo processing.
+		// When there is a desired view cone, a MoveToViewConeCommand must be issued.
 		if (from.desiredLocations.length > 0) {
 			ViewCone vc = from.desiredLocations[0];
 			result.put("viewcone-anchor-x", DoubleFormula.create(vc.anchor.x).getAsFormula());
@@ -59,7 +60,7 @@ public class ProtoObjectTransferFunction extends
 			result.put("viewcone-dtheta", DoubleFormula.create(vc.viewDirection).getAsFormula());
 			result.put("viewcone-tilt", DoubleFormula.create(vc.tilt).getAsFormula());
 		}
-		// TODO: add a flag: fine-soi-processed
+		// add a flag: fine-soi-processed; if not, AnalyzeProtoObjectCommand must be issued
 		result.put("fine-soi-processed", DoubleFormula.create(0).getAsFormula());
 		// A link to VisualObject ?
 
