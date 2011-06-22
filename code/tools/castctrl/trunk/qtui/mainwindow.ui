@@ -683,7 +683,7 @@
                    </size>
                   </property>
                   <property name="statusTip">
-                   <string>Player configuration file</string>
+                   <string>The logging level for the console.</string>
                   </property>
                   <item>
                    <property name="text">
@@ -767,6 +767,9 @@
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
+                  </property>
+                  <property name="statusTip">
+                   <string>The logging level for the XML file (only available when log4j server is used)</string>
                   </property>
                   <item>
                    <property name="text">

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri May 27 12:48:51 2011
+# Created: Wed Jun 22 08:30:34 2011
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -877,7 +877,7 @@ class Ui_MainWindow(object):
         self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Port:", None, QtGui.QApplication.UnicodeUTF8))
         self.edLog4jServerPort.setText(QtGui.QApplication.translate("MainWindow", "48143", None, QtGui.QApplication.UnicodeUTF8))
         self.label_12.setText(QtGui.QApplication.translate("MainWindow", "Console Level:", None, QtGui.QApplication.UnicodeUTF8))
-        self.log4jConsoleLevelCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Player configuration file", None, QtGui.QApplication.UnicodeUTF8))
+        self.log4jConsoleLevelCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "The logging level for the console.", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setItemText(0, QtGui.QApplication.translate("MainWindow", "ALL", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setItemText(1, QtGui.QApplication.translate("MainWindow", "TRACE", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setItemText(2, QtGui.QApplication.translate("MainWindow", "DEBUG", None, QtGui.QApplication.UnicodeUTF8))
@@ -887,6 +887,7 @@ class Ui_MainWindow(object):
         self.log4jConsoleLevelCmbx.setItemText(6, QtGui.QApplication.translate("MainWindow", "FATAL", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jConsoleLevelCmbx.setItemText(7, QtGui.QApplication.translate("MainWindow", "OFF", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "XML File Level:", None, QtGui.QApplication.UnicodeUTF8))
+        self.log4jFileLevelCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "The logging level for the XML file (only available when log4j server is used)", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jFileLevelCmbx.setItemText(0, QtGui.QApplication.translate("MainWindow", "ALL", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jFileLevelCmbx.setItemText(1, QtGui.QApplication.translate("MainWindow", "TRACE", None, QtGui.QApplication.UnicodeUTF8))
         self.log4jFileLevelCmbx.setItemText(2, QtGui.QApplication.translate("MainWindow", "DEBUG", None, QtGui.QApplication.UnicodeUTF8))
