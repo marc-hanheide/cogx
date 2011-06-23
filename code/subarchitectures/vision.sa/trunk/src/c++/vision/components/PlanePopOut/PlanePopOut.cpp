@@ -156,7 +156,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   }
   if((it = _config.find("--display")) != _config.end())
   {
-	doDisplay = true;
+    doDisplay = true;
   }
   if((it = _config.find("--minObjHeight")) != _config.end())
   {
@@ -173,22 +173,24 @@ void PlanePopOut::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> StableTime;
   }
-   if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
+  if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
   {
     stereoconfig = it->second;
-  } else printf("PlanePopOut::configure: Warning: No stereoconfig specified!\n");
+  }
+  else println("WARNING: No stereoconfig specified!");
 
   bWriteSoisToWm = true;
   if((it = _config.find("--generate-sois")) != _config.end())
   {
     bWriteSoisToWm = ! (it->second == "0" || it->second == "false" || it->second == "off");
   }
+  println("%s write SOIs to WM", bWriteSoisToWm ? "WILL" : "WILL NOT"); 
 
   StereoCamera *stereo_cam = new StereoCamera();
   if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
     throw (std::runtime_error("PlanePopOut::configure: Warning: Cannot open calibration file for stereo camera."));
   cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
-  
+
   cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
   cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
   cv::Vec3d rotCenter(0,0,0.4);
@@ -227,6 +229,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   #define IDC_POPOUT_IMAGE "popout.show.image"
   #define IDC_POPOUT_POINTS "popout.show.points"
   #define IDC_POPOUT_PLANEGRID "popout.show.planegrid"
+  #define IDC_POPOUT_LABEL_COLOR "popout.show.labelcolor"
 #endif
 
 void PlanePopOut::start()
@@ -237,12 +240,15 @@ void PlanePopOut::start()
   m_bSendPoints = true;
   m_bSendPlaneGrid = false;
   m_bSendImage = true;
+  m_bColorByLabel = true;
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
   m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
   m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
+  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_LABEL_COLOR, "Color by label");
   m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
+
 
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
@@ -252,6 +258,7 @@ void PlanePopOut::start()
   m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", ss.str());
   //Video::Image image;
   //m_display.setImage(ID_OBJECT_IMAGE, image);
+  m_tmSendPoints.restart();
 #endif
 
   // we want to receive detected VisualObject
@@ -282,6 +289,10 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPlaneGrid = false;
 		else pPopout->m_bSendPlaneGrid = true;
 	}
+	else if (event.sourceId == IDC_POPOUT_LABEL_COLOR) {
+		if (event.data == "0" || event.data=="") pPopout->m_bColorByLabel = false;
+		else pPopout->m_bColorByLabel = true;
+	}
 	else if (event.sourceId == IDC_POPOUT_IMAGE) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendImage = false;
 		else pPopout->m_bSendImage = true;
@@ -297,6 +308,10 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 	}
 	if (ctrlId == IDC_POPOUT_PLANEGRID) {
 		if (pPopout->m_bSendPlaneGrid) return "2";
+		else return "0";
+	}
+	if (ctrlId == IDC_POPOUT_LABEL_COLOR) {
+		if (pPopout->m_bColorByLabel) return "2";
 		else return "0";
 	}
 	if (ctrlId == IDC_POPOUT_IMAGE) {
@@ -336,39 +351,72 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
     cvReleaseImage(&iplImg);
 }
 
-void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels,
-  cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels,
+  cogx::display::CDisplayClient& m_display, CMilliTimer& tmSendPoints, PlanePopOut *powner)
 {
-	long long t0 = gethrtime();
+  if (tmSendPoints.elapsed() < 500) // 2Hz
+    return;
+  tmSendPoints.restart();
+
 	std::ostringstream str;
+	str.unsetf(ios::floatfield); // unset floatfield
+	str.precision(5); // set the _maximum_ precision
+
 	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
 	int plab = -9999;
+  int colors = 1;
+	cogx::Math::ColorRGB coPrev;
+	coPrev.r = coPrev.g = coPrev.b = 0;
+	str << "glColor(0,0,0)\n";
 	for(size_t i = 0; i < points.size(); i++)
 	{
-		int lab = labels.at(i);
-		if (plab != lab) {
-			plab = lab;
-			switch (lab) {
-				case 0: str << "glColor(1.0,0.0,0.0)\n"; break;
-				case -10: str << "glColor(0.0,1.0,0.0)\n"; break;
-				case -20: str << "glColor(0.0,0.0,1.0)\n"; break;
-				case -30: str << "glColor(0.0,1.0,1.0)\n"; break;
-				case -40: str << "glColor(0.5,0.5,0.0)\n"; break;
-				case -5: str << "glColor(0.0,0.0,0.0)\n"; break;
-				default: str << "glColor(1.0,1.0,0.0)\n"; break;
+		const PointCloud::SurfacePoint &p = points[i];
+		if (!bColorByLabels) {
+#define CO3(bc) int(1000.0*bc/255)/1000.0
+			if (coPrev != p.c) {
+        colors++;
+				str << "glColor(" << CO3(p.c.r) << "," << CO3(p.c.g) << "," << CO3(p.c.b) << ")\n";
+				coPrev = p.c;
+			}
+#undef CO3
+		}
+		else {
+			int lab = labels.at(i);
+			if (plab != lab) {
+        colors++;
+				plab = lab;
+				switch (lab) {
+					case 0: str << "glColor(1.0,0.0,0.0)\n"; break;
+					case -10: str << "glColor(0.0,1.0,0.0)\n"; break;
+					case -20: str << "glColor(0.0,0.0,1.0)\n"; break;
+					case -30: str << "glColor(0.0,1.0,1.0)\n"; break;
+					case -40: str << "glColor(0.5,0.5,0.0)\n"; break;
+					case -5: str << "glColor(0.0,0.0,0.0)\n"; break;
+					default: str << "glColor(1.0,1.0,0.0)\n"; break;
+				}
 			}
 		}
-		const PointCloud::SurfacePoint &p = points[i];
 		str << "glVertex(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
 	}
 	str << "glEnd()\nend\n";
-	long long t1 = gethrtime();
-	double dt = (t1 - t0) * 1e-6;
-// 	powner->log("*****: %d points; Time to create script %lfms", points.size(), dt);
-	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", str.str());
-	t1 = gethrtime();
-	dt = (t1 - t0) * 1e-6;
-// 	powner->log("*****GL: %ld points sent after %lfms", points.size(), dt);
+  long long t1 = tmSendPoints.elapsed();
+  string S = str.str();
+  long long t2 = tmSendPoints.elapsed();
+  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", S);
+  long long t3 = tmSendPoints.elapsed();
+  if (1) {
+    str.str("");
+    str.clear();
+    str << "<h3>Plane popout - SendPoints</h3>";
+    str << "Labels: " << (bColorByLabels ? "ON" : "OFF") << "<br>";
+    str << "Points: " << points.size() << "<br>";
+    str << "Colors: " << colors << "<br>";
+    str << "Strlen: " << S.length() << "<br>";
+    str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+    str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+    str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
+    m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
+  }
 }
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
@@ -563,7 +611,7 @@ void PlanePopOut::runComponent()
 			
 			//log("Done AddConvexHullinWM");
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendPoints) SendPoints(pointsN, points_label, m_display, this);
+			if (m_bSendPoints) SendPoints(pointsN, points_label, m_bColorByLabel, m_display, m_tmSendPoints, this);
 			if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
 			//log("Done FEAT_VISUALIZATION");
 #endif
@@ -792,13 +840,13 @@ void PlanePopOut::SOIManagement()
 		CurrentObjList.at(matchingResult).count = PreviousObjList.at(j).count;
 		if (dist(CurrentObjList.at(matchingResult).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(matchingResult).c) > 0.15)
 		{
-		    int i = matchingResult;
-		    if (bWriteSoisToWm)
-		    {
-		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-		     overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-		//     cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
-		    }
+		  int i = matchingResult;
+		  if (bWriteSoisToWm)
+		  {
+		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		    debug("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+		    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+		  }
 		}
 		else
 		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
@@ -809,13 +857,13 @@ void PlanePopOut::SOIManagement()
 		CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
 		if (CurrentObjList.at(i).count >= StableTime)
 		{
-		    CurrentObjList.at(i).bInWM =true;
 		    if (bWriteSoisToWm)
 		    {
-		     CurrentObjList.at(i).id = newDataID();
-		     SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-		     addToWorkingMemory(CurrentObjList.at(i).id, obj);
-//log("11111111111 Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+		      CurrentObjList.at(i).bInWM = true;
+		      CurrentObjList.at(i).id = newDataID();
+		      SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+		      debug("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+		      addToWorkingMemory(CurrentObjList.at(i).id, obj);
 		    }
 		    #ifdef SAVE_SOI_PATCH
 		    std::string path = CurrentObjList.at(i).id;
