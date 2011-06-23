@@ -112,7 +112,7 @@ private:
 	/// The SOIs can still be obtained through a filter/wm-call (GetStableSOIs).
 	/// Default: true.
 	bool bWriteSoisToWm;
-  
+
 	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
 	void DisplayInTG();
 
@@ -120,6 +120,10 @@ private:
 	bool m_bSendPoints;
 	bool m_bSendPlaneGrid;
 	bool m_bSendImage;
+	// Color the poitns by labels or send the color from image
+	bool m_bColorByLabel;
+	CMilliTimer m_tmSendPoints;
+
 	class CDisplayClient: public cogx::display::CDisplayClient
 	{
 		PlanePopOut* pPopout;
