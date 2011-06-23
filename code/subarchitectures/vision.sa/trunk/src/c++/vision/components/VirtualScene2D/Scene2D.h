@@ -43,6 +43,7 @@ private:
 
    double m_outputWidth;
    double m_outputHeight;
+   std::string m_objectList; // param
 
 protected:
    // ManagedComponent overrides

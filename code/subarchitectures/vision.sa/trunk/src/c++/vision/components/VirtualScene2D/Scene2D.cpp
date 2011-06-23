@@ -66,6 +66,12 @@ CScene2D::CScene2D()
 void CScene2D::configure(const std::map<std::string,std::string> & _config)
 {
    m_display.configureDisplayClient(_config);
+   map<string,string>::const_iterator it;
+
+   m_objectList = "video.viewer";
+   if ((it = _config.find("--v11n-objects")) != _config.end()) {
+      m_objectList = it->second;
+   }
 
    // TODO: ADD PARAMETER. The size of the video image so that we can draw in the right scale
    m_outputWidth = 640;
@@ -83,13 +89,26 @@ void CScene2D::start()
    addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::DELETE),
          new MemberFunctionChangeReceiver<CScene2D>(this, &CScene2D::onDelete_VisualObject));
 
+   //addChangeFilter(createGlobalTypeFilter<SOI>(cdl::ADD),
+   //      new MemberFunctionChangeReceiver<CScene2D>(this, &CScene2D::onAdd_SOI));
+   //addChangeFilter(createGlobalTypeFilter<SOI>(cdl::OVERWRITE),
+   //      new MemberFunctionChangeReceiver<CScene2D>(this, &CScene2D::onChange_SOI));
+   //addChangeFilter(createGlobalTypeFilter<SOI>(cdl::DELETE),
+   //      new MemberFunctionChangeReceiver<CScene2D>(this, &CScene2D::onDelete_SOI));
+
    m_display.connectIceClient(*this);
    m_display.installEventReceiver();
 
    std::vector<std::string> objects;
-   // TODO: ADD PARAMETER. "video.viewer" is not ok, it's the name of a component -> changes!
-   // --video-object; alternative: views are defined in DisplayServer
-   objects.push_back("video.viewer");
+   istringstream iss(m_objectList);
+   string idobj;
+
+   while (iss.good() && !iss.eof()) {
+      iss >> idobj;
+      if (idobj != "")
+         objects.push_back(idobj);
+   }
+
    objects.push_back(OBJ_VISUAL_OBJECTS);
    m_display.createView("VirtualScene2D", Visualization::VtGraphics, objects);
 }
@@ -229,35 +248,46 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
 #endif
 }
 
-void CScene2D::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-   cdl::WorkingMemoryAddress addr = _wmc.address;
+// TODO: We need left-camera parameters to project the SOI
+//void CScene2D::drawSoi(const std::string& id, const SOIPtr& pSoi)
+//{
+//#if defined(HAS_LIBPLOT)
+//   std::ostringstream ss;
+//   cogx::display::CSvgStringPlotter p(ss);
+//   p.openpl();
+//   p.fscale(W / m_outputWidth, H / m_outputHeight);
+//   p.flinewidth(ps * 1.0);
 
-   // VisualObject provides label values
-   VisualObjectPtr pVisObj;
-   try {
-      pVisObj = getMemoryEntry<VisualObject>(addr);
-   }
-   catch(DoesNotExistOnWMException){
-      //log("CScene2D: VisualObject %s deleted while working...", descAddr(addr).c_str());
-      return;
-   };
-   if (! pVisObj) return;
+//   p.pencolorname("red");
+//   drawContours(p, x0, y0, contours);
 
-   // ProtoObject provides position and outline
-   ProtoObjectPtr pProtoObj;
-   try {
-      addr.id = pVisObj->protoObjectID;
-      pProtoObj = getMemoryEntry<ProtoObject>(addr);
-   }
-   catch(DoesNotExistOnWMException){
-      //log("CScene2D: ProtoObject %s deleted while working...", descAddr(addr).c_str());
-      return; // we don't know where on the image to show the labels
-   };
-   if (! pProtoObj) return;
+//   double true_size = p.fontsize(ps * 12);
+//   double dy = 0;
 
-   drawVisualObject(_wmc.address.id, pVisObj, pProtoObj);
-}
+//   p.fontname("sans-serif");
+//   p.pencolorname("yellow");
+//   p.fframedtext(x0, YY(y0+h0/2+dy), id);
+//   dy += true_size;
+//   if (ident != "") {
+//      p.fframedtext(x0, YY(y0+h0/2+dy), ident);
+//      dy += true_size;
+//   }
+//   if (color != "") {
+//      p.fframedtext(x0, YY(y0+h0/2+dy), color);
+//      dy += true_size;
+//   }
+//   if (shape != "") {
+//      p.fframedtext(x0, YY(y0+h0/2+dy), shape);
+//      dy += true_size;
+//   }
+//   p.endpath();
+
+//   p.closepl();
+//   std::string svg = p.getScreenSvg();
+
+//   m_display.setObject(OBJ_VISUAL_OBJECTS, id, svg);
+//#endif
+//}
 
 void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
@@ -289,10 +319,44 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
    drawVisualObject(_wmc.address.id, pVisObj, pProtoObj);
 }
 
+void CScene2D::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+   onChange_VisualObject(_wmc);
+}
+
 void CScene2D::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
    m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
 }
+
+
+//void CScene2D::onChange_SOI(const cdl::WorkingMemoryChange & _wmc)
+//{
+//   cdl::WorkingMemoryAddress addr = _wmc.address;
+
+//   // VisualObject provides label values
+//   SOIPtr pSoi;
+//   try {
+//      pSoi = getMemoryEntry<VisualObject>(addr);
+//   }
+//   catch(DoesNotExistOnWMException){
+//      //log("CScene2D: VisualObject %s deleted while working...", descAddr(addr).c_str());
+//      return;
+//   };
+//   if (! pSoi) return;
+
+//   drawSoi(_wmc.address.id, pSoi);
+//}
+
+//void CScene2D::onAdd_SOI(const cdl::WorkingMemoryChange & _wmc)
+//{
+//   onChange_SOI(_wmc);
+//}
+
+//void CScene2D::onDelete_SOI(const cdl::WorkingMemoryChange & _wmc)
+//{
+//   m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
+//}
 
 
 void CScene2D::destroy()
