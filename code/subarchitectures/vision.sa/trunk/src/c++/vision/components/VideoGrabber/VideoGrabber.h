@@ -11,7 +11,6 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Video.hpp>
-#include <VisionData.hpp>
 #include <VideoClient2.h>
 
 #ifdef FEAT_VISUALIZATION

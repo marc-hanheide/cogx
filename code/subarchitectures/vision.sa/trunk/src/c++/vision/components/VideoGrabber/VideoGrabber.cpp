@@ -53,7 +53,6 @@ namespace cogx
 {
 
 using namespace std;
-using namespace VisionData;
 using namespace cast;
 namespace cxd = cogx::display;
 
