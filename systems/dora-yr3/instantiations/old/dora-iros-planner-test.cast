@@ -1,0 +1,50 @@
+HOST localhost
+
+# v11n ########################################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# spatial #####################################################################
+# INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+# INCLUDE includes/spatial.sa/spatial-ptz.cast
+# INCLUDE includes/spatial.sa/spatial-base.cast
+# INCLUDE includes/spatial.sa/spatial.cast
+# #INCLUDE includes/spatial.sa/spatial-peekabot.cast
+# CPP GD self.representer SelfRepresenter
+# INCLUDE includes/spatial.sa/spatial-mediator.cast
+# INCLUDE includes/spatial.sa/spatial-objsearch-sim.cast
+
+# Default.SA ################################################################
+# INCLUDE includes/default.sa/default-base.cast
+# INCLUDE includes/coma.sa/coma-defaultsa.cast
+# INCLUDE includes/default.sa/default-main.cast
+
+# Conceptual.SA  ############################################################
+# INCLUDE includes/conceptual.sa/conceptual-base.cast
+# INCLUDE includes/conceptual.sa/conceptual-main.cast
+
+# Categorical.SA ############################################################
+# INCLUDE includes/categorical.sa/categorical-shape-sim.cast
+
+
+# coma ######################################################################
+# INCLUDE includes/coma.sa/coma-base.cast
+# INCLUDE includes/coma.sa/coma-crowl.cast
+# INCLUDE includes/coma.sa/coma-mediators.cast
+
+# binder ######################################################################
+# INCLUDE includes/binder.sa/binder-base.cast
+#JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
+
+
+
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/switching-planner-test.cast
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+INCLUDE includes/planner.sa/fake-motivation.cast
+
+# INCLUDE includes/motivation.sa/motivation.cast
+# INCLUDE includes/motivation.sa/motivation-goals-dora.cast
+
+# JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent

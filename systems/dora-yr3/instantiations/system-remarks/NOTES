@@ -1,0 +1,97 @@
+vision.sa:
+
+	- ARTagRecognizer (includes/vision/vision-artag.cast) has a preKnownObjects and ARConfig file under vision/config
+		Works like this: The objects in both files should follow the same order. in preKnownObjects, what's important is the object category label
+		and that's the name that gets into WM. Also the object pose is stored here. Whereas in ARConfig, each pattern is associated with a unique id (given while loading the patterns in the component) and a name. 
+
+spatial.sa:
+	- As it is now created 2D maps are pretty bad as a result of incorporating maxrange beams from Hokuyo
+	- explore-range of SpatialControl should be smaller then max-frontier-dist of PlaceManager 
+	- Notes on exploratory behaviour:
+		* The command-line switch --hyp-path-length which in Y2 
+		determined the distance at which place hypotheses were created
+		currently has *no effect*. Hypotheses are created on the exact
+		same position as frontiers coming from SpatialControl.
+		* Exception to the above: the ConnectivityProperty of the
+		placeholder gets its cost from --hyp-path-length
+		* The distance at which frontiers (and thus hypotheses) are
+		created is mainly determined by --explore-range in
+		SpatialControl. This is the range to which the grid map is
+		cleared by the laser. However, frontiers may still exist
+		closer by due to occlusions (including the case when the robot
+		has just started running and hasn't seen behind it).
+		* Frontiers yield hypotheses (at the same location, now),
+		and hypotheses yield placeholders. But there is a filtering step
+		here: only placeholders nearer than --max-frontier-dist and
+		farther than --min-frontier-dist (to the current Place's node)
+		are created.
+		Also, frontiers that are less *wide* than --min-frontier-length
+		(default 0) are filtered out.
+		*NOTE*: there's also --min-node-separation. This is a second
+		filter applied after the frontier->hypothesis step. It does
+		the same thing as --min-frontier-dist currently.
+		* Finally, the hypothesis is checked against existing 
+		placeholders, and if it is too close to them it's not created.
+		However, there's a switch here in the code: It can either
+		check against all Placeholders, or just those originating from
+		the same Place as the new one. This is decided at a line which
+		says 
+		if (extantHyp->originPlaceID == currentPlaceID)
+  		in PlaceManager.cpp
+	-- Issues with exploration:
+		* If --explore-range isn't between --min-frontier-dist and
+		--max-frontier-dist, you won't get any Placeholders
+		* If Placeholders are filtered out based on all existing
+		Placeholders instead of only the ones from the same Place
+		(the switch mentioned above), then you run the risk of
+		not exploring a room completely since Placeholders have no
+		redundancy. On the other hand if you don't, you will probably
+		get some Placeholders on top of each other, making exploration
+		take longer.
+
+	-- On Placeholder properties
+		* There's the AssociatedSpace property.
+		This is the number of free
+		space grid cells "belonging" to a Placeholder. A grid cell
+		belongs to a given Placeholder if there is no other Placeholder
+		or Place that is closer than it. (Actually, it counts only
+		Placeholders originating from the current Place.)
+		* There's the AssociatedBorder property. It counts the number
+		of border cells "belonging" to a Placeholder as above. A cell
+		is a border cell if it is free but neighbor to an unexplored
+		cell.
+		* Both of the above are computed using the Local grid map
+		belonging to the Place the Placeholder originates in.
+		The local grid map uses a different scan range
+		(--laser-range-for-placeholders or just --laser-range)
+		than the one
+		used to generate the frontiers (--explore-range in 
+		SpatialControl).
+		* --no-local-maps disables this whole scheme
+	-- On remote doorway detection: LocalMapManager detects doors using HSS,
+		if --detect-doors is enabled. As soon as a door is detected,
+		even for a single frame, a door hypothesis is created at that
+		position and kept for all eternity. No new hypotheses are 
+		created within a 1m (hard coded) radius of an existing
+		one.
+		DoorHypothesis structs are put on spatial WM as they are
+		created.
+		--display-doors makes currently detected doors appear in PB,
+		and kept hypotheses (as green dots)
+	-- On gatewayness: Whenever a new Placeholder is created, or a new
+		doorway hypothesis is created, the distance between Placeholder
+		and nearest doorway is checked. The gatewayness is 
+		exp(-distSq/1.0) where distSq is the square distance between
+		them.
+  		The switch --doorway-width does nothing currently.
+	-- On the exploration exclusion zones: Using --exclude-from-exploration,
+		it's possible to create a zone in which no Placeholders will
+		be created (in absolute coordinates).
+		The syntax is:
+		--exclude-from-exploration "{x|y} {<|>} value [{|or} {x|y}
+			{<|>} value ...]"
+		Example: 
+		--exclude-from-exploration "x < 5 x > 0 y < 5 y > 0 or x > 15"
+		will create two zones: one rectangular between (0,0) and (5,5),
+		and one whole half-plane x>15. No placeholders will be created
+		in these zones.

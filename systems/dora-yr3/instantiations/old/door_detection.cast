@@ -1,0 +1,22 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 #--log
+
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory #--log #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation  #--log #--debug
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--no-x-window --log #--debug
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+#CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --no-nodeclass --no-areaclass --read-ptu #--log
+CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office,living_room --debug -c instantiations/cureconfig/cogxp3.ccf
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window  --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors --display-doors #--load-nodemap #--debug
+

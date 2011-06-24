@@ -1,0 +1,34 @@
+HOST localhost
+
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+
+
+
+SUBARCHITECTURE spatial.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #-m tmpmap.metric #--no-file-output
+#CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #-m tmpmap.graph #--no-file-output
+#CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf 
+#CPP MG spatial.translation SpatialTranslation 
+CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office,living_room --debug -c instantiations/cureconfig/cogxp3.ccf
+
+CPP GD object.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --look-for-objects "box paperclip marker" --display-objects-in-pb
+CPP GD camera.mount CameraMountTest --pan 0.0 --tilt "-0.5"
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 3 --textured --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/box.ply instantiations/ply-models/paperclip.ply instantiations/ply-models/marker.ply" --siftfiles "instantiations/ply-models/box.sift instantiations/ply-models/paperclip.sift instantiations/ply-models/marker.sift" --labels "box paperclip marker" --log
+
+#CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --mode RECOGNIZE --labels "marker box paperclip" --log
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col

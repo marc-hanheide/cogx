@@ -1,0 +1,35 @@
+ply
+format ascii 1.0
+element vertex 0
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+element face 0
+property list uchar uint vertex_indices
+element pass 0
+property list uchar uint face_indices
+property float m0
+property float m1
+property float m2
+property float m3
+property float m4
+property float m5
+property float m6
+property float m7
+property float m8
+property float m9
+property float m10
+property float m11
+property float m12
+property float m13
+property float m14
+property float m15
+property float x
+property float y
+property float w
+property float h
+property uchar tex_index
+end_header

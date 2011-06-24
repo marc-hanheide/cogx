@@ -1,0 +1,69 @@
+HOST localhost
+
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT PYTHON PlannerPythonServer PythonServer
+
+SUBARCHITECTURE spatial.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation #--log #--debug
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #--log #-m tmpmap.metric --debug 
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 #--log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--log #--debug --no-x-window 
+CPP GD path.query PathQueryProcessor --log --no-indirect-paths #--debug
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+# Conceptual->Binding interface components
+CPP GD proxy.marshaller ProxyMarshaller -bsa binder
+CPP GD connectivity.writer ConnectivityWriter 
+CPP GD self.representer SelfRepresenter 
+
+CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --log --gridsize 125 --cellsize 0.1 --objects "frosties" --samplesize 1000 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 5 --away-from-obstacles 1 --disp-magn 3  --cam-step 60 --log	#--display-coverage --ctrl-ptu
+
+
+# Action interface for planning. Listens for events from the executor then generates correct navcommand
+JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  #--log
+
+
+SUBARCHITECTURE coma
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name proxy.marshaller -bsa binder --log true
+
+
+
+
+SUBARCHITECTURE binder 
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+JAVA MG monitor binder.components.BinderMonitor #--gui #--log
+JAVA MG binder binder.components.Binder --log
+JAVA MG discretizer binder.components.UnionDiscretizer #--log
+
+SUBARCHITECTURE planner.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG Planner WMControl #--log
+JAVA MG executor execution.components.DoraExecutionMediator --log
+
+JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator   #--log
+JAVA MG CategorizePlaceGenerator motivation.components.generators.CategorizePlaceGenerator   #--log
+
+# JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log
+# JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
+# JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
+
+# JAVA MG motivation.filters.ManualSelectFilter motivation.components.filters.ManualSelectFilter  #--log
+JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" --log
+
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --log --maxPlannedMotives 3 --orderPolicy InvertAge
+JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager  --log
+
+JAVA MG PropagationTest motivation.tests.PropagationTest  --log
+
+
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom"
+
+

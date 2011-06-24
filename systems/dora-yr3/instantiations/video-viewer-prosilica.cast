@@ -1,0 +1,10 @@
+HOST localhost
+
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
+INCLUDE includes/vision.sa/vision-viewer.cast
