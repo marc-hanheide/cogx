@@ -28,7 +28,7 @@ class CLuaGlScript: public CDisplayObject
    friend class CLuaGlScript_RenderGL;
    static std::auto_ptr<CRenderer> renderGL;
 
-   class CScript
+   class CScript: public CDisplayObjectPart
    {
    private:
       lua_State* luaS;
@@ -59,6 +59,7 @@ public:
    {
       return false;
    }
+   void getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered=false); /*override*/
 
 public:
    virtual int getCameras(CPtrVector<CDisplayCamera>& cameras); /*override*/
