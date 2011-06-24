@@ -59,22 +59,32 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange event)
 			throws CASTException {
+
 		PerceptBelief from = getMemoryEntry(event.address, PerceptBelief.class);
 		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
 				.create(PerceptBelief.class, from);
+
+		if (pb.getContent().get(VisualObjectTransferFunction.LABEL_ID) == null) {
+			log("belief is empty, returning.");
+			return;
+		}
+
 		String perceptLabel = pb.getContent().get(
 				VisualObjectTransferFunction.LABEL_ID).getDistribution()
 				.getMostLikely().getProposition();
 
-		WorkingMemoryAddress perceptPointer = ((PointerFormula) pb.getContent()
-				.get(VisualObjectTransferFunction.IS_IN).getDistribution()
-				.get().values.get(0).val).pointer;
-		double perceptIsInProb = pb.getContent().get(
-				VisualObjectTransferFunction.IS_IN).getDistribution().get().values
-				.get(0).prob;
+		FormulaDistribution coneFormulaDistribution = pb.getContent().get(
+				VisualObjectTransferFunction.CONE);
+		if (coneFormulaDistribution==null) {
+			getLogger().error("could not find fomulas for " + VisualObjectTransferFunction.CONE+"! From here on, it will not work as expected!");
+			return;
+		}
+		WorkingMemoryAddress conePointer = ((PointerFormula) coneFormulaDistribution
+				.getDistribution().get().values.get(0).val).pointer;
 
 		Set<WorkingMemoryAddress> wmaGroundedSet = label2AddrMap
 				.get(perceptLabel);
+
 		if (wmaGroundedSet == null) {
 			label2AddrMap
 					.put(perceptLabel, new HashSet<WorkingMemoryAddress>());
@@ -90,29 +100,43 @@ public class DoraVisualObjectTracker extends ManagedComponent implements
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
 						.create(GroundedBelief.class, getMemoryEntry(
 								wmaGrounded, GroundedBelief.class));
-				float existingProb = sumProb(gb.getContent().get(
-						VisualObjectTransferFunction.IS_IN));
-				log("the current existingProb of the GroundedBelief is "
-						+ existingProb + ", the perceptIsInProb is "
-						+ perceptIsInProb);
-				if (perceptIsInProb < 0.5) {
-					log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-					setIsInProb(gb.getContent().get(
-							VisualObjectTransferFunction.IS_IN),
-							perceptPointer, (float) perceptIsInProb);
+
+				WorkingMemoryAddress gbConePointer = ((PointerFormula) gb
+						.getContent().get(VisualObjectTransferFunction.CONE)
+						.getDistribution().get().values.get(0).val).pointer;
+
+				if (conePointer.equals(gbConePointer)) {
+					log("we have found an object in the same viewcone, "
+							+ conePointer.id);
+					newNeeded = false;
 					manageHistory(event, from, gb.get());
 					overwriteWorkingMemory(wmaGrounded, gb.get());
-					newNeeded = false;
-				} else if (existingProb < 0.5) {
-					log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
-					setIsInProb(gb.getContent().get(
-							VisualObjectTransferFunction.IS_IN),
-							perceptPointer, (float) perceptIsInProb);
-					manageHistory(event, from, gb.get());
-					overwriteWorkingMemory(wmaGrounded, gb.get());
-					newNeeded = false;
 					break;
 				}
+
+				// float existingProb = sumProb(gb.getContent().get(
+				// VisualObjectTransferFunction.IS_IN));
+				// log("the current existingProb of the GroundedBelief is "
+				// + existingProb + ", the perceptIsInProb is "
+				// + perceptIsInProb);
+				// if (perceptIsInProb < 0.5) {
+				// log("perceptIsInProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// setIsInProb(gb.getContent().get(
+				// VisualObjectTransferFunction.IS_IN),
+				// perceptPointer, (float) perceptIsInProb);
+				// manageHistory(event, from, gb.get());
+				// overwriteWorkingMemory(wmaGrounded, gb.get());
+				// newNeeded = false;
+				// } else if (existingProb < 0.5) {
+				// log("existingProb < 0.5: so we overwrite with new prob="+perceptIsInProb);
+				// setIsInProb(gb.getContent().get(
+				// VisualObjectTransferFunction.IS_IN),
+				// perceptPointer, (float) perceptIsInProb);
+				// manageHistory(event, from, gb.get());
+				// overwriteWorkingMemory(wmaGrounded, gb.get());
+				// newNeeded = false;
+				// break;
+				// }
 
 			}
 			// we found no belief that we can assign to, so we need a new one

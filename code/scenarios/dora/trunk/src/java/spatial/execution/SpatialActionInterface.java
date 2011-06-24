@@ -19,9 +19,12 @@ import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.Priority;
 import SpatialData.ProcessViewPointCommand;
+import SpatialData.ProcessConeGroup;
 import SpatialData.StatusError;
+import SpatialData.SpatialRelation;
 import SpatialData.ViewPoint;
 import SpatialData.ViewPointGenerationCommand;
+import SpatialData.RelationalViewPointGenerationCommand;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -37,12 +40,14 @@ import cast.cdl.WorkingMemoryPermissions;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.CreateConesForModel;
+import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessCone;
 import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.ProcessConeGroupAction;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.ComponentActionFactory;
@@ -111,6 +116,45 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
+	public static class RelationalViewConeGenerationExecutor extends
+			NonBlockingCompleteOnOperationExecutor<CreateRelationalConesForModel> {
+
+		public RelationalViewConeGenerationExecutor(ManagedComponent _component) {
+			super(_component, CreateRelationalConesForModel.class);
+		}
+
+		@Override
+		protected boolean acceptAction(CreateRelationalConesForModel _action) {
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			// first delete all cones from previous object call
+			// ((SpatialActionInterface) getComponent())
+			// 		.removeObjectViewPoints(getAction().model);
+            SpatialRelation rel = null;
+            if ("inroom".equals(getAction().relation)) {
+                rel = SpatialRelation.INROOM;
+            }
+            else if ("in".equals(getAction().relation)) {
+                rel = SpatialRelation.INOBJECT;
+            }
+            else if ("on".equals(getAction().relation)) {
+                rel = SpatialRelation.ON;
+            }
+            else {
+                assert false : "unknown relation: " + getAction().relation;
+            }
+
+			// the generate new ones
+			RelationalViewPointGenerationCommand cmd = new RelationalViewPointGenerationCommand(
+                getAction().model, rel, getAction().supportObject, getAction().supportObjectCategory, getAction().roomID,
+					AVSStatus.INPROGRESS);
+			addThenCompleteOnOverwrite(cmd);
+		}
+	}
+
 	public static class ViewConeProcessExecutor extends
 			NonBlockingCompleteOnOperationExecutor<ProcessCone> {
 
@@ -138,6 +182,60 @@ public class SpatialActionInterface extends ManagedComponent {
 					AVSStatus.INPROGRESS, m_vp, new String[] { m_vp.label });
 			addThenCompleteOnOverwrite(cmd);
 		}
+	}
+
+	public static class ConeGroupProcessExecutor extends
+			NonBlockingCompleteOnOperationExecutor<ProcessConeGroupAction> {
+
+		private long coneId;
+
+		public ConeGroupProcessExecutor(ManagedComponent _component) {
+			super(_component, ProcessConeGroupAction.class);
+		}
+
+		@Override
+		protected boolean acceptAction(ProcessConeGroupAction _action) {
+//			try {
+				coneId = _action.coneGroupID;
+//			} catch (CASTException e) {
+//				logException(e);
+//				return false;
+//			}
+			return true;
+		}
+
+		@Override
+		public void executeAction() {
+			ProcessConeGroup cmd = new ProcessConeGroup(
+					AVSStatus.INPROGRESS, coneId);
+			addThenCompleteOnOverwrite(cmd);
+		}
+
+
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+
+			// read in the nav cmd
+            getComponent().lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+			ProcessConeGroup cmd = getComponent().getMemoryEntry(_wmc.address, ProcessConeGroup.class);
+			if (cmd.status == AVSStatus.FAILED) {
+				log("command failed by the looks of this: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+                actionComplete();
+                executionComplete(TriBool.TRIFALSE);
+				getComponent().removeChangeFilter(this);
+			} else if (cmd.status == AVSStatus.SUCCESS) {
+				log("command completed by the looks of this: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+                actionComplete();
+                executionComplete(TriBool.TRITRUE);
+				getComponent().removeChangeFilter(this);
+			} else {
+				log("command in progress: " + cmd.status);
+				getComponent().unlockEntry(_wmc.address);
+			}
+		}
+
 	}
 
 	public static class ProcessAllViewConesAtPlaceExecutor extends
@@ -586,6 +684,14 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(CreateConesForModel.class,
 				new ComponentActionFactory<ViewConeGenerationExecutor>(this,
 						ViewConeGenerationExecutor.class));
+
+		m_actionStateManager.registerActionType(CreateRelationalConesForModel.class,
+				new ComponentActionFactory<RelationalViewConeGenerationExecutor>(this,
+						RelationalViewConeGenerationExecutor.class));
+
+		m_actionStateManager.registerActionType(ProcessConeGroupAction.class,
+				new ComponentActionFactory<ConeGroupProcessExecutor>(this,
+						ConeGroupProcessExecutor.class));
 
 		m_actionStateManager.registerActionType(ProcessCone.class,
 				new ComponentActionFactory<ViewConeProcessExecutor>(this,

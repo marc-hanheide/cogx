@@ -9,15 +9,28 @@ import eu.cogx.perceptmediator.components.abstr.ReferringPerceptMediatorComponen
 public class VisualObjectMediatorComponent extends
 		ReferringPerceptMediatorComponent<GroundedBelief> {
 
+    VisualObjectTransferFunction tf = null;
+
 	public VisualObjectMediatorComponent() {
 		super(GroundedBelief.class);
 	}
 
 	@Override
 	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator() {
+        tf = new VisualObjectTransferFunction(this, allBeliefs);
 		return PerceptBindingMediator.create(this, VisualObject.class,
-				PerceptBelief.class, new VisualObjectTransferFunction(this,
-						allBeliefs));
+				PerceptBelief.class, tf);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#start()
+	 */
+	@Override
+	protected void start() {
+        tf.start();
+        super.start();
+    }
 
 }

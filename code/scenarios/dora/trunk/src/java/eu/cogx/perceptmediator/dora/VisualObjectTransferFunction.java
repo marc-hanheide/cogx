@@ -11,11 +11,16 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import VisionData.VisualObject;
+import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
+import cast.architecture.ChangeFilterFactory;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import cast.core.CASTData;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
@@ -32,7 +37,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import execution.slice.TriBool;
-import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.ProcessConeGroupAction;
 
 /**
  * @author marc
@@ -44,8 +49,11 @@ public class VisualObjectTransferFunction
 
 	private static final String PLANNER_SA = "planner.sa";
 	public static final String LABEL_ID = "label";
-	public static final String IS_IN = "is-in";
+	public static final String IS_IN = "related-to";
+	public static final String CONE = "from-cone";
 	private static final double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
+    
+    private WorkingMemoryAddress lastViewconeAddress = null;
 
 	public VisualObjectTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
@@ -54,6 +62,31 @@ public class VisualObjectTransferFunction
 				PerceptBelief.class);
 	}
 
+    public void start() {
+		WorkingMemoryChangeReceiver receiver = new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				processConeActionAdded(_wmc);
+			}
+		};
+		component.addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(ProcessConeGroupAction.class,
+						WorkingMemoryOperation.ADD), receiver);
+    }
+
+    private void processConeActionAdded(WorkingMemoryChange _wmc) {
+		try {
+			CASTData<ProcessConeGroupAction> actionData = component.getMemoryEntryWithData(_wmc.address,
+					ProcessConeGroupAction.class);
+			ProcessConeGroupAction action = actionData.getData();
+            lastViewconeAddress = action.coneGroupBeliefID;
+		} catch (DoesNotExistOnWMException e) {
+			component.logException(e);
+		} catch (UnknownSubarchitectureException e) {
+			component.logException(e);
+		}
+
+    }
+
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
 			WorkingMemoryChange wmc, VisualObject from) throws BeliefException {
@@ -61,8 +94,10 @@ public class VisualObjectTransferFunction
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			result.put(LABEL_ID, PropositionFormula.create(from.identLabels[0])
-					.getAsFormula());
+            if (from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+                result.put(LABEL_ID, PropositionFormula.create(from.identLabels[0])
+                           .getAsFormula());
+            }
 		} catch (BeliefException e) {
 			component.logException(e);
 		}
@@ -82,69 +117,44 @@ public class VisualObjectTransferFunction
 	protected void fillBelief(
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
 			WorkingMemoryChange wmc, VisualObject from) {
-		FormulaDistribution fd = FormulaDistribution.create();
-		try {
-			log("check if we have pending cone actions");
-			Formula place = null;
-			List<ProcessConesAtPlace> coneActions = new ArrayList<ProcessConesAtPlace>();
-			component.getMemoryEntries(ProcessConesAtPlace.class, coneActions,
-					PLANNER_SA);
-			for (ProcessConesAtPlace pca : coneActions) {
-				if (pca.success == TriBool.TRIINDETERMINATE) { // this guy is
-					// currently
-					// executed
-					WorkingMemoryAddress placeBelief = getReferredBelief(new PlaceMatchingFunction(
-							pca.placeID));
-					log("we found the place that belongs to this cone: "
-							+ CASTUtils.toString(placeBelief));
-					place = WMPointer
-							.create(
-									placeBelief,
-									SimpleDiscreteTransferFunction
-											.getBeliefTypeFromCastType(GroundedBelief.class))
-							.getAsFormula();
-					log("we found the WMPointer that belongs to this cone: "
-							+ place.toString());
-					break;
-				}
-			}
 
-			if (place == null) { // if we haven't found that object through a
-				// cone action, find it by looking where we are now
-				log("try to find out where the agent is...");
-				WorkingMemoryAddress agentWMA = getReferredBelief(new AgentMatchingFunction(
-						0));
-				CASTIndependentFormulaDistributionsBelief<dBelief> agent = CASTIndependentFormulaDistributionsBelief
-						.create(dBelief.class, allBeliefs.get(agentWMA));
-				place = agent.getContent().get(
-						LocalizedAgentTransferFunction.IS_IN).getDistribution()
-						.getMostLikely();
-				// currentPlace = SpatialFacade.get(component).getPlace();
-				// component.log("I am at place " + currentPlace.id
-				// + " when I found that object");
-				// WorkingMemoryAddress placeWMA = getReferredBelief(new
-				// PlaceMatchingFunction(
-				// currentPlace.id));
-				// WMPointer wmp = WMPointer.create(placeWMA, CASTUtils
-				// .typeName(GroundedBelief.class));
-			}
-			assert (place != null);
-			component.log("size of from.identDistrib: "
-					+ from.identDistrib.length);
-			fd
-					.add(
-							place.get(),
-							from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI ? 1.0
-									: 0.0);
-			belief.getContent().put(IS_IN, fd);
-			// } catch (CASTException e) {
-			// component.logException(e);
-		} catch (InterruptedException e) {
-			component.logException(e);
-		} catch (BeliefException e) {
-			component.logException(e);
-		} catch (UnknownSubarchitectureException e) {
-			component.logException(e);
-		}
+        Formula related_to = null;
+        Formula relation = null;
+        Formula label = null;
+        Formula cone = null;
+        log("check if we have pending cone actions");
+        
+        if (lastViewconeAddress != null) {
+					CASTIndependentFormulaDistributionsBelief<GroundedBelief> coneGroupBelief = CASTIndependentFormulaDistributionsBelief
+					  .create(GroundedBelief.class, allBeliefs.get(lastViewconeAddress));
+
+					related_to = coneGroupBelief.getContent().get("cg-related-to").getDistribution().getMostLikely();
+					relation = coneGroupBelief.getContent().get("cg-relation").getDistribution().getMostLikely();
+					label = coneGroupBelief.getContent().get("cg-label").getDistribution().getMostLikely();
+                    cone = WMPointer.create(lastViewconeAddress, "conegroup").getAsFormula();
+
+					log("we found the cone group that belongs to this cone: "
+							+ CASTUtils.toString(lastViewconeAddress));
+        }
+        if (related_to == null) {
+            throw new BeliefException();
+        }
+        component.log("size of from.identDistrib: "
+                      + from.identDistrib.length);
+
+        if (from.identDistrib[0] > BLOODY_THRESHOLD_ACCORDING_TO_MICHI) {
+            FormulaDistribution fd1 = FormulaDistribution.create();
+            fd1.add(related_to.get(), 1.0);
+            FormulaDistribution fd2 = FormulaDistribution.create();
+            fd2.add(relation.get(), 1.0);
+            // FormulaDistribution fd3 = FormulaDistribution.create();
+            // fd3.add(label.get(), 1.0);
+            FormulaDistribution fd4 = FormulaDistribution.create();
+            fd4.add(cone.get(), 1.0);
+            
+            belief.getContent().put(IS_IN, fd1);
+            belief.getContent().put("relation", fd2);
+            belief.getContent().put(CONE, fd4);
+        }
 	}
 }

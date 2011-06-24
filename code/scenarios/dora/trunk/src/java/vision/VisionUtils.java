@@ -1,5 +1,9 @@
 package vision;
 
+import org.apache.log4j.Logger;
+
+import mathlib.Functions;
+import Video.CameraParameters;
 import VisionData.Face;
 import VisionData.GeometryModel;
 import VisionData.Vertex;
@@ -8,6 +12,7 @@ import VisionData.VisualObjectView;
 import blobfinder.ColorRGB;
 import cast.core.CASTUtils;
 import cogx.Math.Matrix33;
+import cogx.Math.Vector2;
 import cogx.Math.Vector3;
 
 public class VisionUtils {
@@ -41,15 +46,48 @@ public class VisionUtils {
 				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
 				CASTUtils.getTimeServer().getCASTTime(), null,
 				new VisualObjectView[0], new GeometryModel(new Vertex[0],
-						new Face[0]),
-				0d, new String[0], new double[0], 0, 0, new String[0], 
-				new double[0], new double[0], 0, 0, new String[0], new double[0],  new double[0], 0, 0, "","");
+						new Face[0]), 0d, new String[0], new double[0], 0, 0,
+				new String[0], new double[0], new double[0], 0, 0,
+				new String[0], new double[0], new double[0], 0, 0, "", "");
 		return obj;
 	}
 
 	public static String toString(ColorRGB _rgb) {
 		return CASTUtils.concatenate("[ColorRGB ", _rgb.r, ",", _rgb.g, ",",
 				_rgb.b, "]");
+	}
+
+	/**
+	 * check if a 3D point (in robot CS) is visible in the camera
+	 * 
+	 * @param cam
+	 * @param w
+	 * @return returns true if a 3D point is visible in the frame of the camera
+	 */
+	static public boolean isVisible(CameraParameters cam, Vector3 w) {
+		Vector2 imgCoords = projectPoint(cam, w);
+		Logger.getLogger(VisionUtils.class).debug(
+				"projected coords=[" + imgCoords.x + ", " + imgCoords.y + "]");
+		return (imgCoords.x >= 0 && imgCoords.x < cam.width && imgCoords.y >= 0 && imgCoords.y < cam.height);
+	}
+
+	/**
+	 * project a 3D point (in robot CS) into the image plane
+	 * 
+	 * @param cam
+	 * @param w
+	 * @return the 2D coordinates of the projected point
+	 */
+	static public Vector2 projectPoint(CameraParameters cam, Vector3 w) {
+		Vector3 p = Functions.transformInverse(cam.pose, w);
+		Logger.getLogger(VisionUtils.class).debug(
+				"in cam coords: [" + p.x + ", " + p.y + ", " + p.z + "]");
+		Logger.getLogger(VisionUtils.class).debug(
+				"cam params: [" + cam.fx + ", " + cam.fy + ", " + cam.cx + ", "
+						+ cam.cy + "]");
+
+		return new Vector2(cam.fx * p.x / p.z + cam.cx, cam.fy * p.y / p.z
+				+ cam.cy);
 	}
 
 }
