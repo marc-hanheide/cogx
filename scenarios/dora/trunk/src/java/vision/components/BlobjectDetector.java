@@ -125,16 +125,20 @@ public class BlobjectDetector extends ManagedComponent {
 			log("see no blobs around here");
 			// we don't see anything
 			for (String label : _labels) {
-				// for the time being just fail
-				VisualObject obj = VisionUtils.newVisualObject();
-				obj.identLabels = new String[1];
-				obj.identLabels[0] = label;
+				if (m_label2colour.containsKey(label)) {
+					// for the time being just fail
+					VisualObject obj = VisionUtils.newVisualObject();
+					obj.identLabels = new String[1];
+					obj.identLabels[0] = label;
 
-				obj.identDistrib = new double[1];
-				obj.identDistrib[0] = 0;
+					obj.identDistrib = new double[1];
+					obj.identDistrib[0] = 0;
 
-				obj.detectionConfidence = 0f;
-				addToWorkingMemory(newDataID(), obj);
+					obj.detectionConfidence = 0f;
+					addToWorkingMemory(newDataID(), obj);
+				} else {
+					log("cannot detect this object... ignore it.");
+				}
 			}
 		} else {
 			log("there are some blobs around");
@@ -166,8 +170,8 @@ public class BlobjectDetector extends ManagedComponent {
 							break;
 						}
 					}
+					addToWorkingMemory(newDataID(), obj);
 				}
-				addToWorkingMemory(newDataID(), obj);
 			}
 		}
 	}
