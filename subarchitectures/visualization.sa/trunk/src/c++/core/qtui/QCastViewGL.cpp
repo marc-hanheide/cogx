@@ -180,6 +180,7 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
          pCamera = cameras[i];
          QString text = QString::fromStdString(pCamera->name);
          QAction* pAct = new QAction(QIcon(":/toolButton/camera-photo.png"), text, pBut);
+         pAct->setToolTip("Select Camera: " + text);
          pAct->setData(qVariantFromValue((void*)pCamera));
          pBut->setDefaultAction(pAct);
          pBar->addWidget(pBut);
@@ -202,6 +203,7 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
                   text = QString::fromStdString(pCamera->name);
                   pPopAct = pMenu->addAction(QIcon(":/toolButton/camera-photo.png"), text);
                   pPopAct->setData(qVariantFromValue((void*)pCamera));
+                  pPopAct->setToolTip("Select Camera: " + text);
                   pBar->connect(pPopAct, SIGNAL(triggered()), this, SLOT(onCameraChangeAction()));
                }
             }

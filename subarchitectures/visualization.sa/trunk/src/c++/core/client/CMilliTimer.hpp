@@ -9,6 +9,7 @@ public:
    ~CMilliTimer();
    void restart();
    long long elapsed();
+   long long elapsed_micros();
 };
 
 #endif /* end of include guard: CMILLITIMER_PEOJ4UOI */
