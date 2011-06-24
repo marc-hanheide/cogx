@@ -49,14 +49,16 @@ if(BUILD_ROCS)
 	set(ROCS_BUILD_TYPE "Release")
 	# Now, set the build options of ROCS
 	set(ROCS_BUILD_MODULE_CORE yes)
-	set(ROCS_BUILD_MODULE_MATH yes)
-	set(ROCS_BUILD_MODULE_CV yes)
+	set(ROCS_BUILD_MODULE_ML yes )
+	set(ROCS_BUILD_MODULE_CONCEPT yes )
 	set(ROCS_BUILD_THIRDPARTY_LIBDAI yes)
+	set(ROCS_BUILD_GPL yes)
 	# Set the directory where ROCS should be installed
 	set(ROCS_DIR ${OUTPUT}/rocs)
 	# Finally, add ROCS
 	add_subdirectory(tools/rocs)
 	get_directory_property(ROCS_SRC_INCLUDES DIRECTORY tools/rocs INCLUDE_DIRECTORIES)
+	message(STATUS ${ROCS_SRC_INCLUDES})
 endif(BUILD_ROCS)
 # ------------ </ROCS> ------------
 
