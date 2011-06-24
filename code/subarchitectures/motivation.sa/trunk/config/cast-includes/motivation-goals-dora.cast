@@ -6,4 +6,5 @@ JAVA MG goal.generator.patrol spatial.motivation.PatrolPlaceGenerator
 
 
 
+
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter" #--min-gain 0.05
