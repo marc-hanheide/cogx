@@ -1,3 +1,0 @@
-ROOMS
-room1 0 9
-room2 9 0

@@ -1,3 +1,0 @@
-#! /bin/bash
-
-./plan.py $1 $2 $3

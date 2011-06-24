@@ -1,4 +1,0 @@
-SUBARCHITECTURE visualization.sa 
-CPP WM SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-CPP MG display.srv DisplayServer --redirect-to-host localhost

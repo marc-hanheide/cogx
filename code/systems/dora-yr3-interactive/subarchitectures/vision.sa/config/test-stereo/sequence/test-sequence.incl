@@ -1,3 +1,0 @@
-# reading stored images
-CPP MG videoserver OpenCvImgSeqServer --framerate_ms 100 --camids "0 1" --sequences "%(CURRENT_DIR)/test-sequence.vseq" --show_sequence "Empty" --displayserver "display.srv" # --log
-

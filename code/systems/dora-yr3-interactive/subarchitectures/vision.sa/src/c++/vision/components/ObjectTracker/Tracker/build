@@ -1,6 +1,0 @@
-cd BUILD
-cmake ..
-cd ..
-make -C BUILD
-sudo make -C BUILD install
-make
