@@ -1,3 +1,0 @@
-Exclude or rm -rf the following from build
-
-subarchitectures/vision.sa/src/java/vision/ 
