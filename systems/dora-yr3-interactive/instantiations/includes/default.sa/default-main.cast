@@ -1,3 +1,0 @@
-CPP GD default.queryhandler DefaultQueryHandler
-CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config subarchitectures/default.sa/config/default_knowledge.xml
-
