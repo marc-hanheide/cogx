@@ -244,10 +244,39 @@ void PlanePopOut::start()
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
-  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
-  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
-  m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_LABEL_COLOR, "Color by label");
-  m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
+  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
+  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
+  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_LABEL_COLOR, "Color by label");
+  //m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
+
+  Visualization::ActionInfo act;
+  act.id = IDC_POPOUT_LABEL_COLOR;
+  act.label = "Color by label";
+  act.iconLabel = "Color";
+  act.iconSvg = "stock:C";
+  act.checkable = true;
+  m_display.addAction(ID_OBJECT_3D, act);
+
+  act.id = IDC_POPOUT_POINTS;
+  act.label = "Toggle Update 3D Points";
+  act.iconLabel = "3D Points";
+  act.iconSvg = "stock:P";
+  act.checkable = true;
+  m_display.addAction(ID_OBJECT_3D, act);
+
+  act.id = IDC_POPOUT_PLANEGRID;
+  act.label = "Toggle Update Plane Grid";
+  act.iconLabel = "Plane Grid";
+  act.iconSvg = "stock:G";
+  act.checkable = true;
+  m_display.addAction(ID_OBJECT_3D, act);
+
+  act.id = IDC_POPOUT_IMAGE;
+  act.label = "Toggle Update Image";
+  act.iconLabel = "Image";
+  act.iconSvg = "stock:I";
+  act.checkable = true;
+  m_display.addAction(ID_OBJECT_IMAGE, act);
 
 
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
@@ -281,6 +310,7 @@ void PlanePopOut::start()
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
 	if (!pPopout) return;
+	pPopout->println("Got event: %s", event.sourceId.c_str());
 	if (event.sourceId == IDC_POPOUT_POINTS) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPoints = false;
 		else pPopout->m_bSendPoints = true;
@@ -302,6 +332,7 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
 std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrlId)
 {
 	if (!pPopout) return "";
+	pPopout->println("Get control state: %s", ctrlId.c_str());
 	if (ctrlId == IDC_POPOUT_POINTS) {
 		if (pPopout->m_bSendPoints) return "2";
 		else return "0";
@@ -354,17 +385,18 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels,
   cogx::display::CDisplayClient& m_display, CMilliTimer& tmSendPoints, PlanePopOut *powner)
 {
-  if (tmSendPoints.elapsed() < 500) // 2Hz
-    return;
-  tmSendPoints.restart();
+	if (tmSendPoints.elapsed() < 500) // 2Hz
+		return;
+	tmSendPoints.restart();
 
 	std::ostringstream str;
 	str.unsetf(ios::floatfield); // unset floatfield
 	str.precision(5); // set the _maximum_ precision
 
 	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+	str << "v=glVertex\nc=glColor\n";
 	int plab = -9999;
-  int colors = 1;
+	int colors = 1;
 	cogx::Math::ColorRGB coPrev;
 	coPrev.r = coPrev.g = coPrev.b = 0;
 	str << "glColor(0,0,0)\n";
@@ -374,8 +406,8 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 		if (!bColorByLabels) {
 #define CO3(bc) int(1000.0*bc/255)/1000.0
 			if (coPrev != p.c) {
-        colors++;
-				str << "glColor(" << CO3(p.c.r) << "," << CO3(p.c.g) << "," << CO3(p.c.b) << ")\n";
+				colors++;
+				str << "c(" << CO3(p.c.r) << "," << CO3(p.c.g) << "," << CO3(p.c.b) << ")\n";
 				coPrev = p.c;
 			}
 #undef CO3
@@ -383,45 +415,46 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 		else {
 			int lab = labels.at(i);
 			if (plab != lab) {
-        colors++;
+				colors++;
 				plab = lab;
 				switch (lab) {
-					case 0: str << "glColor(1.0,0.0,0.0)\n"; break;
-					case -10: str << "glColor(0.0,1.0,0.0)\n"; break;
-					case -20: str << "glColor(0.0,0.0,1.0)\n"; break;
-					case -30: str << "glColor(0.0,1.0,1.0)\n"; break;
-					case -40: str << "glColor(0.5,0.5,0.0)\n"; break;
-					case -5: str << "glColor(0.0,0.0,0.0)\n"; break;
-					default: str << "glColor(1.0,1.0,0.0)\n"; break;
+					case 0:   str << "c(1.0,0.0,0.0)\n"; break;
+					case -10: str << "c(0.0,1.0,0.0)\n"; break;
+					case -20: str << "c(0.0,0.0,1.0)\n"; break;
+					case -30: str << "c(0.0,1.0,1.0)\n"; break;
+					case -40: str << "c(0.5,0.5,0.0)\n"; break;
+					case -5:  str << "c(0.0,0.0,0.0)\n"; break;
+					default:  str << "c(1.0,1.0,0.0)\n"; break;
 				}
 			}
 		}
-		str << "glVertex(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
+		str << "v(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
 	}
 	str << "glEnd()\nend\n";
-  long long t1 = tmSendPoints.elapsed();
-  string S = str.str();
-  long long t2 = tmSendPoints.elapsed();
-  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", S);
-  long long t3 = tmSendPoints.elapsed();
-  if (1) {
-    str.str("");
-    str.clear();
-    str << "<h3>Plane popout - SendPoints</h3>";
-    str << "Labels: " << (bColorByLabels ? "ON" : "OFF") << "<br>";
-    str << "Points: " << points.size() << "<br>";
-    str << "Colors: " << colors << "<br>";
-    str << "Strlen: " << S.length() << "<br>";
-    str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
-    str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
-    str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
-    m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
-  }
+	long long t1 = tmSendPoints.elapsed();
+	string S = str.str();
+	long long t2 = tmSendPoints.elapsed();
+	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", S);
+	long long t3 = tmSendPoints.elapsed();
+	if (1) {
+		str.str("");
+		str.clear();
+		str << "<h3>Plane popout - SendPoints</h3>";
+		str << "Labels: " << (bColorByLabels ? "ON" : "OFF") << "<br>";
+		str << "Points: " << points.size() << "<br>";
+		str << "Colors: " << colors << "<br>";
+		str << "Strlen: " << S.length() << "<br>";
+		str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+		str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+		str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
+		m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
+	}
 }
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
-	long long t0 = gethrtime();
+	CMilliTimer tm;
+	tm.restart();
 	std::ostringstream str;
 	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
 
@@ -448,30 +481,43 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 
 	str << "end\n";
 
-	m_display.setLuaGlObject(ID_OBJECT_3D, "PlaneGrid", str.str());
-	long long t1 = gethrtime();
-	double dt = (t1 - t0) * 1e-6;
-	powner->log("*****GL: Plane grid sent after %lfms", dt);
+	long long t1 = tm.elapsed_micros();
+	string S = str.str();
+	m_display.setLuaGlObject(ID_OBJECT_3D, "PlaneGrid", S);
+	long long t2 = tm.elapsed_micros();
+
+	if (1) {
+		str.str("");
+		str.clear();
+		str << "<h3>Plane popout - SendPlaneGrid</h3>";
+		str << "Strlen: " << S.length() << "<br>";
+		str << "Generated: " << t1 << "&mu;s from start (in " << t1 << "&mu;s).<br>";
+		str << "Sent: " << t2 << "&mu;s from start (in " << (t2-t1) << "&mu;s).<br>";
+		m_display.setHtml("LOG", "log.PPO.SendPlaneGrid", str.str());
+	}
 }
 
 void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
   std::ostringstream str;
   str << "function render()\n";
-  str << "glColor(1.0,1.0,0.0)\n";
   str << "glBegin(GL_LINES)\n";
-  str << "glVertex(-1000., 0., 0.)\n";
-  str << "glVertex(1000., 0., 0.)\n";
-  str << "glVertex(0., -1000., 0.)\n";
-  str << "glVertex(0., 1000., 0.)\n";
-  str << "glVertex(0., 0., -1000.)\n";
-  str << "glVertex(0., 0., 1000.)\n";
+  str << "glColor(1.0,0.0,0.0)\n";
+  str << "glVertex(0., 0., 0.)\n";
+  str << "glVertex(0.1, 0., 0.)\n";
+  str << "glColor(0.0,1.0,0.0)\n";
+  str << "glVertex(0., 0., 0.)\n";
+  str << "glVertex(0., 0.1, 0.)\n";
+  str << "glColor(0.0,0.0,1.0)\n";
+  str << "glVertex(0., 0., 0.)\n";
+  str << "glVertex(0., 0., 0.1)\n";
   str << "glEnd()\n";
   //str << "DrawText3D(\"x\", 0.1, 0.02, 0.)\n";
   //str << "DrawText3D(\"y\", 0., 0.1, 0.02)\n";
   //str << "DrawText3D(\"z\", 0.02, 0., 0.1)\n";
 
   // draw tics every m, up to 10 m
+#if 0
   str << "tic_size = 0.05\n";
   str << "glBegin(GL_LINES)\n";
   str << "for i=-10,10 do\n";
@@ -485,6 +531,7 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
     str << "end\n";
   str << "end\n";
   str << "glEnd()\n";
+#endif
   //str << "for(int i = -10; i < 10; i++)\n";
   //  str << "if(i != 0)
   //    snprintf(buf, 100, "%d", i);
@@ -509,7 +556,7 @@ void PlanePopOut::runComponent()
   int stereoWidth = 640;
 
 #ifdef FEAT_VISUALIZATION
-  //SendOverlays(m_display, this);
+  SendOverlays(m_display, this);
 #endif
   while(isRunning())
   {
@@ -2527,3 +2574,4 @@ void PlanePopOut::DisplayInTG()
 }
 
 }
+// vim: set sw=4 ts=4 noet :vim
