@@ -124,10 +124,10 @@ public abstract class AugmentDiscreteTransferFunction<From extends Ice.ObjectImp
 		Entry<WorkingMemoryAddress, PerceptBelief> entry = waitingBeliefReader
 				.read(contentMatchingFunction);
         if (entry == null) {
-            logger.debug("timed out");
+            getLogger().debug("timed out");
             return null;
         }
-		logger.debug("got it: " + entry.getKey().id);
+		getLogger().debug("got it: " + entry.getKey().id);
 		return entry.getKey();
 	}
 
