@@ -14,13 +14,13 @@
  * GNU General Public License for more details.
  */
 
-#ifndef QCUSTOMGUIPANEL_V9N1BGY9
-#define QCUSTOMGUIPANEL_V9N1BGY9
+#ifndef QCUSTOMTOOLBAR_VBN1BGY9
+#define QCUSTOMTOOLBAR_VBN1BGY9
 
-#include <QFrame>
+#include <QToolBar>
 #include "../Model.hpp"
 
-class QCustomGuiPanel: public QFrame, public cogx::display::CDisplayModelObserver
+class QCustomToolBar: public QToolBar, public cogx::display::CDisplayModelObserver
 {
    Q_OBJECT
 private:
@@ -31,8 +31,8 @@ private:
    void removeUi();
 
 public:
-   QCustomGuiPanel( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
-   ~QCustomGuiPanel();
+   QCustomToolBar( QWidget* parent = 0 );
+   ~QCustomToolBar();
 
    // @returns the nubmer of created custom UI elements.
    int updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
@@ -58,4 +58,4 @@ private slots:
          cogx::display::CGuiElement *pElement, QString newValue); /*override*/
 };
 
-#endif /* end of include guard: QCUSTOMGUIPANEL_V9N1BGY9 */
+#endif /* end of include guard: QCUSTOMTOOLBAR_VBN1BGY9 */

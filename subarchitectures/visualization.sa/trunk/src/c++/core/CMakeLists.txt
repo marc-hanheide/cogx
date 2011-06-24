@@ -134,6 +134,7 @@ set(GUI_CPP
    qtui/QCastView.cpp
    qtui/QCastViewScene.cpp
    qtui/QCustomGuiPanel.cpp
+   qtui/QCustomToolBar.cpp
    qtui/QViewContainer.cpp
    qtui/ChangeSlot.cpp
    )
@@ -145,6 +146,7 @@ set(SERVER_MOC_HEADERS
    qtui/QCastViewScene.hpp
    qtui/ChangeSlot.hpp
    qtui/QCustomGuiPanel.hpp
+   qtui/QCustomToolBar.hpp
    qtui/QViewContainer.hpp
    ${WEBKIT_EXPERIMENT_MOC}
    )

@@ -137,6 +137,7 @@ public:
    void addButton(const std::string& viewId, const std::string& ctrlId, const std::string& label);
    void addDialog(const std::string& dialogId, const std::string& designCode, const std::string& scriptCode,
          const std::string& constructorName);
+   void addAction(const std::string& viewId, const Visualization::ActionInfo& action);
 
    void setImage(const std::string& id, const _IplImagePtr pImage); 
    void setObjectTransform2D(const std::string& id, const std::string& partId, _CvMatPtr pTransform); 

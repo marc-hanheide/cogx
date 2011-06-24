@@ -55,9 +55,9 @@ public:
    virtual void onViewChanged(CDisplayModel *pModel, CDisplayView *pView) {}
    virtual void onViewAdded(CDisplayModel *pModel, CDisplayView *pView) {}
    virtual void onViewRemoved(CDisplayModel *pModel, const std::string& id) {}
-   virtual void onUiDataChanged(CDisplayModel *pModel, CDisplayView *pSourceView,
-         CGuiElement *pElement, const std::string& newValue) {}
    virtual void onDialogAdded(CDisplayModel *pModel, CGuiDialog *pDialog) {}
+   virtual void onModel_UiDataChanged(CDisplayModel *pModel, CDisplayView *pSourceView,
+         CGuiElement *pElement, const std::string& newValue) {}
 };
 
 class COwnerDataProxy
@@ -340,8 +340,8 @@ public:
 
 public:
    // CGuiElementObserver
-   void onUiDataChanged(CGuiElement *pElement, const std::string& newValue);
-   void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue);
+   void onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue);
+   void onGuiElement_OwnerDataChanged(CGuiElement *pElement, const std::string& newValue);
 
 public:
    CObserverList<CDisplayModelObserver> viewObservers;

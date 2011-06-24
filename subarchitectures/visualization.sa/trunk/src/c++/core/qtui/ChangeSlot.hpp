@@ -52,10 +52,22 @@ public:
  
       // The view needs to be notified about data changes related to pGuiElement
       // A button has no data, so it doesn't need to be notified.
-      if (m_pGuiElement && m_pGuiElement->m_type != cogx::display::CGuiElement::wtButton) {
-         if (m_pView) m_pGuiElement->Observers += m_pView;
-         m_pGuiElement->Observers += this;
+      if (m_pGuiElement) {
+        switch(m_pGuiElement->m_type) {
+           case cogx::display::CGuiElement::wtButton:
+              break;
+            case cogx::display::CGuiElement::wtAction:
+              if (!m_pGuiElement->m_bCheckable)
+                 break;
+              // else: fall-through
+            default:
+              DMESSAGE("CChangeSlot: Add obsevers for " << pGuiElement->m_id);
+              if (m_pView) m_pGuiElement->Observers += m_pView;
+              m_pGuiElement->Observers += this;
+              break;
+        }
       }
+      m_sGuiObserverName = std::string("CChangeSlot(") + pGuiElement->m_id + ")";
    }
    ~CChangeSlot() {
       DMESSAGE("~Destroying CChangeSlot");
@@ -70,7 +82,7 @@ public:
 
 public:
    // CGuiElementObserver
-   void onUiDataChanged(cogx::display::CGuiElement *pElement, const std::string& newValue);
+   void onGuiElement_CtrlDataChanged(cogx::display::CGuiElement *pElement, const std::string& newValue);
 
 public slots:
    void onCheckBoxChange(int value);

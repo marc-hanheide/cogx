@@ -136,12 +136,14 @@ public:
    void addDialog(const Ice::Identity& ident, const std::string& dialogId,
          const std::string& designCode, const std::string& scriptCode,
          const std::string& constructorName);
+   void addAction(const Ice::Identity& ident, const std::string& viewId,
+         const Visualization::ActionInfo& action);
 
 private:
    void startIceServer();
 
    // CGuiElementObserver
-   void onUiDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
+   void onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
 
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
@@ -282,11 +284,10 @@ public:
       m_pDisplayServer->addButton(ident, viewId, ctrlId, label);
    }
 
-   virtual void addToolButton(const Ice::Identity& ident, const std::string& viewId,
-         const std::string& ctrlId, const Visualization::ActionInfo& info,
-         const Ice::Current&)
+   virtual void addAction(const Ice::Identity& ident, const std::string& viewId,
+         const Visualization::ActionInfo& action, const Ice::Current&)
    {
-      // TODO m_pDisplayServer->addToolButton(ident, viewId, ctrlId, info);
+      m_pDisplayServer->addAction(ident, viewId, action);
    }
 
    virtual void enableMouseEvents(const Ice::Identity& ident, const std::string& viewId,

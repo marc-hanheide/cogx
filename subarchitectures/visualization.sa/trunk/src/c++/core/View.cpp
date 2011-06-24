@@ -20,7 +20,7 @@
 #include <QGraphicsItemGroup>
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -33,6 +33,7 @@ CDisplayView::CDisplayView(CDisplayModel *pModel)
    m_pModel = pModel;
    m_preferredContext = ContextGraphics;
    m_bDefaultView = false;
+   m_sGuiObserverName = "CDisplayView";
 }
 
 CDisplayView::~CDisplayView()
@@ -178,23 +179,23 @@ void CDisplayView::refreshObject(const std::string& id)
    }
 }
 
-void CDisplayView::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
+void CDisplayView::onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
-   DTRACE("CDisplayView::onUiDataChanged");
+   DTRACE("CDisplayView::onGuiElement_CtrlDataChanged");
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onUiDataChanged(NULL, this, pElement, newValue);
+      pobsrvr->onModel_UiDataChanged(NULL, this, pElement, newValue);
    }
 }
 
-void CDisplayView::onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue)
+void CDisplayView::onGuiElement_OwnerDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
-   DTRACE("CDisplayView::onOwnerDataChanged");
+   DTRACE("CDisplayView::onGuiElement_OwnerDataChanged " << pElement->m_id);
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onUiDataChanged(NULL, NULL, pElement, newValue);
+      pobsrvr->onModel_UiDataChanged(NULL, NULL, pElement, newValue);
    }
 }
 

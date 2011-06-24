@@ -29,8 +29,8 @@ void CGuiElement::notifyDataChange(const std::string& newValue, CChangeSlot* cha
       // The source of the data change should already be aware of the change
       // so we don't need to notify it.
       if (pObsrvr == changeSource) continue;
-      DMESSAGE("Notifying " << pObsrvr << " source=" << changeSource);
-      pObsrvr->onUiDataChanged(this, newValue);
+      DMESSAGE("Notifying (" << pObsrvr->m_sGuiObserverName << ") source=" << changeSource);
+      pObsrvr->onGuiElement_CtrlDataChanged(this, newValue);
    }
 }
 
@@ -46,7 +46,7 @@ void CGuiElement::syncControlState(const std::string& newValue, bool notify)
    CGuiElementObserver *pObsrvr;
    CObserverList<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {
-      pObsrvr->onOwnerDataChanged(this, newValue);
+      pObsrvr->onGuiElement_OwnerDataChanged(this, newValue);
    }
 }
 
