@@ -1,14 +1,15 @@
 debug=true
-ice.slice.dir=${ICE_SLICE_DIR}
+ice.slice.dir=${ICE_SLICE_DIR}:/opt/local/share/slice
 castslice.dir=${CAST_SLICE_DIR}
 cast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar
-log4j.jar=/usr/share/java/log4j-1.2.jar
+log4j.jar=/usr/share/java/log4j-1.2.jar:/opt/local/share/java/jakarta-log4j.jar
 ice.jar=${ICE_HOME}/share/java/Ice.jar
 hfc.jar=${CMAKE_SOURCE_DIR}/subarchitectures/coma.sa/lib/hfc.jar
 plannerslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/planner.sa/src/slice
 binderslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/binder/src/slice
 beliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs/src/slice
 castbeliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs+cast/src/slice
+executionslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/execution.sa/src/slice
 output.dir=${CMAKE_SOURCE_DIR}/output/classes
 
 build_sa_binding=${BUILD_SA_BINDING}
