@@ -1,3 +1,6 @@
+#ifndef PB_VISUALIZATION_H
+#define PB_VISUALIZATION_H
+
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
 #include <cstdlib>
@@ -7,12 +10,12 @@
 #include "GridMapData.hh"
 #include "GridMapWrapper.hh"
 #include <vector>
-#ifndef NO_COGX_DEPENDENCIES
-#include <Navigation/LocalGridMap.hh>
-#include <Math/BinaryMatrix.hh>
-#endif
 #include <iostream>
 #include <sstream>
+#include <Navigation/LocalGridMap.hh>
+#include "Math/BinaryMatrix.hh"
+#include <Navigation/LocalGridMap.hh>
+
 class VisualPB_Bloxel{
   public:
     VisualPB_Bloxel(std::string PB_Hostname, int PB_Port,int PB_xSize,int PB_ySize, double PB_CellSize, double PB_scale, bool replaceMap = false);
@@ -28,14 +31,12 @@ class VisualPB_Bloxel{
     template<class MapData>
       void DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map,double cellsize);
 
-    #ifndef NO_COGX_DEPENDENCIES
-    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d");
+    void Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap,std::string name = "og2d", bool drawNew = false);
     void Display2DBinaryMap(const Cure::BinaryMatrix &binmap,const Cure::LocalGridMap<unsigned char>* curemap, std::string name = "og2d_binarymatrix");
-    #endif
-    void Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden = true, std::string name = "extrapoints");
+    void Add3DPointCloud(std::vector< Cure::Pose3D > point, bool ishidden = true, std::string name = "extrapoints");
     
     template<class MapData>
-    void AddPDF (SpatialGridMap::GridMap<MapData> &map);
+    void AddPDF (SpatialGridMap::GridMap<MapData> &map, bool drawNew = false);
     
     double scale,CellSize;
     int xSize,ySize;
@@ -62,22 +63,34 @@ class VisualPB_Bloxel{
     //peekabot::OccupancyGrid3DProxy OGProxy;
 };
 
-#ifndef NO_COGX_DEPENDENCIES
-void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name){
+void VisualPB_Bloxel::Display2DCureMap(const Cure::LocalGridMap<unsigned char>* curemap, std::string name, bool drawNew){
   peekabot::OccupancySet2D cells;
   peekabot::OccupancyGrid2DProxy og2d;
-  og2d.add(m_2DOccGridProxy,name,peekabot::REPLACE_ON_CONFLICT);
-  og2d.translate(0,0,-0.005);
-  og2d.hide(); 
+  peekabot::GroupProxy local2DOccGridProxy = m_2DOccGridProxy;
+
+  if (drawNew){
+	  peekabot::GroupProxy temp2DOccGridProxy;
+	  temp2DOccGridProxy.add(client, "combined_placemap2D", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+  local2DOccGridProxy = temp2DOccGridProxy;
+  }
+
+  og2d.add(local2DOccGridProxy,name,curemap->getCellSize(), peekabot::REPLACE_ON_CONFLICT);
+  og2d.translate(0,0,-0.10,peekabot::LOCAL_COORDINATES);
+  og2d.set_unoccupied_color(0.5,0.5,0.5);
+  og2d.set_occupied_color(0,0,0);
+
   for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
     for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
       double xw,yw;
       curemap->index2WorldCoords(x,y,xw,yw);
-     if ((*curemap)(x,y) == '1' || (*curemap)(x,y) == '3'){
+     if ((*curemap)(x,y) == '1'){
 	cells.set_cell(xw,yw,1);
       }
       else if ((*curemap)(x,y) == '0'){
 	cells.set_cell(xw,yw,0);
+      }
+      else if ((*curemap)(x,y) == '0'){
+    		cells.set_cell(xw,yw,0.5);
       }
     }
   }
@@ -88,7 +101,7 @@ void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const
   peekabot::OccupancyGrid2DProxy og2d;
  peekabot::OccupancySet2D cells;
  og2d.add(client, name , curemap->getCellSize(),0.3,0.3,0,1,0,0,peekabot::REPLACE_ON_CONFLICT); 
- og2d.translate(0,0,-0.005);
+ //og2d.translate(0,0,-0.005);
  
  for (int x = -curemap->getSize(); x < curemap->getSize(); x++){
    for (int y = -curemap->getSize(); y< curemap->getSize(); y++){
@@ -105,7 +118,7 @@ void VisualPB_Bloxel::Display2DBinaryMap(const Cure::BinaryMatrix &binmap, const
    og2d.set_cells(cells);
     client.sync();
 }
-#endif
+
 
 VisualPB_Bloxel::VisualPB_Bloxel(std::string PB_Hostname, int PB_Port,int PB_xSize
     ,int PB_ySize, double PB_CellSize, double PB_scale, bool replaceMap) 
@@ -138,8 +151,8 @@ bool VisualPB_Bloxel::connectPeekabot(){
     // Assign root
     pb_map.add(client,"map",peekabot::REPLACE_ON_CONFLICT);
     
-    pdf.add(client, "pdf", peekabot::REPLACE_ON_CONFLICT);
-    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::REPLACE_ON_CONFLICT);
+    pdf.add(client, "pdf", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
     
     // Add 15 levels for pdf-visualization
     maxLevels = 15;
@@ -219,13 +232,13 @@ void VisualPB_Bloxel::DisplayPCMap(const SpatialGridMap::GridMap<MapData> &map, 
 }
 */
 
-void VisualPB_Bloxel::Add3DPointCloud(std::vector< std::vector<double> > point, bool ishidden, std::string name){
+void VisualPB_Bloxel::Add3DPointCloud(std::vector< Cure::Pose3D > point, bool ishidden, std::string name){
   try{
     peekabot::OccupancyGrid3DProxy ogproxy;
     ogproxy.add(client, name, 0.05, 0.05, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet3D cells;
     for (unsigned int i = 0; i < point.size(); i++){
-      cells.set_cell(point[i][0],point[i][1], point[i][2],1);
+      cells.set_cell(point[i].getX(),point[i].getY(), point[i].getZ(),1);
     }
 
     ogproxy.set_cells(cells);
@@ -251,8 +264,31 @@ int fallsWhere(std::vector < std::pair<double,double> > thresholdvalues, double 
 }
 
 template<class MapData>
-void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
+void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map, bool drawNew){
   try{
+	  std::vector <peekabot::GroupProxy> localpdflevels = pdflevels;
+	  if (drawNew){
+	  peekabot::GroupProxy pdftemp;
+	  std::vector <peekabot::GroupProxy> pdflevelstemp;
+
+	  pdftemp.add(client, "pdf", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	     // Add 15 levels for pdf-visualization
+	     maxLevels = 15;
+	     thresholds.push_back(1.0);
+	     for(int i=0; i<maxLevels; i++){
+	       thresholds.push_back(thresholds.back()/2);
+
+	       char buf[256];
+	       sprintf(buf, "distribution_%4.5f_%4.5f", thresholds[i],thresholds[i+1]);
+	       std::string s(buf);
+	       std::replace(s.begin(),s.end(),'.',',');
+	       strcpy(buf,s.c_str());
+	       peekabot::GroupProxy level;
+	       level.add(pdftemp, buf, peekabot::REPLACE_ON_CONFLICT);
+	       pdflevelstemp.push_back(level);
+	     }
+	     localpdflevels = pdflevelstemp;
+	  }
     std::cout << "Displaying PDF" << std::endl;
     std::cout << "Map Size: " << map.getMapSize().first << " " << map.getMapSize().second << endl;
     typedef SpatialGridMap::Bloxel<MapData> MapBloxel;
@@ -351,7 +387,7 @@ void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
                       nameBuilder << x << "_" << y << "_" << number; //add coords and count for unique name
 
                       peekabot::CubeProxy cube;
-                      cube.add(pdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
+                      cube.add(localpdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
                       cube.remove();
 
                       number++;
@@ -371,7 +407,7 @@ void VisualPB_Bloxel::AddPDF (SpatialGridMap::GridMap<MapData> &map){
                       nameBuilder << x << "_" << y << "_" << number; //add coords and count for unique name
 
                       peekabot::CubeProxy cube;
-                      cube.add(pdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
+                      cube.add(localpdflevels[it->data.data],nameBuilder.str().c_str(),peekabot::REPLACE_ON_CONFLICT);
                       cube.set_position(coord.first,coord.second, (bloxel_floor+it->celing)/2);
                       cube.set_scale(CellSize,CellSize,(it->celing-bloxel_floor));
                       colorval = (double)(it->data.data) / maxLevels;
@@ -410,7 +446,7 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
   try{
      for (int x  = 0 ; x < pairs.first; x++){
         for (int y = 0; y < pairs.second; y++){
-           if(map.isDirty(x,y)){
+           //if(map.isDirty(x,y)){
 
               // Remove all old values
               // THIS IS A HACK!
@@ -453,7 +489,7 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
               obsCount[x*ySize + y] = number;
            }
         }
-     }
+     //}
      client.sync();
      client.flush();
   }
@@ -464,3 +500,4 @@ void VisualPB_Bloxel::DisplayMap(const SpatialGridMap::GridMap<MapData> &map, st
   }
 
 }
+#endif

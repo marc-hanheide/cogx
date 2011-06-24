@@ -11,7 +11,6 @@
 //    Kristoffer Sjöö
 //
 // = COPYRIGHT
-//    Copyright (c) 2007 Chandana Paul
 //                  2007 Dorian Galvez Lopez
 //                  2009 Patric Jensfelt
 //                  2009 Kristoffer Sjöö
@@ -181,6 +180,8 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
   registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
+
+  registerIceServer<SpatialData::MapInterface, SpatialData::MapInterface>(new MapServer(this));
 } 
 
 void SpatialControl::start() 
@@ -303,6 +304,11 @@ void SpatialControl::explorationDone(int taskId, int status)
     m_taskStatus = TaskFinished;
   }
   m_taskStatusMutex.unlock();
+}
+
+const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
+{
+  return *m_lgm;
 }
 
 void SpatialControl::runComponent() 
@@ -913,6 +919,9 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 void 
 SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd) 
 {
+  debug("execCtrl(type=%d, dir=%fdeg, v=%fm/s, w=%frad/s) called", 
+        cureCmd.type, 180.0/M_PI*cureCmd.dir, cureCmd.v, cureCmd.w);
+
   Robotbase::MotionCommand cmd;
 
   if (m_NumInhibitors > 0) {    
@@ -960,6 +969,8 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
     cmd.rotspeed = 0;
 
   }   
+
+  debug("execCtrl sending (v=%fm/s,w=%frad/s) to RobotServer", cmd.speed, cmd.rotspeed);
   
   m_RobotServer->execMotionCommand(cmd);
 }

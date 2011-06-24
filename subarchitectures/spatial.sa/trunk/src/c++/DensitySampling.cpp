@@ -55,6 +55,7 @@ copyObject(const spatial::Object *o)
 	HollowBoxObject *hb = new HollowBoxObject;
 	ret = hb;
 	hb->thickness = o1hb->thickness;
+	hb->sideOpen = o1hb->sideOpen;
 	hb->radius1 = o1hb->radius1;
 	hb->radius2 = o1hb->radius2;
 	hb->radius3 = o1hb->radius3;
@@ -222,6 +223,8 @@ DensitySampler::sampleBinaryRelationRecursively(const vector <SpatialRelationTyp
       maxLateral = frameRadius*1.5;
       minVertical = -frameRadius*1.5;
       maxVertical = frameRadius*3;
+      cout << "maxLateral: " << maxLateral << "  minVertical" << minVertical
+	  << "  maxVertical: " << maxVertical << "\n";
       break;
 
     case RELATION_IN:
@@ -546,7 +549,20 @@ DensitySampler::sampleBinaryRelationSystematically(
     supportObject = objects[currentLevel+1];
 
     string onObjectLabel = objectLabels[currentLevel];
-    string supportObjectLabel = objectLabels[currentLevel+1];
+    
+    // Identify support object by "label+length+width"
+//    string supportObjectLabel = objectLabels[currentLevel+1];
+    string supportObjectLabel;
+    ostringstream ostr(supportObjectLabel);
+    if (supportObject->type == spatial::OBJECT_BOX ||
+	supportObject->type == spatial::OBJECT_HOLLOW_BOX) {
+    ostr << (int)(100*((BoxObject*)supportObject)->radius1) <<
+"x" << (int)(100*((BoxObject*)supportObject)->radius2);
+    }
+    else {
+      printf("Error! %s, %i: Unexpected object type!", __FILE__, __LINE__);
+      return;
+    }
 
     Pose3 oldPose = onObject->pose;
 

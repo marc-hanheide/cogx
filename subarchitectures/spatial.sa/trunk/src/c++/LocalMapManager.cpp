@@ -17,12 +17,18 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "GridObjectFinder.hpp"
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
 #include <float.h>
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <VisionData.hpp>
 #include <stdlib.h>
+#include "scanmap/HSS/HSSutils.hh"
+#include "scanmap/HSS/HSSDisplayFunctions.hh"
+
 
 using namespace cast;
 using namespace std;
@@ -48,6 +54,7 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
   m_maxClusterDeviation = 0.1;
   m_RobotServerHost = "localhost";
   m_maxNumberOfClusters = 3;
+  m_doorwayWidth = 4.0;
 }
 
 LocalMapManager::~LocalMapManager() 
@@ -96,6 +103,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
   std::string configfile = it->second;
 
+  m_PbPort = 5050;
+  m_PbHost = "localhost";
+
   Cure::ConfigFileReader cfg;
   if (cfg.init(configfile)) {
     println("configure(...) Failed to open with \"%s\"\n",
@@ -122,6 +132,16 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_bNoPlaces = false;
   if (_config.find("--no-places") != _config.end()) {
     m_bNoPlaces = true;
+  }
+
+  m_bDetectDoors = false;
+  if (_config.find("--detect-doors") != _config.end()) {
+    m_bDetectDoors = true;
+  }
+
+  m_bShowDoorsInPB = false;
+  if (_config.find("--display-doors") != _config.end()) {
+    m_bShowDoorsInPB = true;
   }
 
   m_bNoPlanes = true;
@@ -187,6 +207,12 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_standingStillThreshold;
   }
 
+  it = _config.find("--doorway-width");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> m_doorwayWidth;
+  }
+
   m_planeObjectFilename = "";
   it = _config.find("--plane-object-file");
   if (it != _config.end()) {
@@ -247,7 +273,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (!m_bNoPlanes) {
     if (m_planeObjectFilename == "") {
       // Create plane objects
-      m_planeObjectFinders.push_back(createTableFinder(1.1, 0.9, CellSize));
+      //m_planeObjectFinders.push_back(createTableFinder(1.1, 0.9, CellSize));
     }
     for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
       m_planeObstacleMaps.push_back(new CharMap(MapSize, CellSize, 0, CharMap::MAP1));
@@ -269,6 +295,11 @@ void LocalMapManager::configure(const map<string,string>& _config)
 
   FrontierInterface::LocalMapInterfacePtr mapservant = new LocalMapServer(this);
   registerIceServer<FrontierInterface::LocalMapInterface, FrontierInterface::LocalMapInterface>(mapservant);
+
+  if (m_bShowDoorsInPB) {
+    m_peekabotClient.connect(m_PbHost, m_PbPort);
+    m_HSSGroupProxy.add(m_peekabotClient, "HSS", peekabot::REPLACE_ON_CONFLICT);
+  }
 } 
 
 void LocalMapManager::start() 
@@ -281,14 +312,6 @@ void LocalMapManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
 								  &LocalMapManager::newRobotPose));  
-  
-  addChangeFilter(createGlobalTypeFilter<VisionData::ConvexHull>(cdl::ADD),
-      new MemberFunctionChangeReceiver<LocalMapManager>(this,
-	&LocalMapManager::newConvexHull));
-
-  addChangeFilter(createGlobalTypeFilter<VisionData::ConvexHull>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<LocalMapManager>(this,
-	&LocalMapManager::newConvexHull));
 
   if (!m_bNoPlaces) {
     m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
@@ -320,16 +343,6 @@ void LocalMapManager::runComponent()
   setupPushOdometry(*this);
 
   log("I am running!");
-
-  if (m_planeModelFilename != "") {
-    log("Loading plane models from file '%s'", m_planeModelFilename.c_str());
-    readPlaneModelsFromFile(m_planeObstacleMaps[0]->getCellSize());
-  }
-  if (m_planeObjectFilename != "") {
-    log("Loading plane objects from file '%s'", m_planeObjectFilename.c_str());
-    readPlaneObjectsFromFile();
-  }
-
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
   int count = 0;
@@ -419,28 +432,6 @@ void LocalMapManager::runComponent()
     unlockComponent();
     debug("unlock in isRunning");
 
-
-//    VisionData::ConvexHullPtr fakeHull = new
-//      VisionData::ConvexHull();
-//    double angle= 0*M_PI/4;
-//    double radius = 0.5;
-//    double xc = -3.0;
-//    double yc = 0.0;
-//    double dx = radius*(cos(angle)-sin(angle));
-//    double dy = radius*(sin(angle)+cos(angle));
-//    double height = 0.4;
-//    cogx::Math::Vector3 p1 = {-yc-dy,-height,xc+dx};
-//    cogx::Math::Vector3 p2 = {-yc-dy,-height,xc-dx};
-//    cogx::Math::Vector3 p3 = {-yc+dy,-height,xc-dx};
-//    cogx::Math::Vector3 p4 = {-yc+dy,-height,xc+dx};
-//    fakeHull->PointsSeq.push_back(p1);
-//    fakeHull->PointsSeq.push_back(p2);
-//    fakeHull->PointsSeq.push_back(p3);
-//    fakeHull->PointsSeq.push_back(p4);
-//    processConvexHull(fakeHull);
-
-
-    //usleep(250000);
     sleepComponent(250);
   }
 }
@@ -571,6 +562,36 @@ void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
   unlockComponent();
 }
 
+int g_NextScanId = 0;
+
+void laala(HSS::Scan2D &sink, const Cure::SICKScan &src)
+{
+  sink.m_Id = g_NextScanId++;
+
+  sink.range.resize(src.getNPts());
+  sink.valid.resize(src.getNPts());
+  sink.theta.resize(src.getNPts());
+  
+  double da = src.getAngleStep();
+  //double da = 1.0*M_PI/180;
+  
+  sink.min_theta = src.getStartAngle();
+  sink.max_theta = src.getStartAngle() + (src.getNPts()-1)*da;
+
+  sink.min_range = 0.1;
+  sink.max_range = 5.55;
+
+  sink.range_sigma = 0.05;
+
+  for (int i = 0; i < src.getNPts(); i++) {
+    sink.theta[i] = src.getStartAngle() + da * i;
+    sink.valid[i] = 1;
+    sink.range[i] = src.getRange(i);
+  }
+  sink.tv.tv_sec = src.getTime().Seconds;
+  sink.tv.tv_usec = src.getTime().Microsec;
+}
+
 void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 {
   lockComponent(); //Don't allow any interface calls while processing a callback
@@ -595,11 +616,143 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 	m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
       }
       m_firstScanReceived = true;
+
+      if (m_bDetectDoors) {
+	HSS::Scan2D scanNew;
+	Cure::SICKScan &tmp = cureScan;
+	laala(scanNew, tmp);
+//	scanNew << tmp;
+	m_doorExtractor.extract(scanNew);
+
+	list<HSS::RedundantLine2DRep> detDoors =
+	  m_doorExtractor.doors();
+
+	Eigen::Vector3d xsR;
+	xsR[0] = m_LaserPoseR.getX();
+	xsR[1] = m_LaserPoseR.getY();
+	xsR[2] = m_LaserPoseR.getTheta();
+
+	Eigen::Vector3d odomNew;
+	odomNew[0] = lastRobotPose->x;
+	odomNew[1] = lastRobotPose->y;
+	odomNew[2] = lastRobotPose->theta;
+
+	if (m_bShowDoorsInPB) {
+	  HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
+	}
+
+	for (list<HSS::RedundantLine2DRep>::iterator it = detDoors.begin();
+	    it != detDoors.end(); it++) {
+	  bool found = false;
+	  double doorX = odomNew[0] + cos(odomNew[2])*it->xC() - sin(odomNew[2])*it->yC();
+	  double doorY = odomNew[1] + sin(odomNew[2])*it->xC() + cos(odomNew[2])*it->yC();
+
+	  debug("Door detected at (%f,%f)", doorX, doorY);
+	  for (map<string, FrontierInterface::DoorHypothesisPtr>::iterator it2 =
+	      m_detectedDoors.begin(); it2 != m_detectedDoors.end(); it2++) {
+	    double dx = it2->second->x - doorX;
+	    double dy = it2->second->y - doorY;
+	    double dist = dx*dx+dy*dy;
+	    if (dist < 1.0) {
+	      found = true;
+	      break;
+	    }
+	  }
+	  if (!found) {
+	    double doorTheta = odomNew[2] + it->theta();
+	    if (doorTheta < -M_PI) doorTheta += 2*M_PI;
+	    if (doorTheta > M_PI) doorTheta -= 2*M_PI;
+	    double doorWidth = it->length();
+
+	    FrontierInterface::DoorHypothesisPtr newDoor =
+	      new FrontierInterface::DoorHypothesis;
+	    newDoor->x = doorX;
+	    newDoor->y = doorY;
+	    newDoor->theta = doorTheta;
+	    newDoor->width = doorWidth;
+
+	    string newID = newDataID();
+	    addToWorkingMemory<FrontierInterface::DoorHypothesis>(newID,
+		newDoor);
+	    m_detectedDoors[newID] = newDoor;
+
+	 /*   if (m_bShowDoorsInPB) {
+	      peekabot::SphereProxy sph;
+	      sph.add(m_HSSGroupProxy, "GW", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	      sph.set_scale(0.1, 0.1, 0.1);
+	      sph.translate(doorX, doorY, 2.0);
+	    }*/
+
+//	    updatePlaceholderGatewayProperties(doorX, doorY);
+	  }
+	}
+      }
+
       m_Mutex.unlock();
     }
   }
   unlockComponent();
 }
+
+//void
+//LocalMapManager::updatePlaceholderGatewayProperties(double doorX, double doorY)
+//{
+//  if (m_placeInterface) {
+//    //Check all gateway placeholder properties on WM; see if they should be upgraded
+//    //based on the new doorway
+//
+//    vector<SpatialProperties::GatewayPlaceholderPropertyPtr> gwProps;
+//
+//    getMemoryEntries<SpatialProperties::GatewayPlaceholderProperty>(gwProps);
+//
+//    vector< boost::shared_ptr< cast::CASTData<SpatialProperties::GatewayPlaceholderProperty> > > gwProps;
+//    getWorkingMemoryEntries<SpatialProperties::GatewayPlaceholderProperty> ("coma", 0, comaRoomBeliefs);
+//
+//    for (unsigned int i = 0; i < gwProps.size(); i++) {
+//      GatewayPlaceholderPropertyPtr gw = gwProps[i]->getData();
+//
+//      if (gw == 0) {
+//	log("Unexpected null pointer at LocalMapManager::%i", __LINE__);
+//	continue;
+//      }
+//
+//      try {
+//	double currentProb = ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[0]->probability;
+//
+//	FrontierInterface::NodeHypothesisPtr hyp =
+//	  m_placeInterface->getHypFromPlaceID(it->placeID);
+//
+//	bool update = false;
+//	for (vector<Eigen::Vector3d>::iterator it2 = m_detectedDoors.begin(); it2 != 
+//	    m_detectedDoors.end(); it2++) {
+//	  double dx = (*it2)[0] - hyp->x;
+//	  double dy = (*it2)[1] - hyp->y;
+//
+//	  double distsq = dx*dx+dy*dy;
+//	  double value = exp(-distsq/m_doorwayWidth);
+//	  if (value < currentProb) {
+//	    currentProb = value;
+//	    update = true;
+//	  }
+//	}
+//	if (update) {
+//	  cast::cdl::WorkingMemoryAddress owtAddr;
+//	  owtAddr.subarchitecture = "spatial.sa";
+//	  owtAddr.id = gwProps[i]->getID();
+//
+//	  ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[0]->probability =
+//	    currentProb;
+//	  ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[1]->probability =
+//	    1-currentProb;
+//	  overwriteWorkingMemory(owtAddr, gw);
+//	}
+//      }
+//      catch (DoesNotExistOnWMException) {
+//	log("Error at LocalMapManager::%i - DoesNotExistOnWMException", __LINE__);
+//      }
+//    }
+//  }
+//}
 
 NavData::FNodePtr
 LocalMapManager::getCurrentNavNode()
@@ -778,8 +931,25 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
       }
     }
     log("Total free cells: %i; total processed %i", totalFreeCells, totalProcessed);
+
+//  if (m_bDetectDoors) {
+//    double minDistSq = DBL_MAX;
+//    for (vector<Eigen::Vector3d>::iterator it = m_detectedDoors.begin();
+//	it != m_detectedDoors.end(); it++) {
+//    	log("Doorway at %f %f", (*it)[0], (*it)[1]);
+//      double dx = relevantX - (*it)[0];
+//      double dy = relevantY - (*it)[1];
+//      double distSq = dx*dx+dy*dy;
+//      if (distSq < minDistSq) {
+//	minDistSq = distSq;
+//      }
+//    }
+//    ret.gatewayValue = exp(-minDistSq/m_doorwayWidth);
+//  }
+
     m_Mutex.unlock();
   }
+
   return ret;
 }
 
@@ -929,197 +1099,6 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
 }
 
 
-void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
-				   &objID){
-  log("newConvexHull called");
-  if (!m_bNoPlanes) {
-
-    if (m_planeProcessingCooldown.split() > 0.5) {
-      log("Accepting convex hull: Timer is %.4f", m_planeProcessingCooldown.split());
-      m_planeProcessingCooldown.stop();
-
-      try {
-	VisionData::ConvexHullPtr oobj =
-	  getMemoryEntry<VisionData::ConvexHull>(objID.address);
-
-	// Check if the robot has been still long enough
-	double stopTime = oobj->time.s + 0.000001*oobj->time.us -
-	  (m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
-	//    log ("Been stopped for %f seconds", stopTime);
-
-	if (stopTime > 1.0) {
-	  processConvexHull(oobj);
-	}
-      }
-      catch (DoesNotExistOnWMException) {
-	log("Error! Convex hull disappeared from WM!");
-      }
-      m_planeProcessingCooldown.restart();
-    }
-    else {
-      log("Rejecting convex hull: Timer is %.4f", m_planeProcessingCooldown.split());
-    }
-  }
-}
-
-void
-LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
-{
-//    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
-  Cure::Transformation3D cam2WorldTrans =
-    getCameraToWorldTransform();
-  double tmp[6];
-  cam2WorldTrans.getCoordinates(tmp);
-  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-      tmp[4], tmp[5]);
-
-  //Convert hull to world coords
-  for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-    Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-    Cure::Vector3D to;
-    cam2WorldTrans.invTransform(from, to);
-    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-
-//    to.X[2] = 0.45; //FIXME!
-    oobj->PointsSeq[i].x = to.X[0];
-    oobj->PointsSeq[i].y = to.X[1];
-    oobj->PointsSeq[i].z = to.X[2];
-//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
-    double horizDistSq;
-    if (lastRobotPose != 0) {
-      horizDistSq = (to.X[0] - lastRobotPose->x)*(to.X[0] - lastRobotPose->x) + (to.X[1] - lastRobotPose->y)*(to.X[1] - lastRobotPose->y);
-    }
-    else {
-      horizDistSq = to.X[0]*to.X[0] + to.X[1]*to.X[1];
-    }
-    if (horizDistSq > 1.2*1.2) {
-      log("Clipping polygon vertex at distance %f", sqrt(horizDistSq));
-      oobj->PointsSeq.erase(oobj->PointsSeq.begin()+i);
-      i--;
-    }
-  }
-  if (oobj->PointsSeq.size() < 3) return;
-//    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
-//    Cure::Vector3D to;
-//    cam2WorldTrans.invTransform(from, to);
-//    oobj->center.x = to.X[0];
-//    oobj->center.y = to.X[1];
-//    oobj->center.z = to.X[2];
-//    cam2WorldTrans.getCoordinates(tmp);
-
-
-  // Filter polygons that are not horizontal planes
-  // Find average normal
-  Cure::Vector3D avgNormal;
-  double avgZ = 0.0;
-
-  for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-    unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
-    unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
-
-    Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
-	oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
-	oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
-    Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
-	oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
-	oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
-    Cure::Vector3D normal = edge1.cross(edge2);
-    normal /= normal.magnitude();
-    avgNormal += normal;
-    avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
-  }
-  if (avgNormal.magnitude() != 0.0) {
-    avgNormal /= avgNormal.magnitude();
-
-    if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
-      log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
-      return;
-    }
-
-    if (avgZ < 0.10) {
-      log("Rejecting polygon: average Z coordinate is %f < 0.10",
-	  avgZ);
-      return;
-    }
-
-    // Paint the polygon in the grid map
-
-    log("Painting polygon");
-    PaintPolygon(oobj->PointsSeq);
-
-    // Extract N clusters of heights in the plane data.
-    findPlaneHeightClusters();
-
-    // Publish new planes on WM for Peekabot and for AVS
-    double wX,wY;
-    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-      SpatialData::PlanePointsPtr PlanePoints;
-      PlanePoints = new SpatialData::PlanePoints;
-      cogx::Math::Vector3 point;
-      for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
-	for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
-	  if ((*m_planeObstacleMaps[i])(x,y) == 255){
-	    m_planeObstacleMaps[i]->index2WorldCoords(x, y, wX, wY);
-	    point.x = wX;
-	    point.y = wY;
-	    point.z = m_planeHeights[i];
-	    PlanePoints->points.push_back(point);
-	  }
-
-	}
-      }   
-      log("Adding PlanePoints to WM");
-      if (m_planeClusterWMIDs.find(i) == m_planeClusterWMIDs.end()) {
-	// New PlanePoints struct
-	m_planeClusterWMIDs[i] = newDataID();
-	addToWorkingMemory<SpatialData::PlanePoints>
-	  (m_planeClusterWMIDs[i], PlanePoints); 
-      }
-      else {
-	overwriteWorkingMemory<SpatialData::PlanePoints>
-	  (m_planeClusterWMIDs[i], PlanePoints);
-      }
-      //PlanePoints->points.clear();
-    }
-
-    //  if (m_DisplayPlaneMap) {
-    //    Cure::Pose3D currentPose = m_TOPP.getPose();
-    //    m_DisplayPlaneMap->updateDisplay(&currentPose);
-    //  }
-
-
-    // Extract best guesses for plane objects
-    for (unsigned int finderID = 0; finderID < m_planeObjectFinders.size(); finderID++) {
-      GridObjectFinder &finder = *m_planeObjectFinders[finderID];
-      int objX, objY;
-      double objAngle, objConfidence = -FLT_MAX;
-      double objHeight;
-      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	int outX, outY;
-	double outAngle, outConfidence;
-	finder.findObject(*m_planeObstacleMaps[i], &outX, &outY, &outAngle, 
-	    &outConfidence);
-	if (outConfidence > objConfidence) {
-	  objX = outX;
-	  objY = outY;
-	  objAngle = outAngle;
-	  objConfidence = outConfidence;
-	  objHeight = m_planeHeights[i];
-	}
-      }
-      double realX, realY;
-      m_planeMap->index2WorldCoords(objX, objY, realX, realY);
-
-      char buf[256];
-      sprintf(buf, "planeObject%i", finderID);
-      addObservedPlaneObject(buf, realX, realY, objHeight, objAngle, finderID);
-      log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", finderID,
-	  realX, realY, objAngle, 
-	  objHeight, objConfidence);
-    }
-  }
-}
-
 Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
 {
   // Assuming useGlobalPoints is on in PlanePopOut, only need to
@@ -1183,387 +1162,3 @@ Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
   return robotTransform3 + cameraOnRobot;
 } 
 
-struct ScanLine {
-	int small_x, large_x;
-};
-
-//This function adapted from code by Michael Y. Polyakov:
-///////////////////////////////////////////////////////////////////////////////////////
-//
-//	FileName:	ConvexPolRas.cpp
-//	Author	:	Michael Y. Polyakov
-//	email	:	myp@andrew.cmu.edu	or  mikepolyakov@hotmail.com
-//	Website	:	www.angelfire.com/linux/myp
-//	Date	:	7/29/2002
-//
-//	Rasterizes a convex polygon. x/y - arrays of vertices of size num.
-//	drawPoint - function which draws a point at (x,y). Should be provided before hand.
-//	Shceck out the tutorial on my website.
-///////////////////////////////////////////////////////////////////////////////////////
-
-void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
-{
-  const int cellfactor = 5;
-  int num = (int)points.size();
-  int *y = new int[num];
-  int *x = new int[num];
-  double cellSize = m_planeMap->getCellSize();
-  double miniCellSize = cellSize / cellfactor; //Supersampling
-  double XCentW = m_planeMap->getCentXW();
-  double YCentW = m_planeMap->getCentYW();
-  int size = m_planeMap->getSize();
-  double height = points[0].z;
-  log("Height: %f", height);
-
-  for (int i = 0; i < num; i++) {
-    x[i] = (int((points[i].x - XCentW)/(miniCellSize/2.0)) + (points[i].x >= XCentW ? 1: -1)) / 2;
-    y[i] = (int((points[i].y - YCentW)/(miniCellSize/2.0)) + (points[i].y >= YCentW ? 1: -1)) / 2;
-  }
-  int small_y = y[0], large_y = y[0];	//small and large y's
-  int xc, yc;							//current x/y points
-  ScanLine *sl;						//array of structs - contain small/large x for each y that is drawn
-  int delta_y;						//large_y - small_y + 1 (size of the above array)
-  int i, j, ind;
-  //line information (see LineRas.cpp for details)
-  int dx, dy, shortD, longD;
-  int incXH, incXL, incYH, incYL;
-  int d, incDL, incDH;
-
-  /* Step 1: find small and large y's of all the vertices */
-  for(i=1; i < num; i++) {
-    if(y[i] < small_y) small_y = y[i];
-    else if(y[i] > large_y) large_y = y[i];
-  }
-
-  /* Step 2: array that contains small_x and large_x values for each y. */
-  delta_y = large_y - small_y + 1;	
-  sl = new ScanLine[delta_y];			//allocate enough memory to save all y values, including large/small
-
-  for(i=0; i < delta_y; i++) {		//initialize the ScanLine array
-    sl[i].small_x = INT_MAX;		//INT_MAX because all initial values are less
-    sl[i].large_x = INT_MIN;		//INT_MIN because all initial values are greater
-  }
-
-
-  /* Step 3: go through all the lines in this polygon and build min/max x array. */
-  for(i=0; i < num; i++) {
-    ind = (i+1)%num;				//last line will link last vertex with the first (index num-1 to 0)
-    if(y[ind]-y[i]) 
-    {
-      //initializing current line data (see tutorial on line rasterization for details)
-      dx = x[ind] - x[i]; dy = y[ind] - y[i];
-      if(dx >= 0) incXH = incXL = 1; else { dx = -dx; incXH = incXL = -1; }
-      if(dy >= 0) incYH = incYL = 1; else { dy = -dy; incYH = incYL = -1; }
-      if(dx >= dy) { longD = dx;  shortD = dy;  incYL = 0; }
-      else		 { longD = dy;  shortD = dx;  incXL = 0; }
-      d = 2*shortD - longD;
-      incDL = 2*shortD;
-      incDH = 2*shortD - 2*longD;
-
-      xc = x[i]; yc = y[i];		//initial current x/y values
-      for(j=0; j <= longD; j++) {	//step through the current line and remember min/max values at each y
-	ind = yc - small_y;
-	if(xc < sl[ind].small_x) sl[ind].small_x = xc;	//initial contains INT_MAX so any value is less
-	if(xc > sl[ind].large_x) sl[ind].large_x = xc;	//initial contains INT_MIN so any value is greater
-	//finding next point on the line ...
-	if(d >= 0)	{ xc += incXH; yc += incYH; d += incDH; }	//H-type
-	else		{ xc += incXL; yc += incYL; d += incDL; }	//L-type
-      }
-    } //end if
-  } //end i for loop
-
-  /* Step 4: drawing horizontal line for each y from small_x to large_x including. */
-  for(i=small_y; i <= large_y; i++)
-  {
-    for(j=sl[i-small_y].small_x; j <= sl[i-small_y].large_x; j++)
-    {
-      int xindex = j / cellfactor;
-      int yindex = i / cellfactor;
-
-      if (xindex >= -size && xindex <= size && yindex >= -size && yindex <= size) {
-	PlaneData &pd = (*m_planeMap)(xindex, yindex);
-	PlaneList::iterator it = pd.planes.begin();
-	for (; it != pd.planes.end(); it++) {
-	  if (abs(it->first - height) < 0.05) {
-	    //Reinforce this plane
-	    double newHeight = (it->first * it->second + height * 1.0)/(it->second + 1.0);
-	    double newConfidence = it->second + 1.0;
-	    it->first = newHeight;
-	    it->second = newConfidence;
-	    break;
-	  }
-	}
-	if (it == pd.planes.end()) {
-	  //Plane was new, add it
-	  pd.planes.push_back(std::pair<double, double>(height, 1.0));
-	}
-      }
-    }
-  }
-  delete x;
-  delete y;
-
-  delete [] sl;	//previously allocated space for ScanLine array
-}
-
-void
-LocalMapManager::findPlaneHeightClusters()
-{
-  //Use K-means++ clustering to determine K average heights, to filter
-  //planes for plane object detection
-
-  //Gather all plane fragments into a single vector
-  //Note: must be same sequential order as loop in processConvexHull
-  vector<double> heights;
-  for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
-    for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
-      PlaneList &planeList = (*m_planeMap)(x,y).planes;
-      for (PlaneList::iterator it = planeList.begin();
-	  it != planeList.end(); it++) {
-	if (it->second > 4.0) {
-	  heights.push_back(it->first);
-	}
-      }
-    }
-  }
-  vector<int> memberships(heights.size(), 0); // Which cluster a segment belongs to
-
-  vector<double> probMasses; // Accumulated probability mass; for random sampling
-  probMasses.reserve(heights.size());
-  double maxDeviation = 0.0;
-
-  m_currentNumberOfClusters = 1;
-  // First, check deviation if we assume just 1 cluster
-  double sum = 0.0;
-  for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-    sum += heights[currentElement];
-  }
-  sum /= heights.size();
-  m_planeHeights[0] = sum;
-
-  for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-    double dist = abs(heights[currentElement] - sum);
-    maxDeviation = maxDeviation > dist ? maxDeviation : dist;
-  }
-
-
-  // If deviation too large, try more and more clusters
-  for (m_currentNumberOfClusters = 1; maxDeviation > m_maxClusterDeviation && m_currentNumberOfClusters < m_maxNumberOfClusters;) {
-    m_currentNumberOfClusters++;
-
-    // Initialize memberships
-    memberships.assign(memberships.size(),-1);
-
-    // Init centroids with K-means++
-    int *centroids = new int[m_currentNumberOfClusters];
-    centroids[0] = 0;
-
-    for (unsigned int newCentroidNo = 1; newCentroidNo < m_currentNumberOfClusters; newCentroidNo++) {
-      double massBelow = 0.0;
-      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	double closestDist = FLT_MAX;
-	for (unsigned int i = 0; i < newCentroidNo;i++) {
-	  double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
-	  closestDist = closestDist < distToThisCentroid ? closestDist : distToThisCentroid;
-	}
-	probMasses[currentElement] = massBelow + closestDist*closestDist;
-	massBelow += closestDist*closestDist;
-      }
-
-      double randomMassPoint = ((double)rand())/RAND_MAX*massBelow;
-      // Find the weighted randomly chosen point by interval halving
-      int intervalMin = 0;
-      int intervalMax = heights.size()-1;
-      unsigned int i = heights.size()/2;
-      while (!(probMasses[i] < randomMassPoint && (i == heights.size() || probMasses[i+1] >= randomMassPoint))) {
-	if (probMasses[i] >= randomMassPoint) {
-	  intervalMax = i - 1;
-	  i = (i + intervalMin) / 2;
-	}
-	else if (i == heights.size()) {
-	  break;
-	}
-	else {
-	  intervalMin = i;
-	  i = (i + intervalMax + 1) / 2;
-	}
-      }
-      centroids[newCentroidNo] = i;
-    }
-
-    // Find the borderlines between clusters,
-    // and the averages and closest examples to the borders
-    int *memberCounts = new int[m_currentNumberOfClusters];
-    double *sum = new double[m_currentNumberOfClusters];
-    double *bestNextCentroidDistance = new double[m_currentNumberOfClusters];
-    for (unsigned int i= 0; i < m_currentNumberOfClusters;i++){
-      sum[i]=0.0;
-      memberCounts[i]= 0;
-    }
-    bool finished = false;
-    while (!finished) {
-      finished = true;
-      maxDeviation = 0.0;
-      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	double closestDist = FLT_MAX;
-	int closestCluster;
-	for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	  double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
-	  if (distToThisCentroid < closestDist) {
-	    closestDist = distToThisCentroid;
-	    closestCluster = i;
-	  }
-	}
-	memberCounts[closestCluster]++;
-	sum[closestCluster]+=heights[currentElement];
-	if (memberships[currentElement] != closestCluster)
-	  finished = false;
-	memberships[currentElement] = closestCluster;
-
-	maxDeviation = maxDeviation > closestDist ? maxDeviation : closestDist;
-      }
-      // Reassign cluster centroids
-      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	sum[i] /= memberCounts[i];
-	bestNextCentroidDistance[i] = FLT_MAX;
-      }
-
-
-      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	int cluster = memberships[currentElement];
-	double dist = abs(heights[currentElement] - sum[cluster]);
-	if (dist < bestNextCentroidDistance[cluster]) {
-	  bestNextCentroidDistance[cluster] = dist;
-	  centroids[cluster] = currentElement;
-	}
-      }
-    }
-
-    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-      m_planeHeights[i] = heights[centroids[i]];
-    }
-
-    delete[] sum;
-    delete[] bestNextCentroidDistance;
-    delete[] memberCounts;
-    delete[] centroids;
-  }
-  for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-    m_planeObstacleMaps[i]->clearMap();
-//    log("m_planeHeights[%d] is %f", i, m_planeHeights[i]);
-  }
-  // Note: The function of this loop depends on the order of elements
-  // being the same as the loop at the start of this method 
-  unsigned int i = 0;
-  for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
-    for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
-      PlaneList &planeList = (*m_planeMap)(x,y).planes;
-      for (PlaneList::iterator it = planeList.begin();
-	  it != planeList.end(); it++) {
-	if (it->second > 4.0) {
-	 
-	  (*m_planeObstacleMaps[memberships[i]])(x,y) = 255;
-	  i++;
-	}
-	
-      }
-    }
-    
-  }
-}
-
-void 
-LocalMapManager::readPlaneObjectsFromFile()
-{
-  ifstream infile(m_planeObjectFilename.c_str());
-  if (!infile.good()) {
-    log("Error opening file");
-    return;
-  }
-
-  int id = 0;
-  char buf[256];
-  infile.getline(buf, 255);
-  while (!infile.eof() && strlen(buf) > 0) {
-    if (buf[0] == '#') {
-      //Comment
-      infile.getline(buf, 255);
-      continue;
-    }
-
-    istringstream ss(buf);
-    string label;
-    double x,y,height,theta;
-    ss >> label >> x >> y >> height >> theta;
-    if (label == "") {
-      infile.getline(buf, 255);
-      continue;
-    }
-
-    addObservedPlaneObject(label, x, y, height, theta, id++);
-    infile.getline(buf, 255);
-  }
-}
-
-void
-LocalMapManager::readPlaneModelsFromFile(double CellSize)
-{
-  ifstream infile(m_planeModelFilename.c_str());
-  if (!infile.good()) {
-    log("Error opening file");
-    return;
-  }
-
-  char buf[256];
-  infile.getline(buf, 255);
-  while (!infile.eof() && strlen(buf) > 0) {
-    if (buf[0] == '#') {
-      //Comment
-      infile.getline(buf, 255);
-      continue;
-    }
-
-    istringstream ss(buf);
-    string label;
-    double width, depth;
-    ss >> label >> width >> depth;
-    if (label == "" || width == 0.0 || depth == 0.0) {
-      infile.getline(buf, 255);
-      continue;
-    }
-
-    m_planeObjectFinders.push_back(createTableFinder(width, depth, CellSize));
-    infile.getline(buf, 255);
-  }
-}
-
-void
-LocalMapManager::addObservedPlaneObject(const string &label, double x, double y, double height,
-    double angle, int id) 
-{
-  FrontierInterface::ObservedPlaneObjectPtr
-    newPlaneObject = new FrontierInterface::ObservedPlaneObject;
-
-  newPlaneObject->id = id;
-  newPlaneObject->label = label;
-  newPlaneObject->pos.x = x;
-  newPlaneObject->pos.y = y;
-  newPlaneObject->angle = angle;
-  newPlaneObject->pos.z = height;
-
-
-  if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
-    m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
-    addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
-      (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
-  }
-  else {
-    try {
-      overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	(m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
-    }
-    catch (DoesNotExistOnWMException) {
-      log("Error! Could not overwrite plane object on WM; missing!");
-    }
-  }
-}

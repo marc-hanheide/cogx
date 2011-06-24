@@ -1,12 +1,16 @@
 cmake_minimum_required (VERSION 2.6)
 project (SPATIALSA)
 
+# Set build type
+# set(CMAKE_BUILD_TYPE Release)
+
+# Remove warnings about deprecated libs.
+add_definitions(-Wno-deprecated)
+
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
-
-# Set build type
-# set(CMAKE_BUILD_TYPE Release)
 
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)

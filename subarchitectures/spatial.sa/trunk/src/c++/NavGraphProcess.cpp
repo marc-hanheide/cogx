@@ -26,6 +26,8 @@
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
 #include <VisionData.hpp>
+#include <FrontierInterface.hpp>
+#include <cfloat>
 
 #include <sstream>
 
@@ -186,6 +188,12 @@ void NavGraphProcess::configure(const map<string,string>& _config)
     m_DontWriteFiles = true;
   }
   if (!m_DontWriteFiles) log("Will output files");
+
+  m_UseDoorHypotheses = false;
+  it = _config.find("--filter-doors");  
+  if(it != _config.end()) {
+    m_UseDoorHypotheses = true;
+  }
 
   // You can instruct the graph to automatically try to merge areas
   bool autofix = (_config.find("--auto-merge-areas") != _config.end());
@@ -505,6 +513,10 @@ void NavGraphProcess::start() {
   addChangeFilter(createLocalTypeFilter<NavData::ObjObs>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<NavGraphProcess>(this,
                                          &NavGraphProcess::newObjObs));
+
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::DoorHypothesis>(cdl::ADD),
+      new MemberFunctionChangeReceiver<NavGraphProcess>(this,
+	&NavGraphProcess::newDoorHypothesis));
 
   log("NavGraphProcess started");
 }
@@ -1186,7 +1198,9 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
 	string category = visualObjectPtr->identLabels[0];
 	double probability = visualObjectPtr->identDistrib[0];
 	log("Observed object of category \"%s\" with probability %f", category.c_str(), probability);
-
+	// FIXME: this threshold is magic be Michi Zillich
+	if (probability<0.08)
+		return;
     Cure::Timestamp t(visualObjectPtr->time.s, visualObjectPtr->time.us);
 
     // As a first approximation we use the last robot pose as the robot
@@ -1428,70 +1442,85 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
       Cure::LaserScan2d doorScan(cureScan);
 
       if (m_MotionDetector &&
-          !m_MotionDetector->m_Movements.empty()) {
+	  !m_MotionDetector->m_Movements.empty()) {
 
-        // Go tthrough the moving objects and adjust any beams
-        // associated with these to very far away readinsg so they
-        // will not triger doors
+	// Go tthrough the moving objects and adjust any beams
+	// associated with these to very far away readinsg so they
+	// will not triger doors
 
-        for (unsigned int i = 0; i<m_MotionDetector->m_Movements.size(); i++){
-          Cure::ScanMotionDetector::Movement &m = 
-            m_MotionDetector->m_Movements[i];
-          for (int j = 0; j < m.nPts; j++) {
-            doorScan(m.scanIndex[j]) = 1e10;
-          }
-        }
+	for (unsigned int i = 0; i<m_MotionDetector->m_Movements.size(); i++){
+	  Cure::ScanMotionDetector::Movement &m = 
+	    m_MotionDetector->m_Movements[i];
+	  for (int j = 0; j < m.nPts; j++) {
+	    doorScan(m.scanIndex[j]) = 1e10;
+	  }
+	}
       }
 
       if (m_DoorDetector.inDoorOpening(doorScan, 
-                                       m_MinDoorWidth, 
-                                       m_MaxDoorWidth)) {
+	    m_MinDoorWidth, 
+	    m_MaxDoorWidth)) {
+	double minDistSq = DBL_MAX;
+	if (m_UseDoorHypotheses) {
+	  for (vector<pair<double, double> >::iterator it = m_doorHypPositions.begin();
+	      it != m_doorHypPositions.end(); it++) {
+	    double distSq = (cp.getX()-it->first)*(cp.getX()-it->first) + 
+	      (cp.getY()-it->second)*(cp.getY()-it->second);
+	    if (distSq < minDistSq) minDistSq = distSq;
+	  }
+	}
+	if (!m_UseDoorHypotheses || minDistSq < 4.0) {
 
-        debug("\n\nDoor is detected angR=%.2fdeg angL=%.2fdeg\n\n",
-            m_DoorDetector.m_AngleR*180/M_PI,
-            m_DoorDetector.m_AngleL*180/M_PI);
+	  log("Door is detected angR=%.2fdeg angL=%.2fdeg",
+	      m_DoorDetector.m_AngleR*180/M_PI,
+	      m_DoorDetector.m_AngleL*180/M_PI);
 
-        // Get the pose of the laser at the time of the scan 
-        Cure::Pose3D lpW;
-        lpW.add(cp, m_LaserPoseR);
+	  // Get the pose of the laser at the time of the scan 
+	  Cure::Pose3D lpW;
+	  lpW.add(cp, m_LaserPoseR);
 
-        // Now calculate the position of the door posts
-        double xR = lpW.getX() + (m_DoorDetector.m_RangeR * cos(lpW.getTheta() + m_DoorDetector.m_AngleR));
-        double yR = lpW.getY() + (m_DoorDetector.m_RangeR * sin(lpW.getTheta() + m_DoorDetector.m_AngleR));
-        double xL = lpW.getX() + (m_DoorDetector.m_RangeL * cos(lpW.getTheta() + m_DoorDetector.m_AngleL));
-        double yL = lpW.getY() + (m_DoorDetector.m_RangeL * sin(lpW.getTheta() + m_DoorDetector.m_AngleL));
+	  // Now calculate the position of the door posts
+	  double xR = lpW.getX() + (m_DoorDetector.m_RangeR * cos(lpW.getTheta() + m_DoorDetector.m_AngleR));
+	  double yR = lpW.getY() + (m_DoorDetector.m_RangeR * sin(lpW.getTheta() + m_DoorDetector.m_AngleR));
+	  double xL = lpW.getX() + (m_DoorDetector.m_RangeL * cos(lpW.getTheta() + m_DoorDetector.m_AngleL));
+	  double yL = lpW.getY() + (m_DoorDetector.m_RangeL * sin(lpW.getTheta() + m_DoorDetector.m_AngleL));
 
-        // Get the position and orientation of the door
-        double x = 0.5 * (xR + xL);
-        double y = 0.5 * (yR + yL);
-        double dir = atan2(yR - yL, xR - xL);
+	  // Get the position and orientation of the door
+	  double x = 0.5 * (xR + xL);
+	  double y = 0.5 * (yR + yL);
+	  double dir = atan2(yR - yL, xR - xL);
 
-        m_Mutex.lock();
-        //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
-	unsigned long lastsize = m_cureNavGraph.m_Nodes.size();
-        m_cureNavGraph.addGatewayNode(x,y,dir,
-                                      m_DoorDetector.m_Width);
-	//if (m_cureNavGraph.m_Nodes.back()->getId() == lastid) {
-	if (m_cureNavGraph.m_Nodes.size() == lastsize) {
-          checkForNodeChanges();
-	} else {
-          addFreeNode(m_cureNavGraph.m_Nodes.back()->getId(), 
-                      lpW.getX(), lpW.getY(), 0.0, cp.getTheta()-M_PI_2,
-                      m_cureNavGraph.m_Nodes.back()->getAreaId(), 
-                      "Area", 0,
-                      1, 
-                      m_cureNavGraph.m_Nodes.back()->getMaxSpeed(), 
-                      m_DoorDetector.m_Width,
-                      "-",
-                      true); // ask for the area class!!
-          writeGraphToWorkingMemory();
-        } 
-        m_Mutex.unlock();
-        
-        //if (processNewCureNavGraphNode(true)) checkForNodeChanges();     
+	  log("Estimated door pose to x=%.2f y=%.2f theta=%fdeg lpW.x=%.2f lpW.y=%.2f lpW.theta=%.2fdeg rR=%.2f rL=%.2f",
+	      x,y,dir*180/M_PI,lpW.getX(),lpW.getY(),lpW.getTheta()*180.0/M_PI,m_DoorDetector.m_RangeR,m_DoorDetector.m_RangeL);
 
-        m_LastDoorPose = cp;
-        m_InDoor = true;
+
+	  m_Mutex.lock();
+	  //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
+	  unsigned long lastsize = m_cureNavGraph.m_Nodes.size();
+	  m_cureNavGraph.addGatewayNode(x,y,dir,
+	      m_DoorDetector.m_Width);
+	  if (m_cureNavGraph.m_Nodes.size() == lastsize) {
+	    checkForNodeChanges();
+	  } else {
+	    addFreeNode(m_cureNavGraph.m_Nodes.back()->getId(), 
+		//lpW.getX(), lpW.getY(), 0.0, cp.getTheta()-M_PI_2,
+		x, y, 0.0, dir,
+		m_cureNavGraph.m_Nodes.back()->getAreaId(), 
+		"Area", 0,
+		1, 
+		m_cureNavGraph.m_Nodes.back()->getMaxSpeed(), 
+		m_DoorDetector.m_Width,
+		"-",
+		true); // ask for the area class!!
+	    writeGraphToWorkingMemory();
+	  } 
+	  m_Mutex.unlock();
+
+	  //if (processNewCureNavGraphNode(true)) checkForNodeChanges();     
+
+	  m_LastDoorPose = cp;
+	  m_InDoor = true;
+	}
       }
     }       
   }
@@ -1598,4 +1627,23 @@ void NavGraphProcess::checkForNodeChanges()
   }
 
   if (changesMade) writeGraphToWorkingMemory(true);
+}
+
+void 
+NavGraphProcess::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
+{
+  try {
+    FrontierInterface::DoorHypothesisPtr doorHyp =
+      getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
+
+    if (doorHyp != 0) {
+      double doorX = doorHyp->x;
+      double doorY = doorHyp->y;
+      log("Adding door hypothesis at (%f, %f)", doorX, doorY);
+
+      m_doorHypPositions.push_back(pair<double, double>(doorX, doorY));
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+  }
 }

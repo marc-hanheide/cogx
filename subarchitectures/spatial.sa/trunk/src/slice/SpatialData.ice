@@ -333,20 +333,51 @@ module SpatialData {
     // World coordinates
   };
 
-
-  /*
-   * Command to generate AVS view points for a particular object
-   * @author Nick Hawes
-   */
-  class ViewPointGenerationCommand {
+  enum SpatialRelation{ ON,
+  						INOBJECT,
+  						INROOM
+  };
+  
+    class ViewPointGenerationCommand {
     ///Object to generate the viewpoints for. TODO: what should this label contain?
      string label;
      PlaceIDSeq placestosearch; 
      AVSStatus status;
   };
+  
+  class RelationalViewPointGenerationCommand {
+  	string searchedObjectCategory;
+  	// INOBJECT if we are looking indirectly, INROOM if directly, see below
+  	SpatialRelation relation;
+  	// this is "" if we're looking directly, i.e. "mug in room1"
+  	string supportObject; 
+  	string supportObjectCategory;
+  	// always (and I mean always) fill this
+  	int roomId; 
+    AVSStatus status;
+  };
 
+ class ObjectSearchResult{
+	// this is really "mug", "table" etc.
+  	string searchedObjectCategory;
+  	// INOBJECT if we are looking indirectly, INROOM if directly, see enum:SpatialRelation
+  	SpatialRelation relation; 
+  	// this is "" if we're looking directly, i.e. "mug in sroom1"
+  	string supportObjectCategory; 
+  	// this is "" if we're looking directly, i.e. "mug in room1"
+  	string supportObjectId; 
+  	// always (and I mean always) fill this
+  	int roomId; 
+  	// The percentage of the relation probability mass that was already explored.
+  	double beta; 
+  };
+  
+  class ProcessConeGroup {
+	AVSStatus status;     
 
-
+	long coneId;
+  };
+  
   /**
    * Class for exposing AVS plan to planner
    */
@@ -365,8 +396,7 @@ module SpatialData {
   class SearchPlan{
 	  ViewPointSeq plan;
   };
-
-
+  
   /**
    * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
    * @author Nick Hawes
@@ -378,6 +408,16 @@ class ProcessViewPointCommand {
 	///The objects that should be identified from the view point
 	cast::cdl::StringSeq objectModels;
 
+  };
+  
+  interface AVSInterface
+  {
+  	void simulateViewCones(RelationalViewPointGenerationCommand cmd);
+  };
+  
+  interface MapInterface {
+    /* More to be added when necessary */
+    bool isCircleObstacleFree(double x, double y, double radius);
   };
 
 };

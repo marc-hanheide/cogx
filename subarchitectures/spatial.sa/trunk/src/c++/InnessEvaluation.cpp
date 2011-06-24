@@ -184,29 +184,40 @@ RelationEvaluator::evaluateInness(const Object *objectC, const Object *objectO)
     HollowBoxObject *hb = (HollowBoxObject *)objectC;
 
     vector<BoxObject> sides;
+
     BoxObject side1;
     side1.type = OBJECT_BOX;
     side1.pose.pos = vector3(hb->radius1-hb->thickness/2, 0, 0);
     side1.radius1 = hb->thickness/2;
     side1.radius2 = hb->radius2;
     side1.radius3 = hb->radius3;
-    sides.push_back(side1);
+
+    if (hb->sideOpen != 1) {
+      sides.push_back(side1);
+    }
 
     BoxObject side2;
     side2.type = OBJECT_BOX;
-    side2.pose.pos = vector3(0, hb->radius1-hb->thickness/2, 0);
-    side2.radius1 = hb->radius1;
-    side2.radius2 = hb->thickness/2;
+    side2.pose.pos = vector3(-hb->radius1+hb->thickness/2, 0, 0);
+    side2.radius1 = hb->thickness/2;
+    side2.radius2 = hb->radius2;
     side2.radius3 = hb->radius3;
-    sides.push_back(side2);
+
+    if (hb->sideOpen != 2) {
+      sides.push_back(side2);
+    }
 
     BoxObject side3;
     side3.type = OBJECT_BOX;
-    side3.pose.pos = vector3(-hb->radius1+hb->thickness/2, 0, 0);
-    side3.radius1 = hb->thickness/2;
-    side3.radius2 = hb->radius2;
+    side3.pose.pos = vector3(0, hb->radius1-hb->thickness/2, 0);
+    side3.radius1 = hb->radius1;
+    side3.radius2 = hb->thickness/2;
     side3.radius3 = hb->radius3;
-    sides.push_back(side3);
+
+    if (hb->sideOpen != 3) {
+      sides.push_back(side3);
+    }
+
 
     BoxObject side4;
     side4.type = OBJECT_BOX;
@@ -214,15 +225,32 @@ RelationEvaluator::evaluateInness(const Object *objectC, const Object *objectO)
     side4.radius1 = hb->radius1;
     side4.radius2 = hb->thickness/2;
     side4.radius3 = hb->radius3;
-    sides.push_back(side4);
+
+    if (hb->sideOpen != 4) {
+      sides.push_back(side4);
+    }
 
     BoxObject side5;
     side5.type = OBJECT_BOX;
-    side5.pose.pos = vector3(0, 0, -hb->radius3+hb->thickness/2);
+    side5.pose.pos = vector3(0, 0, hb->radius3+hb->thickness/2);
     side5.radius1 = hb->radius1;
     side5.radius2 = hb->radius2;
     side5.radius3 = hb->thickness/2;
-    sides.push_back(side5);
+
+    if (hb->sideOpen != 5) {
+      sides.push_back(side5);
+    }
+
+    BoxObject side6;
+    side6.type = OBJECT_BOX;
+    side6.pose.pos = vector3(0, 0, -hb->radius3+hb->thickness/2);
+    side6.radius1 = hb->radius1;
+    side6.radius2 = hb->radius2;
+    side6.radius3 = hb->thickness/2;
+
+    if (hb->sideOpen != 6) {
+      sides.push_back(side6);
+    }
 
     if (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX) {
       double penetrationPenalty = 0.0;

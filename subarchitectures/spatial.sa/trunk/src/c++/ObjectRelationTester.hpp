@@ -40,6 +40,7 @@ protected:
   bool m_bSampleOnness;
   bool m_bTestInness;
   bool m_bSampleInness;
+  bool m_bTestInference;
   bool m_bDemoSampling;
   bool m_bNoPTZ;
   bool m_bNoVision;

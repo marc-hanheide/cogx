@@ -22,6 +22,9 @@
 #include <float.h>
 #include <limits>
 
+//HACK: Constant value even w/o nearby gateways
+#define GATEWAY_FUNCTION(x) (exp(-x/1.0))
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -102,12 +105,77 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_bNoPlaceholders = true;
   }
 
+  if(_config.find("--exclude-from-exploration") != _config.end()) {
+    std::istringstream str(_config.find("--exclude-from-exploration")->second);
+
+    ForbiddenZone newZone;
+    newZone.minX = -DBL_MAX;
+    newZone.maxX = DBL_MAX;
+    newZone.minY = -DBL_MAX;
+    newZone.maxY = DBL_MAX;
+    while (!str.eof()) {
+      string buf;
+      str >> buf;
+
+      if (buf == "or") {
+    	    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
+	m_forbiddenZones.push_back(newZone);
+	newZone.minX = -DBL_MAX;
+	newZone.maxX = DBL_MAX;
+	newZone.minY = -DBL_MAX;
+	newZone.maxY = DBL_MAX;
+      }
+      else if (buf == "x") {
+	str >> buf;
+	if (buf == ">") {
+	  str >> newZone.maxX;
+	}
+	else if (buf == "<") {
+	  str >> newZone.minX;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else if (buf == "y") {
+	str >> buf;
+	if (buf == ">") {
+	  str >> newZone.maxY;
+	}
+	else if (buf == "<") {
+	  str >> newZone.minY;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else {
+	log("Warning: Malformed --exclude-from-exploration string");
+	break;
+      }
+    }
+    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
+    m_forbiddenZones.push_back(newZone);
+  }
+
   if(_config.find("--hyp-path-length") != _config.end()) {
     std::istringstream str(_config.find("--hyp-path-length")->second);
     str >> m_hypPathLength;
   }
   else {
     m_hypPathLength = 1.5;
+  }
+
+  if(_config.find("--min-placeholder-to-wall-distance") != _config.end()) {
+    std::istringstream str(_config.find("--min-placeholder-to-wall-distance")->second);
+    str >> m_minPlaceholderToWallDistance;
+  }
+  else {
+    m_minPlaceholderToWallDistance = 0.0;
   }
 
   FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
@@ -143,6 +211,9 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newObject));
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::DoorHypothesis>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PlaceManager>(this,
+	&PlaceManager::newDoorHypothesis));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   if (m_useLocalMaps) {
@@ -180,8 +251,10 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   try {
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
+    debug("newNavNode called");
+
     if (m_firstMovementRegistered) {
-      debug("newNavNode called");
+    	debug("");
       
       if (oobj != 0) {
 	processPlaceArrival(false);
@@ -454,7 +527,9 @@ PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("newObject called");
+	// Commented out as for the AVS IROS paper, the AVS is creating the objectplaceproperties!
+
+/**  debug("newObject called");
   try {
     lockEntry(objID.address, cdl::LOCKEDODR);
     vector<NavData::FNodePtr> nodes;
@@ -558,7 +633,43 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException e) {
     log ("Object disappeared!");
   }
-  debug("newObject exited");
+  debug("newObject exited"); */
+}
+
+void 
+PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
+{
+  try {
+    FrontierInterface::DoorHypothesisPtr doorHyp =
+      getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
+
+    if (doorHyp != 0) {
+      double doorX = doorHyp->x;
+      double doorY = doorHyp->y;
+
+      for (map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
+	  m_PlaceIDToHypMap.begin(); it != m_PlaceIDToHypMap.end(); it++) {
+	FrontierInterface::NodeHypothesisPtr nodeHyp = it->second;
+	if (nodeHyp != 0) {
+	  int hypID = nodeHyp->hypID;
+
+	  SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
+
+	  if (placeholder != 0) {
+	    // Check extant placeholder, add/modify gateway placeholder prop. accordingly
+	    double dx = doorX - nodeHyp->x;
+	    double dy = doorY - nodeHyp->y;
+	    double distSq = dx*dx+dy*dy;
+	    double gatewayness = GATEWAY_FUNCTION(distSq);
+	    debug("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
+	    setOrUpgradePlaceholderGatewayProperty(hypID, placeholder->id, gatewayness);
+	  }
+	}
+      }
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+  }
 }
 
 bool 
@@ -642,6 +753,36 @@ PlaceManager::evaluateUnexploredPaths()
       }
     }
 
+    // Remove old rejected hypotheses that are no longer in the vicinity of
+    // any frontiers.
+    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
+        m_rejectedHypotheses[curNodeId].begin(); hypIt != m_rejectedHypotheses[curNodeId].end(); hypIt++) {
+      bool shouldBeRejected = false;
+      for (FrontierInterface::FrontierPtSeq::iterator frontierIt = points.begin();
+          frontierIt != points.end(); frontierIt++) {
+        double frontierX = (*frontierIt)->x;
+        double frontierY = (*frontierIt)->y;
+        double hypX = (*hypIt)->x;
+        double hypY = (*hypIt)->y;
+        double distanceSq = (hypX - frontierX)*(hypX - frontierX) + (hypY - frontierY)*(hypY - frontierY);
+        double epsilon = 1e-10;
+        if (distanceSq <= epsilon) {
+          shouldBeRejected = true;
+          break;
+        }
+        if (shouldBeRejected)
+          log("hypothesis ID %d at (%f, %f) is close enough (dist %f) to frontier at (%f, %f)", (*hypIt)->hypID, hypX, hypY, distanceSq, frontierX, frontierY);
+      }
+      if (!shouldBeRejected) {
+        int hypID = (*hypIt)->hypID;
+        log("removing rejected hypothesis ID %d at (%f, %f) since no frontier is close by", hypID, (*hypIt)->x, (*hypIt)->y);
+        hypIt = m_rejectedHypotheses[curNodeId].erase(hypIt);
+        if (hypIt == m_rejectedHypotheses[curNodeId].end())
+          break;
+      }
+    }
+    
+
     // Loop over currently observed frontiers
     for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
 	points.begin(); frontierIt != points.end(); frontierIt++) {
@@ -651,11 +792,23 @@ PlaceManager::evaluateUnexploredPaths()
       double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
       log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, frontierPt->mWidth);
 
-      double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
-      double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
+      double newX = x;// + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
+      double newY = y;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 
+      bool excluded = false;
+      for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+	  fbIt != m_forbiddenZones.end(); fbIt++) {
+//    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+//    	  log("checking against: %.02g, %.02g", newX, newY);
+	if (!(newX <= fbIt->maxX && newX >= fbIt->minX &&
+	    newY <= fbIt->maxY && newY >= fbIt->minY)) {
+	  log("Placeholder in forbidden zone excluded");
+	  excluded = true;
+	  break;
+	}
+      }
       // Consider only frontiers with an open path to them
-      if (frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
+      if (!excluded && frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
 	// Consider only frontiers within a certain maximum distance of the current
 	// Nav node
 	if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
@@ -663,96 +816,111 @@ PlaceManager::evaluateUnexploredPaths()
 	  if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
 	    // Consider only frontiers of sufficient size
 	    if (frontierPt->mWidth > m_minFrontierLength) {
-	      double minDistanceSq = FLT_MAX;
-	      int minDistID = -1;
+        SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
+        if(map->isCircleObstacleFree(frontierPt->x, frontierPt->y, m_minPlaceholderToWallDistance)) {
+          //Consider only frontiers where the placeholder will not be placed too close to a wall
 
-	      // Check already-rejected hypotheses for this node
-	      if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
-		for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
-		    m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
-		  double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
-		  log ("distanceSq = %f", distanceSq);
-		  if (distanceSq < minDistanceSq) {
-		    minDistanceSq = distanceSq;
-		  }
-		}
-	      }
-	      // Compare distance to all other hypotheses created for this node
-	      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
-		  relevantHyps.begin(); extantHypIt != relevantHyps.end(); extantHypIt++) {
-		FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
-		try {
-		  if (extantHyp->originPlaceID == currentPlaceID) {
-		    double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
-		    debug("2distanceSq = %f", distanceSq);
-		    if (distanceSq < minDistanceSq) {
-		      minDistanceSq = distanceSq;
-		      minDistID = extantHyp->hypID;
-		    }
-		  }
-		}
-		catch (IceUtil::NullHandleException e) {
-		  log("Error: hypothesis suddenly disappeared!");
-		}
-	      }
+          double minDistanceSq = FLT_MAX;
+          int minDistID = -1;
 
-	      if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
-		// Create new hypothetical node in the direction of the frontier
-		FrontierInterface::NodeHypothesisPtr newHyp = 
-		  new FrontierInterface::NodeHypothesis;
-		newHyp->x = newX;
-		newHyp->y = newY;
-		newHyp->hypID = m_hypIDCounter;
-		newHyp->originPlaceID = currentPlaceID;
+          // Check already-rejected hypotheses for this node
+          if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
+      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
+          m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
+        double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
+        log ("distanceSq = %f", distanceSq);
+        if (distanceSq < minDistanceSq) {
+          minDistanceSq = distanceSq;
+        }
+      }
+          }
+          // Compare distance to all other hypotheses created for this node
+          for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
+            hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
+      FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
+      try {
+       // if (extantHyp->originPlaceID == currentPlaceID) {
+          double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
+          debug("2distanceSq = %f", distanceSq);
+          if (distanceSq < minDistanceSq) {
+            minDistanceSq = distanceSq;
+            minDistID = extantHyp->hypID;
+          }
+        //}
+      }
+      catch (IceUtil::NullHandleException e) {
+        log("Error: hypothesis suddenly disappeared!");
+      }
+          }
 
-		log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-		    newHyp->y, newHyp->hypID);
+          if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
+      // Create new hypothetical node in the direction of the frontier
+      FrontierInterface::NodeHypothesisPtr newHyp = 
+        new FrontierInterface::NodeHypothesis;
+      newHyp->x = newX;
+      newHyp->y = newY;
+      newHyp->hypID = m_hypIDCounter;
+      newHyp->originPlaceID = currentPlaceID;
 
-		string newID = newDataID();
-		m_HypIDToWMIDMap[newHyp->hypID]=newID;
-		hypotheses.push_back(newHyp);
-		relevantHyps.push_back(newHyp);
+      log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
+          newHyp->y, newHyp->hypID);
 
-		// Create the Place struct corresponding to the hypothesis
-		PlaceHolder p;
-		p.m_data = new SpatialData::Place;   
-		//p.m_data->id = oobj->getData()->nodeId;
+      string newID = newDataID();
+      m_HypIDToWMIDMap[newHyp->hypID]=newID;
+      hypotheses.push_back(newHyp);
+      relevantHyps.push_back(newHyp);
 
-		int newPlaceID = m_placeIDCounter;
-		m_placeIDCounter++;
-		p.m_data->id = newPlaceID;
-		m_PlaceIDToHypMap[newPlaceID] = newHyp;
-		m_hypIDCounter++;
+      // Create the Place struct corresponding to the hypothesis
+      PlaceHolder p;
+      p.m_data = new SpatialData::Place;   
+      //p.m_data->id = oobj->getData()->nodeId;
 
-		// Add connectivity property (one-way)
-		createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
-		p.m_data->status = SpatialData::PLACEHOLDER;
-		p.m_WMid = newDataID();
-		log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-		addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
-		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
+      int newPlaceID = m_placeIDCounter;
+      m_placeIDCounter++;
+      p.m_data->id = newPlaceID;
+      m_PlaceIDToHypMap[newPlaceID] = newHyp;
+      m_hypIDCounter++;
 
-		m_Places[newPlaceID]=p;
-	      }
-	      else if (minDistID != -1) {
-		// Modify the extant hypothesis that best matched the
-		// new position indicated by the frontier
-		try {
-		  FrontierInterface::NodeHypothesisPtr updatedHyp = 
-		    getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
+      // Add connectivity property (one-way)
+      createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
+      p.m_data->status = SpatialData::PLACEHOLDER;
+      p.m_WMid = newDataID();
+      log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+      addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+      addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 
-		  updatedHyp->x = newX;
-		  updatedHyp->y = newY;
+      m_Places[newPlaceID]=p;
+          }
+          else if (minDistID != -1) {
+      // Modify the extant hypothesis that best matched the
+      // new position indicated by the frontier
+      try {
+        FrontierInterface::NodeHypothesisPtr updatedHyp = 
+          getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
 
-		  log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
-		      updatedHyp->y, updatedHyp->hypID);
+        // Remove the hypothesis from our local list so we don't move
+        // it back again in the next iteration...
+        for (vector<FrontierInterface::NodeHypothesisPtr>::iterator iter =
+            hypotheses.begin(); iter != hypotheses.end(); iter++) {
+          if ((*iter)->hypID == minDistID) {
+            hypotheses.erase(iter);
+            break;
+          }
+        }
 
-		  overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
-		}
-		catch (DoesNotExistOnWMException) {
-		  log("Error! Could not update hypothesis on WM - entry missing!");
-		}
-	      }
+        updatedHyp->x = newX;
+        updatedHyp->y = newY;
+
+        log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
+            updatedHyp->y, updatedHyp->hypID);
+
+        overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
+      }
+      catch (DoesNotExistOnWMException) {
+        log("Error! Could not update hypothesis on WM - entry missing!");
+      }
+          }
+        }
 	    }
 	  }
 	}
@@ -767,7 +935,8 @@ PlaceManager::evaluateUnexploredPaths()
 	for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypothesisIt =
 	    relevantHyps.begin(); hypothesisIt != relevantHyps.end(); hypothesisIt++) {
 	  try {
-	    int hypID = (*hypothesisIt)->hypID;
+	    FrontierInterface::NodeHypothesisPtr hyp = *hypothesisIt;
+	    int hypID = hyp->hypID;
 
 	    SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
 
@@ -796,7 +965,7 @@ PlaceManager::evaluateUnexploredPaths()
 		discDistr->data = pairs;
 
 		map<int, string>::iterator
-		  foundFSIt = m_freeSpaceProperties.find(hypID);
+		  foundFSIt = m_freeSpaceProperties.find(placeholder->id);
 		if (foundFSIt != m_freeSpaceProperties.end()) {
 		  try {
 		    debug("lock 6");
@@ -808,21 +977,24 @@ PlaceManager::evaluateUnexploredPaths()
 		      (foundFSIt->second);
 		    debug("evaluateUnexploredPaths:4");
 
-		    // Property exists; change it
-		    freeProp->distribution = discDistr;
-		    freeProp->placeId = placeholder->id;
-		    freeProp->mapValue = freespacevalue;
-		    freeProp->mapValueReliable = 1;
-		    debug("overwrite 2: %s", foundFSIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
-			done=true;
-		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
+		    if (freeProp != 0) {
+		      // Property exists; change it
+		      freeProp->distribution = discDistr;
+		      freeProp->placeId = placeholder->id;
+		      freeProp->mapValue = freespacevalue;
+		      freeProp->mapValueReliable = 1;
+
+		      debug("overwrite 2: %s", foundFSIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
 		      }
 		    }
 		    unlockEntry(foundFSIt->second);
@@ -843,9 +1015,27 @@ PlaceManager::evaluateUnexploredPaths()
 		  string newID = newDataID();
 		  addToWorkingMemory<SpatialProperties::AssociatedSpacePlaceholderProperty>
 		    (newID, freeProp);
-		  m_freeSpaceProperties[hypID] = newID;
+		  m_freeSpaceProperties[placeholder->id] = newID;
 		}
 	      }
+
+
+
+	      /* Gatewayness Property */
+
+	      double gatewayness = getGatewayness(hyp->x, hyp->y);
+
+	      {
+		setOrUpgradePlaceholderGatewayProperty(hypID, 
+		    placeholder->id, gatewayness);
+	      }
+
+	      /* Gatewayness Property */
+
+
+
+
+
 
 	      {
 		//Frontier length property
@@ -861,7 +1051,7 @@ PlaceManager::evaluateUnexploredPaths()
 		discDistr->data = pairs;
 
 		map<int, string>::iterator
-		  foundUnexpIt = m_borderProperties.find(hypID);
+		  foundUnexpIt = m_borderProperties.find(placeholder->id);
 		if (foundUnexpIt != m_borderProperties.end()) {
 		  try {
 		    debug("lock 7");
@@ -873,21 +1063,23 @@ PlaceManager::evaluateUnexploredPaths()
 		      (foundUnexpIt->second);
 		    debug("evaluateUnexploredPaths:6");
 
-		    // Property exists; change it
-		    borderProp->distribution = discDistr;
-		    borderProp->placeId = placeholder->id;
-		    borderProp->mapValue = bordervalue;
-		    borderProp->mapValueReliable = 1;
-		    debug("overwrite 3: %s", foundUnexpIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
-			done=true;
-		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
+		    if (borderProp != 0) {
+		      // Property exists; change it
+		      borderProp->distribution = discDistr;
+		      borderProp->placeId = placeholder->id;
+		      borderProp->mapValue = bordervalue;
+		      borderProp->mapValueReliable = 1;
+		      debug("overwrite 3: %s", foundUnexpIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
 		      }
 		    }
 
@@ -910,7 +1102,7 @@ PlaceManager::evaluateUnexploredPaths()
 		  string newID = newDataID();
 		  addToWorkingMemory<SpatialProperties::AssociatedBorderPlaceholderProperty>
 		    (newID, borderProp);
-		  m_borderProperties[hypID] = newID;
+		  m_borderProperties[placeholder->id] = newID;
 		}
 	      }
 	    }
@@ -930,6 +1122,113 @@ PlaceManager::evaluateUnexploredPaths()
   //
   //  }
   }
+}
+
+void
+PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
+    int placeholderID, double value)
+{
+  debug("setOrUpgradePlaceholderGatewayProperty(%i,%i,%f) called", hypothesisID, placeholderID, value);
+  SpatialProperties::BinaryValuePtr gatewaynessValue =
+    new SpatialProperties::BinaryValue;
+  gatewaynessValue->value = true;
+  SpatialProperties::ValueProbabilityPair pair =
+  { gatewaynessValue, value};
+  SpatialProperties::ValueProbabilityPairs pairs;
+  pairs.push_back(pair);
+
+  SpatialProperties::BinaryValuePtr noGatewaynessValue =
+    new SpatialProperties::BinaryValue;
+  noGatewaynessValue->value = false;
+  SpatialProperties::ValueProbabilityPair pair2 =
+  { noGatewaynessValue, (1 - value)};
+  pairs.push_back(pair2);
+
+
+  SpatialProperties::BinaryValuePtr gatewaynessMapValue =
+    new SpatialProperties::BinaryValue;
+
+  gatewaynessMapValue->value = (value > 0.5);
+
+  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+    new SpatialProperties::DiscreteProbabilityDistribution;
+  discDistr->data = pairs;
+
+  map<int, string>::iterator
+    foundFSIt = m_placeholderGatewayProperties.find(placeholderID);
+  if (foundFSIt != m_placeholderGatewayProperties.end()) {
+    try {
+      lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+      SpatialProperties::GatewayPlaceholderPropertyPtr
+	gwProp = getMemoryEntry
+	<SpatialProperties::GatewayPlaceholderProperty>
+	(foundFSIt->second);
+
+      if (gwProp != 0) {
+	// Property exists; change it if value is higher
+	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	  SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(gwProp->distribution);
+	double currentProb = discDistr->data[0].probability;
+	debug("Comparing with existing probability: %f", currentProb);
+	if (currentProb < value) {
+	  gwProp->distribution = discDistr;
+	  gwProp->placeId = placeholderID;
+	  gwProp->mapValue = gatewaynessMapValue;
+	  gwProp->mapValueReliable = 1;
+
+	  debug("overwrite: %s", foundFSIt->second.c_str());
+	  bool done = false;
+	  while (!done) {
+	    try {
+	      overwriteWorkingMemory
+		<SpatialProperties::GatewayPlaceholderProperty>(foundFSIt->second,gwProp);
+	      done=true;
+	    }
+	    catch(PermissionException e) {
+	      log("Error! permissionException! Trying again...");
+	    }
+	  }
+	}
+      }
+      unlockEntry(foundFSIt->second);
+    }
+    catch(DoesNotExistOnWMException e) {
+      log("Property missing!");
+    }
+  }
+  else {
+    SpatialProperties::GatewayPlaceholderPropertyPtr gwProp =
+      new SpatialProperties::GatewayPlaceholderProperty;
+    gwProp->distribution = discDistr;
+    gwProp->placeId = placeholderID;
+    gwProp->mapValue = gatewaynessMapValue;
+    gwProp->mapValueReliable = 1;
+
+    string newID = newDataID();
+    debug("Adding new GWPlaceholderProperty");
+    addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
+      (newID, gwProp);
+    m_placeholderGatewayProperties[placeholderID] = newID;
+  }
+}
+
+double
+PlaceManager::getGatewayness(double x, double y) 
+{
+  vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
+  getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
+
+  double minDistSq = DBL_MAX;
+  for (vector<FrontierInterface::DoorHypothesisPtr>::iterator it = 
+      doorHyps.begin(); it != doorHyps.end(); it++) {
+    double dx = x - (*it)->x;
+    double dy = y - (*it)->y;
+    double distSq = dx*dx+dy*dy;
+    if (distSq < minDistSq) {
+      minDistSq = distSq;
+    }
+  }
+  return GATEWAY_FUNCTION(minDistSq);
 }
 
 NavData::FNodePtr
@@ -1175,24 +1474,32 @@ PlaceManager::processPlaceArrival(bool failed)
 	  //Stop moving, upgrade the placeholder we were heading for and connect it
 	  //to this new node, and delete the NodeHypotheses
 	  log("  CASE 1: New node discovered while exploring");
-	  map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 
-	  if (it2 != m_Places.end()) {
-	    //Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
-	    //make the Place refer to node curNode
-	    upgradePlaceholder(wasHeadingForPlace, it2->second, curNode, goalHyp->hypID);
+		/* Only upgrade the goal hypothesis if we are actually close to it */
+		double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
+		if (goalHyp != 0 && distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation) {
+			map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 
-	    if (curNodeGateway == 1) {
-	      addNewGatewayProperty(wasHeadingForPlace);
-	    }
-	  }
-	  else {
-	    log("Missing Placeholder placeholder!");
-	    m_goalPlaceForCurrentPath = -1;
-	    m_isPathFollowing = false;
-	    debug("processPlaceArrival exited");
-	    return;
-	  }
+			if (it2 != m_Places.end()) {
+				//Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
+				//make the Place refer to node curNode
+				upgradePlaceholder(wasHeadingForPlace, it2->second, curNode, goalHyp->hypID);
+
+				if (curNodeGateway == 1) {
+					addNewGatewayProperty(wasHeadingForPlace);
+				}
+			}
+			else {
+				log("Missing Placeholder placeholder!");
+				m_goalPlaceForCurrentPath = -1;
+				m_isPathFollowing = false;
+				debug("processPlaceArrival exited");
+				return;
+			}
+		}
+		else { /* If we are not close enought we came to a new node with no place, so we add one */
+			addPlaceForNode(curNode);
+		}
 	}
 
 	else if (!failed && curNodeId != wasComingFromNode) {
@@ -1203,39 +1510,45 @@ PlaceManager::processPlaceArrival(bool failed)
 	  //Remove the NodeHypothesis and its Placeholder, and
 	  //send the Place merge message
 
+    /* Only remove and merge if we are actually close to the goal */
+    double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
+    if (goalHyp != 0 && distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation) {
+      log("  CASE 2: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
 
-	  log("  CASE 2: Exploration action failed - place already known. Deleting Place %i",
-	      wasHeadingForPlace);
+      deletePlaceProperties(wasHeadingForPlace);
 
-	  deletePlaceProperties(wasHeadingForPlace);
+      m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
+      deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
+      m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
+      m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
 
-	  m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-	  deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
-	  m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
-	  m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
+      //Delete Place struct and entry in m_Places
+      map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
+      if (it2 != m_Places.end()) {
+        deleteFromWorkingMemory(it2->second.m_WMid);
+        m_Places.erase(it2);
+      }
+      else {
+        log("Could not find Place to delete!");
+      }
 
-	  //Delete Place struct and entry in m_Places
-	  map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
-	  if (it2 != m_Places.end()) {
-	    deleteFromWorkingMemory(it2->second.m_WMid);
-	    m_Places.erase(it2);
-	  }
-	  else {
-	    log("Could not find Place to delete!");
-	  }
+      //Prepare and send merge notification
+      SpatialData::PlaceMergeNotificationPtr newNotify = new
+        SpatialData::PlaceMergeNotification;
+      newNotify->mergedPlaces.push_back(wasHeadingForPlace);
+      newNotify->mergedPlaces.push_back(currentPlaceID);
+      newNotify->resultingPlace = currentPlaceID;
+      log("Sending merge notification between places %i and %i", 
+          currentPlaceID, wasHeadingForPlace);
 
-	  //Prepare and send merge notification
-	  SpatialData::PlaceMergeNotificationPtr newNotify = new
-	    SpatialData::PlaceMergeNotification;
-	  newNotify->mergedPlaces.push_back(wasHeadingForPlace);
-	  newNotify->mergedPlaces.push_back(currentPlaceID);
-	  newNotify->resultingPlace = currentPlaceID;
-	  log("Sending merge notification between places %i and %i", 
-	      currentPlaceID, wasHeadingForPlace);
-
-	  addToWorkingMemory<SpatialData::PlaceMergeNotification>(newDataID(), newNotify);
-	  //TODO:delete notifications sometime
-
+      addToWorkingMemory<SpatialData::PlaceMergeNotification>(newDataID(), newNotify);
+      //TODO:delete notifications sometime
+    }
+    else {
+      /* If we are not close to the goal we do nothing (ie. allow travelling
+       * over already visited places */
+      log("   CASE 2: travelling over known place distant from goal, ignoring.");
+    }
 	}
 
 	else {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
@@ -1479,7 +1792,10 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
       }
     }
   }
-  m_firstMovementRegistered = true;
+  if (!m_firstMovementRegistered){
+	  m_firstMovementRegistered = true;
+	  processPlaceArrival(false);
+  }
   //log("robotMoved exited");
 }
 
@@ -1555,6 +1871,19 @@ PlaceManager::deletePlaceholderProperties(int placeID)
 	log("Border property could not be deleted; already missing!");
       }
       m_borderProperties.erase(it);
+    }
+  }
+  {
+    //Delete gateway property
+    map<int, string>::iterator it = m_placeholderGatewayProperties.find(placeID);
+    if (it != m_placeholderGatewayProperties.end()) {
+      try {
+	deleteFromWorkingMemory (it->second);
+      }
+      catch (Exception e) {
+	log("Gateway placeholder property could not be deleted; already missing!");
+      }
+      m_placeholderGatewayProperties.erase(it);
     }
   }
   log("deletePlaceholderProperties exited");
@@ -1646,30 +1975,31 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
   m_PlaceIDToHypMap.erase(placeID);
 
   // Delete placeholder properties for the Place in question
+  deletePlaceholderProperties(placeID);
 
-  // 1: Free space properties
-  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
-    try {
-      lockEntry(m_freeSpaceProperties[placeID], cdl::LOCKEDOD);
-      deleteFromWorkingMemory(m_freeSpaceProperties[placeID]);
-    }
-    catch (DoesNotExistOnWMException) {
-      log("Error! gateway property was already missing!");
-    }
-    m_freeSpaceProperties.erase(placeID);
-  }
-
-  // 2: Border properties
-  if (m_borderProperties.find(placeID) != m_borderProperties.end()) {
-    try {
-      lockEntry(m_borderProperties[placeID], cdl::LOCKEDOD);
-      deleteFromWorkingMemory(m_borderProperties[placeID]);
-    }
-    catch (DoesNotExistOnWMException) {
-      log("Error! gateway property was already missing!");
-    }
-    m_borderProperties.erase(placeID);
-  }
+//  // 1: Free space properties
+//  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
+//    try {
+//      lockEntry(m_freeSpaceProperties[placeID], cdl::LOCKEDOD);
+//      deleteFromWorkingMemory(m_freeSpaceProperties[placeID]);
+//    }
+//    catch (DoesNotExistOnWMException) {
+//      log("Error! gateway property was already missing!");
+//    }
+//    m_freeSpaceProperties.erase(placeID);
+//  }
+//
+//  // 2: Border properties
+//  if (m_borderProperties.find(placeID) != m_borderProperties.end()) {
+//    try {
+//      lockEntry(m_borderProperties[placeID], cdl::LOCKEDOD);
+//      deleteFromWorkingMemory(m_borderProperties[placeID]);
+//    }
+//    catch (DoesNotExistOnWMException) {
+//      log("Error! gateway property was already missing!");
+//    }
+//    m_borderProperties.erase(placeID);
+//  }
 }
 
 void
@@ -1715,4 +2045,29 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
     set<int> &place1Connectivities = m_connectivities[place1ID];
     place1Connectivities.insert(place2ID); 
   }
+}
+
+int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
+	PlaceHolder p;
+	p.m_data = new SpatialData::Place;   
+
+	int newPlaceID = m_placeIDCounter;
+	m_placeIDCounter++;
+	p.m_data->id = newPlaceID;
+	m_PlaceIDToNodeMap[newPlaceID] = node;
+
+	p.m_data->status = SpatialData::TRUEPLACE;
+	p.m_WMid = newDataID();
+	log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+	addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+	checkUnassignedEdges(newPlaceID);
+
+	m_Places[newPlaceID] = p;
+
+	//Write the Gateway property if present
+	if (node->gateway == 1) {
+		addNewGatewayProperty(newPlaceID);
+	}
+
+	return newPlaceID;
 }
