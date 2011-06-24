@@ -344,6 +344,7 @@ inline bool vequals(const Vector2& a, const Vector2& b, double eps)
 //   return a.x != b.x || a.y != b.y;
 // }
 
+
 inline Vector2 operator - (const Vector2 &a)
 {
   return vector2(-a.x, -a.y);
