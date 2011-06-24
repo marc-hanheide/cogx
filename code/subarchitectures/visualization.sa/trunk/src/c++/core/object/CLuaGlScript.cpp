@@ -226,6 +226,7 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 
    if (pModel == NULL) {
       pModel = new CScript(this);
+      pModel->m_id = partId;
       m_Scripts[partId] = pModel;
    }
 
@@ -252,6 +253,16 @@ bool CLuaGlScript::removePart(const std::string& partId)
       }
    }
    return removed;
+}
+
+void CLuaGlScript::getParts(CPtrVector<CDisplayObjectPart>& parts, bool bOrdered)
+{
+   CLuaGlScript::CScript* pPart;
+   //CDisplayObject::ReadLock lock(this);
+   FOR_EACH_V(pPart, m_Scripts) {
+      if (!pPart) continue;
+      parts.push_back(pPart);
+   }
 }
 
 ERenderContext CLuaGlScript::getPreferredContext()
@@ -329,12 +340,15 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
    if (pModel->m_Scripts.size() < 1) return;
    DMESSAGE("Models present.");
 
+   CViewedObjectState *pState = pView->getObjectState(pObject->m_id);
+
    CLuaGlScript::CScript* pPart;
    // Prevent script modification while executing
    //IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
    CDisplayObject::ReadLock lock(*pObject);
    FOR_EACH_V(pPart, pModel->m_Scripts) {
       if (!pPart) continue;
+      if (!pState->m_childState[pPart->m_id].m_bVisible) continue;
       glPushMatrix();
       pPart->exec();
       glPopMatrix();
