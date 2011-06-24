@@ -1,0 +1,20 @@
+HOST localhost
+
+#vision
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/marker.ply" --siftfiles "instantiations/ply-models/marker.sift" --labels "marker" --learnmode --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile --labels "marker" --log
+
+#spatial
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-objOnly.cast
+
+INCLUDE includes/vision.sa/vision-base.cast

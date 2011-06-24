@@ -1,0 +1,35 @@
+HOST 192.168.0.10
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-base-slow.cast
+INCLUDE includes/spatial.sa/spatial-semmap.cast
+INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
+
+# Coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main-semmap.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main-semmap.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP MG VideoServerV OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServerV --camid "0" --plyfiles "instantiations/ply-models/book.ply instantiations/ply-models/rovio.ply instantiations/ply-models/frosties.ply instantiations/ply-models/stapler.ply" --siftfiles "instantiations/ply-models/linuxbook.sift instantiations/ply-models/rovio.sift instantiations/ply-models/frosties-kth.sift instantiations/ply-models/stapler.sift" --labels "book robot cerealbox stapler"
+# Categorical
+INCLUDE includes/categorical.sa/categorical-object.cast
+
+
+HOST 192.168.0.11
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-cvap-semmap-size-shape-appearance-dist.cast
+CPP GD  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
+

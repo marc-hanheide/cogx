@@ -1,0 +1,39 @@
+HOST localhost
+
+# spatial #####################################################################
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-binder.cast
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+#INCLUDE includes/binder.sa/binder.cast
+INCLUDE includes/binder.sa/binder-quiet.cast
+
+# coma ########################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma.cast
+
+
+# comsys ########################################################################
+INCLUDE includes/comsys.sa/comsys-base.cast
+INCLUDE includes/comsys.sa/comsys.cast
+
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/planner-dora.cast
+INCLUDE includes/motivation.sa/motivation.cast
+
+JAVA MG TestGenerator motivation.components.generators.TestGenerator
+JAVA MG HomingGenerator motivation.components.generators.HomingGenerator
+
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comsysdata.ComsysRoom, binder.autogen.core.UnionConfiguration"
+JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
+
+
+
+# verb stuff
+JAVA MG verbal.kint dora.DoraVerbalisation
+
