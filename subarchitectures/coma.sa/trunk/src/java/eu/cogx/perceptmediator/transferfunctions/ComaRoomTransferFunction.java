@@ -65,15 +65,15 @@ public class ComaRoomTransferFunction extends
 					"Coma room without a category yet, not mediating!");
 			return;
 		}
-		logger.info("fill belief with coma categories");
+//		logger.info("fill belief with coma categories");
 		IndependentFormulaDistributions distr = belief.getContent();
 		FormulaDistribution fd = FormulaDistribution.create();
 		for (JointProbabilityValue jp : from.categories.massFunction) {
 			String value = ((SpatialProbabilities.StringRandomVariableValue) (jp.variableValues[0])).value;
-			logger.info("adding " + value + " (" + jp.probability + ")");
+//			logger.info("adding " + value + " (" + jp.probability + ")");
 			fd.add(value, jp.probability);
 		}
-		assert (fd.size() > 0);
+		//assert (fd.size() > 0);
 		distr.put(CATEGORY_ID, fd);
 	}
 

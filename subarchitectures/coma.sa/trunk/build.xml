@@ -45,7 +45,7 @@
 	    <unzip dest="${output.dir}" src="./lib/jena.jar"/>
 	    <unzip dest="${output.dir}" src="./lib/xercesImpl.jar"/>
 <!--	    <unzip dest="${output.dir}" src="./lib/log4j-1.2.12.jar"/> -->
-<!--	    <unzip dest="${output.dir}" src="./lib/commons-logging-1.1.jar"/> --> 	</target>
+	    <unzip dest="${output.dir}" src="./lib/commons-logging-1.1.jar"/>  	</target>
 
 <!-- =================================================================== -->
 	<!-- Source generation                                                   -->
