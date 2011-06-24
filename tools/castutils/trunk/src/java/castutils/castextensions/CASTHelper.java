@@ -18,6 +18,10 @@ public class CASTHelper {
 	protected ManagedComponent component;
 	protected String name;
 	private Logger logger = null;
+	
+	protected Logger getLogger() {
+		return logger;
+	}
 
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
