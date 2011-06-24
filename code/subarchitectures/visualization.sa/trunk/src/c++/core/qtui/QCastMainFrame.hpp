@@ -122,6 +122,7 @@ private slots:
 private:
    cogx::display::CDisplayView* getView();
    void updateCustomUi(cogx::display::CDisplayView *pView);
+   void retrieveControlData(cogx::display::CDisplayView *pView);
    void updateViewList();
    void updateViewMenu();
    void updateToolBars();

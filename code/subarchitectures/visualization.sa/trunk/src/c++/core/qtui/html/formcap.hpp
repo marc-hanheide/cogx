@@ -61,7 +61,7 @@ public:
    // (Note: another solution would be to make QCastViewHtml a CHtmlFormObserver)
    virtual void onFormSubmitted(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
-   virtual void onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
+   virtual void onForm_OwnerDataChanged(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
    virtual void onHtmlClick(cogx::display::CHtmlChunk *pChunk,
          const std::string& ctrlId) { /*unused*/ }
@@ -73,7 +73,7 @@ signals:
    // see <url:../QCastViewHtml.cpp#tn=::createJsObjects>
    // see <url:../QCastViewHtml.cpp#tn=::doFillHtmlFrom>
    // Operation:
-   //    1. this.onOwnerDataChanged(pForm); current data is stored with the form
+   //    1. this.onForm_OwnerDataChanged(pForm); current data is stored with the form
    //    2. this.emit signalOwnerDataChanged(formid)
    //    3. QCastViewHtml::doFillHtmlFrom (connected to signalOwnerDataChanged, queued)
    //    4. QCastViewHtml::exec_JS: CogxJsFillForm(formid)

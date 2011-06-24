@@ -47,7 +47,7 @@ public:
    // This function shoul only be implemented in QCastFormObserver.
    // The CDisplayServer should not respond to this notification since it is the
    // CDisplayServer that causes the change.
-   virtual void onOwnerDataChanged(CHtmlChunk *pForm, const TFormValues& newValues) {}
+   virtual void onForm_OwnerDataChanged(CHtmlChunk *pForm, const TFormValues& newValues) {}
 };
 
 class CHtmlChunk: public CDisplayObjectPart

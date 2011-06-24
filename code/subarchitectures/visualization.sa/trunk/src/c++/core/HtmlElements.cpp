@@ -99,7 +99,7 @@ void CHtmlChunk::syncFormData(const TFormValues& formData, bool notify)
    CHtmlFormObserver *pObsrvr;
    CObserverList<CHtmlFormObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {
-      pObsrvr->onOwnerDataChanged(this, formData);
+      pObsrvr->onForm_OwnerDataChanged(this, formData);
    }
 }
 

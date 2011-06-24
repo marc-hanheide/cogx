@@ -17,10 +17,13 @@
 #include "QCastViewBase.hpp"
 #include "../ptrvector.hpp"
 #include "../HtmlElements.hpp"
+#include "ChangeSlot.hpp"
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QToolButton>
+#include <QAction>
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
@@ -545,32 +548,6 @@ void QCastMainFrame::syncViewListItem()
    }
 }
 
-void QCastMainFrame::updateToolBars()
-{
-   QCastViewBase *pDisplay = ui.drawingArea->getDisplayWidget();
-
-   foreach(QToolBar* pbar, m_customToolbars) {
-      pbar->deleteLater();
-   }
-   m_customToolbars.clear();
-
-   if (!pDisplay)
-      return;
-
-   ui.mainToolBar->setVisible(ui.actShowToolbars->isChecked());
-
-   CPtrVector<QToolBar> bars;
-   pDisplay->getToolbars(bars);
-   QToolBar *pBar;
-   FOR_EACH(pBar, bars) {
-      if (pBar) {
-         pBar->setVisible(ui.actShowToolbars->isChecked());
-         addToolBar(pBar);
-         m_customToolbars << pBar;
-      }
-   }
-}
-
 void QCastMainFrame::updateViewMenu()
 {
    QMenu *pMenu = new QMenu(this);
@@ -663,6 +640,37 @@ void QCastMainFrame::onTreeItemChanged(QTreeWidgetItem* pItem, int column)
 
 }
 
+// Update the toolbars that depend on the current view type
+void QCastMainFrame::updateToolBars()
+{
+   foreach(QToolBar* pbar, m_customToolbars) {
+      pbar->deleteLater();
+   }
+   m_customToolbars.clear();
+
+   ui.mainToolBar->setVisible(ui.actShowToolbars->isChecked());
+
+   // Tools defined by the components for the current view
+   ui.componentToolBar->setVisible(ui.actShowToolbars->isChecked() 
+         && ui.componentToolBar->controlCount() > 0);
+
+   QCastViewBase *pDisplay = ui.drawingArea->getDisplayWidget();
+   if (!pDisplay)
+      return;
+
+   // Toolbars defined by the view type
+   CPtrVector<QToolBar> bars;
+   pDisplay->getToolbars(bars);
+   QToolBar *pBar;
+   FOR_EACH(pBar, bars) {
+      if (pBar) {
+         pBar->setVisible(ui.actShowToolbars->isChecked());
+         addToolBar(pBar);
+         m_customToolbars << pBar;
+      }
+   }
+}
+
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
@@ -670,7 +678,10 @@ void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
    int nc = ui.wgCustomGui->updateUi(m_pModel, pView);
    ui.ckCustomControls->setEnabled(nc > 0);
    ui.wgCustomGui->setVisible(ui.ckCustomControls->isChecked() && nc > 0);
+
+   nc = ui.componentToolBar->updateUi(m_pModel, pView);
 }
+
 
 void QCastMainFrame::onShowViewListChanged()
 {
@@ -850,35 +861,40 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
       ui.drawingArea->setView(NULL, NULL);
    }
    else {
-      setWindowTitle(QString::fromStdString(pView->m_id) + " - " + m_winText);
-      if (! ui.wgCustomGui->hasView(pView)) {
+      if (ui.drawingArea->getActiveView() != pView) {
+         setWindowTitle(QString::fromStdString(pView->m_id) + " - " + m_winText);
+         ui.drawingArea->setView(m_pModel, pView);
          updateCustomUi(pView);
          updateObjectList(pView);
-         // retrieve data for custom widgets from remote display clients
-         if (m_pControlDataProxy) {
-            cogx::display::CGuiElement* pgel;
-            CPtrVector<cogx::display::CGuiElement> elements;
-            m_pModel->getGuiElements(pView->m_id, elements);
-            FOR_EACH(pgel, elements) {
-               if (!pgel) continue;
-               m_pControlDataProxy->getControlStateAsync(pgel);
-            }
-
-            CPtrVector<cogx::display::CHtmlChunk> forms;
-            // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
-            pView->getHtmlChunks(forms, cogx::display::CHtmlChunk::form);
-            cogx::display::CHtmlChunk* pForm;
-            FOR_EACH(pForm, forms) {
-               if (!pForm) continue;
-               m_pControlDataProxy->getFormStateAsync(pForm);
-            }
-         }
+         retrieveControlData(pView);
       }
-      ui.drawingArea->setView(m_pModel, pView);
    }
 
-   syncViewListItem();
    updateToolBars();
+   syncViewListItem();
+}
+
+void QCastMainFrame::retrieveControlData(cogx::display::CDisplayView *pView)
+{
+   // retrieve data for custom widgets from remote display clients
+   if (!m_pControlDataProxy || !pView) return;
+
+   cogx::display::CGuiElement* pgel;
+   CPtrVector<cogx::display::CGuiElement> elements;
+   m_pModel->getGuiElements(pView->m_id, elements);
+   FOR_EACH(pgel, elements) {
+      if (!pgel) continue;
+      m_pControlDataProxy->getControlStateAsync(pgel);
+   }
+
+   CPtrVector<cogx::display::CHtmlChunk> forms;
+   // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
+   pView->getHtmlChunks(forms, cogx::display::CHtmlChunk::form);
+   cogx::display::CHtmlChunk* pForm;
+   FOR_EACH(pForm, forms) {
+      if (!pForm) continue;
+      m_pControlDataProxy->getFormStateAsync(pForm);
+   }
 }
 
 cogx::display::CDisplayView* QCastMainFrame::getView()

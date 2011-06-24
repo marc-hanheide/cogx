@@ -28,13 +28,15 @@ class CGuiElement;
 class CGuiElementObserver
 {
 public:
+   std::string m_sGuiObserverName;
+
    // Pass the data change caused by UI interaction to the observer
-   virtual void onUiDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
+   virtual void onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
 
    // Pass the changes from the owner to the GUI element
    // The CDisplayServer should not respond to this notification since it is the
    // CDisplayServer that causes the change.
-   virtual void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue) {}
+   virtual void onGuiElement_OwnerDataChanged(CGuiElement *pElement, const std::string& newValue) {}
 };
 
 // An instance of this class describes a dynamically created UI widget which
@@ -57,9 +59,10 @@ public:
    std::string m_viewId; 
    std::string m_id;
    std::string m_label;
+   std::string m_tooltip;
    std::string m_iconLabel;
    std::string m_iconSvg;
-   bool m_checkable;
+   bool m_bCheckable;
    Ice::Identity m_dataOwner; // the ID of the component that holds data for the element
    // TODO: list of subscribed clients (CAST components); notify on change
    // TODO: wtDropList has a list of items

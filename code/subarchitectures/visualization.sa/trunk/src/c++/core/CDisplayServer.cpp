@@ -40,7 +40,7 @@ extern "C"
 #endif
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -59,6 +59,7 @@ CDisplayServer::CDisplayServer()
 {
    hIceDisplayServer = NULL;
    m_standaloneHost = "";
+   m_sGuiObserverName = "CDisplayServer";
 }
 
 CDisplayServer::~CDisplayServer()
@@ -393,7 +394,7 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
 void CDisplayServer::setHtml(const std::string& id, const std::string& partId, const std::string& htmlData)
 {
 #ifdef V11N_OBJECT_HTML
-   DTRACE("CDisplayServer::setHtml");
+   // DTRACE("CDisplayServer::setHtml");
 
    CHtmlObject *pObject = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
@@ -620,6 +621,28 @@ void CDisplayServer::addDialog(const Ice::Identity& ident, const std::string& di
       delete pDialog;
 }
 
+void CDisplayServer::addAction(const Ice::Identity& ident, const std::string& viewId,
+      const Visualization::ActionInfo& action)
+{
+   DTRACE("CDisplayServer::addAction (TODO)");
+   CGuiElement *pgel = new CGuiElement();
+   pgel->m_type = CGuiElement::wtAction;
+   pgel->m_viewId = viewId;
+   pgel->m_id = action.id;
+   pgel->m_label = action.label;
+   pgel->m_iconLabel = (action.iconLabel.length() > 0) ? action.iconLabel : action.label;
+   pgel->m_tooltip = (action.tooltip.length() > 0) ? action.tooltip : action.label;
+   pgel->m_iconSvg = action.iconSvg;
+   pgel->m_bCheckable = action.checkable;
+   pgel->m_dataOwner = ident;
+   pgel->Observers += this;
+   if (m_Model.addGuiElement(pgel))
+      debug(std::string("Action added: ") + action.id);
+   else {
+      if (pgel) delete pgel;
+      debug(std::string("Gui element already exists: ") + action.id);
+   }
+}
 
 class CUiDataChangeOperation: public CDisplayServerI::CQueuedOperation
 {
@@ -643,7 +666,14 @@ public:
             event.type = Visualization::evButtonClick; break;
          case CGuiElement::wtDropList:
             event.type = Visualization::evDropListChange; break;
+         case CGuiElement::wtAction:
+            if (pElement->m_bCheckable)
+               event.type = Visualization::evCheckBoxChange;
+            else
+               event.type = Visualization::evButtonClick;
+            break;
          default:
+            DMESSAGE("CUiDataChangeOperation: unknown CGuiElement type");
             return;
       }
 
@@ -657,11 +687,11 @@ public:
 };
 
 // Add change notification to queue, processed in <url:#tn=CDisplayServerI::run>
-void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
+void CDisplayServer::onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
    debug(std::string("Time: ") + sfloat (fclocks()));
    debug(std::string("New value ") + pElement->m_id + "=" + newValue);
-   DTRACE("CDisplayServer::onUiDataChanged");
+   DTRACE("CDisplayServer::onGuiElement_CtrlDataChanged");
 
    if (! hIceDisplayServer.get()) return;
    if (! pElement) return;
@@ -684,11 +714,14 @@ public:
 
    void execute(Visualization::EventReceiverPrx& pClient)
    {
+      DTRACE("CUiGetControlStateOperation::execute");
       if (! pElement) return;
-      // Get data from the ui elemente owner
+      // Get data from the ui element owner
       std::string val = pClient->getControlState(pElement->m_id);
-      if (val.size() > 0)
+      DMESSAGE("got value '" << val << "' for " << pElement->m_id);
+      if (val.size() > 0) {
          pElement->syncControlState(val);
+      }
    }
 };
 
@@ -902,6 +935,7 @@ void CDisplayServerI::run()
                if (!p->get() || pOp->m_clientId != idReceiver) continue;
 
                try {
+                  DMESSAGE("Executing");
                   pOp->execute(pRcvr);
                }
                catch(const Ice::Exception& ex) {

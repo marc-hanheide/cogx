@@ -378,7 +378,7 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
 
          // very simple approach: keep the radius
          double R = (m_camera.eye - m_pivot).length();
-         Vector3 neweye = m_camera.eye + dir * (R/10);
+         Vector3 neweye = m_camera.eye + dir * (R/36);
          dir = neweye - m_pivot;
          dir.normalize();
          m_camera.view = dir * -1;

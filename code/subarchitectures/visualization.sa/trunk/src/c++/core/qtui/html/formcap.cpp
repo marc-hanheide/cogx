@@ -284,9 +284,9 @@ void QCastFormProxy::onFormSubmitted(cogx::display::CHtmlChunk *pForm,
    emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }
 
-void QCastFormProxy::onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
+void QCastFormProxy::onForm_OwnerDataChanged(cogx::display::CHtmlChunk *pForm,
       const cogx::display::TFormValues& newValues)
 {
-   DTRACE("QCastFormProxy::onOwnerDataChanged" << this);
+   DTRACE("QCastFormProxy::onForm_OwnerDataChanged" << this);
    emit signalOwnerDataChanged(QString::fromStdString(pForm->htmlid()));
 }

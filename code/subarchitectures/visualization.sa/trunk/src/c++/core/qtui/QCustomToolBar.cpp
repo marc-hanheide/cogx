@@ -14,11 +14,10 @@
  * GNU General Public License for more details.
  */
 
-#include "QCustomGuiPanel.hpp"
+#include "QCustomToolBar.hpp"
 
-#include <QCheckBox>
-#include <QPushButton>
-#include <QVBoxLayout>
+#include <QToolButton>
+#include <QAction>
 #include "ChangeSlot.hpp"
 
 #ifdef DEBUG_TRACE
@@ -26,8 +25,8 @@
 #endif
 #include "../convenience.hpp"
 
-QCustomGuiPanel::QCustomGuiPanel(QWidget* parent, Qt::WindowFlags flags)
-   :QFrame(parent, flags)
+QCustomToolBar::QCustomToolBar(QWidget* parent)
+   :QToolBar(parent)
 {
    m_pView = NULL;
    // see: <url:QCastMainFrame.cpp#tn=QCastMainFrame::onViewAdded>
@@ -41,18 +40,18 @@ QCustomGuiPanel::QCustomGuiPanel(QWidget* parent, Qt::WindowFlags flags)
    m_controlCount = 0;
 }
 
-QCustomGuiPanel::~QCustomGuiPanel()
+QCustomToolBar::~QCustomToolBar()
 {
    if (m_pView) m_pView->viewObservers -= this;
 }
 
-void QCustomGuiPanel::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel,
+void QCustomToolBar::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel,
       cogx::display::CDisplayView *pSourceView,
       cogx::display::CGuiElement *pElement, const std::string& newValue)
 {
    if (pSourceView == m_pView) return;
    if (pElement == NULL) return;
-   DTRACE("QCustomGuiPanel::onModel_UiDataChanged " << newValue);
+   DTRACE("QCustomToolBar::onModel_UiDataChanged " << newValue);
 
    // If in the same thread, we can set the value for the control here
    // otherwise we emit a signal:
@@ -64,11 +63,11 @@ void QCustomGuiPanel::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel
    DVERIFYGUITHREAD("Custom Update", this);
 }
 
-void QCustomGuiPanel::doUiDataChanged(cogx::display::CDisplayModel *pModel,
+void QCustomToolBar::doUiDataChanged(cogx::display::CDisplayModel *pModel,
       cogx::display::CDisplayView *pView,
       cogx::display::CGuiElement *pElement, QString newValue)
 {
-   DTRACE("slot QCustomGuiPanel::doUiDataChanged");
+   DTRACE("slot QCustomToolBar::doUiDataChanged");
    DVERIFYGUITHREAD("Custom Update", this);
 
    // NOTE: Slots MUST be owned by the appropriate widgets
@@ -83,30 +82,21 @@ void QCustomGuiPanel::doUiDataChanged(cogx::display::CDisplayModel *pModel,
    }
 }
 
-void QCustomGuiPanel::removeUi()
+void QCustomToolBar::removeUi()
 {
-   DTRACE("QCustomGuiPanel::removeUi");
+   DTRACE("QCustomToolBar::removeUi");
 
-   if (layout()) delete layout();
-
-   QObject *pobj;
-   // TODO: CHECK if delete(findChildren()) works with comboboxes and other controls
-   //    delete(findChildren()) was causing problems with HTML comboboxes in QViewContainer::removeUi
-   //    it was changed to delete(children()) and crashes disappeared
-   QList<QObject*> wdgts = findChildren<QObject*>();
-   FOR_EACH(pobj, wdgts) {
-      if (pobj)
-         pobj->deleteLater();
-   }
+   bool sigBlocked = blockSignals(true);
+   clear();
    m_controlCount = 0;
+   blockSignals(sigBlocked);
 }
 
-int QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+int QCustomToolBar::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
-   DTRACE("QCustomGuiPanel::updateUi");
+   DTRACE("QCustomToolBar::updateUi");
    if (m_pView) m_pView->viewObservers -= this;
 
-   setVisible(false);
    removeUi();
 
    m_pView = pView;
@@ -116,39 +106,39 @@ int QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displa
    pModel->getGuiElements(pView->m_id, elements);
    if (elements.size() < 1) return 0;
 
+   bool sigBlocked = blockSignals(true);
    m_controlCount = 0;
 
    // Create new widgets
    cogx::display::CGuiElement* pgel;
    CChangeSlot *pSlot;
-   QCheckBox *pBox;
-   QPushButton *pButton;
-
-   QLayout *pLayout = new QVBoxLayout();
+   QToolBar *pBar = this;
 
    FOR_EACH(pgel, elements) {
       if (!pgel) continue;
-      switch (pgel->m_type) {
-         case cogx::display::CGuiElement::wtCheckBox:
-            pBox = new QCheckBox(QString(pgel->m_label.c_str()), this);
-            pLayout->addWidget(pBox);
-            pSlot = new CChangeSlot(pgel, pView, pBox);
-            connect(pBox, SIGNAL(stateChanged(int)), pSlot, SLOT(onCheckBoxChange(int)));
-            m_controlCount++;
-            break;
-         case cogx::display::CGuiElement::wtButton:
-            pButton = new QPushButton(QString(pgel->m_label.c_str()), this);
-            pLayout->addWidget(pButton);
-            pSlot = new CChangeSlot(pgel, pView, pButton);
-            connect(pButton, SIGNAL(clicked(bool)), pSlot, SLOT(onButtonClick(bool)));
-            m_controlCount++;
-            break;
-         default: break;
+      if (pgel->m_type != cogx::display::CGuiElement::wtAction)
+         continue;
+      QToolButton *pBtn;
+      pBtn = new QToolButton(pBar);
+      QString text = QString::fromStdString(pgel->m_iconLabel);
+      if (pgel->m_iconSvg.length() > 0) {
+         if (strncmp(pgel->m_iconSvg.c_str(), "stock:", 6) == 0) {
+            std::string stock = pgel->m_iconSvg.substr(6);
+            text = QString::fromStdString(stock);
+         }
       }
+      QAction* pAct = new QAction(QIcon(), text, pBtn);
+      pAct->setToolTip(QString::fromStdString(pgel->m_tooltip));
+      pAct->setCheckable(pgel->m_bCheckable);
+      pBtn->setDefaultAction(pAct);
+      pBar->addWidget(pBtn);
+      CChangeSlot* pSlot = new CChangeSlot(pgel, pView, pAct);
+      connect(pAct, SIGNAL(triggered(bool)), pSlot, SLOT(onButtonClick(bool)));
+      ++m_controlCount;
    }
 
-   setLayout(pLayout);
    if (pView) pView->viewObservers += this;
-   setVisible(true);
+
+   blockSignals(sigBlocked);
    return m_controlCount;
 }
