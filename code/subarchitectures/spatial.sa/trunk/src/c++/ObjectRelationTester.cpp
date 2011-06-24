@@ -15,6 +15,10 @@
 #include <AddressBank/ConfigFileReader.hh>
 //#include "PBVisualization.hh"
 
+bool
+inferRelationsThreeObjects(vector<double> &ret, double BOnA, double AOnB, double BOnT,
+    double AOnT, double BInA, double AInB, double BInT, double AInT);
+
 using namespace cast;
 #include <Pose3.h>
 
@@ -74,6 +78,12 @@ void ObjectRelationTester::configure(const map<string,string>& _config)
     m_bDemoSampling = true;
   }
 
+  m_bTestInference = false;
+  it = _config.find("--test-inference");
+  if (it != _config.end()) {
+    m_bTestInference = true;
+  }
+
   m_PbPort = 5050;
   m_PbHost = "localhost";
 
@@ -102,7 +112,7 @@ void ObjectRelationTester::configure(const map<string,string>& _config)
 
 void ObjectRelationTester::start() 
 {
-  if (m_bTestOnness || m_bTestInness) {
+  if (m_bTestOnness || m_bTestInness || m_bTestInference) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       connectPeekabot();
       sleep(m_RetryDelay);
@@ -113,6 +123,9 @@ void ObjectRelationTester::start()
     }
     else if (m_bTestInness) {
       m_relationTester.add(m_PeekabotClient, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+    }
+    else if (m_bTestInference) {
+      m_relationTester.add(m_PeekabotClient, "inference_tester", peekabot::REPLACE_ON_CONFLICT);
     }
     println("Connected to peekabot, ready to go");
   }
@@ -128,50 +141,53 @@ void ObjectRelationTester::runComponent()
   peekabot::SphereProxy op;
   peekabot::CubeProxy csp;
   peekabot::CubeProxy cop;
-  peekabot::PolygonProxy pp;
   peekabot::CubeProxy bp;
   peekabot::CubeProxy bp2;
-  PlaneObject table1;
+  peekabot::CubeProxy bp3;
+  BoxObject table1;
 
   peekabot::SphereProxy sp;
   peekabot::SphereProxy spm;
   peekabot::SphereProxy sp2;
   peekabot::SphereProxy spm2;
 
-  if (m_bTestOnness || m_bTestInness) {
-    table1.type = OBJECT_PLANE;
+  if (m_bTestOnness || m_bTestInness || m_bTestInference) {
+    table1.type = OBJECT_BOX;
 
     Matrix33 rotation;
     double rotAngle = 0.0;
     fromAngleAxis(rotation, rotAngle, vector3(0.0, 0.0, 1.0));
-    table1.pose = pose3(vector3(0.0, 0.0, 1.0), rotation);
+    table1.pose = pose3(vector3(0.0, 0.0, 0.5), rotation);
 
-    table1.shape = PLANE_OBJECT_RECTANGLE;
+//    table1.shape = PLANE_OBJECT_RECTANGLE;
     table1.radius1 = 0.5;
     table1.radius2 = 0.5;
+    table1.radius3 = 0.5;
 
-    peekabot::VertexSet polyVerts;
+    bp3.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
 
-    pp.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
-    pp.set_color(1.0, 1.0, 0);
-    polyVerts.add(table1.radius1, table1.radius2, 0);
-    polyVerts.add(-table1.radius1, table1.radius2, 0);
-    polyVerts.add(-table1.radius1, -table1.radius2, 0);
-    polyVerts.add(table1.radius1, -table1.radius2, 0);
+//    peekabot::VertexSet polyVerts;
 
-    pp.add_vertices(polyVerts);
-    pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
-    pp.rotate(rotAngle, 0.0, 0.0, 1.0);
+//    pp.add(m_relationTester, "table", peekabot::REPLACE_ON_CONFLICT);
+//    pp.set_color(1.0, 1.0, 0);
+//    polyVerts.add(table1.radius1, table1.radius2, 0);
+//    polyVerts.add(-table1.radius1, table1.radius2, 0);
+//    polyVerts.add(-table1.radius1, -table1.radius2, 0);
+//    polyVerts.add(table1.radius1, -table1.radius2, 0);
+
+//    pp.add_vertices(polyVerts);
+    bp3.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
+    bp3.rotate(rotAngle, 0.0, 0.0, 1.0);
 
 
     bp.add(m_relationTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
-    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
+    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z+0.5 + 0.26+0.145);
     bp.set_scale(0.19, 0.09, 0.29);
     bp.set_color(0.0, 0.0, 1.0);
     bp.set_opacity(0.5);
 
     bp2.add(m_relationTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
-    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
+    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z+0.5 + 0.13);
     bp2.set_scale(0.23, 0.21, 0.26);
     bp2.set_color(1.0, 0.0, 0.0);
     bp2.set_opacity(0.5);
@@ -222,7 +238,7 @@ void ObjectRelationTester::runComponent()
   }
 
   while (isRunning()) {
-    if (m_bTestOnness || m_bTestInness) {
+    if (m_bTestOnness || m_bTestInness || m_bTestInference) {
     
       
       peekabot::Result<peekabot::Transformation> r;
@@ -284,23 +300,6 @@ void ObjectRelationTester::runComponent()
 	  m[15] = 0;
 
 	  
-	 /* m[0] = r.get_result()(0,0);
-	  m[1] = r.get_result()(0,1);
-	  m[2] = r.get_result()(0,2);
-	  m[3] = r.get_result()(0,3);
-	  m[4] = r.get_result()(1,0);
-	  m[5] = r.get_result()(1,1);
-	  m[6] = r.get_result()(1,2);
-	  m[7] = r.get_result()(1,3);
-	  m[8] = r.get_result()(2,0);
-	  m[9] = r.get_result()(2,1);
-	  m[10] = r.get_result()(2,2);
-	  m[11] = r.get_result()(2,3);
-	  m[12] = r.get_result()(3,0);
-	  m[13] = r.get_result()(3,1);
-	  m[14] = r.get_result()(3,2);
-	  m[15] = r.get_result()(3,3);*/
-
 	  setRow44(boxPose, m);
 
 	  HollowBoxObject box2;
@@ -313,6 +312,35 @@ void ObjectRelationTester::runComponent()
 	  box2.radius3 = 0.13;
 //	  box2.thickness = 0.02;
 
+	  if (m_bTestInference) {
+	    double BOnA = m_evaluator.evaluateOnness(&box1, &box2);
+	    double AOnB = m_evaluator.evaluateOnness(&box2, &box1);
+	    double AOnT = m_evaluator.evaluateOnness(&table1, &box1);
+	    double BOnT = m_evaluator.evaluateOnness(&table1, &box2);
+	    double BInA = m_evaluator.evaluateInness(&box1, &box2);
+	    double AInB = m_evaluator.evaluateInness(&box2, &box1);
+	    double AInT = m_evaluator.evaluateInness(&table1, &box1);
+	    double BInT = m_evaluator.evaluateInness(&table1, &box2);
+	    vector<double> inferred;
+	    if (inferRelationsThreeObjects(inferred,
+		  BOnA, AOnB, BOnT, AOnT, BInA, AInB, BInT, AInT)) {
+	      log("B on A: %f", inferred[11]);
+	      log("B on table: %f", inferred[5]);
+	      log("B on_t A: %f", inferred[10]);
+	      log("B on_t table: %f", inferred[4]);
+	      log("B in A: %f", inferred[9]);
+	      log("B in table: %f", inferred[3]);
+	      log("A on B: %f", inferred[8]);
+	      log("A on table: %f", inferred[2]);
+	      log("A on_t B: %f", inferred[7]);
+	      log("A on_t table: %f", inferred[1]);
+	      log("A in B: %f", inferred[6]);
+	      log("A in table: %f", inferred[0]);
+	    }
+	    else {
+	      log("Error! inferRelationsThreeObjects failed!");
+	    }
+	  }
 
 	  if (m_bTestOnness) {
 	    peekabot::Result<peekabot::Transformation> vr;
@@ -571,6 +599,12 @@ void ObjectRelationTester::runComponent()
 	    }
 	  } // if (m_bTestInness)
 	}
+	else {
+	  log("Couldn't get pose from PB!");
+	}
+      }
+      else {
+	log("Couldn't get pose from PB!");
       }
     }
 

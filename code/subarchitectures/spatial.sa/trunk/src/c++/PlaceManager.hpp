@@ -87,6 +87,9 @@ class PlaceManager : public cast::ManagedComponent
     // Callback function for detected objects
     void newObject(const cast::cdl::WorkingMemoryChange &objID);
 
+    // Callback function for new door hypothesis
+    void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+
     // Call back functions for edges 
     void newEdge(const cast::cdl::WorkingMemoryChange &objID);
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
@@ -123,9 +126,16 @@ class PlaceManager : public cast::ManagedComponent
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
 
+    double getGatewayness(double x, double y);
+    void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
+	int placeholderID, double value);
+
     void createConnectivityProperty(double cost, int place1ID, int place2ID);
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
+
+    /* Helper function for adding a place to a node */
+    int addPlaceForNode(NavData::FNodePtr node);
 
     // Abort any movement commands
     void cancelMovement();
@@ -142,6 +152,7 @@ class PlaceManager : public cast::ManagedComponent
     // hypothetical nodes generated at a place
     double m_hypPathLength;     // How far to try and move in the direction of the
     // frontier
+    double m_minPlaceholderToWallDistance; // Don't place placeholders closer to a wall than this
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
@@ -162,6 +173,17 @@ class PlaceManager : public cast::ManagedComponent
     					// connectivity properties maintained
     std::map<std::pair<int, int>, std::string> m_connectivityToWMIDMap;
     std::map<int, std::string> m_gatewayProperties;
+
+    struct ForbiddenZone {
+      double minX;
+      double maxX;
+      double minY;
+      double maxY;
+    };
+    std::vector<ForbiddenZone> m_forbiddenZones;
+
+    //Maps from placeID 
+    std::map<int, std::string> m_placeholderGatewayProperties;
     std::map<int, std::string> m_freeSpaceProperties; // Keeps track of the
     					// freespace placeholder properties maintained
     std::map<int, std::string> m_borderProperties; // Keeps track of the

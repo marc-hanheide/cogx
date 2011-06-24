@@ -97,40 +97,42 @@ SelfRepresenter::runComponent()
     try {
       SpatialData::PlacePtr curPlace = agg2->getPlaceFromNodeID(curFNode->nodeId);
 
-      int curPlaceID = curPlace->id;
-      if (curPlaceID != prevPlaceID) {
-	// Place has changed!
+      if (curPlace != 0) {
+	int curPlaceID = curPlace->id;
+	if (curPlaceID != prevPlaceID) {
+	  // Place has changed!
 
-	SpatialProperties::IntegerValuePtr placeIDValue = 
-	  new SpatialProperties::IntegerValue;
-	placeIDValue->value = curPlaceID;
+	  SpatialProperties::IntegerValuePtr placeIDValue = 
+	    new SpatialProperties::IntegerValue;
+	  placeIDValue->value = curPlaceID;
 
-	SpatialProperties::ValueProbabilityPair pair1 =
-	{ placeIDValue, 1.0 };
+	  SpatialProperties::ValueProbabilityPair pair1 =
+	  { placeIDValue, 1.0 };
 
-	SpatialProperties::ValueProbabilityPairs pairs;
-	pairs.push_back(pair1);
+	  SpatialProperties::ValueProbabilityPairs pairs;
+	  pairs.push_back(pair1);
 
-	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-	  new SpatialProperties::DiscreteProbabilityDistribution;
-	discDistr->data = pairs;
+	  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	    new SpatialProperties::DiscreteProbabilityDistribution;
+	  discDistr->data = pairs;
 
-	SpatialProperties::PlaceContainmentAgentPropertyPtr robotLocationProperty =
-	  new SpatialProperties::PlaceContainmentAgentProperty();
-	robotLocationProperty->agentID = 0; //Robot's ID
-	robotLocationProperty->distribution = discDistr;
-	robotLocationProperty->mapValue = placeIDValue;
-	robotLocationProperty->mapValueReliable = 1;
+	  SpatialProperties::PlaceContainmentAgentPropertyPtr robotLocationProperty =
+	    new SpatialProperties::PlaceContainmentAgentProperty();
+	  robotLocationProperty->agentID = 0; //Robot's ID
+	  robotLocationProperty->distribution = discDistr;
+	  robotLocationProperty->mapValue = placeIDValue;
+	  robotLocationProperty->mapValueReliable = 1;
 
-	if (robotPositionPropertyWMID == "") {
-	  robotPositionPropertyWMID = newDataID();
-	  addToWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
+	  if (robotPositionPropertyWMID == "") {
+	    robotPositionPropertyWMID = newDataID();
+	    addToWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
+	  }
+	  else  {
+	    overwriteWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
+	  }
 	}
-	else  {
-	  overwriteWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
-	}
+	prevPlaceID = curPlaceID;
       }
-      prevPlaceID = curPlaceID;
     }
     catch (Ice::Exception e) {
       log("Unable to get current Place! %s",e.what());

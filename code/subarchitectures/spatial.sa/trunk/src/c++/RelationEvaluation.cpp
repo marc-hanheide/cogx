@@ -1621,40 +1621,20 @@ RelationEvaluator::computeAttentionVectorSumForSolid(const Object *obj,
 spatial::Object *
 generateNewObjectModel(const std::string &label) {
 //  log("generateNewObjectModel %s", label.c_str());
-  if (label == "rovio" || label == "bookcase_sm" || label == "bookcase_lg"
-      || label == "dell" || label == "shelves" || label == "metalbox") {
+  if (label == "bookcase" || label == "box") {
     HollowBoxObject *newBoxObject = new HollowBoxObject;
     newBoxObject->type = OBJECT_HOLLOW_BOX;
     newBoxObject->thickness = 0.051;
-    if (label == "rovio") {
-      newBoxObject->radius1 = 0.17;
-      newBoxObject->radius2 = 0.155;
-      newBoxObject->radius3 = 0.175;
-    }
-    else if (label == "bookcase_sm") {
+    newBoxObject->sideOpen = 5; //Positive z
+    if (label == "bookcase") {
       newBoxObject->radius1 = 0.155;
       newBoxObject->radius2 = 0.40;
       newBoxObject->radius3 = 0.75;
     }
-    else if (label == "bookcase_lg") {
-      newBoxObject->radius1 = 0.14;
-      newBoxObject->radius2 = 0.80;
-      newBoxObject->radius3 = 0.965;
-    }
-    else if (label == "shelves") {
-      newBoxObject->radius1 = 0.25;
-      newBoxObject->radius2 = 0.89;
-      newBoxObject->radius3 = 1.075;
-    }
-    else if (label == "dell") {
-      newBoxObject->radius1 = 0.11;
-      newBoxObject->radius2 = 0.245;
-      newBoxObject->radius3 = 0.200;
-    }
-    else if (label == "metalbox") {
-      newBoxObject->radius1 = 0.2;
-      newBoxObject->radius2 = 0.38;
-      newBoxObject->radius3 = 0.275;
+    else if (label == "box") {
+      newBoxObject->radius1 = 0.27;
+      newBoxObject->radius2 = 0.165;
+      newBoxObject->radius3 = 0.135;
     }
     else {
       newBoxObject->radius1 = 0.1;
@@ -1669,32 +1649,32 @@ generateNewObjectModel(const std::string &label) {
   else {
     BoxObject *newBoxObject = new BoxObject;
     newBoxObject->type = OBJECT_BOX;
-    if (label == "krispies") {
-      newBoxObject->radius1 = 0.095;
-      newBoxObject->radius2 = 0.045;
-      newBoxObject->radius3 = 0.145;
+    if (label == "cornflakes") {
+      newBoxObject->radius1 = 0.097;
+      newBoxObject->radius2 = 0.064;
+      newBoxObject->radius3 = 0.146;
     }
-    else if (label == "joystick") {
-      newBoxObject->radius1 = 0.115;
-      newBoxObject->radius2 = 0.105;
-      newBoxObject->radius3 = 0.13;
+    else if (label == "mug") {
+      newBoxObject->radius1 = 0.1;
+      newBoxObject->radius2 = 0.1;
+      newBoxObject->radius3 = 0.1;
     }
-    else if (label == "rice") {
-      newBoxObject->radius1 = 0.075;
-      newBoxObject->radius2 = 0.023;
-      newBoxObject->radius3 = 0.095;
+    else if (label == "paperclip") {
+      newBoxObject->radius1 = 0.05;
+      newBoxObject->radius2 = 0.085;
+      newBoxObject->radius3 = 0.05;
     }
-    else if (label == "printer") {
-      newBoxObject->radius1 = 0.300;
-      newBoxObject->radius2 = 0.160;
-      newBoxObject->radius3 = 0.260;
+    else if (label == "stapler") {
+      newBoxObject->radius1 = 0.0305;
+      newBoxObject->radius2 = 0.0185;
+      newBoxObject->radius3 = 0.077;
+    }
+    else if (label == "marker") {
+      newBoxObject->radius1 = 0.019;
+      newBoxObject->radius2 = 0.07;
+      newBoxObject->radius3 = 0.048;
     }
     else if (label == "book") {
-      newBoxObject->radius1 = 0.0275;
-      newBoxObject->radius2 = 0.095;
-      newBoxObject->radius3 = 0.12;
-    }
-    else if (label == "table1") {
       newBoxObject->radius1 = 0.55;
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
@@ -1704,10 +1684,10 @@ generateNewObjectModel(const std::string &label) {
       newBoxObject->radius2 = 0.45;
       newBoxObject->radius3 = 0.275;
     }
-    else if (label == "table2") {
-      newBoxObject->radius1 = 0.30;
-      newBoxObject->radius2 = 0.50;
-      newBoxObject->radius3 = 0.36;
+    else if (label == "counter") {
+      newBoxObject->radius1 = 1.70;
+      newBoxObject->radius2 = 0.45;
+      newBoxObject->radius3 = 0.275;
     }
     else  {
       newBoxObject->radius1 = 0.1;

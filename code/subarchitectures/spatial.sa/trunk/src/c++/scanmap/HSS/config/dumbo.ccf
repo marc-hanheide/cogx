@@ -1,0 +1,55 @@
+ROBOT
+Dumbo
+
+PEEKABOT_HOST
+localhost
+
+PEEKABOT_ROBOT_XML_FILE
+Dumbo.xml
+
+SENSORCHAINS
+# List the sensors to use .
+# type: 1 sick, 2 camera
+# ver type id PredictType XtraRotCovType SensorOffsetCovType MapSensorCovType 
+1 1 0 1 0 63 63
+
+SENSORPOSES
+# List the sensors and their initial poses relative to the robot pose 
+# (The Covariance is diagonal set to Covariance value)  
+# if additional covariance numbers follow they will be placed 
+# along the diagonal of the Covariance other wise the first value is repeated.
+# type id x y z theta phi psi, (opt. covtype) (opt. Covariance value(s))
+1 0 0.265 0 0.27 -1.5708 0 0 63 .000001 .000001 .000001 .0001 .0001 .0001 
+
+ODOMMODEL
+# version odtype covDistM covAngRad covAngM CovNormalperM CovXYperRad
+# biasDistPerM biasAngPerM biasAngPerRad 
+0 1 0.001 0.002 4e-7 4E-5 1E-6 0 0 0
+
+#=========================================================================
+
+# Files for the sensor and odometry data. The first number on each
+#line is the type which can be of the follinwg types
+# 0 - raw odometry
+# 1 - cum.odometry
+# 2 - inc.odometry
+# 3 - laser scans
+SENSORFILES
+0 odom.tdf
+1 cum.tdf
+2 inc.tdf
+3 scans.tdf
+
+# To make it easy to switch between data set in different directories
+# you can set the path to the file. By default it is assumed that it
+# is the current directory
+FILEPATH 
+data/data_dumbo
+
+#================================================
+
+INCLUDEPATH
+./
+
+INCLUDE
+robotpose.ccf

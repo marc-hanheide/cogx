@@ -129,6 +129,9 @@ private:
   void newObjObs(const cast::cdl::WorkingMemoryChange &objID);
   void newVisualObject(const cast::cdl::WorkingMemoryChange & wmChange);
 
+  // Callback function for new door hypothesis
+  void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void receiveScan2d(const Laser::Scan2d &castScan);
 
@@ -150,6 +153,8 @@ private:
   std::string m_cureNavGraphFile;
   std::string m_NavGraphWMid;
 
+  std::vector<std::pair<double, double> > m_doorHypPositions;
+
   /// This class holds the data for the areas and pointers to where
   /// they can be found in working memory
   class Area {
@@ -168,6 +173,8 @@ private:
   NavData::TopologicalRobotPosPtr m_TopRobPos;
   std::string m_TopRobPosWMid;
   bool m_WriteFirstTopologicalPose; // true when navgraph read from file
+
+  bool m_UseDoorHypotheses; // Whether to filter out doorways not detected from afar
 
   Cure::InDoorOpeningDetector m_DoorDetector;
   Cure::SensorPose m_LaserPoseR;

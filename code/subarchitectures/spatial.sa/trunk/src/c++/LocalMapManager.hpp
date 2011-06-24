@@ -14,6 +14,8 @@
 
 #ifndef LocalMapManager_hpp
 #define LocalMapManager_hpp
+#include <peekabot.hh>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
@@ -33,6 +35,10 @@
 #include <VisionData.hpp>
 #include "GridObjectFinder.hpp"
 #include <cast/core/CASTTimer.hpp>
+#include "scanmap/HSS/HSSScan2D.hh"
+#include "scanmap/HSS/HSSDoorExtractor.hh"
+#include "scanmap/HSS/HSSRedundantLine2DRep.hh"
+
 
 namespace spatial {
   typedef std::vector<std::pair<double, double> > PlaneList;
@@ -145,9 +151,11 @@ protected:
   double m_MaxLaserRangeForPlaceholders; 
   double m_MaxLaserRangeForCombinedMaps;
 
+  bool m_bShowDoorsInPB;
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
+  bool m_bDetectDoors;
   std::string m_planeObjectFilename;
   std::string m_planeModelFilename;
 
@@ -210,6 +218,20 @@ protected:
   Robotbase::RobotbaseServerPrx m_RobotServer;
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
+  //Remote door extractor
+  HSS::DoorExtractor m_doorExtractor;
+  //Detected doors
+  std::map<std::string, FrontierInterface::DoorHypothesisPtr> m_detectedDoors;
+  //Falloff for gateway property value with distance to nearest detected door
+  double m_doorwayWidth;
+
+  //Peekabot
+  std::string m_PbHost;
+  int m_PbPort;
+
+  peekabot::PeekabotClient m_peekabotClient;
+  peekabot::GroupProxy m_HSSGroupProxy;
+
   //For keeping track of when the robot is moving (to filter planes)
   double m_standingStillThreshold;
   cast::cdl::CASTTime m_lastTimeMoved;
@@ -226,14 +248,6 @@ private:
   void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
       const std::vector<NavData::FNodePtr> &nodes);
   Cure::Transformation3D getCameraToWorldTransform();
-  void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
-  void processConvexHull(const VisionData::ConvexHullPtr hull);
-  void addObservedPlaneObject(const std::string &label, 
-      double x, double y, double height, double angle, int id);
-  void findPlaneHeightClusters();
-  void PaintPolygon(const VisionData::Vector3Seq &points);
-  void readPlaneObjectsFromFile();
-  void readPlaneModelsFromFile(double CellSize);
   void SaveNodeGridMaps();
   void LoadNodeGridMaps(std::string filename);
 };

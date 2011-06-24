@@ -84,6 +84,23 @@ class SpatialControl : public cast::ManagedComponent ,
     };
     friend class FrontierServer;
 
+
+    class MapServer: public SpatialData::MapInterface {
+      private:
+        virtual bool isCircleObstacleFree(double x, double y, double radius, const Ice::Current &_context) {
+          if(!m_pOwner->m_lgm)
+            throw "No map exists. Can not check for obstacles.";
+
+          return m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
+        }
+        SpatialControl *m_pOwner;
+        MapServer(SpatialControl *owner) : m_pOwner(owner) {}
+        friend class SpatialControl;
+    };
+    friend class MapServer;
+
+
+
 public:
 
   SpatialControl ();
@@ -96,6 +113,8 @@ public:
   void doneTask(int taskID);
   void failTask(int taskID, int error);
   void explorationDone(int taskID, int status);
+  const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
+
 
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config);

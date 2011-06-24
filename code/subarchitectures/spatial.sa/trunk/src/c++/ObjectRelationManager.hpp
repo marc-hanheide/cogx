@@ -36,6 +36,7 @@ namespace Cure {
 template <class T>
 class LocalGridMap;
 }
+typedef std::pair<std::string, std::string> StrPair;
 
 namespace spatial {
 
@@ -48,17 +49,6 @@ namespace spatial {
  */
 class ObjectRelationManager : public cast::ManagedComponent
 {
-  private:
-    class RelationServer: public FrontierInterface::RelationInterface {
-      virtual FrontierInterface::StringSeq 
-	getObjectRelationProbabilities(const string &object);
-
-      ObjectRelationManager *m_pOwner;
-      RelationServer(ObjectRelationManager *owner) : m_pOwner(owner)
-      {}
-      friend class ObjectRelationManager;
-    };
-    friend class RelationServer;
 public:
 
   ObjectRelationManager ();
@@ -76,7 +66,7 @@ protected:
   std::map<std::string, SpatialObjectPtr> m_objects; 
   std::map<std::string, spatial::Object*> m_objectModels;
   std::map<std::string, std::string> m_objectWMIDs; 
-  std::map<std::string, std::string> m_visualObjectIDs;
+//  std::map<std::string, std::string> m_visualObjectIDs;
 
   std::map<std::string, PlaneObject> m_planeObjectModels;
   std::map<std::string, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
@@ -94,14 +84,18 @@ protected:
   double m_recognitionTimeThreshold;
   bool m_bRecognitionIssuedThisStop;
 
+  std::set<cdl::WorkingMemoryAddress> m_updatedObjects;
+  //Pair order: (trajector, landmark)
+  std::map<StrPair, double> m_objectOnnessValues;
+  std::map<StrPair, double> m_objectInnessValues;
 
   std::map<std::string, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
-  std::map<std::string, std::string> m_containmentPropWMIDs; 
+//  std::map<std::string, std::string> m_containmentPropWMIDs; 
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
   bool m_bNoPTZ;
-  bool m_bNoVision;
+  bool m_bDetectObjects;
 
   bool m_bDisplayPlaneObjectsInPB;
   bool m_bDisplayVisualObjectsInPB;
@@ -127,6 +121,7 @@ protected:
 
   void newRobotPose(const cast::cdl::WorkingMemoryChange &);
   void newObject(const cast::cdl::WorkingMemoryChange &);
+  void newObject(const cast::cdl::WorkingMemoryAddress &);
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
@@ -135,14 +130,16 @@ protected:
   void recomputeOnnessForObject(const std::string &label);
   void recomputeOnnessForPlane(const std::string &label);
   void recomputeInnessForObject(const std::string &label);
+  void runInference();
 
 //  void sampleOnnessForPlane(const std::string &planeLabel, 
 //      const std::string &objectLabel);
 //  void sampleOnnessForObject(const std::string &supLabel, 
 //      const std::string &onLabel);
 
-  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
+//  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
+  void processPriorRequest(FrontierInterface::ObjectPriorRequestPtr request);
   void new3DPriorRequest(const cast::cdl::WorkingMemoryChange &wmc);
 
   void setContainmentProperty(const std::string &objectLabel, int placeID, double confidence);

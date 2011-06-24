@@ -2,15 +2,29 @@ include_directories(../autogen)
 
 Find_package(Player REQUIRED)
 Find_package(X11 REQUIRED)
+# Set build type
+# set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Peekabot REQUIRED)
+
+# Find QT4 
+find_package( Qt4 REQUIRED )
+include(${QT_USE_FILE})
+
+find_package(Eigen)
+include_directories(${EIGEN_INCLUDE_DIRS})
+include_directories(/usr/include/eigen2)
 include_directories(${PEEKABOT_INSTALLROOT}/include)
 link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
 
+find_package(Eigen REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIRS})
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
-
+#MESSAGE(${OPENCV_INCLUDE_DIRS})
+#MESSAGE(${OPENCV_LDFLAGS})
 Find_package(Cure REQUIRED)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
@@ -25,7 +39,29 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen/)
 include_directories(${COGX_ROOT}/tools/hardware/utils/src/c++/components/)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
+include_directories(${COGX_ROOT}/tools/rocs/src/concept/cpp/)
+include_directories(${COGX_ROOT}/tools/rocs/src/ml/cpp/)
+include_directories(${COGX_ROOT}/tools/rocs/src/core/cpp/)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+include_directories(scanmap/HSS)
+
+
+include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/shared/)
+
+include_directories(${COGX_ROOT}/tools/cogxutils/src/autogen)
+
+include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++/)
+
+include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/autogen)
+
+include_directories(${COGX_ROOT}/tools/cogxutils/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/cpp/autogen)
+include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
+
+include_directories(/home/krsj/code/libdai/include)
+link_directories(/home/krsj/code/libdai/lib)
+
+
 if(BUILD_SA_BINDING)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
@@ -47,7 +83,7 @@ include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 
 add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver SpatialProbabilities SpatialProperties)
+link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver ComaData ConceptualData SpatialProbabilities SpatialProperties)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
@@ -73,7 +109,7 @@ link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 # -------------- /NAV.SA ----------------
 
 add_cast_component(NavGraphProcess NavGraphProcess.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Robotbase OdometryReceiver Scan2dReceiver CureHWUtils VisionData)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Robotbase OdometryReceiver Scan2dReceiver CureHWUtils VisionData FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
@@ -96,11 +132,12 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
-add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
+add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp scanmap/HSS/HSSDoorExtractor.cc scanmap/HSS/HSSDisplayFunctions.cc scanmap/HSS/HSSLsqLineExtractor.cc scanmap/HSS/HSSRedundantLine2DRep.cc) 
+
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+ link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 #add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
@@ -148,7 +185,6 @@ if(BUILD_AVS)
 #link_cast_component(${CAST_COMPONENT_NAME} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
 #link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
 #link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-#link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
 
 Find_package(GTK2 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
@@ -176,13 +212,35 @@ ENDIF(APPLE)
 
 endif(BUILD_AVS)
 
-add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+option(BUILD_SA_SPATIAL_RELATIONMANAGER "Build spatial.SA ObjectRelationManager component" NO)
+if(BUILD_SA_SPATIAL_RELATIONMANAGER)
+  include_directories(${COGX_ROOT}/tools/rocs/thirdparty/libdai/include)
+  add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp)# InferRelations.cpp) 
 
-add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} peekabot)
-#link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank)
+  set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
+  link_cast_component(${CAST_COMPONENT_NAME} dai rocs_core rocs_ml rocs_concept)
 
+  link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
+  link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
+  link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+
+  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp InferRelations.cpp) 
+  set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
+  link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+  link_cast_component(${CAST_COMPONENT_NAME} dai rocs_core rocs_ml rocs_concept)
+  link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank CureTransformation CureMath CureSensorData)
+  link_cast_component(${CAST_COMPONENT_NAME} Math)
+endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
+
+OPTION(BUILD_AVS_PLANNER NO)
+if(BUILD_AVS_PLANNER)
+    add_cast_component(AVS_ContinualPlanner AVS_ContinualPlanner.cpp DensitySampling.cpp RelationEvaluation.cpp InnessEvaluation.cpp OnnessEvaluation.cpp ConeSlicer.cpp ViewPointGenerator.cpp) 
+    link_cast_component(${CAST_COMPONENT_NAME} peekabot PTZ)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualShared NavData VisionData ConceptualData FrontierInterface SpatialProperties SpatialProbabilities SpatialData CureAddressBank ComaData BeliefsCogX )
+# link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+ link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
+   link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+endif(BUILD_AVS_PLANNER)
+
+add_cast_component(PlaceholderExplorer PlaceholderExplorer.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)

@@ -46,6 +46,7 @@ struct SphereObject : public Object {
 //Box with the top (Z+) side open
 struct HollowBoxObject : public BoxObject {
   double thickness;
+  int sideOpen;
 };
 
 enum WitnessType {WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE};
@@ -180,6 +181,10 @@ class RelationEvaluator {
 
 void
 randomizeOrientation(Pose3 &pose);
+
+bool
+inferRelationsThreeObjects(std::vector<double> &ret, double BOnA, double AOnB, double BOnT,
+   double AOnT, double BInA, double AInB, double BInT, double AInT);
 
 void
 getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
