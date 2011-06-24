@@ -222,6 +222,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
 #ifdef FEAT_VISUALIZATION
   // display objects
+  // TODO: with multiple PPOs the names have to include the componentID.
   #define ID_OBJECT_3D      "PlanePopout.3D"
   #define ID_OBJECT_IMAGE   "PlanePopout.Image"
 
