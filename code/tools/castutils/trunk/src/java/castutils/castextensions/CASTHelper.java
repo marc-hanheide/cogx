@@ -19,10 +19,6 @@ public class CASTHelper {
 	protected String name;
 	private Logger logger = null;
 	
-	protected Logger getLogger() {
-		return logger;
-	}
-
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
 		name = this.getClass().getSimpleName();
