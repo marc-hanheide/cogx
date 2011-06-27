@@ -189,6 +189,9 @@ class CCastConfig:
             raise Exception ("Failed to include: '%s'\n%s" % (filename, e))
 
         fdir = os.path.abspath(os.path.dirname(filename))
+        reldir = os.path.relpath(fdir)
+        if not reldir.startswith("."):
+            fdir = reldir
         lines = [
                 # CURRENT_DIR is also set by cast
                 "SETVAR CURRENT_DIR=%s" % fdir,
