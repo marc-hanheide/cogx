@@ -3,6 +3,8 @@ FIND_PATH(
   /usr/include/eigen2
   /usr/local/include/eigen2
   /opt/local/include/eigen2 
+  /usr/include/eigen3
+  /usr/local/include/eigen3
 )
 
 IF(EIGEN_INCLUDE_DIRS)
