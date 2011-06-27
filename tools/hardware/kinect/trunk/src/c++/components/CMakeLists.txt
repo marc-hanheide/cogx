@@ -4,8 +4,6 @@ include_directories(.)
 include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${OPENCV_CFLAGS})
 
-option(BUILD_HAL_KINECT YES)
-if(BUILD_HAL_KINECT)
   SET(HEADERS
 	Capture.h
 	Device.h
@@ -32,4 +30,3 @@ if(BUILD_HAL_KINECT)
 
   add_cast_component(KinectStereoSeqServer KinectStereoSeqServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
-endif(BUILD_HAL_KINECT)
