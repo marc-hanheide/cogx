@@ -17,7 +17,7 @@
 #include <cast/core/CASTUtils.hpp>
 
 #include <Utils/HelpFunctions.hh>
-
+#include <fstream>
 using namespace Robotbase;
 using namespace cast;
 using namespace cast::cdl;
@@ -108,6 +108,28 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
   if ((it = config.find("--rand-data")) != config.end()) {
     m_RandData = true;
   }
+
+  m_saveToFile = false;
+  if ((it = config.find("--save-to-file")) != config.end()) {
+    m_saveToFile = true;
+
+    if ((it = config.find("--save-directory")) != config.end()) {
+    	std::istringstream str(it->second);
+     str >> m_saveDirectory;
+ 	//check if the last char is / if yes remove
+     if (m_saveDirectory[m_saveDirectory.size()-1] == '/'){
+    	 m_saveDirectory.erase(m_saveDirectory.size()-1);
+     }
+     log("Will be saving scans to %s", m_saveDirectory.c_str());
+    }
+    else
+    {
+    	log("You haven't specified a save directory! (usage: --save-directory)");
+    	abort();
+    }
+  }
+
+
 
   m_OverRideJoystickEnable = false;
   if ((it = config.find("--no-joystick")) != config.end()) {
@@ -246,6 +268,7 @@ RobotbaseServerPlayer::runComponent()
       sleepComponent(100);
     }
 
+    saveOdomToFile(m_Odom);
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       //nah: added isRunning check to prevent hang on CAST stop()
@@ -260,6 +283,21 @@ RobotbaseServerPlayer::runComponent()
 
   }
 
+}
+
+
+void RobotbaseServerPlayer::saveOdomToFile(Robotbase::Odometry odom){
+
+         char buf[256];
+         sprintf(buf,"%s/odom_%ld", m_saveDirectory.c_str(), (long int)odom.time.us);
+         std::ofstream odomfile;
+
+         odomfile.open (buf);
+
+         odomfile << odom.odompose[1].x << " " << odom.odompose[1].y
+        		 << " " << odom.odompose[1].theta << " " << odom.speed[1] << " " << odom.encoder[1];
+         odomfile << std::endl;
+         odomfile.close();
 }
 
 Robotbase::Odometry
