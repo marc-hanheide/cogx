@@ -128,8 +128,10 @@ IplImage* rgb_data = new IplImage(kinect->rgbImage);
 // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
 IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
 char buf[256];
-long int timeNow = getCASTTime().us;
-sprintf(buf, "%s/frame_%d_rgb_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,timeNow);
+CASTTime timeNow = getCASTTime();
+sprintf(buf, "%s/frame_%d_rgb_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
+		(long int)timeNow.s, (long int)timeNow.us);
+
 cvSaveImage(buf, rgb_data);
 
 short*d = kinect->depImage.ptr<short>(0);	
@@ -143,7 +145,8 @@ for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
 		depth_data->imageData[3*i+2]=(char)value;
 	}
 		char buf2[256];
-		sprintf(buf2,"%s/frame_%d_depth_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,timeNow);
+		sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp	", m_saveDirectory.c_str(), kinect->frameNumber,
+				(long int)timeNow.s, (long int)timeNow.us);
 		cvSaveImage(buf2, depth_data);
 }
 
