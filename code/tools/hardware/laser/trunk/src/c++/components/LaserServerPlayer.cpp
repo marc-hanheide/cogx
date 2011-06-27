@@ -169,7 +169,7 @@ LaserServerPlayer::configure(const std::map<std::string,std::string> & config)
 void LaserServerPlayer::saveScanToFile(Laser::Scan2d scan){
 
          char buf[256];
-         sprintf(buf,"%s/laserscan_%ld", m_saveDirectory.c_str(), (long int)scan.time.us);
+         sprintf(buf,"%s/laserscan_%ld_%ld", m_saveDirectory.c_str(),(long int)scan.time.s, (long int)scan.time.us);
          std::ofstream scanfile;
 
          scanfile.open (buf);
