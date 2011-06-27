@@ -293,7 +293,7 @@ void RobotbaseServerPlayer::saveOdomToFile(Robotbase::Odometry odom){
 		return;
   
          char buf[256];
-         sprintf(buf,"%s/odom_%ld", m_saveDirectory.c_str(), (long int)odom.time.us);
+         sprintf(buf,"%s/odom_%ld_%ld", m_saveDirectory.c_str(), (long int)odom.time.s, (long int)odom.time.us);
          std::ofstream odomfile;
 
          odomfile.open (buf);
