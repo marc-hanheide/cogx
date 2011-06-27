@@ -6,13 +6,19 @@ INCLUDE includes/visualization.sa/v11n-base.cast
 # Spatial.SA ################################################################
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial-ICAPS11.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph #--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --explore-range 2.0 
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.6 --min-node-separation 1 --hyp-path-length 2.0 --no-placeholders 
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors 
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
 CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
-
 CPP MG avs.cpplanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 30 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 3 --kernel-width-factor 0.7 --sampleawayfromobs 0.35 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
 
 
