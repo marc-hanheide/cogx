@@ -1,3 +1,3 @@
 #!/bin/bash
 
-tar cfz data.tar.gz data 
+tar czf data.tar.gz data 
