@@ -16,6 +16,15 @@ module Math {
     double z;
   };
 
+  // RGB color
+  // NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
+  // char in your code.
+  struct ColorRGB {
+    byte r;
+    byte g;
+    byte b;
+  };
+
   struct Matrix33 {
     double m00;
     double m01;
