@@ -45,6 +45,8 @@ public:
   virtual void getCompletePoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&);
   virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
   virtual void getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&);
+  virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data, const Ice::Current&);
+  virtual void getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&);
   virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars, const Ice::Current&);
 };
 
@@ -101,8 +103,14 @@ public:
   virtual void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete) {}
   virtual void getRectImage(int side, int imgWidth, Video::Image& image) {}
   virtual void getDisparityImage(int imgWidth, Video::Image& image) {}
+  virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data) {}
   virtual bool getCameraParameters(int side, Video::CameraParameters& camPars) { return false; }
 
+  /**
+   * The callback function for 2D points extracted from the Kinect depth data
+   * @author Rasoul Mojtahedzadeh
+   */
+  virtual void getRangePoints(Laser::Scan2d &KRdata) {}
   /**
    * The callback function for images pushed by the image server.
    * To be overwritten by derived classes.

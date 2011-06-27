@@ -4,7 +4,7 @@
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
 #include <Video.ice>
-
+#include <Laser.ice>
 module PointCloud {
 
   /**
@@ -17,6 +17,7 @@ module PointCloud {
   };
   sequence<SurfacePoint> SurfacePointSeq;
 
+  sequence<int> IntSeq;
 
   /**
    * A point cloud server.
@@ -25,7 +26,9 @@ module PointCloud {
     void getPoints(bool transformToGlobal, int imgWidth, out PointCloud::SurfacePointSeq points);
     void getCompletePoints(bool transformToGlobal, int imgWidth, out PointCloud::SurfacePointSeq points);
     void getRectImage(int side, int imgWidth, out Video::Image img);
+    void getDepthMap(out cast::cdl::CASTTime time, out IntSeq data);
     void getDisparityImage(int imgWidth, out Video::Image img);
+    void getRangePoints(out Laser::Scan2d KRdata); /* kinect range data returns back like laser sensor */
     bool getCameraParameters(int side, out Video::CameraParameters camPars);
   };
 
