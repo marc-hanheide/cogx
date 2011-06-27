@@ -1,10 +1,11 @@
 HOST localhost
 
-COMPONENT CPP laser.server LaserServerPlayer --player-host localhost --save-to-file #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --save-to-file #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost --save-to-file --save-directory "data/laser" #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --save-to-file --save-directory "data/odom" --cure-config-file  cureconfig.ccf #--rand-data
+#COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost
 
 SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG pcserver KinectPCServer --camids "2" --kconfig "KinectConfig.xml" --camconfigs "camcalib-kinect.xml" --save-to-file --log
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "KinectConfig.xml" --camconfigs "camcalib-kinect.xml" --save-to-file --save-directory "data/rgbd" --log
 
