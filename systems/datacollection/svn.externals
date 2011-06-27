@@ -7,4 +7,6 @@
 ^/code/tools/hardware/video/branches/spring-school-2011	tools/hardware/video
 ^/code/tools/math/trunk	tools/math
 ^/code/tools/hardware/pointCloud/trunk			tools/hardware/pointCloud
-^/code/tools/hardware/ptz/branches/spring-school-2011/ tools/hardware/ptz
+^/code/tools/hardware/ptz/trunk tools/hardware/ptz
+^/code/tools/hardware/ptz/trunk tools/hardware/ptz
+^/code/subarchitectures/data.sa/trunk/ subarchitectures/data.sa
