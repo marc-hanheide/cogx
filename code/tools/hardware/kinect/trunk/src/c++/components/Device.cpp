@@ -88,8 +88,8 @@ void initConstants()
 	g_Registration.pValues[nIndex++] = FALSE;
 	g_Registration.pValueToName[FALSE] = "Off";
 
-	g_Registration.pValues[nIndex++] = TRUE;
-	g_Registration.pValueToName[TRUE] = "Depth -> Image";
+	g_Registration.pValues[nIndex++] = FALSE;
+	g_Registration.pValueToName[FALSE] = "Depth -> Image";
 
 	g_Registration.nValuesCount = nIndex;
 

@@ -162,13 +162,14 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
 
   Pose3 global_kinect_pose, zeroPose;
   setIdentity(zeroPose);
+  setIdentity(global_kinect_pose);
   if(transformToGlobal)
     transform(camPars[0].pose, zeroPose, global_kinect_pose);
 
   // copy clouds to points-vector (dense!)
-  for(unsigned row=0; row< cloud.size().height; row++)   /// TODO SLOW!!!
+  for (int row=0; row < cloud.size().height; row++)   /// TODO SLOW!!!
   {
-    for(unsigned col=0; col < cloud.size().width; col++)
+    for (int col=0; col < cloud.size().width; col++)
     {
       PointCloud::SurfacePoint pt;
       pt.p.x = cloud.at<cv::Point3f>(row, col).x;
@@ -264,9 +265,41 @@ bool KinectPCServer::getCameraParameters(Ice::Int side /*not used*/, Video::Came
 void KinectPCServer::getDisparityImage(int imgWidth, Video::Image& image)
 {
   printf("KinectPCServer::getDisparityImage: Warning: Not yet implemented!\n");
-	/*lockComponent();
+/*
+	lockComponent();
 	convertImageFromIpl(disparityImg, image);
-	unlockComponent();*/
+	unlockComponent();
+*/
+}
+
+void KinectPCServer::getRangePoints(Laser::Scan2d &KRdata)
+{
+  printf("KinectPCServer::getRangePoints: Warning: Not yet implemented!\n");
+}
+
+void KinectPCServer::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
+{
+  lockComponent();
+  //kinect->NextFrame();
+  //cv::Mat RGB;
+  //cv::Mat DEPTH;
+  //kinect->GetImages(RGB, DEPTH);
+  //kinect::readFrame();  // read next frame
+  kinect::changeRegistration(0);
+  const DepthMetaData* pDepthMD = kinect->getNextDepthMD();
+  time = getCASTTime();
+
+  //for(int row=0;row < DEPTH.rows;row++)
+  for(size_t row=0;row < pDepthMD->YRes();row++)
+  {
+    for(size_t col=0;col < pDepthMD->XRes();col++)
+    {
+      //depth.push_back( int ( DEPTH.ptr<short>(row)[(640-col-1)] ) );
+      //depth.push_back( int ( DEPTH.ptr<short>(row)[col] ) );
+      depth.push_back( (*pDepthMD)(col,row) );
+    }
+  }
+  unlockComponent();
 }
 
 void KinectPCServer::receiveImages(const vector<Video::Image>& images)

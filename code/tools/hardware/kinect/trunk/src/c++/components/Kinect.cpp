@@ -49,6 +49,9 @@ bool Kinect::Init(const char *kinect_xml_file)
   rc = kinect::openDeviceFromXml(kinect_xml_file, errors);
   if (rc != XN_STATUS_OK)
   {
+    char buf[255];
+    errors.ToString(buf,255);
+    printf("Errors: %s\n", buf);
     printf("Kinect::Init: Error: Initialisation from xml-file failed (%s). Check filename and connection to Kinect.\n", kinect_xml_file);
     return false;
   }
@@ -249,6 +252,19 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 //   }
 }
 
+const DepthMetaData* Kinect::getNextDepthMD()
+{
+  if(!kinect::isCapturing())
+  {
+    printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
+    return 0;
+  }
+    
+  kinect::readFrame();  // read next frame
+
+  // get depth image
+  return kinect::getDepthMetaData();
+}
 
 std::pair<const DepthMetaData*, const ImageGenerator*> Kinect::getNextFrame()
 {

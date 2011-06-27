@@ -56,6 +56,8 @@ public:
   void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete);
   void getRectImage(int side, int imgWidth, Video::Image& image);
   void getDisparityImage(int imgWidth, Video::Image& image);
+  void getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth);
+  void getRangePoints(Laser::Scan2d &KRdata);
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   void saveNextFrameToFile();
