@@ -21,10 +21,13 @@ module Visualization
    };
 
    struct ActionInfo {
+      string id;
       string label;
 
       // iconLabel Optional, defaults to label
       string iconLabel;
+
+      string tooltip;
 
       // iconSvg Optional
       string iconSvg;
@@ -101,7 +104,7 @@ module Visualization
       // TODO: ActionInfo parameter
       void addButton(Ice::Identity ident, string viewId, string ctrlId, string label);
 
-      void addToolButton(Ice::Identity ident, string viewId, string ctrlId, ActionInfo info);
+      void addAction(Ice::Identity ident, string viewId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
 
       // Create a Qt dialog
