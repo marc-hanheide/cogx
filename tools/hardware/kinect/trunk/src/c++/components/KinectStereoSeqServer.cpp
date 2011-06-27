@@ -800,7 +800,7 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
     setIdentity(ideal_pose);
     // pose of ideal left camera w.r.t. to real left camera
     // the pose is a rotation given by the rectification matrix
-    setRow33(ideal_pose.rot, stereoCam->cam[LEFT].rect);
+    setRow33(ideal_pose.rot, (double*)stereoCam->cam[LEFT].rect);
     // get from ideal left pose to real left pose
     transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
     // get from relative left pose to global left pose
@@ -922,7 +922,7 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
     setIdentity(global_pose);
     // pose of ideal left/right camera w.r.t. to actual left/right camera
     // the pose is a rotation given by the rectification matrix
-    setRow33(ideal_pose.rot, stereoCam->cam[side].rect);
+    setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
     // get from ideal left/right pose to real left/right pose
     transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
     // get from relative left/right pose to global left/right pose
