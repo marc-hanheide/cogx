@@ -118,6 +118,7 @@ void KinectPCServer::runComponent() {
 		while(isRunning()) {
 			if (m_saveToFile) {
 				saveNextFrameToFile();
+				usleep(50000);
 			}
 		}
 	}
