@@ -26,6 +26,8 @@
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 
+#include <ctime>
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -55,6 +57,10 @@ SpatialControl::SpatialControl()
   m_CurrPersonWMid = "";
   m_firstScanAdded = false;
 
+	m_Npts = 1440;
+	m_StartAngle = -3.141592654;//-2.086214;
+	m_AngleStep = 0.004363323;//0.006136;
+	
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
   cure_debug_level = 10;
@@ -72,6 +78,12 @@ SpatialControl::~SpatialControl()
 
 void SpatialControl::configure(const map<string,string>& _config) 
 {
+  m_UsePointCloud = false;
+  if (_config.find("--pcserver") != _config.end()) {
+    configureServerCommunication(_config);
+    m_UsePointCloud = true;
+  }
+
   map<string,string>::const_iterator it = _config.find("-c");
   if (it== _config.end()) {
     println("configure(...) Need config file (use -c option)\n");
@@ -114,18 +126,38 @@ void SpatialControl::configure(const map<string,string>& _config)
     str >> m_RobotServerHost;
   }
 
-  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-  m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
+  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmK = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+
+  if (m_UsePointCloud) {
+    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
+    m_Explorer = new Cure::FrontierExplorer(*this,*m_lgmL);
+  }
+  else {
+    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
+    m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
+  }
   //m_Explorer->setExplorationConfinedByGateways(true);
   m_Explorer->addEventListener(this);
 
 
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
+    if (m_UsePointCloud) {
+      m_DisplaylgmK = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmK);
+      m_DisplaylgmLM = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmLM);
+    } else {
+      m_DisplaylgmK = 0;
+      m_DisplaylgmLM = 0;
+    }
     println("Will use X window to show the exploration map");
+
   } else {
     m_Displaylgm = 0;
+    m_DisplaylgmK = 0;
+		m_DisplaylgmLM = 0;
     println("Will NOT use X window to show the exploration map");
   }
 
@@ -186,6 +218,10 @@ void SpatialControl::configure(const map<string,string>& _config)
 
 void SpatialControl::start() 
 {
+
+  if (m_UsePointCloud) {
+    startPCCServerCommunication(*this);
+  }
   //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
     //(getComponentPointer());
  
@@ -227,7 +263,21 @@ void SpatialControl::start()
   
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::DELETE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
-                                                               &SpatialControl::deletePersonData));    
+                                                               &SpatialControl::deletePersonData));   
+               /*                             
+		// connecting Pan-Tilt server                   
+    Ice::CommunicatorPtr ic = getCommunicator();
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+      << ":default"
+      << " -h localhost"
+      << " -p " << cast::cdl::CPPSERVERPORT;
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+ */
   
   log("SpatialControl started");
   
@@ -311,24 +361,332 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
+/* eulerotation */
+void SpatialControl::eulerotation(double alpha, double beta, double gamma,Cure::Matrix &R)
+{
+	double ca = cos(alpha);
+	double cb = cos(beta);
+	double cg = cos(gamma);
+
+	double sa = sin(alpha);
+	double sb = sin(beta);
+	double sg = sin(gamma);	
+
+	R(0,0) = cg*ca-sg*cb*sa;
+	R(0,1) = cg*sa+sg*cb*ca;
+	R(0,2) = sg*sb;
+
+	R(1,0) = -sg*ca-cg*cb*sa;
+	R(1,1) = -sg*sa+cg*cb*ca;
+	R(1,2) = cg*sb;
+
+	R(2,0) = sb*sa;
+	R(2,1) = -sb*ca;
+	R(2,2) = cb;
+}
+
+/* pointInKinectFov */
+//  The function will return YES if the point x,y is inside the polygon, or
+//  NO if it is not.  If the point is exactly on the edge of the polygon,
+//  then the function may return YES or NO.
+bool SpatialControl::pointInKinectFov(double x, double y) {
+    double x1,x2,y1,y2,x21;
+    int crossings = 0;
+    for ( int i = 0; i < 4; i++ ){
+      /* This is done to ensure that we get the same result when
+         the line goes from left to right and right to left */
+      if ( m_polyX[i] < m_polyX[ (i+1)%4 ] ){
+              x1 = m_polyX[i];
+              y1 = m_polyY[i];
+              x2 = m_polyX[(i+1)%4];
+              y2 = m_polyY[(i+1)%4];
+      } else {
+              x1 = m_polyX[(i+1)%4];
+              y1 = m_polyY[(i+1)%4];              
+              x2 = m_polyX[i];
+              y2 = m_polyY[i];
+      }
+      /* First check if the ray is possible to cross the line */
+      if ( x1 < x && x <= x2 && ( y < m_polyY[i] || y <= m_polyY[(i+1)%4] ) ) {
+      	x21 = x2-x1;
+      	if(x21 > 1e-6){
+	      	if( y1+(x-x1)*(y2-y1)/x21 > y)
+  		      crossings++;
+  		  } else crossings++;
+      }
+    }
+    if ( crossings % 2 == 1 ) return true;
+    
+    return false;
+}
+/* p3line */
+Cure::Matrix SpatialControl::p3line(Cure::Matrix p1, Cure::Matrix p2, double d)
+{
+	/* p1------p2------d-------p3 */
+	Cure::Matrix V = p2 - p1;
+	double theta = atan2(V(1,0),V(0,0));
+	V(0,0) = p2(0,0)+d*cos(theta);
+  V(1,0) = p2(1,0)+d*sin(theta);
+	return V;
+}
+
+/* convertDepthToCureScan */
+void SpatialControl::getKinectObs(Cure::Pose3D scanPose)
+{  
+	double Rtheta;
+
+	Cure::Matrix Rr(3,3);
+	Cure::Matrix Rptu(3,3);
+	Cure::Matrix Rk(3,3);	
+	Cure::Matrix Prob_w(3,1);
+	Cure::Matrix Pcam_ptu(3,1);
+	Cure::Matrix Pptu_r(3,1);	
+	Cure::Matrix Tnet(3,1);
+	Cure::Matrix Pw(3,1);
+	Cure::Matrix B(3,1);
+	Cure::Matrix Rtotal(3,3);
+
+
+	Pcam_ptu(0,0) = Xcam_ptu;
+	Pcam_ptu(1,0) = Ycam_ptu;
+	Pcam_ptu(2,0) = Zcam_ptu;
+	Pptu_r(0,0) = Xptu_r;
+	Pptu_r(1,0) = Yptu_r;
+	Pptu_r(2,0) = Zptu_r;
+	
+	Prob_w(0,0) = scanPose.getX();
+	Prob_w(1,0) = scanPose.getY();
+	Prob_w(2,0) = 0.24;
+	Rtheta = scanPose.getTheta();
+  m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+                                0.55*Cure::NavController::getRobotWidth(), 
+                                '0');                                  
+
+	//poseData.tilt = -0.524;
+	//poseData.tilt = 0.0;
+	double Ctilt = -55*pi/180;
+	double epsilon = 2.2*pi/180;
+	eulerotation(0.0, 0.0, Rtheta,Rr); // robot coordinate rotation only Yaw!
+	//eulerotation(pi/2-poseData.pan,-poseData.tilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
+	//eulerotation(pi/2-poseData.pan,-Ctilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
+	eulerotation(pi/2,-Ctilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
+	eulerotation(pi/2, pi/2, pi-epsilon,Rk); // IR camera coordinate rotation correction!
+	//Tnet.minus(Rc*Rt*Prob_w+Rc*Pcam_r);
+	//Tnet.minus(Rk*Rptu*Prob_w+Rk*Pptu_r+Pcam_ptu);
+	Tnet.minus(Rk*Rptu*Rr*Prob_w+Rk*Rptu*Pptu_r+Rk*Pcam_ptu);
+	Rtotal = Rk*Rptu*Rr;
+	Rtotal = Rtotal.inv();
+		
+
+	// calculating the polygon [P1 P3 P4 P2 P1] inside which should points be removed
+	double h = Zptu_r + Prob_w(2,0);
+	double r = Zcam_ptu;
+	double hp = h+r*cos(-Ctilt);
+	double ro1 = hp/cos(pi/2-FOVv/2+Ctilt);
+	double ro2 = hp/cos(pi/2+FOVv/2+Ctilt);
+	static int counter = 0;
+	double scale = 1.5;
+	double scale2 = 0.7;
+	char buff[100];
+	sprintf(buff,"hp=%f, ro1=%f, ro2=%f, Rtheta=%f",hp,ro1,ro2,Rtheta);
+	if(counter < 2) log(buff);
+	counter++;
+	B(0,0) = ro1 * (0-camU0)/(scale*camAx) - Tnet(0,0);				
+	B(1,0) = ro1 * (479-camV0)/(scale2*camAy) - Tnet(1,0);
+	B(2,0) = ro1 - Tnet(2,0);
+	Cure::Matrix P0Fov = Rtotal*B;
+	m_polyX[0] = P0Fov(0,0);
+	m_polyY[0] = P0Fov(1,0);	
+	
+	B(0,0) = ro1 * (631-camU0)/(scale*camAx) - Tnet(0,0);				
+	Cure::Matrix P3Fov = Rtotal*B;
+	m_polyX[3] = P3Fov(0,0);
+	m_polyY[3] = P3Fov(1,0);	
+
+	B(0,0) = ro2 * (0-camU0)/(scale*camAx) - Tnet(0,0);				
+	B(1,0) = ro2 * (0-camV0)/(scale2*camAy) - Tnet(1,0);
+	B(2,0) = ro2 - Tnet(2,0);
+	Cure::Matrix P1Fov = Rtotal*B;
+	m_polyX[1] = P1Fov(0,0);
+	m_polyY[1] = P1Fov(1,0);	
+	
+	B(0,0) = ro2 * (631-camU0)/(scale*camAx) - Tnet(0,0);				
+	Cure::Matrix P2Fov = Rtotal*B;
+	m_polyX[2] = P2Fov(0,0);
+	m_polyY[2] = P2Fov(1,0);	
+
+	//char buff[100];
+	//sprintf(buff,"number of points in local memory before erasing = %u",m_kinectObs.size());
+	//log(buff);
+	
+	sprintf(buff,"plot([%f,%f,%f,%f],[%f,%f,%f,%f],'bo')",m_polyX[0],m_polyX[1],m_polyX[2],m_polyX[3],m_polyY[0],m_polyY[1],m_polyY[2],m_polyY[3]);
+	if(counter < 2) log(buff);
+	// removing the obstacle points which are far from the center of the robot from the local kinect obstacle points memory
+	// as well as the points in the field of view
+
+	int lgmRes = m_lgmK->getSize();
+	double xW,yW;
+  for(int xi=-lgmRes; xi <= lgmRes; xi++){
+	  for(int yi=-lgmRes; yi <= lgmRes; yi++){  
+	  	m_lgmK->index2WorldCoords(xi,yi,xW,yW);
+			//distance = hypot( yW-poseData.y, xW-poseData.x );
+			//if (distance > MaxObsDistance) (*m_lgmK)(xi,yi) = '2';
+			//else 
+			if(pointInKinectFov(xW, yW)) (*m_lgmK)(xi,yi) = '2';				
+		}    	
+  }               
+
+	//sprintf(buff,"number of points in local memory after erasing = %u",m_kinectObs.size());
+	//log(buff);
+	
+	int xi,yi;
+	double depth;
+	int depthInt;
+	for(unsigned int col=0; col < (XRes-DEADZONE); col+=4) // 640-DEADZONE and angleStep = FOV_h/(640-DEADZONE) * pi / 180 , FOV_h = 57.8 degrees
+	{				
+		double colSS = (col-camU0)/camAx;
+		for(unsigned int row=0; row < YRes; row += 4) // 480
+		{
+			depthInt = m_depthData[XRes*row+col];			
+			if(!depthInt) continue;
+			depth = double (depthInt)/1000 + camFocalIR;
+			if(depth < MaxDistanceToInclude && depth > MinDistanceToInclude){								
+				B(0,0) = depth * colSS - Tnet(0,0);
+				B(1,0) = depth * (row-camV0)/camAy - Tnet(1,0);
+				B(2,0) = depth - Tnet(2,0);
+				Pw = Rtotal*B;
+				// height check
+				if(MinHeightToPass < Pw(2,0) && Pw(2,0) < MaxHeightToPass){ // obstacle detection
+					if(m_lgmK->worldCoords2Index(Pw(0,0),Pw(1,0),xi,yi)==0) (*m_lgmK)(xi,yi) = '1';
+				}
+			}
+		}
+		//if(predistance != MaxObsDistance) m_kinectObs.push_back(tempObs);
+		//sprintf(buff,"number of points in local memory after adding = %u",m_kinectObs.size());
+		//log(buff);		
+	}
+	
+}
+
+
 void SpatialControl::runComponent() 
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
-
   log("I am running!");
-  
-  while(isRunning()){
-    if (m_Displaylgm) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_Displaylgm->updateDisplay(&currentPose,
-                                  &m_NavGraph, 
-                                  &m_Explorer->m_Fronts);
-    }
+	std::ofstream depthfile;
 
-    usleep(250000);
+  Cure::Pose3D scanPose;
+	Cure::Pose3D LscanPose;
+  Cure::Pose3D lpW;
+	bool useLaserScan = false;		
+  bool useKinectFrame = false;		
+ 	int xi,yi;
+  while(isRunning()){
+    useLaserScan = false;		
+    useKinectFrame = false;		
+
+    if (m_UsePointCloud) {
+
+      //clock_t t0 = clock();		
+      m_depthData.clear();
+      getDepthMap(m_frameTime, m_depthData);
+      //clock_t t1 = clock();
+      //log("Execution time of getDepthMap() = %f s", double (t1-t0)/CLOCKS_PER_SEC);
+
+      //if(m_depthData.empty()) continue;
+
+      //		m_Mutex.lock();
+      if(!m_LScanQueue.empty()){
+        if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
+          lpW.add(LscanPose, m_LaserPoseR);		
+          m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+              0.55*Cure::NavController::getRobotWidth(), '0');                                  
+          m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+          m_firstScanAdded = true;
+          useLaserScan = true;
+          m_LScanQueue.pop();
+        }else log("No Estimation for Scan Pose!!!!!!!!!!!!!!!!!!!");
+      }else log("empty!!!!!!!!!!!!!!!!!!!!!!!");
+      //		m_Mutex.unlock();
+
+      if (m_TOPP.getPoseAtTime(Cure::Timestamp(m_frameTime.s, m_frameTime.us), scanPose) == 0) {
+        getKinectObs(scanPose);
+        useKinectFrame = true;
+      }
+
+      m_Mutex.lock();    				
+      (*m_lgm) = (*m_lgmL);			   
+      for(long i=0; i<m_lgmK->getNumCells(); i++){
+        if((*m_lgmK)[i] != '2') (*m_lgm)[i] = (*m_lgmK)[i];
+      } 						
+      m_Mutex.unlock();
+
+      // filtering
+      unsigned int bound = m_lgm->getSize();
+
+      for(unsigned int x=-bound+1; x<bound-1; x++){
+        for(unsigned int y=-bound+1; y<bound-1; y++){
+          if( (*m_lgm)(x,y) == '1' && 
+              (*m_lgm)(x-1,y) != '1' && (*m_lgm)(x+1,y) != '1' && 
+              (*m_lgm)(x-1,y-1) != '1' && (*m_lgm)(x+1,y-1) != '1' && 
+              (*m_lgm)(x-1,y+1) != '1' && (*m_lgm)(x+1,y+1) != '1' && 
+              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y-1) != '1' ) (*m_lgm)(x,y) = '0';
+        }
+      } 								
+
+      const int deltaN = 3;
+      double d = m_lgm->getCellSize()/deltaN;
+      int maxcellstocheck = int (5.0/d);
+      double xWT,yWT;
+      double theta;
+
+      //clock_t t0 = clock();					
+      m_Mutex.lock();    							
+      m_LMap.clearMap();
+      for(long i=0; i<m_lgmLM->getNumCells(); i++){
+        (*m_lgmLM)[i] = '2';
+      }               
+      Cure::Pose3D currPose = m_TOPP.getPose();		
+      for (int i = 0; i < m_Npts; i++) {
+        theta = m_StartAngle + m_AngleStep * i;
+        for (int j = 1; j < deltaN*maxcellstocheck; j++){
+          xWT = currPose.getX()+j*d*cos(theta);
+          yWT = currPose.getY()+j*d*sin(theta);
+          if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
+            if((*m_lgm)(xi,yi) == '1'){
+              (*m_lgmLM)(xi,yi) = '1';   							
+              m_LMap.addObstacle(xWT, yWT, 1);
+              break;    
+            }
+          }
+        }
+      }
+      //clock_t t1 = clock();log("Execution time of he LOOP = %f s", double (t1-t0)/CLOCKS_PER_SEC);
+      m_Mutex.unlock();	
+    }	
+
+		m_Mutex.lock();
+		if (m_Displaylgm) {
+			Cure::Pose3D currentPose = m_TOPP.getPose();
+			m_Displaylgm->updateDisplay(&currentPose,
+						                      &m_NavGraph, 
+						                      &m_Explorer->m_Fronts);
+      if (m_UsePointCloud) {
+        m_DisplaylgmLM->updateDisplay(&currentPose);
+        m_DisplaylgmK->updateDisplay(&currentPose);
+      }
+		}
+		m_Mutex.unlock();	
+	  
+   	if (m_UsePointCloud && useKinectFrame) {
+      usleep(100000); // usec
+    } else if (!m_UsePointCloud) {
+      usleep(250000);
+    }
   }
-}
+} 
+
 
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
   m_Mutex.lock();
@@ -483,13 +841,14 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
-  
+
   //FIXME
-//   m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
-//                                           oobj->getData()->time.us));
+  m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
+                                          oobj->getData()->time.us));
   m_SlamRobotPose.setX(oobj->getData()->x);
   m_SlamRobotPose.setY(oobj->getData()->y);
   m_SlamRobotPose.setTheta(oobj->getData()->theta);
+		//log("time of newRobtoPose() = %d.%ld s",(long int)oobj->getData()->time.s, (long int)oobj->getData()->time.us);
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
@@ -668,10 +1027,10 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
         Cure::NavController::setPositionToleranceFinal(m_TolPos);
         Cure::NavController::setOrientationTolerance(m_TolRot);
         ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-	//Clean out path; use only final waypoint
-	Cure::NavGraphNode lastNode = m_Path.back();
-	m_Path.clear();
-	m_Path.push_back(lastNode);
+				//Clean out path; use only final waypoint
+				Cure::NavGraphNode lastNode = m_Path.back();
+				m_Path.clear();
+				m_Path.push_back(lastNode);
       }
       
       // GOTO_POLAR
@@ -847,50 +1206,59 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
+	
   debug("lock receiveScan2d");
   lockComponent(); //Don't allow any interface calls while processing a callback
   debug("lock acquired");
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
-
+	
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-  if (m_TOPP.isTransformDefined()) {
-    
-    Cure::Pose3D scanPose;
-    if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-      m_Mutex.lock();
-      m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-      m_Mutex.unlock();
+  if (!m_UsePointCloud) {
+    if (m_TOPP.isTransformDefined()) {
 
-      /*      
-      static int id = 0;
-      std::fstream fs;
-      char buf[128];
-      sprintf(buf, "lm%02d.txt", id);
-      fs.open(buf, std::ios::out);
-      for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
-        fs << m_LMap.obstRef(i).x << " "
-           << m_LMap.obstRef(i).y << " ";
+      Cure::Pose3D scanPose;
+      if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
+        m_Mutex.lock();
+        m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
+        m_Mutex.unlock();
+
+        /*
+        static int id = 0;
+        std::fstream fs;
+        char buf[128];
+        sprintf(buf, "lm%02d.txt", id);
+        fs.open(buf, std::ios::out);
+        for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
+          fs << m_LMap.obstRef(i).x << " "
+            << m_LMap.obstRef(i).y << " ";
+        }
+        fs << std::endl;
+        fs.close();
+        println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
+        id = (id + 1) % 100;
+        */
+
+        Cure::Pose3D lpW;
+        m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+            0.5*Cure::NavController::getRobotWidth(), 
+            '0');
+        lpW.add(scanPose, m_LaserPoseR);
+        m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
+        m_firstScanAdded = true;
       }
-      fs << std::endl;
-      fs.close();
-      println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
-      id = (id + 1) % 100;
-      */
-
-      Cure::Pose3D lpW;
-      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-                                  0.5*Cure::NavController::getRobotWidth(), 
-                                  '0');
-      lpW.add(scanPose, m_LaserPoseR);
-      m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
-      m_firstScanAdded = true;
     }
   }
-    
+  else {
+    m_Mutex.lock();
+    m_LScanQueue.push(cureScan);
+    m_Mutex.unlock();
+  }
+
+  /* Person following stuff */    
   NavData::PersonFollowedPtr p = new NavData::PersonFollowed;
   static long last_id_sent = -1;
   if (m_CurrPerson >= 0 && m_CurrPerson < (int)m_People.size()) {
@@ -996,23 +1364,23 @@ SpatialControl::getFrontiers()
     newPt->mWidth = it->m_Width;
     switch (it->m_State) {
       case Cure::FrontierPt::FRONTIER_STATUS_OPEN:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_CURRENT:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_UNKNOWN:
       default:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
     }
     newPt->x = it->getX();
     newPt->y = it->getY();

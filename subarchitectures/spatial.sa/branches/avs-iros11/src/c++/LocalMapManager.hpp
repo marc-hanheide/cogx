@@ -19,6 +19,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
+#include <PointCloudClient.h>
 #include <NavData.hpp>
 
 #include <SensorData/LaserScan2d.hh>
@@ -41,7 +42,28 @@
 
 
 namespace spatial {
+
+// camera constant parameters
+const double camFocalIR = 5.8e-3;
+const double camAx = 615.956787;
+const double camAy = 615.956787;
+const double camU0 = 321.940572;
+const double camV0 = 226.489246;
+const double Xcam_r = 0.1; // meter
+const double Ycam_r = 0.0; // meter
+const double Zcam_r = 0.79; // meter
+const unsigned int XRes = 640;
+const unsigned int YRes = 480;
+const unsigned int DEADZONE = 8;
+// some constants
+const double MaxHeightToPass = 1.35; // meter
+const double MinHeightToPass = 0.03; // meter
+const double MaxDistanceToInclude = 2.0; // meter
+const double MinDistanceToInclude = 0.45; // meter
+const double pi = 3.14159265;
+
   typedef std::vector<std::pair<double, double> > PlaneList;
+	
 
 struct PlaneData {
   //first component is the Z position; the second, the confidence.
@@ -81,8 +103,8 @@ bool operator==(const PlaneData &data, char cmp)
   return maxHeight != 0.0;
 }
 
-typedef Cure::LocalGridMap<unsigned char> CharMap ;
-typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer;
+typedef Cure::LocalGridMap<unsigned char> CharMap ; // <------------ ~/cosycure/trunk/include/cure/Navigation/LocalGridMap.hh
+typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer; // <--------- ~/cosycure/trunk/include/cure/Navigation/GridLineRayTracer.hh
 typedef Cure::LocalGridMap<PlaneData> PlaneMap;
 /**
  * This class maintains small grid maps around individual nav nodes. The maps
@@ -114,8 +136,9 @@ typedef Cure::LocalGridMap<PlaneData> PlaneMap;
  * @see
  */
 class LocalMapManager : public cast::ManagedComponent,
-  		  public OdometryReceiver,
-		  public Scan2dReceiver
+  		  								public OdometryReceiver,
+		  									public Scan2dReceiver,
+												public cast::PointCloudClient
 {
   private:
     class EvaluationServer: public FrontierInterface::HypothesisEvaluator {
@@ -155,6 +178,7 @@ protected:
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
+  bool m_useKinect;
   bool m_bDetectDoors;
   std::string m_planeObjectFilename;
   std::string m_planeModelFilename;
@@ -172,6 +196,7 @@ protected:
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
   Cure::SensorPose m_CameraPoseR;
+  Cure::SensorPose m_KinectPoseR;
 
   // This grid map represents the current Place
   CharMap* m_lgm1;
@@ -243,6 +268,11 @@ private:
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+  /* convert depth points from the Kinect to Cure LaserScan2d format */
+  void convertDepthToCureScan(cast::cdl::CASTTime &time, vector<int>& depthData, Cure::LaserScan2d& cureScanD);
+  void combineCureScans(Cure::LaserScan2d& cureScanKinect, Cure::LaserScan2d& cureScanLaser);
+	void eulerotation(double alpha, double beta, double gamma, Cure::Matrix &R);
+	
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
   void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
