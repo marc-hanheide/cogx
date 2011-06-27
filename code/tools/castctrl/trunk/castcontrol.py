@@ -753,7 +753,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             log4.setServerConsoleLevel(self._log4jConsoleLevel)
             log4.setServerXmlFileLevel(self._log4jXmlFileLevel)
             log4.setServerPort(self._log4jServerPort)
-            log4.serverHost = self._log4jServerHost
+            log4.serverHost = self.configuredHosts.expandHostName(self._log4jServerHost)
             return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self)
