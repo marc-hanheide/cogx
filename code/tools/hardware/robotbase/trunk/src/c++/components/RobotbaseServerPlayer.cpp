@@ -211,7 +211,6 @@ RobotbaseServerPlayer::runComponent()
     }               
   }
   
-	log("%d", __LINE__); 
 
   bool joyDriveState = false;
   while (isRunning()) {
