@@ -31,7 +31,6 @@ private:
   std::string kinectConfig;                     ///< Kinect configuration file
   CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
-  bool saveDepth;
 
   void getResolution(int camIdx, CvSize &size);
   bool setResolution(int camIdx, CvSize &size);
@@ -40,6 +39,9 @@ private:
   ImageGenerator* imageGenerator;
   DepthMetaData depthMD;
   ImageMetaData imageMD;
+
+  bool m_saveToFile;
+  std::string m_saveDirectory;
 
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
