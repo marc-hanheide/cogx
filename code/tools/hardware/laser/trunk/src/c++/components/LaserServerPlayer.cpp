@@ -16,7 +16,7 @@
 
 #include <cstdlib>
 #include <sstream>
-
+#include <fstream>
 #include <cast/core/CASTUtils.hpp>
 
 using namespace Laser;
@@ -116,6 +116,27 @@ LaserServerPlayer::configure(const std::map<std::string,std::string> & config)
     std::istringstream str(it->second);
     str >> m_Discr;
   }
+  m_saveToFile = false;
+
+  if ((it = config.find("--save-to-file")) != config.end()) {
+    m_saveToFile = true;
+
+    if ((it = config.find("--save-directory")) != config.end()) {
+    	std::istringstream str(it->second);
+     str >> m_saveDirectory;
+ 	//check if the last char is / if yes remove
+     if (m_saveDirectory[m_saveDirectory.size()-1] == '/'){
+    	 m_saveDirectory.erase(m_saveDirectory.size()-1);
+     }
+     log("Will be saving scans to %s", m_saveDirectory.c_str());
+    }
+    else
+    {
+    	log("You haven't specified a save directory! (usage: --save-directory)");
+    	abort();
+    }
+  }
+
   if (m_Discr > 0) {
     log("Using m_Discr=%fm", m_Discr);
   } else {
@@ -144,6 +165,24 @@ LaserServerPlayer::configure(const std::map<std::string,std::string> & config)
     std::cerr << msg << std::endl;
   }
 }
+
+void LaserServerPlayer::saveScanToFile(Laser::Scan2d scan){
+
+         char buf[256];
+         sprintf(buf,"%s/laserscan_%ld", m_saveDirectory.c_str(), (long int)scan.time.us);
+         std::ofstream scanfile;
+
+         scanfile.open (buf);
+
+         scanfile << scan.angleStep << " " << scan.minRange << " " << scan.maxRange
+        		 << " " << scan.rangeRes << scan.startAngle << " ";
+         for (int i = 0; i < scan.ranges.size(); i++){
+        	 scanfile << scan.ranges[i] << " ";
+         }
+         scanfile << std::endl;
+         scanfile.close();
+}
+
 
 void 
 LaserServerPlayer::start() 
@@ -286,7 +325,9 @@ LaserServerPlayer::runComponent()
       }
     }
 
-      
+    if(m_saveToFile){
+      saveScanToFile(m_Scan);
+    }
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       if ( isRunning() && 

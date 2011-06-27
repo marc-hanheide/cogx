@@ -80,6 +80,8 @@ protected:
 
   virtual void stop();
 
+  void saveScanToFile(Laser::Scan2d scan);
+
 protected:
 
   class Scan2dClient {
@@ -128,6 +130,9 @@ protected:
   /// readings. The variable should be expressed in [m]
   /// r_new = m_Discr * int(r_old / m_Discr + 0.5)
   double m_Discr;
+
+  bool m_saveToFile;
+  std::string m_saveDirectory;
 };
 
 }; // namespace Laser
