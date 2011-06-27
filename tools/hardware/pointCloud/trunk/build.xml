@@ -35,6 +35,7 @@
 	    <includepath> 
 		<pathelement path="${basedir}/../../math/src/slice"/>
 		<pathelement path="${basedir}/../video/src/slice"/>
+		<pathelement path="${basedir}/../laser/src/slice"/>
 		<pathelement path="${slice.dir}"/>
 		<pathelement path="${castslice.dir}"/>
 		<pathelement path="/opt/local/share"/>

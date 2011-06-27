@@ -58,6 +58,16 @@ void PointCloudClient::getRectImage(int side, int imgWidth, Video::Image& image)
   pointCloudServer->getRectImage(side, imgWidth, image);
 }
 
+void PointCloudClient::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
+{
+  pointCloudServer->getDepthMap(time, depth);
+}
+
+void PointCloudClient::getRangePoints(Laser::Scan2d &KRdata)
+{
+  pointCloudServer->getRangePoints(KRdata);
+}
+
 void PointCloudClient::getDisparityImage(int imgWidth, Video::Image& image)
 {
   pointCloudServer->getDisparityImage(imgWidth, image);

@@ -90,9 +90,19 @@ void PointCloudServerI::getDisparityImage(int imgWidth, Video::Image& image, con
   ptCloudSrv->getDisparityImage(imgWidth, image);
 }
 
+void PointCloudServerI::getDepthMap(cast::cdl::CASTTime &time, vector<int>& data, const Ice::Current&)
+{
+  ptCloudSrv->getDepthMap(time, data);
+}
+
 bool PointCloudServerI::getCameraParameters(Ice::Int side, Video::CameraParameters& cam, const Ice::Current&)
 {
   return ptCloudSrv->getCameraParameters(side, cam);
+}
+
+void PointCloudServerI::getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&)
+{
+  ptCloudSrv->getRangePoints(KRdata);
 }
 
 
@@ -138,8 +148,8 @@ void PointCloudServer::configure(const map<string,string> & _config) throw(runti
         // file storage)
         if(file.find(".xml") == string::npos)
           loadCameraParameters(pars, file);
-        else
-          loadCameraParametersXML(pars, file);
+        //else
+          //loadCameraParametersXML(pars, file); /* Missing function... */
       }
       else
       {

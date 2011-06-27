@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <cv.h>
 #include <cast/core/CASTComponent.hpp>
 #include "PointCloud.hpp"
 
@@ -47,6 +48,8 @@ public:
   void getPoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points);
   void getCompletePoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points);
   void getRectImage(int side, int imgWidth, Video::Image& image);
+  void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data);
+  void getRangePoints(Laser::Scan2d &KRdata);
   void getDisparityImage(int imgWidth, Video::Image& image);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);
 };
