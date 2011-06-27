@@ -175,7 +175,7 @@ void LaserServerPlayer::saveScanToFile(Laser::Scan2d scan){
          scanfile.open (buf);
 
          scanfile << scan.angleStep << " " << scan.minRange << " " << scan.maxRange
-        		 << " " << scan.rangeRes << scan.startAngle << " ";
+        		 << " " << scan.rangeRes << " " << scan.startAngle << " ";
          for (int i = 0; i < scan.ranges.size(); i++){
         	 scanfile << scan.ranges[i] << " ";
          }
