@@ -183,6 +183,16 @@ if(BUILD_HAL_STEREO)
 add_subdirectory (tools/hardware/stereo)
 endif(BUILD_HAL_STEREO)
 
+option(BUILD_HAL_KINECT "Build hardware kinect" YES)
+if(BUILD_HAL_KINECT)
+add_subdirectory (tools/hardware/kinect)
+endif(BUILD_HAL_KINECT)
+
+option(BUILD_HAL_POINT_CLOUD "Build hardware point cloud" YES)
+if(BUILD_HAL_POINT_CLOUD)
+add_subdirectory (tools/hardware/pointCloud)
+endif(BUILD_HAL_POINT_CLOUD)
+
 option(BUILD_SA_VISION "Build vision subarchitecure" NO)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
