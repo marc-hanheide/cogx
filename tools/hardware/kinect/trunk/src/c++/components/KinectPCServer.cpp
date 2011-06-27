@@ -69,27 +69,38 @@ void KinectPCServer::configure(const map<string, string> & _config)
 	if ((it = _config.find("--kconfig")) != _config.end()) {
 		istringstream str(it->second);
 		str >> kinectConfig;
-	} else
+	} else{
 		throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
-
+	}
 		// init kinect hardware driver
-				CvSize size;
-				const char* name = kinectConfig.c_str();
-				kinect = new Kinect::Kinect(name);
-				kinect->GetColorVideoSize(size);
-				captureSize.width = size.width;
-				captureSize.height = size.height;
+	 CvSize size;
+	 const char* name = kinectConfig.c_str();
+	 kinect = new Kinect::Kinect(name);
+	 kinect->GetColorVideoSize(size);
+	 captureSize.width = size.width;
+	 captureSize.height = size.height;
+     kinect->StartCapture(0); 	// start capturing
+     depthGenerator = kinect::getDepthGenerator();
+     imageGenerator = kinect::getImageGenerator();
+     m_saveToFile = false;
+     if ((it = _config.find("--save-to-file")) != _config.end()) {
+       m_saveToFile = true;
 
-				saveDepth = false;
-				if((it = _config.find("--save-depth")) != _config.end())
-   {
-	  saveDepth = true;
-	  log("Saving Kinect depth map");
-   }
-
-  kinect->StartCapture(0); 	// start capturing
-  depthGenerator = kinect::getDepthGenerator();
-  imageGenerator = kinect::getImageGenerator();
+       if ((it = _config.find("--save-directory")) != _config.end()) {
+       	std::istringstream str(it->second);
+        str >> m_saveDirectory;
+    	//check if the last char is / if yes remove
+        if (m_saveDirectory[m_saveDirectory.size()-1] == '/'){
+       	 m_saveDirectory.erase(m_saveDirectory.size()-1);
+        }
+        log("Will be saving scans to %s", m_saveDirectory.c_str());
+       }
+       else
+       {
+       	log("You haven't specified a save directory! (usage: --save-directory)");
+       	abort();
+       }
+     }
 
   log("Capturing from kinect sensor started.");
 }
@@ -99,26 +110,26 @@ void KinectPCServer::configure(const map<string, string> & _config)
 */
 void KinectPCServer::start()
 {
-PointCloudServer::start();
+  PointCloudServer::start();
 }
 
 void KinectPCServer::runComponent() {
-log("I am running");
-while(isRunning()) {
-if (saveDepth) {
-	saveNextFrameToFile();
-}
-}
-}
+	log("I am running");
+		while(isRunning()) {
+			if (m_saveToFile) {
+				saveNextFrameToFile();
+			}
+		}
+	}
 
 void KinectPCServer::saveNextFrameToFile() {
 kinect->NextFrame();
 IplImage* rgb_data = new IplImage(kinect->rgbImage);
-// Doing this (new IplImage(kinect->depImage);) actually causes the depth map stored as a binary image for some reason
+// Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
 IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
 char buf[256];
 long int timeNow = getCASTTime().us;
-sprintf(buf, "data/frame_%d_rgb_%ld.bmp", kinect->frameNumber,timeNow);
+sprintf(buf, "%s/frame_%d_rgb_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,timeNow);
 cvSaveImage(buf, rgb_data);
 
 short*d = kinect->depImage.ptr<short>(0);	
@@ -132,7 +143,7 @@ for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
 		depth_data->imageData[3*i+2]=(char)value;
 	}
 		char buf2[256];
-		sprintf(buf2,"data/frame_%d_depth_%ld.bmp", kinect->frameNumber,timeNow);
+		sprintf(buf2,"%s/frame_%d_depth_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,timeNow);
 		cvSaveImage(buf2, depth_data);
 }
 
