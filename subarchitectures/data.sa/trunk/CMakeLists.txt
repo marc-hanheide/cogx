@@ -47,4 +47,5 @@ include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 
 # Data.SA C++ Components
 add_subdirectory (src/c++/data/components/DataSaver)
+add_subdirectory (src/c++/data/components/MovePanTilt)
 
