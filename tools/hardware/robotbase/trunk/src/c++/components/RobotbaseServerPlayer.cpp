@@ -211,6 +211,7 @@ RobotbaseServerPlayer::runComponent()
     }               
   }
   
+	log("%d", __LINE__); 
 
   bool joyDriveState = false;
   while (isRunning()) {
@@ -267,14 +268,13 @@ RobotbaseServerPlayer::runComponent()
       //      m_Odom.time = getCASTTime();
       sleepComponent(100);
     }
-
     saveOdomToFile(m_Odom);
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       //nah: added isRunning check to prevent hang on CAST stop()
       if ( isRunning() && (!m_PushClients[i].timer.isRunning() ||
 			   m_PushClients[i].timer.split() >= m_PushClients[i].interval )) {
-        debug("pushed odom to client %d", i);    
+        log("pushed odom to client %d", i);    
         m_PushClients[i].timer.restart();
         m_PushClients[i].prx->receiveOdometry(m_Odom);
       }
@@ -287,15 +287,18 @@ RobotbaseServerPlayer::runComponent()
 
 
 void RobotbaseServerPlayer::saveOdomToFile(Robotbase::Odometry odom){
-
+	
+	// NOTE: the speed and encoder fields are not set so we don't save them
+	if (odom.odompose.size() == 0)
+		return;
+  
          char buf[256];
          sprintf(buf,"%s/odom_%ld", m_saveDirectory.c_str(), (long int)odom.time.us);
          std::ofstream odomfile;
 
          odomfile.open (buf);
-
-         odomfile << odom.odompose[1].x << " " << odom.odompose[1].y
-        		 << " " << odom.odompose[1].theta << " " << odom.speed[1] << " " << odom.encoder[1];
+         odomfile << odom.odompose[0].x << " " << odom.odompose[0].y
+        		 << " " << odom.odompose[0].theta;
          odomfile << std::endl;
          odomfile.close();
 }
@@ -303,7 +306,7 @@ void RobotbaseServerPlayer::saveOdomToFile(Robotbase::Odometry odom){
 Robotbase::Odometry
 RobotbaseServerPlayer::pullOdometry(const Ice::Current&)
 {
-  debug("pullOdometry");
+  log("pullOdometry");
   return m_Odom;
 }
 
@@ -320,16 +323,16 @@ RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd,
       Cure::HelpFunctions::limitAndSetValueSymm(v, m_MaxV);
       Cure::HelpFunctions::limitAndSetValueSymm(w, m_MaxW);
 
-      debug("execMotionCommand v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s",v,w,cmd.speed,cmd.rotspeed);
+      log("execMotionCommand v=%.2fm/s w=%.3frad/s (got v=%.2fm/s w=%.3frad/s",v,w,cmd.speed,cmd.rotspeed);
       if (!m_Joydrive) {
         m_Position->SetSpeed(v,w);
       }
     } else  {
-      debug("execMotionCommand (DISABLED MOTORS) v=%.2fm/s w=%.3frad/s",
+      log("execMotionCommand (DISABLED MOTORS) v=%.2fm/s w=%.3frad/s",
               cmd.speed, cmd.rotspeed);
     }
   } else {
-      debug("execMotionCommand (NOT CONNECTED) v=%.2fm/s w=%.3frad/s",
+      log("execMotionCommand (NOT CONNECTED) v=%.2fm/s w=%.3frad/s",
               cmd.speed, cmd.rotspeed);    
   }
 }
