@@ -25,10 +25,13 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
+#include <PointCloudClient.h>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>
 
 #include <string>
+#include <queue>
+#include <vector>
 #include <map>
 
 #include <SensorData/LaserScan2d.hh>
@@ -39,10 +42,49 @@
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
+#include <PTZ.hpp>
 #include <SensorData/SensorPose.hh>
 #include <FrontierInterface.hpp>
 
 namespace spatial {
+// camera constant parameters
+const double camFocalIR = 5.8e-3;
+const double camAx = 600;//522.149103;//813.445758; //615.956787;
+const double camAy = 600;//522.829838;//815.471465; //615.956787;
+const double camU0 = 299.901428;//325.069348; //321.940572;
+const double camV0 = 270.913543;//220.749067; //226.489246;
+const double Xcam_ptu = 0.0; // meter
+const double Ycam_ptu = 0.010; // meter
+const double Zcam_ptu = 0.117; // meter
+const double Xptu_r = 0.156; // meter
+const double Yptu_r = 0.0; // meter
+const double Zptu_r = 1.1; // meter
+const unsigned int XRes = 640;
+const unsigned int YRes = 480;
+const unsigned int DEADZONE = 8;
+const double FOVv = 0.750491578; // = 43 degrees
+// some constants
+const double MaxHeightToPass = 1.35; // meter
+const double MinHeightToPass = 0.07; // meter
+const double MaxNegHeightToPass = -0.05; // meter
+const double MaxDistanceToInclude = 3.0; // meter
+const double MinDistanceToInclude = 0.50; // meter
+const double MaxObsDistance = 5.00; // meter
+const double pi = 3.14159265;
+
+struct PoseData{
+	double x;
+	double y;
+	double theta;
+	double pan;
+	double tilt;
+} poseData;
+
+struct KinectObs{
+	double x;
+	double y;
+	unsigned char type;	
+};
 
 /**
  * This class wraps the class Cure::NavController which contains
@@ -63,19 +105,21 @@ class SpatialControl : public cast::ManagedComponent ,
                    public OdometryReceiver,
                    public Cure::NavController,                  
                    public Cure::NavControllerEventListener,
-		   public Cure::FrontierExplorerEventListener
+		   						 public Cure::FrontierExplorerEventListener,
+		   						 public Cure::LocalMap,
+									 public cast::PointCloudClient
 {
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-	m_pOwner->log("lock in getFrontiers");
-	m_pOwner->lockComponent();
-	m_pOwner->log("lock acquired");
-	FrontierInterface::FrontierPtSeq ret =
-	  m_pOwner->getFrontiers();
-	m_pOwner->unlockComponent();
-	m_pOwner->log("unlocked in getFrontiers");
-	return ret;
+				m_pOwner->log("lock in getFrontiers");
+				m_pOwner->lockComponent();
+				m_pOwner->log("lock acquired");
+				FrontierInterface::FrontierPtSeq ret =
+					m_pOwner->getFrontiers();
+				m_pOwner->unlockComponent();
+				m_pOwner->log("unlocked in getFrontiers");
+				return ret;
       }
       SpatialControl *m_pOwner;
       FrontierServer(SpatialControl *owner) : m_pOwner(owner)
@@ -114,6 +158,10 @@ public:
   void failTask(int taskID, int error);
   void explorationDone(int taskID, int status);
   const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
+  void getKinectObs(Cure::Pose3D scanPose);
+  void eulerotation(double alpha, double beta, double gamma, Cure::Matrix &R);
+  Cure::Matrix p3line(Cure::Matrix p1, Cure::Matrix p2, double d);
+  bool pointInKinectFov(double x, double y);
 
 
 protected:
@@ -130,15 +178,35 @@ protected:
   Cure::GridLineRayTracer<unsigned char>* m_Glrt;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmK;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
+
 
   IceUtil::Mutex m_Mutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
+  Cure::LocalGridMap<unsigned char>* m_lgmK; // LGM filled by Kinect
+  Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
+  Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
+
+	std::queue<Cure::LaserScan2d> m_LScanQueue;	
+
+  int m_Npts;
+	double m_StartAngle;
+	double m_AngleStep;
+  
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
+  
+  std::vector<KinectObs> m_kinectObs;
+ 	std::vector<int> m_depthData;	
+	cast::cdl::CASTTime m_frameTime;  
+
+  double m_polyY[4];
+  double m_polyX[4];
   
   NavData::InternalCommandType m_commandType;
   double m_commandX;
@@ -191,7 +259,11 @@ protected:
   int m_NumInhibitors;
   bool m_SentInhibitStop;
 
+  ptz::PTZInterfacePrx m_ptzInterface;
+
   bool m_firstScanAdded;
+
+  bool m_UsePointCloud;
 
 protected:
   /* 
