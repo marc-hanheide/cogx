@@ -86,6 +86,7 @@ protected:
 
   virtual void stop();
 
+  void saveOdomToFile(Robotbase::Odometry odom);
 protected:
 
   class OdometryClient {
@@ -119,6 +120,9 @@ protected:
 
   double m_MaxV;
   double m_MaxW;
+
+  bool m_saveToFile;
+  std::string m_saveDirectory;
 
 };
 
