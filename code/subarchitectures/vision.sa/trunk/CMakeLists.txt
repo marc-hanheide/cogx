@@ -15,6 +15,7 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 
 
 # auto generated code
