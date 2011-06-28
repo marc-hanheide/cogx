@@ -34,6 +34,7 @@
 			<fileset dir="${slice.dir}" includes="VisionData.ice ObjectRecognizerSrv.ice" />
 			<includepath>
 				<pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
+				<pathelement path="${basedir}/../../tools/hardware/laser/src/slice"/>
 				<pathelement path="${basedir}/../../tools/math/src/slice" />
 				<pathelement path="${basedir}/../../tools/hardware/pointCloud/src/slice" />
 				<pathelement path="${slice.dir}" />
