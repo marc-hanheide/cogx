@@ -1,5 +1,5 @@
 /**
- * @file StereoDetectorLearner.cpp
+ * @file StereoDetectorKinectLines.cpp
  * @author Andreas Richtsfeld
  * @date 2011
  * @version 0.1
@@ -29,7 +29,9 @@
 #include "Closure3D.h"
 #include "Rectangle3D.h"
 
-#include "PCLCommonHeaders.h"
+#include "v4r/PCLAddOns/PlanePopout.hh"
+#include "v4r/PCLAddOns/utils/PCLUtils.h"
+#include "v4r/PCLAddOns/functions/PCLFunctions.h"
 
 using namespace std;
 using namespace VisionData;
@@ -45,7 +47,7 @@ extern "C" {
 }
 
 /// maximum allowed depth jump from one pixel to the next (0.05m == 5cm)
-static double MAXIMUM_DIST = 0.05;
+// static double MAXIMUM_DIST = 0.05;
 
 namespace cast
 {
@@ -247,9 +249,6 @@ void StereoDetectorKinectLines::runComponent()
   cvReleaseImage(&iplImage_r);
   cvReleaseImage(&iplImage_k);
   cvReleaseImage(&iplImage_depthMap);
-//   cvReleaseImage(&iplImage_r_hr);
-//   cvReleaseImage(&iplImage_l_pr);
-//   cvReleaseImage(&iplImage_r_pr);
   
   if(showImages)
   {
@@ -385,13 +384,11 @@ void StereoDetectorKinectLines::processImage()
   Z::SetActiveDrawArea(iplImage_k);
   vcore->DrawGestalts(Z::Gestalt::RECTANGLE, 0);
   
-//   calc3DSegments();
-//   calc3DLines();
-//   LearnCollinearities(vcore);
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
   
-//   printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData()\n");
   cv::Mat_<cv::Vec4f> kinect_point_cloud_new;
   Points2Cloud(points, kinect_point_cloud_new);
+
   kcore->ProcessKinectData(vcore, iplImage_k, kinect_point_cloud_new);
 //   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT);
 //   kcore->PrintGestalts3D(Z::Gestalt3D::SEGMENT);
@@ -402,16 +399,41 @@ void StereoDetectorKinectLines::processImage()
 //   printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData() end\n");
 //   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
 //   kcore->PrintGestalts3D(Z::Gestalt3D::PATCH);
-  kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
-
-  printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData() end\n");
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-  learner->Process(kcore);
+//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
+//   printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData() end\n");
 
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 
-//   // Compare color histograms of different kinect patches
+  pclA::PlanePopout planePopout;
+  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;
+
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud_new, *pcl_cloud);
+  planePopout.CalculateSOIs(pcl_cloud, sois);
+
+  // Display sois on the tgRenderer
+  for(unsigned i=0; i< sois.size(); i++)
+  {
+    std::vector<cv::Vec4f> soi_hulls;
+    pclA::ConvertPCLCloud2CvVec(*sois[i], soi_hulls);  // convert pcl cloud to cvVec cloud
+    tgRenderer->AddHullPrism(soi_hulls);
+  }
+  
+  cv::Mat_<cv::Vec3b> image;
+  planePopout.GetImageFromPointCloud(*pcl_cloud, image);
+  cv::imshow("Image",image);
+//   cv::imshow("Mask",mask);
+
+  tgRenderer->AddPointCloud(kinect_point_cloud_new);
+
+  /// TODO Nächste Baustelle
+//   learner->Process(kcore);
+
+
+
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+  // Compare color histograms of different kinect patches
 //   for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH)-1; i++)
 //   {
 //     Z::Patch3D *p = (Z::Patch3D*)(kcore->Gestalts3D(Z::Gestalt3D::PATCH, i));
