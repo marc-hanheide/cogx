@@ -1,0 +1,27 @@
+CogX RGB-D Dataset Instructions
+
+The aim of this system is to collect a large RGB-D dataset (alongside with
+laser scans and odometry) from all CogX sites. The end result will be publicly available
+under as a dataset.
+
+
+COMPILATION
+========================
+
+1. Run ./do-it-al.sh, this compiles the system the usual
+way i.e. mkdir BUILD, cmake .. , make install. The
+default Cmake options should be sufficient.
+
+2. Now launch castctrl and use the save_data.cast file.
+Some remarks:
+	-  --save-to-file option: This makes the servers save the sensory data.
+	-  --save-directory option: This specifies the place for saving.
+
+If you change nothing these are set as data/rgbd, data/laser and data/odom.
+
+3. The script ./packdata tar.gz the data directory with a new name called: data.tar.gz
+4. The script ./cleandata removes the files under data/rgbd, data/laser and data/odom AND data.tar.gz
+
+
+That's all!
+
