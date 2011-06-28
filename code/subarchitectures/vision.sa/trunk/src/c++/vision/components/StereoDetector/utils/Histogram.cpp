@@ -13,7 +13,7 @@
 namespace Z
 {
 
-Histogram::Histogram(int _nr_bins, std::vector<double> _p)
+Histogram::Histogram(int _nr_bins, std::vector<double> &_p)
 {
   nr_bins = _nr_bins;
   points = _p;
@@ -23,10 +23,9 @@ Histogram::Histogram(int _nr_bins, std::vector<double> _p)
   for(unsigned i=0; i<nr_bins; i++)
     histogram[i] = 0.;
 
-  double bin = 0.;
   for(unsigned i=0; i<points.size(); i++)
   {
-    bin = points[i]*nr_bins + 0.5;
+    double bin = points[i]*nr_bins;
     histogram[(int)bin] += 1;
   }
    
@@ -53,15 +52,15 @@ double Histogram::Compare(Histogram *h)
     this_sum += histogram[i]*i/nr_bins;
     h_sum += h->histogram[i]*i/nr_bins;
   }
-  return fabs(this_sum - h_sum);;
+  return fabs(this_sum - h_sum);
 }
+
 
 void Histogram::PrintHistogram()
 {
   printf("Printed histogram:\n");
   for(unsigned i=0; i<nr_bins; i++)
     printf(" histogram[%u]: %4.3f\n", i, histogram[i]);
-
 }
   
 }

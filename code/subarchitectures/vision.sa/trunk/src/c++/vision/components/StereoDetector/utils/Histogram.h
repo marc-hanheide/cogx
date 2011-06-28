@@ -29,7 +29,8 @@ private:
   double *histogram;                // resulting histogram
   
 public:
-  Histogram(int _nr_bins, std::vector<double> _p);
+  Histogram(int _nr_bins, std::vector<double> &_p);
+  ~Histogram() {delete histogram;}
   
   double* GetHistogram() {return histogram;}
   double Compare(Histogram *h);

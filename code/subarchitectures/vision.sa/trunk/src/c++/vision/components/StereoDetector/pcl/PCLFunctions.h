@@ -77,7 +77,7 @@ bool FitPlanesRecursiveWithNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 /**
  * @brief Process a single SAC segmentation: Fit a plane into the cloud, using SAC_RANSAC.
  * Returns the pcl_cloud without the segmented plane points. The resulting plane will be
- * stored in clustered_clouds in openCV matrix style.
+ * stored in pcl_plane_clouds in openCV matrix style.
  * @param pcl_cloud Point cloud in pcl format to segment.
  * @param pcl_plane_clouds Vector of point clouds with resulting planes.
  * @param sac_optimal_distance Calculate optimal SAC distance threshold
@@ -113,8 +113,10 @@ bool SingleSACSegmentationWithNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl
 /**
  * @brief Cluster a point cloud with a euclidean threshold.
  * @param pcl_cloud Point cloud in pcl format to cluster.
+ * @param pcl_cluster_clouds The resulting clustered clouds in pcl-format.
  * @param cluster_tolerance Euclidean threshold for clustering points.
  * @param min_cluster_size Minimum cluster size for a object.
+ * @param max_cluster_size Maximum cluster size for a object.
  * @return Returns true for success
  */  
 bool EuclideanClustering(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
@@ -133,13 +135,23 @@ bool EuclideanClustering(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
 bool GetConvexHulls(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds, 
                     std::vector< pcl::ModelCoefficients::Ptr > model_coefficients,
                     std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_convex_hulls);
-                           
-                           
+ 
+                    
 /**
  * @brief Project a point cloud to the model (SAC plane).
- * @param pcl_clouds Planes as projected points.
+ * @param pcl_clouds Point clouds in pcl format.
  * @param model_coefficients Model coefficients of the planes.
- * @param pcl_clouds_projected Projected point cloud
+ * @param pcl_clouds_projected Projected point clouds
+ */    
+bool GetProjectedPoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
+                        pcl::ModelCoefficients::Ptr model_coefficients,
+                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud_projected);
+                           
+/**
+ * @brief Project point clouds to models (SAC plane).
+ * @param pcl_clouds Point clouds in pcl format.
+ * @param model_coefficients Model coefficients of the planes.
+ * @param pcl_clouds_projected Projected point clouds
  */                            
 bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds, 
                         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients,
@@ -147,99 +159,36 @@ bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &p
                          
                          
                          
-
+/**
+ * @brief Space Of Interest (SOI) Segmentation: We assume a dominant plane (table) on which we
+ * can identify seperated objects. We prune segmented clouds outside of the dominant plane.
+ * Returns the ...??? TODO
+ * @param pcl_cloud Point cloud in PCL format.
+ * @param pcl_plane_clouds Vector of point clouds with resulting planes.
+ * @param sac_optimal_distance Calculate optimal distance threshold for plane fitting.
+ * @param sac_optimal_weight_factor Weight factor for optimal threshold processing.
+ * @param sac_distance Inlier distance for SAC segmentation.
+ * @param sac_max_iterations Maximum iterations for SAC.
+ * @param sac_min_inliers Minimum inliers for a plane.
+ * @param ec_cluster_tolerance Minimum distance for euclidean clustering.
+ * @param ec_min_cluster_size Minimum cluster size.
+ * @param ec_max_cluster_size Maximum cluster size.
+ * @return Returns true for success.
+ */  
+bool SOISegmentation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
+                        std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_plane_clouds,
+                        std::vector< pcl::ModelCoefficients::Ptr > &model_coefficients,
+                        bool sac_optimal_distance,
+                        double sac_optimal_weight_threshold,
+                        double sac_distance,
+                        int sac_max_iterations,
+                        int sac_min_inliers,
+                        double ec_cluster_tolerance, 
+                        int ec_min_cluster_size,
+                        int ec_max_cluster_size);
                
 
-// bool FitPlanesIncremental(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-//                           std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-//                           double cluster_tolerance, 
-//                           int min_cluster_size,
-//                           int max_cluster_size);
-//   
-// /**
-//  * @brief TODO
-//  */
-// bool FitPlanesAfterDominantPlaneExtraction(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-//                                            std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-//                                            double cluster_tolerance = 0.01, 
-//                                            int min_cluster_size = 50,
-//                                            int max_cluster_size = 1000000);
-// 
-// /** TODO TODO TODO Write explanataion
-//  * @brief FitPlanes into a point cloud. Use first euclidean clustering and second SACSegmentation. 
-//  * @param cloud Point cloud in pcl format to cluster into planes.
-//  * @param pcl_clustered_clouds Resulting plane clouds in pcl style.
-//  * @param clustered_clouds Resulting plane clusters in openCv style.
-//  * @param cluster_tolerance Euclidean threshold for clustering points and SACSegmentation. (default: 2cm)
-//  * @param min_cluster_size Minimum cluster size for a plane. (default: 100 points)
-//  * @return Returns true for success
-//  */ 
-// bool FitPlanesWithNormals(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-//                           std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-//                           double cluster_tolerance, 
-//                           int min_cluster_size,
-//                           int max_cluster_size);
-//                                            
-// /**
-//  * @brief FitPlanes into a point cloud. Use first euclidean clustering and second SACSegmentation. 
-//  * @param cloud Point cloud in pcl format to cluster into planes.
-//  * @param pcl_clustered_clouds Resulting plane clouds in pcl style.
-//  * @param clustered_clouds Resulting plane clusters in openCv style.
-//  * @param cluster_tolerance Euclidean threshold for clustering points and SACSegmentation. (default: 2cm)
-//  * @param min_cluster_size Minimum cluster size for a plane. (default: 100 points)
-//  * @return Returns true for success
-//  */  
-// bool FitPlanes(pcl::PointCloud<pcl::PointXYZRGB> &cloud,
-//                std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-//                double cluster_tolerance = 0.01, 
-//                int min_cluster_size = 50,
-//                int max_cluster_size = 1000000);
-// 
-// 
-// /** TODO TODO TODO Write explanataion
-//  * @brief Cluster a point cloud with a euclidean threshold.
-//  * @param cloud Point cloud in pcl format to cluster.
-//  * @param cluster_tolerance Euclidean threshold for clustering points.
-//  * @param min_cluster_size Minimum cluster size for a object.
-//  * @return Returns true for success
-//  */  
-// bool SingleEuclideanCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
-//                                pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cluster_cloud,
-//                                double cluster_tolerance = 0.015, // 15mm
-//                                double min_cluster_size = 50,
-//                                double max_cluster_size = 1000000);
-// 
-//                          
-// 
-// 
-//   
-// 
-//                            
-// /**
-//  * @brief Calculate reverse SAC-Segmentation with pcl.
-//  * @param cloud PCL point cloud
-//  * @param distanceTH Distance threshold for the SACSegmentation of pcl.
-//  * @param cvClouds Resulting point clouds of the segmentation.
-//  * @return Returns true for success.
-//  */
-// bool ReverseSACSegmentation(pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
-//                             std::vector< cv::Mat_<cv::Vec4f> > &cvClouds,
-//                             double distanceTH);
-// 
-//  
-// /**
-//  * @brief Calculate reverse SAC-Segmentation with pcl.
-//  * @param points Point cloud in cast-framework style
-//  * @param distanceTH Distance threshold for the SACSegmentation of pcl.
-//  * @param cvClouds Resulting point clouds of the segmentation.
-//  * @return Returns true for success.
-//  * TODO TODO Do not give surface points to this functions, give a cv::Mat, 
-//  * so that we do not need cast things in here
-//  */
-// // bool ReverseSACSegmentationFromNormals(pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
-// //                                        std::vector< cv::Mat_<cv::Vec4f> > &cvClouds,
-// //                                        double distanceTH);
-// //   
+
   
 }
 

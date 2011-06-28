@@ -16,6 +16,8 @@
 #include "KinectClosures.h"
 #include "KinectRectangles.h"
 
+#include "PCLCommonHeaders.h"
+
 namespace Z
 {
 
@@ -192,8 +194,54 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
     printf("KinectCore::ProcessKinectData: Exception during processing of kinect data.");
     std::cout << e.what() << std::endl;
   }
-  
-  printf("KinectCore::ProcessKinectData: ended\n");
+}
+
+
+/**
+ * @brief We assume, that we have a dominant plane, on which we can find different objects.
+ * We prune the dominant plane, do euclidean clustering and interpret each cluster, which is
+ * "on" the table, that it is a seperate object!
+ * @param _vcore Vision core
+ * @param _iplImage Color image of the kinect camera
+ * @param _points Point cloud of the Kinect
+ */
+void KinectCore::ProcessSOIs(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points)
+{
+  printf("KinectCore::ProcessSOIs: Antiquated => Delete this stuff and use v4r->PCLAddOns!\n");
+//   vcore = _vcore;
+//   iplImg = _iplImg;
+//   points = _points;
+//   
+//   struct timespec start, current;
+//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+// 
+//   pcl::PointCloud<pcl::PointXYZRGB> cloud;
+//   pclU::Cv2PCLCloud(points, cloud);
+// 
+//   // preprocess point cloud
+//   bool useVoxelGrid = true;
+//   double vg_size = 0.008;                 // 0.01 - 0.005
+//   pclF::PreProcessPointCloud(cloud, useVoxelGrid, vg_size);
+// 
+//   bool sac_optimal_distance = true;
+//   double sac_optimal_weight_factor = 1.5;
+//   double sac_distance = 0.005;            // 5mm
+//   int sac_max_iterations = 100;
+//   int sac_min_inliers = 25;
+//   double ec_cluster_tolerance = 0.015;    // 15mm
+//   int ec_min_cluster_size = 25;
+//   int ec_max_cluster_size = 1000000;
+// 
+//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;
+//   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
+//     
+//   pclF::SOISegmentation(cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
+//                         sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
+//   
+// 
+//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+//   printf("Runtime for processing the kinect core with soi: %4.3f\n", timespec_diff(&current, &start));
+// //   start = current;
 }
 
 
