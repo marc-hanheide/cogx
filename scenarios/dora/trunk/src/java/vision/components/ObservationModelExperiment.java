@@ -38,53 +38,61 @@ import castutils.castextensions.WMEventQueue;
  */
 public class ObservationModelExperiment extends ManagedComponent {
 
-	private static final String SET_PREFIX = "--set-";
-
 	public class Reading {
+		double angle;
+
+		double confidence;
+		double distance;
+		int detectionSeq;
+		int setting;
+
 		public Reading(int setting, double angle, double distance,
-				double confidence) {
+				int detectionSeq, double confidence) {
 			this.setting = setting;
 			this.angle = angle;
 			this.distance = distance;
 			this.confidence = confidence;
+			this.detectionSeq = detectionSeq;
 		}
-
-		int setting;
-		double angle;
-		double distance;
-		double confidence;
 
 		@Override
 		public String toString() {
-			return setting + ", " + angle + ", " + distance + ", " + confidence;
+			return setting + ", " + angle + ", " + distance + ", "
+					+ detectionSeq + ", " + confidence;
 		}
 
 	}
 
-	private static final String DEFAULT_FILENAME = "observation-model.txt";
-
-	private String fileName = DEFAULT_FILENAME;
-
-	PrintWriter out;
-
-	private static double[] TOLERANCE = new double[] { 0.1, 0.1,
-			Math.PI * 5 / 180 };
-
-	private static final double DEFAULT_RADIUS_START = 0.7;
-	private static final double DEFAULT_RADIUS_STOP = 1.0;
-	private static final double DEFAULT_RADIUS_STEP = 0.5;
 	private static final int DEFAULT_ANGLE_STEP = 45;
+
+	private static final String DEFAULT_FILENAME = "observation-model.txt";
 
 	private static final String[] DEFAULT_LABELS = new String[] { "cerealbox" };
 
-	double radiusStart = DEFAULT_RADIUS_START;
-	double radiusStop = DEFAULT_RADIUS_STOP;
-	double radiusStep = DEFAULT_RADIUS_STEP;
+	private static final double DEFAULT_NUMBER_DETECTIONS = 10;
+
+	private static final double DEFAULT_RADIUS_START = 0.7;
+
+	private static final double DEFAULT_RADIUS_STEP = 0.5;
+	private static final double DEFAULT_RADIUS_STOP = 1.0;
+	private static final String SET_PREFIX = "--set-";
+	private static double[] TOLERANCE = new double[] { 0.1, 0.1,
+			Math.PI * 5 / 180 };
+
 	double angleStep = DEFAULT_ANGLE_STEP;
 
 	double[] centre = new double[] { 1.0, 0.0 };
 
+	private String fileName = DEFAULT_FILENAME;
+	private double numberDetection = DEFAULT_NUMBER_DETECTIONS;
 	private String[] objectLabels = DEFAULT_LABELS;
+	PrintWriter out;
+
+	double radiusStart = DEFAULT_RADIUS_START;
+
+	double radiusStep = DEFAULT_RADIUS_STEP;
+
+	double radiusStop = DEFAULT_RADIUS_STOP;
 
 	@Override
 	protected void configure(Map<String, String> config) {
@@ -109,69 +117,6 @@ public class ObservationModelExperiment extends ManagedComponent {
 			}
 		}
 
-	}
-
-	@Override
-	protected void start() {
-		try {
-
-			out = new PrintWriter(new File(fileName));
-		} catch (FileNotFoundException e) {
-			logException(e);
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	protected void runComponent() {
-		sleepComponent(2000);
-		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0, Math.PI
-				* -35 / 180, 1), PTZCompletion.COMPINIT);
-		try {
-			addToWorkingMemory(newDataID(), spc);
-		} catch (AlreadyExistsOnWMException e1) {
-			logException(e1);
-		}
-		sleepComponent(3000);
-
-		int setting = 0;
-		for (double currentRadius = radiusStart; currentRadius <= radiusStop; currentRadius += radiusStep) {
-			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += (angleStep * Math.PI / 180.0)) {
-				try {
-					if (!isRunning())
-						return;
-					println("current angle is: " + currentAngle * 180 / Math.PI);
-
-					NavCommand navCommand = generateNavCommand(currentRadius,
-							currentAngle);
-					println("new goal pose: " + navCommand.pose[0] + ", "
-							+ navCommand.pose[1] + ", " + navCommand.pose[2]);
-					Completion comp = executeNavCommand(navCommand);
-					println("navCommand completed with " + comp.toString());
-					if (comp != Completion.COMMANDSUCCEEDED) {
-						getLogger()
-								.warn(
-										"failed to navigate to goal. Will try the next one.");
-						continue;
-					}
-					println("reached goal. time to run the detector");
-
-					VisualObject nc = executeDetection();
-					println("visual object: " + nc.identDistrib[0]);
-
-					Reading r = new Reading(setting, currentAngle,
-							currentRadius, nc.identDistrib[0]);
-					out.println(r.toString());
-					out.flush();
-				} catch (CASTException e) {
-					logException(e);
-				} catch (InterruptedException e) {
-					logException(e);
-					return;
-				}
-				setting++;
-			}
-		}
 	}
 
 	private VisualObject executeDetection() throws AlreadyExistsOnWMException,
@@ -225,6 +170,74 @@ public class ObservationModelExperiment extends ManagedComponent {
 				new double[0], TOLERANCE, StatusError.NONE,
 				Completion.COMMANDPENDING);
 		return navCommand;
+	}
+
+	@Override
+	protected void runComponent() {
+		sleepComponent(2000);
+		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0, Math.PI
+				* -35 / 180, 1), PTZCompletion.COMPINIT);
+		try {
+			addToWorkingMemory(newDataID(), spc);
+		} catch (AlreadyExistsOnWMException e1) {
+			logException(e1);
+		}
+		sleepComponent(3000);
+
+		int setting = 0;
+		for (double currentRadius = radiusStart; currentRadius <= radiusStop; currentRadius += radiusStep) {
+			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += (angleStep
+					* Math.PI / 180.0)) {
+				try {
+					if (!isRunning())
+						return;
+					println("current angle is: " + currentAngle * 180 / Math.PI);
+
+					NavCommand navCommand = generateNavCommand(currentRadius,
+							currentAngle);
+					println("new goal pose: " + navCommand.pose[0] + ", "
+							+ navCommand.pose[1] + ", " + navCommand.pose[2]);
+					Completion comp = executeNavCommand(navCommand);
+					println("navCommand completed with " + comp.toString());
+					if (comp != Completion.COMMANDSUCCEEDED) {
+						getLogger()
+								.warn("failed to navigate to goal. Will try the next one.");
+						continue;
+					}
+					println("reached goal. time to run the detector");
+
+					for (int i = 0; i < (int) numberDetection; i++) {
+						VisualObject nc = executeDetection();
+						println("run " + i + ": object found with conf="
+								+ nc.identDistrib[0]);
+
+						Reading r = new Reading(setting, currentAngle,
+								currentRadius, i, nc.identDistrib[0]);
+
+						out.println(r.toString());
+						out.flush();
+					}
+
+				} catch (CASTException e) {
+					logException(e);
+				} catch (InterruptedException e) {
+					logException(e);
+					return;
+				}
+				setting++;
+			}
+		}
+	}
+
+	@Override
+	protected void start() {
+		try {
+
+			out = new PrintWriter(new File(fileName));
+		} catch (FileNotFoundException e) {
+			logException(e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
