@@ -14,6 +14,7 @@
 // #include <stdexcept>
 
 #include "KinectCore.h"
+#include "Histogram.h"
 
 namespace Z
 {
@@ -27,6 +28,9 @@ public:
   
 private:
   KinectCore *kcore;
+  
+  Histogram *closenessHisto;
+  Histogram *colorHisto;
   
 //   void LearnLJunctionsBetweenLines();
 //   void LearnParallelities();

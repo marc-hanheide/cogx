@@ -49,13 +49,20 @@ void Cv2PCLCloud(cv::Mat_<cv::Vec4f> cv_cloud,
                  pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud);
                  
 /**
- * TODO Antiquated?
  * @brief Convert CogX points to pcl color point cloud.
  * @param points Point cloud in cogX framework format
  * @param cloud PCL style point cloud
  */
 void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, 
                         pcl::PointCloud<pcl::PointXYZRGB> &cloud);
+
+/**
+ * @brief Convert CogX points to pcl color point cloud.
+ * @param points Point cloud in cogX framework format
+ * @param cloud PCL style, constant point cloud as ptr.
+ */
+// void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, 
+//                         pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud);
 
 
 /**
@@ -94,8 +101,8 @@ void PCLClouds2CvVecs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_
  * @param random_color Convert cloud with random color.
  */
 void PCLCloud2CvMat(pcl::PointCloud<pcl::PointXYZRGB> cloud, 
-                      cv::Mat_<cv::Vec4f> &cvCloud,
-                      bool random_colors = false);
+                    cv::Mat_<cv::Vec4f> &cvCloud,
+                    bool random_colors = false);
 
 /**
  * // TODO Random color!!!
@@ -169,7 +176,7 @@ void CalculateOptimalSACDistanceKinect(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc
  * @param pcl_cloud Point cloud
  * @param distance Average distance to point cloud
  */
-void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, double &distance);
+void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, double &distance, int nrOfPoints = 5);
 
 }
 

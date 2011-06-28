@@ -67,13 +67,19 @@ double Patch3D::IsClose(Patch3D *p)
     {
       cv::Vec4f v0 = hull_points[i];
       cv::Vec4f v1 = p->hull_points[j];
+      
       double current_distance = Distance(v0, v1);
+// printf("Distance: %4.2f\n", current_distance);
       
       if(current_distance < distance)
         distance = current_distance;
     }    
   }
-  return (1.-distance);
+//   printf("Patch3D::IsClose: Distance at the end: %4.2f\n", distance);
+//   double new_distance = 1. - distance;
+//   return (1.-distance);
+//   printf("Patch3D::IsClose: Distance at the end new: %4.2f\n", new_distance);
+  return (1. - distance);
 }
 
 /**

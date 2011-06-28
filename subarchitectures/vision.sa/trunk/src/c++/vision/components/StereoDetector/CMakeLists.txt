@@ -50,7 +50,6 @@ SET(SOURCES
   #Configuration.cpp
 )
 add_cast_component(StereoDetector ${SOURCES} ${HEADERS})
-
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDPCL SDLearner)
 link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)

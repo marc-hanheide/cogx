@@ -58,9 +58,9 @@ public:
   void PrintGestalts3D(Gestalt3D::Type type);
   const char* GetKinectTypeName(KinectBase::Type type);
 
-  
   void ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);
-
+  void ProcessSOIs(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);  
+  
   const char* GetGestaltListInfo();
   const char* GetGestaltTypeName(Z::Gestalt3D::Type type);
   int NumMonoGestalts(Gestalt::Type type) {return vcore->Gestalts(type).Size();}

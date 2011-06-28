@@ -77,6 +77,41 @@ void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, pcl:
   }
 }
 
+
+// void Points2PCLColCloud(const std::vector<PointCloud::SurfacePoint> points, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud)
+// {
+//   unsigned pcWidth = sqrt(points.size()*4/3);
+//   unsigned pcHeight = pcWidth *3/4;
+//   unsigned position = 0;
+//   
+//   // TODO Create a new cloud assign to constant pointer
+//   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr tmpCloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+// 
+// //   cloud.points.resize(pcWidth*pcHeight);
+//   
+//   RGBValue color;
+//   color.Alpha = 1.;
+//   
+//   for(unsigned row = 0; row < pcHeight; row++)
+//   {
+//     for(unsigned col = 0; col < pcWidth; col++)
+//     {
+//       position = row*pcWidth + col;
+// 
+//       color.Red = points[position].c.r;
+//       color.Green = points[position].c.g;
+//       color.Blue = points[position].c.b;
+// 
+//       tmpCloud->width = pcWidth;
+//       tmpCloud->height = pcHeight;
+//       tmpCloud.points[row*pcWidth+col].x = (float) points[position].p.x;
+//       tmpCloud.points[row*pcWidth+col].y = (float) points[position].p.y;
+//       tmpCloud.points[row*pcWidth+col].z = (float) points[position].p.z;
+//       tmpCloud.points[row*pcWidth+col].rgb = color.float_value;
+//     }
+//   }
+// }
+
 void Points2PCLCloud(const std::vector<PointCloud::SurfacePoint> points, 
                      pcl::PointCloud<pcl::PointXYZ> &cloud)
 {
@@ -333,18 +368,15 @@ void CalculateOptimalSACDistanceKinect(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc
 }
 
 
-void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, double &distance)
+void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, double &distance, int nrOfPoints)
 {
   distance = 0.;
-  int nrOfPoints = 5;
-  
   int p[nrOfPoints];
   for(unsigned i=0; i<nrOfPoints; i++)
     p[i] = (int) (pcl_cloud->points.size()-1)*i/(nrOfPoints-1);
 
   for(unsigned i=0; i<nrOfPoints; i++)
     distance += sqrt(pow((double)pcl_cloud->points[p[i]].x, 2) + pow((double)pcl_cloud->points[p[i]].y, 2) + pow((double)pcl_cloud->points[p[i]].z, 2));
-
   distance /= nrOfPoints;
 }
 

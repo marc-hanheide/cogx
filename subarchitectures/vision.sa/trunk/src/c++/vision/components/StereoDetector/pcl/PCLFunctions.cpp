@@ -246,6 +246,23 @@ bool GetConvexHulls(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_c
 }
 
 
+bool GetProjectedPoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud,
+                        pcl::ModelCoefficients::Ptr model_coefficients,
+                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud_projected)
+
+{
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::ProjectInliers<pcl::PointXYZRGB> proj;
+  proj.setModelType(pcl::SACMODEL_PLANE);
+  proj.setModelCoefficients(model_coefficients);
+  proj.setInputCloud(pcl_cloud);
+  proj.setCopyAllData(true);      // copy all data, not only inliers!
+  proj.filter(*cloud_projected);
+    
+  pcl_cloud_projected = cloud_projected;
+}
+
+
 bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds, 
                         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients,
                         std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_clouds_projected)
@@ -272,267 +289,44 @@ bool GetProjectedPoints(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &p
 }
 
 
-
-
-
-
-
-
-
-
-/*  
-bool ReverseSACSegmentation(pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
-                            std::vector< cv::Mat_<cv::Vec4f> > &cvClouds,
-                            double distanceTH)
+bool SOISegmentation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
+                        std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_plane_clouds,
+                        std::vector< pcl::ModelCoefficients::Ptr > &model_coefficients,
+                        bool sac_optimal_distance,
+                        double sac_optimal_weight_threshold,
+                        double sac_distance,
+                        int sac_max_iterations,
+                        int sac_min_inliers,
+                        double ec_cluster_tolerance, 
+                        int ec_min_cluster_size,
+                        int ec_max_cluster_size)
 {
-  bool segment = true;
-  
-  Prepare SAC-Segmentation
-  pcl::SACSegmentation<pcl::PointXYZRGB> seg;
-  seg.setModelType(pcl::SACMODEL_PLANE);
-  seg.setMethodType(pcl::SAC_RANSAC);
-  seg.setDistanceThreshold(distanceTH);
-  seg.setMaxIterations(250);                        /// TODO TODO Arbitrary value
-  
-  while(segment)
+  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clustered_clouds;
+  if(SingleSACSegmentation(pcl_cloud, pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_threshold, sac_distance, sac_max_iterations, sac_min_inliers))
   {
-    SEGMENT cloud
-    seg.setInputCloud(cloud.makeShared());
-    pcl::PointIndices inliers;
-    pcl::ModelCoefficients model_coefficients;
-    seg.segment(inliers, model_coefficients);
-    
-    check if we still have valid results
-    if(inliers.indices.size() <= 100) segment = false;
-    
-    converse and add to cvClouds
-    if(segment)
+    if(EuclideanClustering(pcl_cloud, pcl_clustered_clouds, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size))
     {
-printf("got another result: inliers.indices.size(): %u\n", inliers.indices.size());
+printf("SOISegmentation: we have now a lot of clusters? %u\n", pcl_clustered_clouds.size()); 
+
+      /// TODO Project clusters on the dominant plane and check if all points are inside of the convex hull of the dominant plane => New SOI found
+      std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clouds_projected;
+      for(unsigned i=0; i<pcl_clustered_clouds.size(); i++)
+      {
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_projected;
+        GetProjectedPoints(pcl_clustered_clouds[i], model_coefficients[0], pcl_cloud_projected);                   /// TODO TODO TODO Diese Funktion funktioniert nicht!!!
+
+pclU::PrintPCLCloud(*pcl_cloud_projected);
+
+//         pcl_clouds_projected.push_back(pcl_cloud_projected);
+       
+      }
       
-      delete points from cloud
-      pcl::PointCloud<pcl::PointXYZRGB> inlierCloud;
-      pcl::PointCloud<pcl::PointXYZRGB> outlierCloud;
-
-      pclU::GetInlierCloud(cloud, inliers, inlierCloud);
-      pclU::GetOutlierCloud(cloud, inliers, outlierCloud);
-
-printf("        in/outlier cloud size: %u - %u\n", inlierCloud.points.size(), outlierCloud.points.size());
+      // 
       
-      Convert plane to openCV style
-      cv::Mat_<cv::Vec4f> cvCloud;
-      pclU::PCLCloud2CvCloud(inlierCloud, cvCloud);
-      cvClouds.push_back(cvCloud);
-
-      cloud = outlierCloud;
     }
   }
-
-  if(cvClouds.size() > 0) return true;
-  return false; 
-}
-  
-  
-  
-bool FitPlanesIncremental(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-               std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-               double cluster_tolerance, 
-               int min_cluster_size,
-               int max_cluster_size)
-{
-  bool finished = false;
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clustered_clouds;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_clustered_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_sac_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr saveCloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  std::vector< cv::Mat_<cv::Vec4f> > single_clustered_clouds;
-  
-  pcl_sac_cloud = pcl_cloud.makeShared();
-
-  printf("  SingleSACSegmentation: before: pcl_cluster_cloud.points: %u\n", pcl_sac_cloud->points.size());
-  SingleSACSegmentation(pcl_sac_cloud, clustered_clouds, 0.008, 100, 50);
-  printf("  SingleSACSegmentation:  after: pcl_cluster_cloud.points: %u\n", pcl_sac_cloud->points.size());
-
-  bool save = false;
-  while(!finished) // TODO Arbitrary
-  {
-printf("SingleEuclideanClustering: start while!\n");
-    if(SingleEuclideanCluster(pcl_sac_cloud, pcl_clustered_cloud))
-    {
-printf("SingleEuclideanClustering: success!\n");
-      if(!save)
-      {
-        saveCloud = pcl_sac_cloud;            // save rest of cloud
-printf("SingleEuclideanClustering: save pcl_sac_cloud to saveCloud: %u\n", saveCloud->points.size());
-        save = true;
-      }
-      pcl_sac_cloud = pcl_clustered_cloud;
-printf("SingleEuclideanClustering: new pcl_sac_cloud: %u\n", pcl_sac_cloud->points.size());
-    }
-    else
-    {
-printf("SingleEuclideanClustering: FAILED!\n");
-      if(!save)
-      {
-        save = false;
-        pcl_sac_cloud = saveCloud;
-      }
-      else finished = true;
-
-      printf("SingleEuclideanClustering: failed!\n");
-      printf("SingleEuclideanClustering: finished: clouds: %u\n", pcl_clustered_cloud->points.size());
-    }
-    
-printf("  SingleSACSegmentation: before: pcl_cluster_cloud.points: %u\n", pcl_sac_cloud->points.size());
-    SingleSACSegmentation(pcl_sac_cloud, clustered_clouds, 0.008, 100, 50);
-printf("  SingleSACSegmentation:  after: pcl_cluster_cloud.points: %u\n", pcl_sac_cloud->points.size());
-  }
-  return true;
-}
-
- 
-bool FitPlanesAfterDominantPlaneExtraction(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-               std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-               double cluster_tolerance, 
-               int min_cluster_size,
-               int max_cluster_size)
-{
-  SingleSACSegmentation(pcl_cloud.makeShared(), clustered_clouds);
-  
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clustered_clouds;
-  std::vector< cv::Mat_<cv::Vec4f> > single_clustered_clouds;
-  
-  if(EuclideanClustering(pcl_cloud.makeShared(), pcl_clustered_clouds, cluster_tolerance, min_cluster_size, max_cluster_size))
-  {
-printf("Euclidean clustering successful: %u clusters found!\n", pcl_clustered_clouds.size());
-    for(unsigned i=0; i < pcl_clustered_clouds.size(); i++)
-    {
-      if(ReverseSACSegmentation(*pcl_clustered_clouds[i], clustered_clouds, cluster_tolerance))
-      {
-printf(" HUHU: SAC successful: %u clusters found!\n", clustered_clouds.size());
-      }
-    }
-  }
-  else return false;
-  return true;
 }
 
 
-bool FitPlanes(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-               std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-               double cluster_tolerance, 
-               int min_cluster_size,
-               int max_cluster_size)
-{
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clustered_clouds;
-  std::vector< cv::Mat_<cv::Vec4f> > single_clustered_clouds;
-
-  if(EuclideanClustering(pcl_cloud.makeShared(), pcl_clustered_clouds, cluster_tolerance, min_cluster_size, max_cluster_size))
-  {
-printf("Euclidean clustering successful: %u clusters found!\n", pcl_clustered_clouds.size());
-    for(unsigned i=0; i < pcl_clustered_clouds.size(); i++)
-    {
-      if(ReverseSACSegmentation(*pcl_clustered_clouds[i], clustered_clouds, cluster_tolerance))
-      {
-printf(" HUHU: SAC successful: %u clusters found!\n", clustered_clouds.size());
-      }
-    }
-  }
-  else return false;
-  return true;
-}      
-
-  
-bool FitPlanesWithNormals(pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-                          std::vector< cv::Mat_<cv::Vec4f> > &clustered_clouds,
-                          double cluster_tolerance, 
-                          int min_cluster_size,
-                          int max_cluster_size)
-{
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_clustered_clouds;
-  std::vector< cv::Mat_<cv::Vec4f> > single_clustered_clouds;
-
-  if(EuclideanClustering(pcl_cloud.makeShared(), pcl_clustered_clouds, cluster_tolerance, min_cluster_size, max_cluster_size))
-  {
-printf("Euclidean clustering successful: %u clusters found!\n", pcl_clustered_clouds.size());
-    for(unsigned i=0; i < pcl_clustered_clouds.size(); i++)
-    {
-      if(ReverseSACSegmentationFromNormals(*pcl_clustered_clouds[i], clustered_clouds, cluster_tolerance))
-      {
-printf(" HUHU: SAC successful: %u clusters found!\n", clustered_clouds.size());
-      }
-    }
-  }
-  else return false;
-  return true;
-}      
-  
-bool SingleEuclideanCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, 
-                               pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cluster_cloud,
-                               double cluster_tolerance, 
-                               double min_cluster_size,
-                               double max_cluster_size)
-{
-printf("SingleEuclideanClustering: start! pcl_cloud.points.size: %u\n", pcl_cloud->points.size());
-  pcl::VoxelGrid<pcl::PointXYZRGB> vg;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>);
-  vg.setInputCloud (pcl_cloud);
-  vg.setLeafSize (0.01, 0.01, 0.01);      // x,y,z size
-  vg.filter (*cloud_filtered);
-  
-printf("SingleEuclideanClustering: start! cloud_filtered->points.size: %u\n", cloud_filtered->points.size());
-
-  pcl::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZRGB>);
-  tree->setInputCloud(cloud_filtered);
-  tree->setInputCloud(pcl_cloud);
-
-  pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> ec;
-  std::vector<pcl::PointIndices> indices;
-  ec.setClusterTolerance(cluster_tolerance);
-  ec.setMinClusterSize(min_cluster_size);
-  ec.setMaxClusterSize(max_cluster_size);
-  ec.setSearchMethod (tree);
-  ec.setInputCloud(cloud_filtered);
-  ec.setInputCloud(pcl_cloud);     /// TODO 
-  ec.extract(indices);
-
-  copy the clusters to new point clouds
-  if(indices.size() > 0)
-  {
-printf("SingleEuclideanClustering: Loop 1!\n");
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl_cluster_cloud = tmp_cloud;
-    
-
-    pcl::copyPointCloud(*pcl_cloud, indices[0], *pcl_cluster_cloud);
-    pcl::copyPointCloud(*pcl_cloud, *cloud_filtered);
-    pclU::GetInlierCloud(*pcl_cloud, indices[0], *pcl_cluster_cloud);
-    pclU::GetOutlierCloud(*pcl_cloud, indices[0]);
-printf("SingleEuclideanClustering: GetOutlierCloud: cloud_filtered: %u\n", cloud_filtered->points.size());
-
-    pcl_cloud = cloud_filtered;
-    pcl::copyPointCloud(*cloud_filtered, *pcl_cloud);
-
-printf("SingleEuclideanClustering: 3: pcl_cloud->points.size: %u\n", pcl_cloud->points.size());
-
-    return true;
-  }
-  else return false;
-  
-printf("SingleEuclideanClustering: 2: indices.size: %u\n", indices.size());
-  
-//   pcl_cluster_clouds.resize(indices.size());
-//   for(unsigned idx=0; idx<indices.size(); idx++)
-//   {
-// printf("SingleEuclideanClustering: WE ARE INSIDE OF THE LOOP!\n");
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-//     pcl_cluster_clouds[idx] = tmp_cloud;
-//     
-//     pcl::copyPointCloud(*cloud_filtered, indices[idx], *pcl_cluster_cloud);
-//   }
-//   
-//   if(indices.size() > 0) return true;
-//   return false;
-}*/
 
 }
