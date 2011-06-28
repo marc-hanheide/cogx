@@ -597,7 +597,7 @@ void SpatialControl::runComponent()
       //if(m_depthData.empty()) continue;
 
       //		m_Mutex.lock();
-      if(!m_LScanQueue.empty()){
+      while (!m_LScanQueue.empty()){
         if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
           lpW.add(LscanPose, m_LaserPoseR);		
           m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
@@ -607,7 +607,7 @@ void SpatialControl::runComponent()
           useLaserScan = true;
           m_LScanQueue.pop();
         }else log("No Estimation for Scan Pose!!!!!!!!!!!!!!!!!!!");
-      }else log("empty!!!!!!!!!!!!!!!!!!!!!!!");
+      }
       //		m_Mutex.unlock();
 
       if (m_TOPP.getPoseAtTime(Cure::Timestamp(m_frameTime.s, m_frameTime.us), scanPose) == 0) {
@@ -631,7 +631,7 @@ void SpatialControl::runComponent()
               (*m_lgm)(x-1,y) != '1' && (*m_lgm)(x+1,y) != '1' && 
               (*m_lgm)(x-1,y-1) != '1' && (*m_lgm)(x+1,y-1) != '1' && 
               (*m_lgm)(x-1,y+1) != '1' && (*m_lgm)(x+1,y+1) != '1' && 
-              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y-1) != '1' ) (*m_lgm)(x,y) = '0';
+              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y+1) != '1' ) (*m_lgm)(x,y) = '0';
         }
       } 								
 
