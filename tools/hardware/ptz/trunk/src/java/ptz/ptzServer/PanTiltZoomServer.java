@@ -114,8 +114,8 @@ public class PanTiltZoomServer extends ManagedComponent {
 		Ice.Communicator ic = Ice.Util.initialize();
 
 		Identity id = new Identity();
-		id.name = "PTZServer";
-		id.category = "PTZServer";
+		id.name = "ptz.server";
+		id.category = "ptz.server";
 
 		String path = ic.identityToString(id) + ":default -h localhost -p "
 				+ cast.cdl.CPPSERVERPORT.value;
