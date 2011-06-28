@@ -178,7 +178,6 @@ protected:
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
-  bool m_useKinect;
   bool m_bDetectDoors;
   std::string m_planeObjectFilename;
   std::string m_planeModelFilename;
@@ -196,7 +195,6 @@ protected:
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
   Cure::SensorPose m_CameraPoseR;
-  Cure::SensorPose m_KinectPoseR;
 
   // This grid map represents the current Place
   CharMap* m_lgm1;
@@ -268,10 +266,6 @@ private:
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
-  /* convert depth points from the Kinect to Cure LaserScan2d format */
-  void convertDepthToCureScan(cast::cdl::CASTTime &time, vector<int>& depthData, Cure::LaserScan2d& cureScanD);
-  void combineCureScans(Cure::LaserScan2d& cureScanKinect, Cure::LaserScan2d& cureScanLaser);
-	void eulerotation(double alpha, double beta, double gamma, Cure::Matrix &R);
 	
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);

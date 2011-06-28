@@ -118,11 +118,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
     std::abort();
   } 
 
-  if (cfg.getSensorPose(3, m_KinectPoseR)) {
-    println("configure(...) Failed to get sensor pose for laser");
-    std::abort();
-  } 
-
   m_loadNodeLgms = false;
   m_saveNodeLgms = false;
   if (_config.find("--save-nodemap") != _config.end()) {
@@ -132,11 +127,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (_config.find("--load-nodemap") != _config.end()) {
     m_loadNodeLgms = true;
     m_saveNodeLgms = false;
-  }
-
-	m_useKinect = false;
-  if (_config.find("--use-kinect") != _config.end()) {
-    m_useKinect = true;
   }
 
   m_bNoPlaces = false;
