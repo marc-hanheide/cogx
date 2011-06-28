@@ -9,6 +9,7 @@ include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/slice)
 # latter args are include paths to serach
 cast_slice2cpp(GEN_CPP GEN_HPP VisionData.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/tools/math/src/slice
+    ${COGX_ROOT}/tools/hardware/laser/src/slice
     ${COGX_ROOT}/tools/hardware/pointCloud/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice)
 

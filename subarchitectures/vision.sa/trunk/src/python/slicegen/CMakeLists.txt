@@ -8,6 +8,7 @@ set(V_SLICE_INCLUDE_DIRS
    ${CAST_SLICE_DIR}
    ${COGX_ROOT}/tools/math/src/slice
    ${COGX_ROOT}/tools/hardware/video/src/slice
+   ${COGX_ROOT}/tools/hardware/laser/src/slice
    ${COGX_ROOT}/tools/hardware/pointCloud/src/slice
    /usr/share/slice
    /usr/local/share
