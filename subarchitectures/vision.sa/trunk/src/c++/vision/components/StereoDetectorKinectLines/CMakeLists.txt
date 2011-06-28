@@ -4,7 +4,6 @@ add_definitions(-DHAVE_CAST)
 
 # include openNI headers for kinect sensor
 include_directories(/usr/include/ni)
-#include_directories(Kinect)
 
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGine)
@@ -23,9 +22,15 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/compo
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/kinect)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/Learner)
 
-
 find_package(PCL 1.0 REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
+
+# TODO TODO We shoud define a flag, if v4r is available!
+# Include v4r libraries!
+include(${COGX_ROOT}/cmake/v4r.cmake)
+include_directories(${V4R_DIR})
+link_directories(${V4R_DIR}/lib)
+
 
 # Set the sources.
 SET(HEADERS
@@ -41,5 +46,5 @@ link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGin
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES})
-
+target_link_libraries(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions)
 

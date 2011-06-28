@@ -57,16 +57,11 @@ private:
   Z::KinectCore *kcore;                                     ///< Kinect core
   Z::Learner *learner;                                      ///< Learner
 
-//  std::vector< cv::Mat_<cv::Vec4f> > clustered_planes;      /// TODO Clustered planes for displaying => Delete later?
-//  std::vector< cv::Mat_<cv::Vec4f> > clustered_planes2;
-
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::string stereoconfig;                                 ///< Config name of stereo camera config file
   std::vector<int> camIds;                                  ///< Which cameras to get images from
   std::vector<Video::CameraParameters> camPars;             ///< Camera parameters for each camera
-//   std::string videoServerName;                             ///< Component ID of the video server to connect to
-//   Video::VideoInterfacePrx videoServer;                    ///< ICE proxy to the video server
 
   int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
   int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
@@ -74,7 +69,7 @@ private:
   IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
   IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
   
-  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points
+  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
   cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
   
   bool single;                                              ///< Single shot mode for the stereo detector learner
@@ -82,11 +77,6 @@ private:
 
   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
-  
-//   void calc3DSegments();
-//   void calc3DLines();
-//   bool calc3DLine(Z::Line *line, double width_2d, double width_3d, cv::Point3f &line_start, cv::Point3f &line_end);
-//   void LearnCollinearities(Z::VisionCore *vcore);
   
   void processImage();
   void SingleShotMode();
