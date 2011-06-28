@@ -6,8 +6,13 @@ package vision.components;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import ptz.PTZCompletion;
+import ptz.PTZPose;
+import ptz.SetPTZPoseCommand;
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
@@ -33,9 +38,12 @@ import castutils.castextensions.WMEventQueue;
  */
 public class ObservationModelExperiment extends ManagedComponent {
 
+	private static final String SET_PREFIX = "--set-";
+
 	public class Reading {
-		public Reading(int setting, double angle, double distance, double confidence) {
-			this.setting= setting;
+		public Reading(int setting, double angle, double distance,
+				double confidence) {
+			this.setting = setting;
 			this.angle = angle;
 			this.distance = distance;
 			this.confidence = confidence;
@@ -62,7 +70,7 @@ public class ObservationModelExperiment extends ManagedComponent {
 	private static double[] TOLERANCE = new double[] { 0.1, 0.1,
 			Math.PI * 5 / 180 };
 
-	private static final double DEFAULT_RADIUS_START = 0.6;
+	private static final double DEFAULT_RADIUS_START = 0.7;
 	private static final double DEFAULT_RADIUS_STOP = 1.0;
 	private static final double DEFAULT_RADIUS_STEP = 0.5;
 	private static final int DEFAULT_ANGLE_STEP = 45;
@@ -72,7 +80,7 @@ public class ObservationModelExperiment extends ManagedComponent {
 	double radiusStart = DEFAULT_RADIUS_START;
 	double radiusStop = DEFAULT_RADIUS_STOP;
 	double radiusStep = DEFAULT_RADIUS_STEP;
-	double angleStep = Math.PI * DEFAULT_ANGLE_STEP / 180.0;
+	double angleStep = DEFAULT_ANGLE_STEP;
 
 	double[] centre = new double[] { 1.0, 0.0 };
 
@@ -80,7 +88,27 @@ public class ObservationModelExperiment extends ManagedComponent {
 
 	@Override
 	protected void configure(Map<String, String> config) {
-		// TODO Auto-generated method stub
+		for (Entry<String, String> e : config.entrySet()) {
+			if (!e.getKey().startsWith(SET_PREFIX))
+				continue;
+			String fieldName = e.getKey().substring(SET_PREFIX.length());
+			try {
+				Field f = this.getClass().getDeclaredField(fieldName);
+				f.setDouble(this, Double.parseDouble(e.getValue()));
+				println("configured " + fieldName + "=" + e.getValue());
+			} catch (SecurityException e1) {
+				logException(e1);
+			} catch (NoSuchFieldException e1) {
+				getLogger().warn("no such field: " + fieldName);
+			} catch (NumberFormatException e1) {
+				logException(e1);
+			} catch (IllegalArgumentException e1) {
+				logException(e1);
+			} catch (IllegalAccessException e1) {
+				logException(e1);
+			}
+		}
+
 	}
 
 	@Override
@@ -96,10 +124,19 @@ public class ObservationModelExperiment extends ManagedComponent {
 
 	@Override
 	protected void runComponent() {
-		sleepComponent(5000);
-		int setting=0;
+		sleepComponent(2000);
+		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0, Math.PI
+				* -35 / 180, 1), PTZCompletion.COMPINIT);
+		try {
+			addToWorkingMemory(newDataID(), spc);
+		} catch (AlreadyExistsOnWMException e1) {
+			logException(e1);
+		}
+		sleepComponent(3000);
+
+		int setting = 0;
 		for (double currentRadius = radiusStart; currentRadius <= radiusStop; currentRadius += radiusStep) {
-			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += angleStep) {
+			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += (angleStep * Math.PI / 180.0)) {
 				try {
 					if (!isRunning())
 						return;
@@ -122,8 +159,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 					VisualObject nc = executeDetection();
 					println("visual object: " + nc.identDistrib[0]);
 
-					Reading r = new Reading(setting, currentAngle, currentRadius,
-							nc.identDistrib[0]);
+					Reading r = new Reading(setting, currentAngle,
+							currentRadius, nc.identDistrib[0]);
 					out.println(r.toString());
 					out.flush();
 				} catch (CASTException e) {
