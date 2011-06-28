@@ -297,7 +297,7 @@ LaserServerPlayer::runComponent()
       }
     }
 
-    saveScanToFile(m_Scan);
+    //saveScanToFile(m_Scan);
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       if ( isRunning() && 
