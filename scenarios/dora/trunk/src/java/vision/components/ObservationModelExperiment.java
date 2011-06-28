@@ -33,12 +33,17 @@ import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEventQueue;
 
 /**
- * @author cogx
+ * run an experiment with the robot to estimate an observation model of the
+ * object detector. The robot circles a centre point step-wise and always looks
+ * towards the centre point at given radii. The detector is then trigger n times
+ * and the result is stored in a file that be loaded into matlab.
+ * 
+ * @author marc
  * 
  */
 public class ObservationModelExperiment extends ManagedComponent {
 
-	public class Reading {
+	public class DetectionMeasurement {
 		double angle;
 
 		double confidence;
@@ -46,7 +51,7 @@ public class ObservationModelExperiment extends ManagedComponent {
 		int detectionSeq;
 		int setting;
 
-		public Reading(int setting, double angle, double distance,
+		public DetectionMeasurement(int setting, double angle, double distance,
 				int detectionSeq, double confidence) {
 			this.setting = setting;
 			this.angle = angle;
@@ -211,8 +216,9 @@ public class ObservationModelExperiment extends ManagedComponent {
 						println("run " + i + ": object found with conf="
 								+ nc.identDistrib[0]);
 
-						Reading r = new Reading(setting, currentAngle,
-								currentRadius, i, nc.identDistrib[0]);
+						DetectionMeasurement r = new DetectionMeasurement(
+								setting, currentAngle, currentRadius, i,
+								nc.identDistrib[0]);
 
 						out.println(r.toString());
 						out.flush();
