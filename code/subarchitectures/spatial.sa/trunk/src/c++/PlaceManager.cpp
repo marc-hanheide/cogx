@@ -1929,7 +1929,7 @@ SpatialData::PlacePtr
 PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
   m_pOwner->lockComponent();
   NavData::FNodePtr curNode = m_pOwner->getCurrentNavNode();
-  if(curNode !=NULL){
+  if(curNode.get() != NULL){
     SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
     m_pOwner->unlockComponent();
     return curPlace;
