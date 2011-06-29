@@ -57,7 +57,7 @@ long long gethrtime(void)
 
 #endif
 
-//#define USE_MOTION_DETECTION
+#define USE_MOTION_DETECTION
 //#define SAVE_SOI_PATCH  //todo: fix that !crop the ROI may cause the crash since the size of the ROI may exceeds the boundaries of img  
 #define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
 
@@ -96,18 +96,7 @@ using namespace VisionData;
 //using namespace navsa;
 using namespace cdl;
 
-int win;
 int objnumber = 0;
-double cam_trans[3];
-double cam_rot[2];
-int mouse_x, mouse_y;
-int mouse_butt;
-int butt_state;
-Vector3 view_point, view_dir, view_up, view_normal;
-GLfloat col_background[4];
-GLfloat col_surface[4];
-GLfloat col_overlay[4];
-GLfloat col_highlight[4];
 
 PointCloud::SurfacePointSeq points;
 PointCloud::SurfacePointSeq pointsN;
