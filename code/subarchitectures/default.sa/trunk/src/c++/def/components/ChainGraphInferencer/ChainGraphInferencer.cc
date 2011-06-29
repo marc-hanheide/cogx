@@ -61,6 +61,24 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	{
 		_hfcServerName = it->second;
 	}
+	// Where to load object information from?
+	if((it = _config.find("--objects-from-hfc")) != _config.end())
+	{ // Get object info from the HFC
+		_loadObjectsFrom = LOF_HFC;
+	}
+	else if((it = _config.find("--objects-from-defaultprob")) != _config.end())
+	{ // Get object info from the defaultprob file used by AVS
+		_loadObjectsFrom = LOF_DEFAULTPROB;
+		_objectsFileName = it->second;
+
+		if (_objectsFileName.empty())
+			throw CASTException(exceptionMessage(__HERE__, "Provide the AVS default knowledge file!"));
+	}
+	else
+	{
+		throw CASTException(exceptionMessage(__HERE__, "Please select the source of object information (--objects-from-hfc or --objects-from-defaultprob)."));
+	}
+
 	// Config file name
 	string configFileName;
 	if((it = _config.find("--config")) != _config.end())
@@ -135,6 +153,45 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_defaultShapePropertyGivenRoomCategory.push_back(dspgrc);
 	}
 
+
+	// Properties (size)
+	roomCat1Vector.clear();
+	config.getValueList("default.size_property_given_room_category", "room_category1", roomCat1Vector);
+	vector<string> sizePropVector;
+	config.getValueList("default.size_property_given_room_category", "size_property", sizePropVector);
+	potentialVector.clear();
+	config.getValueList("default.size_property_given_room_category", "probability", potentialVector);
+
+	if ( (roomCat1Vector.size()!=sizePropVector.size()) ||
+		 (roomCat1Vector.size()!=potentialVector.size()) )
+		throw CASTException("The numbers of room_category1, size_property and potential keys do not match.");
+
+	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
+	{
+		SizePropertyGivenRoomCategory spgrc;
+		spgrc.roomCategory1=roomCat1Vector[i];
+		spgrc.sizeProperty=sizePropVector[i];
+		spgrc.probability=potentialVector[i];
+		_sizePropertyGivenRoomCategory.push_back(spgrc);
+	}
+
+	// Properties (size) default
+	sizePropVector.clear();
+	config.getValueList("default.default_size_property_given_room_category", "size_property", sizePropVector);
+	potentialVector.clear();
+	config.getValueList("default.default_size_property_given_room_category", "probability", potentialVector);
+
+	if ( sizePropVector.size()!=potentialVector.size() )
+		throw CASTException("The numbers of size_property and potential keys do not match.");
+
+	for(unsigned int i=0; i<sizePropVector.size(); ++i)
+	{
+		DefaultSizePropertyGivenRoomCategory dspgrc;
+		dspgrc.sizeProperty=sizePropVector[i];
+		dspgrc.probability=potentialVector[i];
+		_defaultSizePropertyGivenRoomCategory.push_back(dspgrc);
+	}
+
 	// Properties (appearance)
 	roomCat1Vector.clear();
 	config.getValueList("default.appearance_property_given_room_category", "room_category1", roomCat1Vector);
@@ -174,7 +231,11 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_defaultAppearancePropertyGivenRoomCategory.push_back(dspgrc);
 	}
 
-
+	// Load object information from AVS DefaultProb file
+	if (_loadObjectsFrom == LOF_DEFAULTPROB)
+	{
+		loadAvsDefaultKnowledge();
+	}
 
 	// Register the ICE Server
 	DefaultData::ChainGraphInferencerServerInterfacePtr chainGraphInferencerServerInterfacePtr =
@@ -213,6 +274,24 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 				it->shapeProperty.c_str(), it->probability);
 	}
 
+
+	log("-> Size property given room category:");
+	for(list<SizePropertyGivenRoomCategory>::iterator it = _sizePropertyGivenRoomCategory.begin();
+			it!=_sizePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> rc1=%s sp=%s p=%f",
+				it->roomCategory1.c_str(), it->sizeProperty.c_str(), it->probability);
+	}
+
+	log("-> Default Size property given room category:");
+	for(list<DefaultSizePropertyGivenRoomCategory>::iterator it = _defaultSizePropertyGivenRoomCategory.begin();
+			it!=_defaultSizePropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> sp=%s p=%f",
+				it->sizeProperty.c_str(), it->probability);
+	}
+
+
 	log("-> Appearance property given room category:");
 	for(list<AppearancePropertyGivenRoomCategory>::iterator it = _appearancePropertyGivenRoomCategory.begin();
 			it!=_appearancePropertyGivenRoomCategory.end(); ++it)
@@ -236,72 +315,95 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 // -------------------------------------------------------
 void ChainGraphInferencer::start()
 {
-	// Get the HFCServer interface proxy
-	_hfcInterfacePrx =
+	// Load object information from HFC
+	if (_loadObjectsFrom == LOF_HFC)
+	{
+		// Get the HFCServer interface proxy
+		_hfcInterfacePrx =
 			getIceServer<comadata::HFCInterface>(_hfcServerName);
 
-	// Local filter on DefaultData::InferenceResult
-	addChangeFilter(createLocalTypeFilter<DefaultData::InferenceQuery>(cdl::ADD),
-			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
-					&ChainGraphInferencer::inferenceQueryAdded));
+		// Read the relevant information from the HFC of Default.SA
+		_hfcQueryResults =
+				_hfcInterfacePrx->querySelect("SELECT ?x ?y ?p where ?x <dora:in> ?y ?p");
 
-	// Read the relevant information from the HFC of Default.SA
-	_hfcQueryResults =
-			_hfcInterfacePrx->querySelect("SELECT ?x ?y ?p where ?x <dora:in> ?y ?p");
+		log ("Received default knowledge from the HFC Server");
 
-	log ("Received default knowledge from the HFC Server");
+		// Get variable columns
+		int roomColumn = _hfcQueryResults.varPosMap["?y"];
+		int objectColumn = _hfcQueryResults.varPosMap["?x"];
+		int probabilityColumn = _hfcQueryResults.varPosMap["?p"];
 
-	// Get variable columns
-	int roomColumn = _hfcQueryResults.varPosMap["?y"];
-	int objectColumn = _hfcQueryResults.varPosMap["?x"];
-	int probabilityColumn = _hfcQueryResults.varPosMap["?p"];
+		// Print the knowledge out
+	//	for (unsigned int i=0; i<_hfcQueryResults.bt.size(); ++i)
+	//	{
+	//		debug("room=%s object=%s p=%s", _hfcQueryResults.bt[i][roomColumn].c_str(),
+	//				_hfcQueryResults.bt[i][objectColumn].c_str(),
+	//				_hfcQueryResults.bt[i][probabilityColumn].c_str());
+	//	}
 
-	// Print the knowledge out
-//	for (unsigned int i=0; i<_hfcQueryResults.bt.size(); ++i)
-//	{
-//		debug("room=%s object=%s p=%s", _hfcQueryResults.bt[i][roomColumn].c_str(),
-//				_hfcQueryResults.bt[i][objectColumn].c_str(),
-//				_hfcQueryResults.bt[i][probabilityColumn].c_str());
-//	}
+		// Convert the output to more efficient format
+		// Typical string values:
+		// room=<dora:box_of_nails> object=<dora:toilet> p="0.25800696"^^<xsd:float>
+		debug("-> Default knowledge obtained from HFC:");
+		for (unsigned int i=0; i<_hfcQueryResults.bt.size(); ++i)
+		{
+			std::string room = _hfcQueryResults.bt[i][roomColumn];
+			std::string object = _hfcQueryResults.bt[i][objectColumn];
+			std::string probability = _hfcQueryResults.bt[i][probabilityColumn];
 
-	// Convert the output to more efficient format
-	// Typical string values:
-	// room=<dora:box_of_nails> object=<dora:toilet> p="0.25800696"^^<xsd:float>
-	debug("-> Default knowledge obtained from HFC:");
-	for (unsigned int i=0; i<_hfcQueryResults.bt.size(); ++i)
-	{
-		std::string room = _hfcQueryResults.bt[i][roomColumn];
-		std::string object = _hfcQueryResults.bt[i][objectColumn];
-		std::string probability = _hfcQueryResults.bt[i][probabilityColumn];
+			replace_first(room, "<dora:", "");
+			replace_last(room, ">", "");
+			replace_first(object, "<dora:", "");
+			replace_last(object, ">", "");
+			replace_first(probability, "\"", "");
+			replace_last(probability, "\"^^<xsd:float>", "");
 
-		replace_first(room, "<dora:", "");
-		replace_last(room, ">", "");
-		replace_first(object, "<dora:", "");
-		replace_last(object, ">", "");
-		replace_first(probability, "\"", "");
-		replace_last(probability, "\"^^<xsd:float>", "");
+			ObjectPropertyGivenRoomCategory hfcItem;
+			hfcItem.roomCategory = room;
+			hfcItem.objectCategory = object;
+			hfcItem.supportObjectCategory = "";
+			hfcItem.relation = SpatialData::INROOM;
+			hfcItem.probability = lexical_cast<double>(probability);
+			_objectPropertyGivenRoomCategory.push_back(hfcItem);
 
-		HFCItem hfcItem;
-		hfcItem.room = room;
-		hfcItem.object = object;
-		hfcItem.probability = lexical_cast<double>(probability);
-		_hfcKnowledge.push_back(hfcItem);
+			debug("---> room=%s object=%s p=%f", hfcItem.roomCategory.c_str(), hfcItem.objectCategory.c_str(), hfcItem.probability);
+		}
 
-		debug("---> room=%s object=%s p=%f", hfcItem.room.c_str(), hfcItem.object.c_str(), hfcItem.probability);
-	}
+	} // if (_loadObjectsFrom = LOF_HFC)
 
 	// Generate list of object variables
 	set<string> objectPropertyVariables;
-	for(list<HFCItem>::iterator it = _hfcKnowledge.begin();
-			it!=_hfcKnowledge.end(); ++it)
-		objectPropertyVariables.insert("object_"+it->object+"_property");
+	for(list<ObjectPropertyGivenRoomCategory>::iterator it = _objectPropertyGivenRoomCategory.begin();
+			it!=_objectPropertyGivenRoomCategory.end(); ++it)
+		objectPropertyVariables.insert(
+				VariableNameGenerator::getDefaultObjectPropertyVarName(
+						it->objectCategory, it->relation, it->supportObjectCategory));
 	_objectPropertyVariables = vector<string>(objectPropertyVariables.begin(), objectPropertyVariables.end());
 
-	// Generate list of room categories
+	// Generate list of objects
+	set<string> objectCategories;
+	for(list<ObjectPropertyGivenRoomCategory>::iterator it = _objectPropertyGivenRoomCategory.begin();
+			it!=_objectPropertyGivenRoomCategory.end(); ++it)
+		objectCategories.insert(it->objectCategory);
+	_objectCategories = vector<string>(objectCategories.begin(), objectCategories.end());
+
+	// Generate list of room categories mentioned ANYWHERE
 	set<string> roomCategories;
-	for(list<HFCItem>::iterator it = _hfcKnowledge.begin();
-			it!=_hfcKnowledge.end(); ++it)
-		roomCategories.insert(it->room);
+	for(list<ObjectPropertyGivenRoomCategory>::iterator it = _objectPropertyGivenRoomCategory.begin();
+			it!=_objectPropertyGivenRoomCategory.end(); ++it)
+		roomCategories.insert(it->roomCategory);
+	for(std::list<ShapePropertyGivenRoomCategory>::iterator it =
+			_shapePropertyGivenRoomCategory.begin();
+			it!=_shapePropertyGivenRoomCategory.end(); ++it)
+		roomCategories.insert(it->roomCategory1);
+	for(std::list<SizePropertyGivenRoomCategory>::iterator it =
+			_sizePropertyGivenRoomCategory.begin();
+			it!=_sizePropertyGivenRoomCategory.end(); ++it)
+		roomCategories.insert(it->roomCategory1);
+	for(std::list<AppearancePropertyGivenRoomCategory>::iterator it =
+			_appearancePropertyGivenRoomCategory.begin();
+			it!=_appearancePropertyGivenRoomCategory.end(); ++it)
+		roomCategories.insert(it->roomCategory1);
 	_roomCategories = vector<string>(roomCategories.begin(), roomCategories.end());
 
 	// Generate list of shapes
@@ -312,6 +414,15 @@ void ChainGraphInferencer::start()
 		shapes.insert(it->shapeProperty);
 	_shapes = vector<string>(shapes.begin(), shapes.end());
 
+	// Generate list of sizes
+	set<string> sizes;
+	for(std::list<SizePropertyGivenRoomCategory>::iterator it =
+			_sizePropertyGivenRoomCategory.begin();
+			it!=_sizePropertyGivenRoomCategory.end(); ++it)
+		sizes.insert(it->sizeProperty);
+	_sizes = vector<string>(sizes.begin(), sizes.end());
+
+
 	// Generate list of appearances
 	set<string> appearances;
 	for(std::list<AppearancePropertyGivenRoomCategory>::iterator it =
@@ -320,6 +431,10 @@ void ChainGraphInferencer::start()
 		appearances.insert(it->appearanceProperty);
 	_appearances = vector<string>(appearances.begin(), appearances.end());
 
+	// Local filter on DefaultData::InferenceQuery
+	addChangeFilter(createLocalTypeFilter<DefaultData::InferenceQuery>(cdl::ADD),
+			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
+					&ChainGraphInferencer::inferenceQueryAdded));
 }
 
 
@@ -379,6 +494,84 @@ void ChainGraphInferencer::stop()
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::loadAvsDefaultKnowledge()
+{
+	ifstream avsFile(_objectsFileName.c_str());
+	if (!avsFile.is_open())
+		throw CASTException(exceptionMessage(__HERE__, "Cannot open the AVS default knowledge file!"));
+
+	char *line = new char[256];
+	while (avsFile.good())
+	{
+		string targetObjectCategory;
+		string supportObjectCategory;
+		SpatialData::SpatialRelation relation;
+		string roomCategory;
+		double probability;
+
+		try
+		{
+			avsFile.getline(line, 256);
+			vector<string> splitLine;
+			split(splitLine, line, is_any_of(" ") );
+			if (splitLine.size()==4)
+			{
+				if (splitLine[0]=="INROOM")
+				{
+					targetObjectCategory = splitLine[1];
+					roomCategory = splitLine[2];
+					probability = boost::lexical_cast<double>(splitLine[3]);
+					relation = SpatialData::INROOM;
+				}
+				else continue;
+			}
+			else if (splitLine.size()==5)
+			{
+				if (splitLine[0]=="ON")
+				{
+					targetObjectCategory = splitLine[1];
+					supportObjectCategory = splitLine[2];
+					roomCategory = splitLine[3];
+					probability = boost::lexical_cast<double>(splitLine[4]);
+					relation = SpatialData::ON;
+				}
+				else if (splitLine[0]=="INOBJECT")
+				{
+					targetObjectCategory = splitLine[1];
+					supportObjectCategory = splitLine[2];
+					roomCategory = splitLine[3];
+					probability = boost::lexical_cast<double>(splitLine[4]);
+					relation = SpatialData::INOBJECT;
+				}
+				else continue;
+			}
+			else continue;
+		}
+		catch(...)
+		{
+			throw CASTException(exceptionMessage(__HERE__, "Incorrect AVS default knowledge file!"));
+		}
+
+		ObjectPropertyGivenRoomCategory item;
+		item.roomCategory = roomCategory;
+		item.objectCategory = targetObjectCategory;
+		item.supportObjectCategory = supportObjectCategory;
+		item.relation = relation;
+		item.probability = probability;
+		_objectPropertyGivenRoomCategory.push_back(item);
+
+		debug("---> room=%s object=%s relation=%d supportObject=%s p=%f",
+				item.roomCategory.c_str(), item.objectCategory.c_str(),
+				item.relation, item.supportObjectCategory.c_str(),
+				item.probability);
+	}
+	delete [] line;
+	avsFile.close();
+}
+
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::inferenceQueryAdded(const cast::cdl::WorkingMemoryChange &wmChange)
 {
 	// Get the inference query
@@ -427,9 +620,25 @@ DefaultData::StringSeq
 
 // -------------------------------------------------------
 DefaultData::StringSeq
+	ChainGraphInferencer::Server::getObjectCategories(const Ice::Current &)
+{
+	return _chainGraphInferencer->_objectCategories;
+}
+
+
+// -------------------------------------------------------
+DefaultData::StringSeq
 	ChainGraphInferencer::Server::getShapes(const Ice::Current &)
 {
 	return _chainGraphInferencer->_shapes;
+}
+
+
+// -------------------------------------------------------
+DefaultData::StringSeq
+	ChainGraphInferencer::Server::getSizes(const Ice::Current &)
+{
+	return _chainGraphInferencer->_sizes;
 }
 
 
@@ -445,6 +654,10 @@ DefaultData::StringSeq
 SpatialProbabilities::ProbabilityDistribution
 	ChainGraphInferencer::Server::getFactor(const std::string &factorStr, const Ice::Current &)
 {
+	_chainGraphInferencer->debug("Received factor query '%s'",
+			factorStr.c_str());
+
+
 	// Extract variable names
 	string variableString=factorStr;
 	erase_head(variableString, 2);
@@ -510,7 +723,6 @@ SpatialProbabilities::ProbabilityDistribution
 		return factor;
 	}
 
-
 	// room_category1 -> object_xxx_property factors
 	if ((variables.size()==2) && (variables[0]=="room_category1"))
 	{
@@ -520,25 +732,33 @@ SpatialProbabilities::ProbabilityDistribution
 		{
 			if (variables[1] == (*it))
 			{ // We found our factor!
-				string objectName = (*it);
-				replace_first(objectName, "object_", "");
-				replace_last(objectName, "_property", "");
+				string objectCategory;
+				string supportObjectCategory;
+				SpatialData::SpatialRelation relation;
+				VariableNameGenerator::parseDefaultObjectPropertyVar(*it, objectCategory, relation, supportObjectCategory);
+
+				_chainGraphInferencer->debug("Received query for object property factor for object=%s, relation=%d, support=%s",
+						objectCategory.c_str(), relation, supportObjectCategory.c_str());
 
 				// Set of room categories that we need to add value for
 				set<string> roomCategories( _chainGraphInferencer->_roomCategories.begin(),
 						_chainGraphInferencer->_roomCategories.end() );
 
+
 				// Let's iterate over the knowledge and fill values of what we know
-				for (std::list<HFCItem>::iterator it2=_chainGraphInferencer->_hfcKnowledge.begin();
-						it2!=_chainGraphInferencer->_hfcKnowledge.end(); ++it2)
+				for (std::list<ObjectPropertyGivenRoomCategory>::iterator
+						it2=_chainGraphInferencer->_objectPropertyGivenRoomCategory.begin();
+						it2!=_chainGraphInferencer->_objectPropertyGivenRoomCategory.end(); ++it2)
 				{
-					if (it2->object == objectName)
+					if ( (it2->objectCategory == objectCategory) && (it2->relation == relation) &&
+						 ( (relation == SpatialData::INROOM) || (it2->supportObjectCategory == supportObjectCategory) )
+					   )
 					{
-						roomCategories.erase(it2->room); // Remove from the to-do list
+						roomCategories.erase(it2->roomCategory); // Remove from the to-do list
 
 						// Existance of object
 						SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
-								new SpatialProbabilities::StringRandomVariableValue(it2->room);
+								new SpatialProbabilities::StringRandomVariableValue(it2->roomCategory);
 						SpatialProbabilities::BoolRandomVariableValuePtr objectRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(true);
 						SpatialProbabilities::JointProbabilityValue jpv1;
@@ -548,8 +768,6 @@ SpatialProbabilities::ProbabilityDistribution
 						factor.massFunction.push_back(jpv1);
 
 						// Non-existance of object
-						roomCategory1RVVPtr =
-								new SpatialProbabilities::StringRandomVariableValue(it2->room);
 						objectRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(false);
 						SpatialProbabilities::JointProbabilityValue jpv2;
@@ -652,6 +870,69 @@ SpatialProbabilities::ProbabilityDistribution
 
 		return factor;
 	}
+
+
+	// room_category1 -> _size_property
+	if ((variables.size()==2) &&
+		(variables[0]=="room_category1") && (variables[1]=="size_property"))
+	{
+		// Set of all pairs category -> size
+		set< pair<string, string> > catSize;
+		for ( vector<string>::iterator it = _chainGraphInferencer->_roomCategories.begin();
+			  it!=_chainGraphInferencer->_roomCategories.end(); ++it )
+		{
+			for ( vector<string>::iterator it2 = _chainGraphInferencer->_sizes.begin();
+				  it2!=_chainGraphInferencer->_sizes.end(); ++it2 )
+			{
+				catSize.insert(pair<string,string>((*it), (*it2)));
+			}
+		}
+
+		// Add the connectivities from the data file
+		for(list<SizePropertyGivenRoomCategory>::iterator it =
+				_chainGraphInferencer->_sizePropertyGivenRoomCategory.begin();
+				it!=_chainGraphInferencer->_sizePropertyGivenRoomCategory.end(); ++it)
+		{
+			catSize.erase(pair<string, string>(it->roomCategory1, it->sizeProperty));
+
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory1);
+			SpatialProbabilities::StringRandomVariableValuePtr sizePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->sizeProperty);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			jpv.probability=it->probability;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(sizePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		// Add default potential for those connectivities that we don't know
+		for (set< pair<string, string> >::iterator it=catSize.begin();
+				it!=catSize.end(); ++it)
+		{
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->first);
+			SpatialProbabilities::StringRandomVariableValuePtr sizePropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->second);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			for(std::list<DefaultSizePropertyGivenRoomCategory>::iterator it2 =
+					_chainGraphInferencer->_defaultSizePropertyGivenRoomCategory.begin();
+					it2!=_chainGraphInferencer->_defaultSizePropertyGivenRoomCategory.end(); ++it2)
+			{
+				if (it2->sizeProperty == it->second)
+				{
+					jpv.probability=it2->probability;
+					break;
+				}
+			}
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(sizePropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		return factor;
+	}
+
 
 
 	// room_category1 -> appearance_property
