@@ -4,6 +4,8 @@
 
 #include <QFileDialog>
 #include <QtSvg/QSvgGenerator>
+#include <QTimer>
+//#include <QtOpenGL/QGLWidget>
 
 using namespace std;
 using namespace conceptual;
@@ -16,8 +18,11 @@ EventVisualizer::EventVisualizer(QWidget *parent,
 {
 	ui.setupUi(this);
 	_roomCats = &roomCats;
+//	ui.eventView->setViewport(new QGLWidget);
+//	ui.legendView->setViewport(new QGLWidget);
 	ui.eventView->setDisplayedEntities(roomCats, shapes, sizes, appearances, visualizedObjects);
 	ui.legendView->setDisplayedEntities(roomCats, shapes, sizes, appearances, visualizedObjects);
+	_timer = new QTimer(this);
 
 	connect(ui.saveSvgButton, SIGNAL(clicked()), this, SLOT(saveSvgButtonClicked()));
 	connect(ui.savePngButton, SIGNAL(clicked()), this, SLOT(savePngButtonClicked()));
@@ -28,6 +33,15 @@ EventVisualizer::EventVisualizer(QWidget *parent,
 	connect(ui.locationEventsCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
 	connect(ui.verticalLinesCheckBox, SIGNAL(toggled(bool)), this, SLOT(generate()));
 
+	connect(ui.playButton, SIGNAL(clicked()), this, SLOT(playButtonClicked()));
+	connect(ui.pauseButton, SIGNAL(clicked()), this, SLOT(pauseButtonClicked()));
+	connect(ui.nextButton, SIGNAL(clicked()), this, SLOT(nextButtonClicked()));
+	connect(ui.prevButton, SIGNAL(clicked()), this, SLOT(prevButtonClicked()));
+	connect(ui.startButton, SIGNAL(clicked()), this, SLOT(startButtonClicked()));
+	connect(ui.endButton, SIGNAL(clicked()), this, SLOT(endButtonClicked()));
+	connect(_timer, SIGNAL(timeout()), this, SLOT(timerTimedout()));
+
+	_hasLegend = false;
 }
 
 EventVisualizer::~EventVisualizer()
@@ -41,13 +55,17 @@ void EventVisualizer::generate(const QList<conceptual::ConceptualEvent> &events)
 	_lastEvents = events;
 	_curPlaceId = events.last().curPlaceId;
 	_curRoomId = events.last().curRoomId;
+	_curTime = events.last().time;
 	for (long _e=0; _e<events.size(); ++_e)
 	{
 		const conceptual::ConceptualEvent &event = events[_e];
 		if (event.curRoomId>=0)
 			_roomIds.insert(event.curRoomId);
 	}
+
 	generate();
+	if (!_hasLegend)
+		ui.legendView->updateLegend();
 }
 
 
@@ -55,8 +73,8 @@ void EventVisualizer::generate()
 {
 	ui.eventView->updateEvents(_lastEvents, ui.placesCheckBox->isChecked(),
 			ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
-			ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
-	ui.legendView->updateLegend();
+			ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked(), _curTime);
+	ui.timeLabel->setText(QString::number(_curTime,'f',2));
 }
 
 
@@ -69,7 +87,7 @@ void EventVisualizer::saveSvgButtonClicked()
 		QGraphicsScene scene;
 		ui.eventView->drawEvents(&scene, _lastEvents, ui.placesCheckBox->isChecked(),
 				ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
-				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
+				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked(), _curTime);
 		ui.eventView->drawLegend(&scene);
 
 		QSvgGenerator generator;
@@ -94,7 +112,7 @@ void EventVisualizer::savePngButtonClicked()
 		QGraphicsScene scene;
 		ui.eventView->drawEvents(&scene, _lastEvents, ui.placesCheckBox->isChecked(),
 				ui.widthSpinBox->value(), ui.verticalIndicatorsCheckBox->isChecked(),
-				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked());
+				ui.verticalLinesCheckBox->isChecked(), ui.locationEventsCheckBox->isChecked(), _curTime);
 		ui.eventView->drawLegend(&scene);
 
 		QImage image(QSize(scene.width(), scene.height())*5, QImage::Format_RGB32);
@@ -129,3 +147,62 @@ void EventVisualizer::addGroundtruthButtonClicked()
 	generate();
 }
 
+
+void EventVisualizer::playButtonClicked()
+{
+	_timer->start(1000);
+}
+
+void EventVisualizer::pauseButtonClicked()
+{
+	_timer->stop();
+}
+
+void EventVisualizer::nextButtonClicked()
+{
+	int i;
+	for (i=0; i<_lastEvents.count(); ++i)
+	{
+		if (_lastEvents[i].time>_curTime)
+			break;
+	}
+	if (i>=_lastEvents.count())
+		i=_lastEvents.count()-1;
+	_curTime = _lastEvents[i].time;
+	generate();
+}
+
+void EventVisualizer::prevButtonClicked()
+{
+	int j=0;
+	for (int i=0; i<_lastEvents.count(); ++i)
+	{
+		if (_lastEvents[i].time<=_curTime)
+		{
+			j=i;
+		}
+	}
+	if (j>0)
+		j--;
+	_curTime = _lastEvents[j].time;
+	generate();
+}
+
+void EventVisualizer::startButtonClicked()
+{
+	_curTime = _lastEvents.first().time;
+	generate();
+}
+
+void EventVisualizer::endButtonClicked()
+{
+	_curTime = _lastEvents.last().time;
+	generate();
+}
+
+
+void EventVisualizer::timerTimedout()
+{
+	_curTime+=1;
+	generate();
+}

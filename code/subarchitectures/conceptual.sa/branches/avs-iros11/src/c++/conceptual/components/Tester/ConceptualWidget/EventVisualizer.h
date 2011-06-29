@@ -9,6 +9,7 @@
 
 class QGraphicsScene;
 class ConceptualWidget;
+class QTimer;
 
 class EventVisualizer : public QDialog
 {
@@ -32,8 +33,14 @@ private slots:
 	void savePngButtonClicked();
 	void addGroundtruthButtonClicked();
 
+	void playButtonClicked();
+	void pauseButtonClicked();
+	void nextButtonClicked();
+	void prevButtonClicked();
+	void startButtonClicked();
+	void endButtonClicked();
 
-
+	void timerTimedout();
 
 private:
     Ui::RCVisualizerClass ui;
@@ -44,6 +51,10 @@ private:
 	std::set<int> _roomIds;
 	QList<conceptual::ConceptualEvent> _lastEvents;
 
+	double _curTime;
+	QTimer *_timer;
+
+	bool _hasLegend;
 };
 
 #endif // RCVISUALIZER_H

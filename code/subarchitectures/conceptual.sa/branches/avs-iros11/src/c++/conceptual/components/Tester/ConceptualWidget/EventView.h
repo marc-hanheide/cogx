@@ -30,7 +30,7 @@ public:
 
     void drawLegend(QGraphicsScene *scene);
     int drawEvents(QGraphicsScene *scene, const QList<conceptual::ConceptualEvent> &events, bool placeIds,
-    		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly);
+    		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly, double time);
 
 
 public:
@@ -38,7 +38,7 @@ public:
 	void updateAll(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
 		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly);
 	void updateEvents(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
-		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly);
+		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly, double time);
 	void updateLegend();
 
 	void fit();
