@@ -474,9 +474,6 @@ module VisionData {
 
     // segmented planar surface patches
     SurfacePatchSeq surfacePatches;
-  
- // position of the center
-    cogx::Math::Vector3 position;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
