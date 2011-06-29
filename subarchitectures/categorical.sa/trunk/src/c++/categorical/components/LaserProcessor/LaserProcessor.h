@@ -62,7 +62,7 @@ private:
 
   void sendDpUpdateCommand();
 
-
+  
 private:
 
   /** Initializes the part of the recogntion system implemented in this component. */
@@ -74,13 +74,15 @@ private:
   /** Performs processing of a single laser scan and produces classification results. */
   void processLaserScan(Laser::Scan2d &scan,
                         CategoricalData::LaserProcessorStatusPtr laserProcessorStatus,
-                        CategoricalData::LaserResultsPtr laserResults);
+                        CategoricalData::LaserResultsPtr laserResults, bool &wasError);
 
 
 private:
 
   /** SVM Model. */
   svm_model* _svmModel;
+  /** SVM Model. */
+  svm_model* _sizeSvmModel;
 
   /** List of features and their params. */
   oscar::dyntab_featuresInfo* _featureInfoList;
@@ -123,6 +125,7 @@ private:
 
   /** Path to the model file*/
   std::string _modelFilePath;
+  std::string _sizeModelFilePath;
 
   int _svmOaoAlg;
   int _svmOaaAlg;
@@ -134,8 +137,10 @@ private:
 
   /** List of labels and names. */
   categorical::LabelFile _labels;
+  categorical::LabelFile _sizeLabels;
 
   bool _useVision;
+  bool _useSize;
 };
 
 

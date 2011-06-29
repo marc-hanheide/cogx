@@ -1,7 +1,7 @@
 PROJECT(libcrfh)
 
 # Set build type
-SET(CMAKE_BUILD_TYPE Release)
+# SET(CMAKE_BUILD_TYPE Release)
 
 # Add definition with version
 ADD_DEFINITIONS(-DVERSION="0.6.3")

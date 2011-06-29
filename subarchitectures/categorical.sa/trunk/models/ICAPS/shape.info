@@ -1,0 +1,9 @@
+Training sets:
+ - ICAPS_train_set.data
+ - ICAPS_test_set.data
+Parameter selection: Reduced gamma cross-validation
+Features: geometrical features
+SVM Kernel: Gaussian
+SVM Multi-class: One-against-all
+SVM C: 100
+SVM Kernel Gamma: 0.177828

@@ -8,6 +8,7 @@
 #include "DataProvider.h"
 #include "shared/ConfigFile.h"
 #include "shared/CastTools.h"
+#include "LaserCorrector.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cast/core/CASTUtils.hpp>
@@ -54,10 +55,14 @@ CategoricalDataProvider::CategoricalDataProvider(): _cfgGroup("DataProvider")
   pthread_mutex_init(&_scanQueueMutex, 0);
   pthread_mutex_init(&_odometryQueueMutex, 0);
 
+  // Laser corrector
+  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.1, 10, 51, 5.6);
+
   // Other
   _frameNo=0;
   _lastGrabTimestamp.s=0;
   _lastGrabTimestamp.us=0;
+
 }
 
 
@@ -68,6 +73,8 @@ CategoricalDataProvider::~CategoricalDataProvider()
   pthread_mutex_destroy(&_signalMutex);
   pthread_mutex_destroy(&_scanQueueMutex);
   pthread_mutex_destroy(&_odometryQueueMutex);
+
+  delete _laserCorrector;
 }
 
 
@@ -83,13 +90,25 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
   string dataFile;
   if (it!=config.end())
     dataFile = it->second;
-  it = config.find("--videoserver");
-  string vidServ;
-  if (it!=config.end())
-    vidServ = it->second;
-  it = config.find("--startservers");
-  _startServers=(((it!=config.end()) && (it->second == "true")));
 
+  // --laser-robot-servers-hostname
+  it = config.find("--laser-robot-servers-hostname");
+  if (it!=config.end())
+	  _laserRobotServersHostname = it->second;
+  if (_laserRobotServersHostname.empty())
+      throw(CASTException(exceptionMessage(__HERE__, "Please provide --laser-robot-servers-hostname")));
+
+  // --startservers
+  it = config.find("--start-servers");
+  _startServers=(it!=config.end());
+
+  // --correct-scans
+  it = config.find("--correct-scans");
+  _correctScans=(it!=config.end());
+
+  // --convert-scans-to-sick
+  it = config.find("--convert-scans-to-sick");
+  _convertScansToSick=(it!=config.end());
 
   // Read config file
   ConfigFile cf;
@@ -124,17 +143,6 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
   if ((!_useVision) && (!_useLaser) && (!_useOdometry))
     throw(CASTException(exceptionMessage(__HERE__, "There is nothing to do!" )));
 
-  // Choose video server type
-  _videoServerType=VS_STD;
-  if (!vidServ.empty())
-  {
-    if (vidServ == "std")
-      _videoServerType=VS_STD;
-    else
-      throw(CASTException(exceptionMessage(__HERE__,
-          "Unknown video server type!" )));
-  }
-
   // Read data file
   _loadDataFromDisk=false;
   if (!dataFile.empty())
@@ -153,6 +161,8 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
   log("-> Use laser: %s", (_useLaser)?"on":"off");
   log("-> Use vision: %s", (_useVision)?"on":"off");
   log("-> Use odometry: %s", (_useOdometry)?"on":"off");
+  log("-> Correct scans: %s", (_correctScans)?"on":"off");
+  log("-> Convert scans to SICK: %s", (_convertScansToSick)?"on":"off");
   log("-> Queue time window: %g", _queueTimeWindow);
   log("-> Queue size: %d", _queueSize);
   log("-> Camera id: %d", _cameraId);
@@ -175,6 +185,7 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
     getObjectAdapter()->add(&_laserServer, id2);
     println("Laser server registered.");
   }
+
 }
 
 
@@ -203,18 +214,65 @@ void CategoricalDataProvider::stop()
 
 
 // ------------------------------------------------------
-void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &scan)
+void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
 {
-  if (scan.ranges.empty())
+  if (inScan.ranges.empty())
   {
     println("Empty scan, ignoring it");
     return;
   }
+  Laser::Scan2d scan = inScan;
 
   debug("Received scan acquired at %d.%d.", scan.time.s, scan.time.us);
 
-  pthread_mutex_lock(&_scanQueueMutex);
+  if (_correctScans)
+  {
+	  // Find best matching odometry
+	  double x=0;
+  	  double y=0;
+  	  double theta=0;
+	  pthread_mutex_lock(&_odometryQueueMutex);
+	  double minTDiff = 100000;
+	  OdomQueue::iterator minTDiffIt = _odometryQueue.end();
+	  for (OdomQueue::iterator it = _odometryQueue.begin(); it!=_odometryQueue.end(); ++it)
+	  {
+		  double tDiff = fabs(castTimeToSeconds(castTimeDiff(scan.time, it->time)));
+		  if ((it->odompose.size()>0) && (tDiff < minTDiff))
+		  {
+			  minTDiff = tDiff;
+			  minTDiffIt = it;
+		  }
+	  }
+	  if (minTDiffIt!=_odometryQueue.end())
+	  {
+		  x=minTDiffIt->odompose[0].x;
+		  y=minTDiffIt->odompose[0].y;
+		  theta=minTDiffIt->odompose[0].theta;
+	  }
+	  pthread_mutex_unlock(&_odometryQueueMutex);
 
+	  // If good enough, use it
+	  if ((minTDiff>0.05) || (minTDiffIt==_odometryQueue.end()))
+	  {
+		  debug("Ignoring scan as it does not have a corresponding odometry (timediff=%f)!", minTDiff);
+		  return;
+	  }
+
+	  _laserCorrector->addScan(x, y, theta, scan.ranges, scan.startAngle, scan.angleStep);
+	  if (_convertScansToSick)
+	  {
+		  const double sickStartAngle = -1.5708;
+		  const double sickAngleStep = 0.017453;
+		  const int sickCount = 181;
+		  scan.startAngle = sickStartAngle;
+		  scan.angleStep = sickAngleStep;
+		  _laserCorrector->getCorrectedScan(scan.ranges, scan.startAngle, scan.angleStep, sickCount);
+	  }
+	  else
+		  _laserCorrector->getCorrectedScan(scan.ranges, scan.startAngle, scan.angleStep, scan.ranges.size());
+  }
+
+  pthread_mutex_lock(&_scanQueueMutex);
   _scanQueue.push_back(scan);
   cdl::CASTTime tDiff = castTimeDiff(_scanQueue.front().time, _scanQueue.back().time);
   while ((castTimeToSeconds(tDiff) > _queueTimeWindow) || (_scanQueue.size() > 100))
@@ -332,8 +390,8 @@ void CategoricalDataProvider::runComponent()
   _lastGrabTimestamp.us=0;
 
   // Setup push
-  setupPushScan2d(*this);
-  setupPushOdometry(*this);
+  setupPushScan2d(*this, -1, _laserRobotServersHostname);
+  setupPushOdometry(*this, -1, _laserRobotServersHostname);
 
   // Run component
   while(isRunning())
@@ -474,7 +532,7 @@ std::string CategoricalDataProvider::addEmptyImage()
   debug("Empty image placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+//  lockEntry(dataId, cdl::LOCKEDOD);
 
   return dataId;
 }
@@ -496,7 +554,7 @@ std::string CategoricalDataProvider::addEmptyLaserScan()
   debug("Empty laser scan placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
   return dataId;
 }
@@ -518,7 +576,7 @@ std::string CategoricalDataProvider::addEmptyOdometry()
   debug("Empty odometry reading placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
 
   return dataId;
@@ -539,7 +597,7 @@ std::string CategoricalDataProvider::addEmptyTarget()
   debug("Empty target placed in the WM.");
 
   // To prevent consistency exceptions
-  lockEntry(dataId, cdl::LOCKEDO);
+  //lockEntry(dataId, cdl::LOCKEDOD);
 
 
   return dataId;
@@ -584,10 +642,7 @@ void CategoricalDataProvider::pullImage(CategoricalData::ImagePtr image)
   image->frameNo = _frameNo;
   image->realTimeStamp = imageData.time;
 
-  if (_videoServerType==VS_STD)
-    convertImageRGB24(imageData, image->imageBuffer);
-  else
-    throw(CASTException(exceptionMessage(__HERE__, "Incorrect video server type!")));
+  convertImageRGB24(imageData, image->imageBuffer);
 }
 
 
@@ -608,10 +663,7 @@ cast::cdl::CASTTime CategoricalDataProvider::outputImage()
     }
     else
     { // Grab from hardware server
-      if (_videoServerType==VS_STD)
         pullImage(image);
-      else
-        throw(CASTException(exceptionMessage(__HERE__, "Unknown video server type!" )));
     }
   }
   else

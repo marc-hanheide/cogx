@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
   // Create the odomscanwidget
   QVBoxLayout *vbl = new QVBoxLayout(mapGroupBox);
-  _osWidget = new OdomScanWidget(mapGroupBox, 35.0, QSize(1800, 1800));
+  _osWidget = new OdomScanWidget(mapGroupBox, 35.0, QSize(2500, 2500));
   vbl->addWidget(_osWidget);
   vbl->setContentsMargins(2,2,2,2);
   _osWidget->setFrameShape(QFrame::StyledPanel);
@@ -71,6 +71,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
   connect(actionChangeLabel, SIGNAL(triggered()), this, SLOT(actionChangeLabelTriggered()));
   connect(actionMarkForRemoval, SIGNAL(triggered()), this, SLOT(actionMarkForRemovalTriggered()));
   connect(actionUnmark, SIGNAL(triggered()), this, SLOT(actionUnmarkTriggered()));
+  connect(actionChangeLabelTo1, SIGNAL(triggered()), this, SLOT(actionChangeLabelTo1Triggered()));
+  connect(actionChangeLabelTo2, SIGNAL(triggered()), this, SLOT(actionChangeLabelTo2Triggered()));
 
   // Context menus
   dataTreeWidget->addAction(actionChangeLabel);
@@ -425,6 +427,50 @@ void MainWindow::actionChangeLabelTriggered()
         selItems[i]->setText(3, QString::number(_targets[idx]->targetNo)+" - "+ QString::fromStdString(_targets[idx]->targetName));
       }
     }
+  }
+}
+
+
+// ------------------------------------------------------
+void MainWindow::actionChangeLabelTo1Triggered()
+{
+  QList<QTreeWidgetItem *> selItems=dataTreeWidget->selectedItems();
+
+  if (selItems.count()==0)
+    return;
+
+  // Select new label
+  int labelNo=1;
+  QString labelName=_labels[labelNo];
+
+  for(int i=0; i<selItems.count(); ++i)
+  {
+	  int idx=selItems[i]->data(1, Qt::UserRole).toInt();
+	  _targets[idx]->targetNo=labelNo;
+	  _targets[idx]->targetName=labelName.toStdString();
+	  selItems[i]->setText(3, QString::number(_targets[idx]->targetNo)+" - "+ QString::fromStdString(_targets[idx]->targetName));
+  }
+}
+
+
+// ------------------------------------------------------
+void MainWindow::actionChangeLabelTo2Triggered()
+{
+  QList<QTreeWidgetItem *> selItems=dataTreeWidget->selectedItems();
+
+  if (selItems.count()==0)
+    return;
+
+  // Select new label
+  int labelNo=2;
+  QString labelName=_labels[labelNo];
+
+  for(int i=0; i<selItems.count(); ++i)
+  {
+	  int idx=selItems[i]->data(1, Qt::UserRole).toInt();
+	  _targets[idx]->targetNo=labelNo;
+	  _targets[idx]->targetName=labelName.toStdString();
+	  selItems[i]->setText(3, QString::number(_targets[idx]->targetNo)+" - "+ QString::fromStdString(_targets[idx]->targetName));
   }
 }
 
