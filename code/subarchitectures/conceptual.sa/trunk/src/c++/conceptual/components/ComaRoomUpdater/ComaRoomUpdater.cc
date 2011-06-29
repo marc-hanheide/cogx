@@ -119,7 +119,7 @@ void ComaRoomUpdater::runComponent()
 				debug("Requesting inference about category of room %d.", it->first);
 				stringstream varName;
 				varName<<"room"<<it->first<<"_category";
-				SpatialProbabilities::ProbabilityDistribution probDist =
+				ConceptualData::ProbabilityDistributions probDists =
 						_queryHandlerServerInterfacePrx->query("p("+varName.str()+")");
 
 				sched_yield();
@@ -132,7 +132,10 @@ void ComaRoomUpdater::runComponent()
 					comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(it->second);
 
 					// Update category information
-					comaRoomPtr->categories = probDist;
+					if (probDists.size())
+						comaRoomPtr->categories = probDists[0];
+					else
+						comaRoomPtr->categories = SpatialProbabilities::ProbabilityDistribution();
 
 					// Update the coma room
 					overwriteWorkingMemory(it->second, comaRoomPtr);
