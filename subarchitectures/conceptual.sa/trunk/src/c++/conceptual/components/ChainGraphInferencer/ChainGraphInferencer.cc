@@ -345,38 +345,17 @@ bool ChainGraphInferencer::updateFactorGraph(bool &factorGraphChanged)
 
 
 // -------------------------------------------------------
-ChainGraphInferencer::DaiVariable&
-ChainGraphInferencer::createDaiVariable(const string &name, const vector<string> &values)
+void ChainGraphInferencer::createDaiVariable(string name, const vector<string> &values)
 {
 	if (_variableNameToDai.find(name) == _variableNameToDai.end())
 	{
 		DaiVariable &dv = _variableNameToDai[name];
-		dv.name = name;
 		dv.var = dai::Var(_variableNameToDai.size(), values.size());
 		for (unsigned int i=0; i<values.size(); ++i)
 		{
 			dv.valueIdToName[i] = values[i];
 		}
 	}
-    return _variableNameToDai[name];
-}
-
-ChainGraphInferencer::DaiVariable& ChainGraphInferencer::RoomCategoryVar(int roomId)
-{
-	string varname = "room"+lexical_cast<string>(roomId)+"_category";
-	return createDaiVariable(varname, _roomCategories);
-}
-
-ChainGraphInferencer::DaiVariable& ChainGraphInferencer::PlaceShapePropertyVar(int placeId)
-{
-	string varname = "place"+lexical_cast<string>(placeId)+"_shape_property";
-	return createDaiVariable(varname, _shapes);
-}
-
-ChainGraphInferencer::DaiVariable& ChainGraphInferencer::PlaceAppearancePropertyVar(int placeId)
-{
-	string varname = "place"+lexical_cast<string>(placeId)+"_appearance_property";
-	return createDaiVariable(varname, _appearances);
 }
 
 // -------------------------------------------------------
@@ -426,11 +405,65 @@ double ChainGraphInferencer::getProbabilityValue(
 
 
 // -------------------------------------------------------
+void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
+{
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,room_category2)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementatation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string room2VarName = "room"+lexical_cast<string>(room2Id)+"_category";
+
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), room2VarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	createDaiVariable(room2VarName, _roomCategories);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[room2VarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Note: first fariable changes faster
+	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int index=0;
+	for (int i2 = 0; i2<roomCatCount; ++i2)
+	{
+		string var2ValueName = dv2.valueIdToName[i2];
+		// Go over the first variable
+		for (int i1 = 0; i1<roomCatCount; ++i1)
+		{
+			string var1ValueName = dv1.valueIdToName[i1];
+			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			if (potential<0)
+				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+}
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 {
 	// Create variables
-	DaiVariable &dv1 = RoomCategoryVar(room1Id);
-	debug("Creating DAI single room factor for variable '%s'", dv1.name.c_str());
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+
+	debug("Creating DAI single room factor for variable '%s'", room1VarName.c_str());
+	createDaiVariable(room1VarName, _roomCategories);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
@@ -456,17 +489,27 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
-		const string& objectVariableName, bool objectExists)
+		string objectVariableName, bool objectExists)
 {
-	string factorName = "f(room_category1,"+objectVariableName+")";
-	const SpatialProbabilities::ProbabilityDistribution *factor =
-		getDefaultProbabilityDistribution(factorName);
-	if (!factor) return;
+	// Get the default object property factor
+	string factorName = string("f(room_category1,")+objectVariableName+")";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error ("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
 
 	// Create variables
-	DaiVariable &dv1 = RoomCategoryVar(room1Id);
-	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", dv1.name.c_str(),
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+
+	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", room1VarName.c_str(),
 			objectVariableName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 
 	// Create factor
 	dai::Factor daiFactor( dv1.var );
@@ -477,7 +520,7 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 	for (int i1 = 0; i1<roomCatCount; ++i1)
 	{
 		string var1ValueName = dv1.valueIdToName[i1];
-		double potential = getProbabilityValue(*factor, var1ValueName, objectExists);
+		double potential = getProbabilityValue(factor, var1ValueName, objectExists);
 		if (potential<0)
 			throw CASTException("Potential not found for object '"+objectVariableName+
 					"'values '"+var1ValueName+"' and '"+((objectExists)?"true":"false")+"'");
@@ -493,21 +536,84 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id,
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiFactor(const string &name,
-										   const ConceptualData::ValuePotentialPairs &dist,
-										   ChainGraphInferencer::DaiVariable &dv)
+void ChainGraphInferencer::createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
 {
-	debug("Creating DAI factor '%s' for variable '%s'", name.c_str(), dv.name.c_str());
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,shape_property)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string shapePropVarName = "place"+lexical_cast<string>(placeId)+"_shape_property";
+
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), shapePropVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	createDaiVariable(shapePropVarName, _shapes);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[shapePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Note: first fariable changes faster
+	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int shapeCount = _shapes.size();
+	int index=0;
+	for (int i2 = 0; i2<shapeCount; ++i2)
+	{
+		string var2ValueName = dv2.valueIdToName[i2];
+		// Go over the first variable
+		for (int i1 = 0; i1<roomCatCount; ++i1)
+		{
+			string var1ValueName = dv1.valueIdToName[i1];
+			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
+			if (potential<0)
+				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
+			daiFactor.set(index, potential);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedShapePropertyFactor(int placeId,
+		ConceptualData::ValuePotentialPairs dist)
+{
+	string shapePropVarName = "place"+lexical_cast<string>(placeId)+"_shape_property";
+
+	debug("Creating DAI observed shape property factor for variable '%s'",
+			shapePropVarName.c_str());
+
+	// Create variables
+	createDaiVariable(shapePropVarName, _shapes);
+	DaiVariable &dv = _variableNameToDai[shapePropVarName];
+
+	// Create factor
 	dai::Factor daiFactor( dv.var );
 
+	int shapeCount = _shapes.size();
 	int index=0;
-	typedef pair<int,string> item_type;
-	foreach(const item_type &varValueName, dv.valueIdToName)
+	for (int i = 0; i<shapeCount; ++i)
 	{
+		// Find probability for the shape
+		string shape = _shapes[i];
 		double potential = -1;
 		for (unsigned int j=0; j<dist.size(); ++j)
 		{
-			if (dist[j].value == varValueName.second)
+			if (dist[j].value == shape)
 			{
 				potential = dist[j].potential;
 				break;
@@ -517,38 +623,61 @@ void ChainGraphInferencer::createDaiFactor(const string &name,
 		{
 			log("Warning: Can't find potential for a shape %s while building observed shape property DAI factor!"
 					"This probably means that the shape value is not present in the model for this property.",
-					varValueName.second.c_str());
+					shape.c_str());
 			potential=0.01;
 		}
 		daiFactor.set(index, potential);
 		++index;
 	}
+
+	// Add factor to the list
 	_factors.push_back(daiFactor);
-	_factorNames.push_back(name);
+	_factorNames.push_back("ObservedShapePropertyFactor");
+
 }
 
+
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiFactor(const string &name, DaiVariable &dv1, DaiVariable &dv2)
+void ChainGraphInferencer::createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId)
 {
-	debug("Creating DAI factor '%s' for variables '%s' and '%s'", name.c_str(), dv1.name.c_str(), dv2.name.c_str() );
-	const SpatialProbabilities::ProbabilityDistribution *factor = getDefaultProbabilityDistribution(name);
-	if(!factor) return;
+	// Get the default connectivity factor
+	string factorName = "f(room_category1,appearance_property)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
+
+	debug("Creating DAI connectivity factor for variables '%s' and '%s'", room1VarName.c_str(), appearancePropVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[appearancePropVarName];
 
 	// Create factor
 	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
-
 	// Note: first fariable changes faster
 	// Go over the second variable
+	int roomCatCount = _roomCategories.size();
+	int appearanceCount = _appearances.size();
 	int index=0;
-	typedef pair<int,string> item_type;
-	foreach(const item_type &var2ValueName, dv2.valueIdToName)
+	for (int i2 = 0; i2<appearanceCount; ++i2)
 	{
+		string var2ValueName = dv2.valueIdToName[i2];
 		// Go over the first variable
-		foreach(const item_type &var1ValueName, dv1.valueIdToName)
+		for (int i1 = 0; i1<roomCatCount; ++i1)
 		{
-			double potential = getProbabilityValue(*factor, var1ValueName.second, var2ValueName.second);
+			string var1ValueName = dv1.valueIdToName[i1];
+			double potential = getProbabilityValue(factor, var1ValueName, var2ValueName);
 			if (potential<0)
-				throw CASTException("Potential not found for values '"+var1ValueName.second+"' and '"+var2ValueName.second+"'");
+				throw CASTException("Potential not found for values '"+var1ValueName+"' and '"+var2ValueName+"'");
 			daiFactor.set(index, potential);
 			++index;
 		}
@@ -556,15 +685,70 @@ void ChainGraphInferencer::createDaiFactor(const string &name, DaiVariable &dv1,
 
 	// Add factor to the list
 	_factors.push_back(daiFactor);
-	_factorNames.push_back(name);
+	_factorNames.push_back(factorName);
+
 }
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId,
+		ConceptualData::ValuePotentialPairs dist)
+{
+	string appearancePropVarName = "place"+lexical_cast<string>(placeId)+"_appearance_property";
+
+	debug("Creating DAI observed appearance property factor for variable '%s'",
+			appearancePropVarName.c_str());
+
+	// Create variables
+	createDaiVariable(appearancePropVarName, _appearances);
+	DaiVariable &dv = _variableNameToDai[appearancePropVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dv.var );
+
+	int appearanceCount = _appearances.size();
+	int index=0;
+	for (int i = 0; i<appearanceCount; ++i)
+	{
+		// Find probability for the appearance
+		string appearance = _appearances[i];
+		double potential = -1;
+		for (unsigned int j=0; j<dist.size(); ++j)
+		{
+			if (dist[j].value == appearance)
+			{
+				potential = dist[j].potential;
+				break;
+			}
+		}
+		if (potential<0)
+		{
+			log("Warning: Can't find potential for an appearance %s while building observed appearance property DAI factor!"
+					"This probably means that the appearance value is not present in the model for this property.",
+					appearance.c_str());
+
+			potential=0.01;
+		}
+		daiFactor.set(index, potential);
+		++index;
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedAppearancePropertyFactor");
+
+}
+
 
 // -------------------------------------------------------
 void ChainGraphInferencer::addDaiFactors()
 {
 	// Let's go through all the room connections and add category connectivity factors
-	foreach(const ConceptualData::RoomConnectivityInfo &rci, _worldStateRoomConnections)
-		createDaiFactor("f(room_category1,room_category2)", RoomCategoryVar(rci.room1Id), RoomCategoryVar(rci.room2Id) );
+	for (unsigned int i=0; i<_worldStateRoomConnections.size(); ++i)
+	{
+		ConceptualData::RoomConnectivityInfo &rci = _worldStateRoomConnections[i];
+		createDaiConnectivityFactor(rci.room1Id, rci.room2Id);
+	}
 
 	// Add single room factors. Should change nothing, but help if there are unconnected or
 	// single rooms without any properties.
@@ -573,31 +757,41 @@ void ChainGraphInferencer::addDaiFactors()
 
 	// Property factors
 	// Go over all rooms
-	foreach(const ConceptualData::ComaRoomInfo &cri, _worldStateRooms)
+	for (unsigned int r=0; r<_worldStateRooms.size(); ++r)
 	{
 		// No through all the places in the room
-		foreach(const ConceptualData::PlaceInfo &pi, cri.places)
+		const ConceptualData::ComaRoomInfo &cri =_worldStateRooms[r];
+		for (unsigned int p=0; p<cri.places.size(); ++p)
 		{
+			const ConceptualData::PlaceInfo &pi = cri.places[p];
+
 			// Object properties
-			foreach(const ConceptualData::ObjectPlacePropertyInfo &oppi, pi.objectProperties)
+			for (unsigned int o=0; o<pi.objectProperties.size(); ++o)
+			{
+				const ConceptualData::ObjectPlacePropertyInfo &oppi = pi.objectProperties[o];
 				createDaiObservedObjectPropertyFactor(cri.roomId,
 						"object_"+oppi.category+"_property", oppi.present);
+			} // o
 
 			// Shape properties
-			foreach(const ConceptualData::ShapePlacePropertyInfo &sppi, pi.shapeProperties)
+			for (unsigned int s=0; s<pi.shapeProperties.size(); ++s)
 			{
-				createDaiFactor("f(room_category1,shape_property)", RoomCategoryVar(cri.roomId), PlaceShapePropertyVar(pi.placeId));
-				createDaiFactor("ObservedShapePropertyFactor", sppi.distribution, PlaceShapePropertyVar(pi.placeId));
-			}
+				const ConceptualData::ShapePlacePropertyInfo &sppi = pi.shapeProperties[s];
+				createDaiShapePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiObservedShapePropertyFactor(pi.placeId, sppi.distribution);
+			} // s
 
 			// Appearance properties
-			foreach(const ConceptualData::AppearancePlacePropertyInfo &appi, pi.appearanceProperties)
+			for (unsigned int a=0; a<pi.appearanceProperties.size(); ++a)
 			{
-				createDaiFactor("f(room_category1,appearance_property)", RoomCategoryVar(cri.roomId), PlaceAppearancePropertyVar(pi.placeId));
-				createDaiFactor("ObservedShapePropertyFactor", appi.distribution, PlaceAppearancePropertyVar(pi.placeId));
-			}
-		}
-	}
+				const ConceptualData::AppearancePlacePropertyInfo &appi = pi.appearanceProperties[a];
+				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
+				createDaiObservedAppearancePropertyFactor(pi.placeId, appi.distribution);
+			} // a
+
+
+		} // p
+	} // r
 }
 
 
@@ -673,7 +867,6 @@ void ChainGraphInferencer::prepareInferenceResult(string queryString,
     		jpv.probability=marginalProb;
     		jpv.variableValues.push_back(rvvPtr);
     		resultDistribution->massFunction.push_back(jpv);
-			resultDistribution->massFunction.push_back(jpv);
         }
 	}
 	else
@@ -703,43 +896,43 @@ void ChainGraphInferencer::getDefaultKnowledge()
 	if ( (_objectPropertyVariables.empty()) || (_roomCategories.empty()) )
 		throw CASTException("Did not receive information from Default.SA. Is everything started?");
 
-	vector<string> factors;
+	string factorStr;
 
 	// Get the room_category1, room_category2 factor
-	factors.push_back("f(room_category1,room_category2)");
+	factorStr = "f(room_category1,room_category2)";
+	_defaultKnowledgeFactors[factorStr] =
+			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+
 
 	// Get the room1_category -> object_xxx_property factors
 	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
-		factors.push_back("f(room_category1,"+_objectPropertyVariables[i]+")");
-
-	// Get the room1_category -> appearance_property factor
-	factors.push_back("f(room_category1,appearance_property)");
-
-	// Get the room1_category -> shape_property factor
-	factors.push_back("f(room_category1,shape_property)");
-
-	// Fetch all the default factors
-	foreach(const string &factorStr, factors)
 	{
+		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
 		_defaultKnowledgeFactors[factorStr] =
 				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
 			throw CASTException("Did not receive information from Default.SA. Is everything started?");
 	}
+
+	// Get the room1_category -> shape_property factor
+	factorStr = "f(room_category1,shape_property)";
+	_defaultKnowledgeFactors[factorStr] =
+			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException("Did not receive information from Default.SA. Is everything started?");
+
+	// Get the room1_category -> appearance_property factor
+	factorStr = "f(room_category1,appearance_property)";
+	_defaultKnowledgeFactors[factorStr] =
+			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException("Did not receive information from Default.SA. Is everything started?");
 }
 
-// -------------------------------------------------------
-const SpatialProbabilities::ProbabilityDistribution*
-ChainGraphInferencer::getDefaultProbabilityDistribution(const string& factorName) const
-{
-	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::const_iterator dnfIt =
-			_defaultKnowledgeFactors.find(factorName);
-	if (dnfIt == _defaultKnowledgeFactors.end())
-	{
-		error("Factor \'%s\' not found. This indicates a serious implementatation error!", factorName.c_str());
-		return 0;
-	}
-	return &dnfIt->second;
-}
+
+
+
 
 } // namespace def
