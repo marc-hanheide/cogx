@@ -24,7 +24,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-    pose [-3.0 -2.4 0 0]
+    pose [1.0 1.4 0 0]
 	color "red"
 )
 
@@ -36,7 +36,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "redbox1"
  color "red"
- pose [-2 -2.4 0.000 0]
+ pose [2 1.4 0.000 0]
  )
 # 
 # box2d
