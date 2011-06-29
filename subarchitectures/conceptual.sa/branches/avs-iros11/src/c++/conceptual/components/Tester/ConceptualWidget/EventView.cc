@@ -42,7 +42,7 @@ void EventView::updateAll(const QList<conceptual::ConceptualEvent> &events, bool
 		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
 {
 	QGraphicsScene *scene = new QGraphicsScene(this);
-	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly);
+	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly, -1);
 	drawLegend(scene);
 	setScene(scene);
 
@@ -55,10 +55,10 @@ void EventView::updateAll(const QList<conceptual::ConceptualEvent> &events, bool
 
 // ------------------------------------------------------
 void EventView::updateEvents(const QList<conceptual::ConceptualEvent> &events, bool placeIds,
-		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
+		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly, double time)
 {
 	QGraphicsScene *scene = new QGraphicsScene(this);
-	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly);
+	_lastE = drawEvents(scene, events, placeIds,	resultWidth, verticalIndicators, verticalLines, locationOnly, time);
 	setScene(scene);
 
 	_lastResultWidth = resultWidth;
@@ -99,7 +99,7 @@ void EventView::fit()
 
 // ------------------------------------------------------
 int EventView::drawEvents(QGraphicsScene *scene, const QList<conceptual::ConceptualEvent> &events, bool placeIds,
-		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly)
+		int resultWidth, bool verticalIndicators, bool verticalLines, bool locationOnly, double time)
 {
 	// Initialization
 	scene->setBackgroundBrush(Qt::white);
@@ -136,7 +136,7 @@ int EventView::drawEvents(QGraphicsScene *scene, const QList<conceptual::Concept
 	std::vector<int> mapSizeRows;
 	std::vector<int> mapAppearanceRows;
 	std::vector<ConceptualData::EventInfo> accumulatedInfos;
-	for (long _e=0; _e<events.size(); ++_e)
+	for (long _e=0; _e<events.size() && ((time<0) || (events[_e].time<=time)); ++_e)
 	{
 		const conceptual::ConceptualEvent &event = events[_e];
 

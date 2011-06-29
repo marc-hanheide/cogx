@@ -207,7 +207,7 @@ void DemoWidget::updateEvents(const QList<conceptual::ConceptualEvent> &events)
 	if (_enabled)
 	{
 		_lastEvents = events;
-		ui.eventView->updateEvents(events, true, 10, true, false, false);
+		ui.eventView->updateEvents(events, true, 10, true, false, false,-1);
 		ui.legendView->updateLegend();
 	}
 }
