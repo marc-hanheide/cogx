@@ -34,6 +34,7 @@
 		<slice2java tie="true" outputdir="${src.dir}">
 			<fileset dir="${slice.dir}" includes="ConceptualData.ice" />
 			<includepath>
+				<pathelement path="${basedir}/../../tools/math/src/slice" />
 				<pathelement path="${slice.dir}" />
 				<pathelement path="${castslice.dir}" />
 				<pathelement path="${basedir}/../../subarchitectures/spatial.sa/src/slice" />

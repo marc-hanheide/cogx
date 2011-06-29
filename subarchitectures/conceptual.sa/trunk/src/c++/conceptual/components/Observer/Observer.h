@@ -12,6 +12,7 @@
 #include "ComaData.hpp"
 #include "SpatialData.hpp"
 #include "SpatialProperties.hpp"
+#include "SpatialProbabilities.hpp"
 
 namespace conceptual
 {
@@ -29,12 +30,10 @@ class Observer: public cast::ManagedComponent
 public:
 
 	/** Constructor. */
-	Observer()
-	{}
+	Observer();
 
 	/** Destructor. */
-	virtual ~Observer()
-	{}
+	virtual ~Observer();
 
 
 protected:
@@ -79,10 +78,22 @@ private:
 	void shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
+	void sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
 	void appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
 	void connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
+	void associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 
 private:
@@ -90,14 +101,35 @@ private:
 	/** Checks if the place is a true place based on the _placeWmAddressMap */
 	bool isTruePlace(int placeId);
 
+	/** Checks if the place is a placeholder based on the _placeWmAddressMap */
+	bool isPlaceholder(int placeId);
+
+	/** Returns true if the placeholder is already added to the ComaRoomInfo. */
+	bool isPlaceholderPresent(const ConceptualData::ComaRoomInfo &cri, int placeholderId);
+
+	/** Returns room index (in the list) of the room to which a placeholder is already added. */
+	int isPlaceholderInRooms(const std::vector<ConceptualData::ComaRoomInfo> &cris, int placeholderId);
+
 	/** Returns true if the place has a gateway property set. */
 	bool isGatewayPlace(int placeId);
 
 	/** Returns all object properties of the place. */
 	void getObjectPlaceProperties(int placeId, std::vector<SpatialProperties::ObjectPlacePropertyPtr> &properties);
 
+	/** Returns all object search results for a room. */
+	void getObjectSearchResults(int roomId,
+			std::vector<SpatialData::ObjectSearchResultPtr> &results);
+
 	/** Returns all object properties of the place. */
 	void getShapePlaceProperties(int placeId, std::vector<SpatialProperties::RoomShapePlacePropertyPtr> &properties);
+
+	/** Returns all object properties of the place. */
+	void getSizePlaceProperties(int placeId, std::vector<SpatialProperties::RoomSizePlacePropertyPtr> &properties);
+
+	/** Returns all gateway properties of the placeholder. */
+	void getGatewayPlaceholderProperties(int placeId, std::vector<SpatialProperties::GatewayPlaceholderPropertyPtr> &properties);
+
+	void getAssociatedSpacePlaceholderProperties(int placeId, std::vector<SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> &properties);
 
 	/** Returns all object properties of the place. */
 	void getAppearancePlaceProperties(int placeId, std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties);
@@ -112,8 +144,13 @@ private:
 
 	bool areWorldStatesDifferent(ConceptualData::WorldStatePtr ws1, ConceptualData::WorldStatePtr ws2);
 
-	double calculateDistributionDifference(const ConceptualData::ValuePotentialPairs &dist1,
-			const ConceptualData::ValuePotentialPairs &dist2);
+	double calculateDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
+			SpatialProperties::ProbabilityDistributionPtr dist2);
+
+	double calculateBinaryDistributionDifference(SpatialProperties::ProbabilityDistributionPtr dist1,
+			SpatialProperties::ProbabilityDistributionPtr dist2);
+
+	double castTimeToSeconds(const cast::cdl::CASTTime &time);
 
 private:
 
@@ -130,15 +167,32 @@ private:
 	/** Map of place wmAddress -> ObjectPlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ObjectPlacePropertyPtr> _objectPlacePropertyWmAddressMap;
 
+	/** Map of place wmAddress -> ObjectSearchResult*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr> _objectSearchResultWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialData::ObjectSearchResultPtr> _acceptedObjectSearchResultWmAddressMap;
+
 	/** Map of place wmAddress -> ShapePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _shapePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomShapePlacePropertyPtr> _acceptedShapePlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> SizePlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr> _sizePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomSizePlacePropertyPtr> _acceptedSizePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> AppearancePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearancePlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _acceptedAppearancePlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> ConnectivityPathProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;
 
+	/** Map of place wmAddress -> GatewayPlaceholderProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _gatewayPlaceholderPropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::GatewayPlaceholderPropertyPtr> _acceptedGatewayPlaceholderPropertyWmAddressMap;
+
+	/** Map of place wmAddress -> AssociatedSpacePlaceholderProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> _associatedSpacePlaceholderPropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::AssociatedSpacePlaceholderPropertyPtr> _acceptedAssociatedSpacePlaceholderPropertyWmAddressMap;
 
 	/** Current state of the world as much as
 	 * the conceptual.sa is concerned. */
@@ -147,8 +201,18 @@ private:
 	/** Working memory ID of the world state struct. */
 	std::string _worldStateId;
 
+	pthread_mutex_t _worldStateMutex;
+
+	std::vector<ConceptualData::EventInfo> _accumulatedEvents;
+	double _lastWsUpdateTime;
+
 	double _shapeThreshold;
+	double _sizeThreshold;
 	double _appearanceThreshold;
+	double _gatewayThreshold;
+	double _associatedSpaceThreshold;
+	double _betaThreshold;
+	bool _includePlaceholderInfo;
 
 }; // class Observer
 } // namespace
