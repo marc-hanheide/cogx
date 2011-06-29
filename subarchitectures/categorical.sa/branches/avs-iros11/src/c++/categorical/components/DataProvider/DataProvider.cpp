@@ -56,7 +56,7 @@ CategoricalDataProvider::CategoricalDataProvider(): _cfgGroup("DataProvider")
   pthread_mutex_init(&_odometryQueueMutex, 0);
 
   // Laser corrector
-  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.05, 20, 19, 5.6);
+  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.1, 10, 51, 5.6);
 
   // Other
   _frameNo=0;
