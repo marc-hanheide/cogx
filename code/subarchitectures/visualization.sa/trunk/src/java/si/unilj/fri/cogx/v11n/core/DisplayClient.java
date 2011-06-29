@@ -311,12 +311,11 @@ public class DisplayClient {
 		m_Server.addCheckBox(iceid, viewId, ctrlId, label);
 	}
 
-	public final void addToolButton(String viewId, String ctrlId,
-			ActionInfo info) {
+	public final void addAction(String viewId, ActionInfo info) {
 		if (m_Server == null)
 			return;
 		Ice.Identity iceid = getEventClientId();
-		m_Server.addToolButton(iceid, viewId, ctrlId, info);
+		m_Server.addAction(iceid, viewId, info);
 	}
 
 	// public final void enableMouseEvents(String viewId, boolean enabled)
