@@ -1,0 +1,3 @@
+#!/bin/bash
+../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps > fg.ps
+../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps | okular -
