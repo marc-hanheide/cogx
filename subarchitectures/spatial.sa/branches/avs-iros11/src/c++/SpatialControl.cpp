@@ -133,12 +133,12 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   if (m_UsePointCloud) {
     m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
-    m_Explorer = new Cure::FrontierExplorer(*this,*m_lgmL);
   }
   else {
     m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-    m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
   }
+
+  m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
   //m_Explorer->setExplorationConfinedByGateways(true);
   m_Explorer->addEventListener(this);
 
@@ -645,7 +645,7 @@ void SpatialControl::runComponent()
       m_Mutex.lock();    							
       m_LMap.clearMap();
       for(long i=0; i<m_lgmLM->getNumCells(); i++){
-        (*m_lgmLM)[i] = '2';
+        (*m_lgmLM)[i] = (*m_lgmL)[i];
       }               
       Cure::Pose3D currPose = m_TOPP.getPose();		
       for (int i = 0; i < m_Npts; i++) {
