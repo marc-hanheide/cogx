@@ -2,7 +2,7 @@ PROJECT(libsvm-mod)
 SET(VERSION "1.3.6")
 
 # Set build type
-SET(CMAKE_BUILD_TYPE Release)
+# SET(CMAKE_BUILD_TYPE Release)
 
 # Add definition with version
 ADD_DEFINITIONS(-DVERSION=\\"${VERSION}\\")

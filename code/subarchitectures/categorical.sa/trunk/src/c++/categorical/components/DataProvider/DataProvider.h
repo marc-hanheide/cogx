@@ -25,6 +25,9 @@
 #include <pthread.h>
 
 
+class CategoricalLaserCorrector;
+
+
 /**
  * Implements the DataProvider component.
  * Collects and synchronizes multi-sensory data when triggered.
@@ -161,8 +164,9 @@ private: // Configuration
   bool _useLaser;
   bool _useVision;
   bool _useOdometry;
-
   bool _startServers;
+  bool _correctScans;
+  bool _convertScansToSick;
 
   /**
    * The timeWindow specifies the length of the queue in seconds.
@@ -190,7 +194,7 @@ private: // Queues
 
   pthread_mutex_t _odometryQueueMutex;
   std::list<Robotbase::Odometry> _odometryQueue;
-
+  typedef std::list<Robotbase::Odometry> OdomQueue;
 
 private: // Thread synchronization
 
@@ -207,14 +211,6 @@ private: // Servers
 
 private: // Data sources
 
-  /** Which video server to use. */
-  enum VideoServerType
-  {
-    /** Standard VideoServer. */
-    VS_STD
-  };
-  VideoServerType _videoServerType;
-
   /** If true, data will be loaded from disk. */
   bool _loadDataFromDisk;
 
@@ -223,6 +219,8 @@ private: // Data sources
 
   /** ICE proxy to the video server. */
   Video::VideoInterfacePrx _videoServer;
+
+  std::string _laserRobotServersHostname;
 
 
 private: // WM object IDs
@@ -241,6 +239,8 @@ private:
 
   /** Timestamp when last image was grabbed .*/
   cast::cdl::CASTTime _lastGrabTimestamp;
+
+  CategoricalLaserCorrector *_laserCorrector;
 };
 
 #endif

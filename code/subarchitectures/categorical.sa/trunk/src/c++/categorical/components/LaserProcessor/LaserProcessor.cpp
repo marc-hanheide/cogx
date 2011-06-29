@@ -44,6 +44,7 @@ CategoricalLaserProcessor::CategoricalLaserProcessor(): _cfgGroup("LaserProcesso
   pthread_mutex_init(&_dataSignalMutex, 0);
 
   _svmModel=0;
+  _sizeSvmModel=0;
 
   _featureInfoList = new dyntab_featuresInfo(2);
   _rangeExample = new RangeExampleGeneral();
@@ -70,6 +71,7 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
   if (it!=config.end())
     configFile = it->second;
   string labelFile;
+  string sizeLabelFile;
 
   // Read config file
   ConfigFile cf;
@@ -85,14 +87,17 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
   try
   {
     labelFile=cf.getStrValue(_cfgGroup, "LabelFile", "");
+    sizeLabelFile=cf.getStrValue(_cfgGroup, "SizeLabelFile", "");
 
     _useVision=cf.getBoolValue("DataProvider", "UseVision", true);
+    _useSize=cf.getBoolValue(_cfgGroup, "UseSize", false);
     _delay=cf.getIntValue(_cfgGroup, "Delay", 0);
 
     _featureFilePath=cf.getStrValue(_cfgGroup, "FeatureConfigFile", "");
     _scaleFilePath=cf.getStrValue(_cfgGroup, "ScaleConfigFile", "");
 
     _modelFilePath=cf.getStrValue(_cfgGroup, "ModelFile", "");
+    _sizeModelFilePath=cf.getStrValue(_cfgGroup, "SizeModelFile", "");
     _svmOaoAlg=cf.getIntValue(_cfgGroup, "SvmOaoAlg", 1);
     _svmOaaAlg=cf.getIntValue(_cfgGroup, "SvmOaaAlg", 1);
     _svmMeasure=cf.getIntValue(_cfgGroup, "SvmMeasure", 1);
@@ -115,6 +120,20 @@ void CategoricalLaserProcessor::configure(const map<string,string> &config)
     if (!_labels.read(labelFile))
       throw(CASTException(exceptionMessage(__HERE__, "Unable to load the label file '%s'!", labelFile.c_str())));
   }
+
+  if (_useSize)
+  {
+	  if (sizeLabelFile.empty())
+	  {
+	    throw(CASTException(exceptionMessage(__HERE__, "No size label file provided! Use the SizeLabelFile option in the config file!")));
+	  }
+	  else
+	  {
+	    if (!_sizeLabels.read(sizeLabelFile))
+	      throw(CASTException(exceptionMessage(__HERE__, "Unable to load the size label file '%s'!", sizeLabelFile.c_str())));
+	  }
+  }
+
 
   // Read feature config file
   if (_featureFilePath.empty())
@@ -311,6 +330,7 @@ void CategoricalLaserProcessor::createInvalidLaserResults(CategoricalData::Laser
   lasRes->hypFindAlg=-1;
   lasRes->confidenceThreshold = 0.0;
   lasRes->confident = false;
+  lasRes->useSize = _useSize;
 }
 
 
@@ -441,10 +461,11 @@ ts.tv_nsec = 0;
       CategoricalData::LaserResultsPtr laserResults = new CategoricalData::LaserResults;
       CategoricalData::LaserProcessorStatusPtr laserProcessorStatus = new CategoricalData::LaserProcessorStatus;
 
+      bool wasError=false;
       if (scan->status==CategoricalData::DsValid)
       {
         // Run all the feature extraction and classification
-        processLaserScan(scan->scanBuffer, laserProcessorStatus, laserResults);
+        processLaserScan(scan->scanBuffer, laserProcessorStatus, laserResults, wasError);
         // Set remaining fields
         laserResults->status=CategoricalData::DsValid;
         laserResults->frameNo=scan->frameNo;
@@ -455,7 +476,8 @@ ts.tv_nsec = 0;
         laserProcessorStatus->scanRealTimeStamp=scan->realTimeStamp;
         laserProcessorStatus->scanWmTimeStamp=scan->wmTimeStamp;
       }
-      else
+
+      if ((scan->status!=CategoricalData::DsValid) || (wasError))
       {
         // Create empty, invalid outputs
         createInvalidLaserResults(laserResults);
@@ -489,16 +511,29 @@ void CategoricalLaserProcessor::finishProcessing()
 {
   if (_svmModel)
     svm_destroy_model(_svmModel);
+
+  if (_sizeSvmModel)
+    svm_destroy_model(_sizeSvmModel);
 }
 
 
 void CategoricalLaserProcessor::initProcessing()
 {
   // Load model
-  println("Loading model...");
+  println("Loading shape model...");
   if( (_svmModel = svm_load_model(_modelFilePath.c_str())) == 0 )
   {
-    throw(CASTException(exceptionMessage(__HERE__, "Unable to load model file '%s'!", _modelFilePath.c_str() )));
+    throw(CASTException(exceptionMessage(__HERE__, "Unable to load shape model file '%s'!", _modelFilePath.c_str() )));
+  }
+
+  // Load model
+  if (_useSize)
+  {
+	  println("Loading size model...");
+	  if( (_sizeSvmModel = svm_load_model(_sizeModelFilePath.c_str())) == 0 )
+	  {
+		throw(CASTException(exceptionMessage(__HERE__, "Unable to load size model file '%s'!", _sizeModelFilePath.c_str() )));
+	  }
   }
 
   println("Done!");
@@ -507,18 +542,23 @@ void CategoricalLaserProcessor::initProcessing()
 
 void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
                                            CategoricalData::LaserProcessorStatusPtr laserProcessorStatus,
-                                           CategoricalData::LaserResultsPtr laserResults)
+                                           CategoricalData::LaserResultsPtr laserResults, bool &wasError)
 {
 
   debug("Processing scan...");
+
+  // Convert the scan to the SICK format
+  double *ranges = &(scan.ranges[0]);
+  int rangesCount = scan.ranges.size();
 
   // Get processing start timestamp
   laserProcessorStatus->processingStartTimeStamp = getCASTTime();
 
   // Extract features
   _rangeExample->clean();
-  if (_rangeExample->setRanges(scan.ranges.size(), &(scan.ranges[0]))<0)
+  if (_rangeExample->setRanges(rangesCount, ranges)<0)
     throw(CASTException(exceptionMessage(__HERE__, "Couldn't set ranges!")));
+
 
   classifier.calcSelectedFeatures(_rangeExample, _featureInfoList);
   int featureCount = _featureInfoList->num();
@@ -531,11 +571,13 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   for (int i=0; i<featureCount; ++i)
   {
     FeatureInfo *fi = _featureInfoList->getElement(i);
+
     libSvmFeatures[i].index = i+1;
     if (_scales[i].min==_scales[i].max)
       libSvmFeatures[i].value = 0; //fi->result;
     else
       libSvmFeatures[i].value = ((fi->result-_scales[i].min)*2.0)/(_scales[i].max-_scales[i].min) - 1.0;
+
   }
   libSvmFeatures[featureCount].index=-1;
   libSvmFeatures[featureCount].value=0.0;
@@ -543,58 +585,138 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   // Yield
   sched_yield();
 
-  // Setup prediction
-  predict_parameter predParam;
-  predParam.oaaAlg=_svmOaaAlg;
-  predParam.oaoAlg=_svmOaoAlg;
-  predParam.measure=_svmMeasure;
-  int nrClass = _svmModel->nr_class;
-  int nrHyp = _svmModel->nr_hyp;
-  double v;
-  int *classes = (int*)malloc(sizeof(int)*nrClass);
-  double *confidence = (double*)malloc(sizeof(double)*nrClass);
-  double *outputs = (double*)malloc(sizeof(double)*nrHyp);
-  int *outputLabels1 = (int*)malloc(sizeof(int)*nrHyp);
-  int *outputLabels2 = (int*)malloc(sizeof(int)*nrHyp);
-  int outputCount=0;
 
-  svm_predict(&_svmModel, &libSvmFeatures,
-              0 /*f_values*/, &predParam, 1 /*target*/,
-              &v, classes, confidence, outputs,
-              outputLabels1, outputLabels2, &outputCount );
-
-  // Get classification timestamp
-  laserProcessorStatus->classificationEndTimeStamp = getCASTTime();
-
-  debug("Laser scan classified as %d - %s", classes[0], _labels.labelNoToName(classes[0]).c_str());
-
-  // Copy outcomes to IDL structs
-  laserResults->results.resize(nrClass);
-  laserResults->outputs.resize(nrHyp);
-  for (int i=0; i<nrClass; ++i)
   {
-    laserResults->results[i].classNo=classes[i];
-    laserResults->results[i].className=_labels.labelNoToName(classes[i]).c_str();
-    laserResults->results[i].confidence=confidence[i];
-  }
-  for (int i=0; i<nrHyp; ++i)
-  {
-    string outName;
-    if (outputLabels2[i]<0)
-      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]));
-    else
-      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]))+"_"+
-      lexical_cast<string>(_labels.labelNoToName(outputLabels2[i]));
-    laserResults->outputs[i].name=outName.c_str();
-    laserResults->outputs[i].value=outputs[i];
+	  // Setup prediction
+	  predict_parameter predParam;
+	  predParam.oaaAlg=_svmOaaAlg;
+	  predParam.oaoAlg=_svmOaoAlg;
+	  predParam.measure=_svmMeasure;
+	  int nrClass = _svmModel->nr_class;
+	  int nrHyp = _svmModel->nr_hyp;
+	  double v;
+	  int *classes = (int*)malloc(sizeof(int)*nrClass);
+	  double *confidence = (double*)malloc(sizeof(double)*nrClass);
+	  double *outputs = (double*)malloc(sizeof(double)*nrHyp);
+	  int *outputLabels1 = (int*)malloc(sizeof(int)*nrHyp);
+	  int *outputLabels2 = (int*)malloc(sizeof(int)*nrHyp);
+	  int outputCount=0;
+
+	  svm_predict(&_svmModel, &libSvmFeatures,
+				  0 /*f_values*/, &predParam, 1 /*target*/,
+				  &v, classes, confidence, outputs,
+				  outputLabels1, outputLabels2, &outputCount );
+
+	  // Get classification timestamp
+	  laserProcessorStatus->classificationEndTimeStamp = getCASTTime();
+	  debug("Laser scan classified as %d - %s", classes[0], _labels.labelNoToName(classes[0]).c_str());
+
+	  // Copy outcomes to IDL structs
+	  laserResults->results.resize(nrClass);
+	  laserResults->outputs.resize(nrHyp);
+	  for (int i=0; i<nrClass; ++i)
+	  {
+	    laserResults->results[i].classNo=classes[i];
+	    laserResults->results[i].className=_labels.labelNoToName(classes[i]).c_str();
+	    laserResults->results[i].confidence=confidence[i];
+	    if (isnan(confidence[i]))
+	      wasError=true;
+	  }
+	  for (int i=0; i<nrHyp; ++i)
+	  {
+	    string outName;
+	    if (outputLabels2[i]<0)
+	      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]));
+	    else
+	      outName=lexical_cast<string>(_labels.labelNoToName(outputLabels1[i]))+"_"+
+	      lexical_cast<string>(_labels.labelNoToName(outputLabels2[i]));
+	    laserResults->outputs[i].name=outName.c_str();
+	    laserResults->outputs[i].value=outputs[i];
+	    if (isnan(outputs[i]))
+	      wasError=true;
+	  }
+
+	  // Confidence
+	  laserResults->confidenceThreshold = _confidenceThreshold;
+	  if (confidence[0]<_confidenceThreshold)
+	    laserResults->confident=false;
+	  else
+	    laserResults->confident=true;
+
+	  free(classes);
+	  free(confidence);
+	  free(outputs);
+	  free(outputLabels1);
+	  free(outputLabels2);
+
   }
 
-  // Confidence
-  laserResults->confidenceThreshold = _confidenceThreshold;
-  if (confidence[0]<_confidenceThreshold)
-    laserResults->confident=false;
-  else
-    laserResults->confident=true;
+  laserResults->useSize = false;
+  if (_useSize)
+  {
+	  laserResults->useSize = true;
+
+	  // Setup prediction for size
+	  predict_parameter predParam;
+	  predParam.oaaAlg=_svmOaaAlg;
+	  predParam.oaoAlg=_svmOaoAlg;
+	  predParam.measure=_svmMeasure;
+	  int nrClass = _sizeSvmModel->nr_class;
+	  int nrHyp = _sizeSvmModel->nr_hyp;
+	  double v;
+	  int *classes = (int*)malloc(sizeof(int)*nrClass);
+	  double *confidence = (double*)malloc(sizeof(double)*nrClass);
+	  double *outputs = (double*)malloc(sizeof(double)*nrHyp);
+	  int *outputLabels1 = (int*)malloc(sizeof(int)*nrHyp);
+	  int *outputLabels2 = (int*)malloc(sizeof(int)*nrHyp);
+	  int outputCount=0;
+
+	  svm_predict(&_sizeSvmModel, &libSvmFeatures,
+				  0 /*f_values*/, &predParam, 1 /*target*/,
+				  &v, classes, confidence, outputs,
+				  outputLabels1, outputLabels2, &outputCount );
+	  //println("%f", confidence[0]);
+
+	  debug("Laser scan classified as %d - %s", classes[0], _sizeLabels.labelNoToName(classes[0]).c_str());
+
+	  // Copy outcomes to IDL structs
+	  laserResults->sizeResults.resize(nrClass);
+	  laserResults->sizeOutputs.resize(nrHyp);
+	  for (int i=0; i<nrClass; ++i)
+	  {
+	    laserResults->sizeResults[i].classNo=classes[i];
+	    laserResults->sizeResults[i].className=_sizeLabels.labelNoToName(classes[i]).c_str();
+	    laserResults->sizeResults[i].confidence=confidence[i];
+	    if (isnan(confidence[i]))
+	      wasError=true;
+	  }
+	  for (int i=0; i<nrHyp; ++i)
+	  {
+	    string outName;
+	    if (outputLabels2[i]<0)
+	      outName=lexical_cast<string>(_sizeLabels.labelNoToName(outputLabels1[i]));
+	    else
+	      outName=lexical_cast<string>(_sizeLabels.labelNoToName(outputLabels1[i]))+"_"+
+	      lexical_cast<string>(_sizeLabels.labelNoToName(outputLabels2[i]));
+	    laserResults->sizeOutputs[i].name=outName.c_str();
+	    laserResults->sizeOutputs[i].value=outputs[i];
+	    if (isnan(outputs[i]))
+	      wasError=true;
+	  }
+
+	  // Confidence
+	  laserResults->confidenceThreshold = _confidenceThreshold;
+	  if (confidence[0]<_confidenceThreshold)
+	    laserResults->sizeConfident=false;
+	  else
+	    laserResults->sizeConfident=true;
+
+	  free(classes);
+	  free(confidence);
+	  free(outputs);
+	  free(outputLabels1);
+	  free(outputLabels2);
+  }
 
 
   // Set the algorithms
@@ -610,11 +732,11 @@ void CategoricalLaserProcessor::processLaserScan(Laser::Scan2d &scan,
   }
 
   // Clean up
-  free(classes);
-  free(confidence);
-  free(outputs);
-  free(outputLabels1);
-  free(outputLabels2);
   free(libSvmFeatures);
 }
+
+
+
+
+
 
