@@ -195,10 +195,10 @@ class CDisplayClient:
         iceid = self.getEventClientId()
         self.m_Server.addCheckBox(iceid, viewId, ctrlId, label)
 
-    def addToolButton(self, viewId, ctrlId, actionInfo):
+    def addAction(self, viewId, actionInfo):
         if self.m_Server == None: return
         iceid = self.getEventClientId()
-        self.m_Server.addToolButton(iceid, viewId, ctrlId, actionInfo)
+        self.m_Server.addAction(iceid, viewId, actionInfo)
 
     #----------------------------------------------------------------- 
     # Active client callbacks - to be reimplemented
