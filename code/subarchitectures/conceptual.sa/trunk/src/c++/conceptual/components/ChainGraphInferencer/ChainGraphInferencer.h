@@ -67,20 +67,17 @@ private:
 	bool updateFactorGraph(bool &factorGraphChanged);
 
 	/** Create DAI Variable if not yet created. */
-	struct DaiVariable; /* forward declaration */
-	DaiVariable& createDaiVariable(const std::string &name, const std::vector<std::string> &values);
-
-	DaiVariable& RoomCategoryVar(int roomId);
-	DaiVariable& PlaceShapePropertyVar(int placeId);
-	DaiVariable& PlaceAppearancePropertyVar(int placeId);
-
-	void createDaiFactor(const std::string &name, const ConceptualData::ValuePotentialPairs &dist, DaiVariable &dv);
-	void createDaiFactor(const std::string &name, DaiVariable &dv1, DaiVariable &dv2);
+	void createDaiVariable(std::string name, const std::vector<std::string> &values);
 
 	/** Creates a DAI connectivity factor for two rooms. */
+	void createDaiConnectivityFactor(int room1Id, int room2Id);
 	void createDaiSingleRoomFactor(int room1Id);
 	void createDaiObservedObjectPropertyFactor(int room1Id,
-			const std::string &objectVariableName, bool objectExists);
+			std::string objectVariableName, bool objectExists);
+	void createDaiShapePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
+	void createDaiObservedShapePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
+	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
+	void createDaiObservedAppearancePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 
 	/** Adds factors related to the factor graph */
 	void addDaiFactors();
@@ -94,11 +91,6 @@ private:
 
 	/** Reads the default knowledge factors from the Default.SA */
 	void getDefaultKnowledge();
-
-	/** Returns the given probability distribution from the default knowledge.
-	 * The returned pointer is valid as long _defaultKnowledge is not changed.
-	 * At the moment _defaultKnowledge only gets changed on call to getDefaultKnowledge */
-	const SpatialProbabilities::ProbabilityDistribution* getDefaultProbabilityDistribution(const std::string &factorName) const;
 
 	/** Returns probability value from the distribution. */
 	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
@@ -166,7 +158,6 @@ private:
 	struct DaiVariable
 	{
 		dai::Var var;
-		std::string name;
 		std::map<int, std::string> valueIdToName;
 	};
 
