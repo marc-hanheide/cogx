@@ -43,6 +43,8 @@ import castutils.castextensions.WMEventQueue;
  */
 public class ObservationModelExperiment extends ManagedComponent {
 
+	private static final double CAMERA_POS_Z = 1.37;
+
 	public class DetectionMeasurement {
 		double angle;
 
@@ -81,6 +83,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 	private static final double DEFAULT_RADIUS_STEP = 0.5;
 	private static final double DEFAULT_RADIUS_STOP = 1.0;
 	private static final String SET_PREFIX = "--set-";
+
+	private static final double DEFAULT_OBJ_POS_Z = 0.8;
 	private static double[] TOLERANCE = new double[] { 0.1, 0.1,
 			Math.PI * 5 / 180 };
 
@@ -98,6 +102,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 	double radiusStep = DEFAULT_RADIUS_STEP;
 
 	double radiusStop = DEFAULT_RADIUS_STOP;
+
+	double objectPosZ = DEFAULT_OBJ_POS_Z;
 
 	@Override
 	protected void configure(Map<String, String> config) {
@@ -179,18 +185,14 @@ public class ObservationModelExperiment extends ManagedComponent {
 
 	@Override
 	protected void runComponent() {
-		sleepComponent(2000);
-		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0, Math.PI
-				* -35 / 180, 1), PTZCompletion.COMPINIT);
-		try {
-			addToWorkingMemory(newDataID(), spc);
-		} catch (AlreadyExistsOnWMException e1) {
-			logException(e1);
-		}
-		sleepComponent(3000);
+		sleepComponent(5000);
 
 		int setting = 0;
 		for (double currentRadius = radiusStart; currentRadius <= radiusStop; currentRadius += radiusStep) {
+
+			setPTZ(currentRadius);
+			sleepComponent(2000);
+			
 			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += (angleStep
 					* Math.PI / 180.0)) {
 				try {
@@ -206,7 +208,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 					println("navCommand completed with " + comp.toString());
 					if (comp != Completion.COMMANDSUCCEEDED) {
 						getLogger()
-								.warn("failed to navigate to goal. Will try the next one.");
+								.warn(
+										"failed to navigate to goal. Will try the next one.");
 						continue;
 					}
 					println("reached goal. time to run the detector");
@@ -232,6 +235,16 @@ public class ObservationModelExperiment extends ManagedComponent {
 				}
 				setting++;
 			}
+		}
+	}
+
+	private void setPTZ(double currentRadius) {
+		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0,
+				Math.atan((objectPosZ - CAMERA_POS_Z) / currentRadius), 1), PTZCompletion.COMPINIT);
+		try {
+			addToWorkingMemory(newDataID(), spc);
+		} catch (AlreadyExistsOnWMException e1) {
+			logException(e1);
 		}
 	}
 
