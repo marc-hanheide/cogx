@@ -8,8 +8,10 @@
 #define DEFAULT_CHAINGRAPHINFERENCER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include "VariableNameGenerator.h"
 #include <DefaultData.hpp>
 #include <ComaData.hpp>
+#include <SpatialData.hpp>
 
 
 namespace def
@@ -34,9 +36,13 @@ class ChainGraphInferencer: public cast::ManagedComponent
 
 		virtual DefaultData::StringSeq getObjectPropertyVariables(const Ice::Current &);
 
+		virtual DefaultData::StringSeq getObjectCategories(const Ice::Current &);
+
 		virtual DefaultData::StringSeq getRoomCategories(const Ice::Current &);
 
 		virtual DefaultData::StringSeq getShapes(const Ice::Current &);
+
+		virtual DefaultData::StringSeq getSizes(const Ice::Current &);
 
 		virtual DefaultData::StringSeq getAppearances(const Ice::Current &);
 
@@ -50,6 +56,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
     };
 
 
+	enum LoadObjectsFrom
+		{LOF_HFC, LOF_DEFAULTPROB};
 
 
 public:
@@ -80,6 +88,8 @@ private:
 	/** Change event. */
 	void inferenceQueryAdded(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Loads the avs default knowledge file (defaultprob.txt) */
+	void loadAvsDefaultKnowledge();
 
 
 private:
@@ -106,15 +116,17 @@ private:
 	/** Results of the query for the default knowledge sent to HFC. */
 	comadata::QueryResults _hfcQueryResults;
 
-	struct HFCItem
+	struct ObjectPropertyGivenRoomCategory
 	{
-		std::string room;
-		std::string object;
+		std::string roomCategory;
+		std::string objectCategory;
+		std::string supportObjectCategory;
+		SpatialData::SpatialRelation relation;
 		double probability;
 	};
 
 	/** Converted knowledge from the HFC. */
-	std::list<HFCItem> _hfcKnowledge;
+	std::list<ObjectPropertyGivenRoomCategory> _objectPropertyGivenRoomCategory;
 
 	double _defaultRoomCategoryConnectivityPotential;
 	double _defaultObjectExistenceProbability;
@@ -130,6 +142,9 @@ private:
 	/** Room connectivity information as read from the config file. */
 	std::list<RoomCategoryConnectivity> _roomCategoryConnectivity;
 
+	/** List of all object categories. */
+	std::vector<std::string> _objectCategories;
+
 	/** List of all object property variable names. */
 	std::vector<std::string> _objectPropertyVariables;
 
@@ -138,6 +153,9 @@ private:
 
 	/** List of all the shapes. */
 	std::vector<std::string> _shapes;
+
+	/** List of all the sizes. */
+	std::vector<std::string> _sizes;
 
 	/** List of all the appearances. */
 	std::vector<std::string> _appearances;
@@ -159,6 +177,25 @@ private:
 
 	std::list<DefaultShapePropertyGivenRoomCategory> _defaultShapePropertyGivenRoomCategory;
 
+
+	struct SizePropertyGivenRoomCategory
+	{
+		std::string roomCategory1;
+		std::string sizeProperty;
+		double probability;
+	};
+
+	std::list<SizePropertyGivenRoomCategory> _sizePropertyGivenRoomCategory;
+
+	struct DefaultSizePropertyGivenRoomCategory
+	{
+		std::string sizeProperty;
+		double probability;
+	};
+
+	std::list<DefaultSizePropertyGivenRoomCategory> _defaultSizePropertyGivenRoomCategory;
+
+
 	struct AppearancePropertyGivenRoomCategory
 	{
 		std::string roomCategory1;
@@ -175,6 +212,13 @@ private:
 	};
 
 	std::list<DefaultAppearancePropertyGivenRoomCategory> _defaultAppearancePropertyGivenRoomCategory;
+
+	/** Determines from where the object information should be loaded. */
+	LoadObjectsFrom _loadObjectsFrom;
+
+	/** Path to the file with object info. */
+	std::string _objectsFileName;
+
 
 }; // class ChainGraphInferencer
 } // namespace def
