@@ -41,6 +41,7 @@ private:
   ImageMetaData imageMD;
 
   bool m_saveToFile;
+  bool m_displayImage;
   std::string m_saveDirectory;
 
 protected:

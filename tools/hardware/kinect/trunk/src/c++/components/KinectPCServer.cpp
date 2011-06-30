@@ -9,7 +9,7 @@
 #include <cmath>
 #include <cast/core/CASTUtils.hpp>
 #include "KinectPCServer.h"
-
+#include <highgui.h>
 /**
  * The function called to create a new instance of our component.
  */
@@ -101,6 +101,11 @@ void KinectPCServer::configure(const map<string, string> & _config)
        	abort();
        }
      }
+ 
+     m_displayImage = false;
+     if ((it = _config.find("--display-rgb")) != _config.end()) {
+       m_displayImage= true;
+ }
 
   log("Capturing from kinect sensor started.");
 }
@@ -111,6 +116,9 @@ void KinectPCServer::configure(const map<string, string> & _config)
 void KinectPCServer::start()
 {
   PointCloudServer::start();
+  if(m_displayImage){
+    cvNamedWindow(getComponentID().c_str(),1);
+  }
 }
 
 void KinectPCServer::runComponent() {
@@ -124,31 +132,34 @@ void KinectPCServer::runComponent() {
 	}
 
 void KinectPCServer::saveNextFrameToFile() {
-kinect->NextFrame();
-IplImage* rgb_data = new IplImage(kinect->rgbImage);
-// Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
-IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
-char buf[256];
-CASTTime timeNow = getCASTTime();
-sprintf(buf, "%s/frame_%d_rgb_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
-		(long int)timeNow.s, (long int)timeNow.us);
+  kinect->NextFrame();
+  IplImage* rgb_data = new IplImage(kinect->rgbImage);
+  // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
+  if(m_displayImage){
+    cvShowImage(getComponentID().c_str(),rgb_data);
+  }
+  IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+  char buf[256];
+  CASTTime timeNow = getCASTTime();
+  sprintf(buf, "%s/frame_%d_rgb_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
+      (long int)timeNow.s, (long int)timeNow.us);
 
-cvSaveImage(buf, rgb_data);
+  cvSaveImage(buf, rgb_data);
 
-short*d = kinect->depImage.ptr<short>(0);	
-for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
-	{
-		short value = d[i]/16;
-		char value_pt1 = d[i]>>8;
-		char value_pt2 = d[i]&0xFF;
-		depth_data->imageData[3*i+0]=(char)value_pt1;
-		depth_data->imageData[3*i+1]=(char)value_pt2;
-		depth_data->imageData[3*i+2]=(char)value;
-	}
-		char buf2[256];
-		sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
-				(long int)timeNow.s, (long int)timeNow.us);
-		cvSaveImage(buf2, depth_data);
+  short*d = kinect->depImage.ptr<short>(0);	
+  for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
+  {
+    short value = d[i]/16;
+    char value_pt1 = d[i]>>8;
+    char value_pt2 = d[i]&0xFF;
+    depth_data->imageData[3*i+0]=(char)value_pt1;
+    depth_data->imageData[3*i+1]=(char)value_pt2;
+    depth_data->imageData[3*i+2]=(char)value;
+  }
+  char buf2[256];
+  sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
+      (long int)timeNow.s, (long int)timeNow.us);
+  cvSaveImage(buf2, depth_data);
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
