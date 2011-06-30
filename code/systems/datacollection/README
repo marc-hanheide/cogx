@@ -16,11 +16,14 @@ default Cmake options should be sufficient.
 Some remarks:
 	-  --save-to-file option: This makes the servers save the sensory data.
 	-  --save-directory option: This specifies the place for saving.
-
+	-  --display-rgb in KinectPCServer to see the RGB image (note: for this the opencv should be build with gtk or qt)
 If you change nothing these are set as data/rgbd, data/laser and data/odom.
 
 3. The script ./packdata tar.gz the data directory with a new name called: data.tar.gz
 4. The script ./cleandata removes the files under data/rgbd, data/laser and data/odom AND data.tar.gz
+
+TROUBLESHOOTHING
+=====================
 
 
 That's all!
