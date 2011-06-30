@@ -60,10 +60,13 @@ private:
    * If true, ask the PTZ server regularly for pan/tilt angles to update camera poses.
    */
   bool usePTZ;
+  std::string ptzServerComponent;
+
   /**
    * Fixed pan and tilt angle, for which we have precise calibration.
    */
   ptz::PTZReading fixedPanTilt;
+
 
   /**
    * for given pan and tilt angles, calculate poses of cameras w.r.t. robot ego
