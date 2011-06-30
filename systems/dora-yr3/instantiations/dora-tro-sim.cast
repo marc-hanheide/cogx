@@ -49,7 +49,6 @@ INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 
 # Vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-blobs-dora.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
 CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
@@ -75,6 +74,8 @@ VARDEFAULT or3d_ply_files=<multiline>
 </multiline>
 VARDEFAULT or3d_labels=cerealbox table
 CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
