@@ -84,8 +84,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 	private static final double DEFAULT_RADIUS_STOP = 1.0;
 	private static final String SET_PREFIX = "--set-";
 
-	private static final double DEFAULT_OBJ_POS_Z = 0.8;
-	private static double[] TOLERANCE = new double[] { 0.1, 0.1,
+	private static final double DEFAULT_OBJ_POS_Z = 0.9;
+	private static double[] TOLERANCE = new double[] { 0.05, 0.05,
 			Math.PI * 5 / 180 };
 
 	double angleStep = DEFAULT_ANGLE_STEP;
