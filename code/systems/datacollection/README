@@ -12,6 +12,9 @@ COMPILATION
 way i.e. mkdir BUILD, cmake .. , make install. The
 default Cmake options should be sufficient.
 
+RUNNING
+=====================
+
 2. Now launch castctrl and use the save_data.cast file.
 Some remarks:
 	-  --save-to-file option: This makes the servers save the sensory data.
