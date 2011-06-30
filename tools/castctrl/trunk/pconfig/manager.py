@@ -9,7 +9,7 @@ class CServerInfo(CPropertySet):
     def __init__(self, name, **kwargs):
         super(CServerInfo, self).__init__(name, **kwargs)
         self.enabled = False
-        self.command = None
+        self._command = None
         self.isServer = True
         self.workdir = None
         self.defaultVars = []
@@ -36,14 +36,29 @@ class CServerInfo(CPropertySet):
         self.setVar(name, ":".join(self._valid_lines(value)))
 
     def setCommand(self, cmd, workdir=None):
-        self.command = " ".join(self._valid_lines(cmd))
+        self._command = " ".join(self._valid_lines(cmd))
         self.workdir = workdir
+
+    def getCommand(self):
+        cmd = self._command
+        if self._paramPreprocess != None:
+            cmdname = cmd.split()[0]
+            if cmdname.startswith("[") and cmdname.endswith("]"):
+                cmdlen = len(cmdname)
+                cmdname = cmdname.strip(" []")
+                default = "echo"
+                #parts = cmdname.split(":")
+                #cmdname = parts[0]
+                #if len(parts) > 1: default = ":".join(parts[1:])
+                newcmdname = self._paramPreprocess(cmdname, default, self)
+                cmd = "%s %s" % (newcmdname, cmd[cmdlen:])
+        return cmd
 
     def getParameters(self):
         params = {}
         if self._paramPreprocess != None:
             for p in self.properties:
-                params[p.name] = "%s" % self._paramPreprocess("%s" % p.name, "%s" % p.value)
+                params[p.name] = "%s" % self._paramPreprocess("%s" % p.name, "%s" % p.value, self)
         else:
             for p in self.properties:
                 params[p.name] = "%s" % p.value
@@ -59,7 +74,15 @@ class CServerManager:
         self.servers = []
 
     def addServersFromFile(self, filename):
-        self.servers = self.servers + self.discoverServers(filename)
+        srvrs = self.discoverServers(filename)
+        self.servers = self.servers + srvrs
+        return srvrs
+
+    def getServerInfo(self, name):
+        for c in self.servers:
+            if c.name == name:
+                return c
+        return None
 
     # Load config files to discover servers
     def discoverServers(self, filename):

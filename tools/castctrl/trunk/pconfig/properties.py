@@ -87,6 +87,11 @@ class CPropertySet(object):
         self.properties = []
         if 'label' in kwargs: self.label = kwargs['label']
 
+    def getProperty(self, name):
+        for p in self.properties:
+            if name == p.name: return p
+        return None
+
     def integerField(self, name, label=None, range=None, default=None, group=None):
         p = CIntProperty(name, label, default, range)
         self.properties.append(p)
