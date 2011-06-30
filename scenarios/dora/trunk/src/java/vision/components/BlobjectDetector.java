@@ -3,10 +3,11 @@ package vision.components;
 import java.util.HashMap;
 import java.util.Map;
 
+import mathlib.Functions;
 import vision.VisionUtils;
 import VisionData.DetectionCommand;
+import VisionData.Post3DObject;
 import VisionData.Recognizer3DCommand;
-import VisionData.VisualObject;
 import blobfinder.BlobFinderInterface;
 import blobfinder.BlobFinderInterfacePrx;
 import blobfinder.BlobInfo;
@@ -18,6 +19,8 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 /**
  * A fake object detector that uses the player blobfinder model to find objects.
@@ -127,16 +130,19 @@ public class BlobjectDetector extends ManagedComponent {
 			// we don't see anything
 			for (String label : _labels) {
 				if (m_label2colour.containsKey(label)) {
-					// for the time being just fail
-					VisualObject obj = VisionUtils.newVisualObject();
-					obj.identLabels = new String[1];
-					obj.identLabels[0] = label;
-
-					obj.identDistrib = new double[1];
-					obj.identDistrib[0] = 0;
-
-					obj.detectionConfidence = 0f;
-					addToWorkingMemory(newDataID(), obj);
+					submitVisualObjectToWM(label, Functions.pose3FromEuler(
+							new Vector3(0, 0, 0), 0, 0, 0), false);
+//					// for the time being just fail
+//
+//					VisualObject obj = VisionUtils.newVisualObject();
+//					obj.identLabels = new String[1];
+//					obj.identLabels[0] = label;
+//
+//					obj.identDistrib = new double[1];
+//					obj.identDistrib[0] = 0;
+//
+//					obj.detectionConfidence = 0f;
+//					addToWorkingMemory(newDataID(), obj);
 				} else {
 					log("cannot detect this object... ignore it.");
 				}
@@ -145,18 +151,19 @@ public class BlobjectDetector extends ManagedComponent {
 			log("there are some blobs around");
 			for (String label : _labels) {
 				log("  is it a " + label + "?");
-				VisualObject obj = VisionUtils.newVisualObject();
-				obj.identLabels = new String[1];
-				obj.identLabels[0] = label;
-				obj.identDistrib = new double[1];
-				obj.identDistrib[0] = 0;
+//				VisualObject obj = VisionUtils.newVisualObject();
+//				obj.identLabels = new String[1];
+//				obj.identLabels[0] = label;
+//				obj.identDistrib = new double[1];
+//				obj.identDistrib[0] = 0;
+//
+//				// default to not seen (i.e. 0)
+//				obj.detectionConfidence = 0f;
+//
+//				// get expected rgb for label
 
-				// default to not seen (i.e. 0)
-				obj.detectionConfidence = 0f;
-
-				// get expected rgb for label
 				ColorRGB rgb = m_label2colour.get(label);
-
+				boolean seenIt=false;
 				// if the colour code is not known continue with next label
 				if (rgb != null) {
 					// now see if we have this one in our blobs
@@ -166,15 +173,24 @@ public class BlobjectDetector extends ManagedComponent {
 								+ "?");
 						if (blob.colour.equals(rgb)) {
 							println("  YES, found an object");
-							obj.detectionConfidence = 1f;
-							obj.identDistrib[0] = 1;
+//							obj.detectionConfidence = 1f;
+//							obj.identDistrib[0] = 1;
+							seenIt=true;
 							break;
 						}
 					}
-					addToWorkingMemory(newDataID(), obj);
+					submitVisualObjectToWM(label, Functions.pose3FromEuler(
+							new Vector3(1, 0, 0), 0, 0, 0), seenIt);
 				}
 			}
 		}
+	}
+
+	private void submitVisualObjectToWM(String label, Pose3 objPose,
+			boolean positiveDetection) throws AlreadyExistsOnWMException {
+		Post3DObject postCmd = new Post3DObject(label, objPose,
+				positiveDetection);
+		addToWorkingMemory(newDataID(), postCmd);
 	}
 
 	@Override
