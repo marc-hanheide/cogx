@@ -1,0 +1,9 @@
+Training sets:
+ - train.data
+ - test.data
+Parameter selection: Reduced gamma cross-validation
+Features: geometrical features
+SVM Kernel: Gaussian
+SVM Multi-class: One-against-all
+SVM C: 100
+SVM Kernel Gamma: 0.0177828
