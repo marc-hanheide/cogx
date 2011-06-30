@@ -90,7 +90,8 @@ public class BlobjectDetector extends ManagedComponent {
 
 		// executed the command, results (if any) are on working memory,
 		// now delete command as not needed anymore
-		//overwriteWorkingMemory(_wmc.address, cmd);
+		getMemoryEntry(_wmc.address, Recognizer3DCommand.class);
+		overwriteWorkingMemory(_wmc.address, cmd);
 	}
 
 	public void newDetectionCommand(WorkingMemoryChange _wmc)
