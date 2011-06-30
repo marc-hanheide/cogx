@@ -105,6 +105,22 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
   }
   log("Using m_MaxW=%.2frad/s", m_MaxW);
 
+  if ((it = config.find("--max-joyv")) != config.end()) {
+    std::istringstream str(it->second);
+    str >> m_MaxJoyV;
+  }
+
+  log("Using m_MaxJoyV=%.2fm/s", m_MaxV);
+
+  if ((it = config.find("--max-joyw")) != config.end()) {
+    std::istringstream str(it->second);
+    str >> m_MaxJoyW;
+  }
+  log("Using m_MaxW=%.2frad/s", m_MaxJoyW);
+
+
+
+
   if ((it = config.find("--rand-data")) != config.end()) {
     m_RandData = true;
   }
@@ -239,14 +255,18 @@ RobotbaseServerPlayer::runComponent()
       //else we have no idea!
       else {
 	// FIXME get a better estimate of the time for the scan
-	//CASTTime timeNow(getCASTTime());
-	m_Odom.time = getCASTTime(); //m_TimeOffset - timeNow;
+  //CASTTime timeNow(getCASTTime());
+        m_Odom.time = getCASTTime(); //m_TimeOffset - timeNow;
       }
 
 
       // alper: to disable Joystick, in some laptops with internal accelerometer
       // causes to be seen as joystick and produces weird results.
       if (m_Joydrive && !m_OverRideJoystickEnable) {
+        Cure::HelpFunctions::limitAndSetValueSymm(m_JoyV, m_MaxJoyV);
+        Cure::HelpFunctions::limitAndSetValueSymm(m_JoyW, m_MaxJoyW);
+
+
         if (m_JoydriveRotOnly) {
           m_Position->SetSpeed(0, m_JoyW);
         } else if (m_JoydriveTransOnly) {
@@ -254,7 +274,7 @@ RobotbaseServerPlayer::runComponent()
         } else {
           m_Position->SetSpeed(m_JoyV, m_JoyW);
         }
-        
+
       } else if (joyDriveState && !m_OverRideJoystickEnable) {
         // Was in joydrive state last iteration, should send stop
         m_Position->SetSpeed(0,0);
