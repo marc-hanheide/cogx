@@ -43,7 +43,8 @@
   :precondition
    (and
 	(= (pos ?truck) ?loc)
-	(= (pos ?obj) ?loc) 
+	(in-domain (pos ?obj) ?loc) 
+	(kval ?a (pos ?obj)) 
    )
   :effect
    (and (assign (pos ?obj) ?truck))
