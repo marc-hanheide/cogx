@@ -1,4 +1,4 @@
-^/code/tools/castctrl/trunk/	tools/castctrl
+^/code/tools/castctrl/branches/spring-school-2011	tools/castctrl
 ^/code/tools/castutils/branches/avs-yr3/	tools/castutils
 ^/code/tools/hardware/config/branches/stable-0                  tools/hardware/config
 ^/code/tools/hardware/laser/trunk                   tools/hardware/laser
@@ -7,6 +7,5 @@
 ^/code/tools/hardware/video/branches/spring-school-2011	tools/hardware/video
 ^/code/tools/math/trunk	tools/math
 ^/code/tools/hardware/pointCloud/trunk			tools/hardware/pointCloud
-^/code/tools/hardware/ptz/trunk tools/hardware/ptz
 ^/code/tools/hardware/ptz/trunk tools/hardware/ptz
 ^/code/subarchitectures/data.sa/trunk/ subarchitectures/data.sa
