@@ -190,7 +190,10 @@ module slice {
 
 	//-----------------------------------------------------------------
 
-	exception AbducerException { };
+	exception AbducerException { 
+		string message;
+		
+		};
 	
 	exception FileReadErrorException extends AbducerException {
 		string filename;
@@ -205,7 +208,6 @@ module slice {
 	exception NoProofException extends AbducerException {};
 
 	exception EngineException extends AbducerException {
-		string message;
 	};
 
 	//-----------------------------------------------------------------
