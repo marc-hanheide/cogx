@@ -45,6 +45,7 @@ CameraMount::CameraMount()
   setIdentity(ptBasePose);
   setIdentity(ptPanPose);
   setIdentity(ptTiltPose);
+  ptzServerComponent = "";
 }
 
 void CameraMount::configure(const map<string,string> & _config)
@@ -114,6 +115,11 @@ void CameraMount::configure(const map<string,string> & _config)
     have_fixed_pan_tilt = true;
   }
 
+  if((it = _config.find("--ptzserver")) != _config.end())
+  {
+    ptzServerComponent = it->second;
+  }
+
   if(camIds.size() == 0)
     throw runtime_error("no cam IDs given, need at least one");
   if(camPoses.size() != 0 && camIds.size() != camPoses.size())
@@ -130,6 +136,17 @@ void CameraMount::start()
 {
   if(usePTZ)
   {
+    std::string ptzServerHost = "localhost";
+    int ptzServerPort = cast::cdl::CPPSERVERPORT;
+
+    if (ptzServerComponent.length() > 0) {
+      cast::cdl::ComponentDescription desc =
+        getComponentManager()->getComponentDescription(ptzServerComponent);
+
+      ptzServerHost = desc.hostName;
+      ptzServerPort = cast::languageToPort(desc.language);
+    }
+
     Ice::CommunicatorPtr ic = getCommunicator();
 
     Ice::Identity id;
@@ -139,8 +156,8 @@ void CameraMount::start()
     std::ostringstream str;
     str << ic->identityToString(id) 
       << ":default"
-      << " -h localhost"
-      << " -p " << cast::cdl::CPPSERVERPORT;
+      << " -h " << ptzServerHost
+      << " -p " << ptzServerPort;
 
     Ice::ObjectPrx base = ic->stringToProxy(str.str());    
     m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
