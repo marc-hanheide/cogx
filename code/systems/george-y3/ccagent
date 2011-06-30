@@ -11,4 +11,4 @@ bash tools/scripts/cast-client-start --version 2> /dev/null | grep "Release:"
 ifconfig | grep "inet \|^[a-z]"
 
 # Start the agent
-python ./tools/castctrl/castagent
+python ./tools/castctrl/castagent $*
