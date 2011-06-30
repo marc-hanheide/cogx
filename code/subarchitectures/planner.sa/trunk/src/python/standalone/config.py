@@ -67,6 +67,9 @@ class LoggerProxy(object):
 
         logging.getLogger(".".join(elems)).log(level, msg, *args, **kwargs)
 
+    def trace(self, msg, *args, **kwargs):
+        self._log(logging.DEBUG, msg, *args, **kwargs)
+        
     def debug(self, msg, *args, **kwargs):
         self._log(logging.DEBUG, msg, *args, **kwargs)
 

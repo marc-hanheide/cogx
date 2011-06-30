@@ -256,33 +256,6 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
     }
 }
 
-void LocalProblemNode::compute_probability(const State &state, std::vector<const Operator *>& ops) {
-    assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
-    if(reached_by) {
-        const Operator *op = reached_by->label->op;
-        if (op && ops.find(op) == ops.end())
-            ops.insert(op);
-
-        if(reached_by->target_cost == reached_by->action_cost) {
-            // Transition applicable, all preconditions achieved.
-        } else {
-            // Recursively compute helpful transitions for precondition variables.
-            const vector<LocalAssignment> &precond = reached_by->label->precond;
-            int *parent_vars = &*owner->causal_graph_parents->begin();
-            for(int i = 0; i < precond.size(); i++) {
-                int precond_value = precond[i].value;
-                int local_var = precond[i].local_var;
-                int precond_var_no = parent_vars[local_var];
-                if(state[precond_var_no] == precond_value)
-                    continue;
-                LocalProblemNode *child_node = &g_HACK->get_local_problem(
-                    precond_var_no, state[precond_var_no])->nodes[precond_value];
-                child_node->compute_probability(state, ops);
-            }
-        }
-    }
-}
-
 CyclicCGHeuristic::CyclicCGHeuristic() {
     assert(!g_HACK);
     g_HACK = this;
@@ -323,11 +296,8 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
 
     int heuristic = compute_costs(state);
 
-    if(heuristic != DEAD_END && heuristic != 0) {
+    if(heuristic != DEAD_END && heuristic != 0)
         goal_node->mark_helpful_transitions(state);
-        std::set<const Operator *> ops;
-        goal_node->compute_probability(state, ops);
-    }
 
     return heuristic;
 }
@@ -352,7 +322,7 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
             if(node->priority() < curr_priority)
                 continue;
             if(node == goal_node)
-                return node->action_cost;
+                return node->cost;
 
             assert(node->priority() == curr_priority);
             node->on_expand();

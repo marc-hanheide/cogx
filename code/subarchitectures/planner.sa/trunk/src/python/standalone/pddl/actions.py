@@ -55,8 +55,9 @@ class Action(Scope):
         #indent = len("(:action ")
 
     def get_inst_func(self, st, condition=None):
+        import itertools
         import state
-        from predicates import FunctionTerm, VariableTerm
+        from predicates import FunctionTerm, FunctionVariableTerm, VariableTerm
         
         def args_visitor(term, results):
             if isinstance(term, FunctionTerm):
@@ -87,14 +88,24 @@ class Action(Scope):
                     if mapping.get(k, None) != v:
                         checked.difference_update(self.cond_by_arg[k])
             prev_mapping.update(mapping)
+            
+            def instantianteAndCheck(cond, combinations, func):
+                for c in combinations:
+                    cond.instantiate(dict(zip(cond.args, c)), st.problem)
+                    result = func()
+                    cond.uninstantiate()
+                    yield result
 
             #print [a.name for a in mapping.iterkeys()]
             forced = []
             def check(cond):
+                def is_instantiated_function(term):
+                    return type(term) == FunctionTerm or (type(term) == FunctionVariableTerm and term.is_instantiated())
+                
                 if not cond or cond in checked:
                     return True
                 if isinstance(cond, conditions.LiteralCondition):
-                    if cond.predicate == builtin.equals and isinstance(cond.args[0], FunctionTerm) and isinstance(cond.args[1], VariableTerm):
+                    if cond.predicate == builtin.equals and is_instantiated_function(cond.args[0]) and isinstance(cond.args[1], VariableTerm):
                         v = cond.args[-1]
                         if all(a.is_instantiated() for a in cond.args[0].args if isinstance(a, VariableTerm)) and  isinstance(v, VariableTerm) and not v.is_instantiated():
                             svar = state.StateVariable.from_literal(cond, st)
@@ -128,6 +139,21 @@ class Action(Scope):
                         return True
                     if all(c == False for c in results):
                         return False
+                elif isinstance(cond, conditions.QuantifiedCondition):
+                    combinations = itertools.product(*map(lambda a: list(st.problem.get_all_objects(a.type)), cond.args))
+                    results = list(instantianteAndCheck(cond, combinations, lambda: check(cond.condition)))
+                    if isinstance(cond, conditions.Conjunction):
+                        if any(c == False for c in results):
+                            return False
+                        if all(c == True for c in results):
+                            checked.add(cond)
+                            return True
+                    elif isinstance(cond, conditions.ExistentialCondition):
+                        if any(c == True for c in results):
+                            checked.add(cond)
+                            return True
+                        if all(c == False for c in results):
+                            return False
                 else:
                     assert False
                 return None

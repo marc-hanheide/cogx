@@ -36,7 +36,7 @@ add_custom_target(downward_preprocess
                    WORKING_DIRECTORY ${DOWNWARD_DIR}/preprocess/
                    COMMENT "Building ${DOWNWARD_DIR}/preprocess/preprocess")
 add_custom_target(downward_search
-                   COMMAND make
+                   COMMAND make release
                    WORKING_DIRECTORY ${DOWNWARD_DIR}/search/
                    COMMENT "Building ${DOWNWARD_DIR}/search/search")
 
