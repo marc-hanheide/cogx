@@ -1,0 +1,5 @@
+#!/bin/bash
+# Absolute path and directory
+#SCRIPT=$(readlink -f $0)
+#SCRIPTDIR=$(dirname $SCRIPT)
+python ./tools/castctrl/castagent.py
