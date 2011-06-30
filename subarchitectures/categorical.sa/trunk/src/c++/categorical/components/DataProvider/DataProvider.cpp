@@ -396,6 +396,7 @@ void CategoricalDataProvider::runComponent()
   // Run component
   while(isRunning())
   {
+   try {
     // Get current time and add 1sec
 	 timeval tv;
     timespec ts;
@@ -469,6 +470,9 @@ void CategoricalDataProvider::runComponent()
                 castTimeToSeconds(odomTimestamp),
                 castTimeDiffToSeconds(odomTimestamp, refTimestamp) );
     }
+   } catch (const CASTException& e) {
+    error("caught CASTException in runComponent(): %s", e.what());
+   }
   }
 
   debug("Completed!");
