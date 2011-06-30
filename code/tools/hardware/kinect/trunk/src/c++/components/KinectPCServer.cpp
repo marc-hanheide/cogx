@@ -106,7 +106,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
      if ((it = _config.find("--display-rgb")) != _config.end()) {
        m_displayImage= true;
  }
-
+     m_lastframe = -1;
   log("Capturing from kinect sensor started.");
 }
 
@@ -133,6 +133,9 @@ void KinectPCServer::runComponent() {
 
 void KinectPCServer::saveNextFrameToFile() {
   kinect->NextFrame();
+  if(kinect->frameNumber == m_lastframe){
+    return;
+  }
   IplImage* rgb_data = new IplImage(kinect->rgbImage);
   // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   if(m_displayImage){
@@ -160,6 +163,7 @@ void KinectPCServer::saveNextFrameToFile() {
   sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
   cvSaveImage(buf2, depth_data);
+m_lastframe = kinect->frameNumber;
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
