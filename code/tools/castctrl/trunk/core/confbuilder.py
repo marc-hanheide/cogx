@@ -180,6 +180,12 @@ class CCastConfig:
             pass
         return line.split("#")[0]
 
+    def _cwdRelativeDir(self, fdir):
+        reldir = os.path.relpath(fdir)
+        if reldir == "" or reldir == ".": fdir = "."
+        elif not reldir.startswith("."): fdir = reldir
+        return fdir
+
     def readConfig(self, filename, maxdepth=32):
         if maxdepth < 1:
             raise Exception("Failed to include: '%s' - maxdepth reached." % filename)
@@ -188,10 +194,7 @@ class CCastConfig:
         except Exception as e:
             raise Exception ("Failed to include: '%s'\n%s" % (filename, e))
 
-        fdir = os.path.abspath(os.path.dirname(filename))
-        reldir = os.path.relpath(fdir)
-        if not reldir.startswith("."):
-            fdir = reldir
+        fdir = self._cwdRelativeDir(os.path.abspath(os.path.dirname(filename)))
         lines = [
                 # CURRENT_DIR is also set by cast
                 "SETVAR CURRENT_DIR=%s" % fdir,
@@ -220,48 +223,72 @@ class CCastConfig:
         return lines
 
 
-    # TODO: support the new HOSTNAME entries in CAST file
     # done: HOSTNAME entries are overwritten by hconf HOST entries
     # done: new HOSTNAME entries are added
     # maybe: HPAR rules may be dropped (use SETVAR instead?)
-    # Currently only works if there is a HOSTNAME entry in the cast file
+    # Regenerate the HOSTNAME entries, put them at the beginning of the file
     def _update_cast_hostnames(self, lines):
         self._cast_hostnames = {}
-        first = -1
-        last = 0
+        ordHosts = []
+        removelines = []
         for i,line in enumerate(lines):
             mo = CCastConfig.reHostName.match(line)
             if mo != None:
-                if first < 0: first = i
-                last = i+1
                 self._cast_hostnames[mo.group(1)] = mo.group(2)
+                removelines.append(i)
+                ordHosts.append(mo.group(1))
 
-        if first < 0:
-            first = 0
-            last = 1
+        for i in reversed(removelines):
+            lines.pop(i)
 
         # add localhost definition
         if not "localhost" in self._cast_hostnames:
             self._cast_hostnames["localhost"] = self.hostMap.fixLocalhost("localhost")
-            lines.insert(first, "HOSTNAME  localhost  %s" % self._cast_hostnames["localhost"])
-            last = last + 1
-
-        # replace hosts from hconf
-        for i in xrange(first, last):
-            line = lines[i]
-            mo = CCastConfig.reHostName.match(line)
-            if mo == None: continue
-            if self.hostMap.isKnownHost(mo.group(1)):
-                lines[i] = "HOSTNAME  %s  %s" % (mo.group(1), self.hostMap.expandHostName(mo.group(1)))
+            ordHosts.append("localhost")
 
         # add additional hosts from hconf
         for k,v in self.hostMap.items():
-            if k in self._cast_hostnames: continue
+            if k in self._cast_hostnames: # update the value
+                self._cast_hostnames[k] = v
+                continue
             mo = re.match("^[a-zA-Z][a-zA-Z0-9_]*$", k)
             if not mo: continue;
+            ordHosts.append(k)
             self._cast_hostnames[k] = v
-            lines.insert(last, "HOSTNAME  %s  %s" % (k, v))
-            last = last + 1
+
+        # topological sorting of hosts
+        # if host uses target, target must be defined first
+        def uses(host, target):
+            if target == "localhost" and self._cast_hostnames[host] == target:
+                return True
+            if self._cast_hostnames[host] == "[%s]" % target:
+                return True
+            return False
+
+        changed = True
+        retries = 20
+        while changed and retries > 0:
+            neword = []
+            changed = False
+            while len(ordHosts) > 0:
+                host = ordHosts.pop(0)
+                i = 0
+                while i < len(ordHosts):
+                    if uses(host, ordHosts[i]):
+                        neword.append(ordHosts.pop(i))
+                        changed = True
+                        continue
+                    i += 1
+                neword.append(host)
+            ordHosts = neword
+            retries -= 1
+
+        if retries < 1:
+            logger.get().warn("HOSTNAME-s COULD NOT BE SORTED.")
+
+        for h in reversed(ordHosts):
+            lines.insert(0, "HOSTNAME %s %s" % (h, self._cast_hostnames[h]))
+        last = len(ordHosts)
 
         # remove invalid HOST declarations
         defaultHostFound = False
@@ -294,7 +321,10 @@ class CCastConfig:
         Fixes the localchost IP. Distributes the components to remote machines
         according to rules.
         """
-        lines = [ "SETVAR CONFIG_DIR=%s" % os.path.dirname(os.path.abspath(filename)) ]
+        lines = [
+            "SETVAR WORKING_DIR=%s" % os.getcwd(),
+            "SETVAR CONFIG_DIR=%s" % self._cwdRelativeDir(os.path.dirname(os.path.abspath(filename)))
+        ]
         lines += self.readConfig(filename)
         self._update_cast_hostnames(lines)
 
