@@ -43,6 +43,7 @@ private:
   bool m_saveToFile;
   bool m_displayImage;
   std::string m_saveDirectory;
+  int m_lastframe;
 
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
