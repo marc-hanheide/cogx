@@ -174,6 +174,11 @@ class CFilenameEditor(QtGui.QWidget, ICustomEditorBase):
         if prop.mruEnabled:
             if prop.mruHistory == None:
                 prop.mruHistory = []
+
+            #if prop.allowEmpty:
+            #    try: i = prop.mruHistory.index("<none>")
+            #    except ValueError: prop.mruHistory.append("<none>")
+
             cb = self.cb
             cb.blockSignals(True)
             cb.clear()

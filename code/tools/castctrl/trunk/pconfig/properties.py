@@ -75,10 +75,20 @@ class CStringItemProperty(CProperty):
 
 class CFilenameProperty(CProperty):
     # @param filter: tr("Name (mask mask ...);;Name (mask ...) ...")
-    def __init__(self, name, label=None, default="", filter="All files (*)"):
+    def __init__(self, name, label=None, default="", filter="All files (*)", allowEmpty=False):
         super(CFilenameProperty, self).__init__(name, label, default)
         self.filter = filter
         self.mruEnabled = True
+        self.allowEmpty = allowEmpty
+
+    #def _get_value(self):
+    #    if self._value == None or self._value == "<none>" or self._value == "":
+    #        return "<none>"
+
+    #def _set_value(self, value):
+    #    if value == None or value == "<none>" or value == "":
+    #        value = "<none>"
+    #    self._value = value
 
 class CPropertySet(object):
     def __init__(self, name, **kwargs):
@@ -110,6 +120,6 @@ class CPropertySet(object):
         p = CStringItemProperty(name, label, default, items)
         self.properties.append(p)
 
-    def filenameField(self, name, label=None, filter=None, default=None, group=None):
-        p = CFilenameProperty(name, label, default, filter)
+    def filenameField(self, name, label=None, filter=None, default=None, group=None, allowEmpty=False):
+        p = CFilenameProperty(name, label, default, filter, allowEmpty)
         self.properties.append(p)
