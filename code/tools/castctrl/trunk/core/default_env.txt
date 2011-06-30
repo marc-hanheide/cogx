@@ -72,9 +72,14 @@ V11N_STANDALONE=--standalone-display-host
 V11N_STANDALONE_HOST=localhost
 
 CMD_JAVA=java -ea -classpath ${CLASSPATH}
+
 CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
-CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
+CMD_CPP_SERVER_DEBUG=ddd --eval-command=run ${CAST_BIN_DIR}/cast-server-c++ 
+
 CMD_PYTHON_SERVER=python -m ComponentServer
+
+CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
+
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_GOLEM=golemTinyIce [GOLEM_CONFIG]

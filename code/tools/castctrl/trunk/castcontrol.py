@@ -414,17 +414,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.procGroupB = CProcessGroup("CAST Servers")
         self.procGroupC = CProcessGroup("CAST Client")
 
-        self._manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
-        self._manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
-        self._manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
-        self.procGroupB.addProcess("cast-java")
-        self.procGroupB.addProcess("cast-cpp")
-        self.procGroupB.addProcess("cast-python")
-
         self._manager.addProcess(procman.CProcess("cast-client", self._options.xe("${CMD_CAST_CLIENT}")))
         self.procGroupC.addProcess("cast-client")
 
         self.serverManager = CServerManager()
+        fn = os.path.join(os.path.dirname(pconfig.__file__), "castservers.txt")
+        self.serverManager.addServersFromFile(fn)
         fn = os.path.join(os.path.dirname(pconfig.__file__), "cogxservers.txt")
         self.serverManager.addServersFromFile(fn)
         self.wAppConfig.addServers(self.serverManager.servers)
@@ -528,12 +523,28 @@ class CCastControlWnd(QtGui.QMainWindow):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
 
-    def startProcesses(self, procGroup):
+    def startLocalProcesses(self, procGroup):
         LOGGER.log("Starting %s" % procGroup.name)
         for name in procGroup.processlist:
+            csi = self.serverManager.getServerInfo(name)
             p = self._manager.getProcess(name)
-            if p: p.start()
+            if not p:
+                continue
+            if not csi:
+                p.start()
+                continue
+            if not csi.enabled:
+                continue
 
+            extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+            command = self._options.xe(csi.getCommand(), environ=extenv)
+            params = csi.getParameters()
+            if params:
+                for k,v in params.items():
+                    params[k] = self._options.xe(v, environ=extenv)
+            p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+
+    def startRemoteProcesses(self, procGroup):
         log4 = self._getLog4jConfig()
         log4config = "".join(open(log4.clientConfigFile).readlines())
 
@@ -550,12 +561,13 @@ class CCastControlWnd(QtGui.QMainWindow):
                 p.start()
 
 
-    def stopProcesses(self, procGroup):
+    def stopLocalProcesses(self, procGroup):
         LOGGER.log("Stopping %s" % procGroup.name)
         for name in procGroup.processlist:
             p = self._manager.getProcess(name)
             if p: p.stop()
 
+    def stopRemoteProcesses(self, procGroup):
         for h in self._remoteHosts: # See <URL:#remotestart>
             for p in h.proclist:
                 if p.name == procman.LOG4J_PROCESS:
@@ -576,11 +588,13 @@ class CCastControlWnd(QtGui.QMainWindow):
         if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
 
-        self.startProcesses(self.procGroupB)
+        self.startLocalProcesses(self.procGroupB)
+        self.startRemoteProcesses(self.procGroupB)
 
 
     def stopServers(self):
-        self.stopProcesses(self.procGroupB)
+        self.stopLocalProcesses(self.procGroupB)
+        self.stopRemoteProcesses(self.procGroupB)
 
 
     def onStartCastServers(self):
@@ -829,24 +843,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             hasServer = self._log4j_use_server
             log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
-            for name in self.procGroupA.processlist:
-                csi = None
-                for c in self.serverManager.servers:
-                    if c.name == name:
-                        csi = c
-                        break
-                if not csi: continue
-                if not csi.enabled: continue
-                p = self._manager.getProcess(csi.name)
-                if not p: continue
-
-                extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
-                command = self._options.xe(csi.command, environ=extenv)
-                params = csi.getParameters()
-                if params:
-                    for k,v in params.items():
-                        params[k] = self._options.xe(v, environ=extenv)
-                p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+            self.startLocalProcesses(self.procGroupA)
         finally:
             QtGui.QApplication.restoreOverrideCursor()
 
@@ -854,7 +851,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onStopExternalServers(self):
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-            self.stopProcesses(self.procGroupA)
+            self.stopLocalProcesses(self.procGroupA)
             self.checkStopLog4jServer()
         finally:
             QtGui.QApplication.restoreOverrideCursor()

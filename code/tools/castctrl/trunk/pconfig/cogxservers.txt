@@ -31,7 +31,7 @@ levels = ["Off", "Critical (default)", "Medium", "All"]
 gazebo.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1])
 gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
 
-def gazeboParamProcessor(name, value):
+def gazeboParamProcessor(name, value, serverInfo):
     if name == "GUI":
         if value == "No": return "-g"
         return ""
@@ -56,7 +56,7 @@ levels = ["Off", "Default", "Medium", "All"]
 player.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1] )
 player.setCommand("player  [DEBUG]  [CONFIG]")
 
-def playerParamProcessor(name, value):
+def playerParamProcessor(name, value, serverInfo):
     if name == "DEBUG":
         if value.startswith("Off"): return "-d 0"
         elif value.startswith("Default"): return "-d 1"
