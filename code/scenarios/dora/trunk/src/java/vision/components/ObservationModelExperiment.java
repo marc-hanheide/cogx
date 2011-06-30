@@ -127,6 +127,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 				logException(e1);
 			}
 		}
+		if (config.containsKey("--label"))
+			objectLabels = new String[] { config.get("--label") };
 
 	}
 
@@ -192,7 +194,7 @@ public class ObservationModelExperiment extends ManagedComponent {
 
 			setPTZ(currentRadius);
 			sleepComponent(2000);
-			
+
 			for (double currentAngle = -Math.PI; currentAngle < Math.PI; currentAngle += (angleStep
 					* Math.PI / 180.0)) {
 				try {
@@ -208,8 +210,7 @@ public class ObservationModelExperiment extends ManagedComponent {
 					println("navCommand completed with " + comp.toString());
 					if (comp != Completion.COMMANDSUCCEEDED) {
 						getLogger()
-								.warn(
-										"failed to navigate to goal. Will try the next one.");
+								.warn("failed to navigate to goal. Will try the next one.");
 						continue;
 					}
 					println("reached goal. time to run the detector");
@@ -240,7 +241,8 @@ public class ObservationModelExperiment extends ManagedComponent {
 
 	private void setPTZ(double currentRadius) {
 		SetPTZPoseCommand spc = new SetPTZPoseCommand(new PTZPose(0.0,
-				Math.atan((objectPosZ - CAMERA_POS_Z) / currentRadius), 1), PTZCompletion.COMPINIT);
+				Math.atan((objectPosZ - CAMERA_POS_Z) / currentRadius), 1),
+				PTZCompletion.COMPINIT);
 		try {
 			addToWorkingMemory(newDataID(), spc);
 		} catch (AlreadyExistsOnWMException e1) {
