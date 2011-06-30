@@ -874,7 +874,12 @@ class CCastControlWnd(QtGui.QMainWindow):
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": ""})
-            # p.start()
+
+        for h in self._remoteHosts:
+            for p in h.proclist:
+                if p.name == "BUILD":
+                    p.start()
+
 
     def onRunMakeInstall(self):
         if not self._checkBuidDir(): return
@@ -884,6 +889,11 @@ class CCastControlWnd(QtGui.QMainWindow):
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "install"})
+
+        for h in self._remoteHosts:
+            for p in h.proclist:
+                if p.name == "BUILD-INSTALL":
+                    p.start()
 
     def onRunMakeClean(self):
         if not self._checkBuidDir(): return

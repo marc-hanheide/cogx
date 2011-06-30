@@ -122,6 +122,18 @@ class CConsoleAgent:
                 cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
                 self.manager.addProcess(procman.CProcess("golem", cmd))
 
+        if appOptions.dobuild:
+            # XXX: Remote processes don't accept additional parameters, so we need 2 processes
+            LOGGER.log("BUILD is enabled.")
+            cmd = "make -C BUILD"
+            proc = procman.CProcess("BUILD", cmd)
+            proc.allowTerminate = True
+            self.manager.addProcess(proc)
+            cmd = "make -C BUILD install"
+            proc = procman.CProcess("BUILD-INSTALL", cmd)
+            proc.allowTerminate = True
+            self.manager.addProcess(proc)
+
         #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
         #self.procBuild.allowTerminate = True
@@ -177,6 +189,8 @@ def parseOptions():
         help="Set the Player configuration file. If not set, Player won't be started by this agent.")
     parser.add_option("", "--golem", action="store", type="string", default=None, dest="golem_cfg",
         help="Set the Golem configuration file. If not set, Golem won't be started by this agent.")
+    parser.add_option("", "--build", action="store_true", dest="dobuild",
+        help="Build the project when required by the remote process.")
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
