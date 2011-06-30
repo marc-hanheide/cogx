@@ -82,7 +82,7 @@ public class TourGiver extends ManagedComponent {
 		String id = newDataID();
 		WMEventQueue queue = new WMEventQueue();
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id), queue);
-		addToWorkingMemory(id, navCommand);
+		addToWorkingMemory(id, "spatial.sa",  navCommand);
 		Completion completion = Completion.COMMANDFAILED;
 		while (isRunning()) {
 			WorkingMemoryChange ev = queue.take();
