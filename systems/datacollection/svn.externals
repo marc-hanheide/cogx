@@ -1,5 +1,5 @@
 ^/code/tools/castctrl/branches/spring-school-2011	tools/castctrl
-^/code/tools/castutils/branches/avs-yr3/	tools/castutils
+^/code/tools/castutils/branches/spring-school-2011	tools/castutils
 ^/code/tools/hardware/config/branches/stable-0                  tools/hardware/config
 ^/code/tools/hardware/laser/trunk                   tools/hardware/laser
 ^/code/tools/hardware/kinect/trunk               tools/hardware/kinect
