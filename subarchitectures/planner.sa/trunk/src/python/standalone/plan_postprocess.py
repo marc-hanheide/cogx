@@ -3,6 +3,7 @@ import time, itertools
 import config
 
 import pddl
+import pddl.dtpddl
 from pddl import state
 import plans
 
