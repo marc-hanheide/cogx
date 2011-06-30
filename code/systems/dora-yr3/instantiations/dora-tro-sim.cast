@@ -31,7 +31,10 @@ INCLUDE includes/coma.sa/coma-mediators.cast
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast
 INCLUDE includes/coma.sa/coma-defaultsa.cast
-INCLUDE includes/default.sa/default-main-ICAPS.cast
+
+CPP GD default.queryhandler DefaultQueryHandler
+CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config subarchitectures/default.sa/config/default_knowledge.xml --objects-from-defaultprob instantiations/defaultprobs/defaultprobs-TRO.txt
+
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
@@ -41,7 +44,7 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-INCLUDE includes/categorical.sa/categorical-ICAPS-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 
 
 # Vision ######################################################################
@@ -52,13 +55,13 @@ INCLUDE includes/vision.sa/vision-mediators-dora.cast
 CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
 CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
 
-VARDEFAULT fake_tables=<multiline>
-   --geometry-hack 
-   --pos-table "2.5, 1.0, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "1.0, -1.0, 8.0, 8.0"
-</multiline>
+#VARDEFAULT fake_tables=<multiline>
+#   --geometry-hack 
+#   --pos-table "2.5, 1.0, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "1.0, -1.0, 8.0, 8.0"
+#</multiline>
 #
 
-JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
+#JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
 
 VARDEFAULT siftroot_=./instantiations/sift-models
 VARDEFAULT plyroot_=./instantiations/ply-models
@@ -77,7 +80,8 @@ CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/switching-planner-dora.cast
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain avs/dora-avs.pddl --log --nodot --pdb  --low-p-threshold 0.01 --default instantiations/defaultprobs/defaultprobs-TRO.txt
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
