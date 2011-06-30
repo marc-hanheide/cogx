@@ -569,8 +569,8 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   }
 
   //FIXME
-//   m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
-//                                           oobj->getData()->time.us));
+   m_SlamRobotPose.setTime(Cure::Timestamp(lastRobotPose->time.s,
+                                           lastRobotPose->time.us));
   m_SlamRobotPose.setX(lastRobotPose->x);
   m_SlamRobotPose.setY(lastRobotPose->y);
   m_SlamRobotPose.setTheta(lastRobotPose->theta);
