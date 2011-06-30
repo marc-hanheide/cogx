@@ -15,7 +15,7 @@
 
 # TODO: Fix castcontrol to properly run the processes. Only group='A' works as it should.
 cleanup = Server("Cleanup", server=False, label="Cleanup shell script (bash)") #, group='B')
-cleanup.filenameField("SCRIPT", label="Script", filter="SH Files (*.sh);;All files (*)")
+cleanup.filenameField("SCRIPT", label="Script", filter="SH Files (*.sh);;All files (*)", allowEmpty=True)
 cleanup.setCommand("bash [SCRIPT]")
 
 
