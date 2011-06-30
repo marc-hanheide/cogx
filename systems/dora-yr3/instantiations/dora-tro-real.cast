@@ -30,7 +30,8 @@ INCLUDE includes/coma.sa/coma-mediators.cast
 # Default.SA ################################################################
 INCLUDE includes/default.sa/default-base.cast
 INCLUDE includes/coma.sa/coma-defaultsa.cast
-INCLUDE includes/default.sa/default-main-ICAPS.cast
+CPP GD default.queryhandler DefaultQueryHandler
+CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config subarchitectures/default.sa/config/default_knowledge.xml --objects-from-defaultprob instantiations/defaultprobs/defaultprobs-TRO.txt
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
@@ -77,7 +78,8 @@ CPP MG recognizer.3D ObjectRecognizer3D --no-learning --videoname VideoServer --
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/switching-planner-dora.cast
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain avs/dora-avs.pddl --log --nodot --pdb  --low-p-threshold 0.01 --default instantiations/defaultprobs/defaultprobs-TRO.txt
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent

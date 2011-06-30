@@ -24,7 +24,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-    pose [1.0 1.4 0 0]
+    pose [-3.0 -2.4 0 0]
 	color "red"
 )
 
