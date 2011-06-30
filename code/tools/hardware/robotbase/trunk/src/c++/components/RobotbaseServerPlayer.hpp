@@ -120,6 +120,8 @@ protected:
 
   double m_MaxV;
   double m_MaxW;
+ double m_MaxJoyV;                                                                              
+   double m_MaxJoyW;   
 
   bool m_saveToFile;
   std::string m_saveDirectory;
