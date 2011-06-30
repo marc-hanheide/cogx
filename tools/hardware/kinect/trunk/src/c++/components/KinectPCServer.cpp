@@ -122,7 +122,7 @@ void KinectPCServer::start()
 }
 
 void KinectPCServer::runComponent() {
-	log("I am running");
+	log("I am running ");
 		while(isRunning()) {
 			if (m_saveToFile) {
 				saveNextFrameToFile();
