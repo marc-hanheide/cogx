@@ -232,8 +232,8 @@ void PlanePopOut::start()
   startPCCServerCommunication(*this);
 #ifdef FEAT_VISUALIZATION
 
-  m_bSendPoints = true;
-  m_bSendPlaneGrid = false;
+  m_bSendPoints = false;
+  m_bSendPlaneGrid = true;
   m_bSendImage = true;
   m_bSendSois = true;
   m_bColorByLabel = true;
@@ -245,35 +245,35 @@ void PlanePopOut::start()
   act.id = IDC_POPOUT_LABEL_COLOR;
   act.label = "Color by label";
   act.iconLabel = "Color";
-  act.iconSvg = "stock:C";
+  act.iconSvg = "text:C";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_POINTS;
   act.label = "Toggle Update 3D Points";
   act.iconLabel = "3D Points";
-  act.iconSvg = "stock:P";
+  act.iconSvg = "text:P";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_SOIS;
   act.label = "Toggle Update SOIs";
   act.iconLabel = "SOIs";
-  act.iconSvg = "stock:S";
+  act.iconSvg = "text:S";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_PLANEGRID;
   act.label = "Toggle Update Plane Grid";
   act.iconLabel = "Plane Grid";
-  act.iconSvg = "stock:G";
+  act.iconSvg = "text:G";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_IMAGE;
   act.label = "Toggle Update Image";
   act.iconLabel = "Image";
-  act.iconSvg = "stock:I";
+  act.iconSvg = "text:I";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_IMAGE, act);
 
@@ -464,32 +464,30 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
+	static CMilliTimer tmSendPlaneGrid(true);
+	if (tmSendPlaneGrid.elapsed() < 100) // 10Hz
+		return;
+	tmSendPlaneGrid.restart();
+
 	CMilliTimer tm;
 	tm.restart();
 	std::ostringstream str;
-	str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+	str << "function render()\n";
 
-	// See: DrawPlaneGrid
-	str << "glBegin(GL_LINE_LOOP);\n";
-	str << "glColor(1.0,1.0,1.0);\n";
-	str << "glVertex(" << v3dmax.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
-	str << "glVertex(" << v3dmax.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmin.y << "," << v3dmin.z << ");\n";
-	str << "glEnd();\n";
-
-	str << "glBegin(GL_LINE_LOOP);\n";
-	str << "glColor(1.0,1.0,1.0);\n";
-	str << "glVertex(" << v3dmax.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x+A << "," << v3dmin.y+B << "," << v3dmin.z+C << ");\n";
-	str << "glVertex(" << v3dmax.x+A << "," << v3dmax.y+B << "," << v3dmax.z+C << ");\n";
-	str << "glVertex(" << v3dmin.x << "," << v3dmax.y << "," << v3dmax.z << ");\n";
-	str << "glVertex(" << v3dmin.x+A << "," << v3dmin.y+B << "," << v3dmin.z+C << ");\n";
-	str << "glEnd();\n";
-
+	if (mConvexHullPoints.size() > 2)
+	{
+		str << "glBegin(GL_LINE_LOOP)\n";
+		str << "glPointSize(2.0)\n";
+		str << "glColor(1.0,1.0,1.0)\n";
+		str << "v=glVertex\n";
+		for(int i = 0; i < mConvexHullPoints.size(); i++) {
+			Vector3& p = mConvexHullPoints.at(i);
+			str << "v(" << p.x << "," << p.y << "," << p.z << ")\n";
+		}
+		Vector3& p = mConvexHullPoints.at(0);
+		str << "v(" << p.x << "," << p.y << "," << p.z << ")\n";
+		str << "glEnd()\n";
+	}
 	str << "end\n";
 
 	long long t1 = tm.elapsed_micros();
@@ -699,14 +697,14 @@ void PlanePopOut::runComponent()
 			{
 			      DisplayInTG();
 			}
-			AddConvexHullinWM();
-			
-			//log("Done AddConvexHullinWM");
 #ifdef FEAT_VISUALIZATION
 			if (m_bSendPoints) SendPoints(pointsN, points_label, m_bColorByLabel, m_display, m_tmSendPoints, this);
 			if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
 			//log("Done FEAT_VISUALIZATION");
 #endif
+
+			AddConvexHullinWM();
+			//log("Done AddConvexHullinWM");
 		}
 		else	log("Wrong with the execution of Plane fitting!");
 	}
