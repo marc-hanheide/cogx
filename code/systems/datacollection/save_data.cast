@@ -1,7 +1,7 @@
 HOST localhost
 
 COMPONENT CPP laser.server LaserServerPlayer --player-host localhost --save-to-file --save-directory "data/laser" #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --save-to-file --save-directory "data/odom" --cure-config-file  cureconfig.ccf --max-joyv 0.1 --max-joyw 0.25 #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --save-to-file --save-directory "data/odom" --cure-config-file  cureconfig.ccf --max-joyv 0.2 --max-joyw 0.25 #--rand-data
 COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost
 
 SUBARCHITECTURE vision.sa
