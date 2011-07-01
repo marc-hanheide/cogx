@@ -196,9 +196,6 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::DELETE),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::deletedNavNode));
-  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<PlaceManager>(this,
-	&PlaceManager::robotMoved));
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newEdge));
@@ -241,6 +238,12 @@ PlaceManager::runComponent()
   cdl::WorkingMemoryChange change = rv->wait();
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(change.address);
+  log("PlaceManager is running, now wait 5 seconds before listenng to robot movement (useful for preloaded maps)");
+  sleepComponent(5000);
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceManager>(this,
+	&PlaceManager::robotMoved));
+
 
 
 }
