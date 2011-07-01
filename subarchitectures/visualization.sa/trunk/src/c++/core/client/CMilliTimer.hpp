@@ -5,7 +5,7 @@ class CMilliTimer
 {
    void* pStartTime;
 public:
-   CMilliTimer();
+   CMilliTimer(bool bStart=false);
    ~CMilliTimer();
    void restart();
    long long elapsed();

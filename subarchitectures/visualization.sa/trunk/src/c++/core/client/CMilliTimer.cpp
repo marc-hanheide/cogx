@@ -1,9 +1,11 @@
 #include "CMilliTimer.hpp"
 #include <sys/time.h>
 
-CMilliTimer::CMilliTimer()
+CMilliTimer::CMilliTimer(bool bStart)
 {
    pStartTime = 0;
+   if (bStart)
+      restart();
 }
 
 CMilliTimer::~CMilliTimer()

@@ -122,8 +122,8 @@ int QCustomToolBar::updateUi(cogx::display::CDisplayModel *pModel, cogx::display
       pBtn = new QToolButton(pBar);
       QString text = QString::fromStdString(pgel->m_iconLabel);
       if (pgel->m_iconSvg.length() > 0) {
-         if (strncmp(pgel->m_iconSvg.c_str(), "stock:", 6) == 0) {
-            std::string stock = pgel->m_iconSvg.substr(6);
+         if (strncmp(pgel->m_iconSvg.c_str(), "text:", 5) == 0) {
+            std::string stock = pgel->m_iconSvg.substr(5);
             text = QString::fromStdString(stock);
          }
       }
