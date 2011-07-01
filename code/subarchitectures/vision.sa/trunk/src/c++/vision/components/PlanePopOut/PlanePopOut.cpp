@@ -365,6 +365,12 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 
 void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
+	//static CMilliTimer tmSendImage(true);
+	//if (tmSendImage.elapsed() < 500) // 2Hz
+	//    return;
+	//tmSendImage.restart();
+
+	CMilliTimer tm(true);
     IplImage *iplImg = convertImageToIpl(img);
     Video::CameraParameters c = img.camPars;
 
@@ -388,9 +394,25 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.5*vSOIonImg.at(i).height);
 	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
     }
-    cvSaveImage("/tmp/planes_image.jpg", iplImg);
+
+	bool bSaveImage = true;
+	long long t1 = tm.elapsed();
     m_display.setImage(ID_OBJECT_IMAGE, iplImg);
+	long long t2 = tm.elapsed();
+    if (bSaveImage)
+		cvSaveImage("/tmp/planes_image.jpg", iplImg);
     cvReleaseImage(&iplImg);
+	long long t3 = tm.elapsed();
+
+	if (1) {
+		ostringstream str;
+		str << "<h3>Plane popout - SendImage</h3>";
+		str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+		str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+		if (bSaveImage)
+			str << "Saved: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
+		m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	}
 }
 
 void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels,
@@ -469,8 +491,7 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 		return;
 	tmSendPlaneGrid.restart();
 
-	CMilliTimer tm;
-	tm.restart();
+	CMilliTimer tm(true);
 	std::ostringstream str;
 	str << "function render()\n";
 
