@@ -1,28 +1,35 @@
 package castutils.experimentation;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import motivation.slice.PlanProxy;
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
 import SpatialData.Priority;
 import SpatialData.StatusError;
-
+import autogen.Planner.Goal;
+import autogen.Planner.PlanningTask;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEventQueue;
+import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
+import eu.cogx.planner.facade.PlannerFacade;
 
 public class TourGiver extends ManagedComponent {
 
 	private static final String CONFIG_DELAY_MS = "--delay-ms";
 	private static final int DEFAULT_DELAY = 5000;
 	private static final String CONFIG_PLACES = "--places";
+	private static final String CONFIG_GOAL = "--goal";
+	private String goalString = null;
 
 	/*
 	 * (non-Javadoc)
@@ -44,11 +51,16 @@ public class TourGiver extends ManagedComponent {
 			delayTimeInMs = Integer.parseInt(config.get(CONFIG_DELAY_MS));
 		}
 		println("start after " + delayTimeInMs + " ms");
+		if (config.containsKey(CONFIG_GOAL)) {
+			goalString = config.get(CONFIG_GOAL);
+		}
+		println("start after " + delayTimeInMs + " ms");
 
 	}
 
 	private List<Integer> placeIds = new ArrayList<Integer>();
 	private long delayTimeInMs = DEFAULT_DELAY;
+	private PlannerFacade planner;
 
 	/*
 	 * (non-Javadoc)
@@ -57,6 +69,8 @@ public class TourGiver extends ManagedComponent {
 	 */
 	@Override
 	protected void runComponent() {
+		planner = PlannerFacade.get(this);
+
 		sleepComponent(delayTimeInMs);
 		for (Integer io : placeIds) {
 			try {
@@ -75,6 +89,10 @@ public class TourGiver extends ManagedComponent {
 			}
 		}
 		println("tour finished");
+		if (goalString != null) {
+			println("planning for goal " + goalString);
+			submitPlan(goalString);
+		}
 	}
 
 	private Completion executeNavCommand(NavCommand navCommand)
@@ -82,7 +100,7 @@ public class TourGiver extends ManagedComponent {
 		String id = newDataID();
 		WMEventQueue queue = new WMEventQueue();
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id), queue);
-		addToWorkingMemory(id, "spatial.sa",  navCommand);
+		addToWorkingMemory(id, "spatial.sa", navCommand);
 		Completion completion = Completion.COMMANDFAILED;
 		while (isRunning()) {
 			WorkingMemoryChange ev = queue.take();
@@ -110,4 +128,24 @@ public class TourGiver extends ManagedComponent {
 				new double[0], new double[0], StatusError.UNKNOWN,
 				Completion.COMMANDPENDING);
 	}
+
+	public void submitPlan(String goalStr) {
+		LinkedList<Goal> goals = new LinkedList<Goal>();
+		Goal goal = new Goal(-1, (String) goalStr, false);
+		goals.add(goal);
+		try {
+			WMEntryQueueElement<PlanningTask> res = planner.plan(goals, true)
+					.get();
+			if (res == null)
+				getLogger().warn("PLANNING FAILED");
+			else {
+				addToWorkingMemory(newDataID(), new PlanProxy(
+						res.getEvent().address));
+			}
+		} catch (Exception e) {
+			logException(e);
+		}
+
+	}
+
 }
