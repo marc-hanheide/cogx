@@ -22,7 +22,6 @@ JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8
 CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
 CPP MG avs.cpplanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 30 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 3 --kernel-width-factor 0.7 --sampleawayfromobs 0.35 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
 
-JAVA MG tourguide castutils.experimentation.TourGiver --places "4 5 14 17 19 0" --delay-ms 20000
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
@@ -87,6 +86,13 @@ COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+
+
+#JAVA MG tourguide castutils.experimentation.TourGiver --places "1" --delay-ms 20000 --goal %(goal)
+JAVA MG tourguide castutils.experimentation.TourGiver --places "4 5 14 17 19 0" --delay-ms 20000 --goal %(goal)
+
 
 # exection ####################################################################
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
