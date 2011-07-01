@@ -2406,7 +2406,21 @@ void PlanePopOut::ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::ve
 
 void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 {
-	double dd = D - hei*sqrt(A*A+B*B+C*C);
+    //just the prism up to the plane will be calculated
+    
+    v3c.z = v3c.z+hei/2;
+    VisionData::OneObj OObj;
+    for (unsigned int i = 0; i<ppSeq.size(); i++)
+    {
+	    Vector3 v;
+	    v.x =ppSeq.at(i).x;
+	    v.y =ppSeq.at(i).y;
+	    v.z =ppSeq.at(i).z+hei;
+	    OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
+    }
+    mObjSeq.push_back(OObj);
+    
+/*	double dd = D - hei*sqrt(A*A+B*B+C*C);
 	double half_dd = D- 0.5*hei*sqrt(A*A+B*B+C*C);
 	Vector3 v3core;
 	v3core.x =((C*C+B*B)*v3c.x-A*(C*v3c.z+B*v3c.y+half_dd))/(A*A+B*B+C*C);
@@ -2425,7 +2439,7 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 		OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
 	}
 	mObjSeq.push_back(OObj);
-
+*/
 /*
 	glBegin(GL_POLYGON);
 	glColor3f(1.0,1.0,1.0);
