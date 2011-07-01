@@ -1284,7 +1284,6 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
   if (m_ShowPath) {
-    log("drawing path");
     if (objID.operation == cdl::ADD) {
       m_ProxyPathStartMarker.add(m_PeekabotClient, "PathStart", peekabot::REPLACE_ON_CONFLICT);
       peekabot::VertexSet set1;
