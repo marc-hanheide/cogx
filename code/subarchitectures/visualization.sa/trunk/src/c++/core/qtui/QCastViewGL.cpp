@@ -295,6 +295,10 @@ void QCastViewGL::initializeGL()
 
    glEnable(GL_COLOR_MATERIAL);
    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+   // Enable alpha blending (transparency)
+   glEnable (GL_BLEND);
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void QCastViewGL::resizeGL(int width, int height)
