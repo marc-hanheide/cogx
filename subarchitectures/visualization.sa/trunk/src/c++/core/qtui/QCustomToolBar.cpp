@@ -18,6 +18,8 @@
 
 #include <QToolButton>
 #include <QAction>
+#include <QPixmap>
+#include <QPainter>
 #include "ChangeSlot.hpp"
 
 #ifdef DEBUG_TRACE
@@ -119,15 +121,26 @@ int QCustomToolBar::updateUi(cogx::display::CDisplayModel *pModel, cogx::display
       if (pgel->m_type != cogx::display::CGuiElement::wtAction)
          continue;
       QToolButton *pBtn;
+      QIcon icon;
       pBtn = new QToolButton(pBar);
       QString text = QString::fromStdString(pgel->m_iconLabel);
       if (pgel->m_iconSvg.length() > 0) {
          if (strncmp(pgel->m_iconSvg.c_str(), "text:", 5) == 0) {
-            std::string stock = pgel->m_iconSvg.substr(5);
-            text = QString::fromStdString(stock);
+            QString sym = QString::fromStdString(pgel->m_iconSvg.substr(5));
+            QPixmap pixmap(22, 22);
+            pixmap.fill(QColor(0, 0, 0, 0));
+            QPainter p(&pixmap);
+            QRect r = p.fontMetrics().boundingRect(sym);
+            int x = (22 - r.width()) / 2;
+            if (x < 0) x = 0;
+            int y = (22 - r.height()) / 2;
+            if (y < 0) y = 0;
+            y = 20 - y;
+            p.drawText(QPointF(x, y), sym);
+            icon = QIcon(pixmap);
          }
       }
-      QAction* pAct = new QAction(QIcon(), text, pBtn);
+      QAction* pAct = new QAction(icon, text, pBtn);
       pAct->setToolTip(QString::fromStdString(pgel->m_tooltip));
       pAct->setCheckable(pgel->m_bCheckable);
       pBtn->setDefaultAction(pAct);
