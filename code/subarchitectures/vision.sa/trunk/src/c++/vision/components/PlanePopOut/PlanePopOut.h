@@ -30,6 +30,7 @@ using namespace cogx::Math;
 class PlanePopOut : public PointCloudClient,
                     public ManagedComponent
 {
+public:
 typedef struct ObjP
 {
 	Vector3 c;
@@ -120,6 +121,7 @@ private:
 	bool m_bSendPoints;
 	bool m_bSendPlaneGrid;
 	bool m_bSendImage;
+	bool m_bSendSois;
 	// Color the poitns by labels or send the color from image
 	bool m_bColorByLabel;
 	CMilliTimer m_tmSendPoints;
@@ -134,6 +136,7 @@ private:
 		std::string getControlState(const std::string& ctrlId); /*override*/
 	};
 	CDisplayClient m_display;
+	void SendSyncAllSois();
 #endif
 
 protected:
