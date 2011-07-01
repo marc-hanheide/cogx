@@ -212,10 +212,15 @@ void PlanePopOut::configure(const map<string,string> & _config)
 #ifdef FEAT_VISUALIZATION
   // display objects
   // TODO: with multiple PPOs the names have to include the componentID.
-  #define ID_OBJECT_3D      "PlanePopout.3D"
-  #define ID_OBJECT_IMAGE   "PlanePopout.Image"
+  #define ID_OBJECT_3D       "PlanePopout.3D"
+  #define ID_PART_3D_POINTS  "3D points"
+  #define ID_PART_3D_PLANE   "Plane grid"
+  #define ID_PART_3D_SOI     "SOI:"
+  #define ID_PART_3D_OVERLAY "Overlay"
+  #define ID_OBJECT_IMAGE    "PlanePopout.Image"
 
   // display controls
+  #define IDC_POPOUT_SOIS "popout.show.sois"
   #define IDC_POPOUT_IMAGE "popout.show.image"
   #define IDC_POPOUT_POINTS "popout.show.points"
   #define IDC_POPOUT_PLANEGRID "popout.show.planegrid"
@@ -230,14 +235,11 @@ void PlanePopOut::start()
   m_bSendPoints = true;
   m_bSendPlaneGrid = false;
   m_bSendImage = true;
+  m_bSendSois = true;
   m_bColorByLabel = true;
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
-  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_POINTS, "Show 3D points");
-  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_PLANEGRID, "Show plane grid");
-  //m_display.addCheckBox(ID_OBJECT_3D, IDC_POPOUT_LABEL_COLOR, "Color by label");
-  //m_display.addCheckBox(ID_OBJECT_IMAGE, IDC_POPOUT_IMAGE, "Show image");
 
   Visualization::ActionInfo act;
   act.id = IDC_POPOUT_LABEL_COLOR;
@@ -251,6 +253,13 @@ void PlanePopOut::start()
   act.label = "Toggle Update 3D Points";
   act.iconLabel = "3D Points";
   act.iconSvg = "stock:P";
+  act.checkable = true;
+  m_display.addAction(ID_OBJECT_3D, act);
+
+  act.id = IDC_POPOUT_SOIS;
+  act.label = "Toggle Update SOIs";
+  act.iconLabel = "SOIs";
+  act.iconSvg = "stock:S";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
@@ -268,13 +277,12 @@ void PlanePopOut::start()
   act.checkable = true;
   m_display.addAction(ID_OBJECT_IMAGE, act);
 
-
   // Object displays (m_bXX) are set to off: we need to create dummy display objects
   // on the server so that we can activate displays through GUI
   ostringstream ss;
   ss <<  "function render()\nend\n"
      << "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
-  m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", ss.str());
+  m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, ss.str());
   //Video::Image image;
   //m_display.setImage(ID_OBJECT_IMAGE, image);
   m_tmSendPoints.restart();
@@ -304,10 +312,14 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
 	if (event.sourceId == IDC_POPOUT_POINTS) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPoints = false;
 		else pPopout->m_bSendPoints = true;
+		if (!pPopout->m_bSendPoints)
+			setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
 	}
 	else if (event.sourceId == IDC_POPOUT_PLANEGRID) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendPlaneGrid = false;
 		else pPopout->m_bSendPlaneGrid = true;
+		if (!pPopout->m_bSendPlaneGrid)
+			setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_PLANE, "function render()\nend\n");
 	}
 	else if (event.sourceId == IDC_POPOUT_LABEL_COLOR) {
 		if (event.data == "0" || event.data=="") pPopout->m_bColorByLabel = false;
@@ -316,6 +328,11 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
 	else if (event.sourceId == IDC_POPOUT_IMAGE) {
 		if (event.data == "0" || event.data=="") pPopout->m_bSendImage = false;
 		else pPopout->m_bSendImage = true;
+	}
+	else if (event.sourceId == IDC_POPOUT_SOIS) {
+		if (event.data == "0" || event.data=="") pPopout->m_bSendSois = false;
+		else pPopout->m_bSendSois = true;
+		pPopout->SendSyncAllSois();
 	}
 }
 
@@ -337,6 +354,10 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 	}
 	if (ctrlId == IDC_POPOUT_IMAGE) {
 		if (pPopout->m_bSendImage) return "2";
+		else return "0";
+	}
+	if (ctrlId == IDC_POPOUT_SOIS) {
+		if (pPopout->m_bSendSois) return "2";
 		else return "0";
 	}
 	return "";
@@ -424,7 +445,7 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 	long long t1 = tmSendPoints.elapsed();
 	string S = str.str();
 	long long t2 = tmSendPoints.elapsed();
-	m_display.setLuaGlObject(ID_OBJECT_3D, "3D points", S);
+	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, S);
 	long long t3 = tmSendPoints.elapsed();
 	if (1) {
 		str.str("");
@@ -473,7 +494,7 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 
 	long long t1 = tm.elapsed_micros();
 	string S = str.str();
-	m_display.setLuaGlObject(ID_OBJECT_3D, "PlaneGrid", S);
+	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_PLANE, S);
 	long long t2 = tm.elapsed_micros();
 
 	if (1) {
@@ -531,13 +552,47 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
   //  }
   //}
   str << "end\n";
-  m_display.setLuaGlObject(ID_OBJECT_3D, "Overlays", str.str());
+  m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_OVERLAY, str.str());
 }
+
+void SendSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soiobj)
+{
+	ostringstream ss;
+	ss << "function render()\n";
+	ss << "glPushMatrix()\n";
+	ss << "glColor(0.0, 0.0, 1.0, 0.2)\n";
+	ss << "glTranslate("
+		<< soiobj.c.x << ","
+		<< soiobj.c.y << ","
+		<< soiobj.c.z << ")\n";
+	ss << "StdModel:cylinder(" << soiobj.s.x << "," << soiobj.s.y << "," << soiobj.s.z << ",12)\n";
+	ss << "glPopMatrix()\n";
+	ss << "end\n";
+	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, ss.str());
+}
+
+void SendRemoveSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soiobj)
+{
+	// XXX: ATM the parts are not removed from LuaGL, so we just create an empty render()
+	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, "function render()\nend\n");
+	m_display.removePart(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id);
+}
+
+void PlanePopOut::SendSyncAllSois()
+{
+	vector<ObjPara> sois = CurrentObjList; // copy to minimize race conditions
+	for (int i = 0; i < sois.size(); i++) {
+		ObjPara& soi = sois.at(i);
+		if (m_bSendSois) SendSoi(m_display, soi);
+		else SendRemoveSoi(m_display, soi);
+	}
+}
+
 #endif
 
 void PlanePopOut::runComponent()
 {
-  sleepComponent(100);
+  sleepComponent(2000);
   log("Component PlanePopOut is running now");
   // note: this must be called in the run loop, not in configure or start as these are all different threads!
   int argc = 1;
@@ -794,6 +849,9 @@ void PlanePopOut::SOIManagement()
 		 {
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
 		  //  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+#ifdef FEAT_VISUALIZATION
+		  if (m_bSendSois) SendRemoveSoi(m_display, PreviousObjList.at(j));
+#endif
 		 }
 		}
 	    }
@@ -857,6 +915,9 @@ void PlanePopOut::SOIManagement()
 		  // cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 		  deleteFromWorkingMemory(PreviousObjList.at(j).id);
 		  // cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+#ifdef FEAT_VISUALIZATION
+		  if (m_bSendSois) SendRemoveSoi(m_display, PreviousObjList.at(j));
+#endif
 		 }
 		}
 	    }
@@ -883,6 +944,9 @@ void PlanePopOut::SOIManagement()
 		    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 		    debug("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 		    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+#ifdef FEAT_VISUALIZATION
+			if (m_bSendSois) SendSoi(m_display, CurrentObjList.at(i));
+#endif
 		  }
 		}
 		else
@@ -901,6 +965,10 @@ void PlanePopOut::SOIManagement()
 		      SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 		      debug("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 		      addToWorkingMemory(CurrentObjList.at(i).id, obj);
+
+#ifdef FEAT_VISUALIZATION
+			  if (m_bSendSois) SendSoi(m_display, CurrentObjList.at(i));
+#endif
 		    }
 		    #ifdef SAVE_SOI_PATCH
 		    std::string path = CurrentObjList.at(i).id;
