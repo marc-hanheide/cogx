@@ -245,35 +245,35 @@ void PlanePopOut::start()
   act.id = IDC_POPOUT_LABEL_COLOR;
   act.label = "Color by label";
   act.iconLabel = "Color";
-  act.iconSvg = "text:C";
+  act.iconSvg = "text:Co";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_POINTS;
   act.label = "Toggle Update 3D Points";
   act.iconLabel = "3D Points";
-  act.iconSvg = "text:P";
+  act.iconSvg = "text:Pts";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_SOIS;
   act.label = "Toggle Update SOIs";
   act.iconLabel = "SOIs";
-  act.iconSvg = "text:S";
+  act.iconSvg = "text:Soi";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_PLANEGRID;
-  act.label = "Toggle Update Plane Grid";
-  act.iconLabel = "Plane Grid";
-  act.iconSvg = "text:G";
+  act.label = "Toggle Update Convex Hull of Principal Plane";
+  act.iconLabel = "Plane Hull";
+  act.iconSvg = "text:Hul";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_3D, act);
 
   act.id = IDC_POPOUT_IMAGE;
   act.label = "Toggle Update Image";
   act.iconLabel = "Image";
-  act.iconSvg = "text:I";
+  act.iconSvg = "text:Img";
   act.checkable = true;
   m_display.addAction(ID_OBJECT_IMAGE, act);
 
