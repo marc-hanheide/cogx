@@ -38,7 +38,7 @@ SET(SOURCES
 	src/TM_Vector3.cpp
 	src/Tracker.cpp)
 
-link_libraries(cv highgui SDL GLU glut)
+link_libraries(${OpenCV_LIBRARIES} SDL GLU glut)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
