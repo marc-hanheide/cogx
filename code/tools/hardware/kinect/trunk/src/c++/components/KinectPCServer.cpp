@@ -162,10 +162,10 @@ void KinectPCServer::saveNextFrameToFile() {
   char buf2[256];
   sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
+  log("Saving Kinect frame # %d",kinect->frameNumber);
   cvSaveImage(buf2, depth_data);
   m_lastframe = kinect->frameNumber;
-
-  cvReleaseImage(&rgb_data);
+  delete rgb_data;
   cvReleaseImage(&depth_data);
 }
 
