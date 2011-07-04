@@ -10,6 +10,12 @@ CONFIGURE_SCRIPTS =
 BUILD_SCRIPTS = 
 INSTALL_SCRIPTS =
 
+DEB_PACKAGES=\
+	libusb-1.0-0-dev@ubuntu \
+	libmono-winforms2.0-cil@ubuntu
+
+
+
 include ../../gar.extend.mk
 
 
