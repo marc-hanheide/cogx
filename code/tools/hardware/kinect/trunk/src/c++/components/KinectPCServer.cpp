@@ -163,7 +163,10 @@ void KinectPCServer::saveNextFrameToFile() {
   sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
   cvSaveImage(buf2, depth_data);
-m_lastframe = kinect->frameNumber;
+  m_lastframe = kinect->frameNumber;
+
+  cvReleaseImage(&rgb_data);
+  cvReleaseImage(&depth_data);
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
