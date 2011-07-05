@@ -2,6 +2,6 @@
 VARDEFAULT displaysrv_param_redirect=
 
 SUBARCHITECTURE visualization.sa 
-CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
