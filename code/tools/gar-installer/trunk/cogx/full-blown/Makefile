@@ -29,10 +29,11 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 LIBDEPS = 			contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
-		cogx/cosycure 
-#contrib/opencv-trunk 
-#		contrib/player-2.1.2 
-#		contrib/stage 
+		cogx/cosycure \
+		contrib/opencv \
+		contrib/player-3.0.2 \
+		contrib/stage \
+		contrib/avin2-SensorKinect
 
 DESCRIPTION = agai-distro
 
