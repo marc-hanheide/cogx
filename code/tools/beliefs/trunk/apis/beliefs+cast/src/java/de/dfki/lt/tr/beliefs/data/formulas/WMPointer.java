@@ -24,6 +24,7 @@ package de.dfki.lt.tr.beliefs.data.formulas;
 
 // Belief API slice
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
@@ -49,6 +50,10 @@ public class WMPointer extends GenericFormula<PointerFormula> {
 
 	public static WMPointer create(WorkingMemoryAddress v, String type) {
 		return new WMPointer(new PointerFormula(-1, v, type));
+	}
+	
+	public static WMPointer create(WorkingMemoryPointer ptr) {
+		return new WMPointer(new PointerFormula(-1, ptr.address, ptr.type));
 	}
 	
 	public void setType(String t) {
