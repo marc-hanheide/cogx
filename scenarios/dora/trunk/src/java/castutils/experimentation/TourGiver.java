@@ -105,7 +105,7 @@ public class TourGiver extends ManagedComponent {
 		while (isRunning()) {
 			WorkingMemoryChange ev = queue.take();
 			if (ev.operation == WorkingMemoryOperation.OVERWRITE) {
-				NavCommand nc = getMemoryEntry(id, NavCommand.class);
+				NavCommand nc = getMemoryEntry(ev.address, NavCommand.class);
 				completion = nc.comp;
 				if (completion == Completion.COMMANDPENDING
 						|| completion == Completion.COMMANDINPROGRESS)
