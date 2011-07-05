@@ -1,0 +1,65 @@
+INROOM bookcase kitchen 0.0
+INROOM bookcase meetingroom 0.0
+INROOM bookcase office 1.0
+INROOM bookcase corridor 0.0
+
+INROOM cerealbox kitchen 1.0
+INROOM cerealbox meetingroom 0.0
+INROOM cerealbox office 0.0
+INROOM cerealbox corridor 0.00
+
+INROOM paperclip kitchen 0.00
+INROOM paperclip meetingroom 0.0
+INROOM paperclip office 1.0
+INROOM paperclip corridor 0.0
+
+INROOM stapler kitchen 0.0
+INROOM stapler meetingroom 0.0
+INROOM stapler office 1.0
+INROOM stapler corridor 0.0
+
+INROOM mug kitchen 0.0
+INROOM mug meetingroom 0.0
+INROOM mug office 1.0
+INROOM mug corridor 0.0
+
+INROOM whiteboardmarker kitchen 0.0
+INROOM whiteboardmarker meetingroom 1.0
+INROOM whiteboardmarker office 0.0
+INROOM whiteboardmarker corridor 0.0
+
+INROOM book kitchen 0.0
+INROOM book meetingroom 0.0
+INROOM book office 1.0
+INROOM book corridor 0.0
+
+
+
+COST_INROOM mug 200
+
+
+COST_INROOM table 50
+COST_INROOM bookcase 50
+
+
+COST_INROOM cerealbox 200
+
+
+COST_INROOM paperclip 200
+
+
+
+COST_INROOM stapler 200
+
+
+
+
+COST_INROOM marker 200
+
+
+
+
+COST_INROOM book 200
+
+
+
