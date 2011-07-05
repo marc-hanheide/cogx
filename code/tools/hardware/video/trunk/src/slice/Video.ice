@@ -79,7 +79,7 @@ module Video {
    *   u_y' = f_x*y' + c_y
    */
   struct CameraParameters {
-    int id;					// What id??? ARI
+    int id;				
     // image dimension
     int width;
     int height;

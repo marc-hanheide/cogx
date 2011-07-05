@@ -61,7 +61,9 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-                <delete dir="${src.dir}/**"/>
+                <delete dir="${src.dir}/Video"/>
+				<delete dir="${output.dir}/Video"/>
+                <delete file="${src.dir}/.depend"/>
 	</target>
 
 
