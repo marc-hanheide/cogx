@@ -134,6 +134,12 @@ void SOIFilter::configure(const map<string,string> & _config)
 
   m_bSameSource = m_coarseSource == m_fineSource;
 
+  ptzServerName = "";
+  if((it = _config.find("--ptzserver")) != _config.end())
+  {
+    ptzServerName = it->second;
+  }
+
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
 #endif
@@ -141,6 +147,17 @@ void SOIFilter::configure(const map<string,string> & _config)
 
 void SOIFilter::connectPtz()
 {
+  std::string ptzServerHost = "localhost";
+  int ptzServerPort = cast::cdl::CPPSERVERPORT;
+
+  if (ptzServerName.length() > 0) {
+    cast::cdl::ComponentDescription desc =
+      getComponentManager()->getComponentDescription(ptzServerName);
+
+    ptzServerHost = desc.hostName;
+    ptzServerPort = cast::languageToPort(desc.language);
+  }
+
   Ice::CommunicatorPtr ic = getCommunicator();
 
   Ice::Identity id;
@@ -150,8 +167,8 @@ void SOIFilter::connectPtz()
   std::ostringstream str;
   str << ic->identityToString(id) 
     << ":default"
-    << " -h localhost"
-    << " -p " << cast::cdl::CPPSERVERPORT;
+    << " -h " << ptzServerHost
+    << " -p " << ptzServerPort;
 
   Ice::ObjectPrx base = ic->stringToProxy(str.str());    
   ptzServer = ptz::PTZInterfacePrx::uncheckedCast(base);
@@ -462,7 +479,7 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     ProtoObjectPtr pobj;
     pobj = findProtoObjectAt(psoi);
     if (pobj.get())
-     return;
+      return;
 
     pobj = new ProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
@@ -557,7 +574,7 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // Add PO to WM
     pSoiFilter->addToWorkingMemory(objId, pobj);
     
-    // This should be done by the executor
+    // TODO: This should be done by the executor
     MoveToViewConeCommandPtr pMoveCmd = new MoveToViewConeCommand();
     pMoveCmd->target = vcPtr;
     pMoveCmd->reason = "find-fine-soi";
