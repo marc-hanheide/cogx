@@ -374,26 +374,30 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
     IplImage *iplImg = convertImageToIpl(img);
     Video::CameraParameters c = img.camPars;
 
-    for (unsigned int i=0 ; i<points.size() ; i++)
-    {
-	int m_label = labels.at(i);
-	switch (m_label)
+	for (unsigned int i=0 ; i<points.size() ; i++)
 	{
-	  case 0:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(255,0,0)); break;
-	  case -10:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,255,0)); break;
-	  case -20:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,0,255)); break;
-	  case -30:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(0,255,255)); break;
-	  case -40:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(128,128,0)); break;
-	  case -5:	cvCircle(iplImg, powner->ProjectPointOnImage(points.at(i).p,c), 2, CV_RGB(255,255,255)); break;
+		int m_label = labels.at(i);
+		PointCloud::SurfacePoint& pt = points.at(i);
+		switch (m_label)
+		{
+			case 0:   cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
+			case -10: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
+			case -20: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
+			case -30: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
+			case -40: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
+			case -50: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
+		}
 	}
-    }
-    CvFont a;
-    cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
-    for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
-    {
-	CvPoint p; p.x = (int)(vSOIonImg.at(i).x+0.3*vSOIonImg.at(i).width); p.y = (int)(vSOIonImg.at(i).y+0.5*vSOIonImg.at(i).height);
-	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
-    }
+	CvFont a;
+	cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
+	for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
+	{
+		CvPoint p;
+		CvRect& rsoi = vSOIonImg.at(i);
+		p.x = (int)(rsoi.x+0.3 * rsoi.width);
+		p.y = (int)(rsoi.y+0.5 * rsoi.height);
+		cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
+	}
 
 	bool bSaveImage = true;
 	long long t1 = tm.elapsed();
@@ -401,6 +405,7 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 	long long t2 = tm.elapsed();
     if (bSaveImage)
 		cvSaveImage("/tmp/planes_image.jpg", iplImg);
+	long size = iplImg->imageSize;
     cvReleaseImage(&iplImg);
 	long long t3 = tm.elapsed();
 
@@ -408,6 +413,7 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 		ostringstream str;
 		str << "<h3>Plane popout - SendImage</h3>";
 		str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+		str << "Size: " << size << " bytes.<br>";
 		str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
 		if (bSaveImage)
 			str << "Saved: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
