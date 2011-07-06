@@ -125,7 +125,7 @@ class CConsoleAgent:
                 self.manager.addProcess(procman.CProcess("golem", cmd))
 
         if appOptions.can_build:
-            cmd = "make -C BUILD [TARGET]"
+            cmd = "make [TARGET]"
             proc = procman.CProcess("BUILD", cmd)
             proc.allowTerminate = True
             self.manager.addProcess(proc)

@@ -160,7 +160,8 @@ class CAgentI(CastAgent.Agent):
             return False
 
         params = { "TARGET": "" if target == None else target }
-        p.start(params=params)
+        bdir = os.path.join(rasync.COGX_ROOT, "BUILD")
+        p.start(params=params, workdir=bdir)
         return True
 
     def stopBuild(self, current=None):
