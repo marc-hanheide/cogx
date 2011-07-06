@@ -147,12 +147,15 @@ class CRemoteProcessManager:
 
 
     def pumpRemoteMessages(self):
-        for p in self.proclist: p._readMessages()
-        msgs = self.agentProxy.readMessages("LOGGER")
-        for m in msgs:
-            self.remoteInternalMessages.append(
-                CMessage(self.srcid, "RI:" + m.message, m.msgtype, timestamp=m.time))
-
+        try:
+            for p in self.proclist: p._readMessages()
+            msgs = self.agentProxy.readMessages("LOGGER")
+            for m in msgs:
+                self.remoteInternalMessages.append(
+                    CMessage(self.srcid, "RI:" + m.message, m.msgtype, timestamp=m.time))
+            self.online = True
+        except Ice.ConnectionRefusedException:
+            self.online = False
 
     def stopAll(self):
         # self.agentProxy.stopAll()

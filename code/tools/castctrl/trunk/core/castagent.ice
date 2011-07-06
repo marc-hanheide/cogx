@@ -22,6 +22,11 @@ module castcontrol{
          int stopProcess(string name);
          void setLog4jClientProperties(string propText);
          void setLog4jServerProperties(int port, string propText);
+
+         bool startRsync(string srcHost);
+         bool stopRsync();
+         bool startBuild(string target);
+         bool stopBuild();
       };
    };
 };

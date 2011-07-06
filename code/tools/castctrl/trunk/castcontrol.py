@@ -13,6 +13,7 @@ from core import procman, options, messages, logger, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
 from core import log4util
+from core import rasync
 from qtui import uimainwindow
 from selectcomponentdlg import CSelectComponentsDlg
 from textedit import CTextEditor
@@ -199,7 +200,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actRunMake, QtCore.SIGNAL("triggered()"), self.onRunMake)
         self.connect(self.ui.actRunMakeInstall, QtCore.SIGNAL("triggered()"), self.onRunMakeInstall)
         self.connect(self.ui.actRunMakeClean, QtCore.SIGNAL("triggered()"), self.onRunMakeClean)
+        self.connect(self.ui.actCancelBuild, QtCore.SIGNAL("triggered()"), self.onStopMake)
         self.connect(self.ui.actConfigureWithCMake, QtCore.SIGNAL("triggered()"), self.onRunCmakeConfig)
+        self.connect(self.ui.actSynchronizeCode, QtCore.SIGNAL("triggered()"), self.onSynchronizeRemoteCode)
 
         self.connect(self.ui.actCtxShowBuildError, QtCore.SIGNAL("triggered()"), self.onEditBuildError)
 
@@ -244,12 +247,20 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not val in log4jlevels: val = log4jlevels[-1]
         self.ui.log4jFileLevelCmbx.setCurrentIndex(log4jlevels.index(val))
 
+        self._createRemoteBuildModes()
+        val = self._options.getOption('remoteBuildMode')
+        if not val: val = 0
+        else: val = int(val)
+        if val < 0 or val >= len(self.buildModes): val = 0
+        self.ui.cbRemoteBuildMode.setCurrentIndex(val)
+
         def ckint(field, default=0):
             try: return int(self._options.getOption(field)) % 3
             except: return default
         self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
         self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
+        self.ui.ckAutoSyncCode.setCheckState(ckint("ckAutoSyncCode", 0))
 
 
     def _fillMessageFilterCombo(self):
@@ -409,6 +420,22 @@ class CCastControlWnd(QtGui.QMainWindow):
         val = val.strip()
         return val
 
+    @property
+    def _localBuildEnabled(self):
+        val = self.ui.cbRemoteBuildMode.currentIndex()
+        return val == 0 or val == 2
+
+    @property
+    def _remoteBuildEnabled(self):
+        val = self.ui.cbRemoteBuildMode.currentIndex()
+        return val == 1 or val == 2
+
+    def _createRemoteBuildModes(self):
+        self.buildModes = ["Local", "Remote", "Local & Remote"]
+        self.ui.cbRemoteBuildMode.clear()
+        for item in self.buildModes:
+            self.ui.cbRemoteBuildMode.addItem(item)
+
     def _initLocalProcesses(self):
         self.procGroupA = CProcessGroup("External Servers")
         self.procGroupB = CProcessGroup("CAST Servers")
@@ -497,6 +524,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
+            self._options.setOption("ckAutoSyncCode", self.ui.ckAutoSyncCode.checkState())
+            self._options.setOption("remoteBuildMode", self.ui.cbRemoteBuildMode.currentIndex())
 
             cfg = ConfigParser.RawConfigParser()
             cfg.read(self.fnhist)
@@ -862,53 +891,68 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not os.path.exists(workdir):
             dlg = QtGui.QErrorMessage(self)
             dlg.setModal(True)
-            dlg.showMessage("The build directory doesn't exist. Run 'Config...'")
+            dlg.showMessage("The build directory doesn't exist. Run 'Build.Configure With CMake'.")
             return False
         return True
 
-    def onRunMake(self):
-        if not self._checkBuidDir(): return
+    def _runRemoteBuild(self, target):
+        if not self._remoteBuildEnabled:
+            return
+
+        if self.ui.ckAutoSyncCode.isChecked():
+            try:
+                QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+                self.syncRemoteCode()
+            finally:
+                QtGui.QApplication.restoreOverrideCursor()
+
+        for h in self._remoteHosts:
+            h.agentProxy.startBuild(target)
+
+    def _runLocalBuild(self, target):
+        if not self._localBuildEnabled or not self._checkBuidDir():
+            return
+
         p = self._manager.getProcess("BUILD")
         if p != None:
             self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
-            p.start(params={"target": ""})
+            p.start(params={"target": target})
 
-        for h in self._remoteHosts:
-            for p in h.proclist:
-                if p.name == "BUILD":
-                    p.start()
-
+    def onRunMake(self):
+        target = ""
+        self._runLocalBuild(target)
+        self._runRemoteBuild(target)
 
     def onRunMakeInstall(self):
-        if not self._checkBuidDir(): return
-        p = self._manager.getProcess("BUILD")
-        if p != None:
-            self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
-            self.buildLog.clearOutput()
-            if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
-            p.start(params={"target": "install"})
-
-        for h in self._remoteHosts:
-            for p in h.proclist:
-                if p.name == "BUILD-INSTALL":
-                    p.start()
+        target = "install"
+        self._runLocalBuild(target)
+        self._runRemoteBuild(target)
 
     def onRunMakeClean(self):
-        if not self._checkBuidDir(): return
-        p = self._manager.getProcess("BUILD")
-        if p != None:
-            self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
-            self.buildLog.clearOutput()
-            if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
-            p.start(params={"target": "clean"})
+        target = "clean"
+        self._runLocalBuild(target)
+        self._runRemoteBuild(target)
 
         # CMake can't run "ant clean" (can't add a clean dependency), so we run it here 
         # TODO: chould check in CMakeCache if DO_ANT is enabled
         #root = self._options.xe("${COGX_ROOT}")
         #procman.xrun_wait("ant clean", root)
 
+    def _stopRemoteBuild(self):
+        if not self._remoteBuildEnabled:
+            return
+
+        for h in self._remoteHosts:
+            h.agentProxy.stopBuild()
+
+    def onStopMake(self):
+        p = self._manager.getProcess("BUILD")
+        if p and p.isRunning():
+            p.stop()
+
+        self._stopRemoteBuild()
 
     def _checkMakeCache(self, listsDir, cacheFile):
         bdir = os.path.dirname(cacheFile)
@@ -948,6 +992,22 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not self._checkMakeCache(root, bcmc): return
         cmd = 'cmake-gui %s' % root
         procman.xrun_wait(cmd, bdir)
+
+
+    def syncRemoteCode(self):
+        lhost = self._localhost
+        sync = rasync.CRemoteSync()
+
+        for h in self._remoteHosts:
+            sync.rsync(lhost, h)
+
+
+    def onSynchronizeRemoteCode(self):
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.syncRemoteCode()
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     def on_btEditFilterComponents_clicked(self, valid=True):
         if not valid: return
