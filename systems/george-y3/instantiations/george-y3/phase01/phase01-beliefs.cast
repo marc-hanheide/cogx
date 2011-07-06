@@ -4,7 +4,8 @@
 # Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
 # HOSTNAME  localhost      192.168.33.101
 HOSTNAME  Main           localhost
-HOSTNAME  PlayerHost     cca-0838
+# HOSTNAME  PlayerHost     cca-0838
+HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 
@@ -22,7 +23,8 @@ INCLUDE  sim/cameras-sim.incl
 # Include othere vision components
 INCLUDE  georgeY3-vision.incl
 # mediators, execution
-JAVA MG vision.mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent 
+JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent 
+JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent 
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -34,5 +36,5 @@ INCLUDE includes/planner.sa/planner-base.cast
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
 INCLUDE  includes/visualization.sa/v11n-base-p.cast
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  #--generic-col --compact
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
 
