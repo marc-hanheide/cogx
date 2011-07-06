@@ -185,9 +185,74 @@
          </widget>
          <widget class="QWidget" name="tabBuildLog">
           <attribute name="title">
-           <string>Build Log</string>
+           <string>Build</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0,0,0,0">
+             <property name="topMargin">
+              <number>4</number>
+             </property>
+             <property name="bottomMargin">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="lblBuildMode">
+               <property name="text">
+                <string>Build:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cbRemoteBuildMode">
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToContents</enum>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Local and Remote</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="ckAutoSyncCode">
+               <property name="toolTip">
+                <string>Synchronize the code on remote hosts before every build</string>
+               </property>
+               <property name="text">
+                <string>Auto Synchronize</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btSynchronize">
+               <property name="toolTip">
+                <string>Synchronize the code on remote hosts</string>
+               </property>
+               <property name="text">
+                <string>Synchronize</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
            <item>
             <widget class="QTextEdit" name="buildLogfileTxt">
              <property name="undoRedoEnabled">
@@ -252,6 +317,9 @@
                  <widget class="QLabel" name="label_5">
                   <property name="text">
                    <string>localhost:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>txtLocalHost</cstring>
                   </property>
                  </widget>
                 </item>
@@ -330,6 +398,9 @@
                  <widget class="QLabel" name="label_10">
                   <property name="text">
                    <string>Configuration</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>hostConfigCmbx</cstring>
                   </property>
                  </widget>
                 </item>
@@ -423,6 +494,9 @@
                  <widget class="QLabel" name="label_6">
                   <property name="text">
                    <string>Configuration</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>clientConfigCmbx</cstring>
                   </property>
                  </widget>
                 </item>
@@ -539,6 +613,9 @@
                   <property name="text">
                    <string>Mode:</string>
                   </property>
+                  <property name="buddy">
+                   <cstring>cbLog4jMode</cstring>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -594,6 +671,9 @@
                   <property name="text">
                    <string>Log4j Server Host:</string>
                   </property>
+                  <property name="buddy">
+                   <cstring>cbLog4jServerHost</cstring>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -613,6 +693,9 @@
                  <widget class="QLabel" name="label_7">
                   <property name="text">
                    <string>Port:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>edLog4jServerPort</cstring>
                   </property>
                  </widget>
                 </item>
@@ -665,6 +748,9 @@
                  <widget class="QLabel" name="label_12">
                   <property name="text">
                    <string>Console Level:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>log4jConsoleLevelCmbx</cstring>
                   </property>
                  </widget>
                 </item>
@@ -758,6 +844,9 @@
                   <property name="text">
                    <string>XML File Level:</string>
                   </property>
+                  <property name="buddy">
+                   <cstring>log4jFileLevelCmbx</cstring>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -830,6 +919,9 @@
                  <widget class="QLabel" name="label_11">
                   <property name="text">
                    <string>Output:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>edLog4jOutfile</cstring>
                   </property>
                  </widget>
                 </item>
@@ -912,6 +1004,9 @@
                   <property name="text">
                    <string>Host:</string>
                   </property>
+                  <property name="buddy">
+                   <cstring>processHostCmbx</cstring>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -950,6 +1045,9 @@
                  <widget class="QLabel" name="label_18">
                   <property name="text">
                    <string>Group:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>processGroupCmbx</cstring>
                   </property>
                  </widget>
                 </item>
@@ -1526,9 +1624,11 @@
     </property>
     <addaction name="actRunMake"/>
     <addaction name="actRunMakeInstall"/>
+    <addaction name="actCancelBuild"/>
     <addaction name="actConfigureWithCMake"/>
     <addaction name="separator"/>
     <addaction name="actRunMakeClean"/>
+    <addaction name="actSynchronizeCode"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
     <property name="title">
@@ -1642,6 +1742,7 @@
    <addaction name="actConfigureWithCMake"/>
    <addaction name="actRunMake"/>
    <addaction name="actRunMakeInstall"/>
+   <addaction name="actCancelBuild"/>
    <addaction name="separator"/>
    <addaction name="actRunMakeClean"/>
   </widget>
@@ -1798,9 +1899,9 @@
   </action>
   <action name="actRunMake">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/svn-update.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/iconBuild.png</normaloff>
+     <normalon>:/icons/res/svn-update.png</normalon>:/icons/res/iconBuild.png</iconset>
    </property>
    <property name="text">
     <string>Make</string>
@@ -1811,9 +1912,9 @@
   </action>
   <action name="actRunMakeInstall">
    <property name="icon">
-    <iconset>
-     <normalon>:/icons/res/svn-commit.png</normalon>
-    </iconset>
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/iconBuildInstall.png</normaloff>
+     <normalon>:/icons/res/svn-commit.png</normalon>:/icons/res/iconBuildInstall.png</iconset>
    </property>
    <property name="text">
     <string>Make Install</string>
@@ -1852,6 +1953,34 @@
     <string>&amp;Cast environment settings</string>
    </property>
   </action>
+  <action name="actRemoteBuild">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Remote Build</string>
+   </property>
+   <property name="toolTip">
+    <string>Build the code on remote machines</string>
+   </property>
+  </action>
+  <action name="actSynchronizeCode">
+   <property name="text">
+    <string>Synchronize Code</string>
+   </property>
+   <property name="toolTip">
+    <string>Synchronize the code on remote machines</string>
+   </property>
+  </action>
+  <action name="actCancelBuild">
+   <property name="icon">
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/iconBuildStop.png</normaloff>:/icons/res/iconBuildStop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cancel Build</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="castcontrol.qrc"/>
@@ -1864,8 +1993,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>676</x>
-     <y>214</y>
+     <x>678</x>
+     <y>206</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1880,8 +2009,24 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>676</x>
-     <y>151</y>
+     <x>678</x>
+     <y>145</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btSynchronize</sender>
+   <signal>clicked()</signal>
+   <receiver>actSynchronizeCode</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

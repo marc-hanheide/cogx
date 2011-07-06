@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>res/iconBuildStop.png</file>
+    <file>res/iconBuildInstall.png</file>
+    <file>res/iconBuild.png</file>
     <file>res/castStop.png</file>
     <file>res/castStart.png</file>
     <file>res/serverStart.png</file>

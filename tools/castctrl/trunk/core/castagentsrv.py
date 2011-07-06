@@ -9,12 +9,14 @@ import stat
 import modice
 import icemodule.castcontrol.CastAgent as CastAgent
 # import icemodule.castcontrol.ProcessInfo as ProcessInfo
-from core import messages, logger, options, procman
+from core import messages, logger, options, procman, rasync
 
 LOGGER = logger.get()
 
 # Default port for the Ice server of a CastAgent.
 SLAVE_PORT=7832
+
+RSYNC_DAEMON = rasync.CRSyncDaemonConfig()
 
 # Ice servant
 class CAgentI(CastAgent.Agent):
@@ -109,6 +111,65 @@ class CAgentI(CastAgent.Agent):
         f = open(CAgentI.serverfile, 'w')
         f.write(propText)
         f.close()
+
+    def startRsync(self, srcHost, current=None):
+        p = self.manager.getProcess("RSYNC")
+        if not p:
+            return False
+
+        if p.isRunning():
+            return True
+
+        RSYNC_DAEMON.srcHost = srcHost
+        RSYNC_DAEMON.writeDaemonConfig()
+
+        p.start(params = RSYNC_DAEMON.getDaemonParams())
+        return True
+
+    def stopRsync(self, current=None):
+        p = self.manager.getProcess("RSYNC")
+        if not p:
+            return False
+
+        p.stop()
+        return True
+
+    def _checkBuildDir(self):
+        bdir = os.path.join(rasync.COGX_ROOT, "BUILD")
+        bfile = os.path.join(bdir, "CMakeCache.txt")
+        if os.path.exists(bfile):
+            return True
+        if not os.path.exists(bdir):
+            try: os.mkdir(bdir)
+            except: return False
+        if not os.path.exists(bdir):
+            return False
+        procman.xrun_wait("cmake ..", workdir=bdir)
+
+        return os.path.exists(bfile)
+
+    def startBuild(self, target, current=None):
+        p = self.manager.getProcess("BUILD")
+        if not p:
+            return False
+
+        if p.isRunning():
+            return True
+
+        if not self._checkBuildDir():
+            return False
+
+        params = { "TARGET": "" if target == None else target }
+        p.start(params=params)
+        return True
+
+    def stopBuild(self, current=None):
+        p = self.manager.getProcess("BUILD")
+        if not p:
+            return False
+
+        p.stop()
+        return True
 
 
 class CCastSlave(threading.Thread):

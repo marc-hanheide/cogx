@@ -9,6 +9,7 @@ import optparse
 from string import Template
 
 from core import castagentsrv, procman, options, messages, logger, log4util
+from core.castagentsrv import RSYNC_DAEMON
 LOGGER = logger.get()
 
 import threading
@@ -65,7 +66,7 @@ class CLogDisplayer(threading.Thread):
                         text = self._markWords(text, CODEF+FGW)
                         co = FGW
                 if co != None: self.out.write(co)
-                self.out.write(text)
+                self.out.write(text.encode("ascii", "replace"))
                 self.out.write(CODEF)
                 self.out.write("\n")
             mods = True
@@ -91,6 +92,7 @@ class CConsoleAgent:
         self._options.configEnvironment()
         self.address = "tcp -p %d" % port
         self.agent = None
+        self._options.appOptions = appOptions
         self._initLocalProcesses(appOptions)
         self._initMessagePump(appOptions)
 
@@ -122,17 +124,17 @@ class CConsoleAgent:
                 cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
                 self.manager.addProcess(procman.CProcess("golem", cmd))
 
-        if appOptions.dobuild:
-            # XXX: Remote processes don't accept additional parameters, so we need 2 processes
-            LOGGER.log("BUILD is enabled.")
-            cmd = "make -C BUILD"
+        if appOptions.can_build:
+            cmd = "make -C BUILD [TARGET]"
             proc = procman.CProcess("BUILD", cmd)
             proc.allowTerminate = True
             self.manager.addProcess(proc)
-            cmd = "make -C BUILD install"
-            proc = procman.CProcess("BUILD-INSTALL", cmd)
-            proc.allowTerminate = True
-            self.manager.addProcess(proc)
+
+        if  appOptions.can_rsync:
+            RSYNC_DAEMON.port = appOptions.rsync_port
+            cmd = RSYNC_DAEMON.getDaemonCommand()
+            p = procman.CProcess("RSYNC", cmd)
+            self.manager.addProcess(p)
 
         #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
         #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
@@ -189,8 +191,13 @@ def parseOptions():
         help="Set the Player configuration file. If not set, Player won't be started by this agent.")
     parser.add_option("", "--golem", action="store", type="string", default=None, dest="golem_cfg",
         help="Set the Golem configuration file. If not set, Golem won't be started by this agent.")
-    parser.add_option("", "--build", action="store_true", dest="dobuild",
+    parser.add_option("", "--build", action="store_true", dest="can_build", default=False,
         help="Build the project when required by the remote process.")
+    parser.add_option("", "--rsync", action="store_true", dest="can_rsync", default=False,
+        help="Allow the agent to receive code from the remote process via rsync into current directory.")
+    parser.add_option("", "--rsync-port", action="store", type="int", dest="rsync_port",
+        default=RSYNC_DAEMON.port,
+        help="The rsync daemon will serve on this port (default=%d)." % RSYNC_DAEMON.port)
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
