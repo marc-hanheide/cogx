@@ -54,12 +54,10 @@ public class PlannerStopWatch extends ManagedComponent {
 
 				switch (wmc.operation) {
 				case ADD:
-					watch.info(plan.id + "/"
-							+ plan.planningStatus.toString() + "/"
-							+ plan.executionStatus.toString() + "/"
+					watch.info(plan.id + "/" + plan.planningStatus.toString()
+							+ "/" + plan.executionStatus.toString() + "/"
 							+ plan.planningRetries + "/"
-							+ plan.goals[0].goalString + "/"
-							+ plan.plan.length);
+							+ plan.goals[0].goalString + "/" + plan.plan.length);
 					watch.tic();
 					break;
 				case OVERWRITE:
@@ -67,11 +65,11 @@ public class PlannerStopWatch extends ManagedComponent {
 					case INPROGRESS:
 					case PENDING:
 						watch.info(plan.id + "/"
-									+ plan.planningStatus.toString() + "/"
-									+ plan.executionStatus.toString() + "/"
-									+ plan.planningRetries + "/"
-									+ plan.goals[0].goalString + "/"
-									+ plan.plan.length);
+								+ plan.planningStatus.toString() + "/"
+								+ plan.executionStatus.toString() + "/"
+								+ plan.planningRetries + "/"
+								+ plan.goals[0].goalString + "/"
+								+ plan.plan.length);
 						watch.tic();
 						break;
 					case ABORTED:
@@ -106,23 +104,14 @@ public class PlannerStopWatch extends ManagedComponent {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see cast.core.CASTComponent#configure(java.util.Map)
-	 */
-	@Override
-	protected void configure(Map<String, String> config) {
-		// TODO Auto-generated method stub
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see cast.core.CASTComponent#start()
 	 */
 	@Override
 	protected void start() {
 		// TODO Auto-generated method stub
 		super.start();
-		addChangeFilter(ChangeFilterFactory
-				.createGlobalTypeFilter(PlanningTask.class), monitorTask);
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(PlanningTask.class),
+				monitorTask);
 	}
 }
