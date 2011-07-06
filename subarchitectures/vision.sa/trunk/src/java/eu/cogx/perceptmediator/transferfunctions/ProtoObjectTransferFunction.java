@@ -9,13 +9,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import VisionData.ProtoObject;
-import VisionData.ViewCone;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
@@ -41,25 +42,19 @@ public class ProtoObjectTransferFunction extends
 	protected Map<String, Formula> getFeatureValueMapping(
 			WorkingMemoryChange wmc, ProtoObject from)
 			throws InterruptedException, BeliefException {
+
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
-		//result.put("salience", DoubleFormula.create(from.salience)
-		//    .getAsFormula());
 		result.put(PROTO_OBJECT_ID, PropositionFormula.create(wmc.address.id)
 			 .getAsFormula());
 
 		// Add the desired view cone if necessary for fine-stereo processing.
 		// When there is a desired view cone, a MoveToViewConeCommand must be issued.
-		if (from.desiredLocations.length > 0) {
-			ViewCone vc = from.desiredLocations[0];
-			result.put("viewcone-anchor-x", DoubleFormula.create(vc.anchor.x).getAsFormula());
-			result.put("viewcone-anchor-y", DoubleFormula.create(vc.anchor.y).getAsFormula());
-			result.put("viewcone-anchor-theta", DoubleFormula.create(vc.anchor.z).getAsFormula());
-			result.put("viewcone-dx", DoubleFormula.create(vc.x).getAsFormula());
-			result.put("viewcone-dy", DoubleFormula.create(vc.y).getAsFormula());
-			result.put("viewcone-dtheta", DoubleFormula.create(vc.viewDirection).getAsFormula());
-			result.put("viewcone-tilt", DoubleFormula.create(vc.tilt).getAsFormula());
+		
+		for (WorkingMemoryPointer ptr : from.desiredLocations) {
+			result.put("viewcone-ptr", WMPointer.create(ptr).getAsFormula());
 		}
+		
 		// add a flag: fine-soi-processed; if not, AnalyzeProtoObjectCommand must be issued
 		result.put("fine-soi-processed", DoubleFormula.create(0).getAsFormula());
 		// A link to VisualObject ?
