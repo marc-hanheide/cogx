@@ -41,10 +41,27 @@ void CameraMountTest::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> tilt;
   }
+
+  if((it = _config.find("--ptzserver")) != _config.end())
+  {
+    ptzServerComponent = it->second;
+  }
+
 }
 
 void CameraMountTest::start()
 {
+  std::string ptzServerHost = "localhost";
+  int ptzServerPort = cast::cdl::CPPSERVERPORT;
+
+  if (ptzServerComponent.length() > 0) {
+    cast::cdl::ComponentDescription desc =
+      getComponentManager()->getComponentDescription(ptzServerComponent);
+
+    ptzServerHost = desc.hostName;
+    ptzServerPort = cast::languageToPort(desc.language);
+  }
+
   Ice::CommunicatorPtr ic = getCommunicator();
 
   Ice::Identity id;
@@ -54,8 +71,8 @@ void CameraMountTest::start()
   std::ostringstream str;
   str << ic->identityToString(id) 
     << ":default"
-    << " -h localhost"
-    << " -p " << cast::cdl::CPPSERVERPORT;
+    << " -h " << ptzServerHost
+    << " -p " << ptzServerPort;
 
   Ice::ObjectPrx base = ic->stringToProxy(str.str());    
   m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
