@@ -8,20 +8,14 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import VisionData.ProtoObject;
 import VisionData.ViewCone;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -52,6 +46,9 @@ public class ViewConeTransferFunction extends
 		result.put(VIEW_CONE_ID, PropositionFormula.create(wmc.address.id)
 				.getAsFormula());
 
+		result.put("proto-object", WMPointer.create(from.target)
+				.getAsFormula());
+		
 		result.put("anchor-x", DoubleFormula.create(from.anchor.x)
 				.getAsFormula());
 		result.put("anchor-y", DoubleFormula.create(from.anchor.y)

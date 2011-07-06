@@ -102,6 +102,8 @@ module VisionData {
     FaceSeq faces;
   };
 
+sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
+
   class VisualObject {
     // 3D position and orientation, in the robot ego coordinate system.
     cogx::Math::Pose3 pose;
@@ -386,7 +388,12 @@ module VisionData {
 
     // the vertical angle of the Pan-Tilt unit where the cameras are mounted
     double tilt;
+
+	// the object that this was created for
+	cast::cdl::WorkingMemoryPointer target;
+
   };
+
   sequence<ViewCone> ViewConeSeq;
 
   // A command to move the robot and the PTU so that the target ViewCone is
@@ -394,7 +401,7 @@ module VisionData {
   // to target.anchor.
   // @author mmarko
   class MoveToViewConeCommand {
-    ViewCone target;
+    cast::cdl::WorkingMemoryPointer target;
 
     // eg. look-at-object; maybe use enum instd of string
     string reason;
@@ -422,7 +429,7 @@ module VisionData {
     // location of the robot. The viewDirection and tilt of viewCone are used
     // to find the SOIs for the ProtoObject in the scene.
     // (maybe it would be enough to use panDelta and tiltDelta instead of a ViewCone)
-    ViewCone whereToLook;
+    cast::cdl::WorkingMemoryPointer whereToLook;
 
     // the result passed on overwrite (0 - failed, 1 - ok)
     int status;
@@ -449,7 +456,7 @@ module VisionData {
     ViewCone cameraLocation;
 
     // The desired positions of the camera should have the same anchor as the cameraLocation
-    ViewConeSeq desiredLocations;
+    WorkingMemoryPointerSeq desiredLocations;
 
     // The position of the object relative to the anchor (the position of the robot)
     // in cameraLocation. The center of a SOI is used.

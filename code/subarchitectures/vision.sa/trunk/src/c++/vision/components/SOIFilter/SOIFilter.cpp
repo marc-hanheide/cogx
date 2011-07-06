@@ -539,19 +539,33 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pBetterVc->y = pCurVc->y;
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
-    pobj->desiredLocations.push_back(pBetterVc);
+    pBetterVc->target = new cdl::WorkingMemoryPointer();
+    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId,pSoiFilter->getSubarchitectureID());
+    pBetterVc->target->type = cast::typeName<ProtoObject>();
 
+    // Address at which new view cone will be stored
+    WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),pSoiFilter->getSubarchitectureID());
+    // Write viewcone to memory
+    pSoiFilter->addToWorkingMemory(vcAddr, pBetterVc);
+    
+    // Create pointer to viewcone on WM
+    WorkingMemoryPointerPtr vcPtr = new WorkingMemoryPointer();
+    vcPtr->address = vcAddr;
+    vcPtr->type = cast::typeName<ViewCone>();
+    pobj->desiredLocations.push_back(vcPtr);
+    
+    // Add PO to WM
     pSoiFilter->addToWorkingMemory(objId, pobj);
-
+    
     // This should be done by the executor
     MoveToViewConeCommandPtr pMoveCmd = new MoveToViewConeCommand();
+    pMoveCmd->target = vcPtr;
     pMoveCmd->reason = "find-fine-soi";
-    pMoveCmd->target = pBetterVc;
     pMoveCmd->objectId = objId;
     pMoveCmd->status = 0;
     string moveId = pSoiFilter->newDataID();
     pSoiFilter->addToWorkingMemory(moveId, pMoveCmd);
-
+    
     // Now it is up to the planner to create a plan to move the robot
     // The task contains: PO, target VC
 
@@ -719,7 +733,7 @@ void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
   // XXX: This command only moves the PTU, but should also move the robot
   if (pSoiFilter->ptzServer.get()) {
     ptz::PTZReading ptup;
-    ViewConePtr pBetterVc = pcmd->target;
+    ViewConePtr pBetterVc = pSoiFilter->getMemoryEntry<VisionData::ViewCone>(pcmd->target->address);
     ptup.pose.pan = pBetterVc->viewDirection - pBetterVc->anchor.z;
     ptup.pose.tilt = pBetterVc->tilt;
     ptup.pose.zoom = 0;
