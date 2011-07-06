@@ -30,7 +30,7 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.ProtoObjectMatchingFunc
 public class ViewConeTransferFunction extends
 		DependentDiscreteTransferFunction<ViewCone, PerceptBelief> {
 
-	public static final String VIEW_CONE_ID = "viewConeID";
+	public static final String VIEW_CONE_ID = "view-cone-id";
 	static Logger logger = Logger.getLogger(ViewConeTransferFunction.class);
 
 	public ViewConeTransferFunction(ManagedComponent component,
@@ -43,14 +43,12 @@ public class ViewConeTransferFunction extends
 			WorkingMemoryChange wmc, ViewCone from)
 			throws InterruptedException, BeliefException {
 
-		logger.info("Called with " + CASTUtils.toString(wmc));
-
+		logger.debug("trying to resolve the belief produced from  "
+				+ CASTUtils.toString(from.target.address));
+		
 		// resolve the address of the proto object this cone targets
 		WorkingMemoryAddress poBelAddr = getReferredBelief(new ProtoObjectMatchingFunction(
 				from.target));
-
-		logger.debug("looking for place with belief address "
-				+ CASTUtils.toString(poBelAddr));
 
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
@@ -59,7 +57,7 @@ public class ViewConeTransferFunction extends
 
 		//pointer to belief for proto object
 		result.put(
-				"proto-object",
+				"target-object",
 				WMPointer.create(poBelAddr,
 						CASTUtils.typeName(PerceptBelief.class)).getAsFormula());
 
