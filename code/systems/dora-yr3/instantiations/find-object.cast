@@ -3,7 +3,7 @@
 
 VARDEFAULT siftroot_=./instantiations/sift-models
 VARDEFAULT plyroot_=./instantiations/ply-models
-VARDEFAULT objname_=frosties2
+VARDEFAULT objname_=re_book
 
 VARDEFAULT or3d_sift_files=<multiline>
    %(siftroot_)/%(objname_).sift
