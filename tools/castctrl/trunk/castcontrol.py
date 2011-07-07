@@ -247,6 +247,13 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not val in log4jlevels: val = log4jlevels[-1]
         self.ui.log4jFileLevelCmbx.setCurrentIndex(log4jlevels.index(val))
 
+        self._createLog4ServerModes()
+        val = self._options.getOption('log4jServerMode')
+        if not val: val = 0
+        else: val = int(val)
+        if val < 0 or val >= len(self.log4jModes): val = 0
+        self.ui.cbLog4jMode.setCurrentIndex(val)
+
         self._createRemoteBuildModes()
         val = self._options.getOption('remoteBuildMode')
         if not val: val = 0
@@ -388,6 +395,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     def _log4j_use_server(self):
         return self.ui.cbLog4jMode.currentIndex() in [0, 1]
 
+    def _createLog4ServerModes(self):
+        self.log4jModes = ["Start and Connect to log4j Server",
+                           "Connect to log4j Server", "Log to Console (No Server)"]
+        self.ui.cbLog4jMode.clear()
+        for item in self.log4jModes:
+            self.ui.cbLog4jMode.addItem(item)
+
     @property
     def _log4jServerHost(self):
         val = "%s" % self.ui.cbLog4jServerHost.lineEdit().text()
@@ -521,6 +535,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
             self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
             self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
+            self._options.setOption("log4jServerMode", self.ui.cbLog4jMode.currentIndex())
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
