@@ -221,10 +221,16 @@ void SOIFilter::start()
   // XXX: added to save SurfacePatches with saveSnapshot
   if (m_snapper.m_bAutoSnapshot) {
     log("AUTOSNAP is ON; Triggered on ProtoObject OVERWRITE");
-    addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
-        new MemberFunctionChangeReceiver<SOIFilter>(this,
-          &SOIFilter::onUpdate_ProtoObject));
   }
+  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onAdd_ProtoObject));
+  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onUpdate_ProtoObject));
+  addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onDelete_ProtoObject));
 
   // Hook up changes to the robot pose to a callback function.
   // We will use the robot position as an anchor for VC commands.
@@ -323,12 +329,36 @@ void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
   m_EventQueueMonitor.notify();
 }
 
-// XXX: Added to saveSnapshot with SurfacePatches
+void SOIFilter::saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy)
+{
+  poCopy->cameraLocation = poOrig->cameraLocation;
+  poCopy->position = poOrig->position;
+}
+
+void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  m_protoObjects[_wmc.address] = new VisionData::ProtoObject();
+  saveProtoObjectData(pobj, m_protoObjects[_wmc.address]);
+}
+
 void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  // XXX: ASSUME it's the same protoobject
-  m_snapper.m_LastProtoObject = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  m_snapper.saveSnapshot();
+  ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
+  m_protoObjects[_wmc.address] = new VisionData::ProtoObject();
+  saveProtoObjectData(pobj, m_protoObjects[_wmc.address]);
+
+  if (m_snapper.m_bAutoSnapshot) {
+    // XXX: Added to saveSnapshot with SurfacePatches
+    // XXX: ASSUME it's the same protoobject
+    m_snapper.m_LastProtoObject = pobj;
+    m_snapper.saveSnapshot();
+  }
+}
+
+void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  m_protoObjects.erase(_wmc.address);
 }
 
 void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
@@ -425,12 +455,26 @@ void SOIFilter::runComponent()
 #define YY(y) y
 #endif
 
+
+// psoi is calculated at pSoiFilter->m_RobotPose
 ProtoObjectPtr SOIFilter::WmTaskExecutor_Soi::findProtoObjectAt(SOIPtr psoi)
 {
   if (!psoi.get()) 
     return NULL;
 
-  return NULL; // TODO: find the proto object; PO DB as a class
+  typeof(pSoiFilter->m_protoObjects.begin()) itpo = pSoiFilter->m_protoObjects.begin();
+  for(; itpo != pSoiFilter->m_protoObjects.end(); ++itpo) {
+    ProtoObjectPtr& pobj = itpo->second;
+    // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
+    //   => we only compare robo-centric positions
+    Vector3& p0 = pobj->position;
+    Vector3& p1 = psoi->boundingSphere.pos;
+
+    if (distSqr(p0, p1) < 0.12)
+      return pobj;
+  }
+
+  return NULL;
 }
 
 /*
@@ -472,14 +516,18 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 
   if (psoi->sourceId == pSoiFilter->m_coarseSource || psoi->sourceId == SOURCE_FAKE_SOI)
   {
-    // TODO: Verify all known proto objects if they are at the same location as the SOI;
+    // Verify all known proto objects if they are at the same location as the SOI;
     // In this case, we are looking at a known PO and don't have to do
     // anything, except if we want to analyze the object in the center.
 
     ProtoObjectPtr pobj;
     pobj = findProtoObjectAt(psoi);
-    if (pobj.get())
+    if (pobj.get()) {
+      pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", soi.addr.id.c_str());
+      // XXX: Do we update the PO with the new SOI?
+      // XXX: The object recognizer should verify if this is the same object
       return;
+    }
 
     pobj = new ProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
@@ -545,7 +593,7 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       string s = p.getScreenSvg();
 
       pSoiFilter->m_display.setObject(OBJ_VISUAL_OBJECTS, "soif-last-move", s);
-      pSoiFilter->m_display.setHtml("KrNeki", "soif-last-move-text", s);
+      //pSoiFilter->m_display.setHtml("KrNeki", "soif-last-move-text", s);
 #endif
     }
 
@@ -557,11 +605,11 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
     pBetterVc->target = new cdl::WorkingMemoryPointer();
-    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId,pSoiFilter->getSubarchitectureID());
+    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId, pSoiFilter->getSubarchitectureID());
     pBetterVc->target->type = cast::typeName<ProtoObject>();
 
     // Address at which new view cone will be stored
-    WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),pSoiFilter->getSubarchitectureID());
+    WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
     // Write viewcone to memory
     pSoiFilter->addToWorkingMemory(vcAddr, pBetterVc);
     
@@ -657,7 +705,7 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     return;
   }
 
-  /* Asynchronous call throug a working memory entry.
+  /* Asynchronous call through a working memory entry.
    *
    * A WorkingMemoryChangeReceiver is created on the heap. We wait for it to
    * complete then we remove the it from the change filter list, but we DON'T
