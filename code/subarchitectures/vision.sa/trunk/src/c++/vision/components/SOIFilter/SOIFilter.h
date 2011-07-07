@@ -261,22 +261,20 @@ private:
 #endif
 
 private:
-  /**
-   * callback function called whenever a new SOI appears
-   */
   void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
-   * callback function called whenever a SOI changes
-   */
   void onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
-   * callback function called whenever a SOI is deleted
-   */
   void onDelete_SOI(const cdl::WorkingMemoryChange & _wmc);
 
+public:
+  // The protoobjects are kept locally so that we can match them by position with SOIs
+  // TODO: don't need to keep all PO data locally!
+  std::map<cdl::WorkingMemoryAddress, VisionData::ProtoObjectPtr> m_protoObjects;
+
+private:
+  void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
+  void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
+  void onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
 
   void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
 
