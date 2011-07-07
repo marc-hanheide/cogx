@@ -16,7 +16,7 @@ uiconfigdlg.py: configdlg.ui
 uiselectcomponentsdlg.py: selectcomponentsdlg.ui
 	@pyuic4 -o uiselectcomponentsdlg.py selectcomponentsdlg.ui
 
-castcontrol_rc.py: castcontrol.qrc
+castcontrol_rc.py: castcontrol.qrc res/*.png
 	@pyrcc4 -o castcontrol_rc.py castcontrol.qrc
 
 uitextedit.py: textedit.ui
