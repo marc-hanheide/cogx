@@ -148,8 +148,8 @@ void PointCloudServer::configure(const map<string,string> & _config) throw(runti
         // file storage)
         if(file.find(".xml") == string::npos)
           loadCameraParameters(pars, file);
-        //else
-          //loadCameraParametersXML(pars, file); /* Missing function... */
+        else
+          loadCameraParametersXML(pars, file);
       }
       else
       {
