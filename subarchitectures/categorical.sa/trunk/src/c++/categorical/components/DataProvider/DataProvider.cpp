@@ -471,7 +471,7 @@ void CategoricalDataProvider::runComponent()
                 castTimeDiffToSeconds(odomTimestamp, refTimestamp) );
     }
    } catch (const CASTException& e) {
-    error("caught CASTException in runComponent(): %s", e.what());
+    getLogger()->warn("caught CASTException in runComponent(): "+ std::string(e.what()));
    }
   }
 
