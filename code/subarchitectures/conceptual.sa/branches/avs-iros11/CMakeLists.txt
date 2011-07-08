@@ -28,6 +28,8 @@ include_directories(${COGX_ROOT}/subarchitectures/categorical.sa/src/c++/categor
 include_directories(${COGX_ROOT}/subarchitectures/default.sa/src/c++/def/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 include_directories(${ROCS_SRC_INCLUDES})
 add_subdirectory (src/c++/conceptual/autogen)
 include_directories(src/c++/conceptual/autogen)
