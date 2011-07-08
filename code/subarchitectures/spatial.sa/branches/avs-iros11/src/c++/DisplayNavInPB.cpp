@@ -80,6 +80,14 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
 {
   log("configure entered");
 
+  try {
+    configureServerCommunication(_config);
+    m_ShowPointCloud = true;
+  } 
+  catch (...) {
+    m_ShowPointCloud = false;
+  }
+
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
   m_ShowGraph = (_config.find("--no-graph") == _config.end());
@@ -171,6 +179,11 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
       std::abort();
     } 
+
+    if (cfg->getSensorPose(3, m_KinectPoseR)) {
+      println("configure(...) Failed to get sensor pose for kinect.");
+      std::abort();
+    } 
   }
 
   log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
@@ -199,6 +212,10 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
 }
 
 void DisplayNavInPB::start() {
+
+  if (m_ShowPointCloud) {
+    startPCCServerCommunication(*this);
+  }
 
   // Robot pose
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
@@ -1022,6 +1039,19 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 	}
 }
 
+Cure::Vector3D DisplayNavInPB::surfacePointToWorldPoint(const PointCloud::SurfacePoint& point)
+{
+  Cure::Transformation3D robotTransform;
+  robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
+
+  Cure::Transformation3D robotTransform3 = robotTransform + m_KinectPoseR;
+
+  Cure::Vector3D from(point.p.x, point.p.y, point.p.z);
+  Cure::Vector3D to;
+  robotTransform3.invTransform(from, to);
+
+  return to;
+}
 
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   log("Got new SOI points.");
@@ -1075,6 +1105,7 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   }
   
 }
+
 void DisplayNavInPB::runComponent() {
 
   log("runComponent");
@@ -1124,6 +1155,24 @@ void DisplayNavInPB::runComponent() {
         
 
       }
+
+      if (m_RobotPose && m_ShowPointCloud) {
+        PointCloud::SurfacePointSeq points;
+        getPoints(true, 0 /* unused */, points);
+        log("Got %d points!", points.size());
+
+        peekabot::ColoredVertexSet kinectVerts; 
+        double rangeMax = 1;
+        int k = 0;
+        for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+          Cure::Vector3D p = surfacePointToWorldPoint(*it);
+          if ((k % 64) == 0)
+            kinectVerts.add(p.X[0], p.X[1], p.X[2], 1, std::max(0.0, (1 - p.X[2] / rangeMax)), 0);
+          k++;
+        }
+        m_ProxyKinect.set_vertices(kinectVerts);
+      }
+
 
       // Display robot pose
       if(m_ShowRobot && m_RobotPose) {
@@ -2305,6 +2354,12 @@ void DisplayNavInPB::connectPeekabot()
       }
     }
  
+
+
+    m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyKinect.set_max_vertices(10);
+    m_ProxyKinect.set_vertex_overflow_policy(peekabot::VERTEX_OVERFLOW_TRUNCATE_HALF);
+
     m_ProxyGraph.add(m_PeekabotClient,
                      "graph",
                      peekabot::REPLACE_ON_CONFLICT);

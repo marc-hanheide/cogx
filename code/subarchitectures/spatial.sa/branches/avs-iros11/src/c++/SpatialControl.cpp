@@ -82,6 +82,17 @@ void SpatialControl::configure(const map<string,string>& _config)
   if (_config.find("--pcserver") != _config.end()) {
     configureServerCommunication(_config);
     m_UsePointCloud = true;
+
+    m_obstacleMinHeight = 0.07; 
+    map<string,string>::const_iterator it = _config.find("--min-obstacle-height");
+    if (it != _config.end()) {
+      m_obstacleMinHeight = atof(it->second.c_str());
+    }
+    m_obstacleMaxHeight = 1.35; 
+    it = _config.find("--max-obstacle-height");
+    if (it != _config.end()) {
+      m_obstacleMaxHeight = atof(it->second.c_str());
+    }
   }
 
   map<string,string>::const_iterator it = _config.find("-c");
@@ -110,6 +121,11 @@ void SpatialControl::configure(const map<string,string>& _config)
   } 
 
   if (cfg.getSensorPose(1, m_LaserPoseR)) {
+    println("configure(...) Failed to get sensor pose");
+    std::abort();
+  } 
+
+  if (m_UsePointCloud && cfg.getSensorPose(3, m_KinectPoseR)) {
     println("configure(...) Failed to get sensor pose");
     std::abort();
   } 
@@ -361,213 +377,16 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
-/* eulerotation */
-void SpatialControl::eulerotation(double alpha, double beta, double gamma,Cure::Matrix &R)
+Cure::Vector3D SpatialControl::surfacePointToWorldPoint(const PointCloud::SurfacePoint& point, const Cure::Pose3D& pose)
 {
-	double ca = cos(alpha);
-	double cb = cos(beta);
-	double cg = cos(gamma);
+  Cure::Transformation3D robotTransform3 = pose + m_KinectPoseR;
 
-	double sa = sin(alpha);
-	double sb = sin(beta);
-	double sg = sin(gamma);	
+  Cure::Vector3D from(point.p.x, point.p.y, point.p.z);
+  Cure::Vector3D to;
+  robotTransform3.invTransform(from, to);
 
-	R(0,0) = cg*ca-sg*cb*sa;
-	R(0,1) = cg*sa+sg*cb*ca;
-	R(0,2) = sg*sb;
-
-	R(1,0) = -sg*ca-cg*cb*sa;
-	R(1,1) = -sg*sa+cg*cb*ca;
-	R(1,2) = cg*sb;
-
-	R(2,0) = sb*sa;
-	R(2,1) = -sb*ca;
-	R(2,2) = cb;
+  return to;
 }
-
-/* pointInKinectFov */
-//  The function will return YES if the point x,y is inside the polygon, or
-//  NO if it is not.  If the point is exactly on the edge of the polygon,
-//  then the function may return YES or NO.
-bool SpatialControl::pointInKinectFov(double x, double y) {
-    double x1,x2,y1,y2,x21;
-    int crossings = 0;
-    for ( int i = 0; i < 4; i++ ){
-      /* This is done to ensure that we get the same result when
-         the line goes from left to right and right to left */
-      if ( m_polyX[i] < m_polyX[ (i+1)%4 ] ){
-              x1 = m_polyX[i];
-              y1 = m_polyY[i];
-              x2 = m_polyX[(i+1)%4];
-              y2 = m_polyY[(i+1)%4];
-      } else {
-              x1 = m_polyX[(i+1)%4];
-              y1 = m_polyY[(i+1)%4];              
-              x2 = m_polyX[i];
-              y2 = m_polyY[i];
-      }
-      /* First check if the ray is possible to cross the line */
-      if ( x1 < x && x <= x2 && ( y < m_polyY[i] || y <= m_polyY[(i+1)%4] ) ) {
-      	x21 = x2-x1;
-      	if(x21 > 1e-6){
-	      	if( y1+(x-x1)*(y2-y1)/x21 > y)
-  		      crossings++;
-  		  } else crossings++;
-      }
-    }
-    if ( crossings % 2 == 1 ) return true;
-    
-    return false;
-}
-/* p3line */
-Cure::Matrix SpatialControl::p3line(Cure::Matrix p1, Cure::Matrix p2, double d)
-{
-	/* p1------p2------d-------p3 */
-	Cure::Matrix V = p2 - p1;
-	double theta = atan2(V(1,0),V(0,0));
-	V(0,0) = p2(0,0)+d*cos(theta);
-  V(1,0) = p2(1,0)+d*sin(theta);
-	return V;
-}
-
-/* convertDepthToCureScan */
-void SpatialControl::getKinectObs(Cure::Pose3D scanPose)
-{  
-	double Rtheta;
-
-	Cure::Matrix Rr(3,3);
-	Cure::Matrix Rptu(3,3);
-	Cure::Matrix Rk(3,3);	
-	Cure::Matrix Prob_w(3,1);
-	Cure::Matrix Pcam_ptu(3,1);
-	Cure::Matrix Pptu_r(3,1);	
-	Cure::Matrix Tnet(3,1);
-	Cure::Matrix Pw(3,1);
-	Cure::Matrix B(3,1);
-	Cure::Matrix Rtotal(3,3);
-
-
-	Pcam_ptu(0,0) = Xcam_ptu;
-	Pcam_ptu(1,0) = Ycam_ptu;
-	Pcam_ptu(2,0) = Zcam_ptu;
-	Pptu_r(0,0) = Xptu_r;
-	Pptu_r(1,0) = Yptu_r;
-	Pptu_r(2,0) = Zptu_r;
-	
-	Prob_w(0,0) = scanPose.getX();
-	Prob_w(1,0) = scanPose.getY();
-	Prob_w(2,0) = 0.24;
-	Rtheta = scanPose.getTheta();
-  m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-                                0.55*Cure::NavController::getRobotWidth(), 
-                                '0');                                  
-
-	//poseData.tilt = -0.524;
-	//poseData.tilt = 0.0;
-	double Ctilt = -55*pi/180;
-	double epsilon = 2.2*pi/180;
-	eulerotation(0.0, 0.0, Rtheta,Rr); // robot coordinate rotation only Yaw!
-	//eulerotation(pi/2-poseData.pan,-poseData.tilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
-	//eulerotation(pi/2-poseData.pan,-Ctilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
-	eulerotation(pi/2,-Ctilt,-pi/2,Rptu); // PTU coordinate rotation, Yaw (pan) and Pitch (tilt)!
-	eulerotation(pi/2, pi/2, pi-epsilon,Rk); // IR camera coordinate rotation correction!
-	//Tnet.minus(Rc*Rt*Prob_w+Rc*Pcam_r);
-	//Tnet.minus(Rk*Rptu*Prob_w+Rk*Pptu_r+Pcam_ptu);
-	Tnet.minus(Rk*Rptu*Rr*Prob_w+Rk*Rptu*Pptu_r+Rk*Pcam_ptu);
-	Rtotal = Rk*Rptu*Rr;
-	Rtotal = Rtotal.inv();
-		
-
-	// calculating the polygon [P1 P3 P4 P2 P1] inside which should points be removed
-	double h = Zptu_r + Prob_w(2,0);
-	double r = Zcam_ptu;
-	double hp = h+r*cos(-Ctilt);
-	double ro1 = hp/cos(pi/2-FOVv/2+Ctilt);
-	double ro2 = hp/cos(pi/2+FOVv/2+Ctilt);
-	static int counter = 0;
-	double scale = 1.5;
-	double scale2 = 0.7;
-	char buff[100];
-	sprintf(buff,"hp=%f, ro1=%f, ro2=%f, Rtheta=%f",hp,ro1,ro2,Rtheta);
-	if(counter < 2) log(buff);
-	counter++;
-	B(0,0) = ro1 * (0-camU0)/(scale*camAx) - Tnet(0,0);				
-	B(1,0) = ro1 * (479-camV0)/(scale2*camAy) - Tnet(1,0);
-	B(2,0) = ro1 - Tnet(2,0);
-	Cure::Matrix P0Fov = Rtotal*B;
-	m_polyX[0] = P0Fov(0,0);
-	m_polyY[0] = P0Fov(1,0);	
-	
-	B(0,0) = ro1 * (631-camU0)/(scale*camAx) - Tnet(0,0);				
-	Cure::Matrix P3Fov = Rtotal*B;
-	m_polyX[3] = P3Fov(0,0);
-	m_polyY[3] = P3Fov(1,0);	
-
-	B(0,0) = ro2 * (0-camU0)/(scale*camAx) - Tnet(0,0);				
-	B(1,0) = ro2 * (0-camV0)/(scale2*camAy) - Tnet(1,0);
-	B(2,0) = ro2 - Tnet(2,0);
-	Cure::Matrix P1Fov = Rtotal*B;
-	m_polyX[1] = P1Fov(0,0);
-	m_polyY[1] = P1Fov(1,0);	
-	
-	B(0,0) = ro2 * (631-camU0)/(scale*camAx) - Tnet(0,0);				
-	Cure::Matrix P2Fov = Rtotal*B;
-	m_polyX[2] = P2Fov(0,0);
-	m_polyY[2] = P2Fov(1,0);	
-
-	//char buff[100];
-	//sprintf(buff,"number of points in local memory before erasing = %u",m_kinectObs.size());
-	//log(buff);
-	
-	sprintf(buff,"plot([%f,%f,%f,%f],[%f,%f,%f,%f],'bo')",m_polyX[0],m_polyX[1],m_polyX[2],m_polyX[3],m_polyY[0],m_polyY[1],m_polyY[2],m_polyY[3]);
-	if(counter < 2) log(buff);
-	// removing the obstacle points which are far from the center of the robot from the local kinect obstacle points memory
-	// as well as the points in the field of view
-
-	int lgmRes = m_lgmK->getSize();
-	double xW,yW;
-  for(int xi=-lgmRes; xi <= lgmRes; xi++){
-	  for(int yi=-lgmRes; yi <= lgmRes; yi++){  
-	  	m_lgmK->index2WorldCoords(xi,yi,xW,yW);
-			//distance = hypot( yW-poseData.y, xW-poseData.x );
-			//if (distance > MaxObsDistance) (*m_lgmK)(xi,yi) = '2';
-			//else 
-			if(pointInKinectFov(xW, yW)) (*m_lgmK)(xi,yi) = '2';				
-		}    	
-  }               
-
-	//sprintf(buff,"number of points in local memory after erasing = %u",m_kinectObs.size());
-	//log(buff);
-	
-	int xi,yi;
-	double depth;
-	int depthInt;
-	for(unsigned int col=0; col < (XRes-DEADZONE); col+=4) // 640-DEADZONE and angleStep = FOV_h/(640-DEADZONE) * pi / 180 , FOV_h = 57.8 degrees
-	{				
-		double colSS = (col-camU0)/camAx;
-		for(unsigned int row=0; row < YRes; row += 4) // 480
-		{
-			depthInt = m_depthData[XRes*row+col];			
-			if(!depthInt) continue;
-			depth = double (depthInt)/1000 + camFocalIR;
-			if(depth < MaxDistanceToInclude && depth > MinDistanceToInclude){								
-				B(0,0) = depth * colSS - Tnet(0,0);
-				B(1,0) = depth * (row-camV0)/camAy - Tnet(1,0);
-				B(2,0) = depth - Tnet(2,0);
-				Pw = Rtotal*B;
-				// height check
-				if(MinHeightToPass < Pw(2,0) && Pw(2,0) < MaxHeightToPass){ // obstacle detection
-					if(m_lgmK->worldCoords2Index(Pw(0,0),Pw(1,0),xi,yi)==0) (*m_lgmK)(xi,yi) = '1';
-				}
-			}
-		}
-		//if(predistance != MaxObsDistance) m_kinectObs.push_back(tempObs);
-		//sprintf(buff,"number of points in local memory after adding = %u",m_kinectObs.size());
-		//log(buff);		
-	}
-	
-}
-
 
 void SpatialControl::runComponent() 
 {
@@ -587,15 +406,6 @@ void SpatialControl::runComponent()
     useKinectFrame = false;		
 
     if (m_UsePointCloud) {
-
-      //clock_t t0 = clock();		
-      m_depthData.clear();
-      getDepthMap(m_frameTime, m_depthData);
-      //clock_t t1 = clock();
-      //log("Execution time of getDepthMap() = %f s", double (t1-t0)/CLOCKS_PER_SEC);
-
-      //if(m_depthData.empty()) continue;
-
       //		m_Mutex.lock();
       while (!m_LScanQueue.empty()){
         if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
@@ -606,34 +416,49 @@ void SpatialControl::runComponent()
           m_firstScanAdded = true;
           useLaserScan = true;
           m_LScanQueue.pop();
-        }else log("No Estimation for Scan Pose!!!!!!!!!!!!!!!!!!!");
+        }
       }
       //		m_Mutex.unlock();
 
-      if (m_TOPP.getPoseAtTime(Cure::Timestamp(m_frameTime.s, m_frameTime.us), scanPose) == 0) {
-        getKinectObs(scanPose);
+      cdl::CASTTime frameTime;
+      std::vector<int> depthData; /* not used */
+      getDepthMap(frameTime, depthData); /* get scan time */
+      if (m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0) {
+        PointCloud::SurfacePointSeq points;
+        getPoints(true, 0 /* unused */, points);
+        for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+          Cure::Vector3D p = surfacePointToWorldPoint(*it, scanPose);
+          double pX = p.X[0];
+          double pY = p.X[1];
+          double pZ = p.X[2];
+          if (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight) {
+            if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
+              (*m_lgmK)(xi, yi) = '1';
+            }
+          }
+          else {
+            if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
+              (*m_lgmK)(xi, yi) = '0';
+            }
+          }
+        }
+
         useKinectFrame = true;
       }
 
       m_Mutex.lock();    				
       (*m_lgm) = (*m_lgmL);			   
       for(long i=0; i<m_lgmK->getNumCells(); i++){
-        if((*m_lgmK)[i] != '2') (*m_lgm)[i] = (*m_lgmK)[i];
+        // Don't overwrite obstacles seen by the laser with (possibly old)
+        // free space from the point cloud
+        if ((*m_lgmK)[i] == '0' && (*m_lgm)[i] == '1')
+          continue;
+
+        if((*m_lgmK)[i] != '2')
+          (*m_lgm)[i] = (*m_lgmK)[i];
       } 						
       m_Mutex.unlock();
 
-      // filtering
-      unsigned int bound = m_lgm->getSize();
-
-      for(unsigned int x=-bound+1; x<bound-1; x++){
-        for(unsigned int y=-bound+1; y<bound-1; y++){
-          if( (*m_lgm)(x,y) == '1' && 
-              (*m_lgm)(x-1,y) != '1' && (*m_lgm)(x+1,y) != '1' && 
-              (*m_lgm)(x-1,y-1) != '1' && (*m_lgm)(x+1,y-1) != '1' && 
-              (*m_lgm)(x-1,y+1) != '1' && (*m_lgm)(x+1,y+1) != '1' && 
-              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y+1) != '1' ) (*m_lgm)(x,y) = '0';
-        }
-      } 								
 
       const int deltaN = 3;
       double d = m_lgm->getCellSize()/deltaN;
