@@ -47,44 +47,6 @@
 #include <FrontierInterface.hpp>
 
 namespace spatial {
-// camera constant parameters
-const double camFocalIR = 5.8e-3;
-const double camAx = 600;//522.149103;//813.445758; //615.956787;
-const double camAy = 600;//522.829838;//815.471465; //615.956787;
-const double camU0 = 299.901428;//325.069348; //321.940572;
-const double camV0 = 270.913543;//220.749067; //226.489246;
-const double Xcam_ptu = 0.0; // meter
-const double Ycam_ptu = 0.010; // meter
-const double Zcam_ptu = 0.117; // meter
-const double Xptu_r = 0.156; // meter
-const double Yptu_r = 0.0; // meter
-const double Zptu_r = 1.1; // meter
-const unsigned int XRes = 640;
-const unsigned int YRes = 480;
-const unsigned int DEADZONE = 8;
-const double FOVv = 0.750491578; // = 43 degrees
-// some constants
-const double MaxHeightToPass = 1.35; // meter
-const double MinHeightToPass = 0.07; // meter
-const double MaxNegHeightToPass = -0.05; // meter
-const double MaxDistanceToInclude = 3.0; // meter
-const double MinDistanceToInclude = 0.50; // meter
-const double MaxObsDistance = 5.00; // meter
-const double pi = 3.14159265;
-
-struct PoseData{
-	double x;
-	double y;
-	double theta;
-	double pan;
-	double tilt;
-} poseData;
-
-struct KinectObs{
-	double x;
-	double y;
-	unsigned char type;	
-};
 
 /**
  * This class wraps the class Cure::NavController which contains
@@ -158,11 +120,6 @@ public:
   void failTask(int taskID, int error);
   void explorationDone(int taskID, int status);
   const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
-  void getKinectObs(Cure::Pose3D scanPose);
-  void eulerotation(double alpha, double beta, double gamma, Cure::Matrix &R);
-  Cure::Matrix p3line(Cure::Matrix p1, Cure::Matrix p2, double d);
-  bool pointInKinectFov(double x, double y);
-
 
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
@@ -200,13 +157,7 @@ protected:
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
-  
-  std::vector<KinectObs> m_kinectObs;
- 	std::vector<int> m_depthData;	
-	cast::cdl::CASTTime m_frameTime;  
-
-  double m_polyY[4];
-  double m_polyX[4];
+  Cure::SensorPose m_KinectPoseR;
   
   NavData::InternalCommandType m_commandType;
   double m_commandX;
@@ -264,6 +215,8 @@ protected:
   bool m_firstScanAdded;
 
   bool m_UsePointCloud;
+  double m_obstacleMinHeight;
+  double m_obstacleMaxHeight;
 
 protected:
   /* 
@@ -283,6 +236,8 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
+
+  Cure::Vector3D surfacePointToWorldPoint(const PointCloud::SurfacePoint& point, const Cure::Pose3D& pose);
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 

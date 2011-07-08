@@ -90,6 +90,7 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 if(DISPLAY_COMA_PB)
   link_cast_component(${CAST_COMPONENT_NAME} ComaData)
 endif(DISPLAY_COMA_PB)
