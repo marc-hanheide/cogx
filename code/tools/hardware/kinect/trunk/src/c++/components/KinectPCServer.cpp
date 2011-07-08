@@ -194,6 +194,11 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
       pt.p.x = cloud.at<cv::Point3f>(row, col).x;
       pt.p.y = cloud.at<cv::Point3f>(row, col).y;
       pt.p.z = cloud.at<cv::Point3f>(row, col).z;
+
+      /* Check point for validity */
+      if (pt.p.x == FLT_MAX && pt.p.y == FLT_MAX && pt.p.z == FLT_MAX)
+        continue;
+
       pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
       pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
       pt.c.b = colCloud.at<cv::Point3f>(row, col).x;

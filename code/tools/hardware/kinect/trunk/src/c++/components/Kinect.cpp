@@ -84,7 +84,7 @@ bool Kinect::Init(const char *kinect_xml_file)
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Could not read shadow value.\n");
   
-  rc = kinect::getDepthGenerator()->GetIntProperty ("ShadowValue", no_sample_value);
+  rc = kinect::getDepthGenerator()->GetIntProperty ("NoSampleValue", no_sample_value);
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Could not read \"no sample\" value.\n");
   
@@ -420,15 +420,19 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
   {
     for(unsigned col = 0; col<depWidth; col+=scale)
     {
+      int col4tel = col/scale;
+      int row4tel = row/scale;
       short depth = depImage.at<short>(row, col);
       if(depth != shadow_value && depth != no_sample_value)
       {
-        int col4tel = col/scale;
-        int row4tel = row/scale;
         cloud.at<cv::Point3f>(row4tel, col4tel) = DepthToWorld(col, row, (int) depth);
 
         int rgb2depthRatio = rgbWidth/depWidth;									/// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
         colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
+      }
+      else {
+        /* Initialize points if we have no valid data */
+        cloud.at<cv::Point3f>(row4tel, col4tel) = cv::Point3f(FLT_MAX, FLT_MAX, FLT_MAX);
       }
     }
   }
