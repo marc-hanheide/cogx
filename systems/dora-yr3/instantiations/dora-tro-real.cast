@@ -79,7 +79,7 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-INCLUDE includes/categorical.sa/categorical-gisbert-kapp-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-bham-socs-shape-appearance.cast
 
 
 # Vision ######################################################################
