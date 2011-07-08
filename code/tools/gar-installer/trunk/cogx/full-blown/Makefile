@@ -33,9 +33,10 @@ LIBDEPS = 			contrib/peekabot \
 		contrib/opencv \
 		contrib/player-3.0.2 \
 		contrib/stage \
+		contrib/mercury \
 		contrib/avin2-SensorKinect
 
-DESCRIPTION = agai-distro
+DESCRIPTION = cogx-distro
 
 CONFIGURE_SCRIPTS = 
 BUILD_SCRIPTS = 
