@@ -45,9 +45,12 @@ public class DiscreteComaRoomTransferFunction extends ComaRoomTransferFunction {
 				maxLabel = ((SpatialProbabilities.StringRandomVariableValue) (jp.variableValues[0])).value;
 			}
 		}
-		assert (maxLabel != null);
-		fd.add(maxLabel, maxProb);
-		assert (fd.size() == 1);
+		if (maxLabel != null) {
+			fd.add(maxLabel, 1.0);
+
+		} else {
+			fd.add("unknown", 1.0);
+		}
 		distr.put(CATEGORY_ID, fd);
 	}
 
