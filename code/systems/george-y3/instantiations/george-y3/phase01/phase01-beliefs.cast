@@ -30,6 +30,7 @@ JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
+INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
