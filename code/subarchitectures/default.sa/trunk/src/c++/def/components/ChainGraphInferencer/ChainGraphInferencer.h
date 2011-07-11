@@ -128,9 +128,24 @@ private:
 	/** Converted knowledge from the HFC. */
 	std::list<ObjectPropertyGivenRoomCategory> _objectPropertyGivenRoomCategory;
 
-	double _defaultRoomCategoryConnectivityPotential;
 	double _defaultObjectExistenceProbability;
 
+	struct ObjectObservationModel
+	{
+		std::string objectCategory;
+		std::string supportObjectCategory;
+		SpatialData::SpatialRelation relation;
+		double truePositiveProbability;
+		double trueNegativeProbability;
+	};
+
+	/** Converted knowledge from the HFC. */
+	std::list<ObjectObservationModel> _objectObservationModel;
+
+	double _defaultObjectTruePositiveProbability;
+	double _defaultObjectTrueNegativeProbability;
+
+	double _defaultRoomCategoryConnectivityPotential;
 
 	struct RoomCategoryConnectivity
 	{

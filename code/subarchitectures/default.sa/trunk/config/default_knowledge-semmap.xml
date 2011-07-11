@@ -232,4 +232,9 @@
 	<item appearance_property="meetingroom"     probability="0.143"/>
 	<item appearance_property="office"          probability="0.143"/>
     </default_appearance_property_given_room_category>
+    <object_observation_models>
+	<item object_category="book"	relation="in-room"	support_object_category=""	true_positive_probability="0.9" true_negative_probability="0.7"/>
+	<item object_category="book"	relation="on"		support_object_category="table"	true_positive_probability="0.95" true_negative_probability="0.75"/>
+    </object_observation_models>
+    <default_object_observation_model true_positive_probability="0.8" true_negative_probability="0.8"/>
 </default>

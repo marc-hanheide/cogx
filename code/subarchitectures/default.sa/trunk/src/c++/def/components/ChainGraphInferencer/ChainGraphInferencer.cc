@@ -115,6 +115,40 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_roomCategoryConnectivity.push_back(rcc);
 	}
 
+	// Object observation model
+	_defaultObjectTruePositiveProbability =
+			config.getValue("default.default_object_observation_model.true_positive_probability", 1.0);
+	_defaultObjectTrueNegativeProbability =
+			config.getValue("default.default_object_observation_model.true_negative_probability", 1.0);
+
+	vector<string> objCatVector;
+	config.getValueList("default.object_observation_models", "object_category", objCatVector);
+	vector<string> relationVector;
+	config.getValueList("default.object_observation_models", "relation", relationVector);
+	vector<string> supportObjCatVector;
+	config.getValueList("default.object_observation_models", "support_object_category", supportObjCatVector);
+	vector<double> truePosProbVector;
+	config.getValueList("default.object_observation_models", "true_positive_probability", truePosProbVector);
+	vector<double> trueNegProbVector;
+	config.getValueList("default.object_observation_models", "true_negative_probability", trueNegProbVector);
+
+	if ( (objCatVector.size()!=relationVector.size()) ||
+		 (objCatVector.size()!=supportObjCatVector.size()) ||
+		 (objCatVector.size()!=truePosProbVector.size()) ||
+		 (objCatVector.size()!=trueNegProbVector.size()) )
+		throw CASTException("The numbers of object_category, relation, support_object_category, true_positive_probability and true_negative_probability keys do not match.");
+
+	for(unsigned int i=0; i<objCatVector.size(); ++i)
+	{
+		ObjectObservationModel oom;
+		oom.objectCategory = objCatVector[i];
+		oom.relation = (relationVector[i]=="in")?SpatialData::INOBJECT:((relationVector[i]=="on")?SpatialData::ON:SpatialData::INROOM);
+		oom.supportObjectCategory = supportObjCatVector[i];
+		oom.truePositiveProbability = truePosProbVector[i];
+		oom.trueNegativeProbability = trueNegProbVector[i];
+		_objectObservationModel.push_back(oom);
+	}
+
 	// Properties (shape)
 	roomCat1Vector.clear();
 	config.getValueList("default.shape_property_given_room_category", "room_category1", roomCat1Vector);
@@ -809,6 +843,137 @@ SpatialProbabilities::ProbabilityDistribution
 			}
 		}
 	}
+
+
+
+	// object_xxx_property -> object_xxx_observation factors
+	if ((variables.size()==2) && (starts_with(variables[0],"object_")) &&
+		 (starts_with(variables[1],"object_")) && (ends_with(variables[0],"_property")) &&
+		 (ends_with(variables[1],"_observation")))
+	{
+		// Identify which factor we want
+		for(vector<string>::iterator it = _chainGraphInferencer->_objectPropertyVariables.begin();
+				it!=_chainGraphInferencer->_objectPropertyVariables.end(); ++it)
+		{
+			if (variables[0] == (*it))
+			{ // We found our factor!
+				string objectCategory;
+				string supportObjectCategory;
+				SpatialData::SpatialRelation relation;
+				VariableNameGenerator::parseDefaultObjectPropertyVar(*it, objectCategory, relation, supportObjectCategory);
+				// We assume that the observation variable matches the property variable, so we don't have to parse it.
+
+				_chainGraphInferencer->debug("Received query for object observation factor for object=%s, relation=%d, support=%s",
+						objectCategory.c_str(), relation, supportObjectCategory.c_str());
+
+				// Let's try to find the observation model
+				for (std::list<ObjectObservationModel>::iterator it2 = _chainGraphInferencer->_objectObservationModel.begin();
+						it2 != _chainGraphInferencer->_objectObservationModel.end(); ++it2)
+				{
+					if ( (it2->objectCategory == objectCategory) && (it2->relation == relation) &&
+							( (relation == SpatialData::INROOM) || (it2->supportObjectCategory == supportObjectCategory) )
+					   )
+					{
+						// True positive (real=true, detected=true)
+						SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						SpatialProbabilities::BoolRandomVariableValuePtr realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						SpatialProbabilities::JointProbabilityValue jpv1;
+						jpv1.probability=it2->truePositiveProbability;
+						jpv1.variableValues.push_back(detectedRVVPtr);
+						jpv1.variableValues.push_back(realRVVPtr);
+						factor.massFunction.push_back(jpv1);
+
+						// False negative (real=true, detected=false)
+						detectedRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						SpatialProbabilities::JointProbabilityValue jpv4;
+						jpv4.probability=1.0 - it2->truePositiveProbability;
+						jpv4.variableValues.push_back(detectedRVVPtr);
+						jpv4.variableValues.push_back(realRVVPtr);
+						factor.massFunction.push_back(jpv4);
+
+						// True negative (real=false, detected=false)
+						detectedRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						SpatialProbabilities::JointProbabilityValue jpv3;
+						jpv3.probability=it2->trueNegativeProbability;
+						jpv3.variableValues.push_back(detectedRVVPtr);
+						jpv3.variableValues.push_back(realRVVPtr);
+						factor.massFunction.push_back(jpv3);
+
+
+						// False positive (real=false, detected=true)
+						detectedRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						SpatialProbabilities::JointProbabilityValue jpv2;
+						jpv2.probability=1.0-it2->trueNegativeProbability;
+						jpv2.variableValues.push_back(detectedRVVPtr);
+						jpv2.variableValues.push_back(realRVVPtr);
+						factor.massFunction.push_back(jpv2);
+
+						return factor;
+					}
+				}
+
+				// If it's missing, we used default
+
+				// True positive (detected=true, real=true)
+				SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				SpatialProbabilities::BoolRandomVariableValuePtr realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				SpatialProbabilities::JointProbabilityValue jpv1;
+				jpv1.probability=_chainGraphInferencer->_defaultObjectTruePositiveProbability;
+				jpv1.variableValues.push_back(detectedRVVPtr);
+				jpv1.variableValues.push_back(realRVVPtr);
+				factor.massFunction.push_back(jpv1);
+
+				// False positive (detected=true, real=false)
+				detectedRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(false);
+				SpatialProbabilities::JointProbabilityValue jpv2;
+				jpv2.probability=1.0-_chainGraphInferencer->_defaultObjectTruePositiveProbability;
+				jpv2.variableValues.push_back(detectedRVVPtr);
+				jpv2.variableValues.push_back(realRVVPtr);
+				factor.massFunction.push_back(jpv2);
+
+				// True negative (detected=false, real=false)
+				detectedRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(false);
+				realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(false);
+				SpatialProbabilities::JointProbabilityValue jpv3;
+				jpv3.probability=_chainGraphInferencer->_defaultObjectTrueNegativeProbability;
+				jpv3.variableValues.push_back(detectedRVVPtr);
+				jpv3.variableValues.push_back(realRVVPtr);
+				factor.massFunction.push_back(jpv3);
+
+				// False negative (detected=false, real=true)
+				detectedRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				SpatialProbabilities::JointProbabilityValue jpv4;
+				jpv4.probability=1.0 - _chainGraphInferencer->_defaultObjectTrueNegativeProbability;
+				jpv4.variableValues.push_back(detectedRVVPtr);
+				jpv4.variableValues.push_back(realRVVPtr);
+				factor.massFunction.push_back(jpv4);
+
+				return factor;
+			}
+		}
+	}
+
 
 	// room_category1 -> _shape_property
 	if ((variables.size()==2) &&
