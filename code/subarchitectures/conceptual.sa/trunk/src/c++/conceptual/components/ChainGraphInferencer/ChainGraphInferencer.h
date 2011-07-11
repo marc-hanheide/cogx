@@ -49,6 +49,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
 		ChainGraphInferencer *_chainGraphInferencer;
     };
 
+	enum ObjectPropertyModel
+	{OPM_COUNTING, OPM_OBSERVATION_MODEL};
 
 public:
 
@@ -99,8 +101,14 @@ private:
 	 * have at least one factor.
 	 */
 	void createDaiSingleRoomFactor(int room1Id);
+	void createDaiObjectPropertyGivenRoomCategoryFactorOM(int room1Id, const std::string &objectCategory,
+			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
+			const std::string &supportObjectId, double beta);
+	void createDaiObservedObjectPropertyFactorOM(int room1Id, const std::string &objectCategory,
+			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory, const std::string &supportObjectId,
+			bool objectPresent, double beta);
 	/** Creates the factor for an observed object counter variable for the explored space. */
-	void createDaiObservedObjectPropertyFactor(int room1Id, const std::string &objectCategory,
+	void createDaiObservedObjectPropertyFactorCounting(int room1Id, const std::string &objectCategory,
 			SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
 			const std::string &supportObjectId, unsigned int objectCount, double beta);
 	/** Creates the factor for the presence of the object in yet unexplored space. */
@@ -153,6 +161,10 @@ private:
 	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string var1Value, bool var2value);
 
+	/** Returns probability value from the distribution. */
+	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+			bool var1Value, bool var2value);
+
 	/** Parses a query into a vector of variables. */
 	void parseQuery(std::string queryString, ConceptualData::QueryType type, std::vector<std::string> &variables);
 
@@ -182,6 +194,8 @@ private:
 
 
 private:
+
+	ObjectPropertyModel _objectPropertyModel;
 
 	struct Query
 	{

@@ -17,6 +17,10 @@ public:
 	static std::string getDefaultObjectPropertyVarName(std::string objectCategory,
 			SpatialData::SpatialRelation relation, std::string supportObjectCategory);
 
+	/** Generates name of the object observation variable for default SA. */
+	static std::string getDefaultObjectObservationVarName(std::string objectCategory,
+			SpatialData::SpatialRelation relation, std::string supportObjectCategory);
+
 	/** Parses name of the object property variable for default SA. */
 	static bool parseDefaultObjectPropertyVar(std::string varName,
 			std::string &objectCategory, SpatialData::SpatialRelation &relation,
@@ -35,6 +39,14 @@ public:
 	 * the explored part of space.
 	 */
 	static std::string getExploredObjectVarName(int roomId, std::string objectCategory,
+			SpatialData::SpatialRelation relation, std::string supportObjectCategory,
+			std::string supportObjectId);
+
+	/**
+	 * Generates name of the variable for the observation of the event of the number of objects being present in
+	 * the explored part of space.
+	 */
+	static std::string getObjectObservationVarName(int roomId, std::string objectCategory,
 			SpatialData::SpatialRelation relation, std::string supportObjectCategory,
 			std::string supportObjectId);
 

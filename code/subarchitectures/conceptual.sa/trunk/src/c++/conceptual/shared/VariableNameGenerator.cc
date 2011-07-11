@@ -25,6 +25,19 @@ std::string VariableNameGenerator::getDefaultObjectPropertyVarName(std::string o
 	return objVarName;
 }
 
+// -------------------------------------------------------
+std::string VariableNameGenerator::getDefaultObjectObservationVarName(std::string objectCategory,
+		SpatialData::SpatialRelation relation, std::string supportObjectCategory)
+{
+	string objVarName;
+	if (relation==SpatialData::INROOM)
+		objVarName = "object_"+objectCategory+"_observation";
+	else
+		objVarName = "object_"+objectCategory+
+		            "_"+relationToString(relation)+"_"+supportObjectCategory+"_observation";
+
+	return objVarName;
+}
 
 // -------------------------------------------------------
 std::string VariableNameGenerator::getUnexploredObjectVarName(int roomId, std::string objectCategory,
@@ -53,6 +66,22 @@ std::string VariableNameGenerator::getExploredObjectVarName(int roomId, std::str
 		objVarName = "room"+lexical_cast<string>(roomId)+"_object_"+objectCategory+
 		            "_"+relationToString(relation)+"_"+supportObjectCategory+"-"+
 		            supportObjectId+"_explored";
+
+	return objVarName;
+}
+
+
+// -------------------------------------------------------
+std::string VariableNameGenerator::getObjectObservationVarName(int roomId, std::string objectCategory,
+		SpatialData::SpatialRelation relation, std::string supportObjectCategory, std::string supportObjectId)
+{
+	string objVarName;
+	if (relation==SpatialData::INROOM)
+		objVarName = "room"+lexical_cast<string>(roomId)+"_object_"+objectCategory+"_observation";
+	else
+		objVarName = "room"+lexical_cast<string>(roomId)+"_object_"+objectCategory+
+		            "_"+relationToString(relation)+"_"+supportObjectCategory+"-"+
+		            supportObjectId+"_observation";
 
 	return objVarName;
 }
