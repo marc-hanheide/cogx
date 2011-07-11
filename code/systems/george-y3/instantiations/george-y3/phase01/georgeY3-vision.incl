@@ -56,7 +56,7 @@ SETVAR SOIFilter_Params=<multiline>
    --displayserver "display.srv"
    %(wmBlocking)
    # --display 
-   # --log --debug
+   #--log --debug
 </multiline>
 CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
