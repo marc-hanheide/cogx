@@ -19,6 +19,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.ProtoObjectMatchingFunction;
@@ -28,14 +29,14 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.ProtoObjectMatchingFunc
  * 
  */
 public class ViewConeTransferFunction extends
-		DependentDiscreteTransferFunction<ViewCone, PerceptBelief> {
+		DependentDiscreteTransferFunction<ViewCone, GroundedBelief> {
 
 	public static final String VIEW_CONE_ID = "view-cone-id";
 	static Logger logger = Logger.getLogger(ViewConeTransferFunction.class);
 
 	public ViewConeTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs) {
-		super(component, allBeliefs, logger, PerceptBelief.class);
+			WMView<GroundedBelief> allBeliefs) {
+		super(component, allBeliefs, logger, GroundedBelief.class);
 	}
 
 	@Override

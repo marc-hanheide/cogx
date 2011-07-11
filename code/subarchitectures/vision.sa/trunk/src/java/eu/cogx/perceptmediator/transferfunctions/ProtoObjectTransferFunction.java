@@ -18,7 +18,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
@@ -26,13 +26,13 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * 
  */
 public class ProtoObjectTransferFunction extends
-		SimpleDiscreteTransferFunction<ProtoObject, PerceptBelief> {
+		SimpleDiscreteTransferFunction<ProtoObject, GroundedBelief> {
 
 	public static final String PROTO_OBJECT_ID = "protoObjectID";
 	static Logger logger = Logger.getLogger(ProtoObjectTransferFunction.class);
 
 	public ProtoObjectTransferFunction(ManagedComponent component) {
-		super(component, logger, PerceptBelief.class);
+		super(component, logger, GroundedBelief.class);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class ProtoObjectTransferFunction extends
 	 */
 	@Override
 	protected void fillBelief(
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			WorkingMemoryChange wmc, ProtoObject from) {
 		// TODO Auto-generated method stub
 		super.fillBelief(belief, wmc, from);
