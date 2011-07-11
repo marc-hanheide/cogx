@@ -432,8 +432,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 * @see java.util.Map#entrySet()
 	 */
 	@Override
-	public Set<java.util.Map.Entry<WorkingMemoryAddress, T>> entrySet() {
-		return map.entrySet();
+	public synchronized Set<java.util.Map.Entry<WorkingMemoryAddress, T>> entrySet() {
+		return (new HashMap<WorkingMemoryAddress, T>(map)).entrySet();
 	}
 
 	/*
