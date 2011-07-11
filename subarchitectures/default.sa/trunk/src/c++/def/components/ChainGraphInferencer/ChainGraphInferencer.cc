@@ -875,48 +875,48 @@ SpatialProbabilities::ProbabilityDistribution
 					   )
 					{
 						// True positive (real=true, detected=true)
-						SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
-								new SpatialProbabilities::BoolRandomVariableValue(true);
 						SpatialProbabilities::BoolRandomVariableValuePtr realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(true);
 						SpatialProbabilities::JointProbabilityValue jpv1;
 						jpv1.probability=it2->truePositiveProbability;
-						jpv1.variableValues.push_back(detectedRVVPtr);
 						jpv1.variableValues.push_back(realRVVPtr);
+						jpv1.variableValues.push_back(detectedRVVPtr);
 						factor.massFunction.push_back(jpv1);
 
 						// False negative (real=true, detected=false)
-						detectedRVVPtr =
-								new SpatialProbabilities::BoolRandomVariableValue(true);
 						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(true);
+						detectedRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(false);
 						SpatialProbabilities::JointProbabilityValue jpv4;
 						jpv4.probability=1.0 - it2->truePositiveProbability;
-						jpv4.variableValues.push_back(detectedRVVPtr);
 						jpv4.variableValues.push_back(realRVVPtr);
+						jpv4.variableValues.push_back(detectedRVVPtr);
 						factor.massFunction.push_back(jpv4);
 
 						// True negative (real=false, detected=false)
-						detectedRVVPtr =
-								new SpatialProbabilities::BoolRandomVariableValue(false);
 						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						detectedRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(false);
 						SpatialProbabilities::JointProbabilityValue jpv3;
 						jpv3.probability=it2->trueNegativeProbability;
-						jpv3.variableValues.push_back(detectedRVVPtr);
 						jpv3.variableValues.push_back(realRVVPtr);
+						jpv3.variableValues.push_back(detectedRVVPtr);
 						factor.massFunction.push_back(jpv3);
 
 
 						// False positive (real=false, detected=true)
-						detectedRVVPtr =
-								new SpatialProbabilities::BoolRandomVariableValue(false);
 						realRVVPtr =
+								new SpatialProbabilities::BoolRandomVariableValue(false);
+						detectedRVVPtr =
 								new SpatialProbabilities::BoolRandomVariableValue(true);
 						SpatialProbabilities::JointProbabilityValue jpv2;
 						jpv2.probability=1.0-it2->trueNegativeProbability;
-						jpv2.variableValues.push_back(detectedRVVPtr);
 						jpv2.variableValues.push_back(realRVVPtr);
+						jpv2.variableValues.push_back(detectedRVVPtr);
 						factor.massFunction.push_back(jpv2);
 
 						return factor;
@@ -925,49 +925,51 @@ SpatialProbabilities::ProbabilityDistribution
 
 				// If it's missing, we used default
 
-				// True positive (detected=true, real=true)
-				SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
-						new SpatialProbabilities::BoolRandomVariableValue(true);
+				// True positive (real=true, detected=true)
 				SpatialProbabilities::BoolRandomVariableValuePtr realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(true);
+				SpatialProbabilities::BoolRandomVariableValuePtr detectedRVVPtr =
 						new SpatialProbabilities::BoolRandomVariableValue(true);
 				SpatialProbabilities::JointProbabilityValue jpv1;
 				jpv1.probability=_chainGraphInferencer->_defaultObjectTruePositiveProbability;
-				jpv1.variableValues.push_back(detectedRVVPtr);
 				jpv1.variableValues.push_back(realRVVPtr);
+				jpv1.variableValues.push_back(detectedRVVPtr);
 				factor.massFunction.push_back(jpv1);
 
-				// False positive (detected=true, real=false)
-				detectedRVVPtr =
+				// False negative (real=true, detected=false)
+				realRVVPtr =
 						new SpatialProbabilities::BoolRandomVariableValue(true);
-				realRVVPtr =
-						new SpatialProbabilities::BoolRandomVariableValue(false);
-				SpatialProbabilities::JointProbabilityValue jpv2;
-				jpv2.probability=1.0-_chainGraphInferencer->_defaultObjectTruePositiveProbability;
-				jpv2.variableValues.push_back(detectedRVVPtr);
-				jpv2.variableValues.push_back(realRVVPtr);
-				factor.massFunction.push_back(jpv2);
-
-				// True negative (detected=false, real=false)
 				detectedRVVPtr =
 						new SpatialProbabilities::BoolRandomVariableValue(false);
+				SpatialProbabilities::JointProbabilityValue jpv4;
+				jpv4.probability=1.0 - _chainGraphInferencer->_defaultObjectTruePositiveProbability;
+				jpv4.variableValues.push_back(realRVVPtr);
+				jpv4.variableValues.push_back(detectedRVVPtr);
+				factor.massFunction.push_back(jpv4);
+
+				// True negative (real=false, detected=false)
 				realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(false);
+				detectedRVVPtr =
 						new SpatialProbabilities::BoolRandomVariableValue(false);
 				SpatialProbabilities::JointProbabilityValue jpv3;
 				jpv3.probability=_chainGraphInferencer->_defaultObjectTrueNegativeProbability;
-				jpv3.variableValues.push_back(detectedRVVPtr);
 				jpv3.variableValues.push_back(realRVVPtr);
+				jpv3.variableValues.push_back(detectedRVVPtr);
 				factor.massFunction.push_back(jpv3);
 
-				// False negative (detected=false, real=true)
+				// False positive (real=false, detected=true)
+				realRVVPtr =
+						new SpatialProbabilities::BoolRandomVariableValue(false);
 				detectedRVVPtr =
 						new SpatialProbabilities::BoolRandomVariableValue(true);
-				realRVVPtr =
-						new SpatialProbabilities::BoolRandomVariableValue(true);
-				SpatialProbabilities::JointProbabilityValue jpv4;
-				jpv4.probability=1.0 - _chainGraphInferencer->_defaultObjectTrueNegativeProbability;
-				jpv4.variableValues.push_back(detectedRVVPtr);
-				jpv4.variableValues.push_back(realRVVPtr);
-				factor.massFunction.push_back(jpv4);
+				SpatialProbabilities::JointProbabilityValue jpv2;
+				jpv2.probability=1.0-_chainGraphInferencer->_defaultObjectTrueNegativeProbability;
+				jpv2.variableValues.push_back(realRVVPtr);
+				jpv2.variableValues.push_back(detectedRVVPtr);
+				factor.massFunction.push_back(jpv2);
+
+
 
 				return factor;
 			}
