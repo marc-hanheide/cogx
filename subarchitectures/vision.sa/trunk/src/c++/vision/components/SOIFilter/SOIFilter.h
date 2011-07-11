@@ -253,6 +253,8 @@ private:
     CSfDisplayClient() { pFilter = NULL; }
     void setClientData(SOIFilter* pSoiFilter) { pFilter = pSoiFilter; }
     void handleEvent(const Visualization::TEvent &event); /*override*/
+    void onDialogValueChanged(const std::string& dialogId, const std::string& name, const std::string& value);
+    void handleDialogCommand(const std::string& dialogId, const std::string& command, const std::string& params);
   };
   CSfDisplayClient m_display;
 #endif
