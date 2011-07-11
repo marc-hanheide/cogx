@@ -50,8 +50,8 @@ import george.execution.util.ActionInterfaceFrame;
  */
 public class GraphicalExecutionManager extends AbstractExecutionManager {
 
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+//	private static final String[] DEFAULT_LABELS = { "record1", "record2",
+//			"record3", "record4" };
 
 	private final ActionInterfaceFrame m_gui;
 
@@ -69,14 +69,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	@Override
 	protected void configure(Map<String, String> _config) {
-		String labels = _config.get("--labels");
-		String[] objectLabels = DEFAULT_LABELS;
-		if (labels != null) {
-			objectLabels = labels.split(",");
-		}
+//		String labels = _config.get("--labels");
+//		String[] objectLabels = DEFAULT_LABELS;
+//		if (labels != null) {
+//			objectLabels = labels.split(",");
+//		}
 
-		log("using object labels: " + objectLabels);
-		m_gui.setObjectModels(objectLabels);
+//		log("using object labels: " + objectLabels);
+//		m_gui.setObjectModels(objectLabels);
 	}
 
 	@Override

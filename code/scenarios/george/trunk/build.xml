@@ -1,5 +1,5 @@
 <!-- Inner build file for a module in the CogX system -->
-<project name="dora" default="compile" basedir=".">
+<project name="george" default="compile" basedir=".">
 	<property name="projectroot.dir" value="${basedir}/../.." />
 	<property file="${projectroot.dir}/build.properties" />
 
@@ -36,6 +36,10 @@
 			<includepath>
 				<pathelement path="${slice.dir}" />
 				<pathelement path="${castslice.dir}" />
+				<pathelement path="${plannerslice.dir}" />
+				<pathelement path="${beliefslice.dir}" />
+                <pathelement path="${castbeliefslice.dir}" />
+				<pathelement path="${executionslice.dir}" />
 			</includepath>
 		</slice2java>
 	</target>
