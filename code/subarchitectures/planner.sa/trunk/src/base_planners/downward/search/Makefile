@@ -54,7 +54,15 @@ RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 
 ## We link statically to allow local compiles to work on the BFG cluster.
 ## NOTE: This precludes using exceptions; see man gcc on -static-libgcc.
+
+## This does not work on OSX due to system libraries not being available statically
+## http://stackoverflow.com/questions/3801011/ld-library-not-found-for-lcrt0-o-on-osx-10-6-with-gcc-clang-static-flag
+UNAME := $(shell uname)
+
+ifneq ($(UNAME), Darwin)
 RELEASEOPT += -static -static-libgcc
+endif
+
 
 ## debug, don't optimize
 CCOPT += -g
