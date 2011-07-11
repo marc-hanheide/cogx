@@ -33,6 +33,8 @@ extern "C"
 namespace cast
 {
 
+#include "res/ptuctrl.inc"
+
 using namespace std;
 using namespace cdl;
 using namespace VisionData;
@@ -192,6 +194,9 @@ void SOIFilter::start()
 #ifdef FEAT_GENERATE_FAKE_SOIS
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "fake.soi", "&Fake SOI");
 #endif
+
+  m_display.addDialog("PtuCtrl", res_ptucontroller_ui, res_ptucontroller_js, "PtuController ptuctrl");
+
 #else
   if (doDisplay)
   {
@@ -254,6 +259,44 @@ void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event
       pFilter->addFakeSoi();
     }
 #endif
+  }
+}
+
+void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialogId,
+    const std::string& name, const std::string& value)
+{
+  if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
+    if (name == "PTZ") {
+      pFilter->println(" *** PTZ *** ");
+      double pan, tilt, zoom;
+      int nf = sscanf(value.c_str(), "%lf, %lf, %lf", &pan, &tilt, &zoom);
+      if (nf == 3) {
+        ptz::PTZPose p;
+        p.pan = pan * M_PI / 180;
+        p.tilt = tilt * M_PI / 180;
+        p.zoom = zoom;
+        pFilter->ptzServer->setPose(p);
+      }
+    }
+  }
+}
+
+void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogId,
+    const std::string& command, const std::string& params)
+{
+  if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
+    if (command == "sendStateToDialog") {
+      pFilter->println(" *** sendStateToDialog *** ");
+      ptz::PTZReading ptup;
+      if (pFilter->ptzServer.get())
+        ptup = pFilter->ptzServer->getPose();
+      ostringstream ss;
+      ss << "ptuctrl.ui.wctrls.spinPan.value=" << ptup.pose.pan * 180 / M_PI << ";";
+      ss << "ptuctrl.ui.wctrls.spinTilt.value=" << ptup.pose.tilt * 180 / M_PI << ";";
+      ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
+
+      execInDialog(dialogId, ss.str());
+    }
   }
 }
 #endif
