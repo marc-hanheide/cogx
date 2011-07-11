@@ -16,6 +16,7 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/assign/list_of.hpp>
 // Std
 #include <fstream>
@@ -82,6 +83,22 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_saveGraphFileName = it->second;
 	if((it = _config.find("--save-graph-info")) != _config.end())
 		_saveGraphInfoFileName = it->second;
+
+	// Model in which we count object instances but there are no observation models
+	if((it = _config.find("--opm-counting")) != _config.end())
+	{ // Get object info from the HFC
+		_objectPropertyModel = OPM_COUNTING;
+	}
+	// Model in which we don't have a counter but have an observation model
+	else if((it = _config.find("--opm-observation-model")) != _config.end())
+	{ // Get object info from the HFC
+		_objectPropertyModel = OPM_OBSERVATION_MODEL;
+	}
+	else
+	{
+		throw CASTException(exceptionMessage(__HERE__, "Please select the object property model (--opm-counting or --opm-observation-model)."));
+	}
+
 	// Probability that a placeholder leads to another place which leads to a new room | the
 	// polaceholder does not lead directly to a gateway.
 	if((it = _config.find("--freespace-placeholder-rate")) != _config.end())
@@ -524,6 +541,29 @@ double ChainGraphInferencer::getProbabilityValue(
 
 
 // -------------------------------------------------------
+double ChainGraphInferencer::getProbabilityValue(
+		const SpatialProbabilities::ProbabilityDistribution &pd,
+		bool var1Value, bool var2value)
+{
+	for(unsigned int i=0; i<pd.massFunction.size(); ++i)
+	{
+		SpatialProbabilities::JointProbabilityValue jpv = pd.massFunction[i];
+		bool v1
+			=SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
+					jpv.variableValues[0])->value;
+		bool v2
+			=SpatialProbabilities::BoolRandomVariableValuePtr::dynamicCast(
+					jpv.variableValues[1])->value;
+
+		if ( (v1 == var1Value) && (v2 == var2value) )
+			return jpv.probability;
+	}
+
+	return -1;
+}
+
+
+// -------------------------------------------------------
 void ChainGraphInferencer::createDaiConnectivityFactor(int room1Id, int room2Id)
 {
 	// Get the default connectivity factor
@@ -609,7 +649,148 @@ void ChainGraphInferencer::createDaiSingleRoomFactor(int room1Id)
 
 
 // -------------------------------------------------------
-void ChainGraphInferencer::createDaiObservedObjectPropertyFactor(int room1Id, const std::string &objectCategory,
+void ChainGraphInferencer::createDaiObjectPropertyGivenRoomCategoryFactorOM(int room1Id, const std::string &objectCategory,
+		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory,
+		const std::string &supportObjectId, double beta)
+{
+	// Check if we have default knowledge for this factor, if not do nothing
+	string objectVariableName = VariableNameGenerator::getDefaultObjectPropertyVarName(
+			objectCategory, relation, supportObjectCategory);
+	string defFactorName = string("f(room_category1,")+objectVariableName+")";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(defFactorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This usually means that the object was not in the tuple store.",
+				defFactorName.c_str());
+		return;
+	}
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string objectExploredVarName = VariableNameGenerator::getExploredObjectVarName(
+			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
+	string factorName = "f("+room1VarName+","+objectExploredVarName+")";
+
+	debug("Creating DAI factor for variables '%s' and '%s'", room1VarName.c_str(), objectExploredVarName.c_str() );
+	createDaiVariable(room1VarName, _roomCategories);
+	vector<string> values(2);
+	values[0] = ConceptualData::NOTEXISTS;
+	values[1] = ConceptualData::EXISTS;
+	createDaiVariable(objectExploredVarName, values);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+	DaiVariable &dv2 = _variableNameToDai[objectExploredVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dai::VarSet( dv1.var, dv2.var ) );
+	// Check if the variables in the factor are order the way they should
+	bool switchVars=false;
+	if (daiFactor.vars().elements()[0].label() != dv1.var.label())
+	{
+		switchVars=true;
+		DaiVariable &tmp = dv1;
+		dv1=dv2;
+		dv2=tmp;
+	}
+
+	// Note: first variable changes faster
+	// Go over the second variable
+	int index=0;
+	for (unsigned int i2 = 0; i2<dv2.var.states(); ++i2)
+	{
+		// Go over the first variable
+		for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
+		{
+			string roomCategory;
+			string exist;
+			if (switchVars)
+			{
+				roomCategory = dv2.valueIdToName[i2];
+				exist = dv1.valueIdToName[i1];
+			}
+			else
+			{
+				roomCategory = dv1.valueIdToName[i1];
+				exist = dv2.valueIdToName[i2];
+			}
+
+			// Get the lambda value for the poisson distribution
+			double lambda = getPoissonLambda(roomCategory, objectCategory, relation, supportObjectCategory);
+			// Check for errors
+			if (lambda<0)
+				return;
+			// Get the poisson prob distribution
+			double probability;
+			if (exist == ConceptualData::EXISTS)
+				probability = 1.0 - getPoissonProabability(beta*lambda, 0);
+			else
+				probability = getPoissonProabability(beta*lambda, 0);
+
+			daiFactor.set(index, probability);
+			++index;
+		}
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back(factorName);
+}
+
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedObjectPropertyFactorOM(int room1Id, const std::string &objectCategory,
+		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory, const std::string &supportObjectId,
+		bool objectPresent, double beta)
+{
+	// Get the default factor
+	string defObjectPropVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(
+			objectCategory, relation, supportObjectCategory);
+	string defObjectObsVarName = VariableNameGenerator::getDefaultObjectObservationVarName(
+			objectCategory, relation, supportObjectCategory);
+	string factorName = "f("+defObjectPropVarName+","+defObjectObsVarName+")";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
+	// Create variables
+	string objectExploredVarName = VariableNameGenerator::getExploredObjectVarName(
+			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
+	string objectObservationVarName = VariableNameGenerator::getObjectObservationVarName(
+			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
+
+	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", objectExploredVarName.c_str(),
+			defObjectObsVarName.c_str() );
+
+	vector<string> values(2);
+	values[0] = ConceptualData::NOTEXISTS;
+	values[1] = ConceptualData::EXISTS;
+	createDaiVariable(objectExploredVarName, values);
+	createAndSetObservedVariable(objectObservationVarName, values, objectPresent?1:0);
+	DaiVariable &dv1 = _variableNameToDai[objectExploredVarName];
+
+	// Create factor
+	dai::Factor daiFactor( dv1.var );
+
+	// Set the factor
+	daiFactor.set(0, getProbabilityValue(factor, false, objectPresent));
+	daiFactor.set(1, getProbabilityValue(factor, true, objectPresent));
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedObjectPropertyFactor");
+}
+
+
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedObjectPropertyFactorCounting(int room1Id, const std::string &objectCategory,
 		SpatialData::SpatialRelation relation, const std::string &supportObjectCategory, const std::string &supportObjectId,
 		unsigned int objectCount, double beta)
 {
@@ -1138,9 +1319,22 @@ void ChainGraphInferencer::addDaiFactors()
 			for (unsigned int o=0; o<pi.objectProperties.size(); ++o)
 			{
 				const ConceptualData::ObjectPlacePropertyInfo &oppi = pi.objectProperties[o];
-				createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
-													  oppi.supportObjectCategory, oppi.supportObjectId,
-													  oppi.count, oppi.beta);
+				if (_objectPropertyModel == OPM_COUNTING)
+				{
+					createDaiObservedObjectPropertyFactorCounting(cri.roomId, oppi.category, oppi.relation,
+														  oppi.supportObjectCategory, oppi.supportObjectId,
+														  oppi.count, oppi.beta);
+				}
+				else if (_objectPropertyModel == OPM_OBSERVATION_MODEL)
+				{
+					createDaiObjectPropertyGivenRoomCategoryFactorOM(cri.roomId, oppi.category, oppi.relation,
+														  oppi.supportObjectCategory, oppi.supportObjectId,
+														  oppi.beta);
+
+					createDaiObservedObjectPropertyFactorOM(cri.roomId, oppi.category, oppi.relation,
+														  oppi.supportObjectCategory, oppi.supportObjectId,
+														  oppi.count>0, oppi.beta);
+				}
 				createDaiObjectUnexploredFactor(cri.roomId, oppi.category, oppi.relation,
 						  	  	  	  	  	    oppi.supportObjectCategory, oppi.supportObjectId,
 						  	  	  	  	  	    oppi.beta);
@@ -1187,9 +1381,22 @@ void ChainGraphInferencer::addDaiFactors()
 		for (unsigned int o=0; o<cri.objectProperties.size(); ++o)
 		{
 			const ConceptualData::ObjectPlacePropertyInfo &oppi = cri.objectProperties[o];
-			createDaiObservedObjectPropertyFactor(cri.roomId, oppi.category, oppi.relation,
-												  oppi.supportObjectCategory, oppi.supportObjectId,
-												  oppi.count, oppi.beta);
+			if (_objectPropertyModel == OPM_COUNTING)
+			{
+				createDaiObservedObjectPropertyFactorCounting(cri.roomId, oppi.category, oppi.relation,
+													  oppi.supportObjectCategory, oppi.supportObjectId,
+													  oppi.count, oppi.beta);
+			}
+			else if (_objectPropertyModel == OPM_OBSERVATION_MODEL)
+			{
+				createDaiObjectPropertyGivenRoomCategoryFactorOM(cri.roomId, oppi.category, oppi.relation,
+													  oppi.supportObjectCategory, oppi.supportObjectId,
+													  oppi.beta);
+
+				createDaiObservedObjectPropertyFactorOM(cri.roomId, oppi.category, oppi.relation,
+													  oppi.supportObjectCategory, oppi.supportObjectId,
+													  oppi.count>0, oppi.beta);
+			}
 			createDaiObjectUnexploredFactor(cri.roomId, oppi.category, oppi.relation,
 					  	  	  	  	  	    oppi.supportObjectCategory, oppi.supportObjectId,
 					  	  	  	  	  	    oppi.beta);
@@ -1837,6 +2044,16 @@ void ChainGraphInferencer::getDefaultKnowledge()
 	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
 	{
 		factorStr = "f(room_category1,"+_objectPropertyVariables[i]+")";
+		_defaultKnowledgeFactors[factorStr] =
+				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+			throw CASTException("Did not receive information from Default.SA. Is everything started?");
+	}
+
+	// Get the object_xxx_property -> object_xxx_observation factors
+	for(unsigned int i=0; i<_objectPropertyVariables.size(); ++i)
+	{
+		factorStr = "f("+_objectPropertyVariables[i]+","+replace_first_copy(_objectPropertyVariables[i], "_property", "_observation")+")";
 		_defaultKnowledgeFactors[factorStr] =
 				_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 		if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
