@@ -181,7 +181,7 @@ class SenseEffect(object):
         value = self.get_value()
         if not term:
             return None
-        return conditions.LiteralCondition(hyp, [term, value])
+        return conditions.LiteralCondition(commit, [term, value])
 
     def conditional_knowledge_effect(self):
         cc = self.commit_condition()

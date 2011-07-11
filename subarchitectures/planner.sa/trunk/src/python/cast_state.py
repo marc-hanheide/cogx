@@ -300,25 +300,25 @@ class CASTState(object):
                 
                 room_obj = roomdict[room_id]
                 label_obj = pddl.TypedObject(label, label_t)
-                svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
+                svar = state.StateVariable(exists_func, [label_obj, room_obj])
                 return svar, [label_obj]
 
-        def match_obj_at_obj(key):
-            match = extract_obj_at_object.search(key)
-            if match:
-                label = match.group(2)
-                rel = match.group(3)
-                supp_label = match.group(4)
-                bel_id = match.group(5)
+        # def match_obj_at_obj(key):
+        #     match = extract_obj_at_object.search(key)
+        #     if match:
+        #         label = match.group(2)
+        #         rel = match.group(3)
+        #         supp_label = match.group(4)
+        #         bel_id = match.group(5)
 
-                if bel_id not in self.castname_to_obj:
-                    return
-                supp_obj = self.castname_to_obj[bel_id]
-                label_obj = pddl.TypedObject(label, label_t)
-                rel_obj = on_rel if rel == "on" else in_rel
+        #         if bel_id not in self.castname_to_obj:
+        #             return
+        #         supp_obj = self.castname_to_obj[bel_id]
+        #         label_obj = pddl.TypedObject(label, label_t)
+        #         rel_obj = on_rel if rel == "on" else in_rel
                 
-                svar = state.StateVariable(exists_func, [label_obj, rel_obj, supp_obj])
-                return svar, [label_obj]
+        #         svar = state.StateVariable(exists_func, [label_obj, rel_obj, supp_obj])
+        #         return svar, [label_obj]
 
         def first_match(key, functions):
             for f in functions:
@@ -329,7 +329,7 @@ class CASTState(object):
         
         for entry in results:
             for key, pos in entry.variableNameToPositionMap.iteritems():
-                svar, new_objs = first_match(key, [match_obj_in_room, match_obj_at_obj])
+                svar, new_objs = first_match(key, [match_obj_in_room])
                 if not svar:
                     continue
                 p = entry.massFunction[pos].probability

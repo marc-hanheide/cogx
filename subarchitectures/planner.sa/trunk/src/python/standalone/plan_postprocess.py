@@ -115,10 +115,13 @@ def getRWDescription(action, args, _state, time):
     if action.effect:
         effects.append(action.effect)
     if action.sensors:
+        # print "action %s has sensors" % action.name
         if cond_keffs:
             effects.append(action.conditional_knowledge_effect())
+            # print action.conditional_knowledge_effect().pddl_str()
         else:
             effects.append(action.knowledge_effect())
+            # print action.conditional_knowledge_effect().pddl_str()
             
     if effects:
         rel = reduce(lambda x,y: x | y, (_state.get_relevant_vars(eff) for eff in effects), set())
