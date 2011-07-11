@@ -857,23 +857,36 @@ class DT2MAPLCompiler(translators.Translator):
             mapping = dict(zip(match.args, a.args))
             observe.instantiate(mapping)
             for atom in sensable_atoms:
-                if atom.predicate not in (builtin.equals, builtin.eq):
+                assert atom.predicate in (builtin.equals, builtin.eq)
+                term = atom.args[0]
+                value = atom.args[1]
+                for arg in term.args:
+                    if isinstance(arg, predicates.VariableTerm) and not arg.is_instantiated():
+                        print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+                        new_arg = a.copy_args([arg.object])[0]
+                        a.args.append(new_arg)
+                        a.vars = a.vars + [new_arg]
+                        mapping[arg] = new_arg
+                        observe.uninstantiate()
+                        observe.instantiate(mapping)
+                        print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+                        
+                # if atom.predicate in (builtin.equals, builtin.eq):
+                #     lhs = atom
+                #     s_atom = atom.copy_instance()
+                #     s_atom.set_scope(a)
+                #     a.sensors.append(mapl.SenseEffect(s_atom, a))
+                # else:
+                    #Free parameter on rhs => fully observable
+                if isinstance(value, predicates.VariableTerm) and not value.is_instantiated():
+                    s_term = a.lookup([atom.args[0].copy_instance()])[0]
+                    a.sensors.append(mapl.SenseEffect(s_term, a))
+                # elif any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
+                else:
+                    # print map(str, atom.visit(visitors.collect_free_vars))
                     s_atom = atom.copy_instance()
                     s_atom.set_scope(a)
                     a.sensors.append(mapl.SenseEffect(s_atom, a))
-                else:
-                    #Free parameter on rhs => fully observable
-                    # if isinstance(atom.args[1], predicates.VariableTerm) and not atom.args[1].is_instantiated():
-                    #     s_term = a.lookup([atom.args[0].copy_instance()])[0]
-                    #     a.sensors.append(mapl.SenseEffect(s_term, a))
-                    # el
-                    if any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
-                        continue
-                    else:
-                        # print map(str, atom.visit(visitors.collect_free_vars))
-                        s_atom = atom.copy_instance()
-                        s_atom.set_scope(a)
-                        a.sensors.append(mapl.SenseEffect(s_atom, a))
             observe.uninstantiate()
 
     def create_commit_actions(self, domain, prob_functions):
