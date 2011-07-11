@@ -43,7 +43,7 @@ public class RoomMembershipMediator extends ManagedComponent {
 	final Map<WorkingMemoryAddress, Set<WorkingMemoryAddress>> mapRoom2Places = new HashMap<WorkingMemoryAddress, Set<WorkingMemoryAddress>>();
 
 	WMView<GroundedBelief> allBeliefs;
-	WMContentWaiter<GroundedBelief> waitingBeliefReader;
+	final WMContentWaiter<GroundedBelief> waitingBeliefReader;
 	final WMEventQueue entryQueue = new WMEventQueue();
 
 	public RoomMembershipMediator() {
@@ -66,10 +66,16 @@ public class RoomMembershipMediator extends ManagedComponent {
 			ContentMatchingFunction<? super GroundedBelief> contentMatchingFunction)
 			throws InterruptedException {
 		debug("trying to find referred belief");
-		Entry<WorkingMemoryAddress, GroundedBelief> entry = waitingBeliefReader
-				.read(contentMatchingFunction);
-		debug("got it: " + entry.getKey().id);
-		return entry.getKey();
+		while (true) {
+			Entry<WorkingMemoryAddress, GroundedBelief> entry = waitingBeliefReader
+					.read(contentMatchingFunction);
+			if (entry != null) {
+				debug("got it: " + entry.getKey().id);
+				return entry.getKey();
+			} else {
+				getLogger().warn("waiting for belief VERY long now... keep on waiting");
+			}
+		}
 	}
 
 	/*
@@ -168,10 +174,15 @@ public class RoomMembershipMediator extends ManagedComponent {
 				FormulaDistribution roomProperty = FormulaDistribution.create();
 				WorkingMemoryAddress roomBelief = getReferredBelief(new ComaRoomMatchingFunction(
 						room.roomId));
-				roomProperty.getDistribution().add(
-						WMPointer.create(roomBelief,
-								CASTUtils.typeName(GroundedBelief.class)).get(),
-						1.0);
+				roomProperty
+						.getDistribution()
+						.add(
+								WMPointer
+										.create(
+												roomBelief,
+												CASTUtils
+														.typeName(GroundedBelief.class))
+										.get(), 1.0);
 				placeBelief.getContent().put(ROOM_PROPERTY, roomProperty);
 				overwriteWorkingMemory(newPlace, placeBelief.get());
 			} finally {
