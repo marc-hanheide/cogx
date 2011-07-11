@@ -61,42 +61,44 @@ public class ActionInterfaceFrame extends JFrame {
 	private JButton m_goButton = null;
 	private JButton m_stopButton = null;
 
-	private JRadioButton m_detectObjectsAction;
-	private JRadioButton m_detectPeopleAction;
-
-	private JRadioButton m_learnColourAction;
-	private JRadioButton m_learnShapeAction;
-	private JRadioButton m_learnIdentityAction;
-
-	private JRadioButton m_unlearnColourAction;
-	private JRadioButton m_unlearnShapeAction;
-	private JRadioButton m_unlearnIdentityAction;
-
-	
-	private JRadioButton m_foregroundModelsAction;
-	private JRadioButton m_backgroundModelsAction;
-	private JRadioButton m_recogniseForegroundedModelsAction;
+	// private JRadioButton m_detectObjectsAction;
+	// private JRadioButton m_detectPeopleAction;
+	//
+	// private JRadioButton m_learnColourAction;
+	// private JRadioButton m_learnShapeAction;
+	// private JRadioButton m_learnIdentityAction;
+	//
+	// private JRadioButton m_unlearnColourAction;
+	// private JRadioButton m_unlearnShapeAction;
+	// private JRadioButton m_unlearnIdentityAction;
+	//
+	//
+	// private JRadioButton m_foregroundModelsAction;
+	// private JRadioButton m_backgroundModelsAction;
+	// private JRadioButton m_recogniseForegroundedModelsAction;
 
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
 	private JPanel m_beliefsActionPanel;
-	private JPanel m_objectsActionPanel;
+	// private JPanel m_objectsActionPanel;
 	private JPanel m_beliefsPanel;
-	private JPanel m_objectsPanel;
+	// private JPanel m_objectsPanel;
 	private JTabbedPane m_tabbedPane;
-	private JTable m_objectTable;
-	private DefaultTableModel m_objectTableModel;
+	// private JTable m_objectTable;
+	// private DefaultTableModel m_objectTableModel;
 
-	private JRadioButton m_askForColourAction;
-	private JRadioButton m_askForShapeAction;
-	private JRadioButton m_askForIdentityAction;
+	private JRadioButton m_focusViewConeAction;
 
-	private JRadioButton m_askPolarColourAction;
-	private JRadioButton m_askPolarShapeAction;
-	private JRadioButton m_askPolarIdentityAction;
-
-	private JRadioButton m_askForObjectAction;
+	// private JRadioButton m_askForColourAction;
+	// private JRadioButton m_askForShapeAction;
+	// private JRadioButton m_askForIdentityAction;
+	//
+	// private JRadioButton m_askPolarColourAction;
+	// private JRadioButton m_askPolarShapeAction;
+	// private JRadioButton m_askPolarIdentityAction;
+	//
+	// private JRadioButton m_askForObjectAction;
 
 	private static final Class<?>[] FEATURE_VALUE_TYPES = {
 			ElementaryFormula.class, IntegerFormula.class, FloatFormula.class,
@@ -137,16 +139,16 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_beliefsPanel;
 	}
 
-	private JPanel getObjectsPanel() {
-		if (m_objectsPanel == null) {
-			m_objectsPanel = new JPanel();
-			m_objectsPanel.add(new JScrollPane(getObjectTable()));
-			m_objectsPanel.add(getObjectsActionPanel());
-			getObjectTable().setPreferredScrollableViewportSize(
-					new Dimension(200, 300));
-		}
-		return m_objectsPanel;
-	}
+	// private JPanel getObjectsPanel() {
+	// if (m_objectsPanel == null) {
+	// m_objectsPanel = new JPanel();
+	// m_objectsPanel.add(new JScrollPane(getObjectTable()));
+	// m_objectsPanel.add(getObjectsActionPanel());
+	// getObjectTable().setPreferredScrollableViewportSize(
+	// new Dimension(200, 300));
+	// }
+	// return m_objectsPanel;
+	// }
 
 	/**
 	 * This method initializes jContentPane
@@ -176,7 +178,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 			m_tabbedPane = new JTabbedPane();
 			m_tabbedPane.addTab("Beliefs", getBeliefsPanel());
-			m_tabbedPane.addTab("Objects", getObjectsPanel());
+			// m_tabbedPane.addTab("Objects", getObjectsPanel());
 
 		}
 		return m_tabbedPane;
@@ -211,123 +213,129 @@ public class ActionInterfaceFrame extends JFrame {
 			m_beliefsActionPanel.setLayout(new BoxLayout(m_beliefsActionPanel,
 					BoxLayout.Y_AXIS));
 
-			m_learnColourAction = new JRadioButton("learn colour");
-			m_learnShapeAction = new JRadioButton("learn shape");
-			m_learnIdentityAction = new JRadioButton("learn identity");
-			
-			m_unlearnColourAction = new JRadioButton("unlearn colour");
-			m_unlearnShapeAction = new JRadioButton("unlearn shape");
-			m_unlearnIdentityAction = new JRadioButton("unlearn identity");
-			
-			
-			m_askForColourAction = new JRadioButton("ask for colour");
-			m_askForShapeAction = new JRadioButton("ask for shape");
-			m_askForIdentityAction = new JRadioButton("ask for identity");
+			// m_learnColourAction = new JRadioButton("learn colour");
+			// m_learnShapeAction = new JRadioButton("learn shape");
+			// m_learnIdentityAction = new JRadioButton("learn identity");
+			//
+			// m_unlearnColourAction = new JRadioButton("unlearn colour");
+			// m_unlearnShapeAction = new JRadioButton("unlearn shape");
+			// m_unlearnIdentityAction = new JRadioButton("unlearn identity");
+			//
+			//
 
-			m_askPolarColourAction = new JRadioButton("ask polar colour");
-			m_askPolarShapeAction = new JRadioButton("ask polar shape");
-			m_askPolarIdentityAction = new JRadioButton("ask polar identity");
-
-			m_askForObjectAction = new JRadioButton(
-					"hey mister, got a BLANK object?");
+			m_focusViewConeAction = new JRadioButton("focus viewcone");
+			// m_askForColourAction = new JRadioButton("ask for colour");
+			// m_askForShapeAction = new JRadioButton("ask for shape");
+			// m_askForIdentityAction = new JRadioButton("ask for identity");
+			//
+			// m_askPolarColourAction = new JRadioButton("ask polar colour");
+			// m_askPolarShapeAction = new JRadioButton("ask polar shape");
+			// m_askPolarIdentityAction = new
+			// JRadioButton("ask polar identity");
+			//
+			// m_askForObjectAction = new JRadioButton(
+			// "hey mister, got a BLANK object?");
 
 			ButtonGroup actionGroup = new ButtonGroup();
-			actionGroup.add(m_learnColourAction);
-			actionGroup.add(m_learnShapeAction);
-			actionGroup.add(m_learnIdentityAction);
-			actionGroup.add(m_unlearnColourAction);
-			actionGroup.add(m_unlearnShapeAction);
-			actionGroup.add(m_unlearnIdentityAction);
+			actionGroup.add(m_focusViewConeAction);
 
-			actionGroup.add(m_askForColourAction);
-			actionGroup.add(m_askForShapeAction);
-			actionGroup.add(m_askForIdentityAction);
-			actionGroup.add(m_askPolarColourAction);
-			actionGroup.add(m_askPolarShapeAction);
-			actionGroup.add(m_askPolarIdentityAction);
-			actionGroup.add(m_askForObjectAction);
+			// actionGroup.add(m_learnColourAction);
+			// actionGroup.add(m_learnShapeAction);
+			// actionGroup.add(m_learnIdentityAction);
+			// actionGroup.add(m_unlearnColourAction);
+			// actionGroup.add(m_unlearnShapeAction);
+			// actionGroup.add(m_unlearnIdentityAction);
+			//
+			// actionGroup.add(m_askForColourAction);
+			// actionGroup.add(m_askForShapeAction);
+			// actionGroup.add(m_askForIdentityAction);
+			// actionGroup.add(m_askPolarColourAction);
+			// actionGroup.add(m_askPolarShapeAction);
+			// actionGroup.add(m_askPolarIdentityAction);
+			// actionGroup.add(m_askForObjectAction);
+			//
+			m_focusViewConeAction.setSelected(true);
 
-			m_askForShapeAction.setSelected(true);
-
-			m_beliefsActionPanel.add(m_learnColourAction, null);
-			m_beliefsActionPanel.add(m_learnShapeAction, null);
-			m_beliefsActionPanel.add(m_learnIdentityAction, null);
-
-			m_beliefsActionPanel.add(m_unlearnColourAction, null);
-			m_beliefsActionPanel.add(m_unlearnShapeAction, null);
-			m_beliefsActionPanel.add(m_unlearnIdentityAction, null);
-			
-			m_beliefsActionPanel.add(m_askForColourAction, null);
-			m_beliefsActionPanel.add(m_askForShapeAction, null);
-			m_beliefsActionPanel.add(m_askForIdentityAction, null);
-
-			m_beliefsActionPanel.add(m_askPolarColourAction, null);
-			m_beliefsActionPanel.add(m_askPolarShapeAction, null);
-			m_beliefsActionPanel.add(m_askPolarIdentityAction, null);
-
-			m_beliefsActionPanel.add(m_askForObjectAction);
+			m_beliefsActionPanel.add(m_focusViewConeAction, null);
+			// m_beliefsActionPanel.add(m_learnColourAction, null);
+			// m_beliefsActionPanel.add(m_learnShapeAction, null);
+			// m_beliefsActionPanel.add(m_learnIdentityAction, null);
+			//
+			// m_beliefsActionPanel.add(m_unlearnColourAction, null);
+			// m_beliefsActionPanel.add(m_unlearnShapeAction, null);
+			// m_beliefsActionPanel.add(m_unlearnIdentityAction, null);
+			//
+			// m_beliefsActionPanel.add(m_askForColourAction, null);
+			// m_beliefsActionPanel.add(m_askForShapeAction, null);
+			// m_beliefsActionPanel.add(m_askForIdentityAction, null);
+			//
+			// m_beliefsActionPanel.add(m_askPolarColourAction, null);
+			// m_beliefsActionPanel.add(m_askPolarShapeAction, null);
+			// m_beliefsActionPanel.add(m_askPolarIdentityAction, null);
+			//
+			// m_beliefsActionPanel.add(m_askForObjectAction);
 		}
 		return m_beliefsActionPanel;
 	}
 
-	/**
-	 * 
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getObjectsActionPanel() {
-		if (m_objectsActionPanel == null) {
-			m_objectsActionPanel = new JPanel();
-
-			// m_objectsActionPanel.setLayout(new GridBagLayout());
-			m_objectsActionPanel.setLayout(new BoxLayout(m_objectsActionPanel,
-					BoxLayout.Y_AXIS));
-
-			// m_avsAction = new JRadioButton("visual search in");
-			m_detectObjectsAction = new JRadioButton("detect objects");
-			m_detectPeopleAction = new JRadioButton("detect people");
-			// m_lookForObjectsAction = new JRadioButton("look for objects");
-			// m_lookForPeopleAction = new JRadioButton("look for people");
-			m_foregroundModelsAction = new JRadioButton("foreground models");
-			m_backgroundModelsAction = new JRadioButton("background models");
-			m_recogniseForegroundedModelsAction = new JRadioButton(
-					"recognise foregrounded models");
-
-			// m_avsAction.setSelected(true);
-			m_detectObjectsAction.setSelected(true);
-
-			ButtonGroup actionGroup = new ButtonGroup();
-			// actionGroup.add(m_avsAction);
-			actionGroup.add(m_detectObjectsAction);
-			actionGroup.add(m_detectPeopleAction);
-			// actionGroup.add(m_lookForObjectsAction);
-			// actionGroup.add(m_lookForPeopleAction);
-			actionGroup.add(m_foregroundModelsAction);
-			actionGroup.add(m_backgroundModelsAction);
-			actionGroup.add(m_recogniseForegroundedModelsAction);
-
-			// m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
-			m_objectsActionPanel.add(m_detectObjectsAction,
-			// new GridBagConstraints());
-					null);
-			m_objectsActionPanel.add(m_detectPeopleAction,
-			// new GridBagConstraints());
-					null);
-			// // m_objectsActionPanel.add(m_lookForObjectsAction,
-			// new GridBagConstraints());
-			// m_objectsActionPanel.add(m_lookForPeopleAction,
-			// new GridBagConstraints());
-			m_objectsActionPanel.add(m_foregroundModelsAction,
-			// new GridBagConstraints());
-					null);
-			m_objectsActionPanel.add(m_backgroundModelsAction,
-			// new GridBagConstraints());
-					null);
-			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
-			// new GridBagConstraints());
-					null);
-		}
-		return m_objectsActionPanel;
-	}
+	// /**
+	// *
+	// * @return javax.swing.JPanel
+	// */
+	// private JPanel getObjectsActionPanel() {
+	// if (m_objectsActionPanel == null) {
+	// m_objectsActionPanel = new JPanel();
+	//
+	// // m_objectsActionPanel.setLayout(new GridBagLayout());
+	// m_objectsActionPanel.setLayout(new BoxLayout(m_objectsActionPanel,
+	// BoxLayout.Y_AXIS));
+	//
+	// // m_avsAction = new JRadioButton("visual search in");
+	// m_detectObjectsAction = new JRadioButton("detect objects");
+	// m_detectPeopleAction = new JRadioButton("detect people");
+	// // m_lookForObjectsAction = new JRadioButton("look for objects");
+	// // m_lookForPeopleAction = new JRadioButton("look for people");
+	// m_foregroundModelsAction = new JRadioButton("foreground models");
+	// m_backgroundModelsAction = new JRadioButton("background models");
+	// m_recogniseForegroundedModelsAction = new JRadioButton(
+	// "recognise foregrounded models");
+	//
+	// // m_avsAction.setSelected(true);
+	// m_detectObjectsAction.setSelected(true);
+	//
+	// ButtonGroup actionGroup = new ButtonGroup();
+	// // actionGroup.add(m_avsAction);
+	// actionGroup.add(m_detectObjectsAction);
+	// actionGroup.add(m_detectPeopleAction);
+	// // actionGroup.add(m_lookForObjectsAction);
+	// // actionGroup.add(m_lookForPeopleAction);
+	// actionGroup.add(m_foregroundModelsAction);
+	// actionGroup.add(m_backgroundModelsAction);
+	// actionGroup.add(m_recogniseForegroundedModelsAction);
+	//
+	// // m_objectsActionPanel.add(m_avsAction, new GridBagConstraints());
+	// m_objectsActionPanel.add(m_detectObjectsAction,
+	// // new GridBagConstraints());
+	// null);
+	// m_objectsActionPanel.add(m_detectPeopleAction,
+	// // new GridBagConstraints());
+	// null);
+	// // // m_objectsActionPanel.add(m_lookForObjectsAction,
+	// // new GridBagConstraints());
+	// // m_objectsActionPanel.add(m_lookForPeopleAction,
+	// // new GridBagConstraints());
+	// m_objectsActionPanel.add(m_foregroundModelsAction,
+	// // new GridBagConstraints());
+	// null);
+	// m_objectsActionPanel.add(m_backgroundModelsAction,
+	// // new GridBagConstraints());
+	// null);
+	// m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
+	// // new GridBagConstraints());
+	// null);
+	// }
+	// return m_objectsActionPanel;
+	// }
 
 	/**
 	 * This method initializes m_goButton
@@ -368,61 +376,66 @@ public class ActionInterfaceFrame extends JFrame {
 		// TODO make more robust to code changes
 		int tabIndex = getTabbedPane().getSelectedIndex();
 
-		if (tabIndex == 1) {
-			// if (m_avsAction.isSelected()) {
-			// runAVS();
-			// } else
-			if (m_detectObjectsAction.isSelected()) {
-				detectObjects();
+		// if (tabIndex == 1) {
+		// // if (m_avsAction.isSelected()) {
+		// // runAVS();
+		// // } else
+		// if (m_detectObjectsAction.isSelected()) {
+		// detectObjects();
+		//
+		// } else if (m_detectPeopleAction.isSelected()) {
+		// detectPeople();
+		// }
+		//
+		// // else if (m_lookForObjectsAction.isSelected()) {
+		// // lookForObjects();
+		// // } else if (m_lookForPeopleAction.isSelected()) {
+		// // lookForPeople();
+		// // }
+		// else if (m_foregroundModelsAction.isSelected()) {
+		// foregroundModels();
+		// } else if (m_backgroundModelsAction.isSelected()) {
+		// backgroundModels();
+		// } else if (m_recogniseForegroundedModelsAction.isSelected()) {
+		// recogniseForegroundedModels();
+		// }
+		//
+		// } else
+		if (tabIndex == 0) {
 
-			} else if (m_detectPeopleAction.isSelected()) {
-				detectPeople();
+			if (m_focusViewConeAction.isSelected()) {
+				focusViewCone();
 			}
 
-			// else if (m_lookForObjectsAction.isSelected()) {
-			// lookForObjects();
-			// } else if (m_lookForPeopleAction.isSelected()) {
-			// lookForPeople();
+			// if (m_learnColourAction.isSelected()) {
+			// learnColour();
+			// } else if (m_learnShapeAction.isSelected()) {
+			// learnShape();
+			// } else if (m_learnIdentityAction.isSelected()) {
+			// learnIdentity();
 			// }
-			else if (m_foregroundModelsAction.isSelected()) {
-				foregroundModels();
-			} else if (m_backgroundModelsAction.isSelected()) {
-				backgroundModels();
-			} else if (m_recogniseForegroundedModelsAction.isSelected()) {
-				recogniseForegroundedModels();
-			}
-
-		} else if (tabIndex == 0) {
-
-			if (m_learnColourAction.isSelected()) {
-				learnColour();
-			} else if (m_learnShapeAction.isSelected()) {
-				learnShape();
-			} else if (m_learnIdentityAction.isSelected()) {
-				learnIdentity();
-			}
-			if (m_unlearnColourAction.isSelected()) {
-				unlearnColour();
-			} else if (m_unlearnShapeAction.isSelected()) {
-				unlearnShape();
-			} else if (m_unlearnIdentityAction.isSelected()) {
-				unlearnIdentity();
-			} else if (m_askForColourAction.isSelected()) {
-				askForColour();
-			} else if (m_askForShapeAction.isSelected()) {
-				askForShape();
-			} else if (m_askForIdentityAction.isSelected()) {
-				askForIdentity();
-			} else if (m_askPolarColourAction.isSelected()) {
-				askPolarColour();
-			} else if (m_askPolarShapeAction.isSelected()) {
-				askPolarShape();
-			} else if (m_askPolarIdentityAction.isSelected()) {
-				askPolarIdentity();
-
-			} else if (m_askForObjectAction.isSelected()) {
-				askForObject();
-			}
+			// if (m_unlearnColourAction.isSelected()) {
+			// unlearnColour();
+			// } else if (m_unlearnShapeAction.isSelected()) {
+			// unlearnShape();
+			// } else if (m_unlearnIdentityAction.isSelected()) {
+			// unlearnIdentity();
+			// } else if (m_askForColourAction.isSelected()) {
+			// askForColour();
+			// } else if (m_askForShapeAction.isSelected()) {
+			// askForShape();
+			// } else if (m_askForIdentityAction.isSelected()) {
+			// askForIdentity();
+			// } else if (m_askPolarColourAction.isSelected()) {
+			// askPolarColour();
+			// } else if (m_askPolarShapeAction.isSelected()) {
+			// askPolarShape();
+			// } else if (m_askPolarIdentityAction.isSelected()) {
+			// askPolarIdentity();
+			//
+			// } else if (m_askForObjectAction.isSelected()) {
+			// askForObject();
+			// }
 
 		} else {
 			throw new RuntimeException("No tab selected apparently... "
@@ -470,14 +483,12 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "identity", "learnt");
 			if (colour != null) {
-				m_exeMan.learnIdentity(
-						new WorkingMemoryAddress(beliefID, "binder"), colour,
-						new MonitorPanel());
+				m_exeMan.learnIdentity(new WorkingMemoryAddress(beliefID,
+						"binder"), colour, new MonitorPanel());
 			}
 		}
 	}
-	
-	
+
 	private void unlearnColour() throws CASTException {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
@@ -494,9 +505,8 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "shape", "unlearnt");
 			if (colour != null) {
-				m_exeMan.unlearnShape(
-						new WorkingMemoryAddress(beliefID, "binder"), colour,
-						new MonitorPanel());
+				m_exeMan.unlearnShape(new WorkingMemoryAddress(beliefID,
+						"binder"), colour, new MonitorPanel());
 			}
 		}
 	}
@@ -506,9 +516,8 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefID != null) {
 			String colour = getFeatureValue(beliefID, "identity", "unlearnt");
 			if (colour != null) {
-				m_exeMan.unlearnIdentity(
-						new WorkingMemoryAddress(beliefID, "binder"), colour,
-						new MonitorPanel());
+				m_exeMan.unlearnIdentity(new WorkingMemoryAddress(beliefID,
+						"binder"), colour, new MonitorPanel());
 			}
 		}
 	}
@@ -519,6 +528,15 @@ public class ActionInterfaceFrame extends JFrame {
 			m_exeMan.askForColour(new WorkingMemoryAddress(beliefID, "binder"),
 					new MonitorPanel());
 		}
+	}
+
+	private void focusViewCone() throws CASTException {
+		println("focusViewCone");
+		// String beliefID = getSelectedBeliefID();
+		// if (beliefID != null) {
+		// m_exeMan.askForColour(new WorkingMemoryAddress(beliefID, "binder"),
+		// new MonitorPanel());
+		// }
 	}
 
 	private void askForShape() throws CASTException {
@@ -733,27 +751,27 @@ public class ActionInterfaceFrame extends JFrame {
 	// }
 	// }
 
-	/**
-	 * @throws CASTException
-	 */
-	private void detectObjects() throws CASTException {
-		m_exeMan.triggerDetectObjects(getSelectedObjectModels(),
-				new MonitorPanel());
-	}
-
-	/**
-	 * @throws CASTException
-	 */
-	private void foregroundModels() throws CASTException {
-		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
-	}
-
-	/**
-	 * @throws CASTException
-	 */
-	private void backgroundModels() throws CASTException {
-		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
-	}
+	// /**
+	// * @throws CASTException
+	// */
+	// private void detectObjects() throws CASTException {
+	// m_exeMan.triggerDetectObjects(getSelectedObjectModels(),
+	// new MonitorPanel());
+	// }
+	//
+	// /**
+	// * @throws CASTException
+	// */
+	// private void foregroundModels() throws CASTException {
+	// m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+	// }
+	//
+	// /**
+	// * @throws CASTException
+	// */
+	// private void backgroundModels() throws CASTException {
+	// m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+	// }
 
 	/**
 	 * @throws CASTException
@@ -791,26 +809,26 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_stopButton;
 	}
 
-	/**
-	 * This method initializes m_objectTable
-	 * 
-	 * @return javax.swing.JTable
-	 */
-	private JTable getObjectTable() {
-		if (m_objectTable == null) {
-			m_objectTable = new JTable(1, 2);
-			m_objectTableModel = new DefaultTableModel(
-					new String[] { "model" }, 0);
-			m_objectTable.setModel(m_objectTableModel);
-		}
-		return m_objectTable;
-	}
-
-	public void setObjectModels(String[] _models) {
-		for (String model : _models) {
-			m_objectTableModel.addRow(new Object[] { model });
-		}
-	}
+	// /**
+	// * This method initializes m_objectTable
+	// *
+	// * @return javax.swing.JTable
+	// */
+	// private JTable getObjectTable() {
+	// if (m_objectTable == null) {
+	// m_objectTable = new JTable(1, 2);
+	// m_objectTableModel = new DefaultTableModel(
+	// new String[] { "model" }, 0);
+	// m_objectTable.setModel(m_objectTableModel);
+	// }
+	// return m_objectTable;
+	// }
+	//
+	// public void setObjectModels(String[] _models) {
+	// for (String model : _models) {
+	// m_objectTableModel.addRow(new Object[] { model });
+	// }
+	// }
 
 	/**
 	 * This method initializes m_beliefTable
@@ -854,15 +872,15 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
-	public String[] getSelectedObjectModels() {
-		int[] selectedRows = m_objectTable.getSelectedRows();
-		String[] models = new String[selectedRows.length];
-		int modelCount = 0;
-		for (int row : selectedRows) {
-			models[modelCount++] = (String) m_objectTableModel.getValueAt(row,
-					OBJECT_MODEL_COLUMN);
-		}
-		return models;
-	}
+	// public String[] getSelectedObjectModels() {
+	// int[] selectedRows = m_objectTable.getSelectedRows();
+	// String[] models = new String[selectedRows.length];
+	// int modelCount = 0;
+	// for (int row : selectedRows) {
+	// models[modelCount++] = (String) m_objectTableModel.getValueAt(row,
+	// OBJECT_MODEL_COLUMN);
+	// }
+	// return models;
+	// }
 
 }
