@@ -1,0 +1,51 @@
+(define (domain george-yr3)
+
+  (:requirements :mapl :adl :fluents :action-costs :equality)
+
+  (:types
+    visual-object proto-object viewcone - object
+  )
+
+  (:constants
+    GEORGE - agent
+    UNKNOWN_VO - visual-object
+  )
+
+  (:predicates
+    (current-view ?v - viewcone)
+  )
+
+  (:functions
+    (vc-is-associated-with ?vc - viewcone) - proto-object
+    (po-is-associated-with ?p - proto-object) - visual-object
+  )
+
+  (:action move-head-to
+    :agent (?a - agent)
+    :parameters (?vc1 - viewcone ?vc2 - viewcone)
+    :precondition
+      (current-view ?vc1)
+    :effect
+      (and
+        (not (current-view ?vc1))
+        (current-view ?vc2)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action convert-po-to-vo
+    :agent (?a - agent)
+    :parameters (?vc - viewcone ?po - proto-object)
+    :precondition
+      (and
+        (current-view ?vc)
+        (= (vc-is-associated-with ?vc) ?po)
+        (not (exists (?vo - visual-object) (= (po-is-associated-with ?po) ?vo)))
+      )
+    :effect
+      (and
+        (assign (po-is-associated-with ?po) UNKNOWN_VO)
+        (increase (total-cost) 1)
+      )
+  )
+)
