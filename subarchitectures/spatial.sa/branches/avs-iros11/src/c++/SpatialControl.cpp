@@ -125,11 +125,6 @@ void SpatialControl::configure(const map<string,string>& _config)
     std::abort();
   } 
 
-  if (m_UsePointCloud && cfg.getSensorPose(3, m_KinectPoseR)) {
-    println("configure(...) Failed to get sensor pose");
-    std::abort();
-  } 
-
   m_MaxExplorationRange = 1.5;
   it = _config.find("--explore-range");
   if (it != _config.end()) {
@@ -377,17 +372,6 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
-Cure::Vector3D SpatialControl::surfacePointToWorldPoint(const PointCloud::SurfacePoint& point, const Cure::Pose3D& pose)
-{
-  Cure::Transformation3D robotTransform3 = pose + m_KinectPoseR;
-
-  Cure::Vector3D from(point.p.x, point.p.y, point.p.z);
-  Cure::Vector3D to;
-  robotTransform3.invTransform(from, to);
-
-  return to;
-}
-
 void SpatialControl::runComponent() 
 {
   setupPushScan2d(*this, 0.1);
@@ -427,10 +411,9 @@ void SpatialControl::runComponent()
         PointCloud::SurfacePointSeq points;
         getPoints(true, 0 /* unused */, points);
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
-          Cure::Vector3D p = surfacePointToWorldPoint(*it, scanPose);
-          double pX = p.X[0];
-          double pY = p.X[1];
-          double pZ = p.X[2];
+          double pX = it->p.x;
+          double pY = it->p.y;
+          double pZ = it->p.z;
           if (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight) {
             if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
               (*m_lgmK)(xi, yi) = '1';
