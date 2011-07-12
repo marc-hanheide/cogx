@@ -14,9 +14,11 @@ module execution {
 			module yr3 {
 
 
-      class FocusViewCone extends execution::slice::actions::SingleBeliefAction {
+      class MoveToViewCone extends execution::slice::actions::SingleBeliefAction {
       };    
 
+      class AnalyzeProtoObject  extends execution::slice::actions::SingleBeliefAction {
+      };    
 
     };
 

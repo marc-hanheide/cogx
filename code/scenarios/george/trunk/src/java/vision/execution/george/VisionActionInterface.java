@@ -13,8 +13,10 @@ import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.TriBool;
-import execution.slice.actions.george.yr3.FocusViewCone;
+import execution.slice.actions.george.yr3.AnalyzeProtoObject;
+import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ComponentActionFactory;
+import execution.util.DoNothingActionExecutorFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteFromStatusExecutor;
 
@@ -29,12 +31,12 @@ public class VisionActionInterface extends ManagedComponent {
 
 	private LocalActionStateManager m_actionStateManager;
 
-	public static class FocusViewConeExecutor
+	public static class MoveToViewConeExecutor
 			extends
-			NonBlockingCompleteFromStatusExecutor<FocusViewCone, MoveToViewConeCommand> {
+			NonBlockingCompleteFromStatusExecutor<MoveToViewCone, MoveToViewConeCommand> {
 
-		public FocusViewConeExecutor(ManagedComponent _component) {
-			super(_component, FocusViewCone.class, MoveToViewConeCommand.class);
+		public MoveToViewConeExecutor(ManagedComponent _component) {
+			super(_component, MoveToViewCone.class, MoveToViewConeCommand.class);
 		}
 
 		@Override
@@ -83,17 +85,18 @@ public class VisionActionInterface extends ManagedComponent {
 		return hist.ancestors.get(0);
 	}
 
-//	private String getPropositionFromBelief(
-//			WorkingMemoryAddress _beliefAddress, String _index)
-//			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-//
-//		GroundedBelief belief = getMemoryEntry(_beliefAddress,
-//				GroundedBelief.class);
-//		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-//				.create(GroundedBelief.class, belief);
-//		return pb.getContent().get(_index).getDistribution().getMostLikely()
-//				.getProposition();
-//	}
+	// private String getPropositionFromBelief(
+	// WorkingMemoryAddress _beliefAddress, String _index)
+	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+	//
+	// GroundedBelief belief = getMemoryEntry(_beliefAddress,
+	// GroundedBelief.class);
+	// CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb =
+	// CASTIndependentFormulaDistributionsBelief
+	// .create(GroundedBelief.class, belief);
+	// return pb.getContent().get(_index).getDistribution().getMostLikely()
+	// .getProposition();
+	// }
 
 	@Override
 	protected void start() {
@@ -101,9 +104,12 @@ public class VisionActionInterface extends ManagedComponent {
 
 		// direct dections
 
-		m_actionStateManager.registerActionType(FocusViewCone.class,
-				new ComponentActionFactory<FocusViewConeExecutor>(this,
-						FocusViewConeExecutor.class));
+		m_actionStateManager.registerActionType(MoveToViewCone.class,
+				new ComponentActionFactory<MoveToViewConeExecutor>(this,
+						MoveToViewConeExecutor.class));
+
+		m_actionStateManager.registerActionType(AnalyzeProtoObject.class,
+				new DoNothingActionExecutorFactory(this));
 
 	}
 
