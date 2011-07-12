@@ -12,8 +12,8 @@ public class ViewPointMediator extends ReferringPerceptMediatorComponent<Grounde
 	}
 
 	@Override
-	protected PerceptBindingMediator<ViewPoint, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, ViewPoint.class, GroundedBelief.class, new ViewPointTransferFunction(this, this.allBeliefs));
+	protected PerceptBindingMediator<ViewPoint, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, ViewPoint.class, GroundedBelief.class, new ViewPointTransferFunction(this, this.allBeliefs));
 	}
 
 }
