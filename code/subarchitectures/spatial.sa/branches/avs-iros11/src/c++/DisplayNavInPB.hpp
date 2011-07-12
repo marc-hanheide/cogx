@@ -144,7 +144,6 @@ private:
 	void addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp, int placeId);
 	void displayPeople();
 	Cure::Transformation3D getCameraToWorldTransform();
-  Cure::Vector3D surfacePointToWorldPoint(const PointCloud::SurfacePoint& point);
 
 private:
 	peekabot::PeekabotClient m_PeekabotClient;
@@ -223,7 +222,6 @@ private:
 	bool m_ReadPTU;
 	ptz::PTZInterfacePrx m_PTUServer;
 	Cure::SensorPose m_CameraPoseR;
-	Cure::SensorPose m_KinectPoseR;
 
 	/** List of categories of rooms that we know about. */
 	std::vector<std::string> _roomCategories;

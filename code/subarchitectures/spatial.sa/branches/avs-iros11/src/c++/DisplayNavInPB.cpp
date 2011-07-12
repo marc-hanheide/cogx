@@ -179,11 +179,6 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
       std::abort();
     } 
-
-    if (cfg->getSensorPose(3, m_KinectPoseR)) {
-      println("configure(...) Failed to get sensor pose for kinect.");
-      std::abort();
-    } 
   }
 
   log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
@@ -1039,20 +1034,6 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 	}
 }
 
-Cure::Vector3D DisplayNavInPB::surfacePointToWorldPoint(const PointCloud::SurfacePoint& point)
-{
-  Cure::Transformation3D robotTransform;
-  robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
-
-  Cure::Transformation3D robotTransform3 = robotTransform + m_KinectPoseR;
-
-  Cure::Vector3D from(point.p.x, point.p.y, point.p.z);
-  Cure::Vector3D to;
-  robotTransform3.invTransform(from, to);
-
-  return to;
-}
-
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   log("Got new SOI points.");
   double color[3] = { 0.9, 0, 0};
@@ -1165,9 +1146,8 @@ void DisplayNavInPB::runComponent() {
         double rangeMax = 1;
         int k = 0;
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
-          Cure::Vector3D p = surfacePointToWorldPoint(*it);
           if ((k % 64) == 0)
-            kinectVerts.add(p.X[0], p.X[1], p.X[2], 1, std::max(0.0, (1 - p.X[2] / rangeMax)), 0);
+            kinectVerts.add(it->p.x, it->p.y, it->p.z, 1, std::max(0.0, (1 - it->p.z / rangeMax)), 0);
           k++;
         }
         m_ProxyKinect.set_vertices(kinectVerts);

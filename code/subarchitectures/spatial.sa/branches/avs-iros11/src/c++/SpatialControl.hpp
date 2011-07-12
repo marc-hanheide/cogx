@@ -157,7 +157,6 @@ protected:
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
-  Cure::SensorPose m_KinectPoseR;
   
   NavData::InternalCommandType m_commandType;
   double m_commandX;
@@ -236,8 +235,6 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
-
-  Cure::Vector3D surfacePointToWorldPoint(const PointCloud::SurfacePoint& point, const Cure::Pose3D& pose);
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
