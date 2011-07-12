@@ -39,6 +39,10 @@ public abstract class NonBlockingActionExecutor<ActionType extends Action>
 		return m_actCls.cast(m_action);
 	}
 
+	protected Class<ActionType> getActionClass() {
+		return m_actCls;
+	}
+
 	@Override
 	public TriBool execute() {
 		throw new RuntimeException("Blocking action should not be called");

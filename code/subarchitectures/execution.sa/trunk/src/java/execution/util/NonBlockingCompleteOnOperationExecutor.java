@@ -13,7 +13,8 @@ import execution.slice.TriBool;
 
 /**
  * Add a command to wm and then report that action exection is complete when a
- * particular wm operation happens to that command.
+ * particular wm operation happens to that command. This assumes that the stated
+ * operation always represents success.
  * 
  * @author nah
  * 

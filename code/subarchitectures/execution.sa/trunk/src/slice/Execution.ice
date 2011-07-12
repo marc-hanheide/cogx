@@ -191,6 +191,9 @@ module execution {
 
       };
 
+	 class SinglePointerAction extends Action {
+	cast::cdl::WorkingMemoryPointer pointer;	
+      };
 
       class SingleBeliefAction extends Action {
 	cast::cdl::WorkingMemoryAddress beliefAddress;	
