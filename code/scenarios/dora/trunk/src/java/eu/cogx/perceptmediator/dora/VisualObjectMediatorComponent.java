@@ -16,9 +16,9 @@ public class VisualObjectMediatorComponent extends
 	}
 
 	@Override
-	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator() {
+	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator(String _toSA) {
         tf = new VisualObjectTransferFunction(this, allBeliefs);
-		return PerceptBindingMediator.create(this, VisualObject.class,
+		return PerceptBindingMediator.create(this, _toSA, VisualObject.class,
 				PerceptBelief.class, tf);
 	}
 
