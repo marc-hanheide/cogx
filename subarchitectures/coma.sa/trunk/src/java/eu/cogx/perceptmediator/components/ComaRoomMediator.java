@@ -40,8 +40,8 @@ public class ComaRoomMediator extends PerceptMediatorComponent {
 	}
 
 	@Override
-	protected PerceptBindingMediator<ComaRoom, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, ComaRoom.class,
+	protected PerceptBindingMediator<ComaRoom, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, ComaRoom.class,
 				GroundedBelief.class, transferFunction);
 	}
 
