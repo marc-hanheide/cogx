@@ -37,7 +37,7 @@ import execution.slice.actions.SingleBeliefAction;
 import execution.slice.actions.UnlearnColour;
 import execution.slice.actions.UnlearnIdentity;
 import execution.slice.actions.UnlearnShape;
-import execution.slice.actions.george.yr3.FocusViewCone;
+import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionMonitor;
 import george.execution.util.ActionInterfaceFrame;
 

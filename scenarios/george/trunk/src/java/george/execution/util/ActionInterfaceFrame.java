@@ -38,7 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.Action;
-import execution.slice.actions.george.yr3.FocusViewCone;
+import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionMonitor;
 
 /**
@@ -538,7 +538,7 @@ public class ActionInterfaceFrame extends JFrame {
 		
 		if (beliefID != null) {
 			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(beliefID, "binder"),
-					new MonitorPanel(), FocusViewCone.class);
+					new MonitorPanel(), MoveToViewCone.class);
 		}
 	}
 
