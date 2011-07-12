@@ -3,26 +3,38 @@
   (:requirements :mapl :adl :fluents :action-costs :equality)
 
   (:types
-    visual-object proto-object viewcone - object
+    VisualObject ProtoObject ViewCone - object
   )
 
   (:constants
     GEORGE - agent
-    UNKNOWN_VO - visual-object
+    UNKNOWN_VO - VisualObject
   )
 
   (:predicates
-    (current-view ?v - viewcone)
+    (current-view ?v - ViewCone)
   )
 
   (:functions
-    (vc-is-associated-with ?vc - viewcone) - proto-object
-    (po-is-associated-with ?p - proto-object) - visual-object
+    (target-object ?vc - ViewCone) - ProtoObject
+    (po-is-associated-with ?p - ProtoObject) - VisualObject
   )
 
-  (:action move-head-to
+  (:action move-to-viewcone1
     :agent (?a - agent)
-    :parameters (?vc1 - viewcone ?vc2 - viewcone)
+    :parameters (?vc - ViewCone)
+    :precondition
+      (not (exists (?vc1 - ViewCone) (current-view ?vc1)))
+    :effect
+      (and
+        (current-view ?vc)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action move-to-viewcone2
+    :agent (?a - agent)
+    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
     :precondition
       (current-view ?vc1)
     :effect
@@ -33,14 +45,14 @@
       )
   )
 
-  (:action convert-po-to-vo
+  (:action analyze-proto-object
     :agent (?a - agent)
-    :parameters (?vc - viewcone ?po - proto-object)
+    :parameters (?vc - ViewCone ?po - ProtoObject)
     :precondition
       (and
         (current-view ?vc)
-        (= (vc-is-associated-with ?vc) ?po)
-        (not (exists (?vo - visual-object) (= (po-is-associated-with ?po) ?vo)))
+        (= (target-object ?vc) ?po)
+        (not (exists (?vo - visualobject) (= (po-is-associated-with ?po) ?vo)))
       )
     :effect
       (and
