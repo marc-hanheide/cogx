@@ -14,8 +14,8 @@ public class AgentMediator extends ReferringPerceptMediatorComponent<GroundedBel
 	}
 
 	@Override
-	protected PerceptBindingMediator<PlaceContainmentAgentProperty, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this,
+	protected PerceptBindingMediator<PlaceContainmentAgentProperty, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, 
 				PlaceContainmentAgentProperty.class, GroundedBelief.class,
 				new LocalizedAgentTransferFunction<GroundedBelief>(this, allBeliefs, GroundedBelief.class));
 	}
