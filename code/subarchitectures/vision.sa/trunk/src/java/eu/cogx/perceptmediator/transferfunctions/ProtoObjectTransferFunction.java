@@ -46,7 +46,7 @@ public class ProtoObjectTransferFunction extends
 				.getAsFormula());
 
 		// Add the desired view cone if necessary for fine-stereo processing.
-		// When there is a desired view cone, a MoveToViewConeCommand must be
+		// When there is a desired view cone, a MoveToViewConeCommand must b
 		// issued.
 
 		// Unless there is a good reason to change this, the belief structure is

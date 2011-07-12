@@ -1081,7 +1081,7 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     /* TODO: the command should be handled in runComponent, where it would wait until
      * the sois are stable */
     GetStableSOIs(pcmd->sois);
-    pcmd->status = 1;
+    pcmd->status = VCSUCCEEDED;
 
     // TODO: abort if the entry was overwritten by someone else
     overwriteWorkingMemory(_wmc.address, pcmd);

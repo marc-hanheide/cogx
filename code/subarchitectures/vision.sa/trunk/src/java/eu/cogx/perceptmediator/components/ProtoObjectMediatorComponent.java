@@ -9,8 +9,9 @@ import eu.cogx.perceptmediator.transferfunctions.ProtoObjectTransferFunction;
 public class ProtoObjectMediatorComponent extends PerceptMediatorComponent {
 
 	@Override
-	protected PerceptBindingMediator<ProtoObject, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, ProtoObject.class,
+	protected PerceptBindingMediator<ProtoObject, GroundedBelief> getMediator(
+			String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, ProtoObject.class,
 				GroundedBelief.class, new ProtoObjectTransferFunction(this));
 	}
 
