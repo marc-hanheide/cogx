@@ -7,17 +7,25 @@ trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP
 if [ "$1" ]; then
     configFile="$1"
 else
-    configFile="instantiations/spring-school-real.cast"
+    configFile="instantiations/dora-tro-real.cast"
 fi
 
-LOGNAME=./log
+LOGNAME=./logs/log
 
-xterm -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
+#xterm -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
+#PIDS="$PIDS $!"
+
+xterm -e player instantiations/player/cogx-platform.cfg &
+PIDS="$PIDS $!"
+
+sleep 2
+LD_LIBRARY_PATH=output/lib:/usr/local/lib/cast output/bin/display-server &
 PIDS="$PIDS $!"
 sleep 2
 
-xterm -e player subarchitectures/nav.sa/config/player_cfg/botx.cfg &
-PIDS="$PIDS $!"
+
+./restoremap.sh
+dc1394_reset_bus
 
 #xterm -e peekabot &
 #PIDS="$PIDS $!"
