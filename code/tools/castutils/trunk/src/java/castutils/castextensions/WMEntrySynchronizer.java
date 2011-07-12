@@ -117,6 +117,11 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 	protected final Set<WorkingMemoryOperation> ops;
 
 	/**
+	 * the subarchitecture to write the transformed object to
+	 */
+	protected final String toSA;
+
+	/**
 	 * create new synchronizer only for given memory operations
 	 * 
 	 * @param component
@@ -129,6 +134,23 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 			Class<From> fromType, Class<To> toType,
 			TransferFunction<From, To> transferFunction,
 			Set<WorkingMemoryOperation> ops) {
+		this(component, component.getSubarchitectureID(), fromType, toType,
+				transferFunction, ops);
+	}
+
+	/**
+	 * create new synchronizer only for given memory operations
+	 * 
+	 * @param component
+	 * @param fromType
+	 * @param toType
+	 * @param transferFunction
+	 * @param ops
+	 */
+	protected WMEntrySynchronizer(ManagedComponent component, String toSA,
+			Class<From> fromType, Class<To> toType,
+			TransferFunction<From, To> transferFunction,
+			Set<WorkingMemoryOperation> ops) {
 		super(component);
 		this.fromType = fromType;
 		this.toType = toType;
@@ -137,6 +159,7 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 		this.ops = ops;
 		this.wm2wmMap = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>());
+		this.toSA = toSA;
 	}
 
 	/**
@@ -205,7 +228,7 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 				fromType, WorkingMemoryOperation.DELETE), entryQueue);
 		start();
 		try {
-			while (true) {
+			while (component.isRunning()) {
 				try {
 					final WorkingMemoryChange ev = entryQueue.take();
 					switch (ev.operation) {
@@ -214,11 +237,11 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 								fromType);
 						final String id = component.newDataID();
 						final WorkingMemoryAddress toWMA = new WorkingMemoryAddress(
-								id, component.getSubarchitectureID());
+								id, toSA);
 						final To to = transferFunction.create(toWMA, ev, from);
 						if (to != null) {
 							if (transferFunction.transform(ev, from, to)) {
-								component.addToWorkingMemory(id, to);
+								component.addToWorkingMemory(toWMA, to);
 								log("remember mapping "
 										+ CASTUtils.toString(ev.address)
 										+ " => " + CASTUtils.toString(toWMA));
@@ -247,8 +270,7 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 								if (toWMA == null && from != null) {
 									isNew = true;
 									final String id = component.newDataID();
-									toWMA = new WorkingMemoryAddress(id,
-											component.getSubarchitectureID());
+									toWMA = new WorkingMemoryAddress(id, toSA);
 									to = transferFunction.create(toWMA, ev,
 											from);
 								} else {
