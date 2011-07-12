@@ -333,6 +333,18 @@ class OnlineEngine
     }
   }
   
+  void setMaxBurnIn(const int& maxBurnIn)
+  {
+    if (MCSAT* ms = dynamic_cast<MCSAT*>(inference_))
+    {
+      ms->setMaxBurnIn(maxBurnIn);
+    }
+    else if (GibbsSampler* p = dynamic_cast<GibbsSampler*>(inference_))
+    {
+      p->setMaxBurnIn(maxBurnIn);
+    }
+  }
+  
   void saveAllCounts(bool saveCounts=true)
   {
     inference_->saveAllCounts(saveCounts);
@@ -374,6 +386,28 @@ class OnlineEngine
   		ms->adaptProbs(maxn);
   }
   
+  void setExtPriors(const vector<string>& preds, const vector<float>& wts)
+  {
+  	assert(preds.size() == wts.size());
+  	
+    for (int i=0; i < preds.size(); i++)
+    {
+      GroundPredicate* p = NULL;
+      parseGroundPredicate(preds[i], p);
+      inference_->getState()->setClausePrior(p, wts[i]);
+    }
+  }
+  
+  void resetPriors(const vector<string>& preds)
+  {
+    for (int i=0; i < preds.size(); i++)
+    {
+      GroundPredicate* p = NULL;
+      parseGroundPredicate(preds[i], p);
+      inference_->getState()->resetClausePrior(p);
+    }
+  }
+  
   void printNetwork(ostream& out)
   {
   	inference_->printNetwork(out);
@@ -389,10 +423,10 @@ class OnlineEngine
     for (; it != evidence.end(); it++)
     {
       GroundPredicate* p = NULL;
-      parseGroundPredicate((*it), p); cout << "PROCESSING EVIDENCE : " << *it;
-      if (addEvidence) {  cout << " (adding)"<< endl;
+      parseGroundPredicate((*it), p);
+      if (addEvidence) {
         inference_->getState()->setAsEvidence(p, trueEvidence); }
-      else {  cout << " (removing) " << endl;
+      else {
         inference_->getState()->setAsQuery(p);}
     }
 //HACK

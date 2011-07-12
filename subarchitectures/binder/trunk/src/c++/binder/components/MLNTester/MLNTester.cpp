@@ -102,6 +102,9 @@ void MLNTester::runComponent()
   evd->falseEvidence.push_back("percept(P1)");
   evd->falseEvidence.push_back("percept(P2)");
   evd->falseEvidence.push_back("percept(P3)");
+  evd->initInfSteps = 400;
+  evd->prevInfSteps = 100;
+  evd->burnInSteps = 100;
   
   addToWorkingMemory(newDataID(), m_bindingSA, evd);
   
@@ -138,7 +141,10 @@ void MLNTester::runComponent()
 	  evd->mrfId = m_id;
 	  evd->trueEvidence.push_back("percept(P1)");
 	  evd->trueEvidence.push_back("feature(P1,VGreen)");
-	
+	  evd->initInfSteps = 400;
+	  evd->prevInfSteps = 100;
+	  evd->burnInSteps = 100;
+  
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}	
 	
@@ -149,7 +155,11 @@ void MLNTester::runComponent()
 	  evd->mrfId = m_id;
 	
 	  evd->trueEvidence.push_back("attribute(LRed)");	
-	
+	  
+	  evd->initInfSteps = 400;
+	  evd->prevInfSteps = 100;
+  	  evd->burnInSteps = 100;
+  	  
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
 	
@@ -160,8 +170,15 @@ void MLNTester::runComponent()
 	  EvidencePtr evd = new Evidence();
 	  evd->mrfId = m_id;
 	  evd->trueEvidence.push_back("percept(P2)");
-	  evd->trueEvidence.push_back("feature(P2,VRed)");
+//	  evd->trueEvidence.push_back("feature(P2,VRed)");
+	  evd->extPriors.push_back("feature(P2,VRed)");
+	  evd->priorWts.push_back(1);
+	  evd->extPriors.push_back("feature(P2,VBlue)");
+	  evd->priorWts.push_back(-1);
   //	evd->removeEvidence.push_back("");
+  	  evd->initInfSteps = 400;
+	  evd->prevInfSteps = 100;
+  	  evd->burnInSteps = 100;
 	
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
@@ -173,7 +190,10 @@ void MLNTester::runComponent()
 	  evd->mrfId = m_id;
 	  evd->trueEvidence.push_back("percept(P3)");
 	  evd->trueEvidence.push_back("feature(P3,VRed)");
-	
+	  evd->initInfSteps = 400;
+	  evd->prevInfSteps = 100;
+	  evd->burnInSteps = 100;
+  
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
 	
@@ -183,8 +203,13 @@ void MLNTester::runComponent()
 	  EvidencePtr evd = new Evidence();
 	  evd->mrfId = m_id;
 	  evd->falseEvidence.push_back("percept(P2)");
-	  evd->removeEvidence.push_back("feature(P2,VRed)");
-	
+//	  evd->removeEvidence.push_back("feature(P2,VRed)");
+	  evd->resetPriors.push_back("feature(P2,VRed)");
+	  evd->resetPriors.push_back("feature(P2,VBlue)");
+	  evd->initInfSteps = 400;
+	  evd->prevInfSteps = 100;
+	  evd->burnInSteps = 100;
+  
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
 	
