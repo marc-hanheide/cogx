@@ -38,6 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.Action;
+import execution.slice.actions.george.yr3.FocusViewCone;
 import execution.util.ActionMonitor;
 
 /**
@@ -531,12 +532,14 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void focusViewCone() throws CASTException {
-		println("focusViewCone");
-		// String beliefID = getSelectedBeliefID();
-		// if (beliefID != null) {
-		// m_exeMan.askForColour(new WorkingMemoryAddress(beliefID, "binder"),
-		// new MonitorPanel());
-		// }
+		
+		//TODO assume for now that this is a viewcone belief
+		String beliefID = getSelectedBeliefID();
+		
+		if (beliefID != null) {
+			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(beliefID, "binder"),
+					new MonitorPanel(), FocusViewCone.class);
+		}
 	}
 
 	private void askForShape() throws CASTException {
