@@ -2989,6 +2989,48 @@ class VariableState
       	cout << "*******************************************************************" << endl;
       }
   }
+  
+  void setClausePrior(const GroundPredicate* const & predicate, double wt)
+  {
+  	int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
+    cout << "idx " << atomIdx << endl;
+    assert(atomIdx >= -1);
+      // If evidence, do nothing
+    if ( atomIdx == -1)
+    	return;
+    
+    Array<int> gndClauseIndexes;      
+    gndClauseIndexes = getPosOccurenceArray(atomIdx + 1);
+    
+    for (int i = 0; i < gndClauseIndexes.size(); i++)
+    	if((*gndClauses_)[gndClauseIndexes[i]]->getNumGroundPredicates() == 1) {
+    		(*gndClauses_)[gndClauseIndexes[i]]->setXWt(wt);
+    		setGndClausesWtsToSumOfParentWts();
+    		return;
+    	}
+    
+  }
+  
+  void resetClausePrior(const GroundPredicate* const & predicate)
+  {
+  	int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
+    cout << "idx " << atomIdx << endl;
+    assert(atomIdx >= -1);
+      // If evidence, do nothing
+    if ( atomIdx == -1)
+    	return;
+    
+    Array<int> gndClauseIndexes;      
+    gndClauseIndexes = getPosOccurenceArray(atomIdx + 1);
+    
+    for (int i = 0; i < gndClauseIndexes.size(); i++)
+    	if((*gndClauses_)[gndClauseIndexes[i]]->getNumGroundPredicates() == 1) {
+    		(*gndClauses_)[gndClauseIndexes[i]]->resetXWt();
+    		setGndClausesWtsToSumOfParentWts();
+    		return;
+    	}
+    
+  }
 
   /**
    * Sets a GroundPredicate to be query. If it is already present as query,

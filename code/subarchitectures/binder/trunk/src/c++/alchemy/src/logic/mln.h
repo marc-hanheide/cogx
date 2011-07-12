@@ -452,11 +452,9 @@ class MLN
 
   const Clause* findClause(const Clause* const & c) const 
   { 
-cout << "m1" << endl;
     int i = findClauseIdx(c);
-cout << "m2" << endl;
     if (i < 0) return NULL;
-cout << "m3" << endl;
+
     return (*clauses_)[i];
   }
 

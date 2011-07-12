@@ -36,7 +36,7 @@ module binder {
 module mln {
 
 	sequence<string> PredStrSeq;
-	sequence<double> WeightSeq;
+	sequence<float> WeightSeq;
 	sequence<float> ProbSeq;
 	
 	class Evidence {
@@ -44,8 +44,14 @@ module mln {
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
 		PredStrSeq removeEvidence;
-		PredStrSeq probEvidence;
-		WeightSeq weights;
+		PredStrSeq extPriors;
+		WeightSeq priorWts;
+		PredStrSeq resetPriors;
+		
+		int burnInSteps;
+		int initInfSteps;
+		int prevInfSteps;
+//		int infSteps;
 	};
 	
 	class Query {

@@ -43,6 +43,7 @@ class MLNEngine :  public ManagedComponent
   string m_id;
   string m_resultWMId;
   vector<string> m_query;
+  int m_infSteps;
   /**
    * Name of the binder subarchitecture
    */

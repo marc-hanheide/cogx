@@ -126,8 +126,16 @@ class GroundClause
 
   void setWt(const double& wt)
   { if (wt_ == HARD_GROUNDCLAUSE_WT) return; wt_ = wt; }
+  
+  void setXWt(const double& xwt)
+  { if (wt_ == HARD_GROUNDCLAUSE_WT) return; xwt_ = xwt; xwtset_ = true; }
+  
+  void resetXWt()
+  { if (wt_ == HARD_GROUNDCLAUSE_WT) return; xwt_ = 0; xwtset_ = false; }
 
   double getWt() const { return wt_; }
+  
+  double getXWt() const { assert(xwtset_ == true); return xwt_; }
 
   void setWtToHardWt() { wt_ = HARD_GROUNDCLAUSE_WT; }
   bool isHardClause() const { return (wt_ == HARD_GROUNDCLAUSE_WT); }
@@ -360,6 +368,12 @@ class GroundClause
     // overloaded to indicate whether this is a hard clause
     // if this is a hard clause, wt_ is set to HARD_GROUNDCLAUSE_WT
   double wt_; // 8 bytes
+  
+  	// default caluse weight 
+  double dwt_;
+    //external weight (prior) of the grounded clause
+  double xwt_;
+  bool xwtset_;
 
     // Number of first-order clauses this clause corresponds to. Also stores
     // if the weight has been flipped from each parent clause

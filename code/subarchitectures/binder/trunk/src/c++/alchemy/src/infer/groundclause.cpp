@@ -70,7 +70,7 @@
 
 GroundClause::GroundClause(const Clause* const & c, 
                            GroundPredicateHashArray* const & gndPredHashArray) 
-  : wt_(c->getWt()), foClauseFrequencies_(NULL)
+  : wt_(c->getWt()), foClauseFrequencies_(NULL), dwt_(c->getWt()), xwtset_(false)
 {
   if (gcdebug) cout << "Constructing GroundClause" << endl;
   if (gcdebug)
@@ -173,7 +173,13 @@ void GroundClause::appendToGndPreds(
  */
 void GroundClause::setWtToSumOfParentWts(const MLN* const & mln)
 {
-  wt_ = 0;
+	if(xwtset_) {
+		wt_ = xwt_;
+//		if(foClauseFrequencies_)
+//			wt_-= dwt_;
+	}
+	else
+  		wt_ = 0;
 
   IntBoolPairItr itr;
   for (itr = foClauseFrequencies_->begin();
@@ -183,8 +189,9 @@ void GroundClause::setWtToSumOfParentWts(const MLN* const & mln)
     int frequency = itr->second.first;
     bool invertWt = itr->second.second;
     double parentWeight = mln->getClause(clauseno)->getWt();
-    if (invertWt) wt_ -= parentWeight*frequency;
-    else wt_ += parentWeight*frequency;
+    if(!xwtset_ || mln->getClause(clauseno)->getNumPredicates() != 1)
+    	if (invertWt) wt_ -= parentWeight*frequency;
+    	else wt_ += parentWeight*frequency;
   }
 }
 

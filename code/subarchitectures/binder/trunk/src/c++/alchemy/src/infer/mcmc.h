@@ -592,6 +592,11 @@ class MCMC : public Inference
   {
   	adaptNumAll(maxn);
   }
+  
+  void setMaxBurnIn(const int& maxBurnIn)
+  {
+     burnMaxSteps_ = maxBurnIn;
+  }
 
 
  protected:

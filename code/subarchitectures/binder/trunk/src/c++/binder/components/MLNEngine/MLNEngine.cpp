@@ -128,7 +128,9 @@ void MLNEngine::runComponent()
 
   int tstep = 0;
   bool first = true;
-  m_oe->setMaxInferenceSteps(200);
+  m_infSteps = 100;
+  m_oe->setMaxInferenceSteps(m_infSteps);
+  m_oe->setMaxBurnIn(0);
   
   ResultPtr result = new Result();
   result->mrfId = m_id;
@@ -156,24 +158,26 @@ void MLNEngine::runComponent()
 	log("Adding new evidence...");
 	EvidencePtr evd = m_evidenceQueue.front().evidence;
 	
-	vector<string> trueEvd = evd->trueEvidence;
-	vector<string> falseEvd = evd->falseEvidence;
-	vector<string> oldEvd = evd->removeEvidence;
-	
-	m_oe->addTrueEvidence(trueEvd);
-	m_oe->addFalseEvidence(falseEvd);
-	m_oe->removeEvidence(oldEvd);
+	m_oe->addTrueEvidence(evd->trueEvidence);
+	m_oe->addFalseEvidence(evd->falseEvidence);
+	m_oe->removeEvidence(evd->removeEvidence);
 	
 	m_evidenceQueue.front().status=USED;
 	m_removeQueue.push(m_evidenceQueue.front().addr);
 	m_evidenceQueue.pop();
 	
-	m_oe->adaptProbs(400);
-	m_oe->setMaxInferenceSteps(400);
+
+	m_oe->adaptProbs(evd->prevInfSteps);
+    m_oe->setMaxInferenceSteps(evd->initInfSteps);
+	m_oe->setMaxBurnIn(evd->burnInSteps);
+	m_oe->setExtPriors(evd->extPriors, evd->priorWts);
+	m_oe->resetPriors(evd->resetPriors);
+
+	
 #ifdef FEAT_VISUALIZATION
-  ostringstream v11out;
-  m_oe->printNetwork(v11out);
-  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+    ostringstream v11out;
+    m_oe->printNetwork(v11out);
+	m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
 #endif
   }
   
@@ -187,7 +191,8 @@ void MLNEngine::runComponent()
   m_oe->saveCnts();
   first=false;
 
-  m_oe->setMaxInferenceSteps(200);
+  m_oe->setMaxInferenceSteps(m_infSteps);
+  m_oe->setMaxBurnIn(0);
   
   if(doDisplay) {
     // Print true atoms
@@ -216,171 +221,7 @@ void MLNEngine::runComponent()
   cout << "Num true cnts: " << m_oe->getClauseTrueCnts(0) << endl;
   
 //	ptime t(second_clock::universal_time() + seconds(1));
-/*
-	if (queuesNotEmpty->timed_wait(t))"MLNEngine active"
-	{
-	  log("Got something in my queues");
 
-	  if(!proxyToAdd.empty())
-	  { 
-		log("");
-		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
-
-		if(data.status == OBJECT)
-		{
-		  data.status = PROXY;
-		  try
-		  {
-			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(datattributedEpiStatusa.addr);
-
-			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
-
-			FeatureValuePtr value = createUnknownValue(1.00f); //createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
-			//FeatureValuePtr value = createStringValue ("thing", 1.00f);
-			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
-
-			FeatureValuePtr salvalue = createStringValue ("high", 1.00f);
-			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", salvalue);
-
-			ProxyPtr proxy = createNewProxy (origin, 1.0f);
-
-			addFeatureToProxy (proxy, label);
-			addFeatureToProxy (proxy, saliency);
-			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
-
-			addProxyToWM(proxy);
-			
-			if(!first && existsOnWorkingMemory(m_salientObjID, m_bindingSA))
-			{
-			  
-			  ProxyPtr salProxy = getMemoryEntry<Proxy>(m_salientObjID, m_bindingSA);
-			  
-			  WorkingMemoryPointerPtr ovrOrigin = createWorkingMemoryPointer(getSubarchitectureID(), salProxy->origin->address.id, "VisualObject");
-			  ProxyPtr ovrProxy = createNewProxy (ovrOrigin, 1.0f);
-			  
-			  vsitbeliefsector<FeaturePtr>::iterator it;
-			  
-			  for(it = salProxy->features.begin(); it != salProxy->features.end(); it++)
-			   if(string((*it)->featlabel) == "saliency")
-			   {
-				  addFeatureToProxy(ovrProxy, createFeatureWithUniqueFeatureValue ("saliency", createStringValue ("low", 1.00f)));
-			   }
-			   else
-			   {
-				  addFeatureToProxy(ovrProxy, *it);
-			   }
-			  
-			  ovrProxy->entityID = salProxy->entityID;
-			  overwriteProxyInWM(ovrProxy);		 
-			}
-					
-			m_salientObjID = data.proxyId = proxy->entityID;
-			first = false;
-
-			log("A visual proxy ID %s added for visual object ID %s",
-				proxy->entityID.c_str(), data.addr.id.c_str());
-
-		  }
-		  catch (DoesNotExistOnWMException e)
-		  {
-			log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
-		  }
-		}
-
-		proxyToAdd.pop();
-	  }
-	  else if(!proxyToUpdate.empty())
-	  {
-		log("An update proxy instruction"); 
-		VisualObjectData &data = VisualObjectMap[proxyToUpdate.front()];
-	
-		if(data.status == PROXY)
-		{
-		  try
-		  {
-			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
-
-			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
-			
-			// check if we can reliable recognise the color
-			bool known = false;
-			for(int i=0; i<objPtr->distribution.size(); i++)
-				if(objPtr->labels[i] <= 7 && objPtr->distribution[i] > 0.7)
-				  known = true;
-			
-			FeatureValuePtr value;	  
-			if(known)
-			   value = createStringValue ("thing", 1.00f);
-			else
-			  value = createUnknownValue(1.00f);
-			
-			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
-
-			ProxyPtr proxy = createNewProxy (origin, 1.0f);
-
-			addFeatureToProxy (proxy, label);
-			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
-			
-			proxy->entityID = data.proxyId;
-			
-			string salval;
-			if(m_salientObjID == proxy->entityID)
-			  salval = "high";
-			 else
-			  salval = "low";
-			
-			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", createStringValue (salval, 1.0f));
-			addFeatureToProxy (proxy, saliency);
-			
-			overwriteProxyInWM(proxy);
-			
-			log("A visual proxy ID %s was updated following the visual object ID %s",
-				proxy->entityID.c_str(), data.addr.id.c_str());
-				
-			checkDistribution4Clarification(proxy->entityID, objPtr->labels, objPtr->distribution);
-
-		  }
-		  catch (DoesNotExistOnWMException e)
-		  {
-			log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
-		  }
-		}
-		else if(data.status == OBJECT)
-		{
-		  proxyToUpdate.push(data.addr.id);
-		  queuesNotEmpty->post();
-		  log("No updating, waiting for the proxy to be created");
-		}
-		proxyToUpdate.pop();
-	  }
-	  else if(!proxyToDelete.empty())
-	  {
-		log("A delete proxy instruction");
-		VisualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
-
-		  if(obj.status == PROXY)
-		  {
-			obj.status == DELETED;
-			try
-			{  
-			  deleteEntityInWM(obj.proxyId);
-			  
-			  log("A proxy deleted ID: %s", obj.proxyId.c_str());
-//			  VisualObjectMap.erase(proxyToDelete.front());
-			}
-			catch (DoesNotExistOnWMException e)
-			{
-			  log("WARNING: Proto-object ID %s already removed", obj.proxyId);
-			}
-		  }
-
-		  proxyToDelete.pop();
-	  }
-	}
-	
-*/
-	//    else
-	//		log("Timeout");   
   }
 
   log("Removing semaphore ...");
@@ -418,7 +259,7 @@ void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
 //	deleteFromWorkingMemory(_wmc.address);
   }
   else {
-	debug("Wrong MRF.");
+	debug("Not my evidence.");
 	return;
   }  
 };
@@ -450,7 +291,7 @@ void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
 //	deleteFromWorkingMemory(_wmc.address);
   }
   else {
-	debug("Wrong MRF.");
+	debug("Not mine.");
 	return;
   }  
 };
