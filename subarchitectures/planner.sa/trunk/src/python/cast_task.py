@@ -115,7 +115,7 @@ class CASTTask(object):
         domain = pddl.load_domain(domain_fn)
         t = pddl.translators.RemoveTimeCompiler();
         self.domain = t.translate(domain)
-        self.domain.dt_rules = [r.copy(self.domain) for r in domain.dt_rules]
+        #self.domain.dt_rules = [r.copy(self.domain) for r in domain.dt_rules]
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
