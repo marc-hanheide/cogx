@@ -13,8 +13,8 @@ public class PlaceGatewayMediator extends ReferringPerceptMediatorComponent<Grou
 	}
 
 	@Override
-	protected PerceptBindingMediator<GatewayPlaceProperty, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, GatewayPlaceProperty.class,
+	protected PerceptBindingMediator<GatewayPlaceProperty, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, GatewayPlaceProperty.class,
 				GroundedBelief.class, new GatewayTransferFunction(this,
 						allBeliefs));
 	}

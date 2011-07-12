@@ -14,8 +14,8 @@ public class PlaceContainmentAgentMediator extends
 	}
 
 	@Override
-	protected PerceptBindingMediator<PlaceContainmentAgentProperty, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this,
+	protected PerceptBindingMediator<PlaceContainmentAgentProperty, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this,_toSA,
 				PlaceContainmentAgentProperty.class, GroundedBelief.class,
 				new PlaceContainmentAgentTransferFunction(this,
 						allBeliefs));

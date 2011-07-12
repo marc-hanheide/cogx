@@ -14,8 +14,8 @@ public class PlaceConnectivityMediator extends
 	}
 
 	@Override
-	protected PerceptBindingMediator<ConnectivityPathProperty, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this,
+	protected PerceptBindingMediator<ConnectivityPathProperty, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this,_toSA,
 				ConnectivityPathProperty.class, GroundedBelief.class,
 				new ConnectivityTransferFunction(this, allBeliefs));
 	}
