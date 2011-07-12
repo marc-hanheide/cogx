@@ -33,9 +33,11 @@ import execution.slice.actions.LearnShape;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.RecogniseForegroundedModels;
+import execution.slice.actions.SingleBeliefAction;
 import execution.slice.actions.UnlearnColour;
 import execution.slice.actions.UnlearnIdentity;
 import execution.slice.actions.UnlearnShape;
+import execution.slice.actions.george.yr3.FocusViewCone;
 import execution.util.ActionMonitor;
 import george.execution.util.ActionInterfaceFrame;
 
@@ -262,6 +264,17 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
+	
+	public WorkingMemoryAddress executeSingleBeliefAction(WorkingMemoryAddress _beliefID,
+			ActionMonitor _monitor, Class<? extends SingleBeliefAction> _actionCls) throws CASTException {
+		SingleBeliefAction act = newActionInstance(_actionCls);
+		act.beliefAddress = _beliefID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	
+
+	
 	public WorkingMemoryAddress askForShape(WorkingMemoryAddress _beliefID,
 			ActionMonitor _monitor) throws CASTException {
 		AskForShape act = newActionInstance(AskForShape.class);
