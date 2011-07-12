@@ -2,15 +2,15 @@
 
 # Host names can be used instead of raw IPs to distribute components eg. [Main].
 # Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
-HOSTNAME  localhost      192.168.33.101
+# HOSTNAME  localhost      192.168.33.101
 HOSTNAME  Main           localhost
-HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PlayerHost     cca-0838
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 
 HOST     [Main]
 
-COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
+COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
 
 ####################################################################################################################
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
