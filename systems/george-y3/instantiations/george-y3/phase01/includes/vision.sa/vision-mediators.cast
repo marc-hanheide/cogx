@@ -1,0 +1,2 @@
+JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent --write-to-sa binder
+JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent --write-to-sa binder
