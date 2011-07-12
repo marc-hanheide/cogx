@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- Output the log message to system console -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">    
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%c{1} %p]: %m%n" />
+		</layout>
+	</appender>
+
+	<!-- Output the log message to a log4j XML logfile -->
+	<appender name="logfile" class="org.apache.log4j.FileAppender">
+		<param name="file" value="abducer.log" />
+		<param name="append" value="true" />
+		<layout class="org.apache.log4j.xml.XMLLayout" />
+	</appender>
+
+	<root>
+		<priority value="debug" />
+		<appender-ref ref="console" />
+	</root>
+
+	<logger name="root">
+		<level value="trace" />
+		<appender-ref ref="logfile" />
+	</logger>
+
+</log4j:configuration>
