@@ -79,12 +79,12 @@ public class WMLogger extends ManagedComponent {
 
 	public <T extends Ice.ObjectImpl> void register(Class<T> type) {
 		getLogger().trace("register listeners");
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.ADD), new LoggingChangeReceiver<T>(type), ChangeReceiverPriority.HIGH);
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.DELETE), new LoggingChangeReceiver<T>(
 				type), ChangeReceiverPriority.HIGH);
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.OVERWRITE),
 				new LoggingChangeReceiver<T>(type), ChangeReceiverPriority.HIGH);
 	}
