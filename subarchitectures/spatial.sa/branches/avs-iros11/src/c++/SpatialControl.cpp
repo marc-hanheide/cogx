@@ -411,9 +411,14 @@ void SpatialControl::runComponent()
         PointCloud::SurfacePointSeq points;
         getPoints(true, 0 /* unused */, points);
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
-          double pX = it->p.x;
-          double pY = it->p.y;
-          double pZ = it->p.z;
+          /* Transform point in cloud with regards to the robot pose */
+          Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+          Cure::Vector3D to;
+          scanPose.invTransform(from, to);
+          double pX = to.X[0];
+          double pY = to.X[1];
+          double pZ = to.X[2];
+          /* Add point as obstacle/free space depending on it's height */
           if (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight) {
             if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
               (*m_lgmK)(xi, yi) = '1';

@@ -1146,8 +1146,17 @@ void DisplayNavInPB::runComponent() {
         double rangeMax = 1;
         int k = 0;
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+          /* Transform point in cloud with regards to the robot pose */
+          Cure::Transformation3D robotTransform;
+          robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
+          Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+          Cure::Vector3D to;
+          robotTransform.invTransform(from, to);
+          double pX = to.X[0];
+          double pY = to.X[1];
+          double pZ = to.X[2];
           if ((k % 64) == 0)
-            kinectVerts.add(it->p.x, it->p.y, it->p.z, 1, std::max(0.0, (1 - it->p.z / rangeMax)), 0);
+            kinectVerts.add(pX, pY, pZ, 1, std::max(0.0, (1 - pZ / rangeMax)), 0);
           k++;
         }
         m_ProxyKinect.set_vertices(kinectVerts);
