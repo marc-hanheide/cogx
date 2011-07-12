@@ -1,8 +1,16 @@
 #!/bin/bash
-SCRIPT=$(readlink -f $0)
+
+
+# workaround for missing "readlink -f"
+cd -P -- "$(dirname -- "$0")" &&
+SCRIPT=$(printf '%s\n' "$(pwd -P)/$(basename -- "$0")")
+
 SCRIPT_DIR=$(dirname $SCRIPT)
-COGX_ROOT=$(readlink -f $SCRIPT_DIR/..)
+
+COGX_ROOT=$SCRIPT_DIR/..
+
 TOOLS=$COGX_ROOT/tools/scripts
+
 
 if [ -f $COGX_ROOT/BUILD/CMakeCache.txt ]; then
    echo "BUILD/CMakeCache.txt exsits! Won't continue."
@@ -20,7 +28,8 @@ fi
 
 cd $COGX_ROOT/BUILD
 
-cmake -Wno-dev $COGX_ROOT > /dev/null
-$TOOLS/cmake-apply  $COGX_ROOT/BUILD  $SCRIPT_DIR/cmakecache/george-y3.txt
-cmake -Wno-dev $COGX_ROOT > /dev/null
+cmake -Wno-dev $COGX_ROOT 
+# > /dev/null
+# $TOOLS/cmake-apply  $COGX_ROOT/BUILD  $SCRIPT_DIR/cmakecache/george-y3.txt
+# cmake -Wno-dev $COGX_ROOT > /dev/null
 
