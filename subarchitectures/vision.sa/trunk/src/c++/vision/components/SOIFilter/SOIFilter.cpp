@@ -665,15 +665,6 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // Add PO to WM
     pSoiFilter->addToWorkingMemory(objId, pobj);
     
-    // TODO: This should be done by the executor
-    MoveToViewConeCommandPtr pMoveCmd = new MoveToViewConeCommand();
-    pMoveCmd->target = vcPtr;
-    pMoveCmd->reason = "find-fine-soi";
-    pMoveCmd->objectId = objId;
-    pMoveCmd->status = 0;
-    string moveId = pSoiFilter->newDataID();
-    pSoiFilter->addToWorkingMemory(moveId, pMoveCmd);
-    
     // Now it is up to the planner to create a plan to move the robot
     // The task contains: PO, target VC
 
@@ -738,7 +729,7 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
   catch(cast::DoesNotExistOnWMException){
     pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject deleted while working. Aborting task.");
-    pcmd->status = 0;
+    pcmd->status = VCFAILED;
     try {
       pSoiFilter->overwriteWorkingMemory(pEvent->wmc.address, pcmd);
     }
@@ -806,7 +797,7 @@ void SOIFilter::GetSoisCommandRcv::workingMemoryChanged(const cast::cdl::Working
     }
     catch (...) {
       pSoiFilter->debug("SOIFilter.GetSoisCommand: Failed to get the results.");
-      m_pcmd->status = 0; /* complete, but failed */
+      m_pcmd->status = VCFAILED; /* complete, but failed */
     }
     m_complete = true;
   }
@@ -847,6 +838,10 @@ void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
     ptup.pose.zoom = 0;
     pSoiFilter->log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
     pSoiFilter->ptzServer->setPose(ptup.pose);
+
+	//report success	
+	pcmd->status = VCSUCCEEDED;
+	pSoiFilter->overwriteWorkingMemory(pEvent->wmc.address, pcmd);
   }
 }
 

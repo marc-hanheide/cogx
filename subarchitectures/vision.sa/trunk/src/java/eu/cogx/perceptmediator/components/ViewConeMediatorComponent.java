@@ -14,8 +14,8 @@ public class ViewConeMediatorComponent extends
 	}
 
 	@Override
-	protected PerceptBindingMediator<ViewCone, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, ViewCone.class,
+	protected PerceptBindingMediator<ViewCone, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, ViewCone.class,
 				GroundedBelief.class, new ViewConeTransferFunction(this,
 						this.allBeliefs));
 	}

@@ -13,6 +13,16 @@ module VisionData {
   sequence<string> StringSeq;
   sequence<double> DoubleSeq;
 
+/**
+* Enum for reporting status of vision commands. 
+*/
+enum VisionCommandStatus {
+	//probably too much overhead ;)
+	VCSUCCEEDED,
+		VCFAILED,
+		VCREQUESTED,
+};
+
   /**
    * @brief A convex hull discribes
    * @author Kai Zhou
@@ -286,7 +296,8 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
     PointCloud::SurfacePointSeq BGpoints;
     // equivocal points which either belongs to fg or bg
     PointCloud::SurfacePointSeq EQpoints;
-    int status;
+    //nah: what is this for? what are the possible values?
+	int status;
   };
   sequence<SOI> SOISeq;
 
@@ -396,6 +407,8 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
 
   sequence<ViewCone> ViewConeSeq;
 
+
+
   // A command to move the robot and the PTU so that the target ViewCone is
   // reached. The movements are performed in local coordinate frame relative
   // to target.anchor.
@@ -403,14 +416,16 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
   class MoveToViewConeCommand {
     cast::cdl::WorkingMemoryPointer target;
 
+	//nah: took this out until we need it.. then replace with enum
     // eg. look-at-object; maybe use enum instd of string
-    string reason;
+    //string reason;
 
+	//nah: took this out until we need it
     // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
-    string objectId;
+    //string objectId;
 
     // the result passed on overwrite (0 - failed, 1 - ok)
-    int status;
+    VisionCommandStatus status;
   };
 
   // A command to analyze the proto-object that came into the visual field of
@@ -432,7 +447,7 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
     cast::cdl::WorkingMemoryPointer whereToLook;
 
     // the result passed on overwrite (0 - failed, 1 - ok)
-    int status;
+    VisionCommandStatus status;
   };
 
   class GetStableSoisCommand {
@@ -441,7 +456,7 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
     SOISeq sois;
 
     // the result passed on overwrite (0 - failed, 1 - ok)
-    int status;
+    VisionCommandStatus status;
   };
 
   /**
