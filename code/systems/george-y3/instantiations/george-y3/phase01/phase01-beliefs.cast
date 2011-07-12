@@ -22,9 +22,9 @@ INCLUDE  includes/vision.sa/vision-base.cast
 INCLUDE  sim/cameras-sim.incl
 # Include othere vision components
 INCLUDE  georgeY3-vision.incl
-# mediators, execution
-JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent 
-JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent 
+# belief mediators, execution
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators.cast
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -34,6 +34,7 @@ INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 
 # visualization ##########################################################
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
