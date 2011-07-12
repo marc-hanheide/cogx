@@ -1,11 +1,11 @@
 VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
-VARDEFAULT planning_domain=avs/dora-avs.pddl
+VARDEFAULT planning_domain=dora-simple-avs.pddl
 #VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
 VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
 #VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro.xml"
 VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro-det.xml"
 VARDEFAULT discrete_room_cats=--discrete
-VARDEFAULT tour_places="3 1 6 22 20"
+VARDEFAULT tour_places="0 9 4"
 VARDEFAULT logged_types=<multiline>
   execution.slice.Action, 
   VisionData.VisualObject, 
@@ -23,11 +23,13 @@ VARDEFAULT siftroot_=./instantiations/sift-models
 VARDEFAULT plyroot_=./instantiations/ply-models
 VARDEFAULT or3d_sift_files=<multiline>
    %(siftroot_)/frosties2.sift
+   %(siftroot_)/re_book.sift
 </multiline>
 VARDEFAULT or3d_ply_files=<multiline>
    %(plyroot_)/frosties2.ply
+   %(plyroot_)/re_book.ply
 </multiline>
-VARDEFAULT or3d_labels=cerealbox
+VARDEFAULT or3d_labels=cerealbox book
 
 
 
@@ -74,7 +76,13 @@ CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcs
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
-INCLUDE includes/conceptual.sa/conceptual-main.cast
+CPP GD conceptual.queryhandler ConceptualQueryHandler
+
+CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+
+
 INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
 INCLUDE includes/conceptual.sa/conceptual-test.cast
 
@@ -115,7 +123,7 @@ JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 
 # stuff for experiments #######################################################
-JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 20000 --goal %(goal)
+JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
 JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
 JAVA MG distancelogger castutils.experimentation.DistanceMonitor 
 JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch 
