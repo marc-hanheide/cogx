@@ -3,12 +3,17 @@
   (:requirements :mapl :adl :fluents :action-costs :equality)
 
   (:types
-    VisualObject ProtoObject ViewCone - object
+    VisualObject ProtoObject ViewCone ConceptName - object
+    ColorName ShapeName TypeName - ConceptName
   )
 
   (:constants
     GEORGE - agent
-    UNKNOWN_VO - VisualObject
+    NO_VIEWCONE - ViewCone
+    VISUAL_OBJECT_DUMMY - VisualObject
+    UNKNOWN_COLOR - ColorName
+    UNKNOWN_SHAPE - ShapeName
+    UNKNOWN_TYPE - TypeName
   )
 
   (:predicates
@@ -18,21 +23,18 @@
   (:functions
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
+    (color ?v - VisualObject) - ColorName
+    (shape ?v - VisualObject) - ShapeName
+    (type ?v - VisualObject) - TypeName
   )
 
-  (:action move-to-viewcone1
-    :agent (?a - agent)
-    :parameters (?vc - ViewCone)
-    :precondition
-      (not (exists (?vc1 - ViewCone) (current-view ?vc1)))
-    :effect
-      (and
-        (current-view ?vc)
-        (increase (total-cost) 1)
-      )
+  (:init-rule assign-initial-viewcone
+     :parameters ()
+     :precondition (not (exists (?vc - ViewCone) (current-view ?vc)))
+     :effect (current-view NO_VIEWCONE)
   )
 
-  (:action move-to-viewcone2
+  (:action move-to-viewcone
     :agent (?a - agent)
     :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
     :precondition
@@ -56,7 +58,7 @@
       )
     :effect
       (and
-        (assign (po-is-associated-with ?po) UNKNOWN_VO)
+        (assign (po-is-associated-with ?po) VISUAL_OBJECT_DUMMY)
         (increase (total-cost) 1)
       )
   )
