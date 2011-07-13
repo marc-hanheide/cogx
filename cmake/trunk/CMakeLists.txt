@@ -128,6 +128,11 @@ add_subdirectory (subarchitectures/default.sa)
 endif(BUILD_SA_DEFAULT)
 
 
+option(BUILD_ABDUCER "Build abducer" YES)
+if (BUILD_ABDUCER)
+add_subdirectory (tools/abducer)
+endif(BUILD_ABDUCER)
+
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
