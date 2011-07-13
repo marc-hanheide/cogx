@@ -86,8 +86,8 @@ QCastDialogFrame* QCastFrameManager::getDialogManager()
 {
    if (!m_pDialogFrame) {
       m_pDialogFrame = new QCastDialogFrame(0, 0);
-      connect(m_pDialogFrame, SIGNAL(itemClicked(QListWidgetItem*)),
-            this, SLOT(dialogWindowHidden(QObject*)));
+      // ?????? connect(m_pDialogFrame, SIGNAL(itemClicked(QListWidgetItem*)),
+      //      this, SLOT(dialogWindowHidden(QObject*)));
    }
    return m_pDialogFrame;
 }

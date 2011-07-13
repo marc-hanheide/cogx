@@ -47,6 +47,12 @@ class _EventReceiverImpl (EventReceiver):
             if rv: return (True, fields)
         return (False, None)
 
+    def onDialogValueChanged(self, dialogId, name, value, ctx):
+        if self.m_Client != None: self.m_Client.onDialogValueChanged(dialogId, name, value)
+
+    def handleDialogCommand(self, dialogId, name, value, ctx):
+        if self.m_Client != None: self.m_Client.handleDialogCommand(dialogId, name, value)
+
 class CDisplayClient:
     def __init__(self):
         self.m_ServerName = "display.srv"
@@ -214,4 +220,10 @@ class CDisplayClient:
 
     def getFormData(self, id, partId, fieldDict):
         return False
+
+    def onDialogValueChanged(self, dialogId, name, value):
+        pass
+
+    def handleDialogCommand(self, dialogId, name, value):
+        pass
 

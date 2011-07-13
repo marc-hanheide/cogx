@@ -50,5 +50,32 @@ void CGuiElement::syncControlState(const std::string& newValue, bool notify)
    }
 }
 
+void CGuiDialog::notify_setValue(const std::string& name, const std::string& value)
+{
+   DTRACE("CGuiDialog::notify_setValue");
+   CGuiDialogObserver *pObsrvr;
+   CObserverList<CGuiDialogObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   FOR_EACH(pObsrvr, Observers) {
+      pObsrvr-> onGuiDialog_setValue(this, name, value);
+   }
+}
+
+void CGuiDialog::notify_call(const std::string& name, const std::string& value)
+{
+   DTRACE("CGuiDialog::notify_call");
+   CGuiDialogObserver *pObsrvr;
+   CObserverList<CGuiDialogObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   FOR_EACH(pObsrvr, Observers) {
+      pObsrvr-> onGuiDialog_call(this, name, value);
+   }
+}
+
+void CGuiDialog::execute(const std::string& script)
+{
+   DTRACE("CGuiDialog::execute");
+   if (m_pDialogView)
+      m_pDialogView->execute(script);
+}
+
 }} // namespace
 // vim:sw=3:ts=8:et

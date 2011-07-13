@@ -607,6 +607,8 @@ const char res_calculator_js[] =
    "   this.ui.display.text = this.sumSoFar + \"\";\n"
    "   this.sumSoFar = 0.0;\n"
    "   this.waitingForOperand = true;\n"
+   "\n"
+   "   dialogOwner.setValue(\"display.text\", this.ui.display.text);\n"
    "}\n"
    "\n"
    "Calculator.prototype.pointClicked = function()\n"

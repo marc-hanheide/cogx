@@ -101,7 +101,7 @@ void CDisplayModel::enableDefaultView(const std::string& objectId, bool enable)
 
    // enable=false => Remove an existing default view
    TViewMap::iterator itview = m_Views.find(objectId);
-   CDisplayView *pview = (itview == m_Views.end()) ? NULL : itview->second;
+   CDisplayView *pview = (itview == m_Views.end()) ? 0 : itview->second;
    if (pview && pview->m_bDefaultView) {
       DMESSAGE("Removing default view: " << pview->m_id);
       CDisplayModelObserver *pobsrvr;
@@ -118,7 +118,7 @@ CDisplayView* CDisplayModel::getView(const string& id)
 {
    CDisplayView *pview;
    TViewMap::iterator itview = m_Views.find(id);
-   pview = (itview == m_Views.end()) ? NULL : itview->second;
+   pview = (itview == m_Views.end()) ? 0 : itview->second;
    return pview;
 }
 
@@ -129,6 +129,16 @@ bool CDisplayModel::isValidView(CDisplayView *pView)
       if (it->second == pView) return true;
    }
    return false;
+}
+
+CGuiDialog* CDisplayModel::getDialog(const string& id)
+{
+   CGuiDialog *pdlg;
+   FOR_EACH(pdlg, m_GuiDialogs) {
+      if (pdlg && pdlg->m_id == id)
+         return pdlg;
+   }
+   return 0;
 }
 
 CPtrVector<CDisplayView> CDisplayModel::findViewsWithObject(const std::string &id)

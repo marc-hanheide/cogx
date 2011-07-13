@@ -22,6 +22,42 @@
 #include <QCloseEvent>
 #include "../Model.hpp"
 
+// This object is known in JS as 'dialogOwner'.
+// It is used for interacrtion between the dialog and the remote client.
+class QCastDialogProxy:
+   public QObject,
+   public cogx::display::CGuiDialogDisplayProxy
+{
+   Q_OBJECT
+
+private:
+   cogx::display::CGuiDialog *pDialog;
+   QWidget* wdialog;
+   QScriptEngine engine;  // one per dialog
+   QScriptValue uiobject; // interaction?
+
+public:
+   QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget* pDialogWidget_);
+   bool isProxyFor(cogx::display::CGuiDialog* pDialog_);
+
+   // The client executes some JavaScript in the dialog (eg. to set dialog values)
+   void execute(const std::string& script);
+
+public slots:
+   // These slots are used by JavaScript (through dialogOwner)
+   void testMe();
+   void setValue(QString name, QScriptValue value);
+   void call(QString name, QScriptValue value);
+
+   // These interfaces are missing in JS objects
+   void setComboBoxItems(QString cbObjectName, QScriptValue stringItems);
+
+private slots:
+   void doExecute(QString script);
+
+signals:
+   void sigExecute(QString script);
+};
 
 class QCastDialogFrame:
    public QTabWidget,
@@ -32,14 +68,9 @@ private:
    Ui::DialogWin ui;
 
 private:
-   struct qpack
-   {
-      cogx::display::CGuiDialog *pDialog;
-      QWidget* wdialog;
-      QScriptEngine engine;  // one per dialog
-      QScriptValue uiobject; // interaction?
-   };
-   QList<qpack*> m_dialogs;
+   QList<QCastDialogProxy*> m_dialogs;
+
+   QCastDialogProxy* findDialog(cogx::display::CGuiDialog *pDialog);
 
 public:
    QCastDialogFrame( QWidget * parent = 0, Qt::WindowFlags flags = 0 /* unused */ );

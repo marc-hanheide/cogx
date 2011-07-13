@@ -139,6 +139,7 @@ public:
          const std::string& constructorName);
    void addAction(const std::string& viewId, const Visualization::ActionInfo& action);
 
+   void execInDialog(const std::string& dialogId, const std::string& script);
    void setImage(const std::string& id, const _IplImagePtr pImage); 
    void setObjectTransform2D(const std::string& id, const std::string& partId, _CvMatPtr pTransform); 
 
@@ -155,22 +156,38 @@ private:
          m_pClient = pClient;
       }
       void handleEvent(const Visualization::TEvent &event, const Ice::Current&) {
-         if (m_pClient) m_pClient->handleEvent(event);
+         if (m_pClient)
+            m_pClient->handleEvent(event);
       }
       std::string getControlState(const std::string& ctrlId, const Ice::Current&) {
-         if (m_pClient) return m_pClient->getControlState(ctrlId);
+         if (m_pClient)
+            return m_pClient->getControlState(ctrlId);
          return "";
       }
       void handleForm(const std::string& id, const std::string& partId,
             const std::map<std::string, std::string>& fields, const Ice::Current&)
       {
-         if (m_pClient) m_pClient->handleForm(id, partId, fields);
+         if (m_pClient)
+            m_pClient->handleForm(id, partId, fields);
       }
       bool getFormData(const std::string& id, const std::string& partId,
             std::map<std::string, std::string>& fields, const Ice::Current&)
       {
-         if (m_pClient) return m_pClient->getFormData(id, partId, fields);
+         if (m_pClient)
+            return m_pClient->getFormData(id, partId, fields);
          return false;
+      }
+      void onDialogValueChanged(const std::string& dialogId, const std::string& name,
+            const std::string& value, const Ice::Current&)
+      {
+         if (m_pClient)
+            m_pClient->onDialogValueChanged(dialogId, name, value);
+      }
+      void handleDialogCommand(const std::string& dialogId, const std::string& name,
+            const std::string& value, const Ice::Current&)
+      {
+         if (m_pClient)
+            m_pClient->handleDialogCommand(dialogId, name, value);
       }
    };
 
@@ -190,6 +207,10 @@ public:
          const std::map<std::string, std::string>& fields);
    virtual bool getFormData(const std::string& id, const std::string& partId,
          std::map<std::string, std::string>& fields);
+   virtual void onDialogValueChanged(const std::string& dialogId, const std::string& name,
+         const std::string& value);
+   virtual void handleDialogCommand(const std::string& dialogId, const std::string& command,
+         const std::string& params);
 };
 
 
