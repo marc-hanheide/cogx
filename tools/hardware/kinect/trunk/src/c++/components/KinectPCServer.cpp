@@ -104,6 +104,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
  
      m_displayImage = false;
      if ((it = _config.find("--display-rgb")) != _config.end()) {
+     printf("Will display Kinect RGB image \n");
        m_displayImage= true;
  }
      m_lastframe = -1;
@@ -116,13 +117,15 @@ void KinectPCServer::configure(const map<string, string> & _config)
 void KinectPCServer::start()
 {
   PointCloudServer::start();
-  if(m_displayImage){
-    cvNamedWindow(getComponentID().c_str(),1);
-  }
-}
+ }
 
 void KinectPCServer::runComponent() {
 	log("I am running ");
+ if(m_displayImage){
+    log("Displaying window");
+    cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
+  }
+ cvWaitKey(100);
 		while(isRunning()) {
 			if (m_saveToFile) {
 				saveNextFrameToFile();
@@ -139,7 +142,8 @@ void KinectPCServer::saveNextFrameToFile() {
   IplImage* rgb_data = new IplImage(kinect->rgbImage);
   // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   if(m_displayImage){
-    cvShowImage(getComponentID().c_str(),rgb_data);
+    cvShowImage("Kinect RGB",rgb_data);
+    cvWaitKey(1);
   }
   IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
   char buf[256];
