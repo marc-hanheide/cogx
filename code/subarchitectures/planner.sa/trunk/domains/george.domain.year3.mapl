@@ -16,6 +16,12 @@
     UNKNOWN_TYPE - TypeName
   )
 
+  (:predicates
+    (color-learned ?v - VisualObject)
+    (shape-learned ?v - VisualObject)
+    (type-learned ?v - VisualObject)
+  )
+
   (:functions
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
@@ -48,6 +54,51 @@
       (and
         (assign (po-is-associated-with ?po) VISUAL_OBJECT_DUMMY)
         (increase (total-cost) 1)
+      )
+  )
+
+  (:action learn-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+	(not (color-learned ?v))
+      )
+    :effect 
+      (and
+	(color-learned ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action learn-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+	(not (shape-learned ?v))
+      )
+    :effect 
+      (and
+	(shape-learned ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action learn-type
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+	(not (type-learned ?v))
+      )
+    :effect 
+      (and
+	(type-learned ?v)
+	(increase (total-cost) 1)
       )
   )
 )
