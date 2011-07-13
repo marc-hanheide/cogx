@@ -93,8 +93,8 @@ def main():
   try:
    sftp.mkd(dirname)
   except ftplib.error_perm:
-   print bcolors.FAIL + "Directory: " + dirname  + " already exists, not overwriting directory" + bcolors.FAIL + " but overwriting only any previously uploaded files." + bcolors.ENDC + "\nDirectory contents:"   + bcolors.ENDC 
-   sftp.dir()
+   print bcolors.FAIL + "Directory: " + dirname  + " already exists, not overwriting directory" + bcolors.FAIL + " but overwriting only any previously uploaded files." + bcolors.ENDC #+ "\nDirectory contents:"   + bcolors.ENDC 
+   #sftp.dir()
    print 
   
   sftp.cwd(dirname)    
