@@ -27,12 +27,17 @@ import de.dfki.lt.tr.dialogue.util.LFUtils;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.log4j.Logger;
 
-public abstract class SimpleParseSelection {
+public class SimpleParseSelection {
 
-	static boolean logging = true;
+	private Logger logger = null;
 
 	static LFPacking packingTool = new LFPacking();
+
+	public SimpleParseSelection(Logger _logger) {
+		logger = _logger;
+	}
 
 	/**
 	 * Extract a (random) logical form from the packed representation.
@@ -40,20 +45,22 @@ public abstract class SimpleParseSelection {
 	 * @param plf   The packed logical form
 	 * @return logical form, or null if none could be extracted
 	 */
-	public static LogicalForm extractLogicalFormWithMood(PackedLFs plf) {
+	public LogicalForm extractLogicalFormWithMood(PackedLFs plf) {
 		List<LogicalForm> lfs = new LinkedList<LogicalForm>(Arrays.asList(packingTool.unpackPackedLogicalForm(plf)));
 		List<LogicalForm> filteredLfs = copyFilterLogicalForms(lfs);
 		log("we've got " + lfs.size() + " alternatives, " + filteredLfs.size() + " after filtering");
 
 		if (filteredLfs.size() > 0) {
-			return filteredLfs.get(0);
+			LogicalForm result = filteredLfs.get(0);
+			result.preferenceScore = plf.phonStringConfidence;  // XXX hack
+			return result;
 		}
 		else {
 			return null;
 		}
 	}
 
-	public static List<LogicalForm> copyFilterLogicalForms(List<LogicalForm> lfs) {
+	public List<LogicalForm> copyFilterLogicalForms(List<LogicalForm> lfs) {
 		List<LogicalForm> newLfs = new LinkedList<LogicalForm>();
 		for (LogicalForm lf : lfs) {
 			boolean ok = true;
@@ -71,13 +78,16 @@ public abstract class SimpleParseSelection {
 			if (ok) {
 				newLfs.add(lf);
 			}
+
+			log((ok ? "YES " : "NO  ") + LFUtils.lfToString(lf));
 		}
 		return newLfs;
 	}
 
-	private static void log(String str) {
-		if (logging)
-			System.out.println("\033[32m[ParseSelection]\t" + str + "\033[0m");
+	private void log(String str) {
+		if (logger != null) {
+			logger.debug(str);
+		}
 	}
 
 }

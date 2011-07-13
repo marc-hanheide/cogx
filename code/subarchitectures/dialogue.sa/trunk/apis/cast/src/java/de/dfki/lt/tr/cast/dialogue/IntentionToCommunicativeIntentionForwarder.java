@@ -28,6 +28,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
@@ -59,6 +60,14 @@ extends AbstractDialogueComponent {
 						handleIntention(_wmc);
 					}
 		});
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleIntention(_wmc);
+					}
+		});
 	}
 
 	private void handleIntention(WorkingMemoryChange _wmc) {
@@ -66,7 +75,15 @@ extends AbstractDialogueComponent {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
 			Intention it = (Intention)data.getData();
-			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1 && it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent) && it.estatus instanceof PrivateEpistemicStatus) {
+			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1
+					&& (
+						(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
+							&& it.estatus instanceof PrivateEpistemicStatus)
+						||
+						(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
+							&& it.estatus instanceof SharedEpistemicStatus)
+					   )) {
+
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
@@ -75,7 +92,7 @@ extends AbstractDialogueComponent {
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}
 			else {
-				log("ignoring an intention");
+				log("ignoring an intention that is not the robot's private");
 			}
 		}
 		catch (SubarchitectureComponentException e) {

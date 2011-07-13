@@ -76,10 +76,10 @@
 	<!-- Expand libraries                                                    -->
 	<!-- =================================================================== -->
 
-    <target name="expandlibs" depends="prepare">
+    <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
            <echo message="Expanding external libraries for the Dialogue API CAST extension to output/classes"/>
-    <!--        <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/nsc.jar"/> -->
+           <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>
+	    <unzip dest="${output.dir}" src="./lib/nsc.jar"/>
     </target>
 
 
@@ -98,24 +98,24 @@
 		  </slice2java> 
 		</target> 
 
-	<target name="slice" depends="" description="generates source from slice"/>
+	<target name="slice" depends="prepare" description="generates source from slice"/>
 		
 		
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="compile-java-production, compile-java-testing"
+	<target name="compile" depends="compile-java-production, compile-java-testing" if="build.dialogue_sa"
 		description="compiles the production- and unit test source code, and runs the unit-tests">
 	</target>
 
 	<target name="compile-slice" depends="slice">
-        <javac srcdir="../../${generated.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
+        <javac srcdir="${generated.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
         	optimize="${optimize}" debuglevel="lines,vars,source">
                <classpath refid="build.classpath"/>
         </javac>
 	</target>
 
-    <target name="compile-java-production" depends="expandlibs" 
+    <target name="compile-java-production" depends="expandlibs" if="build.dialogue_sa"
     	description="compiles the production source code">
         <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
         	optimize="${optimize}" debuglevel="lines,vars,source">
@@ -123,7 +123,8 @@
         </javac>
     </target>
 
-	<target name="compile-java-testing" depends="expandlibs" description="compiles the unit test source code">
+	<target name="compile-java-testing" depends="expandlibs" if="build.dialogue_sa"
+	description="compiles the unit test source code">
 	        <javac srcdir="${test.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
 	        	optimize="${optimize}" debuglevel="lines,vars,source">
 	               <classpath refid="build.classpath"/>

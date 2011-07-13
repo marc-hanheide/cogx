@@ -78,7 +78,7 @@
   <!-- Expand libraries                                                    -->
   <!-- =================================================================== -->
 
-  <target name="expandlibs" depends="prepare">
+  <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
     <echo message="Expanding external libraries for the Dialogue API to output/classes"/>
     <unzip dest="${output.dir}" src="./lib/junit-4.4.jar"/>
     <unzip dest="${output.dir}" src="./lib/openccg.jar"/>
@@ -101,14 +101,12 @@
   <target name="slice-src" depends="prepare"
           description="generates source from slice">
     <slice2java tie="true" outputdir="${generated.dir}">
-      <fileset dir="${slice.dir}" includes="dialogue.ice"/>
-      <fileset dir="${slice.dir}" includes="lf.ice"/>
-      <fileset dir="${slice.dir}" includes="asr.ice"/>
-      <fileset dir="${slice.dir}" includes="asr-loquendo.ice"/>
+      <fileset dir="${slice.dir}" includes="lf.ice,time.ice,dialogue.ice,ref.ice,asr-loquendo.ice"/>
       <includepath>
         <pathelement path="${slice.dir}"/>
         <pathelement path="${ice.slice.dir}"/>
         <pathelement path="${beliefslice.dir}"/>
+		<pathelement path="../inference/src/slice" />
       </includepath>
     </slice2java>
   </target>
@@ -132,12 +130,12 @@
   <!-- =================================================================== -->
   <!-- Basic compilation                                                   -->
   <!-- =================================================================== -->
-  <target name="compile" depends="compile-slice,compile-java-production, compile-java-testing"
+  <target name="compile" depends="compile-slice,compile-java-production, compile-java-testing" if="build.dialogue_sa"
           description="compiles the production- and unit test source code, and runs the unit-tests">
   </target>
 
 
-  <target name="compile-java-production" depends="expandlibs,slice"
+  <target name="compile-java-production" depends="expandlibs,slice" if="build.dialogue_sa"
           description="compiles the production source code">
     <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}"
            deprecation="${deprecation}"
@@ -146,7 +144,7 @@
     </javac>
   </target>
 
-  <target name="compile-java-testing" depends="expandlibs,slice"
+  <target name="compile-java-testing" depends="expandlibs,slice" if="build.dialogue_sa"
           description="compiles the unit test source code">
     <javac srcdir="${test.dir}" destdir="${output.dir}" debug="${debug}"
            deprecation="${deprecation}"

@@ -28,20 +28,21 @@ import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReference;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.Atom;
-import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
-import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
+import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
+import de.dfki.lt.tr.infer.abducer.lang.Atom;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,16 +82,16 @@ public class AbductiveReferenceResolution {
 		refresEngine = new AbductionEngineConnection();
 		refresEngine.connectToServer(abd_serverName, abd_endpoints);
 		refresEngine.bindToEngine(REFERENCE_RESOLUTION_ENGINE);
-		refresEngine.getProxy().clearContext();
+		refresEngine.getEngineProxy().clearContext();
 	}
 
 	public List<NominalEpistemicReferenceHypothesis> resolvePresupposition(String nom, Map<String, String> fvPairs) {
 
-		refresEngine.getProxy().clearRules();
-		refresEngine.getProxy().clearFacts();
-		refresEngine.getProxy().clearDisjointDeclarations();
-		refresEngine.getProxy().clearAssumabilityFunction("belief_exist");
-		refresEngine.getProxy().clearAssumabilityFunction("world_exist");
+		refresEngine.getEngineProxy().clearRules();
+		refresEngine.getEngineProxy().clearFacts();
+		refresEngine.getEngineProxy().clearDisjointDeclarations();
+		refresEngine.getEngineProxy().clearAssumabilityFunction("belief_exist");
+		refresEngine.getEngineProxy().clearAssumabilityFunction("world_exist");
 		loadFile(dumpfile);
 		loadFile(appendfile);
 
@@ -142,10 +143,10 @@ public class AbductiveReferenceResolution {
 		return result;
 	}
 
-	public static ModalisedAtom extractResolvesMAtom(MarkedQuery[] qs) {
+	public static ModalisedAtom extractResolvesMAtom(List<MarkedQuery> qs) {
 		for (MarkedQuery q : qs) {
 			ModalisedAtom ma = q.atom;
-			if (ma.m.length > 0 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief")) {
+			if (!ma.m.isEmpty() && ma.m.get(0) == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief")) {
 //				log(MercuryUtils.modalisedAtomToString(ma));
 //				ModalisedAtom copy = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding}, TermAtomFactory.atom("resolves_to_belief", new Term[] {ma.a.args[0], ma.a.args[1]}));
 //				return copy;
@@ -156,17 +157,17 @@ public class AbductiveReferenceResolution {
 	}
 
 	public static AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress> extractHypothesis(ModalisedAtom matom) {
-		assert (matom.a.args.length == 3);
-		assert (matom.a.args[0] instanceof FunctionTerm);
-		String nom = ((FunctionTerm) matom.a.args[0]).functor;
-		WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(matom.a.args[1]);
+		assert (matom.a.args.size() == 3);
+		assert (matom.a.args.get(0) instanceof FunctionTerm);
+		String nom = ((FunctionTerm) matom.a.args.get(0)).functor;
+		WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(matom.a.args.get(1));
 		return new AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>(nom, wma);
 	}
 
 	public static EpistemicStatus extractEpistemicStatus(ModalisedAtom matom) {
-		assert (matom.a.args.length == 3);
-		assert (matom.a.args[2] instanceof FunctionTerm);
-		return ConversionUtils.termToEpistemicStatus((FunctionTerm) matom.a.args[2]);
+		assert (matom.a.args.size() == 3);
+		assert (matom.a.args.get(2) instanceof FunctionTerm);
+		return ConversionUtils.termToEpistemicStatus((FunctionTerm) matom.a.args.get(2));
 	}
 
 	private Term propertiesToListTerm(Map<String, String> fvPairs) {
@@ -174,12 +175,13 @@ public class AbductiveReferenceResolution {
 		for (String featName : fvPairs.keySet()) {
 			FunctionTerm newHead = new FunctionTerm();
 			newHead.functor = "[|]";
-			newHead.args = new FunctionTerm[2];
-			newHead.args[0] = TermAtomFactory.term(
+			newHead.args = new ArrayList<Term>();
+
+			newHead.args.add(TermAtomFactory.term(
 					featName.toLowerCase(),
 					new Term[] { TermAtomFactory.term(fvPairs.get(featName).toLowerCase())}
-			);
-			newHead.args[1] = start;
+			));
+			newHead.args.add(start);
 			start = newHead;
 		}
 		return start;
@@ -192,7 +194,7 @@ public class AbductiveReferenceResolution {
 	 */
 	public void loadFile(String file) {
 		try {
-			refresEngine.getProxy().loadFile(file);
+			refresEngine.getEngineProxy().loadFile(file);
 		}
 		catch (FileReadErrorException ex) {
 			log("file read error: " + ex.filename);

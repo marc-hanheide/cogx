@@ -20,25 +20,37 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.slice.time.Interval;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.DisjointDeclaration;
-import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.NullAssumabilityFunction;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.lang.VariableTerm;
+import de.dfki.lt.tr.infer.abducer.proof.AssertedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.proof.UnsolvedQuery;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 /**
  * The class encapsulating the recognition and realisation of communicative
@@ -52,7 +64,7 @@ import java.util.Set;
  */
 public class IntentionRecognition {
 
-	public boolean logging = true;
+	private Logger logger = null;
 	private AbductionEngineConnection abd_recog;
 
 //	public static Counter counter = new Counter("ir");
@@ -64,14 +76,18 @@ public class IntentionRecognition {
 
 	public static final String INTENTION_RECOGNITION_ENGINE = "IntentionRecognition";
 
+	private ProofConvertor pconv = null;
+
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRecognition(String serverName, String endpoints, IdentifierGenerator idGen_, int timeout_) {
+    public IntentionRecognition(String serverName, String endpoints, IdentifierGenerator idGen_, int timeout_, Logger _logger) {
 		this.idGen = idGen_;
 		this.timeout = timeout_;
 		abd_serverName = serverName;
 		abd_endpoints = endpoints;
+		logger = _logger;
+		pconv = new BasicProofConvertor(Logger.getLogger(logger.getName() + ".pconv"), idGen_, IntentionManagementConstants.thisAgent, "dialogue", "memory");
 		init();
     }
 
@@ -79,7 +95,7 @@ public class IntentionRecognition {
 		abd_recog = new AbductionEngineConnection();
 		abd_recog.connectToServer(abd_serverName, abd_endpoints);
 		abd_recog.bindToEngine(INTENTION_RECOGNITION_ENGINE);
-		abd_recog.getProxy().clearContext();
+		abd_recog.getEngineProxy().clearContext();
 	}
 
 	public void loadFile(String name) {
@@ -93,9 +109,9 @@ public class IntentionRecognition {
 	 * @param plf the utterance
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
-	public RecognisedIntention logicalFormToEpistemicObjects(LogicalForm lf) {
+	public IntentionRecognitionResult logicalFormToInterpretation(LogicalForm lf, Interval ival) {
 		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
-			abd_recog.getProxy().addFact(fact);
+			abd_recog.getEngineProxy().addFact(fact);
 		}
 
 		ModalisedAtom g = TermAtomFactory.modalisedAtom(
@@ -109,9 +125,10 @@ public class IntentionRecognition {
 					TermAtomFactory.term(lf.root.nomVar)
 				}));
 
-		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), timeout);
-		if (proof != null) {
-			return ConversionUtils.proofToEpistemicObjects(idGen, IntentionManagementConstants.humanAgent, proof);
+		ProofWithCost pwc = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), timeout);
+		if (pwc != null) {
+			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(lf, pwc.proof, ival);
+			return pconv.proofToIntentionRecognitionResult(lf, pwc, lf.preferenceScore, ival, rcs);
 		}
 		else {
 			log("no proof found");
@@ -119,8 +136,124 @@ public class IntentionRecognition {
 		}
 	}
 
+	public IntentionRecognitionResult extractFromInterpretation(Interpretation ipret) {
+		if (!ipret.proofs.isEmpty()) {
+			ProofWithCost pwc = ipret.proofs.get(0);
+			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, ipret.ival);
+
+			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, ipret.ival, rcs);
+		}
+		else {
+			log("interpretation empty!");
+			return null;
+		}
+	}
+
+	public Interpretation reinterpret(Interpretation ipret, ResolutionResult rr) {
+
+		log("reinterpreting");
+
+		List<ProofWithCost> old_pwcs = ipret.proofs;
+		List<ProofWithCost> new_pwcs = new ArrayList<ProofWithCost>();
+
+		for (ProofWithCost pwc : ipret.proofs) {
+
+			List<MarkedQuery> old_proof = pwc.proof;
+			List<MarkedQuery> new_proof = new ArrayList<MarkedQuery>();
+
+			for (MarkedQuery mq : old_proof) {
+				List<MarkedQuery> to_add = new ArrayList<MarkedQuery>();
+				to_add.add(mq);
+
+				if (mq.atom.a.predSym.equals(ConversionUtils.predsym_IS_REFERENCE) && mq instanceof AssertedQuery && mq.atom.a.args.size() == 2) {
+					ModalisedAtom old_ma = mq.atom;
+					Term nomTerm = old_ma.a.args.get(0);
+					Term varTerm = old_ma.a.args.get(1);
+
+					if (nomTerm instanceof FunctionTerm && varTerm instanceof VariableTerm) {
+						String nom = ((FunctionTerm) nomTerm).functor;
+						if (rr.nom.equals(nom)) {
+							to_add = new ArrayList<MarkedQuery>();
+
+							UnsolvedQuery new_mq = new UnsolvedQuery(old_ma, new NullAssumabilityFunction());
+/*
+							UnsolvedQuery resolves_mq = new UnsolvedQuery(
+								TermAtomFactory.modalisedAtom(
+									new Modality[] {Modality.Understanding},
+									TermAtomFactory.atom("resolves_to_epobject", new Term[] {
+										nomTerm,
+										varTerm,
+										TermAtomFactory.var("EpSt")
+									})),
+								new NamedAssumabilityFunction("reference_resolution"));
+
+							to_add.add(resolves_mq);
+ */
+							to_add.add(new_mq);
+						}
+					}
+				}
+				new_proof.addAll(to_add);
+			}
+
+			new_pwcs.addAll(AbducerUtils.allAbductiveProofs(abd_recog, new_proof, timeout));
+		}
+
+		Collections.sort(new_pwcs, new ProofWithCostComparator());
+
+		if (!new_pwcs.isEmpty()) {
+			log(new_pwcs.size() + " proofs after reinterpretation");
+			Interpretation new_ipret = new Interpretation(ipret.lform, ipret.ival, new_pwcs, ipret.ungroundedNoms);
+			return new_ipret;
+		}
+		else {
+			log("no proofs after reinterpretation");
+			return null;
+		}
+	}
+
+	public void updateReferenceResolution(ResolutionResult rr) {
+
+		log("updating reference resolution");
+
+		abd_recog.getEngineProxy().clearAssumabilityFunction("reference_resolution");
+		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
+
+		String nom = rr.nom;
+		for (EpistemicReferenceHypothesis hypo : rr.hypos) {
+
+			ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
+					TermAtomFactory.atom(ConversionUtils.predsym_RESOLVES_TO_EPOBJECT, new Term[] {
+						TermAtomFactory.term(nom),
+						ConversionUtils.stateFormulaToTerm(hypo.referent),
+						ConversionUtils.epistemicStatusToTerm(hypo.epst)
+					} ));
+
+			log("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
+			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));
+
+			Set<ModalisedAtom> dj = disj.get(nom);
+			if (dj != null) {
+				dj.add(rma);
+			}
+			else {
+				dj = new HashSet<ModalisedAtom>();
+				dj.add(rma);
+			}
+			disj.put(nom, dj);
+		}
+
+		for (String n : disj.keySet()) {
+			Set<ModalisedAtom> dj = disj.get(n);
+			DisjointDeclaration dd = new DisjointDeclaration();
+			dd.atoms = new ArrayList<ModalisedAtom>(dj);
+			log("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
+			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
+		}
+	}
+
 	public void updateReferentialHypotheses(List<NominalEpistemicReferenceHypothesis> refHypos) {
-		abd_recog.getProxy().clearAssumabilityFunction("reference_resolution");
+		abd_recog.getEngineProxy().clearAssumabilityFunction("reference_resolution");
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
 		for (NominalEpistemicReferenceHypothesis ehypo : refHypos) {
@@ -132,8 +265,8 @@ public class IntentionRecognition {
 						ConversionUtils.epistemicStatusToTerm(ehypo.eref.epst)
 					} ));
 
-			log("adding reference hypothesis: " + MercuryUtils.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
-			abd_recog.getProxy().addAssumable("reference_resolution", rma, (float) -Math.log(ehypo.prob));
+			log("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
+			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(ehypo.prob));
 
 			Set<ModalisedAtom> dj = disj.get(ehypo.eref.ref.nominal);
 			if (dj != null) {
@@ -149,19 +282,19 @@ public class IntentionRecognition {
 		for (String nom : disj.keySet()) {
 			Set<ModalisedAtom> dj = disj.get(nom);
 			DisjointDeclaration dd = new DisjointDeclaration();
-			dd.atoms = dj.toArray(new ModalisedAtom[0]);
+			dd.atoms = new ArrayList<ModalisedAtom>(dj);
 			log("adding a disjoint declaration for " + nom + " (" + dj.size() + " entries)");
-			abd_recog.getProxy().addDisjointDeclaration(dd);
+			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
 		}
 	}
 
 	public void clearContext() {
-		abd_recog.getProxy().clearContext();
+		abd_recog.getEngineProxy().clearContext();
 	}
 
 	private void log(String str) {
-		if (logging)
-			System.out.println("\033[32m[IR]\t" + str + "\033[0m");
+		if (logger != null) {
+			logger.debug(str);
+		}
 	}
-
 }

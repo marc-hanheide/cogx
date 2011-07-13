@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -23,30 +23,34 @@ package de.dfki.lt.tr.dialmanagement.data;
 
 
 //JUnit
+import static org.junit.Assert.*;
+
 import java.util.Random;
 
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.PhonstringAction;
+import de.dfki.lt.tr.dialmanagement.data.conditions.PhonstringCondition;
+
+import java.util.Arrays;
 
 
 /**
  * Simple tests for constructing a dialogue policy
  * 
- * TODO: test for different types of ill-formed policies
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  *
  */
 public class DialoguePolicyTest {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// parameters for the test
 	public static int MAX_LEAVES = 6;
@@ -67,19 +71,17 @@ public class DialoguePolicyTest {
 	public void minimalPolicyConstruction () throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		PolicyNode an1 = new PolicyNode("start", new PolicyAction("start"));
+		PolicyNode an1 = new PolicyNode("start", Arrays.asList((AbstractAction)new PhonstringAction("start", "start")));
 		policy.addNode(an1);
-		policy.setNodeAsInitial(an1);
+		policy.setNodeAsInitial(an1.getId(),true);
 
-		PolicyNode an2 = new PolicyNode("end", new PolicyAction("end"));
+		PolicyNode an2 = new PolicyNode("end", Arrays.asList((AbstractAction) new PhonstringAction("end", "end")));
 		policy.addNode(an2);
-		PolicyEdge newEdge = new PolicyEdge("edge", an1, an2, new PolicyCondition("","edge", 1.0f, 1.0f));
-		newEdge.setSourceNode(an1);
-		newEdge.setTargetNode(an2);
-		policy.addEdge(newEdge, an1, an2);
-		policy.setNodeAsFinal(an2);
+		PolicyEdge newEdge = new PolicyEdge("edge", an1.getId(), an2.getId(), new PhonstringCondition("","edge", 1.0f, 1.0f));
+		policy.addEdge(newEdge);
+		policy.setNodeAsFinal(an2.getId(),true);
 		
-		policy.ensureWellFormedPolicy();
+		assertTrue(policy.isWellFormedPolicy());
 	}
 	
 	
@@ -108,14 +110,14 @@ public class DialoguePolicyTest {
 	private void randomPolicyConstruction (int maxLeaves, int maxDepth) throws DialogueException {
 		DialoguePolicy policy = new DialoguePolicy();
 				
-		PolicyNode an1 = new PolicyNode("start", new PolicyAction(getNewId()));
+		PolicyNode an1 = new PolicyNode("start", Arrays.asList((AbstractAction)new PhonstringAction(getNewId(), getNewId())));
 		policy.addNode(an1);
-		policy.setNodeAsInitial(an1);
+		policy.setNodeAsInitial(an1.getId(),true);
 		debug("initial node: " + an1);
 
 		expandRandomSubTree (policy, an1, maxLeaves, maxDepth);
 		
-		policy.ensureWellFormedPolicy();
+		assert(policy.isWellFormedPolicy());
 
 	}
 	
@@ -136,23 +138,23 @@ public class DialoguePolicyTest {
 	    
 	    for (int i = 0; i < nbLeaves && depth > 0 ; i++) {
 	    	
-	    	PolicyEdge nextObs = new PolicyEdge(getNewId(), new PolicyCondition("",getNewId(), 1.0f, 1.0f));
-	    	PolicyNode nextNode = new PolicyNode(getNewId(), new PolicyAction(getNewId()));
+	    	PolicyEdge nextObs = new PolicyEdge(getNewId(), new PhonstringCondition("",getNewId(), 1.0f, 1.0f));
+	    	PolicyNode nextNode = new PolicyNode(getNewId(), Arrays.asList((AbstractAction)new PhonstringAction(getNewId(), getNewId())));
 	    	policy.addNode(nextNode);
-	    	nextObs.setTargetNode(nextNode);
-	    	nextObs.setSourceNode(curNode);
-			policy.addEdge(nextObs, curNode, nextNode);
+	    	nextObs.setTargetNode(nextNode.getId());
+	    	nextObs.setSourceNode(curNode.getId());
+			policy.addEdge(nextObs);
 			
 			debug("creating new observation " + nextObs + " between node " + curNode + " and node " + nextNode);
 	    	expandRandomSubTree(policy, nextNode, maxNbLeaves, depth -1);
 	    }
 	    
 	    if (nbLeaves == 0 || depth == 0) {
-	    	policy.setNodeAsFinal(curNode);
+	    	policy.setNodeAsFinal(curNode.getId(),true);
 	    	debug("setting node " + curNode + " as final node");
 	    }
 	    
-	}
+	} 
 	
 
 	/**

@@ -1,0 +1,4 @@
+# dialogue manager + intention -> comm. intention forwarding
+# also performs intention <-> comm. intention forwarding
+JAVA MG dialogue-manager     de.dfki.lt.tr.cast.dialogue.DialogueManagement --policy ./subarchitectures/dialogue.sa/config/policies/nifti/fddo-yr1.xml --useAck false --log true
+JAVA MG int-to-cint          de.dfki.lt.tr.cast.dialogue.IntentionToCommunicativeIntentionForwarder --log true

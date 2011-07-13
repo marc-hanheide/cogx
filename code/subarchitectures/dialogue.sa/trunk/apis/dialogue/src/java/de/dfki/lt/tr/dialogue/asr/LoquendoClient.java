@@ -22,14 +22,17 @@ package de.dfki.lt.tr.dialogue.asr;
 
 import Ice.Current;
 import Ice.Identity;
-import de.dfki.lt.tr.dialogue.slice.asr._ResultListenerDisp;
-import de.dfki.lt.tr.dialogue.slice.asr.RecognitionResult;
-import de.dfki.lt.tr.dialogue.slice.asr.loquendo.LoquendoException;
-import de.dfki.lt.tr.dialogue.slice.asr.loquendo.RecogniserPrx;
-import de.dfki.lt.tr.dialogue.slice.asr.loquendo.RecogniserPrxHelper;
+import de.dfki.lt.tr.dialogue.asr.loquendo._ClientDisp;
+import de.dfki.lt.tr.dialogue.asr.loquendo.AudioSource;
+import de.dfki.lt.tr.dialogue.asr.loquendo.LoquendoException;
+import de.dfki.lt.tr.dialogue.asr.loquendo.ServerPrx;
+import de.dfki.lt.tr.dialogue.asr.loquendo.ServerPrxHelper;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.RecognitionResult;
 import de.dfki.lt.tr.meta.TRResultListener;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 
 /**
  * A client to the Loquendo ICE server.
@@ -37,12 +40,12 @@ import java.util.List;
  * @author Miroslav Janicek
  */
 public class LoquendoClient
-extends _ResultListenerDisp {
+extends _ClientDisp {
 
     protected Ice.Communicator ic;
-    protected RecogniserPrx prx = null;
+    protected ServerPrx prx = null;
 
-	public boolean logging = true;
+	private Logger logger = null;
 
 	private List<TRResultListener> listeners = new LinkedList<TRResultListener>();
 
@@ -52,12 +55,18 @@ extends _ResultListenerDisp {
 	 * @param name server name
 	 * @param endpoint server endpoint
 	 */
-	public LoquendoClient(String name, String endpoint) {
+	public LoquendoClient(String name, String endpoint, Logger _logger) {
+		logger = _logger;
 		log("connecting to the Loquendo server \"" + name + "\" at \"" + endpoint + "\"");
-        ic = Ice.Util.initialize();
-		ic = Ice.Util.initialize();
+
+		Ice.Properties properties = Ice.Util.createProperties();
+		properties.setProperty("Ice.ACM.Client", "0");
+		Ice.InitializationData id = new Ice.InitializationData();
+		id.properties = properties;
+		ic = Ice.Util.initialize(id);
+
 		Ice.ObjectPrx base = ic.stringToProxy(name + ":" + endpoint);
-		prx = RecogniserPrxHelper.checkedCast(base);
+		prx = ServerPrxHelper.checkedCast(base);
 		if (prx == null) {
 			throw new Error("Unable to create proxy");
 		}
@@ -69,8 +78,33 @@ extends _ResultListenerDisp {
 		adapter.add(this, ident);
 		adapter.activate();
 		prx.ice_getConnection().setAdapter(adapter);
-		prx.addListener(ident);
+		prx.addClient(ident);
 		log("connected");
+	}
+
+	@Override
+	public void onStart(Current __current) {
+		log("started");
+	}
+
+	@Override
+	public void onStop(Current __current) {
+		log("stopped");
+	}
+
+	@Override
+	public void onAudioSourceChange(AudioSource as, Current __current) {
+		log("audio source changed");
+	}
+
+	@Override
+	public void onEndOfStream(Current __current) {
+		log("eos");
+	}
+
+	@Override
+	public void onGrammarChange(String path, Current __current) {
+		log("grammar changed");
 	}
 
 	/**
@@ -81,7 +115,7 @@ extends _ResultListenerDisp {
 	 * @param __current
 	 */
 	@Override
-	public void receiveRecognitionResult(RecognitionResult res, Current __current) {
+	public void onRecognitionResult(RecognitionResult res, Current __current) {
 		log("received a recognition result");
 		notify(res);
 	}
@@ -93,7 +127,7 @@ extends _ResultListenerDisp {
 	 * @param __current
 	 */
 	@Override
-	public void unregisteredFromServer(String reason, Current __current)
+	public void onUnregistrationFromServer(String reason, Current __current)
 	{
 		log("unregistered from the server, reason: " + reason);
 	}
@@ -159,8 +193,9 @@ extends _ResultListenerDisp {
 	}
 
 	private void log(String str) {
-		if (logging)
-			System.out.println("\033[31m[LoqClient]\t" + str + "\033[0m");
+		if (logger != null) {
+			logger.debug(str);
+		}
 	}
 
 }

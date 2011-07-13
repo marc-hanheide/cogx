@@ -31,9 +31,13 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.components.DialogueManager;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.EventAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.RemoveVariableAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
 import de.dfki.lt.tr.dialmanagement.utils.XMLPolicyReader;
 
 
@@ -42,11 +46,9 @@ import de.dfki.lt.tr.dialmanagement.utils.XMLPolicyReader;
  * CAST wrapper for the dialogue manager.  Listens to new intentions and events inserted onto the Working Memory,
  * and compute the next appropriate action, if any is available.
  * 
- *  TODO: also listen (and take into account) private intentions which are externally provided
- *  TODO: take preconditions into account
  * 
  * @author Pierre Lison
- * @version 08/07/2010
+ * @version 22/12/2010
  *
  */
 public class DialogueManagement extends ManagedComponent {
@@ -64,12 +66,6 @@ public class DialogueManagement extends ManagedComponent {
 	 * 
 	 */
 	public DialogueManagement() {
-		try {
-			manager = new DialogueManager(XMLPolicyReader.constructPolicy(policyFile));
-		}
-		catch (DialogueException e) {
-			e.printStackTrace();
-		} 
 	} 
 
 
@@ -82,19 +78,13 @@ public class DialogueManagement extends ManagedComponent {
 	@Override
 	public void configure(Map<String, String> _config) {
 		if ((_config.containsKey("--policy"))) {
-			try {
-				log("Dialogue manager using the following policy: " + _config.get("--policy"));
-				policyFile = _config.get("--policy");
-				manager = new DialogueManager(XMLPolicyReader.constructPolicy(policyFile));
-			} catch (DialogueException e) {
-				log(e.getMessage());
-				e.printStackTrace();
-			} 	
+			policyFile = _config.get("--policy");
 		}
 		if ((_config.containsKey("--useAck"))) {
 			try {
 				useAcknowledgement = Boolean.parseBoolean(_config.get("--useAck"));
-				log("using acknowledgements when the user provides new information");
+				log("use acknowledgements when the user provides new information: "
+						+ (useAcknowledgement ? "true" : "false"));
 			}
 			catch (Exception e) { }
 		}
@@ -104,6 +94,14 @@ public class DialogueManagement extends ManagedComponent {
 
 	@Override
 	public void start() {
+
+		log("initialising with policy file: " + policyFile);
+		try {
+			manager = new DialogueManager(XMLPolicyReader.constructPolicy(policyFile), this.getLogger(".dm"));
+		}
+		catch (DialogueException e) {
+			e.printStackTrace();
+		} 
 
 		// communicative intentions
 		addChangeFilter(
@@ -191,61 +189,74 @@ public class DialogueManagement extends ManagedComponent {
 			}
 
 			// running the dialogue manager to select the next action
-			PolicyAction action = manager.nextAction(cintention);
-			log("action chosen: " + action.toString());
+			ActionSelectionResult result = manager.updateStateAndSelectAction(cintention);
+			for (AbstractAction action : result.getActions()) {
+				
+				log("action chosen: " + action.toString());
 
-			// if the action is not void or ill-formed, adds the new intention to the WM
-			if (!action.isVoid() && !action.toString().contains("%")) {
+				// if the action is not void or ill-formed, adds the new intention to the WM
+				if (!action.toString().contains("%")) {
 
-				// if it is a communicative intention
-				if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
+					// if it is a communicative intention
+					if (action instanceof EventAction) {
+						log("emitting an event...");
+						Event ev = EpistemicObjectUtils.createSimpleEvent(action.asFormula(), 1.0f);
+						addToWorkingMemory(newDataID(), ev);
+						log("event successfully written to the working memory");
+					}
+					if (action instanceof RemoveVariableAction) {
+						log("removing a variable...");
+						manager.getDialogueState().removeInfoState(((RemoveVariableAction)action).getLabel());
+					}
+					else if (action instanceof IntentionAction && ((IntentionAction)action).getStatus() == IntentionAction.COMMUNICATIVE) {
 
-					log("reacting with a communicative response...");
-					IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
-							EpistemicObjectUtils.robotAgent , 1.0f);
+						log("reacting with a communicative response...");
+						IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.asFormula(), 
+								EpistemicObjectUtils.robotAgent , 1.0f);
 
-					Intention response = new Intention (
-							cintention.intent.frame, EpistemicObjectUtils.privateStatus, 
-							cintention.intent.id, Arrays.asList(content));
-
-					CommunicativeIntention cresponse = new CommunicativeIntention (response);
-					addToWorkingMemory(newDataID(), cresponse);
-					log("communicative intention successfully added to working memory");
-				}
-
-				// if it is an attributed intention to forward
-				else if (action.getType() == PolicyAction.ATTRIBUTED_INTENTION) {
-
-					log("forwarding the communicative intention beyond dialogue.sa...");								
-					IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
-							cintention.intent.content.get(0).agents, 1.0f);
-
-					Intention response = new Intention (cintention.intent.frame, cintention.intent.estatus, 
-							cintention.intent.id, Arrays.asList(content));
-
-					addToWorkingMemory(cintention.intent.id, response);
-					log("attributed intention successfully added to working memory");
-					
-					if (useAcknowledgement) {
-						
-						log("... and providing short acknowledgement");	
-						
-						IntentionalContent ackContent = EpistemicObjectUtils.createIntentionalContent(
-								FormulaUtils.constructFormula("<state>(thanked ^ <agent>human ^ <patient>self)"), EpistemicObjectUtils.robotAgent , 1.0f);
-						
-						Intention ack = new Intention (
+						Intention response = new Intention (
 								cintention.intent.frame, EpistemicObjectUtils.privateStatus, 
-								cintention.intent.id, Arrays.asList(ackContent));
+								cintention.intent.id, Arrays.asList(content));
 
-						CommunicativeIntention cack = new CommunicativeIntention (ack);
-						addToWorkingMemory(newDataID(), cack);
+						CommunicativeIntention cresponse = new CommunicativeIntention (response);
+						addToWorkingMemory(newDataID(), cresponse);
+						log("communicative intention successfully added to working memory");
+					}
+
+					// if it is an attributed intention to forward
+					else if (action instanceof IntentionAction && ((IntentionAction)action).getStatus() == IntentionAction.ATTRIBUTED) {
+
+						log("forwarding the communicative intention beyond dialogue.sa...");								
+						IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.asFormula(), 
+								cintention.intent.content.get(0).agents, 1.0f);
+
+						Intention response = new Intention (cintention.intent.frame, cintention.intent.estatus, 
+								cintention.intent.id, Arrays.asList(content));
+
+						addToWorkingMemory(cintention.intent.id, response);
+						log("attributed intention successfully added to working memory");
+						
+						if (useAcknowledgement) {
+							
+							log("... and providing short acknowledgement");	
+							
+							IntentionalContent ackContent = EpistemicObjectUtils.createIntentionalContent(
+									FormulaUtils.constructFormula("<state>(thanked ^ <agent>human ^ <patient>self)"), EpistemicObjectUtils.robotAgent , 1.0f);
+							
+							Intention ack = new Intention (
+									cintention.intent.frame, EpistemicObjectUtils.privateStatus, 
+									cintention.intent.id, Arrays.asList(ackContent));
+
+							CommunicativeIntention cack = new CommunicativeIntention (ack);
+							addToWorkingMemory(newDataID(), cack);
+						}
 					}
 				}
+				
+				else {
+					log("dialogue manager returned a void or ill-formed action, not doing anything");
+				}
 			}
-			else {
-				log("dialogue manager returned a void or ill-formed action, not doing anything");
-			}
-
 		} catch (Exception e) {
 			log(e.getMessage());
 			e.printStackTrace();
@@ -284,30 +295,42 @@ public class DialogueManagement extends ManagedComponent {
 		try {
 
 			// running the dialogue manager to select the next action
-			PolicyAction action = manager.nextAction(event);
-			log("action chosen: " + action.toString());
+			ActionSelectionResult result = manager.updateStateAndSelectAction(event);
+			
+			for (AbstractAction action : result.getActions()) {
 
-			// if the action is not void, adds the new intention to the WM
+				log("action chosen: " + action.toString());
 
-			if (action.getType() == PolicyAction.COMMUNICATIVE_INTENTION) {
+				if (action instanceof EventAction) {
+					log("emitting an event...");
+					Event ev = EpistemicObjectUtils.createSimpleEvent(action.asFormula(), 1.0f);
+					addToWorkingMemory(newDataID(), ev);
+					log("event successfully written to the working memory");
+				}
+				if (action instanceof RemoveVariableAction) {
+					log("removing a variable...");
+					manager.getDialogueState().removeInfoState(((RemoveVariableAction)action).getLabel());
+				}
+				else if (action instanceof IntentionAction && ((IntentionAction)action).getStatus() == IntentionAction.COMMUNICATIVE) {
 
-				log("reacting with a communicative response...");
-				IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.getContent(), 
-						EpistemicObjectUtils.robotAgent , 1.0f);
+					log("reacting with a communicative response...");
+					IntentionalContent content = EpistemicObjectUtils.createIntentionalContent(action.asFormula(), 
+							EpistemicObjectUtils.robotAgent , 1.0f);
 
-				Intention response = new Intention (
-						event.frame, EpistemicObjectUtils.privateStatus, 
-						event.id, Arrays.asList(content));
+					Intention response = new Intention (
+							event.frame, EpistemicObjectUtils.privateStatus, 
+							event.id, Arrays.asList(content));
 
-				CommunicativeIntention cresponse = new CommunicativeIntention (response);
-				addToWorkingMemory(newDataID(), cresponse);
-				log("communicative intention successfully added to working memory");
+					CommunicativeIntention cresponse = new CommunicativeIntention (response);
+					addToWorkingMemory(newDataID(), cresponse);
+					log("communicative intention successfully added to working memory");
+				}
 			}
-
-		} catch (DialogueException e) {
-			log(e.getMessage());
+		}
+		catch (DialogueException e) {
 			e.printStackTrace();
-		} catch (AlreadyExistsOnWMException e) {
+		}
+		catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
 		}
 	}
@@ -322,7 +345,7 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	private List<String> getFeaturesToExtractForQuestion(dFormula form) {
 		
-		String featureType = FormulaUtils.getString(EpistemicObjectUtils.
+		String featureType = FormulaUtils.getString(FormulaUtils.
 				getModalOperatorValue(form,"feature"));
 		debug("feature type: " + featureType);
 
@@ -396,26 +419,26 @@ public class DialogueManagement extends ManagedComponent {
 	 */
 	public void transformPolarQuestionHypothesis (IntentionalContent content) {
 		
-		String featureType = FormulaUtils.getString(EpistemicObjectUtils.
+		String featureType = FormulaUtils.getString(FormulaUtils.
 				getModalOperatorValue(content.postconditions,"feature"));
 		
-		dFormula featureValue = EpistemicObjectUtils.getModalOperatorValue(
+		dFormula featureValue = FormulaUtils.getModalOperatorValue(
 				content.postconditions, featureType);	
 		debug("feature value: " + FormulaUtils.getString(featureValue));
 
-		dFormula hypothesis = EpistemicObjectUtils.getModalOperatorValue(content.postconditions, "hypo");
+		dFormula hypothesis = FormulaUtils.getModalOperatorValue(content.postconditions, "hypo");
 		debug("hypothesis: " + FormulaUtils.getString(hypothesis));		
 
 		if (hypothesis != null && featureValue != null) {
 			if (FormulaUtils.subsumes(hypothesis,featureValue)) {
-				EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "valid");
+				FormulaUtils.setModalOperatorValue(content.postconditions, "hypo", "valid");
 			}
 			else {
-				EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "invalid");
+				FormulaUtils.setModalOperatorValue(content.postconditions, "hypo", "invalid");
 			}
 		}
 		else if (hypothesis != null) {
-			EpistemicObjectUtils.setModalOperatorValue(content.postconditions, "hypo", "noclue");
+			FormulaUtils.setModalOperatorValue(content.postconditions, "hypo", "noclue");
 		}
 	}
 

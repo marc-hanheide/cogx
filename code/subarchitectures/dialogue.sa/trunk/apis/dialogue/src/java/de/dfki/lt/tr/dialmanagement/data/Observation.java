@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -19,39 +19,48 @@
 
 package de.dfki.lt.tr.dialmanagement.data;
 
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
+import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 
 import java.util.Collection;
 import java.util.HashMap;
 
-
+ 
 /**
  * Representation of an observation for the dialogue manager, defined as a
- * set of (alternative) wrapped formulae associated with probabilities, plus a 
- * given type
+ * set of formulae (each of which is associated with a probability), plus
+ * an observation type
  * 
- * @author Pierre Lison (plison@dfki.de)
- * @version 7/10/2010
+ * @author Pierre Lison (plison@ifi.uio.no)
+ * @version 16/12/2010
  */
-
+ 
 public class Observation {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	// the set of alternatives
-	private HashMap<FormulaWrapper,Float> alternatives ;
+	private HashMap<dFormula,Float> alternatives ;
 	
 	// the type of the observation
-	private int observationType ;
+	private int type ;
 	
-	// defined type for an intention
+	// allowed observation types
 	public static final int INTENTION = 0;
-	
-	// defined type for an event
 	public static final int EVENT = 1;
+	public static final int PHONSTRING = 2;
+	public static final int TIMEOUT = 3;
+	
+	
+	// ==============================================================
+	// OBSERVATION CONSTRUCTION METHODS
+	// ==============================================================
+	
 	
 	/**
 	 * Creates an (empty) observation for a given type
@@ -59,35 +68,38 @@ public class Observation {
 	 * @param observationType the type of the observation
 	 * @throws DialogueException if the observation type is not allowed
 	 */
-	public Observation(int observationType) throws DialogueException {
-		alternatives = new HashMap<FormulaWrapper, Float>();
+	public Observation(int type) {
+		alternatives = new HashMap<dFormula, Float>();
 
-		if (observationType == INTENTION || observationType == EVENT) {
-			this.observationType = observationType;
+		if (type == INTENTION || type == EVENT || type == PHONSTRING || type == TIMEOUT) {
+			this.type = type;
 		}
 		else {
-			throw new DialogueException("ERROR: observation type not allowed");
+			debug("non admissible observation type, setting observation as intention");
+			this.type = INTENTION;
 		}
 	}
 	
-	/**
-	 * Adds an alternative (as wrapped formula) to the observation
-	 * 
-	 * @param content the formula itself
-	 * @param prob the probability of the formula
-	 */
-	public void addAlternative (FormulaWrapper content, float prob) {
-		alternatives.put(content, prob);
-	}
 	
 	/**
-	 * Adds an alternative (as unwrapped formula) to the observation
+	 * Add a phonstring alternative to the observation
+	 * 
+	 * @param phon the phonological string
+	 * @param prob the probability of the phonstring
+	 */
+	public void addAlternative(PhonString phon, float prob) {
+		alternatives.put(new ElementaryFormula(0,phon.wordSequence), prob);
+	}
+	
+	
+	/**
+	 * Adds an alternative (as formula) to the observation
 	 * 
 	 * @param formula the formula itself
 	 * @param prob the probability of the formula
 	 */
 	public void addAlternative (dFormula formula, float prob) {
-		alternatives.put(new FormulaWrapper (formula), prob);
+		alternatives.put(formula, prob);
 	}
 	
 	
@@ -99,20 +111,33 @@ public class Observation {
 	 * @param prob the probability of the formula
 	 */
 	public void addAlternative (String str, float prob) {
+		try {
 		if (str.contains(" ") && !str.contains("^") && !str.contains("<")) {
-			addAlternative(new FormulaWrapper ("\"" +str + "\""), prob);
-		}
+				addAlternative(FormulaUtils.constructFormula("\"" +str + "\""), prob);
+			} 
 		else  {
-			addAlternative(new FormulaWrapper (str), prob);
+			addAlternative(FormulaUtils.constructFormula(str), prob);
+		}
+		}
+		catch (DialogueException e) {
+			addAlternative(new ElementaryFormula(0, str), prob);
 		}
 	}
+	
+	
+	
+	// ==============================================================
+	// GETTER METHODS
+	// ==============================================================
+	
+	
 	
 	/**
 	 * Returns the set of alternative formulae contained in the observation
 	 * 
 	 * @return the set of alternative formulae
 	 */
-	public Collection<FormulaWrapper> getAlternatives () {
+	public Collection<dFormula> getAlternatives () {
 		return alternatives.keySet();
 	}
 	
@@ -122,7 +147,7 @@ public class Observation {
 	 * @return the type of the observation
 	 */
 	public int getType() {
-		return observationType;
+		return type;
 	}
 	
 	
@@ -133,7 +158,7 @@ public class Observation {
 	 * @param content the formula
 	 * @return the probability float
 	 */
-	public float getProbability (FormulaWrapper content) {
+	public float getProbability (dFormula content) {
 		if (alternatives.containsKey(content)) {
 			return alternatives.get(content);
 		}
@@ -142,15 +167,29 @@ public class Observation {
 		}
 	}
 	
+	
+	
+	
+	// ==============================================================
+	// UTILITY METHODS
+	// ==============================================================
+	
+	
+	
 	/**
 	 * Returns a string representation of the observation
 	 */
 	public String toString() {
 		String result = "{";
-		for (FormulaWrapper key : alternatives.keySet()) {
-			result += "(" + key + ", "  + alternatives.get(key) + "), ";
+		if (alternatives.size() > 0) {
+		for (dFormula key : alternatives.keySet()) {
+			result += "(" + FormulaUtils.getString(key) + ", "  + alternatives.get(key) + "), ";
 		}
 		return result.substring(0, result.length() -2) + "}";
+		}
+		else {
+			return "{emptyObs}";
+		}
 	}
 	
 

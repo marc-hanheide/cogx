@@ -1,0 +1,8 @@
+start action1 obs1
+start action1 obs2
+start action2 obs3
+action1 end1 obs4
+action2 action3 obs5
+action3 end2 obs6
+end1
+end2

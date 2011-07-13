@@ -1,0 +1,8 @@
+command1Recog = I["Please find the cornflakes box"] (0.7,1.0)
+command2Recog = I["Please find the mug"] (0.7,1.0)
+command1Unsure = I["Please find the cornflakes box"] (0.2,0.7)
+command2Unsure = I["Please find the mug"] (0.2,0.7)
+confirmed = I[yes] (0.7,1.0)
+disproved = I[no] (0.7,1.0)
+unrecog = I[?]
+irrelevant = I[*]

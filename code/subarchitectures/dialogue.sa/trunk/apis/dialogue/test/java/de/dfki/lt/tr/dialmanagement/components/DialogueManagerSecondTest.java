@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -27,11 +27,13 @@ import org.junit.Test;
 import org.junit.Before;
 
 import de.dfki.lt.tr.beliefs.slice.events.Event;
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
@@ -40,51 +42,56 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test class for a simple interaction with openings and closings
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 04/07/2010
  *
  */
 public class DialogueManagerSecondTest {
 
+
+
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
+	
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy2.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions2.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions2.txt";
+	public static String POLICYFILE = "config/policies/testing/policy2.txt";
+	public static String OBSFILE = "config/policies/testing/conditions2.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions2.txt";
 
-	// the dialogue manager
-	public DialogueManager manager;
+	protected DialogueManager manager ;
 	
 	
+
 	/**
-	 * Construct the dialogue policy
+	 * Construct the policy based on the configuration files
 	 * 
-	 * @throws DialogueException if the configuration files are not well-formatted
+	 * @throws DialogueException if the files are ill-formatted
 	 */
 	@Before
-	public void constructPolicy() throws DialogueException {
-		
+	public void startDialogueManager() throws DialogueException {
 		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
 		manager = new DialogueManager(policy);
 	}
+	
+	
+	
 	
 
 	/**
 	 * Test a greeting
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyGreeting() throws DialogueException {
+	public void testPolicyGreeting() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("<state>(engagement-open ^ <agent>human ^ <agent>robot)");
-		PolicyAction action1 = manager.nextAction(intent);
+		CommunicativeIntention intent = 
+			EpistemicObjectUtils.createSimpleCommunicativeIntention("<state>(engagement-open ^ <agent>human ^ <agent>robot)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals("CI[<state>(engagement-open ^ <agent>(robot) ^ <agent>(human))]", action1.toString());	
 	}
 
@@ -92,12 +99,15 @@ public class DialogueManagerSecondTest {
 	 * Test a closing
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyClosing1() throws DialogueException {
+	public void testPolicyClosing1() throws DialogueException, InterruptedException {
 		testPolicyGreeting();
-		Observation intent = PolicyUtils.createSimpleObservation("<state>(engagement-closed ^ <agent>human ^ <agent>robot)");
-		PolicyAction action1 = manager.nextAction(intent);
+		CommunicativeIntention intent = 
+			EpistemicObjectUtils.createSimpleCommunicativeIntention("<state>(engagement-closed ^ <agent>human ^ <agent>robot)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals( "CI[<state>(engagement-closed ^ <agent>(robot) ^ <agent>(human))]", action1.toString());
 	}
 	
@@ -105,34 +115,40 @@ public class DialogueManagerSecondTest {
 	 * Test a failed closing (without first engaging with the user)
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyClosing2() throws DialogueException {
-		Observation intent = PolicyUtils.createSimpleObservation("<state>(engagement-closed ^ <agent>human ^ <agent>robot)");
-		PolicyAction action1 = manager.nextAction(intent);
-		assertTrue(action1.isVoid());
+	public void testPolicyClosing2() throws DialogueException, InterruptedException {
+		CommunicativeIntention intent = 
+			EpistemicObjectUtils.createSimpleCommunicativeIntention("<state>(engagement-closed ^ <agent>human ^ <agent>robot)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		assertTrue(r.isVoid());
 	}
 	
 	/**
 	 * Test a recognition error
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyRecognitionError() throws DialogueException {
+	public void testPolicyRecognitionError() throws DialogueException, InterruptedException {
+		log("START TESTING RECOGNITION ERROR");
 		Event event = EpistemicObjectUtils.createSimpleEvent("recognition-error", 0.8f);
-		PolicyAction action1 = manager.nextAction(event);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(event);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals("CI[<state>(error-reported)]", action1.toString());
+		log("END TESTING RECOGNITION ERROR");
 	}
 	
-	
+
 	/**
 	 * Logging
 	 * @param s
 	 */
-	private static void log (String s) {
+	protected static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager_secondtest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 	
@@ -140,9 +156,10 @@ public class DialogueManagerSecondTest {
 	 * Debugging
 	 * @param s
 	 */
-	private static void debug (String s) {
+	protected static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager_secondtest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
+
 }

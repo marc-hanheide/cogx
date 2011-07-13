@@ -27,17 +27,19 @@ import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
+import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +73,7 @@ public class IntentionRealization {
 		abd_realize = new AbductionEngineConnection();
 		abd_realize.connectToServer(abd_serverName, abd_endpoints);
 		abd_realize.bindToEngine(INTENTION_REALIZATION_ENGINE);
-		abd_realize.getProxy().clearContext();
+		abd_realize.getEngineProxy().clearContext();
 	}
 
 	/**
@@ -88,7 +90,7 @@ public class IntentionRealization {
 
 		// update the abduction context
 		for (ModalisedAtom mf : ConversionUtils.intentionToFacts(itIdTerm, it)) {  // XXX
-			abd_realize.getProxy().addFact(mf);
+			abd_realize.getEngineProxy().addFact(mf);
 		}
 /*
 		for (dBelief b : bels) {
@@ -109,9 +111,9 @@ public class IntentionRealization {
 					itIdTerm
 				}));
 
-		MarkedQuery[] proof = AbducerUtils.bestAbductiveProof(abd_realize, ProofUtils.newUnsolvedProof(g), timeout);
-		if (proof != null) {
-			return proofToProtoLF(proof);
+		ProofWithCost pwc = AbducerUtils.bestAbductiveProof(abd_realize, ProofUtils.newUnsolvedProof(g), timeout);
+		if (pwc != null) {
+			return proofToProtoLF(pwc.proof);
 		}
 		else {
 			log("no proof found");
@@ -119,18 +121,18 @@ public class IntentionRealization {
 		}
 	}
 
-	private ContentPlanningGoal proofToProtoLF(MarkedQuery[] proof) {
-		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
-				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
-				new Modality[] {Modality.Truth});
+	private ContentPlanningGoal proofToProtoLF(List<MarkedQuery> proof) {
+		List<ModalisedAtom> imfs = ProofUtils.filterStripByModalityPrefix(
+				ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof)),
+				new ArrayList<Modality>(Arrays.asList(new Modality[] {Modality.Truth})));
 		LogicalForm lf = AbducerUtils.factsToLogicalForm(imfs, "dn1_1");
 
 		NominalReference nr = null;
-		ModalisedAtom[] rrs = ProofUtils.stripMarking(ProofUtils.filterAssumed(proof));
-		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			if (ma.m.length == 1 && ma.m[0] == Modality.Generation && ma.a.predSym.equals("dialogue_move_topic") && ma.a.args.length == 2) {
-				String nom = ((FunctionTerm)ma.a.args[0]).functor;
-				WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(ma.a.args[1]);
+		List<ModalisedAtom> rrs = ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof));
+		for (ModalisedAtom ma : rrs) {
+			if (ma.m.size() == 1 && ma.m.get(0) == Modality.Generation && ma.a.predSym.equals("dialogue_move_topic") && ma.a.args.size() == 2) {
+				String nom = ((FunctionTerm)ma.a.args.get(0)).functor;
+				WorkingMemoryAddress wma = ConversionUtils.termToWorkingMemoryAddress(ma.a.args.get(1));
 				if (wma != null) {
 					nr = new NominalReference(nom, BeliefFormulaFactory.newPointerFormula(wma));
 				}
@@ -145,7 +147,7 @@ public class IntentionRealization {
 	}
 
 	public void clearContext() {
-		abd_realize.getProxy().clearContext();
+		abd_realize.getEngineProxy().clearContext();
 	}
 
 	/**
@@ -155,7 +157,7 @@ public class IntentionRealization {
 	 */
 	public void loadFile(String file) {
 		try {
-			abd_realize.getProxy().loadFile(file);
+			abd_realize.getEngineProxy().loadFile(file);
 		}
 		catch (FileReadErrorException ex) {
 			log("file read error: " + ex.filename);

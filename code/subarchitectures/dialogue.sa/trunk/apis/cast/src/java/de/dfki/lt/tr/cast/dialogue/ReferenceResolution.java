@@ -32,10 +32,11 @@ import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.AbductiveReferenceResolution;
 import de.dfki.lt.tr.dialogue.ref.PresupposedBeliefConstruction;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.slice.ref.RefLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -108,7 +109,7 @@ extends AbstractDialogueComponent {
 		}
 
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(LogicalForm.class,  WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -151,7 +152,7 @@ extends AbstractDialogueComponent {
 	private void handleLogicalForm(WorkingMemoryChange _wmc) {
 		try {
 			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-			LogicalForm arg = (LogicalForm)data.getData();
+			SelectedLogicalForm arg = (SelectedLogicalForm)data.getData();
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
@@ -171,9 +172,9 @@ extends AbstractDialogueComponent {
 		if (iter.hasNext()) {
 			Object body = iter.next().getData();
 
-			if (body instanceof LogicalForm) {
-				LogicalForm lf = (LogicalForm) body;
-				Map<String, Map<String, String>> pmap = pbc.extractPresuppositions(lf);
+			if (body instanceof SelectedLogicalForm) {
+				SelectedLogicalForm slf = (SelectedLogicalForm) body;
+				Map<String, Map<String, String>> pmap = pbc.extractPresuppositions(slf.lform);
 
 				List<NominalEpistemicReferenceHypothesis> refs = new LinkedList<NominalEpistemicReferenceHypothesis>();
 				if (pmap != null && !pmap.isEmpty()) {
@@ -187,7 +188,7 @@ extends AbstractDialogueComponent {
 						refs.addAll(nrhs);
 					}
 				}
-				RefLogicalForm rlf = new RefLogicalForm(lf, refs);
+				RefLogicalForm rlf = new RefLogicalForm(slf.lform, slf.ival, refs);
 				log("adding the RefLogicalForm to the working memory");
 
 				try {

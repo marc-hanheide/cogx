@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,7 +21,10 @@
 package de.dfki.lt.tr.dialmanagement.components;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+
 
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
@@ -29,39 +32,55 @@ import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.events.Event;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
+import de.dfki.lt.tr.dialmanagement.data.DialogueState;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.DialStateAction;
+import de.dfki.lt.tr.dialmanagement.data.conditions.AbstractCondition;
+import de.dfki.lt.tr.dialmanagement.data.conditions.IntentionCondition;
+import de.dfki.lt.tr.dialmanagement.data.conditions.PhonstringCondition;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
+import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
+import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
+import org.apache.log4j.Logger;
 
 
 /**
- * <p>A simple, FSA-based dialogue manager.  The manager is based on (1) a dialogue policy, and
- * (2) a pointer to the current node in the policy.
+ * <p>A simple, FSA-based dialogue manager.  The manager is based on a set of dialogue policies,
+ * and a dialogue state comprising the dialogue history, the current node position in each policy,
+ * and a shared information state (which can include a context and user model).
  * 
- * <p>The traversal of the policy is implemented with the nexAction method, which takes an observation
- * as argument, and jumps to the appropriate next action.  If no appropriate action is found,
- * the manager remains on the same position and outputs a void action.  
+ * The dialogue manager is centered on two core mechanisms: <ul>
+ * <li> the dialogue state update mechanism, which modifies the current dialogue state given a new
+ *   observation (which can be a phonological string, a communicative intention or an event)
+ * <li> the action selection mechanism, which selected a list of actions which can be executed
+ *      for the current dialogue state.
+ * </ul>
  * 
- * <p>The current dialogue manager features:  <ul>
- * <li> the ability to provide policies with both text or XML files
+ * <p>The current dialogue manager features the following functionalities:  <ul>
+ * <li> the ability to work with several FSA policies in parallel;
+ * <li> the ability to import and export information onto and into a global information state;
+ * <li> the ability to provide policies using various text or XML encodings;
  * <li> the ability to handle intentions or events encoding arbitrarily complex formulae;
  * <li> the ability to process intention or events with multiple alternatives;
  * <li> the ability of partially or fully underspecifying observations;
  * <li> the ability of passing arguments from observations to actions;
+ * <li> the ability to handle time-related events (i.e. timeouts);
+ * <li> the ability to provide actions with several alternative realizations to choose at runtime;
  * <li> the ability to provide lower and higher bounds on the observation probabilities. </ul><br>
  * 
- * <p> TODO: write complete policies for Dora and George, and extensive tests<br>
- * TODO: refactor logging functionality<br>
- * TODO: provide simple adaptivity model<br>
- * TODO: once ready, recopy dialogue manager on DFKI SVN<br>
- * 
- * @author Pierre Lison (plison@dfki.de)
- * @version 8/10/2010
+ * @author Pierre Lison (plison@ifi.uio.no)
+ * @version 21/12/2010
  *
  */
 public class DialogueManager {
@@ -70,65 +89,163 @@ public class DialogueManager {
 	public static boolean LOGGING = true;
 	public static boolean DEBUG = false;
 
-	// the dialogue policy
-	DialoguePolicy policy;
+	private Logger logger = null;
 
-	// the current action node
-	PolicyNode curNode;
+	// the dialogue policies
+	private List<DialoguePolicy> policies;
+
+	// the dialogue state
+	private DialogueState dialState;
+
+
+
+	// ==============================================================
+	// INITIALISATION
+	// ==============================================================
+
 
 	/**
-	 * Create a new dialogue manager based on a dialogue policy
+	 * Create a new dialogue manager, initially with no policies and an 
+	 * empty dialogue state
 	 * 
-	 * @param policy the dialogue policy (typically extracted from a configuration file)
 	 */
+	public DialogueManager(Logger _logger) {
+		policies = new LinkedList<DialoguePolicy>();
+		logger = _logger;
+		dialState = new DialogueState(Logger.getLogger(logger.getName() + ".state"));
+	}
+
+	public DialogueManager() {
+		this((Logger) null);
+	}
+
 	public DialogueManager(DialoguePolicy policy) throws DialogueException {
-		policy.ensureWellFormedPolicy();
-		this.policy = policy;
-		curNode = policy.getInitNode();
+		this(policy, null);
+	}
+
+	/**
+	 * Create a new dialogue manager with one single policy, and a dialogue state
+	 * initialised with the initial node of the policy
+	 * 
+	 * @param policy the dialogue policy
+	 * @throws DialogueException if the policy is ill-formed
+	 */
+	public DialogueManager (DialoguePolicy policy, Logger _logger) throws DialogueException {
+		this(_logger);
+		addDialoguePolicy(policy);
+	}
+
+
+	/**
+	 * Add a new dialogue policy to the manager
+	 * 
+	 * @param policy the dialogue policy
+	 * @throws DialogueException if the policy is ill-formed
+	 */
+	public void addDialoguePolicy(DialoguePolicy policy) throws DialogueException {
+		policy.setLogger(Logger.getLogger(logger.getName() + ".policy"));
+		if (!policy.isWellFormedPolicy()) {
+			throw new DialogueException ("ERROR: not well-formed policy");
+		}
+		policies.add(policy);
+		dialState.initialisePolicy(policy);
+
+		log("Policy " + policy.getPolicyId() + "  successfully loaded");
+
 	}
 
 
 
+	// ==============================================================
+	// UPDATE + ACTION SELECTION METHODS
+	// ==============================================================
+
+
+
+
 	/**
-	 * Jumps to the next appropriate communicative action given the intention provided as argument.  
-	 * The method extracts all alternative intentional contents to create an observation,
-	 * and then checks whether a policy edge matching this observation can be found
+	 * Update the dialogue state given the set of alternative phonstrings, and subsequently
+	 * select the next (machine) actions to perform, if any.
 	 * 
-	 * If one exists, the method assigns curNode to be the node pointed by the edge,
-	 * and returns it. Otherwise, a void action is returned.
-	 *   
-	 * @param intention the communicative intention
-	 * @return the next action if one is available, or else a void action 
-	 * @throws DialogueException if the content of the intention or the dialogue policy
-	 *         is ill-formatted
+	 * The update consists in: <ul>
+	 * <li> adding the phonstrings list to the dialogue state history;
+	 * <li> if one phonstring matches a policy edge in the policies currently handled
+	 *      by the dialogue manager, move its position to the target node in the policy
+	 *      (this is repeated for each policy);
+	 * <li> finally, if the forementioned policy edge contains a function to update the 
+	 *      global information state, inserts the provided information.
+	 * </ul>
+	 * 
+	 * @param phonStrings the observation, encoded as a set of alternative phonStrings
+	 * @return the result of the action selection
 	 */
-	public PolicyAction nextAction(CommunicativeIntention intention) throws DialogueException {
+	public ActionSelectionResult updateStateAndSelectAction(List<PhonString> phonStrings) {
+
+		Observation obs = new Observation(Observation.PHONSTRING);
+		for (PhonString phon : phonStrings) {
+			obs.addAlternative(phon, phon.confidenceValue);
+		}
+
+		if (updateState(obs)) {
+			return extractActionSelectionResult();
+		}
+		else {
+			return ActionSelectionResult.createVoidResult();
+		}
+	}
+
+
+	/**
+	 * Update the dialogue state given the communicative intention, and subsequently
+	 * select the next (machine) actions to perform, if any.
+	 * 
+	 * The update consists in: <ul>
+	 * <li> adding the communicative intention to the dialogue state history;
+	 * <li> if the intention matches a policy edge in the policies currently handled
+	 *      by the dialogue manager, move its position to the target node in the policy
+	 *      (this is repeated for each policy);
+	 * <li> finally, if the forementioned policy edge contains a function to update the 
+	 *      global information state, inserts the provided information.
+	 * </ul>
+	 * 
+	 * @param intention a communicative intention object
+	 * @return the result of the action selection
+	 */
+	public ActionSelectionResult updateStateAndSelectAction (CommunicativeIntention intention) {
 
 		Observation obs = new Observation(Observation.INTENTION);
 		for (IntentionalContent icontent : intention.intent.content) {
 			obs.addAlternative(EpistemicObjectUtils.translateIntoFormula(icontent), icontent.probValue);
 		}
 
-		return nextAction(obs);
+		if (updateState(obs)) {
+			return extractActionSelectionResult();
+		}
+		else {
+			return ActionSelectionResult.createVoidResult();
+		}
 	}
 
 
 
 
 	/**
-	 * Jumps to the next appropriate communicative action given the event provided as argument.  
-	 * The method extracts all alternative event descriptions to create an observation,
-	 * and then checks whether a policy edge matching this observation can be found
+	 * Update the dialogue state given an external event, and subsequently
+	 * select the next (machine) actions to perform, if any.
 	 * 
-	 * If one exists, the method assigns curNode to be the node pointed by the edge,
-	 * and returns it. Otherwise, a void action is returned.
-	 *   
-	 * @param event the event
-	 * @return the next action if one is available, or else a void action 
-	 * @throws DialogueException if the content of the event or the dialogue policy
-	 *         is ill-formatted
+	 * The update consists in: <ul>
+	 * <li> adding the observation to the dialogue state history;
+	 * <li> if the observation matches a policy edge in the policies currently handled
+	 *      by the dialogue manager, move its position to the target node in the policy
+	 *      (this is repeated for each policy);
+	 * <li> finally, if the forementioned policy edge contains a function to update the 
+	 *      global information state, inserts the provided information.
+	 * </ul>
+	 * 
+	 * @param event an event object
+	 * @return the result of the action selection
 	 */
-	public PolicyAction nextAction(Event event) throws DialogueException {
+	public ActionSelectionResult updateStateAndSelectAction(Event event) {
 
 		// we assume here that the event content is a BasicProbDistribution
 		Observation obs = new Observation(Observation.EVENT);
@@ -139,92 +256,323 @@ public class DialogueManager {
 			}
 		}
 
-		return nextAction(obs);
+		if (updateState(obs)) {
+			return extractActionSelectionResult();
+		}
+		else {
+			return ActionSelectionResult.createVoidResult();
+		}
 	} 
 
 
 
 	/**
-	 * Jumps to the next appropriate action in the policy given a particular observation. 
-	 * Two separate cases are distinguished:
-	 * - if the dialogue policy has an outgoing observation edge starting from curNode and
-	 *   whose content matches the content in obs, then assigns curNode to be the node pointed by 
-	 *   the edge, and returns it
-	 * - if no such observation edge is available from curNode, then returns a void action,
-	 *   and keep the curNode as it is
+	 * Update the dialogue state given a timeout event (in milliseconds), and subsequently
+	 * select the next (machine) actions to perform, if any.
 	 * 
-	 * @param obs the observation           
-	 * @return if a node jump is available at the current node with the given observation, returns
-	 *         the next action.   Else, returns a void action         
-	 * @throws DialogueException exception thrown if the policy or the observation is ill-formed
+	 * The update consists in: <ul>
+	 * <li> adding the observation to the dialogue state history;
+	 * <li> if the observation matches a policy edge in the policies currently handled
+	 *      by the dialogue manager, move its position to the target node in the policy
+	 *      (this is repeated for each policy);
+	 * <li> finally, if the forementioned policy edge contains a function to update the 
+	 *      global information state, inserts the provided information.
+	 * </ul>
+	 * 
+	 * @param timeout a timeout, in milliseconds
+	 * @return the result of the action selection
 	 */
-	public PolicyAction nextAction (Observation obs) throws DialogueException {
+	public ActionSelectionResult updateStateAndSelectAction(int timeout) {
 
-		// get matching edges
-		Collection<PolicyEdge> matchingEdges = curNode.getMatchingEdges(obs);
-		debug("number of matching edges: " + matchingEdges);
-	
-		// sort the edges by preferential order
-		List<PolicyEdge> sortedEdges = PolicyUtils.sortEdges(matchingEdges);
-		if (sortedEdges.size() > 0) {
+		// we assume here that the event content is a BasicProbDistribution
+		Observation obs = new Observation(Observation.TIMEOUT);
+		obs.addAlternative(new IntegerFormula(0, timeout), 1.0f);
 
-			// select the best edge
-			PolicyEdge selectedEdge = sortedEdges.get(0);
-			curNode = selectedEdge.getTargetNode();
-			debug("now moving to node " + curNode.getId());
-			
-			// if the outgoing action is underspecified, fill the arguments
-			if (curNode.getAction().isUnderspecified()) {
-				debug("action is underspecified");
-				curNode.getAction().fillActionArguments(PolicyUtils.extractFilledArguments(obs, selectedEdge));
+		if (updateState(obs) || timeout ==  0.0f) {
+			return extractActionSelectionResult();
+		}
+		else {
+			return ActionSelectionResult.createVoidResult();
+		}
+	} 
+
+
+
+	// ==============================================================
+	// STATE UPDATE METHODS
+	// ==============================================================
+
+
+
+	/**
+	 * Update the dialogue state given the observation provided as argument
+	 * 
+	 * The update consists in: <ul>
+	 * <li> adding the observation to the dialogue state history
+	 * <li> if the observation matches a policy edge in the policies currently handled
+	 *      by the dialogue manager, move its position to the target node in the policy
+	 *      (this is repeated for each policy)
+	 * <li> finally, if the forementioned policy edge contains a function to update the 
+	 *      global information state, inserts the provided information
+	 * </ul>
+	 *
+	 * @param observation the observation object
+	 * @return true if the update resulted in at least one policy transition in the dialogue
+	 * state, false otherwise
+	 */
+	private boolean updateState (Observation obs) {
+
+		log("current state: " + dialState.toString());
+		log("observation: " + obs.toString());
+
+		// STEP 1: update the observation history
+		dialState.addToHistory(obs);
+
+		// STEP 2: update the node position in each dialogue policy, if possible
+		boolean transitionPerformed = false;
+		for (DialoguePolicy policy: policies) {
+ 
+			try {
+				// get the current node
+				PolicyNode curNode = dialState.getPolicyPosition(policy.getPolicyId());
+
+				// find the matching edges at the current node
+				List<PolicyEdge> matchingEdges = policy.getMatchingEdges(curNode.getId(),obs, dialState);
+				debug("Matching edges: " + matchingEdges);
+
+				// sort the edges by preferential order
+				PolicyUtils.sortEdges(matchingEdges);
+
+				if (matchingEdges.size() > 0) {
+
+					// select the best edge
+					PolicyEdge selectedEdge = matchingEdges.get(0);
+					log("best edge selected: " + selectedEdge);
+
+					// performing the transition
+					curNode = policy.getTargetNode(selectedEdge);
+					log("now moving to node " + curNode.getId());
+					dialState.setPolicyPosition(policy.getPolicyId(), curNode);
+					transitionPerformed = true;
+
+					// STEP 3: if the edge contains export variables, update 
+					// the global information state as well
+					updateInfoState (obs, selectedEdge);				
+
+				}
+
+				else {
+					// non-valid observation at this position for the policy
+					debug("Observation " + obs.toString() + " not applicable from node " + curNode.getId());
+					debug("number of edges from node: " + policy.getAllOutgoingEdges(curNode.getId()).size());
+					for (PolicyEdge matchingEdge: matchingEdges) {
+						debug("Matching edge: " + matchingEdge.toString());
+					}
+					debug("Policy: " + policy.toString());
+				}
 			} 
+
+			catch (DialogueException e) {
+				debug("Warning: internal problem with policy " + policy.getPolicyId() +
+				", aborting update process");
+			}
+
+		}
+
+		return transitionPerformed;
+	}
+
+
+
+	/**
+	 * Given an observation and a policy edge matching it (and containing an underspecified
+	 * variable), udpate the information state with the new information
+	 * 
+	 * @param obs the observation
+	 * @param selectedEdge the selected policy edge (which must match the observation
+	 *        and contain an unserspecified variable)
+	 *        
+	 * @throws DialogueException if the extraction of the new information fails
+	 */
+	private void updateInfoState (Observation obs, PolicyEdge selectedEdge) 
+	throws DialogueException {
+
+		
+		HashMap<String,dFormula> newInfos = new HashMap<String,dFormula>();
+		
+		// extract the arguments contained in the observation
+		for (AbstractCondition cond: selectedEdge.getConditions()) {
 			
-			// and return the action to perform
-			return curNode.getAction();
+			if (cond instanceof IntentionCondition) {
+				newInfos.putAll(((IntentionCondition)cond).extractFilledArguments(obs));
+			}
+			else if (cond instanceof PhonstringCondition) {
+				newInfos.putAll(((PhonstringCondition)cond).extractFilledArguments(obs));
+			}
+		}
+		
+		// for each argument, add a new belief to the information state
+		for (String newInfoLabel : newInfos.keySet()) {
+			
+			// if the dialogue state already contains the same label, it is replaced
+			if (dialState.hasInfoState(newInfoLabel)) {
+				dialState.removeInfoState(newInfoLabel);
+			}
+			dFormula newInfoContent = newInfos.get(newInfoLabel);
+			dBelief newBelief = 
+				EpistemicObjectUtils.createSimpleBelief(newInfoContent, 1.0f, newInfoLabel);
+			log("inserting the following information into the dialogue state: <" + newInfoLabel + ">" 
+					+ FormulaUtils.getString(newInfoContent));
+			dialState.addNewInfoState(newBelief);
+		}
+	}
+
+
+	// ==============================================================
+	// ACTION SELECTION METHODS
+	// ==============================================================
+
+
+	/**
+	 * Returns the (possibly empty) list of policy actions which are executable 
+	 * at the current dialogue state, wrapped in a ActionSelectionResult object.
+	 * 
+	 * If the selected actions are underspecified, the arguments are filled given
+	 * the information provided in the information state.
+	 * 
+	 * @return the list of policy actions
+	 */
+	private ActionSelectionResult extractActionSelectionResult () {
+
+		ActionSelectionResult result = new ActionSelectionResult();
+
+		// loop on the policies
+		for (DialoguePolicy policy: policies) {
+
+			PolicyNode curNode;
+			try {
+				curNode = dialState.getPolicyPosition(policy.getPolicyId());
+
+				for (AbstractAction action : curNode.getActions()) {
+
+					if (action != null) {
+						// if the outgoing action is underspecified, fill the arguments
+						if (action.isUnderspecified()) {
+							log("action " + action.getId() + " is underspecified");
+
+							HashMap<String,dFormula> argumentValues = 
+								dialState.extractArgumentValues(action.getUnderspecifiedArguments());
+
+							action.fillArguments(argumentValues);
+						} 
+						
+						log("action selected: " + action.toString());
+
+						// if the action is a dialogue state action, add the new information
+						// to the dialogue state
+						if (action instanceof DialStateAction) {
+							updateInfoState ((DialStateAction)action);
+						}
+						
+						// else, simply add it to the result list
+						else {
+							result.addAction(action);
+						}
+					}
+				}
+
+
+			}
+			catch (DialogueException e) {
+				log("Warning: internal problem with the policy " + policy.getPolicyId() + 
+				", aborting the action selection process");
+			}
 		}
 
-		debug("Warning: observation " + obs.toString() + " not applicable from node " + curNode.getId());
-		debug("number of edges from node: " + curNode.getAllOutgoingEdges().size());
-		for (PolicyEdge matchingEdge: matchingEdges) {
-			debug("Matching edge: " + matchingEdge.toString());
+		return result;
+	}
+
+
+	/**
+	 * Update the information state with the information contained in a
+	 * dialogue state action
+	 * 
+	 * @param action the dialogue state action containing the new information
+	 * @throws DialogueException if the information cannot be inserted in the dialogue state
+	 */
+	private void updateInfoState (DialStateAction action) throws DialogueException {
+
+		// introduce the postconditions, if any 
+		log("adding new information to info state: " + action.toString());
+			if (action.asFormula() instanceof ModalFormula) {
+				String label = ((ModalFormula)action.asFormula()).op;
+				dFormula content = ((ModalFormula)action.asFormula()).form;
+				dialState.addNewInfoState(EpistemicObjectUtils.createSimpleBelief(content, 1.0f, label));
+			}	
+			else {
+				log("WARNING: dialogue state action is not properly defined");
+			}
+	}
+
+
+	// ==============================================================
+	// GETTER METHODS
+	// ==============================================================
+
+
+
+	/**
+	 * Get a list of all outdoing edges accessible from the current dialogue 
+	 * state
+	 * 
+	 * @return the list of accessible edges
+	 */
+	public List<PolicyEdge> getAllOutgoingEdges() {
+		List<PolicyEdge> edges = new LinkedList<PolicyEdge>();
+
+		// loop on the policies
+		for (DialoguePolicy policy : policies) {
+
+			try {
+				PolicyNode curNode = dialState.getPolicyPosition(policy.getPolicyId());
+				List<PolicyEdge> accessibleEdges = policy.getAllOutgoingEdges(curNode.getId());
+				edges.addAll(accessibleEdges);
+			}
+			catch (DialogueException e) {
+				log("internal problem with policy " + policy.getPolicyId() + 
+				", aborting extraction of outgoing edges");
+			}
 		}
-		debug("Policy: " + policy.toString());
-	
-		// else, return a void action
-		return PolicyAction.createVoidAction();
-	}
-
-
-
-	/**
-	 * Returns the action encapsulated in the current node
-	 * 
-	 * @return the current action
-	 */
-	public PolicyAction getCurrentAction () {
-		return curNode.getAction();
+		return edges;
 	}
 
 
 	/**
-	 * Returns true if the manager reached a final state in the dialogue policy, 
-	 * false otherwise
+	 * Returns the dialogue state for the dialogue manager
 	 * 
-	 * @return true if the policy is finished, false otherwise
+	 * @return the dialogue state
 	 */
-	public boolean isFinished() {
-		return policy.isFinalNode(curNode);
+	public DialogueState getDialogueState() {
+		return dialState;
 	}
 
+
 	/**
-	 * Returns true if the manager is set on the initial state of the dialogue
-	 * policy, false otherwise
+	 * Return the set of dialogue policies currently applied to the
+	 * dialogue manager
 	 * 
-	 * @return true if the policy is starting, false otherwise
+	 * @return the set of dialogue policies
 	 */
-	public boolean isStarting() {
-		return policy.isInitNode(curNode);
+	public List<DialoguePolicy> getDialoguePolicies() {
+		return policies;
 	}
+
+
+	// ==============================================================
+	// UTILITY METHODS
+	// ==============================================================
+
+
 
 
 
@@ -232,9 +580,12 @@ public class DialogueManager {
 	 * Logging
 	 * @param s
 	 */
-	private static void log (String s) {
-		if (LOGGING) {
-			System.out.println("[dialmanager] " + s);
+	private void log (String s) {
+		if (logger != null) {
+			logger.info(s);
+		}
+		else if (LOGGING) {
+			System.err.println("[dialmanager LOG] " + s);
 		}
 	}
 
@@ -242,9 +593,13 @@ public class DialogueManager {
 	 * Debugging
 	 * @param s
 	 */
-	private static void debug (String s) {
-		if (DEBUG) {
-			System.out.println("[dialmanager] " + s);
+	private void debug (String s) {
+		if (logger != null) {
+			logger.debug(s);
+		}
+		else if (DEBUG) {
+			System.err.println("[dialmanager DEBUG] " + s);
 		}
 	}
+
 }

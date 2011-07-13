@@ -1,0 +1,2 @@
+#JAVA GD tts-mary    de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost dfki-toughbook-cf31 --serverPort 59125 --voice cmu-slt-hsmm --log true #--debug true
+JAVA GD tts-mary    de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost localhost --serverPort 59125 --voice dfki-spike-hsmm --log true #--debug true

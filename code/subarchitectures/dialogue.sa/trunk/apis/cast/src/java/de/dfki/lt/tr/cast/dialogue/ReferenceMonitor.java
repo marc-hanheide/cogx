@@ -54,10 +54,9 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.ref.BeliefTranslator;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import eu.cogx.beliefs.slice.SharedBelief;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.List;
 
 /**
@@ -105,7 +104,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 		 * @Override public void workingMemoryChanged(WorkingMemoryChange _wmc)
 		 * { handleBeliefDelete(_wmc); } });
 		 */
-		addBeliefChangeFilters(SharedBelief.class);
+		addBeliefChangeFilters(dBelief.class);
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 				DialogueMove.class, WorkingMemoryOperation.ADD),
@@ -374,7 +373,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 		if (qud != null) {
 			List<ModalisedAtom> qud_facts = ConversionUtils.intentionToFacts(TermAtomFactory.term("qud"), qud);
 			for (ModalisedAtom fact : qud_facts) {
-				qud_str += MercuryUtils.modalisedAtomToString(fact) + ".\n";
+				qud_str += PrettyPrint.modalisedAtomToString(fact) + ".\n";
 			}
 		} else {
 			qud_str += "% (none)\n";

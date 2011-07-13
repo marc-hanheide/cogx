@@ -4,12 +4,20 @@ import cast.AlreadyExistsOnWMException;
 import cast.core.CASTData;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.asr.LoquendoClient;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.RecognitionResult;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.Hypothesis;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.NBestList;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.NoRecognitionResult;
+import de.dfki.lt.tr.dialogue.asr.loquendo.result.RejectionFlag;
+import de.dfki.lt.tr.dialogue.asr.loquendo.time.TimeVal;
+import de.dfki.lt.tr.dialogue.slice.asr.InitialNoise;
+import de.dfki.lt.tr.dialogue.slice.asr.InitialPhonString;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
-import de.dfki.lt.tr.dialogue.slice.asr.RecognitionResult;
-import de.dfki.lt.tr.dialogue.slice.asr.loquendo.Hypothesis;
-import de.dfki.lt.tr.dialogue.slice.asr.loquendo.NBestList;
-import de.dfki.lt.tr.meta.TRResultListener;
+import de.dfki.lt.tr.dialogue.slice.asr.Noise;
+import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
+import de.dfki.lt.tr.meta.TRResultListener;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -32,6 +40,9 @@ implements TRResultListener {
 	
 	private float threshold = 0.2f;
 
+	private final int FRAME_RATE = 10;  // length of a frame in ms
+	private final int VOICEDETECT_CORRECTION = 100;  // in ms
+
 	/**
 	 * Starts up the component. The engine is configured and started
 	 * already in the configure method (which is called before start).
@@ -42,6 +53,9 @@ implements TRResultListener {
 	@Override
 	public void start() {
 		super.start();
+		if (client != null) {
+			client.start();
+		}
 	}
 
 
@@ -56,7 +70,7 @@ implements TRResultListener {
 		}
 		if (_config.containsKey("--threshold")) {
 			try {
-			threshold = Float.parseFloat(_config.get("--threshold"));
+				threshold = Float.parseFloat(_config.get("--threshold"));
 			}
 			catch (NumberFormatException e) {
 				System.out.println("Wrong format for threshold");
@@ -66,16 +80,15 @@ implements TRResultListener {
 			serverEndpoint = _config.get("--serverEndpoint");
 		}
 		try {
-			client = new LoquendoClient(serverName, serverEndpoint);
+			client = new LoquendoClient(serverName, serverEndpoint, this.getLogger(".client"));
 			client.registerNotification(this);
-			client.start();
 		}
-        catch (Ice.LocalException e) {
-            e.printStackTrace();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+		catch (Ice.LocalException e) {
+			log("failed to connect to the ASR server: " + e.toString());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -85,13 +98,13 @@ implements TRResultListener {
 			Iterator<CASTData> dit = data.getData();
 			while (dit.hasNext()) {
 				CASTData d = dit.next();
-				if (d.getData() instanceof RecognitionResult) {
-					RecognitionResult rr = (RecognitionResult)d.getData();
-					addToWorkingMemory(newDataID(), rr);
+				if (d.getData() instanceof Noise) {
+					Noise noise = (Noise)d.getData();
+					addToWorkingMemory(newDataID(), new InitialNoise(noise));
 				}
 				if (d.getData() instanceof PhonString) {
 					PhonString pstr = (PhonString)d.getData();
-					addToWorkingMemory(pstr.id, pstr);
+					addToWorkingMemory(newDataID(), new InitialPhonString(pstr));
 				}
 			}
 		}
@@ -110,27 +123,28 @@ implements TRResultListener {
 		if (rr instanceof RecognitionResult) {
 			log("notify: got a RecognitionResult");
 
-			if (rr instanceof NBestList) {
+			if (rr instanceof NoRecognitionResult) {
+				log("ignoring a NoRecognitionResult");
+			}
+			else if (rr instanceof NBestList) {
 				PhonString pstr = nBestListToPhonString((NBestList)rr);
 				if (pstr != null) {
 					
-					PhonString phonString = nBestListToPhonString((NBestList)rr);
-					
-					log("Recognised phonological string: " + phonString.wordSequence + " [" + phonString.confidenceValue + "]");
-					
-					if (phonString.confidenceValue > threshold) {
+					log("Recognised phonological string: " + pstr.wordSequence + " [" + pstr.confidenceValue + "], rejectionAdvice=" + (pstr.maybeOOV ? "true" : "false"));
+
 					String taskID = newTaskID();
-
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
-					pd.add(new CASTData<PhonString> ("emptyid", phonString));
-					m_proposedProcessing.put(taskID, pd);
+					if (pstr.confidenceValue > threshold) {
 
-					String taskGoal = DialogueGoals.ASR_TASK;
-					proposeInformationProcessingTask(taskID, taskGoal);
+						pd.add(new CASTData<PhonString> ("emptyid", pstr));
 					}
 					else {
-						log("phonological string below minimal threshold, not forwarding");
+						log("phonological string below minimal threshold, will forward a Noise object");
+						pd.add(new CASTData<Noise> ("emptyid", nBestListToNoise((NBestList) rr)));
 					}
+					m_proposedProcessing.put(taskID, pd);
+					String taskGoal = DialogueGoals.ASR_TASK;
+					proposeInformationProcessingTask(taskID, taskGoal);
 				}
 				else {
 					log("got a NULL in phonstring extraction");
@@ -152,6 +166,7 @@ implements TRResultListener {
 			pstr.id = newDataID();
 
 			Hypothesis hypo = nbl.hypos[0];
+
 			pstr.rank = 1;
 			pstr.confidenceValue = hypo.confidence;
 			pstr.NLconfidenceValue = hypo.confidence;
@@ -160,8 +175,44 @@ implements TRResultListener {
 			if (pstr.wordSequence.equals("no")) {
 				pstr.wordSequence = "No";
 			}
+			pstr.maybeOOV = (nbl.rejectionAdvice == RejectionFlag.RecognitionNomatch);
+
+			TimePoint begin = timeValToTimePoint(nbl.timeAnchor);
+			begin.msec -= VOICEDETECT_CORRECTION;
+			TimePoint end = timeValToTimePoint(nbl.timeAnchor);
+
+			// compute the duration
+			long duration_msec = 0;
+			if (hypo.words.length > 0) {
+				duration_msec = (hypo.words[hypo.words.length-1].endFrame) * FRAME_RATE;
+				log("phonstring duration is " + duration_msec + " ms (" + (nbl.speechEndFrame - nbl.speechStartFrame) * FRAME_RATE + " ms)");
+			}
+
+			// extend the temporal interval by the duration
+			end.msec += duration_msec;
+
+			pstr.ival = new Interval(begin, end);
 		}
  		return pstr;
+	}
+
+	public Noise nBestListToNoise(NBestList nbl) {
+		TimePoint begin = timeValToTimePoint(nbl.timeAnchor);
+		begin.msec -= VOICEDETECT_CORRECTION;
+		TimePoint end = timeValToTimePoint(nbl.timeAnchor);
+
+		// compute the duration
+		long duration_msec = (nbl.speechEndFrame - nbl.speechStartFrame) * FRAME_RATE;
+		log("noise duration is " + duration_msec + " ms");
+
+		// extend the temporal interval by the duration
+		end.msec += duration_msec;
+
+		return new Noise(new Interval(begin, end));
+	}
+
+	public static TimePoint timeValToTimePoint(TimeVal ta) {
+		return new TimePoint(ta.sec * 1000 + ta.usec / 1000);
 	}
 
 }

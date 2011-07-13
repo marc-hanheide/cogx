@@ -1,0 +1,39 @@
+<policy>
+<nodes>
+<node id="init" isInitial="true" isFinal="false" action="hello,knowName,knowUserSpeed"/>
+<node id="reply" isInitial="false" isFinal="false" action="replyName"/>
+<node id="ask" isInitial="false" isFinal="false" action="askForName"/>
+<node id="thankForInfo" isInitial="false" isFinal="false" action="thankForInfo,nameProvided"/>
+<node id="nextStep" isInitial="false" isFinal="true" action="nextStep"/>
+</nodes>
+
+<edges>
+<edge id="askName" source="init" target="reply" condition="askNameCond"/>
+<edge id="timeout1" source="reply" target="ask" condition="timeoutCond1,fastUser"/>
+<edge id="timeout2" source="reply" target="ask" condition="timeoutCond2,slowUser"/>
+<edge id="getName" source="ask" target="thankForInfo" condition="getNameCond"/>
+<edge id="nameProvided" source="thankForInfo" target="nextStep" condition="nameProvidedCond"/>
+</edges>
+
+<conditions>
+<condition id="askNameCond" type="phonstring" content="What's your name?"/>
+<condition id="timeoutCond1" type="timeout" content="1000"/>
+<condition id="timeoutCond2" type="timeout" content="2000" />
+<condition id="getNameCond" type="phonstring" content="%USERNAME"/>
+<condition id="nameProvidedCond" type="dialstate" content="&lt;NAME_PROVIDED&gt;true"/>
+<condition id="fastUser" type="dialstate" content="&lt;USER_SPEED&gt;fast"/>
+<condition id="slowUser" type="dialstate" content="&lt;USER_SPEED&gt;slow"/>
+</conditions>
+
+<actions>
+<action id="knowName" type="dialstate" content="&lt;ROBOT_NAME&gt;Nao"/>
+<action id="knowUserSpeed" type="dialstate" content="&lt;USER_SPEED&gt;slow"/>
+<action id="hello" type="phonstring" content="hello there!"/>
+<action id="replyName" type="phonstring" content="I'm %ROBOT_NAME"/>
+<action id="askForName" type="phonstring" content="and what is yours?"/>
+<action id="thankForInfo" type="phonstring" content="thank you %USERNAME"/>
+<action id="nextStep" type="phonstring" content="let's move to the next step now..."/>
+<action id="nameProvided" type="dialstate" content="&lt;NAME_PROVIDED&gt;true"/>
+</actions>
+
+</policy>

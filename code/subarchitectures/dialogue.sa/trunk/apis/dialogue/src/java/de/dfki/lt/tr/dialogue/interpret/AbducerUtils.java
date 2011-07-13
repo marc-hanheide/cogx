@@ -6,25 +6,26 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
 
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
-import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
+import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public abstract class AbducerUtils {
 
-	public static boolean logging = true;
+	public static Logger logger = Logger.getLogger("abducer-utils");
 
 	/** Convert a logical form to an array of modalised atoms -- facts
      *  for the abducer.
@@ -100,18 +101,17 @@ public abstract class AbducerUtils {
      * @param root identifier of the root nominal
      * @return the logical form
      */
-	public static LogicalForm factsToLogicalForm(ModalisedAtom[] facts, String root) {
+	public static LogicalForm factsToLogicalForm(List<ModalisedAtom> facts, String root) {
 		LogicalForm lf = LFUtils.newLogicalForm();
 		
 		// go through the facts, extending the logical form
-		for (int i = 0; i < facts.length; i++) {
-			ModalisedAtom f = facts[i];
+		for (ModalisedAtom f : facts) {
 			String nomVar = "";
 			
-			if (f.a.predSym.equals("sort") && f.a.args.length == 2) {
+			if (f.a.predSym.equals("sort") && f.a.args.size() == 2) {
 				//System.err.println("sort...");
-				nomVar = ProofUtils.termToString(f.a.args[0]);
-				String sort = ProofUtils.termToString(f.a.args[1]);
+				nomVar = ProofUtils.termFunctor(f.a.args.get(0));
+				String sort = ProofUtils.termFunctor(f.a.args.get(1));
 
 				boolean isNew = false;
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
@@ -128,10 +128,10 @@ public abstract class AbducerUtils {
 					lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
 			}
 
-			else if (f.a.predSym.equals("prop") && f.a.args.length == 2) {
+			else if (f.a.predSym.equals("prop") && f.a.args.size() == 2) {
 				//System.err.println("prop...");
-				nomVar = ProofUtils.termToString(f.a.args[0]);
-				String prop = ProofUtils.termToString(f.a.args[1]);
+				nomVar = ProofUtils.termFunctor(f.a.args.get(0));
+				String prop = ProofUtils.termFunctor(f.a.args.get(1));
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				if (nom == null) {
 					nom = LFUtils.newLFNominal(nomVar);
@@ -142,12 +142,12 @@ public abstract class AbducerUtils {
 				//System.err.println("  " + LFUtils.lfNominalToString(nom));
 			}
 
-			else if (f.a.predSym.matches("feat_.*") && f.a.args.length == 2) {
+			else if (f.a.predSym.matches("feat_.*") && f.a.args.size() == 2) {
 				//System.err.println("feat...");
-				nomVar = ProofUtils.termToString(f.a.args[0]);
+				nomVar = ProofUtils.termFunctor(f.a.args.get(0));
 				Feature feat = new Feature();
 				feat.feat = f.a.predSym.substring(5);
-				feat.value = ProofUtils.termToString(f.a.args[1]);
+				feat.value = ProofUtils.termFunctor(f.a.args.get(1));
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				if (nom == null) {
 					nom = LFUtils.newLFNominal(nomVar);
@@ -158,11 +158,11 @@ public abstract class AbducerUtils {
 				//System.err.println("  " + LFUtils.lfNominalToString(nom));
 			}
 						
-			else if (f.a.predSym.matches("rel_.*") && f.a.args.length == 2) {
+			else if (f.a.predSym.matches("rel_.*") && f.a.args.size() == 2) {
 				//System.err.println("rel...");
-				nomVar = ProofUtils.termToString(f.a.args[0]);
+				nomVar = ProofUtils.termFunctor(f.a.args.get(0));
 				String mode = f.a.predSym.substring(4);
-				String dep = ProofUtils.termToString(f.a.args[1]);
+				String dep = ProofUtils.termFunctor(f.a.args.get(1));
 				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
 				LFRelation rel = LFUtils.newLFRelation(nomVar, mode, dep);
 				if (nom == null) {
@@ -186,41 +186,32 @@ public abstract class AbducerUtils {
 		return lf;
 	}
 
-	public static MarkedQuery[] bestAbductiveProof(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
+	public static ProofWithCost bestAbductiveProof(AbductionEngineConnection abd, List<MarkedQuery> goal, int timeout) {
 		List<ProofWithCost> proofs = allAbductiveProofs(abd, goal, timeout);
 
 		if (!proofs.isEmpty()) {
-			log("abducer:" + abd.getEngineName(), "using the best proof");
+			engineLog(abd.getEngineName(), "using the best proof");
 
-			MarkedQuery[] proof = proofs.get(0).proof;
-			String queriesStr = "";
-			for (int i = 0; i < proof.length; i++) {
-				queriesStr += MercuryUtils.modalisedAtomToString(proof[i].atom);
-				if (i < proof.length - 1) queriesStr += ",\n";
-			}
-			log("abducer:" + abd.getEngineName(), "obtained the proof: [" + queriesStr + "]");
+			ProofWithCost pwc = proofs.get(0);
+			List<MarkedQuery> proof = pwc.proof;
+			engineLog(abd.getEngineName(), "obtained the proof: " + PrettyPrint.proofToString(proof));
 
-			return proof;
+			return pwc;
 		}
 		else {
+			engineLog(abd.getEngineName(), "no proofs found");
 			return null;
 		}
 	}
 
-	public static List<ProofWithCost> allAbductiveProofs(AbductionEngineConnection abd, MarkedQuery[] goal, int timeout) {
-		String listGoalsStr = "";
-		for (int i = 0; i < goal.length; i++) {
-			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
-			if (i < goal.length - 1) listGoalsStr += ", ";
-		}
-		log("abducer:" + abd.getEngineName(), "proving: [" + listGoalsStr + "]");
+	public static List<ProofWithCost> allAbductiveProofs(AbductionEngineConnection abd, List<MarkedQuery> goal, int timeout) {
+		engineLog(abd.getEngineName(), "proving: " + PrettyPrint.proofToString(goal));
 
-		abd.getProxy().startProving(goal);
-		ProofWithCost[] result = abd.getProxy().getProofs(timeout);
+		abd.getEngineProxy().startProving(goal);
+		List<ProofWithCost> result = abd.getEngineProxy().getProofs(timeout);
 
-		List<ProofWithCost> results = Arrays.asList(result);
-		log("abducer:" + abd.getEngineName(), "found " + result.length + " alternatives");
-		return results;
+		engineLog(abd.getEngineName(), "found " + result.size() + " alternatives");
+		return result;
 	}
 
 	/**
@@ -230,19 +221,25 @@ public abstract class AbducerUtils {
 	 */
 	public static void loadFile(AbductionEngineConnection abd, String file) {
 		try {
-			abd.getProxy().loadFile(file);
+			abd.getEngineProxy().loadFile(file);
 		}
 		catch (FileReadErrorException ex) {
-			log("abducer:" + abd.getEngineName(), "file read error: " + ex.filename);
+			engineLog(abd.getEngineName(), "file read error: " + ex.filename);
 		}
 		catch (SyntaxErrorException ex) {
-			log("abducer:" + abd.getEngineName(), "syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
+			engineLog(abd.getEngineName(), "syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
 		}
 	}
 
 	private static void log(String logname, String str) {
-		if (logging)
-			System.out.println("\033[31m[" + logname + "]\t" + str + "\033[0m");
+		if (logger != null) {
+			Logger lg = Logger.getLogger(logger.getName() + "." + logname);
+			lg.debug(str);
+		}
+	}
+
+	private static void engineLog(String engName, String str) {
+		log("engine." + engName, str);
 	}
 
 }

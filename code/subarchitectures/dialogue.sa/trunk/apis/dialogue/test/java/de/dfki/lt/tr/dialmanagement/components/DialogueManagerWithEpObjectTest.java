@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -22,7 +22,6 @@ package de.dfki.lt.tr.dialmanagement.components;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -31,12 +30,12 @@ import org.junit.Before;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.utils.FormulaUtils;
 import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
@@ -46,68 +45,71 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
  * Test class for an interaction with full epistemic objects (events 
  * and intentions)
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 04/07/2010
  *
  */
 public class DialogueManagerWithEpObjectTest {
 
+
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
+	
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy3.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions3.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions3.txt";
+	public static String POLICYFILE = "config/policies/testing/policy3.txt";
+	public static String OBSFILE = "config/policies/testing/conditions3.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions3.txt";
 
-	// the dialogue manager
-	public DialogueManager manager;
+
+	protected DialogueManager manager ;
 	
-	
+
 	/**
-	 * Construct the dialogue policy
+	 * Construct the policy based on the configuration files
 	 * 
-	 * @throws DialogueException if the configuration files are not well-formatted
+	 * @throws DialogueException if the files are ill-formatted
 	 */
 	@Before
-	public void constructPolicy() throws DialogueException {
-		
+	public void startDialogueManager() throws DialogueException {
 		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
 		manager = new DialogueManager(policy);
 	}
+	
 	
 	
 	/**
 	 * Test the policy with a simple intention
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyWithSimpleIntention() throws DialogueException {
+	public void testPolicyWithSimpleIntention() throws DialogueException, InterruptedException {
 			
-		dFormula postCondition = FormulaUtils.constructFormula("\"Please find the cornflakes box\"");
+		dFormula postCondition = FormulaUtils.constructFormula("Please find the cornflakes box");
 		IntentionalContent intent = 
 			EpistemicObjectUtils.createIntentionalContent(postCondition, EpistemicObjectUtils.robotAgent, 1.0f);
 			
 		CommunicativeIntention intention = new CommunicativeIntention (new Intention(
 				EpistemicObjectUtils.curFrame, EpistemicObjectUtils.attributedStatus, "", Arrays.asList(intent)));
 		
-		PolicyAction action1 = manager.nextAction(intention);
-		assertEquals(new PolicyAction("", FormulaUtils.constructFormula("\"okay, searching for the cornflakes box!\"")), action1);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intention);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[okay, searching for the cornflakes box!]", action1.toString());
 	}
 	 
-	 
+
+
 	/**
 	 * Test the policy with an uncertain intention
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyWithUncertainIntentions() throws DialogueException {
+	public void testPolicyWithUncertainIntentions() throws DialogueException, InterruptedException {
 		
 		dFormula postCondition1 = FormulaUtils.constructFormula("\"bla bla bla\"");
 		IntentionalContent intent1 = 
@@ -120,18 +122,19 @@ public class DialogueManagerWithEpObjectTest {
 		CommunicativeIntention intention = new CommunicativeIntention (new Intention(
 				EpistemicObjectUtils.curFrame, EpistemicObjectUtils.attributedStatus, "", Arrays.asList(intent1, intent2)));
 		
-		PolicyAction action1 = manager.nextAction(intention);
-		assertEquals(new PolicyAction("", FormulaUtils.constructFormula("\"sorry, should I search for the cornflaxes box?\"")), action1);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intention);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[sorry, should I search for the cornflaxes box?]", action1.toString());
 	}
 	
-	
+
 	/**
 	 * Logging
 	 * @param s
 	 */
-	private static void log (String s) {
+	protected static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager_withepobjectstest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 	
@@ -139,9 +142,9 @@ public class DialogueManagerWithEpObjectTest {
 	 * Debugging
 	 * @param s
 	 */
-	private static void debug (String s) {
+	protected static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager_withepobjectstest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 }

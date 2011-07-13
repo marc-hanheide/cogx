@@ -105,14 +105,14 @@ public class MaryTTSLocal {
 		   if (m_bSilentMode)   System.out.println("(silent mode) - \"" + tosay + "\"");
 		   else {
 			   try {
-			   		m_baos = new ByteArrayOutputStream();
-			   		//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-			   		//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-			        
-			   		m_mary.process(tosay, m_inputType, "AUDIO", "en-US", m_audioType, m_voiceName, "", "", null, m_baos);
-			    	   
-			   		AudioInputStream ais = AudioSystem.getAudioInputStream(
-			   								new ByteArrayInputStream(m_baos.toByteArray()));
+				m_baos = new ByteArrayOutputStream();
+				//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
+				//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
+//		   		m_mary.process(tosay, m_inputType, "AUDIO", "en_GB", m_audioType, m_voiceName, "", "WAVE", null, m_baos);
+
+				m_mary.process(tosay, "TEXT", "AUDIO", "en-GB", "WAVE", m_voiceName, m_baos);
+
+				AudioInputStream ais = AudioSystem.getAudioInputStream(new ByteArrayInputStream(m_baos.toByteArray()));
 			        LineListener lineListener = new LineListener() {
 			            public void update(LineEvent event) {
 			                if (event.getType() == LineEvent.Type.START) {
@@ -129,7 +129,6 @@ public class MaryTTSLocal {
 
 			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
 			        ap.start();
-			        
 			        
 			        if(m_SaveAudio2Wav){
 			        	 

@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,14 +21,17 @@ package de.dfki.lt.tr.dialmanagement.components;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import org.junit.Before;
 
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
@@ -36,108 +39,123 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test class for a simple, Dora-style interaction
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 04/07/2010
  *
  */
-public class DialogueManagerGeneralTest {
+public class DialogueManagerGeneralTest  {
+ 
+	
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
+	
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy3.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions3.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions3.txt";
+	// the configuration files
+	public static String POLICYFILE = "config/policies/testing/policy3.txt";
+	public static String OBSFILE = "config/policies/testing/conditions3.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions3.txt";
 
-	// the dialogue manager
-	public DialogueManager manager;
+	protected DialogueManager manager ;
 	
 	
+
 	/**
-	 * Construct the dialogue policy
+	 * Construct the policy based on the configuration files
 	 * 
-	 * @throws DialogueException if the configuration files are not well-formatted
+	 * @throws DialogueException if the files are ill-formatted
 	 */
 	@Before
-	public void constructPolicy() throws DialogueException {
-		
+	public void startDialogueManager() throws DialogueException {
 		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
 		manager = new DialogueManager(policy);
 	}
 	
 	
+	 
+	
 	/**
 	 * Test the policy with a single, high-confidence utterance
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyDirect1() throws DialogueException {
+	public void testPolicyDirect1() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box");
-		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals("CI[\"okay, searching for the cornflakes box!\"]", action1.toString());
+		CommunicativeIntention intent = EpistemicObjectUtils.createSimpleCommunicativeIntention("Please find the cornflakes box");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[okay, searching for the cornflakes box!]", action1.toString());
 		
 	}
 	
 	/**
 	 * Test the policy with a single, high-confidence utterance
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyDirect2() throws DialogueException {
+	public void testPolicyDirect2() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("Please find the mug");
-		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals("CI[\"okay, searching for the mug!\"]", action1.toString());
+		CommunicativeIntention intent = EpistemicObjectUtils.createSimpleCommunicativeIntention("Please find the mug");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[okay, searching for the mug!]", action1.toString());
 		
 	}
 	
 	/**
 	 * Test the policy with a lower-confidence utterance which must be confirmed
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyConfirm() throws DialogueException {
+	public void testPolicyConfirm() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box", 0.4f);
-		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals("CI[\"sorry, should I search for the cornflaxes box?\"]", action1.toString());
-		Observation intent2 = PolicyUtils.createSimpleObservation("yes", 0.8f);
-		PolicyAction action2 = manager.nextAction(intent2);
-		assertEquals("CI[\"okay, searching for the cornflakes box!\"]", action2.toString());
+		CommunicativeIntention intent = EpistemicObjectUtils.createSimpleCommunicativeIntention("Please find the cornflakes box", 0.4f);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
+	//	log("POLICY: " + manager.getPolicy().toString());
+		assertEquals("CI[sorry, should I search for the cornflaxes box?]", action1.toString());
+		CommunicativeIntention intent2 = EpistemicObjectUtils.createSimpleCommunicativeIntention("yes", 0.8f);
+		ActionSelectionResult r2 = manager.updateStateAndSelectAction(intent2);
+		AbstractAction action2 = r2.getActions().get(0);
+		assertEquals("CI[okay, searching for the cornflakes box!]", action2.toString());
 	}
 	
 	/**
 	 * Test the policy with a lower-confidence which is disproved, then repeated
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyDisprove() throws DialogueException {
+	public void testPolicyDisprove() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("Please find the cornflakes box", 0.4f);
-		PolicyAction action1 = manager.nextAction(intent);
-		assertEquals("CI[\"sorry, should I search for the cornflaxes box?\"]", action1.toString());
-		Observation intent2 = PolicyUtils.createSimpleObservation("no", 0.8f);
-		PolicyAction action2 = manager.nextAction(intent2);
-		assertEquals("CI[\"sorry, could you repeat please?\"]", action2.toString());
+		CommunicativeIntention intent = EpistemicObjectUtils.createSimpleCommunicativeIntention("Please find the cornflakes box", 0.4f);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[sorry, should I search for the cornflaxes box?]", action1.toString());
+		CommunicativeIntention intent2 = EpistemicObjectUtils.createSimpleCommunicativeIntention("no", 0.8f);
+		ActionSelectionResult r2 = manager.updateStateAndSelectAction(intent2);
+		AbstractAction action2 = r2.getActions().get(0);
+		assertEquals("CI[sorry, could you repeat please?]", action2.toString());
 		testPolicyDirect2();
 	}
 
 	/**
 	 * Test the policy with an unrecognised utternce which must be repeated
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyRepeat() throws DialogueException {
+	public void testPolicyRepeat() throws DialogueException, InterruptedException {
 		
-		Observation i = PolicyUtils.createSimpleObservation("?", 0.8f);
-		PolicyAction action1 = manager.nextAction(i);
-		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
+		CommunicativeIntention i = EpistemicObjectUtils.createSimpleCommunicativeIntention("?", 0.8f);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(i);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[sorry, could you repeat please?]", action1.toString());
 		testPolicyConfirm();
 	}
 	
@@ -145,38 +163,44 @@ public class DialogueManagerGeneralTest {
 	/**
 	 * Test the policy with an unrecognised utternce which must be repeated
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyRepeat2() throws DialogueException {
+	public void testPolicyRepeat2() throws DialogueException, InterruptedException {
 		
-		Observation i = PolicyUtils.createSimpleObservation("bla bla bla", 0.8f);
-		PolicyAction action1 = manager.nextAction(i);
-		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
+		CommunicativeIntention i = EpistemicObjectUtils.createSimpleCommunicativeIntention("bla bla bla", 0.8f);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(i);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[sorry, could you repeat please?]", action1.toString());
 		testPolicyConfirm();
 	}
 
 	/**
 	 * Test the policy with a failed attempt to recognise what the user said
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyFailure() throws DialogueException {
+	public void testPolicyFailure() throws DialogueException, InterruptedException {
 		
-		Observation i1 = PolicyUtils.createSimpleObservation("?", 0.8f);
-		PolicyAction action1 = manager.nextAction(i1);
-		assertEquals("CI[\"sorry, could you repeat please?\"]", action1.toString());
-		Observation i2 = PolicyUtils.createSimpleObservation("?", 0.8f);
-		PolicyAction action2 = manager.nextAction(i2);
-		assertEquals("CI[\"sorry I couldn't understand you\"]", action2.toString());
+		CommunicativeIntention i1 = EpistemicObjectUtils.createSimpleCommunicativeIntention("?", 0.8f);
+		ActionSelectionResult r = manager.updateStateAndSelectAction(i1);
+		AbstractAction action1 = r.getActions().get(0);
+		assertEquals("CI[sorry, could you repeat please?]", action1.toString());
+		CommunicativeIntention i2 = EpistemicObjectUtils.createSimpleCommunicativeIntention("?", 0.8f);
+		ActionSelectionResult r2 = manager.updateStateAndSelectAction(i2);
+		AbstractAction action2 = r2.getActions().get(0);
+		assertEquals("CI[sorry I couldn't understand you]", action2.toString());
 	}
+
 
 	/**
 	 * Logging
 	 * @param s
 	 */
-	private static void log (String s) {
+	protected static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager_generaltest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 	
@@ -184,9 +208,10 @@ public class DialogueManagerGeneralTest {
 	 * Debugging
 	 * @param s
 	 */
-	private static void debug (String s) {
+	protected static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager_generaltest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
+
 }

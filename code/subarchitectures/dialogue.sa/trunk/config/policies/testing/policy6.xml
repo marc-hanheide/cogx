@@ -14,13 +14,13 @@
 	</edges>
     
 	<conditions>
-        <condition type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0" id="greetingCond"/>
-        <condition content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" type="communicativeintention" lowerProb="0.0" higherProb="1.0" id="closingCond"/>
+        <condition  id="greetingCond" type="intention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0"/>
+        <condition id="closingCond"  type="intention"  content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;human ^ &lt;agent&gt;robot)" lowerProb="0.0" higherProb="1.0" />
     </conditions>
     
 	<actions>
-        <action id="greetingAction" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)"/>
-        <action id="closingAction" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)">
+        <action id="greetingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)"/>
+        <action id="closingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;robot ^ &lt;agent&gt;human)">
 </action>
 	</actions>
 

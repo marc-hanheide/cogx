@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -24,10 +24,13 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.Before;
 
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
@@ -35,51 +38,52 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test with a policy including underspecified arguments
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  *
  */
-public class DialogueManagerWithArgumentsTest {
+public class DialogueManagerWithArgumentsTest  {
+
+
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
-
+	public static boolean DEBUG = false;
+	
+	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy5.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions5.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions5.txt";
+	public static String POLICYFILE = "config/policies/testing/policy5.txt";
+	public static String OBSFILE = "config/policies/testing/conditions5.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions5.txt";
 
-	// the dialogue manager
-	public DialogueManager manager;
-
+	protected DialogueManager manager ;
+	
 
 	/**
-	 * Construct the dialogue policy
+	 * Construct the policy based on the configuration files
 	 * 
-	 * @throws DialogueException if the configuration files are not well-formatted
+	 * @throws DialogueException if the files are ill-formatted
 	 */
 	@Before
-	public void constructPolicy() throws DialogueException {
-
+	public void startDialogueManager() throws DialogueException {
 		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-
-		policy.ensureWellFormedPolicy();
-
 		manager = new DialogueManager(policy);
 	}
-
+	
+	
 
 
 	/**
 	 * Test the policy with an observation filling a single argument
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyBasic() throws DialogueException {
+	public void testPolicyBasic() throws DialogueException, InterruptedException {
 
-		Observation intent = PolicyUtils.createSimpleObservation("Say ^ <Object>(Blabla)");
-		PolicyAction action1 = manager.nextAction(intent);
+		CommunicativeIntention intent = EpistemicObjectUtils.createSimpleCommunicativeIntention("Say ^ <Object>(Blabla)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals("CI[Said ^ <Object>(Blabla)]", action1.toString());
 
 	}
@@ -89,34 +93,19 @@ public class DialogueManagerWithArgumentsTest {
 	 * Test the policy with an observation filling two arguments
 	 * 
 	 * @throws DialogueException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicySecond() throws DialogueException {
+	public void testPolicySecond() throws DialogueException, InterruptedException {
 
-		Observation intent = PolicyUtils.createSimpleObservation("Say ^ <Subject>(ahah ^ <oho>4.3f) ^ <Object>(Blabla)");
-		PolicyAction action1 = manager.nextAction(intent);
+		CommunicativeIntention intent = 
+			EpistemicObjectUtils.createSimpleCommunicativeIntention("Say ^ <Subject>(ahah ^ <oho>4.3f) ^ <Object>(Blabla)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals("CI[Said ^ <Subject>(ahah ^ <oho>(4.3f)) ^ <Object>(Blabla)]", action1.toString());
 
 	}
 
+	
 
-	/**
-	 * Logging
-	 * @param s
-	 */
-	private static void log (String s) {
-		if (LOGGING) {
-			System.out.println("[dialmanager_withargumentstest] " + s);
-		}
-	}
-
-	/**
-	 * Debugging
-	 * @param s
-	 */
-	private static void debug (String s) {
-		if (DEBUG) {
-			System.out.println("[dialmanager_withargumentstest] " + s);
-		}
-	}
 }

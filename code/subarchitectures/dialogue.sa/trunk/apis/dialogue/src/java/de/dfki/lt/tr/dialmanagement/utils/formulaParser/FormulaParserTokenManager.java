@@ -5,7 +5,9 @@ import java.util.LinkedList ;
 import java.util.Enumeration ;
 import java.io.* ;
 import java.util.Hashtable;
-import cast.cdl.WorkingMemoryAddress;
+// import cast.cdl.WorkingMemoryAddress;
+
+
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.*;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 
@@ -52,7 +54,7 @@ static private final int jjMoveStringLiteralDfa0_0()
       case 41:
          return jjStopAtPos(0, 8);
       case 42:
-         return jjStopAtPos(0, 13);
+         return jjStartNfaWithStates_0(0, 13, 10);
       case 58:
          return jjStopAtPos(0, 18);
       case 60:
@@ -123,7 +125,7 @@ static private final int jjMoveNfa_0(int startState, int curPos)
             switch(jjstateSet[--i])
             {
                case 3:
-                  if ((0x83ff708200000000L & l) != 0L)
+                  if ((0x83ff748200000000L & l) != 0L)
                   {
                      if (kind > 22)
                         kind = 22;
@@ -143,14 +145,14 @@ static private final int jjMoveNfa_0(int startState, int curPos)
                      jjCheckNAdd(9);
                   break;
                case 9:
-                  if ((0x3ff000000000000L & l) == 0L)
+                  if ((0x83ff748200000000L & l) == 0L)
                      break;
                   if (kind > 14)
                      kind = 14;
                   jjCheckNAdd(9);
                   break;
                case 10:
-                  if ((0x83ff708200000000L & l) == 0L)
+                  if ((0x83ff748200000000L & l) == 0L)
                      break;
                   if (kind > 22)
                      kind = 22;
@@ -232,6 +234,13 @@ static private final int jjMoveNfa_0(int startState, int curPos)
                case 7:
                   if (curChar == 102)
                      jjstateSet[jjnewStateCnt++] = 6;
+                  break;
+               case 9:
+                  if ((0x7fffffe87fffffeL & l) == 0L)
+                     break;
+                  if (kind > 14)
+                     kind = 14;
+                  jjstateSet[jjnewStateCnt++] = 9;
                   break;
                case 10:
                   if ((0x7fffffe87fffffeL & l) == 0L)

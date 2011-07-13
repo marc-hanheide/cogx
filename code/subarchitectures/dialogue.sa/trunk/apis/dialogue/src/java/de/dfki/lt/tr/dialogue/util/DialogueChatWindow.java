@@ -27,6 +27,7 @@ package de.dfki.lt.tr.dialogue.util;
 // IMPORTS
 
 // Java
+import de.dfki.lt.tr.dialogue.slice.asr.Noise;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -54,6 +55,8 @@ import de.dfki.lt.tr.meta.TRResultListener;
 // Dialogue API slice
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
+import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
 import java.util.LinkedList;
 
 
@@ -82,7 +85,6 @@ implements ActionListener
 	
 	private int idCounter = 0;
 
-	
 	// Process that listen for / are to be notified of results of the engine
 	private Vector<TRResultListener> listeners = new Vector<TRResultListener>();
 
@@ -137,6 +139,13 @@ implements ActionListener
 			phonString.confidenceValue = 1.0f;
 			phonString.NLconfidenceValue= 0.0f;
 			phonString.rank = 1;
+
+			long now = System.currentTimeMillis();
+			long past = now - 50;
+			TimePoint now_tp = new TimePoint(now);
+			TimePoint past_tp = new TimePoint(past);
+			phonString.ival = new Interval(past_tp, now_tp);
+
 			blocked.add(phonString.id);
 			notify((Object)phonString);
 			inputField.setText("");
@@ -173,7 +182,14 @@ implements ActionListener
 			}
 		}
 	} // end publishSOI
-	
+
+	public void publishNoise (Noise n)
+	{
+		if (n != null) {
+			utterances.append("Human: [...]" + newline);
+		}
+	}
+
 	/**
 	 * Registers a process with the engine, to be notified whenever
 	 * the engine produces a new result
