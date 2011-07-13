@@ -71,11 +71,11 @@ class CASTState(object):
         #for f in self.facts:
         #    print f
 
-        #if component:
-        #    if self.facts:
-        #        cfacts, cobjects = self.get_conceptual_data(component, self.facts)
-        #        self.facts += cfacts
-        #        self.objects |= cobjects
+        if component and global_vars.config.enable_conceptual_query:
+           if self.facts:
+               cfacts, cobjects = self.get_conceptual_data(component, self.facts)
+               self.facts += cfacts
+               self.objects |= cobjects
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
@@ -99,6 +99,9 @@ class CASTState(object):
             self.state.set(f)
 
     def translate_domain(self, stat):
+        if not global_vars.config.enable_switching_planner:
+            return self.domain
+        
         if global_vars.config.base_planner.name == "TFD" or global_vars.config.base_planner.name == "Downward":
             dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
         elif global_vars.config.base_planner.name == "ProbDownward":
@@ -142,8 +145,9 @@ class CASTState(object):
                     return cond.args[0].function
                 
         functions = set()
-        #for r in self.domain.dt_rules:
-        #    functions |= set(f for f in r.deps if f.type != pddl.t_number)
+        if global_vars.config.enable_switching_planner:
+            for r in self.domain.dt_rules:
+                functions |= set(f for f in r.deps if f.type != pddl.t_number)
 
         for a in self.domain.actions:
             functions |= set(pddl.visitors.visit(a.precondition, get_committed_functions, []))
@@ -465,7 +469,7 @@ class CASTState(object):
             opt = None
             opt_func = None
 
-        cp_domain = self.domain#self.translate_domain(self.prob_state)
+        cp_domain = self.translate_domain(self.prob_state)
             
         if deterministic:
             facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]

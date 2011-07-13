@@ -144,7 +144,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.dt = None
     self.hfc = None
     self.conceptual = None
-    self.planner = StandalonePlanner()
+    self.planner = None
     self.tasks = {}
     self.dt_tasks = {}
     
@@ -166,6 +166,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     server = self.getIceServer("PlannerPythonServer", Planner.PythonServer, Planner.PythonServerPrx)
     log.debug("It worked. We got a server: %s", str(server))
 
+    if "--config" in config:
+        standalone.globals.update_config(config.get("--config"))
+
+    self.planner = StandalonePlanner()
     self.m_display.configureDisplayClient(config)
     
     self.client_name = config.get("--wm", "Planner")
