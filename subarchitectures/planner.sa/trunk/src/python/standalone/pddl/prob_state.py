@@ -345,6 +345,7 @@ class ProbabilisticState(State):
 
 
     def get_effect_facts(self, effect, trace_vars=False):
+        import logging
         facts = defaultdict(ValueDistribution)
         
         if isinstance(effect, effects.ProbabilisticEffect):
@@ -361,17 +362,22 @@ class ProbabilisticState(State):
                     all_effects.append((eff, p.value))
                     p_total += p.value
 
-            if remaining_effects:
+            if remaining_effects and p_total < 1.0:
                 p = (1.0-p_total) / len(remaining_effects)
                 for eff in remaining_effects:
                     all_effects.append((eff, p))
 
+            normalize = 1.0
+            if p_total > 1.0:
+                logging.getLogger().warn("Probability distribution sum up to %.8f > 1: %s", p_total, effect.pddl_str())
+                normalize = 1/p_total
+                    
             for eff, p in all_effects:
                 for svar, val in self.get_effect_facts(eff, trace_vars).iteritems():
                     if isinstance(val, ValueDistribution):
-                        facts[svar] += val*p
+                        facts[svar] += val*p*normalize
                     else:
-                        facts[svar][val] += p
+                        facts[svar][val] += p*normalize
                 
             for dist in facts.itervalues():
                 dist.normalize()
