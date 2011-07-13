@@ -39,6 +39,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import java.util.Iterator;
@@ -228,6 +229,11 @@ public abstract class BeliefIntentionUtils {
 		if (f instanceof PointerFormula) {
 			PointerFormula pF = (PointerFormula) f;
 			s += "[" + pF.pointer.subarchitecture + "," + pF.pointer.id + "]";
+			return s;
+		}
+		if (f instanceof UnderspecifiedFormula) {
+			UnderspecifiedFormula uF = (UnderspecifiedFormula) f;
+			s += "?" + uF.arglabel;
 			return s;
 		}
 		return "DFORMULA";

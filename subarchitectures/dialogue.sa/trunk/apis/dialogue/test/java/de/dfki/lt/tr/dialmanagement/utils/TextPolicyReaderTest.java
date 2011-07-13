@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,6 +21,8 @@
 
 package de.dfki.lt.tr.dialmanagement.utils;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
@@ -30,18 +32,18 @@ import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
 /**
  * Test for reading a text policy file
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 09/10/2010
  */
 public class TextPolicyReaderTest {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy1.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions1.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions1.txt";
+	public static String POLICYFILE = "config/policies/testing/policy1.txt";
+	public static String OBSFILE = "config/policies/testing/conditions1.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions1.txt";
 
 	
 	/**
@@ -53,7 +55,7 @@ public class TextPolicyReaderTest {
 	public void readSimplePolicy() throws DialogueException {
 		
 		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);	
-		policy.ensureWellFormedPolicy();	
+		assertTrue(policy.isWellFormedPolicy())	;
 	}
 	
 	

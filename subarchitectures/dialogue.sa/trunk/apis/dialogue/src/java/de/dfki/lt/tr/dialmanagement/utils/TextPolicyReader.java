@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,32 +21,48 @@
 package de.dfki.lt.tr.dialmanagement.utils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyNode;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyCondition;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.IntentionAction;
+import de.dfki.lt.tr.dialmanagement.data.actions.PhonstringAction;
+import de.dfki.lt.tr.dialmanagement.data.conditions.AbstractCondition;
+import de.dfki.lt.tr.dialmanagement.data.conditions.EventCondition;
+import de.dfki.lt.tr.dialmanagement.data.conditions.IntentionCondition;
+import de.dfki.lt.tr.dialmanagement.data.conditions.PhonstringCondition;
+
 
 /**
  * Utility for constructing a new dialogue policy from a finite-state specification
  * in the text-based AT&T FSM format, associated with a file describing the actions and a
- * file describing the conditions on observations
+ * file describing the conditions on observations.
  * 
- * @author Pierre Lison (plison@dfki.de)
- * @version 09/10/2010
+ * NOTE: the present format does not support many functionalities of the dialogue manager,
+ * and is mainly maintained for backward compatibility
+ * 
+ * @author Pierre Lison (plison@ifi.uio.no)
+ * @version 21/12/2010
  */
 
 public class TextPolicyReader {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
+	
+
+	// ==============================================================
+	// POLICY CONSTRUCTION METHODS
+	// ==============================================================
+
+	
 
 	/**
 	 * Construct a new dialogue policy according to the specifications in the 3 configuration
@@ -63,13 +79,14 @@ public class TextPolicyReader {
 
 		try {
 			// extracting the conditions
-			HashMap<String,PolicyCondition> conditions = extractConditions (FileUtils.readfile(condFile));
+			HashMap<String,AbstractCondition> conditions = extractConditions (FileUtils.readfile(condFile));
 
 			// extracting the actions
-			HashMap<String,PolicyAction> actions = extractActions (FileUtils.readfile(actionsFile));
+			HashMap<String,AbstractAction> actions = extractActions (FileUtils.readfile(actionsFile));
 
 			// constructing the policy
 			String policyText = FileUtils.readfile(policyFile);
+			
 			return constructPolicy(policyText, conditions, actions);
 
 		} catch (IOException e) {
@@ -81,6 +98,47 @@ public class TextPolicyReader {
 
 
 
+	/**
+	 * Construct a new dialogue policy from a policy specification, a set of conditions and a set of actions
+	 * @param text the policy text
+	 * @param conditions the conditions
+	 * @param actions the actions
+	 * @return
+	 * @throws DialogueException if the policy text is not well formatted
+	 */
+	public static DialoguePolicy constructPolicy (String text, HashMap<String, AbstractCondition> conditions, 
+			HashMap<String, AbstractAction> actions) throws DialogueException {
+
+		String[] lines = text.split("\n");
+
+		DialoguePolicy policy = new DialoguePolicy();
+
+		for (int i = 0 ; i < lines.length ; i++) {
+			String curLine = lines[i];
+			debug("parsing line: " + curLine);
+			
+			// line formatted as "inNode outNode condition"
+			if ((curLine.split("\t").length == 3) || (curLine.split(" ").length == 3)) {
+				addEdgeAndNodesToPolicy (curLine, policy, conditions, actions);
+				
+				// if it is the first line, set the first node as initial
+				if (i == 0) {
+					debug("init node: " + getStringInTabbedLine(curLine,0));
+					policy.setNodeAsInitial(policy.getNode(getStringInTabbedLine(curLine, 0)).getId(),true);
+				}
+			}
+			
+			// line formatted as "finalNode"
+			else if (curLine.split("\t").length == 1) {
+				addFinalNodesToPolicy(curLine, policy);
+			}
+			else {
+				throw new DialogueException("ERROR: line " + i + " in policy file is not correctly formatted");
+			}
+		}
+		return policy;
+	}
+
 
 	/**
 	 * Returns a list of conditions extracted from the specification text
@@ -89,11 +147,11 @@ public class TextPolicyReader {
 	 * @return a hashmap containing the edges, indexed by their identifier
 	 * @throws DialogueException if the specification text is ill-formated
 	 */
-	public static HashMap<String,PolicyCondition> extractConditions (String condText) throws DialogueException {
+	public static HashMap<String,AbstractCondition> extractConditions (String condText) throws DialogueException {
 
 		String[] lines = condText.split("\n");
 
-		HashMap<String,PolicyCondition> conditions = new HashMap<String, PolicyCondition>();
+		HashMap<String,AbstractCondition> conditions = new HashMap<String, AbstractCondition>();
 
 		for (int i = 0 ; i < lines.length ; i++) {
 			String line = lines[i];
@@ -103,7 +161,7 @@ public class TextPolicyReader {
 			if (tabs.length == 2) {
 				String condSymbol = tabs[0].replace("=", "").trim();
 				String condFormula = tabs[1].trim();
-				PolicyCondition cond = extractCondition(condSymbol, condFormula);
+				AbstractCondition cond = extractCondition(condSymbol, condFormula);
 				conditions.put(condSymbol, cond);		
 			}
 			else if (line.trim().length() > 0) {
@@ -114,36 +172,11 @@ public class TextPolicyReader {
 	}
 
 	
+	// ==============================================================
+	// CONDITION EXTRACTION METHODS
+	// ==============================================================
 
-	/**
-	 * Extract a list of actions from a a specification text
-	 * 
-	 * @param actionsText the text specifying the actions
-	 * @return the list of actions
-	 * @throws DialogueException if the specification text is ill-formatted
-	 */
-	public static HashMap<String,PolicyAction> extractActions (String actionsText) throws DialogueException {
 
-		String[] lines = actionsText.split("\n");
-
-		HashMap<String,PolicyAction> totalActions = new HashMap<String, PolicyAction>();
-
-		for (int i = 0 ; i < lines.length ; i++) {
-			String line = lines[i];
-
-			String[] tabs = line.split("=");
-
-			if (tabs.length == 2) {
-				String actionsSymbol = tabs[0].replace("=", "").trim();
-				String content = tabs[1].trim();
-				totalActions.put(actionsSymbol, extractAction(actionsSymbol, content));
-			}
-			else if (line.trim().length() > 0) {
-				throw new DialogueException("ERROR: action file is ill-formated at line: " + i);
-			}
-		}
-		return totalActions;
-	}
 
 	/**
 	 * Returns a new constructed condition from a line of specification
@@ -152,7 +185,7 @@ public class TextPolicyReader {
 	 * @return the constructed condition
 	 * @throws DialogueException if the line is ill-formatted
 	 */
-	public static PolicyCondition extractCondition (String condSymbol, String str) throws DialogueException {
+	public static AbstractCondition extractCondition (String condSymbol, String str) throws DialogueException {
 
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -172,25 +205,29 @@ public class TextPolicyReader {
 		// event condition
 		if (str.substring(0,2).equals("E[")) {
 			String eventcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyCondition(condSymbol, eventcontent, minmaxPrcond[0], minmaxPrcond[1]);
+			EventCondition cond = new EventCondition(condSymbol, eventcontent, minmaxPrcond[0], minmaxPrcond[1]);
+			return cond;
 		}
 
 		// intention condition
 		else if (str.substring(0,3).equals("CI[")) {
 			String intentContent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
+			IntentionCondition cond = new IntentionCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
+			return cond;
 		}
 		
 		// intention condition
 		else if (str.substring(0,2).equals("I[")) {
 			String intentContent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
+			IntentionCondition cond = new IntentionCondition(condSymbol, intentContent, minmaxPrcond[0], minmaxPrcond[1]);
+			return cond;
 		}
 
 		// else, we assume it is a shallow condition
 		else {
 			String internalcontent = str.split("\\(")[0];
-			return new PolicyCondition(condSymbol, internalcontent.replace("\"", ""), minmaxPrcond[0], minmaxPrcond[1]);
+			PhonstringCondition cond = new PhonstringCondition(condSymbol, internalcontent.replace("\"", ""), minmaxPrcond[0], minmaxPrcond[1]);
+			return cond;
 		}
 	}
 
@@ -227,6 +264,45 @@ public class TextPolicyReader {
 	}
 
 
+	// ==============================================================
+	// ACTION EXTRACTION METHODS
+	// ==============================================================
+
+	
+	/**
+	 * Extract a list of actions from a a specification text
+	 * 
+	 * @param actionsText the text specifying the actions
+	 * @return the list of actions
+	 * @throws DialogueException if the specification text is ill-formatted
+	 */
+	public static HashMap<String,AbstractAction> extractActions (String actionsText) throws DialogueException {
+
+		String[] lines = actionsText.split("\n");
+
+		HashMap<String,AbstractAction> totalActions = new HashMap<String, AbstractAction>();
+
+		for (int i = 0 ; i < lines.length ; i++) {
+			String line = lines[i];
+
+			String[] tabs = line.split("=");
+
+			if (tabs.length == 2) {
+				String actionsSymbol = tabs[0].replace("=", "").trim();
+				String content = tabs[1].trim();
+				AbstractAction action = extractAction(actionsSymbol, content);
+				if (action != null) {
+					totalActions.put(actionsSymbol, action);
+				}
+			}
+			else if (line.trim().length() > 0) {
+				throw new DialogueException("ERROR: action file is ill-formated at line: " + i);
+			}
+		}
+		return totalActions;
+	}
+
+	
 	/**
 	 * Extract an action from a line of specification
 	 *  
@@ -234,7 +310,7 @@ public class TextPolicyReader {
 	 * @return the extracted action
 	 * @throws DialogueException 
 	 */
-	public static PolicyAction extractAction (String actionSymbol, String str) throws DialogueException {
+	public static AbstractAction extractAction (String actionSymbol, String str) throws DialogueException {
 		
 		str = str.trim();
 		if (str.contains("[") != str.contains("]")) {
@@ -244,80 +320,29 @@ public class TextPolicyReader {
 		// intention action
 		if (str.length() > 4 && str.substring(0,3).equals("CI[")) {
 			String intentcontent = str.substring(3,str.length()).split("]")[0].replace("]", "");
-			return new PolicyAction(actionSymbol, intentcontent);
+			IntentionAction action = new IntentionAction(actionSymbol, FormulaUtils.constructFormula(intentcontent));
+			action.setStatus(IntentionAction.COMMUNICATIVE);
+			return action;
 		}
 		else if (str.length() > 3 && str.substring(0,2).equals("I[")) {
 			String intentcontent = str.substring(2,str.length()).split("]")[0].replace("]", "");
-			return new PolicyAction(actionSymbol, intentcontent);
-		}
+			IntentionAction action = new IntentionAction(actionSymbol, FormulaUtils.constructFormula(intentcontent));
+			action.setStatus(IntentionAction.PRIVATE);
+			return action;		}
 		
 		// by default, shallow dialogue action
 		else {
-			return PolicyAction.createVoidAction();
+			return new PhonstringAction(actionSymbol, str);
 		}
 	}
 
 
-	/**
-	 * Construct a new dialogue policy from a policy specification, a set of conditions and a set of actions
-	 * @param text the policy text
-	 * @param conditions the conditions
-	 * @param actions the actions
-	 * @return
-	 * @throws DialogueException if the policy text is not well formatted
-	 */
-	public static DialoguePolicy constructPolicy (String text, HashMap<String, PolicyCondition> conditions, 
-			HashMap<String, PolicyAction> actions) throws DialogueException {
 
-		String[] lines = text.split("\n");
-
-		DialoguePolicy policy = new DialoguePolicy();
-
-		for (int i = 0 ; i < lines.length ; i++) {
-			String curLine = lines[i];
-			debug("parsing line: " + curLine);
-			
-			// line formatted as "inNode outNode condition"
-			if ((curLine.split("\t").length == 3) || (curLine.split(" ").length == 3)) {
-				addEdgeAndNodesToPolicy (curLine, policy, conditions, actions);
-				
-				// if it is the first line, set the first node as initial
-				if (i == 0) {
-					debug("init node: " + getStringInTabbedLine(curLine,0));
-					policy.setNodeAsInitial(policy.getNode(getStringInTabbedLine(curLine, 0)));
-				}
-			}
-			
-			// line formatted as "finalNode"
-			else if (curLine.split("\t").length == 1) {
-				addFinalNodesToPolicy(curLine, policy);
-			}
-			else {
-				throw new DialogueException("ERROR: line " + i + " in policy file is not correctly formatted");
-			}
-		}
-		return policy;
-	}
+	// ==============================================================
+	// METHODS FOR ATTACHING CONDITIONS AND ACTIONS TO THE POLICY
+	// ==============================================================
 
 	
-	/**
-	 * Given a string separated by tabs or spaces, split it and take the substring
-	 * at position anchor 
-	 *
-	 * @param line the line to split
-	 * @param anchor the position in the splitted string to extract
-	 * @return the extracted substring
-	 */
-	private static String getStringInTabbedLine (String line, int anchor) {
-
-		if (line.contains("\t") && line.split("\t").length > anchor) {
-			return line.split("\t")[anchor];
-		}
-		else if (line.contains(" ") && line.split(" ").length > anchor) {
-			return line.split(" ")[anchor];
-		}
-		return "";
-	}
 
 	
 	/**
@@ -332,8 +357,8 @@ public class TextPolicyReader {
 	 *         refers to actions or conditions not in the list
 	 */
 	public static void addEdgeAndNodesToPolicy (String line, DialoguePolicy policy, 
-			HashMap<String, PolicyCondition> conditions, 
-			HashMap<String, PolicyAction> actions) 
+			HashMap<String, AbstractCondition> conditions, 
+			HashMap<String, AbstractAction> actions) 
 	throws DialogueException {
 
 		String[] tabs = line.split("\t");
@@ -358,7 +383,7 @@ public class TextPolicyReader {
 			PolicyNode sourceNode;
 			if (!policy.hasNode(sourceNodeId)) {
 				log("sourceNodeId: " + sourceNodeId);
-				sourceNode = new PolicyNode(sourceNodeId, actions.get(sourceNodeId));
+				sourceNode = new PolicyNode(sourceNodeId, Arrays.asList(actions.get(sourceNodeId)));
 				log("sourceNode.id: " + sourceNode.getId());
 				log("hasNode: " + policy.hasNode(sourceNodeId));
 				policy.addNode(sourceNode);
@@ -369,7 +394,7 @@ public class TextPolicyReader {
 
 			PolicyNode targetNode;
 			if (!policy.hasNode(targetNodeId)  && actions.containsKey(targetNodeId)) {
-				targetNode = new PolicyNode(targetNodeId, actions.get(targetNodeId));
+				targetNode = new PolicyNode(targetNodeId, Arrays.asList(actions.get(targetNodeId)));
 				policy.addNode(targetNode);
 			}
 			else {
@@ -377,9 +402,9 @@ public class TextPolicyReader {
 			}
 
 			PolicyEdge newEdge = new PolicyEdge(edgeId, conditions.get(edgeId));
-			newEdge.setSourceNode(sourceNode);
-			newEdge.setTargetNode(targetNode);		
-			policy.addEdge(newEdge, sourceNode, targetNode);
+			newEdge.setSourceNode(sourceNode.getId());
+			newEdge.setTargetNode(targetNode.getId());		
+			policy.addEdge(newEdge);
 		}
 		else {
 			throw new DialogueException("ERROR: line not well formatted");
@@ -387,6 +412,7 @@ public class TextPolicyReader {
 	}
 
 
+	
 	/**
 	 * Set a node as being in the set of final nodes in the policy
 	 * 
@@ -399,12 +425,40 @@ public class TextPolicyReader {
 		if (line.split("\t").length == 1) {
 
 			if (policy.hasNode(line.trim())) {
-				policy.setNodeAsFinal(policy.getNode(line.trim()));
+				policy.setNodeAsFinal(policy.getNode(line.trim()).getId(),true);
 				debug("setting node as final: " + line.trim());
 			}
 		}
 	}
 
+
+
+	// ==============================================================
+	// UTILITY METHODS
+	// ==============================================================
+
+	
+	
+	/**
+	 * Given a string separated by tabs or spaces, split it and take the substring
+	 * at position anchor 
+	 *
+	 * @param line the line to split
+	 * @param anchor the position in the splitted string to extract
+	 * @return the extracted substring
+	 */
+	private static String getStringInTabbedLine (String line, int anchor) {
+
+		if (line.contains("\t") && line.split("\t").length > anchor) {
+			return line.split("\t")[anchor];
+		}
+		else if (line.contains(" ") && line.split(" ").length > anchor) {
+			return line.split(" ")[anchor];
+		}
+		return "";
+	}
+
+	
 	/**
 	 * Logging
 	 * @param s

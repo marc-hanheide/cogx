@@ -1,0 +1,10 @@
+JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --unlock-phrase "continue" --unlock-threshold 0.65 --log true
+
+# phonological string -> linguistic meaning
+JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --log true
+JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
+#JAVA MG ref-resolution       de.dfki.lt.tr.cast.dialogue.GUIAwareReferenceResolution --log true
+#JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.NoReferenceResolution --log true
+
+# intention recognition
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/nifti/current/INDEX.U.txt --log true --timeout 250

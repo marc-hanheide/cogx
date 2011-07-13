@@ -19,22 +19,22 @@
 	</edges>
 	
 	<conditions>
-		<condition id="anyCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(&lt;ref&gt;(%2)))" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
-		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
-		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
-		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
-		<condition id="whQuestionCond" type="communicativeintention"
+		<condition id="anyCond"  type="intention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(&lt;ref&gt;(%2)))" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="greetingCond"  type="intention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="evalCond" type="intention"  content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="closingCond" type="intention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
+		<condition id="whQuestionCond" type="intention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" />
-	<!--	<condition id="pQuestionCond" type="communicativeintention"
+	<!--	<condition id="pQuestionCond" type="intention"
 			lowerProb="0.0" higherProb="1.0" content="&lt;pdddre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" /> -->
 	</conditions>
 	
 	<actions>
-		<action id="forwardAction" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" type="attributedintention"></action>
-		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
-		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
-		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
-		<action id="whAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
-<!--	    <action id="pAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" /> -->
+		<action id="forwardAction" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" type="intention" status="attributed"></action>
+		<action id="greetingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="thankAction" type="intention" status="communicative" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
+		<action id="closingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="whAnswerAction" type="intention" status="communicative"  content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+<!--	    <action id="pAnswerAction" type="intention" status="communicative"  content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" /> -->
 	</actions>
 </policy>

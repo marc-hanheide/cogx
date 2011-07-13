@@ -1,13 +1,15 @@
-#!/bin/bash
+#!/bin/sh
+
 cd external
 
-ABDUCER_VERSION="2.0.2"
+ABDUCER_VERSION="2.1.0"
 
 if [ "abducer-$ABDUCER_VERSION" -nt "abducer-$ABDUCER_VERSION.tar.gz" ]; then
-    echo "abducer is up to date"
+#	echo "the abducer seems to be up to date"
+	true
 else
-    tar xzvf "abducer-$ABDUCER_VERSION.tar.gz"
-    touch "abducer-$ABDUCER_VERSION"
+	tar xzvf "abducer-$ABDUCER_VERSION.tar.gz"
+	touch "abducer-$ABDUCER_VERSION"
 fi
 
 make -C "abducer-$ABDUCER_VERSION"  ICE_HOME=@ICE_HOME@

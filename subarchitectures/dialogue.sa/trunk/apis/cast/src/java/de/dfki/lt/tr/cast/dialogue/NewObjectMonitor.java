@@ -46,7 +46,6 @@ import de.dfki.lt.tr.dialogue.interpret.BeliefFormulaFactory;
 import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
-import eu.cogx.beliefs.slice.SharedBelief;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +61,7 @@ public class NewObjectMonitor extends AbstractDialogueComponent {
 	@Override
 	public void start() {
 		super.start();
-		addChangeFilter(ChangeFilterFactory.createChangeFilter(SharedBelief.class,
+		addChangeFilter(ChangeFilterFactory.createChangeFilter(dBelief.class,
 				WorkingMemoryOperation.ADD, "", "", LISTEN_SUBARCH,
 				FilterRestriction.ALLSA), new WorkingMemoryChangeReceiver() {
 			@Override

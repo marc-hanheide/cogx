@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -33,7 +33,7 @@ import java.io.InputStreamReader;
 /**
  * Generic utility for reading and writing text files
  * 
- * @author plison
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 09/10/2010
  */
 
@@ -41,7 +41,7 @@ public class FileUtils {
 
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	private static String NEWLINE = "\n"; 
 

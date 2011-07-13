@@ -1,0 +1,4 @@
+# intention realisation
+JAVA MG	int-realizer         de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRealizer --ruleset ./subarchitectures/dialogue.sa/resources/abduction/nifti/current/INDEX.G.txt --log true
+JAVA MG cplan                de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile ./subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf --contentRel Content --log true
+JAVA MG realizer             de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml --ngrams ./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt --log true

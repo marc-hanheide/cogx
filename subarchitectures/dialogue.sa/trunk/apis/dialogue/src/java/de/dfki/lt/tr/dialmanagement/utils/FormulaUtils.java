@@ -1,6 +1,6 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -21,8 +21,11 @@
 package de.dfki.lt.tr.dialmanagement.utils;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
@@ -33,19 +36,19 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.GenericPointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
 import de.dfki.lt.tr.dialmanagement.utils.formulaParser.FormulaParser;
 import de.dfki.lt.tr.dialmanagement.utils.formulaParser.ParseException;
+import de.dfki.lt.tr.dialmanagement.utils.formulaParser.TokenMgrError;
 
 /**
- * Utility functions for manipulating propositional modal formulae
+ * Utility functions for manipulating logical formulae
  * 
- * @author Pierre Lison (plison@dfki.de)
- * @version 09/10/2010
+ * @author Pierre Lison (plison@ifi.uio.no)
+ * @version 22/12/2010
  *
  */
 public class FormulaUtils {
@@ -56,6 +59,11 @@ public class FormulaUtils {
 
 	// the formula parser
 	private static FormulaParser parser;
+
+	
+	// ==============================================================
+	// FORMULA CONVERSION METHODS
+	// ==============================================================
 
 
 	/**
@@ -69,12 +77,8 @@ public class FormulaUtils {
 			return ((ElementaryFormula)formula).prop;
 		}
 		else if (formula instanceof UnderspecifiedFormula) {
-			if (formula.id == 0) {
-				return "*";
-			}
-			else {
-				return "%"+formula.id;
-			}
+				return "%"+((UnderspecifiedFormula)formula).arglabel;
+			
 		}
 		else if (formula instanceof UnknownFormula) {
 			return "?";
@@ -108,9 +112,6 @@ public class FormulaUtils {
 				return str;
 			}
 		}
-		else if (formula instanceof PointerFormula) {
-			return "["+((PointerFormula)formula).pointer.subarchitecture + ":" + ((PointerFormula)formula).pointer.id + "]";
-		}
 		else if (formula instanceof IntegerFormula) {
 			return "" + ((IntegerFormula)formula).val;
 		}
@@ -126,6 +127,7 @@ public class FormulaUtils {
 		return "";
 	}
 
+	
 
 	/**
 	 * Construct a logical formula from a string representation
@@ -144,8 +146,11 @@ public class FormulaUtils {
 			} 
 			catch (ParseException e) 
 			{
-				e.printStackTrace();
-				throw new DialogueException("ERROR: couldn't parse formula: " + s);
+				return new ElementaryFormula(0, s);
+			}
+			catch (TokenMgrError e) 
+			{
+				return new ElementaryFormula(0, s);
 			}
 		}
 		return new UnknownFormula(0);
@@ -176,6 +181,9 @@ public class FormulaUtils {
 
 
 
+	// ==============================================================
+	// FORMULA COPY METHODS
+	// ==============================================================
 
 
 
@@ -213,11 +221,8 @@ public class FormulaUtils {
 		else if (form instanceof GenericPointerFormula) {
 			return new GenericPointerFormula(0, ((GenericPointerFormula)form).pointer);
 		}
-		else if (form instanceof PointerFormula) {
-			return new PointerFormula(0, ((PointerFormula)form).pointer, ((PointerFormula)form).type);
-		}
 		else if (form instanceof UnderspecifiedFormula) {
-			return new UnderspecifiedFormula(form.id);
+			return new UnderspecifiedFormula(0, ((UnderspecifiedFormula)form).arglabel);
 		}
 		else if (form instanceof UnknownFormula) {
 			return new UnknownFormula(0);
@@ -227,6 +232,73 @@ public class FormulaUtils {
 	}
 
 
+
+	// ==============================================================
+	// METHODS FOR MANIPULATION OF MODAL CONTENT
+	// ==============================================================
+
+	
+    /**
+     * In a formula, search for a subformula with a modal operator of variable "modOp",
+     * and sets its pointed formula to be an elementary formula with the given value
+     * 
+     * @param form the formula to change
+     * @param modOp the modal operator to search
+     * @param val the value to enter
+     */
+    public static void setModalOperatorValue(dFormula form, String modOp, String val) {
+	
+	if (form instanceof ComplexFormula) {
+	    for (dFormula subform : ((ComplexFormula)form).forms) {
+		setModalOperatorValue(subform, modOp, val);
+	    }
+	} 
+	else if (form instanceof ModalFormula && ((ModalFormula)form).op.equals(modOp)) {
+	    ((ModalFormula)form).form = new ElementaryFormula(0,val);
+	}
+	else if (form instanceof ModalFormula) {
+	    setModalOperatorValue(((ModalFormula)form).form, modOp, val);
+	}
+    }
+
+    
+
+	
+	/**
+	 * Returns the formula accessible from a particular modal operator applied
+	 * to a given formula
+	 * 
+	 * @param form the full formula
+	 * @param modOp the modal operator
+	 * @return the formula if it is accessible, null otherwise
+	 */
+	public static dFormula getModalOperatorValue(dFormula form, String modOp) {
+		
+		if (form instanceof ComplexFormula) {
+			for (dFormula subform : ((ComplexFormula)form).forms) {
+				dFormula val = getModalOperatorValue(subform, modOp);
+				if (val != null) {
+					return val;
+				}
+			}
+		} 
+		else if (form instanceof ModalFormula && ((ModalFormula)form).op.equals(modOp)) {
+			return ((ModalFormula)form).form;
+		}
+		else if (form instanceof ModalFormula) {
+			return getModalOperatorValue(((ModalFormula)form).form, modOp);
+		}
+		
+		return null;
+	}
+	
+
+	// ==============================================================
+	// FORMULA COMPARISON METHODS
+	// ==============================================================
+
+
+	
 	/**
 	 * Returns true if the content of form1 subsumes the content form2, 
 	 * and false otherwise
@@ -236,7 +308,7 @@ public class FormulaUtils {
 	 * @return true if form1 subsumes form2, false otherwise
 	 */
 	public static boolean subsumes (dFormula form1, dFormula form2)  {
-
+ 
 		
 		form1 = flattenFormula(form1);
 		form2 = flattenFormula(form2);
@@ -247,9 +319,7 @@ public class FormulaUtils {
 		
 		// elementary formulae
 		if (form1 instanceof ElementaryFormula && form2 instanceof ElementaryFormula) {
-			if (((ElementaryFormula)form1).prop.toLowerCase().equals(((ElementaryFormula)form2).prop.toLowerCase())) {
-				return true;
-			}
+			return compare (((ElementaryFormula)form1).prop, ((ElementaryFormula)form2).prop);
 		}
 
 		// complex formulae
@@ -283,12 +353,6 @@ public class FormulaUtils {
 			return ((GenericPointerFormula)form1).pointer.equals(((GenericPointerFormula)form2).pointer);
 		}
 
-		// CAST pointer formulae
-		else if (form1 instanceof PointerFormula && form2 instanceof PointerFormula) {
-			return (((PointerFormula)form1).pointer.subarchitecture.equals(((PointerFormula)form2).pointer.subarchitecture) && 
-					((PointerFormula)form1).pointer.id.equals(((PointerFormula)form2).pointer.id));
-		}
-
 		// boolean formulae
 		else if (form1 instanceof BooleanFormula && form2 instanceof BooleanFormula) {
 			return ((BooleanFormula)form1).val == ((BooleanFormula)form2).val;
@@ -300,7 +364,7 @@ public class FormulaUtils {
 		}
 
 		// unknown formulae
-		else if (form1 instanceof UnknownFormula && form2 instanceof UnknownFormula) {
+		else if (form1 instanceof UnknownFormula) {
 			return true;
 		}
 
@@ -310,16 +374,53 @@ public class FormulaUtils {
 
 
 
-	public static dFormula flattenFormula (dFormula form) {
-		if (form instanceof ComplexFormula && ((ComplexFormula)form).forms.size() == 1) {
-			return ((ComplexFormula)form).forms.get(0);
+	/**
+	 * Compares the two strings and returns true if the first one "subsumes"
+	 * the second one -- in this case, it means that the two strings are
+	 * essentially equal modulo some underspecified arguments
+	 * 
+	 * @param first the first string
+	 * @param second the second string
+	 * @return true if the first string subsumes the second, false otherwise
+	 */
+	private static boolean compare (String first, String second) {
+		if (second.toLowerCase().contains(first.toLowerCase())) {
+			return true;
 		}
-		else {
-			return form;
+		else if (first.contains("%")) {
+			
+			String[] initSplit = first.split("%");
+					
+			String varName = "";
+			for (int i = 1 ; i < initSplit.length ; i++) {
+				StringTokenizer t = new StringTokenizer(initSplit[i]);
+				varName = t.nextToken().trim();
+			}
+			
+			String[] fullSplit = first.split("%"+varName);
+			
+			for (String substr : fullSplit) {
+				if (!second.contains(substr)) {
+					return false;
+				}
+			}
+			return true;
 		}
+		else if (first.contains("*")) {
+			
+			String[] fullSplit = first.split("\\*");
+			
+			for (String substr : fullSplit) {
+				if (!second.contains(substr)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
-
-
+	
+	
 
 	/**
 	 * returns true if the content of form1 is equal to the content of form2,
@@ -338,6 +439,7 @@ public class FormulaUtils {
 		return (subsumes(form1.form, form2.form));
 	}
 
+	
 	/**
 	 * returns true if the content of form1 is equal to the content of form2,
 	 * false otherwise (with the two being complex formulae)
@@ -372,7 +474,30 @@ public class FormulaUtils {
 
 
 
+	// ==============================================================
+	// UTILITY METHODS
+	// ==============================================================
 
+	
+
+	/**
+	 * Flatten the formula (i.e. transform a complex formula of size one into the
+	 * included formula)
+	 * 
+	 * @param form the formula to flatten
+	 * @return the flattened formula
+	 */
+	public static dFormula flattenFormula (dFormula form) {
+		if (form instanceof ComplexFormula && ((ComplexFormula)form).forms.size() == 1) {
+			return ((ComplexFormula)form).forms.get(0);
+		}
+		else {
+			return form;
+		}
+	}
+
+
+	
 	/**
 	 * Logging
 	 * @param s

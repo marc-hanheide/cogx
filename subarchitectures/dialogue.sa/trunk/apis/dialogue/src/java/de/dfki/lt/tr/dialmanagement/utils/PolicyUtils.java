@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -23,24 +23,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
-import de.dfki.lt.tr.dialmanagement.data.FormulaWrapper;
-import de.dfki.lt.tr.dialmanagement.data.Observation;
 import de.dfki.lt.tr.dialmanagement.data.policies.PolicyEdge;
 
 
 /**
- * Utilities for manipulating dialogue policies
+ * Utilities for manipulating objects related to dialogue policy
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 09/10/2010
  *
  */
@@ -51,74 +50,127 @@ public class PolicyUtils {
 	public static boolean DEBUG = false;
 	
 	
+	
+
+	// ==============================================================
+	// EDGE SORTING METHODS (PARTIAL ORDERING)
+	// ==============================================================
+
+	
+	
 	/**
 	 * Sort the edge according to their specificity, the head of the list being the most
 	 * specific while the tail is the most underspecified
-	 *  
+	 *    
 	 * @param unsortedEdges the unsorted collection of edges
-	 * @return the sorted list of edges
 	 */
-	public static List<PolicyEdge> sortEdges (Collection<PolicyEdge> unsortedEdges) {
+	public static void sortEdges (List<PolicyEdge> edges) {
 		
-		LinkedList<PolicyEdge> sortedEdges = new LinkedList<PolicyEdge>();
-		for (PolicyEdge edge: unsortedEdges) {
-			sortedEdges.add(edge);
-		}
+		debug("sortedEdges: " + edges);
 		
-		debug("sortedEdges: " + sortedEdges);
+		// fixed point to determine when to stop sorting
 		boolean fixedPointReached = false;
+		
 		while (!fixedPointReached) {
 			fixedPointReached = true;
-			for (int i = 0 ; fixedPointReached && i < sortedEdges.size(); i++) {
-				PolicyEdge firstEdge = sortedEdges.get(i);
-				if (i < sortedEdges.size() -1) {
-					PolicyEdge nextEdge = sortedEdges.get(i+1);
-					boolean subsumption1 = 
-						FormulaUtils.subsumes(firstEdge.getCondition().getContent(), nextEdge.getCondition().getContent());
-					boolean subsumption2 = 
-						FormulaUtils.subsumes(nextEdge.getCondition().getContent(),firstEdge.getCondition().getContent());
+			for (int i = 0 ; fixedPointReached && i < edges.size(); i++) {
+				PolicyEdge firstEdge = edges.get(i);
+				if (i < edges.size() -1) {
+					PolicyEdge nextEdge = edges.get(i+1);
 					
+					// we first use subsumption to sort the edges according
+					// to their specificity
+					boolean subsumption1 = 
+						FormulaUtils.subsumes(firstEdge.getConditionsAsSingleFormula(), 
+								nextEdge.getConditionsAsSingleFormula());
+					boolean subsumption2 = 
+						FormulaUtils.subsumes(nextEdge.getConditionsAsSingleFormula(),
+								firstEdge.getConditionsAsSingleFormula());
+					
+					// if one edge is more specific than the other one, it is moved up
 					if (subsumption1 && !subsumption2) {
-						sortedEdges.remove(i);
-						sortedEdges.add(i+1, firstEdge);
+						edges.remove(i);
+						edges.add(i+1, firstEdge);
 						fixedPointReached = false;
 					}
 					
-					// hack
+					// if the subsumption above was not enough to sort the edges, 
+					// we resort to simple heuristics
 					else if (!subsumption1 && !subsumption2) {
-						if (firstEdge.getCondition().getUnderspecifiedArguments().size() > 
-						nextEdge.getCondition().getUnderspecifiedArguments().size()) {
-							sortedEdges.remove(i);
-							sortedEdges.add(i+1, firstEdge);
+						
+						// counting the number of underspecified arguments
+						if (firstEdge.getAllUnderspecifiedArguments().size() > 
+						nextEdge.getAllUnderspecifiedArguments().size()) {
+							edges.remove(i);
+							edges.add(i+1, firstEdge);
+							fixedPointReached = false;
+						}
+						
+						// or simply comparing the lengths of the conditions
+						else if (FormulaUtils.getString(firstEdge.getConditionsAsSingleFormula()).length() 
+								>= FormulaUtils.getString(nextEdge.getConditionsAsSingleFormula()).length()) {
+							edges.remove(i);
+							edges.add(i+1, firstEdge);
 							fixedPointReached = false;
 						}
 					}
 				}
 			}
-			debug("sortedEdges: " + sortedEdges);
 		}
 		
-		return sortedEdges;
-	}
-		
+	} 
+		 	
+	
+	
+	
+
+	// ==============================================================
+	// METHODS FOR MANIPULATION OF UNDERSPECIFIED CONTENT
+	// ==============================================================
+
+
 	
 	/**
-	 * Given an observation and a policy edge whose condition contains arguments (of the form %i), 
-	 * extract the value of these arguments against the observation
+	 * Returns the underspecified subformulae contained in the formula
 	 * 
-	 * @param obs the observation
-	 * @param edge the policy edge
-	 * @return a mapping from each argument i to its value in the observation
+	 * @param formula the formula to visit
+	 * @return a collection of underspecified subformulae
 	 */
-	public static HashMap<Integer,dFormula> extractFilledArguments (Observation obs, PolicyEdge edge) {
+	public static Collection<String> getUnderspecifiedArguments (dFormula formula) {
+		Vector<String> uforms = new Vector<String>();
 		
-		for (FormulaWrapper alternative : obs.getAlternatives()) {		
-			if (edge.getCondition().equals(alternative) && 
-					obs.getProbability(alternative) >= edge.getCondition().getMinimumProb()) {
-				return extractFilledArguments (edge.getCondition().getContent(), alternative.getContent()) ;
+		if (formula instanceof ComplexFormula) {
+			for (dFormula subform : ((ComplexFormula)formula).forms) {
+				uforms.addAll(getUnderspecifiedArguments(subform));
 			}
 		}
-		return new HashMap<Integer,dFormula>();
+		else if (formula instanceof ModalFormula) {
+			uforms.addAll(getUnderspecifiedArguments(((ModalFormula)formula).form));
+		}
+		else if (formula instanceof UnderspecifiedFormula) {
+			uforms.add(""+((UnderspecifiedFormula)formula).arglabel);
+		}
+		else if (formula instanceof ElementaryFormula) {
+			uforms.addAll(getUnderspecifiedFormulae(((ElementaryFormula)formula).prop));
+		}
+		return uforms;
+	}
+	
+	 
+	
+	private static Collection<String> getUnderspecifiedFormulae (String text) {
+		
+		Vector<String> uforms = new Vector<String>();
+		
+		String[] splits = text.split("%");
+		
+		for (int i = 1 ; splits.length > 1 && i < splits.length ; i++) {
+			StringTokenizer t = new StringTokenizer(splits[i]);
+			String varName = t.nextToken().replace("!", "").replace(",", "").replace(".", "");
+			uforms.add(varName);
+		}
+		
+		return uforms;
 	}
 	
 	
@@ -130,13 +182,14 @@ public class PolicyUtils {
 	 * @param form1 the underspecified formula
 	 * @param form2 the fully specified formula
 	 * @return  a mapping from each argument i in form1 to its value in form2
+	 * @throws DialogueException 
 	 */
-	public static HashMap<Integer,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
+	public static HashMap<String,dFormula> extractFilledArguments (dFormula form1, dFormula form2)  {
 						
-		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
+		HashMap<String,dFormula> filledArguments = new HashMap<String,dFormula>();
 
 		form1 = FormulaUtils.flattenFormula(form1);
-		form2 = FormulaUtils.flattenFormula(form2);
+		form2 = FormulaUtils.flattenFormula(form2);	
 		
 		if (form1 instanceof ComplexFormula && form2 instanceof ComplexFormula) {
 			filledArguments.putAll(extractFilledArgumentsInComplexFormula((ComplexFormula)form1, (ComplexFormula)form2));
@@ -156,12 +209,15 @@ public class PolicyUtils {
 		}
 		
 		else if (form1 instanceof UnderspecifiedFormula) {
-			filledArguments.put(form1.id, form2);
+			debug("detected the following argument: <" + ((UnderspecifiedFormula)form1).arglabel + ">" + FormulaUtils.getString(form2));
+			filledArguments.put(((UnderspecifiedFormula)form1).arglabel, form2);
 		}
 		
 		return filledArguments;
 	}
 	
+
+
 
 	/**
 	 * Given two complex formulae (one of which is fully specified and the other contains underspecified
@@ -169,10 +225,12 @@ public class PolicyUtils {
 	 * @param form1 the underspecified complex formula
 	 * @param form2 the fully specified complex formula
 	 * @return  a mapping from each argument i in form1 to its value in form2
+	 * @throws DialogueException 
 	 */	
-	public static HashMap<Integer,dFormula> extractFilledArgumentsInComplexFormula (ComplexFormula form1, ComplexFormula form2)  {
+	public static HashMap<String,dFormula> extractFilledArgumentsInComplexFormula 
+		(ComplexFormula form1, ComplexFormula form2) {
 			
-		HashMap<Integer,dFormula> filledArguments = new HashMap<Integer,dFormula>();
+		HashMap<String,dFormula> filledArguments = new HashMap<String,dFormula>();
 		
 		if ((form1.forms.size() > form2.forms.size()) || !(form1.op.equals(form2.op))) {
 			return filledArguments;
@@ -189,41 +247,21 @@ public class PolicyUtils {
 				}
 			}
 			if (!foundMatch) {
-				return new HashMap<Integer,dFormula>();
+				return new HashMap<String,dFormula>();
 			}
 		}
 		return filledArguments;
 	}
-	
+	 
 
 
-	/**
-	 * Create a simple (intentional) observation with a unique alternative with p = 1.0
-	 * 
-	 * @param s the string describing the observation
-	 * @return the constructed observation
-	 * @throws DialogueException if formatting problem
-	 */
-	public static Observation createSimpleObservation (String s) throws DialogueException {
-		return createSimpleObservation(s, 1.0f);
-	}
-	
-	/**
-	 * Create a simple (intentional) observation with a unique alternative with p = f
-	 * 
-	 * @param s the string describing the observation
-	 * @param f the probability for the description
-	 * @return the constructed observation
-	 * @throws DialogueException if formatting problem
-	 */
-	public static Observation createSimpleObservation (String s, float f) throws DialogueException {
-		Observation intent = new Observation (Observation.INTENTION);
-		intent.addAlternative(s, f);
-		intent.addAlternative(new UnknownFormula(0), 1-f);
-		return intent;
-	}
-	
 
+	// ==============================================================
+	// UTILITY METHODS
+	// ==============================================================
+
+
+	
 	/**
 	 * Logging
 	 * @param s

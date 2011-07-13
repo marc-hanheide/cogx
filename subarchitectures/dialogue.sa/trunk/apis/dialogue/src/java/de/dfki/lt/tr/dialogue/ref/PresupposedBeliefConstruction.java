@@ -23,20 +23,22 @@ package de.dfki.lt.tr.dialogue.ref;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.infer.weigabd.AbductionEngineConnection;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.FileReadErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.ProofWithCost;
-import de.dfki.lt.tr.infer.weigabd.slice.SyntaxErrorException;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
+import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
+import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,13 +65,13 @@ public class PresupposedBeliefConstruction {
 		abd = new AbductionEngineConnection();
 		abd.connectToServer(abd_serverName, abd_endpoints);
 		abd.bindToEngine(BELIEF_CONSTRUCTION_ENGINE);
-		abd.getProxy().clearContext();
+		abd.getEngineProxy().clearContext();
 	}
 
 	public Map<String, Map<String, String>> extractPresuppositions(LogicalForm lf) {
 		log("expanding LF into facts");
 		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
-			abd.getProxy().addFact(fact);
+			abd.getEngineProxy().addFact(fact);
 		}
 
 		ModalisedAtom g = TermAtomFactory.modalisedAtom(
@@ -78,7 +80,7 @@ public class PresupposedBeliefConstruction {
 					TermAtomFactory.term(lf.root.nomVar)
 				}));
 
-		MarkedQuery[] proof = bestAbductiveProof(ProofUtils.newUnsolvedProof(g));
+		List<MarkedQuery> proof = bestAbductiveProof(ProofUtils.newUnsolvedProof(g));
 
 		Map<String, Map<String, String>> result = new HashMap<String, Map<String, String>>();
 
@@ -87,16 +89,16 @@ public class PresupposedBeliefConstruction {
 			return result;
 		}
 
-		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
+		List<ModalisedAtom> imfs = ProofUtils.filterStripByModalityPrefix(
 				ProofUtils.stripMarking(proof),
-				new Modality[] {Modality.Belief});
+				Arrays.asList(new Modality[] {Modality.Belief}));
 
 		// extract the feature-value pairs
-		for (ModalisedAtom ma : Arrays.asList(imfs)) {
+		for (ModalisedAtom ma : imfs) {
 			if (ma.a.predSym.equals("fv")) {
-				FunctionTerm nominal = (FunctionTerm) ma.a.args[0];
-				FunctionTerm name = (FunctionTerm) ma.a.args[1];
-				FunctionTerm value = (FunctionTerm) ma.a.args[2];
+				FunctionTerm nominal = (FunctionTerm) ma.a.args.get(0);
+				FunctionTerm name = (FunctionTerm) ma.a.args.get(1);
+				FunctionTerm value = (FunctionTerm) ma.a.args.get(2);
 				if (!result.containsKey(nominal.functor)) {
 					result.put(nominal.functor, new HashMap<String, String>());
 				}
@@ -116,21 +118,22 @@ public class PresupposedBeliefConstruction {
 		return s;
 	}
 
-	private MarkedQuery[] bestAbductiveProof(MarkedQuery[] goal) {
+	private List<MarkedQuery> bestAbductiveProof(List<MarkedQuery> goal) {
 		String listGoalsStr = "";
-		for (int i = 0; i < goal.length; i++) {
-			listGoalsStr += MercuryUtils.modalisedAtomToString(goal[i].atom);
-			if (i < goal.length - 1) listGoalsStr += ", ";
+		for (MarkedQuery q : goal) {
+			listGoalsStr += PrettyPrint.modalisedAtomToString(q.atom) + ", ";
 		}
 		log("proving: [" + listGoalsStr + "]");
 
-		abd.getProxy().startProving(goal);
-		ProofWithCost[] result = abd.getProxy().getProofs(250);
-		if (result.length > 0) {
-			log("found " + result.length + " alternatives, using the best one");
-			return result[0].proof;
+		abd.getEngineProxy().startProving(goal);
+		List<ProofWithCost> result = abd.getEngineProxy().getProofs(250);
+
+		if (!result.isEmpty()) {
+			log("found " + result.size() + " alternatives, using the best one");
+			return result.get(0).proof;
 		}
 		else {
+			log("no proof found");
 			return null;
 		}
 	}
@@ -142,7 +145,7 @@ public class PresupposedBeliefConstruction {
 	 */
 	public void loadFile(String file) {
 		try {
-			abd.getProxy().loadFile(file);
+			abd.getEngineProxy().loadFile(file);
 		}
 		catch (FileReadErrorException ex) {
 			log("file read error: " + ex.filename);

@@ -522,7 +522,11 @@ public class IncrWordLatticeParser
                 			results.plf,
                 			results.finalized, 
                 			"interpretation", 
-                			new NonStandardRulesAppliedForLF[0]);
+                			new NonStandardRulesAppliedForLF[0],
+							phonString.confidenceValue,
+							phonString.maybeOOV,
+							phonString.ival
+							);
                 	
                 	log("Add the newly formed PackedLF to working memory, finalized is ["+results.finalized+"] ");
 					
@@ -664,8 +668,12 @@ public class IncrWordLatticeParser
 	                			results.plf,
 	                			results.finalized, 
 	                			"interpretation", 
-	                			new NonStandardRulesAppliedForLF[0]);					
-	                	
+	                			new NonStandardRulesAppliedForLF[0],
+								phonString.confidenceValue,
+								phonString.maybeOOV,
+								phonString.ival
+								);
+
 	                	log("Updating PackedLF in working memory, finalized flag is ["+results.finalized+"]");
 					try {
 						//overwriteWorkingMemory(data.getID(),

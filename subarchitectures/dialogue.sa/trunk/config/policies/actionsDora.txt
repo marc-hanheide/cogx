@@ -1,0 +1,7 @@
+start = wait
+acknowledge1 = I["okay, searching for the cornflakes box!"]
+acknowledge2 = I["okay, searching for the mug!"]
+confirm1 = I["sorry, should I search for the cornflaxes box?"]
+confirm2 = I["sorry, should I search for the mug?"]
+repeat = I["sorry, could you repeat please?"]
+failure = I["sorry I couldn't understand you"]

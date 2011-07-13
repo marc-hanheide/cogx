@@ -26,6 +26,7 @@ package de.dfki.lt.tr.cast;
 // IMPORTS
 
 // Java
+import cast.cdl.WorkingMemoryAddress;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -57,6 +58,8 @@ public class ProcessingData {
 	
 	// A vector with the data types
 	private Vector<String> types;
+
+	private WorkingMemoryAddress wma = null;
 
 	//=================================================================
 	// CONSTRUCTOR METHODS
@@ -114,13 +117,14 @@ public class ProcessingData {
 	/** Returns the vector with types of data objects stored */
 	public Vector getTypes () { return types; }
 
+	public WorkingMemoryAddress getWorkingMemoryAddress () { return wma; }
+
 	/** Sets the ID of the object */
 	public void setId (String i) { id = i; }
-	
-	
-	
-	
-	
-} // end class
 
+	public void setWorkingMemoryAddress (WorkingMemoryAddress wma) {
+		this.wma = wma;
+	}
 
+}
+	

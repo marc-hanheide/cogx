@@ -25,6 +25,9 @@
 
 #include <lf.ice>
 #include <beliefs.ice>
+#include <ref.ice>
+#include <time.ice>
+#include <abducer.ice>
 
 // ===================================================================
 // MODULE: de.dfki.lt.tr.dialogue.slice
@@ -65,6 +68,11 @@ module slice {
 
 	// Sequence of string Ids
 	sequence<string> stringIds;
+
+	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
+
+	class StandbyMode {
+	};
 
 // ===================================================================
 // MODULE ASR
@@ -113,6 +121,8 @@ module asr {
 		float	confidenceValue;
 		float   NLconfidenceValue;
 		long	rank;
+		bool	maybeOOV;
+		time::Interval ival;
     };
 
 	// ----------------------------------------------------------------------
@@ -121,8 +131,23 @@ module asr {
 
 	sequence<PhonString> PhonStrings;
 
+	// ----------------------------------------------------------------------
+	// Noise
+	// ----------------------------------------------------------------------
+
+	class Noise {
+		time::Interval ival;
+	};
+
+	class InitialPhonString {
+		PhonString ps;
+	};
+
+	class InitialNoise {
+		Noise n;
+	};
+
 }; 
-// end module asr
 
 // ===================================================================
 // MODULE PARSE
@@ -172,42 +197,59 @@ module parse {
 		long finalized; 
 		string type;
 		NonStandardRulesAppliedForLFs nonStandardRulesForLF;
+		float phonStringConfidence;
+		bool phonStringMaybeOOV;
+		time::Interval phonStringIval;
 	}; 
-	// end PackedLFs
 
 }; 
-// end module parse
+
+// ===================================================================
+// MODULE PARSESELECTION
+// ===================================================================
+
+module parseselection {
+
+	class SelectedLogicalForm {
+		lf::LogicalForm lform;
+		time::Interval ival;
+	};
+
+};
+
+module interpret {
+
+	dictionary<string, de::dfki::lt::tr::dialogue::ref::ConstraintSeq> StringToConstraintSeqDict;
+
+	class Interpretation {
+		lf::LogicalForm lform;
+		time::Interval ival;
+		de::dfki::lt::tr::infer::abducer::proof::ProofWithCostSeq proofs;
+		stringSeq ungroundedNoms;
+//		de::dfki::lt::tr::dialogue::ref::ResolutionRequestSeq rrs;
+//		StringToConstraintSeqDict cts;
+	};
+
+//	class UngroundedIntentionalContent extends de::dfki::lt::tr::beliefs::slice::intentions::IntentionalContent {
+//		VarConstraints varctrs;
+//	};
+
+//	["java:type:java.util.ArrayList<UngroundedIntentionalContent>"] sequence<UngroundedIntentionalContent> UngroundedIntentionalContentSeq;
+
+//	class UngroundedIntention {
+//		UngroundedIntentionalContentSeq alt;
+//
+//		lf::LogicalForm lform;
+//		time::Interval ival;
+//	};
+
+};
 
 // ===================================================================
 // MODULE REF
 // ===================================================================
 
 module ref { 
-
-	//---------------------------------------------------------------------------
-	// A RefReading maintains two lists of id's. The identifiers refer to
-	// (sub)trees in a logical form with id lfId. These subtrees are identified as providing
-	// a restrictive form of reference, or an attributive form of reference. 
-	//
-	// @author	Geert-Jan Kruijff
-	// @started	090921
-	// @version	090921
-	//---------------------------------------------------------------------------
-
-	// outdated
-	class RefReading extends BaseData { 
-		string lfId;
-		stringIds restrictiveTrees;
-		stringIds attributiveTrees;
-	};
-	
-	sequence<RefReading> Readings; 
-	// outdated
-
-	//outdated
-	class RefReadings extends BaseData { 
-		Readings refRdngs; 
-	};
 
 	class NominalReference {
 		string nominal;
@@ -224,15 +266,15 @@ module ref {
 		double prob;
 	};
 
-	["java:type:java.util.LinkedList<NominalEpistemicReferenceHypothesis>"] sequence<NominalEpistemicReferenceHypothesis> NominalEpistemicReferenceHypothesisSeq;
+	["java:type:java.util.ArrayList<NominalEpistemicReferenceHypothesis>"] sequence<NominalEpistemicReferenceHypothesis> NominalEpistemicReferenceHypothesisSeq;
 
 	class RefLogicalForm {
 		lf::LogicalForm lform;
+		time::Interval ival;
 		NominalEpistemicReferenceHypothesisSeq refs;
 	};
 
 }; 
-// end module
 
 // ===================================================================
 // MODULE DISCOURSE
@@ -261,23 +303,21 @@ module produce {
 	class ContentPlanningGoal { 
 		string cpgid;
 		lf::LogicalForm lform;
-		// FIXME: hacky
-		ref::NominalReference topic;  
+
+		// FIXME: hack
+		ref::NominalReference topic;
 	}; 
-	// end ProductionLF
 	
 	
 	class ProductionLF { 
 		string plfid;
 		lf::LogicalForm lform;
-		// FIXME: hacky
+
+		// FIXME:: hack
 		ref::NominalReference topic;
 	}; 
-	// end ProductionLF	
-	
 	
 }; 
-// end module produce
 
 // ===================================================================
 // MODULE SYNTH
@@ -287,19 +327,17 @@ module synthesize {
 
 	//---------------------------------------------------------------------------
 	// Speech output
-	// @param 
 	//---------------------------------------------------------------------------
 
 	class SpokenOutputItem extends BaseData { 
 		string phonString;
 		string inputStreamId;
-		// FIXME: hacky
-		ref::NominalReference topic;  
+
+		// FIXME: hack
+		ref::NominalReference topic;
 	}; 
-	// end SpokenOutputItem 
 	
 }; 
-// end module synthesize	
 
 
 // ===================================================================
@@ -307,9 +345,7 @@ module synthesize {
 // ===================================================================
 
 }; 
-// end module slice
 }; 
-// end module dialogue
 
 
 module beliefs {
@@ -323,16 +359,12 @@ class CommunicativeIntention {
 
 
 };
-} ;
-} ;
+};
+};
 
 }; 
-// end module tr
 }; 
-// end module lt
 }; 
-// end module dfki
 }; 
-// end module de
 
 #endif

@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
@@ -502,7 +503,42 @@ public class IncrStringParser
 		@param pd The processing data to be used in parsing
 		@throws ComsysException Thrown if there is no data to parse
 	*/ 
-		
+
+	private void preprocessPhonString(PhonString ps) {
+		String[] words = ps.wordSequence.split(" +");
+		LinkedList<String> passed = new LinkedList<String>();
+		boolean mainBody = false;
+
+		for (int i = 0; i < words.length; i++) {
+			if (!mainBody && (words[i].equals("robot") || words[i].equals("and"))) {
+				// okay, ignore this one
+			}
+			else {
+				if (words[i].equals("base")) {
+					if (i > 0 && !words[i-1].equals("the")) {
+						passed.add("the");
+					}
+					passed.add("entrance");
+				}
+				else {
+					mainBody = true;
+					passed.add(words[i]);
+				}
+			}
+		}
+
+		String result = "";
+		Iterator<String> iter = passed.iterator();
+		while (iter.hasNext()) {
+			result += iter.next();
+			result += (iter.hasNext() ? " " : "");
+		}
+
+		log("phonstring before preprocessing: \"" + ps.wordSequence + "\"");
+		ps.wordSequence = result;
+		log("phonstring after preprocessing:  \"" + ps.wordSequence + "\"");
+	}
+
     public void executeParseTask(ProcessingData pd)
             throws DialogueException, ParseException {
         Vector<String> pdTypes = pd.getTypes();
@@ -515,6 +551,8 @@ public class IncrStringParser
 				log("Now try to start parsing with the phon string");
                 // get the input string
                 PhonString phonString = (PhonString) data.getData();
+		preprocessPhonString(phonString);
+
 				// let the parser start the incremental analysis
                 if (phonString.wordSequence.length() != 0) {
                 	PackedLFParseResults results = (PackedLFParseResults) parser.incrParse(phonString);
@@ -531,7 +569,11 @@ public class IncrStringParser
                 			results.plf,
                 			results.finalized, 
                 			"interpretation", 
-                			new NonStandardRulesAppliedForLF[0]);
+                			new NonStandardRulesAppliedForLF[0],
+							phonString.confidenceValue,
+							phonString.maybeOOV,
+							phonString.ival
+							);
                 	
                 	log("Add the newly formed PackedLF to working memory, finalized is ["+results.finalized+"] ");
 					
@@ -673,7 +715,10 @@ public class IncrStringParser
 	                			results.plf,
 	                			results.finalized, 
 	                			"interpretation", 
-	                			new NonStandardRulesAppliedForLF[0]);					
+	                			new NonStandardRulesAppliedForLF[0],
+								plfs.phonStringConfidence,
+								plfs.phonStringMaybeOOV,
+								plfs.phonStringIval);
 	                	
 	                	log("Updating PackedLF in working memory, finalized flag is ["+results.finalized+"]");
 					try {

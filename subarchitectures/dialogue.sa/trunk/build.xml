@@ -34,14 +34,11 @@
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target </echo>
-	<!--	<ant target="${target}" dir="tools/beliefs"/> -->
 		<ant target="${target}" dir="apis/sdl" /> 
 		<ant target="${target}" dir="apis/meta" /> 
-<!--		<ant target="${target}" dir="apis/dialmanager" /> -->
 		<ant target="${target}" dir="apis/inference" /> 
 		<ant target="${target}" dir="apis/dialogue" /> 
 		<ant target="${target}" dir="apis/cast" /> 
-		<ant target="${target}" dir="resources" />
 	</target>
 
 
@@ -51,6 +48,7 @@
 	<target name="clean" depends="init">
 		<echo>Cleaning all builds"</echo>
         	<delete dir="${output.dir}"/>
+        	<delete dir="${generated.dir}"/>
 		<antcall target="template">
 			<param name="target" value="clean" />
 		</antcall>
@@ -90,7 +88,7 @@
 	<!-- =================================================================== -->
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="compile-slice">
+	<target name="compile" depends="compile-slice" if="build.dialogue_sa">
 		<echo>compiling all builds"</echo>
 		<antcall target="template">
 		     <param name="target" value="compile" />
@@ -100,7 +98,7 @@
 	<!-- =================================================================== -->
 	<!-- Creates doc in all subdirs                                          -->
 	<!-- =================================================================== -->
-	<target name="doc">
+	<target name="doc" if="build.dialogue_sa">
 		<echo>create documentation for all packages</echo>
 		<antcall target="template">
 		     <param name="target" value="doc" />
@@ -128,12 +126,5 @@
 		     <param name="target" value="jar" />
 		</antcall>
 	</target>
-
-
-
-
-
-
-
 
 </project>

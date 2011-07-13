@@ -86,7 +86,7 @@ public class ParsingUtils {
 		}  }
 		
 		PackedLFs plf = new PackedLFs("", pairs, new PhonString[0], results.stringPos, 
-				results.plf, results.finalized,  "", new NonStandardRulesAppliedForLF[0]);	
+				results.plf, results.finalized,  "", new NonStandardRulesAppliedForLF[0], 1.0f, false, null);
 
 		return plf;
 	}

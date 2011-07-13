@@ -1,5 +1,5 @@
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -17,7 +17,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (plison@dfki.de)                                                                
+// Copyright (C) 2009-2011 Pierre Lison (plison@ifi.uio.no)                                                                
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -45,11 +45,14 @@ import org.junit.Test;
 
 import org.junit.Before;
 
+import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+import de.dfki.lt.tr.dialmanagement.data.ActionSelectionResult;
 import de.dfki.lt.tr.dialmanagement.data.Observation;
+import de.dfki.lt.tr.dialmanagement.data.actions.AbstractAction;
 import de.dfki.lt.tr.dialmanagement.data.policies.DialoguePolicy;
-import de.dfki.lt.tr.dialmanagement.data.policies.PolicyAction;
+import de.dfki.lt.tr.dialmanagement.utils.EpistemicObjectUtils;
 import de.dfki.lt.tr.dialmanagement.utils.PolicyUtils;
 import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 
@@ -57,63 +60,67 @@ import de.dfki.lt.tr.dialmanagement.utils.TextPolicyReader;
 /**
  * Test class for an interaction using complex and modal formulae
  * 
- * @author Pierre Lison (plison@dfki.de)
+ * @author Pierre Lison (plison@ifi.uio.no)
  * @version 04/07/2010
  *
  */
 public class DialogueManagerFormulaTest {
 
+
 	// logging and debugging
 	public static boolean LOGGING = true;
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	
 	
 	// the configuration files
-	public static String POLICYFILE = "subarchitectures/dialogue.sa/config/policies/testing/policy4.txt";
-	public static String OBSFILE = "subarchitectures/dialogue.sa/config/policies/testing/conditions4.txt";
-	public static String ACTIONSFILE = "subarchitectures/dialogue.sa/config/policies/testing/actions4.txt";
+	// the configuration files
+	public static String POLICYFILE = "config/policies/testing/policy4.txt";
+	public static String CONDFILE = "config/policies/testing/conditions4.txt";
+	public static String ACTIONSFILE = "config/policies/testing/actions4.txt";
 
-	// the dialogue manager
-	public DialogueManager manager;
+	protected DialogueManager manager ;
+	
 	
 	
 	/**
-	 * Construct the dialogue policy
+	 * Construct the policy based on the configuration files
 	 * 
-	 * @throws DialogueException if the configuration files are not well-formatted
+	 * @throws DialogueException if the files are ill-formatted
 	 */
 	@Before
-	public void constructPolicy() throws DialogueException {
-		
-		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE, OBSFILE, ACTIONSFILE);
-		
-		policy.ensureWellFormedPolicy();
-		
+	public void startDialogueManager() throws DialogueException {
+		DialoguePolicy policy = TextPolicyReader.constructPolicy(POLICYFILE,CONDFILE, ACTIONSFILE);
 		manager = new DialogueManager(policy);
 	}
 	
+	
+
 
 	/**
 	 * Test the policy with an observation containing complex and modal formulae
 	 * 
 	 * @throws DialogueException if test fails
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testPolicyDirect1() throws DialogueException {
+	public void testPolicyDirect1() throws DialogueException, InterruptedException {
 		
-		Observation intent = PolicyUtils.createSimpleObservation("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
-		PolicyAction action1 = manager.nextAction(intent);
+		CommunicativeIntention intent = 
+			EpistemicObjectUtils.createSimpleCommunicativeIntention("<Belief>(<Ref>context1_1 ^ <ObjectType>ball)");
+		ActionSelectionResult r = manager.updateStateAndSelectAction(intent);
+		AbstractAction action1 = r.getActions().get(0);
 		assertEquals("CI[okay]", action1.toString());
 		
 	}
-	
+
+
 	/**
 	 * Logging
 	 * @param s
 	 */
-	private static void log (String s) {
+	protected static void log (String s) {
 		if (LOGGING) {
-			System.out.println("[dialmanager_formulatest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
 	
@@ -121,9 +128,11 @@ public class DialogueManagerFormulaTest {
 	 * Debugging
 	 * @param s
 	 */
-	private static void debug (String s) {
+	protected static void debug (String s) {
 		if (DEBUG) {
-			System.out.println("[dialmanager_formulatest] " + s);
+			System.out.println("[dialmanager_basictest] " + s);
 		}
 	}
+
+
 }

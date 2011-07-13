@@ -3,9 +3,9 @@ package de.dfki.lt.tr.dialogue.discourse;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class DialogueMoveTranslator {
 			String s = "%   ";
 			s += "(dm " + dm.agent + " " + dm.lform.root.nomVar + " (topic ";
 			if (nr != null) {
-				s += "(ref " + nr.nominal + " " + MercuryUtils.termToString(ConversionUtils.stateFormulaToTerm(nr.referent)) + ")";
+				s += "(ref " + nr.nominal + " " + PrettyPrint.termToString(ConversionUtils.stateFormulaToTerm(nr.referent)) + ")";
 				latestTopic = nr;
 			}
 			else {
@@ -38,7 +38,7 @@ public class DialogueMoveTranslator {
 		String topS = "";
 		if (latestTopic != null) {
 			FunctionTerm topicTerm = (FunctionTerm) ConversionUtils.stateFormulaToTerm(latestTopic.referent);
-			topS = "att : linguisticsalience(" + MercuryUtils.termToString(topicTerm) + ", high).\n";
+			topS = "att : linguisticsalience(" + PrettyPrint.termToString(topicTerm) + ", high).\n";
 		}
 		return "\n" + "% discourse structure\n" + join("\n", lines) + "\n\n" + "% latest topic\n" + topS;
 	}

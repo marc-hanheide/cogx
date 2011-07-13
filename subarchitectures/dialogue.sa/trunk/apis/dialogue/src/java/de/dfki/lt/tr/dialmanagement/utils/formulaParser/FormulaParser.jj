@@ -9,7 +9,7 @@ import java.util.LinkedList ;
 import java.util.Enumeration ;
 import java.io.* ;
 import java.util.Hashtable;
-import cast.cdl.WorkingMemoryAddress;
+// import cast.cdl.WorkingMemoryAddress;
 
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.*;
@@ -41,7 +41,7 @@ TOKEN :
 | <FLOAT: ( ["0"-"9"] )+ "." (["0"-"9"] )+ "f">
 | <BOOLEAN: "true"|"false">
 | <KLEENE_STAR: "*">
-| <ARGUMENT: "%" ( ["0"-"9"] )+>
+| <ARGUMENT: "%" ( [".", "A"-"Z", "a"-"z", "0"-"9","-" ,"_", "?", ",", "!", "'", "*"] )+ >
 | <INTERROGATION_MARK: "?">
 | <SLBRACKET: "[">
 | <SRBRACKET: "]">
@@ -49,7 +49,7 @@ TOKEN :
 | <LAND: "^">
 | <LOR: "v">
 | <QUOTE: "\"">
-| <WORD: ( [".", "A"-"Z", "a"-"z", "0"-"9","-" ,"_", "?", ",", "!", "'"] )+  >
+| <WORD: ( [".", "A"-"Z", "a"-"z", "0"-"9","-" ,"_", "?", ",", "!", "'", "*"] )+  >
 }
 
 
@@ -62,10 +62,11 @@ Token tok;
  <QUOTE> (tok=<WORD>
   {curString += tok.toString() +" " ; }
 	)+ <QUOTE> 
-	{return new ElementaryFormula(0, "\"" + curString.substring(0, curString.length()-1) + "\""); }
+	{return new ElementaryFormula(0, curString.substring(0, curString.length()-1) ); }
 }	
 
 
+/**
 PointerFormula PointerFormula():
 {
 Token tok1;
@@ -74,7 +75,7 @@ Token tok3;
 }
 { <SLBRACKET> tok1=<WORD> <COLON> tok2=<INTEGER> <COLON> tok3=<INTEGER> <SRBRACKET> 
  { return new PointerFormula(0, new WorkingMemoryAddress(tok2.toString()+":"+tok3.toString(), tok1.toString()), "") ; }
-}
+}*/
 
 ElementaryFormula ElemFormula():
 {
@@ -138,9 +139,9 @@ Token tok;
 }
 {
 ( tok=<KLEENE_STAR>
-  {return new UnderspecifiedFormula(0);}
+  {return new UnderspecifiedFormula(0,"*");}
   | tok=<ARGUMENT>
-  {return new UnderspecifiedFormula(Integer.parseInt(tok.toString().replace("%",""))); }
+  {return new UnderspecifiedFormula(0,tok.toString().replace("%","")); }
   )
 }
 
@@ -199,12 +200,13 @@ dFormula formulaIn;
 	|
 	formula = UnderspecifiedFormula()
 	|
-	formula = PointerFormula()
-	|
+	/** formula = PointerFormula()
+	| */
 	formula = IntegerFormula()	
 	|
    formula = ElemFormula()	
-	
+		|
+	formula = ElemFormulaExtended()	
 	)
 	{return formula; }
 }
@@ -252,8 +254,8 @@ dFormula formulaIn;
 	|
 	formula = UnderspecifiedFormula()	
 	|
-	formula = PointerFormula()
-	|
+	/** formula = PointerFormula() 
+	| */
 	formula = UnknownFormula()	
 	|
 	formula = IntegerFormula()	

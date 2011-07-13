@@ -18,7 +18,7 @@
 	<!-- =================================================================== -->
 	 	
 	<!-- Controls where the output goes -->
-	<property name="output.dir" value="../../output/classes" />
+	<property name="output.dir" value="output/classes" />
 	
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
@@ -72,7 +72,7 @@
 	<!-- Expand libraries                                                    -->
 	<!-- =================================================================== -->
 
-    <target name="expandlibs" depends="prepare">
+    <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
            <echo message="Expanding external libraries for the binder to output/classes"/>
            <!-- <unzip dest="${output.dir}" src="./lib/YOURJAR.jar"/> -->
     </target>
@@ -88,7 +88,7 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="compile-java-production, compile-java-testing" 
+	<target name="compile" depends="compile-java-production, compile-java-testing" if="build.dialogue_sa"
 		description="compiles the production- and unit test source code, and runs the unit-tests">
 	</target>
 
@@ -96,7 +96,7 @@
 	<target name="compile-slice">
 	</target>
 
-    <target name="compile-java-production" depends="expandlibs" 
+    <target name="compile-java-production" depends="expandlibs" if="build.dialogue_sa"
     	description="compiles the production source code">
         <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
         	optimize="${optimize}" debuglevel="lines,vars,source">
@@ -104,7 +104,8 @@
         </javac>
     </target>
 
-	<target name="compile-java-testing" depends="expandlibs" description="compiles the unit test source code">
+	<target name="compile-java-testing" depends="expandlibs" if="build.dialogue_sa"
+	description="compiles the unit test source code">
 	        <javac srcdir="${test.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" 
 	        	optimize="${optimize}" debuglevel="lines,vars,source">
 	               <classpath refid="build.classpath"/>

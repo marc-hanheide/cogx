@@ -36,6 +36,7 @@ import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.parseselection.SimpleParseSelection;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
+import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import java.util.HashMap;
@@ -44,8 +45,12 @@ import java.util.Iterator;
 public class ParseSelection
 extends AbstractDialogueComponent {
 
+	SimpleParseSelection worker = null;
+
 	@Override
 	public void start() {
+
+		worker = new SimpleParseSelection(this.getLogger(".simple"));
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
@@ -93,11 +98,12 @@ extends AbstractDialogueComponent {
 			Object body = iter.next().getData();
 			if (body instanceof PackedLFs) {
 				PackedLFs plf = (PackedLFs)body;
-				LogicalForm lf = SimpleParseSelection.extractLogicalFormWithMood(plf);
+				LogicalForm lf = worker.extractLogicalFormWithMood(plf);
 				if (lf != null) {
 					log("selected the following LF: [" + LFUtils.lfToString(lf) + "]");
+					SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval);
 					try {
-						addToWorkingMemory(newDataID(), lf);
+						addToWorkingMemory(newDataID(), slf);
 					}
 					catch (AlreadyExistsOnWMException ex) {
 						ex.printStackTrace();

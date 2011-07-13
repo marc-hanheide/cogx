@@ -1,0 +1,106 @@
+%-------------------------------------------------------------------------
+% ASSERTION
+%-------------------------------------------------------------------------
+
+% X is Y
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
+	understand : assertion_effect(S, H, Int, SubjNom, Polarity, ScopeNom).
+
+	% mirroring
+%	mirror_id(MInt),
+%	int : agent(MInt, H) / -0.1,
+%	understand : topic(H, S, EpSt, MInt, SubjNom, RestrNom),
+%	understand : assertion_effect(H, S, MInt, SubjNom, Polarity, ScopeNom).
+
+%-------------------------------------------------------------------------
+
+% there is X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, presentational),
+	i : feat_Mood(Nom, ind),
+	i : feat_Tense(Nom, pres),
+	i : rel_Presented(Nom, PresNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom),
+	understand : topic_switch_mark(PresNom, 'pointer-to'(assertion)) / p(1.0),
+	int : post(Int, state([presented, agent(S), patient('pointer-to'(assertion))])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% I see X
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : feat_Mood(Nom, ind),
+	i : rel_Patient(Nom, PatNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+%	int : pre(Int, state([see, agent(S), patient(PatNom)])) / p(1.0),
+	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
+
+%-------------------------------------------------------------------------
+
+% (I) don't know
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),
+	i : feat_Polarity(Nom, neg),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(['knowing-disconfirmed'])) / p(1.0).
+
+%-------------------------------------------------------------------------
+% YES/NO CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, H, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Marker),
+	marker_to_polarity(Marker, Polarity),
+	i : int : agent(qud, [H]),
+%	i : int : pre(qud, belief(SharedBId)),
+	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat), hypo(Hypo)])),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
+	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
+	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	polarprop(Hypo, Polarity, PolHypo),
+	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, PolHypo))) / p(1.0),
+	int : post(Int, belief(Nom, shared(S, H), fv(Feat, PolHypo))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+marker_to_polarity(yes, pos).
+marker_to_polarity('No', neg).
+
+%-------------------------------------------------------------------------
+% SHORT ANSWERS TO WH- QUESTIONS
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, H, Nom) <-
+	i : int : agent(qud, [H]),
+%	i : int : pre(qud, belief(SharedBId)),
+	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
+	polar_query_prop(Nom, Feat, Value),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
+	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
+	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, Value))) / p(1.0),
+	int : post(Int, belief(Nom, shared(S, H), fv(Feat, Value))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+

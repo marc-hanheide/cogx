@@ -41,260 +41,77 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
+import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
+import de.dfki.lt.tr.dialogue.slice.time.Interval;
 import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.ProofUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.FunctionTerm;
-import de.dfki.lt.tr.infer.weigabd.slice.MarkedQuery;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.lang.VariableTerm;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.cognitivesystems.binder.POINTERLABEL;
+import org.apache.log4j.Logger;
+//import org.cognitivesystems.binder.POINTERLABEL;
 
 public abstract class ConversionUtils {
 
-	public static boolean logging = true;
+	private static Logger logger = Logger.getLogger("conversion-utils");
+
+//	public static String commitSA = "memory";
+//	public static String dialogueSA = "dialogue";
 
 	private static Counter counter = new Counter("conv");
 
-	public static final String beliefPredSym = "belief";
-	public static final String agentPredSym = "agent";
-	public static final String preconditionPredSym = "pre";
-	public static final String postconditionPredSym = "post";
+	public static final String predsym_UTTER = "utter";
+	public static final String predsym_BELIEF = "belief";
+	public static final String predsym_AGENT = "agent";
+	public static final String predsym_PRECONDITION = "pre";
+	public static final String predsym_POSTCONDITION = "post";
+	public static final String predsym_IS_REFERENCE = "is_reference";
+	public static final String predsym_RESOLVES_TO_BELIEF = "resolves_to_belief";
+	public static final String predsym_RESOLVES_TO_EPOBJECT = "resolves_to_epobject";
+	public static final String predsym_TOPIC_SWITCH_MARK = "topic_switch_mark";
+	public static final String predsym_POINTER = "pointer";
 
-	private static final String privateEpStFunctor = "private";
-	private static final String attributedEpStFunctor = "attrib";
-	private static final String sharedEpStFunctor = "shared";
+	public static final String functor_EPST_PRIVATE = "private";
+	public static final String functor_EPST_ATTRIB = "attrib";
+	public static final String functor_EPST_SHARED = "shared";
+	public static final String functor_FEATVAL = "fv";
+	public static final String functor_PTR = "ptr";
+	public static final String functor_VAR = "var";
+	public static final String functor_OR = "or";
+	public static final String functor_NOT = "not";
+	public static final String functor_RPV = "rpv";
+	public static final String functor_POINTER_TO = "pointer-to";
+	public static final String functor_MARK = "mark";
 
-	public static RecognisedIntention proofToEpistemicObjects(IdentifierGenerator idGen, String attribAgent, MarkedQuery[] proof) {
+	public static final String feat_MARK = "mark";
 
-		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
-		List<dBelief> bels_pre = new LinkedList<dBelief>();
-		List<dBelief> bels_post = new LinkedList<dBelief>();
+	private static final String NIL = "nil";
 
-//		Map<String, dBelief> marks = new HashMap<String, dBelief>();
-//		List<InterBeliefPointer> pointers = new LinkedList<InterBeliefPointer>();
+	public static final String POINTERLABEL = "about";
 
-		RecognisedIntention ri = new RecognisedIntention();
-
-		Map<String, WorkingMemoryAddress> usedRefs = new HashMap<String, WorkingMemoryAddress>();
-		ModalisedAtom[] rrs = ProofUtils.stripMarking(ProofUtils.filterAssumed(proof));
-
-		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("resolves_to_belief") && ma.a.args.length == 3) {
-				String n = ((FunctionTerm)ma.a.args[0]).functor;
-				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ma.a.args[1]);
-				if (wma != null) {
-					usedRefs.put(n, wma);
-				}
-			}
-		}
-
-		if (usedRefs.size() == 1) {
-			for (String refnom : usedRefs.keySet()) {
-				ri.nref = new NominalReference(refnom, BeliefFormulaFactory.newPointerFormula(usedRefs.get(refnom)));
-				break;
-			}
-		}
-
-		ModalisedAtom[] imfs = ProofUtils.filterStripByModalityPrefix(
-				ProofUtils.stripMarking(ProofUtils.filterAssumed(proof)),
-				new Modality[] {Modality.Intention});
-
-		HashMap<String, IntentionalContent> rIts = new HashMap<String, IntentionalContent>();
-
-		// TODO: make a dedicated class for this
-		for (ModalisedAtom ma : Arrays.asList(imfs)) {
-			if (ma.a.predSym.equals(agentPredSym)) {
-				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
-				FunctionTerm agentTerm = (FunctionTerm) ma.a.args[1];
-
-				if (!rIts.containsKey(idTerm.functor)) {
-					rIts.put(idTerm.functor, newIntentionalContent());
-				}
-				IntentionalContent itc = rIts.get(idTerm.functor);
-
-				itc.agents = new LinkedList<String>();
-				itc.agents.add(agentTerm.functor);
-			}
-			else if (ma.a.predSym.equals(preconditionPredSym)) {
-				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
-				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
-
-				if (!rIts.containsKey(idTerm.functor)) {
-					rIts.put(idTerm.functor, newIntentionalContent());
-				}
-				IntentionalContent itc = rIts.get(idTerm.functor);
-
-				if (argTerm.functor.equals(IntentionManagementConstants.beliefLinkModality)) {
-					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
-					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
-
-					FunctionTerm action = (FunctionTerm)argTerm.args[2];
-
-					if (action.functor.equals("fv")) {
-						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
-						if (newId != null) {
-							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
-							itc.preconditions = combineDFormulas(itc.preconditions, refF);
-						}
-					}
-/*
-					else if (action.functor.equals("mark")) {
-						String marking = ((FunctionTerm)action.args[0]).functor;
-						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_pre);
-						if (newId != null) {
-							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagement.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "binder")));
-							itc.preconditions = combineDFormulas(itc.preconditions, refF);
-						}
-					}
- */
-				}
-				if (argTerm.functor.equals(IntentionManagementConstants.stateModality) && argTerm.args.length == 1) {
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality, uniTermToFormula((FunctionTerm) argTerm.args[0]));
-					itc.preconditions = combineDFormulas(itc.preconditions, stateF);
-				}
-			}
-			else if (ma.a.predSym.equals(postconditionPredSym)) {
-				FunctionTerm idTerm = (FunctionTerm) ma.a.args[0];
-				FunctionTerm argTerm = (FunctionTerm) ma.a.args[1];
-
-				if (!rIts.containsKey(idTerm.functor)) {
-					rIts.put(idTerm.functor, newIntentionalContent());
-				}
-				IntentionalContent itc = rIts.get(idTerm.functor);
-
-				if (argTerm.functor.equals(IntentionManagementConstants.beliefLinkModality)) {
-					String lingRef = ((FunctionTerm)argTerm.args[0]).functor;
-					EpistemicStatus es = termToEpistemicStatus((FunctionTerm)argTerm.args[1]);
-
-					FunctionTerm action = (FunctionTerm)argTerm.args[2];
-
-					if (action.functor.equals("fv")) {
-						String newId = foldIntoBeliefs(idGen, es, lingRef, usedRefs, action, bels_post);
-						if (newId != null) {
-							dFormula refF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.beliefLinkModality, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(newId, "dialogue")));
-							itc.postconditions = combineDFormulas(itc.postconditions, refF);
-						}
-					}
-				}
-				if (argTerm.functor.equals(IntentionManagementConstants.stateModality) && argTerm.args.length == 1) {
-					dFormula stateF = BeliefFormulaFactory.newModalFormula(IntentionManagementConstants.stateModality, uniTermToFormula((FunctionTerm) argTerm.args[0]));
-					itc.postconditions = combineDFormulas(itc.postconditions, stateF);
-				}
-			}
-		}
-
-		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			if (ma.m.length == 1 && ma.m[0] == Modality.Intention && ma.a.predSym.equals("pointer") && ma.a.args.length == 3) {
-				String featName = ((FunctionTerm)ma.a.args[0]).functor;
-				String markFrom = ((FunctionTerm)ma.a.args[1]).functor;
-				String markTo = ((FunctionTerm)ma.a.args[2]).functor;
-
-				dBelief from = findMarkedBelief(bels_pre, markFrom);
-//				if (from == null) {
-//					from = findMarkedBelief(bels_post, markFrom);
-//				}
-
-				dBelief to = findMarkedBelief(bels_pre, markTo);
-//				if (to == null) {
-//					to = findMarkedBelief(bels_post, markTo);
-//				}
-
-				if (from != null && to != null) {
-					addFeature(from, featName, BeliefFormulaFactory.newPointerFormula(new WorkingMemoryAddress(to.id, "binder")));  // FIXME: this is *very* hacky!
-				}
-			}
-		}
-
-		// explicit topic switch
-		for (ModalisedAtom ma : Arrays.asList(rrs)) {
-			if (ma.m.length == 1 && ma.m[0] == Modality.Understanding && ma.a.predSym.equals("topic_switch_mark") && ma.a.args.length == 2
-					&& ma.a.args[0] instanceof FunctionTerm && ma.a.args[1] instanceof FunctionTerm) {
-
-				String nom = ((FunctionTerm) ma.a.args[0]).functor;
-				NominalReference newTopic = null;
-
-				dFormula inF = uniTermToFormula((FunctionTerm) ma.a.args[1]);
-				dFormula outF = null;
-
-				outF = replacePointersInFormula(inF, bels_pre, "binder");
-				if (outF instanceof PointerFormula) {
-					newTopic = new NominalReference(nom, outF);
-				}
-
-				if (newTopic == null) {
-					outF = replacePointersInFormula(inF, bels_post, "dialogue");
-					if (outF instanceof PointerFormula) {
-						newTopic = new NominalReference(nom, outF);
-					}
-				}
-
-				if (newTopic == null) {
-					log("got a topic swith, but don't know what to resolve it against");
-				}
-				else {
-					ri.nref = newTopic;
-				}
-			}
-		}
-
-		Iterator<String> iter = rIts.keySet().iterator();
-		while (iter.hasNext()) {
-			Intention it = new Intention();
-			it.id = idGen.newIdentifier();
-			it.frame = new AbstractFrame();
-			AttributedEpistemicStatus epst = new AttributedEpistemicStatus();
-			epst.agent = IntentionManagementConstants.thisAgent;
-			epst.attribagents = new LinkedList<String>();
-			epst.attribagents.add(attribAgent);
-			it.estatus = epst;
-			it.content = new LinkedList<IntentionalContent>();
-			IntentionalContent itc = rIts.get(iter.next());
-			it.content.add(itc);
-			if (itc.agents != null && !itc.agents.isEmpty()) {
-
-				// replace pointers in the formulas
-				replacePointersInFormula(itc.preconditions, bels_pre, "binder");
-				replacePointersInFormula(itc.preconditions, bels_post, "dialogue");
-				replacePointersInFormula(itc.postconditions, bels_pre, "binder");
-				replacePointersInFormula(itc.postconditions, bels_post, "dialogue");
-
-				ri.ints.add(it);
-			}
-			else {
-				log("discarding [" + it.id + "]: incomplete (agent list empty)");
-			}
-		}
-
-		for (dBelief b : bels_pre) {
-			removeFeature(b, "mark");
-		}
-		for (dBelief b : bels_post) {
-			removeFeature(b, "mark");
-		}
-
-		ri.pre.addAll(bels_pre);
-		ri.post.addAll(bels_post);
-
-		return ri;
-	}
-
-	private static dFormula replacePointersInFormula(dFormula f, List<dBelief> bels, String subarch) {
+	public static dFormula replacePointersInFormula(dFormula f, List<dBelief> bels, String subarch) {
 		if (f instanceof ComplexFormula) {
 			ComplexFormula cF = (ComplexFormula) f;
 			for (dFormula ff : cF.forms) {
@@ -306,7 +123,7 @@ public abstract class ConversionUtils {
 		}
 		if (f instanceof ModalFormula) {
 			ModalFormula mF = (ModalFormula) f;
-			if (mF.op.equals("pointer-to") && mF.form instanceof ElementaryFormula) {
+			if (mF.op.equals(functor_POINTER_TO) && mF.form instanceof ElementaryFormula) {
 				ElementaryFormula eF = (ElementaryFormula) mF.form;
 				dBelief to = findMarkedBelief(bels, eF.prop);
 				if (to != null) {
@@ -323,11 +140,11 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	private static dBelief findMarkedBelief(List<dBelief> bels, String mark) {
+	public static dBelief findMarkedBelief(List<dBelief> bels, String mark) {
 		for (dBelief b : bels) {
 			if (b.content instanceof CondIndependentDistribs) {
 				CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
-				ProbDistribution pd = cnt.distribs.get("mark");
+				ProbDistribution pd = cnt.distribs.get(feat_MARK);
 				if (pd != null && pd instanceof BasicProbDistribution) {
 					BasicProbDistribution bpd = (BasicProbDistribution) pd;
 					if (bpd.values instanceof FormulaValues) {
@@ -344,7 +161,7 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	private static void addFeature(dBelief b, String featName, dFormula f) {
+	public static void addFeature(dBelief b, String featName, dFormula f) {
 		if (b.content instanceof CondIndependentDistribs) {
 			CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
 
@@ -364,70 +181,86 @@ public abstract class ConversionUtils {
 		}
 	}
 
-	private static void removeFeature(dBelief b, String featName) {
+	public static void removeFeature(dBelief b, String featName) {
 		if (b.content instanceof CondIndependentDistribs) {
 			CondIndependentDistribs cnt = (CondIndependentDistribs) b.content;
 			cnt.distribs.remove(featName);
 		}
 	}
 
-	private static dFormula uniTermToFormula(FunctionTerm ft) {
+	public static dFormula uniTermToFormula(Term t) {
 
-		// empty list
-		if (ft.functor.equals("[]") && ft.args.length == 0) {
-			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, new LinkedList<dFormula>());
-		}
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
 
-		// list head
-		if (ft.functor.equals("[|]") && ft.args.length == 2) {
-			List<dFormula> lfs = new LinkedList<dFormula>();
-			lfs.add(uniTermToFormula((FunctionTerm) ft.args[0]));
-			dFormula tail = uniTermToFormula((FunctionTerm) ft.args[1]);
-			assert (tail instanceof ComplexFormula);
-			ComplexFormula cF = (ComplexFormula) tail;
-			lfs.addAll(cF.forms);
-			return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, lfs);
-		}
-
-		// pointer to an address
-		if (ft.functor.equals("ptr")) {
-			WorkingMemoryAddress wma = termToWorkingMemoryAddress(ft);
-			if (wma != null) {
-				return BeliefFormulaFactory.newPointerFormula(wma);
+			// empty list
+			if (ft.functor.equals("[]") && ft.args.isEmpty()) {
+				return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, new LinkedList<dFormula>());
 			}
-		}
 
-		// modal formula
-		if (ft.args.length == 1) {
-			return BeliefFormulaFactory.newModalFormula(ft.functor, uniTermToFormula((FunctionTerm) ft.args[0]));
-		}
+			// list head
+			if (ft.functor.equals("[|]") && ft.args.size() == 2) {
+				List<dFormula> lfs = new LinkedList<dFormula>();
+				lfs.add(uniTermToFormula(ft.args.get(0)));
+				dFormula tail = uniTermToFormula(ft.args.get(1));
+				assert (tail instanceof ComplexFormula);
+				ComplexFormula cF = (ComplexFormula) tail;
+				lfs.addAll(cF.forms);
+				return BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, lfs);
+			}
 
-		// elementary formula
-		if (ft.args.length == 0) {
-			return BeliefFormulaFactory.newElementaryFormula(ft.functor);
-		}
+			// pointer to an address
+			if (ft.functor.equals(functor_PTR)) {
+				WorkingMemoryAddress wma = termToWorkingMemoryAddress(ft);
+				if (wma != null) {
+					return BeliefFormulaFactory.newPointerFormula(wma);
+				}
+			}
 
-		return BeliefFormulaFactory.newElementaryFormula("nil");
+			if (ft.functor.equals(functor_VAR)) {
+				return termToUnderspecifiedFormula(ft);
+			}
+
+			// modal formula
+			if (ft.args.size() == 1) {
+				return BeliefFormulaFactory.newModalFormula(ft.functor, uniTermToFormula(ft.args.get(0)));
+			}
+
+			// elementary formula
+			if (ft.args.isEmpty()) {
+				return BeliefFormulaFactory.newElementaryFormula(ft.functor);
+			}
+
+			return BeliefFormulaFactory.newElementaryFormula(NIL);
+		}
+		else if (t instanceof VariableTerm) {
+			VariableTerm vt = (VariableTerm) t;
+			return new UnderspecifiedFormula(-1, vt.name);
+		}
+		return null;
  	}
 
 	public static EpistemicStatus termToEpistemicStatus(FunctionTerm epstT) {
-		if (epstT.functor.equals(privateEpStFunctor)) {
+		if (epstT.functor.equals(functor_EPST_PRIVATE)) {
 			PrivateEpistemicStatus p = new PrivateEpistemicStatus();
-			p.agent = ((FunctionTerm)epstT.args[0]).functor;
+			p.agent = ((FunctionTerm)epstT.args.get(0)).functor;
 			return p;
 		}
-		if (epstT.functor.equals(attributedEpStFunctor)) {
+		if (epstT.functor.equals(functor_EPST_ATTRIB)) {
 			AttributedEpistemicStatus a = new AttributedEpistemicStatus();
-			a.agent = ((FunctionTerm)epstT.args[0]).functor;
+			a.agent = ((FunctionTerm)epstT.args.get(0)).functor;
 			a.attribagents = new LinkedList<String>();
-			a.attribagents.add(((FunctionTerm)epstT.args[1]).functor);
+			a.attribagents.add(((FunctionTerm)epstT.args.get(1)).functor);
 			return a;
 		}
-		if (epstT.functor.equals(sharedEpStFunctor)) {
+		if (epstT.functor.equals(functor_EPST_SHARED)) {
 			SharedEpistemicStatus s = new SharedEpistemicStatus();
 			s.cgagents = new LinkedList<String>();
-			for (int i = 0; i < epstT.args.length; i++) {
-				s.cgagents.add(((FunctionTerm)epstT.args[i]).functor);
+			for (Term t : epstT.args) {
+				String ag = ProofUtils.termFunctor(t);
+				if (ag != null) {
+					s.cgagents.add(ag);
+				}
 			}
 			return s;
 		}
@@ -450,7 +283,7 @@ public abstract class ConversionUtils {
 	public static FunctionTerm epistemicStatusToTerm(EpistemicStatus epst) {
 		if (epst instanceof PrivateEpistemicStatus) {
 			PrivateEpistemicStatus p = (PrivateEpistemicStatus)epst;
-			return TermAtomFactory.term(privateEpStFunctor, new Term[] {
+			return TermAtomFactory.term(functor_EPST_PRIVATE, new Term[] {
 					TermAtomFactory.term(p.agent)
 				});
 		}
@@ -461,7 +294,7 @@ public abstract class ConversionUtils {
 			for (String ag : a.attribagents) {
 				args.add(TermAtomFactory.term(ag));
 			}
-			return TermAtomFactory.term(attributedEpStFunctor, args.toArray(new Term[0]));
+			return TermAtomFactory.term(functor_EPST_ATTRIB, args.toArray(new Term[0]));
 		}
 		if (epst instanceof SharedEpistemicStatus) {
 			SharedEpistemicStatus a = (SharedEpistemicStatus)epst;
@@ -469,20 +302,20 @@ public abstract class ConversionUtils {
 			for (String ag : a.cgagents) {
 				args.add(TermAtomFactory.term(ag));
 			}
-			return TermAtomFactory.term(sharedEpStFunctor, args.toArray(new Term[0]));
+			return TermAtomFactory.term(functor_EPST_SHARED, args.toArray(new Term[0]));
 		}
 		return null;
 	}
 
-	private static IntentionalContent newIntentionalContent() {
+	public static IntentionalContent newIntentionalContent(float probValue) {
 		IntentionalContent itc = new IntentionalContent();
-		itc.probValue = 1.0f;
+		itc.probValue = probValue;
 		itc.preconditions = BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, new LinkedList<dFormula>());
 		itc.postconditions = BeliefFormulaFactory.newComplexFormula(BinaryOp.conj, new LinkedList<dFormula>());
 		return itc;
 	}
 
-	private static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, Map<String, WorkingMemoryAddress> usedRefs, FunctionTerm t, List<dBelief> bel) {
+	public static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, Map<String, WorkingMemoryAddress> usedRefs, FunctionTerm t, List<dBelief> bel) {
 		Iterator<dBelief> it = bel.iterator();
 		while (it.hasNext()) {
 			dBelief xb = it.next();
@@ -494,9 +327,9 @@ public abstract class ConversionUtils {
 		String newId = idGen.newIdentifier();
 		dBelief b = emptyCondIndepDistribBelief(newId, epst);
 		// XXX we should actually check success here
-		foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(IntentionManagementConstants.discRefModality), TermAtomFactory.term(lingRef)}), b);
+		foldTermAsContent(epst, lingRef, TermAtomFactory.term(functor_FEATVAL, new Term[] {TermAtomFactory.term(IntentionManagementConstants.discRefModality), TermAtomFactory.term(lingRef)}), b);
 		if (usedRefs.containsKey(lingRef)) {
-			foldTermAsContent(epst, lingRef, TermAtomFactory.term("fv", new Term[] {TermAtomFactory.term(POINTERLABEL.value), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
+			foldTermAsContent(epst, lingRef, TermAtomFactory.term(functor_FEATVAL, new Term[] {TermAtomFactory.term(POINTERLABEL), workingMemoryAddressToTerm(usedRefs.get(lingRef))}), b);
 		}
 		foldTermAsContent(epst, lingRef, t, b);
 		bel.add(b);
@@ -516,9 +349,9 @@ public abstract class ConversionUtils {
 	private static boolean foldTermAsContent(EpistemicStatus epst, String lingRef, FunctionTerm t, dBelief bel) {
 		String featureName = "";
 		dFormula featureValue;
-		if (t.functor.equals("fv")) {
-			featureName = ((FunctionTerm)t.args[0]).functor;
-			featureValue = functionTermToContentFormula((FunctionTerm)t.args[1]);
+		if (t.functor.equals(functor_FEATVAL)) {
+			featureName = ((FunctionTerm)t.args.get(0)).functor;
+			featureValue = functionTermToContentFormula((FunctionTerm)t.args.get(1));
 
 			Comparator<EpistemicStatus> cmp = new EpistemicStatusComparator();
 			if (cmp.compare(bel.estatus, epst) != 0) {
@@ -531,7 +364,7 @@ public abstract class ConversionUtils {
 				return true;
 			}
 		}
-		if (t.functor.equals("mark")) {
+		if (t.functor.equals(functor_MARK)) {
 			return true;
 		}
  		return false;
@@ -555,17 +388,17 @@ public abstract class ConversionUtils {
 	}
 
 	public static dFormula functionTermToContentFormula(FunctionTerm t) {
-		if (t.functor.equals("ptr")) {
+		if (t.functor.equals(functor_PTR)) {
 			WorkingMemoryAddress wma = termToWorkingMemoryAddress(t);
 			if (wma != null) {
 				return BeliefFormulaFactory.newPointerFormula(wma);
 			}
 		}
-		if (t.functor.equals("not") && t.args.length == 1) {
-			return BeliefFormulaFactory.newNegatedFormula(functionTermToContentFormula((FunctionTerm)t.args[0]));
+		if (t.functor.equals(functor_NOT) && t.args.size() == 1) {
+			return BeliefFormulaFactory.newNegatedFormula(functionTermToContentFormula((FunctionTerm)t.args.get(0)));
 		}
-		if (t.functor.equals("or") && t.args.length == 2) {
-			return BeliefFormulaFactory.newComplexFormula(BinaryOp.disj, functionTermToContentFormula((FunctionTerm)t.args[0]), functionTermToContentFormula((FunctionTerm)t.args[1]));
+		if (t.functor.equals(functor_OR) && t.args.size() == 2) {
+			return BeliefFormulaFactory.newComplexFormula(BinaryOp.disj, functionTermToContentFormula((FunctionTerm)t.args.get(0)), functionTermToContentFormula((FunctionTerm)t.args.get(1)));
 		}
 		else {
 			return BeliefFormulaFactory.newElementaryFormula(t.functor);
@@ -575,20 +408,39 @@ public abstract class ConversionUtils {
 	public static WorkingMemoryAddress termToWorkingMemoryAddress(Term t) {
 		if (t instanceof FunctionTerm) {
 			FunctionTerm ft = (FunctionTerm) t;
-			if (ft.functor.equals("ptr") && ft.args.length == 2 && ft.args[0] instanceof FunctionTerm && ft.args[1] instanceof FunctionTerm) {
-				String subarch = ((FunctionTerm) ft.args[0]).functor;
-				String id = ((FunctionTerm) ft.args[1]).functor;
+			if (ft.functor.equals(functor_PTR) && ft.args.size() == 2 && ft.args.get(0) instanceof FunctionTerm && ft.args.get(1) instanceof FunctionTerm) {
+				String subarch = ((FunctionTerm) ft.args.get(0)).functor;
+				String id = ((FunctionTerm) ft.args.get(1)).functor;
 				return new WorkingMemoryAddress(id, subarch);
 			}
 		}
 		return null;
 	}
 
-	public static Term workingMemoryAddressToTerm(WorkingMemoryAddress wma) {
-		return TermAtomFactory.term("ptr", new Term[] { TermAtomFactory.term(wma.subarchitecture), TermAtomFactory.term(wma.id)});
+	public static UnderspecifiedFormula termToUnderspecifiedFormula(Term t) {
+		String varName = null;
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals(functor_VAR) && ft.args.size() == 1) {
+				Term argt = ft.args.get(0);
+				if (argt instanceof FunctionTerm && ((FunctionTerm)argt).args.isEmpty()) {
+					varName = ((FunctionTerm)argt).functor;
+				}
+			}
+		}
+		else if (t instanceof VariableTerm) {
+			VariableTerm vt = (VariableTerm) t;
+			varName = vt.name;
+		}
+		
+		return (varName != null ? new UnderspecifiedFormula(-1, varName) : null);
 	}
 
-	private static dFormula combineDFormulas(dFormula oldF, dFormula newF) {
+	public static Term workingMemoryAddressToTerm(WorkingMemoryAddress wma) {
+		return TermAtomFactory.term(functor_PTR, new Term[] { TermAtomFactory.term(wma.subarchitecture), TermAtomFactory.term(wma.id)});
+	}
+
+	public static dFormula combineDFormulas(dFormula oldF, dFormula newF) {
 		if (oldF == null) {
 			return newF;
 		}
@@ -667,7 +519,7 @@ public abstract class ConversionUtils {
 						NegatedFormula nF = (NegatedFormula)m2.form;
 						if (nF.negForm instanceof ElementaryFormula) {
 							ElementaryFormula eF = (ElementaryFormula)nF.negForm;
-							valTerm = TermAtomFactory.term("not", new Term[] {TermAtomFactory.term(eF.prop)});
+							valTerm = TermAtomFactory.term(functor_NOT, new Term[] {TermAtomFactory.term(eF.prop)});
 						}
 						else {
 							return null;
@@ -676,7 +528,7 @@ public abstract class ConversionUtils {
 					else {
 						return null;
 					}
-					return TermAtomFactory.term("rpv", new Term[] {
+					return TermAtomFactory.term(functor_RPV, new Term[] {
 						TermAtomFactory.term(objRef),
 						TermAtomFactory.term(objProp),
 						valTerm
@@ -727,18 +579,18 @@ public abstract class ConversionUtils {
 						Modality.Truth,
 						Modality.Intention
 					},
-					TermAtomFactory.atom(agentPredSym, args));
+					TermAtomFactory.atom(predsym_AGENT, args));
 
-			log("adding fact: " + MercuryUtils.modalisedAtomToString(amf));
+			log("adding fact: " + PrettyPrint.modalisedAtomToString(amf));
 			result.add(amf);
 
-			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.preconditions, ms, preconditionPredSym)) {
-				log("adding fact: " + MercuryUtils.modalisedAtomToString(ma));
+			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.preconditions, ms, predsym_PRECONDITION)) {
+				log("adding fact: " + PrettyPrint.modalisedAtomToString(ma));
 				result.add(ma);
 			}
 
-			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.postconditions, ms, postconditionPredSym)) {
-				log("adding fact: " + MercuryUtils.modalisedAtomToString(ma));
+			for (ModalisedAtom ma : intentionFormulaToFacts(itIdTerm, itc.postconditions, ms, predsym_POSTCONDITION)) {
+				log("adding fact: " + PrettyPrint.modalisedAtomToString(ma));
 				result.add(ma);
 			}
 		}
@@ -831,9 +683,29 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	private static void log(String str) {
-		if (logging)
-			System.out.println("\033[32m[Conversion]\t" + str + "\033[0m");
+	static List<ResolutionRequest> extractReferenceRequests(LogicalForm lf, List<MarkedQuery> proof, Interval ival) {
+		List<ResolutionRequest> result = new ArrayList<ResolutionRequest>();
+
+		List<ModalisedAtom> matoms = ProofUtils.filterStripByModalityPrefix(ProofUtils.stripMarking(proof), Arrays.asList(new Modality[] {Modality.Understanding}));
+		for (ModalisedAtom matom : matoms) {
+			if (matom.a.predSym.equals(predsym_IS_REFERENCE) && matom.a.args.size() == 2
+					&& matom.a.args.get(0) instanceof FunctionTerm
+					&& matom.a.args.get(1) instanceof VariableTerm) {
+
+				String nom = ((FunctionTerm) matom.a.args.get(0)).functor;
+				VariableTerm varTerm = (VariableTerm) matom.a.args.get(1);
+
+				LFNominal lfNom = LFUtils.lfGetNominal(lf, nom);
+
+				result.add(ReferenceUtils.nominalToConstraints(lfNom, ival));
+			}
+		}
+		return result;
 	}
 
+	private static void log(String str) {
+		if (logger != null) {
+			logger.debug(str);
+		}
+	}
 }

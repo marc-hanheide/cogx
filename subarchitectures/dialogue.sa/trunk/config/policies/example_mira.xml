@@ -1,0 +1,38 @@
+
+<policy>
+
+<nodes>
+<node id="start" isInitial="true" isFinal="true"/>
+<node id="forwardingNode" isInitial="false" isFinal="true" action="forwardAction"/>
+<node id="forwardingStop" isInitial="false" isFinal="true" action="forwardStop"/>
+<node id="clarifyNode" isInitial="false" isFinal="false" action="clarifyAction"/>
+</nodes>
+
+<edges>
+<edge source="start" target="forwardingNode" condition="anyCondCertain"/>
+<edge source="start" target="clarifyNode" condition="anyCondUncertain"/>
+<edge source="start" target="forwardingStop" condition="stop"/>
+
+<edge source="clarifyNode" target="forwardingNode" condition="polarPosCondPhon"/>
+<edge source="clarifyNode" target="start" condition="polarNegCondPhon"/>
+
+<edge source="forwardingNode" target="start" condition="ultraShortTimeout"/>
+<edge source="forwardingStop" target="start" condition="ultraShortTimeout"/>
+</edges>
+
+<conditions>
+<condition id="stop" content="stop" type="intention" status="communicative"/>
+<condition id="anyCondCertain" content="%1" lowerProb="0.6" higherProb="1.0" type="intention" status="communicative"/>
+<condition id="anyCondUncertain" content="%1" lowerProb="0.4" higherProb="1.6" type="intention" status="communicative"/>
+<condition id="polarPosCondPhon" type="phonstring" lowerProb="0.4" higherProb="1.0" content="yes" /> 
+<condition id="polarNegCondPhon" type="phonstring" lowerProb="0.4" higherProb="1.0" content="no"/>
+<condition id="ultraShortTimeout" type="timeout" content="10"/>
+</conditions>
+
+<actions>
+		<action id="forwardAction" content="%1" type="intention" status="attributed"/>
+		<action id="forwardStop" content="stop" type="intention" status="attributed"/>
+		<action id="clarifyAction" content="did you say %1 ?" type="phonstring"/>
+</actions>
+
+</policy>

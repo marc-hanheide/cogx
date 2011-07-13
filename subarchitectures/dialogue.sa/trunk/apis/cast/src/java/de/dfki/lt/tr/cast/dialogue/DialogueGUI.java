@@ -40,7 +40,9 @@ import cast.core.CASTData;
 import de.dfki.lt.tr.cast.ProcessingData;
 
 //Dialogue API slice
+import de.dfki.lt.tr.dialogue.slice.asr.Noise;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
+import de.dfki.lt.tr.dialogue.slice.asr.InitialPhonString;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 
 //Dialogue API 
@@ -100,6 +102,13 @@ implements TRResultListener
                 	handlePhonStringAdd(_wmc);
                 }
             });
+        addChangeFilter(
+        		ChangeFilterFactory.createLocalTypeFilter(Noise.class,  WorkingMemoryOperation.ADD),
+            new WorkingMemoryChangeReceiver() {
+                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+                	handleNoiseAdd(_wmc);
+                }
+            });
     } // end start
 	
     /**
@@ -123,6 +132,17 @@ implements TRResultListener
         try {
             // get the data from working memory and publish it
             gui.publishPhonString(getMemoryEntry(_wmc.address, PhonString.class));
+        }
+        catch (SubarchitectureComponentException e) {
+            e.printStackTrace();
+        } // end try..catch
+    }
+
+    private void handleNoiseAdd(WorkingMemoryChange _wmc)
+    {
+        try {
+            // get the data from working memory and publish it
+            gui.publishNoise(getMemoryEntry(_wmc.address, Noise.class));
         }
         catch (SubarchitectureComponentException e) {
             e.printStackTrace();
@@ -198,7 +218,7 @@ implements TRResultListener
                     if (phonString.wordSequence.equals("no")) {
                     	phonString.wordSequence = "No";
                     }
-                    addToWorkingMemory(phonString.id, phonString);
+                    addToWorkingMemory(newDataID(), new InitialPhonString(phonString));
                 }
     	}
     	catch (Exception e) {

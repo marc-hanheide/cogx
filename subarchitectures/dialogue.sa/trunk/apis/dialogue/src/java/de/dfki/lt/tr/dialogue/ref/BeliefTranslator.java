@@ -17,35 +17,36 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
-import de.dfki.lt.tr.infer.weigabd.MercuryUtils;
-import de.dfki.lt.tr.infer.weigabd.TermAtomFactory;
-import de.dfki.lt.tr.infer.weigabd.slice.Antecedent;
-import de.dfki.lt.tr.infer.weigabd.slice.AssumableAntecedent;
-import de.dfki.lt.tr.infer.weigabd.slice.ModalisedAtom;
-import de.dfki.lt.tr.infer.weigabd.slice.Modality;
-import de.dfki.lt.tr.infer.weigabd.slice.NamedAssumabilityFunction;
-import de.dfki.lt.tr.infer.weigabd.slice.NullAssumabilityFunction;
-import de.dfki.lt.tr.infer.weigabd.slice.Rule;
-import de.dfki.lt.tr.infer.weigabd.slice.Term;
+import de.dfki.lt.tr.infer.abducer.lang.Antecedent;
+import de.dfki.lt.tr.infer.abducer.lang.AssumableAntecedent;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.NamedAssumabilityFunction;
+import de.dfki.lt.tr.infer.abducer.lang.NullAssumabilityFunction;
+import de.dfki.lt.tr.infer.abducer.lang.Rule;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class BeliefTranslator {
 
-	public static final Modality[] mod = new Modality[] { Modality.Belief };
+	public static final ArrayList<Modality> mod = new ArrayList(Arrays.asList(new Modality[] { Modality.Belief }));
 
 	public static double THRESHOLD_MIN = 0.01f;
 	public static double THRESHOLD_MAX = 1.0f;
 
-	public List<ModalisedAtom> facts_epst = new LinkedList<ModalisedAtom>();
-	public List<ModalisedAtom> facts_ancestor = new LinkedList<ModalisedAtom>();
-	public List<ModalisedAtom> facts_offspring = new LinkedList<ModalisedAtom>();
-	public List<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>> assf_belief_exist = new LinkedList<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>>();
-	public List<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>> assf_world_exist = new LinkedList<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>>();
-	public List<List<ModalisedAtom>> disjoints = new LinkedList<List<ModalisedAtom>>();
-	public List<Rule> rules = new LinkedList<Rule>();
+	public List<ModalisedAtom> facts_epst = new ArrayList<ModalisedAtom>();
+	public List<ModalisedAtom> facts_ancestor = new ArrayList<ModalisedAtom>();
+	public List<ModalisedAtom> facts_offspring = new ArrayList<ModalisedAtom>();
+	public List<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>> assf_belief_exist = new ArrayList<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>>();
+	public List<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>> assf_world_exist = new ArrayList<AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double>>();
+	public List<List<ModalisedAtom>> disjoints = new ArrayList<List<ModalisedAtom>>();
+	public List<Rule> rules = new ArrayList<Rule>();
 
 	public void addBelief(WorkingMemoryAddress addr, dBelief bel) {
 
@@ -111,7 +112,7 @@ public class BeliefTranslator {
 					if (pd instanceof BasicProbDistribution) {
 						BasicProbDistribution bpd = (BasicProbDistribution)pd;
 
-						List<ModalisedAtom> ddpart = new LinkedList<ModalisedAtom>();
+						List<ModalisedAtom> ddpart = new ArrayList<ModalisedAtom>();
 
 						if (bpd.values instanceof FormulaValues) {
 							FormulaValues fv = (FormulaValues) bpd.values;
@@ -192,10 +193,9 @@ public class BeliefTranslator {
 							valTerm
 						}));
 
-			r.ante = new Antecedent[] {
-				new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME)),
-				new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME))
-			};
+			r.ante = new ArrayList<Antecedent>();
+			r.ante.add(new AssumableAntecedent(worldexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME)));
+			r.ante.add(new AssumableAntecedent(belexMAtom, new NamedAssumabilityFunction(AbductiveReferenceResolution.BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME)));
 
 			rules.add(r);
 		}
@@ -203,11 +203,11 @@ public class BeliefTranslator {
 
 	public String toRulefileContents() {
 		StringBuilder sb = new StringBuilder();
-		List<String> args = new LinkedList<String>();
+		List<String> args = new ArrayList<String>();
 
 		sb.append("% epistemic statuses\n");
 		for (ModalisedAtom ma : facts_epst) {
-			args.add(MercuryUtils.modalisedAtomToString(ma) + ".");
+			args.add(PrettyPrint.modalisedAtomToString(ma) + ".");
 		}
 		sb.append(join("\n", args)).append("\n");
 		sb.append("\n");
@@ -215,7 +215,7 @@ public class BeliefTranslator {
 		sb.append("% belief existence assumability function\n");
 		args.clear();
 		for (AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double> ass : assf_belief_exist) {
-			args.add("(" + MercuryUtils.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
+			args.add("(" + PrettyPrint.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
 		}
 		sb.append(AbductiveReferenceResolution.BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 		sb.append("\n");
@@ -223,7 +223,7 @@ public class BeliefTranslator {
 		sb.append("% belief ancestors\n");
 		args.clear();
 		for (ModalisedAtom ma : facts_ancestor) {
-			args.add(MercuryUtils.modalisedAtomToString(ma) + ".");
+			args.add(PrettyPrint.modalisedAtomToString(ma) + ".");
 		}
 		sb.append(join("\n", args)).append("\n");
 		sb.append("\n");
@@ -232,7 +232,7 @@ public class BeliefTranslator {
 		sb.append("% belief offsprings\n");
 		args.clear();
 		for (ModalisedAtom ma : facts_offspring) {
-			args.add(MercuryUtils.modalisedAtomToString(ma) + ".");
+			args.add(PrettyPrint.modalisedAtomToString(ma) + ".");
 		}
 		sb.append(join("\n", args)).append("\n");
 		sb.append("\n");
@@ -241,7 +241,7 @@ public class BeliefTranslator {
 		sb.append("% world existence assumability function\n");
 		args.clear();
 		for (AbstractMap.SimpleImmutableEntry<ModalisedAtom,Double> ass : assf_world_exist) {
-			args.add("(" + MercuryUtils.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
+			args.add("(" + PrettyPrint.modalisedAtomToString(ass.getKey()) + ") = p(" + ass.getValue() + ")");
 		}
 		sb.append(AbductiveReferenceResolution.WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME + " = [\n\t").append(join(",\n\t", args)).append("\n].\n");
 		sb.append("\n");
@@ -249,9 +249,9 @@ public class BeliefTranslator {
 		sb.append("% disjoint declarations\n");
 		args.clear();
 		for (List<ModalisedAtom> dd : disjoints) {
-			List<String> ss = new LinkedList<String>();
+			List<String> ss = new ArrayList<String>();
 			for (ModalisedAtom d : dd) {
-				ss.add(MercuryUtils.modalisedAtomToString(d));
+				ss.add(PrettyPrint.modalisedAtomToString(d));
 			}
 			args.add("disjoint([" + join(", ", ss) + "]).");
 		}
@@ -261,22 +261,22 @@ public class BeliefTranslator {
 		sb.append("% rules\n");
 		args.clear();
 		for (Rule r : rules) {
-			List<String> ss = new LinkedList<String>();
-			for (int i = 0; i < r.ante.length; i++) {
-				if (r.ante[i] instanceof AssumableAntecedent) {
-					AssumableAntecedent a = (AssumableAntecedent) r.ante[i];
+			List<String> ss = new ArrayList<String>();
+			for (int i = 0; i < r.ante.size(); i++) {
+				if (r.ante.get(i) instanceof AssumableAntecedent) {
+					AssumableAntecedent a = (AssumableAntecedent) r.ante.get(i);
 
 					if (a.f instanceof NullAssumabilityFunction) {
-						ss.add(MercuryUtils.modalisedAtomToString(a.matom));
+						ss.add(PrettyPrint.modalisedAtomToString(a.matom));
 					}
 					if (a.f instanceof NamedAssumabilityFunction) {
 						NamedAssumabilityFunction naf = (NamedAssumabilityFunction) a.f;
-						ss.add(MercuryUtils.modalisedAtomToString(a.matom) + " / " + naf.name);
+						ss.add(PrettyPrint.modalisedAtomToString(a.matom) + " / " + naf.name);
 					}
 				}
 			}
 			if (!ss.isEmpty()) {
-				args.add(MercuryUtils.modalisedAtomToString(r.head) + " <- " + join(", ", ss) + ".");
+				args.add(PrettyPrint.modalisedAtomToString(r.head) + " <- " + join(", ", ss) + ".");
 			}
 		}
 		sb.append(join("\n", args)).append("\n");
