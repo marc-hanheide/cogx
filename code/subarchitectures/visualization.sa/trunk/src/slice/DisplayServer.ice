@@ -107,9 +107,21 @@ module Visualization
       void addAction(Ice::Identity ident, string viewId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
 
-      // Create a Qt dialog
+      // Create a Qt dialog. Only one dialog with a unique dialogId can exist. Multiple
+      // components may try to add a dialog with the same dialogId, but only the first
+      // one will succeed.
+      //
+      // @param designCode - Qt4 designer code (xml)
+      // @param scriptCode - JavaScript code with the dialog logic
+      // @param constructorName - the name of a JS 'constructor' function and optionally
+      //    the name of the JS global object that will be created.
+      //    case 1: 'Calculator'
+      //       This will create an instance of the Calculator class named '_Calculator_'.
+      //    case 2: 'Calculator calc'
+      //       The Calculator instance will be accessible through a global name 'calc'.
       void addDialog(Ice::Identity ident, string dialogId, string designCode,
             string scriptCode, string constructorName);
+      void execInDialog(string dialogId, string scriptCode);
    };
 
    enum EEventType
@@ -160,6 +172,10 @@ module Visualization
 
       // Get data to fill the form when first displayed; returns false if not supported
       bool getFormData(string id, string partId, out TFormFieldMap fields);
+
+      // TODO: the value should be JSON; now it's just a string representation (QtVariant.toString())
+      void onDialogValueChanged(string dialogId, string name, string value);
+      void handleDialogCommand(string dialogId, string command, string params);
    };
 };
 

@@ -70,6 +70,17 @@ public class DisplayClient {
 				return m_Client.getFormData(id, partId, fields);
 			return false;
 		}
+
+		public void onDialogValueChanged(String dialogId, String name,
+				String value, Ice.Current ctx) {
+			if (m_Client != null)
+				m_Client.onDialogValueChanged(dialogId, name, value);
+		}
+		public void handleDialogCommand(String dialogId, String name,
+				String value, Ice.Current ctx) {
+			if (m_Client != null)
+				m_Client.handleDialogCommand(dialogId, name, value);
+		}
 	}
 
 	private String m_ServerName = "display.srv";
@@ -341,6 +352,10 @@ public class DisplayClient {
 	public boolean getFormData(String id, String partId,
 			TFormFieldMapHolder fields) {
 		return false;
+	}
+	public void onDialogValueChanged(String dialogId, String name, String value) {
+	}
+	public void handleDialogCommand(String dialogId, String name, String value) {
 	}
 
 }

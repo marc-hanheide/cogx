@@ -197,6 +197,22 @@ bool CDisplayClient::getFormData(const std::string& id, const std::string& partI
    return false;
 }
 
+void CDisplayClient::onDialogValueChanged(const std::string& dialogId, const std::string& name,
+      const std::string& value)
+{
+   if (m_pOwner)
+      m_pOwner->debug("onDialogValueChanged NOT IMPLEMENTED. %s[%s]='%s'",
+            dialogId.c_str(), name.c_str(), value.c_str());
+}
+
+void CDisplayClient::handleDialogCommand(const std::string& dialogId, const std::string& name,
+      const std::string& value)
+{
+   if (m_pOwner)
+      m_pOwner->debug("handleDialogCommand NOT IMPLEMENTED. %s#%s(%s)",
+            dialogId.c_str(), name.c_str(), value.c_str());
+}
+
 void CDisplayClient::createView(const std::string& id, Visualization::ViewType type,
       const std::vector<std::string>& objects)
 {
@@ -470,6 +486,12 @@ void CDisplayClient::addDialog(const std::string& dialogId, const std::string& u
    if (! m_pServer) return;
    Ice::Identity id = getEventClientId();
    m_pServer->addDialog(id, dialogId, uiCode, jsCode, ctorName);
+}
+
+void CDisplayClient::execInDialog(const std::string& dialogId, const std::string& script)
+{
+   if (! m_pServer) return;
+   m_pServer->execInDialog(dialogId, script);
 }
 
 void CDisplayClient::addAction(const std::string& viewId, const Visualization::ActionInfo& action)

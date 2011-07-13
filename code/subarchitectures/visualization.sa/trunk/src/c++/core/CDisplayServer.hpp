@@ -40,6 +40,7 @@ typedef IceUtil::Handle<CDisplayServerI> CDisplayServerIPtr;
 class CDisplayServer:
    public cast::ManagedComponent,
    public CGuiElementObserver,
+   public CGuiDialogObserver,
    public CHtmlFormObserver,
    public COwnerDataProxy
 {
@@ -138,12 +139,17 @@ public:
          const std::string& constructorName);
    void addAction(const Ice::Identity& ident, const std::string& viewId,
          const Visualization::ActionInfo& action);
+   void execInDialog(const std::string& dialogId, const std::string& scriptCode);
 
 private:
    void startIceServer();
 
    // CGuiElementObserver
    void onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
+
+   // CGuiDialogObserver
+   void onGuiDialog_setValue(CGuiDialog *pDialog, const std::string& name, const std::string& value);
+   void onGuiDialog_call(CGuiDialog *pDialog, const std::string& name, const std::string& value);
 
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
@@ -301,6 +307,11 @@ public:
          const std::string& constructorName, const Ice::Current&)
    {
       m_pDisplayServer->addDialog(ident, dialogId, designCode, scriptCode, constructorName);
+   }
+
+   virtual void execInDialog(const std::string& dialogId, const std::string& script, const Ice::Current&)
+   {
+      m_pDisplayServer->execInDialog(dialogId, script);
    }
 
    virtual void getStandaloneHost(std::string& hostname, const Ice::Current&)

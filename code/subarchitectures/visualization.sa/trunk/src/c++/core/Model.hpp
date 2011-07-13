@@ -141,6 +141,7 @@ public:
    CDisplayObject* getObject(const std::string &id);
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
+   CGuiDialog* getDialog(const std::string &id);
    bool isValidView(CDisplayView *pView);
    void createView(const std::string& id, ERenderContext context, const std::vector<std::string>& objects);
 

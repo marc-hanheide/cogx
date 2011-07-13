@@ -195,6 +195,8 @@ Calculator.prototype.equalClicked = function()
    this.ui.display.text = this.sumSoFar + "";
    this.sumSoFar = 0.0;
    this.waitingForOperand = true;
+
+   dialogOwner.setValue("display.text", this.ui.display.text);
 }
 
 Calculator.prototype.pointClicked = function()

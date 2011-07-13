@@ -235,26 +235,27 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
    if (channels == 1) {
       for (int i = 0; i < npix; i++) {
          *ppix = qRgb(*pvimg, *pvimg, *pvimg);
-         pvimg++;
-         ppix++;
+         ++pvimg;
+         ++ppix;
       }
    }
    else if (channels == 3) {
       bool bgr = true; // reverse channels by default; TODO: parameter in setRawImage
+      int r, g, b;
       if (bgr) {
-         int r, g, b;
          for (int i = 0; i < npix; i++) {
             b = *pvimg; g = *(++pvimg); r = *(++pvimg);
             *ppix = qRgb(r, g, b);
-            pvimg++;
-            ppix++;
+            ++pvimg;
+            ++ppix;
          }
       }
       else {
          for (int i = 0; i < npix; i++) {
-            *ppix = qRgb(*pvimg, *(++pvimg), *(++pvimg));
-            pvimg++;
-            ppix++;
+            r = *pvimg; g = *(++pvimg); b = *(++pvimg);
+            *ppix = qRgb(r, g, b);
+            ++pvimg;
+            ++ppix;
          }
       }
    }
@@ -617,14 +618,32 @@ void CDisplayServer::addDialog(const Ice::Identity& ident, const std::string& di
    pDialog->m_designCode = designCode;
    pDialog->m_scriptCode = scriptCode;
    pDialog->m_ctorName = constructorName;
-   if (!m_Model.addGuiDialog(pDialog))
+
+   if (!m_Model.addGuiDialog(pDialog)) {
       delete pDialog;
+      pDialog = 0;
+   }
+
+   if (pDialog)
+      pDialog->Observers.addObserver(this);
+
+   // TODO: push_back only if ident not in m_dataOwner AND all the other fields have the same value
+   // as the primary dialog!
+   pDialog->m_dataOwners.push_back(ident);
+}
+
+void CDisplayServer::execInDialog(const std::string& dialogId, const std::string& scriptCode)
+{
+   DTRACE("CDisplayServer::execInDialog: " << scriptCode);
+   CGuiDialog* pDialog = m_Model.getDialog(dialogId);
+   if (!pDialog) return;
+   pDialog->execute(scriptCode);
 }
 
 void CDisplayServer::addAction(const Ice::Identity& ident, const std::string& viewId,
       const Visualization::ActionInfo& action)
 {
-   DTRACE("CDisplayServer::addAction (TODO)");
+   DTRACE("CDisplayServer::addAction");
    CGuiElement *pgel = new CGuiElement();
    pgel->m_type = CGuiElement::wtAction;
    pgel->m_viewId = viewId;
@@ -700,6 +719,78 @@ void CDisplayServer::onGuiElement_CtrlDataChanged(CGuiElement *pElement, const s
    pOp->pElement = pElement;
    pOp->value = newValue;
    hIceDisplayServer->addOperation(pOp);
+}
+
+class CDialogValueChangeOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   CGuiDialog* pDialog;
+   std::string name;
+   std::string value;
+   CDialogValueChangeOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+      pDialog = 0;
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      if (! pDialog) return;
+      pClient->onDialogValueChanged(pDialog->m_id, name, value);
+   }
+};
+
+void CDisplayServer::onGuiDialog_setValue(CGuiDialog *pDialog, const std::string& name, const std::string& value)
+{
+   DTRACE("CDisplayServer::onGuiDialog_setValue");
+   if (! pDialog)
+      return;
+
+   typeof(pDialog->m_dataOwners.begin()) it = pDialog->m_dataOwners.begin();
+   for (; it != pDialog->m_dataOwners.end(); ++it) {
+      CDialogValueChangeOperation* pOp = new CDialogValueChangeOperation(*it);
+      pOp->pDialog = pDialog;
+      pOp->name = name;
+      pOp->value = value;
+      hIceDisplayServer->addOperation(pOp);
+      DMESSAGE("setValue " << name << "=" << value);
+   }
+}
+
+class CDialogCallOperation: public CDisplayServerI::CQueuedOperation
+{
+public:
+   CGuiDialog* pDialog;
+   std::string name;
+   std::string value;
+   CDialogCallOperation(const Ice::Identity& clientId)
+      : CDisplayServerI::CQueuedOperation(clientId)
+   {
+      pDialog = 0;
+   }
+
+   void execute(Visualization::EventReceiverPrx& pClient)
+   {
+      if (! pDialog) return;
+      pClient->handleDialogCommand(pDialog->m_id, name, value);
+   }
+};
+
+void CDisplayServer::onGuiDialog_call(CGuiDialog *pDialog, const std::string& name, const std::string& value)
+{
+   DTRACE("CDisplayServer::onGuiDialog_call");
+   if (! pDialog)
+      return;
+
+   typeof(pDialog->m_dataOwners.begin()) it = pDialog->m_dataOwners.begin();
+   if (it != pDialog->m_dataOwners.end()) {
+      CDialogCallOperation* pOp = new CDialogCallOperation(*it);
+      pOp->pDialog = pDialog;
+      pOp->name = name;
+      pOp->value = value;
+      hIceDisplayServer->addOperation(pOp);
+      DMESSAGE("call " << name << "(" << value << ")");
+   }
 }
 
 class CUiGetControlStateOperation: public CDisplayServerI::CQueuedOperation

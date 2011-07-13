@@ -89,6 +89,23 @@ public:
    void syncControlState(const std::string& newValue, bool notify=false);
 };
 
+class CGuiDialog;
+class CGuiDialogObserver
+{
+public:
+   // The dialog is sending a piece of data to the owner
+   virtual void onGuiDialog_setValue(CGuiDialog* pDialog, const std::string& name, const std::string& value) = 0;
+
+   // The dialog is calling an owner method
+   virtual void onGuiDialog_call(CGuiDialog* pDialog, const std::string& name, const std::string& value) = 0;
+};
+
+// The Qt infrastructure that manages the display/control of the dialog
+class CGuiDialogDisplayProxy
+{
+public:
+   virtual void execute(const std::string& script) = 0;
+};
 
 class CGuiDialog
 {
@@ -97,12 +114,33 @@ public:
    std::string m_designCode; // design of the UI
    std::string m_scriptCode; // script that controls the UI
    std::string m_ctorName;   // constructor for the UI object, defined in script
+   CGuiDialogDisplayProxy* m_pDialogView; // XXX: should this be private?
+ 
+   // The IDs of the components that use the dialog. All components are notified when
+   // the dialog data changes. Only the first component is the (pull-)source for dialog
+   // data and can execute scripts through m_pDialogView.
+   std::vector<Ice::Identity> m_dataOwners;
 
-   bool isSameDialog(CGuiDialog *pGuiDialog) {
+   CObserverList<CGuiDialogObserver> Observers;
+
+   CGuiDialog()
+   {
+      m_pDialogView = 0;
+   }
+
+   bool isSameDialog(CGuiDialog *pGuiDialog)
+   {
       if (! pGuiDialog) return false;
       if (m_id != pGuiDialog->m_id) return false;
       return true;
    }
+
+   // Receive changes from m_pDialogView and notify the observers (remote client)
+   void notify_setValue(const std::string& name, const std::string& value);
+   void notify_call(const std::string& name, const std::string& value);
+
+   // Execute some code in m_pDialogView
+   void execute(const std::string& script);
 };
 
 }} // namespace
