@@ -8,6 +8,12 @@
 module execution {
   module slice {
 
+	/*
+	* Class used to store information about last viewcone moved to. Hopefully name should change.
+	*/
+	class Robot {
+			cast::cdl::WorkingMemoryPointer currentViewCone;
+	};
 
     module actions {
 		module george {

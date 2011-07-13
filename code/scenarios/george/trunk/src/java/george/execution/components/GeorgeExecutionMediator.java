@@ -34,9 +34,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			throws CASTException {
 
 		
-		if (_plannedAction.name.equals("move-to-viewcone1")) {
+		if (_plannedAction.name.equals("move-to-viewcone")) {
 
-			assert _plannedAction.arguments.length == 2 : "move-to-viewcone1  is expected to be of arity 2";
+			assert _plannedAction.arguments.length == 2 : "move-to-viewcone  is expected to be of arity 2";
 			return createSingleBeliefAction(MoveToViewCone.class,
 					_plannedAction.arguments[1]);
 		}
