@@ -12,6 +12,10 @@ module VisionData {
   sequence<cogx::Math::Vector3> Vector3Seq;
   sequence<string> StringSeq;
   sequence<double> DoubleSeq;
+  sequence<int> IntSeq;
+  sequence<bool> BoolSeq;
+  sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
+  sequence<string> IdSeq;
 
 /**
 * Enum for reporting status of vision commands. 
@@ -56,9 +60,7 @@ enum VisionCommandStatus {
     ObjSeq Objects;
     // The estimated plane
     cogx::Math::Plane3 plane;
- };
-
-  sequence<string> IdSeq;
+  };
 
 
   /**
@@ -92,9 +94,6 @@ enum VisionCommandStatus {
   };
   sequence<VisualObjectView> VisualObjectViewSeq;
 
-  sequence<int> IntSeq;
-  sequence<bool> BoolSeq;
-
   struct Vertex {
     cogx::Math::Vector3 pos;
     cogx::Math::Vector3 normal;
@@ -111,8 +110,6 @@ enum VisionCommandStatus {
     VertexSeq vertices;
     FaceSeq faces;
   };
-
-sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
 
   class VisualObject {
     // 3D position and orientation, in the robot ego coordinate system.
@@ -404,7 +401,6 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
 	cast::cdl::WorkingMemoryPointer target;
 
   };
-
   sequence<ViewCone> ViewConeSeq;
 
 
@@ -436,6 +432,7 @@ sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
     // which proto object
     cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
+    // @param ViewCone whereToLook
     // where in the visual field is it? This should be (approx.) the same as
     // the target of the MoveToViewConeCommand command. If the target could not
     // be reached, a new view cone is generated from the desired and the
