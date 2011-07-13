@@ -3,21 +3,17 @@
   (:requirements :mapl :adl :fluents :action-costs :equality)
 
   (:types
+    Robot - agent
     VisualObject ProtoObject ViewCone ConceptName - object
     ColorName ShapeName TypeName - ConceptName
   )
 
   (:constants
-    GEORGE - agent
-    NO_VIEWCONE - ViewCone
+    GEORGE - Robot
     VISUAL_OBJECT_DUMMY - VisualObject
     UNKNOWN_COLOR - ColorName
     UNKNOWN_SHAPE - ShapeName
     UNKNOWN_TYPE - TypeName
-  )
-
-  (:predicates
-    (current-view ?v - ViewCone)
   )
 
   (:functions
@@ -26,33 +22,25 @@
     (color ?v - VisualObject) - ColorName
     (shape ?v - VisualObject) - ShapeName
     (type ?v - VisualObject) - TypeName
-  )
-
-  (:init-rule assign-initial-viewcone
-     :parameters ()
-     :precondition (not (exists (?vc - ViewCone) (current-view ?vc)))
-     :effect (current-view NO_VIEWCONE)
+    (current-viewcone ?r - Robot) - ViewCone
   )
 
   (:action move-to-viewcone
-    :agent (?a - agent)
-    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
-    :precondition
-      (current-view ?vc1)
+    :agent (?r - Robot)
+    :parameters (?vc - ViewCone)
     :effect
       (and
-        (not (current-view ?vc1))
-        (current-view ?vc2)
+        (assign (current-viewcone ?r) ?vc)
         (increase (total-cost) 1)
       )
   )
 
   (:action analyze-proto-object
-    :agent (?a - agent)
+    :agent (?r - Robot)
     :parameters (?vc - ViewCone ?po - ProtoObject)
     :precondition
       (and
-        (current-view ?vc)
+        (= (current-viewcone ?r) ?vc)
         (= (target-object ?vc) ?po)
         (not (exists (?vo - visualobject) (= (po-is-associated-with ?po) ?vo)))
       )
