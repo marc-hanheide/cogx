@@ -195,7 +195,9 @@ class FloatFormula extends dFormula {
 
 class UnknownFormula extends dFormula { };
 
-class UnderspecifiedFormula extends dFormula { };
+class UnderspecifiedFormula extends dFormula {
+	string arglabel;
+};
 
 
 
