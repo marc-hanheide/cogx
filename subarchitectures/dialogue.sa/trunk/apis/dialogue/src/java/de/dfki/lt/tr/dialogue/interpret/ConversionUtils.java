@@ -20,11 +20,11 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.util.BeliefFormulaFactory;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
-import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
@@ -47,7 +47,6 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
 import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
@@ -58,7 +57,6 @@ import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.lang.VariableTerm;
 import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
-import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;

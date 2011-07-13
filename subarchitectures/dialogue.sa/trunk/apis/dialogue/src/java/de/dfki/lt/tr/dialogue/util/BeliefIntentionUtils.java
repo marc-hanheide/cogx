@@ -18,7 +18,7 @@
 // 02111-1307, USA.
 // =================================================================
 
-package de.dfki.lt.tr.dialogue.interpret;
+package de.dfki.lt.tr.dialogue.util;
 
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
@@ -42,6 +42,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import java.util.Iterator;
 import java.util.LinkedList;
 

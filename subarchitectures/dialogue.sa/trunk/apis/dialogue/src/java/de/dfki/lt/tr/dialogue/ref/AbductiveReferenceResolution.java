@@ -23,14 +23,13 @@ package de.dfki.lt.tr.dialogue.ref;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
-import de.dfki.lt.tr.dialogue.interpret.BeliefFormulaFactory;
+import de.dfki.lt.tr.dialogue.util.BeliefFormulaFactory;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReference;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
-import de.dfki.lt.tr.infer.abducer.lang.Atom;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
@@ -47,7 +46,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -55,14 +53,14 @@ import java.util.Set;
  */
 public class AbductiveReferenceResolution {
 
-	private int timeout;
+	private final int timeout;
 	public boolean logging = true;
-	private AbductionEngineConnection refresEngine = null;
-	private String dumpfile;
-	private String appendfile;
+	private final AbductionEngineConnection engineConnection;
+	private final String dumpfile;
+	private final String appendfile;
 
-	private String abd_serverName = "";
-	private String abd_endpoints = "";
+	private final String abd_serverName;
+	private final String abd_endpoints;
 
 	public static final String REFERENCE_RESOLUTION_ENGINE = "ReferenceResolution";
 
@@ -72,26 +70,23 @@ public class AbductiveReferenceResolution {
 	public AbductiveReferenceResolution(String servername, String endpoints, String dumpfile_, String appendfile_, int timeout_) {
 		abd_serverName = servername;
 		abd_endpoints = endpoints;
-		init();
 		dumpfile = dumpfile_;
 		appendfile = appendfile_;
 		timeout = timeout_;
-	}
 
-	private void init() {
-		refresEngine = new AbductionEngineConnection();
-		refresEngine.connectToServer(abd_serverName, abd_endpoints);
-		refresEngine.bindToEngine(REFERENCE_RESOLUTION_ENGINE);
-		refresEngine.getEngineProxy().clearContext();
+		engineConnection = new AbductionEngineConnection();
+		engineConnection.connectToServer(abd_serverName, abd_endpoints);
+		engineConnection.bindToEngine(REFERENCE_RESOLUTION_ENGINE);
+		engineConnection.getEngineProxy().clearContext();
 	}
 
 	public List<NominalEpistemicReferenceHypothesis> resolvePresupposition(String nom, Map<String, String> fvPairs) {
 
-		refresEngine.getEngineProxy().clearRules();
-		refresEngine.getEngineProxy().clearFacts();
-		refresEngine.getEngineProxy().clearDisjointDeclarations();
-		refresEngine.getEngineProxy().clearAssumabilityFunction("belief_exist");
-		refresEngine.getEngineProxy().clearAssumabilityFunction("world_exist");
+		engineConnection.getEngineProxy().clearRules();
+		engineConnection.getEngineProxy().clearFacts();
+		engineConnection.getEngineProxy().clearDisjointDeclarations();
+		engineConnection.getEngineProxy().clearAssumabilityFunction(BELIEF_EXIST_ASSUMABILITY_FUNCTION_NAME);
+		engineConnection.getEngineProxy().clearAssumabilityFunction(WORLD_EXIST_ASSUMABILITY_FUNCTION_NAME);
 		loadFile(dumpfile);
 		loadFile(appendfile);
 
@@ -104,7 +99,7 @@ public class AbductiveReferenceResolution {
 					propertiesToListTerm(fvPairs)
 				}));
 
-		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(refresEngine, ProofUtils.newUnsolvedProof(g), timeout);
+		List<ProofWithCost> proofs = AbducerUtils.allAbductiveProofs(engineConnection, ProofUtils.newUnsolvedProof(g), timeout);
 
 		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double> combined_hypos = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, Double>();
 		Map<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus> epistemic_statuses = new HashMap<AbstractMap.SimpleImmutableEntry<String, WorkingMemoryAddress>, EpistemicStatus>();
@@ -194,7 +189,7 @@ public class AbductiveReferenceResolution {
 	 */
 	public void loadFile(String file) {
 		try {
-			refresEngine.getEngineProxy().loadFile(file);
+			engineConnection.getEngineProxy().loadFile(file);
 		}
 		catch (FileReadErrorException ex) {
 			log("file read error: " + ex.filename);

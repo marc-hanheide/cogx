@@ -18,7 +18,7 @@
 // 02111-1307, USA.
 // =================================================================
 
-package de.dfki.lt.tr.dialogue.interpret;
+package de.dfki.lt.tr.dialogue.util;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;

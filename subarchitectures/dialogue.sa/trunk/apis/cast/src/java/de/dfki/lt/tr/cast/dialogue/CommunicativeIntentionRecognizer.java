@@ -45,7 +45,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
-import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognitionResult;
 import de.dfki.lt.tr.dialogue.interpret.ReferenceUtils;

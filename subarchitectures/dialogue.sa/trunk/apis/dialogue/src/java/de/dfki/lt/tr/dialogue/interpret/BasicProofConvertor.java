@@ -1,5 +1,6 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.util.BeliefFormulaFactory;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
