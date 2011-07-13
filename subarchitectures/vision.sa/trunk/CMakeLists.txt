@@ -213,6 +213,12 @@ if (BUILD_SA_VISION_GAZEBO)
 add_subdirectory (src/c++/vision/components/GazeboVision)
 endif (BUILD_SA_VISION_GAZEBO)
 
+option(BUILD_SA_VISION_GAZEBO_JUGGLER "build gazebo object juggler" NO)
+if (BUILD_SA_VISION_GAZEBO_JUGGLER)
+add_subdirectory (src/c++/vision/components/GazeboJuggler)
+endif (BUILD_SA_VISION_GAZEBO_JUGGLER)
+
+
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
 endif(BUILD_PYTHON_COMPONENTS)
