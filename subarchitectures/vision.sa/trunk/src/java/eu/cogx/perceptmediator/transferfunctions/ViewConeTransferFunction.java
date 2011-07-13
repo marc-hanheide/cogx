@@ -20,12 +20,11 @@ import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.helpers.ProtoObjectMatchingFunction;
+import eu.cogx.perceptmediator.transferfunctions.helpers.BeliefAncestorMatchingFunction;
 
 /**
- * @author mmarko (copied from VisualObjectTransferFunction and adapted)
+ * @author mmarko and nah (copied from VisualObjectTransferFunction and adapted)
  * 
  */
 public class ViewConeTransferFunction extends
@@ -48,7 +47,7 @@ public class ViewConeTransferFunction extends
 				+ CASTUtils.toString(from.target.address));
 		
 		// resolve the address of the proto object this cone targets
-		WorkingMemoryAddress poBelAddr = getReferredBelief(new ProtoObjectMatchingFunction(
+		WorkingMemoryAddress poBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
 				from.target));
 
 		Map<String, Formula> result = new HashMap<String, Formula>();
@@ -60,7 +59,7 @@ public class ViewConeTransferFunction extends
 		result.put(
 				"target-object",
 				WMPointer.create(poBelAddr,
-						CASTUtils.typeName(PerceptBelief.class)).getAsFormula());
+						CASTUtils.typeName(GroundedBelief.class)).getAsFormula());
 
 		result.put("anchor-x", DoubleFormula.create(from.anchor.x)
 				.getAsFormula());
