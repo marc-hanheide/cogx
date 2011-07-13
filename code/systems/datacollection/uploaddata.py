@@ -2,6 +2,22 @@ import getopt, sys
 import ftplib
 import os
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+    def disable(self):
+        self.HEADER = ''
+        self.OKBLUE = ''
+        self.OKGREEN = ''
+        self.WARNING = ''
+        self.FAIL = ''
+        self.ENDC = ''
+
 class progressBar:
 	def __init__(self, minValue = 0, maxValue = 10, totalWidth=12):
 		self.progBar = "[]"   # This holds the progress bar string
@@ -56,7 +72,7 @@ def main():
       if o in ("-h", "--help"):
         usage()
         sys.exit()
-      elif o in ("-p", "--place"):
+      elif o in ("--place"):
         dirname = a
       elif o in ("-f", "--filename"):
         filename = a 
@@ -65,15 +81,19 @@ def main():
       else:
         assert False, "unhandled option"
   if (dirname == None):
-    print "Specify your university with -p, e.g. -p vienna"
+    print bcolors.FAIL + "Specify your university with --place, e.g. --place vienna" + bcolors.ENDC
     sys.exit()  
   
+  if os.path.isdir(filename):
+    print bcolors.FAIL + "This is a folder, compress the directory and send it that way!" + bcolors.ENDC
+    sys.exit()
+     
   sftp = ftplib.FTP('130.237.218.125','alperaydemir','alper') # Connect
   sftp.cwd('/home/alper')
   try:
    sftp.mkd(dirname)
   except ftplib.error_perm:
-   print "Directory: " + dirname  + " already exists, not overwriting directory but overwriting any previously uploaded files. Directory contents:"    
+   print bcolors.FAIL + "Directory: " + dirname  + " already exists, not overwriting directory" + bcolors.FAIL + " but overwriting only any previously uploaded files." + bcolors.ENDC + "\nDirectory contents:"   + bcolors.ENDC 
    sftp.dir()
    print 
   
@@ -85,7 +105,7 @@ def main():
 def upload(sftp, filename, forceDirUpload):
   # check if this is a folder
   if os.path.isdir(filename):
-    print "This is a folder, it's recommended that you compress the directory and send it that way!"
+    print bcolors.FAIL + "This is a directory, compress the directory and send it that way!" + bcolors.ENDC
  #   if (forceDirUpload):
  #     allfiles = [] 
  #    subfiles = []
@@ -113,14 +133,15 @@ def upload_file(sftp, filename):
   global currentfilesize
 
   currentfilesize = os.path.getsize(os.path.abspath(filename))
-  print "Uploading file " + os.path.abspath(filename) + " of size " + str(currentfilesize)
+  print bcolors.OKGREEN + "Uploading file " + os.path.abspath(filename) + " of size " + str(currentfilesize) + bcolors.ENDC
   prog = progressBar(0, currentfilesize, 50)
   currentfile = os.path.basename(filename)
   try:
    fp = open(os.path.abspath(filename),'r') # file to send
    sftp.storbinary('STOR ' + os.path.basename(filename), fp, 1024, callback=handle) # Send the file
    fp.close() # Close file and FTP
-   print "File uploaded, current directory contents: "
+   print '\n\n'
+   print bcolors.OKBLUE + "File uploaded, current directory (" + sftp.pwd() + ") contents: " + bcolors.ENDC
    sftp.dir()
    sftp.quit()
   except ftplib.all_errors, e:
@@ -139,13 +160,15 @@ def handle(p):
   if oldprog != str(prog) or bytessofar % (1024*1000) == 0:
     sys.stdout.write('\b\b\b\b')
     sys.stdout.flush()
-    sys.stdout.write('\r' + currentfile + ": " + prog.progBar + "(" + str(bytessofar) + "/" + str(currentfilesize) + ")")
+    sys.stdout.write(bcolors.OKBLUE + '\r' + currentfile + bcolors.ENDC + ": " + prog.progBar + "(" + str(bytessofar) + "/" + str(currentfilesize) + ")")
     sys.stdout.flush()
     oldprog = prog.progBar 
 
 def usage():
-    print """-p for your university,
-     -f or --file to give the data to send. 
-     eg. uploaddata.py -p birmingham -f data.tar.gz"""
+    print """
+     USAGE:
+       --place for your university,
+       --file to give the file to send. 
+     eg. uploaddata.py --place birmingham --filename data.tar.gz"""
 if __name__ == "__main__":
     main()
