@@ -36,6 +36,7 @@ INCLUDE includes/planner.sa/viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
+JAVA MG rbt-mediator eu.cogx.perceptmediator.components.RobotMediatorComponent --write-to-sa binder
 
 # visualization ##########################################################
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
