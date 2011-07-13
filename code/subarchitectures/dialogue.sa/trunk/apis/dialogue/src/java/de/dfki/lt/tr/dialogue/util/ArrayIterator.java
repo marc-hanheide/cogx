@@ -42,7 +42,7 @@ public class ArrayIterator <ElementType> implements Iterator {
     //=================================================================
 
 	// Array being converted to iterator.
-    private ElementType[] array;
+    private final ElementType[] array;
 
 	// Current index into the array.
     private int index = 0;

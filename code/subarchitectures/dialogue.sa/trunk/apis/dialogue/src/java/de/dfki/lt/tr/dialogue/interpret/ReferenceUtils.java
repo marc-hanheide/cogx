@@ -1,5 +1,6 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.Constraint;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;

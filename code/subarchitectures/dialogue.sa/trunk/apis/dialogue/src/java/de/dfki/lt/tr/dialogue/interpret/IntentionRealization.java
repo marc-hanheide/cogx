@@ -20,6 +20,7 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.util.BeliefFormulaFactory;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;

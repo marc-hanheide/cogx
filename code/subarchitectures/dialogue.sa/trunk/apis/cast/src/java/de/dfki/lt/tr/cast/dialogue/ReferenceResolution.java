@@ -28,7 +28,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import de.dfki.lt.tr.cast.ProcessingData;
-import de.dfki.lt.tr.dialogue.interpret.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.AbductiveReferenceResolution;
 import de.dfki.lt.tr.dialogue.ref.PresupposedBeliefConstruction;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;

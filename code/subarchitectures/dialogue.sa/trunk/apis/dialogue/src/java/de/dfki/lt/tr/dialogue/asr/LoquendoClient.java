@@ -42,8 +42,8 @@ import org.apache.log4j.Logger;
 public class LoquendoClient
 extends _ClientDisp {
 
-    protected Ice.Communicator ic;
-    protected ServerPrx prx = null;
+	private final Ice.Communicator ic;
+	private ServerPrx prx = null;
 
 	private Logger logger = null;
 
