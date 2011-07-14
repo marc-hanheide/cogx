@@ -179,6 +179,10 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
       std::abort();
     } 
+    if (cfg->getSensorPose(3, m_KinectPoseR)) {
+      println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
+      std::abort();
+    } 
   }
 
   log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
@@ -1149,6 +1153,7 @@ void DisplayNavInPB::runComponent() {
           /* Transform point in cloud with regards to the robot pose */
           Cure::Transformation3D robotTransform;
           robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
+          robotTransform = robotTransform + m_KinectPoseR;
           Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
           Cure::Vector3D to;
           robotTransform.invTransform(from, to);

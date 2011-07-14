@@ -124,6 +124,10 @@ void SpatialControl::configure(const map<string,string>& _config)
     println("configure(...) Failed to get sensor pose");
     std::abort();
   } 
+  if (cfg.getSensorPose(3, m_KinectPoseR)) {
+    println("configure(...) Failed to get sensor pose");
+    std::abort();
+  } 
 
   m_MaxExplorationRange = 1.5;
   it = _config.find("--explore-range");
@@ -412,9 +416,10 @@ void SpatialControl::runComponent()
         getPoints(true, 0 /* unused */, points);
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
           /* Transform point in cloud with regards to the robot pose */
+          Cure::Transformation3D trans = scanPose + m_KinectPoseR;
           Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
           Cure::Vector3D to;
-          scanPose.invTransform(from, to);
+          trans.invTransform(from, to);
           double pX = to.X[0];
           double pY = to.X[1];
           double pZ = to.X[2];
@@ -430,7 +435,8 @@ void SpatialControl::runComponent()
             }
           }
         }
-
+        m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+            0.55*Cure::NavController::getRobotWidth(), '0');                                  
         useKinectFrame = true;
       }
 
@@ -445,6 +451,18 @@ void SpatialControl::runComponent()
         if((*m_lgmK)[i] != '2')
           (*m_lgm)[i] = (*m_lgmK)[i];
       } 						
+      // filtering
+      unsigned int bound = m_lgm->getSize();
+
+      for(unsigned int x=-bound+1; x<bound-1; x++){
+        for(unsigned int y=-bound+1; y<bound-1; y++){
+          if( (*m_lgm)(x,y) == '1' && 
+              (*m_lgm)(x-1,y) != '1' && (*m_lgm)(x+1,y) != '1' &&
+              (*m_lgm)(x-1,y-1) != '1' && (*m_lgm)(x+1,y-1) != '1' &&
+              (*m_lgm)(x-1,y+1) != '1' && (*m_lgm)(x+1,y+1) != '1' &&
+              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y-1) != '1' ) (*m_lgm)(x,y) = '0';
+        }
+      }
       m_Mutex.unlock();
 
 
@@ -461,6 +479,8 @@ void SpatialControl::runComponent()
         (*m_lgmLM)[i] = (*m_lgmL)[i];
       }               
       Cure::Pose3D currPose = m_TOPP.getPose();		
+      m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0');                                  
       for (int i = 0; i < m_Npts; i++) {
         theta = m_StartAngle + m_AngleStep * i;
         for (int j = 1; j < deltaN*maxcellstocheck; j++){
