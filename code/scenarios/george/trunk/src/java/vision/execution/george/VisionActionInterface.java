@@ -35,14 +35,22 @@ public class VisionActionInterface extends ManagedComponent {
 
 	private LocalActionStateManager m_actionStateManager;
 
+	private WorkingMemoryAddress m_viewStateAddress;
+
 	public static class MoveToViewConeExecutor
 			extends
 			NonBlockingCompleteFromStatusExecutor<MoveToViewCone, MoveToViewConeCommand> {
 
-		private WorkingMemoryAddress m_viewStateAddress;
-
 		public MoveToViewConeExecutor(ManagedComponent _component) {
 			super(_component, MoveToViewCone.class, MoveToViewConeCommand.class);
+		}
+
+		public WorkingMemoryAddress getViewStateAddress() {
+			return ((VisionActionInterface) getComponent()).m_viewStateAddress;
+		}
+
+		public void setViewStateAddress(WorkingMemoryAddress _vsa) {
+			((VisionActionInterface) getComponent()).m_viewStateAddress = _vsa;
 		}
 
 		@Override
@@ -86,12 +94,13 @@ public class VisionActionInterface extends ManagedComponent {
 			}
 		}
 
-		private void clearCurrentView() throws DoesNotExistOnWMException, PermissionException, UnknownSubarchitectureException {
-			if(m_viewStateAddress != null) {
-				getComponent().deleteFromWorkingMemory(m_viewStateAddress);
-				m_viewStateAddress = null;
+		private void clearCurrentView() throws DoesNotExistOnWMException,
+				PermissionException, UnknownSubarchitectureException {
+			if (getViewStateAddress() != null) {
+				getComponent().deleteFromWorkingMemory(getViewStateAddress());
+				setViewStateAddress(null);
 			}
-			
+
 		}
 
 		/**
@@ -107,13 +116,12 @@ public class VisionActionInterface extends ManagedComponent {
 				UnknownSubarchitectureException, ConsistencyException,
 				PermissionException {
 			Robot rbt = new Robot(_cmd.target);
-			if (m_viewStateAddress == null) {
-				m_viewStateAddress = newWorkingMemoryAddress();
-				getComponent().addToWorkingMemory(m_viewStateAddress,
-						rbt);
+			if (getViewStateAddress() == null) {
+				setViewStateAddress(newWorkingMemoryAddress());
+				getComponent().addToWorkingMemory(getViewStateAddress(), rbt);
 			} else {
-				getComponent().overwriteWorkingMemory(
-						m_viewStateAddress, rbt);
+				getComponent().overwriteWorkingMemory(getViewStateAddress(),
+						rbt);
 			}
 		}
 
