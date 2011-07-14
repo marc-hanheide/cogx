@@ -64,6 +64,9 @@
 	<condition property="build.george">
 		<equals arg1="${build_george}" arg2="ON" />
 	</condition>
+	<condition property="build.abducer">
+		<equals arg1="${build_abducer}" arg2="ON" />
+	</condition>
 
 	<target name="sa.binder" if="build.binding_sa">
 	  <ant target="${target}" dir="subarchitectures/binder.sa" />
@@ -110,6 +113,9 @@
 	<target name="george" if="build.george">
 	  <ant target="${target}" dir="scenarios/george" />
 	</target>
+	<target name="abducer" if="build.abducer">
+	  <ant target="${target}" dir="tools/abducer/api-java" />
+	</target>
 
 	<!-- =========================================
 	     Template target.  Never called explicitly, 
@@ -150,6 +156,9 @@
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.conceptual">
+		  <param name="target" value="${target}" />
+		</antcall>
+		<antcall target="abducer">
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.dialogue">
