@@ -236,84 +236,84 @@
   </model:physical>
   <model:physical name="table-l1_model">
     <static>true</static>
-    <xyz>1.000 0.700 0.176</xyz>
+    <xyz>1.200 0.700 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-l2_model">
     <static>true</static>
-    <xyz>0.540 0.700 0.176</xyz> <!-- PLACE -->
+    <xyz>0.740 0.700 0.176</xyz> <!-- PLACE -->
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-l3_model">
     <static>true</static>
-    <xyz>0.080 0.700 0.176</xyz>
+    <xyz>0.280 0.700 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-l4_model">
     <static>true</static>
-    <xyz>1.000 1.050 0.176</xyz> <!-- PLACE -->
+    <xyz>1.200 1.050 0.176</xyz> <!-- PLACE -->
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-l5_model">
     <static>true</static>
-    <xyz>0.540 1.050 0.176</xyz>
+    <xyz>0.740 1.050 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-l6_model">
     <static>true</static>
-    <xyz>0.080 1.050 0.176</xyz>
+    <xyz>0.280 1.050 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r1_model">
     <static>true</static>
-    <xyz>1.000 -0.700 0.176</xyz>
+    <xyz>1.200 -0.700 0.176</xyz> <!-- PLACE -->
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r2_model">
     <static>true</static>
-    <xyz>0.540 -0.700 0.176</xyz>
+    <xyz>0.740 -0.700 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r3_model">
     <static>true</static>
-    <xyz>0.080 -0.700 0.176</xyz> <!-- PLACE -->
+    <xyz>0.280 -0.700 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r4_model">
     <static>true</static>
-    <xyz>1.000 -1.050 0.176</xyz>
+    <xyz>1.200 -1.050 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r5_model">
     <static>true</static>
-    <xyz>0.540 -1.050 0.176</xyz> <!-- PLACE -->
+    <xyz>0.740 -1.050 0.176</xyz>  <!-- PLACE -->
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-r6_model">
     <static>true</static>
-    <xyz>0.080 -1.050 0.176</xyz>
+    <xyz>0.280 -1.050 0.176</xyz>
     <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
@@ -322,7 +322,7 @@
   <!-- and finally the cereals! -->
   <model:physical name="schokomusli"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 -1 1.4</xyz>
+    <xyz>1 -0.8 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
@@ -332,7 +332,7 @@
 
   <model:physical name="fruchtemusli"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 -0.5 1.4</xyz>
+    <xyz>1 -0.4 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
@@ -342,7 +342,7 @@
 
   <model:physical name="weetabix"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 0 1.4</xyz>
+    <xyz>1 0 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
@@ -352,7 +352,7 @@
 
   <model:physical name="bircher"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 0.5 1.4</xyz>
+    <xyz>1 0.4 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
@@ -362,7 +362,7 @@
 
   <model:physical name="toppas"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 1 1.4</xyz>
+    <xyz>1 0.8 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
@@ -372,7 +372,7 @@
 
   <model:physical name="chocos"> <!-- OBJECT -->
     <static>false</static>
-    <xyz>1 1.5 1.4</xyz>
+    <xyz>0.5 0.8 1.0</xyz>
     <rpy>0 0 90</rpy>
 
     <include embedded="true">
