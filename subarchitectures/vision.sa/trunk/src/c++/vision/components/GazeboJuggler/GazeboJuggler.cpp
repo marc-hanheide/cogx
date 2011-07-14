@@ -171,8 +171,8 @@ void GazeboJuggler::prepareObjects()
       notthere.push_back(o);
       continue;
     }
-    o.loc.x = 100;
-    o.loc.y = 100;
+    o.loc.x = 100 + i * 10;
+    o.loc.y = 100 + i * 10;
     pSim->SetPose3d((char*)o.label.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
     m_objects.push_back(o);
   }
@@ -219,8 +219,8 @@ void GazeboJuggler::moveObject(const std::string& label, int placeIndex)
     if (o.label != label)
       continue;
     if (placeIndex < 0 || placeIndex >= m_locations.size()) {
-      o.loc.x = 100;
-      o.loc.y = 100;
+      o.loc.x = 100 + i * 10;
+      o.loc.y = 100 + i * 10;
     }
     else
       o.loc = m_locations[placeIndex];
