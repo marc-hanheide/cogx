@@ -132,10 +132,14 @@ module motivation {
 	 		*/
 			long roomId;
     	};
+
+		class AnalyzeProtoObjectMotive extends Motive {};
     	
     	class PlanProxy {
     	    cast::cdl::WorkingMemoryAddress planAddress;
     	};
+
+
     };
 };
 

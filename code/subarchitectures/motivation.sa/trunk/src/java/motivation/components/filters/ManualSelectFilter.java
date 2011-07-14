@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import motivation.slice.AnalyzeProtoObjectMotive;
 import motivation.slice.CannedTextMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
@@ -57,6 +58,9 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JSlider jTutorInitiativePrioritySlider = null;
 	private JSlider jRobotNonSituatedPrioritySlider = null;
 
+	private JSlider jAnalyzePOPrioritySlider = null;
+	
+	
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		if (motive instanceof ExploreMotive)
@@ -75,6 +79,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.values()[jTutorInitiativePrioritySlider.getValue()];
 		else if (motive instanceof RobotNonSituatedMotive)
 			return MotivePriority.values()[jRobotNonSituatedPrioritySlider.getValue()];
+		else if (motive instanceof AnalyzeProtoObjectMotive)
+			return MotivePriority.values()[jAnalyzePOPrioritySlider.getValue()];
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -168,6 +174,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderTutorInitiative());
 			jMotivesPanel.add(new JLabel("Robot NonSit."));
 			jMotivesPanel.add(getJSliderRobotNonSituated());
+			jMotivesPanel.add(new JLabel("Anal. PO"));
+			jMotivesPanel.add(getJSliderAnalyzePO());
 			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
@@ -394,6 +402,14 @@ public class ManualSelectFilter implements MotiveFilter {
 		}
 		return jRobotNonSituatedPrioritySlider;
 	}
+	
+	private JSlider getJSliderAnalyzePO() {
+		if (jAnalyzePOPrioritySlider == null) {
+			jAnalyzePOPrioritySlider = createPrioritySlider();
+		}
+		return jAnalyzePOPrioritySlider;
+	}
+	
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
