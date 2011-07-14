@@ -38,22 +38,21 @@ public class RobotTransferFunction extends
 
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
-			WorkingMemoryChange wmc, Robot from)
-			throws InterruptedException, BeliefException {
-
-		
-		// resolve the address of the proto object this cone targets
-		WorkingMemoryAddress vcBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
-				from.currentViewCone));
+			WorkingMemoryChange wmc, Robot from) throws InterruptedException,
+			BeliefException {
 
 		Map<String, Formula> result = new HashMap<String, Formula>();
-
-		//pointer to belief for proto object
-		result.put(
-				CURRENT_VIEWCONE_ID,
-				WMPointer.create(vcBelAddr,
-						CASTUtils.typeName(GroundedBelief.class)).getAsFormula());
-
+		if (from.currentViewCone != null) {
+			// resolve the address of the proto object this cone targets
+			WorkingMemoryAddress vcBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
+					from.currentViewCone));
+			// pointer to belief for proto object
+			result.put(
+					CURRENT_VIEWCONE_ID,
+					WMPointer.create(vcBelAddr,
+							CASTUtils.typeName(GroundedBelief.class))
+							.getAsFormula());
+		}
 		return result;
 	}
 
