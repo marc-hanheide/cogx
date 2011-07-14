@@ -73,6 +73,7 @@ SENSORPOSES
 # type id x y z theta phi psi, (opt. covtype) (opt. Covariance value(s))
 1 0 0.14 0 0.24 0 0 0 63 .000001 .000001 .000001 .0001 .0001 .0001 
 2 0 0.15 0 0.335 0 0 0
+3 0 0.14 0 -0.24 0 0 0 
 
 ODOMMODEL
 # version odtype covDistM covAngRad covAngM CovNormalperM CovXYperRad
