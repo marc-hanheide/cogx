@@ -3,6 +3,8 @@
 # Host names can be used instead of raw IPs to distribute components eg. [Main].
 # Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
 # HOSTNAME  localhost      192.168.33.101
+# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
+# in a .hconf file will be used instead of host addresses defined here.
 HOSTNAME  Main           localhost
 # HOSTNAME  PlayerHost     cca-0838
 HOSTNAME  PlayerHost     [Main]
@@ -11,7 +13,8 @@ HOSTNAME  DisplayHost    [Main]
 
 HOST     [Main]
 
-COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
+SETVAR ptzServerComponent=ptz.server
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host %(host:PlayerHost)
 
 # spatial ################################################################
 INCLUDE  includes/spatial.sa/spatial-base.cast
