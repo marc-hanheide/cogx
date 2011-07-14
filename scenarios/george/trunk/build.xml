@@ -40,6 +40,7 @@
 				<pathelement path="${beliefslice.dir}" />
                 <pathelement path="${castbeliefslice.dir}" />
 				<pathelement path="${executionslice.dir}" />
+				<pathelement path="${motivationslice.dir}" />
 			</includepath>
 		</slice2java>
 	</target>

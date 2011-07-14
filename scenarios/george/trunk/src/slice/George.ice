@@ -3,6 +3,7 @@
 
 #include <cast/slice/CDL.ice>
 #include <Execution.ice>
+#include <motivation.ice>
 
 
 module execution {
@@ -32,5 +33,11 @@ module execution {
     };
   };
 };
+
+// module motivation {
+//     module slice {
+// 		class AnalyzeProtoObjectMotive extends Motive {};	
+// 	};
+// };
 
 #endif
