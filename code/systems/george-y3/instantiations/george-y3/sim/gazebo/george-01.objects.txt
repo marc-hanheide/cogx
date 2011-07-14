@@ -1,0 +1,16 @@
+[objects]
+schokomusli
+fruchtemusli
+weetabix
+bircher
+toppas
+chocos
+[places]
+1 0 0.176
+1 -0.350 0.176
+1 0.350 0.176
+1.460 0 0.176
+0.540 0.700 0.176
+1.000 1.050 0.176
+0.080 -0.700 0.176
+0.540 -1.050 0.176
