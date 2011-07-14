@@ -63,14 +63,14 @@ void GazeboJuggler::configure(const map<string,string> & _config)
     m_objects.clear();
     m_locations.clear();
     string fname = it->second;
-    println(" GJ **** " + fname);
+    //println(" GJ **** " + fname);
     ifstream f;
     f.open(fname.c_str());
     int mode = 0; // 1 - objects, 2 - places
     while (f.good() && !f.eof()) {
       string line, tok;
       getline(f, line);
-      println(" GJ **** " + line);
+      //println(" GJ **** " + line);
       istringstream itok(line);
 
       int newmode = mode;
