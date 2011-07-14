@@ -18,12 +18,17 @@ set(EXECUTION_DIR ${COGX_ROOT}/subarchitectures/execution.sa)
 set(EXECUTION_SLICE ${EXECUTION_DIR}/src/slice)
 set(EXECUTION_INCLUDE ${EXECUTION_DIR}/src/c++/autogen)
 
+set(MOTIVATION_DIR ${COGX_ROOT}/subarchitectures/motivation.sa)
+set(MOTIVATION_SLICE ${MOTIVATION_DIR}/src/slice)
+set(MOTIVATION_INCLUDE ${MOTIVATION_DIR}/src/c++/autogen)
+
 
 include_directories(src/c++)
 include_directories(src/c++/autogen)
 include_directories(${BELIEF_INCLUDE})
 include_directories(${PLANNER_INCLUDE})
 include_directories(${EXECUTION_INCLUDE})
+include_directories(${MOTIVATION_INCLUDE})
 
 add_subdirectory(src/c++/autogen)
 
