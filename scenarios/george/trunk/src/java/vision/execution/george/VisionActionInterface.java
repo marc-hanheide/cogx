@@ -6,6 +6,7 @@ package vision.execution.george;
 import VisionData.MoveToViewConeCommand;
 import VisionData.VisionCommandStatus;
 import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -82,10 +83,12 @@ public class VisionActionInterface extends ManagedComponent {
 
 			try {
 				if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
-					recordCurrentView(_cmd);
+					((VisionActionInterface) getComponent())
+							.recordCurrentViewCone(_cmd.target);
 					return TriBool.TRITRUE;
 				} else {
-					clearCurrentView();
+					((VisionActionInterface) getComponent())
+							.recordCurrentViewCone(null);
 					return TriBool.TRIFALSE;
 				}
 			} catch (Exception e) {
@@ -94,37 +97,28 @@ public class VisionActionInterface extends ManagedComponent {
 			}
 		}
 
-		private void clearCurrentView() throws DoesNotExistOnWMException,
-				PermissionException, UnknownSubarchitectureException {
-			if (getViewStateAddress() != null) {
-				getComponent().deleteFromWorkingMemory(getViewStateAddress());
-				setViewStateAddress(null);
-			}
+	}
 
+	/**
+	 * @param _cmd
+	 * @throws AlreadyExistsOnWMException
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 */
+	private void recordCurrentViewCone(WorkingMemoryPointer _viewconePtr)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException, ConsistencyException,
+			PermissionException {
+		Robot rbt = new Robot(_viewconePtr);
+		if (m_viewStateAddress == null) {
+			m_viewStateAddress = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
+			addToWorkingMemory(m_viewStateAddress, rbt);
+		} else {
+			overwriteWorkingMemory(m_viewStateAddress, rbt);
 		}
-
-		/**
-		 * @param _cmd
-		 * @throws AlreadyExistsOnWMException
-		 * @throws DoesNotExistOnWMException
-		 * @throws UnknownSubarchitectureException
-		 * @throws ConsistencyException
-		 * @throws PermissionException
-		 */
-		private void recordCurrentView(MoveToViewConeCommand _cmd)
-				throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
-				UnknownSubarchitectureException, ConsistencyException,
-				PermissionException {
-			Robot rbt = new Robot(_cmd.target);
-			if (getViewStateAddress() == null) {
-				setViewStateAddress(newWorkingMemoryAddress());
-				getComponent().addToWorkingMemory(getViewStateAddress(), rbt);
-			} else {
-				getComponent().overwriteWorkingMemory(getViewStateAddress(),
-						rbt);
-			}
-		}
-
 	}
 
 	private WorkingMemoryPointer getFirstAncestorOfBelief(
@@ -164,6 +158,17 @@ public class VisionActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(AnalyzeProtoObject.class,
 				new DoNothingActionExecutorFactory(this));
 
+	}
+
+	@Override
+	protected void runComponent() {
+		lockComponent();
+		try {
+			recordCurrentViewCone(null);
+		} catch (CASTException e) {
+			logException(e);
+		}
+		unlockComponent();
 	}
 
 }
