@@ -36,7 +36,6 @@
 		<echo>Executing &quot;${target}&quot; target </echo>
 		<ant target="${target}" dir="apis/sdl" /> 
 		<ant target="${target}" dir="apis/meta" /> 
-		<ant target="${target}" dir="apis/inference" /> 
 		<ant target="${target}" dir="apis/dialogue" /> 
 		<ant target="${target}" dir="apis/cast" /> 
 	</target>

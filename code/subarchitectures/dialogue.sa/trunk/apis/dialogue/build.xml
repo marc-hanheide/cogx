@@ -106,7 +106,7 @@
         <pathelement path="${slice.dir}"/>
         <pathelement path="${ice.slice.dir}"/>
         <pathelement path="${beliefslice.dir}"/>
-		<pathelement path="../inference/src/slice" />
+        <pathelement path="${abducerslice.dir}"/>
       </includepath>
     </slice2java>
   </target>
