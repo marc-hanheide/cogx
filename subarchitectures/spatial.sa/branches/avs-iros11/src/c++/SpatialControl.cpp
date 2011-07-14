@@ -124,10 +124,6 @@ void SpatialControl::configure(const map<string,string>& _config)
     println("configure(...) Failed to get sensor pose");
     std::abort();
   } 
-  if (cfg.getSensorPose(3, m_KinectPoseR)) {
-    println("configure(...) Failed to get sensor pose");
-    std::abort();
-  } 
 
   m_MaxExplorationRange = 1.5;
   it = _config.find("--explore-range");
@@ -398,9 +394,9 @@ void SpatialControl::runComponent()
       while (!m_LScanQueue.empty()){
         if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
           lpW.add(LscanPose, m_LaserPoseR);		
+          m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
           m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
               0.55*Cure::NavController::getRobotWidth(), '0');                                  
-          m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
           m_firstScanAdded = true;
           useLaserScan = true;
           m_LScanQueue.pop();
@@ -416,7 +412,7 @@ void SpatialControl::runComponent()
         getPoints(true, 0 /* unused */, points);
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
           /* Transform point in cloud with regards to the robot pose */
-          Cure::Transformation3D trans = scanPose + m_KinectPoseR;
+          Cure::Transformation3D trans = scanPose;
           Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
           Cure::Vector3D to;
           trans.invTransform(from, to);
