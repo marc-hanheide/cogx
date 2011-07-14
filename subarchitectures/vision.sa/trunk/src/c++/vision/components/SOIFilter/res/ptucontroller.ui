@@ -50,10 +50,10 @@
          </sizepolicy>
         </property>
         <property name="minimum">
-         <number>-180</number>
+         <number>-90</number>
         </property>
         <property name="maximum">
-         <number>180</number>
+         <number>90</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -63,10 +63,10 @@
       <item>
        <widget class="QDoubleSpinBox" name="spinPan">
         <property name="minimum">
-         <double>-180.000000000000000</double>
+         <double>-90.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>180.000000000000000</double>
+         <double>90.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -93,10 +93,10 @@
          </sizepolicy>
         </property>
         <property name="minimum">
-         <number>-180</number>
+         <number>-90</number>
         </property>
         <property name="maximum">
-         <number>180</number>
+         <number>90</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -106,10 +106,10 @@
       <item>
        <widget class="QDoubleSpinBox" name="spinTilt">
         <property name="minimum">
-         <double>-180.000000000000000</double>
+         <double>-90.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>180.000000000000000</double>
+         <double>90.000000000000000</double>
         </property>
        </widget>
       </item>
