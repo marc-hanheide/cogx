@@ -28,9 +28,7 @@ INCLUDE  sim/cameras-sim.incl
 # Include othere vision components
 INCLUDE  georgeY3-vision.incl
 
-# Special components for simulation
-SETVAR worldDir=%(CURRENT_DIR)/../sim/gazebo
-CPP MG gazebo.juggler GazeboJuggler --player-host %(host:PlayerHost) --objects "%(worldDir)/george-01.objects.txt"
+INCLUDE  juggler.incl
 
 # mediators, execution
 JAVA MG vision.mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent #--debug
