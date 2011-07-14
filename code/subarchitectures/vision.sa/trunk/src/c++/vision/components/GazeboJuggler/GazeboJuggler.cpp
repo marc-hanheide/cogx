@@ -6,6 +6,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 //#include <../../VisionUtils.h>
 #include "GazeboJuggler.h"
+#include <fstream>
 
 extern "C"
 {
@@ -48,7 +49,58 @@ void GazeboJuggler::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> m_playerPort;
   }
+  // Path to a configuration file with objects. The file has the format:
+  // [objects]
+  // object1-name
+  // object2-name
+  // [places]
+  // x y z
+  // x y z
+  //
+  // Only the object names that are actually present in a Gazebo world file will be used.
+  if((it = _config.find("--objects")) != _config.end())
+  {
+    m_objects.clear();
+    m_locations.clear();
+    string fname = it->second;
+    println(" GJ **** " + fname);
+    ifstream f;
+    f.open(fname.c_str());
+    int mode = 0; // 1 - objects, 2 - places
+    while (f.good() && !f.eof()) {
+      string line, tok;
+      getline(f, line);
+      println(" GJ **** " + line);
+      istringstream itok(line);
 
+      int newmode = mode;
+      itok >> tok;
+      if (tok == "[objects]") newmode = 1;
+      else if (tok == "[places]") newmode = 2;
+      if (mode != newmode) {
+        mode = newmode;
+        continue;
+      }
+
+      if (mode == 1) {
+        if (tok != "")
+          m_objects.push_back(GObject(tok));
+      }
+      else if (mode == 2) {
+        Vector3 v;
+        int n;
+        n = sscanf(line.c_str(), "%lf %lf %lf", &v.x, &v.y, &v.z);
+        if (n > 1) {
+          if (n != 3) v.z = 1.0;
+          else v.z += 0.5;
+          m_locations.push_back(v);
+        }
+      }
+    }
+    f.close();
+  }
+
+#if 0
   // XXX: TEST TEST TEST
   m_objects.push_back(GObject("manner1"));
   m_objects.push_back(GObject("manner2"));
@@ -56,6 +108,7 @@ void GazeboJuggler::configure(const map<string,string> & _config)
 
   m_locations.push_back(vector3(0.233, 0.175, 0.6));
   m_locations.push_back(vector3(-0.233, -0.175, 0.6));
+#endif
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -64,7 +117,7 @@ void GazeboJuggler::CDisplayClient::onDialogValueChanged(const std::string& dial
     const std::string& name, const std::string& value)
 {
   if (dialogId == DLG_JUGGLER) {
-    if (name == "cbxPlace01" || name == "cbxPlace02") {
+    if (name.substr(0, 8) == "cbxPlace") {
       pJuggler->println(" *** cbxPlace *** %s=%s", name.c_str(), value.c_str());
       int placeId;
       if (value == "<empty>")

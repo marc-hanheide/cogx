@@ -14,6 +14,7 @@ function GazeboJuggler(ui)
    this.ui = ui;
    this.placeCount = 0;
    this.emptyObject = "<empty>";
+   this.placeContent = {};
 
    //with (this.ui.wctrls) {
    //   ////sliderPan.valueChanged.connect(this, this.onSliderPan_valueChanged);
@@ -35,7 +36,7 @@ function GazeboJuggler(ui)
 
 GazeboJuggler.prototype.setPlaceCount = function(n)
 {
-   var i, num, ctrl;
+   var i, num, ctrl, name;
    if (n > 10) n = 10;
    this.placeCount = n;
    for(i = 1; i <= 10; i++) {
@@ -44,9 +45,11 @@ GazeboJuggler.prototype.setPlaceCount = function(n)
 
       ctrl = this.ui.findChild('labelPlace' + num);
       ctrl.visible = (i <= n);
-      ctrl = this.ui.findChild('cbxPlace' + num);
+      name = 'cbxPlace' + num;
+      ctrl = this.ui.findChild(name);
       ctrl.visible = (i <= n);
-      ctrl['currentIndexChanged(QString)'].connect(this.placeIndexChanged.bind(this, 'cbxPlace' + num));
+      ctrl['currentIndexChanged(QString)'].connect(this.placeIndexChanged.bind(this, name));
+      this.placeContent[name] = ctrl.value;
    }
 }
 
@@ -70,13 +73,14 @@ GazeboJuggler.prototype.placeIndexChanged = function(cbxName)
    var ctrl = this.ui.findChild(cbxName);
    var wasMoved = false;
    var text = ctrl.currentText;
+
    if (ctrl.currentIndex != 0) {
-      var name, i, cbOther;
+      var name, i, numOther, cbOther;
 
       for(i = 1; i <= this.placeCount; i++) {
-         if (i < 10) num = '0' + i.toString();
-         else num = i.toString();
-         name = 'cbxPlace' + num;
+         if (i < 10) numOther = '0' + i.toString();
+         else numOther = i.toString();
+         name = 'cbxPlace' + numOther;
          if (name == cbxName)
             continue;
          cbOther = this.ui.findChild(name);
@@ -87,7 +91,12 @@ GazeboJuggler.prototype.placeIndexChanged = function(cbxName)
          }
       }
    }
-   dialogOwner.setValue(cbxName, text);
+   if (text != this.placeContent[cbxName]) {
+      // move the object that was previously on place cbxName to cbxPlace00 (off the scene)
+      dialogOwner.setValue('cbxPlace00', this.placeContent[cbxName]);
+      dialogOwner.setValue(cbxName, text);
+   }
+   this.placeContent[cbxName] = text;
 }
 
 
