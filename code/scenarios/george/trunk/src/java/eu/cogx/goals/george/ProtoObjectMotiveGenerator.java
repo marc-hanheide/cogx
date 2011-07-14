@@ -53,8 +53,8 @@ public class ProtoObjectMotiveGenerator extends
 		// (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v))
 
 		result.goal = new Goal(1,
-				"(exists (?v - VisualObject) (= (po-is-associated-with "
-						+ belief.getId() + ") ?v))", false);
+				"(exists (?v - VisualObject) (= (po-is-associated-with '"
+						+ belief.getId() + "') ?v))", false);
 
 		log("goal is " + result.goal.goalString + " with inf-gain "
 				+ result.informationGain);
