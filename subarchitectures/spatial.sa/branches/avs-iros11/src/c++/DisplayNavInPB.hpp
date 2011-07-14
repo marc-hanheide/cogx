@@ -222,6 +222,7 @@ private:
 	bool m_ReadPTU;
 	ptz::PTZInterfacePrx m_PTUServer;
 	Cure::SensorPose m_CameraPoseR;
+	Cure::SensorPose m_KinectPoseR;
 
 	/** List of categories of rooms that we know about. */
 	std::vector<std::string> _roomCategories;
