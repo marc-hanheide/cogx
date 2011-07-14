@@ -295,13 +295,7 @@ void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogI
       ss << "ptuctrl.ui.wctrls.spinTilt.value=" << ptup.pose.tilt * 180 / M_PI << ";";
       ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
 
-	println("execInDialog(dialogId, ss.str()); NOT CALLED!!!!!!");
-	println("execInDialog(dialogId, ss.str()); NOT CALLED!!!!!!");
-	println("execInDialog(dialogId, ss.str()); NOT CALLED!!!!!!");
-	println("execInDialog(dialogId, ss.str()); NOT CALLED!!!!!!");
-	println("execInDialog(dialogId, ss.str()); NOT CALLED!!!!!!");
-					
-//      execInDialog(dialogId, ss.str());
+      execInDialog(dialogId, ss.str());
     }
   }
 }
