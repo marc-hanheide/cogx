@@ -7,7 +7,7 @@ DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 #MASTER_SITES = svnhttps://playerstage.svn.sourceforge.net/svnroot/playerstage/code/gazebo/trunk/
 MASTER_SITES = http://downloads.sourceforge.net/project/playerstage/Gazebo/$(GARVERSION)/
 
-PATCHFILES= gar-base.diff gazebo-initialisation.diff
+PATCHFILES= gar-base.diff gazebo-initialisation.diff ogre-visual-name.diff gazeborc-noinstall.diff
 
 DEB_PACKAGES=\
 	libode1sp@ubuntu libode-sp-dev@ubuntu libogre-dev@ubuntu libogremain-1.6.4@ubuntu ogre-tools@ubuntu libxml2-dev@ubuntu
