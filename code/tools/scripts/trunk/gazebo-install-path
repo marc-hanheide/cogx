@@ -19,6 +19,19 @@ path = os.path.abspath(path)
 
 if not os.path.exists(grc):
     print "Not found:", grc
+    print "Creating one ..."
+    f = open(grc, "w")
+    f.write("""\
+<?xml version="1.0"?>
+<gazeborc>
+  <gazeboPath>/usr/local/share/gazebo</gazeboPath>
+  <ogrePath>/usr/lib/OGRE</ogrePath>
+</gazeborc>
+""")
+    f.close()
+
+if not os.path.exists(grc):
+    print "Could not be created:", grc
     sys.exit(1)
 
 if not os.path.exists("%s/Media" % path) and not os.path.exists("%s/models" % path):
