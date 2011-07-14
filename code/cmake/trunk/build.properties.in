@@ -10,6 +10,8 @@ binderslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/binder/src/slice
 beliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs/src/slice
 castbeliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs+cast/src/slice
 executionslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/execution.sa/src/slice
+motivationslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/motivation.sa/src/slice
+abducerslice.dir=${CMAKE_SOURCE_DIR}/tools/abducer/slice
 output.dir=${CMAKE_SOURCE_DIR}/output/classes
 
 build_sa_binding=${BUILD_SA_BINDING}
@@ -28,3 +30,4 @@ build_sa_visualization=${BUILD_SA_V11N}
 build_dora=${BUILD_DORA}
 build_george=${BUILD_GEORGE}
 build_shared=${BUILD_SCENARIO_SHARED}
+build_abducer=${BUILD_ABDUCER}
