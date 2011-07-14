@@ -54,6 +54,7 @@ SETVAR SOIFilter_Params=<multiline>
    --videoname videoserver
    # stuff
    --displayserver "display.srv"
+   --ptzserver "%(ptzServerComponent)"
    %(wmBlocking)
    # --display 
    #--log --debug
@@ -77,9 +78,13 @@ CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 #JAVA MG beliefs castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
 #JAVA MG visual.objects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"
 JAVA MG proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact
-JAVA MG SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col #  --compact
+#JAVA MG SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact
 # JAVA MG learning.tasks castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualLearningTask"
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.WMRemoteProcedureCall"
+JAVA MG camparam.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "Video.CameraParametersWrapper" --generic-col --compact
+
+JAVA MG visualobject.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col --compact
+
 
 CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
 #CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"
