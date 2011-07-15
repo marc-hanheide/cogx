@@ -1434,6 +1434,7 @@ PlaceManager::processPlaceArrival(bool failed)
       int curNodeGateway = curNode->gateway;
 
       int arrivalCase = -1;
+      bool shouldCancelMovement = false;
 
       if (wasExploring) {
 	FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
@@ -1458,6 +1459,9 @@ PlaceManager::processPlaceArrival(bool failed)
 				if (curNodeGateway == 1) {
 					addNewGatewayProperty(wasHeadingForPlace);
 				}
+
+        /* Only cancel movement if we upgraded the placeholder */
+        shouldCancelMovement = true;
 			}
 			else {
 				log("Missing Placeholder placeholder!");
@@ -1467,7 +1471,7 @@ PlaceManager::processPlaceArrival(bool failed)
 				return;
 			}
 		}
-		else { /* If we are not close enought we came to a new node with no place, so we add one */
+		else { /* If we are not close enought we came to a new node with no place, so we add one and DON'T cancel the movement */
 			addPlaceForNode(curNode);
 		}
 	}
@@ -1667,7 +1671,9 @@ PlaceManager::processPlaceArrival(bool failed)
 
       //Once any new Placeholders have been added, it's safe to stop the robot
       //and signal the client component that we're done moving
-      if (arrivalCase == 1) {
+      if (arrivalCase == 1 && shouldCancelMovement) {
+  // In Case 1, we should only stop if reached/upgraded the placeholder we
+  // were heading for.
 	// In Case 2, it's still quite likely that there's a new Place
 	// at the location we're heading for.
 	// In Case 3, the robot will already have stopped moving
