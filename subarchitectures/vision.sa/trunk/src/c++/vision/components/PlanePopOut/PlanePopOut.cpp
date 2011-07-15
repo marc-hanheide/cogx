@@ -20,6 +20,7 @@
 #include <time.h>
 #include "StereoCamera.h"
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include "../VisionUtils.h"
 
 #ifdef __APPLE__
 
@@ -1063,30 +1064,33 @@ void PlanePopOut::GetStableSOIs(std::vector<SOIPtr>& soiList)
 // @author: mmarko
 void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc)
 {
-    GetStableSoisCommandPtr pcmd;
-    try {
-	pcmd = getMemoryEntry<VisionData::GetStableSoisCommand>(_wmc.address);
-    }
-    catch(cast::DoesNotExistOnWMException){
+    class CCmd:
+	public VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>
+    {
+    public:
+	CCmd(cast::WorkingMemoryReaderComponent* pReader)
+	: VisionCommandNotifier(pReader) {}
+    protected:
+	virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+	virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+    } cmd(this);
+
+    if (! cmd.read(_wmc.address)) {
 	debug("PlanePopOut: GetStableSoisCommand deleted while working...");
 	return;
     }
 
     // TODO: getComponentID || stereoServer->componentId
-    if (pcmd->componentId != getComponentID())
+    if (cmd.pcmd->componentId != getComponentID())
 	return;
 
     debug("PlanePopOut: Will handle a GetStableSoisCommand.");
 
     /* TODO: the command should be handled in runComponent, where it would wait until
      * the sois are stable */
-    GetStableSOIs(pcmd->sois);
-    pcmd->status = VCSUCCEEDED;
-
-    // TODO: abort if the entry was overwritten by someone else
-    overwriteWorkingMemory(_wmc.address, pcmd);
-
-    debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", pcmd->sois.size());
+    GetStableSOIs(cmd.pcmd->sois);
+    cmd.succeed();
+    debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", cmd.pcmd->sois.size());
 }
 
 CvHistogram* PlanePopOut::GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)

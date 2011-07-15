@@ -11,6 +11,7 @@
 #include <Sphere3.h>
 #include <Box3.h>
 #include <VisionData.hpp>
+#include "VisionCommander.h"
 
 /**
  * Project a SOI in world co-ordinates to an image ROI.
