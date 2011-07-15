@@ -28,6 +28,7 @@ INCLUDE  georgeY3-vision.incl
 # belief mediators, execution
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators.cast
+INCLUDE juggler.incl
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
