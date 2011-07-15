@@ -122,6 +122,9 @@ enum VisionCommandStatus {
 
     // The *visible* proto object associated with this VO.
     cast::cdl::WorkingMemoryPointer protoObject;
+    // The proto object that was last associated with this VO.
+    // Same as protoObject when the object is visible.
+    cast::cdl::WorkingMemoryPointer lastProtoObject;
 
     // working memory IDs of the surface patches that belong to this object
     IdSeq patchIds;
