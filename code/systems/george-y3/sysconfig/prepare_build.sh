@@ -28,8 +28,7 @@ fi
 
 cd $COGX_ROOT/BUILD
 
-cmake -Wno-dev $COGX_ROOT 
-# > /dev/null
-# $TOOLS/cmake-apply  $COGX_ROOT/BUILD  $SCRIPT_DIR/cmakecache/george-y3.txt
-# cmake -Wno-dev $COGX_ROOT > /dev/null
+cmake -Wno-dev $COGX_ROOT > /dev/null
+$TOOLS/cmake-apply  $COGX_ROOT/BUILD  $SCRIPT_DIR/cmakecache/george-y3.txt
+cmake -Wno-dev $COGX_ROOT
 
