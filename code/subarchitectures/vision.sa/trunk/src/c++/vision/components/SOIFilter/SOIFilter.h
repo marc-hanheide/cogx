@@ -268,15 +268,23 @@ private:
   void onDelete_SOI(const cdl::WorkingMemoryChange & _wmc);
 
 public:
-  // The protoobjects are kept locally so that we can match them by position with SOIs
-  // TODO: don't need to keep all PO data locally!
+  // The proto objects are kept locally so that we can match them by position with SOIs.
+  // We don't keep all PO data locally! (see saveProtoObjectData)
   std::map<cdl::WorkingMemoryAddress, VisionData::ProtoObjectPtr> m_protoObjects;
+
+  // The visual objects are kept locally so that we can match them to POs.
+  // We don't keep all VO data locally! (see saveVisualObjectData)
+  std::map<cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> m_visualObjects;
 
 private:
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
+  void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
+  void onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc);
 
   void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
 
