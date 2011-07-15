@@ -395,6 +395,7 @@ void SOIFilter::saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, Vision
 {
   // Tracking visible objects
   voCopy->protoObject = voOrig->protoObject;
+  voCopy->lastProtoObject = voOrig->lastProtoObject;
 }
 
 void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
@@ -538,13 +539,13 @@ void SOIFilter::runComponent()
 
 
 // psoi is calculated at pSoiFilter->m_RobotPose
-ProtoObjectPtr SOIFilter::WmTaskExecutor_Soi::findProtoObjectAt(SOIPtr psoi)
+ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
 {
   if (!psoi.get()) 
     return NULL;
 
-  typeof(pSoiFilter->m_protoObjects.begin()) itpo = pSoiFilter->m_protoObjects.begin();
-  for(; itpo != pSoiFilter->m_protoObjects.end(); ++itpo) {
+  typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
+  for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectPtr& pobj = itpo->second;
     // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
     //   => we only compare robo-centric positions
@@ -556,6 +557,30 @@ ProtoObjectPtr SOIFilter::WmTaskExecutor_Soi::findProtoObjectAt(SOIPtr psoi)
   }
 
   return NULL;
+}
+
+cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(cdl::WorkingMemoryAddress& protoAddr)
+{
+  if (protoAddr.id == "") 
+    return cdl::WorkingMemoryAddress();
+
+  // First check the visible objects
+  typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
+  for(; itvo != m_visualObjects.end(); ++itvo) {
+    VisualObjectPtr& pobj = itvo->second;
+    if (pobj->protoObject->address == protoAddr)
+      return itvo->first;
+  }
+
+  // The check the hidden objects
+  itvo = m_visualObjects.begin();
+  for(; itvo != m_visualObjects.end(); ++itvo) {
+    VisualObjectPtr& pobj = itvo->second;
+    if (pobj->lastProtoObject->address == protoAddr)
+      return itvo->first;
+  }
+
+  return cdl::WorkingMemoryAddress();
 }
 
 /*
@@ -602,7 +627,7 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // anything, except if we want to analyze the object in the center.
 
     ProtoObjectPtr pobj;
-    pobj = findProtoObjectAt(psoi);
+    pobj = pSoiFilter->findProtoObjectAt(psoi);
     if (pobj.get()) {
       pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", soi.addr.id.c_str());
       // XXX: Do we update the PO with the new SOI?
@@ -821,8 +846,32 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
   {
     pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);
+  } // TODO: else: do we fail if segmentObject failed?
+
+
+  // find VO for this PO
+  WorkingMemoryAddress voAddr = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
+  VisualObjectPtr pvo;
+  if (voAddr.id == "") {
+    pvo = new VisualObject();
+    pvo->protoObject = new cdl::WorkingMemoryPointer();
+    pvo->protoObject->type = cast::typeName<ProtoObject>();
+    pvo->protoObject->address = cmd.pcmd->protoObjectAddr;
+    pvo->lastProtoObject = pvo->protoObject;
+
+    voAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
+    pSoiFilter->addToWorkingMemory(voAddr, pvo);
   }
-  // TODO: else: do we fail if segmentObject failed?
+  else {
+    try {
+      pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
+    }
+    catch(cast::DoesNotExistOnWMException){
+      pSoiFilter->debug("SOIFilter.analyze_task: VisualObject deleted while working.");
+      return;
+    }
+  }
+
 
   cmd.succeed();
 }

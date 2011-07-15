@@ -181,7 +181,6 @@ private:
   protected:
     virtual void handle_add_soi(WmEvent *pEvent);
     virtual void handle_delete_soi(WmEvent *pEvent);
-    VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
   public:
     WmTaskExecutor_Soi(SOIFilter* soif) : WmTaskExecutor(soif) {}
 
@@ -276,9 +275,14 @@ public:
   // We don't keep all VO data locally! (see saveVisualObjectData)
   std::map<cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> m_visualObjects;
 
+public:
+  VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
+  cdl::WorkingMemoryAddress findVisualObjectFor(cdl::WorkingMemoryAddress& protoAddr);
+
 private:
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
+
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
