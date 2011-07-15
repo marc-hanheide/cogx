@@ -75,14 +75,16 @@ pbot.setCommand("peekabot")
 
 abducer = Server("Abducer", label="Abducer Server")
 abducer.integerField("PORT",
-        label="Port", range=(10000,50000), default=10000)
+        label="Port", range=(2000,50000), default=9100)
 #TODO: maybe server and engine should also be configurable
-abducer.setVar("ABDUCER_ROOT", "${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-2.0.0")
+abducer.setVar("ABDUCER_ROOT", "${COGX_ROOT}/tools/abducer")
 abducer.setCommand("""
-      ${ABDUCER_ROOT}/abducer-server-bin
+      ${ABDUCER_ROOT}/bin/abducer-server
       -n "AbducerServer"
       -e "default -p [PORT]"
-      -a ${ABDUCER_ROOT}/abduction-engine
+      -l ${COGX_ROOT}/log4j.properties
+      -a ${ABDUCER_ROOT}/bin/abduction-engine-pb
+      -x --silent
       """)
 
 

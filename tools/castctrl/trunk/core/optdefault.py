@@ -94,12 +94,14 @@ CMD_LOG4J_SERVER=<multiline>
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
 # Abducer Server
-ABDUCER_ROOT=${COGX_ROOT}/subarchitectures/dialogue.sa/external/abducer-current
+ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
 CMD_ABDUCER_SERVER=<multiline>
-   ${ABDUCER_ROOT}/abducer-server-bin
+   ${ABDUCER_ROOT}/bin/abducer-server
    -n "AbducerServer"
-   -e "default -p 10000"
-   -a ${ABDUCER_ROOT}/abduction-engine
+   -e "default -p 9100"
+   -l ${COGX_ROOT}/log4j.properties
+   -a ${ABDUCER_ROOT}/abduction-engine-pb
+   -x --silent
 </multiline>
 
 MARY_ROOT=${COGX_ROOT}/tools/mary
