@@ -37,6 +37,7 @@ processCommandLineArgs(int argc, char ** argv, Settings & setup)
 			{"name",       required_argument, 0, 'n'},
 			{"endpoints",  required_argument, 0, 'e'},
 			{"log-config", required_argument, 0, 'l'},
+			{"log-xml",    no_argument,       0, 'm'},
 			{"abducer",    required_argument, 0, 'a'},
 			{"arg",        required_argument, 0, 'x'},
 			{0, 0, 0, 0}
@@ -46,7 +47,7 @@ processCommandLineArgs(int argc, char ** argv, Settings & setup)
 		int c;
 		int idx = 0;
 
-		c = getopt_long(argc, argv, "hvn:e:l:a:x:", longOptions, &idx);
+		c = getopt_long(argc, argv, "hvn:e:l:ma:x:", longOptions, &idx);
 		if (c == -1) {
 			break;
 		}
@@ -74,6 +75,10 @@ processCommandLineArgs(int argc, char ** argv, Settings & setup)
 
 		case 'l':
 			setup.logConfigPath = optarg;
+			break;
+
+		case 'm':
+			setup.logConfigIsXML = true;
 			break;
 
 		case 'a':

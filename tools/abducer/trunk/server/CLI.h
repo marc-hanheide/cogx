@@ -36,6 +36,7 @@ struct Settings {
 	std::string serverEndpoints;
 	std::string abducerPath;
 	std::vector<std::string> abducerArgs;
+	bool logConfigIsXML;
 	std::string logConfigPath;
 };
 
