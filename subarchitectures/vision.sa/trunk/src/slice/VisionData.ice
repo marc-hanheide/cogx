@@ -21,10 +21,10 @@ module VisionData {
 * Enum for reporting status of vision commands. 
 */
 enum VisionCommandStatus {
-	//probably too much overhead ;)
-	VCSUCCEEDED,
-		VCFAILED,
-		VCREQUESTED,
+  //probably too much overhead ;)
+  VCSUCCEEDED,
+  VCFAILED,
+  VCREQUESTED,
 };
 
   /**
@@ -112,11 +112,16 @@ enum VisionCommandStatus {
   };
 
   class VisualObject {
-    // 3D position and orientation, in the robot ego coordinate system.
+    // 3D position and orientation, in the robot ego coordinate system (ECS).
+    // TODO: when the robot moves, it will take the ECS with it. We should tie object poses
+    // to anchors instead of the ECS. The other option is to update the positions of all objects.
     cogx::Math::Pose3 pose;
 
     // pose covariance matrix
     // PoseVar3 var;
+
+    // The *visible* proto object associated with this VO.
+    cast::cdl::WorkingMemoryPointer protoObject;
 
     // working memory IDs of the surface patches that belong to this object
     IdSeq patchIds;
@@ -397,8 +402,8 @@ enum VisionCommandStatus {
     // the vertical angle of the Pan-Tilt unit where the cameras are mounted
     double tilt;
 
-	// the object that this was created for
-	cast::cdl::WorkingMemoryPointer target;
+    // the object that this was created for
+    cast::cdl::WorkingMemoryPointer target;
 
   };
   sequence<ViewCone> ViewConeSeq;
@@ -420,7 +425,7 @@ enum VisionCommandStatus {
     // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
     //string objectId;
 
-    // the result passed on overwrite (0 - failed, 1 - ok)
+    // the result passed on overwrite
     VisionCommandStatus status;
   };
 
@@ -443,7 +448,7 @@ enum VisionCommandStatus {
     // (maybe it would be enough to use panDelta and tiltDelta instead of a ViewCone)
     cast::cdl::WorkingMemoryPointer whereToLook;
 
-    // the result passed on overwrite (0 - failed, 1 - ok)
+    // the result passed on overwrite
     VisionCommandStatus status;
   };
 
@@ -452,7 +457,7 @@ enum VisionCommandStatus {
     string componentId;
     SOISeq sois;
 
-    // the result passed on overwrite (0 - failed, 1 - ok)
+    // the result passed on overwrite
     VisionCommandStatus status;
   };
 
