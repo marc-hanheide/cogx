@@ -10,6 +10,8 @@
 #include <fstream>
 #include <cmath>
 
+#include "../VisionUtils.h"
+
 #define CAM_ID_DEFAULT 0
 
 /**
@@ -223,10 +225,6 @@ void SOIFilter::start()
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_MoveToVcCommand));
 
-  // XXX: added to save SurfacePatches with saveSnapshot
-  if (m_snapper.m_bAutoSnapshot) {
-    log("AUTOSNAP is ON; Triggered on ProtoObject OVERWRITE");
-  }
   addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_ProtoObject));
@@ -236,6 +234,19 @@ void SOIFilter::start()
   addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::DELETE),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onDelete_ProtoObject));
+  if (m_snapper.m_bAutoSnapshot) {
+    log("AUTOSNAP is ON; Triggered on ProtoObject OVERWRITE");
+  }
+
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onAdd_VisualObject));
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onUpdate_VisualObject));
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onDelete_VisualObject));
 
   // Hook up changes to the robot pose to a callback function.
   // We will use the robot position as an anchor for VC commands.
@@ -372,10 +383,18 @@ void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
   m_EventQueueMonitor.notify();
 }
 
+// Save a part of a ProtoObject to the internal database
 void SOIFilter::saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy)
 {
   poCopy->cameraLocation = poOrig->cameraLocation;
   poCopy->position = poOrig->position;
+}
+
+// Save a part of a VisualObject to the internal database
+void SOIFilter::saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy)
+{
+  // Tracking visible objects
+  voCopy->protoObject = voOrig->protoObject;
 }
 
 void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
@@ -402,6 +421,25 @@ void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
   m_protoObjects.erase(_wmc.address);
+}
+
+void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+  m_visualObjects[_wmc.address] = new VisionData::VisualObject();
+  saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+}
+
+void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+  m_visualObjects[_wmc.address] = new VisionData::VisualObject();
+  saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+}
+
+void SOIFilter::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
+{
+  m_visualObjects.erase(_wmc.address);
 }
 
 void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
@@ -655,16 +693,16 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
     // Write viewcone to memory
     pSoiFilter->addToWorkingMemory(vcAddr, pBetterVc);
-    
+
     // Create pointer to viewcone on WM
     WorkingMemoryPointerPtr vcPtr = new WorkingMemoryPointer();
     vcPtr->address = vcAddr;
     vcPtr->type = cast::typeName<ViewCone>();
     pobj->desiredLocations.push_back(vcPtr);
-    
+
     // Add PO to WM
     pSoiFilter->addToWorkingMemory(objId, pobj);
-    
+
     // Now it is up to the planner to create a plan to move the robot
     // The task contains: PO, target VC
 
@@ -713,11 +751,18 @@ void SOIFilter::WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
 void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
 {
-  AnalyzeProtoObjectCommandPtr pcmd;
-  try {
-    pcmd = pSoiFilter->getMemoryEntry<VisionData::AnalyzeProtoObjectCommand>(pEvent->wmc.address);
-  }
-  catch(cast::DoesNotExistOnWMException){
+  class CCmd:
+    public cogx::VisionCommandNotifier<AnalyzeProtoObjectCommand, AnalyzeProtoObjectCommandPtr>
+  {
+  public:
+    CCmd(cast::WorkingMemoryReaderComponent* pReader)
+      : VisionCommandNotifier(pReader) {}
+  protected:
+    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+  } cmd(pSoiFilter);
+
+  if (! cmd.read(pEvent->wmc.address)) {
     pSoiFilter->debug("SOIFilter.analyze_task: AnalyzeProtoObjectCommand deleted while working.");
     return;
   }
@@ -725,55 +770,61 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // pobj - The proto object to segment
   ProtoObjectPtr pobj;
   try {
-    pobj = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(pcmd->protoObjectAddr);
+    pobj = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(cmd.pcmd->protoObjectAddr);
   }
   catch(cast::DoesNotExistOnWMException){
     pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject deleted while working. Aborting task.");
-    pcmd->status = VCFAILED;
-    try {
-      pSoiFilter->overwriteWorkingMemory(pEvent->wmc.address, pcmd);
-    }
-    catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->debug("SOIFilter.analyze_task: Failed to acknowledge an AnalyzeProtoObjectCommand.");
-    }
+    cmd.fail();
     return;
   }
 
   /* Asynchronous call through a working memory entry.
    *
    * A WorkingMemoryChangeReceiver is created on the heap. We wait for it to
-   * complete then we remove the it from the change filter list, but we DON'T
+   * complete then we remove it from the change filter list, but we DON'T
    * DELETE it. It will be moved to a deletion queue by the framework and
    * deleted later. */
   GetSoisCommandRcv* pGetSois;
   vector<SOIPtr> sois;
   pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
   bool bCompleted = pGetSois->waitForCompletion(20e3/*ms*/);
-  bCompleted = bCompleted && pGetSois->m_pcmd->status == 0;
+  bCompleted = bCompleted && pGetSois->m_pcmd->status == VisionData::VCSUCCEEDED;
   if (bCompleted)
     pGetSois->getSois(sois);
   pSoiFilter->removeChangeFilter(pGetSois, cdl::DELETERECEIVER);
 
   if (! bCompleted || sois.size() < 1)
   {
-      pSoiFilter->debug("SOIFilter.analyze_task: No SOIs. Aborting task.");
-      /* TODO: overwrite command with status FAILED */
-      return;
+    pSoiFilter->debug("SOIFilter.analyze_task: No Fine SOIs. Aborting task.");
+    cmd.fail();
+    return;
   }
 
-  pSoiFilter->debug("SOIFilter.analyze_task: Got some SOIs.");
+  pSoiFilter->debug("SOIFilter.analyze_task: Got some Fine SOIs.");
 
+  // Find the SOI that is closesst to the PO
   // psoi - The fine SOI that represents the proto object
-  SOIPtr psoi;
-  /* 
-   * TODO: Match the SOIs with the PO, find the best match
-   */
-  psoi = sois[0];
+  SOIPtr psoi = sois[0];
+  double d, dmin;
+  dmin = distSqr(pobj->position, psoi->boundingSphere.pos);
+  for (int i = 1; i < sois.size(); ++i) {
+    d = distSqr(pobj->position, sois[i]->boundingSphere.pos);
+    if (d < dmin) {
+      dmin = d;
+      psoi = sois[i];
+    }
+  }
+  if (dmin >= 0.2) {
+    pSoiFilter->println("SOIFilter.analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
+  }
+
   if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
   {
-    pSoiFilter->overwriteWorkingMemory(pcmd->protoObjectAddr, pobj);
+    pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);
   }
-  /* TODO: overwrite command with status SUCCESS */
+  // TODO: else: do we fail if segmentObject failed?
+
+  cmd.succeed();
 }
 
 SOIFilter::GetSoisCommandRcv::GetSoisCommandRcv(SOIFilter* psoif, std::string component_id)
@@ -797,7 +848,7 @@ void SOIFilter::GetSoisCommandRcv::workingMemoryChanged(const cast::cdl::Working
     }
     catch (...) {
       pSoiFilter->debug("SOIFilter.GetSoisCommand: Failed to get the results.");
-      m_pcmd->status = VCFAILED; /* complete, but failed */
+      m_pcmd->status = VisionData::VCFAILED; /* complete, but failed */
     }
     m_complete = true;
   }
@@ -811,37 +862,43 @@ void SOIFilter::GetSoisCommandRcv::getSois(std::vector<VisionData::SOIPtr>& sois
 
 bool SOIFilter::GetSoisCommandRcv::waitForCompletion(double milliSeconds)
 {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
-    if (m_complete) return true;
-    m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
-    return m_complete;
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
+  if (m_complete) return true;
+  m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
+  return m_complete;
 }
 
 void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
 {
-  MoveToViewConeCommandPtr pcmd;
-  try {
-    pcmd = pSoiFilter->getMemoryEntry<VisionData::MoveToViewConeCommand>(pEvent->wmc.address);
-    pSoiFilter->debug("SOIFilter.move_to: GOT A MoveToViewConeCommand");
-  }
-  catch(cast::DoesNotExistOnWMException){
+  class CCmd:
+    public cogx::VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>
+  {
+  public:
+    CCmd(cast::WorkingMemoryReaderComponent* pReader)
+      : VisionCommandNotifier(pReader) {}
+  protected:
+    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+  } cmd(pSoiFilter);
+
+  if (!cmd.read(pEvent->wmc.address)) {
     pSoiFilter->debug("SOIFilter.move_to: MoveToViewConeCommand deleted while working.");
     return;
   }
+  pSoiFilter->debug("SOIFilter.move_to: GOT A MoveToViewConeCommand");
 
-  // XXX: This command only moves the PTU, but should also move the robot
-  if (pSoiFilter->ptzServer.get()) {
+  if (! pSoiFilter->ptzServer.get())
+    cmd.fail();
+  else {
+    // XXX: This command only moves the PTU, but should also move the robot
     ptz::PTZReading ptup;
-    ViewConePtr pBetterVc = pSoiFilter->getMemoryEntry<VisionData::ViewCone>(pcmd->target->address);
+    ViewConePtr pBetterVc = pSoiFilter->getMemoryEntry<VisionData::ViewCone>(cmd.pcmd->target->address);
     ptup.pose.pan = pBetterVc->viewDirection - pBetterVc->anchor.z;
     ptup.pose.tilt = pBetterVc->tilt;
     ptup.pose.zoom = 0;
     pSoiFilter->log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
     pSoiFilter->ptzServer->setPose(ptup.pose);
-
-	//report success	
-	pcmd->status = VCSUCCEEDED;
-	pSoiFilter->overwriteWorkingMemory(pEvent->wmc.address, pcmd);
+    cmd.succeed();
   }
 }
 
