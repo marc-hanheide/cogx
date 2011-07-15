@@ -4,7 +4,7 @@ SERVER_BIN=abducer-server
 ENGINE_BIN=abducer-engine-pb
 
 SERVER_NAME="AbducerServer"
-SERVER_ENDPOINTS="default -p 10000"
+SERVER_ENDPOINTS="default -p 9100"
 
 DIR="`pwd`/`dirname $0`"
 
@@ -25,4 +25,4 @@ if [ ! -e "$PATH_TO_ENGINE" ]; then
 	exit 1
 fi
 
-"$PATH_TO_SERVER" -n "$SERVER_NAME" -e "$SERVER_ENDPOINTS" -a "$PATH_TO_ENGINE" -x --silent -l "$DIR/Log4jConfig.xml"
+"$PATH_TO_SERVER" -n "$SERVER_NAME" -e "$SERVER_ENDPOINTS" -a "$PATH_TO_ENGINE" -x --silent -l "$DIR/Log4jConfig.xml" -m

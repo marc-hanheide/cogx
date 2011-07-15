@@ -27,6 +27,7 @@
 
 #include <log4cxx/logger.h>
 #include <log4cxx/xml/domconfigurator.h>
+#include <log4cxx/propertyconfigurator.h>
 
 #include <iostream>
 
@@ -48,7 +49,7 @@ LoggerPtr mainLogger(Logger::getLogger("abducer.main"));
 const string DEFAULT_SERVER_NAME = "AbducerServer";
 const string DEFAULT_SERVER_ENDPOINTS = "default -p 10000";
 const string DEFAULT_ABDUCER_PATH = "/usr/bin/false";
-const string DEFAULT_LOGCONFIG_PATH = "Log4jConfig.xml";
+const string DEFAULT_LOGCONFIG_PATH = "log4j.properties";
 
 // this probably shouldn't be static
 static Ice::CommunicatorPtr ic;
@@ -79,12 +80,19 @@ main(int argc, char ** argv)
 	s.serverEndpoints = DEFAULT_SERVER_ENDPOINTS;
 	s.abducerPath = DEFAULT_ABDUCER_PATH;
 	s.logConfigPath = DEFAULT_LOGCONFIG_PATH;
+	s.logConfigIsXML = false;
 
 	switch (processCommandLineArgs(argc, argv, s)) {
 	case Start:
 		{
 			printVersion();
-			DOMConfigurator::configure(s.logConfigPath);
+
+			if (s.logConfigIsXML) {
+				DOMConfigurator::configure(s.logConfigPath);
+			}
+			else {
+				PropertyConfigurator::configure(s.logConfigPath);
+			}
 
 			BoundUnixSocket * socket = NULL;
 			try {
@@ -235,6 +243,7 @@ printUsage()
 		<< "  -a ABDUCER_BIN  Path to the engine binary [" << DEFAULT_ABDUCER_PATH << "]" << endl
 		<< "  -x ARG          Add ARG to the engine arguments" << endl
 		<< "  -l LOG_CONF     Path to the log4cxx config file [" << DEFAULT_LOGCONFIG_PATH << "]" << endl
+		<< "  -m              LOG_CONF is an XML document" << endl
 		<< "  -h              Print (this) help and exit" << endl
 		<< "  -v              Print version and exit" << endl;
 }
