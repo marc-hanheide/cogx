@@ -230,7 +230,7 @@ void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &camPosesTo
   vector<Pose3> poses;
 
   setZero(panRot.pos);
-  fromRotZ(panRot.rot, -ptz.pose.pan);
+  fromRotZ(panRot.rot, ptz.pose.pan);
   // note: positive tilt angle is tilting "up" which is negative rotation around
   // y axis -> need minus
   setZero(tiltRot.pos);
