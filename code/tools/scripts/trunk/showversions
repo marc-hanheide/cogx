@@ -11,6 +11,9 @@ echo "----------GCC, CMAKE"
 gcc --version
 cmake --version
 echo ""
+echo "----------ICE"
+slice2cpp --version
+echo ""
 echo "----------JAVA, ANT"
 java -version
 ant -version
