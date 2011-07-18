@@ -7,6 +7,7 @@ OUTPUT_DIR?=../bin
 # ICE
 
 SLICE_PATH?=../slice
+ICE_HOME?=/usr/
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 # C++
