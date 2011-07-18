@@ -738,10 +738,14 @@ void PlanePopOut::runComponent()
 	}
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
 	{
+	    static int lastSize = -1;
 	    //log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 	    CurrentObjList.clear();
 	    //Pre2CurrentList.clear();
-	    log("v3center.size() = %d",v3center.size());	
+	    if (lastSize != v3center.size()) {
+		log("SOI COUNT = %d",v3center.size());	
+		lastSize = v3center.size();
+	    }
 	    for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 	    {
 		ObjPara OP;
