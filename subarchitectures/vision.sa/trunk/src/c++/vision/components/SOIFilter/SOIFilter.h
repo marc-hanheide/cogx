@@ -252,10 +252,16 @@ private:
     CSfDisplayClient() { pFilter = NULL; }
     void setClientData(SOIFilter* pSoiFilter) { pFilter = pSoiFilter; }
     void handleEvent(const Visualization::TEvent &event); /*override*/
+    std::string getControlState(const std::string& ctrlId);
     void onDialogValueChanged(const std::string& dialogId, const std::string& name, const std::string& value);
     void handleDialogCommand(const std::string& dialogId, const std::string& command, const std::string& params);
   };
   CSfDisplayClient m_display;
+  bool m_bShowProtoObjects;
+  std::string m_sProtoObjectView;
+  void sendSyncAllProtoObjects();
+  void sendProtoObject(const cdl::WorkingMemoryAddress& addr, const VisionData::ProtoObjectPtr& pobj);
+  void sendRemoveProtoObject(const cdl::WorkingMemoryAddress& addr);
 #endif
 #ifdef FEAT_GENERATE_FAKE_SOIS
   void addFakeSoi();
@@ -277,7 +283,7 @@ public:
 
 public:
   VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
-  cdl::WorkingMemoryAddress findVisualObjectFor(cdl::WorkingMemoryAddress& protoAddr);
+  cdl::WorkingMemoryAddress findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
 
 private:
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
