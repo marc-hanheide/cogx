@@ -55,6 +55,8 @@ SOIFilter::SOIFilter()
 
 #ifdef FEAT_VISUALIZATION
   m_segmenter.pDisplay = &m_display;
+  m_sProtoObjectView = "";
+  m_bShowProtoObjects = false;
 #endif
 
 }
@@ -115,10 +117,20 @@ void SOIFilter::configure(const map<string,string> & _config)
     str >> camId;
   }
 
+#ifdef FEAT_VISUALIZATION
+  m_bShowProtoObjects = false;
+  if((it = _config.find("--scene3d")) != _config.end())
+  {
+    //m_sProtoObjectView = "soif.proto-objects";
+    m_sProtoObjectView = it->second;
+    m_bShowProtoObjects = true;
+  }
+#else
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
   }
+#endif
 
   if((it = _config.find("--coarse-source")) != _config.end())
   {
@@ -178,6 +190,9 @@ void SOIFilter::connectPtz()
   ptzServer = ptz::PTZInterfacePrx::uncheckedCast(base);
 }
 
+#define IDC_SOIF_PROTOOBJECTS "popout.show.protoobjects"
+#define ID_PART_3D_PO     "PO:"
+
 void SOIFilter::start()
 {
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
@@ -193,6 +208,15 @@ void SOIFilter::start()
   m_display.setClientData(this);
   m_display.installEventReceiver();
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "take.snapshot", "&Snapshot");
+
+  Visualization::ActionInfo act;
+  act.id = IDC_SOIF_PROTOOBJECTS;
+  act.label = "Toggle Update Proto Objects";
+  act.iconLabel = "ProtoObjects";
+  act.iconSvg = "text:PO";
+  act.checkable = true;
+  m_display.addAction(m_sProtoObjectView, act);
+
 #ifdef FEAT_GENERATE_FAKE_SOIS
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "fake.soi", "&Fake SOI");
 #endif
@@ -261,16 +285,73 @@ void SOIFilter::start()
 #ifdef FEAT_VISUALIZATION
 void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
+  if (!pFilter) return;
   if (event.type == Visualization::evButtonClick) {
     if (event.sourceId == "take.snapshot") {
       pFilter->m_snapper.saveSnapshot();
     }
 #ifdef FEAT_GENERATE_FAKE_SOIS
-    if (event.sourceId == "fake.soi") {
+    else if (event.sourceId == "fake.soi") {
       pFilter->addFakeSoi();
     }
 #endif
   }
+  if (event.sourceId == IDC_SOIF_PROTOOBJECTS) {
+    if (event.data == "0" || event.data=="") pFilter->m_bShowProtoObjects = false;
+    else pFilter->m_bShowProtoObjects = true;
+    pFilter->sendSyncAllProtoObjects();
+  }
+}
+
+std::string SOIFilter::CSfDisplayClient::getControlState(const std::string& ctrlId)
+{
+    if (!pFilter) return "";
+    pFilter->println("Get control state: %s", ctrlId.c_str());
+    if (ctrlId == IDC_SOIF_PROTOOBJECTS) {
+	if (pFilter->m_bShowProtoObjects) return "2";
+	else return "0";
+    }
+    return "";
+}
+
+void SOIFilter::sendSyncAllProtoObjects()
+{
+  // copy to minimize race conditions
+  std::map<cdl::WorkingMemoryAddress, VisionData::ProtoObjectPtr> objs = m_protoObjects;
+  typeof(objs.begin()) it = objs.begin();
+  for (; it != objs.end(); ++it) {
+    ProtoObjectPtr& pobj = it->second;
+    if (m_bShowProtoObjects) sendProtoObject(it->first, pobj);
+    else sendRemoveProtoObject(it->first);
+  }
+}
+
+void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const VisionData::ProtoObjectPtr& pobj)
+{
+  cdl::WorkingMemoryAddress voaddr = findVisualObjectFor(addr);
+  bool bHasVo = voaddr.id != "";
+
+  ostringstream ss;
+  ss << "function render()\n";
+  ss << "glPushMatrix()\n";
+  if (bHasVo)
+    ss << "glColor(0.0, 1.0, 0.0, 0.3)\n";
+  else
+    ss << "glColor(0.2, 0.2, 0.2, 0.3)\n";
+  ss << "glTranslate("
+    << pobj->position.x << ","
+    << pobj->position.y << ","
+    << pobj->position.z << ")\n";
+  ss << "StdModel:box(0.05,0.05,0.05)\n";
+  ss << "glPopMatrix()\n";
+  ss << "end\n";
+  m_display.setLuaGlObject(m_sProtoObjectView, ID_PART_3D_PO + addr.id, ss.str());
+}
+
+void SOIFilter::sendRemoveProtoObject(const cdl::WorkingMemoryAddress& addr)
+{
+  m_display.setLuaGlObject(m_sProtoObjectView, ID_PART_3D_PO + addr.id, "function render()\nend\n");
+  m_display.removePart(m_sProtoObjectView, ID_PART_3D_PO + addr.id);
 }
 
 void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialogId,
@@ -403,6 +484,9 @@ void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
   ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
   m_protoObjects[_wmc.address] = new VisionData::ProtoObject();
   saveProtoObjectData(pobj, m_protoObjects[_wmc.address]);
+  if (m_bShowProtoObjects) {
+    sendProtoObject(_wmc.address, pobj);
+  }
 }
 
 void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
@@ -417,11 +501,17 @@ void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
     m_snapper.m_LastProtoObject = pobj;
     m_snapper.saveSnapshot();
   }
+  if (m_bShowProtoObjects) {
+    sendProtoObject(_wmc.address, pobj);
+  }
 }
 
 void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
   m_protoObjects.erase(_wmc.address);
+  if (m_bShowProtoObjects) {
+    sendRemoveProtoObject(_wmc.address);
+  }
 }
 
 void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -545,6 +635,9 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
     return NULL;
 
   typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
+  double dmin = 1e99;
+  double d;
+  ProtoObjectPtr pBest;
   for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectPtr& pobj = itpo->second;
     // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
@@ -552,14 +645,20 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
     Vector3& p0 = pobj->position;
     Vector3& p1 = psoi->boundingSphere.pos;
 
-    if (distSqr(p0, p1) < 0.12)
-      return pobj;
+    d = distSqr(p0, p1);
+    log("PO %s: %.4lf", itpo->first.id.c_str(), d);
+    if (d < dmin) {
+      dmin = d;
+      pBest = pobj;
+    }
   }
+  if (dmin < 0.12)
+    return pBest;
 
   return NULL;
 }
 
-cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(cdl::WorkingMemoryAddress& protoAddr)
+cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
 {
   if (protoAddr.id == "") 
     return cdl::WorkingMemoryAddress();
@@ -627,6 +726,7 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // anything, except if we want to analyze the object in the center.
 
     ProtoObjectPtr pobj;
+    pSoiFilter->log("FIND SOI '%s'", soi.addr.id.c_str());
     pobj = pSoiFilter->findProtoObjectAt(psoi);
     if (pobj.get()) {
       pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", soi.addr.id.c_str());
