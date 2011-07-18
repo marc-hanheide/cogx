@@ -143,7 +143,7 @@ void KinectPCServer::saveNextFrameToFile() {
   // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   if(m_displayImage){
     cvShowImage("Kinect RGB",rgb_data);
-    cvWaitKey(1);
+    cvWaitKey(5);
   }
   IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
   char buf[256];
