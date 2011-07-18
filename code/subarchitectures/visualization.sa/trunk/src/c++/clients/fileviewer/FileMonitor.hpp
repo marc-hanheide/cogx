@@ -29,6 +29,7 @@ struct SWatchInfo
 {
    std::string watchDef;
    int watchId;
+   long changeCount;
    std::string title;
    std::string section;
    std::string directory;
