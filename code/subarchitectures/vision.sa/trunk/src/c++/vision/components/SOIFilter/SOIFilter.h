@@ -297,6 +297,7 @@ private:
   void onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc);
 
   void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
+  void onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
   IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;
   // Use this as an anchor to define target view cones
