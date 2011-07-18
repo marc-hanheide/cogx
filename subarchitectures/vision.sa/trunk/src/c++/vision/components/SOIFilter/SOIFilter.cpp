@@ -642,15 +642,17 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
   double dmin = 1e99;
   double d;
   ProtoObjectPtr pBest;
+  Vector3& p0 = psoi->boundingSphere.pos;
+  //log("Find PO near SOI (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
+
   for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectPtr& pobj = itpo->second;
     // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
     //   => we only compare robo-centric positions
-    Vector3& p0 = pobj->position;
-    Vector3& p1 = psoi->boundingSphere.pos;
+    Vector3& p1 = pobj->position;
 
     d = distSqr(p0, p1);
-    log("PO %s: %.4lf", itpo->first.id.c_str(), d);
+    //log("PO %s (%.4lf, %.4lf, %.4lf): %.4lf", itpo->first.id.c_str(), p1.x, p1.y, p1.z, d);
     if (d < dmin) {
       dmin = d;
       pBest = pobj;
@@ -885,7 +887,7 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   {
   public:
     CCmd(cast::WorkingMemoryReaderComponent* pReader)
-      : VisionCommandNotifier<AnalyzeProtoObjectCommand, AnalyzeProtoObjectCommandPtr>(pReader) {}
+      : cogx::VisionCommandNotifier<AnalyzeProtoObjectCommand, AnalyzeProtoObjectCommandPtr>(pReader) {}
   protected:
     virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
@@ -1030,7 +1032,7 @@ void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
   {
   public:
     CCmd(cast::WorkingMemoryReaderComponent* pReader)
-      : VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>(pReader) {}
+      : cogx::VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>(pReader) {}
   protected:
     virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
