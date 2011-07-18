@@ -885,11 +885,13 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   {
   public:
     CCmd(cast::WorkingMemoryReaderComponent* pReader)
-      : VisionCommandNotifier(pReader) {}
+      : VisionCommandNotifier<AnalyzeProtoObjectCommand, AnalyzeProtoObjectCommandPtr>(pReader) {}
   protected:
     virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
+
+  pSoiFilter->println("SOIFilter.AnalyzeProtoObjectCommand");
 
   if (! cmd.read(pEvent->wmc.address)) {
     pSoiFilter->debug("SOIFilter.analyze_task: AnalyzeProtoObjectCommand deleted while working.");
@@ -1028,11 +1030,13 @@ void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
   {
   public:
     CCmd(cast::WorkingMemoryReaderComponent* pReader)
-      : VisionCommandNotifier(pReader) {}
+      : VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>(pReader) {}
   protected:
     virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
+
+  pSoiFilter->println("SOIFilter.MoveToViewConeCommand");
 
   if (!cmd.read(pEvent->wmc.address)) {
     pSoiFilter->debug("SOIFilter.move_to: MoveToViewConeCommand deleted while working.");
