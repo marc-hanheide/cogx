@@ -170,15 +170,22 @@ public abstract class PrettyPrint {
 	 * @param proof
 	 * @return the string representation of proof
 	 */
-	public static String proofToString(MarkedQuery[] proof) {
-		String s = "";
-		for (int i = 0; i < proof.length; i++) {
-			s += "  [" + markedQueryToMarkingString(proof[i]) + "]\t";
-			s += modalisedAtomToString(proof[i].atom);
-			if (i < proof.length-1) { s += ",\n"; }
-		}
-		return s;
-	}
+	 public static String proofToString(List<MarkedQuery> proof) {
+		 String s = "[";
+		 Iterator<MarkedQuery> iter = proof.iterator();
+		 if (iter.hasNext()) {
+			 s += "\n";
+		 }
+		 while (iter.hasNext()) {
+			 MarkedQuery mq = iter.next();
+			 s += markedQueryToMarkingString(mq) + ": ";
+			 s += modalisedAtomToString(mq.atom);
+			 s += iter.hasNext() ? "," : "";
+			 s += "\n";
+		 }
+		 s += "]";
+		 return s;
+	 }
 
 	/**
 	 * Return the string representation of a marked query marking.
