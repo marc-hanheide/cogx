@@ -253,6 +253,10 @@ void SOIFilter::start()
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_MoveToVcCommand));
 
+  addChangeFilter(createLocalTypeFilter<VisionData::AnalyzeProtoObjectCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onAdd_AnalyzeProtoObjectCommand));
+
   addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_ProtoObject));
@@ -468,6 +472,16 @@ void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
   m_EventQueueMonitor.notify();
 }
 
+void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+    m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
+  }
+  m_EventQueueMonitor.notify();
+}
+
+
 // Save a part of a ProtoObject to the internal database
 void SOIFilter::saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy)
 {
@@ -564,6 +578,7 @@ void SOIFilter::runComponent()
 {
   WmTaskExecutor_Soi soiProcessor(this);
   WmTaskExecutor_MoveToViewCone moveProcessor(this);
+  WmTaskExecutor_Analyze analysisProcessor(this);
 
   while(isRunning())
   {
@@ -606,6 +621,9 @@ void SOIFilter::runComponent()
           break;
         case TYPE_CMD_LOOK:
           moveProcessor.handle(pevent);
+          break;
+        case TYPE_CMD_ANALYZE:
+          analysisProcessor.handle(pevent);
           break;
         default:
           error(" ***** Event with an unknown type of object '%d'", pevent->objectType);
