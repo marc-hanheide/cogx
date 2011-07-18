@@ -420,11 +420,11 @@ enum VisionCommandStatus {
   class MoveToViewConeCommand {
     cast::cdl::WorkingMemoryPointer target;
 
-	//nah: took this out until we need it.. then replace with enum
+    //nah: took this out until we need it.. then replace with enum
     // eg. look-at-object; maybe use enum instd of string
     //string reason;
 
-	//nah: took this out until we need it
+    //nah: took this out until we need it
     // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
     //string objectId;
 
@@ -438,9 +438,10 @@ enum VisionCommandStatus {
   // @author mmarko
   class AnalyzeProtoObjectCommand {
     // which proto object
+    // @param ProtoObject-address protoObjectAddr;
     cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
-    // @param ViewCone whereToLook
+    // @param ViewCone-address whereToLook
     // where in the visual field is it? This should be (approx.) the same as
     // the target of the MoveToViewConeCommand command. If the target could not
     // be reached, a new view cone is generated from the desired and the
