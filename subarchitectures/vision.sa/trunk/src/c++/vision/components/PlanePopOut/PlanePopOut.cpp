@@ -1073,7 +1073,7 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     {
     public:
 	CCmd(cast::WorkingMemoryReaderComponent* pReader)
-	: VisionCommandNotifier(pReader) {}
+	: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
     protected:
 	virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
 	virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
