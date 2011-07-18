@@ -119,10 +119,12 @@ void SOIFilter::configure(const map<string,string> & _config)
 
 #ifdef FEAT_VISUALIZATION
   m_bShowProtoObjects = false;
+  // The name of the display server scene where 3D objects (proto-objects) should be displayed
   if((it = _config.find("--scene3d")) != _config.end())
   {
-    //m_sProtoObjectView = "soif.proto-objects";
     m_sProtoObjectView = it->second;
+    if (m_sProtoObjectView == "")
+      m_sProtoObjectView = "soif.objects.3d";
     m_bShowProtoObjects = true;
   }
 #else
@@ -209,13 +211,15 @@ void SOIFilter::start()
   m_display.installEventReceiver();
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "take.snapshot", "&Snapshot");
 
-  Visualization::ActionInfo act;
-  act.id = IDC_SOIF_PROTOOBJECTS;
-  act.label = "Toggle Update Proto Objects";
-  act.iconLabel = "ProtoObjects";
-  act.iconSvg = "text:PO";
-  act.checkable = true;
-  m_display.addAction(m_sProtoObjectView, act);
+  if (m_bShowProtoObjects) {
+    Visualization::ActionInfo act;
+    act.id = IDC_SOIF_PROTOOBJECTS;
+    act.label = "Toggle Update Proto Objects";
+    act.iconLabel = "ProtoObjects";
+    act.iconSvg = "text:PO";
+    act.checkable = true;
+    m_display.addAction(m_sProtoObjectView, act);
+  }
 
 #ifdef FEAT_GENERATE_FAKE_SOIS
   m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "fake.soi", "&Fake SOI");
