@@ -4,7 +4,6 @@ import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
-import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,9 +11,13 @@ import java.util.List;
 
 public class DialogueMoveTranslator {
 
-	List<String> lines = new LinkedList<String>();
-	NominalReference latestTopic = null;
-//	FunctionTerm lastTopic = null;
+	private final List<String> lines;
+	private NominalReference latestTopic;
+
+	public DialogueMoveTranslator() {
+		lines = new LinkedList<String>();
+		latestTopic = null;
+	}
 
 	public void addDialogueMove(DialogueMove dm) {
 		NominalReference nr = dm.topic;

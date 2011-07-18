@@ -41,9 +41,7 @@ import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class IntentionRealization {
 

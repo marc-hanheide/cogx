@@ -17,7 +17,6 @@ import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
