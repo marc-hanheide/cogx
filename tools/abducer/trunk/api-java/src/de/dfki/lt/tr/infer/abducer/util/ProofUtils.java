@@ -74,6 +74,23 @@ public abstract class ProofUtils {
 	}
 
 	/**
+	 * A "forgetful" version of <tt>filterAssumed()</tt>. Returns the sequence
+	 * of queries with their original marking.
+	 *
+	 * @param qs the sequence of queries (proof)
+	 * @return all elements of qs that are of type AssumedQuery, as MarkedQuery
+	 */
+	public static List<MarkedQuery> filterAssumedAndForget(List<MarkedQuery> qs) {
+		ArrayList<MarkedQuery> result = new ArrayList<MarkedQuery>();
+		for (MarkedQuery q : qs) {
+			if (q instanceof AssumedQuery) {
+				result.add(q);
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Convert a proof to a sequence of modalised atoms, thereby stripping
 	 * the proof of the markings.
 	 *
@@ -125,9 +142,25 @@ public abstract class ProofUtils {
 	 * @param goal the goal formula
 	 * @return the proof
 	 */
-	public static ArrayList<UnsolvedQuery> newUnsolvedProof(ModalisedAtom goal) {
-		ArrayList<UnsolvedQuery> result = new ArrayList<UnsolvedQuery>();
+	public static List<MarkedQuery> newUnsolvedProof(ModalisedAtom goal) {
+		List<MarkedQuery> result = new ArrayList<MarkedQuery>();
 		result.add(new UnsolvedQuery(goal, new NullAssumabilityFunction()));
 		return result;
+	}
+
+	/**
+	 * Return the functor of a term. The term is assumed to be a function
+	 * term. If this isn't true, the method returns {@code null}.
+	 *
+	 * @param t  the term
+	 * @return functor, or {@code null} if {@code t} is not a function term.
+	 */
+	public static String termFunctor(Term t) {
+		if (t instanceof FunctionTerm) {
+			return ((FunctionTerm) t).functor;
+		}
+		else {
+			return null;
+		}
 	}
 }
