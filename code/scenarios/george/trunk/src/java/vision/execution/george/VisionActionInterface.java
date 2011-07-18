@@ -3,6 +3,7 @@
  */
 package vision.execution.george;
 
+import VisionData.AnalyzeProtoObjectCommand;
 import VisionData.MoveToViewConeCommand;
 import VisionData.VisionCommandStatus;
 import cast.AlreadyExistsOnWMException;
@@ -21,7 +22,6 @@ import execution.slice.TriBool;
 import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ComponentActionFactory;
-import execution.util.DoNothingActionExecutorFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteFromStatusExecutor;
 
@@ -99,6 +99,56 @@ public class VisionActionInterface extends ManagedComponent {
 
 	}
 
+	public static class AnalyzeProtoObjectExecutor
+			extends
+			NonBlockingCompleteFromStatusExecutor<AnalyzeProtoObject, AnalyzeProtoObjectCommand> {
+
+		public AnalyzeProtoObjectExecutor(ManagedComponent _component) {
+			super(_component, AnalyzeProtoObject.class,
+					AnalyzeProtoObjectCommand.class);
+		}
+
+		@Override
+		protected TriBool executionResult(AnalyzeProtoObjectCommand _cmd) {
+			try {
+				if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
+					return TriBool.TRITRUE;
+				} else {
+					return TriBool.TRIFALSE;
+				}
+			} catch (Exception e) {
+				logException(e);
+				return TriBool.TRIFALSE;
+			}
+		}
+
+		@Override
+		public void executeAction() {
+			try {
+
+				WorkingMemoryPointer protoObjPtr = ((VisionActionInterface) getComponent())
+						.getFirstAncestorOfBelief(getAction().beliefAddress);
+				if (protoObjPtr == null) {
+					getComponent()
+							.getLogger()
+							.warn("Action failed because ProtoObject pointer was null",
+									getComponent().getLogAdditions());
+					executionComplete(TriBool.TRIFALSE);
+				} else {
+					println("addeing APOC");
+					AnalyzeProtoObjectCommand cmd = new AnalyzeProtoObjectCommand();
+					cmd.protoObjectAddr = protoObjPtr.address;
+					cmd.status = VisionCommandStatus.VCREQUESTED;
+					addThenCompleteOnOverwrite(cmd);
+				}
+			} catch (Exception e) {
+				logException(e);
+				executionComplete(TriBool.TRIFALSE);
+			}
+		}
+
+	}
+
 	/**
 	 * @param _cmd
 	 * @throws AlreadyExistsOnWMException
@@ -149,14 +199,13 @@ public class VisionActionInterface extends ManagedComponent {
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
 
-		// direct dections
-
 		m_actionStateManager.registerActionType(MoveToViewCone.class,
 				new ComponentActionFactory<MoveToViewConeExecutor>(this,
 						MoveToViewConeExecutor.class));
 
 		m_actionStateManager.registerActionType(AnalyzeProtoObject.class,
-				new DoNothingActionExecutorFactory(this));
+				new ComponentActionFactory<AnalyzeProtoObjectExecutor>(this,
+						AnalyzeProtoObjectExecutor.class));
 
 	}
 

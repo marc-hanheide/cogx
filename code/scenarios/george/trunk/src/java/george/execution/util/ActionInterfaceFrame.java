@@ -38,6 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.Action;
+import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionMonitor;
 
@@ -90,6 +91,7 @@ public class ActionInterfaceFrame extends JFrame {
 	// private DefaultTableModel m_objectTableModel;
 
 	private JRadioButton m_focusViewConeAction;
+	private JRadioButton m_analyseProtoObjectAction;
 
 	// private JRadioButton m_askForColourAction;
 	// private JRadioButton m_askForShapeAction;
@@ -225,6 +227,7 @@ public class ActionInterfaceFrame extends JFrame {
 			//
 
 			m_focusViewConeAction = new JRadioButton("focus viewcone");
+			m_analyseProtoObjectAction = new JRadioButton("analyse protoobject");
 			// m_askForColourAction = new JRadioButton("ask for colour");
 			// m_askForShapeAction = new JRadioButton("ask for shape");
 			// m_askForIdentityAction = new JRadioButton("ask for identity");
@@ -239,6 +242,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_focusViewConeAction);
+			actionGroup.add(m_analyseProtoObjectAction);
 
 			// actionGroup.add(m_learnColourAction);
 			// actionGroup.add(m_learnShapeAction);
@@ -258,6 +262,8 @@ public class ActionInterfaceFrame extends JFrame {
 			m_focusViewConeAction.setSelected(true);
 
 			m_beliefsActionPanel.add(m_focusViewConeAction, null);
+			m_beliefsActionPanel.add(m_analyseProtoObjectAction, null);
+
 			// m_beliefsActionPanel.add(m_learnColourAction, null);
 			// m_beliefsActionPanel.add(m_learnShapeAction, null);
 			// m_beliefsActionPanel.add(m_learnIdentityAction, null);
@@ -407,7 +413,9 @@ public class ActionInterfaceFrame extends JFrame {
 			if (m_focusViewConeAction.isSelected()) {
 				focusViewCone();
 			}
-
+			else if (m_analyseProtoObjectAction.isSelected()) {
+				analyseProtoObject();
+			}
 			// if (m_learnColourAction.isSelected()) {
 			// learnColour();
 			// } else if (m_learnShapeAction.isSelected()) {
@@ -532,13 +540,27 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void focusViewCone() throws CASTException {
-		
-		//TODO assume for now that this is a viewcone belief
+
+		// TODO assume for now that this is a viewcone belief
 		String beliefID = getSelectedBeliefID();
-		
+
 		if (beliefID != null) {
-			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(beliefID, "binder"),
-					new MonitorPanel(), MoveToViewCone.class);
+			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(
+					beliefID, "binder"), new MonitorPanel(),
+					MoveToViewCone.class);
+		}
+	}
+
+	private void analyseProtoObject() throws CASTException {
+
+		// TODO assume for now that this is a protoobject belief
+		String beliefID = getSelectedBeliefID();
+
+		if (beliefID != null) {
+			println("go proto");
+			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(
+					beliefID, "binder"), new MonitorPanel(),
+					AnalyzeProtoObject.class);
 		}
 	}
 
