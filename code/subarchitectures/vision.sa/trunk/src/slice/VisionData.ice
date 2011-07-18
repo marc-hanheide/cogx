@@ -418,6 +418,7 @@ enum VisionCommandStatus {
   // to target.anchor.
   // @author mmarko
   class MoveToViewConeCommand {
+    // @param ViewCone target
     cast::cdl::WorkingMemoryPointer target;
 
     //nah: took this out until we need it.. then replace with enum
@@ -425,8 +426,8 @@ enum VisionCommandStatus {
     //string reason;
 
     //nah: took this out until we need it
-    // arbitrary callers reference; depends on reason; maybe use WorkingMemoryAddress instead.
-    //string objectId;
+    // arbitrary callers reference to a WM entry; depends on reason.
+    // cast::cdl::WorkingMemoryPointer object;
 
     // the result passed on overwrite
     VisionCommandStatus status;
