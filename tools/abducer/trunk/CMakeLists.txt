@@ -6,6 +6,6 @@ add_custom_target (Abducer ALL)
 add_custom_command (
 	TARGET  Abducer
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	COMMAND make
+	COMMAND make ICE_HOME=${ICE_HOME}
 )
 
