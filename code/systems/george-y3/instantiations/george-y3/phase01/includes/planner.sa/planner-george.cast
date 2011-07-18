@@ -1,1 +1,2 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain george.domain.year3.mapl $V11N_STANDALONE $V11N_STANDALONE_HOST 
+VARDEFAULT planner_show_dot=--nodot
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain george.domain.year3.mapl %(planner_show_dot) --displayserver "display.srv"
