@@ -380,7 +380,7 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
       else {
          // orbit around current pivot
          Vector3 dir = m_camera.normal()*dx + m_camera.up*dy;
-         std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
+         //std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
 
          // very simple approach: keep the radius
          double R = (m_camera.eye - m_pivot).length();
