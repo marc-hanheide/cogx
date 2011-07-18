@@ -91,12 +91,14 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
 {
    this->watchDef = watchDef;
    watchId = -1;
+   changeCount = 0;
    pConverter = NULL;
 
    // title#section=converter:path{masks}
    // title --> object on server
    // section --> object part on server, if supported by object type
-   boost::regex rxWatch ("\\s*(([\\w\\.]+)(#[\\w]+)?\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
+   //         '%c' in section will be replaced with a sequential number
+   boost::regex rxWatch ("\\s*(([\\w\\.]+)(#[\\w%]+)?\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
    boost::smatch res;
    boost::match_flag_type flags = boost::match_default;
 
@@ -337,6 +339,15 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 
       std::string section = pinfo->section;
       if (section == "") section = "FileMonitor";
+      else {
+         size_t pos = section.find ("%c");
+         if (pos != std::string::npos) {
+            char buf[32];
+            ++ pinfo->changeCount;
+            sprintf(buf, "%04ld", pinfo->changeCount);
+            section.replace(pos, 2, buf);
+         }
+      }
 
       if (pConv->command != "") {
          debug("Convert cmd: %s -> %s", pConv->command.c_str(), title.c_str());
@@ -548,7 +559,8 @@ public:
    }
    void installWatches() {}
    void pollWatches() {
-      m_pMonitor->sleepComponent(500);
+      m_pMonitor->println("DUMMY MONITOR");
+      m_pMonitor->sleepComponent(5000);
    }
    void releaseWatches() {}
 };
