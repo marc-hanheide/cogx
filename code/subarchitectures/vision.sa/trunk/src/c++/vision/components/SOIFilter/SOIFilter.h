@@ -18,6 +18,17 @@
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
+
+# if defined(HAS_LIBPLOT)
+#  include <CSvgPlotter.hpp>
+   // The same ID as in VirtualScene2D, part of the VirtualScene2D View
+#  define OBJ_VISUAL_OBJECTS "scene2d.VisualObjects"
+#  if 1
+#   define YY(y) -(y)
+#  else
+#   define YY(y) y
+#  endif
+# endif
 #endif
 
 #include <VisionData.hpp>
@@ -42,6 +53,40 @@
 namespace cast
 {
 
+//struct colorHLS {
+//  int h;
+//  float l;
+//  float s;
+//};
+
+/**
+ * status of SOI persistency
+ */
+enum SOIStatus {
+  CANDIDATE, // Used only in Y1
+  STABLE,
+  PROTOOBJECT,
+  OBJECT,
+  DELETED
+};
+
+/** 
+ * SOI data, contains also data used to evaluate SOI persistency
+ */	
+struct SOIData
+{
+  cdl::WorkingMemoryAddress addr;
+  SOIStatus status;
+  // 	VisionData::SurfacePointsSeq points;
+  int updCount;
+  std::string objId;
+  std::string sourceId;
+  cdl::CASTTime addTime;
+  cdl::CASTTime stableTime;
+  cdl::CASTTime objectTime;
+  cdl::CASTTime deleteTime;
+};
+
 class SOIPointCloudClient: public PointCloudClient
 {
   public:
@@ -65,16 +110,22 @@ private:
   std::string stereoServerName; /* PointCloudServer! */
   std::string ptzServerName;
 
+public:
   std::string m_coarsePcServer;  // periferial vision (eg. Kinect)
   std::string m_finePcServer;    // detailed vision (eg. stereo gear)
-  SOIPointCloudClient m_coarsePointCloud;
-  SOIPointCloudClient m_finePointCloud;
 
   /**
    * Identifiers of SOI sources. (plane pop-out)
    */
+public:
+#define SOURCE_FAKE_SOI   "--fake.soi"
   std::string m_coarseSource;  // periferial vision (eg. Kinect)
   std::string m_fineSource;    // detailed vision (eg. stereo gear)
+
+  SOIPointCloudClient m_coarsePointCloud;
+  SOIPointCloudClient m_finePointCloud;
+
+private:
   bool m_bSameSource;
 
   /**
@@ -85,6 +136,7 @@ private:
 
   bool doDisplay;
 
+public:
   /**
    * Segmentation tolerances for distance and hsl
    *(gaussian dispersion)
@@ -92,68 +144,9 @@ private:
   GraphCutSegmenter m_segmenter;
   Snapper m_snapper;
 
-#if 0
-  UNUSED
-  /**
-   * Time and update thresholds
-   *(part of the ROI persistency criteria)
-   */
-  unsigned timeThr;
-  int updateThr;
-#endif
-
-  /**
-   * status of SOI persistency
-   */
-  enum SOIStatus {
-    CANDIDATE, // Used only in Y1
-    STABLE,
-    PROTOOBJECT,
-    OBJECT,
-    DELETED
-  };
-
-  /** 
-   * SOI data, contains also data used to evaluate SOI persistency
-   */	
-  struct SOIData {
-    cdl::WorkingMemoryAddress addr;
-    SOIStatus status;
-    // 	VisionData::SurfacePointsSeq points;
-    int updCount;
-    std::string objId;
-    std::string sourceId;
-    cdl::CASTTime addTime;
-    cdl::CASTTime stableTime;
-    cdl::CASTTime objectTime;
-    cdl::CASTTime deleteTime;
-  };
-
-  struct colorHLS {
-    int h;
-    float l;
-    float s;
-  };
-
-  std::map<std::string, SOIData> SOIMap;
-
+private:
   std::deque<WmEvent*> m_EventQueue;
   IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
-
-  class WmTaskExecutor_Soi: public WmTaskExecutor
-  {
-  protected:
-    virtual void handle_add_soi(WmEvent *pEvent);
-    virtual void handle_delete_soi(WmEvent *pEvent);
-  public:
-    WmTaskExecutor_Soi(SOIFilter* soif) : WmTaskExecutor(soif) {}
-
-    virtual void handle(WmEvent *pEvent)
-    {
-      if (pEvent->change == cdl::ADD) handle_add_soi(pEvent);
-      else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
-    }
-  };
 
   // The planner/executor is responsible for the correct ordering of Analyze
   // and MoveToViewCone tasks. While an Analyze task is active, a
@@ -220,13 +213,15 @@ private:
     void onDialogValueChanged(const std::string& dialogId, const std::string& name, const std::string& value);
     void handleDialogCommand(const std::string& dialogId, const std::string& command, const std::string& params);
   };
-  CSfDisplayClient m_display;
   bool m_bShowProtoObjects;
   std::string m_sProtoObjectView;
   void sendSyncAllProtoObjects();
   void sendProtoObject(const cdl::WorkingMemoryAddress& addr, const VisionData::ProtoObjectPtr& pobj);
   void sendRemoveProtoObject(const cdl::WorkingMemoryAddress& addr);
+public:
+  CSfDisplayClient m_display;
 #endif
+private:
 #ifdef FEAT_GENERATE_FAKE_SOIS
   void addFakeSoi();
 #endif
@@ -245,14 +240,16 @@ public:
   // We don't keep all VO data locally! (see saveVisualObjectData)
   std::map<cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> m_visualObjects;
 
+  std::map<std::string, SOIData> SOIMap;
+
 public:
   VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
   cdl::WorkingMemoryAddress findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
-
-private:
+  void updateRobotPosePtz();
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
 
+private:
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
@@ -263,8 +260,13 @@ private:
   void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
   void onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
+  void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
+  void connectPtz();
+
   IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;
+
   // Use this as an anchor to define target view cones
+public:
   struct _RobotPose
   {
     double x;
@@ -279,8 +281,6 @@ private:
     }
   };
   _RobotPose m_RobotPose;
-  void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
-  void connectPtz();
 
 protected:
   /**
