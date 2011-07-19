@@ -10,6 +10,7 @@
 #include "GraphCutSegmenter.h"
 #include "Snapper.h"
 #include "../../VisionUtils.h"
+#include "TaskBase.h"
 
 #include <VideoClient.h>
 #include <PointCloudClient.h>
@@ -34,6 +35,7 @@
 #include <string>
 #include <queue>
 #include <map>
+
 
 #define FEAT_GENERATE_FAKE_SOIS
 
@@ -135,46 +137,8 @@ private:
 
   std::map<std::string, SOIData> SOIMap;
 
-  static long long g_order;
-  static IceUtil::Monitor<IceUtil::Mutex> g_OrderMonitor;
-  static long long getEventOrder()
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(g_OrderMonitor);
-    ++g_order;
-    return g_order;
-  }
-
-  enum {
-    TYPE_SOI = 1, TYPE_CMD_LOOK = 2, TYPE_CMD_ANALYZE = 3
-  };
-  struct WmEvent
-  {
-    int  objectType;
-    int  change; // One of cdl ADD, OVERWRITE, DELETE
-    long long order;
-    cdl::WorkingMemoryChange wmc;
-    WmEvent(int wmType, int changeType, const cdl::WorkingMemoryChange& _wmc)
-    {
-      objectType = wmType;
-      change = changeType;
-      wmc = _wmc;
-      order = SOIFilter::getEventOrder();
-    }
-  };
   std::deque<WmEvent*> m_EventQueue;
   IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
-
-  class WmTaskExecutor
-  {
-  protected:
-    SOIFilter* pSoiFilter;
-  public:
-    WmTaskExecutor(SOIFilter* soif)
-    {
-      pSoiFilter = soif;
-    }
-    virtual void handle(WmEvent *pEvent) = 0;
-  };
 
   class WmTaskExecutor_Soi: public WmTaskExecutor
   {

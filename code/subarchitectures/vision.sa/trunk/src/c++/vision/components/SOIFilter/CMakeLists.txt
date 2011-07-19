@@ -15,7 +15,8 @@ if(HAS_LIBPLOT)
 endif(HAS_LIBPLOT)
 
 # Set the sources.
-SET(SOURCES SOIFilter.cpp
+SET(SOURCES
+   SOIFilter.cpp TaskBase.cpp
    Snapper.cpp
    GraphCutSegmenter.cpp
    GCoptimization.cpp graph.cpp LinkedBlockList.cpp maxflow.cpp)

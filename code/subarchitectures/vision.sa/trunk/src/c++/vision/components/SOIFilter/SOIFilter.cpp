@@ -44,9 +44,6 @@ using namespace Video;
 
 using namespace boost::posix_time;
 
-long long SOIFilter::g_order = 0;
-IceUtil::Monitor<IceUtil::Mutex> SOIFilter::g_OrderMonitor;
-
 SOIFilter::SOIFilter()
 {
   m_segmenter.pPcClient = &m_finePointCloud;
@@ -661,7 +658,7 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
   double d;
   ProtoObjectPtr pBest;
   Vector3& p0 = psoi->boundingSphere.pos;
-  //log("Find PO near SOI (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
+  log("Find PO near SOI (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
 
   for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectPtr& pobj = itpo->second;
@@ -669,8 +666,8 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
     //   => we only compare robo-centric positions
     Vector3& p1 = pobj->position;
 
-    d = distSqr(p0, p1);
-    //log("PO %s (%.4lf, %.4lf, %.4lf): %.4lf", itpo->first.id.c_str(), p1.x, p1.y, p1.z, d);
+    d = dist(p0, p1);
+    log("PO %s (%.4lf, %.4lf, %.4lf): %.4lf", itpo->first.id.c_str(), p1.x, p1.y, p1.z, d);
     if (d < dmin) {
       dmin = d;
       pBest = pobj;
@@ -756,6 +753,12 @@ void SOIFilter::WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", soi.addr.id.c_str());
       // XXX: Do we update the PO with the new SOI?
       // XXX: The object recognizer should verify if this is the same object
+      return;
+    }
+
+    if (psoi->boundingSphere.pos.x < 0.6 && psoi->boundingSphere.pos.z < 0.5) {
+      pSoiFilter->log("SOI '%s' could be the Katana arm.", soi.addr.id.c_str());
+      // XXX: may be looking at the katana arm, ignore
       return;
     }
 
@@ -928,6 +931,11 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     cmd.fail();
     return;
   }
+  //catch (Ice::MarshalException){
+  //  pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject MarshalException. Aborting task.");
+  //  cmd.fail();
+  //  return;
+  //}
 
   /* Asynchronous call through a working memory entry.
    *
@@ -957,9 +965,9 @@ void SOIFilter::WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // psoi - The fine SOI that represents the proto object
   SOIPtr psoi = sois[0];
   double d, dmin;
-  dmin = distSqr(pobj->position, psoi->boundingSphere.pos);
+  dmin = dist(pobj->position, psoi->boundingSphere.pos);
   for (int i = 1; i < sois.size(); ++i) {
-    d = distSqr(pobj->position, sois[i]->boundingSphere.pos);
+    d = dist(pobj->position, sois[i]->boundingSphere.pos);
     if (d < dmin) {
       dmin = d;
       psoi = sois[i];
