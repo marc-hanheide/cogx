@@ -1,3 +1,8 @@
+/**
+ * @author Marko Mahnič
+ * @date July 2011
+ *
+ */
 
 #include "TaskMoveToViewCone.h"
 #include "SOIFilter.h"

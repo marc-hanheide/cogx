@@ -1,3 +1,8 @@
+/**
+ * @author Marko Mahnič
+ * @date July 2011
+ *
+ */
 
 #ifndef _SOIFILTER_TASKRECEIVESOI_H_
 #define _SOIFILTER_TASKRECEIVESOI_H_
