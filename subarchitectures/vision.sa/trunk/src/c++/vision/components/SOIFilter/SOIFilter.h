@@ -165,19 +165,6 @@ private:
     }
   };
 
-  class WmTaskExecutor_MoveToViewCone: public WmTaskExecutor
-  {
-  protected:
-    virtual void handle_add_task(WmEvent *pEvent);
-  public:
-    WmTaskExecutor_MoveToViewCone(SOIFilter* soif) : WmTaskExecutor(soif) {}
-
-    virtual void handle(WmEvent *pEvent)
-    {
-      if (pEvent->change == cdl::ADD) handle_add_task(pEvent);
-    }
-  };
-
   // An implementation of a RPC call through WM that completes on WM-overwrite.
   /*
    * A WorkingMemoryChangeReceiver should be created on the heap. We wait for
@@ -246,6 +233,8 @@ public:
   VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
   cdl::WorkingMemoryAddress findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
   void updateRobotPosePtz();
+  bool hasPtz() { return (ptzServer.get() != 0); }
+  bool movePtz(double pan, double tilt, double zoom=0);
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
 
