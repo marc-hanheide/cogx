@@ -29,6 +29,9 @@
 #   define YY(y) y
 #  endif
 # endif
+#else
+# include <opencv/cv.h>
+# include <opencv/highgui.h>
 #endif
 
 #include <VisionData.hpp>
@@ -37,8 +40,6 @@
 #include <cast/architecture/ManagedComponent.hpp>
 
 #include <IceUtil/IceUtil.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <algorithm>
@@ -148,45 +149,6 @@ private:
   std::deque<WmEvent*> m_EventQueue;
   IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
 
-  // The planner/executor is responsible for the correct ordering of Analyze
-  // and MoveToViewCone tasks. While an Analyze task is active, a
-  // MoveToViewCone should not be executed.
-
-  class WmTaskExecutor_Analyze: public WmTaskExecutor
-  {
-  protected:
-    virtual void handle_add_task(WmEvent *pEvent);
-  public:
-    WmTaskExecutor_Analyze(SOIFilter* soif) : WmTaskExecutor(soif) {}
-
-    virtual void handle(WmEvent *pEvent)
-    {
-      if (pEvent->change == cdl::ADD) handle_add_task(pEvent);
-    }
-  };
-
-  // An implementation of a RPC call through WM that completes on WM-overwrite.
-  /*
-   * A WorkingMemoryChangeReceiver should be created on the heap. We wait for
-   * it to complete then we remove the it from the change filter list with
-   * removeChangeFilter(*, cdl::DELETERECEIVER), but we DON'T DELETE it. It
-   * will be moved to a deletion queue by the framework and deleted later. */
-  class GetSoisCommandRcv:
-    public cast::WorkingMemoryChangeReceiver
-  {
-  protected:
-    SOIFilter* pSoiFilter;
-    bool m_complete;
-    IceUtil::Monitor<IceUtil::Mutex> m_CompletionMonitor;
-  public:
-    VisionData::GetStableSoisCommandPtr m_pcmd;
-  public:
-    GetSoisCommandRcv(SOIFilter* psoif, std::string component_id);
-    void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
-    bool waitForCompletion(double milliSeconds);
-    void getSois(std::vector<VisionData::SOIPtr>& sois);
-  };
- 
 private:
 #ifdef FEAT_VISUALIZATION
   class CSfDisplayClient: public cogx::display::CDisplayClient

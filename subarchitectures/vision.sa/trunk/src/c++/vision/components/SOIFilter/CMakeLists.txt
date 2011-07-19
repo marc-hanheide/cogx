@@ -17,7 +17,8 @@ endif(HAS_LIBPLOT)
 # Set the sources.
 SET(SOURCES
    SOIFilter.cpp
-   TaskBase.cpp TaskReceiveSoi.cpp TaskMoveToViewCone.cpp
+   TaskBase.cpp TaskReceiveSoi.cpp TaskMoveToViewCone.cpp TaskAnalyzePo.cpp
+   CmdGetSois.cpp
    Snapper.cpp
    GraphCutSegmenter.cpp
    GCoptimization.cpp graph.cpp LinkedBlockList.cpp maxflow.cpp)

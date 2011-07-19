@@ -1,3 +1,8 @@
+/**
+ * @author Marko Mahnič
+ * @date July 2011
+ *
+ */
 
 #include "TaskBase.h"
 #include <IceUtil/IceUtil.h>

@@ -1,3 +1,8 @@
+/**
+ * @author Marko Mahnič
+ * @date July 2011
+ *
+ */
 
 #include "TaskReceiveSoi.h"
 #include "SOIFilter.h"
