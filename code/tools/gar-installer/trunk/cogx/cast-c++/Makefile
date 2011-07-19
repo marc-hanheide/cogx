@@ -12,8 +12,7 @@ LIBDEPS =
 
 DEB_PACKAGES=\
 	liblog4cxx10-dev@ubuntu \
-        libzeroc-ice33-dev@ubuntu \
-        python-zeroc-ice@ubuntu
+        zeroc-ice33@ubuntu
 
 MFLAGS=$(MFLAGS_NUMCPU)
 
