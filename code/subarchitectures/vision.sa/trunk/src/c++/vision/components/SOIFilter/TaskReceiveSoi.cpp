@@ -2,7 +2,7 @@
 #include "TaskReceiveSoi.h"
 #include "SOIFilter.h"
 
-#include "../VisionUtils.h"
+#include "../../VisionUtils.h"
 #include <Video.hpp>
 #include <Math.hpp>
 

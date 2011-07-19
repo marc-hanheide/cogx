@@ -6,6 +6,7 @@
 
 #include "SOIFilter.h"
 #include "TaskReceiveSoi.h"
+#include "TaskMoveToViewCone.h"
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
@@ -574,6 +575,20 @@ void SOIFilter::updateRobotPosePtz()
   }
 }
 
+bool SOIFilter::movePtz(double pan, double tilt, double zoom)
+{
+  if (!ptzServer.get())
+    return false;
+
+  ptz::PTZReading ptup;
+  ptup.pose.pan = pan;
+  ptup.pose.tilt = tilt;
+  ptup.pose.zoom = zoom;
+  log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
+  ptzServer->setPose(ptup.pose);
+  return true;
+}
+
 void SOIFilter::runComponent()
 {
   WmTaskExecutor_Soi soiProcessor(this);
@@ -848,43 +863,6 @@ bool SOIFilter::GetSoisCommandRcv::waitForCompletion(double milliSeconds)
   m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
   return m_complete;
 }
-
-void SOIFilter::WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
-{
-  class CCmd:
-    public cogx::VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>
-  {
-  public:
-    CCmd(cast::WorkingMemoryReaderComponent* pReader)
-      : cogx::VisionCommandNotifier<MoveToViewConeCommand, MoveToViewConeCommandPtr>(pReader) {}
-  protected:
-    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
-    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
-  } cmd(pSoiFilter);
-
-  pSoiFilter->println("SOIFilter.MoveToViewConeCommand");
-
-  if (!cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("SOIFilter.move_to: MoveToViewConeCommand deleted while working.");
-    return;
-  }
-  pSoiFilter->debug("SOIFilter.move_to: GOT A MoveToViewConeCommand");
-
-  if (! pSoiFilter->ptzServer.get())
-    cmd.fail();
-  else {
-    // XXX: This command only moves the PTU, but should also move the robot
-    ptz::PTZReading ptup;
-    ViewConePtr pBetterVc = pSoiFilter->getMemoryEntry<VisionData::ViewCone>(cmd.pcmd->target->address);
-    ptup.pose.pan = pBetterVc->viewDirection - pBetterVc->anchor.z;
-    ptup.pose.tilt = pBetterVc->tilt;
-    ptup.pose.zoom = 0;
-    pSoiFilter->log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
-    pSoiFilter->ptzServer->setPose(ptup.pose);
-    cmd.succeed();
-  }
-}
-
 
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
