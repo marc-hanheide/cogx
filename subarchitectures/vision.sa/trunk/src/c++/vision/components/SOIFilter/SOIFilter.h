@@ -49,36 +49,24 @@
 #include <map>
 
 
-#define FEAT_GENERATE_FAKE_SOIS
-
 namespace cast
 {
-
-//struct colorHLS {
-//  int h;
-//  float l;
-//  float s;
-//};
 
 /**
  * status of SOI persistency
  */
 enum SOIStatus {
-  CANDIDATE, // Used only in Y1
-  STABLE,
-  PROTOOBJECT,
-  OBJECT,
-  DELETED
+  CANDIDATE, STABLE, PROTOOBJECT, OBJECT, DELETED
 };
 
 /** 
- * SOI data, contains also data used to evaluate SOI persistency
+ * SOI data, contains also data used to evaluate SOI persistency.
+ * Not important for Year 3 vision, this is now handled by PlanePopout.
  */	
 struct SOIData
 {
   cdl::WorkingMemoryAddress addr;
   SOIStatus status;
-  // 	VisionData::SurfacePointsSeq points;
   int updCount;
   std::string objId;
   std::string sourceId;
@@ -118,7 +106,6 @@ public:
   /**
    * Identifiers of SOI sources. (plane pop-out)
    */
-public:
 #define SOURCE_FAKE_SOI   "--fake.soi"
   std::string m_coarseSource;  // periferial vision (eg. Kinect)
   std::string m_fineSource;    // detailed vision (eg. stereo gear)
@@ -169,10 +156,6 @@ private:
   void sendRemoveProtoObject(const cdl::WorkingMemoryAddress& addr);
 public:
   CSfDisplayClient m_display;
-#endif
-private:
-#ifdef FEAT_GENERATE_FAKE_SOIS
-  void addFakeSoi();
 #endif
 
 private:

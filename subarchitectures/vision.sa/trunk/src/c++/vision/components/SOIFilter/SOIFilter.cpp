@@ -212,10 +212,6 @@ void SOIFilter::start()
     m_display.addAction(m_sProtoObjectView, act);
   }
 
-#ifdef FEAT_GENERATE_FAKE_SOIS
-  m_display.addButton(ID_OBJ_LAST_SEGMENTATION, "fake.soi", "&Fake SOI");
-#endif
-
   m_display.addDialog("PtuCtrl", res_ptucontroller_ui, res_ptucontroller_js, "PtuController ptuctrl");
 
 #else
@@ -289,11 +285,6 @@ void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event
     if (event.sourceId == "take.snapshot") {
       pFilter->m_snapper.saveSnapshot();
     }
-#ifdef FEAT_GENERATE_FAKE_SOIS
-    else if (event.sourceId == "fake.soi") {
-      pFilter->addFakeSoi();
-    }
-#endif
   }
   if (event.sourceId == IDC_SOIF_PROTOOBJECTS) {
     if (event.data == "0" || event.data=="") pFilter->m_bShowProtoObjects = false;
@@ -389,40 +380,6 @@ void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogI
       execInDialog(dialogId, ss.str());
     }
   }
-}
-#endif
-
-#ifdef FEAT_GENERATE_FAKE_SOIS
-void SOIFilter::addFakeSoi()
-{
-  VisionData::SOIPtr psoi = new VisionData::SOI;
-  psoi->sourceId = SOURCE_FAKE_SOI;
-  psoi->status = 0;
-  double x, y, z, r;
-  // SOURCE_FAKE_SOI coordinates are in % of image size (top-left = 0.0) , (bottom-right = 1.0)
-  x = 0.7; /* TODO rand */
-  y = 0.7; /* TODO rand */
-  z = 0.18;
-  r = 0.05;
-
-  psoi->boundingBox.pos.x = x;
-  psoi->boundingBox.pos.y = y;
-  psoi->boundingBox.pos.z = z;
-  psoi->boundingBox.size.x = r;
-  psoi->boundingBox.size.y = r;
-  psoi->boundingBox.size.z = r;
-
-  psoi->boundingSphere.pos.x = x;
-  psoi->boundingSphere.pos.y = y;
-  psoi->boundingSphere.pos.z = z;
-  psoi->boundingSphere.rad = r;
-
-  psoi->time = getCASTTime();
-  //obs->points = psIn1SOI;
-  //obs->BGpoints = BGpIn1SOI;
-  //obs->EQpoints = EQpIn1SOI;
-
-  addToWorkingMemory(newDataID(), psoi);
 }
 #endif
 

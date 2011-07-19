@@ -24,7 +24,9 @@ namespace cast {
  *      desired ViewCones
  *   2. If the SOI comes from fineSource, we need to know which PO it belongs
  *      to (SOI matching by position), then we update the PO and create the VO.
- * TODO: Decide how to process stuff when there is only a single source ...
+ * 
+ * When there is a single source, all SOIs come from this source: first through
+ * WM filters, then through the GetStableSoisCommand.
  */
 void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
@@ -146,11 +148,13 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
     pBetterVc->target = new cdl::WorkingMemoryPointer();
-    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId, pSoiFilter->getSubarchitectureID());
+    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId,
+        pSoiFilter->getSubarchitectureID());
     pBetterVc->target->type = cast::typeName<ProtoObject>();
 
     // Address at which new view cone will be stored
-    cdl::WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
+    cdl::WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),
+        pSoiFilter->getSubarchitectureID());
     // Write viewcone to memory
     pSoiFilter->addToWorkingMemory(vcAddr, pBetterVc);
 
@@ -166,17 +170,6 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // Now it is up to the planner to create a plan to move the robot
     // The task contains: PO, target VC
 
-    // Simulation of the plan:
-    // TODO: Post MovementTask(PO, VC)
-    //    class MoveToViewCone {
-    //      ViewCone target;
-    //      string reason;   // look-at-object; maybe enum instd of string
-    //      string objectId; // callers reference
-    //    }
-    //    - only control the PTU; use the difference of VC-thetas to get the angle
-    // onMovementTask_Complete (overwrite):
-    //    TODO: Post VisualAnalysisTask(PO)
-    //
     // Actual work performed here:
     //    onVisualAnalysisTask_Accepted: -- this is implemented in SOIF
     //       TODO: Remember the PO, the desired VC
