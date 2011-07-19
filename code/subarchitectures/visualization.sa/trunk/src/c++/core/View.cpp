@@ -311,7 +311,7 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
 // TODO: dawing multiple objects in 3D
 //    - all objects in a single scene (viewport = window)
 //    - multiple scenes side by side (different viewports); how would zoom work here?
-void CDisplayView::drawGL()
+void CDisplayView::drawGL(CGlTextWriter* pTextWriter)
 {
    CDisplayObject *pObject;
    CRenderer *pRender;
@@ -326,7 +326,7 @@ void CDisplayView::drawGL()
       if (!m_ObjectState.m_childState[pObject->m_id].m_bVisible) continue;
       pRender = pObject->getRenderer(ContextGL);
       if (pRender) {
-         pRender->draw(this, pObject, NULL);
+         pRender->draw(this, pObject, pTextWriter);
       }
    }
 }

@@ -350,6 +350,11 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
       if (!pPart) continue;
       if (!pState->m_childState[pPart->m_id].m_bVisible) continue;
       glPushMatrix();
+      if (pContext) {
+         // TODO: quick&dirty: pPart could reference m_pWriter through the owner (CLuaGlScript)
+         //CGlTextWriter *pWriter = (CGlTextWriter*) pContext;
+         //pWriter->renderText(0, 0, 0, "A", 1);
+      }
       pPart->exec();
       glPopMatrix();
    }

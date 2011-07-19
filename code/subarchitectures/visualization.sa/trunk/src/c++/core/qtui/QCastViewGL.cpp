@@ -334,6 +334,20 @@ void QCastViewGL::resizeGL(int width, int height)
    glMatrixMode(GL_MODELVIEW);
 }
 
+class CGlWidgetTextWriter: public cogx::display::CGlTextWriter
+{
+   QGLWidget* pWriter;
+public:
+   CGlWidgetTextWriter(QGLWidget* pWidget)
+   {
+      pWriter = pWidget;
+   }
+   void renderText(double x, double y, double z, const std::string& text, double size)
+   {
+      pWriter->renderText(x, y, z, QString::fromStdString(text));
+   }
+};
+
 void QCastViewGL::paintGL()
 {
    glEnable(GL_LIGHTING);
@@ -349,7 +363,8 @@ void QCastViewGL::paintGL()
       glRotatef(yRot, 0.0, 1.0, 0.0);
       glRotatef(zRot, 0.0, 0.0, 1.0);
 
-      pView->drawGL();
+      CGlWidgetTextWriter writer(this);
+      pView->drawGL(&writer);
    }
 }
 

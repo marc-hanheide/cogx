@@ -291,6 +291,12 @@ public:
    }
 };
 
+class CGlTextWriter
+{
+public:
+   virtual void renderText(double x, double y, double z, const std::string& text, double size) = 0;
+};
+
 // A view defines a set of objects to be displayed side by side.
 // It also defines the layout of the objects.
 class CDisplayView: public CGuiElementObserver
@@ -328,7 +334,7 @@ public:
    void getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered=false);
    CViewedObjectState* getObjectState(const std::string& id);
 
-   virtual void drawGL();
+   virtual void drawGL(CGlTextWriter* pTextWriter=0);
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
    virtual void drawScene(QGraphicsScene &scene);
