@@ -14,9 +14,9 @@ LIBDEPS = cogx/cast-c++
 
 DEB_PACKAGES=\
 	liblog4j1.2-java@ubuntu \
-        sun-java6-jdk@ubuntu \
+	default-jdk@ubuntu \
         ant@ubuntu \
-        libzeroc-ice3.3-java@ubuntu
+        zeroc-ice33@ubuntu
 	
 MFLAGS=$(MFLAGS_NUMCPU)
 

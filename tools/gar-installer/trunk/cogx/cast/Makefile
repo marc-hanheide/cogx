@@ -16,9 +16,6 @@ INSTALL_SCRIPTS =
 include ../../gar.extend.mk
 
 	
-
-
-	
-	
-
-
+clean2:
+	make -C ../cast-c++ clean
+	make -C ../cast-java clean
