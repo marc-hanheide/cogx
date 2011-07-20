@@ -138,6 +138,7 @@ void CLuaGlScript::CScript::initLuaState()
       loadScript(luacode_displist_lua);
       loadScript(luacode_models_lua);
       loadScript(luacode_camera_lua);
+      loadScript(luacode_glwriter_lua);
    }
 }
 
@@ -168,13 +169,15 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
    return -1;
 }
 
-int CLuaGlScript::CScript::exec()
+int CLuaGlScript::CScript::exec(CGlTextWriter *pWriter)
 {
 #if 0
    _stack.clear();
 #endif
    if (!luaS) return -1;
    // long long t0 = gethrtime();
+   lua_pushlightuserdata(luaS, pWriter);
+   lua_setglobal(luaS, "_v11n_glw_interface_");
    lua_getfield(luaS, LUA_GLOBALSINDEX, "render");
    int rv = lua_pcall(luaS, 0, 0, 0);
    //long long t1 = gethrtime();
@@ -350,12 +353,12 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
       if (!pPart) continue;
       if (!pState->m_childState[pPart->m_id].m_bVisible) continue;
       glPushMatrix();
-      if (pContext) {
-         // TODO: quick&dirty: pPart could reference m_pWriter through the owner (CLuaGlScript)
-         //CGlTextWriter *pWriter = (CGlTextWriter*) pContext;
-         //pWriter->renderText(0, 0, 0, "A", 1);
-      }
-      pPart->exec();
+      //if (pContext) {
+      //   // TODO: quick&dirty: pPart could reference m_pWriter through the owner (CLuaGlScript)
+      //   //CGlTextWriter *pWriter = (CGlTextWriter*) pContext;
+      //   //pWriter->renderText(0, 0, 0, "A", 1);
+      //}
+      pPart->exec((CGlTextWriter*)pContext);
       glPopMatrix();
    }
 }

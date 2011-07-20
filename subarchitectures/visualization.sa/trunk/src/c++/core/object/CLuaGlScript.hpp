@@ -39,7 +39,7 @@ class CLuaGlScript: public CDisplayObject
       CScript(CLuaGlScript* pOwner_);
       ~CScript();
       int loadScript(const char* pscript); 
-      int exec();
+      int exec(CGlTextWriter *pWriter);
    };
 
 public:

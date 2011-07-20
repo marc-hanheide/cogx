@@ -214,3 +214,13 @@ const char luacode_camera_lua[] =
    "end\n"
    ; // luacode_camera_lua
 
+// Generated from glwriter.lua
+const char luacode_glwriter_lua[] =
+   "\n"
+   "\n"
+   "\n"
+   "function showLabel(x, y, z, text, size)\n"
+   "   v11nGlw_RenderText(_v11n_glw_interface_, x, y, z, text, size)\n"
+   "end\n"
+   ; // luacode_glwriter_lua
+

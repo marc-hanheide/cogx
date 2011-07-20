@@ -1,6 +1,6 @@
 /*
 ** Lua binding: gl
-** Generated automatically by tolua++-1.0.93 on Mon Feb  7 11:27:23 2011.
+** Generated automatically by tolua++-1.0.93 on Wed Jul 20 12:46:09 2011.
 */
 
 #ifndef __cplusplus
