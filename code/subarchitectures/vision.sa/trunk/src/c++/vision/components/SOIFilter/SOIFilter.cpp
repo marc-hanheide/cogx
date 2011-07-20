@@ -673,6 +673,9 @@ cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(const cdl::WorkingMemor
 }
 
 
+
+
+
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
 
