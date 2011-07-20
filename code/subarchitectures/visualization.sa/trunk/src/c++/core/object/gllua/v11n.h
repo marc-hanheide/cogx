@@ -13,4 +13,6 @@ void v11nCamera_SetPosition(void* scriptObj, char* name,
       double xView, double yView, double zView, // camera direction
       double xUp, double yUp, double zUp);      // camera orientation
 
+void v11nGlw_RenderText(void* writerObject, double x, double y, double z, char* text, double size);
+
 #endif /* end of include guard: V11N_WWMWW49Q */

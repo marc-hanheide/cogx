@@ -3,7 +3,7 @@
 
 import os, sys
 outfile = "v11n_luacode.inc"
-infiles = ["displist.lua", "models.lua", "camera.lua"]
+infiles = ["displist.lua", "models.lua", "camera.lua", "glwriter.lua"]
 
 f = open(outfile, "w")
 
