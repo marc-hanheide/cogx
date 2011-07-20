@@ -14,6 +14,7 @@
 using namespace std;
 using namespace cogx::Math;
 using namespace Video;
+using namespace ptz;
 
 /**
  * The function called to create a new instance of our component.
@@ -51,31 +52,7 @@ void CameraMountTest::configure(const map<string,string> & _config)
 
 void CameraMountTest::start()
 {
-  std::string ptzServerHost = "localhost";
-  int ptzServerPort = cast::cdl::CPPSERVERPORT;
-
-  if (ptzServerComponent.length() > 0) {
-    cast::cdl::ComponentDescription desc =
-      getComponentManager()->getComponentDescription(ptzServerComponent);
-
-    ptzServerHost = desc.hostName;
-    ptzServerPort = cast::languageToPort(desc.language);
-  }
-
-  Ice::CommunicatorPtr ic = getCommunicator();
-
-  Ice::Identity id;
-  id.name = "PTZServer";
-  id.category = "PTZServer";
-
-  std::ostringstream str;
-  str << ic->identityToString(id) 
-    << ":default"
-    << " -h " << ptzServerHost
-    << " -p " << ptzServerPort;
-
-  Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-  m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+  m_PTUServer = getIceServer<PTZInterface>(ptzServerComponent);
 }
 
 void CameraMountTest::runComponent()
