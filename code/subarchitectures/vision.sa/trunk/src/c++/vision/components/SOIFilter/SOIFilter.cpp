@@ -143,7 +143,8 @@ void SOIFilter::configure(const map<string,string> & _config)
 
   m_bSameSource = m_coarseSource == m_fineSource;
 
-  ptzServerName = "";
+  //default value
+  ptzServerName = "ptz.server";
   if((it = _config.find("--ptzserver")) != _config.end())
   {
     ptzServerName = it->second;
@@ -154,33 +155,8 @@ void SOIFilter::configure(const map<string,string> & _config)
 #endif
 }
 
-void SOIFilter::connectPtz()
-{
-  std::string ptzServerHost = "localhost";
-  int ptzServerPort = cast::cdl::CPPSERVERPORT;
-
-  if (ptzServerName.length() > 0) {
-    cast::cdl::ComponentDescription desc =
-      getComponentManager()->getComponentDescription(ptzServerName);
-
-    ptzServerHost = desc.hostName;
-    ptzServerPort = cast::languageToPort(desc.language);
-  }
-
-  Ice::CommunicatorPtr ic = getCommunicator();
-
-  Ice::Identity id;
-  id.name = "PTZServer";
-  id.category = "PTZServer";
-
-  std::ostringstream str;
-  str << ic->identityToString(id) 
-    << ":default"
-    << " -h " << ptzServerHost
-    << " -p " << ptzServerPort;
-
-  Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-  ptzServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+void SOIFilter::connectPtz() {
+  ptzServer = getIceServer<ptz::PTZInterface>(ptzServerName);
 }
 
 #define IDC_SOIF_PROTOOBJECTS "popout.show.protoobjects"
