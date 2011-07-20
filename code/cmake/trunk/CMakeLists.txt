@@ -1,5 +1,16 @@
 cmake_minimum_required (VERSION 2.6)
 
+#
+# If the user specifies -DCMAKE_BUILD_TYPE on the command line, take their definition
+# and dump it in the cache along with proper documentation, otherwise set CMAKE_BUILD_TYPE
+# to Debug prior to calling PROJECT()
+#
+IF(DEFINED CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+ELSE()
+   SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+ENDIF()
+
 # ------------ <CCache> ------------
 if(USE_CCACHE)
 	set(CMAKE_CXX_COMPILER "ccache")
