@@ -27,7 +27,7 @@ INCLUDE  georgeY3-vision.incl
 # belief mediators, execution
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators.cast
-INCLUDE juggler.incl
+# INCLUDE juggler.incl
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -36,10 +36,11 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+# JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.components.RobotMediatorComponent --write-to-sa binder
+JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
 INCLUDE includes/motivation.sa/motivation.cast
 INCLUDE includes/motivation.sa/motivation-goals-george.cast
