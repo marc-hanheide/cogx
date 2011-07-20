@@ -74,13 +74,6 @@ namespace ptz {
     m_defaultZoom = m_ptzProxy->zoom;
   }
 
-  void 
-  PlayerPTZServer::start() {
-    //ensure generic server part is configured
-    PTZServer::start();
-
-  }
-
 
   PTZReading 
   PlayerPTZServer::getPose() {

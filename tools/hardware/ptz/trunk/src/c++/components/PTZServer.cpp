@@ -14,18 +14,13 @@ namespace ptz {
   }
   
 
-  PTZServer::PTZServer() : m_iceName("PTZServer"),
-			   m_icePort(cdl::CPPSERVERPORT) {
+  PTZServer::PTZServer()  {
   }
 
-  void PTZServer::setupIceServer() {
-    Ice::Identity id;
-    id.name = m_iceName;
-    id.category = "PTZServer";
-    getObjectAdapter()->add(new PTZServerI(this), id);
-  }
 
-  void PTZServer::start()  {
-    setupIceServer();
+  void PTZServer::configure(const std::map<std::string,std::string> & _config)  {
+	//setup ice server
+  	PTZInterfacePtr servant = new PTZServerI(this);
+  	registerIceServer<PTZInterface, PTZInterface>(servant);
   }
 }

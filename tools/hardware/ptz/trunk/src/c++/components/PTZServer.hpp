@@ -34,30 +34,14 @@ namespace ptz {
    * Server to provide access to a pan-tilt(-zoom) server.
    */
   class PTZServer : virtual public cast::CASTComponent {
-  private:
-    
-    /**
-     * Ice (servant) name for interface.
-     */
-    std::string m_iceName;
-
-    /**
-     * Ice port for interface.
-     */
-    int m_icePort;
-    
-    /**
-     * Create Ice interface.
-     */
-    void setupIceServer();
     
   public:
     PTZServer();
 
     virtual ~PTZServer() {}
     
-    virtual void start();
-    
+    virtual void configure(const std::map<std::string,std::string> & _config);
+
   protected:
 
     friend class PTZServerI;
