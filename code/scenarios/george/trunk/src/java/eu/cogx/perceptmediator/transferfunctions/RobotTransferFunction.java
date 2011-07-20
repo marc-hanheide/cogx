@@ -14,6 +14,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -29,6 +30,7 @@ public class RobotTransferFunction extends
 		DependentDiscreteTransferFunction<Robot, GroundedBelief> {
 
 	public static final String CURRENT_VIEWCONE_ID = "current-viewcone";
+	public static final String NO_VIEWCONE_CONSTANT = "no_viewcone";
 	static Logger logger = Logger.getLogger(RobotTransferFunction.class);
 
 	public RobotTransferFunction(ManagedComponent component,
@@ -52,6 +54,9 @@ public class RobotTransferFunction extends
 					WMPointer.create(vcBelAddr,
 							CASTUtils.typeName(GroundedBelief.class))
 							.getAsFormula());
+		}
+		else {
+			result.put(CURRENT_VIEWCONE_ID, PropositionFormula.create(NO_VIEWCONE_CONSTANT).getAsFormula());
 		}
 		return result;
 	}
