@@ -3,8 +3,15 @@
  */
 package vision.execution.george;
 
+import java.util.Map;
+
+import ptz.PTZInterface;
+import ptz.PTZInterfacePrx;
+import ptz.PTZReading;
+import NavData.RobotPose2d;
 import VisionData.AnalyzeProtoObjectCommand;
 import VisionData.MoveToViewConeCommand;
+import VisionData.ViewCone;
 import VisionData.VisionCommandStatus;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
@@ -12,10 +19,14 @@ import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
+import cogx.Math.Vector3;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.Robot;
@@ -38,6 +49,11 @@ public class VisionActionInterface extends ManagedComponent {
 	private LocalActionStateManager m_actionStateManager;
 
 	private WorkingMemoryAddress m_viewStateAddress;
+
+	private String m_ptzServerComponent;
+
+	//determine whether to fake the robot pose
+	private boolean m_fakeRobotPose;
 
 	public static class MoveToViewConeExecutor
 			extends
@@ -129,9 +145,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 				WorkingMemoryPointer protoObjPtr = ((VisionActionInterface) getComponent())
 						.getFirstAncestorOfBelief(getAction().beliefAddress);
-				
-				
-				
+
 				if (protoObjPtr == null) {
 					getComponent()
 							.getLogger()
@@ -139,7 +153,10 @@ public class VisionActionInterface extends ManagedComponent {
 									getComponent().getLogAdditions());
 					executionComplete(TriBool.TRIFALSE);
 				} else {
-					log("belief addr " + CASTUtils.toString(getAction().beliefAddress) + " yielded PO addr " + CASTUtils.toString(protoObjPtr.address));
+					log("belief addr "
+							+ CASTUtils.toString(getAction().beliefAddress)
+							+ " yielded PO addr "
+							+ CASTUtils.toString(protoObjPtr.address));
 					AnalyzeProtoObjectCommand cmd = new AnalyzeProtoObjectCommand();
 					cmd.protoObjectAddr = protoObjPtr.address;
 					cmd.status = VisionCommandStatus.VCREQUESTED;
@@ -200,6 +217,16 @@ public class VisionActionInterface extends ManagedComponent {
 	// }
 
 	@Override
+	protected void configure(Map<String, String> _config) {
+		m_ptzServerComponent = _config.get("--ptzserver");
+		if (m_ptzServerComponent == null) {
+			m_ptzServerComponent = "ptz.server";
+		}
+		
+		m_fakeRobotPose = _config.containsKey("--fake-pose");
+	}
+
+	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
 
@@ -211,17 +238,71 @@ public class VisionActionInterface extends ManagedComponent {
 				new ComponentActionFactory<AnalyzeProtoObjectExecutor>(this,
 						AnalyzeProtoObjectExecutor.class));
 
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(RobotPose2d.class),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+
+						boolean success = createInitialView(_wmc.address);
+						if (success) {
+							removeChangeFilter(this);
+						}
+					}
+				});
+
 	}
 
+	private static ViewCone createViewConeFromPosition(RobotPose2d _pose,
+			PTZReading _ptz) {
+		ViewCone vc = new ViewCone();
+		vc.anchor = new Vector3(_pose.x, _pose.y, _pose.theta);
+		vc.x = 0;
+		vc.y = 0;
+		vc.viewDirection = _pose.theta + _ptz.pose.pan;
+		vc.tilt = _ptz.pose.tilt;
+		vc.target = null;
+		return vc;
+	}
+
+	/**
+	 * Creates a ViewCone from the robot's current position and uses records it
+	 * as the current active viewcone.
+	 * 
+	 * @param _poseAddr
+	 * @return
+	 * @throws CASTException
+	 */
+	private boolean createInitialView(WorkingMemoryAddress _poseAddr)
+			throws CASTException {
+		PTZInterfacePrx ptz = getIceServer(m_ptzServerComponent,
+				PTZInterface.class, PTZInterfacePrx.class);
+		if (ptz != null) {
+			PTZReading currentPTZPose = ptz.getPose();
+			RobotPose2d currentRobotPose = getMemoryEntry(_poseAddr,
+					RobotPose2d.class);
+			ViewCone vc = createViewConeFromPosition(currentRobotPose,
+					currentPTZPose);
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+			addToWorkingMemory(wma, vc);
+			recordCurrentViewCone(new WorkingMemoryPointer(wma, CASTUtils.typeName(vc)));
+		}
+		return false;
+	}
+	
 	@Override
 	protected void runComponent() {
-		lockComponent();
-		try {
-			recordCurrentViewCone(null);
-		} catch (CASTException e) {
-			logException(e);
+		if(m_fakeRobotPose) {
+			getLogger().warn("Faking robot pose. Don't use when real robot poses are being generated");
+			RobotPose2d pose = new RobotPose2d(getCASTTime(), 0, 0, 0, null);
+			try {
+				addToWorkingMemory(newDataID(), pose);
+			} catch (AlreadyExistsOnWMException e) {
+				logException(e);
+			}
 		}
-		unlockComponent();
 	}
 
 }
