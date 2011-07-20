@@ -22,6 +22,7 @@ GetSoisCommandRcv::GetSoisCommandRcv(SOIFilter* psoif, std::string component_id)
   pSoiFilter = psoif;
   m_pcmd = new GetStableSoisCommand();
   m_pcmd->componentId = component_id;
+  m_pcmd->status = VisionData::VCREQUESTED;
   string id = pSoiFilter->newDataID();
   pSoiFilter->addChangeFilter(createIDFilter(id, cdl::OVERWRITE), this);  
   pSoiFilter->addToWorkingMemory(id, m_pcmd);  
