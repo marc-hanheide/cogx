@@ -333,6 +333,11 @@ void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const Vis
     << pobj->position.y << ","
     << pobj->position.z << ")\n";
   ss << "StdModel:box(0.05,0.05,0.05)\n";
+  if (bHasVo)
+    ss << "glColor(0.0, 1.0, 0.0)\n";
+  else
+    ss << "glColor(0.2, 0.2, 0.2)\n";
+  ss << "showLabel(0, 0, 0.06, 'PO:" << addr.id << "', 12);\n";
   ss << "glPopMatrix()\n";
   ss << "end\n";
   m_display.setLuaGlObject(m_sProtoObjectView, ID_PART_3D_PO + addr.id, ss.str());
