@@ -15,6 +15,7 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
+import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.Robot;
@@ -128,6 +129,9 @@ public class VisionActionInterface extends ManagedComponent {
 
 				WorkingMemoryPointer protoObjPtr = ((VisionActionInterface) getComponent())
 						.getFirstAncestorOfBelief(getAction().beliefAddress);
+				
+				
+				
 				if (protoObjPtr == null) {
 					getComponent()
 							.getLogger()
@@ -135,7 +139,7 @@ public class VisionActionInterface extends ManagedComponent {
 									getComponent().getLogAdditions());
 					executionComplete(TriBool.TRIFALSE);
 				} else {
-					println("addeing APOC");
+					log("belief addr " + CASTUtils.toString(getAction().beliefAddress) + " yielded PO addr " + CASTUtils.toString(protoObjPtr.address));
 					AnalyzeProtoObjectCommand cmd = new AnalyzeProtoObjectCommand();
 					cmd.protoObjectAddr = protoObjPtr.address;
 					cmd.status = VisionCommandStatus.VCREQUESTED;
