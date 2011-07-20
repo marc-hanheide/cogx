@@ -38,9 +38,6 @@ namespace ptz {
     virtual void 
     configure(const std::map<std::string,std::string> & _config);
 
-    virtual void start();
-
-
   public:
     PlayerPTZServer();
     

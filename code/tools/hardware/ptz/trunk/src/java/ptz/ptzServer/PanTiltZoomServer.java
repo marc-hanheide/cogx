@@ -6,11 +6,10 @@ import org.apache.log4j.Logger;
 
 import ptz.GetPTZPoseCommand;
 import ptz.PTZCompletion;
+import ptz.PTZInterface;
 import ptz.PTZInterfacePrx;
-import ptz.PTZInterfacePrxHelper;
 import ptz.PTZPose;
 import ptz.SetPTZPoseCommand;
-import Ice.Identity;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -23,6 +22,8 @@ public class PanTiltZoomServer extends ManagedComponent {
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private PTZInterfacePrx ptzInterface = null;
+
+	private String ptzServerComponent;
 
 	private void addPanTiltCommandListener() {
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
@@ -56,8 +57,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 	}
 
 	private double ptzPosError(PTZPose pos1, PTZPose pos2) {
-		return Math.abs(pos1.pan - pos2.pan)
-				+ Math.abs(pos1.tilt - pos2.tilt) 
+		return Math.abs(pos1.pan - pos2.pan) + Math.abs(pos1.tilt - pos2.tilt)
 				+ Math.abs(pos1.zoom - pos2.zoom);
 	}
 
@@ -108,22 +108,13 @@ public class PanTiltZoomServer extends ManagedComponent {
 	protected void configure(Map<String, String> config) {
 
 		if (config.containsKey("--testGUI")) {
-			new PanTiltZoomGUI(this);		
+			new PanTiltZoomGUI(this);
 		}
 
-		Ice.Communicator ic = Ice.Util.initialize();
-
-		Identity id = new Identity();
-		id.name = "PTZServer";
-		id.category = "PTZServer";
-
-		String path = ic.identityToString(id) + ":default -h localhost -p "
-				+ cast.cdl.CPPSERVERPORT.value;
-
-		Ice.ObjectPrx init = ic.stringToProxy(path);
-		ptzInterface = PTZInterfacePrxHelper.uncheckedCast(init);
-
-
+		ptzServerComponent = config.get("--ptzserver");
+		if (ptzServerComponent == null) {
+			ptzServerComponent = "ptz.server";
+		}
 
 	}
 
@@ -132,6 +123,11 @@ public class PanTiltZoomServer extends ManagedComponent {
 	 */
 	@Override
 	protected void start() {
+		try {
+			ptzInterface = getIceServer(ptzServerComponent, PTZInterface.class, PTZInterfacePrx.class);
+		} catch (CASTException e) {
+			throw new RuntimeException("failed to get ptz interface",e);
+		}
 		addPanTiltCommandListener();
 	}
 
