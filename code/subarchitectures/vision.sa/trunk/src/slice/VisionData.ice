@@ -303,7 +303,7 @@ enum VisionCommandStatus {
     // equivocal points which either belongs to fg or bg
     PointCloud::SurfacePointSeq EQpoints;
     //nah: what is this for? what are the possible values?
-	int status;
+    int status;
   };
   sequence<SOI> SOISeq;
 
@@ -319,9 +319,11 @@ enum VisionCommandStatus {
 
   class VisualLearnerRecognitionTask {
     // REQUEST:
-    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+    cast::cdl::WorkingMemoryPointer protoObjectAddr;
 
     // RESPONSE
+    VisionCommandStatus status;
+
     StringSeq labels;
     IntSeq labelConcepts;
     DoubleSeq distribution;
@@ -334,14 +336,18 @@ enum VisionCommandStatus {
   // (review2010): processed by VisualLearner
   class AffordanceRecognitionTask {
     // REQUEST:
-    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+    cast::cdl::WorkingMemoryPointer protoObjectAddr;
 
     // RESPONSE
+    VisionCommandStatus status;
+
     string affordance;
   };
 
   class VisualLearningTask {
-    string visualObjectId;
+    // REQUEST:
+    //string visualObjectId; replaced by visualObjectAddr
+    cast::cdl::WorkingMemoryPointer visualObjectAddr;
     string beliefId;
 
     // superConcept: color, shape, type; maybe also shape3D
@@ -349,6 +355,9 @@ enum VisionCommandStatus {
     // concepts: red, compact, box
     StringSeq labels;
     DoubleSeq weights;
+
+    // RESPONSE
+    VisionCommandStatus status;
   };
 
   class VisualConceptModelStatus {

@@ -95,6 +95,7 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const WorkingMemoryAddress &protoO
 {
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
+   ptask->status = VCREQUESTED;
    ptask->protoObjectAddr = protoObjectAddr;
 
    string reqId(newDataID());
@@ -105,6 +106,7 @@ void ObjectAnalyzer::start_AL_AffordanceTask(const WorkingMemoryAddress &protoOb
 {
    log("Adding new AffordanceRecognitionTask");
    AffordanceRecognitionTaskPtr ptask = new AffordanceRecognitionTask();
+   ptask->status = VCREQUESTED;
    ptask->protoObjectAddr = protoObjectAddr;
 
    string reqId(newDataID());

@@ -51,7 +51,10 @@ void CTestCase_Standalone::issueRequest()
 
    m_pOwner->println("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectAddr = addr;
+   ptask->status = VCREQUESTED;
+   ptask->protoObjectAddr = new cdl::WorkingMemoryPointer();
+   ptask->protoObjectAddr->type = cast::typeName<ProtoObject>();
+   ptask->protoObjectAddr->address = addr;
 
    string reqId(m_pOwner->newDataID());
    m_pOwner->addToWorkingMemory(reqId, ptask);
@@ -184,10 +187,13 @@ void CTestCase_Learning::performLearningStep(int issued, string protoId)
    if (issued == 1 || issued == 3 || issued == 5) {
       m_pOwner->log("STEP %d: RECOGNITION", issued);
       VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
+      ptask->status = VCREQUESTED;
       cdl::WorkingMemoryAddress addr;
       addr.subarchitecture = string(m_pOwner->getSubarchitectureID());
       addr.id = protoId;
-      ptask->protoObjectAddr = addr;
+      ptask->protoObjectAddr = new cdl::WorkingMemoryPointer();
+      ptask->protoObjectAddr->type = cast::typeName<ProtoObject>();
+      ptask->protoObjectAddr->address = addr;
 
       string reqId(m_pOwner->newDataID());
       m_pOwner->addToWorkingMemory(reqId, ptask);
