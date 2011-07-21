@@ -16,7 +16,6 @@ import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -30,12 +29,19 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.BeliefAncestorMatchingF
 public class ViewConeTransferFunction extends
 		DependentDiscreteTransferFunction<ViewCone, GroundedBelief> {
 
-	public static final String VIEW_CONE_ID = "view-cone-id";
 	static Logger logger = Logger.getLogger(ViewConeTransferFunction.class);
+
+//	private final WMView<ViewCone> m_allCones;
 
 	public ViewConeTransferFunction(ManagedComponent component,
 			WMView<GroundedBelief> allBeliefs) {
 		super(component, allBeliefs, logger, GroundedBelief.class);
+//		m_allCones = WMView.create(component, ViewCone.class);
+//		try {
+//			m_allCones.start();
+//		} catch (UnknownSubarchitectureException e) {
+//			logger.error("Can't start WMView", e);
+//		}
 	}
 
 	@Override
@@ -43,23 +49,24 @@ public class ViewConeTransferFunction extends
 			WorkingMemoryChange wmc, ViewCone from)
 			throws InterruptedException, BeliefException {
 
-		logger.debug("trying to resolve the belief produced from  "
-				+ CASTUtils.toString(from.target.address));
-		
-		// resolve the address of the proto object this cone targets
-		WorkingMemoryAddress poBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
-				from.target));
-
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
-		result.put(VIEW_CONE_ID, PropositionFormula.create(wmc.address.id)
-				.getAsFormula());
+		if (from.target != null) {
 
-		//pointer to belief for proto object
-		result.put(
-				"target-object",
-				WMPointer.create(poBelAddr,
-						CASTUtils.typeName(GroundedBelief.class)).getAsFormula());
+			logger.debug("trying to resolve the belief produced from  "
+					+ CASTUtils.toString(from.target.address));
+
+			// resolve the address of the proto object this cone targets
+			WorkingMemoryAddress poBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
+					from.target));
+
+			// pointer to belief for proto object
+			result.put(
+					"target-object",
+					WMPointer.create(poBelAddr,
+							CASTUtils.typeName(GroundedBelief.class))
+							.getAsFormula());
+		}
 
 		result.put("anchor-x", DoubleFormula.create(from.anchor.x)
 				.getAsFormula());

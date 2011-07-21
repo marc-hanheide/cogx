@@ -463,6 +463,7 @@ enum VisionCommandStatus {
     // (maybe it would be enough to use panDelta and tiltDelta instead of a ViewCone)
     cast::cdl::WorkingMemoryPointer whereToLook;
 
+
     // the result passed on overwrite
     VisionCommandStatus status;
   };
@@ -513,6 +514,9 @@ enum VisionCommandStatus {
 
     // segmented planar surface patches
     SurfacePatchSeq surfacePatches;
+
+	// The visual object created from this PO. size() == 0 if none created yet, otherwise size() == 1
+	WorkingMemoryPointerSeq	visualObject;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
