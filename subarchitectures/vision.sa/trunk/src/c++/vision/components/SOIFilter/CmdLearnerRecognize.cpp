@@ -21,6 +21,7 @@ LearnerRecognitionTaskRcv::LearnerRecognitionTaskRcv(SOIFilter* psoif,
   const cast::cdl::WorkingMemoryAddress& visualObjectAddr)
 {
   m_complete = false;
+  m_bDelete = false;
   pSoiFilter = psoif;
   m_pcmd = new VisualLearnerRecognitionTask();
   m_pcmd->status = VisionData::VCREQUESTED;
@@ -31,7 +32,6 @@ LearnerRecognitionTaskRcv::LearnerRecognitionTaskRcv(SOIFilter* psoif,
   string id = pSoiFilter->newDataID();
   pSoiFilter->addChangeFilter(createIDFilter(id, cdl::OVERWRITE), this);  
   pSoiFilter->addToWorkingMemory(id, m_pcmd);  
-  m_bDelete = false;
 }
 
 void LearnerRecognitionTaskRcv::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc)
@@ -48,10 +48,9 @@ void LearnerRecognitionTaskRcv::workingMemoryChanged(const cast::cdl::WorkingMem
   }
 
   m_complete = true;
-  // pSoiFilter->debug("GetSoisCommand: NOTIFYING waitForCompletion.");
   m_CompletionMonitor.notify(); // works only if m_CompletionMonitor is locked here
   if (m_bDelete) {
-    // XXX WARNING: this may delete the instance before waitForCompletion gets executed.
+    // This could delete the instance before waitForCompletion wakes up.
     // For this reason there is an assertion in waitForCompletion.
     pSoiFilter->removeChangeFilter(this, cdl::DELETERECEIVER);
   }
@@ -64,7 +63,6 @@ bool LearnerRecognitionTaskRcv::waitForCompletion(double milliSeconds)
 
   if (m_complete) return true;
   m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
-  // pSoiFilter->debug("GetSoisCommand: waitForCompletion WOKE UP.");
   return m_complete;
 }
 
