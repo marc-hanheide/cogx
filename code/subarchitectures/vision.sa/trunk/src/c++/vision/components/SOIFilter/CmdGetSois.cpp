@@ -30,19 +30,19 @@ GetSoisCommandRcv::GetSoisCommandRcv(SOIFilter* psoif, std::string component_id)
 
 void GetSoisCommandRcv::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
-    try {
-      GetStableSoisCommandPtr pcmd = pSoiFilter->getMemoryEntry<GetStableSoisCommand>(_wmc.address);
-      m_pcmd = pcmd;
-    }
-    catch (...) {
-      pSoiFilter->debug("SOIFilter.GetSoisCommand: Failed to get the results.");
-      m_pcmd->status = VisionData::VCFAILED; /* complete, but failed */
-    }
-    m_complete = true;
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
+  try {
+    GetStableSoisCommandPtr pcmd = pSoiFilter->getMemoryEntry<GetStableSoisCommand>(_wmc.address);
+    m_pcmd = pcmd;
   }
-  m_CompletionMonitor.notify();
+  catch (...) {
+    pSoiFilter->debug("GetSoisCommand: Failed to get the results.");
+    m_pcmd->status = VisionData::VCFAILED; /* complete, but failed */
+  }
+
+  m_complete = true;
+  // pSoiFilter->debug("GetSoisCommand: NOTIFYING waitForCompletion.");
+  m_CompletionMonitor.notify(); // works only if m_CompletionMonitor is locked here
 }
 
 void GetSoisCommandRcv::getSois(std::vector<VisionData::SOIPtr>& sois)
@@ -55,6 +55,7 @@ bool GetSoisCommandRcv::waitForCompletion(double milliSeconds)
   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_CompletionMonitor);
   if (m_complete) return true;
   m_CompletionMonitor.timedWait(IceUtil::Time::milliSeconds(milliSeconds));
+  // pSoiFilter->debug("GetSoisCommand: waitForCompletion WOKE UP.");
   return m_complete;
 }
 

@@ -366,49 +366,39 @@ void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogI
 
 void SOIFilter::onAdd_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::ADD, _wmc));
-  }
-  m_EventQueueMonitor.notify();
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::ADD, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
 void SOIFilter::onDelete_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::DELETE, _wmc));
-  }
-  m_EventQueueMonitor.notify();
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::DELETE, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
 void SOIFilter::onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
-  }
-  m_EventQueueMonitor.notify();
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
 void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("RECEIVED: MoveToViewConeCommand %s", _wmc.address.id.c_str());
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
-  }
-  m_EventQueueMonitor.notify();
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
 void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("RECEIVED: AnalyzeProtoObjectCommand %s", _wmc.address.id.c_str());
-  {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-    m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
-  }
-  m_EventQueueMonitor.notify();
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
 
@@ -654,10 +644,6 @@ cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(const cdl::WorkingMemor
 
   return cdl::WorkingMemoryAddress();
 }
-
-
-
-
 
 } // namespace
 /* vim:set fileencoding=utf-8 sw=2 ts=8 et:vim */
