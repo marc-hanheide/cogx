@@ -18,7 +18,7 @@ endif(HAS_LIBPLOT)
 SET(SOURCES
    SOIFilter.cpp
    TaskBase.cpp TaskReceiveSoi.cpp TaskMoveToViewCone.cpp TaskAnalyzePo.cpp
-   CmdGetSois.cpp
+   CmdGetSois.cpp CmdLearnerRecognize.cpp
    Snapper.cpp
    GraphCutSegmenter.cpp
    GCoptimization.cpp graph.cpp LinkedBlockList.cpp maxflow.cpp)

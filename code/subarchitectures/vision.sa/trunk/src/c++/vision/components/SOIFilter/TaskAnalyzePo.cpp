@@ -7,6 +7,7 @@
 #include "TaskAnalyzePo.h"
 #include "SOIFilter.h"
 #include "CmdGetSois.h"
+#include "CmdLearnerRecognize.h"
 
 #include "../../VisionUtils.h"
 
@@ -97,6 +98,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
   {
     pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);
+
   } // TODO: else: do we fail if segmentObject failed?
 
 
@@ -119,9 +121,13 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     }
     catch(cast::DoesNotExistOnWMException){
       pSoiFilter->debug("analyze_task: VisualObject deleted while working.");
-      return;
+      return; // TODO: fail? succeed? overwrite?
     }
   }
+
+  // Start other recognition tasks
+  LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
+  pTask->deleteOnCompletion();
 
   cmd.succeed();
 }
