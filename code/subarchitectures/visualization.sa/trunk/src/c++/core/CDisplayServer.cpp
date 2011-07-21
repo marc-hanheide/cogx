@@ -624,12 +624,19 @@ void CDisplayServer::addDialog(const Ice::Identity& ident, const std::string& di
       pDialog = 0;
    }
 
-   if (pDialog)
+   if (pDialog) {
       pDialog->Observers.addObserver(this);
+      bool bFound = false;
+      for (int i = 0; !bFound && i < pDialog->m_dataOwners.size(); i++) {
+         if (pDialog->m_dataOwners[i] == ident)
+            bFound = true;
+      }
 
-   // TODO: push_back only if ident not in m_dataOwner AND all the other fields have the same value
-   // as the primary dialog!
-   pDialog->m_dataOwners.push_back(ident);
+      // TODO: push_back only if ident not in m_dataOwner AND all the other parameters have the same value
+      // as the primary dialog!
+      if (! bFound)
+         pDialog->m_dataOwners.push_back(ident);
+   }
 }
 
 void CDisplayServer::execInDialog(const std::string& dialogId, const std::string& scriptCode)
