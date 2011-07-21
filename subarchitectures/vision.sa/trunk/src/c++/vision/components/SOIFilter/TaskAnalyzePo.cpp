@@ -125,6 +125,9 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     }
   }
 
+  pobj->visualObject.push_back(new cdl::WorkingMemoryPointer(voAddr,cast::typeName<VisualObject>()));
+  pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
+
   // Start other recognition tasks
   LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
   pTask->deleteOnCompletion();
