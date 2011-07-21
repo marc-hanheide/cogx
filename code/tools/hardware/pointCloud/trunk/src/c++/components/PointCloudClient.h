@@ -15,6 +15,7 @@
 #include <map>
 #include <cv.h>
 #include <cast/core/CASTComponent.hpp>
+#include "Math.hpp"
 #include "PointCloud.hpp"
 
 namespace cast
@@ -52,6 +53,7 @@ public:
   void getRangePoints(Laser::Scan2d &KRdata);
   void getDisparityImage(int imgWidth, Video::Image& image);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);
+  bool isPointInViewCone(const cogx::Math::Vector3&);
 };
 
 }

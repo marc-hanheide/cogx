@@ -100,11 +100,15 @@ bool PointCloudServerI::getCameraParameters(Ice::Int side, Video::CameraParamete
   return ptCloudSrv->getCameraParameters(side, cam);
 }
 
+bool PointCloudServerI::isPointInViewCone(const cogx::Math::Vector3& point, const Ice::Current&)
+{
+  return ptCloudSrv->isPointInViewCone(point);
+}
+
 void PointCloudServerI::getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&)
 {
   ptCloudSrv->getRangePoints(KRdata);
 }
-
 
 /// ************** Point Cloud Server ************** ///
 PointCloudServer::PointCloudServer()
