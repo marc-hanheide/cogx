@@ -419,7 +419,6 @@ bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
    VisualObjectPtr pVisObj;
    try{
       pVisObj = getMemoryEntry<VisualObject>(addr);
-      addr.id = pVisObj->protoObjectID;
    }
    catch(cast::DoesNotExistOnWMException){
       log("VisualLearner.updateAttr: VisualObject %s deleted while working...", descAddr(addr).c_str());
@@ -428,7 +427,14 @@ bool VisualLearner::updateModel(VisualLearningTaskPtr _pTask)
 
    ProtoObjectPtr pProtoObj;
    try{
-      pProtoObj = getMemoryEntry<ProtoObject>(addr);
+      cdl::WorkingMemoryPointerPtr pomp = pVisObj->protoObject;
+      if (pomp->type == cast::typeName<ProtoObject>()) {
+         pProtoObj = getMemoryEntry<ProtoObject>(pomp->address);
+      }
+      if (! pProtoObj.get()) {
+         log("VisualLearner.updateAttr: VisualObject is not visible (protoObject not specified)");
+         return false;
+      }
    }
    catch(cast::DoesNotExistOnWMException){
       log("VisualLearner.updateAttr: ProtoObject %s deleted while working...", descAddr(addr).c_str());
