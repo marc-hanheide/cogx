@@ -40,6 +40,8 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     return;
   }
 
+  pSoiFilter->println("Handle SOI %s", pEvent->wmc.address.id.c_str());
+
   pSoiFilter->updateRobotPosePtz();
 
   SOIData soi;
