@@ -13,6 +13,12 @@
 
 #from extserver import Server
 
+def selectDebugCommand(basename, serverInfo):
+    debug = serverInfo.getProperty("DEBUGGER")
+    debug = debug != None and debug.value == "Yes"
+    if debug: return "${%s_DEBUG}" % basename
+    else: return "${%s}" % basename
+
 # TODO: Fix castcontrol to properly run the processes. Only group='A' works as it should.
 cleanup = Server("Cleanup", server=False, label="Cleanup shell script (bash)") #, group='B')
 cleanup.filenameField("SCRIPT", label="Script", filter="SH Files (*.sh);;All files (*)", allowEmpty=True)
@@ -20,7 +26,18 @@ cleanup.setCommand("bash [SCRIPT]")
 
 
 disp=Server("Display", label="Standalone Display Server")
-disp.setCommand("${COGX_ROOT}/output/bin/display-server")
+disp.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+disp.setVar("CMD_DISPLAY_SERVER", "output/bin/display-server")
+disp.setVar("CMD_DISPLAY_SERVER_DEBUG", "${CMD_DISPLAY_SERVER}")
+disp.setCommand("[COMMAND]")
+#disp.setCommand("${COGX_ROOT}/output/bin/display-server")
+
+def displayParamProcessor(name, value, serverInfo):
+    if name == "COMMAND":
+        return selectDebugCommand("CMD_DISPLAY_SERVER", serverInfo)
+    return value
+
+disp.setParamProcessor(displayParamProcessor)
 
 
 gazebo = Server("Gazebo", label="Gazebo")
