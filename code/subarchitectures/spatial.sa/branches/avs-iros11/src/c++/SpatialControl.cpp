@@ -141,6 +141,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_lgmK = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
   if (m_UsePointCloud) {
     m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
@@ -372,6 +373,12 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
+class ComparePoints {
+  public:
+    bool operator()(const PointCloud::SurfacePoint& lhs, const PointCloud::SurfacePoint& rhs) const {
+      return lhs.p.z < rhs.p.z;
+    }
+};
 void SpatialControl::runComponent() 
 {
   setupPushScan2d(*this, 0.1);
@@ -382,81 +389,100 @@ void SpatialControl::runComponent()
   Cure::Pose3D scanPose;
 	Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
-	bool useLaserScan = false;		
-  bool useKinectFrame = false;		
  	int xi,yi;
-  while(isRunning()){
-    useLaserScan = false;		
-    useKinectFrame = false;		
 
+  /* Local references so we don't have to dereference the pointers all the time */
+  Cure::LocalGridMap<unsigned char>& lgm = *m_lgm;
+  Cure::LocalGridMap<unsigned char>& lgmL = *m_lgmL;
+  Cure::LocalGridMap<unsigned char>& lgmK = *m_lgmK;
+  Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
+
+  while(isRunning()){
     if (m_UsePointCloud) {
-      //		m_Mutex.lock();
+      /* Add all queued laser scans */
       while (!m_LScanQueue.empty()){
         if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
           lpW.add(LscanPose, m_LaserPoseR);		
+          m_Mutex.lock();
           m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+          m_Mutex.unlock();
           m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
               0.55*Cure::NavController::getRobotWidth(), '0');                                  
           m_firstScanAdded = true;
-          useLaserScan = true;
           m_LScanQueue.pop();
         }
       }
-      //		m_Mutex.unlock();
 
+      /* Update height map */
       cdl::CASTTime frameTime;
       std::vector<int> depthData; /* not used */
       getDepthMap(frameTime, depthData); /* get scan time */
       if (m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0) {
         PointCloud::SurfacePointSeq points;
         getPoints(true, 0 /* unused */, points);
+        std::sort(points.begin(), points.end(), ComparePoints());
         for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
           /* Transform point in cloud with regards to the robot pose */
-          Cure::Transformation3D trans = scanPose;
           Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
           Cure::Vector3D to;
-          trans.invTransform(from, to);
+          scanPose.invTransform(from, to);
           double pX = to.X[0];
           double pY = to.X[1];
           double pZ = to.X[2];
-          /* Add point as obstacle/free space depending on it's height */
-          if (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight) {
-            if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
-              (*m_lgmK)(xi, yi) = '1';
+          if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
+            /* Check if we can safely remove an old obstacle */
+            bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
+            bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+            if (oldObstacle && !newObstacle) {
+              /* Undo robot pose transform since it is not known by the point cloud */
+              Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
+              scanPose.transform(old, to);
+              cogx::Math::Vector3 point;
+              point.x = to.X[0];
+              point.y = to.X[1];
+              point.z = to.X[2];
+              if (!isPointInViewCone(point))
+                continue;
             }
+            /* If the above tests passed update the height map */ 
+            lgmKH(xi, yi) = pZ;
           }
-          else {
-            if (m_lgmK->worldCoords2Index(pX, pY, xi, yi) == 0) {
-              (*m_lgmK)(xi, yi) = '0';
-            }
-          }
+        }
+
+        /* Create 2D map from height map */
+        for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
+          if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight)
+            lgmK[i] = '1';
+          else if (lgmKH[i] != FLT_MAX)
+            lgmK[i] = '0';
         }
         m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
             0.55*Cure::NavController::getRobotWidth(), '0');                                  
-        useKinectFrame = true;
       }
 
       m_Mutex.lock();    				
-      (*m_lgm) = (*m_lgmL);			   
+      /* Merge the laser map and the 2D point cloud map */
+      lgm = lgmL;			   
       for(long i=0; i<m_lgmK->getNumCells(); i++){
         // Don't overwrite obstacles seen by the laser with (possibly old)
         // free space from the point cloud
-        if ((*m_lgmK)[i] == '0' && (*m_lgm)[i] == '1')
+        if (lgmK[i] == '0' && lgm[i] == '1')
           continue;
 
-        if((*m_lgmK)[i] != '2')
-          (*m_lgm)[i] = (*m_lgmK)[i];
+        if(lgmK[i] != '2')
+          lgm[i] = lgmK[i];
       } 						
+
       // filtering
       unsigned int bound = m_lgm->getSize();
 
       for(unsigned int x=-bound+1; x<bound-1; x++){
         for(unsigned int y=-bound+1; y<bound-1; y++){
-          if( (*m_lgm)(x,y) == '1' && 
-              (*m_lgm)(x-1,y) != '1' && (*m_lgm)(x+1,y) != '1' &&
-              (*m_lgm)(x-1,y-1) != '1' && (*m_lgm)(x+1,y-1) != '1' &&
-              (*m_lgm)(x-1,y+1) != '1' && (*m_lgm)(x+1,y+1) != '1' &&
-              (*m_lgm)(x,y-1) != '1' && (*m_lgm)(x,y-1) != '1' ) (*m_lgm)(x,y) = '0';
+          if( lgm(x,y) == '1' && 
+              lgm(x-1,y) != '1' && lgm(x+1,y) != '1' &&
+              lgm(x-1,y-1) != '1' && lgm(x+1,y-1) != '1' &&
+              lgm(x-1,y+1) != '1' && lgm(x+1,y+1) != '1' &&
+              lgm(x,y-1) != '1' && lgm(x,y-1) != '1' ) lgm(x,y) = '0';
         }
       }
       m_Mutex.unlock();
@@ -468,11 +494,11 @@ void SpatialControl::runComponent()
       double xWT,yWT;
       double theta;
 
-      //clock_t t0 = clock();					
       m_Mutex.lock();    							
+      /* Update the nav map */
       m_LMap.clearMap();
       for(long i=0; i<m_lgmLM->getNumCells(); i++){
-        (*m_lgmLM)[i] = (*m_lgmL)[i];
+        (*m_lgmLM)[i] = lgmL[i];
       }               
       Cure::Pose3D currPose = m_TOPP.getPose();		
       m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
@@ -483,7 +509,7 @@ void SpatialControl::runComponent()
           xWT = currPose.getX()+j*d*cos(theta);
           yWT = currPose.getY()+j*d*sin(theta);
           if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
-            if((*m_lgm)(xi,yi) == '1'){
+            if(lgm(xi,yi) == '1'){
               (*m_lgmLM)(xi,yi) = '1';   							
               m_LMap.addObstacle(xWT, yWT, 1);
               break;    
@@ -491,7 +517,6 @@ void SpatialControl::runComponent()
           }
         }
       }
-      //clock_t t1 = clock();log("Execution time of he LOOP = %f s", double (t1-t0)/CLOCKS_PER_SEC);
       m_Mutex.unlock();	
     }	
 
@@ -508,11 +533,7 @@ void SpatialControl::runComponent()
 		}
 		m_Mutex.unlock();	
 	  
-   	if (m_UsePointCloud && useKinectFrame) {
-      usleep(100000); // usec
-    } else if (!m_UsePointCloud) {
-      usleep(250000);
-    }
+    usleep(250000);
   }
 } 
 
