@@ -164,11 +164,13 @@ def gen_fact_tuples(beliefs):
       
     if bel.type != "relation":
       if attributed_object is not None:
+        yield SVarDistribution("existence",  [attributed_object], [])
         agent = pddl.TypedObject("tutor",pddl.mapl.t_agent)
         for feat,vals in factdict.iteritems():
           yield AttributedSVarDistribution(agent, feat, [attributed_object], vals)
       else:
         obj = belief_to_object(bel)
+        yield SVarDistribution("existence",  [obj], [])
         for feat,vals in factdict.iteritems():
           # for val, prob in vals:
           #   log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
@@ -195,7 +197,8 @@ def gen_fact_tuples(beliefs):
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
-    if ft.feature not in current_domain.functions and \
+    if ft.feature != "existence" and\
+          ft.feature not in current_domain.functions and \
           ft.feature not in current_domain.predicates:
       pass
       log.trace("filtering feature assignment %s, because '%s' is not part of the planning domain", \
@@ -207,7 +210,9 @@ def filter_unknown_preds(fact_tuples):
 def tuples2facts(fact_tuples):
   for ftup in fact_tuples:
     feature_label = str(ftup.feature)
-    if feature_label in current_domain.functions:
+    if feature_label == "existence":
+      continue
+    elif feature_label in current_domain.functions:
       func = current_domain.functions.get(feature_label, ftup.args)
     else:
       assert feature_label in current_domain.predicates
@@ -263,7 +268,12 @@ def infer_types(obj_descriptions):
   constraints = defaultdict(set)
   for ftup in obj_descriptions:
     pred = str(ftup.feature)
-    if pred in current_domain.functions:
+    if pred == "existence":
+      arg = ftup.args[0]
+      if arg.type != pddl.t_object:
+        constraints[arg].add(frozenset([arg.type]))
+      continue
+    elif pred in current_domain.functions:
       declarations = current_domain.functions[pred]
       #is_function = True
     else:
