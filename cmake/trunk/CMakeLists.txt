@@ -13,10 +13,10 @@ ENDIF()
 
 # ------------ <CCache> ------------
 if(USE_CCACHE)
-	set(CMAKE_CXX_COMPILER "ccache")
-	set(CMAKE_CXX_COMPILER_ARG1 "g++")
-	set(CMAKE_C_COMPILER "ccache")
-	set(CMAKE_C_COMPILER_ARG1 "gcc")
+   set(CMAKE_CXX_COMPILER "ccache")
+   set(CMAKE_CXX_COMPILER_ARG1 "g++")
+   set(CMAKE_C_COMPILER "ccache")
+   set(CMAKE_C_COMPILER_ARG1 "gcc")
 endif(USE_CCACHE)
 # ------------ </CCache> ------------
 
@@ -55,6 +55,7 @@ add_subdirectory (tools/d-lib)
 option(BUILD_ROCS "Build the internal version of the ROCS library." YES)
 if(BUILD_ROCS)
 	# We don't want the ROCS build system to define its own build options. We will set them as variables.
+	# mmarko: This will also prevent ROCS from setting various CMAKE_ variables
 	set(ROCS_DONT_DEFINE_OPTIONS yes)
 	# Build type used for rocs
 	set(ROCS_BUILD_TYPE "Release")
@@ -254,3 +255,4 @@ ADD_CUSTOM_TARGET( ant_build ALL )
      	)
 endif(DO_ANT)
 
+MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
