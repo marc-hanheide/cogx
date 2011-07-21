@@ -12,5 +12,9 @@ include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen/)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components/)
 
+find_package(Eigen REQUIRED)
+include_directories(/usr/include/eigen2)
+include_directories(${EIGEN_INCLUDE_DIRS})
+
 add_subdirectory(src/c++/components)
 

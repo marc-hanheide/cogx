@@ -12,6 +12,8 @@
 #include <vector>
 #include <sys/time.h>
 
+#include <Eigen/Geometry>
+
 #include "PointCloudServer.h"
 #include "Kinect.h"
 #include "VideoUtils.h"
@@ -45,6 +47,23 @@ private:
   std::string m_saveDirectory;
   int m_lastframe;
 
+  int m_subSampleScale;
+
+  enum {
+    PLANE_LEFT,
+    PLANE_TOP,
+    PLANE_RIGHT,
+    PLANE_BOTTOM,
+    N_PLANES
+  };
+  /* The planes defining the view cone */ 
+  Eigen::Hyperplane<double, 3>* fovPlanes[N_PLANES];
+  /* Sense of the normals for the planes above */
+  int senses[N_PLANES];
+
+  Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
+
+
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void start();
@@ -62,6 +81,8 @@ public:
   void getRangePoints(Laser::Scan2d &KRdata);
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
+  bool isPointInViewCone(const cogx::Math::Vector3& point);
+
   void saveNextFrameToFile();
 };
 
