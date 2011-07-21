@@ -28,13 +28,13 @@ void WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("SOIFilter.MoveToViewConeCommand");
+  pSoiFilter->println("MoveToViewConeCommand %s", pEvent->wmc.address.id.c_str());
 
   if (!cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("SOIFilter.move_to: MoveToViewConeCommand deleted while working.");
+    pSoiFilter->debug("move_to: MoveToViewConeCommand deleted while working.");
     return;
   }
-  pSoiFilter->debug("SOIFilter.move_to: GOT A MoveToViewConeCommand");
+  pSoiFilter->debug("move_to: GOT A MoveToViewConeCommand");
 
   if (! pSoiFilter->hasPtz())
     cmd.fail();
@@ -48,7 +48,7 @@ void WmTaskExecutor_MoveToViewCone::handle_add_task(WmEvent *pEvent)
       cmd.succeed();
     }
     catch (cast::DoesNotExistOnWMException) {
-      pSoiFilter->debug("SOIFilter.move_to: ViewCone deleted while working.");
+      pSoiFilter->debug("move_to: ViewCone deleted while working.");
       cmd.fail();
     }
   }

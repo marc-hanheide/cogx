@@ -29,7 +29,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("AnalyzeProtoObjectCommand");
+  pSoiFilter->println("AnalyzeProtoObjectCommand %s", pEvent->wmc.address.id.c_str());
 
   if (! cmd.read(pEvent->wmc.address)) {
     pSoiFilter->debug("analyze_task: AnalyzeProtoObjectCommand deleted while working.");

@@ -549,37 +549,12 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
     str << "glVertex(0., 0., 0.)\n";
     str << "glVertex(0., 0., 0.1)\n";
     str << "glEnd()\n";
-    //str << "DrawText3D(\"x\", 0.1, 0.02, 0.)\n";
-    //str << "DrawText3D(\"y\", 0., 0.1, 0.02)\n";
-    //str << "DrawText3D(\"z\", 0.02, 0., 0.1)\n";
-
-    // draw tics every m, up to 10 m
-#if 0
-    str << "tic_size = 0.05\n";
-    str << "glBegin(GL_LINES)\n";
-    str << "for i=-10,10 do\n";
-    str << "if i ~= 0 then\n";
-    str << "glVertex(i, 0, 0.)\n";
-    str << "glVertex(i, tic_size, 0.)\n";
-    str << "glVertex(0., i, 0.)\n";
-    str << "glVertex(0., i, tic_size)\n";
-    str << "glVertex(0., 0., i)\n";
-    str << "glVertex(tic_size, 0., i)\n";
+    str << "showLabel(0.1, 0, 0, 'x', 12)\n";
+    str << "showLabel(0, 0.1, 0, 'y', 12)\n";
+    str << "showLabel(0, 0, 0.1, 'z', 12)\n";
     str << "end\n";
-    str << "end\n";
-    str << "glEnd()\n";
-#endif
-    //str << "for(int i = -10; i < 10; i++)\n";
-    //  str << "if(i != 0)
-    //    snprintf(buf, 100, "%d", i);
-    //    DrawText3D(buf, (double)i, 2.*tic_size, 0.);
-    //    DrawText3D(buf, 0., (double)i, 2.*tic_size);
-    //    DrawText3D(buf, 2.*tic_size, 0., (double)i);
-    //  }
-    //}
-	str << "end\n";
-	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_OVERLAY, str.str());
-	}
+    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_OVERLAY, str.str());
+}
 
 void SendSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soiobj)
 {
@@ -618,7 +593,7 @@ void PlanePopOut::SendSyncAllSois()
 
 void PlanePopOut::runComponent()
 {
-    sleepComponent(2000);
+    sleepComponent(3000);
     log("Component PlanePopOut is running now");
     // note: this must be called in the run loop, not in configure or start as these are all different threads!
     int argc = 1;

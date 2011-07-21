@@ -393,6 +393,7 @@ void SOIFilter::onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
 {
+  debug("RECEIVED: MoveToViewConeCommand %s", _wmc.address.id.c_str());
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
     m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
@@ -402,6 +403,7 @@ void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc)
 {
+  debug("RECEIVED: AnalyzeProtoObjectCommand %s", _wmc.address.id.c_str());
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
     m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
