@@ -1079,14 +1079,18 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
 	virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
     } cmd(this);
 
+    println("PlanePopOut: GetStableSoisCommand.");
+
     if (! cmd.read(_wmc.address)) {
 	debug("PlanePopOut: GetStableSoisCommand deleted while working...");
 	return;
     }
 
     // TODO: getComponentID || stereoServer->componentId
-    if (cmd.pcmd->componentId != getComponentID())
+    if (cmd.pcmd->componentId != getComponentID()) {
+	debug("GetStableSoisCommand is not for me, but for '%s'.", cmd.pcmd->componentId.c_str());
 	return;
+    }
 
     debug("PlanePopOut: Will handle a GetStableSoisCommand.");
 
@@ -2616,10 +2620,11 @@ void PlanePopOut::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
     VisualObjectPtr vis_obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-    VisionData::VertexSeq ver_seq = vis_obj->model->vertices;
-
-    vlines.push_back(ver_seq.at(0).normal);
-    vlineConfidence.push_back(vis_obj->detectionConfidence);
+    if (vis_obj->model.get()) {
+	VisionData::VertexSeq ver_seq = vis_obj->model->vertices;
+	vlines.push_back(ver_seq.at(0).normal);
+	vlineConfidence.push_back(vis_obj->detectionConfidence);
+    }
 }
 
 void PlanePopOut::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc)

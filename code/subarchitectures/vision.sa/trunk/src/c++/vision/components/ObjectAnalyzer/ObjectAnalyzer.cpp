@@ -155,7 +155,11 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 	log("Visual object ID %s deleted. It will not be updated", pvId.c_str());
 	return;
   }
-  pvobj->protoObjectID = ptask->protoObjectAddr.id; // XXX: this should already be present in VisualObject
+  // XXX: this should already be present in VisualObject
+  pvobj->protoObject->type = cast::typeName<ProtoObject>();
+  pvobj->protoObject->address = ptask->protoObjectAddr;
+  pvobj->lastProtoObject = pvobj->protoObject;
+
 
   // NOTE: we are assuming that all the lists have the same length
   // so we stop copying when the shortest list ends.
@@ -257,7 +261,9 @@ void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange 
   string objid = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
   long mode = getOrCreateVisualObject(objid, pvobj);
   if (mode == NewObject) {
-	pvobj->protoObjectID = ptask->protoObjectAddr.id;
+	pvobj->protoObject->type = cast::typeName<ProtoObject>();
+	pvobj->protoObject->address = ptask->protoObjectAddr;
+	pvobj->lastProtoObject = pvobj->protoObject;
   }
 
   pvobj->identLabels.clear();
@@ -303,7 +309,9 @@ void ObjectAnalyzer::runComponent()
 			ProtoObjectPtr objPtr = getMemoryEntry<VisionData::ProtoObject>(data.addr);
 
 			VisualObjectPtr pvobj = new VisualObject;
-			pvobj->protoObjectID = data.addr.id; 
+			pvobj->protoObject->type = cast::typeName<ProtoObject>();
+			pvobj->protoObject->address = data.addr;
+			pvobj->lastProtoObject = pvobj->protoObject;
 			pvobj->time = getCASTTime();
 			pvobj->identLabels.push_back("unknown");
 			pvobj->identDistrib.push_back(1.0f);
