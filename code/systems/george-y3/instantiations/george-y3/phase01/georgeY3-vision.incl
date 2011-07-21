@@ -69,7 +69,7 @@ CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
 #CPP MG vis.analyzer ObjectAnalyzer  %(wmBlocking)  --log --debug
 
-#INCLUDE ../includes/vision.sa/vision-visual-learner.cast
+INCLUDE  includes/vision.sa/vision-visual-learner.cast
 
 # ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
 # Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
@@ -90,6 +90,7 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 #JAVA MG vis.SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact
 JAVA MG vis.proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact
 JAVA MG vis.visual.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact
+JAVA MG vis.visual.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
 # JAVA MG vis.learning.tasks castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv"
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
 JAVA MG vis.camparam castutils.viewer.V11WMViewerComponent --subscribe "Video.CameraParametersWrapper" --displayserver "display.srv" --generic-col --compact
