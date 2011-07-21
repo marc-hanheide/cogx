@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
 
-# Using CCache to speed up compilation of ROCS
-if(ROCS_CCACHE)
-	set(CMAKE_CXX_COMPILER "ccache")
-	set(CMAKE_CXX_COMPILER_ARG1 "g++")
-	set(CMAKE_C_COMPILER "ccache")
-	set(CMAKE_C_COMPILER_ARG1 "gcc")
-endif(ROCS_CCACHE)
+if(NOT ROCS_DONT_DEFINE_OPTIONS)
+   # Using CCache to speed up compilation of ROCS
+   if(ROCS_CCACHE)
+      set(CMAKE_CXX_COMPILER "ccache")
+      set(CMAKE_CXX_COMPILER_ARG1 "g++")
+      set(CMAKE_C_COMPILER "ccache")
+      set(CMAKE_C_COMPILER_ARG1 "gcc")
+      MESSAGE(" ***** CMAKE_C*_COMPILER **** modified by ROCS")
+   endif(ROCS_CCACHE)
+endif(NOT ROCS_DONT_DEFINE_OPTIONS)
 
 # Definition of the project starts here
 project(ROCS)
@@ -35,7 +38,10 @@ if("${ROCS_BUILD_TYPE}" STREQUAL "")
     set(ROCS_BUILD_TYPE "Debug")
 endif("${ROCS_BUILD_TYPE}" STREQUAL "")
 set(ROCS_BUILD_TYPE ${ROCS_BUILD_TYPE} CACHE PATH "ROCS build type (Debug/Release).")
-set(CMAKE_BUILD_TYPE ${ROCS_BUILD_TYPE} CACHE INTERNAL "" FORCE)
+if(NOT ROCS_DONT_DEFINE_OPTIONS)
+   set(CMAKE_BUILD_TYPE ${ROCS_BUILD_TYPE} CACHE INTERNAL "" FORCE)
+   MESSAGE(" ***** CMAKE_BUILD_TYPE **** modified by ROCS")
+endif(NOT ROCS_DONT_DEFINE_OPTIONS)
 
 # Make ROCS_DIR available as preprocessor definition
 ADD_DEFINITIONS(-DROCS_DIR="${ROCS_DIR}")
