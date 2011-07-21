@@ -78,4 +78,9 @@ bool PointCloudClient::getCameraParameters(Ice::Int side, Video::CameraParameter
   return pointCloudServer->getCameraParameters(side, camPars);
 }
 
+bool PointCloudClient::isPointInViewCone(const cogx::Math::Vector3& point)
+{
+  return pointCloudServer->isPointInViewCone(point);
+}
+
 }

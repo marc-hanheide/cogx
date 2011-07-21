@@ -30,6 +30,7 @@ module PointCloud {
     void getDisparityImage(int imgWidth, out Video::Image img);
     void getRangePoints(out Laser::Scan2d KRdata); /* kinect range data returns back like laser sensor */
     bool getCameraParameters(int side, out Video::CameraParameters camPars);
+    bool isPointInViewCone(cogx::Math::Vector3 point);
   };
 
 };

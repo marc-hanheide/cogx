@@ -48,6 +48,7 @@ public:
   virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data, const Ice::Current&);
   virtual void getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&);
   virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars, const Ice::Current&);
+  virtual bool isPointInViewCone(const cogx::Math::Vector3&, const Ice::Current&);
 };
 
 
@@ -105,6 +106,8 @@ public:
   virtual void getDisparityImage(int imgWidth, Video::Image& image) {}
   virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data) {}
   virtual bool getCameraParameters(int side, Video::CameraParameters& camPars) { return false; }
+  virtual bool isPointInViewCone(const cogx::Math::Vector3& point) { return true; }
+
 
   /**
    * The callback function for 2D points extracted from the Kinect depth data
