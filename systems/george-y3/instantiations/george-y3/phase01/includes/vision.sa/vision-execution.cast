@@ -1,4 +1,4 @@
-JAVA MG exe.vision vision.execution.george.VisionActionInterface
+JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose
 
 
 
