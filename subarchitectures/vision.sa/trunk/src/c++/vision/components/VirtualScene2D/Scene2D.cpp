@@ -302,19 +302,21 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
       //log("CScene2D: VisualObject %s deleted while working...", descAddr(addr).c_str());
       return;
    };
-   if (! pVisObj) return;
+   if (! pVisObj.get()) return;
 
    // ProtoObject provides position and outline
    ProtoObjectPtr pProtoObj;
    try {
-      addr.id = pVisObj->protoObjectID;
-      pProtoObj = getMemoryEntry<ProtoObject>(addr);
+      cdl::WorkingMemoryPointerPtr pomp = pVisObj->protoObject;
+      if (pomp->type == cast::typeName<ProtoObject>()) {
+         pProtoObj = getMemoryEntry<ProtoObject>(pomp->address);
+      }
    }
    catch(DoesNotExistOnWMException){
       //log("CScene2D: ProtoObject %s deleted while working...", descAddr(addr).c_str());
       return; // we don't know where on the image to show the labels
    };
-   if (! pProtoObj) return;
+   if (! pProtoObj.get()) return;
 
    drawVisualObject(_wmc.address.id, pVisObj, pProtoObj);
 }

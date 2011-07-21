@@ -29,20 +29,21 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("SOIFilter.AnalyzeProtoObjectCommand");
+  pSoiFilter->println("AnalyzeProtoObjectCommand");
 
   if (! cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("SOIFilter.analyze_task: AnalyzeProtoObjectCommand deleted while working.");
+    pSoiFilter->debug("analyze_task: AnalyzeProtoObjectCommand deleted while working.");
     return;
   }
 
+  pSoiFilter->println("analyze_task: read po");
   // pobj - The proto object to segment
   ProtoObjectPtr pobj;
   try {
     pobj = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(cmd.pcmd->protoObjectAddr);
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject deleted while working. Aborting task.");
+    pSoiFilter->debug("analyze_task: ProtoObject deleted while working. Aborting task.");
     cmd.fail();
     return;
   }
@@ -58,6 +59,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
    * complete then we remove it from the change filter list, but we DON'T
    * DELETE it. It will be moved to a deletion queue by the framework and
    * deleted later. */
+  pSoiFilter->debug("analyze_task: calling GetStableSoisCommand");
   GetSoisCommandRcv* pGetSois;
   vector<SOIPtr> sois;
   pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
@@ -69,12 +71,12 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
 
   if (! bCompleted || sois.size() < 1)
   {
-    pSoiFilter->debug("SOIFilter.analyze_task: No Fine SOIs. Aborting task.");
+    pSoiFilter->debug("analyze_task: No Fine SOIs. Aborting task.");
     cmd.fail();
     return;
   }
 
-  pSoiFilter->debug("SOIFilter.analyze_task: Got some Fine SOIs.");
+  pSoiFilter->debug("analyze_task: Got some Fine SOIs.");
 
   // Find the SOI that is closesst to the PO
   // psoi - The fine SOI that represents the proto object
@@ -89,7 +91,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     }
   }
   if (dmin >= 0.2) {
-    pSoiFilter->println("SOIFilter.analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
+    pSoiFilter->println("analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
   }
 
   if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
@@ -116,7 +118,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
     }
     catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->debug("SOIFilter.analyze_task: VisualObject deleted while working.");
+      pSoiFilter->debug("analyze_task: VisualObject deleted while working.");
       return;
     }
   }

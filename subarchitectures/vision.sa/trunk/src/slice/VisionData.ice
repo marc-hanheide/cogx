@@ -186,8 +186,9 @@ enum VisionCommandStatus {
     // Object affordance
     string affordance;
 
+    // Y3, OBSOLETE: use protoObject/lastProtoObject
     // Source proto object
-    string protoObjectID;
+    // string protoObjectID;
 
     // HACK: Points in 2D
     DoubleSeq points2D;
