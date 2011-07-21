@@ -240,7 +240,9 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
       if(transformToGlobal)
         pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
 
-      if (!complete && isPointInViewCone(pt.p))
+      if (complete)
+        points.push_back(pt);
+      else if (isPointInViewCone(pt.p))
         points.push_back(pt);
     }
   }
