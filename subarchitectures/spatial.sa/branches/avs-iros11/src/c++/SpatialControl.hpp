@@ -144,6 +144,7 @@ protected:
   Cure::LocalGridMap<unsigned char>* m_lgmK; // LGM filled by Kinect
   Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
+  Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
 
 	std::queue<Cure::LaserScan2d> m_LScanQueue;	
 

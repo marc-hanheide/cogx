@@ -1140,25 +1140,26 @@ void DisplayNavInPB::runComponent() {
       if (m_RobotPose && m_ShowPointCloud) {
         PointCloud::SurfacePointSeq points;
         getPoints(true, 0 /* unused */, points);
-        log("Got %d points!", points.size());
-
         peekabot::ColoredVertexSet kinectVerts; 
         double rangeMax = 1;
-        int k = 0;
-        for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+        for (int i = 0; i < points.size(); i += 16) {
           /* Transform point in cloud with regards to the robot pose */
           Cure::Transformation3D robotTransform;
           robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
           robotTransform = robotTransform;
-          Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+          Cure::Vector3D from(points[i].p.x, points[i].p.y, points[i].p.z);
           Cure::Vector3D to;
           robotTransform.invTransform(from, to);
           double pX = to.X[0];
           double pY = to.X[1];
           double pZ = to.X[2];
-          if ((k % 64) == 0)
-            kinectVerts.add(pX, pY, pZ, 1, std::max(0.0, (1 - pZ / rangeMax)), 0);
-          k++;
+          cogx::Math::Vector3 p;
+          p.x = points[i].p.x;
+          p.y = points[i].p.y;
+          p.z = points[i].p.z;
+          if (!isPointInViewCone(p))
+            continue;
+          kinectVerts.add(pX, pY, pZ, 1, std::max(0.0, (1 - pZ / rangeMax)), 0);
         }
         m_ProxyKinect.set_vertices(kinectVerts);
       }
