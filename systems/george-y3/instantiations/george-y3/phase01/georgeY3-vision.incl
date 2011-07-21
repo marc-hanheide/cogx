@@ -18,6 +18,7 @@ SETVAR FinePlanePopOut_Params=<multiline>
    # --log
 </multiline>
 # CPP MG vis.ppo.fine PlanePopOut %(FinePlanePopOut_Params) 
+VARDEFAULT finePcSource=vis.ppo.fine
 
 VARDEFAULT coarsePointCloud=stereoserver
 SETVAR CoarsePlanePopOut_Params=<multiline>
@@ -34,6 +35,10 @@ SETVAR CoarsePlanePopOut_Params=<multiline>
    #--log
 </multiline>
 CPP MG vis.ppo.coarse PlanePopOut %(CoarsePlanePopOut_Params)
+VARDEFAULT coarsePcSource=vis.ppo.coarse
+
+# XXX: until more than one instance of PPO can be run we use only one
+SETVAR finePcSource=%(coarsePcSource)
 
 SETVAR wmBlocking=--blocking false
 SETVAR SOIFilter_Params=<multiline>
@@ -41,8 +46,8 @@ SETVAR SOIFilter_Params=<multiline>
    --coarse-pcserver    "%(coarsePointCloud)"
    --fine-pcserver      "%(finePointCloud)"
    # SOI sources (plane popout)
-   --coarse-source      "vis.ppo.coarse"
-   --fine-source        "vis.ppo.fine"
+   --coarse-source      "%(coarsePcSource)"
+   --fine-source        "%(finePcSource)"
    # Parameters for graph-cut
    --objht 23
    --objdt 60
