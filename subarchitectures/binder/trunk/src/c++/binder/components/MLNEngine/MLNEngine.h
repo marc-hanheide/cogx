@@ -73,9 +73,20 @@ class MLNEngine :  public ManagedComponent
 //   cdl::CASTTime addedTime;
 //   cdl::CASTTime deleteTime;
   };
+
   
   std::queue<QueryData> m_queryQueue;
-
+  
+  struct LearnWtsData {
+   cdl::WorkingMemoryAddress addr;
+   org::cognitivesystems::binder::mln::LearnWtsPtr learnWts;
+   EntryStatus status;
+//   cdl::CASTTime addedTime;
+//   cdl::CASTTime deleteTime;
+  };
+  
+  std::queue<LearnWtsData> m_learnWtsQueue;  
+  
   boost::interprocess::named_semaphore* m_queuesNotEmpty;
   
   std::queue<cdl::WorkingMemoryAddress> m_removeQueue;
@@ -83,7 +94,7 @@ class MLNEngine :  public ManagedComponent
   /**
    * callback function called whenever a Belief changes
    */
-  void newBelief(const cdl::WorkingMemoryChange & _wmc);
+//  void newBelief(const cdl::WorkingMemoryChange & _wmc);
   
   /**
    * callback function called whenever there is new evidence
@@ -94,6 +105,11 @@ class MLNEngine :  public ManagedComponent
    * callback function called whenever there is new query
    */
   void newQuery(const cdl::WorkingMemoryChange & _wmc);
+  
+  /**
+   * callback function called whenever there is a learn weights instruction
+   */
+  void learnWts(const cdl::WorkingMemoryChange & _wmc);
   
   /**
    * checks if the epistemic status is T
@@ -110,9 +126,22 @@ class MLNEngine :  public ManagedComponent
 	  return false;
   };
   
-  void queueNewEvidence(EvidenceData data);
-  
-  void queueNewQuery(QueryData data);
+
+  void queueNewEvidence(EvidenceData data)
+  {
+	m_evidenceQueue.push(data);
+  }
+
+
+  void queueNewQuery(QueryData data)
+  {
+	m_queryQueue.push(data);
+  }
+
+  void queueLearnWts(LearnWtsData data)
+  {
+	m_learnWtsQueue.push(data);
+  }
   
 
 protected:

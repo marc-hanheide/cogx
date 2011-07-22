@@ -71,9 +71,15 @@
 #include "variablestate.h"
 #include "arguments.h"
 #include "util.h"
+#include "learnwts.h"
+#include "lbfgsb.h"
+
+const double GEN_DEFAULT_STD_DEV = 100;
+const bool PRINT_CLAUSE_DURING_COUNT = true;
 
   // Set to true for more output
 const bool oedebug = false;
+
 
   // TODO: List the arguments common to learnwts and inference in
   // inferenceargs.h. This can't be done with a static array.
@@ -274,6 +280,7 @@ class OnlineEngine
 
   ~OnlineEngine()
   {
+  	PowerSet::deletePowerSet();
     delete inference_;
   }
      
@@ -413,6 +420,411 @@ class OnlineEngine
   	inference_->printNetwork(out);
   }
   
+  int genLearnWts(vector<string> tevd, // true evidence
+  				  vector<string> fevd, // false evidence
+  				  vector<string> nevd, // no evidence
+  				  double priorStdDev=GEN_DEFAULT_STD_DEV,
+  				  char* nonEvidPredsStr=NULL,
+  				  int maxIter=10000,
+  				  double convThresh=1e-5)
+  {
+  	bool noPrior = false;
+  	bool noEqualPredWt = false;
+  	
+	Timer timer;
+	double startSec = timer.time();
+	double begSec;
+
+	if (priorStdDev < 0)
+	{
+	  cout << "priorStdDev set to (generative learning's) default of "
+		   << GEN_DEFAULT_STD_DEV << endl;
+	  priorStdDev = GEN_DEFAULT_STD_DEV;
+	}
+	
+	if (maxIter <= 0)  { cout << "maxIter must be > 0" << endl; return -1; }
+	if (convThresh <= 0 || convThresh > 1)
+	  { cout << "convThresh must be > 0 and <= 1" << endl; return -1;  }
+	if (priorStdDev <= 0) { cout << "priorStdDev must be > 0" << endl; return -1;}
+
+// ?????
+	  StringHashArray nonEvidPredNames;
+	  if (nonEvidPredsStr)
+	  {
+		if (!extractPredNames(nonEvidPredsStr, NULL, nonEvidPredNames))
+		{
+		  cout << "ERROR: failed to extract non-evidence predicate names." << endl;
+		  return -1;
+		}
+	  }
+
+	  StringHashArray owPredNames;
+	  StringHashArray cwPredNames;
+
+	  ////////////////////////// create domains and mlns //////////////////////////
+
+	  Array<Domain*> domains;
+	  Array<MLN*> mlns;
+
+	  
+	  Database* infdb;
+	  
+	  Domain* domain = (Domain*) inference_->getState()->getDomain();
+	  MLN* mln = (MLN*) inference_->getState()->getMLN();
+	  
+	  infdb = domain->getDB();
+	  Database* db = new Database(*infdb);
+	  
+	  domain->setDB(db);
+	  
+	  for(int i=0; i<db->getClosedWorld().size(); i++)
+	  	if(db->isClosedWorld((const int) i)) cout << "pred " << i << "closed" << endl;
+	  	else cout << "pred " << i << "open" << endl;
+
+	  
+	  dbEvidenceHelper(nevd, false, false);
+	  dbEvidenceHelper(tevd, true, true);
+	  dbEvidenceHelper(fevd, true, false);
+	  
+//	  db->printInfo();
+/*	  
+	  Array<bool> cw = db->getClosedWorld();
+	  for(int i=0; i<cw.size(); i++)
+	  	if(db->isClosedWorld((const int) i)) cout << "pred " << i << "closed" << endl;
+	  	else cout << "pred " << i << "open" << endl;
+	  
+	  		
+	  for(int i=0; i<db->getClosedWorld().size(); i++)
+	  	db->setClosedWorld (i, true);
+	  	
+	  for(int i=0; i<cw.size(); i++)
+	  	if(db->isClosedWorld((const int) i)) cout << "pred " << i << "closed" << endl;
+	  	else cout << "pred " << i << "open" << endl;
+*/	  	
+//	  db->printInfo();	  
+	  
+	  domains.append(domain);
+  	  mlns.append(mln);
+
+	// start here
+	  const FormulaAndClausesArray* fca = mlns[0]->getFormulaAndClausesArray();
+	  for (int i = 0; i < fca->size(); i++)
+	  {
+		IndexClauseHashArray* indexClauses = (*fca)[i]->indexClauses;
+		for (int j = 0; j < indexClauses->size(); j++)
+		{
+		  int idx = (*indexClauses)[j]->index;
+		  Clause* c = (*indexClauses)[j]->clause;
+		  cout << "idx " << idx << ": ";
+		  c->printWithWtAndStrVar(cout, domains[0]);
+		  cout << endl;
+		}
+	  }
+
+	  /*
+	  cout << "Clause prior means:" << endl;
+	  cout << "_________________________________" << endl;
+	  mlns[0]->printClausePriorMeans(cout, domains[0]);
+	  cout << "_________________________________" << endl;
+	  cout << endl;
+
+	  cout << "Formula prior means:" << endl;
+	  cout << "_________________________________" << endl;
+	  mlns[0]->printFormulaPriorMeans(cout);
+	  cout << "_________________________________" << endl;
+	  cout << endl;
+	  */
+
+	  //////////////////// set the prior means & standard deviations //////////////
+
+		//we need an index translator if clauses do not line up across multiple DBs
+	  IndexTranslator* indexTrans
+		= (IndexTranslator::needIndexTranslator(mlns, domains)) ?
+		   new IndexTranslator(&mlns, &domains) : NULL;
+
+	  if (indexTrans)
+		cout << endl << "the weights of clauses in the CNFs of existential"
+			 << " formulas will be tied" << endl;
+
+	  Array<double> priorMeans, priorStdDevs;
+	  Array<bool> lockedWts;
+	  if (!noPrior)
+	  {
+		if (indexTrans)
+		{
+		  indexTrans->setPriorMeans(priorMeans);
+		  priorStdDevs.growToSize(priorMeans.size());
+		  lockedWts.growToSize(priorMeans.size());
+		  for (int i = 0; i < priorMeans.size(); i++)
+		  {
+			priorStdDevs[i] = priorStdDev;
+			lockedWts[i] = false;
+		  }
+		}
+		else
+		{
+		  const ClauseHashArray* clauses = mlns[0]->getClauses();
+		  int numClauses = clauses->size();
+		  for (int i = 0; i < numClauses; i++)
+		  {
+			priorMeans.append((*clauses)[i]->getWt());
+			priorStdDevs.append(priorStdDev);
+			lockedWts.append((*clauses)[i]->isStaticWt());
+		  }
+		}
+	  }
+
+	  int numClausesFormulas;
+	  if (indexTrans)
+		numClausesFormulas = indexTrans->getNumClausesAndExistFormulas();
+	  else
+		numClausesFormulas = mlns[0]->getClauses()->size();
+
+
+	  Array<double> wts;
+
+	  for (int j = 0; j < mlns[0]->getNumClauses(); j++)
+	  {
+		Clause* c = (Clause*) mlns[0]->getClause(j);
+		  // If the weight was set to non-zero in the source MLN,
+		  // don't modify it while learning.
+		if (c->getWt() != 0 && c->isStaticWt())
+		  c->lock();
+	  }
+	    
+	  Array<bool> areNonEvidPreds;
+	  if (nonEvidPredNames.empty())
+	  {
+	    areNonEvidPreds.growToSize(domains[0]->getNumPredicates(), true);
+	    for (int i = 0; i < domains[0]->getNumPredicates(); i++)
+	    {
+		    //prevent equal pred from being non-evidence preds
+		  if (domains[0]->getPredicateTemplate(i)->isEqualPred())
+		  {
+		    const char* pname = domains[0]->getPredicateTemplate(i)->getName();
+		    int predId = domains[0]->getPredicateId(pname);
+		    areNonEvidPreds[predId] = false;
+		  }
+		    //prevent internal preds from being non-evidence preds
+		  if (domains[0]->getPredicateTemplate(i)->isInternalPredicateTemplate())
+		  {
+		    const char* pname = domains[0]->getPredicateTemplate(i)->getName();
+		    int predId = domains[0]->getPredicateId(pname);
+		    areNonEvidPreds[predId] = false;
+		  }
+	    }
+	  }
+	  else
+	  {
+	    areNonEvidPreds.growToSize(domains[0]->getNumPredicates(), false);
+	    for (int i = 0; i < nonEvidPredNames.size(); i++)
+	    {
+		  int predId = domains[0]->getPredicateId(nonEvidPredNames[i].c_str());
+		  if (predId < 0)
+		  {
+		    cout << "ERROR: Predicate " << nonEvidPredNames[i] << " undefined."
+			     << endl;
+		    exit(-1);
+		  }
+		  areNonEvidPreds[predId] = true;
+	    }
+	  }
+
+	  Array<bool>* nePreds = &areNonEvidPreds;
+	  PseudoLogLikelihood pll(nePreds, &domains, !noEqualPredWt, false,-1,-1,-1);
+	  pll.setIndexTranslator(indexTrans);
+
+	  if (!noPrior)
+	    pll.setMeansStdDevs(numClausesFormulas, priorMeans.getItems(),
+		  		            priorStdDevs.getItems());
+	  else
+	    pll.setMeansStdDevs(-1, NULL, NULL);
+
+	  pll.setLockedWts(lockedWts.getItems());
+
+	  ////////////// compute the counts for the clauses
+
+	  begSec = timer.time();
+	  Array<bool> wtsWithTiedClauses;
+	  wtsWithTiedClauses.growToSize(numClausesFormulas + 1, false);
+	  int numWts = 0;
+	  for (int m = 0; m < mlns.size(); m++)
+	  {
+	    cout << "Computing counts for clauses in domain " << m << "..." << endl;
+/*
+	  const ClauseHashArray* clauses = mlns[m]->getClauses();
+	  for (int i = 0; i < clauses->size(); i++)
+	  {
+		if (PRINT_CLAUSE_DURING_COUNT)
+		{
+		  cout << "clause " << i << ": ";
+		  (*clauses)[i]->printWithoutWt(cout, domains[m]);
+		  cout << endl; cout.flush();
+		}
+		MLNClauseInfo* ci = (MLNClauseInfo*) mlns[m]->getMLNClauseInfo(i);
+		pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index), m,
+				                              NULL, false, NULL);
+	  }
+*/		
+
+	    const ClauseHashArray* clauses = mlns[m]->getClauses();
+	    const Array<MLNClauseInfo*>* clauseInfos = mlns[m]->getMLNClauseInfos();
+	    const FormulaAndClausesArray* facs = mlns[m]->getFormulaAndClausesArray();
+	    for (int i = 0; i < clauseInfos->size(); i++)
+	    {
+		  MLNClauseInfo* ci = (*clauseInfos)[i];
+		  if (PRINT_CLAUSE_DURING_COUNT)
+		  {
+		    cout << "clause " << i << ": ";
+		    (*clauses)[i]->printWithoutWt(cout, domains[m]);
+		    cout << endl; cout.flush();
+		  }
+
+		  Array<FormulaClauseIndexes*>& fciArr = ci->formulaClauseIndexes;
+		  int fidx = *(fciArr[0]->formulaIndex);
+		  int cidx = *(fciArr[0]->clauseIndex);
+		  FormulaAndClauses* fac = (*facs)[fidx];
+
+		  // If clauses are tied together, compute counts for the conjunction
+		  // of clauses
+		  if (fac->tiedClauses)
+		  {
+		    if (cidx == 0)
+		    {
+			  if (m == 0)
+			  {
+			    numWts++;
+			    wtsWithTiedClauses[i+1] = true;
+			  }
+			  Array<Clause*>* tiedClauses = new Array<Clause*>;
+			  IndexClauseHashArray* indexClauses = fac->indexClauses;
+			  for (int c = 1; c < indexClauses->size(); c++)
+			    tiedClauses->append((*indexClauses)[c]->clause);
+			  
+			  pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index),
+				                                     m, NULL, false, NULL,
+				                                     tiedClauses);
+			  delete tiedClauses;
+		    }
+		  }
+		  else
+		  {
+		    if (m == 0)
+		    {
+			  numWts++;
+			  wtsWithTiedClauses[i+1] = true;
+		    }
+		    pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index), m,
+				                                  NULL, false, NULL, NULL);
+		  }
+	    }
+	  }
+
+
+	pll.compress();
+	cout <<"Computing counts took ";
+	Timer::printTime(cout, timer.time() - begSec); cout << endl;
+
+	////////////// learn clause wts
+
+	  // initialize the clause weights
+	wts.growToSize(1);
+	wts.append(0.0);
+	int numNonLockedWts = numWts;
+	for (int i = 0; i < numWts; i++)
+	{
+	  if (noPrior)
+	  {
+		wts.growToSize(wts.size() + 1);
+		wts[i+1] = 0;
+	  }
+	  else
+	  {
+		if (lockedWts[i]) numNonLockedWts--;
+		else
+		{
+		  wts.growToSize(wts.size() + 1);
+		  wts[i+1] = 0;
+		}
+	  }
+	}
+
+	  // optimize the clause weights
+	cout << "L-BFGS-B is finding optimal weights......" << endl;
+	begSec = timer.time();
+	//LBFGSB lbfgsb(maxIter, convThresh, &pll, numClausesFormulas);
+	LBFGSB lbfgsb(maxIter, convThresh, &pll, numNonLockedWts);
+	int iter;
+	bool error;
+	double pllValue = lbfgsb.minimize((double*)wts.getItems(), iter, error);
+
+	if (error) cout << "LBFGSB returned with an error!" << endl;
+	cout << "num iterations        = " << iter << endl;
+	cout << "time taken            = ";
+	Timer::printTime(cout, timer.time() - begSec);
+	cout << endl;
+	cout << "pseudo-log-likelihood = " << -pllValue << endl;
+
+	  // If tied clauses, then fill out the wts array with zeros
+	wts.growToSize(numClausesFormulas + 1);
+	Array<double> wtsAfterTiedClauses;
+	wtsAfterTiedClauses.growToSize(numClausesFormulas + 1);
+	int idxOffset = 0;
+	for (int w = 1; w < wtsAfterTiedClauses.size(); w++)
+	{
+	  if (wtsWithTiedClauses[w])
+	  {
+		wtsAfterTiedClauses[w] = wts[w - idxOffset];
+		idxOffset = 0;
+	  }
+	  else
+	  {
+		wtsAfterTiedClauses[w] = 0.0;
+		idxOffset++;
+	  }
+	}
+	for (int w = 1; w < wtsAfterTiedClauses.size(); w++)
+	{
+	  wts[w] = wtsAfterTiedClauses[w];
+	}
+
+	//////////////////////////// output results ////////////////////////////////
+	if (indexTrans) assignWtsAndOutputMLN(cout, mlns, domains, wts, indexTrans);
+	else            assignWtsAndOutputMLN(cout, mlns, domains, wts);
+
+	// Update MRF
+	inference_->getState()->setGndClausesWtsToSumOfParentWts();
+	
+	/////////////////////////////// clean up ///////////////////////////////////
+	
+	domain->setDB(infdb);
+	delete(db);
+	
+	/*
+	deleteDomains(domains);
+
+	for (int i = 0; i < mlns.size(); i++)
+	{
+	  if (DOMAINS_SHARE_DATA_STRUCT && i > 0)
+	  {
+		mlns[i]->setClauses(NULL);
+		mlns[i]->setMLNClauseInfos(NULL);
+		mlns[i]->setPredIdToClausesMap(NULL);
+		mlns[i]->setFormulaAndClausesArray(NULL);
+		mlns[i]->setExternalClause(NULL);
+	  }
+	  
+	  delete mlns[i];
+	}
+	*/
+
+//	PowerSet::deletePowerSet();
+	if (indexTrans) delete indexTrans;
+
+	cout << "Total time = ";
+	Timer::printTime(cout, timer.time() - startSec); cout << endl;
+  }
+  
  private:
 
   void addRemoveEvidenceHelper(const vector<string>& evidence,
@@ -431,7 +843,29 @@ class OnlineEngine
     }
 //HACK
 //   inference_->getState()->init();
- }
+  }
+ 
+  void dbEvidenceHelper(const vector<string>& evidence,
+                               const bool& addEvidence,
+                               const bool& trueEvidence)
+  {
+    vector<string>::const_iterator it = evidence.begin();
+    for (; it != evidence.end(); it++)
+    {
+      GroundPredicate* p = NULL;
+      parseGroundPredicate((*it), p);
+      
+      inference_->getState()->getDomain()
+        	->getDB()->setEvidenceStatus(p, addEvidence);
+      
+      if (trueEvidence)
+        inference_->getState()->getDomain()
+        	->getDB()->setValue(p, TRUE);
+      else
+		inference_->getState()->getDomain()
+        	->getDB()->setValue(p, FALSE);
+    }
+  }
  
   void parseGroundPredicate(const string& predicateAsString,
                             GroundPredicate*& predicate)

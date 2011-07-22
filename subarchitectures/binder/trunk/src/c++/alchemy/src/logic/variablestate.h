@@ -2799,7 +2799,7 @@ class VariableState
   void setAsEvidence(const GroundPredicate* const & predicate,
                      const bool& trueEvidence)
   { 
-    if (true) //(vsdebug)
+    if (vsdebug)
     { 
       cout << "*sb****************************************************************" << endl;
       printNetwork(cout);
@@ -2810,7 +2810,7 @@ class VariableState
     }
     Database* db = domain_->getDB();
     int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
-    cout << "idx " << atomIdx << endl;
+//    cout << "idx " << atomIdx << endl;
     assert(atomIdx >= -1);
       // If already evidence, then check its truth value
     if ( atomIdx == -1) {
@@ -2982,7 +2982,7 @@ class VariableState
  
       reinit();
       
-      if (true) //(vsdebug)
+      if (vsdebug)
       { 
       	cout << "*se*****************************************************************" << endl;
       	printNetwork(cout);
@@ -3075,7 +3075,7 @@ class VariableState
       	Clause *fclause = (Clause *) (*indexClauses)[i]->clause;
       	const int clauseId = mln_->findClauseIdx(fclause);
       	
-      	if (true) //(vsdebug)
+      	if (vsdebug)
       	{
         	cout << "Getting grounded clauses for FO clause Id " << clauseId << ":";
         	fclause->print(cout, domain_);
