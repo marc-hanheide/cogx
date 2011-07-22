@@ -14,7 +14,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
-import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
@@ -34,16 +34,16 @@ import org.apache.log4j.Logger;
 public class BasicProofConvertor
 implements ProofConvertor {
 
-	private Logger logger = null;
+	private final Logger logger;
 
 	private String thisAgent;
 
 	private String dialogueSA;
 	private String commitSA;
 
-	private IdentifierGenerator idGen = null;
+	private final IdentifierGenerator<String> idGen;
 
-	public BasicProofConvertor(Logger logger, IdentifierGenerator idGen, String thisAgent, String dialogueSA, String commitSA) {
+	public BasicProofConvertor(Logger logger, IdentifierGenerator<String> idGen, String thisAgent, String dialogueSA, String commitSA) {
 		this.logger = logger;
 		this.idGen = idGen;
 		this.dialogueSA = dialogueSA;
@@ -51,7 +51,7 @@ implements ProofConvertor {
 		this.thisAgent = thisAgent;
 	}
 
-	public IntentionRecognitionResult proofToIntentionRecognitionResult(LogicalForm lf, ProofWithCost pwc, float probBound, Interval ival, List<ResolutionRequest> rrqs) {
+	public IntentionRecognitionResult proofToIntentionRecognitionResult(LogicalForm lf, ProofWithCost pwc, float probBound, TimeInterval ival, List<ResolutionRequest> rrqs) {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
 		List<dBelief> bels_pre = new LinkedList<dBelief>();
@@ -64,7 +64,7 @@ implements ProofConvertor {
 		pwcs.add(pwc);
 		IntentionRecognitionResult ri = new IntentionRecognitionResult(lf, ival, pwcs);
 		if (!rrqs.isEmpty()) {
-			ri.rrs.addAll(rrqs);
+			ri.getResolutionRequests().addAll(rrqs);
 		}
 
 		// determine the speaker
@@ -95,7 +95,7 @@ implements ProofConvertor {
 
 		if (usedRefs.size() == 1) {
 			for (String refnom : usedRefs.keySet()) {
-				ri.nref = new NominalReference(refnom, BeliefFormulaFactory.newPointerFormula(usedRefs.get(refnom)));
+				ri.setNominalReference(new NominalReference(refnom, BeliefFormulaFactory.newPointerFormula(usedRefs.get(refnom))));
 				break;
 			}
 		}
@@ -237,7 +237,7 @@ implements ProofConvertor {
 					log("got a topic swith, but don't know what to resolve it against");
 				}
 				else {
-					ri.nref = newTopic;
+					ri.setNominalReference(newTopic);
 				}
 			}
 		}
@@ -263,7 +263,7 @@ implements ProofConvertor {
 				ConversionUtils.replacePointersInFormula(itc.postconditions, bels_pre, commitSA);
 				ConversionUtils.replacePointersInFormula(itc.postconditions, bels_post, dialogueSA);
 
-				ri.ints.add(it);
+				ri.getIntentions().add(it);
 			}
 			else {
 				log("discarding [" + it.id + "]: incomplete (agent list empty)");
@@ -277,8 +277,8 @@ implements ProofConvertor {
 			ConversionUtils.removeFeature(b, ConversionUtils.feat_MARK);
 		}
 
-		ri.pre.addAll(bels_pre);
-		ri.post.addAll(bels_post);
+		ri.getPreconditionBeliefs().addAll(bels_pre);
+		ri.getPostconditionBeliefs().addAll(bels_post);
 
 		return ri;
 	}

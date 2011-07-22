@@ -27,6 +27,7 @@ import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,17 +37,17 @@ import java.util.TreeSet;
 
 public class IntentionRecognitionResult {
 
-	public LogicalForm lf;
-	public Interval ival;
+	private final LogicalForm lf;
+	private final TimeInterval ival;
 
-	public List<Intention> ints;
-	public List<dBelief> pre;
-	public List<dBelief> post;
-	public NominalReference nref;
-	public List<ResolutionRequest> rrs;
-	public List<ProofWithCost> proofs;
+	private final List<Intention> ints;
+	private final List<dBelief> pre;
+	private final List<dBelief> post;
+	private NominalReference nref;
+	private final List<ResolutionRequest> rrs;
+	private final List<ProofWithCost> proofs;
 
-	public IntentionRecognitionResult(LogicalForm lf, Interval ival, List<ProofWithCost> _proofs) {
+	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> _proofs) {
 		ints = new LinkedList<Intention>();
 		pre = new LinkedList<dBelief>();
 		post = new LinkedList<dBelief>();
@@ -62,7 +63,40 @@ public class IntentionRecognitionResult {
 		for (ResolutionRequest rr : rrs) {
 			ungrounded.add(rr.nom);
 		}
-		return new Interpretation(lf, ival, proofs, new ArrayList<String>(ungrounded));
+		return new Interpretation(lf, ival.toIce(), proofs, new ArrayList<String>(ungrounded));
 	}
+
+	public void setNominalReference(NominalReference nominalReference) {
+		nref = nominalReference;
+	}
+
+	public List<Intention> getIntentions() {
+		return ints;
+	}
+
+	public List<dBelief> getPreconditionBeliefs() {
+		return pre;
+	}
+
+	public List<dBelief> getPostconditionBeliefs() {
+		return post;
+	}
+
+	public List<ResolutionRequest> getResolutionRequests() {
+		return rrs;
+	}
+
+//	public static IntentionRecognitionResult extractFromInterpretation(Interpretation ipret) {
+//		if (!ipret.proofs.isEmpty()) {
+//			ProofWithCost pwc = ipret.proofs.get(0);
+//			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, ipret.ival);
+//
+//			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, ipret.ival, rcs);
+//		}
+//		else {
+//			log("interpretation empty!");
+//			return null;
+//		}
+//	}
 
 }
