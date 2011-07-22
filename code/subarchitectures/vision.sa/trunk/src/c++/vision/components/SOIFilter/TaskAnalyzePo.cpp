@@ -95,17 +95,21 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     pSoiFilter->println("analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
   }
 
-  if(pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj))
-  {
-    pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);
-
-  } // TODO: else: do we fail if segmentObject failed?
-
+  bool bSegmented = pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj);
 
   // find VO for this PO
   cdl::WorkingMemoryAddress voAddr = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
   VisualObjectPtr pvo;
-  if (voAddr.id == "") {
+  if (voAddr.id != "") {
+    try {
+      pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
+    }
+    catch(cast::DoesNotExistOnWMException){
+      pSoiFilter->debug("analyze_task: VisualObject deleted while working.");
+    }
+  }
+  if (! pvo.get()) {
+    pSoiFilter->debug("analyze_task: creating new VisualObject.");
     pvo = new VisualObject();
     pvo->protoObject = new cdl::WorkingMemoryPointer();
     pvo->protoObject->type = cast::typeName<ProtoObject>();
@@ -115,18 +119,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     voAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
     pSoiFilter->addToWorkingMemory(voAddr, pvo);
   }
-  else {
-    try {
-      pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
-    }
-    catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->debug("analyze_task: VisualObject deleted while working.");
-      return; // TODO: fail? succeed? overwrite?
-    }
-  }
 
   pobj->visualObject.push_back(new cdl::WorkingMemoryPointer(voAddr,cast::typeName<VisualObject>()));
-  pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
+  try {
+    pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
+  }
+  catch(cast::DoesNotExistOnWMException){
+    pSoiFilter->debug("analyze_task: ProtoObject deleted while working.");
+  }
 
   // Start other recognition tasks
   LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
