@@ -67,9 +67,8 @@ SETVAR SOIFilter_Params=<multiline>
 </multiline>
 CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
-#CPP MG vis.analyzer ObjectAnalyzer  %(wmBlocking)  --log --debug
 
-INCLUDE  includes/vision.sa/vision-visual-learner.cast
+#INCLUDE  includes/vision.sa/vision-visual-learner.cast
 
 # ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
 # Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
@@ -84,6 +83,8 @@ CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayser
 
 CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 
+
+# not used in Y3 CPP MG vis.analyzer ObjectAnalyzer  %(wmBlocking)  --log --debug
 
 ##### Monitors
 
