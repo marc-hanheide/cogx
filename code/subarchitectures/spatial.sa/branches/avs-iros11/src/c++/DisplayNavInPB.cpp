@@ -69,6 +69,7 @@ DisplayNavInPB::DisplayNavInPB()
   m_lastLoggedX = DBL_MAX;
   m_lastLoggedY = DBL_MAX;
   m_currentMostLikelyRoom= "";
+  m_currGoalPlace = -1;
 }
 
 
@@ -221,6 +222,10 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newRobotPose));  
 	
+  addChangeFilter(createLocalTypeFilter<SpatialData::NavCommand>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavCommand));  
+
   // NavData
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -1142,7 +1147,7 @@ void DisplayNavInPB::runComponent() {
         getPoints(true, 0 /* unused */, points);
         peekabot::ColoredVertexSet kinectVerts; 
         double rangeMax = 1;
-        for (int i = 0; i < points.size(); i += 16) {
+        for (unsigned int i = 0; i < points.size(); i += 16) {
           /* Transform point in cloud with regards to the robot pose */
           Cure::Transformation3D robotTransform;
           robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta);
@@ -1574,6 +1579,86 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
   debug(buf);
   m_Mutex.unlock();
 }
+
+void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
+{
+  shared_ptr<CASTData<SpatialData::NavCommand> > oobj =
+    getWorkingMemoryEntry<SpatialData::NavCommand>(objID.address);
+
+  if (oobj != 0 && oobj->getData()->cmd == SpatialData::GOTOPLACE)
+  {
+    FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    /* Reset the old goal (if any) */
+    if (m_currGoalPlace != -1)
+    {
+      /* Was the old goal a placeholder? */
+      FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
+      if (nodeHypPtr)
+      {
+        // Get the node proxy
+        peekabot::SphereProxy sp;
+        std::stringstream ss;
+        ss << "node_hyp" << nodeHypPtr->hypID << "/goalMarker";
+        log("Removing old goal marker: %s", ss.str().c_str());
+        sp.assign(m_ProxyNodes, ss.str());
+        sp.remove();
+      }
+      /* Or was it a proper place? */
+      NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(m_currGoalPlace);
+      if (fnodePtr) 
+      {
+        // Get the node proxy
+        peekabot::SphereProxy sp;
+        std::stringstream ss;
+        ss << "node" << fnodePtr->nodeId << "/goalMarker";
+        log("Removing old goal marker: %s", ss.str().c_str());
+        sp.assign(m_ProxyNodes, ss.str());
+        sp.remove();
+      }
+    }
+
+    if (oobj->getData()->destId.empty())
+      return;
+    
+    log("Updating goal from %d to %d", m_currGoalPlace, oobj->getData()->destId[0]);
+
+    /* Update new goal */
+    m_currGoalPlace = oobj->getData()->destId[0];
+
+    /* Was the old goal a placeholder? */
+    FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
+    if (nodeHypPtr)
+    {
+      // Get the node proxy
+      peekabot::CubeProxy parent;
+      std::stringstream ss;
+      ss << "node_hyp" << nodeHypPtr->hypID;
+      log("Adding goal marker: %s", ss.str().c_str());
+      parent.assign(m_ProxyNodes, ss.str());
+      peekabot::SphereProxy sp;
+      sp.add(parent, "goalMarker");
+      sp.set_scale(0.5, 0.5, 0.5);
+      sp.set_color(0, 1, 0);
+      sp.set_opacity(0.3);
+    }
+    /* Or was it a proper place? */
+    NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(m_currGoalPlace);
+    if (fnodePtr) 
+    {
+      // Get the node proxy
+      peekabot::SphereProxy parent;
+      std::stringstream ss;
+      ss << "node" << fnodePtr->nodeId;
+      log("Adding goal marker: %s", ss.str().c_str());
+      parent.assign(m_ProxyNodes, ss.str());
+      peekabot::SphereProxy sp;
+      sp.add(parent, "goalMarker");
+      sp.set_scale(0.5, 0.5, 0.5);
+      sp.set_color(0, 1, 0);
+      sp.set_opacity(0.3);
+    }
+  }
+}		
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {

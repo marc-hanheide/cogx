@@ -114,6 +114,7 @@ private:
 
 	void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
 	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+	void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
 	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
 	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
@@ -189,6 +190,7 @@ private:
 	bool m_NonUniqueObjects;
   bool m_ShowPointCloud;
 	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+	int m_currGoalPlace;
 
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
