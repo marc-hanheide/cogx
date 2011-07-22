@@ -1,6 +1,6 @@
 //predicate declarations
 feature(perc,feat)
-resolved(perc)
+// resolved(perc)
 percept(perc)
 attribute(attr)
 resolution(perc)
@@ -97,5 +97,5 @@ perc={P1,P2,P3}
 -7.23121  percept(a1)
 
 // -7.23121  resolved(a1)
--7.23121  resolved(a1)
+//-7.23121  resolved(a1)
 

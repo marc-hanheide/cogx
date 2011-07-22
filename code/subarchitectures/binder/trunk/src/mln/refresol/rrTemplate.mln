@@ -6,7 +6,7 @@ feature(perc, feat)
 attribute(attr)
 resolution(perc)
 percept(perc)
-resolved(perc)
+//resolved(perc)
 
 //formulas
 

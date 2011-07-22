@@ -86,9 +86,9 @@ void MLNEngine::start()
   }
 
  // filters for belief updates
-  addChangeFilter(createGlobalTypeFilter<dBelief>(cdl::ADD),
-	  new MemberFunctionChangeReceiver<MLNEngine>(this,
-		&MLNEngine::newBelief));
+//  addChangeFilter(createGlobalTypeFilter<dBelief>(cdl::ADD),
+//	  new MemberFunctionChangeReceiver<MLNEngine>(this,
+//		&MLNEngine::newBelief));
 		
  // filters for direct evidence updates
   addChangeFilter(createGlobalTypeFilter<Evidence>(cdl::ADD),
@@ -99,6 +99,10 @@ void MLNEngine::start()
   addChangeFilter(createGlobalTypeFilter<Query>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<MLNEngine>(this,
 		&MLNEngine::newQuery));
+		
+    addChangeFilter(createGlobalTypeFilter<LearnWts>(cdl::ADD),
+	  new MemberFunctionChangeReceiver<MLNEngine>(this,
+		&MLNEngine::learnWts));
 		
 
 //  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
@@ -138,91 +142,110 @@ void MLNEngine::runComponent()
   while(isRunning())
   {
   
-  sleep(0.1);
-  
-  while(!m_queryQueue.empty())
-  {
-	log("A new query...");
-	QueryPtr q = m_queryQueue.front().query;
+	sleep(0.1);
 	
-	m_query.clear();
-	m_query=q->atoms;
-	
-	m_queryQueue.front().status=USED;
-	m_removeQueue.push(m_queryQueue.front().addr);
-	m_queryQueue.pop();
-  }
-  
-  while(!m_evidenceQueue.empty())
-  {
-	log("Adding new evidence...");
-	EvidencePtr evd = m_evidenceQueue.front().evidence;
-	
-	m_oe->addTrueEvidence(evd->trueEvidence);
-	m_oe->addFalseEvidence(evd->falseEvidence);
-	m_oe->removeEvidence(evd->removeEvidence);
-	
-	m_evidenceQueue.front().status=USED;
-	m_removeQueue.push(m_evidenceQueue.front().addr);
-	m_evidenceQueue.pop();
-	
-
-	m_oe->adaptProbs(evd->prevInfSteps);
-    m_oe->setMaxInferenceSteps(evd->initInfSteps);
-	m_oe->setMaxBurnIn(evd->burnInSteps);
-	m_oe->setExtPriors(evd->extPriors, evd->priorWts);
-	m_oe->resetPriors(evd->resetPriors);
-
-	
-#ifdef FEAT_VISUALIZATION
-    ostringstream v11out;
-    m_oe->printNetwork(v11out);
-	m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
-#endif
-  }
-  
-//  ResultPtr result = new Result();
-//  result->mrfId = m_id;
-  
-//  m_oe->setMaxInferenceSteps(5000);
-  if(!first) m_oe->restoreCnts();
-  
-  m_oe->infer(m_query, result->atoms, result->probs);
-  m_oe->saveCnts();
-  first=false;
-
-  m_oe->setMaxInferenceSteps(m_infSteps);
-  m_oe->setMaxBurnIn(0);
-  
-  if(doDisplay) {
-    // Print true atoms
-	cout << endl;
-	cout << "Time step " << ++tstep << " non-zero atoms: " << endl;
-	vector<string>::const_iterator it = result->atoms.begin();
-	vector<float>::const_iterator probIt = result->probs.begin();
-	for (; it != result->atoms.end(); it++)
+	while(!m_queryQueue.empty())
 	{
-	  cout << (*it) << " " << (*probIt) << endl;
-	  probIt++;
-	}
-  }
-
-  overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
-  
-  while(!m_removeQueue.empty())
-  {
-	debug("Removing evidence or query entry"); 
-	deleteFromWorkingMemory(m_removeQueue.front());
+	  log("A new query...");
+	  QueryPtr q = m_queryQueue.front().query;
 	
-	m_removeQueue.pop();
-  }
-  
-  cout << "Samples: " << m_oe->getNumSamples() << endl;
-  cout << "Num true cnts: " << m_oe->getClauseTrueCnts(0) << endl;
-  
-//	ptime t(second_clock::universal_time() + seconds(1));
+	  m_query.clear();
+	  m_query=q->atoms;
+	
+	  m_queryQueue.front().status=USED;
+	  m_removeQueue.push(m_queryQueue.front().addr);
+	  m_queryQueue.pop();
+	}
+	
+	while(!m_evidenceQueue.empty())
+	{
+	  log("Adding new evidence...");
+	  EvidencePtr evd = m_evidenceQueue.front().evidence;
+	
+	  m_oe->addTrueEvidence(evd->trueEvidence);
+	  m_oe->addFalseEvidence(evd->falseEvidence);
+	  m_oe->removeEvidence(evd->noEvidence);
+	
+	  m_evidenceQueue.front().status=USED;
+	  m_removeQueue.push(m_evidenceQueue.front().addr);
+	  m_evidenceQueue.pop();
+	
 
-  }
+	  m_oe->adaptProbs(evd->prevInfSteps);
+	  m_oe->setMaxInferenceSteps(evd->initInfSteps);
+	  m_oe->setMaxBurnIn(evd->burnInSteps);
+	  m_oe->setExtPriors(evd->extPriors, evd->priorWts);
+	  m_oe->resetPriors(evd->resetPriors);
+
+	  
+  #ifdef FEAT_VISUALIZATION
+	  ostringstream v11out;
+	  m_oe->printNetwork(v11out);
+	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+  #endif
+	}
+	
+	while(!m_learnWtsQueue.empty())
+	{
+	  log("Executing weight learning instrction...");
+	  LearnWtsPtr lw = m_learnWtsQueue.front().learnWts;
+
+
+	  m_learnWtsQueue.front().status=USED;
+	  m_removeQueue.push(m_learnWtsQueue.front().addr);
+	  m_learnWtsQueue.pop();
+	
+	  m_oe->genLearnWts(lw->trueEvidence, lw->falseEvidence, lw->noEvidence, 1);
+	  	  
+  #ifdef FEAT_VISUALIZATION
+	  ostringstream v11out;
+	  m_oe->printNetwork(v11out);
+	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+  #endif
+	}
+	
+  //  ResultPtr result = new Result();
+  //  result->mrfId = m_id;
+	
+  //  m_oe->setMaxInferenceSteps(5000);
+	if(!first) m_oe->restoreCnts();
+	
+	m_oe->infer(m_query, result->atoms, result->probs);
+	m_oe->saveCnts();
+	first=false;
+
+	m_oe->setMaxInferenceSteps(m_infSteps);
+	m_oe->setMaxBurnIn(0);
+	
+	if(doDisplay) {
+	  // Print true atoms
+	  cout << endl;
+	  cout << "Time step " << ++tstep << " non-zero atoms: " << endl;
+	  vector<string>::const_iterator it = result->atoms.begin();
+	  vector<float>::const_iterator probIt = result->probs.begin();
+	  for (; it != result->atoms.end(); it++)
+	  {
+		cout << (*it) << " " << (*probIt) << endl;
+		probIt++;
+	  }
+	}
+
+	overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
+	
+	while(!m_removeQueue.empty())
+	{
+	  debug("Removing evidence or query entry"); 
+	  deleteFromWorkingMemory(m_removeQueue.front());
+	
+	  m_removeQueue.pop();
+	}
+	
+	cout << "Samples: " << m_oe->getNumSamples() << endl;
+	cout << "Num true cnts: " << m_oe->getClauseTrueCnts(0) << endl;
+	
+  //	ptime t(second_clock::universal_time() + seconds(1));
+
+	}
 
   log("Removing semaphore ...");
   m_queuesNotEmpty->remove("MLNSemaphore");
@@ -254,16 +277,14 @@ void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
 	data.status=NEW;
 	data.evidence=evd;
 	data.addr= _wmc.address;
-	queueNewEvidence(data);
-	
+	queueNewEvidence(data);	
 //	deleteFromWorkingMemory(_wmc.address);
   }
   else {
 	debug("Not my evidence.");
 	return;
   }  
-};
-
+}
 
 
 void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
@@ -294,9 +315,9 @@ void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
 	debug("Not mine.");
 	return;
   }  
-};
+}
 
-
+/*
 void MLNEngine::newBelief(const cdl::WorkingMemoryChange & _wmc)
 {
   log("A belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
@@ -312,112 +333,41 @@ void MLNEngine::newBelief(const cdl::WorkingMemoryChange & _wmc)
   }
   		
   debug("Got a belief from WM. ID: %s", _wmc.address.id.c_str());  
-/*
-  if(!epistemicStatus<SharedEpistemicStatus>(belief))
-  {
-	log("WARNING: the epistemic status is not a shared one. No learning case.");
-	return;
-  }
-*/
   
   cdl::WorkingMemoryAddress refWmaAddr;
   
-//  if(!pointedCASTAddr("about", belief, refWmaAddr))
-//  {
-//	log("WARNING: no reference property in the presupposed belief. No learning case.");
-//	return;
-//  }
-}
-
-void MLNEngine::queueNewEvidence(EvidenceData data)
-{
-  m_evidenceQueue.push(data);
-}
-
-
-void MLNEngine::queueNewQuery(QueryData data)
-{
-  m_queryQueue.push(data);
-}
-
-/*
-void MLNEngine::updatedLearningTask(const cdl::WorkingMemoryChange & _wmc)
-{
-  log("A learning Task was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
-  
-  VisualLearnerLearningTaskPtr task =
-	getMemoryEntry<VisualLearnerLearningTask>(_wmc.address);
-	
-  debug("Got an overwritten learning task ID: %s", _wmc.address.id.c_str());
-  
-  BeliefPtr belief = getMemoryEntry<Belief>(task->beliefId, m_bindingSA);
-  GroundedBeliefPtr grobelief = new GroundedBelief();
-  grobelief->sigma = belief->sigma;
-  grobelief->phi = belief->phi;
-	removeLearnedAssertions(grobelief->phi, task);
-	
-	MutualAgentStatusPtr agstatus = new MutualAgentStatus();
-	agstatus->ags.push_back(new Agent("robot"));
-	agstatus->ags.push_back(new Agent("human"));
-  grobelief->ags = agstatus;
-  grobelief->grounding = new Ground();
-  grobelief->grounding->gstatus = assertionVerified;
-  grobelief->grounding->modality = getSubarchitectureID();
-//  grobelief->grounding->indexSet
-  grobelief->grounding->reason = new SuperFormula();
-  grobelief->timeStamp = getCASTTime();
-  grobelief->id = belief->id;
-  
-  overwriteWorkingMemory(task->beliefId, m_bindingSA, grobelief);
-  log("Updated the belief ID %s with grounding", belief->id.c_str());
-
-  deleteFromWorkingMemory(_wmc.address);
-  log("Removed the learning task ID %s", _wmc.address.id.c_str());
-  
-  removeChangeFilter(TaskFilterMap[_wmc.address.id]);
-  TaskFilterMap.erase(_wmc.address.id);
 }
 */
 
-/*
-bool MLNEngine::pointedCASTAddr(std::string key, map<string,ProbDistribution> distibutions, cast::cdl::WorkingMemoryAddress &refWmaAddr)
+void MLNEngine::learnWts(const cdl::WorkingMemoryChange & _wmc)
 {
-  // BasicProbDistributionresult->atoms
-  map<string,ProbDistribution>::iterator bpd = distributions.find(key);
+  log("A new weight learn entry. ID: %s ", _wmc.address.id.c_str());
   
-  if(bpd==distributions.end())
-	return false;
-  else if(bpd->key==key)
-	{
-	  refWmaAddr=bpd->values->values.begin().val->pointer;
-	  return true;
-	}
-	else
-	{
-	  log("Basic distribution key did not match the Distributions key");
-	  return false;
-	}	  
-}
-
-
-bool MLNEngine::pointedCASTAddr(std::string key, ProbDistribution distribution, cast::cdl::WorkingMemoryAddress &refWmaAddr)
-{
-  ProbDistribution *pd= &(*distribution);
+  LearnWtsPtr lw; 
   
-  if(typeid(*pd) == typeid(CondIndependentDistribs))
-	return pointedCASTAddr(key, pd->distributions, refWmaAddr)
-  else
-  {
-	log("UNEXPECTED STRUCTURE in belief content");
-	return false;
+  try {
+	lw = getMemoryEntry<LearnWts>(_wmc.address);
   }
+  catch (DoesNotExistOnWMException e) {
+	log("WARNING: the LearnWts entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
+	return;
+  }
+  		
+  debug("Got a weight learning instruction from WM. ID: %s", _wmc.address.id.c_str());
+  
+  if( lw->mrfId == m_id ) {
+	LearnWtsData data;
+	data.status=NEW;
+	data.learnWts=lw;
+	data.addr= _wmc.address;
+	queueLearnWts(data);
+//	deleteFromWorkingMemory(_wmc.address);
+  }
+  else {
+	debug("Not mine.");
+	return;
+  }  
 }
-
-bool MLNEngine::pointedCASTAddr(std::string key, dBelief belief, cast::cdl::WorkingMemoryAddress &refWmaAddr)
-{
-  return pointedCASTAddr(key, belief->content, refWmaAddr);
-}
-*/
 
 }
 /* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/

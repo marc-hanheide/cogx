@@ -43,7 +43,7 @@ module mln {
 		string mrfId;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
-		PredStrSeq removeEvidence;
+		PredStrSeq noEvidence;
 		PredStrSeq extPriors;
 		WeightSeq priorWts;
 		PredStrSeq resetPriors;
@@ -63,6 +63,13 @@ module mln {
 		string mrfId;
 		PredStrSeq atoms;
 		ProbSeq probs;
+	};
+	
+	class LearnWts {
+		string mrfId;
+		PredStrSeq trueEvidence;
+		PredStrSeq falseEvidence;
+		PredStrSeq noEvidence;
 	};
 };
 
