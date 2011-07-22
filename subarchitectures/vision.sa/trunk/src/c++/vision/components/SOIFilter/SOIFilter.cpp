@@ -457,6 +457,7 @@ void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
   m_visualObjects[_wmc.address] = new VisionData::VisualObject();
   saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+  sendSyncAllProtoObjects();
 }
 
 void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -464,11 +465,13 @@ void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
   m_visualObjects[_wmc.address] = new VisionData::VisualObject();
   saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+  sendSyncAllProtoObjects();
 }
 
 void SOIFilter::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   m_visualObjects.erase(_wmc.address);
+  sendSyncAllProtoObjects();
 }
 
 void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
