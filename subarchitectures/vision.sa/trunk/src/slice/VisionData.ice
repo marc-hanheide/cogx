@@ -515,8 +515,8 @@ enum VisionCommandStatus {
     // segmented planar surface patches
     SurfacePatchSeq surfacePatches;
 
-	// The visual object created from this PO. size() == 0 if none created yet, otherwise size() == 1
-	WorkingMemoryPointerSeq	visualObject;
+    // The visual object created from this PO. size() == 0 if none created yet, otherwise size() == 1
+    WorkingMemoryPointerSeq visualObject;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
