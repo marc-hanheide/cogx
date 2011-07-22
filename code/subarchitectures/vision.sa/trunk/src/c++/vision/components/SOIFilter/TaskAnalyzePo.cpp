@@ -37,6 +37,10 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     return;
   }
 
+  try { // DEBUGGING: NullHandleException
+  // XXX: a NullHandleException is raised if wrong object type is selected in execution GUI
+  // TODO: fix execution GUI to allow only sensible object/operation combiantions
+
   pSoiFilter->println("analyze_task: read po");
   // pobj - The proto object to segment
   ProtoObjectPtr pobj;
@@ -79,7 +83,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   SOIPtr psoi = sois[0];
   double d, dmin;
   dmin = dist(pobj->position, psoi->boundingSphere.pos);
-  for (int i = 1; i < sois.size(); ++i) {
+  for (unsigned int i = 1; i < sois.size(); ++i) {
     d = dist(pobj->position, sois[i]->boundingSphere.pos);
     if (d < dmin) {
       dmin = d;
@@ -144,6 +148,9 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   pTask->deleteOnCompletion();
 
   cmd.succeed();
+  } catch ( IceUtil::NullHandleException& e ) { // DEBUGGING
+    pSoiFilter->println("CAUGHT");
+  }
 }
 
 } // namespace
