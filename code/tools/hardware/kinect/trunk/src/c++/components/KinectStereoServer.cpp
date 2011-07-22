@@ -597,6 +597,9 @@ void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& imag
 
 bool KinectStereoServer::getCameraParameters(Ice::Int side, Video::CameraParameters& _camPars)
 {
+  if (side != LEFT && side != RIGHT)
+    return false;
+
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   initCameraParameters(_camPars);
