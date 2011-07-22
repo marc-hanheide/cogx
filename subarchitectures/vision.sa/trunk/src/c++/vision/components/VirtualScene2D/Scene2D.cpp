@@ -117,6 +117,8 @@ IplImage* wrapMask(const VisionData::SegmentMask &img)
 {
    // HACK: Data shared between IplImage and vector
    IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 1);
+   if (! pImg)
+      return pImg;
    pImg->imageData = (char*) &(img.data[0]);
    pImg->imageDataOrigin = pImg->imageData;
    pImg->widthStep = img.width;
@@ -187,22 +189,39 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
 
    vector<vector<cv::Point> > contours;
    vector<cv::Vec4i> hierarchy;
-   IplImage* pImg = wrapMask(pProtoObj->mask);
-   cv::Mat imgMat(pImg); // XXX copy=true crashes; so we modify the original data.
-
-   // XXX: mask created in SOIFilter: 1-object, 2-background.
-   // findContours requires 0 for background, everything else is the object.
-   for (int i=0; i< pProtoObj->mask.height; i++) {
-     unsigned char *prow = imgMat.ptr(i);
-     unsigned char *pend = prow + pProtoObj->mask.width;
-     while(prow < pend) {
-        if (*prow != 1) *prow = 0;
-        prow++;
-     }
+   IplImage* pImg = 0;
+   try {
+      pImg = wrapMask(pProtoObj->mask);
    }
-   cv::findContours( imgMat, contours, hierarchy,
-         CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );
-   releaseWrappedImage(&pImg);
+   catch (...) {
+      println("wrapMask FAILED");
+      sleepComponent(100);
+      throw;
+   }
+   if (pImg) {
+      cv::Mat imgMat(pImg); // XXX copy=true crashes; so we modify the original data.
+
+      // XXX: mask created in SOIFilter: 1-object, 2-background.
+      // findContours requires 0 for background, everything else is the object.
+      for (int i=0; i< pProtoObj->mask.height; i++) {
+         unsigned char *prow = imgMat.ptr(i);
+         unsigned char *pend = prow + pProtoObj->mask.width;
+         while(prow < pend) {
+            if (*prow != 1) *prow = 0;
+            prow++;
+         }
+      }
+      try {
+         cv::findContours( imgMat, contours, hierarchy,
+               CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );
+      }
+      catch (...) {
+         println("cv::findContours FAILED");
+         sleepComponent(100);
+         throw;
+      }
+      releaseWrappedImage(&pImg);
+   }
 
    double W = pProtoObj->sourceImageSize.x;
    double H = pProtoObj->sourceImageSize.y;
@@ -218,7 +237,8 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    p.flinewidth(ps * 1.0);
 
    p.pencolorname("red");
-   drawContours(p, x0, y0, contours);
+   if (pImg)
+      drawContours(p, x0, y0, contours);
 
    double true_size = p.fontsize(ps * 12);
    double dy = 0;
@@ -318,7 +338,18 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
    };
    if (! pProtoObj.get()) return;
 
-   drawVisualObject(_wmc.address.id, pVisObj, pProtoObj);
+   try {
+      drawVisualObject(_wmc.address.id, pVisObj, pProtoObj);
+   }
+   catch(const std::exception &e) {
+      println("drawVisualObject FAILED with: %s", e.what());
+      sleepComponent(100);
+   }
+   catch (...) {
+      println("drawVisualObject FAILED");
+      sleepComponent(100);
+   }
+
 }
 
 void CScene2D::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
