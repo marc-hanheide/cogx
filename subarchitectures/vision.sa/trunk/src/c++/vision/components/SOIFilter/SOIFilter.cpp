@@ -294,6 +294,9 @@ void SOIFilter::sendSyncAllProtoObjects()
 
 void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const VisionData::ProtoObjectPtr& pobj)
 {
+  // The first time the PO is analyzed, the VO may still not exist in WM, but 
+  // PO already references it.
+  // (Temporary) fix: send all POs again after every VO change (done in onXXX_VisualObject).
   cdl::WorkingMemoryAddress voaddr = findVisualObjectFor(addr);
   bool bHasVo = voaddr.id != "";
 
