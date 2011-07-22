@@ -25,9 +25,7 @@ LearnerRecognitionTaskRcv::LearnerRecognitionTaskRcv(SOIFilter* psoif,
   pSoiFilter = psoif;
   m_pcmd = new VisualLearnerRecognitionTask();
   m_pcmd->status = VisionData::VCREQUESTED;
-  m_pcmd->protoObjectAddr = new cdl::WorkingMemoryPointer();
-  m_pcmd->protoObjectAddr->type = cast::typeName<ProtoObject>();
-  m_pcmd->protoObjectAddr->address = protoObjectAddr;
+  m_pcmd->protoObjectAddr = createWmPointer<ProtoObject>(protoObjectAddr);
   this->visualObjectAddr = visualObjectAddr;
   string id = pSoiFilter->newDataID();
   pSoiFilter->addChangeFilter(createIDFilter(id, cdl::OVERWRITE), this);  
