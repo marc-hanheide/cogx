@@ -74,7 +74,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       return;
     }
 
-    pobj = new ProtoObject();
+    pobj = createProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
     string objId = pSoiFilter->newDataID();
 
@@ -87,7 +87,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     //    VC is reached. We could use anchors for that, but are they currently
     //    implemented?
     //    Current VC is at anchor. Desired VC(s) are relative to the anchor.
-    ViewConePtr pCurVc = new ViewCone();
+    ViewConePtr pCurVc = createViewCone();
     pCurVc->anchor.x = pSoiFilter->m_RobotPose.x;
     pCurVc->anchor.y = pSoiFilter->m_RobotPose.y;
     pCurVc->anchor.z = pSoiFilter->m_RobotPose.theta;
@@ -143,16 +143,14 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     }
 
     // New view cone for turning the head
-    ViewConePtr pBetterVc = new ViewCone();
+    ViewConePtr pBetterVc = createViewCone();
     pBetterVc->anchor = pCurVc->anchor;
     pBetterVc->x = pCurVc->x;
     pBetterVc->y = pCurVc->y;
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
-    pBetterVc->target = new cdl::WorkingMemoryPointer();
-    pBetterVc->target->address = cast::makeWorkingMemoryAddress(objId,
-        pSoiFilter->getSubarchitectureID());
-    pBetterVc->target->type = cast::typeName<ProtoObject>();
+    pBetterVc->target = createWmPointer<ProtoObject>(cast::makeWorkingMemoryAddress(objId,
+        pSoiFilter->getSubarchitectureID()));
 
     // Address at which new view cone will be stored
     cdl::WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),
@@ -167,6 +165,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pobj->desiredLocations.push_back(vcPtr);
 
     // Add PO to WM
+    pSoiFilter->debug("Adding new ProtoObject '%s'", objId.c_str());
     pSoiFilter->addToWorkingMemory(objId, pobj);
 
     // Now it is up to the planner to create a plan to move the robot

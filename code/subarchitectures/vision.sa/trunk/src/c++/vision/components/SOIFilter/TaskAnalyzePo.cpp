@@ -48,11 +48,6 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     cmd.fail();
     return;
   }
-  //catch (Ice::MarshalException){
-  //  pSoiFilter->debug("SOIFilter.analyze_task: ProtoObject MarshalException. Aborting task.");
-  //  cmd.fail();
-  //  return;
-  //}
 
   /* Asynchronous call through a working memory entry.
    *
@@ -96,10 +91,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   bool bSegmented = pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj);
+  if (! bSegmented) {
+    pSoiFilter->debug("analyze_task: Segmentation failed.");
+  }
 
   // find VO for this PO
   cdl::WorkingMemoryAddress voAddr = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
   VisualObjectPtr pvo;
+  bool bNewVo = false;
   if (voAddr.id != "") {
     try {
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
@@ -110,22 +109,34 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
   if (! pvo.get()) {
     pSoiFilter->debug("analyze_task: creating new VisualObject.");
-    pvo = new VisualObject();
-    pvo->protoObject = new cdl::WorkingMemoryPointer();
-    pvo->protoObject->type = cast::typeName<ProtoObject>();
-    pvo->protoObject->address = cmd.pcmd->protoObjectAddr;
-    pvo->lastProtoObject = pvo->protoObject;
+    pvo = createVisualObject();
+    pvo->protoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
+    pvo->lastProtoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
 
     voAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
-    pSoiFilter->addToWorkingMemory(voAddr, pvo);
+    bNewVo = true;
   }
 
-  pobj->visualObject.push_back(new cdl::WorkingMemoryPointer(voAddr,cast::typeName<VisualObject>()));
+  // XXX: Problems may arise because VO points to PO and PO points to VO !!!
+  // We write first the PO because usually PO is used throug the reference in VO.
+
+  pobj->visualObject.push_back(createWmPointer<VisualObject>(voAddr));
   try {
     pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->debug("analyze_task: ProtoObject deleted while working.");
+    pSoiFilter->debug("analyze_task (WRITE): ProtoObject deleted while working.");
+  }
+
+  // VO has to be written after PO (components usually access PO through VO)
+  if (pvo.get() && voAddr.id != "") {
+    try {
+      if (bNewVo) pSoiFilter->addToWorkingMemory(voAddr, pvo);
+      else pSoiFilter->overwriteWorkingMemory(voAddr, pvo);	
+    }
+    catch(cast::DoesNotExistOnWMException){
+      pSoiFilter->debug("analyze_task (WRITE): VisualObject deleted while working.");
+    }
   }
 
   // Start other recognition tasks
