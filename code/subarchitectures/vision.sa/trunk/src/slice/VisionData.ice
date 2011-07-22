@@ -149,6 +149,7 @@ enum VisionCommandStatus {
     VisualObjectViewSeq views;
 
     // Geometric representation in 3D space
+    // TODO: make a WM Pointer: ProtoObjectGeometryModel { PO-Ptr, GeometryModel }
     GeometryModel model;
 
     // The name with which we refer to the object linguistically
@@ -496,9 +497,11 @@ enum VisionCommandStatus {
     cogx::Math::Vector3 position;
 
     // 2D image patch
+    // TODO: make a WM Pointer: ProtoObjectImage { PO-Ptr, Image } 
     Video::Image image;
 
     // Segmentation mask;
+    // TODO: make a WM Pointer: ProtoObjectMask { PO-Ptr, Mask }
     SegmentMask mask;
 
     // (review2010) Size of the original image from which the patch and mask were created
@@ -507,12 +510,15 @@ enum VisionCommandStatus {
     cogx::Math::Vector2 imageOrigin;
 
     // List of all surface 3D points
+    // TODO: make a WM Pointer: ProtoObjectSuefacePoints { PO-Ptr, SurfacePointSeq }
     PointCloud::SurfacePointSeq points;
 
     // RAS shape descriptor
     RASShapeDescriptor rasShapeDesc;
 
     // segmented planar surface patches
+    // TODO: make a WM Pointer: ProtoObjectSurfacePatches { PO-Ptr, SurfacePatchSeq }
+    // XXX: is this used at all?
     SurfacePatchSeq surfacePatches;
 
     // The visual object created from this PO. size() == 0 if none created yet, otherwise size() == 1
