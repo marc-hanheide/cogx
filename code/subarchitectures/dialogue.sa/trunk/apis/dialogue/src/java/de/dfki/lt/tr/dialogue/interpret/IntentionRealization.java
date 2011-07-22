@@ -50,7 +50,7 @@ public class IntentionRealization {
 	private AbductionEngineConnection abd_realize;
 
 //	public static Counter counter = new Counter("ir");
-	public IdentifierGenerator idGen;
+	public final IdentifierGenerator<String> idGen;
 
 	private String abd_serverName = "";
 	private String abd_endpoints = "";
@@ -60,7 +60,7 @@ public class IntentionRealization {
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRealization(String servername, String endpoints, IdentifierGenerator idGen_, int timeout_) {
+    public IntentionRealization(String servername, String endpoints, IdentifierGenerator<String> idGen_, int timeout_) {
 		this.idGen = idGen_;
 		this.timeout = timeout_;
 		this.abd_serverName = servername;

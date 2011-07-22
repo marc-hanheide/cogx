@@ -8,6 +8,7 @@ import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,7 +46,7 @@ public abstract class ReferenceUtils {
 		return s;
 	}
 
-	static ResolutionRequest nominalToConstraints(LFNominal nom, Interval ival) {
+	static ResolutionRequest nominalToConstraints(LFNominal nom, TimeInterval ival) {
 		List<Constraint> cs = new ArrayList<Constraint>();
 		Iterator<Feature> iter = LFUtils.lfNominalGetFeatures(nom);
 		log("converting nominal to constraints");
@@ -63,7 +64,7 @@ public abstract class ReferenceUtils {
 			cs.add(c);
 		}
 		log("conversion done");
-		return new ResolutionRequest(nom.nomVar, sort, cs, ival);
+		return new ResolutionRequest(nom.nomVar, sort, cs, ival.toIce());
 	}
 
 	private static void log(String s) {

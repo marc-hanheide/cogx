@@ -48,6 +48,7 @@ import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.Counter;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
@@ -313,7 +314,7 @@ public abstract class ConversionUtils {
 		return itc;
 	}
 
-	public static String foldIntoBeliefs(IdentifierGenerator idGen, EpistemicStatus epst, String lingRef, Map<String, WorkingMemoryAddress> usedRefs, FunctionTerm t, List<dBelief> bel) {
+	public static String foldIntoBeliefs(IdentifierGenerator<String> idGen, EpistemicStatus epst, String lingRef, Map<String, WorkingMemoryAddress> usedRefs, FunctionTerm t, List<dBelief> bel) {
 		Iterator<dBelief> it = bel.iterator();
 		while (it.hasNext()) {
 			dBelief xb = it.next();
@@ -681,7 +682,7 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	static List<ResolutionRequest> extractReferenceRequests(LogicalForm lf, List<MarkedQuery> proof, Interval ival) {
+	static List<ResolutionRequest> extractReferenceRequests(LogicalForm lf, List<MarkedQuery> proof, TimeInterval ival) {
 		List<ResolutionRequest> result = new ArrayList<ResolutionRequest>();
 
 		List<ModalisedAtom> matoms = ProofUtils.filterStripByModalityPrefix(ProofUtils.stripMarking(proof), Arrays.asList(new Modality[] {Modality.Understanding}));

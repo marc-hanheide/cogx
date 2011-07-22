@@ -24,13 +24,13 @@ package de.dfki.lt.tr.dialogue.util;
  *
  * @author Miroslav Janicek <miroslav.janicek@dfki.de>
  */
-public abstract interface IdentifierGenerator {
+public abstract interface IdentifierGenerator<T> {
 
 	/**
 	 * Return a unique string identifier.
 	 *
 	 * @return identifier
 	 */
-	public String newIdentifier();
+	public T newIdentifier();
 
 }

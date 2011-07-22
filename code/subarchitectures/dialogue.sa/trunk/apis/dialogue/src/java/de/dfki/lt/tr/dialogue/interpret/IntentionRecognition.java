@@ -26,7 +26,7 @@ import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
-import de.dfki.lt.tr.dialogue.slice.time.Interval;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
@@ -109,7 +109,7 @@ public class IntentionRecognition {
 	 * @param plf the utterance
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
-	public IntentionRecognitionResult logicalFormToInterpretation(LogicalForm lf, Interval ival) {
+	public IntentionRecognitionResult logicalFormToInterpretation(LogicalForm lf, TimeInterval ival) {
 		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
 			abd_recog.getEngineProxy().addFact(fact);
 		}
@@ -132,19 +132,6 @@ public class IntentionRecognition {
 		}
 		else {
 			log("no proof found");
-			return null;
-		}
-	}
-
-	public IntentionRecognitionResult extractFromInterpretation(Interpretation ipret) {
-		if (!ipret.proofs.isEmpty()) {
-			ProofWithCost pwc = ipret.proofs.get(0);
-			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, ipret.ival);
-
-			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, ipret.ival, rcs);
-		}
-		else {
-			log("interpretation empty!");
 			return null;
 		}
 	}
