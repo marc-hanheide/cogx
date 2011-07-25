@@ -9,9 +9,10 @@ import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
 public class VisualObjectMediatorComponent extends PerceptMediatorComponent {
 
 	@Override
-	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator() {
-		return PerceptBindingMediator.create(this, VisualObject.class,
+	protected PerceptBindingMediator<VisualObject, PerceptBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this,  _toSA, VisualObject.class,
 				PerceptBelief.class, new VisualObjectTransferFunction(this));
 	}
+
 
 }
