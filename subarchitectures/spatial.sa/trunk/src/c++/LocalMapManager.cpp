@@ -94,7 +94,7 @@ LocalMapManager::~LocalMapManager()
 }
 
 void LocalMapManager::configure(const map<string,string>& _config) 
-{
+{ 
   log("configure...");
   map<string,string>::const_iterator it = _config.find("-c");
   if (it== _config.end()) {
@@ -302,9 +302,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
 } 
 
-void LocalMapManager::start() 
-{
 
+void LocalMapManager::start() 
+{  
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
 								  &LocalMapManager::newRobotPose));
@@ -342,100 +342,118 @@ void LocalMapManager::runComponent()
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
 
+  log("the number of cells from the center to the edge of the LGM is: %u",	m_lgm2->getSize());
+
   log("I am running!");
+
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
   int count = 0;
   while(isRunning()){
-  if(m_saveNodeLgms && count  == 12){
-    SaveNodeGridMaps();
-    count = 0;
-  }
-  count++;
-    debug("lock in isRunning");
+  
+		if(m_saveNodeLgms && count  == 12){
+		  SaveNodeGridMaps();
+		  count = 0;
+		}
+		
+	  count++;
+	  
+    debug("lock in isRunning");    
     lockComponent(); //Don't allow any interface calls while processing a callback
-    curNode = getCurrentNavNode();
+    curNode = getCurrentNavNode(); //PlaceManager::getCurrentNavNode()
+    
     if (curNode != 0) {
-      if (curNode->nodeId != prevNode) {
-	m_Mutex.lock();
-	// Node has changed! See if the node already has a lgm associated
-	// with it; if so, swap the current for it. Otherwise,
-	// assign the temporary to it.
-	if (m_nodeGridMaps.find(curNode->nodeId) == m_nodeGridMaps.end()) {
-	  // There's no grid map for the current Node. Assign the 
-	  // temporary lgm to it.
-	  m_nodeGridMaps[curNode->nodeId] = m_lgm2;
-	  log("Movin'");
-	  m_lgm2->moveCenterTo(curNode->x, curNode->y);
-	  m_lgm1 = m_lgm2;
-	  log("Allocatin'");
-	  m_lgm2 = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
+      if (curNode->nodeId != prevNode) { /* The robot is in some new node! */
+				m_Mutex.lock();
+				// Node has changed! See if the node already has a lgm associated
+				// with it; if so, swap the current for it. Otherwise,
+				// assign the temporary to it.
+				/*   std::map<int, CharMap *> m_nodeGridMaps; */
+				if (m_nodeGridMaps.find(curNode->nodeId) == m_nodeGridMaps.end()) { /* search on nodeId */
+				  // There's no grid map for the current Node. Assign the 
+				  // temporary lgm to it.
+					/* m_lgm2: This grid map represents a potential new place and is reset each time the robot changes Place. */
+				  m_nodeGridMaps[curNode->nodeId] = m_lgm2;
+				  log("Movin'");
+				  /* center of the local grid map (m_lgm2) is set to the current node location */
+				  m_lgm2->moveCenterTo(curNode->x, curNode->y);
+			    /* m_lgm1: This grid map represents the current Place */
+				  m_lgm1 = m_lgm2;
+				  log("Allocatin'");
+				  /* allocating a new local grid map object filled with the proper parameters */
+				  m_lgm2 = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
 
-	  if (m_isUsingSeparateGridMaps) {
-	    m_nodeGridMapsAlt[curNode->nodeId] = m_lgm2_alt;
-	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y);
-	    m_lgm1_alt = m_lgm2_alt;
-	    m_lgm2_alt = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
-	  }
-	}
-	else {
-	  // Clear the temporary lgm
-	  m_lgm1 = m_nodeGridMaps[curNode->nodeId];
-	  log("Clearin'");
-	  m_lgm2->clearMap();
-	  log("Movin' 2");
-	  m_lgm2->moveCenterTo(curNode->x, curNode->y, false);
+					if (m_isUsingSeparateGridMaps) {
+						m_nodeGridMapsAlt[curNode->nodeId] = m_lgm2_alt;
+						m_lgm2_alt->moveCenterTo(curNode->x, curNode->y);
+						m_lgm1_alt = m_lgm2_alt;
+						m_lgm2_alt = new CharMap(m_mapsize, m_cellsize, '2', CharMap::MAP1, curNode->x, curNode->y);
+					}
+				}
+				else { /* nodeId was not found in nodeGridMaps */
+					// Clear the temporary local grid map, m_lgm2
+					m_lgm1 = m_nodeGridMaps[curNode->nodeId];
+					log("Clearin'");
+					m_lgm2->clearMap(); /* remove all the obstacles from the map */
+					log("Movin' 2");
+					m_lgm2->moveCenterTo(curNode->x, curNode->y, false); /* false: don't update the map */
 
-	  if (m_isUsingSeparateGridMaps){
-	    m_lgm1_alt = m_nodeGridMapsAlt[curNode->nodeId];
-	    m_lgm2_alt->clearMap();
-	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y, false);
-	  }
-	}
-	delete m_Glrt1;
-	delete m_Glrt2;
-	m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
-	m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
+					if (m_isUsingSeparateGridMaps){
+						m_lgm1_alt = m_nodeGridMapsAlt[curNode->nodeId];
+						m_lgm2_alt->clearMap();
+						m_lgm2_alt->moveCenterTo(curNode->x, curNode->y, false);
+					}
+				}
+				delete m_Glrt1;
+				delete m_Glrt2;
+				m_Glrt1  = new CharGridLineRayTracer(*m_lgm1); /* typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer; */
+				m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
-	if (m_isUsingSeparateGridMaps) {
-	  delete m_Glrt1_alt;
-	  delete m_Glrt2_alt;
-	  m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
-	  m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
-	}
+				if (m_isUsingSeparateGridMaps) {
+					delete m_Glrt1_alt;
+					delete m_Glrt2_alt;
+					m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
+					m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
+				}
 
-	if (m_Displaylgm1) {
-	  //m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
-	  m_Displaylgm1->setMap(m_lgm1);
-	}
-	if (m_Displaylgm2) {
-	  m_Displaylgm2->setMap(m_lgm2);
-	}
-	//log("Maps set");
+				if (m_Displaylgm1) {
+					//m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+					m_Displaylgm1->setMap(m_lgm1);
+				}
+				
+				if (m_Displaylgm2) {
+					m_Displaylgm2->setMap(m_lgm2);
+				}
+				//log("Maps set");
 
-	m_Mutex.unlock();
-      }
-      prevNode = curNode->nodeId;
+				m_Mutex.unlock();
+	    } // if (curNode->nodeId != prevNode) ends
+		  prevNode = curNode->nodeId;
 
-      //log("Updatin'");
-      if (m_Displaylgm1) {
-	Cure::Pose3D currentPose = m_TOPP.getPose();
-	m_Displaylgm1->updateDisplay(&currentPose);
-      }
-      if (m_Displaylgm2) {
-	Cure::Pose3D currentPose = m_TOPP.getPose();
-	m_Displaylgm2->updateDisplay(&currentPose);
-      }
-      //log("Updated");
+		  //log("Updatin'");
+		  if (m_Displaylgm1) {
+				Cure::Pose3D currentPose = m_TOPP.getPose();
+				m_Displaylgm1->updateDisplay(&currentPose);
+			}
+			
+		  if (m_Displaylgm2) {
+				Cure::Pose3D currentPose = m_TOPP.getPose();
+				m_Displaylgm2->updateDisplay(&currentPose);
+		  }
+		  
+	    //log("Updated");
 
-    }
+  	} // if (curNode != 0) ends
+    
     unlockComponent();
+    
     debug("unlock in isRunning");
 
     sleepComponent(250);
-  }
+  } // While ends
 }
 
+// Save into a file
 void LocalMapManager::SaveNodeGridMaps(){
   log("Saving node gridmaps");
   ofstream fout("NodeGridMaps.txt");
@@ -462,6 +480,8 @@ void LocalMapManager::SaveNodeGridMaps(){
   }
     fout.close();
 }
+
+// load from the file
 void LocalMapManager::LoadNodeGridMaps(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
@@ -498,6 +518,8 @@ log("node cx, cy: %3.2f, %3.2f",cx,cy);
   }
 log("loaded %d maps",m_nodeGridMaps.size());
 }
+
+/* newRobotPose */
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
   double oldX = 0.0;
@@ -514,10 +536,22 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   try {
     lastRobotPose =
       getMemoryEntry<NavData::RobotPose2d>(objID.address);
+      /*
+			poseData.x = lastRobotPose->x;
+			poseData.y = lastRobotPose->y;
+			poseData.theta = lastRobotPose->theta;
+			*/
+      
   }
   catch (DoesNotExistOnWMException e) {
     log("Error! robotPose missing on WM!");
     return;
+  }
+
+  if (m_ptzInterface != 0) {
+    ptz::PTZReading reading = m_ptzInterface->getPose();
+		//sprintf(buff,"Pan-Tilt(%f,%f)",reading.pose.pan,reading.pose.tilt);
+		//log(buff);
   }
 
   double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
@@ -535,8 +569,8 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   }
 
   //FIXME
-//   m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
-//                                           oobj->getData()->time.us));
+   m_SlamRobotPose.setTime(Cure::Timestamp(lastRobotPose->time.s,
+                                           lastRobotPose->time.us));
   m_SlamRobotPose.setX(lastRobotPose->x);
   m_SlamRobotPose.setY(lastRobotPose->y);
   m_SlamRobotPose.setTheta(lastRobotPose->theta);
@@ -546,6 +580,7 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
 
 }
 
+/* receiveOdometry */
 void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
   lockComponent(); //Don't allow any interface calls while processing a callback
@@ -592,18 +627,19 @@ void laala(HSS::Scan2D &sink, const Cure::SICKScan &src)
   sink.tv.tv_usec = src.getTime().Microsec;
 }
 
-void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
+/* receiveScan2d is called by setupPushScan2d(*this, 0.1); */
+void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser::Scan2d @ Laser.ice
 {
   lockComponent(); //Don't allow any interface calls while processing a callback
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
-
-  Cure::LaserScan2d cureScan;
+        
+	
+  Cure::LaserScan2d cureScan; // <---- LaserScan2d.hh = SICKScan.hh
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-  if (m_TOPP.isTransformDefined()) {
-    
+  if (m_TOPP.isTransformDefined()) {    
     Cure::Pose3D scanPose;
     if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
       Cure::Pose3D lpW;
@@ -612,8 +648,8 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
       m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
       m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
       if (m_isUsingSeparateGridMaps) {
-	m_Glrt1_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
-	m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
+        m_Glrt1_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
+        m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
       }
       m_firstScanReceived = true;
 
@@ -788,6 +824,7 @@ LocalMapManager::getCurrentNavNode()
   return ret;
 }
 
+/* getHypothesisEvaluation */
 FrontierInterface::HypothesisEvaluation
 LocalMapManager::getHypothesisEvaluation(int hypID)
 {
@@ -979,7 +1016,7 @@ LocalMapManager::LocalMapServer::getCombinedGridMap(const SpatialData::PlaceIDSe
       //NOTE: May block
       NavData::FNodePtr node = m_pOwner->m_placeInterface->getNodeFromPlaceID(*it);
       if (node != 0) {
-	nodes.push_back(node);
+				nodes.push_back(node);
       }
     }
   }

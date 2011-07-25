@@ -26,6 +26,8 @@
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 
+#include <ctime>
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -55,6 +57,10 @@ SpatialControl::SpatialControl()
   m_CurrPersonWMid = "";
   m_firstScanAdded = false;
 
+	m_Npts = 1440;
+	m_StartAngle = -3.141592654;//-2.086214;
+	m_AngleStep = 0.004363323;//0.006136;
+	
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
   cure_debug_level = 10;
@@ -72,6 +78,23 @@ SpatialControl::~SpatialControl()
 
 void SpatialControl::configure(const map<string,string>& _config) 
 {
+  m_UsePointCloud = false;
+  if (_config.find("--pcserver") != _config.end()) {
+    configureServerCommunication(_config);
+    m_UsePointCloud = true;
+
+    m_obstacleMinHeight = 0.07; 
+    map<string,string>::const_iterator it = _config.find("--min-obstacle-height");
+    if (it != _config.end()) {
+      m_obstacleMinHeight = atof(it->second.c_str());
+    }
+    m_obstacleMaxHeight = 1.35; 
+    it = _config.find("--max-obstacle-height");
+    if (it != _config.end()) {
+      m_obstacleMaxHeight = atof(it->second.c_str());
+    }
+  }
+
   map<string,string>::const_iterator it = _config.find("-c");
   if (it== _config.end()) {
     println("configure(...) Need config file (use -c option)\n");
@@ -114,8 +137,19 @@ void SpatialControl::configure(const map<string,string>& _config)
     str >> m_RobotServerHost;
   }
 
-  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
+  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmK = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
+
+  if (m_UsePointCloud) {
+    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
+  }
+  else {
+    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
+  }
+
   m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
   //m_Explorer->setExplorationConfinedByGateways(true);
   m_Explorer->addEventListener(this);
@@ -123,9 +157,19 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
+    if (m_UsePointCloud) {
+      m_DisplaylgmK = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmK);
+      m_DisplaylgmLM = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmLM);
+    } else {
+      m_DisplaylgmK = 0;
+      m_DisplaylgmLM = 0;
+    }
     println("Will use X window to show the exploration map");
+
   } else {
     m_Displaylgm = 0;
+    m_DisplaylgmK = 0;
+		m_DisplaylgmLM = 0;
     println("Will NOT use X window to show the exploration map");
   }
 
@@ -186,6 +230,10 @@ void SpatialControl::configure(const map<string,string>& _config)
 
 void SpatialControl::start() 
 {
+
+  if (m_UsePointCloud) {
+    startPCCServerCommunication(*this);
+  }
   //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
     //(getComponentPointer());
  
@@ -227,7 +275,21 @@ void SpatialControl::start()
   
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::DELETE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
-                                                               &SpatialControl::deletePersonData));    
+                                                               &SpatialControl::deletePersonData));   
+               /*                             
+		// connecting Pan-Tilt server                   
+    Ice::CommunicatorPtr ic = getCommunicator();
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+      << ":default"
+      << " -h localhost"
+      << " -p " << cast::cdl::CPPSERVERPORT;
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+ */
   
   log("SpatialControl started");
   
@@ -311,24 +373,170 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
+class ComparePoints {
+  public:
+    bool operator()(const PointCloud::SurfacePoint& lhs, const PointCloud::SurfacePoint& rhs) const {
+      return lhs.p.z < rhs.p.z;
+    }
+};
 void SpatialControl::runComponent() 
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
-
   log("I am running!");
-  
-  while(isRunning()){
-    if (m_Displaylgm) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_Displaylgm->updateDisplay(&currentPose,
-                                  &m_NavGraph, 
-                                  &m_Explorer->m_Fronts);
-    }
+	std::ofstream depthfile;
 
+  Cure::Pose3D scanPose;
+	Cure::Pose3D LscanPose;
+  Cure::Pose3D lpW;
+ 	int xi,yi;
+
+  /* Local references so we don't have to dereference the pointers all the time */
+  Cure::LocalGridMap<unsigned char>& lgm = *m_lgm;
+  Cure::LocalGridMap<unsigned char>& lgmL = *m_lgmL;
+  Cure::LocalGridMap<unsigned char>& lgmK = *m_lgmK;
+  Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
+
+  while(isRunning()){
+    if (m_UsePointCloud) {
+      /* Add all queued laser scans */
+      while (!m_LScanQueue.empty()){
+        if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
+          lpW.add(LscanPose, m_LaserPoseR);		
+          m_Mutex.lock();
+          m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+          m_Mutex.unlock();
+          m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+              0.55*Cure::NavController::getRobotWidth(), '0');                                  
+          m_firstScanAdded = true;
+          m_LScanQueue.pop();
+        }
+      }
+
+      /* Update height map */
+      cdl::CASTTime frameTime;
+      std::vector<int> depthData; /* not used */
+      getDepthMap(frameTime, depthData); /* get scan time */
+      if (m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0) {
+        PointCloud::SurfacePointSeq points;
+        getPoints(true, 0 /* unused */, points);
+        std::sort(points.begin(), points.end(), ComparePoints());
+        for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+          /* Transform point in cloud with regards to the robot pose */
+          Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+          Cure::Vector3D to;
+          scanPose.invTransform(from, to);
+          double pX = to.X[0];
+          double pY = to.X[1];
+          double pZ = to.X[2];
+          if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
+            /* Check if we can safely remove an old obstacle */
+            bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
+            bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+            if (oldObstacle && !newObstacle) {
+              /* Undo robot pose transform since it is not known by the point cloud */
+              Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
+              scanPose.transform(old, to);
+              cogx::Math::Vector3 point;
+              point.x = to.X[0];
+              point.y = to.X[1];
+              point.z = to.X[2];
+              if (!isPointInViewCone(point))
+                continue;
+            }
+            /* If the above tests passed update the height map */ 
+            lgmKH(xi, yi) = pZ;
+          }
+        }
+
+        /* Create 2D map from height map */
+        for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
+          if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight)
+            lgmK[i] = '1';
+          else if (lgmKH[i] != FLT_MAX)
+            lgmK[i] = '0';
+        }
+        m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+            0.55*Cure::NavController::getRobotWidth(), '0');                                  
+      }
+
+      m_Mutex.lock();    				
+      /* Merge the laser map and the 2D point cloud map */
+      lgm = lgmL;			   
+      for(long i=0; i<m_lgmK->getNumCells(); i++){
+        // Don't overwrite obstacles seen by the laser with (possibly old)
+        // free space from the point cloud
+        if (lgmK[i] == '0' && lgm[i] == '1')
+          continue;
+
+        if(lgmK[i] != '2')
+          lgm[i] = lgmK[i];
+      } 						
+
+      // filtering
+      unsigned int bound = m_lgm->getSize();
+
+      for(unsigned int x=-bound+1; x<bound-1; x++){
+        for(unsigned int y=-bound+1; y<bound-1; y++){
+          if( lgm(x,y) == '1' && 
+              lgm(x-1,y) != '1' && lgm(x+1,y) != '1' &&
+              lgm(x-1,y-1) != '1' && lgm(x+1,y-1) != '1' &&
+              lgm(x-1,y+1) != '1' && lgm(x+1,y+1) != '1' &&
+              lgm(x,y-1) != '1' && lgm(x,y-1) != '1' ) lgm(x,y) = '0';
+        }
+      }
+      m_Mutex.unlock();
+
+
+      const int deltaN = 3;
+      double d = m_lgm->getCellSize()/deltaN;
+      int maxcellstocheck = int (5.0/d);
+      double xWT,yWT;
+      double theta;
+
+      m_Mutex.lock();    							
+      /* Update the nav map */
+      m_LMap.clearMap();
+      for(long i=0; i<m_lgmLM->getNumCells(); i++){
+        (*m_lgmLM)[i] = lgmL[i];
+      }               
+      Cure::Pose3D currPose = m_TOPP.getPose();		
+      m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0');                                  
+      for (int i = 0; i < m_Npts; i++) {
+        theta = m_StartAngle + m_AngleStep * i;
+        for (int j = 1; j < deltaN*maxcellstocheck; j++){
+          xWT = currPose.getX()+j*d*cos(theta);
+          yWT = currPose.getY()+j*d*sin(theta);
+          if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
+            if(lgm(xi,yi) == '1'){
+              (*m_lgmLM)(xi,yi) = '1';   							
+              m_LMap.addObstacle(xWT, yWT, 1);
+              break;    
+            }
+          }
+        }
+      }
+      m_Mutex.unlock();	
+    }	
+
+		m_Mutex.lock();
+		if (m_Displaylgm) {
+			Cure::Pose3D currentPose = m_TOPP.getPose();
+			m_Displaylgm->updateDisplay(&currentPose,
+						                      &m_NavGraph, 
+						                      &m_Explorer->m_Fronts);
+      if (m_UsePointCloud) {
+        m_DisplaylgmLM->updateDisplay(&currentPose);
+        m_DisplaylgmK->updateDisplay(&currentPose);
+      }
+		}
+		m_Mutex.unlock();	
+	  
     usleep(250000);
   }
-}
+} 
+
 
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
   m_Mutex.lock();
@@ -483,13 +691,14 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
-  
+
   //FIXME
-//   m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
-//                                           oobj->getData()->time.us));
+  m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
+                                          oobj->getData()->time.us));
   m_SlamRobotPose.setX(oobj->getData()->x);
   m_SlamRobotPose.setY(oobj->getData()->y);
   m_SlamRobotPose.setTheta(oobj->getData()->theta);
+		//log("time of newRobtoPose() = %d.%ld s",(long int)oobj->getData()->time.s, (long int)oobj->getData()->time.us);
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
@@ -668,10 +877,10 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
         Cure::NavController::setPositionToleranceFinal(m_TolPos);
         Cure::NavController::setOrientationTolerance(m_TolRot);
         ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-	//Clean out path; use only final waypoint
-	Cure::NavGraphNode lastNode = m_Path.back();
-	m_Path.clear();
-	m_Path.push_back(lastNode);
+				//Clean out path; use only final waypoint
+				Cure::NavGraphNode lastNode = m_Path.back();
+				m_Path.clear();
+				m_Path.push_back(lastNode);
       }
       
       // GOTO_POLAR
@@ -847,50 +1056,59 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
+	
   debug("lock receiveScan2d");
   lockComponent(); //Don't allow any interface calls while processing a callback
   debug("lock acquired");
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
-
+	
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-  if (m_TOPP.isTransformDefined()) {
-    
-    Cure::Pose3D scanPose;
-    if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-      m_Mutex.lock();
-      m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-      m_Mutex.unlock();
+  if (!m_UsePointCloud) {
+    if (m_TOPP.isTransformDefined()) {
 
-      /*      
-      static int id = 0;
-      std::fstream fs;
-      char buf[128];
-      sprintf(buf, "lm%02d.txt", id);
-      fs.open(buf, std::ios::out);
-      for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
-        fs << m_LMap.obstRef(i).x << " "
-           << m_LMap.obstRef(i).y << " ";
+      Cure::Pose3D scanPose;
+      if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
+        m_Mutex.lock();
+        m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
+        m_Mutex.unlock();
+
+        /*
+        static int id = 0;
+        std::fstream fs;
+        char buf[128];
+        sprintf(buf, "lm%02d.txt", id);
+        fs.open(buf, std::ios::out);
+        for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
+          fs << m_LMap.obstRef(i).x << " "
+            << m_LMap.obstRef(i).y << " ";
+        }
+        fs << std::endl;
+        fs.close();
+        println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
+        id = (id + 1) % 100;
+        */
+
+        Cure::Pose3D lpW;
+        m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+            0.5*Cure::NavController::getRobotWidth(), 
+            '0');
+        lpW.add(scanPose, m_LaserPoseR);
+        m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
+        m_firstScanAdded = true;
       }
-      fs << std::endl;
-      fs.close();
-      println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
-      id = (id + 1) % 100;
-      */
-
-      Cure::Pose3D lpW;
-      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-                                  0.5*Cure::NavController::getRobotWidth(), 
-                                  '0');
-      lpW.add(scanPose, m_LaserPoseR);
-      m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
-      m_firstScanAdded = true;
     }
   }
-    
+  else {
+    m_Mutex.lock();
+    m_LScanQueue.push(cureScan);
+    m_Mutex.unlock();
+  }
+
+  /* Person following stuff */    
   NavData::PersonFollowedPtr p = new NavData::PersonFollowed;
   static long last_id_sent = -1;
   if (m_CurrPerson >= 0 && m_CurrPerson < (int)m_People.size()) {
@@ -996,23 +1214,23 @@ SpatialControl::getFrontiers()
     newPt->mWidth = it->m_Width;
     switch (it->m_State) {
       case Cure::FrontierPt::FRONTIER_STATUS_OPEN:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_CURRENT:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
-	break;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
+        break;
       case Cure::FrontierPt::FRONTIER_STATUS_UNKNOWN:
       default:
-	newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
+        newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
     }
     newPt->x = it->getX();
     newPt->y = it->getY();

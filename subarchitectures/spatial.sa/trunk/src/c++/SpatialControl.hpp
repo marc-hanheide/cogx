@@ -25,10 +25,13 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
+#include <PointCloudClient.h>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>
 
 #include <string>
+#include <queue>
+#include <vector>
 #include <map>
 
 #include <SensorData/LaserScan2d.hh>
@@ -39,6 +42,7 @@
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
+#include <PTZ.hpp>
 #include <SensorData/SensorPose.hh>
 #include <FrontierInterface.hpp>
 
@@ -63,19 +67,21 @@ class SpatialControl : public cast::ManagedComponent ,
                    public OdometryReceiver,
                    public Cure::NavController,                  
                    public Cure::NavControllerEventListener,
-		   public Cure::FrontierExplorerEventListener
+		   						 public Cure::FrontierExplorerEventListener,
+		   						 public Cure::LocalMap,
+									 public cast::PointCloudClient
 {
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-	m_pOwner->log("lock in getFrontiers");
-	m_pOwner->lockComponent();
-	m_pOwner->log("lock acquired");
-	FrontierInterface::FrontierPtSeq ret =
-	  m_pOwner->getFrontiers();
-	m_pOwner->unlockComponent();
-	m_pOwner->log("unlocked in getFrontiers");
-	return ret;
+				m_pOwner->log("lock in getFrontiers");
+				m_pOwner->lockComponent();
+				m_pOwner->log("lock acquired");
+				FrontierInterface::FrontierPtSeq ret =
+					m_pOwner->getFrontiers();
+				m_pOwner->unlockComponent();
+				m_pOwner->log("unlocked in getFrontiers");
+				return ret;
       }
       SpatialControl *m_pOwner;
       FrontierServer(SpatialControl *owner) : m_pOwner(owner)
@@ -115,7 +121,6 @@ public:
   void explorationDone(int taskID, int status);
   const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
 
-
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
@@ -130,9 +135,23 @@ protected:
   Cure::GridLineRayTracer<unsigned char>* m_Glrt;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmK;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
+
 
   IceUtil::Mutex m_Mutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
+  Cure::LocalGridMap<unsigned char>* m_lgmK; // LGM filled by Kinect
+  Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
+  Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
+  Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
+
+	std::queue<Cure::LaserScan2d> m_LScanQueue;	
+
+  int m_Npts;
+	double m_StartAngle;
+	double m_AngleStep;
+  
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
@@ -191,7 +210,13 @@ protected:
   int m_NumInhibitors;
   bool m_SentInhibitStop;
 
+  ptz::PTZInterfacePrx m_ptzInterface;
+
   bool m_firstScanAdded;
+
+  bool m_UsePointCloud;
+  double m_obstacleMinHeight;
+  double m_obstacleMaxHeight;
 
 protected:
   /* 

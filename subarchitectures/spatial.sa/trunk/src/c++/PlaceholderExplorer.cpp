@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <queue>
+#include <limits>
 #include <math.h>
 
 using namespace navsa;
@@ -28,6 +29,9 @@ bool PlaceholderExplorer::PlaceholderCompare::operator()(const SpatialData::Plac
 double PlaceholderExplorer::PlaceholderCompare::getCost(const SpatialData::PlacePtr& placeholder) const
 {
   FrontierInterface::NodeHypothesisPtr node = proxy->getHypFromPlaceID(placeholder->id); 
+
+  if (!node)
+    return std::numeric_limits<float>::max();
 
   double distanceSq = (node->x - robotX) * (node->x - robotX) + (node->y - robotY) * (node->y - robotY);
 
@@ -98,6 +102,8 @@ void PlaceholderExplorer::runComponent() {
     cmd->destId.push_back(place->id);
     cmd->comp = SpatialData::COMMANDPENDING;
     cmd->status = SpatialData::NONE;
+    /* Lower the default tolerance so we don't get as much rejected hypotheses */
+    cmd->tolerance.push_back(0.1);
 
     log("Going to %d", place->id);
 

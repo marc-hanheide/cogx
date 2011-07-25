@@ -25,6 +25,11 @@ find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 #MESSAGE(${OPENCV_INCLUDE_DIRS})
 #MESSAGE(${OPENCV_LDFLAGS})
+
+#find_package(OpenNI)
+#include_directories(${OPENNI_INCLUDE_DIRS})
+include_directories(/usr/include/ni)
+
 Find_package(Cure REQUIRED)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
@@ -90,6 +95,7 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 
 if(DISPLAY_COMA_PB)
   link_cast_component(${CAST_COMPONENT_NAME} ComaData)
@@ -123,8 +129,9 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(SpatialControl SpatialControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(PlaceManager PlaceManager.cpp)
@@ -134,9 +141,13 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp scanmap/HSS/HSSDoorExtractor.cc scanmap/HSS/HSSDisplayFunctions.cc scanmap/HSS/HSSLsqLineExtractor.cc scanmap/HSS/HSSRedundantLine2DRep.cc) 
-
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
  link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES} opencv_core)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
@@ -205,7 +216,8 @@ link_directories(${GTK2_FIX_LIBRARY_DIRS})
   link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_LIBRARIES} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
   link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
   link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
+  link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+	link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
 
 IF(APPLE)
 link_cast_component(${CAST_COMPONENT_NAME} ${GTK2_FIX_LIBRARIES})
