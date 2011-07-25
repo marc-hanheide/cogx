@@ -26,7 +26,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 	private String ptzServerComponent;
 
 	private void addPanTiltCommandListener() {
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				SetPTZPoseCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -34,7 +34,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 					}
 				});
 
-		addChangeFilter(ChangeFilterFactory.createTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GetPTZPoseCommand.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
