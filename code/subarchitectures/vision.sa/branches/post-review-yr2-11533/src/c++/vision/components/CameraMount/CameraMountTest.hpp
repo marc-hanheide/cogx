@@ -11,6 +11,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <string>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Math.hpp>
 #include <PTZ.hpp>
@@ -21,6 +22,7 @@ private:
   ptz::PTZInterfacePrx m_PTUServer;
   double pan;
   double tilt;
+  std::string ptzServerComponent;
 
   void MovePanTilt(double pan, double tilt, double tolerance);
 
