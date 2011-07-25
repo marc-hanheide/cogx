@@ -1,0 +1,140 @@
+VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+VARDEFAULT planning_domain=dora-simple-avs.pddl
+#VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
+VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
+#VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro.xml"
+VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro-det.xml"
+VARDEFAULT discrete_room_cats=--discrete
+VARDEFAULT tour_places="0 9 4"
+VARDEFAULT logged_types=<multiline>
+  execution.slice.Action, 
+  VisionData.VisualObject, 
+  SpatialData.NavCommand, 
+  SpatialData.ObjectSearchResult, 
+  SpatialData.ViewPoint, 
+  SpatialData.ProcessConeGroup, 
+  SpatialData.RelationalViewPointGenerationCommand,
+  comadata.ComaRoom,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask
+</multiline>
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/frosties2.sift
+   %(siftroot_)/re_book.sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/frosties2.ply
+   %(plyroot_)/re_book.ply
+</multiline>
+VARDEFAULT or3d_labels=cerealbox book
+
+
+
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+#disabled door detection
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --min-door-width 1.0 --max-door-width 0.9#--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --explore-range 2.0 
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.6 --min-node-separation 1 --hyp-path-length 2.0 --no-placeholders 
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors 
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
+CPP MG avs.cpplanner AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.1 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
+
+
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+
+JAVA MG pm-coma	eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats)
+JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediator
+
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+
+CPP GD default.queryhandler DefaultQueryHandler
+CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(defaults)
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+CPP GD conceptual.queryhandler ConceptualQueryHandler
+
+CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+
+
+INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# Categorical.SA ############################################################
+
+INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+
+#VARDEFAULT fake_tables=<multiline>
+#   --geometry-hack 
+#   --pos-table "2.5, 1.0, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "1.0, -1.0, 8.0, 8.0"
+#</multiline>
+#
+
+#JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
+
+CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+
+# planning and motivation #####################################################
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults)
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+
+
+# stuff for experiments #######################################################
+JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
+JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
+JAVA MG distancelogger castutils.experimentation.DistanceMonitor 
+JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch 
+
+# exection ####################################################################
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+
+# viewing and debugging #######################################################
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
+JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
+JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col

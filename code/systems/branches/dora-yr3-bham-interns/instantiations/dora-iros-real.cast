@@ -1,0 +1,74 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+#INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-unknown-map.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+#INCLUDE includes/spatial.sa/spatial-objsearch-no-tilt.cast
+INCLUDE includes/spatial.sa/spatial-avs-cpplanner.cast
+
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+#INCLUDE includes/default.sa/default-test.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# Categorical.SA ############################################################
+#INCLUDE includes/categorical.sa/categorical-teknikringen-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-shape-sim.cast
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+#INCLUDE includes/vision.sa/vision-blobs-dora.cast
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+INCLUDE includes/vision.sa/vision-artag.cast
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/cerealbox.ply instantiations/ply-models/marker.ply instantiations/ply-models/stapler.ply instantiations/ply-models/paperclip.ply instantiations/ply-models/box.ply" --siftfiles "instantiations/ply-models/cerealbox.sift instantiations/ply-models/marker.sift instantiations/ply-models/stapler.sift instantiations/ply-models/paperclip.sift instantiations/ply-models/box.sift" --labels "cerealbox marker stapler paperclip box" --log
+#CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "frosties"
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+#JAVA MG percepttracker.dora     eu.cogx.percepttracker.dora.DoraBeliefTracker --write-to-sa binder
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/switching-planner-dora.cast
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+#INCLUDE includes/planner.sa/fake-motivation.cast
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+# exection ####################################################################
+#JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cereal_box,filing_box,matchbox,table_for_meal
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+
+# viewing and debugging #######################################################
+JAVA MG pathpropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PathProperty" --generic-col
+JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
+JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
+JAVA MG spatialdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialData.RelationalViewPointGenerationCommand," --generic-col
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
+JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col

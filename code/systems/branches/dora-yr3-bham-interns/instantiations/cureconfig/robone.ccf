@@ -1,0 +1,38 @@
+#=========================================================================
+#
+# This file contains the configuration 
+#
+# NOTE: All lines starting with # will be considered a comment
+# NOTE: No empty line after the KEYWORD 
+#
+#=========================================================================
+
+# Used for display purposes mostly
+ROBOT
+Robone
+
+ROBOTSHAPE
+# You can specify the shape of the robot in different way
+# 0 - circular robot: radius (centeroffset)
+# 1 - rectangular robot: length, width and centeroffset
+# 2 - polygon shape: number_of_verticies x0 y0 x1 y1 ...
+# 3 - complex shape: 144 polar ranges from center
+#0 0.5 -0.05
+#1 0.5 0.45 -0.06
+2 12 -0.308 -0.057 -0.265 -0.149 -0.171 -0.197 0.078 -0.215 0.158 -0.163 0.191 -0.050 0.191 0.050 0.158 0.163 0.078 0.215 -0.171 0.197 -0.265 0.149 -0.308 0.057
+
+SENSORCHAINS
+1 1 0 1 0 0 11
+
+SENSORPOSES
+1 0 0 0 0.303 -1.5708 0 0 0
+
+ODOMMODEL
+# version odtype covDistM covAngRad covAngM CovNormalPerM CovXYPerRad
+# biasDistPerM biasAngPerM biasAngPerRad 
+0 1 0.001 0.002 4e-5 8E-5 8E-8 0 0 0
+
+INCLUDE
+LMS200_8m.ccf
+filenames.ccf
+defaults.ccf
