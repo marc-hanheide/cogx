@@ -78,7 +78,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
 	private JRadioButton m_lookForObjectsAction;
-	// private JRadioButton m_lookForPeopleAction;
+	private JRadioButton m_lookForPeopleAction;
 
 	private JRadioButton m_foregroundModelsAction;
 	private JRadioButton m_backgroundModelsAction;
@@ -286,7 +286,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
-			// m_lookForPeopleAction = new JRadioButton("look for people");
+			m_lookForPeopleAction = new JRadioButton("look for people");
 			m_foregroundModelsAction = new JRadioButton("foreground models");
 			m_backgroundModelsAction = new JRadioButton("background models");
 			m_recogniseForegroundedModelsAction = new JRadioButton(
@@ -301,7 +301,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
 			actionGroup.add(m_lookForObjectsAction);
-			// actionGroup.add(m_lookForPeopleAction);
+			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_foregroundModelsAction);
 			actionGroup.add(m_backgroundModelsAction);
 			actionGroup.add(m_recogniseForegroundedModelsAction);
@@ -313,8 +313,8 @@ public class ActionInterfaceFrame extends JFrame {
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_lookForObjectsAction,
 					new GridBagConstraints());
-			// m_objectsActionPanel.add(m_lookForPeopleAction,
-			// new GridBagConstraints());
+			m_objectsActionPanel.add(m_lookForPeopleAction,
+					new GridBagConstraints());
 			m_objectsActionPanel.add(m_foregroundModelsAction,
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_backgroundModelsAction,
@@ -391,11 +391,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 			else if (m_lookForObjectsAction.isSelected()) {
 				lookForObjects();
-			}
-			// else if (m_lookForPeopleAction.isSelected()) {
-			// lookForPeople();
-			// }
-			else if (m_foregroundModelsAction.isSelected()) {
+			} else if (m_lookForPeopleAction.isSelected()) {
+				lookForPeople();
+			} else if (m_foregroundModelsAction.isSelected()) {
 				foregroundModels();
 			} else if (m_backgroundModelsAction.isSelected()) {
 				backgroundModels();
@@ -625,14 +623,16 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void foregroundModels() throws CASTException {
-		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan
+				.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
 	 * @throws CASTException
 	 */
 	private void backgroundModels() throws CASTException {
-		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan
+				.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -649,10 +649,10 @@ public class ActionInterfaceFrame extends JFrame {
 		m_exeMan.triggerDetectPeople(new MonitorPanel());
 	}
 
-	// private void lookForPeople() throws CASTException {
-	// m_exeMan.triggerLookForPeople(new MonitorPanel());
-	// }
-	//
+	private void lookForPeople() throws CASTException {
+		m_exeMan.triggerLookForPeople(new MonitorPanel());
+	}
+
 	private void lookForObjects() throws CASTException {
 		m_exeMan.log("lookForObjects");
 		m_exeMan.triggerLookForObjects(getSelectedObjectModels(),
@@ -786,26 +786,26 @@ public class ActionInterfaceFrame extends JFrame {
 			IndependentFormulaDistributionsBelief<dBelief> _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		String label = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
-				.getDistribution().getMostLikely().getProposition();
+		String label = _belief.getContent().get(
+				ViewPointTransferFunction.OBJECT_LABEL_ID).getDistribution()
+				.getMostLikely().getProposition();
 
-		Double prob = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent().get(
+				ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
 		String beliefAddr = toAddressString(_address);
 
-		WMPointer pointer = WMPointer.create(_belief.getContent()
-				.get(LocalizedAgentTransferFunction.IS_IN).getDistribution()
+		WMPointer pointer = WMPointer.create(_belief.getContent().get(
+				LocalizedAgentTransferFunction.IS_IN).getDistribution()
 				.getMostLikely().get());
 
 		IndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = IndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
-						pointer.get().pointer, GroundedBelief.class));
+				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(pointer
+						.get().pointer, GroundedBelief.class));
 
-		long placeID = placeBelief.getContent()
-				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = placeBelief.getContent().get(
+				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
 		m_coneTableModel
@@ -920,12 +920,12 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		long placeID = _belief.getContent()
-				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = _belief.getContent().get(
+				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
-		String status = _belief.getContent()
-				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+		String status = _belief.getContent().get(
+				PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
 		String addr = toAddressString(_address);
