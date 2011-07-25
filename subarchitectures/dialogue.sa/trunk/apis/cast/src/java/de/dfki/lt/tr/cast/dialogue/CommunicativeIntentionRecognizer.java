@@ -55,6 +55,7 @@ import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
 import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.infer.abducer.proof.AssertedQuery;
@@ -341,7 +342,7 @@ extends AbstractDialogueComponent {
 				LogicalForm lf = slf.lform;
 				initialiseContext();
 //				irecog.updateReferentialHypotheses(slf.refs);
-				IntentionRecognitionResult ri = irecog.logicalFormToInterpretation(lf, slf.ival);
+				IntentionRecognitionResult ri = irecog.logicalFormToInterpretation(lf, new TimeInterval(slf.ival));
 				if (ri != null) {
 
 					Interpretation ipret = ri.toInterpretation();
@@ -354,8 +355,8 @@ extends AbstractDialogueComponent {
 						ex.printStackTrace();
 					}
 
-					log("found " + ri.rrs.size() + " references to be resolved");
-					for (ResolutionRequest rr : ri.rrs) {
+					log("found " + ri.getResolutionRequests().size() + " references to be resolved");
+					for (ResolutionRequest rr : ri.getResolutionRequests()) {
 						try {
 							log("requesting recognition of this reference:\n" + ReferenceUtils.resolutionRequestToString(rr));
 							WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), this.getSubarchitectureID());
@@ -383,7 +384,7 @@ extends AbstractDialogueComponent {
 
 				if (ipret.ungroundedNoms.isEmpty() && !hasAssertions(ipret)) {
 					log("hurray! this is a grounded interpretation");
-					IntentionRecognitionResult ri = irecog.extractFromInterpretation(ipret);
+					IntentionRecognitionResult ri = IntentionRecognitionResult.extractFromInterpretation(irecog.getProofConvertor(), ipret, this.getLogger());
 
 					// we won't track it any longer
 					WorkingMemoryAddress wma = data.getWorkingMemoryAddress();
@@ -401,8 +402,8 @@ extends AbstractDialogueComponent {
 						ex.printStackTrace();
 					}
 
-					log("recognised " + ri.ints.size() + " intentions and " + (ri.pre.size() + ri.post.size()) + " beliefs");
-					for (dBelief b : ri.pre) {
+					log("recognised " + ri.getIntentions().size() + " intentions and " + (ri.getPreconditionBeliefs().size() + ri.getPostconditionBeliefs().size()) + " beliefs");
+					for (dBelief b : ri.getPreconditionBeliefs()) {
 						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
 						try {
 							addToWorkingMemory(b.id, "binder", b);
@@ -414,7 +415,7 @@ extends AbstractDialogueComponent {
 							ex.printStackTrace();
 						}
 					}
-					for (dBelief b : ri.post) {
+					for (dBelief b : ri.getPostconditionBeliefs()) {
 						log("adding belief " + b.id + " to dialogue WM:\n" + BeliefIntentionUtils.beliefToString(b));
 						try {
 							addToWorkingMemory(b.id, b);
@@ -423,7 +424,7 @@ extends AbstractDialogueComponent {
 							ex.printStackTrace();
 						}
 					}
-					for (Intention i : ri.ints) {
+					for (Intention i : ri.getIntentions()) {
 						log("adding communicative intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
 						try {
 							CommunicativeIntention cit = new CommunicativeIntention();
@@ -436,15 +437,15 @@ extends AbstractDialogueComponent {
 						}
 					}
 
-					if (ri.nref == null) {
+					if (ri.getNominalReference() == null) {
 						log("the communication act does not specify topic");
 					}
 					else {
-						log("topic: (" + ri.nref.nominal + ", " + BeliefIntentionUtils.dFormulaToString(ri.nref.referent) + ")");
+						log("topic: (" + ri.getNominalReference().nominal + ", " + BeliefIntentionUtils.dFormulaToString(ri.getNominalReference().referent) + ")");
 					}
 
 					// register the dialogue move
-					DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, ipret.lform, ri.nref);
+					DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, ipret.lform, ri.getNominalReference());
 					try {
 						addToWorkingMemory(newDataID(), dm);
 					}

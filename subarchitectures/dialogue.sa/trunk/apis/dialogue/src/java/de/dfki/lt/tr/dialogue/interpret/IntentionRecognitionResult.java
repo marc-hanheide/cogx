@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
+import org.apache.log4j.Logger;
 
 public class IntentionRecognitionResult {
 
@@ -70,33 +71,42 @@ public class IntentionRecognitionResult {
 		nref = nominalReference;
 	}
 
+	@Deprecated
 	public List<Intention> getIntentions() {
 		return ints;
 	}
 
+	@Deprecated
 	public List<dBelief> getPreconditionBeliefs() {
 		return pre;
 	}
 
+	@Deprecated
 	public List<dBelief> getPostconditionBeliefs() {
 		return post;
 	}
 
+	@Deprecated
 	public List<ResolutionRequest> getResolutionRequests() {
 		return rrs;
 	}
 
-//	public static IntentionRecognitionResult extractFromInterpretation(Interpretation ipret) {
-//		if (!ipret.proofs.isEmpty()) {
-//			ProofWithCost pwc = ipret.proofs.get(0);
-//			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, ipret.ival);
-//
-//			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, ipret.ival, rcs);
-//		}
-//		else {
-//			log("interpretation empty!");
-//			return null;
-//		}
-//	}
+	public static IntentionRecognitionResult extractFromInterpretation(ProofConvertor pconv, Interpretation ipret, Logger logger) {
+		if (!ipret.proofs.isEmpty()) {
+			ProofWithCost pwc = ipret.proofs.get(0);
+			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
+
+			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, new TimeInterval(ipret.ival), rcs);
+		}
+		else {
+			logger.warn("interpretation empty!");
+			return null;
+		}
+	}
+
+	@Deprecated
+	public NominalReference getNominalReference() {
+		return nref;
+	}
 
 }
