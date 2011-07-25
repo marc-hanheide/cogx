@@ -22,8 +22,9 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		python-pygraphviz@ubuntu \
 		libglew1.5-dev@ubuntu \
 		libdevil-dev@ubuntu \
-		nvidia-cg-toolkit@ubuntu
-
+		nvidia-cg-toolkit@ubuntu\
+		libsuitesparse-dev@ubuntu\
+		libeigen2-dev@ubuntu 
 
 
 LIBDEPS = 			contrib/peekabot \
@@ -33,7 +34,6 @@ LIBDEPS = 			contrib/peekabot \
 		contrib/opencv \
 		contrib/player-3.0.2 \
 		contrib/stage \
-		contrib/mercury \
 		contrib/avin2-SensorKinect
 
 DESCRIPTION = cogx-distro
