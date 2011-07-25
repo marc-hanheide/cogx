@@ -102,6 +102,10 @@ public class IntentionRecognition {
 		AbducerUtils.loadFile(abd_recog, name);
 	}
 
+	public ProofConvertor getProofConvertor() {
+		return pconv;
+	}
+
 	/**
 	 * Try to recognise the communicative intention and underlying beliefs
 	 * behind an utterance, represented by a PackedLFs object.
