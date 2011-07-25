@@ -56,7 +56,7 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	private int m_imageXCentre;
 	private OperationPerformer m_performer;
 	private WMTypeAlignment<BlobInfo, Person> m_aligner;
-	static int blobCounter=0;
+	static int blobCounter = 0;
 
 	private final class BlobInfo2PersonConverter implements
 			Converter<BlobInfo, Person> {
@@ -104,7 +104,7 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		public int hashCode(BlobInfo _t) {
 			// each blob is a new blob for us...
 			return blobCounter++;
-			//			return _t.id;
+			// return _t.id;
 		}
 	}
 
@@ -173,7 +173,7 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		}
 	}
 
-	private static String toString(Person _person) {
+	public static String toString(Person _person) {
 		return CASTUtils.concatenate("Person ", _person.angle, " degrees ",
 				_person.distance, " distance");
 	}

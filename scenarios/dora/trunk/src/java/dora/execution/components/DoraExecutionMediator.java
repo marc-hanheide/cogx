@@ -24,11 +24,11 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
-import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
-import execution.slice.actions.ProcessConesAtPlace;
+import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessConeGroupAction;
+import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.ReportPosition;
 import execution.util.ActionConverter;
 
@@ -119,7 +119,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 		} else if (_plannedAction.name.equals("look-for-people")) {
 			assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
 
-			DetectPeople act = newActionInstance(DetectPeople.class);
+			LookForPeople act = newActionInstance(LookForPeople.class);
 			return act;
 
 		} else if (_plannedAction.name.equals("create_cones")) {

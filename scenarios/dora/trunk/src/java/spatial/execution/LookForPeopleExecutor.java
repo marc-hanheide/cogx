@@ -13,7 +13,7 @@ import execution.slice.actions.LookForPeople;
  * @author nah
  * 
  */
-public class LookForPeopleExecutor extends TurnAndLookExecutor<LookForPeople> {
+public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 
 	public LookForPeopleExecutor(ManagedComponent _component, int _detections) {
 		super(_component, LookForPeople.class, _detections);
@@ -27,10 +27,10 @@ public class LookForPeopleExecutor extends TurnAndLookExecutor<LookForPeople> {
 		PeopleDetectionCommand detect = new PeopleDetectionCommand();
 		String id = getComponent().newDataID();
 		try {
-			getComponent()
-					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+			getComponent().addChangeFilter(
+					ChangeFilterFactory.createIDFilter(id,
 							WorkingMemoryOperation.DELETE),
-							getAfterDetectionReceiver());
+					getAfterDetectionReceiver());
 			getComponent().addToWorkingMemory(id, detect);
 		} catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
