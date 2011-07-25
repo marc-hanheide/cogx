@@ -18,6 +18,7 @@
 #include "PTZ.hpp"
 #include "NavData.hpp"
 #include "Scan2dReceiver.hpp"
+#include "PointCloudClient.h"
 #include "SpatialProbabilities.hpp"
 #include "SpatialProperties.hpp"
 #include "ConceptualData.hpp"
@@ -57,7 +58,7 @@ namespace spatial
  *
  * @author Patric Jensfelt
  */
-class DisplayNavInPB : public cast::ManagedComponent, public Scan2dReceiver
+class DisplayNavInPB : public cast::ManagedComponent, public Scan2dReceiver, public cast::PointCloudClient
 {
 
 public:
@@ -113,6 +114,7 @@ private:
 
 	void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
 	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+	void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
 	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
 	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
@@ -151,6 +153,7 @@ private:
 	peekabot::GroupProxy m_ProxyLaser;
 	peekabot::GroupProxy m_ProxyTrajectory;
 	peekabot::PointCloudProxy m_ProxyScan;
+	peekabot::PointCloudProxy m_ProxyKinect;
 	peekabot::GroupProxy m_ProxyGraph;
 	peekabot::GroupProxy m_ProxyNodes;
 	peekabot::GroupProxy m_ProxyEdges;
@@ -185,7 +188,9 @@ private:
 	bool m_ShowPath;
 	bool m_ShowCommands;
 	bool m_NonUniqueObjects;
+  bool m_ShowPointCloud;
 	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+	int m_currGoalPlace;
 
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
