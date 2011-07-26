@@ -417,6 +417,7 @@ sequence<OneObj> ObjSeq;
     // possible direction of movement in last update
     double deltaX;
     double deltaZ;
+    double existProb;
   };
 
  /**
