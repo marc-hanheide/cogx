@@ -253,12 +253,13 @@ public class VisionActionInterface extends ManagedComponent {
 			try {
 				WorkingMemoryAddress beliefID = getAction().beliefAddress;
 
-				VisualLearningTask cmd;
+				VisualLearningTask cmd = null;
 
-				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
-						beliefID), beliefID.id, m_concept,
-						new String[] { getAction().value },
-						new double[] { m_weight });
+				//TODO put back in
+//				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
+//						beliefID), beliefID.id, m_concept,
+//						new String[] { getAction().value },
+//						new double[] { m_weight });
 
 				getComponent().log(
 						"got the vis obj id: "
