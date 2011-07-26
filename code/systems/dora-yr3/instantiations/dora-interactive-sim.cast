@@ -96,8 +96,7 @@ INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
-CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
-CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+CPP MG CameraMount CameraMount --use_ptz --camids "0" --fixed_cam_poses_xml "instantiations/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -0.785398175" --cam_poses_xml instantiations/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/calibration/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
 JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
 #VARDEFAULT fake_tables=<multiline>
