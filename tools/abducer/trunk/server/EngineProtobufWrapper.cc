@@ -147,7 +147,7 @@ EngineProtobufWrapper::loadFile(const string& filename, const Ice::Current&)
 		case protocol::LoadFileReply::IOERROR:
 			{
 				LOG4CXX_ERROR(logger, "file read error");
-				throw engine::FileReadErrorException("file read error",filename);
+				throw engine::FileReadErrorException("file read error", filename);
 			}
 			break;
 
