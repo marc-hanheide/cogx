@@ -21,8 +21,10 @@ import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import facades.SpatialFacade;
 
@@ -30,14 +32,16 @@ import facades.SpatialFacade;
  * @author marc
  * 
  */
-public class PersonTransferFunction extends
-		DependentDiscreteTransferFunction<Person, PerceptBelief> {
+public class PersonTransferFunction
+		extends
+		DependentLinkingDiscreteTransferFunction<Person, PerceptBelief, GroundedBelief> {
 
 	public static final String IS_IN = "is-in";
 	public static final String PERSON_ID = "PersonId";
 
 	public PersonTransferFunction(ManagedComponent component,
-			WMView<PerceptBelief> allBeliefs) {
+			WMView<GroundedBelief> allBeliefs) {
+
 		super(component, allBeliefs, Logger
 				.getLogger(PersonTransferFunction.class), PerceptBelief.class);
 
