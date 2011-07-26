@@ -221,25 +221,34 @@ module ConceptualData
 		// 0
 		EventNothig, 
 		// 1 2
-		EventRoomAdded, EventRoomDeleted, // Info: room id 
+		// Info: room id
+		EventRoomAdded, EventRoomDeleted,  
 		// 3 4
-		EventRoomPlaceAdded, EventRoomPlaceDeleted, // Info roomId, placeId
+		// Info roomId, placeId
+		EventRoomPlaceAdded, EventRoomPlaceDeleted, 
 		// 5 6
 		EventPlaceholderAdded, EventPlaceholderDeleted,
 		// 7 
-		EventGatewayPlacePropertyChanged, // Info placeId
+		// Info placeId
+		EventGatewayPlacePropertyChanged, 
 		// 8 9 10
-		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, // placeId, propertyNo
+		// placeId, propertyNo
+		EventObjectPlacePropertyAdded, EventObjectPlacePropertyDeleted, EventObjectPlacePropertyChanged, 
 		// 11 12 13
-		EventObjectSearchResultAdded, EventObjectSearchResultDeleted, EventObjectSearchResultChanged, // placeId, propertyNo
+		// placeId, propertyNo
+		EventObjectSearchResultAdded, EventObjectSearchResultDeleted, EventObjectSearchResultChanged, 
 		// 14 15 16
-		EventSizePlacePropertyAdded, EventSizePlacePropertyDeleted, EventSizePlacePropertyChanged, // placeid
+		// placeid
+		EventSizePlacePropertyAdded, EventSizePlacePropertyDeleted, EventSizePlacePropertyChanged, 
 		// 17 18 19
-		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, // placeid
+		// placeid
+		EventShapePlacePropertyAdded, EventShapePlacePropertyDeleted, EventShapePlacePropertyChanged, 
 		// 20 21 22
-		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, // placeid
+		// placeid
+		EventAppearancePlacePropertyAdded, EventAppearancePlacePropertyDeleted, EventAppearancePlacePropertyChanged, 
 		// 23
-		EventRoomConnectivityChanged, // place1id, place2id
+		// place1id, place2id
+		EventRoomConnectivityChanged, 
 		// 24 25 26
 		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
 		// 27 28 29
