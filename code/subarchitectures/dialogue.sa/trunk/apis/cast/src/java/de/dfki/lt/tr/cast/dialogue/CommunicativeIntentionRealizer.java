@@ -77,7 +77,7 @@ extends AbstractDialogueComponent {
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	private String abd_serverName = "AbducerServer";
-	private String abd_endpoints = "default -p 10000";
+	private String abd_endpoints = "default -p 9100";
 
 	@Override
 	public void start() {

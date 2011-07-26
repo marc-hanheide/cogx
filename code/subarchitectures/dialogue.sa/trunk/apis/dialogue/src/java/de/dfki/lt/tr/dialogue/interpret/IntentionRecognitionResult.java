@@ -47,8 +47,9 @@ public class IntentionRecognitionResult {
 	private NominalReference nref;
 	private final List<ResolutionRequest> rrs;
 	private final List<ProofWithCost> proofs;
+	private final List<String> ungroundedNoms;
 
-	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> _proofs) {
+	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> proofs, List<String> ungroundedNoms) {
 		ints = new LinkedList<Intention>();
 		pre = new LinkedList<dBelief>();
 		post = new LinkedList<dBelief>();
@@ -56,7 +57,12 @@ public class IntentionRecognitionResult {
 		nref = null;
 		this.lf = lf;
 		this.ival = ival;
-		proofs = _proofs;
+		this.proofs = proofs;
+		this.ungroundedNoms = ungroundedNoms;
+	}
+
+	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> proofs) {
+		this(lf, ival, proofs, new ArrayList<String>());
 	}
 
 	public Interpretation toInterpretation() {
@@ -65,6 +71,19 @@ public class IntentionRecognitionResult {
 			ungrounded.add(rr.nom);
 		}
 		return new Interpretation(lf, ival.toIce(), proofs, new ArrayList<String>(ungrounded));
+	}
+
+	public static IntentionRecognitionResult extractFromInterpretation(ProofConvertor pconv, Interpretation ipret, Logger logger) {
+		if (!ipret.proofs.isEmpty()) {
+			ProofWithCost pwc = ipret.proofs.get(0);
+			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
+
+			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, new TimeInterval(ipret.ival), rcs);
+		}
+		else {
+			logger.warn("interpretation empty!");
+			return null;
+		}
 	}
 
 	public void setNominalReference(NominalReference nominalReference) {
@@ -91,22 +110,28 @@ public class IntentionRecognitionResult {
 		return rrs;
 	}
 
-	public static IntentionRecognitionResult extractFromInterpretation(ProofConvertor pconv, Interpretation ipret, Logger logger) {
-		if (!ipret.proofs.isEmpty()) {
-			ProofWithCost pwc = ipret.proofs.get(0);
-			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
-
-			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, new TimeInterval(ipret.ival), rcs);
-		}
-		else {
-			logger.warn("interpretation empty!");
-			return null;
-		}
-	}
-
 	@Deprecated
 	public NominalReference getNominalReference() {
 		return nref;
+	}
+
+	@Deprecated
+	public LogicalForm getLogicalForm() {
+		return lf;
+	}
+
+	@Deprecated
+	public List<ProofWithCost> getProofs() {
+		return proofs;
+	}
+
+	public TimeInterval getInterval() {
+		return ival;
+	}
+
+	@Deprecated
+	public List<String> getUngroundedNominals() {
+		return ungroundedNoms;
 	}
 
 }

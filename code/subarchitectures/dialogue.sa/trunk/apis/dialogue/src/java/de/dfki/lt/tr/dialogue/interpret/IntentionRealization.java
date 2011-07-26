@@ -52,8 +52,8 @@ public class IntentionRealization {
 //	public static Counter counter = new Counter("ir");
 	public final IdentifierGenerator<String> idGen;
 
-	private String abd_serverName = "";
-	private String abd_endpoints = "";
+	private final String abd_serverName;
+	private final String abd_endpoints;
 
 	public static final String INTENTION_REALIZATION_ENGINE = "IntentionRealization";
 
