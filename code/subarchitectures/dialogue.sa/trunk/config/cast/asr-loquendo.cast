@@ -1,1 +1,3 @@
-JAVA MG	asr-loquendo    de.dfki.lt.tr.cast.dialogue.LoquendoASR --serverName LoquendoASRServer --serverEndpoint "tcp -h dfki-toughbook-cf31 -p 9021" --threshold .4 --log true
+VARDEFAULT loquendo_server_endpoint="tcp -h localhost -p 9021"
+
+JAVA MG	asr-loquendo    de.dfki.lt.tr.cast.dialogue.LoquendoASR --serverName LoquendoASRServer --serverEndpoint %(loquendo_server_endpoint) --threshold .4 --log true
