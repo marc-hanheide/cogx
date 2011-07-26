@@ -46,8 +46,16 @@ import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import execution.slice.Action;
+import execution.slice.actions.AskForIdentity;
+import execution.slice.actions.AskPolarIdentity;
 import execution.util.ActionMonitor;
 
+/**
+ * Every time I look at this code I die inside a little.
+ * 
+ * @author nah
+ * 
+ */
 public class ActionInterfaceFrame extends JFrame {
 
 	private static final int PLACE_ID_COLUMN = 0;
@@ -85,6 +93,10 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_recogniseForegroundedModelsAction;
 
 	private JRadioButton m_reportPosition;
+
+	// private JRadioButton m_learnIdentityAction;
+	private JRadioButton m_askForIdentityAction;
+	private JRadioButton m_askPolarIdentityAction;
 
 	private GraphicalExecutionManager m_exeMan;
 	private JPanel m_objectsActionPanel;
@@ -257,6 +269,9 @@ public class ActionInterfaceFrame extends JFrame {
 			m_processConesAtPlaceAction = new JRadioButton(
 					"process all cones at place");
 
+			m_askForIdentityAction = new JRadioButton("ask for identity");
+			m_askPolarIdentityAction = new JRadioButton("ask polar identity");
+
 			m_goAction.setSelected(true);
 
 			ButtonGroup actionGroup = new ButtonGroup();
@@ -265,12 +280,17 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_generateConesForRoomAction);
 			actionGroup.add(m_processConeAction);
 			actionGroup.add(m_processConesAtPlaceAction);
+			actionGroup.add(m_askForIdentityAction);
+			actionGroup.add(m_askPolarIdentityAction);
 
 			m_placesActionPanel.add(m_goAction);
 			m_placesActionPanel.add(m_generateConesForPlacesAction);
 			m_placesActionPanel.add(m_generateConesForRoomAction);
 			m_placesActionPanel.add(m_processConeAction);
 			m_placesActionPanel.add(m_processConesAtPlaceAction);
+			m_placesActionPanel.add(m_askForIdentityAction);
+			m_placesActionPanel.add(m_askPolarIdentityAction);
+
 		}
 		return m_placesActionPanel;
 	}
@@ -379,7 +399,12 @@ public class ActionInterfaceFrame extends JFrame {
 				generateConesInRoom();
 			} else if (m_processConesAtPlaceAction.isSelected()) {
 				processConesAtPlace();
+			} else if (m_askForIdentityAction.isSelected()) {
+				askForIdentity();
+			} else if (m_askPolarIdentityAction.isSelected()) {
+				askPolarIdentity();
 			}
+
 		} else if (tabIndex == 1) {
 
 			if (m_detectObjectsAction.isSelected()) {
@@ -536,6 +561,17 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
+	private WorkingMemoryAddress getSelectedRoomBeliefAddress() {
+		int selectedRow = m_roomTable.getSelectedRow();
+		if (selectedRow >= 0) {
+			return addressFromString((String) m_roomTableModel.getValueAt(
+					selectedRow, ROOM_ADDR_COLUMN));
+		} else {
+			return null;
+		}
+
+	}
+
 	/**
 	 * @throws CASTException
 	 */
@@ -623,16 +659,14 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void foregroundModels() throws CASTException {
-		m_exeMan
-				.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
 	 * @throws CASTException
 	 */
 	private void backgroundModels() throws CASTException {
-		m_exeMan
-				.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -786,26 +820,26 @@ public class ActionInterfaceFrame extends JFrame {
 			IndependentFormulaDistributionsBelief<dBelief> _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		String label = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_LABEL_ID).getDistribution()
-				.getMostLikely().getProposition();
+		String label = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
+				.getDistribution().getMostLikely().getProposition();
 
-		Double prob = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
 		String beliefAddr = toAddressString(_address);
 
-		WMPointer pointer = WMPointer.create(_belief.getContent().get(
-				LocalizedAgentTransferFunction.IS_IN).getDistribution()
+		WMPointer pointer = WMPointer.create(_belief.getContent()
+				.get(LocalizedAgentTransferFunction.IS_IN).getDistribution()
 				.getMostLikely().get());
 
 		IndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = IndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(pointer
-						.get().pointer, GroundedBelief.class));
+				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+						pointer.get().pointer, GroundedBelief.class));
 
-		long placeID = placeBelief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = placeBelief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
 		m_coneTableModel
@@ -920,12 +954,12 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		long placeID = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
-		String status = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+		String status = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
 		String addr = toAddressString(_address);
@@ -994,6 +1028,30 @@ public class ActionInterfaceFrame extends JFrame {
 		// return;
 		// }
 		// }
+	}
+
+	private void askForIdentity() throws CASTException {
+		WorkingMemoryAddress beliefAddr = getSelectedRoomBeliefAddress();
+		if (beliefAddr != null) {
+			m_exeMan.executeSingleBeliefAction(beliefAddr, new MonitorPanel(),
+					AskForIdentity.class);
+		}
+	}
+
+	private void askPolarIdentity() throws CASTException {
+		WorkingMemoryAddress beliefAddr = getSelectedRoomBeliefAddress();
+		if (beliefAddr != null) {
+			m_exeMan.executeSingleBeliefPlusStringAction(beliefAddr,
+					getFeatureValue(beliefAddr.id + ":" + beliefAddr.subarchitecture, "identity", "asked for"),
+					new MonitorPanel(), AskPolarIdentity.class);
+		}
+	}
+
+	private String getFeatureValue(String _beliefID, String _concept, String _op) {
+		String message = "What " + _concept + " should be " + _op
+				+ " for belief " + _beliefID + "?";
+
+		return (String) JOptionPane.showInputDialog(this, message);
 	}
 
 }

@@ -20,6 +20,7 @@ import dora.execution.util.ActionInterfaceFrame;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
+import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
@@ -31,6 +32,7 @@ import execution.slice.actions.ProcessCone;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.RecogniseForegroundedModels;
 import execution.slice.actions.ReportPosition;
+import execution.slice.actions.SingleBeliefAction;
 import execution.util.ActionMonitor;
 
 /**
@@ -254,13 +256,32 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	public WorkingMemoryAddress triggerReportPositionAction(
-			WorkingMemoryAddress _beliefAddress, ActionMonitor _monitor) throws CASTException {
+			WorkingMemoryAddress _beliefAddress, ActionMonitor _monitor)
+			throws CASTException {
 		ReportPosition act = newActionInstance(ReportPosition.class);
 		act.beliefAddress = _beliefAddress;
 		println("sending report position action");
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
-		
+
+	}
+
+	
+	public WorkingMemoryAddress executeSingleBeliefAction(WorkingMemoryAddress _beliefID,
+			ActionMonitor _monitor, Class<? extends SingleBeliefAction> _actionCls) throws CASTException {
+		SingleBeliefAction act = newActionInstance(_actionCls);
+		act.beliefAddress = _beliefID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+	
+	public WorkingMemoryAddress executeSingleBeliefPlusStringAction(WorkingMemoryAddress _beliefID, String _string,
+			ActionMonitor _monitor, Class<? extends BeliefPlusStringAction> _actionCls) throws CASTException {
+		BeliefPlusStringAction act = newActionInstance(_actionCls);
+		act.beliefAddress = _beliefID;
+		act.value = _string;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
 	}
 
 	@Override
