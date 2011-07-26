@@ -8,5 +8,5 @@ include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/conceptual.sa/src/c++/
 
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS})
-target_link_libraries(${PROJECT_NAME} CDL ConceptualData QtGui QtCore QtSvg)
+target_link_libraries(${PROJECT_NAME} CDL ConceptualData ${QT_LIBRARIES} ${QT_QTSVG_LIBRARY})
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
