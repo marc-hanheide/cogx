@@ -646,7 +646,7 @@ void PeopleDetector::runDetection()
                         // Update blackboard with new position.
                         VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
                             scan.ranges[scan.ranges.size() - r.scanIndex - 1],
-                            r.laserX, r.laserZ, r.deltaX, r.deltaZ);                                                   
+                            r.laserX, r.laserZ, r.deltaX, r.deltaZ, 1.0);                                                   
                         overwriteWorkingMemory(r.castID, data);            
 
                         newDetections.erase(newDetections.begin() + j);
@@ -664,7 +664,7 @@ void PeopleDetector::runDetection()
                     // Update blackboard with new position.
                     VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
                         scan.ranges[scan.ranges.size() - r.scanIndex - 1],
-                        r.laserX, r.laserZ, r.deltaX, r.deltaZ);                        
+                        r.laserX, r.laserZ, r.deltaX, r.deltaZ,1.0);                        
                     overwriteWorkingMemory(r.castID, data);                                
                     
                     detectionsCopy.push_back(r);
@@ -706,7 +706,7 @@ void PeopleDetector::runDetection()
                 
                 VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
                     scan.ranges[scan.ranges.size() - r.scanIndex - 1],
-                    r.laserX, r.laserZ, r.deltaX, r.deltaZ);    
+                    r.laserX, r.laserZ, r.deltaX, r.deltaZ,1.0);    
                 addToWorkingMemory(r.castID, data);                 
             }
 
