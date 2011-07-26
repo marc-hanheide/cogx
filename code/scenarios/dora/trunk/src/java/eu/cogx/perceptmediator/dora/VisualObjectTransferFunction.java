@@ -3,9 +3,7 @@
  */
 package eu.cogx.perceptmediator.dora;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -13,30 +11,24 @@ import org.apache.log4j.Logger;
 import VisionData.VisualObject;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTUtils;
 import cast.core.CASTData;
-import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
-import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
-import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
-import execution.slice.TriBool;
 import execution.slice.actions.ProcessConeGroupAction;
 
 /**
@@ -47,7 +39,6 @@ public class VisualObjectTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<VisualObject, PerceptBelief, GroundedBelief> {
 
-	private static final String PLANNER_SA = "planner.sa";
 	public static final String LABEL_ID = "label";
 	public static final String IS_IN = "related-to";
 	public static final String CONE = "from-cone";
