@@ -16,10 +16,13 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.factories.specific.FormulaDistributionFactory;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
@@ -36,6 +39,7 @@ public class PersonTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<Person, PerceptBelief, GroundedBelief> {
 
+	public static final String EXISTS = "exists";
 	public static final String IS_IN = "is-in";
 	public static final String PERSON_ID = "PersonId";
 
@@ -55,8 +59,8 @@ public class PersonTransferFunction
 		// TODO: we should use a DoubleValue here!
 		result.put(PERSON_ID, PropositionFormula.create(wmc.address.id)
 				.getAsFormula());
-		result.put("distance", DoubleFormula.create(from.distance)
-				.getAsFormula());
+		// result.put("distance", DoubleFormula.create(from.distance)
+		// .getAsFormula());
 		try {
 			Place place = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeBel = getReferredBelief(new PlaceMatchingFunction(
@@ -70,6 +74,17 @@ public class PersonTransferFunction
 			component.logException(e);
 		}
 		return result;
+	}
+
+	@Override
+	protected void fillBelief(
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
+			WorkingMemoryChange wmc, Person from) {
+
+		super.fillBelief(belief, wmc, from);
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(true, from.existProb);
+		belief.getContent().put(EXISTS, fd);
 	}
 
 }
