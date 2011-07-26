@@ -100,7 +100,7 @@ abducer.setCommand("""
       -n "AbducerServer"
       -e "default -p [PORT]"
       -l ${COGX_ROOT}/log4j.properties
-      -a ${ABDUCER_ROOT}/bin/abduction-engine-pb
+      -a ${ABDUCER_ROOT}/bin/abducer-engine-pb
       -x --silent
       """)
 

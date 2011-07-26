@@ -98,7 +98,7 @@ CMD_ABDUCER_SERVER=<multiline>
    -n "AbducerServer"
    -e "default -p 9100"
    -l ${COGX_ROOT}/log4j.properties
-   -a ${ABDUCER_ROOT}/abduction-engine-pb
+   -a ${ABDUCER_ROOT}/abducer-engine-pb
    -x --silent
 </multiline>
 
