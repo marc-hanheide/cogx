@@ -28,6 +28,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     include_directories(./DemoWidget)
     include_directories(./CategoricalWidget)
     include_directories(./AVSMainWidget)
+    include_directories(../../autogen)
     include_directories(../../../../../../vision.sa/src/c++/vision/autogen)
     include_directories(../../../../../../../tools/hardware/video/src/c++/autogen/)
     include_directories(../../../../../../spatial.sa/src/c++/)
@@ -49,7 +50,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
     add_executable(event-visualizer event-visualizer.cc ConceptualWidget/EventVisualizer.cc ConceptualWidget/ConceptualEvent.cc
                                     ConceptualWidget/AddGroundtruthDialog.cc ConceptualWidget/EventView.cc
                                     ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} ${RC_SOURCES})
-    link_cast_component(event-visualizer ConceptualData QtCore QtGui QtSvg)
+    link_cast_component(event-visualizer ConceptualData  ${QT_LIBRARIES} ${QT_QTSVG_LIBRARY})
     install(TARGETS event-visualizer RUNTIME DESTINATION bin ARCHIVE DESTINATION bin)
 
 
