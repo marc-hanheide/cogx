@@ -320,6 +320,10 @@ void LocalMapManager::start()
 
   if (!m_bNoPTZ) {
     log("connecting to PTU");
+	
+    m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
+
+/*
     Ice::CommunicatorPtr ic = getCommunicator();
 
     Ice::Identity id;
@@ -334,6 +338,7 @@ void LocalMapManager::start()
 
     Ice::ObjectPrx base = ic->stringToProxy(str.str());    
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+*/
   }
 }
 
