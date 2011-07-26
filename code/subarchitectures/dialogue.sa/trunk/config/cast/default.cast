@@ -1,0 +1,6 @@
+INCLUDE  modules/main.cast
+INCLUDE  modules/asr-loquendo.cast
+INCLUDE  modules/nlu-all.cast
+INCLUDE  modules/manage-full.cast
+INCLUDE  modules/nlg-all.cast
+INCLUDE  modules/tts-mary.cast
