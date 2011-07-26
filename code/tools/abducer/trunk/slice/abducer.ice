@@ -202,7 +202,10 @@ module engine {
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 	// Exceptions
 
-	exception AbducerException { };
+	exception AbducerException { 
+		//nah: added this (from EngineException) as I get a really odd slice error with an empty exception
+		string message;
+		};
 	
 	exception FileReadErrorException extends AbducerException {
 		string filename;
@@ -214,10 +217,12 @@ module engine {
 		int line;
 	};
 
-	exception NoProofException extends AbducerException {};
+	exception NoProofException extends AbducerException {
+		
+	};
 
 	exception EngineException extends AbducerException {
-		string message;
+	
 	};
 
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
