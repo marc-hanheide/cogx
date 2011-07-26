@@ -85,11 +85,11 @@ void MLNTester::runComponent()
 {
   sleep(3);
   
-  // init MRF
+  // init mrf
   // leave the .db file from command line empty, because it does
   // not work online if the evidence is initialized there
   QueryPtr q = new Query();
-  q->mrfId = m_id;
+  q->engId = m_id;
   q->atoms.push_back("resolution");
 	
   addToWorkingMemory(newDataID(), m_bindingSA, q);
@@ -98,7 +98,7 @@ void MLNTester::runComponent()
   // again "-cw" option in command line doesn't help, beacuse the
   // evidence from .db is not correctly initialized
   EvidencePtr evd = new Evidence();
-  evd->mrfId = m_id;
+  evd->engIdSeq.push_back(m_id);
   evd->falseEvidence.push_back("percept(P1)");
   evd->falseEvidence.push_back("percept(P2)");
   evd->falseEvidence.push_back("percept(P3)");
@@ -138,7 +138,7 @@ void MLNTester::runComponent()
 	if(tstep == 3)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->mrfId = m_id;
+	  evd->engIdSeq.push_back(m_id);
 	  evd->trueEvidence.push_back("percept(P1)");
 	  evd->trueEvidence.push_back("feature(P1,VGreen)");
 	  evd->initInfSteps = 400;
@@ -152,7 +152,7 @@ void MLNTester::runComponent()
 	if(tstep == 7)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->mrfId = m_id;
+	  evd->engIdSeq.push_back(m_id);
 	
 	  evd->trueEvidence.push_back("attribute(LRed)");	
 	  
@@ -168,7 +168,7 @@ void MLNTester::runComponent()
 	if(tstep == 25)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->mrfId = m_id;
+	  evd->engIdSeq.push_back(m_id);
 	  evd->trueEvidence.push_back("percept(P2)");
 //	  evd->trueEvidence.push_back("feature(P2,VRed)");
 	  evd->extPriors.push_back("feature(P2,VRed)");
@@ -186,7 +186,7 @@ void MLNTester::runComponent()
 	if(tstep == 40)
 	{
 	  LearnWtsPtr lw = new LearnWts();
-	  lw->mrfId = m_id;
+	  lw->engId = m_id;
 	  lw->trueEvidence.push_back("resolution(P2)");
 	  lw->trueEvidence.push_back("feature(P2,VRed)");
 	  lw->falseEvidence.push_back("resolution(P1)");
@@ -199,7 +199,7 @@ void MLNTester::runComponent()
 	if(tstep == 50)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->mrfId = m_id;
+	  evd->engIdSeq.push_back(m_id);
 	  evd->trueEvidence.push_back("percept(P3)");
 	  evd->trueEvidence.push_back("feature(P3,VRed)");
 	  evd->initInfSteps = 400;
@@ -212,7 +212,7 @@ void MLNTester::runComponent()
 	if(tstep == 60)
 	{
 	  LearnWtsPtr lw = new LearnWts();
-	  lw->mrfId = m_id;
+	  lw->engId = m_id;
 	  lw->trueEvidence.push_back("resolution(P3)");
 	  lw->trueEvidence.push_back("feature(P2,VRed)");
 	  lw->falseEvidence.push_back("resolution(P1)");
@@ -225,7 +225,7 @@ void MLNTester::runComponent()
 	if(tstep == 75)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->mrfId = m_id;
+	  evd->engIdSeq.push_back(m_id);
 	  evd->falseEvidence.push_back("percept(P2)");
 //	  evd->noEvidence.push_back("feature(P2,VRed)");
 	  evd->resetPriors.push_back("feature(P2,VRed)");
@@ -262,7 +262,7 @@ void MLNTester::newResult(const cdl::WorkingMemoryChange & _wmc)
   		
   debug("Got a result update from WM. ID: %s", _wmc.address.id.c_str());
   
-  if( res->mrfId == m_id ) {
+  if( res->engId == m_id ) {
 	queueNewResult(res);
   }
   else {

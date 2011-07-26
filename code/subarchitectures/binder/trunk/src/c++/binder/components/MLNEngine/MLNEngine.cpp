@@ -137,7 +137,7 @@ void MLNEngine::runComponent()
   m_oe->setMaxBurnIn(0);
   
   ResultPtr result = new Result();
-  result->mrfId = m_id;
+  result->engId = m_id;
  
   while(isRunning())
   {
@@ -200,12 +200,12 @@ void MLNEngine::runComponent()
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
-	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+	  m_display.setHtml("MLNEngine", "eng Rules", "<pre>" + v11out.str() + "</pre>");
   #endif
 	}
 	
   //  ResultPtr result = new Result();
-  //  result->mrfId = m_id;
+  //  result->engId = m_id;
 	
   //  m_oe->setMaxInferenceSteps(5000);
 	if(!first) m_oe->restoreCnts();
@@ -258,7 +258,7 @@ void MLNEngine::runComponent()
 
 void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
 {
-  log("A new MRF evidence entry. ID: %s ", _wmc.address.id.c_str());
+  log("A new eng evidence entry. ID: %s ", _wmc.address.id.c_str());
   
   EvidencePtr evd; 
   
@@ -272,7 +272,7 @@ void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
   		
   debug("Got a evidence update from WM. ID: %s", _wmc.address.id.c_str());
   
-  if( evd->mrfId == m_id ) {
+  if( containsElement<string>(evd->engIdSeq, m_id) ) {
 	EvidenceData data;
 	data.status=NEW;
 	data.evidence=evd;
@@ -303,7 +303,7 @@ void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
   		
   debug("Got a query update from WM. ID: %s", _wmc.address.id.c_str());
   
-  if( q->mrfId == m_id ) {
+  if( q->engId == m_id ) {
 	QueryData data;
 	data.status=NEW;
 	data.query=q;
@@ -355,7 +355,7 @@ void MLNEngine::learnWts(const cdl::WorkingMemoryChange & _wmc)
   		
   debug("Got a weight learning instruction from WM. ID: %s", _wmc.address.id.c_str());
   
-  if( lw->mrfId == m_id ) {
+  if( lw->engId == m_id ) {
 	LearnWtsData data;
 	data.status=NEW;
 	data.learnWts=lw;
