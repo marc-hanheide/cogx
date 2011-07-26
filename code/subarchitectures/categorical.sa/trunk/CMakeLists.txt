@@ -18,6 +18,7 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 # Includes
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/autogen)
