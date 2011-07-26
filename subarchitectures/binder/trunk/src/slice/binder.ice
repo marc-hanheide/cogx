@@ -36,11 +36,12 @@ module binder {
 module mln {
 
 	sequence<string> PredStrSeq;
+	sequence<string> IdSeq;
 	sequence<float> WeightSeq;
 	sequence<float> ProbSeq;
 	
 	class Evidence {
-		string mrfId;
+		IdSeq engIdSeq;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
 		PredStrSeq noEvidence;
@@ -55,18 +56,18 @@ module mln {
 	};
 	
 	class Query {
-		string mrfId;
+		string engId;
 		PredStrSeq atoms;
 	};
 	
 	class Result {
-		string mrfId;
+		string engId;
 		PredStrSeq atoms;
 		ProbSeq probs;
 	};
 	
 	class LearnWts {
-		string mrfId;
+		string engId;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
 		PredStrSeq noEvidence;

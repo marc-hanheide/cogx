@@ -143,6 +143,16 @@ class MLNEngine :  public ManagedComponent
 	m_learnWtsQueue.push(data);
   }
   
+  template<class T> bool containsElement(vector<T> vec, T elem)
+  {
+	typename vector<T>::iterator it;
+	for (it=vec.begin(); it < vec.end(); it++ )
+	  if(*it == elem)
+		return true;
+		
+	return false;
+  }
+  
 
 protected:
   /**
