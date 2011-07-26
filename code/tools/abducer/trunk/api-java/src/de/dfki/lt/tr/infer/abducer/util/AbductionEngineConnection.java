@@ -75,7 +75,7 @@ public class AbductionEngineConnection {
 			name = engineName;
 		}
 		else {
-			throw new Error("lost connection to the server");
+			throw new Error("no connection to the server");
 		}
 	}
 
