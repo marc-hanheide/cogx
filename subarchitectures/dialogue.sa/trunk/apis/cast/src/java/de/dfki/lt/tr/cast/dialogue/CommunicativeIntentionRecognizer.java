@@ -44,6 +44,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.interpret.BasicProofConvertor;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
@@ -104,7 +105,7 @@ extends AbstractDialogueComponent {
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	private String abd_serverName = "AbducerServer";
-	private String abd_endpoints = "default -p 10000";
+	private String abd_endpoints = "default -p 9100";
 
 	private ConcurrentHashMap<WorkingMemoryAddress, ResolutionRequest> requested = new ConcurrentHashMap<WorkingMemoryAddress, ResolutionRequest>();
 	private ConcurrentHashMap<WorkingMemoryAddress, Interpretation> iprets = new ConcurrentHashMap<WorkingMemoryAddress, Interpretation>();
@@ -113,12 +114,16 @@ extends AbstractDialogueComponent {
 	public void start() {
 		super.start();
 
-		irecog = new IntentionRecognition(abd_serverName, abd_endpoints, new IdentifierGenerator() {
-			@Override
-			public String newIdentifier() {
-				return newDataID();
-			}
-		}, timeout, this.getLogger(".worker"));
+		
+		irecog = new IntentionRecognition(abd_serverName, abd_endpoints,
+			new BasicProofConvertor(this.getLogger(".pconv"), new IdentifierGenerator() {
+				@Override
+				public String newIdentifier() {
+					return newDataID();
+				}
+			}, IntentionManagementConstants.thisAgent, "dialogue", "binder"),
+			timeout,
+			this.getLogger(".worker"));
 
 		initialiseContext();
 		files.add(dumpFile);
@@ -269,20 +274,22 @@ extends AbstractDialogueComponent {
 		List<WorkingMemoryAddress> toRemove = new LinkedList<WorkingMemoryAddress>();
 
 		for (WorkingMemoryAddress wma : iprets.keySet()) {
-			Interpretation ipret = iprets.get(wma);
+			IntentionRecognitionResult irr = IntentionRecognitionResult.extractFromInterpretation(irecog.getProofConvertor(), iprets.get(wma), this.getLogger());
+			iprets.get(wma);
 
 			String nom = rr.nom;
 
-			if (ipret.ungroundedNoms.remove(nom)) {
+			if (irr.getUngroundedNominals().remove(nom)) {
 				log("interpretation of (" + wma.id + ") might have changed");
 
 				// TODO: add resolution result to the proofs
-				Interpretation new_ipret = irecog.reinterpret(ipret, rr);
+				IntentionRecognitionResult new_irr = irecog.reinterpret(irr, rr);
 
-				if (new_ipret != null) {
+				if (new_irr != null) {
 					log("scheduling (" + wma.id + ") for processing");
-					ipret = new_ipret;
+					irr = new_irr;
 
+					Interpretation ipret = irr.toInterpretation();
 					CASTData<Interpretation> data = new CASTData(wma.id, ipret);  // TODO: what is the id here?
 					String taskID = newTaskID();
 					ProcessingData pd = new ProcessingData(newProcessingDataId());

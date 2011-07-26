@@ -51,6 +51,7 @@ implements ProofConvertor {
 		this.thisAgent = thisAgent;
 	}
 
+	@Override
 	public IntentionRecognitionResult proofToIntentionRecognitionResult(LogicalForm lf, ProofWithCost pwc, float probBound, TimeInterval ival, List<ResolutionRequest> rrqs) {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();

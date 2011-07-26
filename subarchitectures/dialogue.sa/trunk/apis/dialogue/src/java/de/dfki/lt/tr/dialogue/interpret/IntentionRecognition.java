@@ -64,39 +64,33 @@ import org.apache.log4j.Logger;
  */
 public class IntentionRecognition {
 
-	private Logger logger = null;
-	private AbductionEngineConnection abd_recog;
+	private final Logger logger;
+	private final AbductionEngineConnection abd_recog;
 
 //	public static Counter counter = new Counter("ir");
-	public IdentifierGenerator idGen;
 	public int timeout;
-
-	private String abd_serverName = "";
-	private String abd_endpoints = "";
 
 	public static final String INTENTION_RECOGNITION_ENGINE = "IntentionRecognition";
 
-	private ProofConvertor pconv = null;
+	private final ProofConvertor pconv;
 
 	/**
 	 * Initialise the abducer and prepare for action.
 	 */
-    public IntentionRecognition(String serverName, String endpoints, IdentifierGenerator idGen_, int timeout_, Logger _logger) {
-		this.idGen = idGen_;
-		this.timeout = timeout_;
-		abd_serverName = serverName;
-		abd_endpoints = endpoints;
-		logger = _logger;
-		pconv = new BasicProofConvertor(Logger.getLogger(logger.getName() + ".pconv"), idGen_, IntentionManagementConstants.thisAgent, "dialogue", "memory");
-		init();
-    }
+	public IntentionRecognition(String serverName, String endpoints, ProofConvertor pconv, int timeout, Logger logger) {
 
-	private void init() {
+		assert(logger != null);
+
+		this.timeout = timeout;		
+
 		abd_recog = new AbductionEngineConnection();
-		abd_recog.connectToServer(abd_serverName, abd_endpoints);
+		abd_recog.connectToServer(serverName, endpoints);
 		abd_recog.bindToEngine(INTENTION_RECOGNITION_ENGINE);
 		abd_recog.getEngineProxy().clearContext();
-	}
+
+		this.logger = logger;
+		this.pconv = pconv;
+    }
 
 	public void loadFile(String name) {
 		AbducerUtils.loadFile(abd_recog, name);
@@ -135,19 +129,18 @@ public class IntentionRecognition {
 			return pconv.proofToIntentionRecognitionResult(lf, pwc, lf.preferenceScore, ival, rcs);
 		}
 		else {
-			log("no proof found");
+			logger.info("no proof found");
 			return null;
 		}
 	}
 
-	public Interpretation reinterpret(Interpretation ipret, ResolutionResult rr) {
+	public IntentionRecognitionResult reinterpret(IntentionRecognitionResult irr, ResolutionResult rr) {
 
-		log("reinterpreting");
+		logger.info("reinterpreting");
 
-		List<ProofWithCost> old_pwcs = ipret.proofs;
 		List<ProofWithCost> new_pwcs = new ArrayList<ProofWithCost>();
 
-		for (ProofWithCost pwc : ipret.proofs) {
+		for (ProofWithCost pwc : irr.getProofs()) {
 
 			List<MarkedQuery> old_proof = pwc.proof;
 			List<MarkedQuery> new_proof = new ArrayList<MarkedQuery>();
@@ -193,19 +186,19 @@ public class IntentionRecognition {
 		Collections.sort(new_pwcs, new ProofWithCostComparator());
 
 		if (!new_pwcs.isEmpty()) {
-			log(new_pwcs.size() + " proofs after reinterpretation");
-			Interpretation new_ipret = new Interpretation(ipret.lform, ipret.ival, new_pwcs, ipret.ungroundedNoms);
-			return new_ipret;
+			logger.info("got " + new_pwcs.size() + " proofs after reinterpretation");
+			IntentionRecognitionResult new_irr = new IntentionRecognitionResult(irr.getLogicalForm(), irr.getInterval(), new_pwcs, irr.getUngroundedNominals());
+			return new_irr;
 		}
 		else {
-			log("no proofs after reinterpretation");
+			logger.info("no proofs after reinterpretation");
 			return null;
 		}
 	}
 
 	public void updateReferenceResolution(ResolutionResult rr) {
 
-		log("updating reference resolution");
+		logger.info("updating reference resolution");
 
 		abd_recog.getEngineProxy().clearAssumabilityFunction("reference_resolution");
 		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
@@ -220,7 +213,7 @@ public class IntentionRecognition {
 						ConversionUtils.epistemicStatusToTerm(hypo.epst)
 					} ));
 
-			log("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
+			logger.debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
 			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));
 
 			Set<ModalisedAtom> dj = disj.get(nom);
@@ -238,7 +231,7 @@ public class IntentionRecognition {
 			Set<ModalisedAtom> dj = disj.get(n);
 			DisjointDeclaration dd = new DisjointDeclaration();
 			dd.atoms = new ArrayList<ModalisedAtom>(dj);
-			log("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
+			logger.debug("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
 			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
 		}
 	}
@@ -256,7 +249,7 @@ public class IntentionRecognition {
 						ConversionUtils.epistemicStatusToTerm(ehypo.eref.epst)
 					} ));
 
-			log("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
+			logger.debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
 			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(ehypo.prob));
 
 			Set<ModalisedAtom> dj = disj.get(ehypo.eref.ref.nominal);
@@ -274,7 +267,7 @@ public class IntentionRecognition {
 			Set<ModalisedAtom> dj = disj.get(nom);
 			DisjointDeclaration dd = new DisjointDeclaration();
 			dd.atoms = new ArrayList<ModalisedAtom>(dj);
-			log("adding a disjoint declaration for " + nom + " (" + dj.size() + " entries)");
+			logger.debug("adding a disjoint declaration for " + nom + " (" + dj.size() + " entries)");
 			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
 		}
 	}
@@ -283,9 +276,4 @@ public class IntentionRecognition {
 		abd_recog.getEngineProxy().clearContext();
 	}
 
-	private void log(String str) {
-		if (logger != null) {
-			logger.debug(str);
-		}
-	}
 }
