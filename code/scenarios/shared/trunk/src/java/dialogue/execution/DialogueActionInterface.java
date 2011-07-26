@@ -439,7 +439,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			TriBool result = TriBool.TRIFALSE;
 			try {
 				((DialogueActionInterface) getComponent())
-						.askForFeatureThenSetDirect("ident", getAction());
+						.askForFeatureThenSetDirect("identity", getAction());
 				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
