@@ -81,7 +81,8 @@ module CategoricalData
   {
     int width;
     int height;
-    ByteSeq data;  // width*height bytes of data
+	// width*height bytes of data
+    ByteSeq data;  
   };
 
 
