@@ -147,7 +147,7 @@ EngineProtobufWrapper::loadFile(const string& filename, const Ice::Current&)
 		case protocol::LoadFileReply::IOERROR:
 			{
 				LOG4CXX_ERROR(logger, "file read error");
-				throw engine::FileReadErrorException(filename);
+				throw engine::FileReadErrorException("file read error",filename);
 			}
 			break;
 
@@ -155,11 +155,11 @@ EngineProtobufWrapper::loadFile(const string& filename, const Ice::Current&)
 			{
 				if (reply.has_error() && reply.has_line()) {
 					LOG4CXX_ERROR(logger, "syntax error: " << reply.error() << " on line " << reply.line());
-					throw engine::SyntaxErrorException(filename, reply.error(), reply.line());
+					throw engine::SyntaxErrorException("syntax error", filename, reply.error(), reply.line());
 				}
 				else {
 					LOG4CXX_ERROR(logger, "unknown syntax error");
-					throw engine::SyntaxErrorException(filename, "unknown syntax error", 1);
+					throw engine::SyntaxErrorException("unknown syntax error", filename, "unknown syntax error", 1);
 				}
 			}
 			break;
