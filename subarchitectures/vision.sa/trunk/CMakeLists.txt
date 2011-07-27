@@ -16,6 +16,7 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/castutils/src/c++)
 
 
 # auto generated code
@@ -218,6 +219,11 @@ if (BUILD_SA_VISION_GAZEBO_JUGGLER)
 add_subdirectory (src/c++/vision/components/GazeboJuggler)
 endif (BUILD_SA_VISION_GAZEBO_JUGGLER)
 
+
+option(BUILD_SA_VISION_VIEWCONE_COSTS "build viewcone cost generator" YES)
+if (BUILD_SA_VISION_VIEWCONE_COSTS)
+add_subdirectory (src/c++/vision/components/ViewConeMoveCostGenerator)
+endif (BUILD_SA_VISION_VIEWCONE_COSTS)
 
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)
