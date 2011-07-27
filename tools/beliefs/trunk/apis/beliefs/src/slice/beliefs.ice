@@ -278,10 +278,14 @@ class  BasicProbDistribution extends ProbDistribution {
 };
 
 /**
- * sequence of probability distributions
+ * map of probability distributions
  */
 dictionary<string,ProbDistribution> Distributions;
 
+/**
+ * sequence of probability distributions
+ */
+["java:type:java.util.LinkedList<ProbDistribution>:java.util.List<ProbDistribution>"] sequence<ProbDistribution> DistributionList;
 
 
 /**
@@ -291,6 +295,16 @@ dictionary<string,ProbDistribution> Distributions;
  */
 class CondIndependentDistribs extends ProbDistribution {
 	Distributions distribs;
+};
+
+
+/**
+ * Discrete probability distribution for P(X1...Xn) where each 
+ * random variable Xi is conditionally independent on the other,
+ * i.e. P(X1...Xn) = P(X1)...P(xn)
+ */
+class CondIndependentDistribList extends ProbDistribution {
+	DistributionList distribs;
 };
 
 struct FormulaProbPair {
