@@ -422,8 +422,20 @@ enum VisionCommandStatus {
   };
   sequence<ViewCone> ViewConeSeq;
 
+  /// Cost to robot to move from one viewcone to another. This assumes that the transition is directed.
+  /// @author Nick Hawes (n.a.hawes@cs.bham.ac.uk)
+  class ViewConeMoveCost {
+    cast::cdl::WorkingMemoryPointer from;
+    cast::cdl::WorkingMemoryPointer to;
+    double cost;
+  };
+  sequence<ViewConeMoveCost> ViewConeMoveCostSeq;
 
-
+  ////List of viewcone move costs
+  class ViewConeMoveCostList {
+    ViewConeMoveCostSeq costs;
+  };
+  
   // A command to move the robot and the PTU so that the target ViewCone is
   // reached. The movements are performed in local coordinate frame relative
   // to target.anchor.
@@ -542,7 +554,9 @@ enum VisionCommandStatus {
     // possible direction of movement in last update
     double deltaX;
     double deltaZ;
-  };
+	// seems to be missing...
+	double existProb;
+};
 
  /**
   * Command to trigger people detection
@@ -564,6 +578,7 @@ enum VisionCommandStatus {
   class Post3DObject{
     string label;
     cogx::Math::Pose3 pose;
+	bool positiveDetection;
   };
 
   /**
