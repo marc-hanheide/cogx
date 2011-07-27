@@ -93,8 +93,9 @@ INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 INCLUDE includes/binder.sa/binder-base.cast
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-base.cast
-# INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
+#INCLUDE includes/dialogue.sa/dialogue-base.cast
+## INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
+INCLUDE default.cast
 INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 # planning and motivation #####################################################
