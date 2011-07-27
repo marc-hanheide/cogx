@@ -10,6 +10,10 @@ module cogx {
 module beliefs {
 module slice {
 
+class MLNState {
+	string state;
+};
+
 class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
