@@ -27,6 +27,7 @@ package de.dfki.lt.tr.dialogue.util;
 // IMPORTS
 
 // Java
+import de.dfki.lt.tr.dialogue.slice.asr.InitialPhonString;
 import de.dfki.lt.tr.dialogue.slice.asr.Noise;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -57,6 +58,8 @@ import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
 import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
+import de.dfki.lt.tr.dialogue.time.Point;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import java.util.LinkedList;
 
 
@@ -76,10 +79,7 @@ import java.util.LinkedList;
 
 public class DialogueChatWindow 
 extends JFrame
-implements ActionListener
-{
-
-	static private final String newline = "\n";
+implements ActionListener {
 
 	LinkedList<String> blocked = new LinkedList<String>();
 	
@@ -130,24 +130,17 @@ implements ActionListener
 		String text= inputField.getText();
 		if (!text.equals(""))
 		{
-			utterances.append("Human: "+text+newline);
+			utterances.append("Human: " + text + "\n");
 			StringTokenizer tokenizer = new StringTokenizer(text);
-			PhonString phonString = new PhonString();
-			phonString.id = newId();
-			phonString.wordSequence= text;
-			phonString.length= tokenizer.countTokens();
-			phonString.confidenceValue = 1.0f;
-			phonString.NLconfidenceValue= 0.0f;
-			phonString.rank = 1;
 
 			long now = System.currentTimeMillis();
 			long past = now - 50;
-			TimePoint now_tp = new TimePoint(now);
-			TimePoint past_tp = new TimePoint(past);
-			phonString.ival = new Interval(past_tp, now_tp);
+			TimeInterval ival = new TimeInterval(new Point(past), new Point(now));
+			PhonString ps = new PhonString(newId(), text, tokenizer.countTokens(), 1.0f, 0.0f, 1, false, ival.toIce());
+			InitialPhonString ips = new InitialPhonString(ps);
 
-			blocked.add(phonString.id);
-			notify((Object)phonString);
+			blocked.add(ps.id);
+			notify(ips);
 			inputField.setText("");
 		} // end if
 	} // end actionPerformed
@@ -164,9 +157,9 @@ implements ActionListener
 	{
 		if (soi != null)
 		{
-			utterances.append("Robot: "+soi.phonString+newline);
+			utterances.append("Robot: " + soi.phonString + "\n");
 		} // end if
-	} // end publishSOI
+	}
 
 	public void publishPhonString (PhonString ps)
 	{
@@ -178,15 +171,15 @@ implements ActionListener
 				}
 			}
 			if (!found) {
-				utterances.append("Human: "+ps.wordSequence+newline);
+				utterances.append("Human: "+ps.wordSequence + "\n");
 			}
 		}
-	} // end publishSOI
+	}
 
 	public void publishNoise (Noise n)
 	{
 		if (n != null) {
-			utterances.append("Human: [...]" + newline);
+			utterances.append("Human: [...]\n");
 		}
 	}
 

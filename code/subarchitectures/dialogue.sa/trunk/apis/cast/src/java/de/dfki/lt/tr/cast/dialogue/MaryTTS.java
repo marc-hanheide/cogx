@@ -623,8 +623,7 @@ public class MaryTTS extends ManagedComponent {
             }
 
             catch (Exception e) {
-                log(e);
-				log("connection to the Mary server failed, switching to no-Mary mode");
+				getLogger().error("connection to the Mary server failed, switching to no-Mary mode", e);
 				m_bNoMary = true;
             }
 

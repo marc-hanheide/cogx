@@ -350,7 +350,7 @@ public class ReferenceMonitor extends AbstractDialogueComponent {
 	private void triggerRulefileRewrite() {
 		String taskID = newTaskID();
 		ProcessingData pd = new ProcessingData(newProcessingDataId());
-		m_proposedProcessing.put(taskID, pd);
+		addProposedTask(taskID, pd);
 		String taskGoal = DialogueGoals.BELIEF_MODEL_UPDATE_TASK;
 		proposeInformationProcessingTask(taskID, taskGoal);
 	}

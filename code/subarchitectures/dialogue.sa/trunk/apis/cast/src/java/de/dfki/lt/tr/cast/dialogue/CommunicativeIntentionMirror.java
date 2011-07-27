@@ -71,7 +71,7 @@ extends AbstractDialogueComponent {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
-				m_proposedProcessing.put(taskID, pd);
+				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.INTENTION_MIRRORING_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}

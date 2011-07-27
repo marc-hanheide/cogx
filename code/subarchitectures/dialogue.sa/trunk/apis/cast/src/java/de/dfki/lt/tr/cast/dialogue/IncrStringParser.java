@@ -51,6 +51,8 @@ import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.parse.IncrCCGStringParser;
 import de.dfki.lt.tr.dialogue.parse.PackedLFParseResults;
 import de.dfki.lt.tr.dialogue.parse.OpenCCGGrammar;
+import de.dfki.lt.tr.dialogue.parse.preprocess.BasicPhonStringPreprocessor;
+import de.dfki.lt.tr.dialogue.parse.preprocess.CapitalizationPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.PhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
@@ -189,9 +191,6 @@ extends AbstractDialogueComponent {
 		m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
 
 		// Data processing
-		m_proposedProcessing = new Hashtable<String, ProcessingData>();
-		m_dataToProcessingGoalMap = new Hashtable<String, String>();
-		m_dataObjects = new Vector<ProcessingData>();
 		pdIdCounter = 0;
 		plfToPackedLFsId = new Hashtable<String, String>();
 
@@ -215,6 +214,8 @@ extends AbstractDialogueComponent {
 			throw new IllegalStateException(ex);
 		}
 
+		preprocessors.add(new CapitalizationPhonStringPreprocessor());
+		preprocessors.add(new BasicPhonStringPreprocessor());
         	
 		// register change filters for PhonString, which triggers parsing
 		addChangeFilter(
@@ -250,7 +251,7 @@ extends AbstractDialogueComponent {
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
-			m_proposedProcessing.put(taskID, pd);
+			addProposedTask(taskID, pd);
 			String taskGoal = DialogueGoals.INCREMENTAL_PARSING_STEP_TASK;
 			proposeInformationProcessingTask(taskID, taskGoal);
 		}
@@ -268,7 +269,7 @@ extends AbstractDialogueComponent {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
-				m_proposedProcessing.put(taskID, pd);
+				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.INCREMENTAL_PARSING_STEP_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}

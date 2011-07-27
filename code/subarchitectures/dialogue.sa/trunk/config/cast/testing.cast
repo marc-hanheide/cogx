@@ -9,6 +9,7 @@ SETVAR realize_ngrams=subarchitectures/dialogue.sa/grammars/openccg/moloko.v6/ng
 INCLUDE  modules/main.incl
 INCLUDE  modules/asr-loquendo.incl
 INCLUDE  modules/nlu-all.incl
-INCLUDE  modules/manage-none.incl
+INCLUDE  modules/manage-mirror.incl
 INCLUDE  modules/nlg-all.incl
 INCLUDE  modules/tts-mary.incl
+INCLUDE  modules/gui-local.incl

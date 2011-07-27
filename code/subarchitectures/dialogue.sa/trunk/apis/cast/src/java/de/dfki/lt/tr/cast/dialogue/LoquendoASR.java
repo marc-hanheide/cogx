@@ -142,7 +142,7 @@ implements TRResultListener {
 						log("phonological string below minimal threshold, will forward a Noise object");
 						pd.add(new CASTData<Noise> ("emptyid", nBestListToNoise((NBestList) rr)));
 					}
-					m_proposedProcessing.put(taskID, pd);
+					addProposedTask(taskID, pd);
 					String taskGoal = DialogueGoals.ASR_TASK;
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}
