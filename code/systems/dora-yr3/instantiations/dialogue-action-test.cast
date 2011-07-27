@@ -94,7 +94,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/dialogue-base.cast
-INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
+# INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
+INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 # planning and motivation #####################################################
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
@@ -103,8 +104,12 @@ JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
 JAVA MG executor dora.execution.components.DoraExecutionMediator
 
+JAVA MG shared-tracker eu.cogx.sharedtracker.dora.SharedBeliefTracker --write-to-sa binder
+
+
 # viewing and debugging #######################################################
 JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
 JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
 JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
 JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
+JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
