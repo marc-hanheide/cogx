@@ -30,12 +30,16 @@ package de.dfki.lt.tr.dialogue.util;
 public class DialogueException extends RuntimeException 
 {
 
-	public DialogueException () { 
+	public DialogueException() { 
 		super("");
 	}
 	
-	public DialogueException (String message) { 
+	public DialogueException(String message) { 
 		super(message);
+	}
+
+	public DialogueException(Throwable cause) {
+		super(cause);
 	}
 
 } // end class

@@ -41,10 +41,7 @@ import opennlp.ccg.hylo.Nominal;
 import opennlp.ccg.lexicon.DefaultTokenizer;
 import opennlp.ccg.lexicon.Tokenizer;
 import opennlp.ccg.lexicon.Word;
-import opennlp.ccg.parse.Chart;
 import opennlp.ccg.parse.ChartScorer;
-import opennlp.ccg.parse.Edge;
-import opennlp.ccg.parse.EdgeHash;
 import opennlp.ccg.parse.IncrCKYParser;
 import opennlp.ccg.parse.ParseException;
 import opennlp.ccg.parse.ParseResults;
@@ -56,10 +53,11 @@ import opennlp.ccg.unify.UnifyControl;
 
 // Dialogue API slice
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
-import de.dfki.lt.tr.dialogue.slice.lf.*;
-import de.dfki.lt.tr.dialogue.slice.parse.*;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.slice.lf.PackedLogicalForm;
 
 // Dialogue API util
+import de.dfki.lt.tr.dialogue.slice.parse.PhonStringLFPair;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.DialogueMissingValueException;
 import de.dfki.lt.tr.dialogue.util.LFPacking;
@@ -561,7 +559,7 @@ public class IncrCCGStringParser {
 	} // end packChartAnalyses
 	
 	public static PhonStringLFPair[] convertPhonString2LFPairs (PackedLFParseResults results) {
-	
+
 		if (results.phon2LFsMapping != null) {
 			Hashtable<PhonString,Vector<String>> hash = results.phon2LFsMapping;
 			Vector<PhonStringLFPair> pairs = new Vector<PhonStringLFPair>();
@@ -581,8 +579,8 @@ public class IncrCCGStringParser {
 			return pairsArray;
 		}
 		else {
-			Vector<PhonStringLFPair> pairs = new Vector<PhonStringLFPair>();
-			return null;
+//			Vector<PhonStringLFPair> pairs = new Vector<PhonStringLFPair>();
+			return new PhonStringLFPair[0];
 		}
 	} // end convertPhonString2LFPairs
 	

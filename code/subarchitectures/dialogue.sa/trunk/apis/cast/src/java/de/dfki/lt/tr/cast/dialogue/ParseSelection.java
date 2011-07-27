@@ -27,30 +27,25 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
-import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.events.Event;
-import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
 import de.dfki.lt.tr.cast.ProcessingData;
+import de.dfki.lt.tr.dialogue.parseselection.ParseSelector;
 import de.dfki.lt.tr.dialogue.parseselection.SimpleParseSelection;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
-import java.util.HashMap;
 import java.util.Iterator;
 
 public class ParseSelection
 extends AbstractDialogueComponent {
 
-	SimpleParseSelection worker = null;
+	private ParseSelector selector = null;
 
 	@Override
 	public void start() {
 
-		worker = new SimpleParseSelection(this.getLogger(".simple"));
+		selector = new SimpleParseSelection(this.getLogger(".simple"));
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
@@ -98,7 +93,7 @@ extends AbstractDialogueComponent {
 			Object body = iter.next().getData();
 			if (body instanceof PackedLFs) {
 				PackedLFs plf = (PackedLFs)body;
-				LogicalForm lf = worker.extractLogicalFormWithMood(plf);
+				LogicalForm lf = selector.selectParse(plf);
 				if (lf != null) {
 					log("selected the following LF: [" + LFUtils.lfToString(lf) + "]");
 					SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval);
