@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
-public class SimpleParseSelection {
+public class SimpleParseSelection implements ParseSelector {
 
 	private Logger logger = null;
 
@@ -45,7 +45,8 @@ public class SimpleParseSelection {
 	 * @param plf   The packed logical form
 	 * @return logical form, or null if none could be extracted
 	 */
-	public LogicalForm extractLogicalFormWithMood(PackedLFs plf) {
+	@Override
+	public LogicalForm selectParse(PackedLFs plf) {
 		List<LogicalForm> lfs = new LinkedList<LogicalForm>(Arrays.asList(packingTool.unpackPackedLogicalForm(plf)));
 		List<LogicalForm> filteredLfs = copyFilterLogicalForms(lfs);
 		log("we've got " + lfs.size() + " alternatives, " + filteredLfs.size() + " after filtering");

@@ -208,5 +208,9 @@ public class ParsingUtils {
 		}
 		}
 	}
-	
+
+	public static boolean arePLFsFinalized(PackedLFs plfs) {
+		return plfs.finalized == 1;
+	}
+
 }

@@ -260,8 +260,7 @@ public class LFPacking {
 		root.lfIds = lfIds.toArray(root.lfIds) ;
 		PackedNominal rootNominal = new PackedNominal() ;
 		rootNominal.nomVar = "rootNom" + utteranceIncrement;
-		rootNominal.prop = new Proposition();
-		rootNominal.prop.prop = "";
+		rootNominal.prop = new Proposition("", ConnectiveType.NONE);
 
 		rootNominal.packedSorts = new PackedOntologicalSort[1];
 		rootNominal.packedSorts[0] = new PackedOntologicalSort();
