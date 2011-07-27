@@ -5,7 +5,6 @@ package de.dfki.lt.tr.beliefs.factories.specific;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.AbstractProxyFactory;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentBasicDistributionList;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentBasicDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
