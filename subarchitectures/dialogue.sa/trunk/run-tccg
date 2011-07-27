@@ -1,0 +1,7 @@
+#!/bin/sh
+
+export CLASSPATH="$CLASSPATH:`pwd`/../../output/classes"
+export PATH="$PATH:`pwd`/resources/grammars/openccg/bin"
+
+cd resources/grammars/openccg/moloko.v6
+./run.sh

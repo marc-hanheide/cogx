@@ -152,6 +152,7 @@ generate : event : utter(S, H, Int) <-
 feat_to_sort(color, 'q-color').
 feat_to_sort(shape, 'q-shape').
 feat_to_sort(size, 'q-size').
+feat_to_sort(identity, 'e-place').
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -215,6 +216,12 @@ generate : object_description(Int, Nom, PrivBId) <-
 	att : linguisticsalience(PrivBId, high),
 	generate : using_salience(PrivBId) / -5.0,
 	generate : it(Nom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : object_description(Int, Nom, PrivBId) <-
+	generate : not_using_belief(PrivBId) / 0.0,
+	generate : this(Nom).
 
 %-------------------------------------------------------------------------
 
