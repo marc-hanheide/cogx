@@ -1,6 +1,4 @@
-/**
- * @author Marc Hanheide (marc@hanheide.de)
- */
+
 package eu.cogx.sharedtracker.dora;
 
 import java.util.Arrays;
@@ -12,6 +10,9 @@ import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
 import castutils.slice.GroundedToSharedBeliefMap;
+
+import comadata.ComaRoom;
+
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -27,7 +28,12 @@ public class SharedBeliefTracker extends ManagedComponent {
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
-	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
+	
+	private static final String COMAROOMTYPE = SimpleDiscreteTransferFunction
+	.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
+
+	
+	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE, COMAROOMTYPE);
 
 	WMTracker<GroundedBelief, SharedBelief> tracker = null;
 
