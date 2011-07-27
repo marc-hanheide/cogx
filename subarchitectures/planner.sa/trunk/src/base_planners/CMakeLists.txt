@@ -36,7 +36,7 @@ add_custom_target(downward_preprocess
                    WORKING_DIRECTORY ${DOWNWARD_DIR}/preprocess/
                    COMMENT "Building ${DOWNWARD_DIR}/preprocess/preprocess")
 add_custom_target(downward_search
-                   COMMAND make release
+                   COMMAND make release CC=${CMAKE_CXX_COMPILER}
                    WORKING_DIRECTORY ${DOWNWARD_DIR}/search/
                    COMMENT "Building ${DOWNWARD_DIR}/search/search")
 
@@ -55,7 +55,7 @@ add_custom_target(pdownward_preprocess
                    WORKING_DIRECTORY ${PDOWNWARD_DIR}/preprocess/
                    COMMENT "Building ${PDOWNWARD_DIR}/preprocess/preprocess")
 add_custom_target(pdownward_search
-                   COMMAND make release
+                   COMMAND make release CC=${CMAKE_CXX_COMPILER}
                    WORKING_DIRECTORY ${PDOWNWARD_DIR}/search/
                    COMMENT "Building ${PDOWNWARD_DIR}/search/search")
 
