@@ -48,7 +48,10 @@ add_definitions(-Wall)
 
 include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 
+add_subdirectory (tools/castutils)
+
 add_subdirectory (tools/d-lib)
+
 
 
 # ------------ <ROCS> ------------
