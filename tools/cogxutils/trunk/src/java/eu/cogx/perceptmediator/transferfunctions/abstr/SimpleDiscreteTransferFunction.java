@@ -3,10 +3,8 @@
  */
 package eu.cogx.perceptmediator.transferfunctions.abstr;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -14,25 +12,19 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryPointer;
-import cast.core.CASTUtils;
-import cast.interfaces.TimeServerPrx;
-import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.PerceptBelief;
 
 /**
  * This is an abstract class for the most simple {@link TransferFunction} to
  * establish a mapping between input percepts (of generic type From) and
- * {@link PerceptBelief}. all it does is creating discrete FeatureDistribution
+ * {@link dBelief}. all it does is creating discrete FeatureDistribution
  * of an {@link CondIndependentDistribs} in a belief. This abstract
  * implementation requires the specific mapping between percepts and belief to
  * be implemented in a subclass by implementing getFeatureValueMapping.
@@ -43,25 +35,9 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  *            type we generate beliefs from
  */
 public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl, To extends dBelief>
-		extends CASTHelper implements TransferFunction<From, To> {
+		extends AbstractDiscreteTransferFunction<From,To> {
 
 
-
-	public static String getBeliefTypeFromCastType(
-			Class<? extends Ice.Object> class1) {
-		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
-	}
-
-	public static String getBeliefTypeFromCastType(String casttype) {
-		StringTokenizer st = new StringTokenizer(casttype, ":");
-		String type = casttype.toLowerCase();
-		while (st.hasMoreTokens())
-			type = st.nextToken();
-		return type;
-	}
-
-	private static TimeServerPrx timeServer = null;
-	final protected Class<To> beliefClass;
 
 	/**
 	 * constructor
@@ -71,8 +47,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 */
 	public SimpleDiscreteTransferFunction(ManagedComponent component,
 			Logger logger, Class<To> beliefType) {
-		super(component);
-		this.beliefClass=beliefType;
+		super(component,logger,beliefType);
 	}
 
 	/*
@@ -151,12 +126,6 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		return true;
 	}
 
-	private void addAncestors(WorkingMemoryChange _wmc, From _from,
-			CASTIndependentFormulaDistributionsBelief<To> _p) {
-		CASTBeliefHistory hist = new CASTBeliefHistory(new ArrayList<WorkingMemoryPointer>(1), new ArrayList<WorkingMemoryPointer>(0));
-		hist.ancestors.add(new WorkingMemoryPointer(_wmc.address, _wmc.type));
-		_p.get().hist = hist;
-        }
 
 	/**
 	 * the abstract method
@@ -186,9 +155,4 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 	}
 
-	public static CASTTime now() {
-		if (timeServer == null)
-			timeServer = CASTUtils.getTimeServer();
-		return timeServer.getCASTTime();
-	}
 }
