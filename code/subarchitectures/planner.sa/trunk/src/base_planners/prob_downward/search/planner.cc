@@ -253,7 +253,7 @@ int main(int argc, const char **argv) {
 
 
     int iteration_no = 0;
-    bool solution_found = false;
+    // bool solution_found = false;
     int wa_star_weights[] = {10, 5, 3, 2, 1, -1};
     int wastar_bound = numeric_limits<int>::max();
     int wastar_weight = wa_star_weights[0];
@@ -371,7 +371,7 @@ int main(int argc, const char **argv) {
         cout << "Search time: " << search_timer << endl;
         cout << "Total time: " << g_timer << endl;
 
-        solution_found = engine->found_solution();
+        // solution_found = engine->found_solution();
 
         delete engine;
     } while (iterative_search);
