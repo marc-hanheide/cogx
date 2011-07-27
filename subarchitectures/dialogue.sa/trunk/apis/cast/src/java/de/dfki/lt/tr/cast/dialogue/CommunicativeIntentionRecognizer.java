@@ -200,7 +200,7 @@ extends AbstractDialogueComponent {
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
-			m_proposedProcessing.put(taskID, pd);
+			addProposedTask(taskID, pd);
 			String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 			proposeInformationProcessingTask(taskID, taskGoal);
 		}
@@ -224,7 +224,7 @@ extends AbstractDialogueComponent {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
-				m_proposedProcessing.put(taskID, pd);
+				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}
@@ -256,7 +256,7 @@ extends AbstractDialogueComponent {
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
 				pd.setWorkingMemoryAddress(_wmc.address);
-				m_proposedProcessing.put(taskID, pd);
+				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}
@@ -295,7 +295,7 @@ extends AbstractDialogueComponent {
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
 					pd.add(data);
 					pd.setWorkingMemoryAddress(wma);
-					m_proposedProcessing.put(taskID, pd);
+					addProposedTask(taskID, pd);
 					String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}

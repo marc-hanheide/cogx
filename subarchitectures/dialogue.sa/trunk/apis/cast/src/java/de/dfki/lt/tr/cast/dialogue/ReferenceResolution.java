@@ -156,7 +156,7 @@ extends AbstractDialogueComponent {
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
-			m_proposedProcessing.put(taskID, pd);
+			addProposedTask(taskID, pd);
 			String taskGoal = DialogueGoals.REFERENCE_RESOLUTION_TASK;
 			proposeInformationProcessingTask(taskID, taskGoal);
 		}

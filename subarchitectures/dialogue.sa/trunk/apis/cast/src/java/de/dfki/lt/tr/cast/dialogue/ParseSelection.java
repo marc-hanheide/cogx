@@ -76,7 +76,7 @@ extends AbstractDialogueComponent {
 				String taskID = newTaskID();
 				ProcessingData pd = new ProcessingData(newProcessingDataId());
 				pd.add(data);
-				m_proposedProcessing.put(taskID, pd);
+				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.PARSESELECTION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}

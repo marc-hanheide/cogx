@@ -57,17 +57,17 @@ extends ManagedComponent
 
 	// Hashtable used to record the tasks we want to carry out. For each
 	// taskID we store a Vector with the data it is to work on
-	protected Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
+	private Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
 	
 	// Hashtable linking data IDs to goal IDs
-	protected Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
+	private Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
 	
 	// Hashtable linking task IDs to task types
-	protected Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
+	private Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
-	protected Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();
+	private Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();
 	
 	// Counter for ProcessingData identifiers
 	protected int pdIdCounter = 0;	
@@ -89,7 +89,7 @@ extends ManagedComponent
 			m_dataToProcessingGoalMap.put(pdID, _goalID);
 		}
 		else {
-			log("ERROR: Goal without data: " + _goalID);
+			getLogger().error("goal without data: " + _goalID);
 		} // end if..else
 	} // end taskAdopted
 	
@@ -101,8 +101,7 @@ extends ManagedComponent
 	 */
 	@Override
 	protected void taskRejected(String _goalID) {
-		log("WARNING: The goal with ID [" + _goalID
-			+ "] has been rejected.");
+		getLogger().warn("goal with ID [" + _goalID + "] has been rejected.");
 		m_proposedProcessing.remove(_goalID);
 	} // end taskRejected	
 
@@ -160,13 +159,17 @@ extends ManagedComponent
 			proposeInformationProcessingTask(taskID, taskGoal);
 		}
 		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
+			getLogger().error("subarchitecture component exception", e);
 		} // end try..catch
 	} // end handleWorkingMemoryChange		
 	
 	abstract public void executeTask (ProcessingData data)
 	throws DialogueException;
-	
+
+	protected void addProposedTask(String id, ProcessingData pd) {
+		m_proposedProcessing.put(id, pd);
+	}
+
 	@Override
 	public void runComponent () 
 	{

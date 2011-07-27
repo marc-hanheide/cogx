@@ -114,7 +114,7 @@ extends AbstractDialogueComponent
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
 			String taskID = newTaskID();
-			m_proposedProcessing.put(taskID, pd);
+			addProposedTask(taskID, pd);
 //			System.out.println("ID: " + taskID);
 //			System.out.println("goal: " + taskGoal);
 			proposeInformationProcessingTask(taskID, taskGoal);

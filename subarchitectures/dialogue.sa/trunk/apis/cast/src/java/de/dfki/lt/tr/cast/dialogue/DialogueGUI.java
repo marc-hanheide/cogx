@@ -179,24 +179,20 @@ implements TRResultListener
 	 * @param result The result from the ASR engine
 	 */
 		
-        @Override
-	public void notify (Object result)
-	{
+	@Override
+	public void notify(Object result) {
 		// create a CAST data object for the result
-        CASTData data = new CASTData ("emptyid",(PhonString)result);
-        // get a new id for the task
-        String taskID = newTaskID();
-        // store the data we want to process for later
-        ProcessingData pd = new ProcessingData(
-            newProcessingDataId());
-        pd.add(data);
-        m_proposedProcessing.put(taskID, pd);
+		CASTData<InitialPhonString> data = new CASTData("emptyid", (InitialPhonString) result);
+		// get a new id for the task
+		String taskID = newTaskID();
+		// store the data we want to process for later
+		ProcessingData pd = new ProcessingData(newProcessingDataId());
+		pd.add(data);
+		addProposedTask(taskID, pd);
 		// set the goal
-        String taskGoal = DialogueGoals.ASR_TASK;
-//        System.out.println("ID: " + taskID);
-//        System.out.println("goal: " + taskGoal);
+		String taskGoal = DialogueGoals.ASR_TASK;
 		// store the goal with its information
-        proposeInformationProcessingTask(taskID, taskGoal);
+		proposeInformationProcessingTask(taskID, taskGoal);
 	}
 	
 	/**
@@ -206,7 +202,6 @@ implements TRResultListener
 	 * 
 	 * @param data	The data structure containing the PhonString object
 	 */
-	
 	@Override
 	public void executeTask (ProcessingData data)
 	throws DialogueException
@@ -214,11 +209,8 @@ implements TRResultListener
     	try {
                 Iterator<CASTData> it = data.getData();
                 while (it.hasNext()) {
-                    PhonString phonString = (PhonString) it.next().getData();
-                    if (phonString.wordSequence.equals("no")) {
-                    	phonString.wordSequence = "No";
-                    }
-                    addToWorkingMemory(newDataID(), new InitialPhonString(phonString));
+                    InitialPhonString ips = (InitialPhonString) it.next().getData();
+                    addToWorkingMemory(newDataID(), ips);
                 }
     	}
     	catch (Exception e) {

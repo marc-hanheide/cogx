@@ -124,7 +124,7 @@ implements TRResultListener
         ProcessingData pd = new ProcessingData(
             newProcessingDataId());
         pd.add(data);
-        m_proposedProcessing.put(taskID, pd);
+        addProposedTask(taskID, pd);
 		// set the goal
         String taskGoal = DialogueGoals.ASR_TASK;
         System.out.println("ID: " + taskID);

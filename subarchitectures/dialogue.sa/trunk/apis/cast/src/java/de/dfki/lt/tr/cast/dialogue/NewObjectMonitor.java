@@ -77,7 +77,7 @@ public class NewObjectMonitor extends AbstractDialogueComponent {
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
-			m_proposedProcessing.put(taskID, pd);
+			addProposedTask(taskID, pd);
 			String taskGoal = DialogueGoals.BELIEF_MODEL_UPDATE_TASK;  // FIXME: task name wrong
 			proposeInformationProcessingTask(taskID, taskGoal);
 			log("observed a new object!");
