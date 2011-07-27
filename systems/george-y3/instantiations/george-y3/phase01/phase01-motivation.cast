@@ -28,6 +28,8 @@ INCLUDE  georgeY3-vision.incl
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators.cast
 # INCLUDE juggler.incl
+CPP MG vc-costs ViewConeMoveCostGenerator
+
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -37,7 +39,7 @@ INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 # JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
-JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+# JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
