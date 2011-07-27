@@ -10,6 +10,7 @@ import VisionData.Vertex;
 import VisionData.VisualObject;
 import VisionData.VisualObjectView;
 import blobfinder.ColorRGB;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cogx.Math.Matrix33;
 import cogx.Math.Vector2;
@@ -41,14 +42,8 @@ public class VisionUtils {
 		// colorAmbiguity, String[] shapeLabels, double[] shapeDistrib, double
 		// shapeGain, double shapeAmbiguity, String protoObjectID)
 
-		VisualObject obj = new VisualObject(new cogx.Math.Pose3(newVector3(),
-				new Matrix33(0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d)),
-				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
-				CASTUtils.getTimeServer().getCASTTime(), null,
-				new VisualObjectView[0], new GeometryModel(new Vertex[0],
-						new Face[0]), 0d, new String[0], new double[0], 0, 0,
-				new String[0], new double[0], new double[0], 0, 0,
-				new String[0], new double[0], new double[0], 0, 0, "", "");
+		VisualObject obj = new VisualObject();
+
 		return obj;
 	}
 
