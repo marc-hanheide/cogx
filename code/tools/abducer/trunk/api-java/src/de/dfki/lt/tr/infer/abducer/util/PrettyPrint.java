@@ -86,7 +86,7 @@ public abstract class PrettyPrint {
 				Iterator<Term> iter = f.args.iterator();
 				while (iter.hasNext()) {
 					s += termToString(iter.next());
-					s += (iter.hasNext() ? "" : ", ");
+					s += (iter.hasNext() ? ", " : "");
 				}
 				s += ")";
 		    }
@@ -109,7 +109,7 @@ public abstract class PrettyPrint {
 			Iterator<Term> iter = a.args.iterator();
 			while (iter.hasNext()) {
 				s += termToString(iter.next());
-				s += (iter.hasNext() ? "" : ", ");
+				s += (iter.hasNext() ? ", " : "");
 			}
 			s += ")";
 		}
