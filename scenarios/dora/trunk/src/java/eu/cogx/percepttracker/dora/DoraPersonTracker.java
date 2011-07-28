@@ -33,6 +33,7 @@ import castutils.castextensions.WMView;
 import comadata.ComaRoom;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
@@ -58,7 +59,6 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class DoraPersonTracker extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
-	private static final String NODE_PERSON_EXISTS = "person_exists";
 	// create a view of all places and room beliefs
 	WMView<GroundedBelief> spatialBeliefs = WMBeliefView.create(this,
 			GroundedBelief.class, new String[] {
@@ -146,66 +146,6 @@ public class DoraPersonTracker extends ManagedComponent implements
 		return newGB;
 	}
 
-	/**
-	 * @param event
-	 * @param pb
-	 * @param placePtr
-	 * @param probExist
-	 * @throws AlreadyExistsOnWMException
-	 * @throws DoesNotExistOnWMException
-	 * @throws UnknownSubarchitectureException
-	 */
-	private void processFirstObservation(WorkingMemoryChange event,
-			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb,
-			PointerFormula placePtr, Boolean probExist)
-			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
-			UnknownSubarchitectureException {
-		log("this is an entirely new person with place " + placePtr.pointer.id
-				+ "that we haven't seen before");
-		List<Boolean> obs = new ArrayList<Boolean>();
-		obs.add(probExist);
-		placeObservations.put(placePtr.pointer.id, obs);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = newBelief(
-				pb, placePtr.pointer, event);
-		updateProbability(newGB, obs);
-		WorkingMemoryAddress wma = new WorkingMemoryAddress(newGB.getId(),
-				getSubarchitectureID());
-		room2GroundedBeliefMap.put(placePtr.pointer, wma);
-		addToWorkingMemory(wma, newGB.get());
-	}
-
-	/**
-	 * @param event
-	 * @param from
-	 * @param placePtr
-	 * @param probExist
-	 * @param wmaGrounded
-	 * @throws DoesNotExistOnWMException
-	 * @throws UnknownSubarchitectureException
-	 * @throws ConsistencyException
-	 * @throws PermissionException
-	 */
-	private void processObservation(WorkingMemoryChange event,
-			PerceptBelief from, PointerFormula placePtr, Boolean probExist,
-			WorkingMemoryAddress wmaGrounded) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, ConsistencyException,
-			PermissionException {
-		log("we have seen a person of " + placePtr.pointer.id
-				+ " before, so check if we have to update at all");
-
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
-						GroundedBelief.class));
-
-		Collection<Boolean> obs = placeObservations.get(placePtr.pointer.id);
-		obs.add(probExist);
-
-		log("we have found a person in the same place, " + placePtr.pointer.id);
-		manageHistory(event, from, gb.get());
-		updateProbability(gb, obs);
-		overwriteWorkingMemory(wmaGrounded, gb.get());
-	}
-
 	@Override
 	protected void start() {
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
@@ -217,21 +157,6 @@ public class DoraPersonTracker extends ManagedComponent implements
 		} catch (UnknownSubarchitectureException e) {
 			logException(e);
 		}
-	}
-
-	private void updateProbability(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb,
-			Collection<Boolean> obs) {
-		log("BNet created, running inference now ");
-		// BeliefNode locationNode = bn.findNode(NODE_PERSON_EXISTS);
-		// CPF res = ls.queryMarginal(locationNode);
-		// log("queryMarginal for exist node: " + res.get(0).getExpr());
-
-		FormulaDistribution df = FormulaDistribution.create();
-		// df.add(true, ((ValueDouble) res.get(0)).getValue());
-
-		gb.getContent().put(PersonTransferFunction.EXISTS, df);
-
 	}
 
 	@Override
@@ -247,6 +172,16 @@ public class DoraPersonTracker extends ManagedComponent implements
 			return;
 		}
 
+		processObservation(event, from, pb);
+
+	}
+
+	private void processObservation(WorkingMemoryChange event,
+			PerceptBelief from,
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException, ConsistencyException,
+			PermissionException {
 		PointerFormula placePtr = (PointerFormula) (pb.getContent().get(
 				PersonTransferFunction.IS_IN).getDistribution().getMostLikely()
 				.get());
@@ -259,44 +194,83 @@ public class DoraPersonTracker extends ManagedComponent implements
 		println("found N=" + placesInRoomAdr.size() + " in this room");
 
 		generateBeliefNet(placesInRoomAdr);
-		FormulaDistribution placeDistribution = computePlaceDistribution(placesInRoomAdr);
+		Map<String, Vector<Double>> marginals = reasoningEngine
+				.queryMarginals();
+		FormulaDistribution placeDistribution = computePlaceDistribution(
+				placesInRoomAdr, marginals);
 
 		// find the corresponding belief:
 		WorkingMemoryAddress wmaGrounded = room2GroundedBeliefMap.get(roomAdr);
+		FormulaDistribution existDistribution = computeExistDistribution(marginals);
 		if (wmaGrounded == null) {
 			log("we have found a new person in room, " + roomAdr.id);
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = newBelief(
-					pb, placePtr.pointer, event);
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(newGB.getId(),
-					getSubarchitectureID());
-			room2GroundedBeliefMap.put(placePtr.pointer, wma);
-			newGB.getContent().put(PersonTransferFunction.IS_IN,
-					placeDistribution);
-			addToWorkingMemory(wma, newGB.get());
-
+			handleFirstObservation(event, pb, placePtr, roomAdr,
+					placeDistribution, existDistribution);
 		} else {
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
-							GroundedBelief.class));
-			log("we have found a person in the same room, " + roomAdr.id);
-			manageHistory(event, from, gb.get());
-			gb.getContent()
-					.put(PersonTransferFunction.IS_IN, placeDistribution);
-			overwriteWorkingMemory(wmaGrounded, gb.get());
+			handleSuccessiveObservation(event, from, roomAdr,
+					placeDistribution, wmaGrounded, existDistribution);
 		}
+	}
 
+	private FormulaDistribution computeExistDistribution(
+			Map<String, Vector<Double>> marginals) {
+
+		FormulaDistribution placeDistribution = FormulaDistribution.create();
+		Vector<Double> marginalExist = marginals
+				.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_ROOM);
+		assert (marginalExist != null);
+		placeDistribution.add(true, marginalExist.get(0));
+
+		return placeDistribution;
+	}
+
+	private void handleFirstObservation(WorkingMemoryChange event,
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb,
+			PointerFormula placePtr, WorkingMemoryAddress roomAdr,
+			FormulaDistribution placeDistribution,
+			FormulaDistribution existsDistribution)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = newBelief(
+				pb, placePtr.pointer, event);
+		WorkingMemoryAddress wma = new WorkingMemoryAddress(newGB.getId(),
+				getSubarchitectureID());
+		room2GroundedBeliefMap.put(roomAdr, wma);
+		newGB.getContent().put(PersonTransferFunction.IS_IN, placeDistribution);
+		newGB.getContent().put(PersonTransferFunction.EXISTS,
+				existsDistribution);
+
+		addToWorkingMemory(wma, newGB.get());
+	}
+
+	private void handleSuccessiveObservation(WorkingMemoryChange event,
+			PerceptBelief from, WorkingMemoryAddress roomAdr,
+			FormulaDistribution placeDistribution,
+			WorkingMemoryAddress wmaGrounded,
+			FormulaDistribution existsDistribution)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			ConsistencyException, PermissionException {
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
+						GroundedBelief.class));
+		log("we have found a person in the same room, " + roomAdr.id);
+		manageHistory(event, from, gb.get());
+		gb.getContent().put(PersonTransferFunction.IS_IN, placeDistribution);
+		gb.getContent().put(PersonTransferFunction.EXISTS, existsDistribution);
+		overwriteWorkingMemory(wmaGrounded, gb.get());
 	}
 
 	private FormulaDistribution computePlaceDistribution(
-			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr) {
-		Map<String, Vector<Double>> marginals = reasoningEngine
-				.queryMarginals();
+			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr,
+			Map<String, Vector<Double>> marginals) {
 
 		FormulaDistribution placeDistribution = FormulaDistribution.create();
 
 		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
 			log("looking up marginals for place " + wmaPlaceInRoom.id);
-			Vector<Double> marginalForPlace = marginals.get(wmaPlaceInRoom.id);
+			Vector<Double> marginalForPlace = marginals
+					.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_PLACE_PREFIX
+							+ wmaPlaceInRoom.id);
 			assert (marginalForPlace != null);
 			placeDistribution.add(WMPointer.create(
 					wmaPlaceInRoom,
