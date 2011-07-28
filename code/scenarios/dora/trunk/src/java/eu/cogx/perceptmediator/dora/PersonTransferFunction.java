@@ -37,7 +37,7 @@ public class PersonTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<Person, PerceptBelief, GroundedBelief> {
 
-	public static final String EXISTS = "exists";
+	public static final String EXISTS = "does-exist";
 	public static final String IS_IN = "is-in";
 	public static final String PERSON_ID = "PersonId";
 
