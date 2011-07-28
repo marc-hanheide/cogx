@@ -9,7 +9,6 @@ import java.util.Vector;
 import java.util.Map.Entry;
 
 import VisionData.DetectionCommand;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 
