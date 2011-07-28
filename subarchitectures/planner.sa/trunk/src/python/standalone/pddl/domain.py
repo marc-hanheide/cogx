@@ -285,7 +285,7 @@ class Domain(Scope):
                 continue
 
             compiler = None
-            for target, comp in desc.compilers:
+            for target, comp in desc.compilers.iteritems():
                 if target in supported:
                     compiler = comp
             if not compiler:
