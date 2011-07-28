@@ -154,15 +154,47 @@ def gen_fact_tuples(beliefs):
       return result
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
-  for bel in beliefs:
+  def decode_relation(dist):
     factdict = defaultdict(list)
-    attributed_object = None
-    for feat, val, prob in extract_features(bel.content):
-      if feat == "about":
-        attributed_object = val
+    for feat, val, prob in extract_features(dist):
       factdict[str(feat)].append((val, prob))
+
+    elems = []
+    i=0
+    while ("val%d" % i) in factdict:
+      el_vals = factdict["val%d" % i]
+      assert len(el_vals) == 1, "valN features in relations must have exactly one possible value"
+      elems.append(el_vals[0][0])
+      i += 1
+
+    if any(val == pddl.UNKNOWN for val in elems):
+      return
+
+    for feat,vals in factdict.iteritems():
+      if feat.startswith("val"):
+        continue
+      #log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
+      yield SVarDistribution(feat, elems, vals)
       
-    if bel.type != "relation":
+  for bel in beliefs:
+    #always treat CondIndependentDistribList as list of relations
+    if isinstance(bel.content, distribs.CondIndependentDistribList):
+      for dist in bel.content.distribs:
+        for fact in decode_relation(dist):
+          yield fact
+
+    elif bel.type == "relation":
+      for fact in decode_relation(bel.content):
+        yield fact
+
+    else:
+      factdict = defaultdict(list)
+      attributed_object = None
+      for feat, val, prob in extract_features(bel.content):
+        if feat == "about":
+          attributed_object = val
+        factdict[str(feat)].append((val, prob))
+      
       if attributed_object is not None:
         yield SVarDistribution("existence",  [attributed_object], [])
         agent = pddl.TypedObject("tutor",pddl.mapl.t_agent)
@@ -175,25 +207,25 @@ def gen_fact_tuples(beliefs):
           # for val, prob in vals:
           #   log.debug("(%s %s) = %s : %f", feat, obj, val, prob)
           yield SVarDistribution(feat, [obj], vals)
-    else:
-      elems = []
-      i=0
-      while ("val%d" % i) in factdict:
-        el_vals = factdict["val%d" % i]
-        assert len(el_vals) == 1, "valN features in relations must have exactly one possible value"
-        elems.append(el_vals[0][0])
-        i += 1
+    # else:
+    #   elems = []
+    #   i=0
+    #   while ("val%d" % i) in factdict:
+    #     el_vals = factdict["val%d" % i]
+    #     assert len(el_vals) == 1, "valN features in relations must have exactly one possible value"
+    #     elems.append(el_vals[0][0])
+    #     i += 1
 
-      if any(val == pddl.UNKNOWN for val in elems):
-        continue
+    #   if any(val == pddl.UNKNOWN for val in elems):
+    #     continue
 
-      # print map(str, elems)
+    #   # print map(str, elems)
         
-      for feat,vals in factdict.iteritems():
-        if feat.startswith("val"):
-          continue
-        #log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
-        yield SVarDistribution(feat, elems, vals)
+    #   for feat,vals in factdict.iteritems():
+    #     if feat.startswith("val"):
+    #       continue
+    #     #log.debug("(%s %s) = %s : %f", feat, " ".join(map(str, elems)), vals[0][0], vals[0][1])
+    #     yield SVarDistribution(feat, elems, vals)
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
