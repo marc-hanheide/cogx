@@ -45,11 +45,87 @@ public class PersonReasoningEngine {
 
 	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.5;
 
+	public static void main(String[] argv) {
+		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
+		Collection<Boolean> placeObs;
+		placeObs = Arrays.asList(false, true, true, true, false, false);
+		allObs.put("p1", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p2", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p3", placeObs);
+
+		PersonReasoningEngine pre = new PersonReasoningEngine();
+		pre.submit(allObs);
+		for (BeliefNode n : pre.getNetwork().getNodes()) {
+			CPF res = pre.getInferenceEngine().queryMarginal(n);
+
+			System.out.println("queryMarginal for " + n.getName() + ": "
+					+ res.get(0).getExpr());
+
+		}
+
+	}
+
 	Logger logger = Logger.getLogger(PersonReasoningEngine.class);
 
 	BeliefNetwork bn;
 
 	edu.ksu.cis.bnj.ver3.inference.Inference ls = new edu.ksu.cis.bnj.ver3.inference.exact.LS();
+
+	/**
+	 * @param observations
+	 * @param g
+	 * @param existNode
+	 */
+	private void addExistNodes(BeliefNetwork g, BeliefNode existInRoomNode,
+			Map<String, Collection<Boolean>> observations) {
+
+		String[] values = observations.keySet().toArray(new String[0]);
+		BeliefNode isInPlace = new BeliefNode("localised", new Discrete(values));
+		for (int i = 0; i < isInPlace.getCPF().size(); i++) {
+			isInPlace.getCPF().put(i,
+					new ValueDouble(1.0 / isInPlace.getCPF().size()));
+		}
+		g.addBeliefNode(isInPlace);
+
+		for (String val : values) {
+
+			BeliefNode existsNode = new BeliefNode(
+					NODE_PERSON_EXISTS_IN_PLACE_PREFIX + val, new Discrete(
+							new String[] { "true", "false" }));
+			g.addBeliefNode(existsNode);
+			g.connect(isInPlace, existsNode);
+			g.connect(existInRoomNode, existsNode);
+
+			CPF cpfObs = existsNode.getCPF();
+
+			for (int i = 0; i < values.length; i++) {
+				String val2 = values[i];
+				if (val.equals(val2)) {
+					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
+							EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
+							1 - EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 1, 0, i }, new ValueDouble(
+							1 - EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 1, 1, i }, new ValueDouble(
+							EXISTS_AT_PLACE_TRUE));
+				} else {
+					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
+							1 - EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
+							1 - EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 1, 0, i }, new ValueDouble(
+							EXISTS_AT_PLACE_TRUE));
+					cpfObs.put(new int[] { 1, 1, i }, new ValueDouble(
+							EXISTS_AT_PLACE_TRUE));
+				}
+			}
+
+			addObservationNodes(observations.get(val), g, existsNode);
+		}
+	}
 
 	/**
 	 * @param observations
@@ -86,65 +162,6 @@ public class PersonReasoningEngine {
 		}
 	}
 
-	/**
-	 * @param observations
-	 * @param g
-	 * @param existNode
-	 */
-	private void addExistNodes(BeliefNetwork g, BeliefNode existInRoomNode,
-			Map<String, Collection<Boolean>> observations) {
-
-		String[] values = observations.keySet().toArray(new String[0]);
-		BeliefNode isInPlace = new BeliefNode("localised", new Discrete(values));
-		for (int i = 0; i < isInPlace.getCPF().size(); i++) {
-			isInPlace.getCPF().put(i,
-					new ValueDouble(1.0 / isInPlace.getCPF().size()));
-		}
-		g.addBeliefNode(isInPlace);
-
-		for (String val : values) {
-
-			BeliefNode existsNode = new BeliefNode(NODE_PERSON_EXISTS_IN_PLACE_PREFIX + val,
-					new Discrete(new String[] { "true", "false" }));
-			g.addBeliefNode(existsNode);
-			g.connect(isInPlace, existsNode);
-			g.connect(existInRoomNode, existsNode);
-
-			CPF cpfObs = existsNode.getCPF();
-
-			for (int i = 0; i < values.length; i++) {
-				String val2 = values[i];
-				if (val.equals(val2)) {
-					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
-							EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
-							1 - EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 1, 0, i }, new ValueDouble(
-							1 - EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 1, 1, i }, new ValueDouble(
-							EXISTS_AT_PLACE_TRUE));
-				} else {
-					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
-							1 - EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
-							1 - EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 1, 0, i }, new ValueDouble(
-							EXISTS_AT_PLACE_TRUE));
-					cpfObs.put(new int[] { 1, 1, i }, new ValueDouble(
-							EXISTS_AT_PLACE_TRUE));
-				}
-			}
-
-//			for (int j = 0; j < cpfObs.size(); j++) {
-//				logger.info("addr=" + cpfObs.realaddr2addr(j)[0] + ", "
-//						+ cpfObs.realaddr2addr(j)[1] + ", "
-//						+ cpfObs.realaddr2addr(j)[2] + ": "
-//						+ ((ValueDouble) cpfObs.get(j)).getValue());
-//			}
-			addObservationNodes(observations.get(val), g, existsNode);
-		}
-	}
-
 	private void generateBayesNet(Map<String, Collection<Boolean>> observations) {
 		bn = new BeliefNetwork("person");
 
@@ -158,22 +175,13 @@ public class PersonReasoningEngine {
 		addExistNodes(bn, existInRoomNode, observations);
 	}
 
-	public BeliefNetwork submit(Map<String, Collection<Boolean>> obs) {
-		generateBayesNet(obs);
-		logger.debug("BNet created");
-		// logger.info(IceXMLSerializer.toXMLString(bn.getGraph().getVertices()));
-		ls.run(bn);
-		return bn;
-
+	public edu.ksu.cis.bnj.ver3.inference.Inference getInferenceEngine() {
+		return ls;
 	}
 
 	public BeliefNetwork getNetwork() {
 
 		return bn;
-	}
-
-	public edu.ksu.cis.bnj.ver3.inference.Inference getInferenceEngine() {
-		return ls;
 	}
 
 	public Map<String, Vector<Double>> queryMarginals() {
@@ -186,10 +194,11 @@ public class PersonReasoningEngine {
 				Value val = cpf.get(i);
 				if (val instanceof ValueDouble)
 					marginalsNode.add(((ValueDouble) cpf.get(i)).getValue());
-				else if (val instanceof ValueZero) 
+				else if (val instanceof ValueZero)
 					marginalsNode.add(0.0);
 				else
-					logger.warn("unsupported value type " + val.getClass().getName());
+					logger.warn("unsupported value type "
+							+ val.getClass().getName());
 			}
 			logger.debug("queryMarginal for " + node.getName() + ": "
 					+ IceXMLSerializer.toXMLString(marginalsNode));
@@ -198,25 +207,12 @@ public class PersonReasoningEngine {
 		return marginals;
 	}
 
-	public static void main(String[] argv) {
-		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
-		Collection<Boolean> placeObs;
-		placeObs = Arrays.asList(false, true, true, true, false, false);
-		allObs.put("p1", placeObs);
-		placeObs = Arrays.asList();
-		allObs.put("p2", placeObs);
-		placeObs = Arrays.asList();
-		allObs.put("p3", placeObs);
-
-		PersonReasoningEngine pre = new PersonReasoningEngine();
-		pre.submit(allObs);
-		for (BeliefNode n : pre.getNetwork().getNodes()) {
-			CPF res = pre.getInferenceEngine().queryMarginal(n);
-
-			System.out.println("queryMarginal for " + n.getName() + ": "
-					+ res.get(0).getExpr());
-
-		}
+	public BeliefNetwork submit(Map<String, Collection<Boolean>> obs) {
+		generateBayesNet(obs);
+		logger.debug("BNet created");
+		// logger.info(IceXMLSerializer.toXMLString(bn.getGraph().getVertices()));
+		ls.run(bn);
+		return bn;
 
 	}
 }
