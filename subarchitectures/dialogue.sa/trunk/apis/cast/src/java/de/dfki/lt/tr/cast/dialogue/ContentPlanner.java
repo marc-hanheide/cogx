@@ -174,11 +174,13 @@ extends AbstractDialogueComponent
 	    		// Get the proto structure from the data
 				CASTData pdata = iter.next();
 				ContentPlanningGoal goal = (ContentPlanningGoal) pdata.getData();
+				//goal.lform=LFUtils.convertFromString("@d1:dvp(c-goal ^ <CannedText>is_this_Utoeya)");
+//				goal.lform=LFUtils.convertFromString("@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object ^ <InfoStatus>familiar) ^ <Type>(r1:e-place ^ <Questioned>true ^ room )))");
 				String canned = LFUtils.lfNominalGetFeature(goal.lform.root, cannedText);
 				log("Canned text feature value ["+goal.lform.root.nomVar+"]: "+canned);
 				// Put the goal to the content planner
 				if (planner != null && canned.equals(""))
-				{
+				{				
 					LogicalForm output = planner.callContentPlanner(goal.lform);				
 					ProductionLF productionLF = new ProductionLF();
 					if (contentRel != null)

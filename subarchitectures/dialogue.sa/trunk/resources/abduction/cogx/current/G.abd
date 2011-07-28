@@ -308,6 +308,27 @@ generate : complex_ex(Nom) <-
 % HACKS
 %-------------------------------------------------------------------------
 
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['question-answered', agent(H), about(AboutBel), feature(Feat), hypo(Hypo)])),
+	generate : feat_hypo_hack(Feat, Hypo, CannedText),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / -20.0.
+
+generate : event : utter(S, H, Int) <-
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['question-answered', agent(H), about(AboutBel), feature(Feat)])),
+	generate : feat_hack(Feat, CannedText),
+	utt_head(Nom),
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / -20.0.
+
+generate : feat_hypo_hack(identity, kitchen, is_this_a_kitchen).
+generate : feat_hypo_hack(identity, corridor, is_this_a_corridor).
+
+generate : feat_hack(identity, what_room_is_this).
+
 % XXX HACK XXX
 % find me a box -> what size is this
 %generate : event : utter(S, H, Int) <-
