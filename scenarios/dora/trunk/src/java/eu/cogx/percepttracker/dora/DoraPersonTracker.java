@@ -4,11 +4,15 @@
 package eu.cogx.percepttracker.dora;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+import java.util.Map.Entry;
 
+import SpatialData.Place;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -22,19 +26,23 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
+import castutils.castextensions.BeliefWaiter;
+import castutils.castextensions.IceXMLSerializer;
+import castutils.castextensions.WMView;
+
+import comadata.ComaRoom;
+
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
-import edu.ksu.cis.bnj.ver3.core.BeliefNetwork;
-import edu.ksu.cis.bnj.ver3.core.BeliefNode;
-import edu.ksu.cis.bnj.ver3.core.CPF;
-import edu.ksu.cis.bnj.ver3.core.Discrete;
-import edu.ksu.cis.bnj.ver3.core.DiscreteEvidence;
-import edu.ksu.cis.bnj.ver3.core.values.ValueDouble;
+import eu.cogx.beliefs.WMBeliefView;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.dora.PersonTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * This person tracker localises persons at places and integrates several
@@ -49,66 +57,63 @@ import eu.cogx.perceptmediator.dora.PersonTransferFunction;
  */
 public class DoraPersonTracker extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
+
 	private static final String NODE_PERSON_EXISTS = "person_exists";
+	// create a view of all places and room beliefs
+	WMView<GroundedBelief> spatialBeliefs = WMBeliefView.create(this,
+			GroundedBelief.class, new String[] {
+					SimpleDiscreteTransferFunction
+							.getBeliefTypeFromCastType(Place.class),
+					SimpleDiscreteTransferFunction
+							.getBeliefTypeFromCastType(ComaRoom.class) });
+	BeliefWaiter<GroundedBelief> waitingBeliefReader = new BeliefWaiter<GroundedBelief>(
+			spatialBeliefs);
 
-	private static final double OBS_MODEL_FALSE_POS_PROB = 0.1;
-	private static final double OBS_MODEL_TRUE_POS_PROB = 0.6;
-
-	Map<WorkingMemoryAddress, WorkingMemoryAddress> label2AddrMap = Collections
+	Map<WorkingMemoryAddress, WorkingMemoryAddress> room2GroundedBeliefMap = Collections
 			.synchronizedMap(new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>());
-	Map<WorkingMemoryAddress, List<Boolean>> placeObservations = Collections
-			.synchronizedMap(new HashMap<WorkingMemoryAddress, List<Boolean>>());
+	Map<String, Collection<Boolean>> placeObservations = Collections
+			.synchronizedMap(new HashMap<String, Collection<Boolean>>());
 
-	/**
-	 * @param observations
-	 * @param g
-	 * @param existNode
-	 */
-	private void addObservationNodes(List<Boolean> observations,
-			BeliefNetwork g, BeliefNode existNode) {
-		// iterate all observations for this label
-		int obsId = 0;
-		for (boolean hasBeenSeen : observations) {
+	PersonReasoningEngine reasoningEngine = new PersonReasoningEngine();
 
-			obsId++;
-
-			BeliefNode observationNode = new BeliefNode("obs", new Discrete(
-					new String[] { "true", "false" }));
-			g.addBeliefNode(observationNode);
-			g.connect(existNode, observationNode);
-			CPF cpfObs = observationNode.getCPF();
-			cpfObs.put(new int[] { 0, 0 }, new ValueDouble(
-					OBS_MODEL_TRUE_POS_PROB));
-			cpfObs.put(new int[] { 0, 1 }, new ValueDouble(
-					OBS_MODEL_FALSE_POS_PROB));
-			cpfObs.put(new int[] { 1, 0 }, new ValueDouble(
-					1 - OBS_MODEL_TRUE_POS_PROB));
-			cpfObs.put(new int[] { 1, 1 }, new ValueDouble(
-					1 - OBS_MODEL_FALSE_POS_PROB));
-			if (hasBeenSeen) {
-				observationNode.setEvidence(new DiscreteEvidence(0));
-			} else {
-				observationNode.setEvidence(new DiscreteEvidence(1));
+	private Map<WorkingMemoryAddress, GroundedBelief> getPlaceBeliefsForRoom(
+			WorkingMemoryAddress comaRoomAdr) {
+		Map<WorkingMemoryAddress, GroundedBelief> places = new HashMap<WorkingMemoryAddress, GroundedBelief>();
+		for (Entry<WorkingMemoryAddress, GroundedBelief> bel : spatialBeliefs
+				.entrySet()) {
+			// skip everything that is not a place!
+			if (!bel.getValue().type.equals(SimpleDiscreteTransferFunction
+					.getBeliefTypeFromCastType(Place.class)))
+				continue;
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belPrx = CASTIndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, bel.getValue());
+			FormulaDistribution roomProp = belPrx.getContent().get(
+					RoomMembershipMediator.ROOM_PROPERTY);
+			if (roomProp == null)
+				continue;
+			PointerFormula roomPtr = (PointerFormula) roomProp
+					.getDistribution().getMostLikely().get();
+			if (roomPtr.pointer.equals(comaRoomAdr)) { // if it points to the
+				// room we are looking
+				// for}
+				places.put(bel.getKey(), bel.getValue());
 			}
 		}
+		return places;
 	}
 
-	private BeliefNetwork generateBayesNet(List<Boolean> observations) {
-		BeliefNetwork g = new BeliefNetwork("person");
+	private WorkingMemoryAddress findRoomForPlace(WorkingMemoryAddress placeAdr) {
+		println("looking up placeAdr " + placeAdr.id
+				+ " in spatialBeliefs of size " + spatialBeliefs.size());
+		GroundedBelief placeBel = spatialBeliefs.get(placeAdr);
+		assert (placeBel != null);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belPrx = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, placeBel);
+		PointerFormula placePtr = (PointerFormula) belPrx.getContent().get(
+				RoomMembershipMediator.ROOM_PROPERTY).getDistribution()
+				.getMostLikely().get();
+		return placePtr.pointer;
 
-		BeliefNode existNode = new BeliefNode(NODE_PERSON_EXISTS, new Discrete(
-				new String[] { "t", "f" }));
-		g.addBeliefNode(existNode);
-		CPF locationNodeCFP = existNode.getCPF();
-		// initialize with uniform distribution
-		for (int i = 0; i < locationNodeCFP.size(); i++) {
-			locationNodeCFP.put(i,
-					new ValueDouble(1.0 / locationNodeCFP.size()));
-		}
-
-		addObservationNodes(observations, g, existNode);
-
-		return g;
 	}
 
 	private void manageHistory(WorkingMemoryChange ev, PerceptBelief from,
@@ -159,13 +164,13 @@ public class DoraPersonTracker extends ManagedComponent implements
 				+ "that we haven't seen before");
 		List<Boolean> obs = new ArrayList<Boolean>();
 		obs.add(probExist);
-		placeObservations.put(placePtr.pointer, obs);
+		placeObservations.put(placePtr.pointer.id, obs);
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = newBelief(
 				pb, placePtr.pointer, event);
 		updateProbability(newGB, obs);
 		WorkingMemoryAddress wma = new WorkingMemoryAddress(newGB.getId(),
 				getSubarchitectureID());
-		label2AddrMap.put(placePtr.pointer, wma);
+		room2GroundedBeliefMap.put(placePtr.pointer, wma);
 		addToWorkingMemory(wma, newGB.get());
 	}
 
@@ -192,7 +197,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 				.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
 						GroundedBelief.class));
 
-		List<Boolean> obs = placeObservations.get(placePtr.pointer);
+		Collection<Boolean> obs = placeObservations.get(placePtr.pointer.id);
 		obs.add(probExist);
 
 		log("we have found a person in the same place, " + placePtr.pointer.id);
@@ -202,34 +207,28 @@ public class DoraPersonTracker extends ManagedComponent implements
 	}
 
 	@Override
-	protected void runComponent() {
-		// TODO Auto-generated method stub
-		super.runComponent();
-	}
-
-	@Override
 	protected void start() {
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				PerceptBelief.class, WorkingMemoryOperation.ADD), this);
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				PerceptBelief.class, WorkingMemoryOperation.OVERWRITE), this);
-		super.start();
+		try {
+			spatialBeliefs.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		}
 	}
 
 	private void updateProbability(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb,
-			List<Boolean> obs) {
-
-		BeliefNetwork bn = generateBayesNet(obs);
+			Collection<Boolean> obs) {
 		log("BNet created, running inference now ");
-		edu.ksu.cis.bnj.ver3.inference.Inference ls = new edu.ksu.cis.bnj.ver3.inference.exact.LS();
-		ls.run(bn);
-		BeliefNode locationNode = bn.findNode(NODE_PERSON_EXISTS);
-		CPF res = ls.queryMarginal(locationNode);
-		log("queryMarginal for exist node: " + res.get(0).getExpr());
+		// BeliefNode locationNode = bn.findNode(NODE_PERSON_EXISTS);
+		// CPF res = ls.queryMarginal(locationNode);
+		// log("queryMarginal for exist node: " + res.get(0).getExpr());
 
 		FormulaDistribution df = FormulaDistribution.create();
-		df.add(true, ((ValueDouble) res.get(0)).getValue());
+		// df.add(true, ((ValueDouble) res.get(0)).getValue());
 
 		gb.getContent().put(PersonTransferFunction.EXISTS, df);
 
@@ -251,18 +250,89 @@ public class DoraPersonTracker extends ManagedComponent implements
 		PointerFormula placePtr = (PointerFormula) (pb.getContent().get(
 				PersonTransferFunction.IS_IN).getDistribution().getMostLikely()
 				.get());
-
 		Boolean probExist = pb.getContent().get(PersonTransferFunction.EXISTS)
 				.getDistribution().get().values.get(0).prob > 0.5;
+		addObservations(placePtr, probExist);
 
-		WorkingMemoryAddress wmaGrounded = label2AddrMap.get(placePtr.pointer);
+		WorkingMemoryAddress roomAdr = findRoomForPlace(placePtr.pointer);
+		Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr = getPlaceBeliefsForRoom(roomAdr);
+		println("found N=" + placesInRoomAdr.size() + " in this room");
 
+		generateBeliefNet(placesInRoomAdr);
+		FormulaDistribution placeDistribution = computePlaceDistribution(placesInRoomAdr);
+
+		// find the corresponding belief:
+		WorkingMemoryAddress wmaGrounded = room2GroundedBeliefMap.get(roomAdr);
 		if (wmaGrounded == null) {
-			processFirstObservation(event, pb, placePtr, probExist);
+			log("we have found a new person in room, " + roomAdr.id);
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> newGB = newBelief(
+					pb, placePtr.pointer, event);
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(newGB.getId(),
+					getSubarchitectureID());
+			room2GroundedBeliefMap.put(placePtr.pointer, wma);
+			newGB.getContent().put(PersonTransferFunction.IS_IN,
+					placeDistribution);
+			addToWorkingMemory(wma, newGB.get());
+
 		} else {
-			processObservation(event, from, placePtr, probExist, wmaGrounded);
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
+							GroundedBelief.class));
+			log("we have found a person in the same room, " + roomAdr.id);
+			manageHistory(event, from, gb.get());
+			gb.getContent()
+					.put(PersonTransferFunction.IS_IN, placeDistribution);
+			overwriteWorkingMemory(wmaGrounded, gb.get());
 		}
 
+	}
+
+	private FormulaDistribution computePlaceDistribution(
+			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr) {
+		Map<String, Vector<Double>> marginals = reasoningEngine
+				.queryMarginals();
+
+		FormulaDistribution placeDistribution = FormulaDistribution.create();
+
+		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
+			log("looking up marginals for place " + wmaPlaceInRoom.id);
+			Vector<Double> marginalForPlace = marginals.get(wmaPlaceInRoom.id);
+			assert (marginalForPlace != null);
+			placeDistribution.add(WMPointer.create(
+					wmaPlaceInRoom,
+					SimpleDiscreteTransferFunction
+							.getBeliefTypeFromCastType(Place.class)).get(),
+					marginalForPlace.get(0));
+		}
+		return placeDistribution;
+	}
+
+	private void generateBeliefNet(
+			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr) {
+		Collection<String> obsIdsForRoom = new Vector<String>();
+		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
+		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
+			Collection<Boolean> obsPerPlace = placeObservations
+					.get(wmaPlaceInRoom.id);
+			if (obsPerPlace == null)
+				obsPerPlace = new Vector<Boolean>();
+			allObs.put(wmaPlaceInRoom.id, obsPerPlace);
+			println("observations for " + wmaPlaceInRoom.id + ": "
+					+ IceXMLSerializer.toXMLString(obsPerPlace));
+			obsIdsForRoom.add(wmaPlaceInRoom.id);
+		}
+		reasoningEngine.submit(allObs);
+	}
+
+	private void addObservations(PointerFormula placePtr, Boolean probExist) {
+		Collection<Boolean> obs = placeObservations.get(placePtr.pointer.id);
+		if (obs == null) {
+			obs = new ArrayList<Boolean>();
+			obs.add(probExist);
+			placeObservations.put(placePtr.pointer.id, obs);
+		} else {
+			obs.add(probExist);
+		}
 	}
 
 }
