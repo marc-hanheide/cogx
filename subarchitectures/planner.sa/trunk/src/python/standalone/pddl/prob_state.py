@@ -354,7 +354,7 @@ class ProbabilisticState(State):
             p_total = 0.0
             
             for p, eff in effect.effects:
-                assert p_total <= 1.0
+                # assert p_total <= 1.0
                 if p is None:
                     remaining_effects.append(eff)
                 else:

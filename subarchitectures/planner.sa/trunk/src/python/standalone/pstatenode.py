@@ -96,12 +96,8 @@ class PNode(object):
             hashes.append(hash((p, frozenset([n.hash() for n in nodes]), frozenset(facts.iteritems()))))
         return hash(frozenset(hashes))
 
-    def unify_branches(self):
-        """if a node contains several children with the same svar,
-        join those into one node. This changes the semantics of the
-        node, but is usually the right thing to do, because unifying
-        nodes during rule expansion is harder to do."""
-
+    @staticmethod
+    def unify_nodes(nodes):
         def join_nodes(svar, nodes):
             children = {}
             for n in nodes:
@@ -114,23 +110,59 @@ class PNode(object):
                     else:
                         children[val]= (p, nds, facts)
             return PNode(svar, children)
+        
+        nodedict = defaultdict(list)
+        for n in nodes:
+            nodedict[n.svar].append(n)
+
+        for svar, nds in nodedict.iteritems():
+            # print svar, len(nds)
+            if len(nds) == 1:
+                yield nds[0]
+            else:
+                yield join_nodes(svar, nds)
+        
+
+    def unify_branches(self):
+        """if a node contains several children with the same svar,
+        join those into one node. This changes the semantics of the
+        node, but is usually the right thing to do, because unifying
+        nodes during rule expansion is harder to do."""
+
+        # def join_nodes(svar, nodes):
+        #     children = {}
+        #     for n in nodes:
+        #         for val, (p, nds, facts) in n.children.iteritems():
+        #             if val in children:
+        #                 p2, nds2, facts2 = children[val]
+        #                 facts = facts.copy()
+        #                 facts.update(facts2)
+        #                 children[val] = (p+p2, nds+nds2, facts)
+        #             else:
+        #                 children[val]= (p, nds, facts)
+        #     return PNode(svar, children)
 
         # print "unify:", self
 
         for p, nodes, facts in self.children.itervalues():
-            nodedict = defaultdict(list)
-            for n in nodes:
-                nodedict[n.svar].append(n)
+            new_nodes =  []
+            for n in PNode.unify_nodes(nodes):
+                n.parent = self
+                new_nodes.append(n)
+            nodes[:] = new_nodes
+            # nodedict = defaultdict(list)
+            # for n in nodes:
+            #     nodedict[n.svar].append(n)
 
-            nodes[:] = []
-            for svar, nds in nodedict.iteritems():
-                # print svar, len(nds)
-                if len(nds) == 1:
-                    nodes += nds
-                else:
-                    newnode = join_nodes(svar, nds)
-                    newnode.parent = self
-                    nodes.append(newnode)
+            # nodes[:] = []
+            # for svar, nds in nodedict.iteritems():
+            #     # print svar, len(nds)
+            #     if len(nds) == 1:
+            #         nodes += nds
+            #     else:
+            #         newnode = join_nodes(svar, nds)
+            #         newnode.parent = self
+            #         nodes.append(newnode)
 
     def consolidate(self, nodedict):
         for val, (p, nodes, facts) in self.children.iteritems():
@@ -210,6 +242,7 @@ class PNode(object):
             factresult.update(df)
             if empty:
                 noderesult.remove(n)
+        noderesult = list(PNode.unify_nodes(noderesult))
         return noderesult, factresult
 
     def simplify(self):
@@ -468,6 +501,11 @@ class PNode(object):
         selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
         observable = False if observable_facts is not None else True
         effs = []
+        normalize = 1.0
+        p_sum = sum(p for p,_,_ in self.children.itervalues())
+        if p_sum > 1.0:
+            normalize = 1.0 / p_sum
+        
         for val, (p, nodes, facts) in self.children.iteritems():
             if p < 0.0001:
                 continue
@@ -493,7 +531,7 @@ class PNode(object):
                 if obs:
                     observable = True
             if ceff.parts:
-                effs.append((pddl.Term(p), ceff))
+                effs.append((pddl.Term(p*normalize), ceff))
         if effs and observable:
             return effects.ProbabilisticEffect(effs), observable
         return None, False
