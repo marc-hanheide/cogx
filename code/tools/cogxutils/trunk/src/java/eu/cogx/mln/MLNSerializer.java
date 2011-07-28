@@ -1,9 +1,10 @@
-package eu.cogx.beliefs.utils;
+package eu.cogx.mln;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.Map.Entry;
 
 import cast.CASTException;
@@ -23,7 +24,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
-import eu.cogx.beliefs.slice.MLNState;
+import eu.cogx.mln.slice.MLNState;
 
 public class MLNSerializer extends ManagedComponent {
 
@@ -33,8 +34,9 @@ public class MLNSerializer extends ManagedComponent {
 	private String stateId = null;
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 
-	static String toMLNString(dBelief bel) throws BeliefException {
-		StringBuilder sb = new StringBuilder();
+	static void addToMLN(dBelief bel, Vector<String> facts,
+			Vector<Double> probs) throws BeliefException {
+
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, bel);
 		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
@@ -43,7 +45,7 @@ public class MLNSerializer extends ManagedComponent {
 					// not looking at relations yet
 				} else {
 					double logProb = weight(v.getProbability());
-					sb.append(logProb);
+					probs.add(logProb);
 					String formula = v.getFormula().toString();
 					if (v.getFormula().get() instanceof PointerFormula) {
 						PointerFormula pf = (PointerFormula) v.getFormula()
@@ -54,12 +56,11 @@ public class MLNSerializer extends ManagedComponent {
 								.getFormula().get();
 						formula = pf.prop;
 					}
-					sb.append("   " + d.getKey() + "(" + b.getId() + ", ");
-					sb.append(formula + ")\n");
+					facts.add("   " + d.getKey() + "(" + b.getId() + ", "
+							+ formula + ")");
 				}
 			}
 		}
-		return sb.toString();
 
 	}
 
@@ -76,6 +77,8 @@ public class MLNSerializer extends ManagedComponent {
 
 	@Override
 	protected void runComponent() {
+		Vector<String> facts = new Vector<String>();
+		Vector<Double> probs = new Vector<Double>();
 		while (isRunning()) {
 			try {
 				queue.take();
@@ -85,21 +88,24 @@ public class MLNSerializer extends ManagedComponent {
 				sleepComponent(TIME_TO_WAIT_TO_SETTLE);
 				queue.clear();
 
-				StringBuilder mlnStateStringBuilder = new StringBuilder();
 				lockComponent();
 				for (WorkingMemoryAddress adr : allBeliefWMA) {
 					dBelief b;
 					try {
 						b = getMemoryEntry(adr, dBelief.class);
-						mlnStateStringBuilder.append(toMLNString(b));
+						addToMLN(b, facts, probs);
 					} catch (DoesNotExistOnWMException e) {
 						// ignore this, it could happen
 					}
 				}
 
-				String mlnString = mlnStateStringBuilder.toString();
-				MLNState mlnState = new MLNState(mlnString);
-				println(mlnString);
+				
+				
+				MLNState mlnState = new MLNState(facts.toArray(new String[0]),
+						toDoubleArray(probs));
+				
+				for (int i = 0; i < probs.size(); i++)
+					log(mlnState.probs[i] +" "+mlnState.facts[i]);
 				if (stateId == null) {
 					stateId = newDataID();
 					addToWorkingMemory(stateId, mlnState);
@@ -115,6 +121,13 @@ public class MLNSerializer extends ManagedComponent {
 				unlockComponent();
 			}
 		}
+	}
+
+	private static double[] toDoubleArray(Vector<Double> probs) {
+		double[] p = new double[probs.size()];
+		for (int i = 0; i < probs.size(); i++)
+			p[i] = probs.get(i);
+		return p;
 	}
 
 	@Override
@@ -156,6 +169,14 @@ public class MLNSerializer extends ManagedComponent {
 		fd.add("VBlue", 0.1);
 
 		b.getContent().put("color", fd);
-		System.out.println(toMLNString(b.get()));
+		Vector<String> facts = new Vector<String>();
+		Vector<Double> probs = new Vector<Double>();
+		addToMLN(b.get(), facts, probs);
+		MLNState mlnState = new MLNState(facts.toArray(new String[0]),
+				toDoubleArray(probs));
+		
+
+		for (int i = 0; i < probs.size(); i++)
+			System.out.println(mlnState.probs[i] +" "+mlnState.facts[i]);
 	}
 }
