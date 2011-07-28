@@ -7,12 +7,23 @@
  
 module eu {
 module cogx {
+
+module mln {
+
+module slice {
+sequence<string> FactSeq;
+sequence<double> FactProbSeq;
+
+class MLNState {
+	FactSeq facts;
+	FactProbSeq probs;
+};
+};
+};
+
 module beliefs {
 module slice {
 
-class MLNState {
-	string state;
-};
 
 class PerceptBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
