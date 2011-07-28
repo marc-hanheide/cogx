@@ -9,7 +9,6 @@
   )
 
   (:constants
-    GEORGE - Robot
     VISUAL_OBJECT_DUMMY - VisualObject
     UNKNOWN_COLOR - ColorName
     UNKNOWN_SHAPE - ShapeName
@@ -29,15 +28,30 @@
     (shape ?v - VisualObject) - ShapeName
     (type ?v - VisualObject) - TypeName
     (current-viewcone ?r - Robot) - ViewCone
+    (cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
+  )
+
+  (:init-rule set-move-to-viewcone-cost
+     :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
+     :precondition 
+       (and 
+         (= (cost ?vc1 ?vc2) UNKNOWN)
+         (not (= (cost ?vc2 ?vc1) UNKNOWN))
+       )
+     :effect (assign (cost ?vc1 ?vc2) (cost ?vc2 ?vc1))
   )
 
   (:action move-to-viewcone
     :agent (?r - Robot)
-    :parameters (?vc - ViewCone)
+    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
+    :precondition
+      (and
+        (= (current-viewcone ?r) ?vc1)
+      )
     :effect
       (and
-        (assign (current-viewcone ?r) ?vc)
-        (increase (total-cost) 1)
+        (assign (current-viewcone ?r) ?vc2)
+        (increase (total-cost) (cost ?vc1 ?vc2))
       )
   )
 
