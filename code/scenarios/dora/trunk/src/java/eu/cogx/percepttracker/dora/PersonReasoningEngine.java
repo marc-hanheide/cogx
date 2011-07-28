@@ -18,7 +18,9 @@ import edu.ksu.cis.bnj.ver3.core.BeliefNode;
 import edu.ksu.cis.bnj.ver3.core.CPF;
 import edu.ksu.cis.bnj.ver3.core.Discrete;
 import edu.ksu.cis.bnj.ver3.core.DiscreteEvidence;
+import edu.ksu.cis.bnj.ver3.core.Value;
 import edu.ksu.cis.bnj.ver3.core.values.ValueDouble;
+import edu.ksu.cis.bnj.ver3.core.values.ValueZero;
 
 /**
  * This person tracker localises persons at places and integrates several
@@ -32,7 +34,9 @@ import edu.ksu.cis.bnj.ver3.core.values.ValueDouble;
  * 
  */
 public class PersonReasoningEngine {
-	private static final String NODE_PERSON_EXISTS_IN_ROOM = "person_exists";
+	public static final String NODE_PERSON_EXISTS_IN_PLACE_PREFIX = "exists_";
+
+	public static final String NODE_PERSON_EXISTS_IN_ROOM = "person_exists";
 
 	private static final double OBS_MODEL_FALSE_POS_PROB = 0.1;
 	private static final double OBS_MODEL_TRUE_POS_PROB = 0.6;
@@ -100,7 +104,7 @@ public class PersonReasoningEngine {
 
 		for (String val : values) {
 
-			BeliefNode existsNode = new BeliefNode("exists_" + val,
+			BeliefNode existsNode = new BeliefNode(NODE_PERSON_EXISTS_IN_PLACE_PREFIX + val,
 					new Discrete(new String[] { "true", "false" }));
 			g.addBeliefNode(existsNode);
 			g.connect(isInPlace, existsNode);
@@ -111,7 +115,6 @@ public class PersonReasoningEngine {
 			for (int i = 0; i < values.length; i++) {
 				String val2 = values[i];
 				if (val.equals(val2)) {
-					logger.info("is true for " + val2);
 					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
 							EXISTS_AT_PLACE_TRUE));
 					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
@@ -121,7 +124,6 @@ public class PersonReasoningEngine {
 					cpfObs.put(new int[] { 1, 1, i }, new ValueDouble(
 							EXISTS_AT_PLACE_TRUE));
 				} else {
-					logger.info("is not true for " + val2);
 					cpfObs.put(new int[] { 0, 0, i }, new ValueDouble(
 							1 - EXISTS_AT_PLACE_TRUE));
 					cpfObs.put(new int[] { 0, 1, i }, new ValueDouble(
@@ -132,13 +134,13 @@ public class PersonReasoningEngine {
 							EXISTS_AT_PLACE_TRUE));
 				}
 			}
-			logger.info("cfp.size()=" + cpfObs.size());
-			for (int j = 0; j < cpfObs.size(); j++) {
-				logger.info("addr=" + cpfObs.realaddr2addr(j)[0] + ", "
-						+ cpfObs.realaddr2addr(j)[1] + ", "
-						+ cpfObs.realaddr2addr(j)[2] + ": "
-						+ ((ValueDouble) cpfObs.get(j)).getValue());
-			}
+
+//			for (int j = 0; j < cpfObs.size(); j++) {
+//				logger.info("addr=" + cpfObs.realaddr2addr(j)[0] + ", "
+//						+ cpfObs.realaddr2addr(j)[1] + ", "
+//						+ cpfObs.realaddr2addr(j)[2] + ": "
+//						+ ((ValueDouble) cpfObs.get(j)).getValue());
+//			}
 			addObservationNodes(observations.get(val), g, existsNode);
 		}
 	}
@@ -158,7 +160,7 @@ public class PersonReasoningEngine {
 
 	public BeliefNetwork submit(Map<String, Collection<Boolean>> obs) {
 		generateBayesNet(obs);
-		logger.info("BNet created, running inference now ");
+		logger.debug("BNet created");
 		// logger.info(IceXMLSerializer.toXMLString(bn.getGraph().getVertices()));
 		ls.run(bn);
 		return bn;
@@ -166,6 +168,7 @@ public class PersonReasoningEngine {
 	}
 
 	public BeliefNetwork getNetwork() {
+
 		return bn;
 	}
 
@@ -180,7 +183,13 @@ public class PersonReasoningEngine {
 			CPF cpf = ls.queryMarginal(node);
 			Vector<Double> marginalsNode = new Vector<Double>();
 			for (int i = 0; i < cpf.size(); i++) {
-				marginalsNode.add(((ValueDouble) cpf.get(i)).getValue());
+				Value val = cpf.get(i);
+				if (val instanceof ValueDouble)
+					marginalsNode.add(((ValueDouble) cpf.get(i)).getValue());
+				else if (val instanceof ValueZero) 
+					marginalsNode.add(0.0);
+				else
+					logger.warn("unsupported value type " + val.getClass().getName());
 			}
 			logger.debug("queryMarginal for " + node.getName() + ": "
 					+ IceXMLSerializer.toXMLString(marginalsNode));

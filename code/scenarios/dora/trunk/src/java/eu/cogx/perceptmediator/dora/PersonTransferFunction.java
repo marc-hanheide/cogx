@@ -15,6 +15,7 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
+import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
@@ -23,11 +24,14 @@ import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.factories.specific.FormulaDistributionFactory;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
+import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.helpers.AgentMatchingFunction;
 import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import facades.SpatialFacade;
 
@@ -62,9 +66,21 @@ public class PersonTransferFunction
 		// result.put("distance", DoubleFormula.create(from.distance)
 		// .getAsFormula());
 		try {
-			Place place = SpatialFacade.get(component).getPlace();
-			WorkingMemoryAddress placeBel = getReferredBelief(new PlaceMatchingFunction(
-					place.id));
+			WorkingMemoryAddress robotBelAddr = getReferredBelief(new WMContentWaiter.ContentMatchingFunction<GroundedBelief>() {
+
+				@Override
+				public boolean matches(GroundedBelief viewContent) {
+					return viewContent.type.equals("Robot");
+				}
+			});
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> robotBel = CASTIndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, component.getMemoryEntry(
+							robotBelAddr, GroundedBelief.class));
+			PointerFormula isIn = (PointerFormula) robotBel.getContent().get(
+					LocalizedAgentTransferFunction.IS_IN).getDistribution()
+					.getMostLikely().get();
+
+			WorkingMemoryAddress placeBel = isIn.pointer;
 			WMPointer ptr = WMPointer.create(placeBel, CASTUtils
 					.typeName(Place.class));
 			result.put(IS_IN, ptr.getAsFormula());
