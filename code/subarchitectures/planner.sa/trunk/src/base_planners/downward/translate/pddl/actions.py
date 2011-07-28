@@ -143,7 +143,10 @@ class Action(object):
             if self.cost is None:
                 cost = 0
             else:
-                cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
+                c_expr = self.cost.instantiate(var_mapping, init_facts)
+                if not c_expr:
+                    return None
+                cost = int(c_expr.expression.value)
             return PropositionalAction(name, precondition, replan, effects, cost)
         else:
             return None
