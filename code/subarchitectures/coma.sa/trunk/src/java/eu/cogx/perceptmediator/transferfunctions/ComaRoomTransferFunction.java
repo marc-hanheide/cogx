@@ -75,6 +75,10 @@ public class ComaRoomTransferFunction extends
 		}
 		//assert (fd.size() > 0);
 		distr.put(CATEGORY_ID, fd);
+		
+		FormulaDistribution fd_person=FormulaDistribution.create();
+		fd_person.add(true, 0.5);
+		distr.put("contains-a-person-prior", fd_person);
 	}
 
 }
