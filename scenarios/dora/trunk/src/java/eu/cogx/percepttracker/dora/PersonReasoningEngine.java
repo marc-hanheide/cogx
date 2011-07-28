@@ -48,12 +48,14 @@ public class PersonReasoningEngine {
 	public static void main(String[] argv) {
 		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
 		Collection<Boolean> placeObs;
-		placeObs = Arrays.asList(false, true, true, true, false, false);
+		placeObs = Arrays.asList();
 		allObs.put("p1", placeObs);
 		placeObs = Arrays.asList();
 		allObs.put("p2", placeObs);
 		placeObs = Arrays.asList();
 		allObs.put("p3", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p4", placeObs);
 
 		PersonReasoningEngine pre = new PersonReasoningEngine();
 		pre.submit(allObs);
