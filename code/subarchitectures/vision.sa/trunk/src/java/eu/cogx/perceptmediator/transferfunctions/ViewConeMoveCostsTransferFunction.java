@@ -76,7 +76,7 @@ public class ViewConeMoveCostsTransferFunction
 			addActionArg(inner, _vals[i], i);
 		}
 
-		addActionCost(inner, _cost);
+		addActionCost(inner, _action, _cost);
 
 		return inner;
 	}
@@ -89,9 +89,9 @@ public class ViewConeMoveCostsTransferFunction
 	}
 
 	private void addActionCost(IndependentFormulaDistributions _inner,
-			float _cost) {
+			String _action, float _cost) {
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(_cost, 1);
-		_inner.put("cost", fd);
+		_inner.put(_action + "-cost", fd);
 	}
 }
