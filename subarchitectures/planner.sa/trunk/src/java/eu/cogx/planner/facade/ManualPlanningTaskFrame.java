@@ -3,6 +3,8 @@
  */
 package eu.cogx.planner.facade;
 
+import java.util.List;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -51,6 +53,8 @@ public class ManualPlanningTaskFrame extends JFrame {
 	private JScrollPane jStatusScrollPane = null;
 	private JCheckBox jExecuteCheckbox = null;
 	private JPanel jPlanButtonsPanel = null;
+    private List<String> goals = null;
+
 	/**
 	 * This is the default constructor
 	 */
@@ -71,10 +75,11 @@ public class ManualPlanningTaskFrame extends JFrame {
 	/**
 	 * This is the default constructor
 	 */
-	public ManualPlanningTaskFrame(TableModel model, SubmitListener listener) {
+	public ManualPlanningTaskFrame(TableModel model, SubmitListener listener, List<String> goals) {
 		super();
 		this.listener = listener;
 		beliefTableModel = model;
+        this.goals = goals;
 		initialize();
 	}
 
@@ -342,9 +347,20 @@ public class ManualPlanningTaskFrame extends JFrame {
 		this.setContentPane(getJContentPane());
 		this.setTitle("ManualPlanningTask");
 		this.pack();
-		//jGoalTextEditField.setText("(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))");
-		jGoalTextEditField.setText("(forall (?p - ProtoObject) (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v)))");
-			
+        if (goals != null && !goals.isEmpty()) {
+            int i = 0;
+            for (String g : goals) {
+                getJGoalsTable().setValueAt(g, i, 0);
+                if (i == 0) {
+                    jGoalTextEditField.setText(g);
+                }
+                i++;
+            }
+        }
+        else {
+            //jGoalTextEditField.setText("(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))");
+            jGoalTextEditField.setText("(forall (?p - ProtoObject) (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v)))");
+        }
 	}
 
 	/**

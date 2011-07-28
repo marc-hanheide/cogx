@@ -3,7 +3,10 @@
  */
 package eu.cogx.planner.facade;
 
+import java.util.Map;
+import java.util.List;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 import javax.swing.table.TableModel;
 
@@ -25,9 +28,28 @@ import eu.cogx.planner.facade.ManualPlanningTaskFrame.SubmitListener;
  */
 public class ManualPlanningTaskComponent extends ManagedComponent implements
 		SubmitListener {
+	private static final String CONFIG_GOALS = "--goals";
+
 	ManualPlanningTaskFrame frame;
 	WMView<GroundedBelief> view;
 	PlannerFacade planner;
+    List<String> goals = null;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> config) {
+        goals = new LinkedList<String>();
+		if (config.containsKey(CONFIG_GOALS)) {
+			StringTokenizer st = new StringTokenizer(config.get(CONFIG_GOALS), ";");
+			while (st.hasMoreTokens()) {
+				goals.add(st.nextToken());
+			}
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -59,7 +81,7 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 				}
 			}
 		};
-		frame = new ManualPlanningTaskFrame(model, this);
+		frame = new ManualPlanningTaskFrame(model, this, goals);
 		try {
 			view.registerHandler(model);
 			view.start();
