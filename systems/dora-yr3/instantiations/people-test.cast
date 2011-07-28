@@ -76,24 +76,33 @@ JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
 #JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
 
-CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+#CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
-JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+#JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 
 JAVA MG persondetector  vision.components.BlobbyPeopleDetector --label-person 255,255,0
 JAVA MG pm.people 	eu.cogx.perceptmediator.dora.PersonMediator
 JAVA MG pt.people 	eu.cogx.percepttracker.dora.DoraPersonTracker
 #JAVA MG pm.people-rel 	eu.cogx.perceptmediator.dora.PersonRelationMediator
 
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+
+JAVA MG pm-coma	eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats)
+JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediator
+
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
+JAVA MG mln.state-generator eu.cogx.mln.MLNSerializer
+
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults)
-COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+#COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults)
+#COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+#INCLUDE includes/planner.sa/viz-plan.cast
+#JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 
 
@@ -105,7 +114,7 @@ JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 
 # exection ####################################################################
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
-JAVA MG executor dora.execution.components.DoraExecutionMediator
+#JAVA MG executor dora.execution.components.DoraExecutionMediator
 
 # viewing and debugging #######################################################
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person" --generic-col --compact 
