@@ -243,6 +243,19 @@ class Scope(dict):
         else:
             dict.__setitem__(self, obj.name, obj)
 
+    def rename(self, obj, name):
+        """Rename an object inside the scope.
+        
+        Arguments:
+        obj -- TypedObject or Parameter to rename.
+        name -- new name of the object"""
+
+        my_obj = dict.__getitem__(self, obj.name)
+        del self[my_obj.name]
+        my_obj.rename(name)
+        self.add(my_obj)
+
+        
     # def merge(self, other):
     #     #assume unique variables for now
     #     for entry in other.values():
@@ -298,7 +311,8 @@ class Scope(dict):
                 nonfunctions.append((key, val))
             
         for key,val in nonfunctions:
-            val = self[val]
+            if not isinstance(val, types.Parameter):
+                val = self[val]
             key.instantiate(val)
 
     def smart_instantiate(self, func, args, arglists, parent=None, partial_mapping={}):

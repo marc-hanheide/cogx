@@ -853,6 +853,17 @@ class DT2MAPLCompiler(translators.Translator):
                 continue
 
             self.annotations.append(a.name)
+
+            #temporarily rename parameters
+            renamings = {}
+            for arg in observe.args:
+                if arg.name in a:
+                    oldname = arg.name
+                    i=1
+                    while arg.name in a:
+                        observe.rename(arg, "%s%d" % (oldname, i))
+                        i+=1
+                    renamings[arg.name] = oldname
             
             mapping = dict(zip(match.args, a.args))
             observe.instantiate(mapping)
@@ -888,6 +899,11 @@ class DT2MAPLCompiler(translators.Translator):
                     s_atom.set_scope(a)
                     a.sensors.append(mapl.SenseEffect(s_atom, a))
             observe.uninstantiate()
+
+            #undo renamings
+            for name, oldname in renamings.iteritems():
+                arg = observe[name]
+                observe.rename(arg, oldname)
 
     def create_commit_actions(self, domain, prob_functions):
         import durative
