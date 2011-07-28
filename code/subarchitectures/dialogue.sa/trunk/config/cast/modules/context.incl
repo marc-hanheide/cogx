@@ -1,0 +1,1 @@
+JAVA MG   ref-monitor  de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile /tmp/belief-model.abd --log true
