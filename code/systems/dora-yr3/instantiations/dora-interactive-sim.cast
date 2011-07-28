@@ -1,5 +1,5 @@
 VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
-VARDEFAULT planning_domain=dora-simple-avs.pddl
+VARDEFAULT planning_domain=dora-interactive.pddl
 #VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
 VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
 #VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro.xml"
@@ -119,11 +119,11 @@ JAVA MG pm.people-rel 	eu.cogx.perceptmediator.dora.PersonRelationMediator
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults)
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(exists (?p - person) (kval (is-in ?p)));(and )"
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/dialogue-base.cast
@@ -144,6 +144,6 @@ JAVA MG executor dora.execution.components.DoraExecutionMediator
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
 JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
 #JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
-#JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col
 #JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
 JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
