@@ -30,6 +30,7 @@ package de.dfki.lt.tr.cast.dialogue;
 
 // Java
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -57,7 +58,7 @@ import cast.cdl.*;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 
-// MARY 
+// MARY
 import marytts.client.MaryClient;
 import marytts.client.http.Address;
 
@@ -616,16 +617,15 @@ public class MaryTTS extends ManagedComponent {
             // Line to be said on startup
             if (_config.containsKey("--startingUp")) {
                 startingUp = _config.get("--startingUp");
-            }						
-			
-            try {
-                m_mary = MaryClient.getMaryClient(new Address(m_serverHost, m_serverPort));
             }
 
-            catch (Exception e) {
-				getLogger().error("connection to the Mary server failed, switching to no-Mary mode", e);
-				m_bNoMary = true;
-            }
+	try {
+		m_mary = MaryClient.getMaryClient(new Address(m_serverHost, m_serverPort));
+	}
+	catch (IOException ex) {
+		getLogger().error("connection to the Mary server failed, switching to no-Mary mode", ex);
+		m_bNoMary = true;
+	}
 
          // Location of RAWMARYXMLHeader
             if (_config.containsKey("--rawMaryXmlHeader")) {

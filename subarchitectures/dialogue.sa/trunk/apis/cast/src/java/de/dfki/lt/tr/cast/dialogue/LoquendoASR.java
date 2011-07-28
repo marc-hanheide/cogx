@@ -72,8 +72,8 @@ implements TRResultListener {
 			try {
 				threshold = Float.parseFloat(_config.get("--threshold"));
 			}
-			catch (NumberFormatException e) {
-				System.out.println("Wrong format for threshold");
+			catch (NumberFormatException ex) {
+				getLogger().error("wrong format for threshold", ex);
 			}
 		}
 		if (_config.containsKey("--serverEndpoint")) {
@@ -83,11 +83,8 @@ implements TRResultListener {
 			client = new LoquendoClient(serverName, serverEndpoint, this.getLogger(".client"));
 			client.registerNotification(this);
 		}
-		catch (Ice.LocalException e) {
-			log("failed to connect to the ASR server: " + e.toString());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Ice.LocalException ex) {
+			getLogger().error("failed to connect to the ASR server", ex);
 		}
 	}
 
@@ -109,7 +106,7 @@ implements TRResultListener {
 			}
 		}
 		catch (AlreadyExistsOnWMException ex) {
-			ex.printStackTrace();
+			getLogger().error("already exists on WM", ex);
 		}
 	}
 
@@ -121,16 +118,16 @@ implements TRResultListener {
 	@Override
 	public void notify(Object rr) {
 		if (rr instanceof RecognitionResult) {
-			log("notify: got a RecognitionResult");
+			getLogger().info("notify: got a RecognitionResult: " + rr.getClass().getCanonicalName());
 
 			if (rr instanceof NoRecognitionResult) {
-				log("ignoring a NoRecognitionResult");
+				getLogger().debug("ignoring a NoRecognitionResult");
 			}
 			else if (rr instanceof NBestList) {
 				PhonString pstr = nBestListToPhonString((NBestList)rr);
 				if (pstr != null) {
 					
-					log("Recognised phonological string: " + pstr.wordSequence + " [" + pstr.confidenceValue + "], rejectionAdvice=" + (pstr.maybeOOV ? "true" : "false"));
+					getLogger().info("Recognised phonological string: " + pstr.wordSequence + " [" + pstr.confidenceValue + "], rejectionAdvice=" + (pstr.maybeOOV ? "true" : "false"));
 
 					String taskID = newTaskID();
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
@@ -139,7 +136,7 @@ implements TRResultListener {
 						pd.add(new CASTData<PhonString> ("emptyid", pstr));
 					}
 					else {
-						log("phonological string below minimal threshold, will forward a Noise object");
+						getLogger().debug("phonological string below minimal threshold, will forward a Noise object");
 						pd.add(new CASTData<Noise> ("emptyid", nBestListToNoise((NBestList) rr)));
 					}
 					addProposedTask(taskID, pd);
@@ -147,15 +144,15 @@ implements TRResultListener {
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}
 				else {
-					log("got a NULL in phonstring extraction");
+					getLogger().warn("got a NULL in phonstring extraction");
 				}
 			}
 			else {
-				log("don't know how to treat a " + rr.getClass().getCanonicalName());
+				getLogger().warn("don't know how to treat a " + rr.getClass().getCanonicalName());
 			}
 		}
 		else {
-			log("notify: not a RecognitionResult: " + rr.getClass().getCanonicalName());
+			getLogger().error("notify: not a RecognitionResult: " + rr.getClass().getCanonicalName());
 		}
 	}
 
@@ -185,7 +182,7 @@ implements TRResultListener {
 			long duration_msec = 0;
 			if (hypo.words.length > 0) {
 				duration_msec = (hypo.words[hypo.words.length-1].endFrame) * FRAME_RATE;
-				log("phonstring duration is " + duration_msec + " ms (" + (nbl.speechEndFrame - nbl.speechStartFrame) * FRAME_RATE + " ms)");
+				getLogger().debug("phonstring duration is " + duration_msec + " ms (" + (nbl.speechEndFrame - nbl.speechStartFrame) * FRAME_RATE + " ms)");
 			}
 
 			// extend the temporal interval by the duration
@@ -203,7 +200,7 @@ implements TRResultListener {
 
 		// compute the duration
 		long duration_msec = (nbl.speechEndFrame - nbl.speechStartFrame) * FRAME_RATE;
-		log("noise duration is " + duration_msec + " ms");
+		getLogger().debug("noise duration is " + duration_msec + " ms");
 
 		// extend the temporal interval by the duration
 		end.msec += duration_msec;

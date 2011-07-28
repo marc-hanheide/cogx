@@ -59,8 +59,8 @@ import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.abducer.proof.AssertedQuery;
-import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
 import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
 import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import java.io.BufferedReader;
@@ -74,8 +74,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A CAST component/wrapper of the class IntentionManagement. The component
@@ -194,9 +192,11 @@ extends AbstractDialogueComponent {
 
 	private void handleSelectedLogicalForm(WorkingMemoryChange _wmc) {
 		try {
-			log("got a SelectedLogicalForm");
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-			SelectedLogicalForm arg = (SelectedLogicalForm)data.getData();
+			CASTData<SelectedLogicalForm> data = getMemoryEntryWithData(_wmc.address, SelectedLogicalForm.class);
+			SelectedLogicalForm arg = data.getData();
+
+			getLogger().info("got a SelectedLogicalForm: " + LFUtils.lfToString(arg.lform));
+
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
@@ -205,7 +205,7 @@ extends AbstractDialogueComponent {
 			proposeInformationProcessingTask(taskID, taskGoal);
 		}
 		catch (SubarchitectureComponentException ex) {
-			ex.printStackTrace();
+			getLogger().warn("component exception", ex);
 		}
 	}
 
@@ -228,14 +228,8 @@ extends AbstractDialogueComponent {
 				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}
-			catch (PermissionException ex) {
-				ex.printStackTrace();
-			}
-			catch (DoesNotExistOnWMException ex) {
-				ex.printStackTrace();
-			}
-			catch (UnknownSubarchitectureException ex) {
-				ex.printStackTrace();
+			catch (SubarchitectureComponentException ex) {
+				getLogger().warn("component exception", ex);
 			}
 		}
 	}
