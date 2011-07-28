@@ -5,9 +5,6 @@ package vision.components;
 
 import java.util.Set;
 
-import cogx.Math.Pose3;
-import cogx.Math.Vector3;
-import mathlib.Functions;
 import VisionData.PeopleDetectionCommand;
 import VisionData.Person;
 import cast.AlreadyExistsOnWMException;
