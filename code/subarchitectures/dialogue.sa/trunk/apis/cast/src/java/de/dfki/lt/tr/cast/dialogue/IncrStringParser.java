@@ -31,10 +31,8 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.architecture.ManagedComponent;
 import cast.SubarchitectureComponentException;
 import cast.AlreadyExistsOnWMException;
-import cast.cdl.TaskOutcome;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryChangeQueueBehaviour;
 import cast.cdl.WorkingMemoryOperation;
@@ -45,7 +43,6 @@ import cast.core.CASTUtils;
 import de.dfki.lt.tr.cast.ProcessingData;
 
 // Dialogue API slice
-import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 
 // Dialogue API 
 import de.dfki.lt.tr.dialogue.parse.IncrCCGStringParser;
@@ -55,13 +52,11 @@ import de.dfki.lt.tr.dialogue.parse.preprocess.BasicPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.CapitalizationPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.PhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
-import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.lf.PackedLogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.NonStandardRulesAppliedForLF;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.parse.PhonStringLFPair;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
-import de.dfki.lt.tr.dialogue.util.LFUtils;
 
 // Java
 import de.dfki.lt.tr.dialogue.util.ParsingUtils;
@@ -69,9 +64,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Vector;
 
 // OpenCCG
 // import opennlp.ccg.parse.FrontierCatFilter;

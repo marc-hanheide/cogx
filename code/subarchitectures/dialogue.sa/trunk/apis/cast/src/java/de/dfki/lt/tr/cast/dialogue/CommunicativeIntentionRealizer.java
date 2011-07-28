@@ -35,6 +35,7 @@ import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRealization;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
@@ -129,12 +130,11 @@ extends AbstractDialogueComponent {
 				}
 				f.close();
 			}
-			catch (FileNotFoundException e) {
-				log("ruleset filename not found");
+			catch (FileNotFoundException ex) {
+				getLogger().warn("ruleset file not found", ex);
 			}
-			catch (IOException e) {
-				log("I/O exception while reading files from list");
-				e.printStackTrace();
+			catch (IOException ex) {
+				getLogger().error("I/O exception while reading files from list", ex);
 			}
 		}
 	}
@@ -145,13 +145,13 @@ extends AbstractDialogueComponent {
 
 			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
 			if (cit.intent.content.size() > 1) {
-				log("don't know how to handle an intention with " + cit.intent.content.size() + " alternative contents");
+				getLogger().warn("don't know how to handle a comm. intention with " + cit.intent.content.size() + " alternative contents => ignoring it");
 				return;
 			}
 			else {
 				IntentionalContent itnc = cit.intent.content.get(0);
 				if (itnc.agents.size() == 1 && itnc.agents.get(0).equals(IntentionManagementConstants.thisAgent)) {
-					log("got a private intention, will try to realise it");
+					log("got a private comm. intention, will try to realise it");
 					String taskID = newTaskID();
 					ProcessingData pd = new ProcessingData(newProcessingDataId());
 					pd.add(data);
@@ -160,12 +160,12 @@ extends AbstractDialogueComponent {
 					proposeInformationProcessingTask(taskID, taskGoal);
 				}
 				else {
-					log("ignoring a communicative intention that is not the robot's");
+					log("ignoring a comm. intention that is not the robot's");
 				}
 			}
 		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
+		catch (SubarchitectureComponentException ex) {
+			getLogger().error("subarch component exception", ex);
 		}
 	}
 
@@ -181,7 +181,7 @@ extends AbstractDialogueComponent {
 
 			if (body instanceof CommunicativeIntention) {
 				CommunicativeIntention cit = (CommunicativeIntention) body;
-				log("processing an intention");
+				getLogger().debug("processing a communicative intention [" + cit.intent.id + "]: " + BeliefIntentionUtils.intentionToString(cit.intent));
 /*
 				LinkedList<String> belIds = BeliefIntentionUtils.collectBeliefIdsInIntention(cit.intent);
 				LinkedList<dBelief> bels = new LinkedList<dBelief>();
@@ -198,7 +198,7 @@ extends AbstractDialogueComponent {
 				ContentPlanningGoal protoLF = ireal.epistemicObjectsToProtoLF(wma, cit.intent, new LinkedList<dBelief>());
 				if (protoLF != null) {
 					try {
-						log("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));
+						getLogger().info("adding proto-LF to working memory: " + LFUtils.lfToString(protoLF.lform));
 						addToWorkingMemory(newDataID(), protoLF);
 					}
 					catch (Exception e) {
@@ -207,20 +207,20 @@ extends AbstractDialogueComponent {
 					}
 				}
 				else {
-					log("no proto-LF generated");
+					getLogger().warn("no proto-LF generated");
 				}
 			}
 		}
 		else {
-			log("no data for processing");
+			getLogger().error("no data for processing");
 		}
 	}
 
 	private void initialiseContext() {
-		log("initialising context");
+		getLogger().debug("initialising context");
 		ireal.clearContext();
 		for (String f : files) {
-			log("reading file " + f);
+			getLogger().debug("reading file " + f);
 			ireal.loadFile(f);
 		}
 	}

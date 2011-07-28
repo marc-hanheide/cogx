@@ -51,30 +51,30 @@ import de.dfki.lt.tr.dialogue.util.DialogueException;
  * @version 100618
  * @started 100618
  */
-abstract public class AbstractDialogueComponent 
+public abstract class AbstractDialogueComponent 
 extends ManagedComponent
 {
 
 	// Hashtable used to record the tasks we want to carry out. For each
 	// taskID we store a Vector with the data it is to work on
 	private Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
-	
+
 	// Hashtable linking data IDs to goal IDs
 	private Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
-	
+
 	// Hashtable linking task IDs to task types
 	private Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
-	
+
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
 	private Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();
-	
+
 	// Counter for ProcessingData identifiers
 	protected int pdIdCounter = 0;	
-	
+
 	// Counter for identifiers
 	protected int idCounter = 0;
-	
+
 	@Override
 	protected void taskAdopted(String _goalID) {
 		// get the data we stored for this goal
@@ -90,8 +90,8 @@ extends ManagedComponent
 		}
 		else {
 			getLogger().error("goal without data: " + _goalID);
-		} // end if..else
-	} // end taskAdopted
+		}
+	}
 	
 	/**
 	 * The method <i>taskRejected</i> removes a rejected task from the
@@ -103,38 +103,34 @@ extends ManagedComponent
 	protected void taskRejected(String _goalID) {
 		getLogger().warn("goal with ID [" + _goalID + "] has been rejected.");
 		m_proposedProcessing.remove(_goalID);
-	} // end taskRejected	
+	}
 
-    @Override
-	public void start() 
-	{
+	@Override
+	public void start() {
 		super.start();
 	}
 	
-    /**
-     * Produces a new identifier, starting with the given prefix
-     * @param   prefix 	The prefix to be used
-     * @return	String	A new (unique) string identifier
-     */
-	
+	/**
+	 * Produces a new identifier, starting with the given prefix
+	 * @param   prefix 	The prefix to be used
+	 * @return	String	A new (unique) string identifier
+	 */
 	protected String newId(String prefix) {
 		String result = prefix + idCounter;
 		idCounter++;
 		return result;
-	} // end newProcessingDataId
+	}
 	
 	/**
 	 * Produces a new identifier for processing data.
 	 * @return String	A new identifier of the form pdINT
 	 */
-	
 	protected String newProcessingDataId() {
 		String result = "pd" + pdIdCounter;
 		pdIdCounter++;
 		return result;
-	} // end newProcessingDataId
-	
-	
+	}
+
 	/**
 	 * The method <i>handleWorkingMemoryChange</i> retrieves a CASTData object from the working memory, 
 	 * and stores it in the <tt>m_proposedProcessing</tt> table with a processing task. 
@@ -160,59 +156,52 @@ extends ManagedComponent
 		}
 		catch (SubarchitectureComponentException e) {
 			getLogger().error("subarchitecture component exception", e);
-		} // end try..catch
-	} // end handleWorkingMemoryChange		
+		}
+	}
 	
-	abstract public void executeTask (ProcessingData data)
-	throws DialogueException;
+	public abstract void executeTask(ProcessingData data) throws DialogueException;
 
 	protected void addProposedTask(String id, ProcessingData pd) {
 		m_proposedProcessing.put(id, pd);
 	}
 
 	@Override
-	public void runComponent () 
-	{
-        try {
-            while (this.isRunning()) {
-                lockComponent();
-                ListIterator<ProcessingData> i = m_dataObjects.listIterator();
-                while (i.hasNext()) {
-                    ProcessingData data = i.next();
-                    String dataID = data.getID();
-                    String taskID = m_dataToProcessingGoalMap
-                        .get(dataID);
-                    log("For data [" + dataID + "/" + data.getTypes()
-                        + "] do [" + taskID + "]");
-                    if (data != null) {
-                        try {
-                            executeTask(data);
-                                taskComplete(
-                                    taskID,
-                                    TaskOutcome.ProcessingCompleteSuccess);
-                        }
-                        catch (DialogueException e) {
-                            log("Exception while executing a task: "
-                                + e.getMessage());
-                            e.printStackTrace();
-                            taskComplete(
-                                    taskID,
-                                    TaskOutcome.ProcessingCompleteFailure);
-                        } 					
-                    } else {
-                        log("Nothing to process: data null");
-                    } // end
-                    i.remove();
-                } // end while
-                // Free the process
-                unlockComponent();
-                sleepComponent(20);
-                waitForNotifications();
-            } // end while running
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        } // end try..catch
+	public void runComponent() {
+		try {
+			while (this.isRunning()) {
+				lockComponent();
+				ListIterator<ProcessingData> i = m_dataObjects.listIterator();
+				while (i.hasNext()) {
+					ProcessingData data = i.next();
+					String dataID = data.getID();
+					String taskID = m_dataToProcessingGoalMap.get(dataID);
+					getLogger().trace("For data [" + dataID + "/" + data.getTypes()
+						+ "] do [" + taskID + "]");
+					if (data != null) {
+						try {
+							executeTask(data);
+							taskComplete(
+								taskID,
+								TaskOutcome.ProcessingCompleteSuccess);
+						}
+						catch (DialogueException e) {
+							getLogger().error("Dialogue exception while executing a task", e);
+							taskComplete(taskID, TaskOutcome.ProcessingCompleteFailure);
+						}
+					}
+					else {
+						getLogger().warn("Nothing to process: data null");
+					}
+					i.remove();
+				}
+				// Free the process
+				unlockComponent();
+				sleepComponent(20);
+				waitForNotifications();
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
-} // end class
+}
