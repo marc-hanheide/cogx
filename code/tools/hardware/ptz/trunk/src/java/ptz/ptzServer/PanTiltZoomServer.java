@@ -19,7 +19,13 @@ import cast.cdl.WorkingMemoryOperation;
 
 public class PanTiltZoomServer extends ManagedComponent {
 
+	private static final int TIMEOUT_MS = 10000;
+
+	private static final int TIME_WAIT_MS = 200;
+
 	private static final double TOLERANCE = 0.05;
+
+	private static final int MAX_LOOPS = TIMEOUT_MS / TIME_WAIT_MS;
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -68,24 +74,24 @@ public class PanTiltZoomServer extends ManagedComponent {
 			SetPTZPoseCommand cmd = getMemoryEntry(_wmc.address,
 					SetPTZPoseCommand.class);
 
-
 			ptzInterface.setPose(cmd.pose);
 
 			double different = Double.MAX_VALUE;
 
 			PTZPose currentPose = null;
-			PTZPose oldPose = new PTZPose(1000, 1000, 1000);
-			while (different > 0.0001) {
+			
+			int loops = 0;
+			while (different >= TOLERANCE) {
 				currentPose = ptzInterface.getPose().pose;
-				different = ptzPosError(currentPose, oldPose);
+				different = ptzPosError(cmd.pose, currentPose);
 				logger.debug("Pan-Tilt motion diff: " + different);
 				try {
-					Thread.sleep(200);
+					Thread.sleep(TIME_WAIT_MS);
+					if (loops > MAX_LOOPS)
+						break;
 				} catch (InterruptedException e) {
 					logger.error(e);
 				}
-
-				oldPose = currentPose;
 			}
 
 			if (ptzPosError(cmd.pose, currentPose) < TOLERANCE) {
