@@ -28,17 +28,17 @@
     (shape ?v - VisualObject) - ShapeName
     (type ?v - VisualObject) - TypeName
     (current-viewcone ?r - Robot) - ViewCone
-    (cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
+    (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
   )
 
   (:init-rule set-move-to-viewcone-cost
      :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
      :precondition 
        (and 
-         (= (cost ?vc1 ?vc2) UNKNOWN)
-         (not (= (cost ?vc2 ?vc1) UNKNOWN))
+         (= (move-to-viewcone-cost ?vc1 ?vc2) UNKNOWN)
+         (not (= (move-to-viewcone-cost ?vc2 ?vc1) UNKNOWN))
        )
-     :effect (assign (cost ?vc1 ?vc2) (cost ?vc2 ?vc1))
+     :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
   )
 
   (:action move-to-viewcone
@@ -51,7 +51,7 @@
     :effect
       (and
         (assign (current-viewcone ?r) ?vc2)
-        (increase (total-cost) (cost ?vc1 ?vc2))
+        (increase (total-cost) (move-to-viewcone-cost ?vc1 ?vc2))
       )
   )
 
