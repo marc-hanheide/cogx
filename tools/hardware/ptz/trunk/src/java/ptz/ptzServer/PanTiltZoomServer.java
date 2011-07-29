@@ -19,6 +19,8 @@ import cast.cdl.WorkingMemoryOperation;
 
 public class PanTiltZoomServer extends ManagedComponent {
 
+	private static final double TOLERANCE = 0.05;
+
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private PTZInterfacePrx ptzInterface = null;
@@ -66,7 +68,6 @@ public class PanTiltZoomServer extends ManagedComponent {
 			SetPTZPoseCommand cmd = getMemoryEntry(_wmc.address,
 					SetPTZPoseCommand.class);
 
-			PTZPose originalPose = ptzInterface.getPose().pose;
 
 			ptzInterface.setPose(cmd.pose);
 
@@ -74,10 +75,10 @@ public class PanTiltZoomServer extends ManagedComponent {
 
 			PTZPose currentPose = null;
 			PTZPose oldPose = new PTZPose(1000, 1000, 1000);
-			while (different > 0.001) {
-				logger.debug("Pan-Tilt motion diff: " + different);
+			while (different > 0.0001) {
 				currentPose = ptzInterface.getPose().pose;
 				different = ptzPosError(currentPose, oldPose);
+				logger.debug("Pan-Tilt motion diff: " + different);
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
@@ -87,7 +88,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 				oldPose = currentPose;
 			}
 
-			if (ptzPosError(originalPose, currentPose) > 0.001) {
+			if (ptzPosError(cmd.pose, currentPose) < TOLERANCE) {
 				cmd.pose = ptzInterface.getPose().pose;
 				cmd.comp = PTZCompletion.SUCCEEDED;
 			} else {
@@ -124,9 +125,10 @@ public class PanTiltZoomServer extends ManagedComponent {
 	@Override
 	protected void start() {
 		try {
-			ptzInterface = getIceServer(ptzServerComponent, PTZInterface.class, PTZInterfacePrx.class);
+			ptzInterface = getIceServer(ptzServerComponent, PTZInterface.class,
+					PTZInterfacePrx.class);
 		} catch (CASTException e) {
-			throw new RuntimeException("failed to get ptz interface",e);
+			throw new RuntimeException("failed to get ptz interface", e);
 		}
 		addPanTiltCommandListener();
 	}
