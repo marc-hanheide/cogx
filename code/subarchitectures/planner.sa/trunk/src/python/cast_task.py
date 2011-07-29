@@ -340,8 +340,8 @@ class CASTTask(object):
             if any(fact not in self.state.state for fact in pnode.effects):
                 sat = False
                 break
-            else:
-                # log.debug("effects are satisfied: %s", ", ".join(map(str, pnode.effects)))
+            # else:
+            #     log.debug("effects are satisfied: %s", ", ".join(map(str, pnode.effects)))
         if sat:
             log.info("dt planner reached its goal.")
             self.dt_done()
