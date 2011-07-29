@@ -336,10 +336,14 @@ class CASTTask(object):
         #test if the dt goals are satisfied:
         sat = True
         for pnode in self.dt_task.subplan_actions:
+            # log.debug(" examining action %s", str(pnode))
             if any(fact not in self.state.state for fact in pnode.effects):
                 sat = False
                 break
+            else:
+                # log.debug("effects are satisfied: %s", ", ".join(map(str, pnode.effects)))
         if sat:
+            log.info("dt planner reached its goal.")
             self.dt_done()
             return
 

@@ -248,8 +248,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
     self.tasks[task.id] = task
-
-    task.run()
+    if task.status != Planner.Completion.FAILED:
+        task.run()
     
   @pdbdebug
   def deliver_plan(self, task, slice_plan):
