@@ -91,7 +91,7 @@ define p3dx_with_urg_and_blobfinder p3dx_with_urg
   min_position -3.14
   max_position 3.14
   #max_speed 0.5
-  max_speed 3.0
+  max_speed 60.0
   color "green"
   size [ 0.32 0.19 0.19 ]
   blobfinder( 
