@@ -87,7 +87,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 				oldPose = currentPose;
 			}
 
-			if (ptzPosError(originalPose, currentPose) != 0) {
+			if (ptzPosError(originalPose, currentPose) > 0.001) {
 				cmd.pose = ptzInterface.getPose().pose;
 				cmd.comp = PTZCompletion.SUCCEEDED;
 			} else {
