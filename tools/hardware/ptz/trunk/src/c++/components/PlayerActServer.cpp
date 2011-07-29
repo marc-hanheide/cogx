@@ -76,7 +76,7 @@ namespace ptz {
     PTZServer::start();
     //going to work in position mode
     //playerc_ptz_set_control_mode(m_ptzProxy.get(),PLAYER_PTZ_POSITION_CONTROL);
-    playerc_actarray_power (m_ptzProxy.get(), 1);
+    //playerc_actarray_power (m_ptzProxy.get(), 1);
 
   }
 
@@ -111,6 +111,7 @@ namespace ptz {
      debug("PlayerActServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
      lockComponent();
      //playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, 0.5, 0.5);
+
      playerc_actarray_position_cmd (m_ptzProxy.get(), 0, _pose.pan);
      m_lastTilt=_pose.tilt;
      unlockComponent();
