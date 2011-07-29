@@ -5,7 +5,6 @@ import java.util.Stack;
 import ptz.PTZCompletion;
 import ptz.PTZPose;
 import ptz.SetPTZPoseCommand;
-
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -13,7 +12,6 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 import execution.slice.Action;
 import execution.slice.TriBool;
@@ -87,7 +85,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 								+ CASTUtils.toString(_wmc));
 				SetPTZPoseCommand cmd = getComponent().getMemoryEntry(
 						_wmc.address, SetPTZPoseCommand.class);
-				getComponent().log("nav command status: " + cmd.comp.name());
+				getComponent().log("ptz command status: " + cmd.comp.name());
 
 				// if this command failed, fail the whole thing
 				if (cmd.comp == PTZCompletion.FAILED) {
