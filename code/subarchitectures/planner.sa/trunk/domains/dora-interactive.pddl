@@ -37,8 +37,6 @@
    (is-in ?o - robot) - place
    (is-in ?o - person) - place
 
-   (associated-room ?p - person) - room
-
    ;; === Default knowledge ===
 
    ;; expected cost of searching for an object. Used by CP planner
@@ -69,6 +67,10 @@
 
    ;; === placeholder properties ===
    (leads_to_room ?p - place ?c - category) - boolean
+
+   ;; === person properties ===
+   (associated-room ?p - person) - room
+   (does-exist ?p - person) - boolean
 
    ;; === object properties ===
    (label ?o - visualobject) - label
@@ -116,9 +118,10 @@
               :parameters(?r - room)
               :precondition (and (not (is-virtual ?r))
                                  (not (exists (?p - person ?pl - place)
-                                              (and (= (in-room ?pl) ?r)
-                                                   (in-domain (is-in ?p) ?pl)
-                                                   (is-virtual ?p)))))
+                                              (or (and (= (in-room ?pl) ?r)
+                                                       (in-domain (is-in ?p) ?pl)
+                                                       (is-virtual ?p))
+                                                  (= (associated-room ?p) ?r)))))
               :effect (create (?p - person) (and
                                              (is-virtual ?p)
                                              (assign (associated-room ?p) ?r))
@@ -506,9 +509,9 @@
              :precondition (and )
                                 
              :effect (and (when (= (is-in ?p) ?pl)
-                            (probabilistic 0.7 (observed (is-in ?p) ?pl)))
+                            (probabilistic 0.7 (observed (does-exist ?p) true)))
                           (when (not (= (is-in ?p) ?pl))
-                            (probabilistic 0.1 (observed (is-in ?p) ?pl)))
+                            (probabilistic 0.1 (observed (does-exist ?p) true)))
                           )
              )
              
