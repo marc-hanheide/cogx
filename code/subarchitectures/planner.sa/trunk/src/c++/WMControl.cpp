@@ -423,7 +423,11 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
 
 void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals) {
     log("Plan delivered");
-    assert(activeTasks.find(id) != activeTasks.end());
+    if (activeTasks.find(id) == activeTasks.end()) {
+        log("Task %d not found.", id);
+        return;
+    }
+
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
 
     double total_costs = 0;

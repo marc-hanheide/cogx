@@ -423,7 +423,7 @@ class CASTState(object):
                     if svar.function.name in ("is-virtual", ) or svar.modality is not None:
                         continue # HACK: don't match on modal/virtual predicates
                     newvar = pddl.state.StateVariable(svar.function, [repl(a) for a in svar.args], svar.modality,  [repl(a) for a in svar.modal_args])
-                    if self.state[newvar] == pddl.UNKNOWN and val == pddl.UNKNOWN:
+                    if self.state[newvar] == pddl.UNKNOWN:# and val == pddl.UNKNOWN:
                         continue
                     if self.state[newvar] != val:
                         log.debug("Mismatch: %s = %s != %s = %s", str(svar), val.name, str(newvar), self.state[newvar].name)
