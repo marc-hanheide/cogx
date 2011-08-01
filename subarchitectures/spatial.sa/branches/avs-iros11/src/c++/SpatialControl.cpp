@@ -48,6 +48,14 @@ extern "C" {
   }
 }
 
+bool SpatialControl::MapServer::isPointReachable(double xW, double yW, const Ice::Current &_context) {
+  return m_pOwner->isPointReachable(xW, yW);
+}
+
+SpatialData::BoolSeq SpatialControl::MapServer::arePointsReachable(const SpatialData::CoordinateSeq& points, const Ice::Current &_context) {
+  return m_pOwner->arePointsReachable(points);
+}
+
 SpatialControl::SpatialControl()
   :NavController(m_NavGraph, m_LMap),
    NavControllerEventListener("SpatialControl"),
@@ -142,6 +150,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
+
+  m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
 
   if (m_UsePointCloud) {
     m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
@@ -397,21 +408,29 @@ void SpatialControl::runComponent()
   Cure::LocalGridMap<unsigned char>& lgmK = *m_lgmK;
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
 
+  int scanCounter = 0;
   while(isRunning()){
     if (m_UsePointCloud) {
       /* Add all queued laser scans */
-      while (!m_LScanQueue.empty()){
+      lockComponent();
+      if (!m_LScanQueue.empty()){
         if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
           lpW.add(LscanPose, m_LaserPoseR);		
-          m_Mutex.lock();
           m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
-          m_Mutex.unlock();
           m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
               0.55*Cure::NavController::getRobotWidth(), '0');                                  
           m_firstScanAdded = true;
           m_LScanQueue.pop();
         }
       }
+      unlockComponent();
+
+      // Only run the following code every 10 scans
+      if(scanCounter++ < 10)
+        continue;
+
+      scanCounter = 0;
+
 
       /* Update height map */
       cdl::CASTTime frameTime;
@@ -530,6 +549,7 @@ void SpatialControl::runComponent()
         m_DisplaylgmLM->updateDisplay(&currentPose);
         m_DisplaylgmK->updateDisplay(&currentPose);
       }
+      m_displayBinaryMap->updateDisplay(&currentPose);
 		}
 		m_Mutex.unlock();	
 	  
@@ -1103,9 +1123,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
     }
   }
   else {
-    m_Mutex.lock();
     m_LScanQueue.push(cureScan);
-    m_Mutex.unlock();
   }
 
   /* Person following stuff */    
@@ -1192,6 +1210,91 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
   
   m_RobotServer->execMotionCommand(cmd);
 }
+
+std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points) {
+  std::vector<bool> ret;
+  Cure::BinaryMatrix map;
+  /* The Cure documentation recommends keeping columns as a multiple
+     of 32 to be able to exploit the performance improvements of doing
+     calculations on 32 bit longs. However, we use both 32 and 64 bit
+     operating systems now and longs on unix systems are usually different
+     sizes for these architectures. If anyone knows the correct way of
+     handling this, please modify the code below. */
+  map.reallocate(2*m_lgm->getSize(), 2*m_lgm->getSize());
+  map = 0; // Set all cells to zero
+
+  // Transfer obstacles for the local gridmap
+  for(int x = -m_lgm->getSize(); x < m_lgm->getSize(); ++x) {
+    for(int y = -m_lgm->getSize(); y < m_lgm->getSize(); ++y) {
+      if((*m_lgm)(x,y) == '1') {
+        map.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(), true);
+      }
+    }
+  }
+
+  // Grow each occupied cell to account for the size of the robot.
+  Cure::BinaryMatrix grown_map;
+  map.growInto(grown_map, 0.5*Cure::NavController::getRobotWidth() / m_lgm->getCellSize());
+
+  /* Set unknown space as obstacles, since we don't want to find paths
+  going through space we don't know anything about */
+  for(int x = -m_lgm->getSize(); x < m_lgm->getSize(); ++x) {
+    for(int y = -m_lgm->getSize(); y < m_lgm->getSize(); ++y) {
+      if((*m_lgm)(x,y) == '2') {
+        grown_map.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(), true);
+      }
+    }
+  }
+
+  for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
+    for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
+      (*m_binaryMap)(x,y) = grown_map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
+    }
+  }
+  
+  int rX, rY; // Robot position index
+
+  Cure::Pose3D robotPose = m_TOPP.getPose();
+  if(m_lgm->worldCoords2Index(robotPose.getX(), robotPose.getY(), rX, rY) != 0) {
+    log("Robot position is outside of gridmap! Returning.");
+    printf("returned prematurely\n");
+    return ret;
+  }
+
+  // Offset the indices so that top left is (0,0).
+  rX += m_lgm->getSize();
+  rY += m_lgm->getSize();
+
+  Cure::ShortMatrix path;
+  /* d will be -1 if there is no path from the robot to the placeholder.
+     The 20*size*size value is taken from AdvancedObjectSearch.cpp. Not sure
+     if it's a good length. */
+  for(std::vector<std::vector<double> >::iterator pointsIt = points.begin(); pointsIt != points.end(); pointsIt++) { 
+    int pX, pY;  // Point position index
+    if(m_lgm->worldCoords2Index((*pointsIt)[0], (*pointsIt)[1], pX, pY) != 0) {
+      log("Point is outside of map.");
+      ret.push_back(false);
+    } else {
+      pX += m_lgm->getSize();
+      pY += m_lgm->getSize();
+      double d = (grown_map.path(rX, rY, pX, pY, path, 20* m_lgm->getSize()) *
+          m_lgm->getCellSize());
+      ret.push_back(d >= 0);
+    }
+  }
+
+  return ret;
+}
+
+bool SpatialControl::isPointReachable(double xW, double yW) {
+  std::vector<std::vector<double> > vec;
+  std::vector<double> coord;
+  coord.push_back(xW);
+  coord.push_back(yW);
+  vec.push_back(coord);
+  
+  return arePointsReachable(vec).front();
+} 
 
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()

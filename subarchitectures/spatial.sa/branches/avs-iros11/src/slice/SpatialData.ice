@@ -14,6 +14,8 @@
 module SpatialData {
 
   sequence<double> DoubleOpt;
+  sequence<bool> BoolSeq;
+  sequence<DoubleOpt> CoordinateSeq;
   sequence<long> PlaceIDSeq;
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
@@ -220,7 +222,7 @@ module SpatialData {
 		    //PERSONFOLLOW, 
 		    TURN, 
 		    // relative
-		    TURNTO, 
+		    TURNTO,
 		    // absolute
 		    //EXPLORE,
 		    //EXPLOREFLOOR,
@@ -418,6 +420,9 @@ class ProcessViewPointCommand {
   interface MapInterface {
     /* More to be added when necessary */
     bool isCircleObstacleFree(double x, double y, double radius);
+    bool findClosestObstacleFreeCircle(double x, double y, double obstacleFreeRadius, double maxDist, out double retX, out double retY);
+    bool isPointReachable(double x, double y);
+    BoolSeq arePointsReachable(CoordinateSeq points);
   };
 
 };

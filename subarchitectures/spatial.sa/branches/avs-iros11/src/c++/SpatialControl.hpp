@@ -38,7 +38,7 @@
 #include <Navigation/NavGraph.hh>
 #include <Navigation/NavController.hh>
 #include <Navigation/FrontierExplorer.hh>
-#include <Navigation/GridLineRayTracer.hh>
+#include "GridLineRayTracerModified.hh"
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
@@ -99,6 +99,9 @@ class SpatialControl : public cast::ManagedComponent ,
 
           return m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
         }
+
+        virtual bool isPointReachable(double xW, double yW, const Ice::Current &_context);
+        virtual SpatialData::BoolSeq arePointsReachable(const SpatialData::CoordinateSeq& points, const Ice::Current &_context);
         SpatialControl *m_pOwner;
         MapServer(SpatialControl *owner) : m_pOwner(owner) {}
         friend class SpatialControl;
@@ -125,6 +128,8 @@ protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
+  virtual bool isPointReachable(double xW, double yW);
+  virtual std::vector<bool> arePointsReachable(std::vector<std::vector<double> > points);
 
   double m_MaxExplorationRange; 
 
@@ -132,11 +137,13 @@ protected:
   Cure::NavGraph m_NavGraph;
   bool m_bNoNavGraph;
 
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt; // This is from our customized cure raytracer. GridLineRayTracerModified.hh in spatial.sa
+
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
   Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmK;
   Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
 
 
   IceUtil::Mutex m_Mutex;
@@ -145,6 +152,8 @@ protected:
   Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
+
+  Cure::LocalGridMap<unsigned char>* m_binaryMap;
 
 	std::queue<Cure::LaserScan2d> m_LScanQueue;	
 
