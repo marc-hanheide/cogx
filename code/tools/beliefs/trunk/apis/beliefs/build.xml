@@ -5,6 +5,7 @@
      <!-- Add JAR files to classpath                                          -->
      <!-- =================================================================== -->
      <path id="build.classpath">
+         <fileset dir="${jar.dir}" includes="*.jar"/>
          <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
          <pathelement path="${antice.jar}"/>
@@ -78,8 +79,8 @@
 	<!-- =================================================================== -->
 
     <target name="expandlibs" depends="prepare">
-           <echo message="Expanding external libraries for the binder to output/classes"/>
-           <unzip dest="${output.dir}" src="./lib/junit-4.4.jar"/>
+           <echo message="Copying external libraries for the binder to ${jar.dir}"/>
+           <copy todir="${jar.dir}" file="./lib/junit-4.4.jar"/>
     </target>
 
 
