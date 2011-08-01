@@ -147,6 +147,17 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_forbiddenZones.push_back(newZone);
   }
 
+  if(_config.find("--hyp-path-length") != _config.end()) {
+    std::istringstream str(_config.find("--hyp-path-length")->second);
+    str >> m_hypPathLength;
+  }
+  else {
+    m_hypPathLength = 1.5;
+  }
+
+
+
+
   FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
   registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
 }
