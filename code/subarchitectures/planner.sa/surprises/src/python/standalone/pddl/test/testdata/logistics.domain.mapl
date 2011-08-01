@@ -1,0 +1,62 @@
+;; Logistics domain, PDDL 3.1 version.
+
+(define (domain logistics-object-fluents)
+
+(:requirements :mapl :typing :equality :object-fluents :numeric-fluents) 
+
+(:types  truck airplane - vehicle
+         package vehicle - thing
+         airport - location
+         city location thing agent - object)
+
+(:predicates (X ?f - (function object) ?v - (typeof ?f)))
+
+(:functions  (city-of ?l - (either location vehicle)) - city
+             (location-of ?t - thing) - (either location vehicle)
+             (p_load_success ?v - vehicle) - number
+)
+
+(:constants
+ agent - agent)
+
+(:action sense_package
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?p - package)
+         :sense         (= (location-of ?p) (location-of ?t)))
+
+(:action sense_position
+         :agent         (?a - agent)
+         :parameters    (?t - truck)
+         :sense         (location-of ?t))
+
+(:action drive
+         :agent         (?a - agent)
+;         :parameters    (?t - truck ?to ?from - location ?c - city)
+         :parameters    (?t - truck ?to - location)
+         ;; :precondition  (and (= (location-of ?t) ?from)
+         ;;                     (= (city-of ?to) ?c)
+         ;;                     (= (city-of ?from) ?c))
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+         :effect        (assign (location-of ?t) ?to))
+
+(:action fly
+         :agent         (?a - agent)
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
+
+(:action load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) (location-of ?v))
+         :effect        (and (assign (location-of ?p) ?v)
+                             (update (location-of ?p) ?v))
+)
+
+
+(:action unload
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) ?v)
+         :effect        (assign (location-of ?p) (location-of ?v)))
+
+)

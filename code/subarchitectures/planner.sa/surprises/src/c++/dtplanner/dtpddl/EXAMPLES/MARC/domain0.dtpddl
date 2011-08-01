@@ -1,0 +1,306 @@
+(define (domain dt-dora-test-100)
+
+(:requirements :quantified-preconditions :numeric-fluents :equality :typing :negative-preconditions :conditional-effects :action-costs :adl :disjunctive-preconditions :partial-observability)
+
+(:types  virtual-place - place
+         place_status - object
+         agent - object
+         movable - object
+         boolean - object
+         cone - object
+         human - movable
+         subgoal - object
+         planning_agent - agent
+         visualobject - movable
+         category - object
+         room - object
+         feature - object
+         label - object
+         place - object
+         robot - movable
+         robot - agent
+         
+)
+
+(:predicates  (kd-in-room ?a - agent ?c - cone)
+              (kd-in-room ?a - agent ?p - place)
+              (kval-ex-in-room ?a - agent ?l - label ?r - room)
+              (kval-placestatus ?a - agent ?n - place)
+              (attributed-is-in ?a - agent ?c - cone ?v - place)
+              (attributed-is-in ?a - agent ?o - movable ?v - place)
+              (update-label ?c - cone ?v - label)
+              (update-label ?o - visualobject ?v - label)
+              (i_in-domain-ex-in-room ?l - label ?r - room ?v - boolean)
+              (in-domain-label ?o - visualobject ?v - label)
+              (in-domain-label ?c - cone ?v - label)
+              (shval-category ?a - agent ?a2 - agent ?r - room)
+              (update-in-room ?p - place ?v - room)
+              (update-in-room ?c - cone ?v - room)
+              (in-domain-placestatus ?n - place ?v - place_status)
+              (attributed-label ?a - agent ?o - visualobject ?v - label)
+              (attributed-label ?a - agent ?c - cone ?v - label)
+              (commit-placestatus ?n - place ?v - place_status)
+              (kd-placestatus ?a - agent ?n - place)
+              (in-domain-is-in ?o - movable ?v - place)
+              (in-domain-is-in ?c - cone ?v - place)
+              (commit-category ?r - room ?v - category)
+              (update-failed-category ?r - room ?v - category)
+              (i_in-domain-placestatus ?n - place ?v - place_status)
+              (attributed-ex-in-room ?a - agent ?l - label ?r - room ?v - boolean)
+              (kd-label ?a - agent ?o - visualobject)
+              (kd-label ?a - agent ?c - cone)
+              (hyp-placestatus ?n - place ?v - place_status)
+              (kval-is-in ?a - agent ?c - cone)
+              (kval-is-in ?a - agent ?o - movable)
+              (update-failed-in-room ?p - place ?v - room)
+              (update-failed-in-room ?c - cone ?v - room)
+              (cones_created ?l - label ?r - room)
+              (cones-exist ?l - label ?r - room)
+              (is-virtual ?o - object)
+              (neg-attributed-ex-in-room ?a - agent ?l - label ?r - room ?v - boolean)
+              (commit-label ?o - visualobject ?v - label)
+              (commit-label ?c - cone ?v - label)
+              (update-category ?r - room ?v - category)
+              (category ?r - room ?value - category)
+              (kd-is-in ?a - agent ?o - movable)
+              (kd-is-in ?a - agent ?c - cone)
+              (update-failed-is-in ?o - movable ?v - place)
+              (update-failed-is-in ?c - cone ?v - place)
+              (neg-attributed-placestatus ?a - agent ?n - place ?v - place_status)
+              (shval-label ?a - agent ?a2 - agent ?c - cone)
+              (shval-label ?a - agent ?a2 - agent ?o - visualobject)
+              (obj-possibly-in-room ?o - visualobject ?r - room)
+              (label ?c - cone ?value - label)
+              (label ?o - visualobject ?value - label)
+              (commit-in-room ?p - place ?v - room)
+              (commit-in-room ?c - cone ?v - room)
+              (hyp-label ?o - visualobject ?v - label)
+              (hyp-label ?c - cone ?v - label)
+              (hyp-is-in ?o - movable ?v - place)
+              (hyp-is-in ?c - cone ?v - place)
+              (hyp-ex-in-room ?l - label ?r - room ?v - boolean)
+              (kval-in-room ?a - agent ?c - cone)
+              (kval-in-room ?a - agent ?p - place)
+              (i_in-domain-label ?c - cone ?v - label)
+              (i_in-domain-label ?o - visualobject ?v - label)
+              (done )
+              (position-reported ?o - visualobject)
+              (update-placestatus ?n - place ?v - place_status)
+              (neg-attributed-label ?a - agent ?c - cone ?v - label)
+              (neg-attributed-label ?a - agent ?o - visualobject ?v - label)
+              (hyp-category ?r - room ?v - category)
+              (commit-ex-in-room ?l - label ?r - room ?v - boolean)
+              (shval-placestatus ?a - agent ?a2 - agent ?n - place)
+              (kval-label ?a - agent ?c - cone)
+              (kval-label ?a - agent ?o - visualobject)
+              (kd-ex-in-room ?a - agent ?l - label ?r - room)
+              (shval-is-in ?a - agent ?a2 - agent ?c - cone)
+              (shval-is-in ?a - agent ?a2 - agent ?o - movable)
+              (i_in-domain-in-room ?p - place ?v - room)
+              (i_in-domain-in-room ?c - cone ?v - room)
+              (started )
+              (is-in ?o - movable ?value - place)
+              (is-in ?c - cone ?value - place)
+              (update-failed-label ?o - visualobject ?v - label)
+              (update-failed-label ?c - cone ?v - label)
+              (shval-in-room ?a - agent ?a2 - agent ?p - place)
+              (shval-in-room ?a - agent ?a2 - agent ?c - cone)
+              (update-ex-in-room ?l - label ?r - room ?v - boolean)
+              (attributed-category ?a - agent ?r - room ?v - category)
+              (update-is-in ?o - movable ?v - place)
+              (update-is-in ?c - cone ?v - place)
+              (neg-attributed-category ?a - agent ?r - room ?v - category)
+              (commit-is-in ?c - cone ?v - place)
+              (commit-is-in ?o - movable ?v - place)
+              (update-failed-placestatus ?n - place ?v - place_status)
+              (in-domain-ex-in-room ?l - label ?r - room ?v - boolean)
+              (kval-category ?a - agent ?r - room)
+              (placestatus ?n - place ?value - place_status)
+              (not_fully_explored ?r - object)
+              (in-domain-category ?r - room ?v - category)
+              (not-instantiated ?o - object)
+              (attributed-placestatus ?a - agent ?n - place ?v - place_status)
+              (neg-attributed-is-in ?a - agent ?c - cone ?v - place)
+              (neg-attributed-is-in ?a - agent ?o - movable ?v - place)
+              (i_in-domain-is-in ?c - cone ?v - place)
+              (i_in-domain-is-in ?o - movable ?v - place)
+              (unused ?o - object)
+              (in-room ?c - cone ?value - room)
+              (in-room ?p - place ?value - room)
+              (in-domain-in-room ?c - cone ?v - room)
+              (in-domain-in-room ?p - place ?v - room)
+              (connected ?p1 - place ?p2 - place)
+              (update-failed-ex-in-room ?l - label ?r - room ?v - boolean)
+              (shval-ex-in-room ?a - agent ?a2 - agent ?l - label ?r - room)
+              (kd-category ?a - agent ?r - room)
+              (i_in-domain-category ?r - room ?v - category)
+              (neg-attributed-in-room ?a - agent ?p - place ?v - room)
+              (neg-attributed-in-room ?a - agent ?c - cone ?v - room)
+              (attributed-in-room ?a - agent ?c - cone ?v - room)
+              (attributed-in-room ?a - agent ?p - place ?v - room)
+              (hyp-in-room ?c - cone ?v - room)
+              (hyp-in-room ?p - place ?v - room)
+              (ex-in-room ?l - label ?r - room ?value - boolean)
+)
+
+(:percepts  (observed-ex-in-room ?l - label ?r - room ?v - boolean)
+            (observed-in-room ?c - cone ?v - room)
+            (observed-in-room ?p - place ?v - room)
+            (observed-is-in ?o - movable ?v - place)
+            (observed-is-in ?c - cone ?v - place)
+            (observed-placestatus ?n - place ?v - place_status)
+            (observed-label ?c - cone ?v - label)
+            (observed-label ?o - visualobject ?v - label)
+            (observed-category ?r - room ?v - category)
+)
+
+(:functions  (log-dora__in ?l - label ?c - category) - number
+             (dora__in ?l - label ?c - category) - number
+             (probability ?c - cone) - number
+             (p-is-in ?p - place) - number
+             (total-p-cost ) - number
+             (p-category ?r - room ?c - category) - number
+             (virtual-probability ?p - virtual-place) - number
+             (log-virtual-probability ?p - virtual-place) - number
+             (log-p-probability ?p - place ?l - label) - number
+             (p-probability ?p - place ?l - label) - number
+             (log-p-category ?r - room ?c - category) - number
+             (reward ) - number
+)
+
+(:constants  room_0_n - room
+             visualobject3 - visualobject
+             cornflakes - label
+             living_room office kitchen - category
+             placeholder trueplace - place_status
+             false true - boolean
+)
+
+(:action  explore_place
+          :parameters  (?a - robot ?loc - place)
+          :precondition  (and  (is-in ?a ?loc)
+                               (placestatus ?loc placeholder)
+                         )
+          :effect  (and  (not (placestatus ?loc placeholder))
+                         (placestatus ?loc trueplace)
+                         (assign (reward ) -0.1000)
+                   )
+)
+
+(:action  report_position
+          :parameters  (?a - robot ?o - visualobject ?p - place ?h - human)
+          :precondition  (and  (kval-is-in ?a ?o)
+                               (is-in ?h ?p)
+                               (is-in ?a ?p)
+                         )
+          :effect  (and  (position-reported ?o)
+                         (assign (reward ) -1.0000)
+                   )
+)
+
+(:action  move
+          :parameters  (?a - robot ?to - place ?from - place)
+          :precondition  (and  (or  (connected ?from ?to)
+                                    (connected ?to ?from)
+                               )
+                               (not (done ))
+                               (is-in ?a ?from)
+                         )
+          :effect  (and  (not (is-in ?a ?from))
+                         (is-in ?a ?to)
+                         (started )
+                         (assign (reward ) -2.0000)
+                   )
+)
+
+(:action  create_cones
+          :parameters  (?a - robot ?l - label ?r - room ?p - place)
+          :precondition  (and  (is-in ?a ?p)
+                               (in-room ?p ?r)
+                               (not (done ))
+                         )
+          :effect  (and  (cones_created ?l ?r)
+                         (started )
+                         (assign (reward ) -10.0000)
+                   )
+)
+
+(:action  process_virtual_place
+          :parameters  (?a - robot ?o - visualobject ?l - label ?r - room ?p - virtual-place)
+          :precondition  (and  (not (done ))
+                               (cones_created ?l ?r)
+                               (in-room ?p ?r)
+                               (label ?o ?l)
+                         )
+          :effect  (and  (started )
+                         (assign (reward ) -10.0000)
+                   )
+)
+
+(:action  process_all_cones_at_place
+          :parameters  (?a - robot ?p - place ?l - label ?o - visualobject)
+          :precondition  (and  (not (done ))
+                               (is-in ?a ?p)
+                               (label ?o ?l)
+                         )
+          :effect  (and  (started )
+                         (assign (reward ) -10.0000)
+                   )
+)
+
+(:action  commit-is-in-visualobject3
+          :parameters  (?val - place)
+          :precondition  (and  (not (done )))
+          :effect  (and  (when  (is-in visualobject3 ?val)
+                                (assign (reward ) 100)
+                         )
+                         (when  (not (is-in visualobject3 ?val))
+                                (assign (reward ) -500)
+                         )
+                         (done )
+                   )
+)
+
+(:action  disconfirm-ex-in-room-cornflakes-room_0_n
+          :precondition  (and  (not (done )))
+          :effect  (and  (when  (not (ex-in-room cornflakes room_0_n true))
+                                (assign (reward ) 50.0000)
+                         )
+                         (when  (ex-in-room cornflakes room_0_n true)
+                                (assign (reward ) -500.0000)
+                         )
+                         (done )
+                   )
+)
+
+(:action  disconfirm-category-room_0_n
+          :precondition  (and  (not (done )))
+          :effect  (and  (when  (not (category room_0_n kitchen))
+                                (assign (reward ) 50.0000)
+                         )
+                         (when  (category room_0_n kitchen)
+                                (assign (reward ) -500.0000)
+                         )
+                         (done )
+                   )
+)
+
+(:observe  visual_object_virtual
+           :parameters  (?a - robot ?o - visualobject ?l - label ?r - room ?p - virtual-place)
+           :execution  (process_virtual_place ?a ?o ?l ?r ?p)
+           :precondition  (and  )
+           :effect  (when  (is-in ?o ?p)
+                           (probabilistic  0.8000  (observed-is-in ?o ?p))
+                    )
+)
+
+(:observe  visual_object
+           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+           :execution  (process_all_cones_at_place ?a ?p ?l ?o)
+           :precondition  (and  )
+           :effect  (when  (is-in ?o ?p)
+                           (probabilistic  0.8000  (observed-is-in ?o ?p))
+                    )
+)
+
+)

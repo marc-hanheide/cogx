@@ -1,0 +1,37 @@
+# Simple deterministic problem
+
+discount : 0.95
+
+values : reward 
+
+states : one1 two1 one2 two2
+
+actions : move-left move-right shift
+
+observations : observe-one1 observe-two1 observe-one2 observe-two2
+
+start: 1.0 0.0 0.0 0.0
+
+T: move-right : one1 : two1 1.0
+T: move-right : two1 : two1 1.0
+T: move-left : two1 : one1 1.0
+T: move-left : one1 : one1 1.0
+
+T: move-right : one2 : two2 1.0
+T: move-right : two2 : two2 1.0
+T: move-left : two2 : one2 1.0
+T: move-left : one2 : one2 1.0
+
+T: shift : one1 : one1 1.0
+T: shift : two1 : two2 1.0
+T: shift : two2 : two2 1.0
+T: shift : one2 : one2 1.0
+
+R: * : one2 : * : * 5000.0
+R: * : two1 : * : * 500.0
+
+O: * : one1 : observe-one1 1.0
+O: * : two1 : observe-two1 1.0
+O: * : one2 : observe-one2 1.0
+O: * : two2 : observe-two2 1.0
+

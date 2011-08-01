@@ -1,0 +1,44 @@
+(define (scenario cogxscen) (:domain cogx)
+
+(:common
+
+(:objects
+	place1 place2 place3 - place
+	pid1 pid2 pid3 - place_id
+    kitchen - place_category
+    R2D2 - robot
+)
+
+(:init
+	(= (place_id place1) pid1)
+	(= (place_id place2) pid2)
+	(= (place_id place3) pid3)
+	(= (place_category place2) kitchen)
+	(connected place1 place2)
+	(connected place2 place1)
+	(connected place2 place3)
+	(connected place3 place2)
+	(located R2D2 place1)
+)
+
+)
+
+(:world
+
+(:init
+)
+
+
+)
+
+(:agent R2D2
+
+
+(:goal (and
+	   (forall (?p - place) (= (explored ?p) true))
+;;	   (forall (?p - place) (kval-area R2D2 (place_category ?p)))
+))
+
+)
+
+)

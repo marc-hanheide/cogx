@@ -1,0 +1,27 @@
+# heads I win, tails you loose.
+
+discount : 0.95
+
+values : reward 
+
+states : heads not-heads
+
+actions : flip 
+
+observations : observe-heads observe-not-heads 
+
+start: 0.5 0.5
+
+T: flip : heads : heads 0.5
+T: flip : heads : not-heads 0.5
+T: flip : not-heads : heads 0.5
+T: flip : not-heads : not-heads 0.5
+
+R: flip : heads : heads : observe-heads 50
+
+
+O: flip : heads : observe-heads 0.8
+O: flip : heads : observe-not-heads 0.2
+O: flip : not-heads : observe-heads 0.2
+O: flip : not-heads : observe-not-heads 0.8
+
