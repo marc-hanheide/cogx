@@ -4,6 +4,7 @@
 	<property file="${projectroot.dir}/build.properties" />
 
 	<path id="build.classpath">
+        <fileset dir="${jar.dir}" includes="*.jar"/>
 		<pathelement path="${ice.jar}" />
 		<pathelement path="${cast.jar}" />
 		<pathelement path="${log4j.jar}" />
@@ -52,7 +53,7 @@
 	<target name="expandlibs" depends="prepare">
 		<!-- <echo message="Expanding external libraries for castutils to output/classes" /> -->
 		<!-- <unzip dest="${output.dir}" src="./lib/jfreechart-1.0.13.jar" /> -->
-		<unzip dest="${output.dir}" src="./lib/bnjv3.jar" />
+		<copy todir="${jar.dir}" file="./lib/bnjv3.jar" />
 	</target>
 
 
