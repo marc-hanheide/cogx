@@ -7,6 +7,7 @@
      <!-- Add JAR files to classpath                                          -->
      <!-- =================================================================== -->
      <path id="build.classpath">
+         <fileset dir="${jar.dir}" includes="*.jar"/>
          <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
          <pathelement path="${antice.jar}"/>
@@ -77,9 +78,9 @@
 	<!-- =================================================================== -->
 
     <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
-           <echo message="Expanding external libraries for the Dialogue API CAST extension to output/classes"/>
-           <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/nsc.jar"/>
+           <echo message="Copying external libraries for the Dialogue API CAST extension to ${jar.dir}"/>
+           <copy todir="${jar.dir}" file="./lib/vcomsc.jar"/>
+           <copy todir="${jar.dir}" file="./lib/nsc.jar"/>
     </target>
 
 
