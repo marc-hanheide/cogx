@@ -14,6 +14,7 @@
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
+	<property name="jar.dir" value="../../output/jar" />
 
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
@@ -34,18 +35,18 @@
  	<!-- Expand libraries                                                    -->
 	<!-- =================================================================== -->
 	<target name="expandlibs" depends="prepare">
-	    <echo message="Expanding external libraries for coma.sa to output/classes"/>
-	    <unzip dest="${output.dir}" src="./lib/arq.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/trove-2.1.0.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/concurrent.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/crowl.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/hfc.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/icu4j_3_4.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/iri.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/jena.jar"/>
-	    <unzip dest="${output.dir}" src="./lib/xercesImpl.jar"/>
-<!--	    <unzip dest="${output.dir}" src="./lib/log4j-1.2.12.jar"/> -->
-	    <unzip dest="${output.dir}" src="./lib/commons-logging-1.1.jar"/>  	</target>
+	    <echo message="Expanding external libraries for coma.sa to output/jar"/>
+	    <copy todir="${jar.dir}" file="./lib/arq.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/trove-2.1.0.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/concurrent.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/crowl.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/hfc.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/icu4j_3_4.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/iri.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/jena.jar"/>
+	    <copy todir="${jar.dir}" file="./lib/xercesImpl.jar"/>
+	    <!-- <copy todir="${jar.dir}" file="./lib/log4j-1.2.12.jar"/> -->
+	    <copy todir="${jar.dir}" file="./lib/commons-logging-1.1.jar"/>  	</target>
 
 <!-- =================================================================== -->
 	<!-- Source generation                                                   -->
