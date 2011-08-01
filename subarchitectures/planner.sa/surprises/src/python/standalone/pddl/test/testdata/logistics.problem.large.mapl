@@ -1,0 +1,102 @@
+(define (problem logistics-4-0)
+
+(:domain logistics-object-fluents)
+
+(:objects  ;agent - agent
+           apn1 apn2 apn3 apn4 - airplane
+           tru1 tru2 tru3 tru4 tru5 tru5b - truck
+           obj11 obj12 obj13 obj21 obj22 obj23
+           obj31 obj32 obj33 obj41 obj42 obj43
+           obj51 obj52 obj53 obj54 obj55 obj56 - package
+           apt1 apt2 apt3 apt4 apt5 - airport
+           pos11 pos12 pos13 pos14 pos15
+           pos21 pos22 pos23 pos24 pos25
+           pos31 pos32 pos33 pos34 pos35
+           pos41 pos42 pos43 pos44 pos45
+           pos51 pos52 pos53 pos54 pos55 - location
+           cit1 cit2 cit3 cit4 cit5 - city)
+
+(:init  (= (location-of apn1) apt2)
+        (= (location-of apn2) apt1)
+        (= (location-of apn3) apt5)
+
+        (= (location-of tru1) pos11)
+        (= (location-of tru2) pos24)
+        (= (location-of tru3) apt3)
+        (= (location-of tru4) pos41)
+        (= (location-of tru5) pos53)
+        (= (location-of tru5b) pos51)
+
+        (= (location-of obj11) pos11)
+        (= (location-of obj12) pos12)
+        ;(= (location-of obj13) pos13)
+        (in-domain (location-of obj13) pos11)
+        (in-domain (location-of obj13) pos12)
+        (in-domain (location-of obj13) pos13)
+        (in-domain (location-of obj13) pos14)
+        (= (location-of obj21) pos22)
+        (= (location-of obj22) pos24)
+        ;(= (location-of obj23) pos25)
+        (in-domain (location-of obj23) pos21)
+        (in-domain (location-of obj23) pos22)
+        (in-domain (location-of obj23) pos23)
+        (in-domain (location-of obj23) pos24)
+        (kval agent (location-of obj23))
+        (= (location-of obj31) pos32)
+        (= (location-of obj32) pos34)
+        (= (location-of obj33) pos35)
+        (= (location-of obj41) pos42)
+        (= (location-of obj42) pos44)
+        (= (location-of obj43) pos45)
+        (= (location-of obj51) apt5)
+        (= (location-of obj52) pos54)
+        (= (location-of obj53) pos55)
+        (= (location-of obj54) pos52)
+        (= (location-of obj55) tru5b)
+        (= (location-of obj56) tru5)
+        (= (city-of apt1) cit1)
+        (= (city-of pos11) cit1)
+        (= (city-of pos12) cit1)
+        (= (city-of pos13) cit1)
+        (= (city-of pos14) cit1)
+        (= (city-of pos15) cit1)
+        (= (city-of apt2) cit2)
+        (= (city-of pos21) cit2)
+        (= (city-of pos22) cit2)
+        (= (city-of pos23) cit2)
+        (= (city-of pos24) cit2)
+        (= (city-of pos25) cit2)
+        (= (city-of apt3) cit3)
+        (= (city-of pos31) cit3)
+        (= (city-of pos32) cit3)
+        (= (city-of pos33) cit3)
+        (= (city-of pos34) cit3)
+        (= (city-of pos35) cit3)
+        (= (city-of apt4) cit4)
+        (= (city-of pos41) cit4)
+        (= (city-of pos42) cit4)
+        (= (city-of pos43) cit4)
+        (= (city-of pos44) cit4)
+        (= (city-of pos45) cit4)
+        (= (city-of apt5) cit5)
+        (= (city-of pos51) cit5)
+        (= (city-of pos52) cit5)
+        (= (city-of pos53) cit5)
+        (= (city-of pos54) cit5)
+        (= (city-of pos55) cit5)
+
+        ;; (= (num_packages apn1) 0)
+        ;; (= (num_packages tru1) 0)
+        ;; (= (num_packages tru2) 0)
+
+        ;; (= (capacity apn1) 20)
+        ;; (= (capacity tru1) 4)
+        ;; (= (capacity tru2) 4)
+)
+
+(:goal  (and (= (location-of obj11) apt1)
+             (= (location-of obj13) apt1)
+             (= (location-of obj21) pos12)
+             (= (location-of obj23) pos15)))
+
+)

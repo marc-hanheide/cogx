@@ -1,0 +1,49 @@
+(define (problem cogxtask)
+
+(:domain dt-pomdprover)
+
+(:objects  r2 - rock
+           w0 w1 w2 - waypoint
+           spirit - rover
+           spiritstore - store
+           node2 - node
+           choice1 choice0 - node_choice
+           general - lander
+)
+
+(:init  (visible w1 w2)
+        (channel_free general)
+        (empty spiritstore)
+        (can_traverse spirit w2 w1)
+        (at_lander general w0)
+        (visible w0 w1)
+        (visible w2 w0)
+        (visible w2 w1)
+        (can_traverse spirit w0 w1)
+        (store_of spiritstore spirit)
+        (has_microscope spirit)
+        (has_spectrometer spirit)
+        (visible w0 w2)
+        (at spirit w1)
+        (can_traverse spirit w1 w0)
+        (has_rat spirit)
+        (visible w1 w0)
+        (at_rock r2 w2)
+        (can_traverse spirit w0 w2)
+        (can_traverse spirit w2 w0)
+        (available spirit)
+        (at_rock r1 w1)
+        (can_traverse spirit w1 w2)
+        (probabilistic  0.6000  (and  (rock_type r1 basalt)
+                                      (selected node2 choice1)
+                                )
+                        0.4000  (and  (rock_type r1 carbonate)
+                                      (selected node2 choice0)
+                                )
+        )
+)
+
+(:goal  (and  ))
+(:metric maximize (reward ))
+
+)

@@ -1,0 +1,226 @@
+(define (domain dora-test-100)
+
+(:requirements :quantified-preconditions :numeric-fluents :equality :typing :negative-preconditions :conditional-effects :action-costs :adl :disjunctive-preconditions :partial-observability)
+
+(:types  node - object
+         virtual-place - place
+         place_status - object
+         detection_difficulty - object
+         agent - object
+         movable - object
+         boolean - object
+         cone - object
+         human - movable
+         human - place
+         subgoal - object
+         planning_agent - agent
+         room - object
+         category - object
+         node_choice - object
+         feature - object
+         label - object
+         visualobject - movable
+         place - object
+         robot - movable
+         robot - place
+         robot - agent
+)
+
+(:predicates
+              (category ?r - room ?value - category)
+              (committed-is-in ?o - movable)
+              (connected ?p1 - place ?p2 - place)
+              (difficulty ?l - label ?value - detection_difficulty)
+              (done )
+              (ex-in-room ?l - label ?r - room ?value - boolean)
+              (in-room ?p - place ?value - room)
+              (is-in ?o - movable ?value - place)
+              (label ?o - visualobject ?value - label)
+              (position-reported ?o - visualobject)
+)
+
+(:percepts  (observed-is-in ?o - movable ?v - place)
+            (observed-category ?r - room ?v - category)
+)
+
+(:functions  (reward ) - number)
+
+(:constants  obj1 - visualobject
+             cornflakes - label
+             p2b p1b - place
+             kitchen - category
+             false true - boolean
+             rb - room
+             hard medium easy - detection_difficulty
+)
+
+;; (:action  explore_place
+;;           :parameters  (?a - robot ?loc - place)
+;;           :precondition  (and  (is-in ?a ?loc)
+;;                                (placestatus ?loc placeholder)
+;;                                (not (done))
+;;                          )
+;;           :effect  (and  (not (placestatus ?loc placeholder))
+;;                          (placestatus ?loc trueplace)
+;;                          (assign (reward ) -0.1000)
+;;                    )
+;; )
+
+(:action  move
+          :parameters  (?a - robot ?to - place ?from - place)
+          :precondition  (and  (or  (connected ?from ?to)
+                                    (connected ?to ?from)
+                               )
+                               (not (done ))
+                               (is-in ?a ?from)
+                         )
+          :effect  (and  (not (is-in ?a ?from))
+                         (is-in ?a ?to)
+                         (assign (reward ) -5.0000)
+                   )
+)
+
+(:action  look-for-object
+          :parameters  (?a - robot ?p - place ?l - label ?o - visualobject)
+          :precondition  (and  (not (done ))
+                               (is-in ?a ?p)
+                               (label ?o ?l)
+                         )
+          :effect  (and  (assign (reward ) -3.0000))
+)
+
+;; (:action  ask_about_room
+;;           :parameters  (?a - robot ?r - room ?h - human ?p - place)
+;;           :precondition  (and  (not (done ))
+;;                                (is-in ?h ?p)
+;;                                (is-in ?a ?p)
+;;                                (in-room ?p ?r)
+;;                          )
+;;           :effect  (and  (assign (reward ) -10.0000))
+;; )
+
+(:action  cancel
+          :precondition  (and  (not (done )))
+          :effect  (and  (done )
+                         (not (category ra kitchen))
+                         (not (category ra living_room))
+                         (not (category ra office))
+                         (not (category ra bathroom))
+                         (not (category rb kitchen))
+                         (not (category rb living_room))
+                         (not (category rb office))
+                         (not (category rb bathroom))
+                         (not (ex-in-room table ra true))
+                         (not (ex-in-room cornflakes ra true))
+                         (not (ex-in-room mug ra true))
+                         (not (ex-in-room oven ra true))
+                         (not (ex-in-room table rb true))
+                         (not (ex-in-room cornflakes rb true))
+                         (not (ex-in-room mug rb true))
+                         (not (ex-in-room oven rb true))
+                         (not (is-in obj1 p1a))
+                         (not (is-in obj2a p1a))
+                         (not (is-in obj3 p1a))
+                         (not (is-in obj4 p1a))
+                         (not (is-in obj1 p2a))
+                         (not (is-in obj2a p2a))
+                         (not (is-in obj3 p2a))
+                         (not (is-in obj4 p2a))
+                         (not (is-in obj1 p1b))
+                         (not (is-in obj2b p1b))
+                         (not (is-in obj3 p1b))
+                         (not (is-in obj4 p1b))
+                         (not (is-in obj1 p2b))
+                         (not (is-in obj2b p2b))
+                         (not (is-in obj3 p2b))
+                         (not (is-in obj4 p2b))
+                         (not (is-in dora p1a))
+                         (not (is-in dora p2a))
+                         (not (is-in dora p1b))
+                         (not (is-in dora p2b))
+                         (assign (reward ) 0)
+                   )
+)
+
+(:action  commit-obj1
+          :parameters (?p - place)
+          :precondition  (and  (not (done )))
+          :effect  (and  (when  (is-in obj1 ?p)
+                           (assign (reward ) 100)
+                           )
+                         (when  (not (is-in obj1 ?p))
+                           (assign (reward ) -100)
+                           )
+                         ;; (committed-is-in obj1)
+                         (done )
+                         (not (category ra kitchen))
+                         (not (category ra living_room))
+                         (not (category ra office))
+                         (not (category ra bathroom))
+                         (not (category rb kitchen))
+                         (not (category rb living_room))
+                         (not (category rb office))
+                         (not (category rb bathroom))
+                         (not (ex-in-room table ra true))
+                         (not (ex-in-room cornflakes ra true))
+                         (not (ex-in-room oven ra true))
+                         (not (ex-in-room table rb true))
+                         (not (ex-in-room cornflakes rb true))
+                         (not (ex-in-room oven rb true))
+                         (not (is-in obj1 p1a))
+                         (not (is-in obj2 p1a))
+                         (not (is-in obj4 p1a))
+                         (not (is-in obj1 p2a))
+                         (not (is-in obj2 p2a))
+                         (not (is-in obj4 p2a))
+                         (not (is-in obj1 p1b))
+                         (not (is-in obj2 p1b))
+                         (not (is-in obj4 p1b))
+                         (not (is-in obj1 p2b))
+                         (not (is-in obj2 p2b))
+                         (not (is-in obj4 p2b))
+
+                         )
+)
+
+;; (:observe  room_type
+;;            :parameters  (?a - robot ?r - room ?h - human ?p - place ?c - category)
+;;            :execution  (ask_about_room ?a ?r ?h ?p)
+;;            :precondition  (and  )
+;;            :effect  (and  (when  (and  (category ?r ?c))
+;;                                  (probabilistic  0.9000  (observed-category ?r ?c))
+;;                           )
+;;                     )
+;; )
+
+(:observe  visual_object_easy
+           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+           :execution  (look-for-object ?a ?p ?l ?o)
+           :precondition  (and  (difficulty ?l easy))
+           :effect  (and  (when  (and  (is-in ?o ?p))
+                                 (probabilistic  0.9  (observed-is-in ?o ?p))
+                          )
+                    )
+)
+
+(:observe  visual_object_medium
+           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+           :execution  (look-for-object ?a ?p ?l ?o)
+           :precondition  (and  (difficulty ?l medium))
+           :effect (and (when (and (is-in ?o ?p))
+                          (probabilistic 0.7 (observed-is-in ?o ?p)))
+                        (when (and (not (is-in ?o ?p)))
+                          (probabilistic 0.1 (observed-is-in ?o ?p))))
+)
+
+(:observe  visual_object_hard
+           :parameters  (?a - robot ?o - visualobject ?l - label ?p - place)
+           :execution  (look-for-object ?a ?p ?l ?o)
+           :precondition  (and  (difficulty ?l hard))
+           :effect (and (when (and (is-in ?o ?p))
+                          (probabilistic 0.5 (observed-is-in ?o ?p)))
+                        (when (and (not (is-in ?o ?p)))
+                          (probabilistic 0.2 (observed-is-in ?o ?p))))
+)
+
+)

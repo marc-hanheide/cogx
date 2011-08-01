@@ -1,0 +1,38 @@
+(define (problem cogxtask)
+
+(:domain dt-find-objects)
+
+(:objects  dora - robot
+           c3b c1b c2b - cone
+           p2b p1a p1b p2a - place
+           kitchen - category
+           rb - room
+           cornflakes - label
+)
+
+(:init  (label o-cf cornflakes)
+	(= (some) 100)
+        (is-in dora p1a)
+        (room p1b rb)
+        (room c2b rb)
+        (room p2b rb)
+        (room c1b rb)
+        (room c3b rb)
+        (probabilistic  0.6000  (and  (category rb kitchen)
+                                      (probabilistic  0.8000  (and  (ex-in-room cornflakes rb true)
+                                                                    (probabilistic  0.1500  (is-in o-cf c3b)
+                                                                                    0.4000  (is-in o-cf c1b)
+                                                                                    0.2000  (is-in o-cf c2b)
+                                                                    )
+                                                              )
+                                                      0.2000  (ex-in-room cornflakes rb false)
+                                      )
+                                )
+                        0.4000  (and  )
+        )
+)
+
+(:goal  (and  ))
+(:metric maximize (reward ))
+
+)
