@@ -17,6 +17,7 @@ MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/${MATLAB_ARCH
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
 COGX_LIB_DIR=${COGX_ROOT}/output/lib
 COGX_CLASS_DIR=${COGX_ROOT}/output/classes
+COGX_JAR_DIR=${COGX_ROOT}/output/jar
 
 CAST_BIN_PREFIX=bin
 CAST_BIN_DIR=${CAST_INSTALL_ROOT}/${CAST_BIN_PREFIX}
@@ -56,6 +57,7 @@ PYTHONPATH=<pathlist>
 CLASSPATH=<pathlist>
    ${CLASSPATH}
    ${CAST_INSTALL_ROOT}/share/java/cast.jar
+   ${COGX_JAR_DIR}/*
    ${COGX_CLASS_DIR}
    <glob>${COGX_CLASS_DIR}/coma.libs/*.jar</glob> # glob expressions must be on one line
    /usr/share/java/Ice.jar
