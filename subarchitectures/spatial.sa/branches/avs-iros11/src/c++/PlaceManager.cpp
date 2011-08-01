@@ -1863,6 +1863,9 @@ void PlaceManager::deletePlaceholder(int placeId) {
     //Delete Place struct and entry in m_Places
     deleteFromWorkingMemory(it2->second.m_WMid);
     m_Places.erase(it2);
+
+    if (placeId == m_goalPlaceForCurrentPath)
+      cancelMovement();
   }
 }
 
