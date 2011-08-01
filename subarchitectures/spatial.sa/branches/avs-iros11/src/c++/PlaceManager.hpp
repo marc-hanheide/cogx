@@ -158,7 +158,9 @@ class PlaceManager : public cast::ManagedComponent
     double m_minFrontierDist; // Culling distance for frontiers around a given node
     double m_minNodeSeparation; // Min distance that has to exist between the new
                                 // hypothetical nodes generated at a place
-    // frontier
+
+    double m_hypPathLength;     // How far to try and move in the direction of the
+                                // frontier
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
