@@ -7,6 +7,7 @@
   <!-- Add JAR files to classpath                                          -->
   <!-- =================================================================== -->
   <path id="build.classpath">
+    <fileset dir="${jar.dir}" includes="*.jar"/>
     <pathelement path="${ice.jar}"/>
     <pathelement path="${cast.jar}"/>
     <pathelement path="${antice.jar}"/>
@@ -79,18 +80,18 @@
   <!-- =================================================================== -->
 
   <target name="expandlibs" depends="prepare" if="build.dialogue_sa">
-    <echo message="Expanding external libraries for the Dialogue API to output/classes"/>
-    <unzip dest="${output.dir}" src="./lib/junit-4.4.jar"/>
-    <unzip dest="${output.dir}" src="./lib/openccg.jar"/>
-    <unzip dest="${output.dir}" src="./lib/trove-2.1.0.jar"/>
-    <unzip dest="${output.dir}" src="./lib/jdom.jar"/>
-    <unzip dest="${output.dir}" src="./lib/jline.jar"/>
-    <unzip dest="${output.dir}" src="./lib/maryclient.jar"/>
-    <unzip dest="${output.dir}" src="./lib/js.jar"/>
-    <unzip dest="${output.dir}" src="./lib/jsapi.jar"/>
-    <unzip dest="${output.dir}" src="./lib/tags.jar"/>
-    <unzip dest="${output.dir}" src="./lib/sphinx4.jar"/>
-    <unzip dest="${output.dir}" src="./lib/log4j-1.2.jar"/>
+    <echo message="Copying external libraries for the Dialogue API to output/jar"/>
+    <copy todir="${jar.dir}" file="./lib/junit-4.4.jar"/>
+    <copy todir="${jar.dir}" file="./lib/openccg.jar"/>
+    <copy todir="${jar.dir}" file="./lib/trove-2.1.0.jar"/>
+    <copy todir="${jar.dir}" file="./lib/jdom.jar"/>
+    <copy todir="${jar.dir}" file="./lib/jline.jar"/>
+    <copy todir="${jar.dir}" file="./lib/maryclient.jar"/>
+    <copy todir="${jar.dir}" file="./lib/js.jar"/>
+    <copy todir="${jar.dir}" file="./lib/jsapi.jar"/>
+    <copy todir="${jar.dir}" file="./lib/tags.jar"/>
+    <copy todir="${jar.dir}" file="./lib/sphinx4.jar"/>
+    <copy todir="${jar.dir}" file="./lib/log4j-1.2.jar"/>
   </target>
 
   <!-- =================================================================== -->
