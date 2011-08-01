@@ -131,6 +131,8 @@ protected:
   virtual bool isPointReachable(double xW, double yW);
   virtual std::vector<bool> arePointsReachable(std::vector<std::vector<double> > points);
 
+  void updateGridMaps();
+
   double m_MaxExplorationRange; 
 
   Cure::LocalMap m_LMap;
@@ -155,6 +157,7 @@ protected:
 
   Cure::LocalGridMap<unsigned char>* m_binaryMap;
 
+  IceUtil::Monitor<IceUtil::Mutex> m_LScanMonitor;
 	std::queue<Cure::LaserScan2d> m_LScanQueue;	
 
   int m_Npts;
