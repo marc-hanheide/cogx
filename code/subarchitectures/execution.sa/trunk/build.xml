@@ -7,6 +7,7 @@
 	<!-- Add JAR files to classpath                                          -->
 	<!-- =================================================================== -->
 	<path id="build.classpath">
+        <fileset dir="${jar.dir}" includes="*.jar"/>
 		<pathelement path="${ice.jar}" />
 		<pathelement path="${cast.jar}" />
 		<fileset dir="lib">
@@ -58,12 +59,12 @@
 	<!-- =================================================================== -->
 
 	<target name="expandlibs" depends="prepare">
-		<echo message="Expanding external libraries for execution.sa to output/classes" />
-    	<unzip dest="${output.dir}">
+		<echo message="Copying external libraries for execution.sa to ${jar.dir}" />
+    	<copy todir="${jar.dir}">
 	    <fileset dir="./lib">
 	        <include name="**/*.jar"/>
 		</fileset>
-    	</unzip>
+    	</copy>
 	</target>
 
 
