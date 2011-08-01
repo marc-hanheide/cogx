@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <utility>
 
 namespace spatial {
 
@@ -95,6 +96,11 @@ class PlaceManager : public cast::ManagedComponent
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
 
     void evaluateUnexploredPaths();
+
+    std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
+    void updateReachablePlaceholderProperties(int placeID);
+    void updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers);
+    SpatialData::PlacePtr getCurrentPlace();
     NavData::FNodePtr getCurrentNavNode();
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
@@ -116,6 +122,7 @@ class PlaceManager : public cast::ManagedComponent
     FrontierInterface::NodeHypothesisPtr getHypFromPlaceID(int placeID);
     NavData::FNodePtr getNodeFromPlaceID(int placeID);
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
+    void refreshPlaceholders(std::vector<std::pair<double,double> > coords);
 
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
@@ -125,6 +132,9 @@ class PlaceManager : public cast::ManagedComponent
 	NavData::FNodePtr newNode, int hypothesisID);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
+    void deletePlaceholder(int placeId);
+    bool createPlaceholder(int curPlaceId, double x, double y);
+    bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
 
     double getGatewayness(double x, double y);
     void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
@@ -145,14 +155,10 @@ class PlaceManager : public cast::ManagedComponent
     void processEdge(NavData::AEdgePtr edge);
 
     // Frontier based exploration path parameters
-    double m_maxFrontierDist; // Culling distance for frontiers around a given node
     double m_minFrontierDist; // Culling distance for frontiers around a given node
-    double m_minFrontierLength; // Minimum size of frontiers to consider
     double m_minNodeSeparation; // Min distance that has to exist between the new
-    // hypothetical nodes generated at a place
-    double m_hypPathLength;     // How far to try and move in the direction of the
+                                // hypothetical nodes generated at a place
     // frontier
-    double m_minPlaceholderToWallDistance; // Don't place placeholders closer to a wall than this
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
