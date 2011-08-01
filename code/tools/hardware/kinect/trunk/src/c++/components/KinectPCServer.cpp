@@ -197,6 +197,7 @@ void KinectPCServer::saveNextFrameToFile() {
 void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
 {
   lockComponent();
+  kinect::changeRegistration(0);
   kinect->NextFrame();
   
   cv::Mat_<cv::Point3f> cloud;
@@ -276,8 +277,10 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
     }
     std::vector<cv::Point3f> cvPoints(colOrRow.begin(), colOrRow.end());
     fovPlanes[i] = createPlane(cvPoints, global_kinect_pose);
-    /* Compensate for the variable direction of the plane normals */
-    senses[i] = 2 * (std::acos(axis.dot(fovPlanes[i]->normal())) > M_PI/2) - 1;
+    if (fovPlanes[i] != NULL) {
+      /* Compensate for the variable direction of the plane normals */
+      senses[i] = 2 * (std::acos(axis.dot(fovPlanes[i]->normal())) > M_PI/2) - 1;
+    }
   }
 
   unlockComponent();
