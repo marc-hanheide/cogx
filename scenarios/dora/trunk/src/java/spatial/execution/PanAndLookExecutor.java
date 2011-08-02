@@ -69,6 +69,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 					getComponent().addToWorkingMemory(m_PanCmd,
 							m_remainingCommands.pop());
 				} else {
+					publishActionOutcome();
 					executionComplete(TriBool.TRITRUE);
 				}
 			}
@@ -111,6 +112,8 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 		};
 
 	}
+
+	abstract protected void publishActionOutcome();
 
 	protected WorkingMemoryChangeReceiver getAfterDetectionReceiver() {
 		return m_afterDetect;

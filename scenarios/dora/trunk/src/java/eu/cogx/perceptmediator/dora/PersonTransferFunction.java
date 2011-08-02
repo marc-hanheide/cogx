@@ -28,6 +28,8 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.PerceptBelief;
 import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import execution.slice.person.PersonObservation;
 
 /**
  * @author marc
@@ -35,8 +37,9 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.DependentLinkingDiscreteT
  */
 public class PersonTransferFunction
 		extends
-		DependentLinkingDiscreteTransferFunction<Person, PerceptBelief, GroundedBelief> {
+		DependentLinkingDiscreteTransferFunction<PersonObservation, PerceptBelief, GroundedBelief> {
 
+	private static final double PROB_EPS = 0.001;
 	public static final String EXISTS = "does-exist";
 	public static final String IS_IN = "is-in";
 	public static final String PERSON_ID = "PersonId";
@@ -51,7 +54,7 @@ public class PersonTransferFunction
 
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
-			WorkingMemoryChange wmc, Person from) throws BeliefException {
+			WorkingMemoryChange wmc, PersonObservation from) throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
@@ -89,11 +92,12 @@ public class PersonTransferFunction
 	@Override
 	protected void fillBelief(
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> belief,
-			WorkingMemoryChange wmc, Person from) {
+			WorkingMemoryChange wmc, PersonObservation from) {
 
 		super.fillBelief(belief, wmc, from);
+		belief.setType(SimpleDiscreteTransferFunction.getBeliefTypeFromCastType(Person.class));
 		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(true, from.existProb);
+		fd.add(true, (from.existProb > PROB_EPS) ? 1.0 : 0.0);
 		belief.getContent().put(EXISTS, fd);
 	}
 
