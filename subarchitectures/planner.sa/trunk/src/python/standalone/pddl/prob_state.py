@@ -106,7 +106,7 @@ class ProbFact(Fact):
                 eff = Fact(self.svar, val).as_literal(_class=effects.SimpleEffect)
                 if prob == 1.0:
                     return eff
-                effect_tups.append((prob, eff))
+                effect_tups.append((Term(prob), eff))
                 
         return effects.ProbabilisticEffect(effect_tups)
 

@@ -95,10 +95,16 @@ class CASTTask(object):
         
         self.update_status(TaskStateEnum.INITIALISED)
 
-        problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % self.id))
+        if not problem_fn:
+            problem_fn = abspath(join(self.component.get_path(), "problem%d-init.pddl" % self.id))
+            init_prob, _, _ = self.state.to_problem(self.slice_goals, deterministic=False, init_problem=True)
+            w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+            w.write(init_prob, problem_fn=problem_fn)
+        
+        problem_fn = abspath(join(self.component.get_path(), "problem%d.pddl" % self.id))
         self.write_cp_problem(problem_fn)
 
-        domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
+        domain_out_fn = abspath(join(self.component.get_path(), "domain%d.pddl" % self.id))
         w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
 
