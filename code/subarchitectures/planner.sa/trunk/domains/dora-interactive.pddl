@@ -71,6 +71,7 @@
    ;; === person properties ===
    (associated-room ?p - person) - room
    (does-exist ?p - person) - boolean
+   (contains-a-person-prior ?r - room) - boolean
 
    ;; === object properties ===
    (label ?o - visualobject) - label
@@ -119,9 +120,9 @@
               :precondition (and (not (is-virtual ?r))
                                  (not (exists (?p - person ?pl - place)
                                               (or (and (= (in-room ?pl) ?r)
-                                                       (in-domain (is-in ?p) ?pl)
-                                                       (is-virtual ?p))
-                                                  (= (associated-room ?p) ?r)))))
+                                                       (in-domain (is-in ?p) ?pl))
+                                                  (and (is-virtual ?p)
+                                                       (= (associated-room ?p) ?r))))))
               :effect (create (?p - person) (and
                                              (is-virtual ?p)
                                              (assign (associated-room ?p) ?r))
@@ -258,10 +259,11 @@
   ;; p(?label IN ?room | category(?room) = ?cat)
   (:dtrule person_in_room
            :parameters (?p - person ?pl - place ?r - room)
-           :precondition (and (= (in-room ?pl) ?r)
+           :precondition (and (= (contains-a-person-prior ?r) true)
+                              (= (in-room ?pl) ?r)
                               (= (associated-room ?p) ?r)
                               (is-virtual ?p))
-           :effect (probabilistic 0.3 (assign (is-in ?p) ?pl)))
+           :effect (probabilistic 1.0 (assign (is-in ?p) ?pl))) ;; will automatically be normalised
 
   ;; probability of an object being at a specific location
   ;;used only by DT (?)
