@@ -146,20 +146,13 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmK = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
   m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
 
-  if (m_UsePointCloud) {
-    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
-  }
-  else {
-    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-  }
+  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
   m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
   //m_Explorer->setExplorationConfinedByGateways(true);
@@ -169,17 +162,14 @@ void SpatialControl::configure(const map<string,string>& _config)
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
     if (m_UsePointCloud) {
-      m_DisplaylgmK = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmK);
       m_DisplaylgmLM = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmLM);
     } else {
-      m_DisplaylgmK = 0;
       m_DisplaylgmLM = 0;
     }
     println("Will use X window to show the exploration map");
 
   } else {
     m_Displaylgm = 0;
-    m_DisplaylgmK = 0;
 		m_DisplaylgmLM = 0;
     println("Will NOT use X window to show the exploration map");
   }
@@ -397,12 +387,11 @@ void SpatialControl::updateGridMaps()
   Cure::Pose3D lpW;
  	int xi,yi;
 
+  debug("lock updateGridMaps");
   lockComponent();
 
   /* Local references so we don't have to dereference the pointers all the time */
   Cure::LocalGridMap<unsigned char>& lgm = *m_lgm;
-  Cure::LocalGridMap<unsigned char>& lgmL = *m_lgmL;
-  Cure::LocalGridMap<unsigned char>& lgmK = *m_lgmK;
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
 
   /* Add all queued laser scans */
@@ -410,7 +399,7 @@ void SpatialControl::updateGridMaps()
     if (m_TOPP.isTransformDefined() && m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
       m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
-      m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+      m_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NavController::getRobotWidth(), '0');                                  
       m_firstScanAdded = true;
     }
@@ -420,7 +409,8 @@ void SpatialControl::updateGridMaps()
 
   /* Update height map */
   cdl::CASTTime frameTime = getCASTTime();
-  if (m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0) {
+  bool hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
+  if (hasScanPose) {
     PointCloud::SurfacePointSeq points;
     getPoints(true, 0 /* unused */, points);
     std::sort(points.begin(), points.end(), ComparePoints());
@@ -444,6 +434,7 @@ void SpatialControl::updateGridMaps()
           point.x = to.X[0];
           point.y = to.X[1];
           point.z = to.X[2];
+          /* If the old obstable is not currently in view don't remove it */
           if (!isPointInViewCone(point))
             continue;
         }
@@ -451,31 +442,28 @@ void SpatialControl::updateGridMaps()
         lgmKH(xi, yi) = pZ;
       }
     }
+  }
 
-    /* Create 2D map from height map */
-    for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
-      if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight)
-        lgmK[i] = '1';
-      else if (lgmKH[i] != FLT_MAX)
-        lgmK[i] = '0';
+  /* Project the height map onto the 2D obstacle map */ 
+  for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
+    if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight) {
+      lgm[i] = '1';
     }
-    m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+    else if (lgmKH[i] != FLT_MAX) {
+      // Don't overwrite obstacles seen by the laser with (possibly old)
+      // free space from the point cloud
+      if (lgm[i] == '1')
+        continue;
+
+      lgm[i] = '0';
+    }
+  }
+  if (hasScanPose) {
+    m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
         0.55*Cure::NavController::getRobotWidth(), '0');                                  
   }
 
   m_Mutex.lock();    				
-  /* Merge the laser map and the 2D point cloud map */
-  lgm = lgmL;			   
-  for(long i=0; i<m_lgmK->getNumCells(); i++){
-    // Don't overwrite obstacles seen by the laser with (possibly old)
-    // free space from the point cloud
-    if (lgmK[i] == '0' && lgm[i] == '1')
-      continue;
-
-    if(lgmK[i] != '2')
-      lgm[i] = lgmK[i];
-  } 						
-
   // filtering
   unsigned int bound = m_lgm->getSize();
 
@@ -501,7 +489,7 @@ void SpatialControl::updateGridMaps()
   /* Update the nav map */
   m_LMap.clearMap();
   for(long i=0; i<m_lgmLM->getNumCells(); i++){
-    (*m_lgmLM)[i] = lgmL[i];
+    (*m_lgmLM)[i] = lgm[i];
   }               
   Cure::Pose3D currPose = m_TOPP.getPose();		
   m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
@@ -523,6 +511,7 @@ void SpatialControl::updateGridMaps()
   m_Mutex.unlock();	
 
   unlockComponent();
+  debug("unlock updateGridMaps");
 }
 
 void SpatialControl::runComponent() 
@@ -543,21 +532,12 @@ void SpatialControl::runComponent()
 						                      &m_Explorer->m_Fronts);
       if (m_UsePointCloud) {
         m_DisplaylgmLM->updateDisplay(&currentPose);
-        m_DisplaylgmK->updateDisplay(&currentPose);
       }
       m_displayBinaryMap->updateDisplay(&currentPose);
 		}
 		m_Mutex.unlock();	
 	  
-    if (m_UsePointCloud) {
-      /* FIXME: use a monitor with timedWait/notify */
-      bool interrupted = false;
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_LScanMonitor);
-      while (!interrupted || m_LScanQueue.empty())
-        interrupted = m_LScanMonitor.timedWait(IceUtil::Time::microSeconds(250000));
-    }
-    else
-      usleep(250000);
+    usleep(250000);
   }
 } 
 
@@ -1128,8 +1108,6 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
   }
   else {
     m_LScanQueue.push(cureScan);
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_LScanMonitor);
-    m_LScanMonitor.notify();
   }
 
   /* Person following stuff */    
@@ -1220,6 +1198,10 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points) {
   std::vector<bool> ret;
   Cure::BinaryMatrix map;
+  
+  debug("lock arePointsReachable");
+  lockComponent();
+
   /* The Cure documentation recommends keeping columns as a multiple
      of 32 to be able to exploit the performance improvements of doing
      calculations on 32 bit longs. However, we use both 32 and 64 bit
@@ -1288,6 +1270,9 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
       ret.push_back(d >= 0);
     }
   }
+
+  unlockComponent();
+  debug("unlock arePointsReachable");
 
   return ret;
 }

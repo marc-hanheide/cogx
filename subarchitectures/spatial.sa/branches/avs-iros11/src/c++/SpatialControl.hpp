@@ -143,15 +143,12 @@ protected:
 
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmK;
   Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
 
 
   IceUtil::Mutex m_Mutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
-  Cure::LocalGridMap<unsigned char>* m_lgmK; // LGM filled by Kinect
-  Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
 
