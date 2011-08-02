@@ -6,9 +6,14 @@
 //#include <beliefs.ice>
 #include <Planner.ice>
 
-
 module execution {
   module slice {
+
+	module person {
+		class PersonObservation {
+			double existProb;
+		};
+	};
 
     /**
      * Module to contain some actions, although these might also go in
