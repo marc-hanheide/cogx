@@ -690,7 +690,7 @@ bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int cur
 bool 
 FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInterface::FrontierPtPtr &b)
 {
-  return (*a).mWidth < (*b).mWidth;
+  return a->mWidth < b->mWidth;
 }
 
 /* Returns the a list of coordinates of positions where placeholders can
