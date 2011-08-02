@@ -1,5 +1,6 @@
 from itertools import chain
 from collections import defaultdict
+from os.path import abspath, join
 import re
 
 from standalone import pddl, pstatenode, config
@@ -79,6 +80,9 @@ class CASTState(object):
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
+        self.init_state = prob_state.ProbabilisticState(self.facts, problem)
+        self.init_facts = self.facts[:]
+        self.init_objects = set(self.objects)
 
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, oldstate)
         self.facts += self.generated_facts
@@ -461,7 +465,7 @@ class CASTState(object):
             self.state = self.prob_state.determinized_state(0.05, 0.95)
 
 
-    def to_problem(self, slice_goals, deterministic=True):
+    def to_problem(self, slice_goals, deterministic=True, init_problem=False):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -469,23 +473,35 @@ class CASTState(object):
             opt = None
             opt_func = None
 
-        cp_domain = self.translate_domain(self.prob_state)
+        if init_problem:
+            det_state = self.init_state.determinized_state(0.05, 0.95)
+            prob_state = self.init_state
+            objects = self.init_objects
+        else:
+            det_state = self.state
+            prob_state = self.prob_state
+            objects = self.objects
+
             
         if deterministic:
-            facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in self.state.iterfacts()]
+            cp_domain = self.translate_domain(prob_state)
+            facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in det_state.iterfacts()]
             if 'numeric-fluents' in cp_domain.requirements:
                 pass
                 #b = pddl.Builder(domain)
                 #facts.append(b.init('=', (pddl.dtpddl.total_p_cost,), TOTAL_P_COSTS))
         else:
-            facts = self.facts
+            facts = [f.to_init() for f in prob_state.iterdists()]
+            cp_domain = self.domain
 
-        problem = pddl.Problem("cogxtask", self.objects | self.generated_objects, facts, None, cp_domain, opt, opt_func )
+        problem = pddl.Problem("cogxtask", objects, facts, None, cp_domain, opt, opt_func )
+        print map(str, objects)
 
-        if deterministic:
-            self.state.problem = problem
-        else:
-            self.prob_state.problem = problem
+        if not init_problem:
+            if deterministic:
+                self.state.problem = problem
+            else:
+                self.prob_state.problem = problem
 
         if slice_goals is None:
             return problem, None
