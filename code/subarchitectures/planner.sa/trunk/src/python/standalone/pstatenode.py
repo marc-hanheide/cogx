@@ -18,6 +18,7 @@ class PNode(object):
                 n.parent = self
         
         self.branch_vars = self.get_branch_vars()
+        self.normalize()
 
         #self.hash = hash(tuple(self.children)) #TODO make order invariant
 
@@ -121,7 +122,14 @@ class PNode(object):
                 yield nds[0]
             else:
                 yield join_nodes(svar, nds)
-        
+
+    def normalize(self):
+        p_sum = sum(p for p, _, _ in self.children.itervalues())
+        if p_sum <= 1.0:
+            return
+        norm = 1.0 / p_sum
+        for val, (p, nodes, facts) in self.children.iteritems():
+            self.children[val] = (p*norm, nodes, facts)
 
     def unify_branches(self):
         """if a node contains several children with the same svar,
