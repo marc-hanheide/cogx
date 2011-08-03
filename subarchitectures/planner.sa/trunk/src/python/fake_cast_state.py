@@ -42,15 +42,16 @@ class FakeCASTState(cast_state.CASTState):
         # import debug
         # debug.set_trace()
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, None)
-        # print map(str,self.generated_objects)
         for o in self.generated_objects:
-            if o not in problem.objects:
+            if o not in self.objects:
                 self.objects.add(o)
-                problem.add_object(o)
         for f in self.generated_facts:
             self.prob_state.set(f)
             problem.init.append(f.as_literal(useEqual=True))
+
+        print map(str, self.objects)
             
+        # print "objects:",  map(str,self.objects)
         self.state = self.prob_state.determinized_state(0.05, 0.95)
 
         self.generate_belief_state(self.prob_state, self.state)
