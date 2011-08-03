@@ -32,19 +32,12 @@ DataSaver::DataSaver(): saveRobotPose(false)
 
 void print_time (char* time_string)
 {
-  struct timeval tv;
-  struct tm* ptm;
-  long milliseconds;
+  struct timeval now;
+  int rc;
+  rc= gettimeofday (&now, NULL);
+  sprintf(time_string, "%u.%06u",
+                  now.tv_sec, now.tv_usec);
 
-  gettimeofday (&tv, NULL);
-  ptm = localtime (&tv.tv_sec);
-  /* Format the date and time, down to a single second. */
-  strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
-  /* Compute milliseconds from microseconds. */
-  milliseconds = tv.tv_usec / 1000;
-  /* Print the formatted time, in seconds, followed by a decimal point
-     and the milliseconds. */
-  printf ("%s.%03ld\n", time_string, milliseconds);
 }
 
 void
