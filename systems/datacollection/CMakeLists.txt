@@ -37,11 +37,13 @@ set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH
 add_definitions(-Wall)
 
 add_subdirectory (tools/math)
+add_subdirectory (tools/d-lib)
 add_subdirectory (tools/hardware/pointCloud)
 add_subdirectory (tools/hardware/video)
 add_subdirectory (tools/hardware/laser)
 add_subdirectory (tools/hardware/kinect)
 add_subdirectory (tools/hardware/robotbase)
 add_subdirectory (tools/hardware/ptz)
+add_subdirectory (tools/hardware/utils)
 add_subdirectory (subarchitectures/data.sa)
-
+add_subdirectory (subarchitectures/spatial.sa)
