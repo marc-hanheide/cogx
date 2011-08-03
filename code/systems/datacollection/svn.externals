@@ -1,11 +1,15 @@
-^/code/tools/castctrl/branches/spring-school-2011	tools/castctrl
-^/code/tools/castutils/branches/spring-school-2011	tools/castutils
+^/code/subarchitectures/data.sa/trunk subarchitectures/data.sa
+^/code/subarchitectures/spatial.sa/branches/post-review-yr2-11530/ subarchitectures/spatial.sa
+
+^/code/tools/castctrl/trunk/	tools/castctrl
+^/code/tools/castutils/branches/avs-yr3/	tools/castutils
 ^/code/tools/hardware/config/branches/stable-0                  tools/hardware/config
 ^/code/tools/hardware/laser/trunk                   tools/hardware/laser
 ^/code/tools/hardware/kinect/trunk               tools/hardware/kinect
-^/code/tools/hardware/robotbase/trunk               tools/hardware/robotbase
+^/code/tools/hardware/utils/trunk                   tools/hardware/utils
+^/code/tools/hardware/utils/trunk                   tools/hardware/utils
+^/code/tools/d-lib/trunk               tools/d-lib
 ^/code/tools/hardware/video/branches/spring-school-2011	tools/hardware/video
 ^/code/tools/math/trunk	tools/math
 ^/code/tools/hardware/pointCloud/trunk			tools/hardware/pointCloud
-^/code/tools/hardware/ptz/trunk tools/hardware/ptz
-^/code/subarchitectures/data.sa/trunk/ subarchitectures/data.sa
+^/code/tools/hardware/ptz/branches/spring-school-2011/ tools/hardware/ptz
