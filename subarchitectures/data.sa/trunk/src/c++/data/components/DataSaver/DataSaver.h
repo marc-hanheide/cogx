@@ -56,6 +56,7 @@ private:
   ptz::PTZInterfacePrx m_ptzInterface;
   bool saveRobotPose;
   Cure::Pose3D m_SlamRobotPose;
+  std::ofstream posesFile_;
 };
 
 #endif /* DATASAVER_H_ */
