@@ -146,7 +146,6 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
   m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
@@ -161,16 +160,9 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
-    if (m_UsePointCloud) {
-      m_DisplaylgmLM = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmLM);
-    } else {
-      m_DisplaylgmLM = 0;
-    }
     println("Will use X window to show the exploration map");
-
   } else {
     m_Displaylgm = 0;
-		m_DisplaylgmLM = 0;
     println("Will NOT use X window to show the exploration map");
   }
 
@@ -374,6 +366,50 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
+void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY)
+{
+  int xi, yi;
+
+  if (minX <= -lgm.getSize())
+    minX = -lgm.getSize() + 1;
+  if (maxX >= lgm.getSize())
+    maxX = lgm.getSize() - 1;
+  if (minY <= -lgm.getSize())
+    minY = -lgm.getSize() + 1;
+  if (maxY >= lgm.getSize())
+    maxY = lgm.getSize() - 1;
+
+  /* Project the height map on to the local map */
+  for (xi = minX; xi <= maxX; xi++) {
+    for (yi = minY; yi <= maxY; yi++) {
+      if ((*m_lgmKH)(xi, yi) > m_obstacleMinHeight && (*m_lgmKH)(xi, yi) < m_obstacleMaxHeight) {
+        lgm(xi, yi) = '1';
+      }
+      else if ((*m_lgmKH)(xi, yi) != FLT_MAX) {
+        // Don't overwrite obstacles seen by the laser with (possibly old)
+        // free space from the point cloud
+        if (lgm(xi, yi) == '1')
+          continue;
+
+        lgm(xi, yi) = '0';
+      }
+    }
+  }
+
+  /* Filtering */
+  for (xi = minX+1; xi < maxX; xi++) {
+    for (yi = minY+1; yi < maxY; yi++) {
+      if (lgm(xi,yi) == '1' && 
+          lgm(xi-1,yi) != '1' && lgm(xi+1,yi) != '1' &&
+          lgm(xi-1,yi-1) != '1' && lgm(xi+1,yi-1) != '1' &&
+          lgm(xi-1,yi+1) != '1' && lgm(xi+1,yi+1) != '1' &&
+          lgm(xi,yi-1) != '1' && lgm(xi,yi+1) != '1') {
+        lgm(xi,yi) = '0';
+      }
+    }
+  }
+}
+
 class ComparePoints {
   public:
     bool operator()(const PointCloud::SurfacePoint& lhs, const PointCloud::SurfacePoint& rhs) const {
@@ -387,25 +423,53 @@ void SpatialControl::updateGridMaps()
   Cure::Pose3D lpW;
  	int xi,yi;
 
-  debug("lock updateGridMaps");
-  lockComponent();
+  /* Update a temporary local map so we don't hog the lock */
+  Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
+  Cure::GridLineRayTracer<unsigned char> tmp_glrt(tmp_lgm);
 
-  /* Local references so we don't have to dereference the pointers all the time */
-  Cure::LocalGridMap<unsigned char>& lgm = *m_lgm;
+  /* Local reference so we don't have to dereference the pointer all the time */
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
+
+  /* Bounding box for laser scan */
+  int laserMinX = INT_MAX, laserMaxX = INT_MIN;
+  int laserMinY = INT_MAX, laserMaxY = INT_MIN;
 
   /* Add all queued laser scans */
   while (!m_LScanQueue.empty()){
     if (m_TOPP.isTransformDefined() && m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
-      m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
-      m_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+      tmp_glrt.addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+      tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NavController::getRobotWidth(), '0');                                  
       m_firstScanAdded = true;
+
+      /* Update bounding box */
+      if (LscanPose.getX() < laserMinX)
+        laserMinX = LscanPose.getX();
+      if (LscanPose.getX() > laserMaxX)
+        laserMaxX = LscanPose.getX();
+      if (LscanPose.getY() < laserMinY)
+        laserMinY = LscanPose.getY();
+      if (LscanPose.getY() > laserMaxY)
+        laserMaxY = LscanPose.getY();
     }
     m_LScanQueue.pop();
   }
+  /* Only proceed if we got any new scans */
+  if (laserMinX == INT_MAX || laserMinY == INT_MAX || laserMaxX == INT_MIN || laserMaxY == INT_MIN) {
+    m_MapsMutex.unlock();
+    return;
+  }
 
+  laserMinX -= m_MaxExplorationRange / tmp_lgm.getCellSize();
+  laserMaxX += m_MaxExplorationRange / tmp_lgm.getCellSize();
+  laserMinY -= m_MaxExplorationRange / tmp_lgm.getCellSize();
+  laserMaxY += m_MaxExplorationRange / tmp_lgm.getCellSize();
+
+
+  /* Bounding box for new point cloud data */
+  int pointcloudMinX = INT_MAX, pointcloudMaxX = INT_MIN;
+  int pointcloudMinY = INT_MAX, pointcloudMaxY = INT_MIN;
 
   /* Update height map */
   cdl::CASTTime frameTime = getCASTTime();
@@ -440,78 +504,63 @@ void SpatialControl::updateGridMaps()
         }
         /* If the above tests passed update the height map */ 
         lgmKH(xi, yi) = pZ;
+
+        /* Update bounding box */
+        if (xi < pointcloudMinX)
+          pointcloudMinX = xi;
+        if (xi > pointcloudMaxX)
+          pointcloudMaxX = xi;
+        if (yi < pointcloudMinY)
+          pointcloudMinY = yi;
+        if (yi > pointcloudMaxY)
+          pointcloudMaxY = yi;
       }
+    }
+
+    /* Project the height map onto the 2D obstacle map */ 
+    if (pointcloudMinX != INT_MAX && pointcloudMinY != INT_MAX && pointcloudMaxX != INT_MIN && pointcloudMaxY != INT_MIN) {
+      blitHeightMap(tmp_lgm, pointcloudMinX, pointcloudMaxX, pointcloudMinY, pointcloudMaxY);
+      tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0'); 
     }
   }
 
   /* Project the height map onto the 2D obstacle map */ 
-  for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
-    if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight) {
-      lgm[i] = '1';
-    }
-    else if (lgmKH[i] != FLT_MAX) {
-      // Don't overwrite obstacles seen by the laser with (possibly old)
-      // free space from the point cloud
-      if (lgm[i] == '1')
-        continue;
-
-      lgm[i] = '0';
-    }
-  }
-  if (hasScanPose) {
-    m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-        0.55*Cure::NavController::getRobotWidth(), '0');                                  
-  }
-
-  m_Mutex.lock();    				
-  // filtering
-  unsigned int bound = m_lgm->getSize();
-
-  for(unsigned int x=-bound+1; x<bound-1; x++){
-    for(unsigned int y=-bound+1; y<bound-1; y++){
-      if( lgm(x,y) == '1' && 
-          lgm(x-1,y) != '1' && lgm(x+1,y) != '1' &&
-          lgm(x-1,y-1) != '1' && lgm(x+1,y-1) != '1' &&
-          lgm(x-1,y+1) != '1' && lgm(x+1,y+1) != '1' &&
-          lgm(x,y-1) != '1' && lgm(x,y-1) != '1' ) lgm(x,y) = '0';
-    }
-  }
-  m_Mutex.unlock();
-
+  blitHeightMap(tmp_lgm, laserMinX, laserMaxX, laserMinY, laserMaxY);
 
   const int deltaN = 3;
-  double d = m_lgm->getCellSize()/deltaN;
+  double d = tmp_lgm.getCellSize()/deltaN;
   int maxcellstocheck = int (5.0/d);
   double xWT,yWT;
   double theta;
 
-  m_Mutex.lock();    							
+
+
   /* Update the nav map */
+  m_Mutex.lock();
   m_LMap.clearMap();
-  for(long i=0; i<m_lgmLM->getNumCells(); i++){
-    (*m_lgmLM)[i] = lgm[i];
-  }               
   Cure::Pose3D currPose = m_TOPP.getPose();		
-  m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
+  tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
       0.55*Cure::NavController::getRobotWidth(), '0');                                  
   for (int i = 0; i < m_Npts; i++) {
     theta = m_StartAngle + m_AngleStep * i;
     for (int j = 1; j < deltaN*maxcellstocheck; j++){
       xWT = currPose.getX()+j*d*cos(theta);
       yWT = currPose.getY()+j*d*sin(theta);
-      if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
-        if(lgm(xi,yi) == '1'){
-          (*m_lgmLM)(xi,yi) = '1';   							
+      if(tmp_lgm.worldCoords2Index(xWT,yWT,xi,yi)==0){
+        if(tmp_lgm(xi,yi) == '1'){
           m_LMap.addObstacle(xWT, yWT, 1);
           break;    
         }
       }
     }
   }
-  m_Mutex.unlock();	
+  m_Mutex.unlock();
 
-  unlockComponent();
-  debug("unlock updateGridMaps");
+  /* Copy the temporary map */
+  m_MapsMutex.lock();
+  *m_lgm = tmp_lgm;
+  m_MapsMutex.unlock();
 }
 
 void SpatialControl::runComponent() 
@@ -524,18 +573,15 @@ void SpatialControl::runComponent()
       updateGridMaps();
     }	
 
-		m_Mutex.lock();
+		m_MapsMutex.lock();
 		if (m_Displaylgm) {
 			Cure::Pose3D currentPose = m_TOPP.getPose();
 			m_Displaylgm->updateDisplay(&currentPose,
 						                      &m_NavGraph, 
 						                      &m_Explorer->m_Fronts);
-      if (m_UsePointCloud) {
-        m_DisplaylgmLM->updateDisplay(&currentPose);
-      }
       m_displayBinaryMap->updateDisplay(&currentPose);
 		}
-		m_Mutex.unlock();	
+		m_MapsMutex.unlock();	
 	  
     usleep(250000);
   }
@@ -1076,25 +1122,8 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 
       Cure::Pose3D scanPose;
       if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-        m_Mutex.lock();
+        m_MapsMutex.lock();
         m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-        m_Mutex.unlock();
-
-        /*
-        static int id = 0;
-        std::fstream fs;
-        char buf[128];
-        sprintf(buf, "lm%02d.txt", id);
-        fs.open(buf, std::ios::out);
-        for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
-          fs << m_LMap.obstRef(i).x << " "
-            << m_LMap.obstRef(i).y << " ";
-        }
-        fs << std::endl;
-        fs.close();
-        println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
-        id = (id + 1) % 100;
-        */
 
         Cure::Pose3D lpW;
         m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
@@ -1103,11 +1132,14 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
         lpW.add(scanPose, m_LaserPoseR);
         m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
         m_firstScanAdded = true;
+        m_MapsMutex.unlock();
       }
     }
   }
   else {
+    m_MapsMutex.lock();
     m_LScanQueue.push(cureScan);
+    m_MapsMutex.unlock();
   }
 
   /* Person following stuff */    
@@ -1200,7 +1232,7 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
   Cure::BinaryMatrix map;
   
   debug("lock arePointsReachable");
-  lockComponent();
+  m_MapsMutex.lock();
 
   /* The Cure documentation recommends keeping columns as a multiple
      of 32 to be able to exploit the performance improvements of doing
@@ -1233,6 +1265,9 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
       }
     }
   }
+
+  m_MapsMutex.unlock();
+  debug("unlock arePointsReachable");
 
   for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
     for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
@@ -1271,9 +1306,6 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
     }
   }
 
-  unlockComponent();
-  debug("unlock arePointsReachable");
-
   return ret;
 }
 
@@ -1291,14 +1323,19 @@ FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {
   log("SpatialControl::getFrontiers() called");
+
+  m_MapsMutex.lock();
+
   while (!m_firstScanAdded) {
     log("  Waiting for first scan to be added...");
-    unlockComponent();
+    m_MapsMutex.unlock();
     usleep(1000000);
-    lockComponent();
+    m_MapsMutex.lock();
   }
 
   m_Explorer->updateFrontiers();
+
+  m_MapsMutex.unlock();
 
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());

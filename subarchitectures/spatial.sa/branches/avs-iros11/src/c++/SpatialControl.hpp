@@ -74,13 +74,8 @@ class SpatialControl : public cast::ManagedComponent ,
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-				m_pOwner->log("lock in getFrontiers");
-				m_pOwner->lockComponent();
-				m_pOwner->log("lock acquired");
 				FrontierInterface::FrontierPtSeq ret =
 					m_pOwner->getFrontiers();
-				m_pOwner->unlockComponent();
-				m_pOwner->log("unlocked in getFrontiers");
 				return ret;
       }
       SpatialControl *m_pOwner;
@@ -131,6 +126,7 @@ protected:
   virtual bool isPointReachable(double xW, double yW);
   virtual std::vector<bool> arePointsReachable(std::vector<std::vector<double> > points);
 
+  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY);
   void updateGridMaps();
 
   double m_MaxExplorationRange; 
@@ -143,11 +139,11 @@ protected:
 
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
 
 
   IceUtil::Mutex m_Mutex;
+  IceUtil::Mutex m_MapsMutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
