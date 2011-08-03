@@ -75,7 +75,7 @@ void DataSaver::newRobotPose(const cdl::WorkingMemoryChange &objID)
   char buf[256];
   sprintf(buf,"robotPoseSequence_%s", time_string);
   posesFile_.open (buf);
-  posesFile_ << m_SlamRobotPose.getX() << m_SlamRobotPose.getY() << m_SlamRobotPose.getTheta() << m_SlamRobotPose.getTime().Seconds <<  m_SlamRobotPose.getTime().Microsec << std::endl;
+  posesFile_ << m_SlamRobotPose.getX() << " " << m_SlamRobotPose.getY() << " " <<  m_SlamRobotPose.getTheta() << " " << time_string << std::endl;
   posesFile_.close();
   }
 }
