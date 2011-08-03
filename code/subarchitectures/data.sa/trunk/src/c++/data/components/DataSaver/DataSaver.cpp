@@ -8,6 +8,12 @@
 #include "DataSaver.h"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <NavData.hpp>
+#include <fstream>
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+#include <boost/filesystem.hpp>
 
 using namespace cast;
 
@@ -22,6 +28,23 @@ extern "C"
 
 DataSaver::DataSaver(): saveRobotPose(false)
 {
+}
+
+void print_time (char* time_string)
+{
+  struct timeval tv;
+  struct tm* ptm;
+  long milliseconds;
+
+  gettimeofday (&tv, NULL);
+  ptm = localtime (&tv.tv_sec);
+  /* Format the date and time, down to a single second. */
+  strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
+  /* Compute milliseconds from microseconds. */
+  milliseconds = tv.tv_usec / 1000;
+  /* Print the formatted time, in seconds, followed by a decimal point
+     and the milliseconds. */
+  printf ("%s.%03ld\n", time_string, milliseconds);
 }
 
 void
@@ -52,8 +75,18 @@ void DataSaver::newRobotPose(const cdl::WorkingMemoryChange &objID)
   m_SlamRobotPose.setY(oobj->y);
   m_SlamRobotPose.setTheta(oobj->theta);
 
-  Cure::Pose3D cp = m_SlamRobotPose;
+  if(saveRobotPose){
+  log("New RobotPose, saving to file");
+  char* time_string= new char[40];
+  print_time (time_string);
+  char buf[256];
+  sprintf(buf,"robotPoseSequence_%s", time_string);
+  posesFile_.open (buf);
+  posesFile_ << m_SlamRobotPose.getX() << m_SlamRobotPose.getY() << m_SlamRobotPose.getTheta() << m_SlamRobotPose.getTime().Seconds <<  m_SlamRobotPose.getTime().Microsec << std::endl;
+  posesFile_.close();
+  }
 }
+
 
 void
 DataSaver::configure(const std::map<std::string, std::string>& _config)
@@ -72,6 +105,15 @@ DataSaver::configure(const std::map<std::string, std::string>& _config)
 
   Ice::ObjectPrx base = ic->stringToProxy(str.str());
   m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+
+
+  map<string,string>::const_iterator it = _config.find("-c");
+  it = _config.find("--save-robotpose");
+    if (it != _config.end()) {
+      saveRobotPose = true;
+      log("Will save robotpose");
+      boost::filesystem::create_directories("robotposes");
+    }
 }
 
 DataSaver::~DataSaver()
