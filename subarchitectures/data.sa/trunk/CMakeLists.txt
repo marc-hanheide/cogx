@@ -44,6 +44,12 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 
+include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/math/src/c++/math)
+
+include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/components)
+include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 
 # Data.SA C++ Components
 add_subdirectory (src/c++/data/components/DataSaver)
