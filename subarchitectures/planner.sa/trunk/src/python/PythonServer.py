@@ -1,5 +1,5 @@
 import os, sys, traceback
-from os.path import abspath, dirname, join
+from os import path
 
 # initialize logging EARLY
 
@@ -104,16 +104,16 @@ from standalone.planner import Planner as StandalonePlanner
 from cast_task import CASTTask, TaskStateEnum
 from display_client import PlannerDisplayClient
 
-this_path = abspath(dirname(__file__))
+this_path = path.abspath(path.dirname(__file__))
 
 def extend_pythonpath():
     """add standalone planner to PYTHONPATH"""
-    standalone_path = join(this_path, "standalone")
+    standalone_path = path.join(this_path, "standalone")
     sys.path.insert(0, standalone_path)
     
 extend_pythonpath()  
 
-TEST_DOMAIN_FN = join(dirname(__file__), "domains/springtest.mapl")
+TEST_DOMAIN_FN = path.join(path.dirname(__file__), "domains/springtest.mapl")
 
 log = config.logger()
 
@@ -181,25 +181,33 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.min_p = float(config.get("--low-p-threshold", 0.01))
 
     if "--dtdomain" in config:
-        self.dtdomain_fn = join(standalone.globals.config.domain_dir, config["--dtdomain"])
+        self.dtdomain_fn = path.join(standalone.globals.config.domain_dir, config["--dtdomain"])
     else:
         self.dtdomain_fn = None
         
     if "--dtproblem" in config:
-        self.dtproblem_fn = join(standalone.globals.config.domain_dir, config["--dtproblem"])
+        self.dtproblem_fn = path.join(standalone.globals.config.problem_dir, config["--dtproblem"])
     else:
         self.dtproblem_fn = None
 
     if "--default" in config:
-        self.default_fn = join(standalone.globals.config.cogx_dir, config["--default"])
+        self.default_fn = path.join(standalone.globals.config.cogx_dir, config["--default"])
     else:
-        self.default_fn = join(standalone.globals.config.cogx_dir, "instantiations/defaultprobs/defaultprobs.txt")
+        self.default_fn = path.join(standalone.globals.config.cogx_dir, "instantiations/defaultprobs/defaultprobs.txt")
         
     if "--domain" in config:
-      self.domain_fn = join(standalone.globals.config.domain_dir, config["--domain"])
+      self.domain_fn = path.join(standalone.globals.config.domain_dir, config["--domain"])
+      if not path.exists(self.domain_fn):
+          log.error("Could not find specified domain %s. Using default domain %s", config["--domain"], TEST_DOMAIN_FN)
+          self.domain_fn = TEST_DOMAIN_FN
 
     if "--problem" in config:
-      self.problem_fn = join(standalone.globals.config.domain_dir, config["--problem"])
+      self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
+      if not path.exists(self.problem_fn):
+          self.problem_fn = path.join(standalone.globals.config.domain_dir, config["--problem"])
+      if not path.exists(self.problem_fn):
+          log.error("Could not find specified problem %s. Using planning state from CAST.", config["--problem"])
+          self.problem_fn = None
       
   def getClient(self):
     if not self.client:
@@ -329,13 +337,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.last_dt_id += 1
       
       tmp_dir = standalone.planner.get_planner_tempdir(planning_tmp_dir)
-      domain_fn = os.path.join(tmp_dir, "domain%d.dtpddl" % task.dt_id)
-      problem_fn = os.path.join(tmp_dir, "problem%d.dtpddl" % task.dt_id)
+      domain_fn = path.join(tmp_dir, "domain%d.dtpddl" % task.dt_id)
+      problem_fn = path.join(tmp_dir, "problem%d.dtpddl" % task.dt_id)
       log.info("Starting new DT task with id %d", task.dt_id)
       self.dt_tasks[task.dt_id] = task
       
       #Write dtpddl domain for debugging
-      domain_out_fn = abspath(join(self.get_path(), "domain%d.dtpddl" % task.id))
+      domain_out_fn = path.abspath(path.join(self.get_path(), "domain%d.dtpddl" % task.id))
       w = standalone.task.PDDLOutput(writer=pddl.dtpddl.DTPDDLWriter())
       w.write(task.dt_task.problem, domain_fn=domain_out_fn)
       
