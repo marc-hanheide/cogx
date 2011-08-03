@@ -299,7 +299,27 @@ class DTProblem(object):
         cH = self.entropy(relevant_facts, {}, 100, node_filter)
         # print "H(%s) - H(.|!%s) = %.2f - %.2f =  %.2f" % (str(dep_var), str(dis_fact), H, cH, H - cH)
         return max(H - cH, 0)
+
+    def entropy_of_goal(self, dis_fact, goal_facts):
+        goal_dict = defaultdict(set)
+        for svar, val in goal_facts:
+            goal_dict[svar].add(val)
+
+        # print "disconfirm", dis_fact,  map(str, goal_dict.iterkeys())
+
+        def state_filter(svar, val=None):
+            # if svar in goal_dict:
+            #     return True
+            if dis_fact and svar == dis_fact.svar and val == dis_fact.value:
+                print "reject state:", svar, val
+                return False
+            return True
+
             
+        H = self.entropy(goal_dict, {}, 100, state_filter)
+        # print "H(%s) - H(.|!%s) = %.2f - %.2f =  %.2f" % (str(dep_var), str(dis_fact), H, cH, H - cH)
+        return H
+
     def create_goal_actions(self, goals, fail_counts, selected, changed_facts, domain):
         commit_actions = []
         dt_conf = global_vars.config.dt
@@ -324,6 +344,7 @@ class DTProblem(object):
 
         self.confirm_dict = {}
         self.disconfirm_dict = {}
+        goal_facts = set()
         
         for fact in goals:
             if fact.svar.modality in (mapl.knowledge, mapl.direct_knowledge):
@@ -357,6 +378,8 @@ class DTProblem(object):
                 else:
                     reward = dt_conf.confirm_score * mult
                     penalty = -reward * (p)/(1-p) if p != 1.0 else 0
+
+                goal_facts.add(f)
                                     
                 #val = pddl.Parameter("?val", svar.function.type)
                 name = "commit-%s-%s-%s" % (svar.function.name, "-".join(a.name for a in svar.get_args()), f.value.name)
@@ -391,11 +414,27 @@ class DTProblem(object):
             return commit_actions
 
         disconfirm = set((svar, val) for svar, val, _ in disconfirm)
+
+        # goal proposition could be regarded as a disjunction of goal facts
+        # i.e. we can reach the goal if any of the goal facts is true
+
+        # assume a disjunct set of goal facts for now.
+        goal_p = sum(self.abstract_state.prob(f.svar, f.value) for f in goal_facts)
         
+        # calculate disconfirm gain on how much it reduces the entropy of the goal formula
+        # H_goal = -goal_p *math.log(goal_p, 2) - (1-goal_p) * math.log(1-goal_p,2)
+        H_goal = self.entropy_of_goal(None, goal_facts)
+        print goal_p, H_goal
+
+
         # dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
         disconfirm_actions = []
         for svar, val in disconfirm:
             dis_fact = state.Fact(svar, val)
+            H = self.entropy_of_goal(dis_fact, goal_facts)
+            print dis_fact, H
+            reward_factor = 1 - H/H_goal
+
             # dH = 0
             # count = 0
             # for goalvar in set(g.svar.nonmodal() for g in goals):
@@ -407,8 +446,8 @@ class DTProblem(object):
             #     continue
             # dH = dH/count
                 
-            # dis_reward = float(dt_conf.confirm_score) * dH #/(2**(max_level-level))
-            dis_reward = float(dt_conf.confirm_score) /(2**(max_level-levels[(svar,val)]))
+            dis_reward = float(dt_conf.confirm_score - 20) * reward_factor #/(2**(max_level-level))
+            # dis_reward = float(dt_conf.confirm_score) /(2**(max_level-levels[(svar,val)]))
             if isinstance(self.abstract_state[svar], pddl.TypedObject):
                 continue # no use in disconfirming known facts
             p = self.abstract_state[svar][val]
@@ -545,9 +584,10 @@ class DTProblem(object):
         levels = defaultdict(lambda: -1)
         def get_level(node, level):
             cval, clevel = choices.get(node.svar, (None, -1))
-            log.trace("get level: %s, %s", str(node), str(cval))
+            log.debug("get level: %s, %s", str(node), str(cval))
             if cval and levels[node] < level and cval in node.children:
                 levels[node] = level
+                node.unify_branches()
                 p, nodes, facts = node.children[cval]
                 for svar, val in facts.iteritems():
                     choices[svar] = (val, clevel)
@@ -570,6 +610,7 @@ class DTProblem(object):
         o_funcs = self.observable_functions()
 
         for n in self.pnodes:
+            print n
             get_level(n, 0)
             
         nodes_by_level = defaultdict(set)
@@ -624,6 +665,7 @@ class DTProblem(object):
                     return svar in next
                     
                 tsize = len(self.compute_states(next, limit, filter_func=fact_filter))
+                log.debug("candidate: %s (%d, %.3f, %.3f)", str(fact), tsize, H, H < H_init)
                 if tsize <= limit and H < H_init - 0.0001:
                     log.debug("added: %s (%d, %.3f)", str(fact), tsize, H)
                     selected = next
@@ -631,53 +673,7 @@ class DTProblem(object):
                     log.debug("skipped: %s (%d, %.3f)", str(fact), tsize, H)
                     pass
 
-            
-            
-            # for added_facts in node_queue:
-            #     for fact in added_facts:
-            #         next = update(selected, [fact])
-            #         tsize = len(self.compute_states(next, limit))
-            #         H = self.cond_entropy(update({}, choices.iteritems()), update({}, [fact]), limit)
-            #         #tsize = total_size(nodes, next)
-            #         if tsize < limit:
-            #             print "added: %s (%d)" % (str(fact), tsize)
-            #             selected = next
-            #         else:
-            #             print "skipped: %s (> %d)" % (str(fact), tsize)
-            #             pass
         return selected
-
-    # def compute_flat_state(self, detstate):
-    #     pstate = prob_state.ProbabilisticState(detstate.iteritems(), detstate.problem)
-    #     def build_state(node):
-    #         result = defaultdict(lambda: 0.0)
-    #         p_total = 0.0
-    #         # print node
-    #         for val, (p, nodes, facts) in node.children.iteritems():
-    #             p_total += p
-    #             for svar, v in chain(facts.iteritems(), [(node.svar, val)]):
-    #                 if svar in selected_facts and v in selected_facts[svar]:
-    #                     # print "set:", svar, v
-    #                     sfacts[svar_order[svar]] = v
-    #             branch_states = {tuple(sfacts) : 1.0}
-    #             # print map(str, sfacts)
-
-    #             for n in nodes:
-    #                 branch_states = multiply_states(branch_states, build_state(n))
-    #                 if len(branch_states) > limit:
-    #                     return branch_states
-
-    #             # print node, val, len(branch_states)
-    #             for bs, bp in branch_states.iteritems():
-    #                 # print map(str, bs) , p*bp
-    #                 result[bs] += p*bp
-
-    #             if len(result) > limit:
-    #                 return result
-    #         if p_total < 1.0:
-    #             result[undef] += 1.0 - p_total
-                
-    #         return result
             
 
     def compute_states(self, selected_facts, limit, order=None, filter_func=None):
@@ -813,12 +809,13 @@ class DTProblem(object):
         for s, p in states.iteritems():
             cf = s[-len(condfacts):]
             # print map(str, s), "  ", map(str, cf)
-            # print "+ %.5f * log(%.5f/%.5f) = %.5f" % (p, cfdict[cf], p, p * math.log(cfdict[cf]/p,2) )
             if p <= 0.000000001:
                 continue
             if condfacts:
+                # print "+ %.5f * log(%.5f/%.5f) = %.5f" % (p, cfdict[cf], p, p * math.log(cfdict[cf]/p,2) )
                 H += p * math.log(cfdict[cf]/p,2)
             else:
+                # print "- %.5f * log(%.5f) = %.5f" % (p, p, -p * math.log(p,2) )
                 H -= p * math.log(p,2)
         # print "H:", H
         return H
@@ -835,57 +832,6 @@ class DTProblem(object):
             for ex in o.execution:
                 if not ex.negated and ex.action == action:
                     yield o
-
-    # def relevant_actions(self, goals):
-    #     @pddl.visitors.collect
-    #     def collect_vars(elem, results):
-    #         if isinstance(elem, pddl.Literal):
-    #             return state.StateVariable.from_literal(elem)
-            
-    #     def get_abstract_observations(observe, agent):
-    #         @pddl.visitors.collect
-    #         def eff_collector(eff, results):
-    #             if isinstance(eff, pddl.ConditionalEffect):
-    #                 return eff.condition.visit(collect_vars)
-                
-    #         observe.instantiate(observe.args)
-    #         for svar in chain(pddl.visitors.visit(observe.precondition, collect_vars, []), observe.effect.visit(eff_collector)):
-    #             if svar.function in self.prob_functions:
-    #                 yield svar.as_modality(mapl.knowledge, [agent])
-    #         observe.uninstantiate()
-                
-    #     def get_abstract_transitions(action):
-    #         action.instantiate(action.args) # workaround because StateVariables cannot be created from ungrounded literals
-    #         pre = set(pddl.visitors.visit(action.precondition, collect_vars, set()))
-    #         eff = set(pddl.visitors.visit(action.effect, collect_vars, set()))
-    #         for o in self.get_observations_for(action):
-    #             eff |= set(get_abstract_observations(o, action.agents[0]))
-    #         action.uninstantiate()
-    #         return pre , eff
-
-    #     relevant_actions = defaultdict(lambda: defaultdict(set))
-    #     for a in self.domain.actions:
-    #         pre, eff = get_abstract_transitions(a)
-    #         for p, e in product(pre, eff):
-    #             relevant_actions[e.function][p.function].add(a)
-                
-    #     open = set(svar.function for svar, val in goals)
-
-    #     closed = set()
-    #     result = set()
-    #     while open:
-    #         var = open.pop()
-    #         closed.add(var)
-    #         for pre, actions in relevant_actions[var].iteritems():
-    #             result |= actions
-    #             if pre not in closed:
-    #                 open.add(pre)
-
-    #     for a in result:
-    #         print a.name
-                    
-    #     return result
-
     
     def find_observation_actions(self):
         def can_observe(action):
