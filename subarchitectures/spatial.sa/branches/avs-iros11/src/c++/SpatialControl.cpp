@@ -435,6 +435,7 @@ void SpatialControl::updateGridMaps()
   int laserMinY = INT_MAX, laserMaxY = INT_MIN;
 
   /* Add all queued laser scans */
+  m_ScanQueueMutex.lock();
   while (!m_LScanQueue.empty()){
     if (m_TOPP.isTransformDefined() && m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
@@ -455,16 +456,23 @@ void SpatialControl::updateGridMaps()
     }
     m_LScanQueue.pop();
   }
+  m_ScanQueueMutex.unlock();
   /* Only proceed if we got any new scans */
   if (laserMinX == INT_MAX || laserMinY == INT_MAX || laserMaxX == INT_MIN || laserMaxY == INT_MIN) {
     return;
   }
-
-  laserMinX -= m_MaxExplorationRange / tmp_lgm.getCellSize();
-  laserMaxX += m_MaxExplorationRange / tmp_lgm.getCellSize();
-  laserMinY -= m_MaxExplorationRange / tmp_lgm.getCellSize();
-  laserMaxY += m_MaxExplorationRange / tmp_lgm.getCellSize();
-
+  laserMinX -= m_MaxExplorationRange;
+  laserMinY -= m_MaxExplorationRange;
+  laserMaxX += m_MaxExplorationRange;
+  laserMaxY += m_MaxExplorationRange;
+  if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinX, laserMinY) != 0) {
+    laserMinX = -tmp_lgm.getSize() + 1;
+    laserMinY = -tmp_lgm.getSize() + 1;
+  }
+  if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxX, laserMaxY) != 0) {
+    laserMaxX = tmp_lgm.getSize() - 1;
+    laserMaxY = tmp_lgm.getSize() - 1;
+  }
 
   /* Bounding box for new point cloud data */
   int pointcloudMinX = INT_MAX, pointcloudMaxX = INT_MIN;
@@ -532,8 +540,6 @@ void SpatialControl::updateGridMaps()
   int maxcellstocheck = int (5.0/d);
   double xWT,yWT;
   double theta;
-
-
 
   /* Update the nav map */
   m_Mutex.lock();
@@ -1136,9 +1142,9 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
     }
   }
   else {
-    m_MapsMutex.lock();
+    m_ScanQueueMutex.lock();
     m_LScanQueue.push(cureScan);
-    m_MapsMutex.unlock();
+    m_ScanQueueMutex.unlock();
   }
 
   /* Person following stuff */    

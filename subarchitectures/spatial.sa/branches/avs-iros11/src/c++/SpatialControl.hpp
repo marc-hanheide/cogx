@@ -144,6 +144,7 @@ protected:
 
   IceUtil::Mutex m_Mutex;
   IceUtil::Mutex m_MapsMutex;
+  IceUtil::Mutex m_ScanQueueMutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
