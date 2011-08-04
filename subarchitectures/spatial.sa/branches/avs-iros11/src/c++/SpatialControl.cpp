@@ -457,7 +457,6 @@ void SpatialControl::updateGridMaps()
   }
   /* Only proceed if we got any new scans */
   if (laserMinX == INT_MAX || laserMinY == INT_MAX || laserMaxX == INT_MIN || laserMaxY == INT_MIN) {
-    m_MapsMutex.unlock();
     return;
   }
 
