@@ -451,7 +451,7 @@ class PNode(object):
         started_pred = domain.predicates.get("started", [])
             
         for val, (p, nodes, facts) in self.children.iteritems():
-            if p * parent_p <= 0.001:
+            if p * parent_p <= 0.001 or val == pddl.UNKNOWN:
                 # print "pruned due to likelihood"
                 continue
             

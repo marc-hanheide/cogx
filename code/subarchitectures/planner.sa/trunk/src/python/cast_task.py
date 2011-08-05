@@ -95,13 +95,7 @@ class CASTTask(object):
         
         self.update_status(TaskStateEnum.INITIALISED)
 
-        if not problem_fn:
-            problem_fn = abspath(join(self.component.get_path(), "problem%d-init.pddl" % self.id))
-            init_prob, _, _ = self.state.to_problem(self.slice_goals, deterministic=False, init_problem=True)
-            w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
-            w.write(init_prob, problem_fn=problem_fn)
-        
-        problem_fn = abspath(join(self.component.get_path(), "problem%d.pddl" % self.id))
+        problem_fn = abspath(join(self.component.get_path(), "problem%d-init.pddl" % self.id))
         self.write_cp_problem(problem_fn)
 
         domain_out_fn = abspath(join(self.component.get_path(), "domain%d.pddl" % self.id))
@@ -155,8 +149,9 @@ class CASTTask(object):
         callback()
 
     def write_cp_problem(self, problem_fn):
+        init_prob, _, _ = self.state.to_problem(self.slice_goals, deterministic=False, raw_problem=True)
         w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
-        w.write(self.cp_task.mapltask, problem_fn=problem_fn)
+        w.write(init_prob, problem_fn=problem_fn)
 
     def write_plan(self):
         plan = self.get_plan()
@@ -191,6 +186,9 @@ class CASTTask(object):
         # domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
         # w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         # w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
+        problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
+        self.write_cp_problem(problem_fn)
+        
         self.cp_task.mark_changed()
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
@@ -225,7 +223,7 @@ class CASTTask(object):
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
             # self.dt_task = dt_problem.DTProblem(plan, self.domain)
-            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.prob_functions, self.relevant_facts, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.get_prob_functions(), self.relevant_facts, self.domain)
             # self.dt_task.initialize(self.state.prob_state)
 
             for pnode in plan.nodes_iter():
@@ -410,7 +408,7 @@ class CASTTask(object):
 
         self.update_status(TaskStateEnum.PROCESSING)
 
-        problem_fn = abspath(join(self.component.get_path(), "problem%d.mapl" % (self.id)))
+        problem_fn = abspath(join(self.component.get_path(), "problem%d.pddl" % (self.id)))
         self.write_cp_problem(problem_fn)
         plan = self.cp_task.get_plan()
 
@@ -434,6 +432,8 @@ class CASTTask(object):
         self.step += 1
         self.cp_task.replan()
         if self.cp_task.get_plan() != plan:
+            problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
+            self.write_cp_problem(problem_fn)
             self.plan_history.append(plan)
             
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:

@@ -26,6 +26,9 @@ class FakeCASTState(cast_state.CASTState):
         self.obj_to_castname = {}
 
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
+        
+        self.raw_state = prob_state.ProbabilisticState.from_problem(problem)
+        self.raw_objects = set(problem.objects)
 
         if component:
             coma_facts, coma_objects = self.get_coma_data(component)
