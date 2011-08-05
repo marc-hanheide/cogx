@@ -1,11 +1,12 @@
 (define (domain dora-avs-iros11)
-  (:requirements :mapl :adl :fluents :durative-actions :partial-observability :dynamic-objects)
+  (:requirements :mapl :adl :fluents :partial-observability :dynamic-objects :action-costs)
 
   (:types
-   conegroup place room visualobject - object
+   conegroup - object
    robot - agent
    person robot - movable
-   place_status label category spatial_relation - object
+   label category spatial_relation place room visualobject - concept
+   place_status polar_reply concept - object
    )
 
   (:predicates
@@ -32,6 +33,13 @@
    (started)
    (done)
    )
+
+   ;; === perceptual fluents for modelling dialogue ===
+  (:percepts 
+   (polar-response ?svar - (function concept) ?val - (typeof ?svar) ?reply - polar_reply)
+   (general-response ?svar - (function concept) ?reply - (typeof ?svar))
+   )
+
 
   (:functions
    (is-in ?o - robot) - place
@@ -98,6 +106,7 @@
   (:constants
    placeholder trueplace - place_status
    in on - spatial_relation
+   yes no dontknow - polar_reply
    )
 
 
@@ -301,55 +310,55 @@
            :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                            (assign (category ?r) ?c))))
 
-  ;; (:durative-action explore_place
+  ;; (:action explore_place
   ;;          :agent (?a - robot)
   ;;          :parameters (?loc - place)
   ;;          :duration (= ?duration 0.1)
-  ;;          :condition (and (over all (= (is-in ?a) ?loc))
-  ;;                          (at start (= (placestatus ?loc) placeholder)))
-  ;;          :effect (change (placestatus ?loc) trueplace)
+  ;;          :precondition (and  (= (is-in ?a) ?loc)
+  ;;                           (= (placestatus ?loc) placeholder))
+  ;;          :effect (assign (placestatus ?loc) trueplace)
   ;;          )
 
-  (:durative-action report_position
+  (:action report_position
            :agent (?a - robot)
            :parameters (?o - visualobject)
            :variables (?p - place ?h - person)
-           :duration (= ?duration 1.0)
-           :condition (over all (and (kval ?a (related-to ?o))
-                                     ;(= (is-in ?h) ?p)
-                                     (= (is-in ?a) ?p)))
-           :effect (at end (position-reported ?o))
+           :precondition (and (kval ?a (related-to ?o))
+                              (= (is-in ?h) ?p)
+                              (= (is-in ?a) ?p))
+           :effect (and (position-reported ?o)
+                        (increase (total-cost) 1))
            )
 
-   (:durative-action move
-                     :agent (?a - robot)
-                     :parameters (?to - place)
-                     :variables (?from - place)
-                     :duration (= ?duration 2)
-                     :condition (and (over all (or (connected ?from ?to)
-                                                   (connected ?to ?from)
-                                                   ))
-                                     (over all (not (done)))
-                                     (at start (= (is-in ?a) ?from)))
-                     :effect (and (change (is-in ?a) ?to)
-                                  (change (placestatus ?to) trueplace))
-                     )
+   (:action move
+            :agent (?a - robot)
+            :parameters (?to - place)
+            :variables (?from - place)
+            :precondition (and (or (connected ?from ?to)
+                                   (connected ?to ?from))
+                               (not (done))
+                               (= (is-in ?a) ?from))
+            :effect (and (assign (is-in ?a) ?to)
+                         (assign (placestatus ?to) trueplace)
+                         (kval ?a (in-room ?to))
+                         (increase (total-cost) 2))
+            )
 
-   (:durative-action move_direct
-                     :agent (?a - robot)
-                     :parameters (?to - place)
-                     :variables (?from - place ?via - place)
-                     :duration (= ?duration 3)
-                     :condition (and (over all (and (or (connected ?from ?via)
-                                                        (connected ?via ?from))
-                                                    (or (connected ?via ?to)
-                                                        (connected ?to ?via))
-                                                   ))
-                                     (over all (not (done)))
-                                     (at start (= (is-in ?a) ?from)))
-                     :effect (and (change (is-in ?a) ?to)
-                                  (change (placestatus ?to) trueplace))
-                     )
+   (:action move_direct
+            :agent (?a - robot)
+            :parameters (?to - place)
+            :variables (?from - place ?via - place)
+            :precondition (and (or (connected ?from ?via)
+                                   (connected ?via ?from))
+                               (or (connected ?via ?to)
+                                   (connected ?to ?via))
+                               (not (done))
+                               (= (is-in ?a) ?from))
+            :effect (and (assign (is-in ?a) ?to)
+                         (assign (placestatus ?to) trueplace)
+                         (kval ?a (in-room ?to))
+                         (increase (total-cost) 3))
+            )
 
    ;; (:durative-action move_direct
    ;;                   :agent (?a - robot)
@@ -368,57 +377,53 @@
 
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
-   (:durative-action create_cones_in_room
-                     :agent (?a - robot)
-                     :parameters (?l - label ?r - room)
-                     :variables (?p - place)
-                     :duration (= ?duration 1)
-                     :condition (and (over all (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
-                                                    (poss (obj_exists ?l in ?r) true)
-                                                    (not (not_fully_explored ?r))
-                                                    (not (done))))
-                                     )
-                     :effect (and (at end (cones_created ?l in ?r)))
-                     )
+   (:action create_cones_in_room
+            :agent (?a - robot)
+            :parameters (?l - label ?r - room)
+            :variables (?p - place)
+            :precondition (and (= (is-in ?a) ?p)
+                               (= (in-room ?p) ?r)
+                               (poss (obj_exists ?l in ?r) true)
+                               (not (not_fully_explored ?r))
+                               (not (done)))
+            :effect (and (cones_created ?l in ?r)
+                         (increase (total-cost) 5))
+            )
    
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
-   (:durative-action create_cones_at_object
-                     :agent (?a - robot)
-                     :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
-                     :variables (?p - place)
-                     :duration (= ?duration 1)
-                     :condition (and (over all (and (= (is-in ?a) ?p)
-                                                    (= (label ?o) ?lsupp)
-                                                    (poss (obj_exists ?l ?rel ?o) true)
-                                                    (poss (in-room ?p) ?r)
-                                                    (poss (related-to ?o) ?r)
-                                                    (kval ?a (related-to ?o))
-                                                    (not (done))))
-                                     )
-                     :effect (and (at end (cones_created ?l ?rel ?o)))
-                     )
+   (:action create_cones_at_object
+            :agent (?a - robot)
+            :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
+            :variables (?p - place)
+            :precondition (and (= (is-in ?a) ?p)
+                               (= (label ?o) ?lsupp)
+                               (poss (obj_exists ?l ?rel ?o) true)
+                               (= (in-room ?p) ?r)
+                               (= (related-to ?o) ?r)
+                               (not (done)))
+            :effect (and (cones_created ?l ?rel ?o)
+                         (increase (total-cost) 4))
+            )
 
    ;; Abstract search action for the CP planner
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
-   (:durative-action search_for_object_in_room
-                     :agent (?a - robot)
-                     :parameters (?l - label ?r - room)
-                     :variables (?p - place ?o - visualobject)
-                     :duration (= ?duration (search_cost ?l in ?r))
-                     :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
-                                                    (= (label ?o) ?l)
-                                                    (or (cones_created ?l in ?r)
-                                                        (cones_exist ?l in ?r))
-                                                    (poss (related-to ?o) ?r)
-                                                    (poss (relation ?o) in)
-                                                    (not (done))))
-                                     )
-                     :effect (kval ?a (related-to ?o))
-                     )
+   (:action search_for_object_in_room
+            :agent (?a - robot)
+            :parameters (?l - label ?r - room)
+            :variables (?p - place ?o - visualobject)
+            :precondition (and (= (is-in ?a) ?p)
+                               (= (in-room ?p) ?r)
+                               (= (label ?o) ?l)
+                               (or (cones_created ?l in ?r)
+                                   (cones_exist ?l in ?r))
+                               (poss (related-to ?o) ?r)
+                               (poss (relation ?o) in)
+                               (not (done)))
+            :effect (and (increase (total-cost) (search_cost ?l in ?r)))
+            :sense (related-to ?o)
+            )
                      
 
    ;; ;; Abstract search action for the CP planner
@@ -444,40 +449,38 @@
    ;; Abstract search action for the CP planner
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
-   (:durative-action search_for_object_at_object
-                     :agent (?a - robot)
-                     :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
-                     :variables (?p - place ?r - room ?o2 - visualobject)
-                     :duration (= ?duration (search_cost ?l ?rel ?o))
-                     :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
-                                                    (poss (related-to ?o) ?r)
-                                                    (kval ?a (related-to ?o))
-                                                    (= (label ?o2) ?l)
-                                                    (or (cones_created ?l ?rel ?o)
-                                                        (cones_exist ?l ?rel ?o))
-                                                    (poss (related-to ?o2) ?o)
-                                                    (poss (relation ?o2) ?rel)
-                                                    (not (done))))
-                                     )
-                     :effect (kval ?a (related-to ?o2))
-                     )
+   (:action search_for_object_at_object
+            :agent (?a - robot)
+            :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
+            :variables (?p - place ?r - room ?o2 - visualobject)
+            :precondition (and (= (is-in ?a) ?p)
+                               (= (in-room ?p) ?r)
+                               (= (related-to ?o) ?r)
+                               (= (label ?o2) ?l)
+                               (or (cones_created ?l ?rel ?o)
+                                   (cones_exist ?l ?rel ?o))
+                               (poss (related-to ?o2) ?o)
+                               (poss (relation ?o2) ?rel)
+                               (not (done)))
+            :effect (and (increase (total-cost) (search_cost ?l ?rel ?o)))
+            :sense (related-to ?o2)
+            )
                      
 
    ;; process one conegroup
    ;; TODO: how to model precondtitions for the robot's location
    ;;       and movement between conegroups?
    ;;       Currently, precondition is to be in the same room as the conegroup
-   (:durative-action process_conegroup
-                     :agent (?a - robot)
-                     :parameters (?c - conegroup)
-                     :variables (?p - place)
-                     :duration (= ?duration 15)
-                     :condition (over all (and (not (done))
-                                               (= (cg-place ?c) ?p)
-                                               (= (is-in ?a) ?p)))
-                     :effect (and )
-                     )
+   (:action process_conegroup
+            :agent (?a - robot)
+            :parameters (?c - conegroup)
+            :variables (?p - place)
+            :precondition (and (not (done))
+                               (= (cg-place ?c) ?p)
+                               (= (is-in ?a) ?p))
+            :effect (and 
+                     (increase (total-cost) 15))
+            )
 
 
    (:observe visual_object
@@ -495,14 +498,14 @@
                           )
              )
 
-   (:durative-action look-for-people
-                     :agent (?a - robot)
-                     :variables (?p - place)
-                     :duration (= ?duration 10)
-                     :condition (over all (and (not (done))
-                                               (= (is-in ?a) ?p)))
-                     :effect (and )
-                     )
+   (:action look-for-people
+            :agent (?a - robot)
+            :variables (?p - place)
+            :precondition (and (not (done))
+                            (= (is-in ?a) ?p))
+            :effect (and 
+                     (increase (total-cost) 10))
+            )
 
    (:observe person
              :agent (?a - robot)
@@ -516,5 +519,35 @@
                             (probabilistic 0.1 (observed (does-exist ?p) true)))
                           )
              )
-             
+
+
+   ;; (:action ask-for-category-polar
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?r - room ?c - category)
+   ;;          :variables (?pl - place ?p - person)
+   ;;          :precondition (and (not (done))
+   ;;                          (= (is-in ?a) ?pl)
+   ;;                          (= (in-room ?pl) ?r))
+   ;;          :effect (and 
+   ;;                   ;; (when (= (is-in ?p) ?pl) (increase (total-cost) 7))
+   ;;                   ;; (when (not (= (is-in ?p) ?pl)) (increase (total-cost) 15)))
+   ;;                   (increase (total-cost) 5))
+   ;;          )
+
+   ;; (:observe category-polar
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?r - room ?c - category ?pl - place ?p - person)
+   ;;           :execution (ask-for-category-polar ?a ?r ?c ?pl ?p)
+   ;;           :precondition (and (= (is-in ?p) ?pl))
+                                
+   ;;           :effect (and (when (= (category ?r) ?c)
+   ;;                          (probabilistic 0.8 (polar-response (category ?r) ?c yes)
+   ;;                                         0.1 (polar-response (category ?r) ?c no)
+   ;;                                         0.1 (polar-response (category ?r) ?c dontknow)))
+   ;;                        (when (not (= (category ?r) ?c))
+   ;;                          (probabilistic 0.9 (polar-response (category ?r) ?c no)
+   ;;                                         0.1 (polar-response (category ?r) ?c dontknow)))
+   ;;                        )
+   ;;           )
+            
 )

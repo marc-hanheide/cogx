@@ -31,11 +31,11 @@ def update_config(fn, cfg_path=src_path):
                 return k, as_dict(v)
             return k,v
         return dict(map(transform_item, struct.__dict__.iteritems()))
-    print config
+    # print config
     base_config = dict(src_path=src_path)
     update_config = utils.load_config_file(join(cfg_path, fn), base_dict=base_config)
-    print "..."
-    print update_config
-    print "..."
+    # print "..."
+    # print update_config
+    # print "..."
     config.merge(update_config)
-    print config
+    # print config
