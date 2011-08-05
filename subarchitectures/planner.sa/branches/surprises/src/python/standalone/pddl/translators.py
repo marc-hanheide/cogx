@@ -199,7 +199,7 @@ def get_function(lit):
 def set_modality(lit, modality, pre_args=[], post_args=[]):
     if lit.predicate in (equals, assign, equal_assign):
         if len(modality.args) == len(pre_args) + len(post_args) + 1:
-            return lit.__class__(modality, pre_args + lit.args[0] + post_args, lit.scope, lit.negated)
+            return lit.__class__(modality, pre_args + lit.args[:1] + post_args, lit.scope, lit.negated)
         elif len(modality.args) == len(pre_args) + len(post_args) + 2:
             return lit.__class__(modality, pre_args + lit.args + post_args, lit.scope, lit.negated)
         else:

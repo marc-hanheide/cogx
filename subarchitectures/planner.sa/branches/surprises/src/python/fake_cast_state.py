@@ -26,6 +26,9 @@ class FakeCASTState(cast_state.CASTState):
         self.obj_to_castname = {}
 
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
+        
+        self.raw_state = prob_state.ProbabilisticState.from_problem(problem)
+        self.raw_objects = set(problem.objects)
 
         if component:
             coma_facts, coma_objects = self.get_coma_data(component)
@@ -48,6 +51,8 @@ class FakeCASTState(cast_state.CASTState):
         for f in self.generated_facts:
             self.prob_state.set(f)
             problem.init.append(f.as_literal(useEqual=True))
+
+        print map(str, self.objects)
             
         # print "objects:",  map(str,self.objects)
         self.state = self.prob_state.determinized_state(0.05, 0.95)

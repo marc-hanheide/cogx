@@ -91,5 +91,6 @@ add_definitions(-std=c++0x -DNDEBUG -O3 -march=native -fPIC)
 add_library(dtpddl ${dtpddl_source})
 target_link_libraries(dtpddl pthread)
 
-add_executable(pcogx main.cpp ${dtpddl_source})
+add_executable(pcogx main.cpp)# ${dtpddl_source})
+target_link_libraries(pcogx dtpddl)
 install(TARGETS pcogx DESTINATION bin)

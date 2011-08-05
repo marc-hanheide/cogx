@@ -303,7 +303,8 @@
                                      (over all (not (done)))
                                      (at start (= (is-in ?a) ?from)))
                      :effect (and (change (is-in ?a) ?to)
-                                  (change (placestatus ?to) trueplace))
+                                  (change (placestatus ?to) trueplace)
+                                  (at end (kval ?a (in-room ?to))))
                      )
 
    (:durative-action move_direct
@@ -319,7 +320,8 @@
                                      (over all (not (done)))
                                      (at start (= (is-in ?a) ?from)))
                      :effect (and (change (is-in ?a) ?to)
-                                  (change (placestatus ?to) trueplace))
+                                  (change (placestatus ?to) trueplace)
+                                  (at end (kval ?a (in-room ?to))))
                      )
 
    ;; (:durative-action move_direct
@@ -345,7 +347,7 @@
                      :variables (?p - place)
                      :duration (= ?duration 1)
                      :condition (and (over all (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
+                                                    (= (in-room ?p) ?r)
                                                     (poss (obj_exists ?l in ?r) true)
                                                     (not (not_fully_explored ?r))
                                                     (not (done))))
@@ -363,9 +365,8 @@
                      :condition (and (over all (and (= (is-in ?a) ?p)
                                                     (= (label ?o) ?lsupp)
                                                     (poss (obj_exists ?l ?rel ?o) true)
-                                                    (poss (in-room ?p) ?r)
-                                                    (poss (related-to ?o) ?r)
-                                                    (kval ?a (related-to ?o))
+                                                    (= (in-room ?p) ?r)
+                                                    (= (related-to ?o) ?r)
                                                     (not (done))))
                                      )
                      :effect (and (at end (cones_created ?l ?rel ?o)))
@@ -380,7 +381,7 @@
                      :variables (?p - place ?o - visualobject)
                      :duration (= ?duration (search_cost ?l in ?r))
                      :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
+                                                    (= (in-room ?p) ?r)
                                                     (= (label ?o) ?l)
                                                     (or (cones_created ?l in ?r)
                                                         (cones_exist ?l in ?r))
@@ -388,7 +389,8 @@
                                                     (poss (relation ?o) in)
                                                     (not (done))))
                                      )
-                     :effect (kval ?a (related-to ?o))
+                     :effect (and )
+                     :sense (related-to ?o)
                      )
                      
 
@@ -421,9 +423,8 @@
                      :variables (?p - place ?r - room ?o2 - visualobject)
                      :duration (= ?duration (search_cost ?l ?rel ?o))
                      :condition (and (at start (and (= (is-in ?a) ?p)
-                                                    (poss (in-room ?p) ?r)
-                                                    (poss (related-to ?o) ?r)
-                                                    (kval ?a (related-to ?o))
+                                                    (= (in-room ?p) ?r)
+                                                    (= (related-to ?o) ?r)
                                                     (= (label ?o2) ?l)
                                                     (or (cones_created ?l ?rel ?o)
                                                         (cones_exist ?l ?rel ?o))
@@ -431,7 +432,8 @@
                                                     (poss (relation ?o2) ?rel)
                                                     (not (done))))
                                      )
-                     :effect (kval ?a (related-to ?o2))
+                     :effect (and )
+                     :sense (related-to ?o2)
                      )
                      
 
