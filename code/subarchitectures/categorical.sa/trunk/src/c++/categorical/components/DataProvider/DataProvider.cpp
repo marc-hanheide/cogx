@@ -202,6 +202,13 @@ void CategoricalDataProvider::start()
       new MemberFunctionChangeReceiver<CategoricalDataProvider>(this,
           &CategoricalDataProvider::newDataProviderCommandAdded) );
 
+  // Add empty objects to WM
+  _dataProviderCommandAckId = addEmptyDataProviderCommandAck();
+  _imageId = addEmptyImage();
+  _laserScanId = addEmptyLaserScan();
+  _odometryId = addEmptyOdometry();
+  _targetId = addEmptyTarget();
+
   debug("Started!");
 }
 
@@ -379,12 +386,6 @@ void CategoricalDataProvider::runComponent()
 {
   debug("Running...");
 
-  // Add empty objects to WM
-  _dataProviderCommandAckId = addEmptyDataProviderCommandAck();
-  _imageId = addEmptyImage();
-  _laserScanId = addEmptyLaserScan();
-  _odometryId = addEmptyOdometry();
-  _targetId = addEmptyTarget();
 
   _lastGrabTimestamp.s=0;
   _lastGrabTimestamp.us=0;
