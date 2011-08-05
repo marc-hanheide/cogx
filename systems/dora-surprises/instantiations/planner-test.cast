@@ -1,9 +1,12 @@
-VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 VARDEFAULT planning_domain=dora-interactive.pddl
-VARDEFAULT planning_problem=dora-yr3-example-1.problem.pddl
+
+VARDEFAULT planning_problem=dora-avs-p1-init.pddl
+# VARDEFAULT planning_problem=dora-avs-p1-viewcones.pddl
+# VARDEFAULT planning_problem=dora-interactive1.pddl
 
 #VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
-VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
+# VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
+VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-DOESNOTEXIST.txt"
 #VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro.xml"
 VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro-det.xml"
 VARDEFAULT discrete_room_cats=
