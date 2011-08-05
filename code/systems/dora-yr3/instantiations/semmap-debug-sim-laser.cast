@@ -4,6 +4,7 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
+COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-semmap.cast
 INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
