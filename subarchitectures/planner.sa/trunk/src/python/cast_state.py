@@ -80,9 +80,8 @@ class CASTState(object):
             
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
-        self.init_state = prob_state.ProbabilisticState(self.facts, problem)
-        self.init_facts = self.facts[:]
-        self.init_objects = set(self.objects)
+        self.raw_state = prob_state.ProbabilisticState(self.facts, problem)
+        self.raw_objects = set(self.objects)
 
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, oldstate)
         self.facts += self.generated_facts
@@ -103,6 +102,7 @@ class CASTState(object):
             self.state.set(f)
 
     def translate_domain(self, stat):
+        
         if not global_vars.config.enable_switching_planner:
             return self.domain
         
@@ -112,14 +112,10 @@ class CASTState(object):
             dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
         else:
             assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
-
-        def prob_functions(s):
-            for svar, val in s.iteritems():
-                if val.value is None:
-                    yield svar.function
             
-        self.prob_functions = set(prob_functions(stat))
-        cp_domain = dt_compiler.translate(self.domain, prob_functions=self.prob_functions)
+        cp_domain = dt_compiler.translate(self.domain, prob_functions=self.get_prob_functions())
+
+        print map(str, cp_domain.requirements)
 
         actions = []
         for n in self.pnodes:
@@ -141,24 +137,35 @@ class CASTState(object):
         # mapltask.init += det_lits
         self.pnodes = pnodes
 
+    def get_prob_functions(self):
+        result = set()
+        def prob_functions_from_state(s):
+            for svar, val in s.iteritems():
+                if val.value is None:
+                    yield svar.function
+                    
+        result = set(prob_functions_from_state(self.prob_state))
+
+        if "partial-observability" in self.domain.requirements:
+            for r in self.domain.dt_rules:
+                for func, _ in r.variables:
+                    result.add(func)
+        
+        return result
+        
+
     def generate_committed_facts(self, detstate):
         @pddl.visitors.collect
         def get_committed_functions(cond, result):
             if isinstance(cond, pddl.LiteralCondition):
                 if cond.predicate == pddl.mapl.commit:
                     return cond.args[0].function
-                
-        functions = set()
-        if global_vars.config.enable_switching_planner:
-            for r in self.domain.dt_rules:
-                functions |= set(f for f in r.deps if f.type != pddl.t_number)
 
-        for a in self.domain.actions:
-            functions |= set(pddl.visitors.visit(a.precondition, get_committed_functions, []))
-
+        prob_functions = self.get_prob_functions()
+                            
         results = []
         for svar, val in detstate.iteritems():
-            if svar.function in functions and not svar.modality:
+            if svar.function in prob_functions and not svar.modality:
                 cvar = svar.as_modality(pddl.mapl.commit, [val])
                 results.append(state.Fact(cvar, pddl.TRUE))
         return results
@@ -465,7 +472,7 @@ class CASTState(object):
             self.state = self.prob_state.determinized_state(0.05, 0.95)
 
 
-    def to_problem(self, slice_goals, deterministic=True, init_problem=False):
+    def to_problem(self, slice_goals, deterministic=True, raw_problem=False):
         if "action-costs" in self.domain.requirements:
             opt = "minimize"
             opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
@@ -473,10 +480,10 @@ class CASTState(object):
             opt = None
             opt_func = None
 
-        if init_problem:
-            det_state = self.init_state.determinized_state(0.05, 0.95)
-            prob_state = self.init_state
-            objects = self.init_objects
+        if raw_problem:
+            det_state = self.raw_state.determinized_state(0.05, 0.95)
+            prob_state = self.raw_state
+            objects = self.raw_objects
         else:
             det_state = self.state
             prob_state = self.prob_state
@@ -497,7 +504,7 @@ class CASTState(object):
         problem = pddl.Problem("cogxtask", objects, facts, None, cp_domain, opt, opt_func )
         print map(str, objects)
 
-        if not init_problem:
+        if not raw_problem:
             if deterministic:
                 self.state.problem = problem
             else:

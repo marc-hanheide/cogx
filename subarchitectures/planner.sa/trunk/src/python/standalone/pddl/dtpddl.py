@@ -852,8 +852,9 @@ class DT2MAPLCompiler(translators.Translator):
                 #not yet supported
                 continue
 
-            self.annotations.append(a.name)
-
+            
+            self.annotations[a.name] = set()
+            
             #temporarily rename parameters
             renamings = {}
             for arg in observe.args:
@@ -899,6 +900,8 @@ class DT2MAPLCompiler(translators.Translator):
                     s_atom.set_scope(a)
                     a.sensors.append(mapl.SenseEffect(s_atom, a))
             observe.uninstantiate()
+            for s in a.sensors:
+                self.annotations[a.name].add(s)
 
             #undo renamings
             for name, oldname in renamings.iteritems():
@@ -958,32 +961,38 @@ class DT2MAPLCompiler(translators.Translator):
         return actions
 
     def translate_action(self, action, prob_functions, domain=None):
+        agent_term = predicates.VariableTerm(action.agents[0])
+        
         @visitors.replace
         def condition_visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 if translators.get_function(cond) in prob_functions:
-                    return translators.set_modality(cond, mapl.committed) 
-                
+                    conds = [translators.set_modality(cond, mapl.commit),
+                             translators.set_modality(cond, mapl.knowledge, [agent_term])]
+                    return conditions.Conjunction(conds)
+               
         # dep_conditions = set()
-        # @visitors.replace
-        # def ceff_condition_visitor(cond, results):
-        #     if isinstance(cond, conditions.LiteralCondition):
-        #         if translators.get_function(cond) in prob_functions:
-        #             dep_conditions.add(translators.set_modality(cond.copy(), mapl.committed))
-        #             return translators.set_modality(cond, mapl.hyp)
+        @visitors.replace
+        def ceff_condition_visitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if translators.get_function(cond) in prob_functions:
+                    conds = [translators.set_modality(cond, mapl.commit),
+                             translators.set_modality(cond, mapl.knowledge, [agent_term])]
+                    # dep_conditions.add(translators.set_modality(cond.copy(), mapl.committed))
+                    return conditions.Conjunction(conds)
                 
-        # @visitors.replace
-        # def effect_visitor(eff, results):
-        #     if isinstance(eff, effects.SimpleEffect) and eff.predicate == builtin.num_assign:
-        #         if eff.args[0].function == reward:
-        #             term = FunctionTerm(builtin.total_cost, [])
-        #             value = -eff.args[1].object.value + 1
-        #             return effects.SimpleEffect(builtin.increase, [term, predicates.Term(value) ])
-        #     if isinstance(eff, effects.ConditionalEffect):
-        #         eff.condition.visit(ceff_condition_visitor)
+        @visitors.replace
+        def effect_visitor(eff, results):
+            # if isinstance(eff, effects.SimpleEffect) and eff.predicate == builtin.num_assign:
+            #     if eff.args[0].function == reward:
+            #         term = FunctionTerm(builtin.total_cost, [])
+            #         value = -eff.args[1].object.value + 1
+            #         return effects.SimpleEffect(builtin.increase, [term, predicates.Term(value) ])
+            if isinstance(eff, effects.ConditionalEffect):
+                eff.condition.visit(ceff_condition_visitor)
 
-        # visitors.visit(action.precondition, condition_visitor)
-        # visitors.visit(action.effect, effect_visitor)
+        visitors.visit(action.precondition, condition_visitor)
+        visitors.visit(action.effect, effect_visitor)
         # if dep_conditions:
         #     action.effect = effects.ConjunctiveEffect.join([action.effect] + list(dep_conditions))
 
@@ -1002,7 +1011,7 @@ class DT2MAPLCompiler(translators.Translator):
     def translate_domain(self, _domain, prob_functions = set()):
         translators.Translator.get_annotations(_domain)['has_commit_actions'] = True
         #if 'observe_effects' not in translators.Translator.get_annotations(_domain):
-        translators.Translator.get_annotations(_domain)['observe_effects'] = []
+        translators.Translator.get_annotations(_domain)['observe_effects'] = {}
         self.annotations = translators.Translator.get_annotations(_domain)['observe_effects']
             
         dom = _domain.copy()

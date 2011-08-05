@@ -206,19 +206,69 @@ class DTProblem(object):
         assert False, "DT-Subplan actions no longer in plan!"
 
     def create_goals(self, plan):
-        observe_actions = translators.Translator.get_annotations(self.domain).get('observe_effects', [])
-
-        @pddl.visitors.collect
-        def knowledge_effects(eff, results):
-            if isinstance(eff, pddl.SimpleEffect) and eff.predicate in (pddl.mapl.knowledge, pddl.mapl.direct_knowledge):
-                return eff
-
+        observe_effects = translators.Translator.get_annotations(self.domain).get('observe_effects', {})
+        sense_effects = set()
+            
+        for senses in observe_effects.itervalues():
+            sense_effects |= senses
         for a in self.domain.actions:
-            if pddl.visitors.visit(a.effect, knowledge_effects, None):
-                observe_actions.append(a.name)
-        
-        if not observe_actions:
-            return []
+            sense_effects |= set(a.sensors)
+            
+        sensed_functions = set(s.get_term().function for s in sense_effects)
+        changed = True
+        while changed:
+            changed = False
+            for rule in self.domain.dt_rules:
+                if not rule.deps < sensed_functions:
+                    if any(f in sensed_functions for f, _ in rule.variables):
+                        sensed_functions |= rule.deps
+                        changed = True
+
+        # print map(str, sensed_functions)
+
+        def get_real_sensor(action, effect):
+            if effect.svar.modality not in (pddl.mapl.knowledge, pddl.mapl.direct_knowledge):
+                return None
+            
+            if action.name in observe_effects:
+                sensors = observe_effects[action.name]
+            else:
+                try:
+                    action = self.domain.get_action(action.name)
+                    sensors = action.sensors
+                except:
+                    sensors = []
+                    
+            for s in sensors:
+                if s.get_term().function == effect.svar.function:
+                    return s
+            return None
+            
+        def triggers_dt(pnode):
+            # print "checking", pnode
+
+            #condition 1: actions must have a knowledge effect corresponding to a MAPL sensor
+            k_effects = set()
+            for s, eff in ((get_real_sensor(pnode.action, e), e) for e in pnode.effects):
+                if s:
+                    k_effects.add(eff.svar)
+            # print "knowledge effects:", map(str, k_effects)
+
+            #condition 2: k-effect must be reachable from DT observations
+            k_effects = set(f for f in k_effects if f.function in sensed_functions)
+            # print "DT k-effects:", map(str, k_effects)
+            if not k_effects:
+                return False
+            
+            #condition 3: another action (or the goal) must depend on the k-effect
+            for succ in plan.successors_iter(pnode):
+                for link in plan[pnode][succ].itervalues():
+                    # print "checking link to %s: svar=%s" % (str(succ), str(link['svar']))
+                    if link['svar'] in k_effects:
+                        # print "ok"
+                        return True
+            return False
+            
 
         def find_restrictions(pnode, level):
             result = {}
@@ -238,7 +288,8 @@ class DTProblem(object):
         for pnode in plan.topological_sort():
             if pnode.status == plans.ActionStatusEnum.EXECUTED:
                 continue
-            if pnode.action.name in observe_actions:
+            # if pnode.action.name in observe_actions:
+            if triggers_dt(pnode):
                 #TODO: only add an action if the observe effect supports a later action
                 for fact in pnode.effects:
                     if fact.svar.function not in (pddl.builtin.total_cost, ):
@@ -249,8 +300,8 @@ class DTProblem(object):
                 log.debug("assumptions: %s", ", ".join("%s/%d" % (str(a),l) for a,l in assumptions))
                 break
             
-            if pnode.action.name not in observe_actions and self.subplan_actions:
-                break
+            # if pnode.action.name not in observe_actions and self.subplan_actions:
+            #     break
         
         self.remaining_costs = 0
         for pnode in plan.topological_sort():
@@ -424,7 +475,7 @@ class DTProblem(object):
         # calculate disconfirm gain on how much it reduces the entropy of the goal formula
         # H_goal = -goal_p *math.log(goal_p, 2) - (1-goal_p) * math.log(1-goal_p,2)
         H_goal = self.entropy_of_goal(None, goal_facts)
-        print goal_p, H_goal
+        log.debug("P(goal) = %.3f, H(goal) = %.3f", goal_p, H_goal)
 
 
         # dis_score = float(confirm_score)/(2**(len(disconfirm)-1))
@@ -432,9 +483,12 @@ class DTProblem(object):
         for svar, val in disconfirm:
             dis_fact = state.Fact(svar, val)
             H = self.entropy_of_goal(dis_fact, goal_facts)
-            print dis_fact, H
-            reward_factor = 1 - H/H_goal
-
+            log.debug("entropyof disconfirming %s: %.3f", dis_fact, H)
+            if H_goal > 0:
+                reward_factor = 1 - H/max(H, H_goal)
+            else:
+                reward_factor = 0
+                
             # dH = 0
             # count = 0
             # for goalvar in set(g.svar.nonmodal() for g in goals):
