@@ -46,7 +46,7 @@ private:
   bool m_displayImage;
   std::string m_saveDirectory;
   int m_lastframe;
-
+  bool m_createViewCone;
   int m_subSampleScale;
 
   enum {
@@ -61,6 +61,7 @@ private:
   /* Sense of the normals for the planes above */
   int senses[N_PLANES];
 
+  bool createViewCone();
   Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
 
 
