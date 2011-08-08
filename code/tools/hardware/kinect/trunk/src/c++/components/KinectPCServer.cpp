@@ -79,6 +79,11 @@ void KinectPCServer::configure(const map<string, string> & _config)
 
 	map<string, string>::const_iterator it;
 
+  m_createViewCone = false;
+  if (_config.find("--create-viewcone") != _config.end()) {
+    m_createViewCone = true;
+  }
+
   m_subSampleScale = 1;
   if ((it = _config.find("--subsample-scale")) != _config.end()) {
     istringstream str(it->second);
@@ -136,7 +141,15 @@ void KinectPCServer::configure(const map<string, string> & _config)
 void KinectPCServer::start()
 {
   PointCloudServer::start();
- }
+
+  if (m_createViewCone) {
+    bool hasAllPlanes = false;
+    while (!hasAllPlanes) {
+      hasAllPlanes = createViewCone();
+      usleep(100000);
+    }
+  }
+}
 
 void KinectPCServer::runComponent() {
 	log("I am running ");
@@ -192,9 +205,7 @@ void KinectPCServer::saveNextFrameToFile() {
   cvReleaseImage(&depth_data);
 }
 
-
-// ########################## Point Cloud Server Implementations ########################## //
-void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
+bool KinectPCServer::createViewCone()
 {
   lockComponent();
   kinect::changeRegistration(0);
@@ -207,48 +218,9 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
   Pose3 global_kinect_pose, zeroPose;
   setIdentity(zeroPose);
   setIdentity(global_kinect_pose);
-  if(transformToGlobal)
-    transform(camPars[0].pose, zeroPose, global_kinect_pose);
+  transform(camPars[0].pose, zeroPose, global_kinect_pose);
 
-  // copy clouds to points-vector (dense!)
-  for (int row=0; row < cloud.size().height; row++)   /// TODO SLOW!!!
-  {
-    for (int col=0; col < cloud.size().width; col++)
-    {
-      PointCloud::SurfacePoint pt;
-      pt.p.x = cloud.at<cv::Point3f>(row, col).x;
-      pt.p.y = cloud.at<cv::Point3f>(row, col).y;
-      pt.p.z = cloud.at<cv::Point3f>(row, col).z;
-
-      /* Check point for validity */
-      if (pt.p.x == FLT_MAX && pt.p.y == FLT_MAX && pt.p.z == FLT_MAX)
-      {
-        /* If no data is available add (0,0,0) as specified in PointCloudServer */
-        if (complete) {
-          pt.p.x = 0;
-          pt.p.y = 0;
-          pt.p.z = 0;
-        }
-        /* Or if we don't care about missing data ignore the point */
-        else
-          continue;
-      }
-
-      pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
-      pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
-      pt.c.b = colCloud.at<cv::Point3f>(row, col).x;
-
-      if(transformToGlobal)
-        pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
-
-      if (complete)
-        points.push_back(pt);
-      else if (isPointInViewCone(pt.p))
-        points.push_back(pt);
-    }
-  }
-  
-  for (int i = 0; i < N_PLANES && transformToGlobal; i++) {
+  for (int i = 0; i < N_PLANES; i++) {
     if (fovPlanes[i])
       continue;
     cv::Mat_<cv::Point3f> colOrRow;
@@ -282,6 +254,65 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
       senses[i] = 2 * (std::acos(axis.dot(fovPlanes[i]->normal())) > M_PI/2) - 1;
     }
   }
+
+  bool allPlanesOk = fovPlanes[0] && fovPlanes[1] && fovPlanes[2] && fovPlanes[3];
+
+  unlockComponent();
+
+  return allPlanesOk;
+}
+
+// ########################## Point Cloud Server Implementations ########################## //
+void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
+{
+  lockComponent();
+  kinect->NextFrame();
+  
+  cv::Mat_<cv::Point3f> cloud;
+  cv::Mat_<cv::Point3f> colCloud;
+  kinect->Get3dWorldPointCloud(cloud, colCloud, m_subSampleScale);
+
+  Pose3 global_kinect_pose, zeroPose;
+  setIdentity(zeroPose);
+  setIdentity(global_kinect_pose);
+  if(transformToGlobal)
+    transform(camPars[0].pose, zeroPose, global_kinect_pose);
+
+  // copy clouds to points-vector (dense!)
+  for (int row=0; row < cloud.size().height; row++)
+  {
+    for (int col=0; col < cloud.size().width; col++)
+    {
+      PointCloud::SurfacePoint pt;
+      pt.p.x = cloud.at<cv::Point3f>(row, col).x;
+      pt.p.y = cloud.at<cv::Point3f>(row, col).y;
+      pt.p.z = cloud.at<cv::Point3f>(row, col).z;
+
+      /* Check point for validity */
+      if (pt.p.x == FLT_MAX && pt.p.y == FLT_MAX && pt.p.z == FLT_MAX)
+      {
+        /* If no data is available add (0,0,0) as specified in PointCloudServer */
+        if (complete) {
+          pt.p.x = 0;
+          pt.p.y = 0;
+          pt.p.z = 0;
+        }
+        /* Or if we don't care about missing data ignore the point */
+        else
+          continue;
+      }
+
+      pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
+      pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
+      pt.c.b = colCloud.at<cv::Point3f>(row, col).x;
+
+      if(transformToGlobal)
+        pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
+
+      points.push_back(pt);
+    }
+  }
+  
 
   unlockComponent();
 }
@@ -412,9 +443,12 @@ void KinectPCServer::receiveImages(const vector<Video::Image>& images)
 bool KinectPCServer::isPointInViewCone(const Vector3& point)
 {
   /* Make sure we have a complete view cone */
-  for (int i = 0; i < N_PLANES; i++)
-    if (fovPlanes[i] == NULL)
+  for (int i = 0; i < N_PLANES; i++) {
+    if (fovPlanes[i] == NULL) {
+      log("WARNING: isPointInViewCone called with undefined view cone planes always returns true");
       return true;
+    }
+  }
 
   Eigen::Vector3d p(point.x, point.y, point.z);
 
