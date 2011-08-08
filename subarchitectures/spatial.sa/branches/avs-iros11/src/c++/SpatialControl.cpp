@@ -431,8 +431,8 @@ void SpatialControl::updateGridMaps()
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
 
   /* Bounding box for laser scan */
-  int laserMinX = INT_MAX, laserMaxX = INT_MIN;
-  int laserMinY = INT_MAX, laserMaxY = INT_MIN;
+  double laserMinX = INT_MAX, laserMaxX = INT_MIN;
+  double laserMinY = INT_MAX, laserMaxY = INT_MIN;
 
   /* Add all queued laser scans */
   m_ScanQueueMutex.lock();
@@ -465,18 +465,19 @@ void SpatialControl::updateGridMaps()
   laserMinY -= m_MaxExplorationRange;
   laserMaxX += m_MaxExplorationRange;
   laserMaxY += m_MaxExplorationRange;
-  if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinX, laserMinY) != 0) {
-    laserMinX = -tmp_lgm.getSize() + 1;
-    laserMinY = -tmp_lgm.getSize() + 1;
+  int laserMinXi, laserMinYi, laserMaxXi, laserMaxYi;
+  if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
+    laserMinXi = -tmp_lgm.getSize() + 1;
+    laserMinYi = -tmp_lgm.getSize() + 1;
   }
-  if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxX, laserMaxY) != 0) {
-    laserMaxX = tmp_lgm.getSize() - 1;
-    laserMaxY = tmp_lgm.getSize() - 1;
+  if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxXi, laserMaxYi) != 0) {
+    laserMaxXi = tmp_lgm.getSize() - 1;
+    laserMaxYi = tmp_lgm.getSize() - 1;
   }
 
   /* Bounding box for new point cloud data */
-  int pointcloudMinX = INT_MAX, pointcloudMaxX = INT_MIN;
-  int pointcloudMinY = INT_MAX, pointcloudMaxY = INT_MIN;
+  int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
+  int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
 
   /* Update height map */
   cdl::CASTTime frameTime = getCASTTime();
@@ -513,27 +514,27 @@ void SpatialControl::updateGridMaps()
         lgmKH(xi, yi) = pZ;
 
         /* Update bounding box */
-        if (xi < pointcloudMinX)
-          pointcloudMinX = xi;
-        if (xi > pointcloudMaxX)
-          pointcloudMaxX = xi;
-        if (yi < pointcloudMinY)
-          pointcloudMinY = yi;
-        if (yi > pointcloudMaxY)
-          pointcloudMaxY = yi;
+        if (xi < pointcloudMinXi)
+          pointcloudMinXi = xi;
+        if (xi > pointcloudMaxXi)
+          pointcloudMaxXi = xi;
+        if (yi < pointcloudMinYi)
+          pointcloudMinYi = yi;
+        if (yi > pointcloudMaxYi)
+          pointcloudMaxYi = yi;
       }
     }
 
     /* Project the height map onto the 2D obstacle map */ 
-    if (pointcloudMinX != INT_MAX && pointcloudMinY != INT_MAX && pointcloudMaxX != INT_MIN && pointcloudMaxY != INT_MIN) {
-      blitHeightMap(tmp_lgm, pointcloudMinX, pointcloudMaxX, pointcloudMinY, pointcloudMaxY);
+    if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
+      blitHeightMap(tmp_lgm, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi);
       tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
           0.55*Cure::NavController::getRobotWidth(), '0'); 
     }
   }
 
   /* Project the height map onto the 2D obstacle map */ 
-  blitHeightMap(tmp_lgm, laserMinX, laserMaxX, laserMinY, laserMaxY);
+  blitHeightMap(tmp_lgm, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi);
 
   const int deltaN = 3;
   double d = tmp_lgm.getCellSize()/deltaN;
