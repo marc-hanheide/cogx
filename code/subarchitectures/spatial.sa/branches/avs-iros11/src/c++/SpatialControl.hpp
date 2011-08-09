@@ -91,8 +91,13 @@ class SpatialControl : public cast::ManagedComponent ,
         virtual bool isCircleObstacleFree(double x, double y, double radius, const Ice::Current &_context) {
           if(!m_pOwner->m_lgm)
             throw "No map exists. Can not check for obstacles.";
+          if (radius < 0)
+            radius = 0.5 * m_pOwner->getRobotWidth();
 
-          return m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
+          m_pOwner->m_MapsMutex.lock();
+          bool ret = m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
+          m_pOwner->m_MapsMutex.unlock();
+          return ret;
         }
 
         virtual bool isPointReachable(double xW, double yW, const Ice::Current &_context);

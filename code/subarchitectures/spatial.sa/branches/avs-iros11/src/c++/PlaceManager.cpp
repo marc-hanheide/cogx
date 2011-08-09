@@ -1843,7 +1843,21 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
           }
         }
         if(!placeholderStillValid) {
-          deletePlaceholder(place->id);
+          /* Check if we are deleting the current goal hypothesis */
+          if (place->id != m_goalPlaceForCurrentPath) {
+            /* If it was not the goal just delete it */
+            deletePlaceholder(place->id);
+          }
+          else {
+            /* If we are trying to delete the goal hypothesis only delete it
+             * if it is blocked, if the goal is in free space (ie no frontier
+             * there) we should still (try to) go to it */
+            FrontierInterface::NodeHypothesisPtr goalHyp = getHypFromPlaceID(place->id); 
+            SpatialData::MapInterfacePrx map = getIceServer<SpatialData::MapInterface>("spatial.control");
+            if (goalHyp && !map->isCircleObstacleFree(goalHyp->x, goalHyp->y, -1)) {
+              deletePlaceholder(place->id);
+            }
+          }
         }
       } catch (IceUtil::NullHandleException e) {
         log("Place suddenly disappeared!\n");
