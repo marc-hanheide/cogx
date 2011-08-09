@@ -69,21 +69,19 @@ private:
   int framerateMillis;                          ///< framerate in milliseconds
 
   /// all the grabbed/calculated images/clouds
-  std::vector<IplImage*> grabbedImages;         ///< pointers to grabbed images for (left/right stereo and kinect image ==3)
+  std::vector<IplImage*> grabbedImages;         ///< pointers to grabbed images for (left/right stereo and kinect image == 3)
   IplImage* scaledStereoImages[2];              ///< pointers to scaled stereo images
   IplImage* rectifiedStereoImages[2];           ///< pointers to rectified stereo images (also scaled!)
   IplImage* rectifiedGrayStereoImages[2];       ///< pointers to rectified stereo images (also scaled!)
   IplImage* disparityImg;                       ///< Disparity image (also scaled)
-  cv::Mat_<cv::Point3f> cloud;                  ///< point cloud from the file
+  cv::Mat_<cv::Point3f> cloud;                  ///< point cloud from the file TODO Change to cv::Vec4f matrix with color!
   cv::Mat_<cv::Point3f> colCloud;               ///< color values to the point cloud from the file
 
   /**
    * time stamps when Ipl images were captured.
    */
   std::vector<cast::cdl::CASTTime> grabTimes;
-//   int frameCnt;
-//   int framerateMillis;
-  int width, height;                            /// width and heigth of the saved images 
+  int width, height;                            /// width and heigth of the saved images
   
   /// for stereoProcessing!
   std::vector<StereoCamera*> stereoCams;        ///<  Stereo parameters, one for each resolution we offer
@@ -91,7 +89,6 @@ private:
   std::vector<CvSize> stereoSizes;              ///< We offer different resolutions for high speed / low accuracy and vice versa
   /// for stereoProcessing end!
   
-//  std::vector<int> camIds;                      ///< TODO Camera IDs for left/right/kinect and points??? => initialized 4 cams!  ==> TODO shifted to PointCloudServer
   int numFiles;                                 ///< Number of filenames (numCams + kinect)
   int numCams;                                  ///< Number of camera images (stereo left/right and kinect = 3)
   int getNumFiles() {return numFiles;}          ///< One more than cams (kinect point cloud)
@@ -123,7 +120,6 @@ private:
   /// SEQUENCE MAPS END
 
 
-
 #ifdef HAVE_GPU_STEREO
   CensusGPU *census;                            ///< The GPU stereo matching code
   int medianSize;                               ///< Size of median filter for specle removeal in the disparity image. (0 = not median filtering)
@@ -138,8 +134,6 @@ private:
  
   void constructFilenames(const vector<string> &fileTemplates, int first, int last, int inc);
   void obtainImageSize() throw(std::runtime_error);
-
-  
   void grabFramesInternal();
 
 protected:

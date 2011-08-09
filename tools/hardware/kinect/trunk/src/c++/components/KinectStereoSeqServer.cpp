@@ -337,7 +337,6 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
   // configure the point cloud server
   PointCloudServer::configure(_config);
   
-  string stereoCalibFile;
   map<string,string>::const_iterator it;
   
   // define number of cams and filenames // TODO we know that we have 3 cams and 4 file-templates
@@ -419,6 +418,7 @@ void KinectStereoSeqServer::configure(const map<string,string> & _config) throw(
     log("log images.");
   }
   
+//   string stereoCalibFile;
 //   if((it = _config.find("--stereoconfig")) != _config.end())
 //   {
 //     stereoCalibFile = it->second;

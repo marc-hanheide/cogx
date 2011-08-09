@@ -61,7 +61,7 @@ bool Kinect::Init(const char *kinect_xml_file)
   if(rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Changing input format failed.\n");
 
-    // set pixel format to grayscale (bayer image)
+  // set pixel format to grayscale (bayer image)
   rc = kinect::getImageGenerator()->SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT);
   if(rc != XN_STATUS_OK) 
     printf("Kinect::Init: Error: Changing pixel format to grayscale failed.\n");
@@ -96,7 +96,6 @@ bool Kinect::Init(const char *kinect_xml_file)
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Geting focal length failed.\n");
   
-
   rgbWidth = 640;	/// TODO Get width and height from file!
   rgbHeight = 480;
   depWidth = 640;
@@ -261,18 +260,14 @@ const DepthMetaData* Kinect::getNextDepthMD()
   }
     
   kinect::readFrame();  // read next frame
-
-  // get depth image
   return kinect::getDepthMetaData();
 }
+
 
 std::pair<const DepthMetaData*, const ImageGenerator*> Kinect::getNextFrame()
 {
   if(!kinect::isCapturing())
-  {
     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
-   // return 0;
-  }
     
   kinect::readFrame();  // read next frame
 

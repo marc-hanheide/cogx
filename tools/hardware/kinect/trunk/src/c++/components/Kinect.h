@@ -30,7 +30,6 @@ private:
   int depWidth;                         ///< Width of depth image
   int depHeight;                        ///< Heigth of depth image
 
-  
   float centerX, centerY;               ///< center of the image -0.5f
   double pixel_size;                    ///< pixel size of the kinect camera
   XnUInt64 depth_focal_length_SXGA;     ///< 
@@ -66,6 +65,7 @@ public:
   int frameNumber;
 
   const DepthMetaData* getNextDepthMD();
+
   std::pair<const DepthMetaData*, const ImageGenerator*> getNextFrame();
   cv::Point3f Get3dWorldPoint(unsigned x, unsigned y);
   cv::Point3f WorldToColor(unsigned x, unsigned y);
