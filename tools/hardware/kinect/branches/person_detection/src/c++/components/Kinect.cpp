@@ -96,6 +96,7 @@ bool Kinect::Init(const char *kinect_xml_file)
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Geting focal length failed.\n");
   
+
   rgbWidth = 640;	/// TODO Get width and height from file!
   rgbHeight = 480;
   depWidth = 640;

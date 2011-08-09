@@ -1,13 +1,13 @@
 /**
- * @file KinectPCServer.h
- * @author Richtsfeld Andreas
+ * @file KinectPCServerPerson.h
+ * @author Richtsfeld Andreas; Hanheide, Marc
  * @date April 2011
  * @version 0.1
  * @brief Point cloud server for the kinect sensor.
- */
+ */ 
 
-#ifndef KINECT_PC_SERVER_H
-#define KINECT_PC_SERVER_H
+#ifndef KINECT_PC_SERVERPERSON_H
+#define KINECT_PC_SERVERPERSON_H
 
 #include <vector>
 #include <sys/time.h>
@@ -39,10 +39,12 @@ private:
 
   DepthGenerator* depthGenerator;
   ImageGenerator* imageGenerator;
+  UserGenerator* userGenerator;
   DepthMetaData depthMD;
   ImageMetaData imageMD;
 
   bool m_saveToFile;
+  bool m_detectPersons;
   bool m_displayImage;
   std::string m_saveDirectory;
   int m_lastframe;
@@ -69,6 +71,7 @@ protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void start();
   virtual void runComponent();
+  void detectPersons();
   
 public:
   KinectPCServer();
