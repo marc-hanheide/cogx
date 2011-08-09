@@ -6,6 +6,8 @@
  * @brief Point cloud server for the kinect sensor.
  */
 
+#define EIGEN2_SUPPORT
+
 #include <cmath>
 #include <algorithm>
 #include <Eigen/LeastSquares>
@@ -28,13 +30,12 @@ using namespace std;
 using namespace cogx;
 using namespace cogx::Math;
 using namespace cast::cdl;
+
 KinectPCServer::KinectPCServer() {
   for (int i = 0; i < N_PLANES; i++) {
     fovPlanes[i] = NULL;
     senses[i] = 0;
   }
-
-	log("I am created.");
 }
 
 KinectPCServer::~KinectPCServer() {
@@ -64,8 +65,7 @@ void KinectPCServer::getResolution(int camIdx, CvSize &size) {
  *        reslution was chosen
  */
 bool KinectPCServer::setResolution(int camIdx, CvSize &size) {
-	log(
-			"setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
+	log("setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
 	return false;
 }
 
@@ -279,9 +279,10 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
     transform(camPars[0].pose, zeroPose, global_kinect_pose);
 
   // copy clouds to points-vector (dense!)
-  for (int row=0; row < cloud.size().height; row++)
+  int scale = cloud.size().width / imgWidth;
+  for (int row=0; row < cloud.size().height; row += scale)   /// SLOW conversion
   {
-    for (int col=0; col < cloud.size().width; col++)
+    for (int col=0; col < cloud.size().width; col += scale)
     {
       PointCloud::SurfacePoint pt;
       pt.p.x = cloud.at<cv::Point3f>(row, col).x;
@@ -312,8 +313,6 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
       points.push_back(pt);
     }
   }
-  
-
   unlockComponent();
 }
 
@@ -483,6 +482,7 @@ class InvalidPointFilter {
     return p.x == FLT_MAX || p.y == FLT_MAX || p.z == FLT_MAX;
   }
 };
+
 Eigen::Hyperplane<double, 3>* KinectPCServer::createPlane(std::vector<cv::Point3f>& cvPoints, Pose3& global_kinect_pose) {
   Eigen::Hyperplane<double, 3>* plane = NULL;
 
