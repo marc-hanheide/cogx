@@ -384,6 +384,7 @@ void DisplayNavInPB::start() {
 
 
 void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+  debug("Entered newPlacePointCloud");
   log("new PlanePointCloud received.");
 
   try {
@@ -422,11 +423,13 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
     log("Error! plane point cloud disappeared from WM.");
   }
 
+  debug("Exited newPlacePointCloud");
 }
 
 
 void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newShapeProperty");
 
     // Get the property
 	SpatialProperties::RoomShapePlacePropertyPtr property;
@@ -437,6 +440,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
+    debug("Exited newShapeProperty");
 	  return;
 	}
 
@@ -459,6 +463,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        debug("Exited newShapeProperty");
         return;
     }
 
@@ -477,6 +482,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    debug("Exited newShapeProperty");
 }
 
 
@@ -484,6 +490,8 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 
 void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
+  
+  debug("Entered newSizeProperty");
 
     // Get the property
 	SpatialProperties::RoomSizePlacePropertyPtr property;
@@ -494,6 +502,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
+    debug("Exited newSizeProperty");
 	  return;
 	}
 
@@ -516,6 +525,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        debug("Exited newSizeProperty");
         return;
     }
 
@@ -534,6 +544,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    debug("Exited newSizeProperty");
 }
 
 
@@ -544,6 +555,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 
 void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newAppearanceProperty");
 	// Get the property
 	SpatialProperties::RoomAppearancePlacePropertyPtr property;
     try
@@ -553,6 +565,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
+    debug("Exited newAppearanceProperty");
 	  return;
 	}
 
@@ -573,6 +586,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        debug("Exited newAppearanceProperty");
         return;
     }
 
@@ -589,13 +603,17 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    debug("Exited newAppearanceProperty");
 }
 
 
 void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 {
-	if (!m_PeekabotClient.is_connected())
+  debug("Entered newComaRoom");
+	if (!m_PeekabotClient.is_connected()) {
+    debug("Exited newComaRoom");
 		return;
+  }
 
 	// Get the ComaRoom
 	comadata::ComaRoomPtr croom;
@@ -606,6 +624,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	catch (...)
 	{
 		log("Error! coma room cloud disappeared from WM.");
+    debug("Exited newComaRoom");
 		return;
 	}
 
@@ -737,12 +756,14 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	} // end for
 	m_PeekabotClient.end_bundle();
 	m_Mutex.unlock();
+  debug("Exited newComaRoom");
 }
 
 
 
 void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newRoomCategoryPlaceholderProperty");
 
     // Get the property
 	SpatialProperties::RoomCategoryPlaceholderPropertyPtr property;
@@ -753,6 +774,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
+    debug("Exited newRoomCategoryPlaceholderProperty");
 	  return;
 	}
 
@@ -782,6 +804,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
+    debug("Entered newRoomCategoryPlaceholderProperty");
 }
 
 
@@ -903,7 +926,7 @@ double DisplayNavInPB::getProbabilityValue(const SpatialProperties::ProbabilityD
 
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
-  debug("VPnodelist called"); 
+  debug("Entered newVPlist"); 
 
   if (!m_PeekabotClient.is_connected()) return;
 
@@ -928,6 +951,7 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
       createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
     }
   }
+  debug("Exited newVPlist"); 
 }
 
 void DisplayNavInPB::createRobotFOV() 
@@ -1040,6 +1064,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 }
 
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
+  debug("Entered newPointCloud");
   log("Got new SOI points.");
   double color[3] = { 0.9, 0, 0};
 
@@ -1090,6 +1115,7 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
     log("Error! SOI WM entry went missing!");
   }
   
+  debug("Exited newPointCloud");
 }
 
 void DisplayNavInPB::runComponent() {
@@ -1319,6 +1345,7 @@ void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
 
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  debug("Entered newRobotPose");
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
   
@@ -1419,12 +1446,15 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 	}
     }
   }
+  debug("Exited newRobotPose");
 }
 
 
 void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 {  
   if (!m_ShowObjects) return;
+  
+  debug("Entered newNavGraphObject");
   
   shared_ptr<CASTData<NavData::ObjData> > oobj =
     getWorkingMemoryEntry<NavData::ObjData>(objID.address);
@@ -1433,6 +1463,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   
   if (!m_PeekabotClient.is_connected()) {
     log("Received an object of category %s, not displaying it since not connected to peekabot", objData->category.c_str());
+    debug("Exited newNavGraphObject");
     return;
   }
   log("Received an object of category %s", objData->category.c_str());
@@ -1499,6 +1530,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   m_PeekabotClient.end_bundle();
 
   m_Mutex.unlock();
+  debug("Exited newNavGraphObject");
 }
   
 void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
@@ -1511,10 +1543,12 @@ void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
   m_Mutex.lock();
   m_LineMap = oobj->getData();
   m_Mutex.unlock();
+  debug("Exited newLineMap");
 }
 
 void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newPerson");
   // Person entries can be removed at any time
   try {
     shared_ptr<CASTData<NavData::Person> > oobj =
@@ -1552,10 +1586,12 @@ void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
   } catch(DoesNotExistOnWMException){}
   
   m_Mutex.unlock();
+  debug("Exited newPerson");
 }
 
 void DisplayNavInPB::deletePerson(const cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered deletePerson");
   int i = 0;
   for (std::vector<DisplayNavInPB::PersonData>::iterator pi = m_People.begin();
        pi != m_People.end(); pi++, i++) {
@@ -1565,10 +1601,12 @@ void DisplayNavInPB::deletePerson(const cdl::WorkingMemoryChange &objID)
       break;
     }
   }
+  debug("Exited deletePerson");
 }
 
 void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newPersonFollowed");
   shared_ptr<CASTData<NavData::PersonFollowed> > oobj =
     getWorkingMemoryEntry<NavData::PersonFollowed>(objID.address);
   
@@ -1578,10 +1616,12 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
   sprintf(buf, "Got id of person being tracked %d", m_CurrPersonId);
   debug(buf);
   m_Mutex.unlock();
+  debug("Exited newPersonFollowed");
 }
 
 void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
 {
+  debug("Entered newNavCommand");
   shared_ptr<CASTData<SpatialData::NavCommand> > oobj =
     getWorkingMemoryEntry<SpatialData::NavCommand>(objID.address);
 
@@ -1617,8 +1657,11 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       }
     }
 
-    if (oobj->getData()->destId.empty())
+    if (oobj->getData()->destId.empty()) {
+      log("No destID. Returning.");
+      debug("Exited newNavCommand");
       return;
+    }
     
     log("Updating goal from %d to %d", m_currGoalPlace, oobj->getData()->destId[0]);
 
@@ -1658,16 +1701,19 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       sp.set_opacity(0.3);
     }
   }
+  debug("Exited newNavCommand");
 }		
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
-	debug("new NavGraphNode");
+	debug("Entered newNavGraphNode");
 
 	try
 	{
-		if (!m_PeekabotClient.is_connected())
+		if (!m_PeekabotClient.is_connected()) {
+      debug("Exited newNavGraphNode");
 			return;
+    }
 
 		shared_ptr<CASTData<NavData::FNode> > oobj =
 				getWorkingMemoryEntry<NavData::FNode>(objID.address);
@@ -1830,6 +1876,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 {
+  debug("Entered newPlace");
 	SpatialData::PlacePtr placePtr;
 	try
 	{
@@ -1839,6 +1886,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 	catch(CASTException &e)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+    debug("Exited newPlace");
 		return;
 	}
 
@@ -1957,16 +2005,20 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			}
 		}
 	}
+  debug("Exited newPlace");
 }
 
 
 void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 {
+  debug("Entered deletePlace");
 	// Find and remove the place data
 	string wmId = wmChange.address.id;
 	map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
-	if ( it == _places.end())
+	if ( it == _places.end()) {
+    debug("Exited deletePlace");
 		return;
+  }
 	PlaceData pd = it->second;
 	_places.erase(it);
 	bool placeholder = (pd.placeStatus == SpatialData::PLACEHOLDER);
@@ -2006,6 +2058,7 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 			text.remove();
 		}
 	}
+  debug("Exited deletePlace");
 }
 
 
@@ -2115,9 +2168,12 @@ void DisplayNavInPB::addDoorpost(double x, double y, double theta,
 
 void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 {
-  debug("new NavGraphEdge");
+  debug("Entered newNavGraphEdge");
 
-  if (!m_PeekabotClient.is_connected()) return;
+  if (!m_PeekabotClient.is_connected()) {
+    debug("Exited newNavGraphEdge");
+    return;
+  }
 
   shared_ptr<CASTData<NavData::AEdge> > oobj =
     getWorkingMemoryEntry<NavData::AEdge>(objID.address);
@@ -2149,6 +2205,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
   m_PeekabotClient.end_bundle();
 
   m_Mutex.unlock();
+  debug("Exited newNavGraphEdge");
 }
 
 
@@ -2525,10 +2582,13 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
 void 
 DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newViewpointGenCommand");
   if (!m_PeekabotClient.is_connected() ||
       !m_ShowCommands ||
-      !m_RobotPose)
+      !m_RobotPose) {
+    debug("Exited newViewpointGenCommand");
     return;
+  }
 
   SpatialData::RelationalViewPointGenerationCommandPtr obj;
   try
@@ -2563,17 +2623,22 @@ DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &obj
   catch (...)
   {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    debug("Exited newViewpointGenCommand");
     return;
   }
+  debug("Exited newViewpointGenCommand");
 }
 
 void 
 DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newARTagCommand");
   if (!m_PeekabotClient.is_connected() ||
       !m_RobotPose ||
-      !m_ShowCommands)
+      !m_ShowCommands) {
+    debug("Exited newARTagCommand");
     return;
+  }
 
   VisionData::ARTagCommandPtr obj;
   try
@@ -2586,17 +2651,22 @@ DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
   catch (...)
   {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    debug("Exited newARTagCommand");
     return;
   }
+  debug("Exited newARTagCommand");
 }
 
 void 
 DisplayNavInPB::newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+  debug("Entered newRecognizerCommand");
   if (!m_PeekabotClient.is_connected() ||
       !m_RobotPose ||
-      !m_ShowCommands)
+      !m_ShowCommands) {
+    debug("Exited newRecognizerCommand");
     return;
+  }
 
   VisionData::Recognizer3DCommandPtr obj;
   try
@@ -2609,8 +2679,10 @@ DisplayNavInPB::newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID
   catch (...)
   {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
+    debug("Exited newRecognizerCommand");
     return;
   }
+  debug("Exited newRecognizerCommand");
 }
 
 void
