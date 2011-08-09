@@ -13,7 +13,7 @@
 #include <Eigen/LeastSquares>
 #include <Eigen/Geometry>
 #include <cast/core/CASTUtils.hpp>
-#include "KinectPCServer.h"
+#include "KinectPCServerPerson.h"
 #include <highgui.h>
 /**
  * The function called to create a new instance of our component.
@@ -106,6 +106,8 @@ void KinectPCServer::configure(const map<string, string> & _config)
      kinect->StartCapture(0); 	// start capturing
      depthGenerator = kinect::getDepthGenerator();
      imageGenerator = kinect::getImageGenerator();
+     userGenerator = kinect::getUserGenerator();
+
      m_saveToFile = false;
      if ((it = _config.find("--save-to-file")) != _config.end()) {
        m_saveToFile = true;
@@ -159,12 +161,18 @@ void KinectPCServer::runComponent() {
   }
  cvWaitKey(100);
 		while(isRunning()) {
+			if (m_detectPersons) {
+				detectPersons();
+			}
 			if (m_saveToFile) {
 				saveNextFrameToFile();
 				usleep(50000);
 			}
 		}
 	}
+void KinectPCServer::detectPersons() {
+	kinect->
+}
 
 void KinectPCServer::saveNextFrameToFile() {
   kinect->NextFrame();
