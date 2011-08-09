@@ -18,7 +18,7 @@ CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instant
 
 
 #CPP MG cameramounttest CameraMountTest --pan 0.0 --tilt -0.52324971 # -30 degrees
-CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 --create-viewcone
 
 SUBARCHITECTURE spatial.sa
 CPP WM SubarchitectureWorkingMemory #--log #--debug
