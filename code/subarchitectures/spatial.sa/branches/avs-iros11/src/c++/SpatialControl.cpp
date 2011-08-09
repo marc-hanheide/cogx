@@ -487,6 +487,9 @@ void SpatialControl::updateGridMaps()
     getPoints(true, 0 /* unused */, points);
     std::sort(points.begin(), points.end(), ComparePoints());
     for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+      /* Ignore points not in the current view cone */
+      if (!isPointInViewCone(it->p))
+        continue;
       /* Transform point in cloud with regards to the robot pose */
       Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
       Cure::Vector3D to;
@@ -502,12 +505,12 @@ void SpatialControl::updateGridMaps()
           /* Undo robot pose transform since it is not known by the point cloud */
           Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
           scanPose.transform(old, to);
-          cogx::Math::Vector3 point;
-          point.x = to.X[0];
-          point.y = to.X[1];
-          point.z = to.X[2];
+          cogx::Math::Vector3 oldPoint;
+          oldPoint.x = to.X[0];
+          oldPoint.y = to.X[1];
+          oldPoint.z = to.X[2];
           /* If the old obstable is not currently in view don't remove it */
-          if (!isPointInViewCone(point))
+          if (!isPointInViewCone(oldPoint))
             continue;
         }
         /* If the above tests passed update the height map */ 
