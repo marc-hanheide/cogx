@@ -48,6 +48,7 @@ PlaceManager::PlaceManager() : m_placeIDCounter(0),
   m_isPathFollowing(false),
   m_startNodeForCurrentPath(-1),
   m_goalPlaceForCurrentPath(-1),
+  m_currentNodeOnPath(-1),
   m_firstMovementRegistered(false)
 {
   cout<<"PlaceManager::PlaceManager()"<<endl;
@@ -1424,6 +1425,7 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
   NavData::FNodePtr curNode = getCurrentNavNode();
   if (curNode != 0) {
     m_startNodeForCurrentPath = curNode->nodeId;
+    m_currentNodeOnPath = curNode->nodeId;
   }
   else {
     log("Error! Could not find current Nav node!");
@@ -1485,7 +1487,7 @@ PlaceManager::processPlaceArrival(bool failed)
       if (wasExploring) {
         FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
         double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
-        bool closeToGoal = distSq <= 0.5*0.5*m_minNodeSeparation*m_minNodeSeparation;
+        bool closeToGoal = distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation;
         //The transition was an exploration action
         if (!placeExisted && closeToGoal) { //No Place exists for current node -> it must be new.
           arrivalCase = 1;
@@ -1893,7 +1895,11 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
     else {
       // If we were following a path and changed nodes, we've arrived at a Place
       if (curNode->nodeId != m_startNodeForCurrentPath) {
-	processPlaceArrival(false);
+        // Make sure we haven't processed this place already
+        if (curNode->nodeId != m_currentNodeOnPath) {
+          m_currentNodeOnPath = curNode->nodeId;
+          processPlaceArrival(false);
+        }
       }
     }
   }
