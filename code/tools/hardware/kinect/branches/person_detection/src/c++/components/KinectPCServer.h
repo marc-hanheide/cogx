@@ -1,13 +1,13 @@
 /**
- * @file KinectPCServerPerson.h
+ * @file KinectPCServer.h
  * @author Richtsfeld Andreas; Hanheide, Marc
  * @date April 2011
  * @version 0.1
  * @brief Point cloud server for the kinect sensor.
  */ 
 
-#ifndef KINECT_PC_SERVERPERSON_H
-#define KINECT_PC_SERVERPERSON_H
+#ifndef KINECT_PC_SERVER_H
+#define KINECT_PC_SERVER_H
 
 #include <vector>
 #include <sys/time.h>

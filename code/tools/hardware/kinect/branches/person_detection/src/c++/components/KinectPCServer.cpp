@@ -13,7 +13,7 @@
 #include <Eigen/LeastSquares>
 #include <Eigen/Geometry>
 #include <cast/core/CASTUtils.hpp>
-#include "KinectPCServerPerson.h"
+#include "KinectPCServer.h"
 #include <highgui.h>
 /**
  * The function called to create a new instance of our component.
@@ -171,7 +171,7 @@ void KinectPCServer::runComponent() {
 		}
 	}
 void KinectPCServer::detectPersons() {
-	kinect->
+	println("number of users in image: %d", userGenerator->GetNumberOfUsers());
 }
 
 void KinectPCServer::saveNextFrameToFile() {
