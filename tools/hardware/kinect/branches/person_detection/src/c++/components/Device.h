@@ -106,6 +106,7 @@ void setPlaybackSpeed(int ratioDiff);
 Device* getDevice();
 DepthGenerator* getDepthGenerator();
 ImageGenerator* getImageGenerator();
+UserGenerator* getUserGenerator();
 IRGenerator* getIRGenerator();
 AudioGenerator* getAudioGenerator();
 
