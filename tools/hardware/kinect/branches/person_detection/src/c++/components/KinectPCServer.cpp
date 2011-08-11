@@ -36,6 +36,7 @@ KinectPCServer::KinectPCServer() {
     fovPlanes[i] = NULL;
     senses[i] = 0;
   }
+  m_detectPersons=true;
 }
 
 KinectPCServer::~KinectPCServer() {
@@ -100,13 +101,17 @@ void KinectPCServer::configure(const map<string, string> & _config)
 	 CvSize size;
 	 const char* name = kinectConfig.c_str();
 	 kinect = new Kinect::Kinect(name);
+
+     userGenerator = kinect::getUserGenerator();
+
 	 kinect->GetColorVideoSize(size);
 	 captureSize.width = size.width;
 	 captureSize.height = size.height;
      kinect->StartCapture(0); 	// start capturing
      depthGenerator = kinect::getDepthGenerator();
      imageGenerator = kinect::getImageGenerator();
-     userGenerator = kinect::getUserGenerator();
+
+     println("depthGenerator: %p, userGenerator is: %p",depthGenerator, userGenerator);
 
      m_saveToFile = false;
      if ((it = _config.find("--save-to-file")) != _config.end()) {
@@ -130,7 +135,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
  
      m_displayImage = false;
      if ((it = _config.find("--display-rgb")) != _config.end()) {
-     printf("Will display Kinect RGB image \n");
+     log("Will display Kinect RGB image");
        m_displayImage= true;
  }
      m_lastframe = -1;
@@ -161,8 +166,10 @@ void KinectPCServer::runComponent() {
   }
  cvWaitKey(100);
 		while(isRunning()) {
+			println("loop");
 			if (m_detectPersons) {
 				detectPersons();
+				sleepComponent(500);
 			}
 			if (m_saveToFile) {
 				saveNextFrameToFile();
@@ -171,6 +178,7 @@ void KinectPCServer::runComponent() {
 		}
 	}
 void KinectPCServer::detectPersons() {
+	kinect->NextFrame();
 	println("number of users in image: %d", userGenerator->GetNumberOfUsers());
 }
 
