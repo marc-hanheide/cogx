@@ -6,7 +6,12 @@
 	</Licenses>
 	<Log writeToConsole="true" writeToFile="false">
 		<!-- 0 - Verbose, 1 - Info, 2 - Warning, 3 - Error (default) -->
-		<LogLevel value="0"/>
+		<LogLevel value="2"/>
+		<Masks>
+			<Mask name="ALL" on="true"/>
+		</Masks>
+		<Dumps>
+		</Dumps>
 	</Log>
 	<ProductionNodes>
 		<Node type="Image" name="Image1">
@@ -21,6 +26,7 @@
 				<Mirror on="false"/>
 			</Configuration>
 		</Node>
+		<Node type="User" />
 		<!--
 		<Node type="Audio" name="Audio1">
 		</Node>
