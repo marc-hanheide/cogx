@@ -10,8 +10,33 @@
 #include "Kinect.h"
 #include <ni/XnCodecIDs.h>
 
+
+// Callback: New user was detected
+void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
+{
+	exit(1);
+	printf("New User %d\n", nId);
+//	// New user found
+//	if (g_bNeedPose)
+//	{
+//		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
+//	}
+//	else
+//	{
+//		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+//	}
+}
+// Callback: An existing user was lost
+void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
+{
+	printf("Lost user %d\n", nId);
+}
+
+
 namespace Kinect
 {
+
+
 
 /**
  * @brief Constructor of Class Kinect
@@ -56,6 +81,8 @@ bool Kinect::Init(const char *kinect_xml_file)
     return false;
   }
 
+
+
   // Input format should be 6 ???
   rc = kinect::getImageGenerator()->SetIntProperty("InputFormat", 6);
   if(rc != XN_STATUS_OK)
@@ -95,7 +122,22 @@ bool Kinect::Init(const char *kinect_xml_file)
   rc = kinect::getDepthGenerator()->GetIntProperty("ZPD", depth_focal_length_SXGA);
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Geting focal length failed.\n");
-  
+
+
+//  UserGenerator* userGenerator = kinect::getUserGenerator();
+//
+//  if (userGenerator!=NULL) {
+//	  if (!userGenerator->IsCapabilitySupported(XN_CAPABILITY_SKELETON)) {
+//		  printf("Supplied user generator doesn't support skeleton\n");
+//		  return 1;
+//	  }
+//	  XnCallbackHandle hUserCallbacks;
+//	  printf("we have a user generator to use\n");
+//	  userGenerator->RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
+//	  userGenerator->GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+//	  printf("is generating? %d\n",userGenerator->IsGenerating());
+//  }
+
 
   rgbWidth = 640;	/// TODO Get width and height from file!
   rgbHeight = 480;
