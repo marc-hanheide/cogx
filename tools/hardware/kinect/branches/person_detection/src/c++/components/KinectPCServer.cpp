@@ -36,7 +36,7 @@ KinectPCServer::KinectPCServer() {
     fovPlanes[i] = NULL;
     senses[i] = 0;
   }
-  m_detectPersons=true;
+  personDetectServer=new PersonDetectServerI(this);
 }
 
 KinectPCServer::~KinectPCServer() {
@@ -85,6 +85,13 @@ void KinectPCServer::configure(const map<string, string> & _config)
     m_createViewCone = true;
   }
 
+
+  m_detectPersons = false;
+  if (_config.find("--detect-persons") != _config.end()) {
+	  m_detectPersons = true;
+  }
+
+
   m_subSampleScale = 1;
   if ((it = _config.find("--subsample-scale")) != _config.end()) {
     istringstream str(it->second);
@@ -101,18 +108,13 @@ void KinectPCServer::configure(const map<string, string> & _config)
 	 CvSize size;
 	 const char* name = kinectConfig.c_str();
 	 kinect = new Kinect::Kinect(name);
-
-     userGenerator = kinect::getUserGenerator();
-
 	 kinect->GetColorVideoSize(size);
 	 captureSize.width = size.width;
 	 captureSize.height = size.height;
      kinect->StartCapture(0); 	// start capturing
      depthGenerator = kinect::getDepthGenerator();
      imageGenerator = kinect::getImageGenerator();
-
-     println("depthGenerator: %p, userGenerator is: %p",depthGenerator, userGenerator);
-
+     userGenerator = kinect::getUserGenerator();
      m_saveToFile = false;
      if ((it = _config.find("--save-to-file")) != _config.end()) {
        m_saveToFile = true;
@@ -135,11 +137,20 @@ void KinectPCServer::configure(const map<string, string> & _config)
  
      m_displayImage = false;
      if ((it = _config.find("--display-rgb")) != _config.end()) {
-     log("Will display Kinect RGB image");
+     log("Will display Kinect RGB image \n");
        m_displayImage= true;
  }
      m_lastframe = -1;
   log("Capturing from kinect sensor started.");
+
+
+  registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
+  println("PersonDetectServer registered");
+}
+
+kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& cur) {
+	kinect::slice::PersonsDict persons;
+	return pcSrv->detectPersons();
 }
 
 /**
@@ -160,26 +171,59 @@ void KinectPCServer::start()
 
 void KinectPCServer::runComponent() {
 	log("I am running ");
- if(m_displayImage){
-    log("Displaying window");
-    cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
-  }
- cvWaitKey(100);
-		while(isRunning()) {
-			println("loop");
-			if (m_detectPersons) {
-				detectPersons();
-				sleepComponent(500);
-			}
-			if (m_saveToFile) {
-				saveNextFrameToFile();
-				usleep(50000);
+	if(m_displayImage){
+		log("Displaying window");
+		cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
+	}
+	cvWaitKey(100);
+
+	while(isRunning()) {
+		println("loop");
+		if (m_detectPersons) {
+			detectPersons();
+		}
+		if (m_saveToFile) {
+			saveNextFrameToFile();
+		}
+		sleepComponent(50);
+	}
+}
+
+::kinect::slice::PersonsDict KinectPCServer::detectPersons() {
+
+	::kinect::slice::PersonsDict persons;
+
+	kinect->NextFrame();
+	int count=userGenerator->GetNumberOfUsers();
+	XnUserID aUsers[count];
+	XnUInt16 nUsers=count;
+
+	userGenerator->GetUsers(aUsers, nUsers);
+	for (int i=0; i<count; i++) {
+		xn::SceneMetaData smd;
+		userGenerator->GetUserPixels(aUsers[i], smd);
+
+		int xRes=smd.LabelMap().XRes();
+		int yRes=smd.LabelMap().YRes();
+		long pixelCount=0;
+		for (int y=0;y<yRes; y++) {
+			for (int x=0;x<xRes; x++) {
+				int v=smd.LabelMap()(x,y);
+				if (v==aUsers[i])
+					pixelCount++;
 			}
 		}
+		double pixelRatio = ((double) pixelCount)/(xRes*yRes);
+		println("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
+		if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
+			kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
+			person->size=pixelCount;
+			persons[aUsers[i]] = person;
+
+		}
 	}
-void KinectPCServer::detectPersons() {
-	kinect->NextFrame();
-	println("number of users in image: %d", userGenerator->GetNumberOfUsers());
+	println("number of users in image: %d", persons.size());
+	return persons;
 }
 
 void KinectPCServer::saveNextFrameToFile() {

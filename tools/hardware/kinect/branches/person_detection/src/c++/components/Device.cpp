@@ -66,9 +66,6 @@ DepthMetaData g_DepthMD;
 ImageMetaData g_ImageMD;
 IRMetaData g_irMD;
 AudioMetaData g_AudioMD;
-/*XnUserID g_aUsers[100];
-XnUInt16 g_nUsers=0;
-*/
 
 ProductionNode* g_pPrimary = NULL;
 
@@ -146,7 +143,6 @@ void openCommon()
 	{
 		for (NodeInfoList::Iterator it = list.Begin(); it != list.End(); ++it)
 		{
-			printf("traversing nodes %d\n", (*it).GetDescription().Type);
 			switch ((*it).GetDescription().Type)
 			{
 			case XN_NODE_TYPE_DEVICE:
@@ -205,17 +201,6 @@ XnStatus openDeviceFromXml(const char* csXmlFile, EnumerationErrors& errors)
 	nRetVal = g_Context.InitFromXmlFile(csXmlFile, &errors);
 	XN_IS_STATUS_OK(nRetVal);
 
-//	nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_USER, g_User);
-//	if (nRetVal != XN_STATUS_OK)
-//	{
-//		nRetVal = g_User.Create(g_Context);
-//		if (nRetVal != XN_STATUS_OK)
-//		{
-//			printf("Kinect.cpp: create failed: %s\n", xnGetStatusString(nRetVal));												\
-//		}
-//	}
-
-
 	openCommon();
 
 	return (XN_STATUS_OK);
@@ -263,11 +248,6 @@ void readFrame()
 	{
 		g_Audio.GetMetaData(g_AudioMD);
 	}
-/*	if (g_User.IsValid())
-	{
-		g_User.GetUsers(g_aUsers, g_nUsers);
-	}
-*/
 }
 
 void changeRegistration(int nValue)
