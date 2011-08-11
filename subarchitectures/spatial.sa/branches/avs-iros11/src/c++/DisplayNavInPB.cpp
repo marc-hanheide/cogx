@@ -429,6 +429,7 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
 
 void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
+  m_PlaceMutex.lock();
   debug("Entered newShapeProperty");
 
     // Get the property
@@ -441,6 +442,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 	{
 	  log("Error! property disappeared from WM.");
     debug("Exited newShapeProperty");
+    m_PlaceMutex.unlock();
 	  return;
 	}
 
@@ -463,6 +465,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        m_PlaceMutex.unlock();
         debug("Exited newShapeProperty");
         return;
     }
@@ -482,6 +485,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    m_PlaceMutex.unlock();
     debug("Exited newShapeProperty");
 }
 
@@ -492,6 +496,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 {
   
   debug("Entered newSizeProperty");
+  m_PlaceMutex.lock();
 
     // Get the property
 	SpatialProperties::RoomSizePlacePropertyPtr property;
@@ -501,7 +506,8 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 	}
 	catch (...)
 	{
-	  log("Error! property disappeared from WM.");
+	  debug("Error! property disappeared from WM.");
+    m_PlaceMutex.unlock();
     debug("Exited newSizeProperty");
 	  return;
 	}
@@ -525,6 +531,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        m_PlaceMutex.unlock();
         debug("Exited newSizeProperty");
         return;
     }
@@ -544,6 +551,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    m_PlaceMutex.unlock();
     debug("Exited newSizeProperty");
 }
 
@@ -556,6 +564,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
   debug("Entered newAppearanceProperty");
+  m_PlaceMutex.unlock();
 	// Get the property
 	SpatialProperties::RoomAppearancePlacePropertyPtr property;
     try
@@ -566,6 +575,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 	{
 	  log("Error! property disappeared from WM.");
     debug("Exited newAppearanceProperty");
+    m_PlaceMutex.unlock();
 	  return;
 	}
 
@@ -586,6 +596,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
+        m_PlaceMutex.unlock();
         debug("Exited newAppearanceProperty");
         return;
     }
@@ -603,6 +614,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
+    m_PlaceMutex.unlock();
     debug("Exited newAppearanceProperty");
 }
 
@@ -764,6 +776,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
   debug("Entered newRoomCategoryPlaceholderProperty");
+  m_PlaceMutex.lock();
 
     // Get the property
 	SpatialProperties::RoomCategoryPlaceholderPropertyPtr property;
@@ -774,6 +787,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
+    m_PlaceMutex.unlock();
     debug("Exited newRoomCategoryPlaceholderProperty");
 	  return;
 	}
@@ -804,7 +818,8 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
-    debug("Entered newRoomCategoryPlaceholderProperty");
+    m_PlaceMutex.unlock();
+    debug("Exited newRoomCategoryPlaceholderProperty");
 }
 
 
@@ -1877,6 +1892,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 {
   debug("Entered newPlace");
+  m_PlaceMutex.lock();
 	SpatialData::PlacePtr placePtr;
 	try
 	{
@@ -1887,18 +1903,33 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
     debug("Exited newPlace");
+    m_PlaceMutex.unlock();
 		return;
 	}
 
 	// Init
-	int placeId = placePtr->id;
-	bool placeholder = (placePtr->status == SpatialData::PLACEHOLDER);
+  int placeId;
+  bool placeholder;
+  try {
+    placeId = placePtr->id;
+    placeholder = (placePtr->status == SpatialData::PLACEHOLDER);
+  } catch (IceUtil::NullHandleException e) {
+    log("Place suddenly disappeared!\n");
+    m_PlaceMutex.unlock();
+    debug("Exited newPlace");
+    return;
+  }
 	// Get node Id for this place
 	FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
 	// Does place exist? If so, delete it first.
-	if (_places.find(wmChange.address.id) != _places.end())
+  log("Delete place if it existed.. ");
+	if (_places.find(wmChange.address.id) != _places.end()) {
+    m_PlaceMutex.unlock();
 		deletePlace(wmChange);
+    m_PlaceMutex.lock();
+  }
+  debug("done.\n");
 
 	// Is it a place or a placeholder
 	if (placeholder)
@@ -1915,42 +1946,61 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			pd.placeStatus = SpatialData::PLACEHOLDER;
 			_places[wmChange.address.id]=pd;
 
+      peekabot::LabelProxy text;
+      peekabot::CubeProxy sp;
+      peekabot::CubeProxy cp;
+      peekabot::CubeProxy mp;
+      peekabot::PolylineProxy lcp;
 			// Draw the placeholder
 			// Add text
 			if (m_ShowLabels)
 			{
-				char buf[32];
-				peekabot::LabelProxy text;
-				sprintf(buf, "%d", placeId);
-				text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-				text.set_text(buf);
-				text.set_pose(nodeHypPtr->x,nodeHypPtr->y,0.3,0,0.0,0);
-				text.set_rotation(0,0,0);
-				text.set_scale(20, 20, 20);
-				text.set_alignment(peekabot::ALIGN_CENTER);
-				text.set_color(1,0,0);
+        try {
+          char buf[32];
+          sprintf(buf, "%d", placeId);
+          text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+          text.set_text(buf);
+          text.set_rotation(0,0,0);
+          text.set_scale(20, 20, 20);
+          text.set_alignment(peekabot::ALIGN_CENTER);
+          text.set_color(1,0,0);
+        } catch(IceUtil::NullHandleException e) {
+          text.remove();
+          log("Placeholder disappeared before we could draw the text.");
+          m_PlaceMutex.unlock();
+          debug("Exited newPlace");
+          return;
+        }
 			}
 
 			// Mashroom
-			peekabot::CubeProxy sp;
-			char name[32];
-			sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
-			sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
-			sp.set_position(nodeHypPtr->x, nodeHypPtr->y, 0);
-			sp.set_scale(0.2, 0.2, 0.05);
-			sp.set_color(0.2, 0.2, 0.2);
+      try {
+        char name[32];
+        sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
+        sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+        sp.set_position(nodeHypPtr->x, nodeHypPtr->y, 0);
+        sp.set_scale(0.2, 0.2, 0.05);
+        sp.set_color(0.2, 0.2, 0.2);
 
-			peekabot::CubeProxy cp;
-			cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
-			cp.set_scale(0.08, 0.08, 0.20);
-			cp.set_position(0,0,0.08);
-			cp.set_color(0.2,0.2,0.2);
+        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+        cp.set_scale(0.08, 0.08, 0.20);
+        cp.set_position(0,0,0.08);
+        cp.set_color(0.2,0.2,0.2);
 
-			peekabot::CubeProxy mp;
-			mp.add(sp, "mushroom");
-			mp.set_scale(0.16, 0.16, 0.05);
-			mp.set_position(0, 0, 0.20);
-			mp.set_color(0.2, 0.2, 0.2);
+        mp.add(sp, "mushroom");
+        mp.set_scale(0.16, 0.16, 0.05);
+        mp.set_position(0, 0, 0.20);
+        mp.set_color(0.2, 0.2, 0.2);
+      } catch(IceUtil::NullHandleException e) {
+        text.remove();
+        sp.remove();
+        cp.remove();
+        mp.remove();
+        log("Placeholder disappeared before we could draw mushroom.");
+        m_PlaceMutex.unlock();
+        debug("Exited newPlace");
+        return;
+      }
 
 			// Origin
 			if (nodeHypPtr) {
@@ -1959,14 +2009,25 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			  NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(originPlaceID);
 			  if (fnodePtr) {
 //			    int parentNodeID= fnodePtr->nodeId;
-			    peekabot::PolylineProxy lcp;
-			    peekabot::VertexSet points;
-			    points.add(0, 0, 0);
-			    points.add(fnodePtr->x-nodeHypPtr->x, 
-				fnodePtr->y-nodeHypPtr->y, 0);
-			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
-			    lcp.set_line_style("dotted",0.5);
-			    lcp.add_vertices(points);
+          try {
+            peekabot::VertexSet points;
+            points.add(0, 0, 0);
+            points.add(fnodePtr->x-nodeHypPtr->x, 
+                fnodePtr->y-nodeHypPtr->y, 0);
+            lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
+            lcp.set_line_style("dotted",0.5);
+            lcp.add_vertices(points);
+          } catch(IceUtil::NullHandleException e) {
+            text.remove();
+            sp.remove();
+            cp.remove();
+            mp.remove();
+            lcp.remove();
+            log("Placeholder disappeared before we could draw the line to the origin.");
+            m_PlaceMutex.unlock();
+            debug("Exited newPlace");
+            return;
+          }
 			  }
 			}
 
@@ -2005,6 +2066,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			}
 		}
 	}
+  m_PlaceMutex.unlock();
   debug("Exited newPlace");
 }
 
@@ -2012,11 +2074,13 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 {
   debug("Entered deletePlace");
+  m_PlaceMutex.lock();
 	// Find and remove the place data
 	string wmId = wmChange.address.id;
 	map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
 	if ( it == _places.end()) {
     debug("Exited deletePlace");
+    m_PlaceMutex.unlock();
 		return;
   }
 	PlaceData pd = it->second;
@@ -2058,6 +2122,7 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 			text.remove();
 		}
 	}
+  m_PlaceMutex.unlock();
   debug("Exited deletePlace");
 }
 
