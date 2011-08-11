@@ -358,7 +358,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	  if (node->x != oobj->x || node->y != oobj->y) {
 	    // If the node has been moved, frontiers must be reevaluated
 	    // and, if necessary, moved.
-	    evaluateUnexploredPaths();
+      evaluateUnexploredPaths();
 	  }
 
 	  unlockEntry(objID.address.id);
@@ -847,6 +847,8 @@ bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
 /* Upgrades placeholderproperties of placeholders reachable from placeID */
 void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
 
+  m_PlacePropsMutex.lock();
+
   vector<FrontierInterface::NodeHypothesisPtr> hypotheses;
   getMemoryEntries<FrontierInterface::NodeHypothesis>(hypotheses);
 
@@ -943,8 +945,10 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
           double gatewayness = getGatewayness(hyp->x, hyp->y);
 
           {
+            m_PlacePropsMutex.unlock();
             setOrUpgradePlaceholderGatewayProperty(hypID, 
                 placeholder->id, gatewayness);
+            m_PlacePropsMutex.lock();
           }
 
           /* Frontier length property */
@@ -1020,6 +1024,8 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
       log("Error: hypothesis suddenly disappeared!");
     }
   }
+
+  m_PlacePropsMutex.unlock();
 }
 
 /* Updates the position of a placeholder to match the position of a frontier
@@ -1137,6 +1143,8 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
     int placeholderID, double value)
 {
   debug("setOrUpgradePlaceholderGatewayProperty(%i,%i,%f) called", hypothesisID, placeholderID, value);
+  m_PlacePropsMutex.lock();
+
   SpatialProperties::BinaryValuePtr gatewaynessValue =
     new SpatialProperties::BinaryValue;
   gatewaynessValue->value = true;
@@ -1218,6 +1226,8 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
       (newID, gwProp);
     m_placeholderGatewayProperties[placeholderID] = newID;
   }
+
+  m_PlacePropsMutex.unlock();
 }
 
 double
@@ -1930,6 +1940,7 @@ PlaceManager::deletePlaceProperties(int placeID)
   log("deletePlaceProperties called");
   deletePlaceholderProperties(placeID);
   {
+    m_PlacePropsMutex.lock();
     //Delete gateway property
     map<int, string>::iterator it = m_gatewayProperties.find(placeID);
     if (it != m_gatewayProperties.end()) {
@@ -1941,6 +1952,7 @@ PlaceManager::deletePlaceProperties(int placeID)
       }
       m_gatewayProperties.erase(it);
     }
+    m_PlacePropsMutex.unlock();
   }
 
   {
@@ -1953,7 +1965,9 @@ void
 PlaceManager::deletePlaceholderProperties(int placeID)
 {
   log("deletePlaceholderProperties called");
-  {  //Delete free space property
+  m_PlacePropsMutex.lock();
+  {  
+    //Delete free space property
     map<int, string>::iterator it = m_freeSpaceProperties.find(placeID);
     if (it != m_freeSpaceProperties.end()) {
       try {
@@ -1991,6 +2005,7 @@ PlaceManager::deletePlaceholderProperties(int placeID)
       m_placeholderGatewayProperties.erase(it);
     }
   }
+  m_PlacePropsMutex.unlock();
   log("deletePlaceholderProperties exited");
 }
 
