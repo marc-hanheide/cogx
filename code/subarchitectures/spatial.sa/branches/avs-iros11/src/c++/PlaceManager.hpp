@@ -182,6 +182,7 @@ class PlaceManager : public cast::ManagedComponent
     std::map<int, std::set<int> > m_connectivities; // Keeps track of the
     					// connectivity properties maintained
     std::map<int, std::string> m_gatewayProperties;
+    IceUtil::Mutex m_PlacePropsMutex;
 
     struct ForbiddenZone {
       double minX;
