@@ -36,6 +36,7 @@ public class PersonDetectorRunner extends ManagedComponent {
 			if (server == null)
 				break;
 			Map<Integer, KinectPerson> persons = server.getPersons();
+			println("number of persons seen: " + persons.size());
 			for (Entry<Integer, KinectPerson> p : persons.entrySet()) {
 				println("person found: id=" + p.getKey() + " size="
 						+ p.getValue().size);
