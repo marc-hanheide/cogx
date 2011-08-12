@@ -178,7 +178,6 @@ void KinectPCServer::runComponent() {
 	cvWaitKey(100);
 
 	while(isRunning()) {
-		println("loop");
 		if (m_detectPersons) {
 			detectPersons();
 		}
@@ -214,7 +213,7 @@ void KinectPCServer::runComponent() {
 			}
 		}
 		double pixelRatio = ((double) pixelCount)/(xRes*yRes);
-		println("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
+		log("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
 		if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
 			kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
 			person->size=pixelCount;
@@ -222,7 +221,7 @@ void KinectPCServer::runComponent() {
 
 		}
 	}
-	println("number of users in image: %d", persons.size());
+	log("number of users in image: %d", persons.size());
 	return persons;
 }
 

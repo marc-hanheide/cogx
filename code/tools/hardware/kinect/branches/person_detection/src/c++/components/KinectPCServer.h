@@ -102,7 +102,7 @@ public:
   bool isPointInViewCone(const cogx::Math::Vector3& point);
     kinect::slice::PersonsDict detectPersons();
     void saveNextFrameToFile();
-    static const float RELATIVE_MINIMUM_PERSON_AREA = 0.05;
+    static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
 };
 
 

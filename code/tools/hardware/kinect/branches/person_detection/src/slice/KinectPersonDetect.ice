@@ -19,6 +19,7 @@ module kinect {
 	PersonsDict getPersons();
   };
 
+
  };
 };
 
