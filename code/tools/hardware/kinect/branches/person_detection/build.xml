@@ -3,6 +3,9 @@
     <!-- =================================================================== -->
     <!-- Add JAR files to classpath                                          -->
     <!-- =================================================================== -->
+        <property name="projectroot.dir" value="${basedir}/../../.." />
+        <property file="${projectroot.dir}/build.properties" />
+
     <path id="build.classpath">
       <pathelement path="${ice.jar}"/>
      <pathelement path="${cast.jar}"/>
@@ -13,6 +16,7 @@
 
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
+	<property name="generated.dir" value="./src/java/kinect/slice" />
 	<property name="slice.dir" value="./src/slice" />
 
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
@@ -62,9 +66,11 @@
 	<!-- =================================================================== -->
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
-	<target name="clean">
-                <delete dir="${src.dir}/**"/>
-	</target>
+        <target name="clean">
+                <delete file="${src.dir}/.depend" />
+                <delete dir="${generated.dir}" />
+        </target>
+
 
 
 </project>
