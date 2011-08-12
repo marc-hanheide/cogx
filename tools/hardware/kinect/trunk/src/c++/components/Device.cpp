@@ -38,6 +38,7 @@ namespace kinect
 // --------------------------------
 #define MAX_STRINGS 20
 
+
 // --------------------------------
 // Global Variables
 // --------------------------------
@@ -48,6 +49,7 @@ DeviceParameter g_Registration;
 DeviceParameter g_Resolution;
 bool g_bIsDepthOn = true;
 bool g_bIsImageOn = true;
+bool g_bIsUserOn = true;
 bool g_bIsIROn = true;
 bool g_bIsAudioOn = true;
 bool g_bIsPlayerOn = true;
@@ -55,6 +57,7 @@ bool g_bIsPlayerOn = true;
 Device g_Device;
 DepthGenerator g_Depth;
 ImageGenerator g_Image;
+UserGenerator g_User;
 IRGenerator g_IR;
 AudioGenerator g_Audio;
 Player g_Player;
@@ -132,6 +135,7 @@ void openCommon()
 	g_bIsImageOn = false;
 	g_bIsIROn = false;
 	g_bIsAudioOn = false;
+	g_bIsUserOn = false;
 
 	NodeInfoList list;
 	nRetVal = g_Context.EnumerateExistingNodes(list);
@@ -151,6 +155,10 @@ void openCommon()
 			case XN_NODE_TYPE_IMAGE:
 				g_bIsImageOn = true;
 				(*it).GetInstance(g_Image);
+				break;
+			case XN_NODE_TYPE_USER:
+				g_bIsUserOn = true;
+				(*it).GetInstance(g_User);
 				break;
 			case XN_NODE_TYPE_IR:
 				g_bIsIROn = true;
@@ -345,6 +353,11 @@ printf("Kinect::Device::toggleStream: Error: Failed to turn on %s: %s\n", genera
 void toggleDepthState(int nDummy)
 {
 	toggleStream(g_Depth, XN_NODE_TYPE_DEPTH, &g_bIsDepthOn);
+}
+
+void toggleUserState(int nDummy)
+{
+	toggleStream(g_User, XN_NODE_TYPE_USER, &g_bIsUserOn);
 }
 
 void toggleImageState(int nDummy)
@@ -591,6 +604,10 @@ Device* getDevice()
 DepthGenerator* getDepthGenerator()
 {
 	return g_Depth.IsValid() ? &g_Depth : NULL;
+}
+UserGenerator* getUserGenerator()
+{
+	return g_User.IsValid() ? &g_User : NULL;
 }
 ImageGenerator* getImageGenerator()
 {

@@ -1,10 +1,10 @@
 /**
  * @file KinectPCServer.h
- * @author Richtsfeld Andreas
+ * @author Richtsfeld Andreas; Hanheide, Marc
  * @date April 2011
  * @version 0.1
  * @brief Point cloud server for the kinect sensor.
- */
+ */ 
 
 #ifndef KINECT_PC_SERVER_H
 #define KINECT_PC_SERVER_H
@@ -19,9 +19,23 @@
 #include "VideoUtils.h"
 #include <cast/core/CASTTimer.hpp>
 #include "cv.h"
+#include "../autogen/KinectPersonDetect.hpp"
 
 namespace cast
 {
+
+class KinectPCServer;
+
+class PersonDetectServerI : public kinect::slice::PersonDetectorInterface {
+private:
+	KinectPCServer* pcSrv;
+
+public:
+	PersonDetectServerI(KinectPCServer *_ptCloud) : pcSrv(_ptCloud) {}
+
+	kinect::slice::PersonsDict getPersons(const Ice::Current&);
+
+};
 
 /**
  * @brief Video device simply wrapping the Kinect API.
@@ -29,7 +43,7 @@ namespace cast
 class KinectPCServer : public PointCloudServer
 {
 private:
-
+  kinect::slice::PersonDetectorInterfacePtr personDetectServer;
   std::string kinectConfig;                     ///< Kinect configuration file
   CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
@@ -39,10 +53,12 @@ private:
 
   DepthGenerator* depthGenerator;
   ImageGenerator* imageGenerator;
+  UserGenerator* userGenerator;
   DepthMetaData depthMD;
   ImageMetaData imageMD;
 
   bool m_saveToFile;
+  bool m_detectPersons;
   bool m_displayImage;
   std::string m_saveDirectory;
   int m_lastframe;
@@ -69,6 +85,7 @@ protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void start();
   virtual void runComponent();
+
   
 public:
   KinectPCServer();
@@ -83,9 +100,11 @@ public:
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   bool isPointInViewCone(const cogx::Math::Vector3& point);
-
-  void saveNextFrameToFile();
+    kinect::slice::PersonsDict detectPersons();
+    void saveNextFrameToFile();
+    static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
 };
+
 
 }
 
