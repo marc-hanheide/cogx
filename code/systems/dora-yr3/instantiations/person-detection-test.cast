@@ -8,7 +8,7 @@ COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-dat
 COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host localhost #--log
 
 SUBARCHITECTURE vision.sa 
-CPP WM SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 # With pan tilt
 JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
@@ -20,7 +20,10 @@ CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instant
 
 CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 
 
-JAVA MG person.runner kinect.components.PersonDetectorRunner 
+JAVA MG person.runner vision.components.PersonDetectorRunner --integrate-detections 10 --gui --continuous 500
 
 
 #CPP MG pcserver KinectPCServer --camids "2" --kconfig "/home/cogx/gar-installer/contrib/openNI/work/main.d/OpenNI-OpenNI-f846740/Data/SamplesConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4  --detect-persons
+
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact 
