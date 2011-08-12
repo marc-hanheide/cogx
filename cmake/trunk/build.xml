@@ -134,6 +134,7 @@
 		<ant target="${target}" dir="tools/hardware/ptz" />
 		<ant target="${target}" dir="tools/hardware/robotbase" />
 		<ant target="${target}" dir="tools/hardware/pointCloud" />
+		<ant target="${target}" dir="tools/hardware/kinect" />
 
 		<antcall target="sa.visualization">
 		  <param name="target" value="${target}" />
