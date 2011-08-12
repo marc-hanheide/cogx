@@ -10,8 +10,23 @@
 #include "Kinect.h"
 #include <ni/XnCodecIDs.h>
 
+
+// Callback: New user was detected
+void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
+{
+	printf("New User %d\n", nId);
+}
+// Callback: An existing user was lost
+void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
+{
+	printf("Lost user %d\n", nId);
+}
+
+
+
 namespace Kinect
 {
+
 
 /**
  * @brief Constructor of Class Kinect
@@ -95,7 +110,18 @@ bool Kinect::Init(const char *kinect_xml_file)
   rc = kinect::getDepthGenerator()->GetIntProperty("ZPD", depth_focal_length_SXGA);
   if (rc != XN_STATUS_OK)
     printf("Kinect::Init: Error: Geting focal length failed.\n");
-  
+
+
+  UserGenerator* userGenerator = kinect::getUserGenerator();
+
+  if (userGenerator!=NULL) {
+	  XnCallbackHandle hUserCallbacks;
+	  printf("we have a user generator to use\n");
+	  userGenerator->RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
+	 // userGenerator->GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+  }
+
+
   rgbWidth = 640;	/// TODO Get width and height from file!
   rgbHeight = 480;
   depWidth = 640;
