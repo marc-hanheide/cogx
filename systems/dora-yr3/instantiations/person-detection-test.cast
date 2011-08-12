@@ -18,6 +18,9 @@ CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instant
 
 
 
-CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 --display-rgb  --detect-persons
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 
+
+JAVA MG person.runner kinect.components.PersonDetectorRunner 
+
 
 #CPP MG pcserver KinectPCServer --camids "2" --kconfig "/home/cogx/gar-installer/contrib/openNI/work/main.d/OpenNI-OpenNI-f846740/Data/SamplesConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4  --detect-persons
