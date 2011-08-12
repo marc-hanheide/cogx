@@ -39,8 +39,8 @@ LOGMX_ADDITIONAL_CLASSPATH=
 SPLASH_SCREEN=-splash:pics/splash_screen.png
 
 # Disable splash screen for Console Mode
-if [ "$1" == "--console" ]; then
-  SPLASH_SCREEN=
+if [ "x$1" = "x--console" ]; then
+  SPLASH_SCREEN=""
 fi
 
 # Setting default JVM options
