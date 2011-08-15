@@ -132,7 +132,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	private void addStableBelief(WorkingMemoryAddress _address, dBelief _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		println(_belief.type);
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, _belief);
 		m_gui.addBelief(_address, b);
