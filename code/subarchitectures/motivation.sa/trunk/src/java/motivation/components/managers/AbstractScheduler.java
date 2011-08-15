@@ -117,7 +117,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 				if (lastChange == null) {
 					this.wait(TIME_TO_WAIT_FOR_CHANGE);
 					if (lastChange == null) {
-						getLogger().info(
+						getLogger().debug(
 								"no relevant event, so we continue waiting");
 						return true;
 					}
@@ -128,7 +128,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			synchronized (this) {
 				if (lastChange != null) {
 					getLogger()
-							.info("there is another change pending, let's collect them all before actally start planning");
+							.debug("there is another change pending, let's collect them all before actally start planning");
 					return false;
 				}
 			}

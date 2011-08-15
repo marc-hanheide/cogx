@@ -16,7 +16,6 @@ import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveView;
 import Ice.ObjectImpl;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -123,20 +122,13 @@ public class MotiveFilterManager extends ManagedComponent {
 				motive.priority = priority;
 				overwriteWorkingMemory(_wmc.address, motive);
 			}
-		} catch (DoesNotExistOnWMException e) {
-			println("filter failed to access motive from WM, maybe has been removed... ignore");
-		} catch (UnknownSubarchitectureException e) {
-			println("UnknownSubarchitectureException: this shouldn't happen.");
-			e.printStackTrace();
 		} catch (CASTException e) {
-			println("CASTException in motive filtering ");
-			e.printStackTrace();
+			logException("CASTException in motive filtering ",e);
 		} finally {
 			try {
 				unlockEntry(_wmc.address);
 			} catch (CASTException e) {
-				println("CASTException while unlocking: ");
-				e.printStackTrace();
+				logException("CASTException in motive filtering ",e);
 			}
 		}
 
@@ -165,12 +157,11 @@ public class MotiveFilterManager extends ManagedComponent {
 					filter.configure(arg0);
 					addFilter(filter);
 				} catch (ClassNotFoundException e) {
-					println("trying to register for a class that doesn't exist.");
-					e.printStackTrace();
+					logException("trying to register for a class that doesn't exist ",e);
 				} catch (InstantiationException e) {
-					e.printStackTrace();
+					logException(e);
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					logException(e);
 				}
 			}
 		}
@@ -236,11 +227,11 @@ public class MotiveFilterManager extends ManagedComponent {
 					wmc = receiver.take();
 
 				if (wmc == null) {
-					getLogger().info(
+					getLogger().debug(
 							"time elapsed without event. check everything");
 					checkAll();
 				} else {
-					getLogger().info(
+					getLogger().debug(
 							"got an update for motive "
 									+ CASTUtils.toString(wmc));
 					processChange(wmc);
