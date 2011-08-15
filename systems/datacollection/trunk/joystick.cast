@@ -1,4 +1,0 @@
-HOST localhost
-
-COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --cure-config-file  cureconfig.ccf  --max-joyv 0.2 --max-joyw 0.25 #--rand-data
