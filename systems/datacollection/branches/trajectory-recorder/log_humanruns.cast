@@ -1,0 +1,10 @@
+HOST localhost
+
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost --save-to-file --save-directory "data/laser" #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --save-to-file --save-directory "data/odom" --cure-config-file  cureconfig.ccf --max-joyv 0.2 --max-joyw 0.25 #--rand-data
+
+SUBARCHITECTURE data.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG data.saver DataSaver --save-robotpose --log
+CPP GD slam.process SlamProcess -c cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output 
