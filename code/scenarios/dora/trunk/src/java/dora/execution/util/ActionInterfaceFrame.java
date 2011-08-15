@@ -881,16 +881,16 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private boolean removeConeBelief(WorkingMemoryAddress _address) {
 
-		println("input addr: " + CASTUtils.toString(_address));
+		//println("input addr: " + CASTUtils.toString(_address));
 
 		for (int row = 0; row < m_coneTableModel.getRowCount(); row++) {
 			WorkingMemoryAddress coneAddr = addressFromString((String) m_coneTableModel
 					.getValueAt(row, CONE_ADDR_COLUMN));
 
-			println("table addr: " + CASTUtils.toString(coneAddr));
+			//println("table addr: " + CASTUtils.toString(coneAddr));
 
 			if (coneAddr.equals(_address)) {
-				println("removed it");
+				//println("removed it");
 				m_coneTableModel.removeRow(row);
 				// pack();
 				return true;
