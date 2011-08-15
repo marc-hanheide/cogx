@@ -11,7 +11,9 @@ import cast.core.CASTUtils;
 import comadata.ComaRoom;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class CategorizeRoomGoalGenerator extends
@@ -24,7 +26,7 @@ public class CategorizeRoomGoalGenerator extends
 	 * the maximum costs to drop we assign if information gain is really high
 	 * (~1) in seconds
 	 */
-	private static final double MAX_COSTS_TO_DROP = 5 * 60;
+	//private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
 	public CategorizeRoomGoalGenerator() {
 		super(COMATYPE, CategorizeRoomMotive.class, GroundedBelief.class);
@@ -43,14 +45,22 @@ public class CategorizeRoomGoalGenerator extends
 			fillDefault(result);
 			fillValues(belief, result);
 			return result;
+		} else {
+			log("the room is already categorised, so no goal here.");
+			return null;
 		}
-		return null;
 	}
 
 	private boolean isCategorized(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
-		// TODO Auto-generated method stub
-		return false;
+		FormulaDistribution catForm=belief.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
+		if (catForm==null) {
+			return false;
+		} else {
+			if (catForm.size()==0)
+				return false;
+		}
+		return true;
 	}
 
 	@Override
