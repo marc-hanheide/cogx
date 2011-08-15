@@ -73,18 +73,18 @@ DisplayNavInPB::DisplayNavInPB()
 }
 
 
-DisplayNavInPB::~DisplayNavInPB() 
+DisplayNavInPB::~DisplayNavInPB()
 {
 }
 
-void DisplayNavInPB::configure(const map<string,string>& _config) 
+void DisplayNavInPB::configure(const map<string,string>& _config)
 {
   log("configure entered");
 
   try {
     configureServerCommunication(_config);
     m_ShowPointCloud = true;
-  } 
+  }
   catch (...) {
     m_ShowPointCloud = false;
   }
@@ -159,7 +159,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   if (cfg) {
 
     //cfg->getRobotName(m_PbRobotName);
-  
+
     // To be backward compatible with config files that specify the
     // RoboLook host and really mean peekabot we read that first and
     // overwrite it below if both are specified
@@ -179,28 +179,28 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     if (cfg->getSensorPose(2, m_CameraPoseR)) {
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
       std::abort();
-    } 
+    }
   }
 
   log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
   log("Using %s as the person in peekabot", m_PbPersonFile.c_str());
 
-  connectPeekabot();  
+  connectPeekabot();
 
   if (m_ReadPTU) {
     Ice::CommunicatorPtr ic = getCommunicator();
-  
+
     Ice::Identity id;
     id.name = "PTZServer";
     id.category = "PTZServer";
 
     std::ostringstream str;
-    str << ic->identityToString(id) 
+    str << ic->identityToString(id)
 	<< ":default"
 	<< " -h localhost"
 	<< " -p " << cast::cdl::CPPSERVERPORT;
 
-    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());
     m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
   }
 
@@ -216,37 +216,37 @@ void DisplayNavInPB::start() {
   // Robot pose
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newRobotPose));  
+                                        &DisplayNavInPB::newRobotPose));
 
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newRobotPose));  
-	
+                                        &DisplayNavInPB::newRobotPose));
+
   addChangeFilter(createLocalTypeFilter<SpatialData::NavCommand>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavCommand));  
+                                        &DisplayNavInPB::newNavCommand));
 
   // NavData
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphNode));  
+                                        &DisplayNavInPB::newNavGraphNode));
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphNode));  
+                                        &DisplayNavInPB::newNavGraphNode));
 
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphObject));  
+                                        &DisplayNavInPB::newNavGraphObject));
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphObject));  
-  
+                                        &DisplayNavInPB::newNavGraphObject));
+
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphEdge));  
+                                        &DisplayNavInPB::newNavGraphEdge));
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newNavGraphEdge));  
+                                        &DisplayNavInPB::newNavGraphEdge));
 
   // Places
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::ADD),
@@ -263,14 +263,14 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                            &DisplayNavInPB::newPerson));
-  
+
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                           &DisplayNavInPB::newPerson));    
-  
+                                           &DisplayNavInPB::newPerson));
+
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::DELETE),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                           &DisplayNavInPB::deletePerson));    
+                                           &DisplayNavInPB::deletePerson));
 
   addChangeFilter(createLocalTypeFilter<NavData::PersonFollowed>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -282,14 +282,14 @@ void DisplayNavInPB::start() {
   // LineMap
   addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newLineMap));  
+                                        &DisplayNavInPB::newLineMap));
   addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newLineMap));  
-										
+                                        &DisplayNavInPB::newLineMap));
+
   addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newVPlist));  
+                                        &DisplayNavInPB::newVPlist));
   addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newVPlist));
@@ -378,7 +378,7 @@ void DisplayNavInPB::start() {
   addChangeFilter(createGlobalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newRecognizerCommand));
-  log("start done");  
+  log("start done");
 }
 
 
@@ -903,7 +903,7 @@ double DisplayNavInPB::getProbabilityValue(const SpatialProperties::ProbabilityD
 
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
-  debug("VPnodelist called"); 
+  debug("VPnodelist called");
 
   if (!m_PeekabotClient.is_connected()) return;
 
@@ -930,7 +930,7 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
   }
 }
 
-void DisplayNavInPB::createRobotFOV() 
+void DisplayNavInPB::createRobotFOV()
 {
   if (!m_ShowRobotViewCone) return;
 
@@ -957,12 +957,12 @@ void DisplayNavInPB::createRobotFOV()
   createFOV(cam, "cam_right/cone", m_FovH, m_FovV, color, 0.3, vp);
 }
 
-void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
-                               double fovHorizAngle, double fovVertiAngle, 
-                               double* color, double opacity, 
+void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
+                               double fovHorizAngle, double fovVertiAngle,
+                               double* color, double opacity,
                                NavData::ViewPoint viewpoint, bool robotfov){
 
-		peekabot::GroupProxy proxyCone;	
+		peekabot::GroupProxy proxyCone;
 		proxyCone.add(proxy, path, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
 		//proxyCone.hide();
   const double coneLen = viewpoint.length;
@@ -977,7 +977,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                                coneLen*tan(fovVerti));
   proxyConeParts[0].add_vertex(coneLen,
                                coneLen*tan(-fovHoriz),
-                               coneLen*tan(fovVerti));                         
+                               coneLen*tan(fovVerti));
   proxyConeParts[1].add(proxyCone, "bottom");
   proxyConeParts[1].add_vertex(0,0,0);
   proxyConeParts[1].add_vertex(coneLen,
@@ -985,7 +985,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                           coneLen*tan(-fovVerti));
   proxyConeParts[1].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
-                          coneLen*tan(-fovVerti));                         
+                          coneLen*tan(-fovVerti));
   proxyConeParts[2].add(proxyCone, "left");
   proxyConeParts[2].add_vertex(0,0,0);
   proxyConeParts[2].add_vertex(coneLen,
@@ -993,7 +993,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                                coneLen*tan(-fovVerti));
   proxyConeParts[2].add_vertex(coneLen,
                                coneLen*tan(fovHoriz),
-                               coneLen*tan(fovVerti));                         
+                               coneLen*tan(fovVerti));
   proxyConeParts[3].add(proxyCone, "right");
   proxyConeParts[3].add_vertex(0,0,0);
   proxyConeParts[3].add_vertex(coneLen,
@@ -1001,7 +1001,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                           coneLen*tan(-fovVerti));
   proxyConeParts[3].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
-                          coneLen*tan(fovVerti));                         
+                          coneLen*tan(fovVerti));
   proxyConeParts[4].add(proxyCone, "image");
   proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(fovHoriz),
@@ -1014,14 +1014,14 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                           coneLen*tan(-fovVerti));
   proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
-                               coneLen*tan(fovVerti));                         
- 
+                               coneLen*tan(fovVerti));
+
   for (int i = 0; i < 5; i++) {
     proxyConeParts[i].set_color(color[0],color[1],color[2]);
     proxyConeParts[i].set_opacity(opacity);
     proxyConeParts[i].set_scale(1);  // This is how I make the cone
                                      // larger or smaller
-    
+
   }	if (!robotfov )
 	{
 
@@ -1029,7 +1029,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 	proxyCone.rotate(viewpoint.pan,0,0,1);
 	proxyCone.rotate(viewpoint.tilt,0,-1,0);
 	proxyCone.set_position(viewpoint.pos.x, viewpoint.pos.y, viewpoint.pos.z);
-			
+
 	}
 	else
 	{
@@ -1089,7 +1089,7 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   catch (DoesNotExistOnWMException) {
     log("Error! SOI WM entry went missing!");
   }
-  
+
 }
 
 void DisplayNavInPB::runComponent() {
@@ -1108,7 +1108,7 @@ void DisplayNavInPB::runComponent() {
   log("Connected to peekabot, ready to go");
   if (m_PeekabotClient.is_connected()) {
     while (isRunning()) {
-      
+
       ptz::PTZReading ptuPose;
       if (m_ReadPTU) {
 	ptuPose = m_PTUServer->getPose();
@@ -1119,14 +1119,14 @@ void DisplayNavInPB::runComponent() {
 	ptuPose.pose.pan = 0;
 	ptuPose.pose.tilt = -0.75;
       }
-      
+
       m_Mutex.lock();
 
       m_PeekabotClient.begin_bundle();
 
 
-      // Display the last laser scan 
-      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {        
+      // Display the last laser scan
+      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {
 
 
         m_ProxyScan.clear_vertices();
@@ -1138,14 +1138,14 @@ void DisplayNavInPB::runComponent() {
           y = sin(startAng + i * angStep) * m_Scan.ranges[i];
           m_ProxyScan.add_vertex(x,y,0);
         }
-        
+
 
       }
 
       if (m_RobotPose && m_ShowPointCloud) {
         PointCloud::SurfacePointSeq points;
         getPoints(true, 0 /* unused */, points);
-        peekabot::ColoredVertexSet kinectVerts; 
+        peekabot::ColoredVertexSet kinectVerts;
         double rangeMax = 1;
         for (unsigned int i = 0; i < points.size(); i += 16) {
           /* Transform point in cloud with regards to the robot pose */
@@ -1188,7 +1188,7 @@ void DisplayNavInPB::runComponent() {
         walls.add(m_PeekabotClient,
                   "walls",
                   peekabot::REPLACE_ON_CONFLICT);
-        
+
         for (unsigned int i = 0; i < m_LineMap->lines.size(); i++) {
 
           peekabot::PolygonProxy pp;
@@ -1222,16 +1222,16 @@ void DisplayNavInPB::runComponent() {
       peekabot::Status s = m_PeekabotClient.end_bundle().status();
 
       m_Mutex.unlock();
-      
+
 
       // Make sure the server processed what we've sent
       m_PeekabotClient.sync();
 
       if( s.failed() ) {
-        debug("Bundle failed with error message: %s", 
+        debug("Bundle failed with error message: %s",
 	      s.get_error_message().c_str());
       }
-      
+
 
       usleep(250000);
     }
@@ -1247,20 +1247,20 @@ void DisplayNavInPB::displayPeople()
              peekabot::REPLACE_ON_CONFLICT);
 
   for (unsigned int i = 0; i < m_People.size(); i++) {
-    
+
     char buf[32];
     sprintf(buf, "person%ld", (long)m_People[i].m_data->id);
-    
+
     if (m_NoPeopleModel) {
-      
+
       // Using a cylinde rmodel instead of beautiful Rolf
-      
+
       peekabot::CylinderProxy cp;
       cp.add(people, buf, peekabot::REPLACE_ON_CONFLICT);
       cp.set_pose(m_People[i].m_data->x,
                   m_People[i].m_data->y,
                   0.9,
-                  m_People[i].m_data->direction);      
+                  m_People[i].m_data->direction);
       cp.set_scale(0.1, 0.2, 1.8);
 
       if (m_CurrPersonId == m_People[i].m_data->id) {
@@ -1272,7 +1272,7 @@ void DisplayNavInPB::displayPeople()
     } else {
 
       peekabot::ModelProxy mp;
-      mp.add(people, buf, m_PbPersonFile, 
+      mp.add(people, buf, m_PbPersonFile,
              peekabot::REPLACE_ON_CONFLICT);
       mp.set_pose(m_People[i].m_data->x,
                   m_People[i].m_data->y,
@@ -1295,10 +1295,10 @@ void DisplayNavInPB::displayPeople()
         text.set_scale(30, 30, 30);
         text.set_alignment(peekabot::ALIGN_CENTER);
         text.set_color(1,0,0);
-      }      
+      }
     }
   }
-  
+
 }
 
 void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
@@ -1310,24 +1310,24 @@ void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
         scan.ranges[scan.ranges.size()-1], scan.angleStep,
         (long)scan.time.s, (long)scan.time.us,
         (long)ct.s, (long)ct.us);
-  
+
   m_Mutex.lock();
   m_Scan = scan;
   m_Mutex.unlock();
 }
 
 
-void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) 
+void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
-  
+
   m_Mutex.lock();
   m_RobotPose = oobj->getData();
   m_Mutex.unlock();
   debug("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
-        (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
+        (long)m_RobotPose->time.s, (long)m_RobotPose->time.us);
   if (m_ShowPath) {
     if (objID.operation == cdl::ADD) {
       m_ProxyPathStartMarker.add(m_PeekabotClient, "PathStart", peekabot::REPLACE_ON_CONFLICT);
@@ -1347,7 +1347,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
       set2.add(0, 0, 0);
       set2.add(-0.2, -0.5, 0);
       m_ProxyPathEndMarker.add_vertices(set2);
-    
+
     m_ProxyPathEndMarker.set_rotation(m_RobotPose->theta, 0,0);
     m_ProxyPathEndMarker.set_position(m_RobotPose->x, m_RobotPose->y, 0.02);
     }
@@ -1371,6 +1371,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 		node = agg2->getNodeFromPlaceID(place->id);
 		std::string roomid = lexical_cast<string> (node->areaId);
 
+		try {
 		ConceptualData::QueryHandlerServerInterfacePrx
 				m_queryHandlerServerInterfacePrx(getIceServer<
 						ConceptualData::QueryHandlerServerInterface> (
@@ -1415,28 +1416,32 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 				getColorByIndex(index,r,g,b);
 				m_ProxyPathLog.set_color(r,g,b);
 		}
-	}
+		} catch (const cast::CASTException& e) {
+			getLogger()->warn("CASTException when displaying path, disabling path display: "+ std::string(e.what()));
+			m_ShowPath=false;
+		}
     }
+  }
   }
 }
 
 
 void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
-{  
+{
   if (!m_ShowObjects) return;
-  
+
   shared_ptr<CASTData<NavData::ObjData> > oobj =
     getWorkingMemoryEntry<NavData::ObjData>(objID.address);
 
   NavData::ObjDataPtr objData = oobj->getData();
-  
+
   if (!m_PeekabotClient.is_connected()) {
     log("Received an object of category %s, not displaying it since not connected to peekabot", objData->category.c_str());
     return;
   }
   log("Received an object of category %s", objData->category.c_str());
-  
-  m_Mutex.lock();    
+
+  m_Mutex.lock();
 
   m_PeekabotClient.begin_bundle();
 
@@ -1455,14 +1460,14 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   if (m_NonUniqueObjects) {
     objProxy.add(m_ProxyObjects, objData->category, filename);
   } else {
-    objProxy.add(m_ProxyObjects, objData->category, filename, 
+    objProxy.add(m_ProxyObjects, objData->category, filename,
                  peekabot::REPLACE_ON_CONFLICT);
   }
 
   if (objData->angles.empty()) {
 
     if (m_RobotPose) {
-      
+
       objProxy.set_pose(objData->x, objData->y, objData->z,
                         atan2(objData->y - m_RobotPose->y,
                               objData->x - m_RobotPose->x), 0, 0);
@@ -1494,12 +1499,12 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   text.set_scale(20, 20, 20);
   text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
   text.set_color(0,0,1);
-  
+
   m_PeekabotClient.end_bundle();
 
   m_Mutex.unlock();
 }
-  
+
 void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
 {
   debug("newLineMap called");
@@ -1518,38 +1523,38 @@ void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
   try {
     shared_ptr<CASTData<NavData::Person> > oobj =
       getWorkingMemoryEntry<NavData::Person>(objID.address);
-    
+
     NavData::PersonPtr p = oobj->getData();
-    
+
     bool addNewPerson = true;
-    
+
     m_Mutex.lock();
 
     // Check if the person already exists, otherwise add it
     for (unsigned int i = 0; i < m_People.size(); i++) {
       if (m_People[i].m_data->id == p->id) {
         // Update it
-        
+
         char buf[256];
         sprintf(buf, "Got new person at x=%.2f y=%.2f theta=%.2f id=%ld",
                 p->x, p->y, p->direction, (long)p->id);
         debug(buf);
-        
+
         m_People[i].m_data = p;
         addNewPerson = false;
         break;
       }
     }
-    
+
     if (addNewPerson) {
       DisplayNavInPB::PersonData pd;
       pd.m_WMid = objID.address.id;
       pd.m_data = p;
       m_People.push_back(pd);
-    } 
+    }
 
   } catch(DoesNotExistOnWMException){}
-  
+
   m_Mutex.unlock();
 }
 
@@ -1570,7 +1575,7 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
 {
   shared_ptr<CASTData<NavData::PersonFollowed> > oobj =
     getWorkingMemoryEntry<NavData::PersonFollowed>(objID.address);
-  
+
   m_Mutex.lock();
   m_CurrPersonId = oobj->getData()->id;
   char buf[256];
@@ -1604,7 +1609,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       }
       /* Or was it a proper place? */
       NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(m_currGoalPlace);
-      if (fnodePtr) 
+      if (fnodePtr)
       {
         // Get the node proxy
         peekabot::SphereProxy sp;
@@ -1618,7 +1623,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
 
     if (oobj->getData()->destId.empty())
       return;
-    
+
     log("Updating goal from %d to %d", m_currGoalPlace, oobj->getData()->destId[0]);
 
     /* Update new goal */
@@ -1642,7 +1647,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
     }
     /* Or was it a proper place? */
     NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(m_currGoalPlace);
-    if (fnodePtr) 
+    if (fnodePtr)
     {
       // Get the node proxy
       peekabot::SphereProxy parent;
@@ -1657,7 +1662,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       sp.set_opacity(0.3);
     }
   }
-}		
+}
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
@@ -1913,7 +1918,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			    peekabot::PolylineProxy lcp;
 			    peekabot::VertexSet points;
 			    points.add(0, 0, 0);
-			    points.add(fnodePtr->x-nodeHypPtr->x, 
+			    points.add(fnodePtr->x-nodeHypPtr->x,
 				fnodePtr->y-nodeHypPtr->y, 0);
 			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
 			    lcp.set_line_style("dotted",0.5);
@@ -2087,14 +2092,14 @@ int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId)
     return d;
 }
 
-void DisplayNavInPB::addDoorpost(double x, double y, double theta, 
-                                 double width, 
+void DisplayNavInPB::addDoorpost(double x, double y, double theta,
+                                 double width,
                                  peekabot::SphereProxy &node)
-{                                 
+{
   peekabot::CubeProxy cpL;
   cpL.add(node, "doorpostleft");
   cpL.set_scale(0.1, 0.1, 2.0);
-  cpL.set_pose(0.5*width*cos(theta), 0.5*width*sin(theta), 1.0, 
+  cpL.set_pose(0.5*width*cos(theta), 0.5*width*sin(theta), 1.0,
                theta, 0, 0);
   cpL.set_color(1.0, 0.817, 0.269);
 
@@ -2104,7 +2109,7 @@ void DisplayNavInPB::addDoorpost(double x, double y, double theta,
   cpR.set_pose(0.5*width*cos(theta+M_PI), 0.5*width*sin(theta+M_PI), 1.0,
                theta, 0, 0);
   cpR.set_color(1.0, 0.817, 0.269);
-  
+
   peekabot::CubeProxy cpT;
   cpT.add(node, "doorposttop");
   cpT.set_scale(width+0.1, 0.1, 0.1);
@@ -2120,7 +2125,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
   shared_ptr<CASTData<NavData::AEdge> > oobj =
     getWorkingMemoryEntry<NavData::AEdge>(objID.address);
-  
+
   NavData::AEdgePtr aedge = oobj->getData();
 
   m_Mutex.lock();
@@ -2138,7 +2143,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
     addEdgeToList(n1->second.m_Id, n2->second.m_Id);
 
   } else {
-    m_NewEdges.push_back(std::make_pair(aedge->startNodeId, 
+    m_NewEdges.push_back(std::make_pair(aedge->startNodeId,
                                         aedge->endNodeId));
   }
 
@@ -2277,7 +2282,7 @@ void DisplayNavInPB::addEdgeToList(long id1, long id2)
   if (id1 > id2) {
     m_Edges.push_back( std::make_pair(id1, id2) );
   } else if (id2 > id1) {
-    m_Edges.push_back( std::make_pair(id2, id1) );    
+    m_Edges.push_back( std::make_pair(id2, id1) );
   } else {
     log("WARNING: Trying to connect node with id %d with itself", id1);
   }
@@ -2294,8 +2299,8 @@ void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
     sprintf(name, "edge%06ld", node2.m_Id*1000+node1.m_Id);
   }
 
-  debug("Adding edge between (%f,%f) %ld and (%f,%f) %ld", 
-      node1.m_X, node1.m_Y, node1.m_Id, 
+  debug("Adding edge between (%f,%f) %ld and (%f,%f) %ld",
+      node1.m_X, node1.m_Y, node1.m_Id,
       node2.m_X, node2.m_Y, node2.m_Id);
 
   lp.add(m_ProxyEdges, name, peekabot::REPLACE_ON_CONFLICT);
@@ -2315,7 +2320,7 @@ void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node)
       n = m_Nodes.find(e->second);
       if (n != m_Nodes.end()) {
         displayEdge(node, n->second);
-        log("Redisplaying edge between nodes %ld and %ld", 
+        log("Redisplaying edge between nodes %ld and %ld",
             node.m_Id, e->second);
       } else {
         log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
@@ -2325,7 +2330,7 @@ void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node)
       n = m_Nodes.find(e->first);
       if (n != m_Nodes.end()) {
         displayEdge(node, n->second);
-        log("Redisplaying edge between nodes %ld and %ld", 
+        log("Redisplaying edge between nodes %ld and %ld",
             node.m_Id, e->first);
       } else {
         log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
@@ -2343,18 +2348,18 @@ void DisplayNavInPB::connectPeekabot()
 
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
- //   m_PeekabotClient.assign(m_PeekabotClient, "root");    
+ //   m_PeekabotClient.assign(m_PeekabotClient, "root");
     peekabot::Status s0,s1, s2, s3,s4;
 
-    s0 = m_ProxyRobot.add(m_PeekabotClient, 
+    s0 = m_ProxyRobot.add(m_PeekabotClient,
 	m_PbRobotName,
 	peekabot::REPLACE_ON_CONFLICT).status();
     if (s0.failed())
       log("failed to add robot");
     else
       log("added robot.");
-    
-      log("Loading robot file \"%s\"", 
+
+      log("Loading robot file \"%s\"",
 	  m_PbRobotFile.c_str());
            if (m_ShowCommands) {
 	m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
@@ -2362,13 +2367,13 @@ void DisplayNavInPB::connectPeekabot()
 	m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
 	    peekabot::REPLACE_ON_CONFLICT);
       }
-      
+
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
       m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
-      
+
       s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
       if( s1.failed() ) {
-      log("Could not load robot file \"%s\"", 
+      log("Could not load robot file \"%s\"",
               m_PbRobotFile.c_str());
       peekabot::CubeProxy cube;
       cube.add(m_PeekabotClient, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
@@ -2389,13 +2394,13 @@ void DisplayNavInPB::connectPeekabot()
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis/rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*240;
         m_ScanMaxRange = 5.6;
-		
+
 		std::string path = "robot/chassis/superstructure/ptu/pan/tilt/baseline/cam_left";
 		s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
 		if(s4.failed()){
 			log("cam proxy failed.");
 		}
-		
+
 		s4 = m_ProxyPan.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan").status();
 		if(s4.failed()){
 			log("cam proxy failed.");
@@ -2406,8 +2411,8 @@ void DisplayNavInPB::connectPeekabot()
 		}
 		m_ProxyPan.set_dof(0);
 		m_ProxyTilt.set_dof(30*M_PI/180.0);
-		
-		
+
+
       } else if (m_PbRobotFile == "B21.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "model/rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*180;
@@ -2419,7 +2424,7 @@ void DisplayNavInPB::connectPeekabot()
       }
       if( s2.failed() ) {
         log("Could not hook up to laser scanner, not using laser");
-        m_LaserConnected = false;        
+        m_LaserConnected = false;
       } else {
 
         m_ProxyScan.add(m_ProxyLaser, "scan", peekabot::REPLACE_ON_CONFLICT);
@@ -2428,7 +2433,7 @@ void DisplayNavInPB::connectPeekabot()
 
       }
     }
- 
+
 
 
     m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT);
@@ -2451,11 +2456,11 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyObjects.add(m_ProxyGraph,
                        "objects",
                        peekabot::REPLACE_ON_CONFLICT);
-                       
+
     m_ProxyObjectLabels.add(m_ProxyGraph,
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
- 
+
       if (m_ShowPath) {
     m_ProxyTrajectory.add(m_PeekabotClient,
                      "trajectory",
@@ -2493,7 +2498,7 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
 
   //Additional transform of ptz base frame
   Cure::Transformation3D ptzBaseTransform;
-//  double nR[] = {0.0, 0.0, 1.0, 
+//  double nR[] = {0.0, 0.0, 1.0,
 //    1.0, 0.0, 0.0,
 //    0.0, 1.0, 0.0};
   double camAngles[] = {-M_PI/2, 0.0, -M_PI/2};
@@ -2519,9 +2524,9 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
 
   Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
   return robotTransform3 + cameraOnRobot;
-} 
+}
 
-void 
+void
 DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
   if (!m_PeekabotClient.is_connected() ||
@@ -2532,7 +2537,7 @@ DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &obj
   SpatialData::RelationalViewPointGenerationCommandPtr obj;
   try
   {
-    obj = 
+    obj =
       getMemoryEntry<SpatialData::RelationalViewPointGenerationCommand>(objID.address);
 
     peekabot::PolygonProxy crossProxy;
@@ -2566,7 +2571,7 @@ DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &obj
   }
 }
 
-void 
+void
 DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
   if (!m_PeekabotClient.is_connected() ||
@@ -2577,7 +2582,7 @@ DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
   VisionData::ARTagCommandPtr obj;
   try
   {
-    obj = 
+    obj =
       getMemoryEntry<VisionData::ARTagCommand>(objID.address);
 
     logDetectionCommand(obj->label);
@@ -2589,7 +2594,7 @@ DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
   }
 }
 
-void 
+void
 DisplayNavInPB::newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
   if (!m_PeekabotClient.is_connected() ||
@@ -2600,7 +2605,7 @@ DisplayNavInPB::newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID
   VisionData::Recognizer3DCommandPtr obj;
   try
   {
-    obj = 
+    obj =
       getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
 
     logDetectionCommand(obj->label);
@@ -2624,7 +2629,7 @@ DisplayNavInPB::logDetectionCommand(const string &label)
   const double radius = 0.5;
   double step = M_PI/32;
   for (double angle = -M_PI/4; angle <= M_PI/4; angle += step) {
-    viewVerts.add(radius*cos(angle), radius*sin(angle), 0.02); 
+    viewVerts.add(radius*cos(angle), radius*sin(angle), 0.02);
   }
   viewProxy.add_vertices(viewVerts);
   viewProxy.set_position(m_RobotPose->x, m_RobotPose->y, 0);
