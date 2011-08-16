@@ -144,6 +144,34 @@ inline std::istream& operator>>(std::istream &is, cogx::Math::ColorRGB &col)
   return is;
 }
 
+
+/**
+ * @brief RGBValue of point clouds, accessable as float or long value.
+ */
+typedef union
+{
+  struct
+  {
+    unsigned char b;  // Blue channel
+    unsigned char g;  // Green channel
+    unsigned char r;  // Red channel
+    unsigned char a;  // Alpha channel
+  };
+  float float_value;
+  long long_value;
+} RGBValue;
+
+
+inline float GetRandomColor()
+{
+  RGBValue x;
+  x.b = std::rand()%255;
+  x.g = std::rand()%255;
+  x.r = std::rand()%255;
+  x.a = 0.; 
+  return x.float_value;
+}
+
 /**
  * @brief Convert points from point cloud server to opencv matrix.
  * @param points Points from the point cloud as vector
@@ -152,6 +180,8 @@ inline std::istream& operator>>(std::istream &is, cogx::Math::ColorRGB &col)
  */
 inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
 {
+  printf("VisionUtils::Points2Cloud: Antiquated function: Use the cv::Vec4f matrix!\n");
+  
   cloud = cv::Mat_<cv::Point3f>(1, points.size());
   colCloud = cv::Mat_<cv::Point3f>(1, points.size());    
 
@@ -171,28 +201,11 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv:
 }
 
 /**
- * @brief RGBValue of point clouds, accessable as float or long value.
- */
-typedef union
-{
-  struct
-  {
-    unsigned char Blue; // Blue channel
-    unsigned char Green; // Green channel
-    unsigned char Red; // Red channel
-    unsigned char Alpha; // Alpha channel
-  };
-  float float_value;
-  long long_value;
-} RGBValue;
-
-
-/**
  * @brief Convert points from point cloud server to opencv matrix.
  * @param points Points from the point cloud as vector
  * @param cloud Point cloud
  */
-inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Vec4f> &cloud)
+inline void ConvertPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Vec4f> &cloud)
 {
   unsigned pcWidth = sqrt(points.size()*4/3);
   unsigned pcHeight = pcWidth *3/4;
@@ -200,7 +213,7 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv:
   
   cloud = cv::Mat_<cv::Vec4f>(pcHeight, pcWidth);    // rows = height / cols = width
   RGBValue color;
-  color.Alpha = 0;
+  color.a = 0;
   
   for(unsigned row = 0; row < pcHeight; row++)
   {
@@ -211,9 +224,44 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv:
       p[0] = (float) points[position].p.x;
       p[1] = (float) points[position].p.y;
       p[2] = (float) points[position].p.z;
-      color.Red = points[position].c.r;
-      color.Green = points[position].c.g;
-      color.Blue = points[position].c.b;
+      color.r = points[position].c.r;
+      color.g = points[position].c.g;
+      color.b = points[position].c.b;
+      p[3] = color.float_value;
+    }
+  }
+}
+
+/**
+ * @brief Convert ONLY kinect points from point cloud server to opencv matrix.
+ * Expects, that the kinect data points come first in the points field.
+ * @param points Points from the point cloud as vector
+ * @param cloud Point cloud
+ * @param width Width of the cloud
+ */
+inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> points, 
+                                         cv::Mat_<cv::Vec4f> &cloud,
+                                         int width)
+{
+  unsigned height = width *3/4;
+  unsigned position = 0;
+  
+  cloud = cv::Mat_<cv::Vec4f>(height, width);    // rows = height / cols = width
+  RGBValue color;
+  color.a = 0;
+  
+  for(unsigned row = 0; row < height; row++)
+  {
+    for(unsigned col = 0; col < width; col++)
+    {
+      cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
+      position = row*width + col;
+      p[0] = (float) points[position].p.x;
+      p[1] = (float) points[position].p.y;
+      p[2] = (float) points[position].p.z;
+      color.r = points[position].c.r;
+      color.g = points[position].c.g;
+      color.b = points[position].c.b;
       p[3] = color.float_value;
     }
   }
