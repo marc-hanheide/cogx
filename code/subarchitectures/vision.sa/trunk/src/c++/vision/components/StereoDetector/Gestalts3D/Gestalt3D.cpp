@@ -71,6 +71,7 @@ Gestalt3D::Gestalt3D(Type _type)
   type = _type;
   sig = 0.;
   id = -1;
+  nodeID = -1;
 }
 
 }
