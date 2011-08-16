@@ -29,10 +29,6 @@
 #include "Closure3D.h"
 #include "Rectangle3D.h"
 
-#include "v4r/PCLAddOns/PlanePopout.hh"
-#include "v4r/PCLAddOns/utils/PCLUtils.h"
-#include "v4r/PCLAddOns/functions/PCLFunctions.h"
-
 using namespace std;
 using namespace VisionData;
 using namespace Video;
@@ -169,7 +165,6 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
 
   if((it = _config.find("--stereoconfig_xml")) != _config.end())
   {
-    int side = 0;  // left
     istringstream str(it->second);
     string fileLeft, fileRight;
     str >> fileLeft;
@@ -186,7 +181,7 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
   {
     // initialize stereo camera
     stereo_cam = new cast::StereoCamera();
-    if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
+    if(!stereo_cam->ReadSVSCalib(stereoconfig))                                                                         /// TODO Kein SVS calib mehr!!!
       throw (std::runtime_error(exceptionMessage(__HERE__, "Cannot open calibration file for stereo camera.")));
     score = new Z::StereoCore(stereoconfig);
   }
@@ -203,6 +198,10 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
   tgRenderer->SetCamera(R, t, rotCenter);
 //   tgRenderer->SetRotationCenter(rotCenter);      /// TODO funktioniert nicht => Wieso?
   tgRenderer->SetCoordinateFrame();
+  
+  relations = new Z::CalculateRelations();
+  svmPredictor = new Z::SVMPredictor();
+  graphCutter = new Z::GraphCut(kcore, learner, relations);
 }
 
 /**
@@ -215,19 +214,13 @@ void StereoDetectorKinectLines::start()
 
   if(showImages) 
   {
-    cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Kinect", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Kinect depth map", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Kinect depth color map", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Kinect edge image", CV_WINDOW_AUTOSIZE);
+//     cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
+//     cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
 
-    cvMoveWindow("Stereo left", 10, 10);
-    cvMoveWindow("Stereo right", 680, 10);
-    cvMoveWindow("Kinect",  10, 500);
-    cvMoveWindow("Kinect depth map",  680, 500);
-    cvMoveWindow("Kinect depth color map",  1350, 500);
-    cvMoveWindow("Kinect edge image",  1350, 1000);
+//     cvMoveWindow("Stereo left", 10, 10);
+//     cvMoveWindow("Stereo right", 680, 10);
+    cvMoveWindow("Kinect image",  10, 500);
   }
 }
 
@@ -248,17 +241,13 @@ void StereoDetectorKinectLines::runComponent()
   cvReleaseImage(&iplImage_l);
   cvReleaseImage(&iplImage_r);
   cvReleaseImage(&iplImage_k);
-  cvReleaseImage(&iplImage_depthMap);
   
   if(showImages)
   {
     log("destroy openCV windows.");
-    cvDestroyWindow("Stereo left");
-    cvDestroyWindow("Stereo right");
-    cvDestroyWindow("Kinect");
-    cvDestroyWindow("Kinect depth map");
-    cvDestroyWindow("Kinect depth color map");
-    cvDestroyWindow("Kinect edge image");
+//     cvDestroyWindow("Stereo left");
+//     cvDestroyWindow("Stereo right");
+    cvDestroyWindow("Kinect image");
   }
   log("windows destroyed");
 }
@@ -272,257 +261,291 @@ void StereoDetectorKinectLines::runComponent()
  * @param depthImage Depth color image
  * @param depthMap Depth map from the kinect
  */
-void StereoDetectorKinectLines::Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap)
-{
-  int imgWidth = 320;                                                                                               /// TODO get image width/height
-  int imgHeight = 240;
-
-  depthImage = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
-  depthMap = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
-  for(unsigned i = 0; i<imgWidth; i++)
-    for(unsigned j = 0; j<imgHeight; j++)
-    {
-      depthImage(j, i).x = 0;
-      depthImage(j, i).y = 0;
-      depthImage(j, i).z = 0;
-      depthMap(j, i).x = 0;
-      depthMap(j, i).y = 0;
-      depthMap(j, i).z = 0;
-    }
-    
-  for(unsigned i = 0; i < imgWidth*imgHeight; i++) // only one row!
-  {
-    cv::Point2d imgPoint;
-
-    if(c(0, i).z != 0)
-    {
-      sc->ProjectPoint(c(0, i).x, c(0, i).y, c(0, i).z, imgPoint.x, imgPoint.y, 0, imgWidth);   // 0 == LEFT
-
-      if(imgPoint.x > 0 && imgPoint.x < imgWidth && imgPoint.y > 0 && imgPoint.y < imgHeight)
-      {
-        depthImage((int) imgPoint.y, (int) imgPoint.x).x = ((float) cc(0, i).z)/255.;   /// change rgb
-        depthImage((int) imgPoint.y, (int) imgPoint.x).y = ((float) cc(0, i).y)/255.;
-        depthImage((int) imgPoint.y, (int) imgPoint.x).z = ((float) cc(0, i).x)/255.;
-        
-        depthMap((int) imgPoint.y, (int) imgPoint.x).x = ((float) c(0, i).z)/4.;
-        depthMap((int) imgPoint.y, (int) imgPoint.x).y = ((float) c(0, i).z)/4.;
-        depthMap((int) imgPoint.y, (int) imgPoint.x).z = ((float) c(0, i).z)/4.;
-      }
-    }
-  }
-}
+// void StereoDetectorKinectLines::Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap)
+// {
+//   printf("StereoDetectorKinectLines::Points2DepthMap: Antiquated!\n");
+//   int imgWidth = 320;                                                                                               /// TODO get image width/height
+//   int imgHeight = 240;
+// 
+//   depthImage = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
+//   depthMap = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
+//   
+//   for(unsigned i = 0; i<imgWidth; i++)
+//     for(unsigned j = 0; j<imgHeight; j++)
+//     {
+//       depthImage(j, i).x = 0;
+//       depthImage(j, i).y = 0;
+//       depthImage(j, i).z = 0;
+//       depthMap(j, i).x = 0;
+//       depthMap(j, i).y = 0;
+//       depthMap(j, i).z = 0;
+//     }
+//     
+//   for(unsigned i = 0; i < imgWidth*imgHeight; i++) // only one row!
+//   {
+//     cv::Point2d imgPoint;
+// 
+//     if(c(0, i).z != 0)
+//     {
+//       sc->ProjectPoint(c(0, i).x, c(0, i).y, c(0, i).z, imgPoint.x, imgPoint.y, 0, imgWidth);   // 0 == LEFT
+// 
+//       if(imgPoint.x > 0 && imgPoint.x < imgWidth && imgPoint.y > 0 && imgPoint.y < imgHeight)
+//       {
+//         depthImage((int) imgPoint.y, (int) imgPoint.x).x = ((float) cc(0, i).z)/255.;   /// change rgb
+//         depthImage((int) imgPoint.y, (int) imgPoint.x).y = ((float) cc(0, i).y)/255.;
+//         depthImage((int) imgPoint.y, (int) imgPoint.x).z = ((float) cc(0, i).x)/255.;
+//         
+//         depthMap((int) imgPoint.y, (int) imgPoint.x).x = ((float) c(0, i).z)/4.;
+//         depthMap((int) imgPoint.y, (int) imgPoint.x).y = ((float) c(0, i).z)/4.;
+//         depthMap((int) imgPoint.y, (int) imgPoint.x).z = ((float) c(0, i).z)/4.;
+//       }
+//     }
+//   }
+// }
   
+  
+/// TODO Project a 3D point on the 2D image plane
+// void StereoDetectorKinectLines::ProjectPoint(double X, double Y, double Z, double &u, double &v, int imgWidth)
+// {
+//   double scale = 1;
+//   assert(Z != 0.);
+//   if(imgWidth !=0) scale = camPars[2].width / imgWidth;
+//   u = camPars[2].fx*X/scale + camPars[2].cx*Z/scale;
+//   v = camPars[2].fy*Y/scale + camPars[2].cy*Z/scale;
+//   u /= Z;
+//   v /= Z;
+// }
   
 /**
  * @brief Get images with the resolution, defined in the cast file, from video server.
  */
 void StereoDetectorKinectLines::GetImageData()
 {
-  log("get image data.");
   pointCloudWidth = 320;                                /// TODO get from cast-file!
   pointCloudHeight = pointCloudWidth *3/4;
   kinectImageWidth = 640;
   kinectImageHeight = kinectImageWidth *3/4;
  
   points.resize(0);
-  getPoints(false, pointCloudWidth, points);                  // call get points only once, if noCont option is on!!!
-//   getPoints(true, pointCloudWidth, points_fromLeft);
-
-  // convert points to cloud for render engine
-  cv::Mat_<cv::Point3f> cloud;
-  cv::Mat_<cv::Point3f> colCloud;
-//   Points2Cloud(points_fromLeft, cloud, colCloud);        // show untransformed kinect point cloud
-//   tgRenderer->SetPointCloud(cloud, colCloud);         // show transformed kinect point cloud
-  Points2Cloud(points, kinect_point_cloud, kinect_color_point_cloud);
-//   tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+  getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
   
+  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
+  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
+
   // get rectified images from point cloud server
   getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
-  getRectImage(1, kinectImageWidth, image_r);            // 0 = left image / we take it with kinect image width
-  getRectImage(2, kinectImageWidth, image_k);            // 0 = left image / we take it with kinect image width
+  getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
+  getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
   iplImage_l = convertImageToIpl(image_l);
   iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
-  
-  // Reproject point cloud to left stereo camera to get the depth image from the view of the left stereo camera
-  cv::Mat_<cv::Point3f> depthImage;
-  cv::Mat_<cv::Point3f> depthMap;
-  Points2DepthMap(stereo_cam, kinect_point_cloud, kinect_color_point_cloud, depthImage, depthMap);
- 
-  IplImage iplImage_depth = depthImage;
-  IplImage iplImage_depthMap = depthMap;
+
+  // convert points to cloud for render engine
+//   cv::Mat_<cv::Point3f> cloud;
+//   cv::Mat_<cv::Point3f> colCloud;
+//   Points2Cloud(points_fromLeft, cloud, colCloud);        // show untransformed kinect point cloud
+//   tgRenderer->SetPointCloud(cloud, colCloud);            // show transformed kinect point cloud
+//   Points2Cloud(points, kinect_point_cloud, kinect_color_point_cloud);
+//   tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+
+//   // Reproject point cloud to left stereo camera to get the depth image from the view of the left stereo camera
+//   cv::Mat_<cv::Point3f> depthImage;
+//   cv::Mat_<cv::Point3f> depthMap;
+//   Points2DepthMap(stereo_cam, kinect_point_cloud, kinect_color_point_cloud, depthImage, depthMap);
+//   IplImage iplImage_depth = depthImage;
+//   IplImage iplImage_depthMap = depthMap;
 
   if(showImages)
   {
-    cvShowImage("Stereo left", iplImage_l);
-    cvShowImage("Stereo right", iplImage_r);
-    cvShowImage("Kinect depth color map", &iplImage_depth);
-    cvShowImage("Kinect depth map", &iplImage_depthMap);
+//     cvShowImage("Stereo left", iplImage_l);
+//     cvShowImage("Stereo right", iplImage_r);
+    cvShowImage("Kinect image", iplImage_k);
+
+    // convert point cloud to iplImage
+    cv::Mat_<cv::Vec3b> kinect_pc_image;
+    pclA::ConvertPCLCloud2Image(*pcl_cloud, kinect_pc_image);     // TODO Funktioniert nicht!!!
+    cv::imshow("Kinect Image from point cloud", kinect_pc_image);
   }
 }
 
 
 
 /**
- *  @brief Process stereo image pair at stereo core.
- *  Use normal resolution of images (640x480).
- *  TODO Try extraction of lines from high resolution image! => sub pixel accuracy
+ *  @brief Process data from stereo or Kinect.
  */
 void StereoDetectorKinectLines::processImage()
 {
+printf("\nStereoDetectorKinectLines::processImage\n");
+
+struct timespec start, last, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+last = start;
+
   log("Process new images with runtime: %ums", runtime);
   kcore->ClearResults();
   score->ClearResults();
   vcore->ClearGestalts();
   tgRenderer->Clear();
+  sois.clear();
 
-  // Get kinect image and run vision core with line detection
+  /// Get kinect data
   GetImageData();
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for StereoDetectorKinectLines::GetImageData: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+  /// Run vision core
   vcore->NewImage(iplImage_k);
   vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
 
-  Z::SetActiveDrawArea(iplImage_k);
-  vcore->DrawGestalts(Z::Gestalt::RECTANGLE, 0);
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for StereoDetectorKinectLines: VisionCore: %4.3f\n", timespec_diff(&current, &last));
+last = current;
   
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-  
-  cv::Mat_<cv::Vec4f> kinect_point_cloud_new;
-  Points2Cloud(points, kinect_point_cloud_new);
-
-  kcore->ProcessKinectData(vcore, iplImage_k, kinect_point_cloud_new);
-//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT);
-//   kcore->PrintGestalts3D(Z::Gestalt3D::SEGMENT);
-//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE);
-//   kcore->PrintGestalts3D(Z::Gestalt3D::LINE);
-//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::COLLINEARITY);
-//   kcore->PrintGestalts3D(Z::Gestalt3D::COLLINEARITY);
-//   printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData() end\n");
-//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
-//   kcore->PrintGestalts3D(Z::Gestalt3D::PATCH);
-//   kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
-//   printf("StereoDetectorKinectLines::processImage: kcore->ProcessKinectData() end\n");
-
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-  pclA::PlanePopout planePopout;
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud_new, *pcl_cloud);
-  planePopout.CalculateSOIs(pcl_cloud, sois);
-
-  // Display sois on the tgRenderer
-  for(unsigned i=0; i< sois.size(); i++)
-  {
-    std::vector<cv::Vec4f> soi_hulls;
-    pclA::ConvertPCLCloud2CvVec(*sois[i], soi_hulls);  // convert pcl cloud to cvVec cloud
-    tgRenderer->AddHullPrism(soi_hulls);
-  }
-  
-  cv::Mat_<cv::Vec3b> image;
-  planePopout.GetImageFromPointCloud(*pcl_cloud, image);
-  cv::imshow("Image",image);
-//   cv::imshow("Mask",mask);
-
-  tgRenderer->AddPointCloud(kinect_point_cloud_new);
-
-  /// TODO Nächste Baustelle
-//   learner->Process(kcore);
-
-
-
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-  // Compare color histograms of different kinect patches
-//   for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH)-1; i++)
-//   {
-//     Z::Patch3D *p = (Z::Patch3D*)(kcore->Gestalts3D(Z::Gestalt3D::PATCH, i));
-//     double comp_val = p->Compare((Z::Patch3D*)kcore->Gestalts3D(Z::Gestalt3D::PATCH, i+1));
-//     printf("comp_val patch[%u][%u]: %4.3f\n", i, i+1, comp_val);
-//   }
-//   for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::CLOSURE)-1; i++)
-//   {
-//     Z::Closure3D *c = (Z::Closure3D*)(kcore->Gestalts3D(Z::Gestalt3D::CLOSURE, i));
-//     double comp_val = c->Compare((Z::Closure3D*)kcore->Gestalts3D(Z::Gestalt3D::CLOSURE, i+1));
-//     printf("comp_val closure[%u][%u]: %4.3f\n", i, i+1, comp_val);
-//   }
-//   for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::RECTANGLE)-1; i++)
-//   {
-//     Z::Rectangle3D *p = (Z::Rectangle3D*)(kcore->Gestalts3D(Z::Gestalt3D::RECTANGLE, i));
-//     double comp_val = p->Compare((Z::Rectangle3D*)kcore->Gestalts3D(Z::Gestalt3D::RECTANGLE, i+1));
-//     printf("comp_val rectangle[%u][%u]: %4.3f\n", i, i+1, comp_val);
-//   }
-  
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-//   pcl::PointCloud<pcl::PointXYZRGB> cloud;
-//   pclU::Points2PCLColCloud(points, cloud);
-//   
-//   /// Clustering and Segmentation of the point cloud
-//   struct timespec start, current;
-//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-// 
-//   bool useVoxelGrid = true;
-//   double vg_size = 0.008;     /// 0.01 - 0.005
-//   pclF::PreProcessPointCloud(cloud, useVoxelGrid, vg_size);
-// 
-// //   clustered_planes.resize(0);
-// //   clustered_planes2.resize(0);
-//   
-//   
-//   bool sac_optimal_distance = true;
-//   double sac_optimal_weight_factor = 1.5;
-//   double sac_distance = 0.005;            // 5mm
-//   int sac_max_iterations = 100;
-//   int sac_min_inliers = 25;
-//   double ec_cluster_tolerance = 0.015;    // 15mm
-//   int ec_min_cluster_size = 25;
-//   int ec_max_cluster_size = 1000000;
-//   
-//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;
-//   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
-//   pclF::FitPlanesRecursive(cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
-//                            sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
-// //   pclF::FitPlanesRecursiveWithNormals(cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
-// //                            sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
-// 
-//   /// calculate convex hulls
-//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_hulls;
-//   pclF::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_hulls);
-// 
-//   /// convert pcl point clouds to cv matrices
-//   std::vector< cv::Mat_<cv::Vec4f> > cv_planes, cv_hulls;
-//   pclU::PCLClouds2CvClouds(pcl_plane_clouds, cv_planes);
-//   pclU::PCLClouds2CvClouds(pcl_hulls, cv_hulls, true);
-//         
-// // pclU::PrintPCLCloud(*pcl_hulls[0]);
-//   
-//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-//   printf("Runtime for processing the point cloud: %4.3f\n", timespec_diff(&current, &start));
-//   start=current;
-// 
-//   tgRenderer->Clear();
-//   tgRenderer->SetPointClouds(cv_planes);
-//   tgRenderer->AddConvexHulls(cv_hulls);
-//   
-// //   if(!makeConvexHull)
-// //     tgRenderer->SetPointClouds(clustered_planes);
-// //   else
-// //     tgRenderer->AddConvexHulls(clustered_planes);
-
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-  
+  /// Run stereo core
   // Stereo core calculations (TODO needs perfekt calibration => solve problem)
 //   score->ProcessStereoImage(runtime, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
-    
+
+  /// Run kinect core
+printf("Run Kinect Core: start\n");
+  kcore->ProcessKinectData(vcore, iplImage_k, kinect_point_cloud);
+printf("Run Kinect Core: end\n");
   
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for StereoDetectorKinectLines: KinectCore: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+  /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
+  pclA::PlanePopout *planePopout;
+  planePopout = new pclA::PlanePopout();
+  planePopout->CalculateSOIs(pcl_cloud);
+  planePopout->GetSOIs(sois);
+  if(!planePopout->CalculateROIMask()) 
+    printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for StereoDetectorKinectLines: PlanePopout: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+  /// Label all the plane patches, according to plane-popout sois
+  unsigned nrPatches = kcore->NumGestalts3D(Z::Gestalt3D::PATCH);
+  for(unsigned i=0; i<nrPatches; i++)
+  {
+    Z::Patch3D *p = (Z::Patch3D*) kcore->Gestalts3D(Z::Gestalt3D::PATCH, i);
+    p->SetObjectLabel(planePopout->IsInSOI(p->GetCenter3D()));
+  }
+  
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+  /// Learned relation probabilieties (load from file and print)
+  static bool first = true;
+  if(first){
+    learner->ReadResultsFromFile();
+    first = false;
+  }
+  // learner->Process(planePopout, kcore, tgRenderer);
+  
+  double mean, variance, st_devi;
+  /// Proximity between patches
+  learner->GetPosProximityBetweenPatches(mean, variance, st_devi);
+  printf("Pos proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+  learner->GetNegProximityBetweenPatches(mean, variance, st_devi);
+  printf("Neg proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+
+  /// Color similarity between patches
+  learner->GetPosColorSimilarityBetweenPatches(mean, variance, st_devi);
+  printf("Pos color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+  learner->GetNegColorSimilarityBetweenPatches(mean, variance, st_devi);
+  printf("Neg color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+
+  /// Coplanarity between patches
+  learner->GetPosCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
+  printf("Pos normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+  learner->GetNegCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
+  printf("Neg normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+
+  // Coplanarity distance between patches
+//   learner->GetPosCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
+//   printf("Pos distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+//   learner->GetNegCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
+//   printf("Neg distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+
+//   learner->GetClosenessBetweenPatchesProp(const double &val, double &prop);
+
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+  std::vector<Z::Relation> relation_vector;
+  relations->Initialize(kcore);
+  relations->CalcAllRelations(relation_vector);   // without ground-truth
+
+  for(unsigned i=0; i<relation_vector.size(); i++)
+  {
+    std::vector<double> probability;
+    relation_vector[i].prediction = svmPredictor->GetResult(relation_vector[i].rel_value, relation_vector[i].rel_probability);
+    relations->AddPrediction(i, relation_vector[i].prediction);
+    relations->AddProbability(i, relation_vector[i].rel_probability);
+  }
+  relations->PrintResults();
+  
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+  /// TODO Nächste Baustelle => Graph cutter
+printf("    graphCutter: Initialize: start\n");
+  graphCutter->Initialize();
+printf("    graphCutter: Initialize: end\n");
+  graphCutter->Cut();
+printf("    graphCutter: Cut end\n");
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for StereoDetectorKinectLines: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+
+  // show results from graph cut
+//   graphCutter->Show(tgRenderer);
+
+  /// Draw vision core image
+  Z::SetActiveDrawArea(iplImage_k);
+  vcore->DrawGestalts(Z::Gestalt::SEGMENT, 0);
   if(showImages) cvShowImage("Kinect", iplImage_k);
   
+  tgRenderer->AddPointCloud(kinect_point_cloud);
+  
   log("Processing of stereo images ended.");
+  
+  /// free memory
+//   delete planePopout;
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for processing StereoDetectorKinectLines: %4.3f\n", timespec_diff(&current, &start));
 }
 
-
-
+/**
+ * @brief Convert a IplImage to a cvMat<Vec3b> image.
+ * @param iplImage IplImage source
+ * @param matImage cv::Mat image destination
+ */
+void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
+{
+  image = cv::Mat_<cv::Vec3b>(iplImage.height, iplImage.width); 
+  
+  for (int v = 0; v < iplImage.height; ++v)
+  {
+    uchar *d = (uchar*) iplImage.imageData + v*iplImage.widthStep;
+    for (int u = 0; u < iplImage.width; ++u, d+=3)
+    {
+      cv::Vec3b &ptCol = image(v,u);
+      ptCol[0] = d[0];
+      ptCol[1] = d[1];
+      ptCol[2] = d[2];
+    }
+  }
+}
 
 
 /**
@@ -582,58 +605,6 @@ void StereoDetectorKinectLines::SingleShotMode()
   int key = 0;
   key = cvWaitKey(100);      /// TODO Kurzes wait, damit eingelesen werden kann!
 
-//   if (key != -1) printf("StereoDetectorKinectLines::SingleShotMode: Pressed key: %c, %i\n", (char) key, key);
-
-//   if (key == 65470 || key == 1114046) // F1
-//     printf("Keyboard commands for single shot mode:\n"
-//             "    F1 ... Show this help \n"
-//             "    F2 ... Print number of Gestalts\n"
-//             "    F3 ... Print information (show single gestalts (5) = on)\n"
-//             "    F4 ... Print runtime statistics\n"
-//             "    F5 ... Refresh display\n\n"
-//             
-//             "    F9 ... Process single shot\n"
-//             "    F10 .. Process single shot with region of interest (ROI)\n"
-//             "    F11 .. Process single shot with HR and ROI\n"
-// 
-//             "    1 ... Szene: Show all stereo features on virtual szene\n"
-//             "    2 ... Stereo: Show all matched features \n"
-//             "    3 ... Stereo: Show matched features \n"
-//             "    4 ... Stereo: Show single stereo match \n"
-//             "    5 ... Mono: Show all edge segments \n"
-//             "    6 ... Mono: Show detected Gestalts \n"
-//             "    7 ... Mono: Show the masked Gestalts \n"
-//             "    8 ... Mono: Show single Gestalts \n"
-//             "    9 ... Mono: Show ROI windows\n"
-//             "    + ... Mono: Increase degree of detail \n"
-//             "    - ... Mono: Decrease degree of detail \n"
-//             "    . ... Mono: Increase ID of single showed Gestalt \n"
-//             "    , ... Mono: Decrease ID of single showed Gestalt \n"
-//             "    x ... Mono: Stop single-shot processing mode.\n\n"
-// 
-//             "    q ... Show SEGMENTS\n"
-//             "    w ... Show LINES\n"
-//             "    e ... Show COLLINEARITIES\n"
-//             "    r ... Show L-JUNCTIONS\n"
-//             "    t ... Show CLOSURES\n"
-//             "    z ... Show RECTANGLES\n"
-//             "    u ... Show FLAPS\n"
-//             "    i ... Show FLAPS_ARI\n"
-//             "    o ... Show CUBES\n\n"
-// 
-//             "    a ... Show ARCS\n"
-//             "    s ... Show A-JUNCTIONS\n"
-//             "    d ... Show CONVEX ARC-GROUPS\n"
-//             "    f ... Show ELLIPSES\n"
-//             "    g ... Show E-JUNCTIONS\n"
-//             "    h ... Show EXT-ELLIPSES: not yet implemented\n"
-//             "    j ... Show CYLINDERS\n"
-//             "    k ... Show CONES\n"
-//             "    l ... Show SPHERES\n\n"
-// 
-//             "    y ... Show REASONER results\n\n"
-// 
-//             "    < ... Switch to older frames\n");
 
   if (key == 65471 || key == 1114047) // F2
   {
@@ -688,361 +659,81 @@ void StereoDetectorKinectLines::SingleShotMode()
 //     ProcessHRImages();
 //     unlockComponent();
 //   }
-// 
-// //  if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
+
+
+//  if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
   switch((char) key)
   {
-    
-
     case '1':
-//       tgRenderer->Clear();
-//       tgRenderer->AddConvexHulls(clustered_planes);
-  //       if(showAllStereo) 
-//       {
-//         showAllStereo = false;
-//         log("Szene: Show ALL stereo features at virtual scene: OFF");
-//       }
-//       else
-//       { 
-//         showAllStereo = true;
-//         log("Szene: Show ALL stereo features at virtual scene: ON");
-//       }
-//       WriteVisualObjects();
+      log("Show POINT CLOUD");
+      tgRenderer->Clear();
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       break;
       
     case '2':
-//       tgRenderer->Clear();
-//       tgRenderer->SetPointClouds(clustered_planes2);
-//       if(showAllStereoMatched) 
-//       {
-//         showAllStereoMatched = false;
-//         log("Stereo: Draw ALL MATCHED stereo features: OFF");
-//       }
-//       else
-//       { 
-//         showAllStereoMatched = true;
-//         log("Stereo: Draw ALL MATCHED stereo features: ON");
-//       }
-//       if(showImages) ShowImages(true);
+      log("Show SOIs");
+      for(unsigned i=0; i< sois.size(); i++)
+      {
+        std::vector<cv::Vec4f> soi_hulls;
+        pclA::ConvertPCLCloud2CvVec(*sois[i], soi_hulls);  // convert pcl cloud to cvVec cloud
+        tgRenderer->AddHullPrism(soi_hulls);
+      }
       break;
-//     case '3':
-//       if(showStereoMatched) 
-//       {
-//         showStereoMatched = false;
-//         log("Stereo: Draw MATCHED stereo features: OFF");
-//       }
-//       else
-//       { 
-//         showStereoMatched = true;
-//         log("Stereo: Draw MATCHED stereo features: ON");
-//       }
-//       if(showImages) ShowImages(true);
-//       break;
-//     case '4':
-//       if(showSingleStereo)
-//       {
-//         showSingleStereo = false;
-//         log("Stereo: Show single stereo match: OFF");
-//       }
-//       else
-//       {
-//         showSingleStereo = true;
-//         log("Stereo: Show single stereo match: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '5':
-//       if(showSegments)
-//       {
-//         showSegments = false;
-//         log("Mono: Show edge segments: OFF");
-//       }
-//       else
-//       {
-//         showSegments = true;
-//         log("Mono: Show edge segments: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '6':
-//       if(showDetected)
-//       {
-//         showDetected = false;
-//         log("Mono: Draw all detected features: OFF");
-//       }
-//       else
-//       {
-//         showDetected = true;
-//         log("Mono: Draw all detected features: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '7':
-//       if(showMasked)
-//       {
-//         showMasked = false;
-//         log("Mono: Draw all MASKED features: OFF");
-//       }
-//       else
-//       {
-//         showMasked = true;
-//         log("Mono: Draw all MASKED features: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '8':
-//       if(showSingleGestalt)
-//       {
-//         showSingleGestalt = false;
-//         log("Mono: Show single Gestalts: OFF");
-//       }
-//       else
-//       {
-//         showSingleGestalt = true;
-//         log("Mono: Show single Gestalts: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '9':
-//       if(showROIs)
-//       {
-//         showROIs = false;
-//         log("Show ROIs: OFF");
-//       }
-//       else
-//       {
-//         showROIs = true;
-//         log("Show ROIs: ON");
-//       }
-//       ShowImages(true);
-//       break;
-//     case '+':
-//       if(detail < 15)
-//       {
-//         detail++;
-//         log("Increased degree of display detail to: %u", detail);
-//         ShowImages(true);
-//       }
-//       break;
-//     case '-':
-//       if(detail > 0)
-//       {
-//         detail--;
-//         log("Decreased degree of display detail to: %u", detail);
-//         ShowImages(true);
-//       }
-//       break;
-//     case '.':
-//       showID++;
-//       ShowImages(true);
-//       break;
-//     case ',':
-//       if(showID > 0)
-//         showID--;
-//       ShowImages(true);
-//       break;
-//     case 'x':
-//       log("stop debug mode.");
-//       single = false;
-//       break;
-// 
+      
+    case '3':
+      log("Show GRAPH-CUT");
+      tgRenderer->Clear();
+      graphCutter->Show(tgRenderer);
+      break;
+
     case 'q':
       log("Show PATCHES");
-//       showType = Z::Gestalt::SEGMENT;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
+      for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH); i++)
+      {
+        cv::Mat_<cv::Vec3b> kinect_image;
+        ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
+        patches = kinect_image;
+        kcore->DrawGestalts3DToImage(patches, Z::Gestalt3D::PATCH, camPars[2]);
+        cv::imshow("Patches", patches);
+      }
       tgRenderer->Clear();
-//       tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
       break;    
     case 'w':
       log("Show SEGMENTS");
-//       showType = Z::Gestalt::SEGMENT;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
       tgRenderer->Clear();
-      tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT);
       break;
     case 'e':
       log("Show LINES");
-//       showType = Z::Gestalt::LINE;
-//       showStereoType = Z::StereoBase::STEREO_LINE;
-//       ShowImages(true);
-//       write_stereo_lines = !write_stereo_lines;
-//       WriteVisualObjects();
       tgRenderer->Clear();
-      tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE);
       break;
     case 'r':
       log("Show COLLINEARITIES");
-//       showType = Z::Gestalt::COLLINEARITY;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
       tgRenderer->Clear();
-      tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::COLLINEARITY);
       break;
-//     case 't':
-//       log("Show CLOSURES");
-//       showType = Z::Gestalt::CLOSURE;
-//       showStereoType = Z::StereoBase::STEREO_CLOSURE;
-//       ShowImages(true);
-//       write_stereo_closures = !write_stereo_closures;
-//       WriteVisualObjects();
-//       break;
     case 'z':
       log("Show CLOSURES");
-//       showType = Z::Gestalt::RECTANGLE;
-//       showStereoType = Z::StereoBase::STEREO_RECTANGLE;
-//       ShowImages(true);
-//       write_stereo_rectangles = !write_stereo_rectangles;
-//       WriteVisualObjects();
       tgRenderer->Clear();
-      tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::CLOSURE);
       break;
     case 'u':
       log("Show RECTANGLES");
-//       showType = Z::Gestalt::FLAP;
-//       showStereoType = Z::StereoBase::STEREO_FLAP;
-//       ShowImages(true);
-//       WriteVisualObjects();
       tgRenderer->Clear();
-      tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+      tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::RECTANGLE);
       break;
-//     case 'i':
-//       log("Show FLAPS_ARI");
-//       showType = Z::Gestalt::FLAP_ARI;
-//       showStereoType = Z::StereoBase::STEREO_FLAP_ARI;
-//       ShowImages(true);
-//       write_stereo_flaps = !write_stereo_flaps;
-//       WriteVisualObjects();
-//       break;
-//     case 'o':
-//       log("Show CUBES");
-//       showType = Z::Gestalt::CUBE;
-//       showStereoType = Z::StereoBase::STEREO_CUBE;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'p':
-//       log("Show CORNERS");
-//       showType = Z::Gestalt::CORNER;
-//       showStereoType = Z::StereoBase::STEREO_CORNER;
-//       ShowImages(true);
-//       write_stereo_corners = !write_stereo_corners;
-//       WriteVisualObjects();
-//       break;
-// 
-//     case 'a':
-//       log("Show ARCS");
-//       showType = Z::Gestalt::ARC;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 's':
-//       log("Show A-JUNCTIONS");
-//       showType = Z::Gestalt::A_JUNCTION;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'd':
-//       log("Show CONVEX ARC-GROUPS");
-//       showType = Z::Gestalt::CONVEX_ARC_GROUP;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'f':
-//       log("Show ELLIPSES");
-//       showType = Z::Gestalt::ELLIPSE;
-//       showStereoType = Z::StereoBase::STEREO_ELLIPSE;
-//       ShowImages(true);
-//       write_stereo_ellipses = !write_stereo_ellipses;
-//       WriteVisualObjects();
-//       break;
-//       
-//     case 'g':
-//       log("Show E-JUNCTIONS");
-//       showType = Z::Gestalt::E_JUNCTION;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'h':
-//       log("Show EXT-ELLIPSES: not yet implemented");
-// //      showType = Z::Gestalt::EXTELLIPSE;
-// //      showStereoType = Z::StereoBase::UNDEF;
-// //      overlays = 204;
-// //      ShowImages(true);
-// //      WriteVisualObjects();
-//       break;
-//     case 'j':
-//       log("Show CYLINDERS");
-//       showType = Z::Gestalt::CYLINDER;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'k':
-//       log("Show CONES");
-//       showType = Z::Gestalt::CONE;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-//     case 'l':
-//       log("Show CIRCLES");
-//       showType = Z::Gestalt::CIRCLE;
-//       showStereoType = Z::StereoBase::UNDEF;
-//       ShowImages(true);
-//       WriteVisualObjects();
-//       break;
-// 
-//     case 'y':
-//       if(showReasoner)
-//       {
-//         showReasoner = false;
-//         log("Show REASONER results: OFF");
-//       }
-//       else
-//       {
-//         showReasoner = true;
-//         log("Show REASONER results:: ON");
-//       }
-//       ShowImages(true);
-//       break;
-// 
-//     case 'c':
-//       if(showReasonerUnprojected)
-//       {
-//         showReasonerUnprojected = false;
-//         log("Show unprojected REASONER results: OFF");
-//       }
-//       else
-//       {
-//         showReasonerUnprojected = true;
-//         log("Show unprojected REASONER results:: ON");
-//       }
-//       ShowImages(true);
-//       break;
-// 
-//     case '<':
-//       showFrame--;
-//       if(showFrame < 0) showFrame = 2;
-//       log("Switch to older frames: %u", showFrame);
-//       score = p_score[showFrame];
-//       ShowImages(true);
-//       break;
-//   default: break;
+      
+    case 'x':
+      log("End Single-Shot mode!");
+      single = false;
+      break;
   }
 }
 

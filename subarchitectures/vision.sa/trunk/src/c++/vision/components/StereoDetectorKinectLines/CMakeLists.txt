@@ -21,30 +21,46 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/compo
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/objRepresentation)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/kinect)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/Learner)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/GraphCut)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/StereoDetector/libSVM)
+
+FIND_PACKAGE (OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
 
 find_package(PCL 1.0 REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
 
-# TODO TODO We shoud define a flag, if v4r is available!
-# Include v4r libraries!
+# Only if v4r libraries are available!
+option(HAVE_V4R "TUW v4r library is available" NO)
+if (HAVE_V4R)
 include(${COGX_ROOT}/cmake/v4r.cmake)
 include_directories(${V4R_DIR})
 link_directories(${V4R_DIR}/lib)
 
-
 # Set the sources.
 SET(HEADERS
-	StereoDetectorKinectLines.h
+  StereoDetectorKinectLines.h
 )
 SET(SOURCES 
-	StereoDetectorKinectLines.cpp
+  StereoDetectorKinectLines.cpp
 )
 add_cast_component(StereoDetectorKinectLines ${SOURCES} ${HEADERS})
-
-link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDPCL SDLearner)
+link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
 link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
-link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES})
-target_link_libraries(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LDFLAGS} ${PCL_LIBRARIES} )
+link_cast_component(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions)
 
+add_cast_component(LearnPrincipleDistributions LearnPrincipleDistributions.cpp LearnPrincipleDistributions.h)
+link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LDFLAGS} ${PCL_LIBRARIES} )
+link_cast_component(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions)
+
+#target_link_libraries(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LDFLAGS})
+
+endif (HAVE_V4R)
