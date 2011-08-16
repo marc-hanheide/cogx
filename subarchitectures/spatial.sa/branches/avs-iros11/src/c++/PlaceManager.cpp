@@ -1066,11 +1066,6 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
         lockEntry(m_HypIDToWMIDMap[minDistID], cdl::LOCKEDODR);
         FrontierInterface::NodeHypothesisPtr updatedHyp = 
           getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
-        SpatialData::PlacePtr placeholder = getPlaceFromHypID(updatedHyp->hypID);
-        if (placeholder->id == m_goalPlaceForCurrentPath) {
-          unlockEntry(m_HypIDToWMIDMap[minDistID]);
-          continue;
-        }
 
         // Remove the hypothesis from our local list so we don't move
         // it back again in the next iteration...
@@ -1087,8 +1082,6 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
         updatedHyp->y = frontierY;
 
         overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
-        m_PlaceIDToHypMap[placeholder->id] = updatedHyp;
-        overwriteWorkingMemory<SpatialData::Place>(m_Places[placeholder->id].m_WMid, placeholder);
         unlockEntry(m_HypIDToWMIDMap[minDistID]);
       }
       catch (const std::exception& e) {
@@ -1137,6 +1130,9 @@ void PlaceManager::evaluateUnexploredPaths()
     } catch(IceUtil::NullHandleException e) {
       log("ERROR: NullHandleException in refreshPlaceholders()");
     }
+
+    // Update positions of old placeholders if frontiers have moved slightly 
+    updatePlaceholderPositions(frontiers);    
 
     // Update properties for the placeholders reachable from the current place
     updateReachablePlaceholderProperties(curPlace->id);
