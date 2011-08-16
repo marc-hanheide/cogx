@@ -96,6 +96,7 @@ class PlaceManager : public cast::ManagedComponent
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
 
     void evaluateUnexploredPaths();
+    IceUtil::Mutex m_PlaceholderMutex;
 
     std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
     void updateReachablePlaceholderProperties(int placeID);

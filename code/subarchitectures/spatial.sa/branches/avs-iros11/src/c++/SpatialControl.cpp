@@ -196,6 +196,8 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   Cure::NavController::setPoseProvider(m_TOPP);
 
+  Cure::NavController::setCanTrimGateways(true);
+
   /*
   it = _config.find("--max-target-graph-dist");
   double maxDist = 5;
@@ -484,7 +486,7 @@ void SpatialControl::updateGridMaps()
   bool hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
   if (hasScanPose) {
     PointCloud::SurfacePointSeq points;
-    getPoints(true, 0 /* unused */, points);
+    getPoints(true, 640/4, points);
     std::sort(points.begin(), points.end(), ComparePoints());
     for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
       /* Ignore points not in the current view cone */
@@ -1131,9 +1133,11 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 
       Cure::Pose3D scanPose;
       if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-        m_MapsMutex.lock();
+        m_Mutex.lock();
         m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
+        m_Mutex.unlock();
 
+        m_MapsMutex.lock();
         Cure::Pose3D lpW;
         m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
             0.5*Cure::NavController::getRobotWidth(), 
@@ -1344,8 +1348,6 @@ SpatialControl::getFrontiers()
 
   m_Explorer->updateFrontiers();
 
-  m_MapsMutex.unlock();
-
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());
   for (list<Cure::FrontierPt>::iterator it =  m_Explorer->m_Fronts.begin();
@@ -1376,5 +1378,7 @@ SpatialControl::getFrontiers()
     newPt->y = it->getY();
     outArray.push_back(newPt);
   }
+  m_MapsMutex.unlock();
+  log("exit getFrontiers");
   return outArray;
 }
