@@ -142,6 +142,8 @@ public:
   void AddConvexHull(std::vector<cv::Vec4f> &vecHull);
   void AddConvexHulls(vector< cv::Mat_<cv::Vec4f> > &vecHulls);
   
+  void AddHullPrism(std::vector<cv::Vec4f> &vecHull);
+
   void Clear();
 };
 
