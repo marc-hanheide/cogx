@@ -600,6 +600,7 @@ void TomGineThread::AddGraphModel(std::vector<cv::Point3d> first, std::vector<cv
  */
 void TomGineThread::SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::Point3f> &colCloud)
 {
+  printf("TomGineThread::SetPointCloud: Antiquated!\n");
   pthread_mutex_lock(&dataMutex);
   matCloud.copyTo(mCloud);
   colCloud.copyTo(cCloud);
@@ -736,6 +737,8 @@ void TomGineThread::AddConvexHull(std::vector<cv::Vec4f> &vecHull)
   color.float_value = s[3];
   AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
 }
+
+
 /**
  * @brief Add several convex hulls. (Matrix with one row of points!)
  * @param vecHulls Convex hulls with Vec4f point format (x, y, z, rgb)
@@ -763,6 +766,54 @@ void TomGineThread::AddConvexHulls(vector< cv::Mat_<cv::Vec4f> > &vecHulls)
     cv::Vec4f e = vecHulls[i](0, vecHulls[i].cols-1);
     color.float_value = s[3];
     AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
+  }
+}
+
+/**
+ * @brief Add a hull prism as a Space of Interest (SOI)..
+ * @param vecHull Hull points (first half bottom, then top) in Vec4f point format (x, y, z, rgb)
+ */
+void TomGineThread::AddHullPrism(std::vector<cv::Vec4f> &vecHull)                                           /// TODO Color is now set to white!!!
+{  
+  if(vecHull.size() < 3)
+  {
+    printf("TomGineThread::AddHullPrism: Warning: Hull prism with less than three points.!\n");
+    return;
+  }
+  
+  RGBValue color;   
+//   color.float_value = vecHull[0][3];
+  color.b = 255;
+  color.g = 255;
+  color.r = 255;
+      
+  int top = vecHull.size();
+  int bottom = top/2; 
+  for(unsigned j=0; j < bottom; j++)
+  {
+    int i = j+1; 
+    if(i >= bottom) i=0;
+    cv::Vec4f s = vecHull[j];
+    cv::Vec4f e = vecHull[i];
+//     color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r, 0.2);
+  }
+  for(unsigned j=bottom; j < top; j++)
+  {
+    int i = j+1; 
+    if(i >= top) i=bottom;
+    cv::Vec4f s = vecHull[j];
+    cv::Vec4f e = vecHull[i];
+//     color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r, 0.2);
+  }
+  for(unsigned j=0; j < bottom; j++)
+  {
+    int i = j + bottom; 
+    cv::Vec4f s = vecHull[j];
+    cv::Vec4f e = vecHull[i];
+//     color.float_value = s[3];
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r, 0.2);
   }
 }
 
