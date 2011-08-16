@@ -13,6 +13,8 @@
 #include "StereoTypes.h"
 #include "GraphLink.h"
 
+#include <VisionData.hpp>
+
 namespace Z
 {
 
@@ -44,10 +46,12 @@ protected:
   Type type;            // Type of stereo Gestalt
   unsigned id;          // Unique ID of the stereo Gestalt (with respect to the core)
   
-  unsigned vs3ID;       // ID, if we got it from one vs3 Gestalt
+  unsigned vs3ID;       // ID, if we got it from one vs3 Gestalt (Kinect)
   unsigned vs3IDs[2];   // IDs of the left and right vs3 Gestalts				/// TODO für alle 3D Gestalts nachziehen
   double sig;           // Significance value
   unsigned rank;	      // Rank of the the stereo Gestalt
+
+  unsigned nodeID;      // Unique ID of the stereo Gestalt (used for graph building/SVM/Learning)
 
 public:
   static const char* TypeName(Type t);
@@ -62,12 +66,18 @@ public:
   double GetSignificance() {return sig;}
   unsigned GetVs3ID(unsigned side) {return vs3IDs[side];}
   
+  void SetNodeID(unsigned id) {nodeID = id;}
+  unsigned GetNodeID() {return nodeID;}
+  
   void SetID(unsigned _id) {id = _id;}
   unsigned GetID() {return id;}
   
-  virtual bool GetLinks(vector<GraphLink> &links) {return false;}       /// TODO ARI: noch notwendig?
+  virtual bool GetLinks(vector<GraphLink> &links) {return false;}                               /// TODO ARI: noch notwendig?
   virtual void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true) {}   // TODO pure virtual
-  virtual void PrintGestalt3D() {}                                     // TODO pure virtual
+  virtual void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image,
+                                      Video::CameraParameters camPars) {}                       // TODO pure virtual ???
+
+  virtual void PrintGestalt3D() {}                                                              // TODO pure virtual
 };
 
 }

@@ -36,11 +36,11 @@ private:
   IplImage *iplImg;                                                 ///< current left and right image
   cv::Mat_<cv::Vec4f> points;                                       ///< point cloud of the kinect camera
 
-  KinectBase* kinectPrinciples[KinectBase::MAX_TYPE];               ///< Kinect gestalt principle list.
-  Z::Array<Z::Gestalt3D*> kinectGestalts[Gestalt3D::MAX_TYPE];      ///< Kinect gestalt list 
+  KinectBase* kinectPrinciples[KinectBase::MAX_TYPE];               ///< Kinect 3D Gestalt principle list.
+  Z::Array<Z::Gestalt3D*> kinectGestalts[Gestalt3D::MAX_TYPE];      ///< Kinect 3D Gestalt list 
+  void SetNodeIDs();                                                ///< Give all 3D Gestalts a unique node ID
 
-  void SetActiveDrawAreaSide(int side);
-//  void SetData(IplImage *iplImg, cv::Mat_<cv::Point3f>points);      ///< TODO TODO 
+//   void SetActiveDrawAreaSide(int side);
   void InitKinectPrinciples();
 
 public:
@@ -54,12 +54,16 @@ public:
   Gestalt3D* Gestalts3D(Gestalt3D::Type type, unsigned id) {return kinectGestalts[type][id];}           ///< Returns Gestalt of "type" and "id"
   unsigned NumGestalts3D(Gestalt3D::Type type) {return kinectGestalts[type].Size();}                    ///< Ruturns number of Gestalts of "type"
   void NewGestalt3D(Gestalt3D* g);
-  void DrawGestalts3D(TGThread::TomGineThread *tgRenderer, Gestalt3D::Type type);
+  
+  void DrawGestalts3D(TGThread::TomGineThread *tgRenderer, Gestalt3D::Type type);                       ///< Draw Gestalt to 3d render engine
+  void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image,
+                             Gestalt3D::Type type,
+                             Video::CameraParameters camPars);                                          ///< Draw Gestalt to image
+
   void PrintGestalts3D(Gestalt3D::Type type);
   const char* GetKinectTypeName(KinectBase::Type type);
 
   void ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);
-  void ProcessSOIs(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);  
   
   const char* GetGestaltListInfo();
   const char* GetGestaltTypeName(Z::Gestalt3D::Type type);

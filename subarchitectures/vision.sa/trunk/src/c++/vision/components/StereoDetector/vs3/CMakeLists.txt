@@ -1,7 +1,5 @@
 PROJECT(SDvs3)
 
-#FIND_PACKAGE( OpenCV REQUIRED )
-
 SET(SOURCES 
 	betacf.c
 	betai.c
@@ -52,7 +50,6 @@ SET(SOURCES
 	VisionCore.cc
 	VoteImage.cc
 )
-
 
 # INCLUDE DIRECTORIES WITH HEADERS (INTERN)
 include_directories(.)

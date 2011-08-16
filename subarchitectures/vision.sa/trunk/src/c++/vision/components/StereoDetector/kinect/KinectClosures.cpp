@@ -10,7 +10,6 @@
 #include "KinectClosures.h"
 //#include "VisionUtils.h"
 
-#include "PCLCommonHeaders.h"
 #include "Closure3D.h"
 
 namespace Z
@@ -44,10 +43,11 @@ void KinectClosures::ClearResults()
  */
 void KinectClosures::Process()
 {
+// printf("Process KinectClosures: start!\n");
   int minimum_points_per_plane = 15;
-  int point_cloud_width = points.cols;
-  int point_cloud_height = points.rows;
-  double scale = iplImg->width/point_cloud_width;
+  int point_cloud_width = GetPCWidth();
+  int point_cloud_height = point_cloud_width * 3/4;
+  double scale = GetImageWidth()/point_cloud_width;
 
   pcl::PointCloud<pcl::PointXYZRGB> pcl_closure_points;   // all points inside of the closure
   pcl::PointCloud<pcl::PointXYZRGB> pcl_closure_jcts;     // all jcts of the closure (hull points)
@@ -55,17 +55,17 @@ void KinectClosures::Process()
   int nrClosures = vcore->NumGestalts(Z::Gestalt::CLOSURE);
   for(unsigned i=0; i<nrClosures; i++)
   {
-// printf("\nKinectClosures::Process next closure!\n");
     vector<cv::Vec4f> closure_jcts;                       // all jcts of the closure (hull points)
     vector<cv::Vec4f> closure_points;                     // all points inside of the closure
 
-    bool firstPoint = true;
     Z::Closure *c = (Z::Closure*) vcore->Gestalts(Z::Gestalt::CLOSURE, i);
     if(!c->IsMasked())
     {       
+// printf("KinectClosures::Process next unmasked closure!\n");
       int minX = 640, maxX = 0;                 // find the min/max x/y-value of closure (bounding box)
       int minY = 480, maxY = 0;
       for(unsigned i=0; i<c->jcts.Size(); i++)  // get each l-junction from the closure and save min/max
+      {
         if(c->jcts[i] != 0)
         {
           if(c->jcts[i]->isct.x < minX) minX = c->jcts[i]->isct.x;
@@ -79,7 +79,10 @@ void KinectClosures::Process()
           if(x>0 && x < point_cloud_width && y > 0 && y < point_cloud_height)
             closure_jcts.push_back(points.at<cv::Vec4f>(y, x));
         }
-        
+      }
+
+// printf("Process KinectClosures: 1 => min/max x/y: %u-%u / %u-%u!\n", minX, maxX, minY, maxY);
+
       minX = (int) minX/scale+0.5;
       maxX = (int) maxX/scale+0.5;
       minY = (int) minY/scale+0.5;
@@ -89,27 +92,33 @@ void KinectClosures::Process()
       {
         for(int p_y = minY; p_y <= maxY; p_y++)
         {
+// printf("Process KinectClosures: 1-1 => min/max x/y: %u-%u!\n", p_x, p_y);
+
           Vector2 p;
-          p.x = p_x*scale;
+          p.x = p_x*scale;    // TODO Wieder rückrechnen auf 640x480 Bilder? Was wenn Bilder andere Größe haben?
           p.y = p_y*scale;
-          if (c->Inside(p))
-            closure_points.push_back(points.at<cv::Vec4f>(p_y, p_x));
+          
+          if(p.x < GetImageWidth())
+            if (c->Inside(p))
+              closure_points.push_back(points.at<cv::Vec4f>(p_y, p_x));
         }
       }
+// printf("Process KinectClosures: 2 => min/max x/y: %u-%u / %u-%u!\n", minX, maxX, minY, maxY);
       
       // convert cv-vector point cloud to pcl-point cloud
-      pclU::Cv2PCLCloud(closure_points, pcl_closure_points);
+      pclA::ConvertCvVec2PCLCloud(closure_points, pcl_closure_points);
   // int nr_points = pcl_closure_points.size();
-      pclU::RemoveZeros(pcl_closure_points);
+      pclA::RemoveZeros(pcl_closure_points);
 
       if(pcl_closure_points.size() > minimum_points_per_plane)
       {
-        pclU::Cv2PCLCloud(closure_jcts, pcl_closure_jcts);
+        pclA::ConvertCvVec2PCLCloud(closure_jcts, pcl_closure_jcts);
         
         // make singel SAC segmentation with 0.02m distance
         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;                  // model_coefficients for SAC
         std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;         // planes from SAC
-        pclF::SingleSACSegmentation(pcl_closure_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
+        pclA::SingleSACSegmentation(pcl_closure_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
+// printf("Process KinectClosures: after sac 1!\n");
         
   /// TODO TODO TODO TODO Unused: How many points are valid (in %) => indicates something? pruning with this value?
   // int nr_points_wo =pcl_plane_clouds[0]->points.size();
@@ -120,28 +129,27 @@ void KinectClosures::Process()
         if(pcl_plane_clouds.size() > 0 && pcl_plane_clouds[0]->points.size() > minimum_points_per_plane)
         {
           std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_convex_hulls;
-          pclF::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_convex_hulls);
+          pclA::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_convex_hulls);
+// printf("Process KinectClosures: got hull!\n");
 
           /// TODO Projektion der Eckpunkte (closure junctions): 
-          /// Kann nicht funktionieren, weil wir eine Ebene als Ergebniss berechnet haben. Wenn die Tiefe (z-wert) eines 
+          /// Kann nicht funktionieren, weil wir eine Ebene als Ergebnis berechnet haben. Wenn die Tiefe (z-wert) eines 
           /// Punktes nicht passt, dann wird er normal zur Ebene projeziert und nicht vom Sichtstrahl aus! Es müsste eine
           /// Projektion in Richtung Bildpunkt auf die Ebene geben, damit der Wert richtig wäre!!!
   //        std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_closure_jcts_clouds;
   //        pcl_closure_jcts_clouds.push_back(pcl_closure_jcts.makeShared());
-  //        pclF::GetProjectedPoints(pcl_closure_jcts_clouds, model_coefficients, pcl_convex_hulls);
+//   //        pclF::GetProjectedPoints(pcl_closure_jcts_clouds, model_coefficients, pcl_convex_hulls);
   // printf("Size of pcl_convex_hull: %u\n", pcl_convex_hulls[0]->points.size());
 
           // convert plane point cloud (inliers) to vector point cloud
           std::vector<cv::Vec4f> cv_vec_plane;
-          pclU::PCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
+          pclA::ConvertPCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
           
           if(pcl_convex_hulls.size() >0) 
           {
             std::vector<cv::Vec4f> hull_points;
-            pclU::PCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, false);
+            pclA::ConvertPCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, true);   /// TODO With random color
 
-  // printf("hull_points size: %u\n", hull_points.size());
-            
             Z::Closure3D *c3d = new Z::Closure3D(cv_vec_plane, hull_points);
             kcore->NewGestalt3D(c3d);
             numClosures++;
@@ -153,6 +161,7 @@ void KinectClosures::Process()
     }
     else printf("KinectClosures::Process: Warning: Closure is masked.\n");
   }
+printf("Process KinectClosures: end!\n");
 }
 
 

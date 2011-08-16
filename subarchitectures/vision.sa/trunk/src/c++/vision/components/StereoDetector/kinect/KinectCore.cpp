@@ -16,8 +16,6 @@
 #include "KinectClosures.h"
 #include "KinectRectangles.h"
 
-#include "PCLCommonHeaders.h"
-
 namespace Z
 {
 
@@ -50,6 +48,18 @@ KinectCore::~KinectCore()
   for(int i = 0; i < KinectBase::MAX_TYPE; i++)
     if(kinectPrinciples[i]->IsEnabled())
       delete kinectPrinciples[i];
+}
+
+
+/**
+ * @brief Give all 3D Gestalts a unique node ID
+ */
+void KinectCore::SetNodeIDs()
+{
+  unsigned nodeID = 0;
+  for(unsigned i=0; i<KinectBase::MAX_TYPE; i++)
+    for(unsigned j=0; j<kinectGestalts[i].Size(); j++)
+      kinectGestalts[i][j]->SetNodeID(nodeID++);
 }
 
 
@@ -110,7 +120,6 @@ void KinectCore::ClearResults()
   }
 }
 
-
 /**
  * @brief Draw results into TomGine render engine.
  * @param tgRenderer TomGine render engine.
@@ -120,6 +129,32 @@ void KinectCore::DrawGestalts3D(TGThread::TomGineThread *tgRenderer, Gestalt3D::
 { 
   for(unsigned i=0; i < NumGestalts3D(type); i++)
     Gestalts3D(type, i)->DrawGestalt3D(tgRenderer);
+}
+
+/**
+ * @brief Draw results into TomGine render engine.
+ * @param image Draw calculated 3D patches to image!
+ * @param type Type of Gestalt3D to draw.
+ */
+void KinectCore::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, 
+                                       Gestalt3D::Type type,
+                                       Video::CameraParameters camPars)
+{ 
+  // initialize black
+//   int width = 640; 
+//   int height = 480;
+//   image = cv::Mat_<cv::Vec3b>(height, width);
+//   for (int u = 0; u < width; ++u)
+//   {
+//     for (int v = 0; v < height; ++v)
+//     {
+//       cv::Vec3b &ptCol = image(v,u);
+//       ptCol[0] = 0; ptCol[1] = 0; ptCol[2] = 0;
+//     }
+//   }
+  
+  for(unsigned i=0; i < NumGestalts3D(type); i++)
+    Gestalts3D(type, i)->DrawGestalts3DToImage(image, camPars);
 }
 
 /**
@@ -165,12 +200,8 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
   iplImg = _iplImg;
   points = _points;
   
-  /// TODO Initialisierung sollte eigentlich nur einmal sein, danach, dann immer Clear()
-  InitKinectPrinciples();
+  InitKinectPrinciples();  /// TODO Initialisierung sollte eigentlich nur einmal sein
 
-  struct timespec start, current;
-  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-  
   try 
   {
     for(int i = 0; i < KinectBase::MAX_TYPE; i++)
@@ -180,11 +211,6 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
         {
           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u\n", i);
           kinectPrinciples[i]->Process();
-
-          clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-          printf("Runtime for processing the kinect principle %u: %4.3f\n", i, timespec_diff(&current, &start));
-          start = current;
-
           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u ended\n", i);
         }
     }
@@ -194,76 +220,14 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
     printf("KinectCore::ProcessKinectData: Exception during processing of kinect data.");
     std::cout << e.what() << std::endl;
   }
+
+  SetNodeIDs();
 }
 
-
 /**
- * @brief We assume, that we have a dominant plane, on which we can find different objects.
- * We prune the dominant plane, do euclidean clustering and interpret each cluster, which is
- * "on" the table, that it is a seperate object!
- * @param _vcore Vision core
- * @param _iplImage Color image of the kinect camera
- * @param _points Point cloud of the Kinect
- */
-void KinectCore::ProcessSOIs(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points)
-{
-  printf("KinectCore::ProcessSOIs: Antiquated => Delete this stuff and use v4r->PCLAddOns!\n");
-//   vcore = _vcore;
-//   iplImg = _iplImg;
-//   points = _points;
-//   
-//   struct timespec start, current;
-//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-// 
-//   pcl::PointCloud<pcl::PointXYZRGB> cloud;
-//   pclU::Cv2PCLCloud(points, cloud);
-// 
-//   // preprocess point cloud
-//   bool useVoxelGrid = true;
-//   double vg_size = 0.008;                 // 0.01 - 0.005
-//   pclF::PreProcessPointCloud(cloud, useVoxelGrid, vg_size);
-// 
-//   bool sac_optimal_distance = true;
-//   double sac_optimal_weight_factor = 1.5;
-//   double sac_distance = 0.005;            // 5mm
-//   int sac_max_iterations = 100;
-//   int sac_min_inliers = 25;
-//   double ec_cluster_tolerance = 0.015;    // 15mm
-//   int ec_min_cluster_size = 25;
-//   int ec_max_cluster_size = 1000000;
-// 
-//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;
-//   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
-//     
-//   pclF::SOISegmentation(cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
-//                         sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
-//   
-// 
-//   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-//   printf("Runtime for processing the kinect core with soi: %4.3f\n", timespec_diff(&current, &start));
-// //   start = current;
-}
-
-
-/**
- * @brief Get a stereo object as visual object for the CogX cast-framework.
- * @param type Type of stereo object.
- * @param number ID of the stereo object
- * @param obj Visual object as pointer
- * @return Returns true for success.
- */
-// #ifdef HAVE_CAST
-// bool KinectCore::GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj)
-// {
-//   return stereoPrinciples[type]->StereoGestalt2VisualObject(obj, id);
-// }
-// #endif
-
-
-/**
- * @brief Get the name of a stereo type with a fixed character length.  
- * @param type Stereo type
- * @return Returns the information as string.
+ * @brief Get the name of a kinect principle type with a fixed character length.  
+ * @param type Kinect principle type
+ * @return Returns the information as character field.
  */
 const char* KinectCore::GetKinectTypeName(KinectBase::Type type)
 {
@@ -327,132 +291,11 @@ const char* KinectCore::GetGestaltTypeName(Z::Gestalt3D::Type type)
 
 
 /**
- * @brief Draw the mono results into a iplImage
- * @param type Type of stereo object.
- * @param iIl Left stereo image.
- * @param iIr Right stereo image.
- * @param masked Draw the masked features.
- * @param single Draw only single Gestalt.
- * @param id ID of the mono Gestalt
- * @param detail Degree of detail.
- * @return Returns true for success.
- */
-// bool KinectCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, 
-// 				 int singleSide, int id, int detail)
-// {
-//   SetImages(iIl, iIr);
-// 
-//   if(!single)
-//   for(int side = LEFT; side <= RIGHT; side++)
-//   {
-//     SetColor(RGBColor::red);
-//     SetActiveDrawAreaSide(side);
-//     int numGestalts = NumMonoGestalts(type, side);
-//     if (id > numGestalts) return false;
-// 
-//     // draw all Gestalts
-//     for(int i=0; i<numGestalts; i++)
-//     {
-//       if(masked)
-//         vcore[side]->Gestalts(type, i)->Draw(detail);	
-//       else
-//         if (vcore[side]->Gestalts(type, i)->IsUnmasked())
-//           vcore[side]->Gestalts(type, i)->Draw(detail);	
-//     }
-//   }
-// 
-//   if(single)
-//   {
-//     SetColor(RGBColor::white);
-//     SetActiveDrawAreaSide(singleSide);
-//     int numGestalts = NumMonoGestalts(type, singleSide);
-//     if (id >= numGestalts) return false;
-// 
-//     // draw only one gestalt if id is in range of 
-//     if(id < numGestalts && id >= 0)
-//     {
-//       if(masked)
-//         vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
-//       else
-//         if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
-//           vcore[singleSide]->Gestalts(type, id)->Draw(detail);
-//     }
-//   }
-// 
-//   return true;
-// }
-
-/**
- * @brief Draw the stereo results into the stereo iplImages.
- * @param type Type of stereo object.
- * @param iIl Left stereo image.
- * @param iIr Right stereo image.
- * @param matched Draw the matched features.
- */
-// void KinectCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, 
-// 				 bool showAllStereoMatched, bool single, int id, int detail)
-// {
-//   SetImages(iIl, iIr);
-//   SetColor(RGBColor::blue);
-//   if(!single)
-//   {
-//     if(!showAllStereoMatched)
-//     {
-//       for(int side = LEFT; side <= RIGHT; side++)
-//       {
-// 	SetActiveDrawAreaSide(side);
-// 	stereoPrinciples[type]->DrawMatched(side, single, id, detail);
-//       }
-//     }
-//     else // show all stereo matched features
-//     {
-//       for(int i=0; i< StereoBase::MAX_TYPE; i++)
-//       {
-// 	for(int side = LEFT; side <= RIGHT; side++)
-// 	{
-// 	  SetActiveDrawAreaSide(side);
-// 	  stereoPrinciples[i]->DrawMatched(side, single, id, detail);
-// 	}
-//       }
-//     }
-//   }
-//   else
-//   {
-//     for(int side = LEFT; side <= RIGHT; side++)
-//     {
-//       SetActiveDrawAreaSide(side);
-//       stereoPrinciples[type]->DrawMatched(side, single, id, detail);
-//     }
-//   }
-// }
-
-
-
-/**
  * @brief Print the statistics from the vision cores.
  */
 void KinectCore::PrintVCoreStatistics()
 {
   vcore->PrintRunTime();
 }
-
-/**
- * @brief Returns id of first gestalt at pixel position (x,y).
- * @param side Left / right side of stereo image pair.
- * @param type Gestalt type.
- * @param x x-coordinate in image pixels.
- * @param y y-coordinate in image pixels.
- * @param start_after Choose only Gestalts with id higher than start_after.
- * @param reject_masked Reject masked Gestalts. 
- * @return Returns the ID of the next Gestalt.
- */
-// unsigned KinectCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked)
-// {
-//   return vcore[side]->PickGestaltAt(type, x, y, start_after, reject_masked);
-// }
-
-
-
-
 
 } 

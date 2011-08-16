@@ -2,6 +2,10 @@ PROJECT(SDGestalts3D)
 
 include_directories(.)
 
+FIND_PACKAGE (OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIR})
+link_directories(${OPENCV_LIBRARY_DIRS})
+
 # Set the header and sources.
 SET(HEADERS
   Closure3D.h
@@ -31,6 +35,9 @@ SET(SOURCES
   Segment3D.cpp
 )
 
+
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+#target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} opencv_core opencv_highgui opencv_imgproc opencv_objdetect opencv_features2d opencv_flann)
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 

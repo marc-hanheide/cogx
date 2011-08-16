@@ -11,6 +11,8 @@
 
 #include "VisionCore.hh"
 
+#include "v4r/PCLAddOns/utils/PCLUtils.h"
+#include "v4r/PCLAddOns/functions/PCLFunctions.h"
 
 namespace Z
 {
@@ -55,6 +57,9 @@ public:
   void EnablePrinciple(bool status);
   bool IsEnabled() {return enabled;}
 
+  int GetImageWidth() {return iplImg->width;}
+  int GetPCWidth() {return points.cols;}
+  
   static Type EnumType(const char *type_name);
   static const char* TypeName(Type t);
   static const int KinectTypeNameLength(Type t);

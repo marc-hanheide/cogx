@@ -28,7 +28,8 @@ private:
 //   cv::Mat_<cv::Vec4f> points;                               // TODO Change to vector<cv::Vec4f>
   std::vector<cv::Vec4f> points;
   
-  double *redHist, *greenHist, *blueHist;
+  double *redHist, *greenHist, *blueHist;   /// r,g,b histogram
+  double *yHist, *uHist, *vHist;            /// y,u,v histogram
   
 public:
   ColorHistogram(int _nr_bins, std::vector<cv::Vec4f> _p);

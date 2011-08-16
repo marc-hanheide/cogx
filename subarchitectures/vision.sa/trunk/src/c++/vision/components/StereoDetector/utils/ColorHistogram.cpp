@@ -22,9 +22,15 @@ ColorHistogram::ColorHistogram(int _nr_bins, std::vector<cv::Vec4f> _p)
   redHist = new double[nr_bins];
   greenHist = new double[nr_bins];
   blueHist = new double [nr_bins];
+  yHist = new double[nr_bins];
+  uHist = new double[nr_bins];
+  vHist = new double [nr_bins];
   
   for(unsigned i=0; i<nr_bins; i++)
+  {
     redHist[i] = greenHist[i] = blueHist[i] = 0.;
+    yHist[i] = uHist[i] = vHist[i] = 0.;
+  }
 
   Z::RGBValue color;
   double bin = 0.;
@@ -39,13 +45,36 @@ ColorHistogram::ColorHistogram(int _nr_bins, std::vector<cv::Vec4f> _p)
     bin = color.b*(double)nr_bins/255.;
     blueHist[(int)bin]+=1;
   }
-  
   for(unsigned i=0; i<nr_bins; i++)
   {
     redHist[i] /= nr_points;
     greenHist[i] /= nr_points;
     blueHist[i] /= nr_points;
   }
+  
+  // calculate YUV-histogram
+  for(unsigned i=0; i<points.size(); i++)
+  {
+    color.float_value = points[i][3];
+    int Y =  (0.257 * color.r) + (0.504 * color.g) + (0.098 * color.b) + 16;
+    int U = -(0.148 * color.r) - (0.291 * color.g) + (0.439 * color.b) + 128;
+    int V =  (0.439 * color.r) - (0.368 * color.g) - (0.071 * color.b) + 128;
+
+    bin = Y*(double)nr_bins/255.;
+    yHist[(int)bin]+=1;
+    bin = U*(double)nr_bins/255.;
+    uHist[(int)bin]+=1;
+    bin = V*(double)nr_bins/255.;
+    vHist[(int)bin]+=1;
+  }
+  for(unsigned i=0; i<nr_bins; i++)
+  {
+    yHist[i] /= nr_points;
+    uHist[i] /= nr_points;
+    vHist[i] /= nr_points;
+  }
+  
+  
 // printf("\nColorHistogram with Vec:\n");
 // printf("vec: v_points: %u\n", v_points.size());
 //PrintHistogram();  /// TODO Print histogram
@@ -60,31 +89,53 @@ double ColorHistogram::Compare(ColorHistogram *ch)
     return 0.;
   }
   
-  double this_sum[3] = {0., 0., 0.};
-  double ch_sum[3] = {0., 0., 0.};
-  
-//   for(unsigned col=0; col<3; col++)
+  /// RGB: Compare with Aris weighted compare method
+//   double overall_sum = 0;
+//   double this_sum[3] = {0., 0., 0.};
+//   double ch_sum[3] = {0., 0., 0.};
+//   for(unsigned i=0; i<nr_bins; i++)
 //   {
-    for(unsigned i=0; i<nr_bins; i++)
-    {
-      this_sum[0] += redHist[i]*i*1/nr_bins;
-      ch_sum[0] += ch->redHist[i]*i*1/nr_bins;
-      this_sum[1] += greenHist[i]*i*1/nr_bins;
-      ch_sum[1] += ch->greenHist[i]*i*1/nr_bins;
-      this_sum[2] += blueHist[i]*i*1/nr_bins;
-      ch_sum[2] += ch->blueHist[i]*i*1/nr_bins;
-    }
+//     this_sum[0] += redHist[i]*i*1/nr_bins;
+//     ch_sum[0] += ch->redHist[i]*i*1/nr_bins;
+//     this_sum[1] += greenHist[i]*i*1/nr_bins;
+//     ch_sum[1] += ch->greenHist[i]*i*1/nr_bins;
+//     this_sum[2] += blueHist[i]*i*1/nr_bins;
+//     ch_sum[2] += ch->blueHist[i]*i*1/nr_bins;
 //   }
+//   for(unsigned col=0; col<3; col++)
+//     overall_sum += fabs(this_sum[col] - ch_sum[col]);
+//   overall_sum /= 3.;
+//   return overall_sum;
+  
+  
+  /// RGB: Fidelity d=(SUM(sqrt(Pi*Qi)))
+  /// RGB: Bhattacharyya d=-ln(SUM(sqrt(Pi*Qi)))
+//   double overall_sum = 0;
+//   for(unsigned i=0; i<nr_bins; i++)
+//   {
+//     overall_sum += sqrt(redHist[i]*ch->redHist[i]);
+//     overall_sum += sqrt(greenHist[i]*ch->greenHist[i]);
+//     overall_sum += sqrt(blueHist[i]*ch->blueHist[i]);
+//   }  
+//   overall_sum /= 3; // 3-color-channels
+//   double fidelity = overall_sum;
+//   double bhattacharyya = -log(overall_sum);
+//   printf("overall_sum: %4.3f => %4.3f\n", overall_sum, bhattacharyya);
+//   return fidelity;
 
+  /// YUV: Fidelity d=(SUM(sqrt(Pi*Qi)))
   double overall_sum = 0;
-  for(unsigned col=0; col<3; col++)
+  for(unsigned i=0; i<nr_bins; i++)
   {
-    overall_sum += fabs(this_sum[col] - ch_sum[col]);
-// printf("  this_sum[%u]: %4.4f\n", col, this_sum[col]);
-// printf("  ch_sum[%u]: %4.4f\n", col, ch_sum[col]);
-  }
-  overall_sum /= 3.;
-  return overall_sum;
+//     overall_sum += sqrt(yHist[i]*ch->yHist[i]);
+    overall_sum += sqrt(uHist[i]*ch->uHist[i]);
+    overall_sum += sqrt(vHist[i]*ch->vHist[i]);
+  }  
+  overall_sum /= 2; // 3-color-channels
+  double fidelity = overall_sum;
+//   double bhattacharyya = -log(overall_sum);
+//   printf("overall_sum: %4.3f => %4.3f\n", overall_sum, bhattacharyya);
+  return fidelity;
 }
 
 void ColorHistogram::PrintHistogram()

@@ -10,7 +10,6 @@
 #include "KinectRectangles.h"
 //#include "VisionUtils.h"
 
-#include "PCLCommonHeaders.h"
 #include "Rectangle3D.h"
 
 namespace Z
@@ -44,8 +43,6 @@ void KinectRectangles::ClearResults()
  */
 void KinectRectangles::Process()
 {
-  printf("KinectRectangles::Process: Time to implement it!!!\n");
-  
   int minimum_points_per_plane = 15;
   int point_cloud_width = points.cols;
   int point_cloud_height = points.rows;
@@ -100,18 +97,18 @@ void KinectRectangles::Process()
       }
       
       // convert cv-vector point cloud to pcl-point cloud
-      pclU::Cv2PCLCloud(rectangle_points, pcl_rectangle_points);
+      pclA::ConvertCvVec2PCLCloud(rectangle_points, pcl_rectangle_points);
   // int nr_points = pcl_rectangle_points.size();
-      pclU::RemoveZeros(pcl_rectangle_points);
+      pclA::RemoveZeros(pcl_rectangle_points);
 
       if(pcl_rectangle_points.size() > minimum_points_per_plane)
       {
-        pclU::Cv2PCLCloud(rectangle_jcts, pcl_rectangle_jcts);
+        pclA::ConvertCvVec2PCLCloud(rectangle_jcts, pcl_rectangle_jcts);
         
         // make singel SAC segmentation with 0.02m distance
         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;                  // model_coefficients for SAC
         std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;         // planes from SAC
-        pclF::SingleSACSegmentation(pcl_rectangle_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
+        pclA::SingleSACSegmentation(pcl_rectangle_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
         
   /// TODO TODO TODO TODO Unused: How many points are valid (in %) => indicates something? pruning with this value?
   // int nr_points_wo =pcl_plane_clouds[0]->points.size();
@@ -122,7 +119,7 @@ void KinectRectangles::Process()
         if(pcl_plane_clouds.size() > 0 && pcl_plane_clouds[0]->points.size() > minimum_points_per_plane)
         {
           std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_convex_hulls;
-          pclF::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_convex_hulls);
+          pclA::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_convex_hulls);
 
           /// TODO Projektion der Eckpunkte (closure junctions): 
           /// Kann nicht funktionieren, weil wir eine Ebene als Ergebniss berechnet haben. Wenn die Tiefe (z-wert) eines 
@@ -135,25 +132,23 @@ void KinectRectangles::Process()
           
           // convert plane point cloud (inliers) to vector point cloud
           std::vector<cv::Vec4f> cv_vec_plane;
-          pclU::PCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
+          pclA::ConvertPCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
           
           if(pcl_convex_hulls.size() >0) 
           {
             std::vector<cv::Vec4f> hull_points;
-            pclU::PCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, false);
+            pclA::ConvertPCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, true);         /// TODO Random color
 
-  // printf("hull_points size: %u\n", hull_points.size());
-            
             Z::Rectangle3D *r3d = new Z::Rectangle3D(cv_vec_plane, hull_points);
             kcore->NewGestalt3D(r3d);
             numRectangles++;
           }
         }
-        else printf("KinectClosures::Process: Warning: Could not fit the plane!!!\n");
+        else printf("KinectRectangles::Process: Warning: Could not fit the plane!!!\n");
       }
-      else printf("KinectClosures::Process: Warning: Plane without enough points.\n");
+//       else printf("KinectRectangles::Process: Warning: Plane without enough points.\n");
     }
-    else printf("KinectClosures::Process: Warning: Rectangle is masked..\n");
+    else printf("KinectRectangles::Process: Warning: Rectangle is masked..\n");
   }
 }
 

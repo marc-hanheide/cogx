@@ -9,12 +9,14 @@
 #ifndef Z_LEARNER_H
 #define Z_LEARNER_H
 
-// #include <opencv/cxcore.h>
-// #include <opencv/cv.h>
-// #include <stdexcept>
-
 #include "KinectCore.h"
-#include "Histogram.h"
+#include "LearnPropBase.h"
+
+#include "v4r/PCLAddOns/PlanePopout.hh"
+#include "v4r/PCLAddOns/utils/PCLUtils.h"
+#include "v4r/PCLAddOns/functions/PCLFunctions.h"
+
+#include "TomGineThread.hh"
 
 namespace Z
 {
@@ -27,19 +29,30 @@ class Learner
 public:
   
 private:
+  TGThread::TomGineThread *tgRenderer;                      ///< TODO 3D render engine => only for debugging necessary
+
   KinectCore *kcore;
+  pclA::PlanePopout *planePopout;
   
-  Histogram *closenessHisto;
-  Histogram *colorHisto;
+//   Histogram *closenessHisto;       /// TODO Diese Histogramme können später zum verifizieren der Wahrscheinlichkeitsverteilung benutzt werden.
+//   Histogram *colorHisto;
+  
+  int numProperties;
+  LearnPropBase *proximityPP;
+  LearnPropBase *colorPP;
+  LearnPropBase *coplanarityPatchesNormals;
+  LearnPropBase *coplanarityPatchesDistance;
+  
+  int nrPatches;                                  // Number of patches
   
 //   void LearnLJunctionsBetweenLines();
 //   void LearnParallelities();
 //   void LearnCollinearities();
 //   void LearnClosures();
 //   void LearnRectangles();
-  void LearnClosenessBetweenPatches();
+  void LearnProximityPP();
   void LearnColorSimilarityBetweenPatches();
-//   void LearnCoplanaritiesBetweenPatches();
+  void LearnCoplanarityBetweenPatches();
 //   void LearnCoplanaritiesBetweenClosuresAndPatches();
 //   void LearnConcavitiesConvexitiesBetweenPatches();
 //   void LearnCommonMotion();
@@ -49,8 +62,26 @@ public:
   Learner();
   ~Learner();
   
-  void Process(KinectCore *kc);
+  void Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineThread *tgR);
+
+  void GetPosProximityBetweenPatches(double &mean, double &variance, double &st_devi);
+  void GetNegProximityBetweenPatches(double &mean, double &variance, double &st_devi);
+  float GetPProximityPP(const double &val);
+
+  void GetPosColorSimilarityBetweenPatches(double &mean, double &variance, double &st_devi);
+  void GetNegColorSimilarityBetweenPatches(double &mean, double &variance, double &st_devi);
+  float GetPColorSimilarityPP(const double &val);
+
+  void GetPosCoplanarityNormalsBetweenPatches(double &mean, double &variance, double &st_devi);
+  void GetNegCoplanarityNormalsBetweenPatches(double &mean, double &variance, double &st_devi);
+  float GetPCoplanarityPP(const double &val);
+
+  void GetPosCoplanarityDistanceBetweenPatches(double &mean, double &variance, double &st_devi);
+  void GetNegCoplanarityDistanceBetweenPatches(double &mean, double &variance, double &st_devi);
+  void GetCoplanarityDistanceBetweenPatchesProbability(const double &val, double &prob);
   
+  void WriteResults2File();
+  void ReadResultsFromFile();
 };
 
 }
