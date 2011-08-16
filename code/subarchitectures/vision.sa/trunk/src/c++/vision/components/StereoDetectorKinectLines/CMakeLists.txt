@@ -28,17 +28,17 @@ FIND_PACKAGE (OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 
-if (HAVE_PCL_LIBRARY)
-find_package(PCL 1.0 REQUIRED COMPONENTS)
-include_directories(${PCL_INCLUDE_DIRS})
-endif(HAVE_PCL_LIBRARY)
-
 # Only if v4r libraries are available!
 option(HAVE_V4R "TUW v4r library is available" NO)
 if (HAVE_V4R)
 include(${COGX_ROOT}/cmake/v4r.cmake)
 include_directories(${V4R_DIR})
 link_directories(${V4R_DIR}/lib)
+
+if (HAVE_PCL_LIBRARY)
+find_package(PCL 1.0 REQUIRED COMPONENTS)
+include_directories(${PCL_INCLUDE_DIRS})
+endif(HAVE_PCL_LIBRARY)
 
 # Set the sources.
 SET(HEADERS
