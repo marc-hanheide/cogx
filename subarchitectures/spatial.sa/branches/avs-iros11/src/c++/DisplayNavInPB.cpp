@@ -1185,7 +1185,7 @@ void DisplayNavInPB::runComponent() {
 
       if (m_RobotPose && m_ShowPointCloud) {
         PointCloud::SurfacePointSeq points;
-        getPoints(true, 0 /* unused */, points);
+        getPoints(true, 640/4, points);
         peekabot::ColoredVertexSet kinectVerts; 
         double rangeMax = 1;
         for (unsigned int i = 0; i < points.size(); i += 16) {

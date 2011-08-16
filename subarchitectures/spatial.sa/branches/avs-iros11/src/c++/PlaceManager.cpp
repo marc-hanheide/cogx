@@ -1059,12 +1059,18 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
       }
     }
 
-    if (minDistanceSq < m_minNodeSeparation * m_minNodeSeparation && minDistID != -1) {
+    if (minDistanceSq < m_minNodeSeparation * m_minNodeSeparation && minDistID != -1 && minDistanceSq > 0) {
       // Modify the extant hypothesis that best matched the
       // new position indicated by the frontier
       try {
+        lockEntry(m_HypIDToWMIDMap[minDistID], cdl::LOCKEDODR);
         FrontierInterface::NodeHypothesisPtr updatedHyp = 
           getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
+        SpatialData::PlacePtr placeholder = getPlaceFromHypID(updatedHyp->hypID);
+        if (placeholder->id == m_goalPlaceForCurrentPath) {
+          unlockEntry(m_HypIDToWMIDMap[minDistID]);
+          continue;
+        }
 
         // Remove the hypothesis from our local list so we don't move
         // it back again in the next iteration...
@@ -1075,17 +1081,18 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
             break;
           }
         }
+        log("Updating hypothesis at (%f, %f) with ID %i to (%f, %f)", updatedHyp->x, updatedHyp->y, updatedHyp->hypID, frontierX, frontierY);
 
         updatedHyp->x = frontierX;
         updatedHyp->y = frontierY;
 
-        log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
-            updatedHyp->y, updatedHyp->hypID);
-
         overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
+        m_PlaceIDToHypMap[placeholder->id] = updatedHyp;
+        overwriteWorkingMemory<SpatialData::Place>(m_Places[placeholder->id].m_WMid, placeholder);
+        unlockEntry(m_HypIDToWMIDMap[minDistID]);
       }
-      catch (DoesNotExistOnWMException) {
-        log("Error! Could not update hypothesis on WM - entry missing!");
+      catch (const std::exception& e) {
+        log("Could not update hypothesis! Caught exception at %s. Message: %s", __HERE__, e.what());
       }
     }
   }
@@ -1093,6 +1100,7 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
 
 void PlaceManager::evaluateUnexploredPaths()
 {
+  m_PlaceholderMutex.lock();
   if(!m_bNoPlaceholders) {
     NavData::FNodePtr curNode = getCurrentNavNode();
     SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNode->nodeId);
@@ -1102,8 +1110,9 @@ void PlaceManager::evaluateUnexploredPaths()
     try {
       frontiers = frontierReader->getFrontiers();
     }
-    catch (Exception e) {
-      log("Error! getFrontiers failed!");
+    catch (const std::exception& e) {
+      log("Error! getFrontiers failed! Message: %s", e.what());
+      m_PlaceholderMutex.unlock();
       return;
     }
     sort(frontiers.begin(), frontiers.end(), FrontierPtCompare);
@@ -1129,13 +1138,10 @@ void PlaceManager::evaluateUnexploredPaths()
       log("ERROR: NullHandleException in refreshPlaceholders()");
     }
 
-    // Update positions of old placeholders if frontiers have moved slightly
-    updatePlaceholderPositions(frontiers);
-
     // Update properties for the placeholders reachable from the current place
     updateReachablePlaceholderProperties(curPlace->id);
-
   }
+  m_PlaceholderMutex.unlock();
 }
 
 void
@@ -1496,8 +1502,13 @@ PlaceManager::processPlaceArrival(bool failed)
 
       if (wasExploring) {
         FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
-        double distSq = (curNodeX-goalHyp->x)*(curNodeX-goalHyp->x) + (curNodeY-goalHyp->y)*(curNodeY-goalHyp->y);
-        bool closeToGoal = distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation;
+        bool closeToGoal = false;
+        vector<NavData::RobotPose2dPtr> robotPoses;
+        getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+        if (robotPoses.size() != 0) {
+          double distSq = (robotPoses[0]->x-goalHyp->x)*(robotPoses[0]->x-goalHyp->x) + (robotPoses[0]->y-goalHyp->y)*(robotPoses[0]->y-goalHyp->y);
+          closeToGoal = distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation;
+        }
         //The transition was an exploration action
         if (!placeExisted && closeToGoal) { //No Place exists for current node -> it must be new.
           arrivalCase = 1;
@@ -1876,8 +1887,6 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
 
   }
   places.clear(); /* May contain dangling pointers */
-
-  fflush(stdout);
 
   debug("refreshPlaceholders() exited");
 }
