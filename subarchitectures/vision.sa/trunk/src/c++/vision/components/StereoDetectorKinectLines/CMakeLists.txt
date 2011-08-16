@@ -28,8 +28,10 @@ FIND_PACKAGE (OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 
+if (HAVE_PCL_LIBRARY)
 find_package(PCL 1.0 REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
+endif(HAVE_PCL_LIBRARY)
 
 # Only if v4r libraries are available!
 option(HAVE_V4R "TUW v4r library is available" NO)
