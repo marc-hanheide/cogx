@@ -1937,7 +1937,36 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 		if (m_ShowPlaceholders)
 		{
 			FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(placeId);
-			int nodeId = (nodeHypPtr)?nodeHypPtr->hypID:-1;
+      if(!nodeHypPtr) {
+        log("Hyp doesnt exist\nExiting.\n");
+        m_PlaceMutex.unlock();
+        return;
+      }
+
+      int nodeId;
+      int originPlaceID;
+      double hypX, hypY;
+      try {
+        nodeId = nodeHypPtr->hypID;
+        originPlaceID = nodeHypPtr->originPlaceID;
+        hypX = nodeHypPtr->x;
+        hypY = nodeHypPtr->y;
+      } catch(IceUtil::NullHandleException &e) {
+        log("nodeHypPtr is no longer valid.\n");
+        m_PlaceMutex.unlock();
+        return;
+      }
+
+      double originX=0;
+      double originY=0;
+      NavData::FNodePtr fnodePtr;
+      fnodePtr = piPrx->getNodeFromPlaceID(originPlaceID);
+      try {
+        originX = fnodePtr->x;
+        originY = fnodePtr->y;
+      } catch(IceUtil::NullHandleException &e) {
+        log("Could not get origin node.\n");
+      }
 
 			// Create internal representation of the placeholder
 			PlaceData pd;
@@ -1946,61 +1975,42 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			pd.placeStatus = SpatialData::PLACEHOLDER;
 			_places[wmChange.address.id]=pd;
 
-      peekabot::LabelProxy text;
-      peekabot::CubeProxy sp;
-      peekabot::CubeProxy cp;
-      peekabot::CubeProxy mp;
-      peekabot::PolylineProxy lcp;
 			// Draw the placeholder
 			// Add text
 			if (m_ShowLabels)
 			{
-        try {
-          char buf[32];
-          sprintf(buf, "%d", placeId);
-          text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
-          text.set_text(buf);
-          text.set_rotation(0,0,0);
-          text.set_scale(20, 20, 20);
-          text.set_alignment(peekabot::ALIGN_CENTER);
-          text.set_color(1,0,0);
-        } catch(IceUtil::NullHandleException e) {
-          text.remove();
-          log("Placeholder disappeared before we could draw the text.");
-          m_PlaceMutex.unlock();
-          debug("Exited newPlace");
-          return;
-        }
+				char buf[32];
+				peekabot::LabelProxy text;
+				sprintf(buf, "%d", placeId);
+				text.add(m_ProxyLabels, buf, peekabot::REPLACE_ON_CONFLICT);
+				text.set_text(buf);
+				text.set_pose(hypX,hypY,0.3,0,0.0,0);
+				text.set_rotation(0,0,0);
+				text.set_scale(20, 20, 20);
+				text.set_alignment(peekabot::ALIGN_CENTER);
+				text.set_color(1,0,0);
 			}
 
 			// Mashroom
-      try {
-        char name[32];
-        sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
-        sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
-        sp.set_position(nodeHypPtr->x, nodeHypPtr->y, 0);
-        sp.set_scale(0.2, 0.2, 0.05);
-        sp.set_color(0.2, 0.2, 0.2);
+			peekabot::CubeProxy sp;
+			char name[32];
+			sprintf(name, "node_hyp%ld", (long)nodeHypPtr->hypID);
+			sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+			sp.set_position(hypX, hypY, 0);
+			sp.set_scale(0.2, 0.2, 0.05);
+			sp.set_color(0.2, 0.2, 0.2);
 
-        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
-        cp.set_scale(0.08, 0.08, 0.20);
-        cp.set_position(0,0,0.08);
-        cp.set_color(0.2,0.2,0.2);
+			peekabot::CubeProxy cp;
+			cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+			cp.set_scale(0.08, 0.08, 0.20);
+			cp.set_position(0,0,0.08);
+			cp.set_color(0.2,0.2,0.2);
 
-        mp.add(sp, "mushroom");
-        mp.set_scale(0.16, 0.16, 0.05);
-        mp.set_position(0, 0, 0.20);
-        mp.set_color(0.2, 0.2, 0.2);
-      } catch(IceUtil::NullHandleException e) {
-        text.remove();
-        sp.remove();
-        cp.remove();
-        mp.remove();
-        log("Placeholder disappeared before we could draw mushroom.");
-        m_PlaceMutex.unlock();
-        debug("Exited newPlace");
-        return;
-      }
+			peekabot::CubeProxy mp;
+			mp.add(sp, "mushroom");
+			mp.set_scale(0.16, 0.16, 0.05);
+			mp.set_position(0, 0, 0.20);
+			mp.set_color(0.2, 0.2, 0.2);
 
 			// Origin
 			if (nodeHypPtr) {
@@ -2009,25 +2019,14 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			  NavData::FNodePtr fnodePtr = piPrx->getNodeFromPlaceID(originPlaceID);
 			  if (fnodePtr) {
 //			    int parentNodeID= fnodePtr->nodeId;
-          try {
-            peekabot::VertexSet points;
-            points.add(0, 0, 0);
-            points.add(fnodePtr->x-nodeHypPtr->x, 
-                fnodePtr->y-nodeHypPtr->y, 0);
-            lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
-            lcp.set_line_style("dotted",0.5);
-            lcp.add_vertices(points);
-          } catch(IceUtil::NullHandleException e) {
-            text.remove();
-            sp.remove();
-            cp.remove();
-            mp.remove();
-            lcp.remove();
-            log("Placeholder disappeared before we could draw the line to the origin.");
-            m_PlaceMutex.unlock();
-            debug("Exited newPlace");
-            return;
-          }
+			    peekabot::PolylineProxy lcp;
+			    peekabot::VertexSet points;
+			    points.add(0, 0, 0);
+			    points.add(originX-hypX, 
+				originY-hypY, 0);
+			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
+			    lcp.set_line_style("dotted",0.5);
+			    lcp.add_vertices(points);
 			  }
 			}
 
