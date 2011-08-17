@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <queue>
-#include <limits>
+#include <set>
 #include <math.h>
 
 using namespace navsa;
@@ -14,28 +14,6 @@ extern "C" {
   cast::interfaces::CASTComponentPtr newComponent() {
     return new PlaceholderExplorer();
   }
-}
-
-PlaceholderExplorer::PlaceholderCompare::PlaceholderCompare(FrontierInterface::PlaceInterfacePrx _proxy, double x, double y)
-: proxy(_proxy), robotX(x), robotY(y)
-{
-}
-
-bool PlaceholderExplorer::PlaceholderCompare::operator()(const SpatialData::PlacePtr& lhs, const SpatialData::PlacePtr& rhs) const
-{
-  return getCost(lhs) > getCost(rhs);
-}
-
-double PlaceholderExplorer::PlaceholderCompare::getCost(const SpatialData::PlacePtr& placeholder) const
-{
-  FrontierInterface::NodeHypothesisPtr node = proxy->getHypFromPlaceID(placeholder->id); 
-
-  if (!node)
-    return std::numeric_limits<float>::max();
-
-  double distanceSq = (node->x - robotX) * (node->x - robotX) + (node->y - robotY) * (node->y - robotY);
-
-  return distanceSq;
 }
 
 PlaceholderExplorer::PlaceholderExplorer() {
@@ -54,100 +32,218 @@ void PlaceholderExplorer::start() {
       new cast::MemberFunctionChangeReceiver<PlaceholderExplorer>(this, &PlaceholderExplorer::navCommandResponse));
 }
 
+void PlaceholderExplorer::runComponent() {
+  FrontierInterface::PlaceInterfacePrx placeInterface(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+  int placeId = -1;
 
+  while(true) {
+    std::set<int> updatedPlaceholders;
 
-SpatialData::PlacePtr PlaceholderExplorer::getPlaceholder()
-{
-  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-  PlaceholderCompare comparator(agg, m_x, m_y);
-  priority_queue<SpatialData::PlacePtr, vector<SpatialData::PlacePtr>, PlaceholderCompare> sortedPlaces(comparator);
-
-  vector<SpatialData::PlacePtr> places;
-  getMemoryEntries<SpatialData::Place>(places);
-
-  for (vector<SpatialData::PlacePtr>::iterator it = places.begin();
-      it != places.end(); ++it) {
-    if ((*it)->status == SpatialData::PLACEHOLDER) {
-      sortedPlaces.push(*it);
+    if(m_status == SpatialData::COMMANDINPROGRESS || m_status == SpatialData::COMMANDPENDING || !m_hasPosition) {
+      sleep(1);
+      continue;
     }
-  }
 
-  if (sortedPlaces.empty()) {
-    return NULL;
-  }
-  else {
-    return sortedPlaces.top();
+    SpatialData::PlacePtr currentPlace = placeInterface->getCurrentPlace();
+    while(true) {
+
+      placeId = findClosestPlaceholderInNodeGraph(currentPlace->id);
+      if(placeId < 0)
+        break;
+
+      // Have we updated this placeholders edge before?
+      if(updatedPlaceholders.find(placeId) == updatedPlaceholders.end()) {
+        log("We have not updated this placeholder before");
+        int res = placeInterface->updatePlaceholderEdge(placeId);
+        updatedPlaceholders.insert(placeId);
+        log("Placeholder %d is now connected to %d", placeId, res);
+        continue;
+      } else {
+        log("We have updated this placeholder before!");
+        int placeConnectedToPlaceholder;
+        try {
+          placeConnectedToPlaceholder = placeInterface->getHypFromPlaceID(placeId)->originPlaceID;
+        } catch(IceUtil::NullHandleException &e) {
+          log("Couldnt get hyp from placeid. Place is probably deleted.");
+          break;
+        }
+
+        // Are we already at the closest node?
+        if(placeConnectedToPlaceholder == currentPlace->id)
+          goToPlace(placeId);
+        else
+          goToPlace(placeConnectedToPlaceholder);
+
+        log("We've sent a movement command.");
+        break;
+      }
+    }
   }
 }
 
-void PlaceholderExplorer::runComponent() {
-  SpatialData::PlacePtr place = NULL;
+int PlaceholderExplorer::findClosestPlaceholderInNodeGraph(int curPlaceId) {
+  debug("FindclosestPlaceholderInNodeGraph entered\n");
+  std::queue<int> toSearch;
+  std::set<int> visited;
+  std::set<int> placeholders;
+  std::map<int, std::vector<int> > adjacencyLists;
 
-  while(true) {
-    if(m_status == SpatialData::COMMANDINPROGRESS || m_status == SpatialData::COMMANDPENDING) {
-      sleep(1);
-      continue;
+  FrontierInterface::PlaceInterfacePrx placeInterface(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+  // Get the graph
+  log("Getting adjacencylists\n");
+  adjacencyLists = placeInterface->getAdjacencyLists();
+
+  // Build a set of all the placeholders
+  log("building a set of all the placeholders\n");
+  std::vector<SpatialData::PlacePtr> places;
+  getMemoryEntries<SpatialData::Place>(places);
+  for(std::vector<SpatialData::PlacePtr>::iterator placesIt = places.begin();
+      placesIt != places.end(); ++placesIt) {
+
+    try {
+      SpatialData::PlacePtr place = *placesIt;
+      if(place->status == SpatialData::PLACEHOLDER)
+        placeholders.insert(place->id);
+    } catch (IceUtil::NullHandleException e) {
+      log("Place disappeared before we got to it. Ignoring.");
     }
-
-    if (!m_hasPosition || !(place = getPlaceholder())) {
-      sleep(1);
-      continue;
-    }
-
-    log("Trying to go to place id: %d", place->id);
-
-    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
-    cmd->prio = SpatialData::NORMAL;
-    cmd->cmd = SpatialData::GOTOPLACE;
-    cmd->destId.push_back(place->id);
-    cmd->comp = SpatialData::COMMANDPENDING;
-    cmd->status = SpatialData::NONE;
-    /* Lower the default tolerance so we don't get as much rejected hypotheses */
-    cmd->tolerance.push_back(0.1);
-
-    log("Going to %d", place->id);
-
-    m_status = NavData::INPROGRESS;
-
-    std::string id = newDataID();
-    addToWorkingMemory<SpatialData::NavCommand>(id,cmd);
   }
+
+
+  // Add the places connected to the current node to the queue
+  log("add places connected to the current node to the queue");
+  std::map<int, std::vector<int> >::iterator adjIt = adjacencyLists.find(curPlaceId);
+  if(adjIt == adjacencyLists.end()) {
+    log("Current place does not have any edges.\n");
+
+    // Print the graph. For debugging purposes.
+    for(std::map<int, std::vector<int> >::iterator it = adjacencyLists.begin();
+        it != adjacencyLists.end(); ++it) {
+      log("Place %d has the following edges:\n", it->first);
+      for(vector<int>::iterator it2 = it->second.begin(); it2 != it->second.end();
+          ++it2) {
+        log("  %d", *it2);
+      }
+    }
+    return -1;
+  }
+
+  std::vector<int> &curPlaceConnections = adjIt->second;
+  for(std::vector<int>::iterator connectionsIt = curPlaceConnections.begin();
+      connectionsIt != curPlaceConnections.end(); ++connectionsIt) {
+
+    // If this is a placeholder, we're done
+    if(placeholders.find(*connectionsIt) != placeholders.end()) {
+      debug("exited function");
+      return *connectionsIt;
+    }
+
+    toSearch.push(*connectionsIt);
+  }
+  visited.insert(curPlaceId);
+
+  // Do a BFS over the graph
+  log("Do the bfs");
+  while(!toSearch.empty()) {
+    int placeId = toSearch.front();
+    toSearch.pop();
+
+    // Otherwise, add all of the places this place is connected to
+    adjIt = adjacencyLists.find(placeId);
+    if(adjIt == adjacencyLists.end())
+      continue; // No connections from this place.
+
+    std::vector<int> &placeConnections = adjIt->second;
+    for(std::vector<int>::iterator connectionsIt = placeConnections.begin();
+        connectionsIt != placeConnections.end(); ++connectionsIt) {
+
+      // If this is a placeholder, we're done
+      if(placeholders.find(*connectionsIt) != placeholders.end())
+        return *connectionsIt;
+
+      // Don't add places we've already searched
+      if(visited.find(*connectionsIt) != visited.end()) {
+        log("exited function");
+        continue;
+      }
+
+      toSearch.push(*connectionsIt);
+    }
+
+    // Mark this place as visited
+    visited.insert(placeId);
+  }
+
+  // We did not find a placeholder.
+  // Print the graph. For debugging purposes.
+  log("Did not find a placeholder in graph.");
+  for(std::map<int, std::vector<int> >::iterator it = adjacencyLists.begin();
+      it != adjacencyLists.end(); ++it) {
+    log("Place %d has the following edges:", it->first);
+    for(vector<int>::iterator it2 = it->second.begin(); it2 != it->second.end();
+        ++it2) {
+      log("  %d", *it2);
+    }
+  }
+  log("exited function");
+  return -1; 
+}
+
+void PlaceholderExplorer::goToPlace(int placeId) {
+    log("Trying to go to place id: %d", placeId);
+
+    SpatialData::NavCommandPtr navCmd = new SpatialData::NavCommand;
+    navCmd->prio = SpatialData::NORMAL;
+    navCmd->cmd = SpatialData::GOTOPLACE;
+    navCmd->destId.push_back(placeId);
+    navCmd->comp = SpatialData::COMMANDPENDING;
+    navCmd->status = SpatialData::NONE;
+    /* Lower the default tolerance so we don't get as much rejected hypotheses */        
+    //navCmd->tolerance.push_back(0.1);
+
+    m_status = SpatialData::COMMANDINPROGRESS;
+    std::string navCmdID = newDataID();
+    addToWorkingMemory<SpatialData::NavCommand>(navCmdID,navCmd);
 }
 
 void PlaceholderExplorer::poseChange(const cast::cdl::WorkingMemoryChange &objID) {
-  NavData::RobotPose2dPtr oobj = getMemoryEntry<NavData::RobotPose2d>(objID.address);
+  try {
+    NavData::RobotPose2dPtr oobj = getMemoryEntry<NavData::RobotPose2d>(objID.address);
 
-  log("Got new position (%f, %f)", oobj->x, oobj->y);
+    m_x = oobj->x;
+    m_y = oobj->y;
+    m_theta = oobj->theta;
 
-  m_x = oobj->x;
-  m_y = oobj->y;
-  m_theta = oobj->theta;
-
-  m_hasPosition = true;
+    m_hasPosition = true;
+  } catch (IceUtil::NullHandleException e) {
+  }
 }
 
 void PlaceholderExplorer::navCommandResponse(const cast::cdl::WorkingMemoryChange &objID) {
+  try {
+    SpatialData::NavCommandPtr oobj = getMemoryEntry<SpatialData::NavCommand>(objID.address);
 
-  SpatialData::NavCommandPtr oobj = getMemoryEntry<SpatialData::NavCommand>(objID.address);
+    m_status = oobj->comp;
 
-  m_status = oobj->comp;
-
-  switch(oobj->comp) {
-    case 0:
-      log("Navigation command status: PENDING");
-      break;
-    case 1:
-      log("Navigation command status: INPROGRESS");
-      break;
-    case 2:
-      log("Navigation command status: ABORTED");
-      break;
-    case 3:
-      log("Navigation command status: FAILED");
-      break;
-    case 4:
-      log("Navigation command status: SUCCEEDED");
-      break;
+    switch(oobj->comp) {
+      case 0:
+        log("Navigation command status: PENDING");
+        break;
+      case 1:
+        log("Navigation command status: INPROGRESS");
+        break;
+      case 2:
+        log("Navigation command status: ABORTED");
+        break;
+      case 3:
+        log("Navigation command status: FAILED");
+        break;
+      case 4:
+        log("Navigation command status: SUCCEEDED");
+        break;
+    }
+  } catch (IceUtil::NullHandleException e) {
   }
 }
 

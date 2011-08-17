@@ -12,18 +12,6 @@ namespace navsa {
 
   class PlaceholderExplorer : public cast::ManagedComponent
   {
-    private:
-      class PlaceholderCompare
-      {
-        private:
-          FrontierInterface::PlaceInterfacePrx proxy;
-          double robotX, robotY;
-          double getCost(const SpatialData::PlacePtr& placeholder) const;
-        public:
-          bool operator()(const SpatialData::PlacePtr& lhs, const SpatialData::PlacePtr& rhs) const;
-          PlaceholderCompare(FrontierInterface::PlaceInterfacePrx _proxy, double x, double y);
-      };
-
     public:
       PlaceholderExplorer();
       virtual ~PlaceholderExplorer() {};
@@ -38,8 +26,8 @@ namespace navsa {
       bool m_hasPosition;
       void poseChange(const cast::cdl::WorkingMemoryChange &objID);
       void navCommandResponse(const cast::cdl::WorkingMemoryChange &objID);
-
-      SpatialData::PlacePtr getPlaceholder();
+      void goToPlace(int placeId);
+      int findClosestPlaceholderInNodeGraph(int curPlaceId);
   };
 };
 

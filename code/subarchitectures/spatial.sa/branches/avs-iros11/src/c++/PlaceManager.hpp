@@ -55,6 +55,8 @@ class PlaceManager : public cast::ManagedComponent
       virtual SpatialData::PlacePtr getCurrentPlace(const Ice::Current &_context);
       virtual FrontierInterface::PlaceMembership getPlaceMembership(double x, double y,
 	  const Ice::Current &_context);
+      int updatePlaceholderEdge(int placeholderId, const Ice::Current &_context);
+      FrontierInterface::AdjacencyLists getAdjacencyLists(const Ice::Current &_context);
 
       PlaceManager *m_pOwner;
       PlaceServer(PlaceManager *owner) : m_pOwner(owner)
@@ -135,13 +137,18 @@ class PlaceManager : public cast::ManagedComponent
     void deletePlaceholderProperties(int placeID);
     void deletePlaceholder(int placeId);
     bool createPlaceholder(int curPlaceId, double x, double y);
+    int updatePlaceholderEdge(int placeholderId);
     bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
+
+    std::map<int, std::vector<int> > getAdjacencyLists();
 
     double getGatewayness(double x, double y);
     void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
 	int placeholderID, double value);
 
+    std::string concatenatePlaceIDs(int place1ID, int place2ID);
     void createConnectivityProperty(double cost, int place1ID, int place2ID);
+    bool deleteConnectivityProperty(int place1ID, int place2ID);
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
 
@@ -182,6 +189,7 @@ class PlaceManager : public cast::ManagedComponent
 
     std::map<int, std::set<int> > m_connectivities; // Keeps track of the
     					// connectivity properties maintained
+    std::map<std::string, std::string> m_placeIDsToConnectivityWMID;
     std::map<int, std::string> m_gatewayProperties;
     IceUtil::Mutex m_PlacePropsMutex;
 

@@ -275,7 +275,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException) {
     log("Error! Nav node missing from WM!");
   }
-    debug("newNavNode exited");
+  debug("newNavNode exited");
 }
 
 void
@@ -297,10 +297,10 @@ PlaceManager::cancelMovement()
       debug("locked");
       SpatialData::NavCommandPtr ptr = it->getData();
       if (ptr->cmd == SpatialData::GOTOPLACE &&
-	  ptr->comp == SpatialData::COMMANDINPROGRESS) {
-	ptr->comp = SpatialData::COMMANDSUCCEEDED;
-	debug("overwrite 1: %s", it->getID().c_str());
-	overwriteWorkingMemory<SpatialData::NavCommand>(it->getID(), ptr);
+          ptr->comp == SpatialData::COMMANDINPROGRESS) {
+        ptr->comp = SpatialData::COMMANDSUCCEEDED;
+        debug("overwrite 1: %s", it->getID().c_str());
+        overwriteWorkingMemory<SpatialData::NavCommand>(it->getID(), ptr);
       }
       debug("unlocking");
       unlockEntry(it->getID());
@@ -688,6 +688,51 @@ bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int cur
     return false;
 }
 
+std::map<int, std::vector<int> > PlaceManager::getAdjacencyLists() {
+  std::map<int, std::vector<int> > adjacencyLists;
+
+  // Build adjecency lists (edges to placeholders not included)
+  std::vector<NavData::AEdgePtr> edges;
+  getMemoryEntries<NavData::AEdge>(edges);
+  for(std::vector<NavData::AEdgePtr>::iterator it = edges.begin();
+      it != edges.end(); ++it) {
+
+    try {
+      SpatialData::PlacePtr place1 = getPlaceFromNodeID((*it)->startNodeId);
+      SpatialData::PlacePtr place2 = getPlaceFromNodeID((*it)->endNodeId);
+
+      adjacencyLists[place1->id].push_back(place2->id);
+      adjacencyLists[place2->id].push_back(place1->id);
+    } catch(IceUtil::NullHandleException e) {
+      log("Edge disappeared. Ignoring.");
+    }
+  }
+
+  // Add the edges that are connected to placeholders
+  std::vector<SpatialData::PlacePtr> places;
+  getMemoryEntries<SpatialData::Place>(places);
+  for(std::vector<SpatialData::PlacePtr>::iterator placesIt = places.begin();
+      placesIt != places.end(); ++placesIt) {
+
+    try {
+      SpatialData::PlacePtr place = *placesIt;
+      if(place->status == SpatialData::PLACEHOLDER) {
+        FrontierInterface::NodeHypothesisPtr hyp = getHypFromPlaceID(place->id);
+
+        if(!hyp)
+          continue;
+
+        adjacencyLists[hyp->originPlaceID].push_back(place->id);
+      }
+    } catch(IceUtil::NullHandleException e) {
+      log("Place disappeared. Ignoring.");
+    }
+  }
+
+  return adjacencyLists;
+}
+
+
 bool 
 FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInterface::FrontierPtPtr &b)
 {
@@ -702,15 +747,21 @@ std::vector<pair <double,double> >
 PlaceManager::getPlaceholderPositionsFromFrontiers(
     FrontierInterface::FrontierPtSeq frontiers,
     int placeId) {
+  debug("Entered getplaceholderpositionsfromfrontiers\n");
 
   std::vector<pair <double,double> > ret;
 
-  NavData::FNodePtr curNode = m_PlaceIDToNodeMap[placeId];
+  NavData::FNodePtr curNode = getNodeFromPlaceID(placeId);
+  if(!curNode) {
+    log("Couldnt find node from the placeid specified");
+    return ret;
+  }
   int curNodeId = curNode->nodeId;
   double nodeX = curNode->x;
   double nodeY = curNode->y;
 
   // Find out which points are reachable
+  log("Find out which points are reachable");
   SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
   std::vector<std::vector<double> > coords;
   for(FrontierInterface::FrontierPtSeq::iterator frontierIt =
@@ -721,6 +772,7 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     coords.push_back(coord);
   }
   std::vector<bool> reachabilityVector = map->arePointsReachable(coords);
+  log("Got reachabilityvector");
 
   if(reachabilityVector.size() == 0 || reachabilityVector.size() != frontiers.size()) {
     log("Failed to get data on frontier reachability.");
@@ -728,6 +780,7 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
   }
 
   // Loop over currently observed frontiers
+  log("looping over frontiers\n");
   std::vector<bool>::iterator reachabilityIt = reachabilityVector.begin();
   for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
       frontiers.begin(); frontierIt != frontiers.end(); frontierIt++, reachabilityIt++) {
@@ -842,6 +895,62 @@ bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
   m_Places[newPlaceID]=p;
 
   return true;
+}
+
+/* Updates the edge of the placeholder so that it is linked to the node to
+   which it has the shortest path.
+   Returns the place id the placeholder is linked to or -1 on error*/
+int PlaceManager::updatePlaceholderEdge(int placeholderId) {
+  FrontierInterface::NodeHypothesisPtr hyp = getHypFromPlaceID(placeholderId);
+  if(!hyp) {
+    return -1;
+  }
+
+  SpatialData::PlacePtr placeholder = getPlaceFromHypID(hyp->hypID);
+  if(!placeholder) {
+    return -1;
+  }
+
+  int originPlaceId = hyp->originPlaceID;
+
+  SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
+  log("Finding closest node.");
+  int closestNodeId = map->findClosestNode(hyp->x, hyp->y);
+  if(closestNodeId < 0) {
+    log("Error in finding closest node. Returning.");
+    return -1;
+  }
+
+  SpatialData::PlacePtr closestPlace = getPlaceFromNodeID(closestNodeId);
+  if(!closestPlace) {
+    log("No place attached to node. Try again later.");
+    return -1;
+  }
+
+  if(closestPlace->id == hyp->originPlaceID) {
+    log("Closest place was the same as before. Returning.");
+    return closestPlace->id;
+  }
+
+  log("Deleting connectivity property.");
+  deleteConnectivityProperty(originPlaceId, placeholderId);
+
+  hyp->originPlaceID = closestPlace->id;
+
+  try {
+    std::map<int,std::string>::iterator wmid = m_HypIDToWMIDMap.find(hyp->hypID);
+    if(wmid != m_HypIDToWMIDMap.end())
+      overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(wmid->second, hyp);
+    else
+      log("Could not find WMID of hyp.");
+
+  } catch (DoesNotExistOnWMException) {
+    log("Error! Could not update hypothesis on WM - entry missing!");
+  }
+
+  log("Found a new connection!");
+
+  return closestPlace->id;
 }
 
 /* Upgrades placeholderproperties of placeholders reachable from placeID */
@@ -1093,13 +1202,21 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
 
 void PlaceManager::evaluateUnexploredPaths()
 {
+  debug("Entering evaluateUnexplorePaths");
   m_PlaceholderMutex.lock();
   if(!m_bNoPlaceholders) {
     NavData::FNodePtr curNode = getCurrentNavNode();
     SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNode->nodeId);
+    
+    if(!curPlace) {
+      log("Could not find current place.");
+      m_PlaceholderMutex.unlock();
+      return;
+    }
 
     FrontierInterface::FrontierPtSeq frontiers;
 
+    log("Getting frontiers");
     try {
       frontiers = frontierReader->getFrontiers();
     }
@@ -1108,15 +1225,17 @@ void PlaceManager::evaluateUnexploredPaths()
       m_PlaceholderMutex.unlock();
       return;
     }
-    sort(frontiers.begin(), frontiers.end(), FrontierPtCompare);
 
     // Create new placeholders
+    log("Getting placeholderpositions.");
     std::vector<pair <double, double> > coords =
       getPlaceholderPositionsFromFrontiers(frontiers, curPlace->id);
 
+    log("Looping over placeholderpositions");
     for(vector<pair <double, double> >::iterator coordIt = coords.begin();
         coordIt != coords.end(); coordIt++) {
       if(!isPointCloseToExistingPlaceholder(coordIt->first, coordIt->second)) {
+        log("Creating placeholder");
         createPlaceholder(curPlace->id, coordIt->first, coordIt->second);
       }
     }
@@ -1126,6 +1245,7 @@ void PlaceManager::evaluateUnexploredPaths()
     // placeholder). This will also, if possible, slightly move the placeholders
     // if they are too close to a wall or other obstacle.
     try {
+      log("Refreshing placeholders.");
       refreshPlaceholders(coords);
     } catch(IceUtil::NullHandleException e) {
       log("ERROR: NullHandleException in refreshPlaceholders()");
@@ -1135,9 +1255,12 @@ void PlaceManager::evaluateUnexploredPaths()
     updatePlaceholderPositions(frontiers);    
 
     // Update properties for the placeholders reachable from the current place
+    log("Updating reachable placeholder properties.");
     updateReachablePlaceholderProperties(curPlace->id);
   }
+
   m_PlaceholderMutex.unlock();
+  debug("Exiting evaluateUnexplorePaths");
 }
 
 void
@@ -1613,6 +1736,7 @@ PlaceManager::processPlaceArrival(bool failed)
           m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
 
           //Delete Place struct and entry in m_Places
+          // TODO: Delete connectivity
           map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
           if (it2 != m_Places.end()) {
             deleteFromWorkingMemory(it2->second.m_WMid);
@@ -1839,13 +1963,6 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
       try {
         SpatialData::PlacePtr place = *it;
         FrontierInterface::NodeHypothesisPtr nodeHyp = getHypFromPlaceID(place->id);
-        double distSq = (curNode->x-nodeHyp->x)*(curNode->x-nodeHyp->x)+
-          (curNode->y-nodeHyp->y)*(curNode->y-nodeHyp->y);
-
-        // Only remove placeholders that are close
-        if(distSq > 2.5*2.5) {
-          continue;
-        }
 
         bool placeholderStillValid = false;
         for(vector<pair <double, double> >::iterator coordIt = coords.begin();
@@ -1864,6 +1981,7 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
           if (place->id != m_goalPlaceForCurrentPath) {
             /* If it was not the goal just delete it */
             deletePlaceholder(place->id);
+            log("deleted placeholder %d", place->id);
           }
           else {
             /* If we are trying to delete the goal hypothesis only delete it
@@ -1888,23 +2006,46 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
 }
 
 void PlaceManager::deletePlaceholder(int placeId) {
-  std::map<int, PlaceHolder>::iterator it2 = m_Places.find(placeId);
-  if (it2 != m_Places.end()) {
-    SpatialData::PlacePtr place = it2->second.m_data;
+  // TODO: Delete connectivities
+  
+  debug("deletePlaceholder entered");
+  std::map<int, PlaceHolder>::iterator it = m_Places.find(placeId);
+  if (it != m_Places.end()) {
+    SpatialData::PlacePtr place = it->second.m_data;
     FrontierInterface::NodeHypothesisPtr nodeHyp = getHypFromPlaceID(place->id);
 
+    log("deleting placeholder properties");
     deletePlaceholderProperties(place->id);
-    deleteFromWorkingMemory(m_HypIDToWMIDMap[nodeHyp->hypID]); //Delete NodeHypothesis
-    m_HypIDToWMIDMap.erase(nodeHyp->hypID); //Delete entry in m_HypIDToWMIDMap
+
+    try {
+      std::map<int, std::string>::iterator wmid = m_HypIDToWMIDMap.find(nodeHyp->hypID);
+      log("deleting nodehyp");
+      if(wmid != m_HypIDToWMIDMap.end()) {
+        try {
+          deleteFromWorkingMemory(wmid->second); //Delete NodeHypothesis
+        } catch (cast::DoesNotExistOnWMException &e) {
+          log("The hypothesis does not exist on WM!");
+        }
+        m_HypIDToWMIDMap.erase(nodeHyp->hypID); //Delete entry in m_HypIDToWMIDMap
+      }
+    } catch (IceUtil::NullHandleException &e) {
+      log("Hypothesis disappeared before we could delete it.");
+    }
     m_PlaceIDToHypMap.erase(place->id); //Delete entry in m_PlaceIDToHypMap
 
     //Delete Place struct and entry in m_Places
-    deleteFromWorkingMemory(it2->second.m_WMid);
-    m_Places.erase(it2);
+    log("delete place struct and entry in m_Places");
+    try {
+      deleteFromWorkingMemory(it->second.m_WMid);
+    } catch(cast::DoesNotExistOnWMException &e) {
+      log("The place does not exist on WM!");
+    }
+    m_Places.erase(it);
 
     if (placeId == m_goalPlaceForCurrentPath)
       cancelMovement();
   }
+  debug("deletePlaceholder exited");
 }
 
 void 
@@ -1978,7 +2119,7 @@ PlaceManager::deletePlaceholderProperties(int placeID)
       try {
 	deleteFromWorkingMemory (it->second);
       }
-      catch (Exception e) {
+      catch (...) {
 	log("Free space property could not be deleted; already missing!");
       }
       m_freeSpaceProperties.erase(it);
@@ -1991,7 +2132,7 @@ PlaceManager::deletePlaceholderProperties(int placeID)
       try {
 	deleteFromWorkingMemory (it->second);
       }
-      catch (Exception e) {
+      catch (...) {
 	log("Border property could not be deleted; already missing!");
       }
       m_borderProperties.erase(it);
@@ -2004,7 +2145,7 @@ PlaceManager::deletePlaceholderProperties(int placeID)
       try {
 	deleteFromWorkingMemory (it->second);
       }
-      catch (Exception e) {
+      catch (...) {
 	log("Gateway placeholder property could not be deleted; already missing!");
       }
       m_placeholderGatewayProperties.erase(it);
@@ -2068,6 +2209,20 @@ PlaceManager::PlaceServer::getPlaceMembership(double x, double y,
   return membership;
 }
 
+int PlaceManager::PlaceServer::updatePlaceholderEdge(int placeholderId, const Ice::Current &_context) {
+  int ret;
+
+  m_pOwner->lockComponent();
+  ret = m_pOwner->updatePlaceholderEdge(placeholderId);
+  m_pOwner->unlockComponent();
+
+  return ret;
+}
+
+FrontierInterface::AdjacencyLists PlaceManager::PlaceServer::getAdjacencyLists(const Ice::Current &_context) {
+  return m_pOwner->getAdjacencyLists();
+}
+
 void
 PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData::FNodePtr newNode, int hypothesisID)
 {
@@ -2087,6 +2242,10 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
   catch (DoesNotExistOnWMException e) {
     log("The Place has disappeared! Re-adding it!");
     addToWorkingMemory<SpatialData::Place>(goalPlaceWMID, placeholder.m_data);
+
+    if(m_Places.find(placeholder.m_data->id) == m_Places.end())
+      m_Places[placeholder.m_data->id] = placeholder;
+
     m_PlaceIDToNodeMap[placeID] = newNode;
   }
 
@@ -2161,7 +2320,31 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
 
     set<int> &place1Connectivities = m_connectivities[place1ID];
     place1Connectivities.insert(place2ID); 
+
+    string placeIDstr = concatenatePlaceIDs(place1ID, place2ID);
+    m_placeIDsToConnectivityWMID[placeIDstr] = newID;
   }
+}
+
+std::string PlaceManager::concatenatePlaceIDs(int place1ID, int place2ID) {
+  std::stringstream concatenated;
+  concatenated << place1ID << '_' << place2ID;
+  return concatenated.str();
+}
+
+bool PlaceManager::deleteConnectivityProperty(int place1ID, int place2ID) {
+  set<int> &place1Connectivities = m_connectivities[place1ID];
+  if(place1Connectivities.find(place2ID) != place1Connectivities.end()) {
+    string placeIDstr = concatenatePlaceIDs(place1ID,place2ID);
+    map<string,string>::iterator it = m_placeIDsToConnectivityWMID.find(placeIDstr);
+    if(it != m_placeIDsToConnectivityWMID.end()) {
+      deleteFromWorkingMemory(it->second);
+      place1Connectivities.erase(place2ID);
+      m_placeIDsToConnectivityWMID.erase(placeIDstr);
+      return true;
+    }
+  }
+  return false;
 }
 
 int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
