@@ -26,8 +26,6 @@
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 
-#include <ctime>
-
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -54,6 +52,10 @@ bool SpatialControl::MapServer::isPointReachable(double xW, double yW, const Ice
 
 SpatialData::BoolSeq SpatialControl::MapServer::arePointsReachable(const SpatialData::CoordinateSeq& points, const Ice::Current &_context) {
   return m_pOwner->arePointsReachable(points);
+}
+
+int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Current &_context) {
+  return m_pOwner->findClosestNode(x,y);
 }
 
 SpatialControl::SpatialControl()
@@ -195,6 +197,7 @@ void SpatialControl::configure(const map<string,string>& _config)
                                            Cure::HelpFunctions::deg2rad(10));
 
   Cure::NavController::setPoseProvider(m_TOPP);
+  Cure::NavController::setCanTrimGateways(true);
 
   Cure::NavController::setCanTrimGateways(true);
 
@@ -939,9 +942,12 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
         Cure::NavController::setOrientationTolerance(m_TolRot);
         ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
 				//Clean out path; use only final waypoint
-				Cure::NavGraphNode lastNode = m_Path.back();
-				m_Path.clear();
-				m_Path.push_back(lastNode);
+        if(!m_Path.empty()) {
+          Cure::NavGraphNode lastNode = m_Path.back();
+          m_Path.clear();
+          m_Path.push_back(lastNode);
+        }
+        log("sent command.");
       }
       
       // GOTO_POLAR
@@ -1240,11 +1246,10 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
   m_RobotServer->execMotionCommand(cmd);
 }
 
-std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points) {
-  std::vector<bool> ret;
-  Cure::BinaryMatrix map;
+/* Fills map with an expanded version of gridmap, where unknown space is
+   also set as obstacles */
+void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const {
   
-  debug("lock arePointsReachable");
   m_MapsMutex.lock();
 
   /* The Cure documentation recommends keeping columns as a multiple
@@ -1253,40 +1258,49 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
      operating systems now and longs on unix systems are usually different
      sizes for these architectures. If anyone knows the correct way of
      handling this, please modify the code below. */
-  map.reallocate(2*m_lgm->getSize(), 2*m_lgm->getSize());
-  map = 0; // Set all cells to zero
+  Cure::BinaryMatrix ungrown_map;
+  ungrown_map.reallocate(2*gridmap->getSize(), 2*gridmap->getSize());
+  ungrown_map = 0; // Set all cells to zero
 
   // Transfer obstacles for the local gridmap
-  for(int x = -m_lgm->getSize(); x < m_lgm->getSize(); ++x) {
-    for(int y = -m_lgm->getSize(); y < m_lgm->getSize(); ++y) {
-      if((*m_lgm)(x,y) == '1') {
-        map.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(), true);
+  for(int x = -gridmap->getSize(); x < gridmap->getSize(); ++x) {
+    for(int y = -gridmap->getSize(); y < gridmap->getSize(); ++y) {
+      if((*gridmap)(x,y) == '1') {
+        ungrown_map.setBit(x + gridmap->getSize(), y + gridmap->getSize(), true);
       }
     }
   }
 
   // Grow each occupied cell to account for the size of the robot.
-  Cure::BinaryMatrix grown_map;
-  map.growInto(grown_map, 0.5*Cure::NavController::getRobotWidth() / m_lgm->getCellSize());
+  ungrown_map.growInto(map, 0.5*Cure::NavController::getRobotWidth() / m_lgm->getCellSize());
 
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
-  for(int x = -m_lgm->getSize(); x < m_lgm->getSize(); ++x) {
-    for(int y = -m_lgm->getSize(); y < m_lgm->getSize(); ++y) {
-      if((*m_lgm)(x,y) == '2') {
-        grown_map.setBit(x + m_lgm->getSize(), y + m_lgm->getSize(), true);
+  for(int x = -gridmap->getSize(); x < gridmap->getSize(); ++x) {
+    for(int y = -gridmap->getSize(); y < gridmap->getSize(); ++y) {
+      if((*gridmap)(x,y) == '2') {
+        map.setBit(x + gridmap->getSize(), y + gridmap->getSize(), true);
       }
     }
   }
-
   m_MapsMutex.unlock();
-  debug("unlock arePointsReachable");
+}
 
+std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points)const  {
+  std::vector<bool> ret;
+  Cure::BinaryMatrix map;
+  
+  getExpandedBinaryMap(m_lgm, map);
+
+  /* Update the map used for visualization of the binarymap */
+
+  m_MapsMutex.lock();
   for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
     for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
-      (*m_binaryMap)(x,y) = grown_map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
+      (*m_binaryMap)(x,y) = map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
     }
   }
+  m_MapsMutex.unlock();
   
   int rX, rY; // Robot position index
 
@@ -1313,13 +1327,75 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
     } else {
       pX += m_lgm->getSize();
       pY += m_lgm->getSize();
-      double d = (grown_map.path(rX, rY, pX, pY, path, 20* m_lgm->getSize()) *
+      double d = (map.path(rX, rY, pX, pY, path, 20* m_lgm->getSize()) *
           m_lgm->getCellSize());
       ret.push_back(d >= 0);
     }
   }
 
   return ret;
+}
+
+/* Finds the node with the shortest path from (x,y) in an expanded binarymap
+   Returns -1 on error of if there are no nodes to search or if no node
+   was found */
+int SpatialControl::findClosestNode(double x, double y) {
+  double maxDist = 20; // The first maximum distance to try
+  Cure::BinaryMatrix map;
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map);
+
+  // Get all the navigation nodes
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  if(nodes.size() == 0)
+    return -1;
+
+  int xi, yi;
+  if(m_lgm->worldCoords2Index(x, y, xi, yi) != 0) {
+    return -1;
+  }
+  
+  // Offset the indices so that top left is (0,0).
+  xi += m_lgm->getSize();
+  yi += m_lgm->getSize();
+
+  int closestNodeId = -1;
+  double minDistance = FLT_MAX;
+  Cure::ShortMatrix path;
+  while(closestNodeId == -1) {
+    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
+      try {
+
+        int nodexi, nodeyi;
+        if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
+          continue;
+
+        // Offset the indices so that top left is (0,0).
+        nodexi += m_lgm->getSize();
+        nodeyi += m_lgm->getSize();
+
+        double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+        if(dist >= 0) { // If a path was found.. 
+          if(dist < minDistance) {
+            closestNodeId = (*nodeIt)->nodeId;
+            minDistance = dist;
+          }
+        }
+      } catch(IceUtil::NullHandleException e) {
+        log("Node suddenly disappeared..");
+      }
+    }
+
+    if(maxDist > map.Columns*map.Rows)
+      return -1;
+
+    maxDist *= 2; // Double the maximum distance to search for the next loop
+  }
+
+  return closestNodeId;
 }
 
 bool SpatialControl::isPointReachable(double xW, double yW) {

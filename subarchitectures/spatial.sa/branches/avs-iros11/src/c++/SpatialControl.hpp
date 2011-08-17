@@ -102,6 +102,7 @@ class SpatialControl : public cast::ManagedComponent ,
 
         virtual bool isPointReachable(double xW, double yW, const Ice::Current &_context);
         virtual SpatialData::BoolSeq arePointsReachable(const SpatialData::CoordinateSeq& points, const Ice::Current &_context);
+        virtual int findClosestNode(double x, double y, const Ice::Current &_context);
         SpatialControl *m_pOwner;
         MapServer(SpatialControl *owner) : m_pOwner(owner) {}
         friend class SpatialControl;
@@ -128,8 +129,10 @@ protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
+  void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const;
   virtual bool isPointReachable(double xW, double yW);
-  virtual std::vector<bool> arePointsReachable(std::vector<std::vector<double> > points);
+  virtual std::vector<bool> arePointsReachable(std::vector<std::vector<double> > points) const;
+  virtual int findClosestNode(double x, double y);
 
   void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY);
   void updateGridMaps();
