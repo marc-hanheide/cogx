@@ -17,30 +17,113 @@
   )
 
   (:predicates
-    (color-learned ?p - ProtoObject)
-    (shape-learned ?p - ProtoObject)
-    (type-learned ?p - ProtoObject)
+    (color-learned ?v - VisualObject)
+    (shape-learned ?v - VisualObject)
+    (type-learned ?v - VisualObject)
+
+    (learning-impossible)
   )
 
   (:functions
-    (color ?p - ProtoObject) - ColorName
-    (shape ?v - ProtoObject) - ShapeName
-    (type ?v - ProtoObject) - TypeName
+    (color ?v - VisualObject) - ColorName
+    (color-prob ?v - VisualObject ?c - ColorName) - number
+    (polar-question-color-threshold ?r - Robot) - number
+
+    (shape ?v - VisualObject) - ShapeName
+    (shape-prob ?v - VisualObject ?s - ShapeName) - number
+    (polar-question-shape-threshold ?r - Robot) - number
+
+    (type ?v - VisualObject) - TypeName
+    (type-prob ?v - VisualObject ?t - TypeName) - number
+    (polar-question-type-threshold ?r - Robot) - number
+
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
+
     (current-viewcone ?r - Robot) - ViewCone
     (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   (:init-rule set-move-to-viewcone-cost
-     :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
-     :precondition 
-       (and 
-         (= (move-to-viewcone-cost ?vc1 ?vc2) UNKNOWN)
-         (not (= (move-to-viewcone-cost ?vc2 ?vc1) UNKNOWN))
-       )
-     :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
+    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
+    :precondition 
+      (and 
+        (= (move-to-viewcone-cost ?vc1 ?vc2) UNKNOWN)
+        (not (= (move-to-viewcone-cost ?vc2 ?vc1) UNKNOWN))
+      )
+    :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
   )
+
+  (:init-rule set-color-prob
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition (= (color-prob ?v ?c) UNKNOWN)
+    :effect (assign (color-prob ?v ?c) 0)
+  )
+
+  (:init-rule set-shape-prob
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition (= (shape-prob ?v ?s) UNKNOWN)
+    :effect (assign (shape-prob ?v ?s) 0)
+  )
+
+  (:init-rule set-type-prob
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition (= (type-prob ?v ?t) UNKNOWN)
+    :effect (assign (type-prob ?v ?t) 0)
+  )
+
+  (:init-rule set-polar-question-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-color-threshold ?r) 0.5)
+  )
+
+  (:init-rule set-polar-question-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-shape-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-shape-threshold ?r) 0.5)
+  )
+
+  (:init-rule set-polar-question-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-type-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-type-threshold ?r) 0.5)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:derived (learning-impossible)
+    (forall (?v - VisualObject)
+      (and
+        (or
+	  (forall (?c - ColorName) (not (attributed TUTOR (color ?v) ?c)))
+          (color-learned ?v)
+        )
+        (or
+          (forall (?s - ShapeName) (not (attributed TUTOR (shape ?v) ?s)))
+          (shape-learned ?v)
+        )
+        (or
+          (forall (?t - TypeName) (not (attributed TUTOR (type ?v) ?t)))
+          (type-learned ?v)
+        )
+      )
+    )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                     ACTIONS                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                MOVE HEAD                ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (:action move-to-viewcone
     :agent (?r - Robot)
@@ -48,6 +131,7 @@
     :precondition
       (and
         (= (current-viewcone ?r) ?vc1)
+        (learning-impossible)
       )
     :effect
       (and
@@ -55,6 +139,10 @@
         (increase (total-cost) (move-to-viewcone-cost ?vc1 ?vc2))
       )
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                  ANALYZE                ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (:action analyze-proto-object
     :agent (?r - Robot)
@@ -64,6 +152,7 @@
         (= (current-viewcone ?r) ?vc)
         (= (target-object ?vc) ?po)
         (not (exists (?vo - visualobject) (= (po-is-associated-with ?po) ?vo)))
+        (learning-impossible)
       )
     :effect
       (and
@@ -72,98 +161,166 @@
       )
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;       ASK FOR OBJECT PROPERTIES         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   (:action ask-for-an-objects-color-general
     :agent (?r - Robot)
-    :parameters (?p - ProtoObject)
+    :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (learning-impossible)
       )
     :effect 
       (and 
-        (attributed TUTOR (color ?p) UNKNOWN_COLOR)
+        (attributed TUTOR (color ?v) UNKNOWN_COLOR)
         (increase (total-cost) 2)
+      )
+  )
+
+  (:action ask-for-an-objects-color-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (>= (color-prob ?v ?c) (polar-question-color-threshold ?r))
+        (learning-impossible)
+      )
+    :effect 
+      (and 
+        (attributed TUTOR (color ?v) ?c)
+        (increase (total-cost) 1)
       )
   )
 
   (:action ask-for-an-objects-shape-general
     :agent (?r - Robot)
-    :parameters (?p - ProtoObject)
+    :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (learning-impossible)
       )
     :effect 
       (and 
-        (attributed TUTOR (shape ?p) UNKNOWN_SHAPE)
+        (attributed TUTOR (shape ?v) UNKNOWN_SHAPE)
         (increase (total-cost) 2)
+      )
+  )
+
+  (:action ask-for-an-objects-shape-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (>= (shape-prob ?v ?s) (polar-question-shape-threshold ?r))
+        (learning-impossible)
+      )
+    :effect 
+      (and 
+        (attributed TUTOR (shape ?v) ?s)
+        (increase (total-cost) 1)
       )
   )
 
   (:action ask-for-an-objects-type-general
     :agent (?r - Robot)
-    :parameters (?p - ProtoObject)
+    :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (learning-impossible)
       )
     :effect 
       (and 
-        (attributed TUTOR (type ?p) UNKNOWN_TYPE)
+        (attributed TUTOR (type ?v) UNKNOWN_TYPE)
         (increase (total-cost) 2)
       )
   )
 
+  (:action ask-for-an-objects-type-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (>= (type-prob ?v ?t) (polar-question-type-threshold ?r))
+        (learning-impossible)
+      )
+    :effect 
+      (and 
+        (attributed TUTOR (type ?v) ?t)
+        (increase (total-cost) 1)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                   LEARNING              ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   (:action learn-color
     :agent (?r - Robot)
-    :parameters (?vc - ViewCone ?p - ProtoObject ?c - ColorName)
-    :precondition 
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
-	(not (color-learned ?p))
-        (attributed TUTOR (color ?p) ?c)
-        (= (current-viewcone ?r) ?vc)
-        (= (target-object ?vc) ?p)
+	(not (color-learned ?v))
+        (attributed TUTOR (color ?v) ?c)
+        (exists (?po - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?po) ?v)
+            (= (target-object (current-viewcone ?r)) ?po)
+          )
+        )
       )
     :effect 
       (and
-	(color-learned ?p)
+	(color-learned ?v)
 	(increase (total-cost) 1)
       )
   )
 
   (:action learn-shape
     :agent (?r - Robot)
-    :parameters (?vc - ViewCone ?p - ProtoObject ?s - ShapeName)
+    :parameters (?v - VisualObject ?s - ShapeName)
     :precondition 
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
-	(not (shape-learned ?p))
-        (attributed TUTOR (shape ?p) ?s)
-        (= (current-viewcone ?r) ?vc)
-        (= (target-object ?vc) ?p)
+	(not (shape-learned ?v))
+        (attributed TUTOR (shape ?v) ?s)
+        (exists (?po - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?po) ?v)
+            (= (target-object (current-viewcone ?r)) ?po)
+          )
+        )
       )
     :effect 
       (and
-	(shape-learned ?p)
+	(shape-learned ?v)
 	(increase (total-cost) 1)
       )
   )
 
   (:action learn-type
     :agent (?r - Robot)
-    :parameters (?vc - ViewCone ?p - ProtoObject ?t - TypeName)
+    :parameters (?v - VisualObject ?t - TypeName)
     :precondition 
       (and
-        (exists (?vo - VisualObject) (= (po-is-associated-with ?p) ?vo))
-	(not (type-learned ?p))
-        (attributed TUTOR (type ?p) ?t)
-        (= (current-viewcone ?r) ?vc)
-        (= (target-object ?vc) ?p)
+	(not (type-learned ?v))
+        (attributed TUTOR (type ?v) ?t)
+        (exists (?po - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?po) ?v)
+            (= (target-object (current-viewcone ?r)) ?po)
+          )
+        )
       )
     :effect 
       (and
-	(type-learned ?p)
+	(type-learned ?v)
 	(increase (total-cost) 1)
       )
   )
