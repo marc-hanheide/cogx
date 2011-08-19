@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,24 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
+import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribList;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
+import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
@@ -124,6 +142,15 @@ public class PlaceMonitor extends ManagedComponent {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
 			throws CASTException {
 				processAddedGatewayProperty(_wmc);
+			}
+		});
+
+		// track asserted room labels (aka human-attributed beliefs)
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(dBelief.class, WorkingMemoryOperation.ADD), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+			throws CASTException {
+				processAddedBelief(_wmc);
 			}
 		});
 
@@ -700,6 +727,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// current place can be a seed for a new room
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
+					//ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution());
 					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution());
 					
 					// create new room on the reasoner
@@ -776,6 +804,48 @@ public class PlaceMonitor extends ManagedComponent {
 			e.printStackTrace();
 		}
 		logInstances("owl:Thing");
+	}
+	
+	
+	
+	private void processAddedBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		// get dBelief from WM
+		dBelief _belief = getMemoryEntry(_wmc.address, dBelief.class);
+		log("processAddedBelief() called: got a callback for an ADDED dBelief");
+		EpistemicStatus _epi= _belief.estatus;
+		if (_epi instanceof AttributedEpistemicStatus) {
+			if (((AttributedEpistemicStatus) _epi).attribagents.contains("human") && (_belief.type.equals("fact"))) {
+				log("received a belief of type fact attributed by a human");
+				if (_belief.content instanceof CondIndependentDistribs) {
+
+					HashSet<String> _assertedRoomCats = new HashSet<String>(); 
+					DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
+					for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
+						log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
+						if (_currPair.prob>=0.5) _assertedRoomCats.add(((ElementaryFormula) _currPair.val).prop);
+					}
+					StringBuffer _assertedLabels = new StringBuffer();
+					for (String _label : _assertedRoomCats) {
+						_assertedLabels.append(_label).append(" ");
+					}
+					
+					HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
+					DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
+					for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
+						log("current about: WMID=" + ((PointerFormula) _currPair.val).pointer.id + "WMSA=" + ((PointerFormula) _currPair.val).pointer.subarchitecture + " with " + _currPair.prob);
+						if (_currPair.prob>=0.5) _gBeliefs.add(new WorkingMemoryAddress(((PointerFormula) _currPair.val).pointer.id, ((PointerFormula) _currPair.val).pointer.subarchitecture));
+					} 
+					
+					for (WorkingMemoryAddress _gBelief : _gBeliefs) {
+						GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
+						for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
+							ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
+							log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString()); 
+						}						
+					}
+				}
+			}
+		}
 	}
 	
 	/* private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
