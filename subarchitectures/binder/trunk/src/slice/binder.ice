@@ -41,7 +41,7 @@ module mln {
 	sequence<float> ProbSeq;
 	
 	class Evidence {
-		IdSeq engIdSeq;
+		string engId;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
 		PredStrSeq noEvidence;
@@ -60,7 +60,7 @@ module mln {
 		PredStrSeq atoms;
 	};
 	
-	class Result {
+	class InferredResult {
 		string engId;
 		PredStrSeq atoms;
 		ProbSeq probs;

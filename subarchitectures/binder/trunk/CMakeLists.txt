@@ -1,9 +1,10 @@
 cmake_minimum_required (VERSION 2.6)
 project (BINDER)
 
-option(BUILD_SA_BINDING_MLNENGINE "build MLN engine" NO)
+option(BUILD_SA_BINDING_MLNENGINE "build MLN engine" YES)
 if (BUILD_SA_BINDING_MLNENGINE)
 add_subdirectory (src/c++/binder/components/MLNEngine)
+add_subdirectory (src/c++/binder/components/MLNClient)
 endif (BUILD_SA_BINDING_MLNENGINE)
 
 option(BUILD_SA_BINDING_MLNTESTER "build MLN tester" NO)
