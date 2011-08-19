@@ -26,6 +26,9 @@
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 
+#include <utility>
+#include <queue>
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -152,6 +155,13 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+
+  m_DisplayCureObstacleMap = false;
+  if (_config.find("--display-cure-obstacle-map") != _config.end()) {
+    m_DisplayCureObstacleMap = true;
+    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
+    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
+  }
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
@@ -588,13 +598,30 @@ void SpatialControl::runComponent()
     }	
 
 		m_MapsMutex.lock();
+    Cure::Pose3D currentPose = m_TOPP.getPose();
 		if (m_Displaylgm) {
-			Cure::Pose3D currentPose = m_TOPP.getPose();
 			m_Displaylgm->updateDisplay(&currentPose,
 						                      &m_NavGraph, 
 						                      &m_Explorer->m_Fronts);
       m_displayBinaryMap->updateDisplay(&currentPose);
 		}
+
+    if(m_DisplayCureObstacleMap)
+      m_displayObstacleMap->updateDisplay(&currentPose);
+
+    if(m_DisplayCureObstacleMap) {
+      // Clear out obstacle map (that's used for visualization only)
+      int radius = m_obstacleMap->getSize();
+      for(int i = -radius; i < radius; ++i) {
+        for(int j = -radius; j < radius; ++j) {
+          (*m_obstacleMap)(i,j) = '0';
+        }
+      }
+      for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+        ObstPt obspt = m_LMap.obstRef(i);
+        (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+      }
+    }
 		m_MapsMutex.unlock();	
 	  
     usleep(250000);
@@ -1259,14 +1286,16 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
      sizes for these architectures. If anyone knows the correct way of
      handling this, please modify the code below. */
   Cure::BinaryMatrix ungrown_map;
-  ungrown_map.reallocate(2*gridmap->getSize(), 2*gridmap->getSize());
+  int gridmapSize = gridmap->getSize();
+
+  ungrown_map.reallocate(2*gridmapSize, 2*gridmapSize);
   ungrown_map = 0; // Set all cells to zero
 
   // Transfer obstacles for the local gridmap
-  for(int x = -gridmap->getSize(); x < gridmap->getSize(); ++x) {
-    for(int y = -gridmap->getSize(); y < gridmap->getSize(); ++y) {
+  for(int x = -gridmapSize; x < gridmapSize; ++x) {
+    for(int y = -gridmapSize; y < gridmapSize; ++y) {
       if((*gridmap)(x,y) == '1') {
-        ungrown_map.setBit(x + gridmap->getSize(), y + gridmap->getSize(), true);
+        ungrown_map.setBit(x + gridmapSize, y + gridmapSize, true);
       }
     }
   }
@@ -1276,10 +1305,10 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
 
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
-  for(int x = -gridmap->getSize(); x < gridmap->getSize(); ++x) {
-    for(int y = -gridmap->getSize(); y < gridmap->getSize(); ++y) {
+  for(int x = -gridmapSize; x < gridmapSize; ++x) {
+    for(int y = -gridmapSize; y < gridmapSize; ++y) {
       if((*gridmap)(x,y) == '2') {
-        map.setBit(x + gridmap->getSize(), y + gridmap->getSize(), true);
+        map.setBit(x + gridmapSize, y + gridmapSize, true);
       }
     }
   }
@@ -1287,23 +1316,25 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
 }
 
 std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points)const  {
-  std::vector<bool> ret;
+  std::vector<bool> ret(points.size(), false);
   Cure::BinaryMatrix map;
   
   getExpandedBinaryMap(m_lgm, map);
 
-  /* Update the map used for visualization of the binarymap */
-
-  m_MapsMutex.lock();
+  /* Update the map used for visualization of the binarymap.
+     Note that we don't lock the map mutex here, since m_binaryMap
+     is not important for robot behaviour, only visualization.
+     Not waiting for a lock takes precedence to always getting the
+     correct visualization */
   for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
     for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
       (*m_binaryMap)(x,y) = map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
     }
   }
-  m_MapsMutex.unlock();
   
   int rX, rY; // Robot position index
 
+  // Get robot position
   Cure::Pose3D robotPose = m_TOPP.getPose();
   if(m_lgm->worldCoords2Index(robotPose.getX(), robotPose.getY(), rX, rY) != 0) {
     log("Robot position is outside of gridmap! Returning.");
@@ -1315,21 +1346,53 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
   rX += m_lgm->getSize();
   rY += m_lgm->getSize();
 
-  Cure::ShortMatrix path;
-  /* d will be -1 if there is no path from the robot to the placeholder.
-     The 20*size*size value is taken from AdvancedObjectSearch.cpp. Not sure
-     if it's a good length. */
-  for(std::vector<std::vector<double> >::iterator pointsIt = points.begin(); pointsIt != points.end(); pointsIt++) { 
-    int pX, pY;  // Point position index
-    if(m_lgm->worldCoords2Index((*pointsIt)[0], (*pointsIt)[1], pX, pY) != 0) {
-      log("Point is outside of map.");
-      ret.push_back(false);
-    } else {
+  /* Do a BFS over the reachable parts of the map to see if the coorinates in
+     points are reachable */
+  std::queue<std::pair<int, int> > toVisit;
+  toVisit.push(make_pair(rX,rY));
+
+  while (!toVisit.empty()) {
+    std::pair<int,int> coord = toVisit.front();
+    toVisit.pop();
+
+    int x = coord.first;
+    int y = coord.second;
+
+    map.setBit(x,y, true); // Set as visited
+
+    // Check if this coordinate is in points
+    for(unsigned int i = 0; i < points.size(); i++) {
+      int pX, pY;
+      if(m_lgm->worldCoords2Index(points[i][0],points[i][1], pX,pY) != 0) {
+        log("Coordinate is outside of map.");
+        continue;
+      }
+
+      // Offset the indices so that top left is (0,0)
       pX += m_lgm->getSize();
       pY += m_lgm->getSize();
-      double d = (map.path(rX, rY, pX, pY, path, 20* m_lgm->getSize()) *
-          m_lgm->getCellSize());
-      ret.push_back(d >= 0);
+
+      if(pX == x && pY == y)
+        ret[i] = true; // This point is reachable
+    }
+
+    // Add neighbors if they are in free space, has not been visited before
+    // and are not out of bounds
+    if(y-1 >= 0 && !map(x  , y-1)) {
+      toVisit.push(make_pair(x  , y-1));
+      map.setBit(x,y-1,true);
+    }
+    if(x-1 >= 0 && !map(x-1, y  )){
+      toVisit.push(make_pair(x-1, y  ));
+      map.setBit(x-1,y,true);
+    }
+    if(x+1 < map.Columns-1 && !map(x+1, y  )){
+      toVisit.push(make_pair(x+1, y  ));
+      map.setBit(x+1,y,true);
+    }
+    if(y+1 < map.Rows-1 && !map(x  , y+1)) {
+      toVisit.push(make_pair(x  , y+1));
+      map.setBit(x,y+1,true);
     }
   }
 

@@ -148,6 +148,7 @@ protected:
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::FrontierExplorer* m_Explorer;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_displayObstacleMap;
 
 
   IceUtil::Mutex m_Mutex;
@@ -158,6 +159,7 @@ protected:
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
 
   Cure::LocalGridMap<unsigned char>* m_binaryMap;
+  Cure::LocalGridMap<unsigned char>* m_obstacleMap; 
 
   IceUtil::Monitor<IceUtil::Mutex> m_LScanMonitor;
 	std::queue<Cure::LaserScan2d> m_LScanQueue;	
@@ -231,6 +233,7 @@ protected:
   bool m_UsePointCloud;
   double m_obstacleMinHeight;
   double m_obstacleMaxHeight;
+  bool m_DisplayCureObstacleMap;
 
 protected:
   /* 
