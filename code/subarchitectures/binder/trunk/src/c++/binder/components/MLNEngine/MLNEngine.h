@@ -16,7 +16,7 @@
 
 #include <boost/interprocess/sync/named_semaphore.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
+#include <../MLNUtils.h>
 #include <cast/architecture/ManagedComponent.hpp>
 
 #include <beliefs_cast.hpp>
@@ -141,16 +141,6 @@ class MLNEngine :  public ManagedComponent
   void queueLearnWts(LearnWtsData data)
   {
 	m_learnWtsQueue.push(data);
-  }
-  
-  template<class T> bool containsElement(vector<T> vec, T elem)
-  {
-	typename vector<T>::iterator it;
-	for (it=vec.begin(); it < vec.end(); it++ )
-	  if(*it == elem)
-		return true;
-		
-	return false;
   }
   
 

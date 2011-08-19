@@ -42,14 +42,14 @@ class MLNTester :  public ManagedComponent
   std::string m_bindingSA;
   
   
-   std::queue<org::cognitivesystems::binder::mln::ResultPtr> m_resultQueue; 
+   std::queue<org::cognitivesystems::binder::mln::InferredResultPtr> m_resultQueue; 
   
   /**
    * callback function called whenever there is new evidence
    */
-  void newResult(const cdl::WorkingMemoryChange & _wmc);
+  void newInferredResult(const cdl::WorkingMemoryChange & _wmc);
   
-  void queueNewResult(org::cognitivesystems::binder::mln::ResultPtr res);
+  void queueNewInferredResult(org::cognitivesystems::binder::mln::InferredResultPtr res);
   
 
  protected:

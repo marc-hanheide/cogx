@@ -114,7 +114,7 @@ void MLNEngine::start()
   m_oe->saveAllCounts(true);
   
   m_resultWMId = newDataID();
-  ResultPtr result = new Result();
+  InferredResultPtr result = new InferredResult();
   addToWorkingMemory(m_resultWMId, m_bindingSA, result);
   
   cout << "MRF initialized" << endl;
@@ -136,7 +136,7 @@ void MLNEngine::runComponent()
   m_oe->setMaxInferenceSteps(m_infSteps);
   m_oe->setMaxBurnIn(0);
   
-  ResultPtr result = new Result();
+  InferredResultPtr result = new InferredResult();
   result->engId = m_id;
  
   while(isRunning())
@@ -204,7 +204,7 @@ void MLNEngine::runComponent()
   #endif
 	}
 	
-  //  ResultPtr result = new Result();
+  //  InferredResultPtr result = new InferredResult();
   //  result->engId = m_id;
 	
   //  m_oe->setMaxInferenceSteps(5000);
@@ -272,7 +272,7 @@ void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
   		
   debug("Got a evidence update from WM. ID: %s", _wmc.address.id.c_str());
   
-  if( containsElement<string>(evd->engIdSeq, m_id) ) {
+  if( evd->engId == m_id ) {
 	EvidenceData data;
 	data.status=NEW;
 	data.evidence=evd;

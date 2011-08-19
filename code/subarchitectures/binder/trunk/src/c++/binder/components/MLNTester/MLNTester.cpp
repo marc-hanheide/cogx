@@ -73,9 +73,9 @@ void MLNTester::start()
   }
 
  // filters for belief updates
-  addChangeFilter(createGlobalTypeFilter<Result>(cdl::OVERWRITE),
+  addChangeFilter(createGlobalTypeFilter<InferredResult>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<MLNTester>(this,
-		&MLNTester::newResult));
+		&MLNTester::newInferredResult));
 		
   
   cout << "MLNTester initialized" << endl;
@@ -98,7 +98,7 @@ void MLNTester::runComponent()
   // again "-cw" option in command line doesn't help, beacuse the
   // evidence from .db is not correctly initialized
   EvidencePtr evd = new Evidence();
-  evd->engIdSeq.push_back(m_id);
+  evd->engId = m_id;
   evd->falseEvidence.push_back("percept(P1)");
   evd->falseEvidence.push_back("percept(P2)");
   evd->falseEvidence.push_back("percept(P3)");
@@ -115,7 +115,7 @@ void MLNTester::runComponent()
 	while(!m_resultQueue.empty()) // here we process incoming results
 	{
 	  log("Got a new result...");
-	  ResultPtr res = m_resultQueue.front();
+	  InferredResultPtr res = m_resultQueue.front();
 	
 	  if(doDisplay) {
 		// Print true atoms
@@ -138,7 +138,7 @@ void MLNTester::runComponent()
 	if(tstep == 3)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->engIdSeq.push_back(m_id);
+	  evd->engId = m_id;
 	  evd->trueEvidence.push_back("percept(P1)");
 	  evd->trueEvidence.push_back("feature(P1,VGreen)");
 	  evd->initInfSteps = 400;
@@ -152,7 +152,7 @@ void MLNTester::runComponent()
 	if(tstep == 7)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->engIdSeq.push_back(m_id);
+	  evd->engId = m_id;
 	
 	  evd->trueEvidence.push_back("attribute(LRed)");	
 	  
@@ -168,7 +168,7 @@ void MLNTester::runComponent()
 	if(tstep == 25)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->engIdSeq.push_back(m_id);
+	  evd->engId = m_id;
 	  evd->trueEvidence.push_back("percept(P2)");
 //	  evd->trueEvidence.push_back("feature(P2,VRed)");
 	  evd->extPriors.push_back("feature(P2,VRed)");
@@ -199,7 +199,7 @@ void MLNTester::runComponent()
 	if(tstep == 50)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->engIdSeq.push_back(m_id);
+	  evd->engId = m_id;
 	  evd->trueEvidence.push_back("percept(P3)");
 	  evd->trueEvidence.push_back("feature(P3,VRed)");
 	  evd->initInfSteps = 400;
@@ -225,7 +225,7 @@ void MLNTester::runComponent()
 	if(tstep == 75)
 	{
 	  EvidencePtr evd = new Evidence();
-	  evd->engIdSeq.push_back(m_id);
+	  evd->engId = m_id;
 	  evd->falseEvidence.push_back("percept(P2)");
 //	  evd->noEvidence.push_back("feature(P2,VRed)");
 	  evd->resetPriors.push_back("feature(P2,VRed)");
@@ -246,24 +246,24 @@ void MLNTester::runComponent()
   }
 }
 
-void MLNTester::newResult(const cdl::WorkingMemoryChange & _wmc)
+void MLNTester::newInferredResult(const cdl::WorkingMemoryChange & _wmc)
 {
-  log("A new Result entry. ID: %s ", _wmc.address.id.c_str());
+  log("A new InferredResult entry. ID: %s ", _wmc.address.id.c_str());
   
-  ResultPtr res; 
+  InferredResultPtr res; 
   
   try {
-	res = getMemoryEntry<Result>(_wmc.address);
+	res = getMemoryEntry<InferredResult>(_wmc.address);
   }
   catch (DoesNotExistOnWMException e) {
-	log("WARNING: the entry Result ID %s not in WM.", _wmc.address.id.c_str());
+	log("WARNING: the entry InferredResult ID %s not in WM.", _wmc.address.id.c_str());
 	return;
   }
   		
   debug("Got a result update from WM. ID: %s", _wmc.address.id.c_str());
   
   if( res->engId == m_id ) {
-	queueNewResult(res);
+	queueNewInferredResult(res);
   }
   else {
 	debug("Wrong MRF.");
@@ -272,7 +272,7 @@ void MLNTester::newResult(const cdl::WorkingMemoryChange & _wmc)
 };
 
 
-void MLNTester::queueNewResult(ResultPtr res)
+void MLNTester::queueNewInferredResult(InferredResultPtr res)
 {
   m_resultQueue.push(res);
 }
