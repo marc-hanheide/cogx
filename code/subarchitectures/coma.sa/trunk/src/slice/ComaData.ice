@@ -39,11 +39,13 @@ module comadata {
 		string ping();    	
     };
     
+    sequence<string> labelList;
     
     class ComaRoom {
     	int roomId;
     	string seedPlaceInstance;
     	PlaceIdSet containedPlaceIds;
+	// labelList assertedLabels;
     	SpatialProbabilities::ProbabilityDistribution categories;
     };
     
