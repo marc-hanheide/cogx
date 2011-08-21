@@ -67,7 +67,7 @@ extends AbstractDialogueComponent {
 	private String correlfile = "/dev/null";
 
 	private String abd_serverName = "AbducerServer";
-	private String abd_endpoints = "default -p 10000";
+	private String abd_endpoints = "default -p 9100";
 
 	AbductionEngineConnection intentionEngine = null;
 
