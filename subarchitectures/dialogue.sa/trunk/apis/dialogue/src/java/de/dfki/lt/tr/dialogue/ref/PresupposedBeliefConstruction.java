@@ -125,7 +125,7 @@ public class PresupposedBeliefConstruction {
 		}
 		log("proving: [" + listGoalsStr + "]");
 
-		abd.getEngineProxy().startProving(goal);
+//		abd.getEngineProxy().startProving(goal);
 		List<ProofWithCost> result = abd.getEngineProxy().getProofs(250);
 
 		if (!result.isEmpty()) {
