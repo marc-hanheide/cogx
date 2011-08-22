@@ -420,8 +420,6 @@ class ProcessViewPointCommand {
   interface MapInterface {
     /* More to be added when necessary */
     bool isCircleObstacleFree(double x, double y, double radius);
-    bool isPointReachable(double x, double y);
-    BoolSeq arePointsReachable(CoordinateSeq points);
     int findClosestNode(double x, double y);
   };
 

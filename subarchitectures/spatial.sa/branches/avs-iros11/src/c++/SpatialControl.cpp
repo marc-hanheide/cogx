@@ -49,14 +49,6 @@ extern "C" {
   }
 }
 
-bool SpatialControl::MapServer::isPointReachable(double xW, double yW, const Ice::Current &_context) {
-  return m_pOwner->isPointReachable(xW, yW);
-}
-
-SpatialData::BoolSeq SpatialControl::MapServer::arePointsReachable(const SpatialData::CoordinateSeq& points, const Ice::Current &_context) {
-  return m_pOwner->arePointsReachable(points);
-}
-
 int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Current &_context) {
   return m_pOwner->findClosestNode(x,y);
 }
@@ -165,10 +157,7 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
-  m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
-  //m_Explorer->setExplorationConfinedByGateways(true);
-  m_Explorer->addEventListener(this);
-
+  m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
@@ -602,7 +591,7 @@ void SpatialControl::runComponent()
 		if (m_Displaylgm) {
 			m_Displaylgm->updateDisplay(&currentPose,
 						                      &m_NavGraph, 
-						                      &m_Explorer->m_Fronts);
+						                      &m_Frontiers);
       m_displayBinaryMap->updateDisplay(&currentPose);
 		}
 
@@ -687,11 +676,6 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
     m_NavGraph.connectNodes();
 
     debug("Got a new graph with %d doors and a total of %d nodes", m_NavGraph.m_Gateways.size(), m_NavGraph.m_Nodes.size());
-    if(gateway) // if a new gateway is detected, let Cure::FrontierExplorer know so that it can back off (if confinedbygateways is set).
-    { 
-      m_Explorer->newGateway( ( *m_NavGraph.m_Gateways.back() ) );
-      gateway = false;
-    }
     
     if (!m_ready) m_ready = true;
 
@@ -1065,26 +1049,6 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
       
       // EXPLORE
 
-      else if ((m_commandType == NavData::lEXPLORE)) {
-        
-        log("executing command EXPLORE");
-         m_TolRot = Cure::HelpFunctions::deg2rad(45);
-        m_Explorer->setExplorationConfinedByGateways(ExplorationConfinedByGateways);
-        ret = m_Explorer->startNextExplorationStep(currentTaskId);
-        m_currentTaskIsExploration = true;
-
-        // The EXPLORE command which calls Frontier Explorer from CURE
-        
-      }
-      else if ((m_commandType == NavData::lEXPLOREFLOOR)) {
-      	log("executing command EXPLOREFLOOR"); 
-  	m_TolRot = Cure::HelpFunctions::deg2rad(45);
-      	m_Explorer->setExplorationConfinedByGateways(ExplorationConfinedByGateways);
-        ret = m_Explorer->startNextExplorationStep(currentTaskId);
-        m_currentTaskIsExploration = true;
-       
-      	
-	}
       
       // Change completion now
       
@@ -1275,9 +1239,12 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
 /* Fills map with an expanded version of gridmap, where unknown space is
    also set as obstacles */
-void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const {
+void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex = true) const {
   
-  m_MapsMutex.lock();
+  if(lockMapsMutex)
+    m_MapsMutex.lock();
+
+  int gridmapSize = gridmap->getSize();
 
   /* The Cure documentation recommends keeping columns as a multiple
      of 32 to be able to exploit the performance improvements of doing
@@ -1286,8 +1253,6 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
      sizes for these architectures. If anyone knows the correct way of
      handling this, please modify the code below. */
   Cure::BinaryMatrix ungrown_map;
-  int gridmapSize = gridmap->getSize();
-
   ungrown_map.reallocate(2*gridmapSize, 2*gridmapSize);
   ungrown_map = 0; // Set all cells to zero
 
@@ -1312,14 +1277,19 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
       }
     }
   }
-  m_MapsMutex.unlock();
+
+  if(lockMapsMutex)
+    m_MapsMutex.unlock();
 }
 
-std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<double> > points)const  {
-  std::vector<bool> ret(points.size(), false);
+void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &frontiers) {
   Cure::BinaryMatrix map;
-  
-  getExpandedBinaryMap(m_lgm, map);
+  getExpandedBinaryMap(m_lgm, map, false);
+
+  for(std::list<Cure::FrontierPt>::iterator it = frontiers.begin();
+      it != frontiers.end(); ++it) {
+    it->m_State = Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE;
+  }
 
   /* Update the map used for visualization of the binarymap.
      Note that we don't lock the map mutex here, since m_binaryMap
@@ -1338,8 +1308,7 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
   Cure::Pose3D robotPose = m_TOPP.getPose();
   if(m_lgm->worldCoords2Index(robotPose.getX(), robotPose.getY(), rX, rY) != 0) {
     log("Robot position is outside of gridmap! Returning.");
-    printf("returned prematurely\n");
-    return ret;
+    return;
   }
 
   // Offset the indices so that top left is (0,0).
@@ -1361,9 +1330,10 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
     map.setBit(x,y, true); // Set as visited
 
     // Check if this coordinate is in points
-    for(unsigned int i = 0; i < points.size(); i++) {
+    for(list<Cure::FrontierPt>::iterator it = frontiers.begin();
+        it != frontiers.end(); ++it) {
       int pX, pY;
-      if(m_lgm->worldCoords2Index(points[i][0],points[i][1], pX,pY) != 0) {
+      if(m_lgm->worldCoords2Index(it->getX(),it->getY(), pX,pY) != 0) {
         log("Coordinate is outside of map.");
         continue;
       }
@@ -1373,7 +1343,7 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
       pY += m_lgm->getSize();
 
       if(pX == x && pY == y)
-        ret[i] = true; // This point is reachable
+        it->m_State = Cure::FrontierPt::FRONTIER_STATUS_OPEN;
     }
 
     // Add neighbors if they are in free space, has not been visited before
@@ -1395,8 +1365,6 @@ std::vector<bool> SpatialControl::arePointsReachable(std::vector<std::vector<dou
       map.setBit(x,y+1,true);
     }
   }
-
-  return ret;
 }
 
 /* Finds the node with the shortest path from (x,y) in an expanded binarymap
@@ -1461,16 +1429,6 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
-bool SpatialControl::isPointReachable(double xW, double yW) {
-  std::vector<std::vector<double> > vec;
-  std::vector<double> coord;
-  coord.push_back(xW);
-  coord.push_back(yW);
-  vec.push_back(coord);
-  
-  return arePointsReachable(vec).front();
-} 
-
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {
@@ -1485,12 +1443,14 @@ SpatialControl::getFrontiers()
     m_MapsMutex.lock();
   }
 
-  m_Explorer->updateFrontiers();
+  m_Frontiers.clear();
+  m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
+  setFrontierReachability(m_Frontiers);
 
   FrontierInterface::FrontierPtSeq outArray;
-  log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());
-  for (list<Cure::FrontierPt>::iterator it =  m_Explorer->m_Fronts.begin();
-      it != m_Explorer->m_Fronts.end(); it++) {
+  log("m_Frontiers contains %i frontiers", m_Frontiers.size());
+  for (list<Cure::FrontierPt>::iterator it =  m_Frontiers.begin();
+      it != m_Frontiers.end(); it++) {
     FrontierInterface::FrontierPtPtr newPt = new FrontierInterface::FrontierPt;
     newPt->mWidth = it->m_Width;
     switch (it->m_State) {
