@@ -91,13 +91,6 @@ void KinectPCServer::configure(const map<string, string> & _config)
 	  m_detectPersons = true;
   }
 
-
-  m_subSampleScale = 1;
-  if ((it = _config.find("--subsample-scale")) != _config.end()) {
-    istringstream str(it->second);
-    str >> m_subSampleScale;
-  }
-
 	if ((it = _config.find("--kconfig")) != _config.end()) {
 		istringstream str(it->second);
 		str >> kinectConfig;
@@ -159,14 +152,6 @@ kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& c
 void KinectPCServer::start()
 {
   PointCloudServer::start();
-
-  if (m_createViewCone) {
-    bool hasAllPlanes = false;
-    while (!hasAllPlanes) {
-      hasAllPlanes = createViewCone();
-      usleep(100000);
-    }
-  }
 }
 
 void KinectPCServer::runComponent() {
@@ -266,13 +251,12 @@ void KinectPCServer::saveNextFrameToFile() {
 
 bool KinectPCServer::createViewCone()
 {
-  lockComponent();
   kinect::changeRegistration(0);
   kinect->NextFrame();
   
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
-  kinect->Get3dWorldPointCloud(cloud, colCloud, m_subSampleScale);
+  kinect->Get3dWorldPointCloud(cloud, colCloud);
 
   Pose3 global_kinect_pose, zeroPose;
   setIdentity(zeroPose);
@@ -314,11 +298,7 @@ bool KinectPCServer::createViewCone()
     }
   }
 
-  bool allPlanesOk = fovPlanes[0] && fovPlanes[1] && fovPlanes[2] && fovPlanes[3];
-
-  unlockComponent();
-
-  return allPlanesOk;
+  return fovPlanes[0] && fovPlanes[1] && fovPlanes[2] && fovPlanes[3];
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
@@ -329,7 +309,7 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
   
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
-  kinect->Get3dWorldPointCloud(cloud, colCloud, m_subSampleScale);
+  kinect->Get3dWorldPointCloud(cloud, colCloud);
 
   Pose3 global_kinect_pose, zeroPose;
   setIdentity(zeroPose);
@@ -498,22 +478,46 @@ void KinectPCServer::receiveImages(const vector<Video::Image>& images)
 //   unlockComponent();
 }
 
+void KinectPCServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
+{
+	PointCloudServer::receiveCameraParameters(_wmc);
+	
+	if (m_createViewCone)
+	{
+		/* Delete old view cone planes */
+		for (int i = 0; i < N_PLANES; i++) {
+			senses[i] = 0;
+			if (fovPlanes[i]) {
+				delete fovPlanes[i];
+				fovPlanes[i] = NULL;
+			}
+		}
+		bool hasAllPlanes = createViewCone();
+		if (!hasAllPlanes)
+			log("Failed to get a complete view cone!");
+	}
+}
+
 bool KinectPCServer::isPointInViewCone(const Vector3& point)
 {
+  lockComponent();
   /* Make sure we have a complete view cone */
   for (int i = 0; i < N_PLANES; i++) {
     if (fovPlanes[i] == NULL) {
-      log("WARNING: isPointInViewCone called with undefined view cone planes always returns true");
-      return true;
+      unlockComponent();
+      return false;
     }
   }
 
   Eigen::Vector3d p(point.x, point.y, point.z);
 
-  return senses[PLANE_LEFT] * fovPlanes[PLANE_LEFT]->signedDistance(p) >= 0 &&
+  bool inView = senses[PLANE_LEFT] * fovPlanes[PLANE_LEFT]->signedDistance(p) >= 0 &&
     senses[PLANE_TOP] * fovPlanes[PLANE_TOP]->signedDistance(p) >= 0 &&
     senses[PLANE_RIGHT] * fovPlanes[PLANE_RIGHT]->signedDistance(p) <= 0 &&
     senses[PLANE_BOTTOM] * fovPlanes[PLANE_BOTTOM]->signedDistance(p) <= 0;
+  unlockComponent();
+
+  return inView;
 }
 
 class CvToGlobal {
