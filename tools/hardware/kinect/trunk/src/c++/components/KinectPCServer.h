@@ -86,6 +86,8 @@ protected:
   virtual void start();
   virtual void runComponent();
 
+  virtual void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
+
   
 public:
   KinectPCServer();
