@@ -1,5 +1,6 @@
 package coma.components;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -727,8 +728,8 @@ public class PlaceMonitor extends ManagedComponent {
 					// current place can be a seed for a new room
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
-					//ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution());
-					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution());
+					// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
+					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
 					
 					// create new room on the reasoner
 					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
@@ -808,17 +809,35 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	
 	
+	/**
+	 * This method is invoked whenever a new dBelief is written to some WorkingMemory.
+	 * 
+	 * It is meant to handle cases in which a user/human-asserted belief about a room category/label 
+	 * is added to WM. This is the case, e.g., when a human answers a question about a room category.
+	 * 
+	 * @param _wmc
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
 	private void processAddedBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get dBelief from WM
 		dBelief _belief = getMemoryEntry(_wmc.address, dBelief.class);
 		log("processAddedBelief() called: got a callback for an ADDED dBelief");
+		
+		// we are only interested in certain dBeliefs
 		EpistemicStatus _epi= _belief.estatus;
 		if (_epi instanceof AttributedEpistemicStatus) {
+			// only react on human-asserted facts
 			if (((AttributedEpistemicStatus) _epi).attribagents.contains("human") && (_belief.type.equals("fact"))) {
 				log("received a belief of type fact attributed by a human");
+				
+				// the rest that follows makes some ugly assumptions about the structure within the human-attributed factual belief
 				if (_belief.content instanceof CondIndependentDistribs) {
-
+					// this try has the intention of catching bad class cast operations 
+					// -- which are the result of not met assumptions regarding the belief structure
+					try {
 					HashSet<String> _assertedRoomCats = new HashSet<String>(); 
+				
 					DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
 					for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
 						log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
@@ -829,6 +848,7 @@ public class PlaceMonitor extends ManagedComponent {
 						_assertedLabels.append(_label).append(" ");
 					}
 					
+					// this should be WMPs -- but the type field does not seem to be properly set anyway
 					HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
 					DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
 					for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
@@ -838,13 +858,62 @@ public class PlaceMonitor extends ManagedComponent {
 					
 					for (WorkingMemoryAddress _gBelief : _gBeliefs) {
 						GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
+						
+						// ok, the following iterator code works, 
+						// but it might be jumping on false conclusions in case there exist multiple ancestors
 						for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
-							ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
-							log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString()); 
+							// naive sanity checking!
+							if (_wmp.type.contains("ComaRoom")) {
+								// load ComaRoomWME in order to check if a new category was asserted
+								ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
+								log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
+								
+								// compare the set(!) of already known asserted room categories with the new set
+								// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
+								HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
+								if (!prevKnownAssertedRoomCats.equals(_assertedRoomCats)) {
+									log("there are new asserted room categories not previosuly known.");
+									HashSet<String> allKnownAssertedRoomsCats = new HashSet<String>();
+									allKnownAssertedRoomsCats.addAll(prevKnownAssertedRoomCats);
+									allKnownAssertedRoomsCats.addAll(_assertedRoomCats);
+									String[] newAssertedLabels = allKnownAssertedRoomsCats.toArray(new String[allKnownAssertedRoomsCats.size()]);
+								
+									// if there is a new room category, we need to overwrite the room WME
+									// _currRoom.assertedLabels = newAssertedLabels; //uncomment this
+									// overwriting must be safe: lock + unlock WME
+									debug("locking ComaRoom WME.");
+									lockEntry(_wmp.address, WorkingMemoryPermissions.LOCKEDODR);
+									try {
+										debug("overwriting ComaRoom WME.");
+										overwriteWorkingMemory(_wmp.address,_currRoom);
+										debug("unlocking ComaRoom WME.");
+										unlockEntry(_wmp.address);
+										log("successfully overwritten ComaRoom WMD with new asserted labels.");
+									} catch (ConsistencyException e) {
+										log("There was a ConsistencyException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
+										e.printStackTrace();
+									} catch (PermissionException e) {
+										log("There was a PermissionException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
+										e.printStackTrace();
+									}
+								}								
+							} else {
+								log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
+							}
 						}						
 					}
+					} catch (ClassCastException cce) {
+						log("Caught a ClassCastException. This means some assumption was not met. Doing nothing. Here's the transcript: " + cce.getStackTrace());
+						cce.printStackTrace();
+					}
+				} else {
+					debug("the belief content is not of type CondIndependentDistribs. Don't know what to do. Doing nothing.");
 				}
+			} else {
+				debug("the attributed dBelief is not a human-asserted fact. Doing nothing.");
 			}
+		} else {
+			debug("the added dBelief WME does not have an AttributedEpistemicStatus. Doing nothing.");
 		}
 	}
 	
