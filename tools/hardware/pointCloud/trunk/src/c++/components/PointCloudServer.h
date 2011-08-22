@@ -80,7 +80,7 @@ protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void runComponent() {}
   virtual void start();
-  void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
+  virtual void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
 
 
 public:
