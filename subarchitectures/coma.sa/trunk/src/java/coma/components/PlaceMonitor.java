@@ -880,6 +880,7 @@ public class PlaceMonitor extends ManagedComponent {
 								
 									// if there is a new room category, we need to overwrite the room WME
 									// _currRoom.assertedLabels = newAssertedLabels; //uncomment this
+									_currRoom.categories=new ProbabilityDistribution();
 									// overwriting must be safe: lock + unlock WME
 									debug("locking ComaRoom WME.");
 									lockEntry(_wmp.address, WorkingMemoryPermissions.LOCKEDODR);
