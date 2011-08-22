@@ -771,19 +771,11 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     coord.push_back((*frontierIt)->y);
     coords.push_back(coord);
   }
-  std::vector<bool> reachabilityVector = map->arePointsReachable(coords);
-  log("Got reachabilityvector");
-
-  if(reachabilityVector.size() == 0 || reachabilityVector.size() != frontiers.size()) {
-    log("Failed to get data on frontier reachability.");
-    return ret;
-  }
 
   // Loop over currently observed frontiers
   log("looping over frontiers\n");
-  std::vector<bool>::iterator reachabilityIt = reachabilityVector.begin();
   for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
-      frontiers.begin(); frontierIt != frontiers.end(); frontierIt++, reachabilityIt++) {
+      frontiers.begin(); frontierIt != frontiers.end(); frontierIt++) {
     FrontierInterface::FrontierPtPtr frontierPt = *frontierIt;
     double x = frontierPt->x;
     double y = frontierPt->y;
@@ -794,7 +786,7 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     double newY = y;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 
     // Consider only frontiers with an open path to them
-    if(!(*reachabilityIt))
+    if ((*frontierIt)->mState != FrontierInterface::FRONTIERSTATUSOPEN)
       continue;
 
     bool excluded = false;
