@@ -1,6 +1,6 @@
 # file: george-y3.externals
 
-^/code/cmake/trunk					cmake
+^/code/cmake/trunk                        cmake
 
 # Scenarios
 ^/code/scenarios/george/trunk             scenarios/george
@@ -10,6 +10,7 @@
 ^/code/subarchitectures/binder/trunk                    subarchitectures/binder.sa
 ^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
 ^/code/subarchitectures/conceptual.sa/trunk             subarchitectures/conceptual.sa
+^/code/subarchitectures/categorical.sa/trunk            subarchitectures/categorical.sa
 ^/code/subarchitectures/default.sa/trunk                subarchitectures/default.sa
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
 ^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
@@ -21,6 +22,7 @@
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
 
 
+^/code/tools/abducer/trunk                        tools/abducer
 ^/code/tools/alchemy                              tools/alchemy
 ^/code/tools/beliefs/trunk                        tools/beliefs
 ^/code/tools/camcalb2/trunk                       tools/camcalb2
@@ -44,13 +46,17 @@
 ^/code/tools/hardware/video/trunk                 tools/hardware/video
 ^/code/tools/interconnectivity                    tools/interconnectivity
 ^/code/tools/logtools/trunk                       tools/logtools
-^/code/tools/mary                                 tools/mary
+^/code/tools/marytts/trunk                        tools/mary
 ^/code/tools/math/trunk                           tools/math
 ^/code/tools/python/trunk                         tools/python
 ^/code/tools/rocs/trunk                           tools/rocs
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/syscalb/trunk                        tools/syscalb
 ^/code/tools/testing/trunk                        tools/testing
+
+
+# importing to have access to dora systems for testing purposes
+^/code/systems/dora-yr3/instantiations            instantiations/dora-yr3
 
 # Obsolete
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
