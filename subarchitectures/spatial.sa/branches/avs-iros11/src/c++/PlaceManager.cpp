@@ -2241,7 +2241,19 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
     m_PlaceIDToNodeMap[placeID] = newNode;
   }
 
-  deleteFromWorkingMemory(m_HypIDToWMIDMap[hypothesisID]); //Delete NodeHypothesis
+  bool done = false;
+  while (!done) {
+    try {
+      deleteFromWorkingMemory(m_HypIDToWMIDMap[hypothesisID]); //Delete NodeHypothesis
+      done = true;
+    }
+    catch (PermissionException e) {
+      log("Could not delete locked NodeHypothesis, try again...");
+    }
+    catch (DoesNotExistOnWMException e) {
+      done = true;
+    }
+  }
   m_HypIDToWMIDMap.erase(hypothesisID);
   m_PlaceIDToHypMap.erase(placeID);
 
