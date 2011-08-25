@@ -8,6 +8,9 @@
 ##
 ## When mcc/mbuild is not available, the script tries to use the precompiled binaries from SVN
 
+find_package(MatlabCompiler)
+include_directories( ${MATLAB_INCLUDE_DIR} )
+
 SET(CAN_BUILD_CTF "No")
 IF (BUILD_SA_VISION_VISLEARNER_CTF)
    IF (MATLAB_BIN_MCC AND MATLAB_BIN_MBUILD)
@@ -87,9 +90,8 @@ IF(CAN_BUILD_CTF)
    ADD_CUSTOM_COMMAND(OUTPUT ${MCC_OUTPUT}
       COMMAND mkdir -p ${MCCBUILD_DIR}
    #~    COMMAND mkdir -p ${MCCDIST_DIR}
-   COMMAND ${MATLAB_BIN_MCC} -F ${MCC_PROJECT}
-      DEPENDS ${MCC_PROJECT}
-         ${MSOURCE_FILES}
+      COMMAND ${MATLAB_BIN_MCC} -F ${MCC_PROJECT}
+         DEPENDS ${MCC_PROJECT} ${MSOURCE_FILES}
    )
 
    ADD_CUSTOM_TARGET(MccVisualLearnerCtf ALL

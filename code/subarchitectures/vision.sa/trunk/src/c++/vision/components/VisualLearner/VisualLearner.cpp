@@ -87,6 +87,12 @@ void VisualLearner::start()
 void VisualLearner::CMyDisplayClient::createViews()
 {
   std::ostringstream ss;
+#if FEAT_FAKE_LEARNER
+  ss << "<h1>Using a fake VisualLearner</h1>";
+  ss << "To use the real VisualLearner it has to be rebuilt with CMake option:<br />";
+  ss << "<pre style='margin-left: 1em;'>BUILD_SA_VISION_VISLEARNER_FAKE=OFF</pre>";
+  setActiveHtml("VisLearner.FAKE", "info", ss.str());
+#else
   const int nModels = 3;
   const string models[nModels] = {
     string("mC1"),
@@ -105,8 +111,9 @@ void VisualLearner::CMyDisplayClient::createViews()
   //   ss << "<option>" << pSim->m_objectNames[i] << "</option>";
   //}
   //ss << "</select>";
-
   setActiveHtml(ID_HTML_OBJECT, IDCHUNK_MODEL_BUTTONS, ss.str());
+#endif
+
 }
 
 void VisualLearner::CMyDisplayClient::handleEvent(const Visualization::TEvent &event)
