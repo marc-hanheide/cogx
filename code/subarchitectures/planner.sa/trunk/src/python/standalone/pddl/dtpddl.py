@@ -255,6 +255,14 @@ class Observation(actions.Action):
         return observe
 
 class DTPDDLWriter(writer.Writer):
+    def write_term(self, term):
+        if isinstance(term, (predicates.ConstantTerm, predicates.VariableTerm)):
+            if term.get_type().equal_or_subtype_of(types.t_number):
+                if isinstance(term.object.name, float):
+                    return "%.16f" % term.object.name
+                
+        return writer.Writer.write_term(self, term)
+
     def write_observe(self, action):
         strings = [action.name]
         #TODO: this is really a bit of a hack...
