@@ -18,40 +18,20 @@ elseif(WIN32)
    get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/win32  ABSOLUTE)
 endif(UNIX)
 
+set (VISUALLEARNER_LIBRARY_DIRS ${VISUALLEARNER_LIBRARY_DIRS} ${PREBUILT_DIR} PARENT_SCOPE)
 set (LIBRARY_NAME VisualLearner)
 set (CTF_EXISTS)
+set (SOLIB_EXISTS)
+
 if(UNIX)
-   set(CTF_ARCHIVE  "lib${LIBRARY_NAME}Ctf.ctf")
-   set(CTF_LIB)
-   set(CTF_SOLIB    "lib${LIBRARY_NAME}Ctf.so")
-   set(CTF_SOPROXY  "lib${LIBRARY_NAME}Proxy.so")
-   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
-   file(GLOB SOLIB_EXISTS  ${PREBUILT_DIR}/${CTF_SOLIB})
-   set(OUTLIBRARIES
-      ${PREBUILT_DIR}/${CTF_SOLIB}
-      ${PREBUILT_DIR}/${CTF_SOPROXY}
-   )
-   set(OUTRUNTIMES)
-   if(CTF_EXISTS)
-      set(OUTLIBRARIES ${OUTLIBRARIES} ${PREBUILT_DIR}/${CTF_ARCHIVE})
-   endif(CTF_EXISTS)
-elseif(WIN32)
-   set(CTF_ARCHIVE  "${LIBRARY_NAME}Ctf.ctf")
-   set(CTF_LIB      "${LIBRARY_NAME}Ctf.lib")
-   set(CTF_SOLIB    "${LIBRARY_NAME}Ctf.dll")
-   set(CTF_SOPROXY  "${LIBRARY_NAME}Proxy.dll")
-   set(OUTLIBRARIES
-      ${PREBUILT_DIR}/${CTF_LIB}
-   )
-   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
-   file(GLOB SOLIB_EXISTS  ${PREBUILT_DIR}/${CTF_SOLIB})
-   set(OUTRUNTIMES
-      ${PREBUILT_DIR}/${CTF_SOLIB}
-      ${PREBUILT_DIR}/${CTF_SOPROXY}
-   )
-   if(CTF_EXISTS)
-      set(OUTRUNTIMES ${OUTRUNTIMES} ${PREBUILT_DIR}/${CTF_ARCHIVE})
-   endif(CTF_EXISTS)
+   file(GLOB CTF_SOLIB   ${PREBUILT_DIR}/lib${LIBRARY_NAME}Ctf.so)
+   file(GLOB CTF_SOPROXY ${PREBUILT_DIR}/lib${LIBRARY_NAME}Proxy.so)
+   file(GLOB CTF_ARCHIVE ${PREBUILT_DIR}/lib${LIBRARY_NAME}Ctf.ctf)
+   set (OUTLIBRARIES ${CTF_SOLIB} ${CTF_SOPROXY} ${CTF_ARCHIVE})
+   set (OUTRUNTIMES)
+
+   set (CTF_EXISTS    ${CTF_ARCHIVE})
+   set (SOLIB_EXISTS  ${CTF_SOLIB})
 endif(UNIX)
 
 if (SOLIB_EXISTS)
@@ -60,11 +40,9 @@ if (SOLIB_EXISTS)
       install(FILES   ${OUTRUNTIMES} DESTINATION lib)
    endif(OUTRUNTIMES)
 else (SOLIB_EXISTS)
-   if(CTF_ARCHIVE)
-      file(GLOB CTF_INSTALLED  ${PREBUILT_DIR}/${CTF_ARCHIVE})
-   endif(CTF_ARCHIVE)
+   file(GLOB SOLIB_INSTALLED   ${OUTPUT}/lib/lib${LIBRARY_NAME}Ctf.so )
 
-   if (NOT CTF_INSTALLED)
+   if (NOT SOLIB_INSTALLED)
       set(ZIP_NAME "libVisualLearnerCtf${SYS_ARCH}.zip")
       set(URL_PREBUILT "http://cogx.eu/data/cogx/prebuilt/${ZIP_NAME}")
       message(
@@ -80,6 +58,6 @@ else (SOLIB_EXISTS)
          "If you have Matlab installed you can also build the libraries.\n"
          "   See: BUILD_VISUAL_LEARNER_CTF (Advanced)\n"
       )
-   endif (NOT CTF_INSTALLED)
+   endif (NOT SOLIB_INSTALLED)
 endif (SOLIB_EXISTS)
 

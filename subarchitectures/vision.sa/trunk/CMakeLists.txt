@@ -150,38 +150,12 @@ if (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
 add_subdirectory (src/c++/vision/components/DisplayConvexHullPB)
 endif (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
 
-option(BUILD_SA_VISION_VISLEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
-option(BUILD_SA_VISION_VISLEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF" NO)
-mark_as_advanced(BUILD_SA_VISION_VISLEARNER_CTF)
-
-if (BUILD_SA_VISION_VISLEARNER_CTF)
-   add_subdirectory(src/matlab)
-elseif (BUILD_SA_VISION_VISLEARNER)
-   add_subdirectory(prebuilt/VisualLearner)   
-endif (BUILD_SA_VISION_VISLEARNER_CTF)
+include(cmake/VisualLearner.cmake)
 
 option(BUILD_SA_VISION_SIMULATION "Build Simulated Vision" YES)
 if(BUILD_SA_VISION_SIMULATION)
    add_subdirectory (src/c++/vision/components/SimulatedVision)
 endif(BUILD_SA_VISION_SIMULATION)
-
-if (BUILD_SA_VISION_VISLEARNER)
-   set (LIB_VLPROXY_SO "libVisualLearnerProxy.so")
-   file(GLOB VISUAL_LEARNER_MATLAB_PROXY ${OUTPUT}/lib/${LIB_VLPROXY_SO})
-   if (VISUAL_LEARNER_MATLAB_PROXY)
-      add_subdirectory(src/c++/vision/components/VisualLearner)
-   else(VISUAL_LEARNER_MATLAB_PROXY)
-      message(
-         "${LIB_VLPROXY_SO} not installed, yet.\n"
-         "  Run 'make install' to generate and install it.\n"
-         "  If you don't have Matlab, put prebuilt libraries into\n"
-         "  vision.sa/config/prebuilt.\n"
-         "  Then run 'ccmake' again.\n"
-         "  (For now, VisualLearner won't be built)\n"
-         "  (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
-      )
-   endif (VISUAL_LEARNER_MATLAB_PROXY)
-endif (BUILD_SA_VISION_VISLEARNER)
 
 option(BUILD_SA_VISION_CAMERA_MOUNT "build camera mount" YES)
 if (BUILD_SA_VISION_CAMERA_MOUNT)
