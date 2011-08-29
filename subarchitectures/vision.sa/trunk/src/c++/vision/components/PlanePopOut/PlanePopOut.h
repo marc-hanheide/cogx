@@ -171,16 +171,14 @@ public:
 	void DrawWireSphere(Vector3 center, double radius);
 
 	vector<double> Hypo2ParaSpace(vector<Vector3> vv3Hypo);
-	void PSO_internal(vector < vector<double> > init_positions, PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	bool PSO_Label(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	double PSO_EvaluateParticle(Particle OneParticle, vector <Particle> optima_found, PointCloud::SurfacePointSeq points, Vector3 cc, double rr);
+	
+	
 	bool lessfitness(const Particle& p1, const Particle& p2);
-	vector<double> UpdatePosition(vector<double> p, vector<double> v);
-	vector<double> UpdateVelocity(vector<double> p, vector<double> v, vector<double> pbest, vector<double> gbest, float chi, float c1, float c2, float w);
+	
 	void CalRadiusCenter4BoundingSphere(PointCloud::SurfacePointSeq points, Vector3 &c, double &r);
-	double DistOfParticles(Particle p1, Particle p2, Vector3 c, double r, bool& bParallel);
+	
 	Vector3 ProjectPointOnPlane(Vector3 p, double A, double B, double C, double D);
-	void Reinitialise_Parallel(vector<Particle>& vPar, vector<Particle>& vT, vector<Particle> vFO, PointCloud::SurfacePointSeq points, Vector3 cc, double rr);
+	
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points);
 	CvHistogram* GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
