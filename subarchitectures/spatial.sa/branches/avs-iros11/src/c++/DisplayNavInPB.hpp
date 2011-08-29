@@ -197,7 +197,6 @@ private:
 	std::vector<double> previouscenter;
 	std::string m_LaserServerHost;
 	IceUtil::Mutex m_Mutex;
-  IceUtil::Mutex m_PlaceMutex;
 	NavData::RobotPose2dPtr m_RobotPose;
 	NavData::LineMapPtr m_LineMap;
 	Laser::Scan2d m_Scan;

@@ -429,7 +429,6 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
 
 void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
-  m_PlaceMutex.lock();
   debug("Entered newShapeProperty");
 
     // Get the property
@@ -442,7 +441,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 	{
 	  log("Error! property disappeared from WM.");
     debug("Exited newShapeProperty");
-    m_PlaceMutex.unlock();
 	  return;
 	}
 
@@ -465,7 +463,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
-        m_PlaceMutex.unlock();
         debug("Exited newShapeProperty");
         return;
     }
@@ -485,7 +482,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
-    m_PlaceMutex.unlock();
     debug("Exited newShapeProperty");
 }
 
@@ -496,7 +492,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 {
   
   debug("Entered newSizeProperty");
-  m_PlaceMutex.lock();
 
     // Get the property
 	SpatialProperties::RoomSizePlacePropertyPtr property;
@@ -507,7 +502,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 	catch (...)
 	{
 	  debug("Error! property disappeared from WM.");
-    m_PlaceMutex.unlock();
     debug("Exited newSizeProperty");
 	  return;
 	}
@@ -531,7 +525,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
-        m_PlaceMutex.unlock();
         debug("Exited newSizeProperty");
         return;
     }
@@ -551,7 +544,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
-    m_PlaceMutex.unlock();
     debug("Exited newSizeProperty");
 }
 
@@ -564,7 +556,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
   debug("Entered newAppearanceProperty");
-  m_PlaceMutex.unlock();
 	// Get the property
 	SpatialProperties::RoomAppearancePlacePropertyPtr property;
     try
@@ -575,7 +566,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 	{
 	  log("Error! property disappeared from WM.");
     debug("Exited newAppearanceProperty");
-    m_PlaceMutex.unlock();
 	  return;
 	}
 
@@ -596,7 +586,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
         m_PeekabotClient.end_bundle();
         m_Mutex.unlock();
 
-        m_PlaceMutex.unlock();
         debug("Exited newAppearanceProperty");
         return;
     }
@@ -614,7 +603,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
 
-    m_PlaceMutex.unlock();
     debug("Exited newAppearanceProperty");
 }
 
@@ -776,7 +764,6 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
   debug("Entered newRoomCategoryPlaceholderProperty");
-  m_PlaceMutex.lock();
 
     // Get the property
 	SpatialProperties::RoomCategoryPlaceholderPropertyPtr property;
@@ -787,7 +774,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	catch (...)
 	{
 	  log("Error! property disappeared from WM.");
-    m_PlaceMutex.unlock();
     debug("Exited newRoomCategoryPlaceholderProperty");
 	  return;
 	}
@@ -818,7 +804,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 
     m_PeekabotClient.end_bundle();
     m_Mutex.unlock();
-    m_PlaceMutex.unlock();
     debug("Exited newRoomCategoryPlaceholderProperty");
 }
 
@@ -1892,7 +1877,6 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 {
   debug("Entered newPlace");
-  m_PlaceMutex.lock();
 	SpatialData::PlacePtr placePtr;
 	try
 	{
@@ -1903,7 +1887,6 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
     debug("Exited newPlace");
-    m_PlaceMutex.unlock();
 		return;
 	}
 
@@ -1915,7 +1898,6 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
     placeholder = (placePtr->status == SpatialData::PLACEHOLDER);
   } catch (IceUtil::NullHandleException e) {
     log("Place suddenly disappeared!\n");
-    m_PlaceMutex.unlock();
     debug("Exited newPlace");
     return;
   }
@@ -1925,9 +1907,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 	// Does place exist? If so, delete it first.
   log("Delete place if it existed.. ");
 	if (_places.find(wmChange.address.id) != _places.end()) {
-    m_PlaceMutex.unlock();
 		deletePlace(wmChange);
-    m_PlaceMutex.lock();
   }
   debug("done.\n");
 
@@ -1939,7 +1919,6 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(placeId);
       if(!nodeHypPtr) {
         log("Hyp doesnt exist\nExiting.\n");
-        m_PlaceMutex.unlock();
         return;
       }
 
@@ -1953,7 +1932,6 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
         hypY = nodeHypPtr->y;
       } catch(IceUtil::NullHandleException &e) {
         log("nodeHypPtr is no longer valid.\n");
-        m_PlaceMutex.unlock();
         return;
       }
 
@@ -2065,7 +2043,6 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			}
 		}
 	}
-  m_PlaceMutex.unlock();
   debug("Exited newPlace");
 }
 
@@ -2073,13 +2050,11 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 {
   debug("Entered deletePlace");
-  m_PlaceMutex.lock();
 	// Find and remove the place data
 	string wmId = wmChange.address.id;
 	map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
 	if ( it == _places.end()) {
     debug("Exited deletePlace");
-    m_PlaceMutex.unlock();
 		return;
   }
 	PlaceData pd = it->second;
@@ -2121,7 +2096,6 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 			text.remove();
 		}
 	}
-  m_PlaceMutex.unlock();
   debug("Exited deletePlace");
 }
 
