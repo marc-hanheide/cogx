@@ -478,7 +478,7 @@ private:
 
 //             std::cerr<<(*traversable_Collection)[index]<<std::endl;
 //             {char ch; std::cin>>ch;};
-            std::cerr<<"NEW ENTRY..." << index << " : " <<wrapped_contents<<std::endl;
+            // std::cerr<<"NEW ENTRY..." << index << " : " <<wrapped_contents<<std::endl;
             
             map_iterator = searchable_Collection->find(wrapped_contents);
             assert(map_iterator != searchable_Collection->end());
