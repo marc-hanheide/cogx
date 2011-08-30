@@ -434,6 +434,8 @@ public:
                 = CXX__PTR_ANNOTATION(Searchable_Collection)(new Searchable_Collection());
             
             _searchable_Collection = indexed__Searchable_Collection.find(runtime_Thread);   
+            VERBOSER(20000, "setting runtime thread :: "<<runtime_Thread);
+
         }
 
         traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
@@ -466,7 +468,7 @@ private:
             
         if(map_iterator
            == searchable_Collection->end()){
-//             std::cerr<<"NEW ENTRY..."<<wrapped_contents<<std::endl;
+            // std::cerr<<"NEW ENTRY..."<<wrapped_contents<<std::endl;
             traversable_Collection->push_back(wrapped_contents);
             assert(traversable_Collection->size());
 //             assert(traversable_Collection->size() - 1 >= 0);
@@ -476,6 +478,7 @@ private:
 
 //             std::cerr<<(*traversable_Collection)[index]<<std::endl;
 //             {char ch; std::cin>>ch;};
+            std::cerr<<"NEW ENTRY..." << index << " : " <<wrapped_contents<<std::endl;
             
             map_iterator = searchable_Collection->find(wrapped_contents);
             assert(map_iterator != searchable_Collection->end());
