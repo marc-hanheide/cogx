@@ -1,3 +1,5 @@
+VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+
 HOST localhost
 
 # Visualization.SA ##########################################################
@@ -50,7 +52,7 @@ INCLUDE includes/planner.sa/switching-planner-dora.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 #INCLUDE includes/planner.sa/fake-motivation.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals %(goal)
 
 # exection ####################################################################
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels cereal_box,filing_box,matchbox,table_for_meal
