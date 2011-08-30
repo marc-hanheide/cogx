@@ -221,7 +221,7 @@ public:
 //     {
 //     }
     
-    static bool ith_exists(int type_index, ID_TYPE object_index)
+    static bool ith_exists(Runtime_Thread type_index, ID_TYPE object_index)
     {
         auto _searchable = indexed__Traversable_Collection.find(type_index);
         if(_searchable != indexed__Traversable_Collection.end()){
