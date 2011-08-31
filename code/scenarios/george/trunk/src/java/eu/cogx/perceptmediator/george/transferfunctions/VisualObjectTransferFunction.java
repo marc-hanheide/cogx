@@ -1,8 +1,8 @@
 package eu.cogx.perceptmediator.george.transferfunctions;
+
 /**
  * 
  */
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,6 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class VisualObjectTransferFunction extends
 		SimpleDiscreteTransferFunction<VisualObject, GroundedBelief> {
 
-	
 	static Logger logger = Logger.getLogger(VisualObjectTransferFunction.class);
 
 	public VisualObjectTransferFunction(ManagedComponent component) {
@@ -43,7 +42,7 @@ public class VisualObjectTransferFunction extends
 
 		result.put("salience", DoubleFormula.create(from.salience)
 				.getAsFormula());
-	
+
 		return result;
 	}
 
@@ -59,7 +58,6 @@ public class VisualObjectTransferFunction extends
 	protected void fillBelief(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			WorkingMemoryChange wmc, VisualObject from) {
-		// TODO Auto-generated method stub
 		super.fillBelief(belief, wmc, from);
 		IndependentFormulaDistributions distr = belief.getContent();
 		FormulaDistribution fd;
@@ -68,7 +66,6 @@ public class VisualObjectTransferFunction extends
 		fd.add((float) from.salience, 1.0);
 		distr.put("salience", fd);
 
-
 		fillConcept("color", distr, from.colorLabels, from.colorDistrib,
 				from.colorGains, from.colorGain, from.colorAmbiguity);
 		fillConcept("shape", distr, from.shapeLabels, from.shapeDistrib,
@@ -76,55 +73,57 @@ public class VisualObjectTransferFunction extends
 		fillConcept("ident", distr, from.identLabels, from.identDistrib, null,
 				from.identGain, from.identAmbiguity);
 
-		// { // color
-		// fd = FormulaDistribution.create();
-		// for (int i = 0; i < from.colorLabels.length; i++) {
-		// fd.add(from.colorLabels[i], from.colorDistrib[i]);
-		// FormulaDistribution gainFD = FormulaDistribution.create();
-		// gainFD.add((float) from.colorGains[i], 1.0);
-		// distr.put("gain-color-" + from.colorLabels[i], gainFD);
-		// }
-		// distr.put("color", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.colorGain, 1.0);
-		// distr.put("colorGain", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.colorAmbiguity, 1.0);
-		// distr.put("colorAmbiguity", fd);
-		//
-		// }
-		// { // shape
-		// fd = FormulaDistribution.create();
-		// for (int i = 0; i < from.shapeLabels.length; i++) {
-		// fd.add(from.shapeLabels[i], from.shapeDistrib[i]);
-		// }
-		// distr.put("shape", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.shapeGain, 1.0);
-		// distr.put("shapeGain", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.shapeAmbiguity, 1.0);
-		// distr.put("shapeAmbiguity", fd);
-		// }
-		// { // ident
-		// fd = FormulaDistribution.create();
-		// for (int i = 0; i < from.identLabels.length; i++) {
-		// fd.add(from.identLabels[i], from.identDistrib[i]);
-		// }
-		// distr.put("ident", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.identGain, 1.0);
-		// distr.put("identGain", fd);
-		//
-		// fd = FormulaDistribution.create();
-		// fd.add((float) from.identAmbiguity, 1.0);
-		// distr.put("identAmbiguity", fd);
-		// }
+		{ // color
+			fd = FormulaDistribution.create();
+			for (int i = 0; i < from.colorLabels.length; i++) {
+				fd.add(from.colorLabels[i], from.colorDistrib[i]);
+				FormulaDistribution gainFD = FormulaDistribution.create();
+				gainFD.add((float) from.colorGains[i], 1.0);
+				distr.put("gain-color-" + from.colorLabels[i], gainFD);
+			}
+			distr.put("color", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.colorGain, 1.0);
+			distr.put("colorGain", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.colorAmbiguity, 1.0);
+			distr.put("colorAmbiguity", fd);
+
+		}
+		
+		{ // shape
+			fd = FormulaDistribution.create();
+			for (int i = 0; i < from.shapeLabels.length; i++) {
+				fd.add(from.shapeLabels[i], from.shapeDistrib[i]);
+			}
+			distr.put("shape", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.shapeGain, 1.0);
+			distr.put("shapeGain", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.shapeAmbiguity, 1.0);
+			distr.put("shapeAmbiguity", fd);
+		}
+		
+		{ // ident
+			fd = FormulaDistribution.create();
+			for (int i = 0; i < from.identLabels.length; i++) {
+				fd.add(from.identLabels[i], from.identDistrib[i]);
+			}
+			distr.put("ident", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.identGain, 1.0);
+			distr.put("identGain", fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) from.identAmbiguity, 1.0);
+			distr.put("identAmbiguity", fd);
+		}
 	}
 
 	private void fillConcept(String concept,
@@ -135,7 +134,7 @@ public class VisualObjectTransferFunction extends
 		String gainStr = "";
 		for (int i = 0; i < labels.length; i++) {
 			fd.add(labels[i], distrib[i]);
-			if (gains != null && i<gains.length) {
+			if (gains != null && i < gains.length) {
 				if (maxGain < gains[i]) {
 					maxGain = gains[i];
 					gainStr = labels[i];
