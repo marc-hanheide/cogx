@@ -258,5 +258,6 @@ ADD_CUSTOM_TARGET( ant_build ALL )
      	)
 endif(DO_ANT)
 
-MESSAGE("Use ccache: " ${USE_CCACHE})
-MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
+MESSAGE(STATUS " * Build type: " ${CMAKE_BUILD_TYPE})
+MESSAGE(STATUS " * Do Ant: " ${DO_ANT})
+MESSAGE(STATUS " * Use ccache: " ${USE_CCACHE})
