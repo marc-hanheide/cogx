@@ -156,7 +156,7 @@ class PlaceManager : public cast::ManagedComponent
     int addPlaceForNode(NavData::FNodePtr node);
 
     // Abort any movement commands
-    void cancelMovement();
+    void cancelMovement(bool failed);
 
     // Methods to deal with synchronisation of edge addition
     void checkUnassignedEdges(int newPlaceID);

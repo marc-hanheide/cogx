@@ -279,7 +279,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 }
 
 void
-PlaceManager::cancelMovement()
+PlaceManager::cancelMovement(bool failed = false)
 {
   debug("CancelMovement called");
 
@@ -298,7 +298,7 @@ PlaceManager::cancelMovement()
       SpatialData::NavCommandPtr ptr = it->getData();
       if (ptr->cmd == SpatialData::GOTOPLACE &&
           ptr->comp == SpatialData::COMMANDINPROGRESS) {
-        ptr->comp = SpatialData::COMMANDSUCCEEDED;
+        ptr->status = failed ? SpatialData::TARGETUNREACHABLE : SpatialData::UNKNOWN;
         debug("overwrite 1: %s", it->getID().c_str());
         overwriteWorkingMemory<SpatialData::NavCommand>(it->getID(), ptr);
       }
@@ -1566,7 +1566,6 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
 void 
 PlaceManager::endPlaceTransition(int failed)
 {
-  
   debug("endPlaceTransition called");
   if (m_isPathFollowing) {
     log("  We were still trying to follow a path; must have failed");
@@ -1706,7 +1705,7 @@ PlaceManager::processPlaceArrival(bool failed)
           //Since we are not close to the goal we do NOT merge the goal and
           //the known place (ie. allow travelling over already visited
           //places).
-          log("   CASE 4: travelling over known place distant from goal, ignoring.");
+          log("   CASE 4: travelling over known place %d distant from goal %d, ignoring.", curPlace->id, m_goalPlaceForCurrentPath);
         }
 
         else {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
@@ -1968,12 +1967,12 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
             break;
           }
         }
-        if(!placeholderStillValid) {
+        if(!placeholderStillValid && m_goalPlaceForCurrentPath != -1) {
           /* Check if we are deleting the current goal hypothesis */
           if (place->id != m_goalPlaceForCurrentPath) {
             /* If it was not the goal just delete it */
+            log("deleting placeholder %d", place->id);
             deletePlaceholder(place->id);
-            log("deleted placeholder %d", place->id);
           }
           else {
             /* If we are trying to delete the goal hypothesis only delete it
@@ -1982,6 +1981,7 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
             FrontierInterface::NodeHypothesisPtr goalHyp = getHypFromPlaceID(place->id); 
             SpatialData::MapInterfacePrx map = getIceServer<SpatialData::MapInterface>("spatial.control");
             if (goalHyp && !map->isCircleObstacleFree(goalHyp->x, goalHyp->y, -1)) {
+              log("deleting goal placeholder %d", place->id);
               deletePlaceholder(place->id);
             }
           }
@@ -2035,7 +2035,7 @@ void PlaceManager::deletePlaceholder(int placeId) {
     m_Places.erase(it);
 
     if (placeId == m_goalPlaceForCurrentPath)
-      cancelMovement();
+      cancelMovement(true);
   }
   debug("deletePlaceholder exited");
 }
@@ -2241,6 +2241,7 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
     m_PlaceIDToNodeMap[placeID] = newNode;
   }
 
+  /* FIXME: Use lockEntry instead of hackish loop? */
   bool done = false;
   while (!done) {
     try {
