@@ -14,8 +14,8 @@ public class PlaceholderCategoryMediator extends
 	}
 
 	@Override
-	protected PerceptBindingMediator<RoomCategoryPlaceholderProperty, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this,
+	protected PerceptBindingMediator<RoomCategoryPlaceholderProperty, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this,_toSA,
 				RoomCategoryPlaceholderProperty.class, GroundedBelief.class,
 				new PlaceholderCategoryTransferFunction(this, allBeliefs));
 	}

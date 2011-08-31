@@ -9,8 +9,8 @@ import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 public class PlaceMediator extends PerceptMediatorComponent {
 
 	@Override
-	protected PerceptBindingMediator<Place, GroundedBelief> getMediator() {
-		return PerceptBindingMediator.create(this, Place.class,
+	protected PerceptBindingMediator<Place, GroundedBelief> getMediator(String _toSA) {
+		return PerceptBindingMediator.create(this, _toSA, Place.class,
 				GroundedBelief.class, new PlaceTransferFunction(this));
 	}
 

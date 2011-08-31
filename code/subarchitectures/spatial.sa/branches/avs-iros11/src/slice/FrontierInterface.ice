@@ -106,16 +106,18 @@ module FrontierInterface {
    */
   class ObjectPriorRequest {
     RelationSeq relationTypes;
-    StringSeq objects; //Starts with the query object's label
+//Starts with the query object's label
+    StringSeq objects; 
     double cellSize;
     double totalMass;
     WeightedPointCloud outCloud;
 
-    PoseSeq baseObjectPose; // If this argument is present, the 
+// If this argument is present, the 
     			// base object (last in 'objects') 
     			// will be temporarily set to the
     			// pose in question, not randomized
     			// nor its known position used
+    PoseSeq baseObjectPose; 
   };
 
   /**
@@ -124,8 +126,10 @@ module FrontierInterface {
    */
   class ObjectTiltAngleRequest {
     ObjectRelation relationType;
-    StringSeq objects; //Starts with the query object's label
-    Vec2Seq triangle; //Describes the 2D triangle in which to sample for points
+//Starts with the query object's label
+    StringSeq objects;
+//Describes the 2D triangle in which to sample for points 
+    Vec2Seq triangle; 
     Vec3Seq tiltAngles; 
   };
 
