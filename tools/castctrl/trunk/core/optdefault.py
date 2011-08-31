@@ -30,6 +30,8 @@ CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
 
 ICE_CONFIG=${CAST_ICE_CONFIG}
 
+V4R_DIR=${HOME}/projects/acin # TODO: the path to the TUW ACIN V4R library
+
 PATH=<pathlist>
    ${COGX_ROOT}/output/bin
    ${CUDA_ROOT}/bin
@@ -44,6 +46,7 @@ LD_LIBRARY_PATH=<pathlist>
    ${CURE_LIB_DIR}
    ${CUDA_ROOT}/lib
    ${MATLAB_RUNTIME_DIR}
+   ${V4R_DIR}/lib
 </pathlist>
 DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
