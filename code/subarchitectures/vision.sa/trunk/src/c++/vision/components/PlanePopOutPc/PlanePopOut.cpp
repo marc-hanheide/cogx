@@ -22,6 +22,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "../VisionUtils.h"
 
+
 #ifdef __APPLE__
 
 long long gethrtime(void)
@@ -1370,8 +1371,172 @@ void PlanePopOut::FindVerticalPlanes(PointCloud::SurfacePointSeq &points, std::v
     }
 }
 
+/**
+ * @brief Get images with the resolution, defined in the cast file, from video server.
+ */
+void PlanePopOut::GetImageData()
+{
+  pointCloudWidth = 320;                                /// TODO get from cast-file!
+  pointCloudHeight = pointCloudWidth *3/4;
+  kinectImageWidth = 640;
+  kinectImageHeight = kinectImageWidth *3/4;
+ 
+  points.resize(0);
+  getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  
+  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
+  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
+
+  // get rectified images from point cloud server
+  getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
+  getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
+  getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+  iplImage_l = convertImageToIpl(image_l);
+  iplImage_r = convertImageToIpl(image_r);
+  iplImage_k = convertImageToIpl(image_k);
+
+  // convert points to cloud for render engine
+//   cv::Mat_<cv::Point3f> cloud;
+//   cv::Mat_<cv::Point3f> colCloud;
+//   Points2Cloud(points_fromLeft, cloud, colCloud);        // show untransformed kinect point cloud
+//   tgRenderer->SetPointCloud(cloud, colCloud);            // show transformed kinect point cloud
+//   Points2Cloud(points, kinect_point_cloud, kinect_color_point_cloud);
+//   tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
+
+//   // Reproject point cloud to left stereo camera to get the depth image from the view of the left stereo camera
+//   cv::Mat_<cv::Point3f> depthImage;
+//   cv::Mat_<cv::Point3f> depthMap;
+//   Points2DepthMap(stereo_cam, kinect_point_cloud, kinect_color_point_cloud, depthImage, depthMap);
+//   IplImage iplImage_depth = depthImage;
+//   IplImage iplImage_depthMap = depthMap;
+}
+
+void PlanePopOut::GetPlaneAndSOIs()
+{
+    pclA::PlanePopout *planePopout;
+    planePopout = new pclA::PlanePopout();
+    planePopout->CalculateSOIs(pcl_cloud);
+    planePopout->GetSOIs(sois);
+    GetHists(hists);
+}
+
+bool PlanePopOut::SimpleSOIMatch()
+{
+    std::vector <int> index_p;
+    for (unsigned i=0; i<sois.size(); i++)
+    {
+	double min_KLD_of_ColorHistogram = 100.0;
+	int matching_index_pre;
+	for (unsigned j=0; j<pre_sois.size(); j++)
+	{
+	    double KLD_result = CompareHistKLD(hists[i], pre_hists[j]);
+	    if (KLD_result<min_KLD_of_ColorHistogram)
+	    {
+		min_KLD_of_ColorHistogram = KLD_result;
+		matching_index_pre = j;
+	    }
+	}
+	index_p.push_back(matching_index_pre);
+    }
+/// now store the sois and hists, and clean up old soi and hist vector
+    pre_sois.clear();
+    pre_hists.clear();
+    pre_sois = sois;
+    pre_hists = hists;
+    sois.clear();
+    hists.clear();
+}
+
+void PlanePopOut::ComplexSOIMatch()
+{
+    
+/// now store the sois and hists, and clean up old soi and hist vector
+    pre_sois.clear();
+    pre_hists.clear();
+    pre_sois = sois;
+    pre_hists = hists;
+    sois.clear();
+    hists.clear();  
+}
+
+void PlanePopOut::TrackSOIs()
+{
+    if (pre_sois.empty())
+    {
+	pre_sois = sois;
+	pre_hists = hists;
+	return;
+    }
+    if (pre_sois.size()==sois.size())
+    {
+	if (SimpleSOIMatch())
+	    return;
+    }
+    else
+	ComplexSOIMatch();
+}
+
+/**
+ * Calculate the Histogram of all the points in ONE SOI.
+ */
+CvHistogram* PlanePopOut::CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud)
+{
+    CvHistogram* h;
+    IplImage* tmp = cvCreateImage(cvSize(1, pcl_cloud->points.size()), 8, 3);		///temp image, store all the points in the SOI in a matrix way
+    for (unsigned int i=0; i<pcl_cloud->points.size(); i++)
+    {
+	CvScalar v;	  
+	v.val[0] = pcl_cloud->points[i].b;
+	v.val[1] = pcl_cloud->points[i].g;
+	v.val[2] = pcl_cloud->points[i].r;
+	cvSet2D(tmp, i, 0, v);
+    }
+    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* planes[] = { h_plane, s_plane };
+    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
+    int h_bins = 16, s_bins = 8;
+    int hist_size[] = {h_bins, s_bins};
+    /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
+    float h_ranges[] = { 0, 180 };
+    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
+    float s_ranges[] = { 0, 255 };
+    float* ranges[] = { h_ranges, s_ranges };
+    float max_value = 0;
+
+    cvCvtColor( tmp, hsv, CV_BGR2HSV );
+    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
+    h = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
+    cvCalcHist( planes, h, 0, 0 );
+    cvGetMinMaxHistValue( h, 0, &max_value, 0, 0 );
+
+    cvReleaseImage(&h_plane);
+    cvReleaseImage(&s_plane);
+    cvReleaseImage(&v_plane);
+    cvReleaseImage(&hsv);
+    cvReleaseImage(&tmp);
+    return h;
+}
+
+/**
+ * Get the Histograms of all the SOIs.
+ */
+void PlanePopOut::GetHists(std::vector< CvHistogram* > &_hists)
+{
+  for(unsigned i=0; i<sois.size(); i++)
+  {
+	CvHistogram* histogram;
+	histogram = CalSOIHist(sois[i]);
+	hists.push_back(histogram);
+  }
+}
+
+
 bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
+  
     PointCloud::SurfacePointSeq R_points = points;
     unsigned int nPoints = R_points.size();
     if(nPoints < 10)
