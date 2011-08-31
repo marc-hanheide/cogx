@@ -659,15 +659,15 @@ vector<unsigned char> GraphCutSegmenter::graphCut(int width, int height, int num
     int diff = abs(e1 - e2);
     int iter = 3;
     /*		
-                      while(diff > 15)
-                      {
-                      e1 = gc->compute_energy();
-                      gc->expansion(1); // run expansion
-                      e2 = gc->compute_energy();
-                      iter++;
-                      diff = abs(e1 - e2);
-                      }
-                      */		
+          while(diff > 15)
+          {
+            e1 = gc->compute_energy();
+            gc->expansion(1); // run expansion
+            e2 = gc->compute_energy();
+            iter++;
+            diff = abs(e1 - e2);
+          }
+    */		
     // log("After %i expand iterations the energy is %d", iter, gc->compute_energy());
 
     //		gc->swap(SWAP_ITERS);		 // run swap
