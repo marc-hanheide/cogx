@@ -94,10 +94,15 @@ add_subdirectory (src/c++/vision/components/StereoDetector)
 #add_subdirectory (src/c++/vision/components/StereoDetectorDriver)
 endif (BUILD_SA_VISION_STEREODETECTOR)
 
-option(BUILD_SA_VISION_PLANEPOPOUT "build plane pop-out (needs hardware/stereo)" YES)
+option(BUILD_SA_VISION_PLANEPOPOUT "build OLD plane pop-out (needs hardware/stereo)" YES)
 if(BUILD_SA_VISION_PLANEPOPOUT)
 add_subdirectory (src/c++/vision/components/PlanePopOut)
 endif(BUILD_SA_VISION_PLANEPOPOUT)
+
+option(BUILD_SA_VISION_PLANEPOPOUT_PC "build PC plane pop-out (needs hardware/stereo)" NO)
+if(BUILD_SA_VISION_PLANEPOPOUT_PC)
+add_subdirectory (src/c++/vision/components/PlanePopOutPc)
+endif(BUILD_SA_VISION_PLANEPOPOUT_PC)
 
 option(BUILD_SA_VISION_SOIFILTER "build SOI filter" YES)
 if(BUILD_SA_VISION_SOIFILTER)
