@@ -14,8 +14,6 @@ include_directories(../ObjectTracker)
 include_directories(../ObjectTracker/Tracker/include)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
-link_directories(${CUDA_INSTALLROOT}/lib)
-
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)
 

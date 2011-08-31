@@ -60,6 +60,10 @@ private:
   int camId;
   std::string videoServerName;
   Video::VideoInterfacePrx videoServer;
+  /**
+   * initial pose for tracking when learning a new object
+   */
+  cogx::Math::Pose3 initPose;
 
   struct RecEntry{
   	std::string siftfile;
@@ -77,6 +81,7 @@ private:
 
 	float m_confidence;
 
+  bool m_simulationOnly;
   bool m_starttask;
   bool m_wait4data;
   bool m_delete_command_from_wm;
@@ -89,6 +94,7 @@ private:
 	public:
 		CDisplayClient() { pRec = NULL; }
 		void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
+    void handleEvent(const Visualization::TEvent &event);
 	};
 	CDisplayClient m_display;
 #endif

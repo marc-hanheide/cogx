@@ -21,11 +21,23 @@ using namespace cogx;
 using namespace Math;
 using namespace std;
 
+
 ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
 	m_showCV = true;
 	m_confidence = 0.08;
+	m_simulationOnly=false;
+	// initial pose for tracking when learning a new object:
+  // useful values for a user presenting an object to the system:
+  // 1.0 meters away and rotated 90 deg around x, so the object stands upright
+  // assuming that the objects local z axis points "up"
+  // can be overwritten in configure
+  setIdentity(initPose);
+  initPose.pos.x = 0.0;
+  initPose.pos.y = 0.0;
+  initPose.pos.z = 1.0;
+  fromRotVector(initPose.rot, vector3(M_PI/2., 0., 0.));
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -43,6 +55,10 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 
   if((it = _config.find("--videoname")) != _config.end()){
     videoServerName = it->second;
+  }
+
+  if((it = _config.find("--simulation-only")) != _config.end()){
+    m_simulationOnly=true;
   }
 
   if((it = _config.find("--camid")) != _config.end())  {
@@ -70,6 +86,16 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 		plyiss.str(it->second);
 	}
 
+	if((it = _config.find("--initpose")) != _config.end()){
+    istringstream str(it->second);
+    str >> initPose;
+	}
+  if((it = _config.find("--initpose_xml")) != _config.end())
+  {
+    string filename = it->second;
+    readXML(filename, initPose);
+  }
+
 	std::string label, plystr, siftstr;
 
 	while(labeliss >> label && plyiss >> plystr && siftiss >> siftstr){
@@ -83,39 +109,73 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 }
 
 void ObjectRecognizer3D::start(){
-  // get connection to the video server
-  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+  
+  if (!m_simulationOnly) {
+    // get connection to the video server
+    videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
-  // register our client interface to allow the video server pushing images
-  Video::VideoClientInterfacePtr servant = new VideoClientI(this);
-  registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
+    // register our client interface to allow the video server pushing images
+    Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+    registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-  addChangeFilter(createLocalTypeFilter<VisionData::TrackingCommand>(cdl::OVERWRITE),
+    addChangeFilter(createLocalTypeFilter<VisionData::TrackingCommand>(cdl::OVERWRITE),
+		    new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+									 &ObjectRecognizer3D::receiveTrackingCommand));
+
+    addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
+		    new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+									 &ObjectRecognizer3D::receiveRecognizer3DCommand));
+
+    addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-        &ObjectRecognizer3D::receiveTrackingCommand));
+        &ObjectRecognizer3D::receiveDetectionCommand));
 
-  addChangeFilter(createLocalTypeFilter<VisionData::Recognizer3DCommand>(cdl::ADD),
-      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-	&ObjectRecognizer3D::receiveRecognizer3DCommand));
-
+  }
   addChangeFilter(createGlobalTypeFilter<VisionData::Post3DObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
 	&ObjectRecognizer3D::PostFake3DObject));
 
 
-  addChangeFilter(createLocalTypeFilter<VisionData::DetectionCommand>(cdl::ADD),
-      new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
-        &ObjectRecognizer3D::receiveDetectionCommand));
-
   // init recognizer, phase 1
   initInStart();
 
 #ifdef FEAT_VISUALIZATION        
-  m_display.connectIceClient(*this);
-  m_display.setClientData(this);
+  if (!m_simulationOnly) {
+    m_display.connectIceClient(*this);
+    m_display.setClientData(this);
+    m_display.installEventReceiver();
+    for(map<string,RecEntry>::iterator it = m_recEntries.begin(); it != m_recEntries.end(); it++)
+    {
+      ostringstream id, label;
+      id << "button." << it->first;
+      label << "Recognize " << it->first;
+      m_display.addButton(getComponentID(), id.str(), label.str());
+    }
+  }
 #endif
 }
 
+#ifdef FEAT_VISUALIZATION
+void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent &event)
+{
+  if(event.type == Visualization::evButtonClick)
+  {
+    for(map<string,RecEntry>::iterator it = pRec->m_recEntries.begin(); it != pRec->m_recEntries.end(); it++)
+    {
+      ostringstream id;
+      id << "button." << it->first;
+      if(event.sourceId == id.str())
+      {
+        Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand;
+        rec_cmd->cmd = RECOGNIZE;
+        rec_cmd->label = it->first;
+        rec_cmd->visualObjectID = "";
+        pRec->addToWorkingMemory(pRec->newDataID(), rec_cmd);
+      }
+    }
+  }
+}
+#endif
 
 void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
 log("Fake 3D Object Received");  
@@ -125,7 +185,8 @@ Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
 
 
 void ObjectRecognizer3D::runComponent(){
-
+  if (m_simulationOnly)
+    return;
   P::DetectGPUSIFT 	sift;
 
   sleepProcess(1000);  // HACK
@@ -193,14 +254,7 @@ void ObjectRecognizer3D::runComponent(){
           if(m_rec_cmd->visualObjectID.empty())
           {
             log("%s: Warning no VisualObject given", m_label.c_str());
-            Math::Pose3 pose;
-            setIdentity(pose);
-            // NOTE: useful values for a user presenting an object to the system:
-            // 1.0 meters away and rotated 90 deg around x, so the object stands upright
-            // assuming that the objects local z axis points "up"
-            pose.pos.x = 0.0; pose.pos.y = 0.0; pose.pos.z = 1.0;
-            fromRotVector(pose.rot, vector3(M_PI/2., 0., 0.));
-            loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
+            loadVisualModelToWM(m_recEntries[m_label], initPose, m_label);
             m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
           }
         }
@@ -217,7 +271,7 @@ void ObjectRecognizer3D::runComponent(){
 		delete(m_detect);
 
 	if(m_showCV)
-  	cvDestroyWindow("ObjectRecognizer3D");
+  	cvDestroyWindow(getComponentID().c_str());
 
   log("stop");
 }
@@ -294,14 +348,14 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 	sift_model_learner.AddToModel(m_temp_keys, (*m_recEntries[m_label].object));
 
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+  m_display.setImage(getComponentID(), m_iplImage);
 #endif
 
 	if(m_showCV){
 		for (unsigned i=0; i<m_temp_keys.Size(); i++){
 				m_temp_keys[i]->Draw( m_iplImage,*m_temp_keys[i],CV_RGB(255,0,0) );
 		}
-		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+		cvShowImage ( getComponentID().c_str(), m_iplImage );
 	}
 
 	m_wait4data = false;
@@ -339,7 +393,7 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
  * @param label the objects label
  * @param forceNewObject if true, we will always add a new object to WM.
  *        otherwise we only add a new model if rec_entry does not yet
- *        have a object id
+ *        have an object id
  */
 void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
   cogx::Math::Pose3 &pose, std::string &label, bool forceNewObject){
@@ -349,7 +403,6 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 
   if(newModel){
 		// Load geometry
-		log("Loading ply model");
 		ModelLoader modelloader;
 		Model model;
 		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
@@ -360,17 +413,17 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 		rec_entry.visualObjectID = newDataID();
   }else{
 		obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
+		// these arrays are modified and need to be cleared first
+		obj->identLabels.clear();
+		obj->identDistrib.clear();
   }
-log("got ply model");
+
   // create a very simple distribution: label and unknown
   obj->identLabels.push_back(label);
   obj->identLabels.push_back("unknown");
   // note: distribution must of course sum to 1
-  if(forceNewObject){
+  if(forceNewObject)
     rec_entry.object->conf = 0.9;
-  //  rec_entry.object->identDistrib.resize(1);
-  //  rec_entry.object->idenDistrib[0] = 0.9;
-  }
   obj->identDistrib.push_back(rec_entry.object->conf);
   obj->identDistrib.push_back(1. - rec_entry.object->conf);
   // the information gain if we know the label, just set to 1, cause we don't
@@ -383,7 +436,6 @@ log("got ply model");
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
   obj->pose = pose;
   obj->componentID = getComponentID();
-log("Making WM changes..");
 
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
@@ -443,7 +495,7 @@ void ObjectRecognizer3D::initInStart(){
   m_delete_command_from_wm = false;
 
   if(m_showCV){
-		cvNamedWindow("ObjectRecognizer3D", 1 );
+		cvNamedWindow(getComponentID().c_str(), 1 );
 		cvWaitKey(10);
 	}
 
@@ -512,10 +564,11 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 
 	int key;
 	do{
-			key = cvWaitKey ( 10 );
+			key = cvWaitKey ( 100 );
 	}while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s') && ((char)key!='q')) );
 
 	if((char)key==' '){
+
 		// 	Lock model
 		addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
 
@@ -539,7 +592,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 		get3DPointFromTrackerModel(m_rec_cmd->visualObjectID, vertexlist);
 
 		while( isRunning() && m_wait4data ){
-			sleepComponent(10);
+			sleepComponent(100);
 		}
 
 	}else if((char)key=='s'){
@@ -613,7 +666,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     m_detect->SetDebugImage(m_iplImage);
     if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
     {
-      log("%s: No object detected", m_label.c_str());
+      log("Failed to find object %s", m_label.c_str());
       Math::Pose3 nonPose;
       setIdentity(nonPose);
       loadVisualModelToWM(m_recEntries[m_label], nonPose, m_label);
@@ -626,21 +679,22 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       Pose3 P, A, B;
       P = m_image.camPars.pose;
       convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
-      Math::transform(P,A,B);
+      Math::transform(P, A, B);
 
       if(m_recEntries[m_label].object->conf < m_confidence)
       {
-        log("%s: Confidence of detected object too low: %f < %f, setting confidence to 0",
-          m_label.c_str(), m_recEntries[m_label].object->conf, m_confidence);
+        log("Found object %s with below threshold conf %f at:\n%s\n",
+          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         // set confidence to 0 to indicate that we consider the object not detected
-        m_recEntries[m_label].object->conf = 0.;
+        // NOTE: this threshold is stupid. let the caller decide, what to do with the result.
+        // m_recEntries[m_label].object->conf = 0.;
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
       }
       else
       {
-        log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f",
-          m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
+        log("Found object %s with conf %f at:\n%s\n",
+          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
       }
@@ -652,11 +706,11 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     }
 
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage("ObjectRecognizer3D", m_iplImage);
+  m_display.setImage(getComponentID(), m_iplImage);
 #endif
 
 	if(m_showCV){
-		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+		cvShowImage(getComponentID().c_str(), m_iplImage);
 		cvWaitKey(50);
 	}
 
