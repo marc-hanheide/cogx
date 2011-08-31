@@ -68,7 +68,7 @@ SETVAR SOIFilter_Params=<multiline>
 CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
 
-#INCLUDE  includes/vision.sa/vision-visual-learner.cast
+INCLUDE  includes/vision.sa/vision-visual-learner.cast
 
 # ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
 # Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
