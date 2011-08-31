@@ -16,6 +16,13 @@
 #include "OpenSURF/surflib.h"
 #include "TomGineWraper/TomGineThread.hh"
 
+#include "StereoCamera.h"
+
+
+#include <v4r/PCLAddOns/PlanePopout.hh>
+#include <v4r/PCLAddOns/utils/PCLUtils.h>
+#include <v4r/PCLAddOns/functions/PCLFunctions.h>
+
 //#undef FEAT_VISUALIZATION
 
 #ifdef FEAT_VISUALIZATION
@@ -116,6 +123,36 @@ private:
 
 	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
 	void DisplayInTG();
+	
+//-----------------------------------------------------------------------------------------------------------------------------------	
+	
+	cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+	
+	std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;     ///< Estimated sois from the PlanePopout
+	std::vector<CvHistogram*> hists;				///< vector with histograms of all the SOIs
+	std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pre_sois; ///< keep the sois for tracking
+	std::vector<CvHistogram*> pre_hists;				///< keep the histograms
+
+	cv::Mat_<cv::Vec3b> patches;                              ///< 3D patches on 2D image
+	int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
+	int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
+	Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
+	IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
+
+      //  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
+      //  cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
+	
+	bool single;                                              ///< Single shot mode for the stereo detector learner
+	bool showImages;                                          ///< Show images in openCV windows
+	void GetImageData();
+	void GetPlaneAndSOIs();					/// Dominant plane detection and Euclidean Clustering
+	bool SimpleSOIMatch();					/// when the no. of SOIs doesn't change, do the one-by-one matching
+	void ComplexSOIMatch();					/// when the no.of SOIs changes, find the missing/new SOIs
+	void TrackSOIs();
+	void GetHists(std::vector< CvHistogram* > &_hists);
+	CvHistogram* CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud);
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------	
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
