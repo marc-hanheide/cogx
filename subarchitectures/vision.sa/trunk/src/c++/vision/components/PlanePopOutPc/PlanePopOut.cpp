@@ -348,7 +348,8 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
     return "";
 }
 
-void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void PlanePopOut::SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels,
+	const Video::Image& img)
 {
     //static CMilliTimer tmSendImage(true);
     //if (tmSendImage.elapsed() < 500) // 2Hz
@@ -365,12 +366,12 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 	PointCloud::SurfacePoint& pt = points.at(i);
 	switch (m_label)
 	{
-	    case 0:   cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
-	    case -10: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
-	    case -20: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
-	    case -30: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
-	    case -40: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
-	    case -50: cvCircle(iplImg, powner->ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
+	    case 0:   cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
+	    case -10: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
+	    case -20: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
+	    case -30: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
+	    case -40: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
+	    case -50: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
 	}
     }
     CvFont a;
@@ -406,8 +407,8 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
     }
 }
 
-void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels,
-	cogx::display::CDisplayClient& m_display, CMilliTimer& tmSendPoints, PlanePopOut *powner)
+void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels,
+	bool bColorByLabels, CMilliTimer& tmSendPoints)
 {
     if (tmSendPoints.elapsed() < 500) // 2Hz
 	return;
@@ -475,7 +476,7 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
     }
 }
 
-void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void PlanePopOut::SendPlaneGrid()
 {
     static CMilliTimer tmSendPlaneGrid(true);
     if (tmSendPlaneGrid.elapsed() < 100) // 10Hz
@@ -518,7 +519,7 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
     }
 }
 
-void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
+void PlanePopOut::SendOverlays()
 {
     std::ostringstream str;
     str << "function render()\n";
@@ -540,7 +541,7 @@ void SendOverlays(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_OVERLAY, str.str());
 }
 
-void SendSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soiobj)
+void PlanePopOut::SendSoi(PlanePopOut::ObjPara& soiobj)
 {
     ostringstream ss;
     ss << "function render()\n";
@@ -556,7 +557,7 @@ void SendSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soi
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, ss.str());
 }
 
-void SendRemoveSoi(cogx::display::CDisplayClient& m_display, PlanePopOut::ObjPara& soiobj)
+void PlanePopOut::SendRemoveSoi(PlanePopOut::ObjPara& soiobj)
 {
     // XXX: ATM the parts are not removed from LuaGL, so we just create an empty render()
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, "function render()\nend\n");
@@ -568,8 +569,8 @@ void PlanePopOut::SendSyncAllSois()
     vector<ObjPara> sois = CurrentObjList; // copy to minimize race conditions
     for (int i = 0; i < sois.size(); i++) {
 	ObjPara& soi = sois.at(i);
-	if (m_bSendSois) SendSoi(m_display, soi);
-	else SendRemoveSoi(m_display, soi);
+	if (m_bSendSois) SendSoi(soi);
+	else SendRemoveSoi(soi);
     }
 }
 
@@ -585,7 +586,7 @@ void PlanePopOut::runComponent()
 //     char *argv[1] = {argv0};
 
 #ifdef FEAT_VISUALIZATION
-    SendOverlays(m_display, this);
+    SendOverlays();
 #endif
     while(isRunning())
     {
@@ -623,8 +624,8 @@ void PlanePopOut::runComponent()
 	    DisplayInTG();
 	}
 #ifdef FEAT_VISUALIZATION
-	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_display, m_tmSendPoints, this);
-	if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
+	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints);
+	if (m_bSendPlaneGrid) SendPlaneGrid();
 	//log("Done FEAT_VISUALIZATION");
 #endif
 
@@ -733,7 +734,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(m_display, PreviousObjList.at(j));
+			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -799,7 +800,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			// cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(m_display, PreviousObjList.at(j));
+			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -828,7 +829,7 @@ void PlanePopOut::SOIManagement()
 			debug("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(m_display, CurrentObjList.at(i));
+			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 		}
@@ -850,7 +851,7 @@ void PlanePopOut::SOIManagement()
 			addToWorkingMemory(CurrentObjList.at(i).id, obj);
 
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(m_display, CurrentObjList.at(i));
+			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 #ifdef SAVE_SOI_PATCH
