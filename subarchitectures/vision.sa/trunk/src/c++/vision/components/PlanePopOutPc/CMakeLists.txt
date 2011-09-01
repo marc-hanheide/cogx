@@ -1,6 +1,6 @@
 FIND_PACKAGE( V4R REQUIRED )
-include_directories(${V4R_DIR})
-link_directories(${V4R_DIR}/lib)
+#include_directories(${V4R_DIR})
+#link_directories(${V4R_DIR}/lib)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
