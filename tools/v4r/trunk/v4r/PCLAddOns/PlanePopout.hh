@@ -89,6 +89,7 @@ protected:
   pcl::ModelCoefficients::Ptr tableCoefficients;                    ///< Coefficients of the dominant plane (table)
   cv::Mat_<ushort> roi_label_mask;                                  ///< Mask of the rois with labels!
   std::vector<SOI> sois;                                            ///< vector with stored SOIs
+//   std::vector<CvHistogram*> hists;				    ///< vector with histograms of all the SOIs
 
 private:
   Parameter param;
@@ -120,20 +121,24 @@ public:
   PlanePopout(Parameter _param = Parameter());
   ~PlanePopout();
 
-  void CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+  bool CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
 
   bool CalculateROIMask();
 
   ushort IsInROI(int x, int y);
 
-  void GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois);
+  void GetTableHulls(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_tablehulls) {_tablehulls = tableHull;}
+  void GetPlanePoints(pcl::PointIndices::Ptr &_planepointsindices) {_planepointsindices = tableInliers;}
+//   void GetHists(std::vector< CvHistogram* > &_hists);
 
+  void GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois);
+  
   unsigned IsInSOI(float x, float y, float z);
   unsigned IsInSOI(const cv::Point3f &p) {return IsInSOI(p.x, p.y, p.z);}
 
   void GetDominantPlaneCoefficients(pcl::ModelCoefficients::Ptr &dpc) {dpc = tableCoefficients;}
 
-  void DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
+  bool DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                     pcl::PointIndices &popout);
 
   void FilterZ(const cv::Mat_<cv::Vec4f> &cloud,                                                                /// TODO Move to pcl functions!!!
@@ -161,7 +166,6 @@ public:
                     cv::Mat_<uchar> &mask);
                     
 private:
-
   
 };
 
