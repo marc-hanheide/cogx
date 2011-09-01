@@ -104,14 +104,7 @@ int objnumber = 0;
 PointCloud::SurfacePointSeq pointsN;
 
 VisionData::ObjSeq mObjSeq;
-VisionData::Vector3Seq mConvexHullPoints;
-Vector3 mCenterOfHull;
-double mConvexHullRadius;
-double mConvexHullDensity;
 
-Vector3 pre_mCenterOfHull;
-double pre_mConvexHullRadius;
-std::string pre_id;
 
 vector <CvRect> vSOIonImg;
 vector <std::string> vSOIid;
@@ -119,7 +112,7 @@ int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of fra
 int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 //this makes stable obj
 
-double A, B, C, D;
+
 int N;  // 1/N points will be used
 bool mbDrawWire;
 bool doDisplay;
@@ -587,26 +580,25 @@ void PlanePopOut::runComponent()
     sleepComponent(3000);
     log("Component PlanePopOut is running now");
     // note: this must be called in the run loop, not in configure or start as these are all different threads!
-    int argc = 1;
-    char argv0[] = "PlanePopOut";
-    char *argv[1] = {argv0};
-    int stereoWidth = 640;
+//     int argc = 1;
+//     char argv0[] = "PlanePopOut";
+//     char *argv[1] = {argv0};
 
 #ifdef FEAT_VISUALIZATION
     SendOverlays(m_display, this);
 #endif
     while(isRunning())
     {
-	GetImageData();
-	GetPlaneAndSOIs();
+	GetImageData();		log("Hoho, we get the image data from PCL");
+	GetPlaneAndSOIs();	log("Haha, we get the Sois and Plane from PCL");
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
-
+				log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
-	{
-	    ConvexHullOfPlane(points,points_label);
-	    BoundingPrism(points,points_label);
-	    DrawCuboids(points,points_label); //cal bounding Cuboids and centers of the points cloud
-	    BoundingSphere(points,points_label); // get bounding spheres, SOIs and ROIs
+	{						log("we get some sois, now analyze them");
+	    ConvexHullOfPlane(points,points_label);	log("get the convex hull of the dominant plane");
+	    BoundingPrism(points,points_label);	log("Generate prisms of sois");
+	    DrawCuboids(points,points_label); 	log("cal the center and the soze of bounding cuboids");			//cal bounding Cuboids and centers of the points cloud
+	    BoundingSphere(points,points_label); log("cal the radius of bounding spheres");			// get bounding spheres, SOIs and ROIs
 	    //if (SendDensePoints==1) CollectDensePoints(image.camPars, points);		/// TODO
 	    //cout<<"m_bSendImage is "<<m_bSendImage<<endl;
 	    //log("Done CollectDensePoints");
@@ -623,8 +615,8 @@ void PlanePopOut::runComponent()
 	    v3size.clear();
 	    v3center.clear();
 	    vdradius.clear();
-	    //cout<<"there is no objects, now strating cal convex hull"<<endl;
-	    ConvexHullOfPlane(points,points_label);
+							log("there is no objects, now strating cal convex hull");
+	    ConvexHullOfPlane(points,points_label);	log("although there is no object, we still can get the convex hull of the dominant plane");
 	}
 	if (doDisplay)
 	{
@@ -636,11 +628,11 @@ void PlanePopOut::runComponent()
 	//log("Done FEAT_VISUALIZATION");
 #endif
 
-	AddConvexHullinWM();
+// 	AddConvexHullinWM();
 	//log("Done AddConvexHullinWM");
 
 	static int lastSize = -1;
-	//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
+	log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 	CurrentObjList.clear();
 	//Pre2CurrentList.clear();
 	if (lastSize != v3center.size()) {
@@ -1034,7 +1026,8 @@ void PlanePopOut::GetImageData()
   kinectImageHeight = kinectImageWidth *3/4;
  
   points.resize(0);
-  getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  getPoints(true, pointCloudWidth, points);
+//   getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
   
   ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
   pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -1056,17 +1049,37 @@ void PlanePopOut::GetPlaneAndSOIs()
     planePopout = new pclA::PlanePopout();
     planePopout->CalculateSOIs(pcl_cloud);
     planePopout->GetSOIs(sois);
+    planePopout->GetDominantPlaneCoefficients(dpc);
+    if (dpc->values[3]>0)  {A = dpc->values[0];		B = dpc->values[1];	C = dpc->values[2];	D = dpc->values[3];}
+    else	{A = -dpc->values[0];		B = -dpc->values[1];	C = -dpc->values[2];	D = -dpc->values[3];}
+    planePopout->GetTableHulls(tablehull);
+    planePopout->GetPlanePoints(planepoints);
     
-    points.clear();
-    points_label.clear();
-    for (unsigned i=0; i<pcl_cloud->points.size(); i++)
+    points.clear();	points.resize(pcl_cloud->points.size());
+    points_label.clear();	points_label.assign(pcl_cloud->points.size(), -1);
+    for (unsigned i=0; i<planepoints->indices.size(); i++)	// use indices of plane points to lable them
     {
+	int index = planepoints->indices[i];		//index of plane point
+	points_label[index] = 0;	//plane points	== label 0
 	PointCloud::SurfacePoint PushStructure;
-	Vector3 tmp; tmp.x = pcl_cloud->points[i].x; tmp.y = pcl_cloud->points[i].y; tmp.z = pcl_cloud->points[i].z;
+	Vector3 tmp;
+	tmp.x = pcl_cloud->points[index].x; tmp.y = pcl_cloud->points[index].y; tmp.z = pcl_cloud->points[index].z;
 	PushStructure.p = tmp;
-	PushStructure.c.r = pcl_cloud->points[i].r;	PushStructure.c.g = pcl_cloud->points[i].g;	PushStructure.c.b = pcl_cloud->points[i].b;
-	points.push_back(PushStructure);
-	points_label.push_back(planePopout->IsInSOI(tmp.x,tmp.y,tmp.z));
+	PushStructure.c.r = pcl_cloud->points[index].r;	PushStructure.c.g = pcl_cloud->points[index].g;	PushStructure.c.b = pcl_cloud->points[index].b;
+	points[index] = PushStructure;
+    }
+    for (unsigned i=0; i<pcl_cloud->points.size(); i++)		// check all the points in which SOI and lable them
+    {
+	if (points_label[i] != 0)
+	{
+	    PointCloud::SurfacePoint PushStructure;
+	    Vector3 tmp; tmp.x = pcl_cloud->points[i].x; tmp.y = pcl_cloud->points[i].y; tmp.z = pcl_cloud->points[i].z;
+	    PushStructure.p = tmp;
+	    PushStructure.c.r = pcl_cloud->points[i].r;	PushStructure.c.g = pcl_cloud->points[i].g;	PushStructure.c.b = pcl_cloud->points[i].b;
+	    points[i] = PushStructure;
+	    int index_of_SOI_point = planePopout->IsInSOI(tmp.x,tmp.y,tmp.z);
+	    if (index_of_SOI_point !=0) points_label[i] = index_of_SOI_point;
+	}
     }
 }
 

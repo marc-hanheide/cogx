@@ -104,7 +104,23 @@ private:
       
   
 ///---------------------------------------------------------------------
+      
+      double A, B, C, D;					///< Plane Coefficients, Ax+By+Cz+D=0
+      pcl::ModelCoefficients::Ptr dpc;				///< Dominant plane Coefficients
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;		///< Table hull
+      pcl::PointIndices::Ptr planepoints;			///< the indices of points on the dominant plane
+      
+      VisionData::Vector3Seq mConvexHullPoints;
+      Vector3 mCenterOfHull;
+      double mConvexHullRadius;
+      double mConvexHullDensity;
+
+      Vector3 pre_mCenterOfHull;
+      double pre_mConvexHullRadius;
+      std::string pre_id;
   
+      
+///---------------------------------------------------------------------
   /**
    * Which camera to get images from
    */
