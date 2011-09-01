@@ -37,7 +37,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     return;
   }
 
-#define CATCH_NULL 1
+#define CATCH_NULL 0
 #if CATCH_NULL
   try { // DEBUGGING: NullHandleException
   // XXX: a NullHandleException is raised if wrong object type is selected in execution GUI
@@ -123,6 +123,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     pvo = createVisualObject();
     pvo->protoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
     pvo->lastProtoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
+    pvo->pose.pos = pobj->position;
 
     voAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
     bNewVo = true;

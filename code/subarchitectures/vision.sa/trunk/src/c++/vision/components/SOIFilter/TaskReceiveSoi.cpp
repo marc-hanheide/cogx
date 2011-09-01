@@ -106,7 +106,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
           pSoiFilter->m_coarsePcServer.c_str());
     }
     else {
-      pobj->image.camPars = camPars;
+      pobj->image.camPars = camPars; // XXX: Where do we need camPars again? In segmentation?
 
       ROIPtr roiPtr = projectSOI(camPars, *psoi);
       if (psoi->sourceId == SOURCE_FAKE_SOI) {

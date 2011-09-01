@@ -53,8 +53,7 @@ namespace cast
 {
 
 /** 
- * SOI data, contains also data used to evaluate SOI persistency.
- * Not important for Year 3 vision, this is now handled by PlanePopout.
+ * Cached SOI data
  */	
 struct SoiRecord: public IceUtil::SimpleShared
 {
