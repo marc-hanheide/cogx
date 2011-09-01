@@ -134,8 +134,8 @@ void loadCameraParametersXML(CameraParameters &cam, const string &configfile)
     CvMat *intr = (CvMat*)calibFile["intrinsic"].readObj();
     CvMat *dist = (CvMat*)calibFile["distortion"].readObj();
     CvMat *imgsize = (CvMat*)calibFile["imgsize"].readObj();
-    CvMat *tvecs = (CvMat*)calibFile["tvecs"].readObj();
-    CvMat *rvecs = (CvMat*)calibFile["rvecs"].readObj();
+    CvMat *tvec = (CvMat*)calibFile["tvec"].readObj();
+    CvMat *rmat = (CvMat*)calibFile["rmat"].readObj();
 
     cam.width = (int)cvGetReal1D(imgsize, 0);
     cam.height = (int)cvGetReal1D(imgsize, 1);
@@ -151,12 +151,20 @@ void loadCameraParametersXML(CameraParameters &cam, const string &configfile)
       cam.k3 = cvGetReal1D(dist, 4);
     else
       cam.k3 = 0.;
-    
-    // if exactly one pose was given, use this as camera pose
-    if(tvecs != 0 && rvecs != 0 && tvecs->rows == 1 && rvecs->rows == 1)
+
+    // these are optional
+    if(tvec != 0 && rmat != 0)
     {
-      fromRotVector(cam.pose.rot, vector3(cvGetReal2D(rvecs, 0, 0), cvGetReal2D(rvecs, 1, 0), cvGetReal2D(rvecs, 2, 0)));
-      cam.pose.pos = vector3(cvGetReal2D(tvecs, 0, 0), cvGetReal2D(tvecs, 1, 0), cvGetReal2D(tvecs, 2, 0));
+      cam.pose.pos = vector3(cvGetReal1D(tvec, 0), cvGetReal1D(tvec, 1), cvGetReal1D(tvec, 2));
+      cam.pose.rot.m00 = cvGetReal2D(rmat, 0, 0);
+      cam.pose.rot.m01 = cvGetReal2D(rmat, 0, 1);
+      cam.pose.rot.m02 = cvGetReal2D(rmat, 0, 2);
+      cam.pose.rot.m10 = cvGetReal2D(rmat, 1, 0);
+      cam.pose.rot.m11 = cvGetReal2D(rmat, 1, 1);
+      cam.pose.rot.m12 = cvGetReal2D(rmat, 1, 2);
+      cam.pose.rot.m20 = cvGetReal2D(rmat, 2, 0);
+      cam.pose.rot.m21 = cvGetReal2D(rmat, 2, 1);
+      cam.pose.rot.m22 = cvGetReal2D(rmat, 2, 2);
     }
   }
   else
