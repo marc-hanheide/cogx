@@ -1,4 +1,6 @@
 FIND_PACKAGE( V4R REQUIRED )
+include_directories(${V4R_DIR})
+link_directories(${V4R_DIR}/lib)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
@@ -46,4 +48,5 @@ link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} PCLUtils PCLFunctions PlanePopout)
 
