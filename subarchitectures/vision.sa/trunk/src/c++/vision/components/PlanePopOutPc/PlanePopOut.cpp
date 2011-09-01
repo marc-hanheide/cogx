@@ -156,11 +156,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
 	istringstream str(it->second);
 	str >> StableTime;
     }
-    if((it = _config.find("--stereoconfig")) != _config.end())   // Configuration of stereo camera
-    {
-	stereoconfig = it->second;
-    }
-    else println("WARNING: No stereoconfig specified!");
 
     bWriteSoisToWm = true;
     if((it = _config.find("--generate-sois")) != _config.end())
@@ -169,11 +164,9 @@ void PlanePopOut::configure(const map<string,string> & _config)
     }
     println("%s write SOIs to WM", bWriteSoisToWm ? "WILL" : "WILL NOT"); 
 
-    StereoCamera *stereo_cam = new StereoCamera();
-    if(!stereo_cam->ReadSVSCalib(stereoconfig)) 
-	throw (std::runtime_error("PlanePopOut::configure: Warning: Cannot open calibration file for stereo camera."));
-    cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);	// 0 == LEFT
-
+    // startup window size
+    int winWidth = 640, winHeight = 480;
+    cv::Mat intrinsic = (cv::Mat_<double>(3,3) << winWidth,0,winWidth/2, 0,winWidth,winHeight/2, 0,0,1);
     cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
     cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
     cv::Vec3d rotCenter(0,0,0.4);
@@ -590,8 +583,8 @@ void PlanePopOut::runComponent()
 #endif
     while(isRunning())
     {
-	GetImageData();		log("Hoho, we get the image data from PCL");
-	GetPlaneAndSOIs();	log("Haha, we get the Sois and Plane from PCL");
+	if (GetImageData() == false) 		continue;		log("Hoho, we get the image data from PCL");
+	if (GetPlaneAndSOIs() == false)		continue;		log("Haha, we get the Sois and Plane from PCL");
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
 				log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
@@ -1019,18 +1012,19 @@ CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p, const Video::CameraParameter
 /**
  * @brief Get images with the resolution, defined in the cast file, from video server.
  */
-void PlanePopOut::GetImageData()
+bool PlanePopOut::GetImageData()
 {
   pointCloudWidth = 320;                                /// TODO get from cast-file!
   pointCloudHeight = pointCloudWidth *3/4;
   kinectImageWidth = 640;
   kinectImageHeight = kinectImageWidth *3/4;
  
-  points.resize(0);
-  getPoints(true, pointCloudWidth, points);
-//   getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  pcl_3Dpoints.resize(0);
+  points.clear();
+  getPoints(true, pointCloudWidth, pcl_3Dpoints);
+//   getCompletePoints(false, pointCloudWidth, pcl_3Dpoints);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
   
-  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
+  ConvertKinectPoints2MatCloud(pcl_3Dpoints, kinect_point_cloud, pointCloudWidth);
   pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
 
@@ -1041,14 +1035,16 @@ void PlanePopOut::GetImageData()
   iplImage_l = convertImageToIpl(image_l);
   iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
-
+  
+  	if (pcl_cloud->points.size()<100)	{log("less than 100 points???"); return false;}
+	else {log("there are %d points from pcl", pcl_cloud->points.size()); return true;}
 }
 
-void PlanePopOut::GetPlaneAndSOIs()
+bool PlanePopOut::GetPlaneAndSOIs()
 {
     pclA::PlanePopout *planePopout;
     planePopout = new pclA::PlanePopout();
-    planePopout->CalculateSOIs(pcl_cloud);
+    if (!planePopout->CalculateSOIs(pcl_cloud))	{log("Cal SOIs error!!!"); return false;}
     planePopout->GetSOIs(sois);
     planePopout->GetDominantPlaneCoefficients(dpc);
     if (dpc->values[3]>0)  {A = dpc->values[0];		B = dpc->values[1];	C = dpc->values[2];	D = dpc->values[3];}
@@ -1082,6 +1078,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 	    if (index_of_SOI_point !=0) points_label[i] = index_of_SOI_point;
 	}
     }
+    return true;
 }
 
 /**

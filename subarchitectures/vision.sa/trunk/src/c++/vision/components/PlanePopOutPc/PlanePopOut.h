@@ -77,8 +77,8 @@ private:
 
 ///--------------------------------------------------------------------
   
-    void GetImageData();
-    void GetPlaneAndSOIs();				/// Dominant plane detection and Euclidean Clustering
+    bool GetImageData();
+    bool GetPlaneAndSOIs();				/// Dominant plane detection and Euclidean Clustering
     void CalSOIHist(PointCloud::SurfacePointSeq pcl_cloud, std::vector< int > label, std::vector <CvHistogram*> & vH);
     
     void ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
@@ -118,7 +118,13 @@ private:
       Vector3 pre_mCenterOfHull;
       double pre_mConvexHullRadius;
       std::string pre_id;
-  
+      
+      std::vector<PointCloud::SurfacePoint> pcl_3Dpoints;       ///< 3D points from kinect view
+      PointCloud::SurfacePointSeq points;	  		 ///< PointCloud type all the points in the scene
+      std::vector< int > points_label;			   ///< lables of all the points
+      cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+
       
 ///---------------------------------------------------------------------
   /**
@@ -169,10 +175,7 @@ private:
 	};
 	
 	std::vector <CvHistogram*> vec_histogram;		 ///< vector with the histograms of all the SOIs
-	PointCloud::SurfacePointSeq points;	  		 ///< PointCloud type all the points in the scene
-	std::vector< int > points_label;			   ///< lables of all the points
-	cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+
 	
 	std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;     ///< Estimated sois from the PlanePopout
 	std::vector<CvHistogram*> hists;				///< vector with histograms of all the SOIs
