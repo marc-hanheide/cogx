@@ -100,7 +100,7 @@ using namespace cdl;
 
 int objnumber = 0;
 
-PointCloud::SurfacePointSeq points;
+
 PointCloud::SurfacePointSeq pointsN;
 
 VisionData::ObjSeq mObjSeq;
@@ -113,7 +113,6 @@ Vector3 pre_mCenterOfHull;
 double pre_mConvexHullRadius;
 std::string pre_id;
 
-vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector <CvRect> vSOIonImg;
 vector <std::string> vSOIid;
 int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
@@ -289,15 +288,6 @@ void PlanePopOut::start()
     //m_display.setImage(ID_OBJECT_IMAGE, image);
     m_tmSendPoints.restart();
 #endif
-
-    // we want to receive detected VisualObject
-    addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		&PlanePopOut::newVisualObject));
-    // when VisualObject is deleted
-    addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
-	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		&PlanePopOut::deleteVisualObject));
 
     // @author: mmarko
     // we want to receive GetStableSoisCommand-s
@@ -607,168 +597,77 @@ void PlanePopOut::runComponent()
 #endif
     while(isRunning())
     {
-	long long t0 = gethrtime();
-	PointCloud::SurfacePointSeq tempPoints = points;
-	points.resize(0);
+	GetImageData();
+	GetPlaneAndSOIs();
+	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
 
-	getPoints(useGlobalPoints, stereoWidth, points);
-	Video::Image image;
-	getRectImage(LEFT, stereoWidth, image);
-#ifdef USE_MOTION_DETECTION
-	if (previousImg->width == 1)	{previousImg = convertImageToIpl(image); bIsMoving = true;}
+	if (sois.size() != 0)
 	{
-	    IplImage* Cimg = convertImageToIpl(image);
-	    IplImage* subimg=cvCreateImage(cvSize(Cimg->width,Cimg->height),Cimg->depth,Cimg->nChannels);
-	    cvAbsDiff(Cimg,previousImg, subimg);
-	    if (IsMoving(subimg))
+	    ConvexHullOfPlane(points,points_label);
+	    BoundingPrism(points,points_label);
+	    DrawCuboids(points,points_label); //cal bounding Cuboids and centers of the points cloud
+	    BoundingSphere(points,points_label); // get bounding spheres, SOIs and ROIs
+	    //if (SendDensePoints==1) CollectDensePoints(image.camPars, points);		/// TODO
+	    //cout<<"m_bSendImage is "<<m_bSendImage<<endl;
+	    //log("Done CollectDensePoints");
+#ifdef FEAT_VISUALIZATION
+	    if (m_bSendImage)
 	    {
-		bIsMoving = true; 
-		//log("Motion detected, freeze the 3D analysis");
+// 		SendImage(points,points_label,image, m_display, this);
+		//cout<<"send Imgs"<<endl;
 	    }
-	    else bIsMoving = false;
-	    cvCopy(Cimg,previousImg , NULL);
-	    cvReleaseImage(&Cimg);  
-	    cvReleaseImage(&subimg);
-	}
 #endif
-
-	if (bIsMoving)	continue;
-	if (points.size() == 0)
-	{
-	    points = tempPoints;
-	    log("Attention: getpoints() gets ZERO point!!");
 	}
 	else
-	{	//cout<<"we get "<<points.size()<<" points"<<endl;
-	    tempPoints.clear();
-	    pointsN.clear();
-	    objnumber = 0;
-	    if (points.size()>= 10000)	N = (int)points.size()/10000;
-	    else N = 1;
-	    random_shuffle ( points.begin(), points.end() );
-	    /* for debug
-	       for (unsigned int k = 0; k<100; k++)
-	       {
-	       log("The %d point is at %f, %f, %f",k, points.at(k).p.x, points.at(k).p.y, points.at(k).p.z);
-	       }
-	       for debug */
-	    for (PointCloud::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
-		if ((*it).p.x*(*it).p.x+(*it).p.y*(*it).p.y+(*it).p.z*(*it).p.z<20 && (*it).p.x*(*it).p.x!=0)
-		    pointsN.push_back(*it);
-	    points_label.clear();
-	    points_label.assign(pointsN.size(), -3);
-
-	    /* for debug *
-	       for (unsigned int k = 0; k<100; k++)
-	       {
-	       log("The %d point is at %f, %f, %f",k, pointsN.at(k).p.x, pointsN.at(k).p.y, pointsN.at(k).p.z);
-	       }
-	       / for debug */
-
-	    bool executeflag = false;
-	    executeflag = RANSAC(pointsN,points_label);
-	
-	    //log("parameters of plane: A, B, C = (%f, %f, %f)", A, B, C);
-	    if (executeflag == true && A!=0 && B!=0 && C!=0)
-	    {	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
-		SplitPoints(pointsN,points_label);
-		if (objnumber != 0)
-		{
-		    ConvexHullOfPlane(pointsN,points_label);
-		    BoundingPrism(pointsN,points_label);
-		    DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
-		    BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
-		    if (SendDensePoints==1) CollectDensePoints(image.camPars, points);
-		    //cout<<"m_bSendImage is "<<m_bSendImage<<endl;
-		    //log("Done CollectDensePoints");
-#ifdef FEAT_VISUALIZATION
-		    if (m_bSendImage)
-		    {
-			SendImage(pointsN,points_label,image, m_display, this);
-			//cout<<"send Imgs"<<endl;
-		    }
-#endif
-		}
-		else
-		{
-		    v3size.clear();
-		    v3center.clear();
-		    vdradius.clear();
-		    //cout<<"there is no objects, now strating cal convex hull"<<endl;
-		    ConvexHullOfPlane(pointsN,points_label);
-		}
-		if (doDisplay)
-		{
-		    DisplayInTG();
-		}
-#ifdef FEAT_VISUALIZATION
-		if (m_bSendPoints) SendPoints(pointsN, points_label, m_bColorByLabel, m_display, m_tmSendPoints, this);
-		if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
-		//log("Done FEAT_VISUALIZATION");
-#endif
-
-		AddConvexHullinWM();
-		//log("Done AddConvexHullinWM");
-	    }
-	    else	log("Wrong with the execution of Plane fitting!");
-	}
-	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
 	{
-	    static int lastSize = -1;
-	    //log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
-	    CurrentObjList.clear();
-	    //Pre2CurrentList.clear();
-	    if (lastSize != v3center.size()) {
-		log("SOI COUNT = %d",v3center.size());	
-		lastSize = v3center.size();
-	    }
-	    for(unsigned int i=0; i<v3center.size(); i++)  //create objects
-	    {
-		ObjPara OP;
-		OP.c = v3center.at(i);
-		OP.s = v3size.at(i);
-		OP.r = vdradius.at(i);
-		OP.id = "";
-		OP.bComCurrentPre = false;
-		OP.bInWM = false;
-		OP.count = 0;
-		OP.pointsInOneSOI = SOIPointsSeq.at(i);
-		OP.BGInOneSOI = BGPointsSeq.at(i);
-		OP.EQInOneSOI = EQPointsSeq.at(i);
-		OP.hist = GetSurfAndHistogram(SOIPointsSeq.at(i), image,OP.surf, OP.rect);
-		CurrentObjList.push_back(OP);
-	    }
-
-	    SOIManagement();
-	    //log("Done SOIManagement");
+	    v3size.clear();
+	    v3center.clear();
+	    vdradius.clear();
+	    //cout<<"there is no objects, now strating cal convex hull"<<endl;
+	    ConvexHullOfPlane(points,points_label);
 	}
-	//	long long t1 = gethrtime();
-	//	double dt = (t1 - t0) * 1e-9;
-	// 	log("run time / frame rate: %lf / %lf", dt, 1./dt);
-	//cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
-	// wait a bit so we don't hog the CPU
-	sleepComponent(50);
-    }
-}
-
-bool PlanePopOut::IsMoving(IplImage * subimg)
-{
-    IplImage * pImage8uGray=NULL;
-    pImage8uGray=cvCreateImage(cvGetSize(subimg),IPL_DEPTH_8U,1);
-    cvCvtColor(subimg,pImage8uGray,CV_BGR2GRAY);
-    int x, y;
-    for(y = 0; y < pImage8uGray->height; y++){
-	for(x = 0; x < pImage8uGray->width; x++){
-	    int a = ((uchar*)(pImage8uGray->imageData+pImage8uGray->widthStep*y))[x];
-	    if (a>50)	
-	    {
-		cvReleaseImage(&pImage8uGray);
-		return true;
-	    }
+	if (doDisplay)
+	{
+	    DisplayInTG();
 	}
+#ifdef FEAT_VISUALIZATION
+	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_display, m_tmSendPoints, this);
+	if (m_bSendPlaneGrid) SendPlaneGrid(m_display, this);
+	//log("Done FEAT_VISUALIZATION");
+#endif
+
+	AddConvexHullinWM();
+	//log("Done AddConvexHullinWM");
+
+	static int lastSize = -1;
+	//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
+	CurrentObjList.clear();
+	//Pre2CurrentList.clear();
+	if (lastSize != v3center.size()) {
+	    log("SOI COUNT = %d",v3center.size());	
+	    lastSize = v3center.size();
+	}
+	for(unsigned int i=0; i<v3center.size(); i++)  //create objects
+	{
+	    ObjPara OP;
+	    OP.c = v3center.at(i);
+	    OP.s = v3size.at(i);
+	    OP.r = vdradius.at(i);
+	    OP.id = "";
+	    OP.bComCurrentPre = false;
+	    OP.bInWM = false;
+	    OP.count = 0;
+	    OP.pointsInOneSOI = SOIPointsSeq.at(i);
+	    OP.BGInOneSOI = BGPointsSeq.at(i);
+	    OP.EQInOneSOI = EQPointsSeq.at(i);
+ 	    OP.hist = vec_histogram.at(i);
+	    CurrentObjList.push_back(OP);
+	}
+
+	SOIManagement();
+	//log("Done SOIManagement");
     }
-    cvReleaseImage(&pImage8uGray);
-    return false;
+    sleepComponent(50);
 }
 
 void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
@@ -811,20 +710,6 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
     cvReleaseImage(&hist_img);
     cvReleaseImage(&hsv_color);
     cvReleaseImage(&rgb_color);
-}
-
-int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
-{
-    int IndexMatching = -1;
-    for (unsigned int i=0; i<mlist.size(); i++)
-    {
-	if (index == mlist.at(i).p)
-	{
-	    IndexMatching = mlist.at(i).c;
-	    break;
-	}
-    }
-    return IndexMatching;
 }
 
 void PlanePopOut::SOIManagement()
@@ -1022,6 +907,20 @@ void PlanePopOut::SOIManagement()
     }
 }
 
+int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
+{
+    int IndexMatching = -1;
+    for (unsigned int i=0; i<mlist.size(); i++)
+    {
+	if (index == mlist.at(i).p)
+	{
+	    IndexMatching = mlist.at(i).c;
+	    break;
+	}
+    }
+    return IndexMatching;
+}
+
 // @author: mmarko
 void PlanePopOut::GetStableSOIs(std::vector<SOIPtr>& soiList)
 {
@@ -1077,120 +976,6 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", cmd.pcmd->sois.size());
 }
 
-CvHistogram* PlanePopOut::GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r)
-{
-    Video::CameraParameters c = img.camPars;
-    IplImage *iplImage = convertImageToIpl(img);
-    float maxx,maxy,minx,miny;	maxx=0.0; maxy=0.0; minx = 99999.0; miny= 99999.0;
-    IplImage* tmp = cvCreateImage(cvSize(1, (int)points.size()), 8, 3);
-    for (unsigned int i=0; i<points.size(); i++)
-    {
-	Vector3 v3OneObj = points.at(i).p;
-	Vector2 SOIPointOnImg; SOIPointOnImg = projectPoint(c, v3OneObj);
-	if (SOIPointOnImg.x>maxx)	maxx = SOIPointOnImg.x;
-	if (SOIPointOnImg.y>maxy)	maxy = SOIPointOnImg.y;
-	if (SOIPointOnImg.x<minx)	minx = SOIPointOnImg.x;
-	if (SOIPointOnImg.y<miny)	miny = SOIPointOnImg.y;
-
-	cogx::Math::ColorRGB rgb = points.at(i).c;
-	CvScalar v;	  
-	v.val[0] = rgb.b;
-	v.val[1] = rgb.g;
-	v.val[2] = rgb.r;
-	cvSet2D(tmp, i, 0, v);
-    }
-    r.x = (int)minx; r.y = (int)miny; r.width =(int)(maxx-minx); r.height =(int)(maxy-miny); 
-    IplImage* imgpatch=cvCreateImage(cvSize(r.width,r.height),iplImage->depth,iplImage->nChannels);
-    imgpatch = Video::crop(iplImage,r);
-    /*    std::string path = "surfpatch";
-	  path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
-	  cvSaveImage(path.c_str(), imgpatch);
-	  */
-    if (r.width>16 && r.height>16)
-	surfDetDes(imgpatch,ips, false, 4, 4, 2, 0.0001f);
-    //---------------------Done the surf detection, now calculate the color histogram-----------------------//
-
-    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* planes[] = { h_plane, s_plane };
-    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
-    int h_bins = 16, s_bins = 8;
-    int hist_size[] = {h_bins, s_bins};
-    /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
-    float h_ranges[] = { 0, 180 };
-    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
-    float s_ranges[] = { 0, 255 };
-    float* ranges[] = { h_ranges, s_ranges };
-    CvHistogram* hist;
-    float max_value = 0;
-
-    cvCvtColor( tmp, hsv, CV_BGR2HSV );
-    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
-    hist = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
-    cvCalcHist( planes, hist, 0, 0 );
-    cvGetMinMaxHistValue( hist, 0, &max_value, 0, 0 );
-
-
-    cvReleaseImage(&imgpatch);
-    cvReleaseImage(&iplImage);
-    cvReleaseImage(&h_plane);
-    cvReleaseImage(&s_plane);
-    cvReleaseImage(&v_plane);
-    cvReleaseImage(&hsv);
-    cvReleaseImage(&tmp);
-    //log("Done get surf!");
-    return hist;
-}
-
-Vector3 PlanePopOut::PixelRGB2HSV(cogx::Math::ColorRGB rgb)
-{
-    CvScalar v;	  
-    v.val[0] = rgb.r;
-    v.val[1] = rgb.g;
-    v.val[2] = rgb.b;
-    double r,g,b; r=v.val[0]/255.0; g=v.val[1]/255.0; b=v.val[2]/255.0;
-    double maxC = b;
-    if (maxC < g) maxC = g;
-    if (maxC < r) maxC = r;
-    double minC = b;
-    if (minC > g) minC = g;
-    if (minC > r) minC = r;
-
-    double delta = maxC - minC;
-
-    double V = maxC;
-    double S = 0;
-    double H = 0;
-
-    if (delta == 0)
-    {
-	H = 0;
-	S = 0;
-    }
-    else
-    {
-	S = delta / maxC;
-	double dR = 60*(maxC - r)/delta + 180;
-	double dG = 60*(maxC - g)/delta + 180;
-	double dB = 60*(maxC - b)/delta + 180;
-	if (r == maxC)
-	    H = dB - dG;
-	else if (g == maxC)
-	    H = 120 + dR - dB;
-	else
-	    H = 240 + dG - dR;
-    }
-
-    if (H<0)
-	H+=360;
-    if (H>=360)
-	H-=360;
-
-    Vector3 hsv; hsv.x=H; hsv.y=S; hsv.z=V;
-    return hsv;
-}
-
 void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points)
 {
     CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
@@ -1227,54 +1012,6 @@ void PlanePopOut::CollectDensePoints(Video::CameraParameters &cam, PointCloud::S
     free(points2D);	
 }
 
-void PlanePopOut::CalRadiusCenter4BoundingSphere(PointCloud::SurfacePointSeq points, Vector3 &c, double &r)
-{
-    for (unsigned int i = 0 ; i<points.size() ; i++)
-    {
-	c = c+points.at(i).p;
-    }
-    c = c/points.size();
-    for (unsigned int i = 0 ; i<points.size() ; i++)
-    {
-	double d = dist(points.at(i).p,c);
-	if (d>r)	r = d;
-    }
-}
-
-vector<double> PlanePopOut::Hypo2ParaSpace(vector<Vector3> vv3Hypo)
-{
-    if (vv3Hypo.size() != 3)
-    {
-	// need three points to determine a plane
-	std::cout << " size =  " <<vv3Hypo.size()<< std::endl;
-	vector<double> r;
-	r.assign(4,0.0);
-	return(r);
-    }
-
-    double para_a, para_b, para_c, para_d;
-    //para_a = ( (vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).z-vv3Hypo.at(0).z)-(vv3Hypo.at(1).z-vv3Hypo.at(0).z)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y) );
-    para_a = 0.0;	//parallel with baseline
-    para_b = ( (vv3Hypo.at(1).z-vv3Hypo.at(0).z)*(vv3Hypo.at(2).x-vv3Hypo.at(0).x)-(vv3Hypo.at(1).x-vv3Hypo.at(0).x)*(vv3Hypo.at(2).z-vv3Hypo.at(0).z) );
-    para_c = ( (vv3Hypo.at(1).x-vv3Hypo.at(0).x)*(vv3Hypo.at(2).y-vv3Hypo.at(0).y)-(vv3Hypo.at(1).y-vv3Hypo.at(0).y)*(vv3Hypo.at(2).x-vv3Hypo.at(0).x) );
-    para_d = ( 0-(para_a*vv3Hypo.at(0).x+para_b*vv3Hypo.at(0).y+para_c*vv3Hypo.at(0).z) );
-    if (para_c<0)
-    {
-	para_b = -para_b;
-	para_c = -para_c;
-	para_d = -para_d;
-    }
-    double temp = sqrt(para_a*para_a+para_b*para_b+para_c*para_c);
-
-    vector<double> ABCD;
-    ABCD.push_back(para_a/temp);
-    ABCD.push_back(para_b/temp);
-    ABCD.push_back(para_c/temp);
-    ABCD.push_back(para_d/temp);
-
-    return ABCD;
-}
-
 CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam)
 {
     cogx::Math::Vector2 p2 = projectPoint(cam, p);
@@ -1285,91 +1022,6 @@ CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p, const Video::CameraParameter
     return re;
 }
 
-Vector3 PlanePopOut::ProjectPointOnPlane(Vector3 p, double A, double B, double C, double D)
-{
-    if (A*p.x+B*p.y+C*p.z+D == 0)
-	return p;
-    Vector3 r;
-    r.x = ((B*B+C*C)*p.x-A*(B*p.y+C*p.z+D))/(A*A+B*B+C*C);
-    r.y = ((A*A+C*C)*p.y-B*(A*p.x+C*p.z+D))/(A*A+B*B+C*C);
-    r.z = ((A*A+B*B)*p.z-C*(A*p.x+B*p.y+D))/(A*A+B*B+C*C);
-    return r;
-}
-
-
-
-
-
-void PlanePopOut::FindVerticalPlanes(PointCloud::SurfacePointSeq &points, std::vector <int> &labels, double B, double C)
-{	
-    std::vector<int> candidants;
-    for (unsigned int i=0; i<labels.size(); i++)
-    {
-	if (labels.at(i) == -2) //not belong to the dominant plane cluster
-	    candidants.push_back(i);
-    }
-    unsigned int nPoints = candidants.size();
-    int nRansacs = 100;
-    int point1 = 0;
-    int point2 = 0;
-    int point3 = 0;
-    Vector3 v3BestMean;
-    Vector3 v3BestNormal;
-    double dBestDistSquared = 9999999999999999.9;
-
-    for(int i=0; i<nRansacs; i++)
-    {
-	int nA, nB, nC;
-	Vector3 v3Normal;
-	//	    do
-	//	    {
-	nA = rand()%nPoints;
-	nB = nA;
-	nC = nA;
-	while(nB == nA)
-	    nB = rand()%nPoints;
-	while(nC == nA || nC==nB)
-	    nC = rand()%nPoints;
-	Vector3 v3CA = points.at(candidants.at(nC)).p - points.at(candidants.at(nA)).p;
-	Vector3 v3BA = points.at(candidants.at(nB)).p - points.at(candidants.at(nA)).p;
-	v3Normal = cross(v3CA, v3BA);
-	if (norm(v3Normal) != 0)
-	    normalise(v3Normal);
-	else v3Normal = 99999.9*v3Normal;
-	//	    } while (fabs(v3Normal.x*B+v3Normal.z*C)>0.01); //the vertical planes
-
-	Vector3 v3Mean = 0.33333333 * (points.at(candidants.at(nA)).p + points.at(candidants.at(nB)).p + points.at(candidants.at(nC)).p);
-	double dSumError = 0.0;
-	for(unsigned int i=0; i<nPoints; i++)
-	{
-	    Vector3 v3Diff = points.at(candidants.at(i)).p - v3Mean;
-	    double dDistSq = dot(v3Diff, v3Diff);
-	    if(dDistSq == 0.0)
-		continue;
-	    double dNormDist = fabs(dot(v3Diff, v3Normal));
-	    if(dNormDist > min_height_of_obj)
-		dNormDist = min_height_of_obj;
-	    dSumError += dNormDist;
-	}
-	if(dSumError < dBestDistSquared)
-	{
-	    dBestDistSquared = dSumError;
-	    v3BestMean = v3Mean;
-	    v3BestNormal = v3Normal;
-	    point1 = nA;
-	    point2 = nB;
-	    point3 = nC;
-	}
-    }
-    //----------------------- now collect the supposed inlier set-----------------//
-    for(unsigned int i=0; i<nPoints; i++)
-    {
-	Vector3 v3Diff = points.at(candidants.at(i)).p - v3BestMean;
-	double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-	if(dNormDist < min_height_of_obj)
-	    labels.at(candidants.at(i)) = -5; // vertical plane
-    }
-}
 
 /**
  * @brief Get images with the resolution, defined in the cast file, from video server.
@@ -1396,20 +1048,6 @@ void PlanePopOut::GetImageData()
   iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
-  // convert points to cloud for render engine
-//   cv::Mat_<cv::Point3f> cloud;
-//   cv::Mat_<cv::Point3f> colCloud;
-//   Points2Cloud(points_fromLeft, cloud, colCloud);        // show untransformed kinect point cloud
-//   tgRenderer->SetPointCloud(cloud, colCloud);            // show transformed kinect point cloud
-//   Points2Cloud(points, kinect_point_cloud, kinect_color_point_cloud);
-//   tgRenderer->SetPointCloud(kinect_point_cloud, kinect_color_point_cloud);
-
-//   // Reproject point cloud to left stereo camera to get the depth image from the view of the left stereo camera
-//   cv::Mat_<cv::Point3f> depthImage;
-//   cv::Mat_<cv::Point3f> depthMap;
-//   Points2DepthMap(stereo_cam, kinect_point_cloud, kinect_color_point_cloud, depthImage, depthMap);
-//   IplImage iplImage_depth = depthImage;
-//   IplImage iplImage_depthMap = depthMap;
 }
 
 void PlanePopOut::GetPlaneAndSOIs()
@@ -1418,368 +1056,76 @@ void PlanePopOut::GetPlaneAndSOIs()
     planePopout = new pclA::PlanePopout();
     planePopout->CalculateSOIs(pcl_cloud);
     planePopout->GetSOIs(sois);
-    GetHists(hists);
-}
-
-bool PlanePopOut::SimpleSOIMatch()
-{
-    std::vector <int> index_p;
-    for (unsigned i=0; i<sois.size(); i++)
-    {
-	double min_KLD_of_ColorHistogram = 100.0;
-	int matching_index_pre;
-	for (unsigned j=0; j<pre_sois.size(); j++)
-	{
-	    double KLD_result = CompareHistKLD(hists[i], pre_hists[j]);
-	    if (KLD_result<min_KLD_of_ColorHistogram)
-	    {
-		min_KLD_of_ColorHistogram = KLD_result;
-		matching_index_pre = j;
-	    }
-	}
-	index_p.push_back(matching_index_pre);
-    }
-/// now store the sois and hists, and clean up old soi and hist vector
-    pre_sois.clear();
-    pre_hists.clear();
-    pre_sois = sois;
-    pre_hists = hists;
-    sois.clear();
-    hists.clear();
-}
-
-void PlanePopOut::ComplexSOIMatch()
-{
     
-/// now store the sois and hists, and clean up old soi and hist vector
-    pre_sois.clear();
-    pre_hists.clear();
-    pre_sois = sois;
-    pre_hists = hists;
-    sois.clear();
-    hists.clear();  
-}
-
-void PlanePopOut::TrackSOIs()
-{
-    if (pre_sois.empty())
+    points.clear();
+    points_label.clear();
+    for (unsigned i=0; i<pcl_cloud->points.size(); i++)
     {
-	pre_sois = sois;
-	pre_hists = hists;
-	return;
+	PointCloud::SurfacePoint PushStructure;
+	Vector3 tmp; tmp.x = pcl_cloud->points[i].x; tmp.y = pcl_cloud->points[i].y; tmp.z = pcl_cloud->points[i].z;
+	PushStructure.p = tmp;
+	PushStructure.c.r = pcl_cloud->points[i].r;	PushStructure.c.g = pcl_cloud->points[i].g;	PushStructure.c.b = pcl_cloud->points[i].b;
+	points.push_back(PushStructure);
+	points_label.push_back(planePopout->IsInSOI(tmp.x,tmp.y,tmp.z));
     }
-    if (pre_sois.size()==sois.size())
-    {
-	if (SimpleSOIMatch())
-	    return;
-    }
-    else
-	ComplexSOIMatch();
 }
 
 /**
- * Calculate the Histogram of all the points in ONE SOI.
+ * Calculate the Histogram of all the SOIs.
  */
-CvHistogram* PlanePopOut::CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud)
+void PlanePopOut::CalSOIHist(PointCloud::SurfacePointSeq pcloud, std::vector< int > label, std::vector <CvHistogram*> & vH)
 {
-    CvHistogram* h;
-    IplImage* tmp = cvCreateImage(cvSize(1, pcl_cloud->points.size()), 8, 3);		///temp image, store all the points in the SOI in a matrix way
-    for (unsigned int i=0; i<pcl_cloud->points.size(); i++)
+    vH.clear();
+    int max = *max_element(label.begin(), label.end());
+    if (max == 0)	return;
+    std::vector <PointCloud::SurfacePointSeq> VpointsOfSOI;
+    PointCloud::SurfacePointSeq pseq = pcloud; pseq.clear();
+    VpointsOfSOI.assign(max, pseq);
+    
+    for (unsigned int i=0; i<pcloud.size(); i++)
     {
-	CvScalar v;	  
-	v.val[0] = pcl_cloud->points[i].b;
-	v.val[1] = pcl_cloud->points[i].g;
-	v.val[2] = pcl_cloud->points[i].r;
-	cvSet2D(tmp, i, 0, v);
+	int k = label[i];
+	if (k!=0)
+	    VpointsOfSOI[k-1].push_back(pcloud[i]);
     }
-    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* planes[] = { h_plane, s_plane };
-    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
-    int h_bins = 16, s_bins = 8;
-    int hist_size[] = {h_bins, s_bins};
-    /* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
-    float h_ranges[] = { 0, 180 };
-    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
-    float s_ranges[] = { 0, 255 };
-    float* ranges[] = { h_ranges, s_ranges };
-    float max_value = 0;
-
-    cvCvtColor( tmp, hsv, CV_BGR2HSV );
-    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
-    h = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
-    cvCalcHist( planes, h, 0, 0 );
-    cvGetMinMaxHistValue( h, 0, &max_value, 0, 0 );
-
-    cvReleaseImage(&h_plane);
-    cvReleaseImage(&s_plane);
-    cvReleaseImage(&v_plane);
-    cvReleaseImage(&hsv);
-    cvReleaseImage(&tmp);
-    return h;
-}
-
-/**
- * Get the Histograms of all the SOIs.
- */
-void PlanePopOut::GetHists(std::vector< CvHistogram* > &_hists)
-{
-  for(unsigned i=0; i<sois.size(); i++)
-  {
-	CvHistogram* histogram;
-	histogram = CalSOIHist(sois[i]);
-	hists.push_back(histogram);
-  }
-}
-
-
-bool PlanePopOut::RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
-{
-  
-    PointCloud::SurfacePointSeq R_points = points;
-    unsigned int nPoints = R_points.size();
-    if(nPoints < 10)
+    
+    for (unsigned j=0; j<VpointsOfSOI.size(); j++)
     {
-	//std::cout << "  too few points to calc plane" << std::endl;
-	return false;
-    };
-    int nRansacs = 100;
-    int point1 = 0;
-    int point2 = 0;
-    int point3 = 0;
-    Vector3 v3BestMean;
-    Vector3 v3BestNormal;
-    double dBestDistSquared = 9999999999999999.9;
-
-    for(int i=0; i<nRansacs; i++)
-    {
-	int nA, nB, nC;
-	Vector3 v3Normal;
-	do
+	CvHistogram* h;
+	IplImage* tmp = cvCreateImage(cvSize(1, VpointsOfSOI[j].size()), 8, 3);		///temp image, store all the points in the SOI in a matrix way
+	for (unsigned int i=0; i<VpointsOfSOI[j].size(); i++)
 	{
-	    nA = rand()%nPoints;
-	    nB = nA;
-	    nC = nA;
-	    while(nB == nA)
-		nB = rand()%nPoints;
-	    while(nC == nA || nC==nB)
-		nC = rand()%nPoints;
-	    Vector3 v3CA = R_points.at(nC).p  - R_points.at(nA).p;
-	    Vector3 v3BA = R_points.at(nB).p  - R_points.at(nA).p;
-	    v3Normal = cross(v3CA, v3BA);
-	    if (norm(v3Normal) != 0)
-		normalise(v3Normal);
-	    else v3Normal = 99999.9*v3Normal;
-	} while ( fabs(v3Normal.x) < 0.00001); //the plane should parallel with the initialisation motion of camera  fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01 ||
-
-	Vector3 v3Mean = 0.33333333 * (R_points.at(nA).p + R_points.at(nB).p + R_points.at(nC).p);
-	//log("v3Normal (%f, %f, %f)",v3Normal.x,v3Normal.y,v3Normal.z);
-	double dSumError = 0.0;
-	for(unsigned int i=0; i<nPoints; i++)
-	{
-	    Vector3 v3Diff = R_points.at(i).p - v3Mean;
-	    double dDistSq = dot(v3Diff, v3Diff); 
-	    if(dDistSq == 0.0)
-		continue;
-	    double dNormDist = fabs(dot(v3Diff, v3Normal));//log("dNormDist (%f)",dNormDist);
-	    if(dNormDist > min_height_of_obj)
-		dNormDist = min_height_of_obj;
-	    dSumError += dNormDist;
+	    CvScalar v;	  
+	    v.val[0] = VpointsOfSOI[j][i].c.b;	    v.val[1] = VpointsOfSOI[j][i].c.g;	    v.val[2] = VpointsOfSOI[j][i].c.r;
+	    cvSet2D(tmp, i, 0, v);
 	}
-	if(dSumError < dBestDistSquared)
-	{
-	    dBestDistSquared = dSumError;
-	    v3BestMean = v3Mean;
-	    v3BestNormal = v3Normal;
-	    point1 = nA;
-	    point2 = nB;
-	    point3 = nC;
-	}
-    }
-    //log("Index of three points are (%d, %d, %d)",point1,point2,point3);
-    ////////////////////////////////use three points to cal plane////
-    //log("dBestDistSquared = %f, CurrentBestDistSquared= %f",dBestDistSquared,CurrentBestDistSquared);
-    if(dBestDistSquared<CurrentBestDistSquared)
-    {
-	para_a = ( (R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.z-R_points.at(point1).p.z)-(R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.y-R_points.at(point1).p.y) );
-	para_b = ( (R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.x-R_points.at(point1).p.x)-(R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.z-R_points.at(point1).p.z) );
-	para_c = ( (R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.y-R_points.at(point1).p.y)-(R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.x-R_points.at(point1).p.x) );
-	para_d = ( 0-(para_a*R_points.at(point1).p.x+para_b*R_points.at(point1).p.y+para_c*R_points.at(point1).p.z) );
-	CurrentBestDistSquared = dBestDistSquared;
-    }
-    else
-    {
-	para_a = A;
-	para_b = B;
-	para_c = C;
-	para_d = D;
-    }
-    //log("The parameters of the dominate plane are (%f, %f, %f)",para_a, para_b,para_c,para_d);
-    /////////////////////////////////end parameters calculation/////////////
+	IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+	IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+	IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+	IplImage* planes[] = { h_plane, s_plane };
+	IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
+	int h_bins = 16, s_bins = 8;
+	int hist_size[] = {h_bins, s_bins};
+	/* hue varies from 0 (~0 deg red) to 180 (~360 deg red again) */
+	float h_ranges[] = { 0, 180 };
+	/* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
+	float s_ranges[] = { 0, 255 };
+	float* ranges[] = { h_ranges, s_ranges };
+	float max_value = 0;
 
-    if (para_d<0)
-    {
-	para_a = -para_a;
-	para_b = -para_b;
-	para_c = -para_c;
-	para_d = -para_d;
-    }
-    if (para_a*para_a+para_b*para_b+para_c*para_c != 0)
-    {
-	A = para_a;
-	B = para_b;
-	C = para_c;
-	D = para_d;
-    }
-    // refine the RANSAC result
-    /*
-       std::vector < double > vddis;
-       vddis.assign(nPoints, 0.0);
-       for(unsigned int i=0; i<nPoints; i++)
-       {
-       Vector3 v3Diff = R_points.at(i).p - v3BestMean;
-       double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-       vddis.at(i) = dNormDist;
-       }
-       sort(vddis.begin(),vddis.end());
-       double step_density = 0.0;
-       double step = 0.001;
-       double thre = 0.0;
-       double max_density= 0.0;
-       for (double d=0.5*min_height_of_obj; d<3.0*min_height_of_obj; d=d+step)
-       {
-       int num= 0; double tmp = 0;
-       for (unsigned int i=0; i<vddis.size(); i++)
-       if (vddis.at(i)>d+step) {num = i; break;}
-       else	tmp = vddis.at(i)+tmp;
-       tmp = num/(d+step); 
-       if (tmp>max_density) max_density = tmp;
-    //log("the density of window = %f, the num is %d, the previous density is %f", tmp, num, step_density);
-    //log("Now the d = %f", d);
-    if (step_density == 0.0 || tmp>step_density)	step_density = tmp;
-    else
-    {
-    if ((max_density-tmp)/max_density>1-1/sqrt(3))
-    {thre = d+step; break;}
-    else step_density = tmp;
-    }
-    }
-    if (thre<min_height_of_obj) thre=min_height_of_obj;
-    //log("the refined min_height_of_obj = %f", thre);
-    */
-    //----------------------- now collect the supposed inlier set-----------------//
-    double dmin = 9999.0;
-    double dmax = 0.0;
+	cvCvtColor( tmp, hsv, CV_BGR2HSV );
+	cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
+	h = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
+	cvCalcHist( planes, h, 0, 0 );
+	cvGetMinMaxHistValue( h, 0, &max_value, 0, 0 );
 
-    if (v3BestMean.x != 0 || v3BestMean.y != 0 || v3BestMean.z != 0)
-    {
-	for(unsigned int i=0; i<nPoints; i++)
-	{
-	    Vector3 v3Diff = R_points.at(i).p - v3BestMean;
-	    double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-	    double DominantPlaneHeight=fabs(D)/sqrt(A*A+B*B+C*C);
-	    if(dNormDist < min_height_of_obj)
-	    {
-		labels.at(i) = 0; // dominant plane
-		double ddist = dot(R_points.at(i).p,R_points.at(i).p);
-		if (ddist > dmax) {dmax = ddist; v3dmax = R_points.at(i).p;}
-		else if (ddist < dmin) {dmin = ddist; v3dmin = R_points.at(i).p;}
-	    }
-	    else
-	    {
-		/*				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
-						if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > sqrt(A*A+B*B+C*C)*min_height_of_obj)
-						labels.at(i) = -2; // objects
-						if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= sqrt(A*A+B*B+C*C)*min_height_of_obj)
-						labels.at(i) = -1; // cannot distingush
-						*/
-
-		double distance_point_plane =
-		    fabs(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z+D)/ sqrt(A*A+B*B+C*C);
-		if (R_points.at(i).p.z>DominantPlaneHeight)	//over the dominant plane
-		    labels.at(i) = -2; // objects
-		if (distance_point_plane <0.01 && R_points.at(i).p.z>DominantPlaneHeight)
-		    labels.at(i) = -1; // cannot distingush
-	    }
-	}
+	cvReleaseImage(&h_plane);
+	cvReleaseImage(&s_plane);
+	cvReleaseImage(&v_plane);
+	cvReleaseImage(&hsv);
+	cvReleaseImage(&tmp);
+	vH.push_back(h);
     }
-    return true;
-}
-
-void PlanePopOut::SplitPoints(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
-{
-    std::vector<int> candidants;
-    std::vector <int> S_label = labels;
-    for (unsigned int i=0; i<S_label.size(); i++)
-    {
-	if (S_label.at(i) == -2) //not belong to the dominant plane cluster
-	    candidants.push_back(i);
-    }
-    //cout<<"candidants.size() =  "<<candidants.size()<<endl;
-    std::vector<int> one_obj;
-    objnumber = 1;
-    unsigned int points_of_one_object = 0;
-    std::stack <int> objstack;
-    double split_threshold = Calc_SplitThreshold(points, labels);
-    unsigned int obj_number_threshold;
-    obj_number_threshold = 100;
-    while(!candidants.empty())
-    {
-	S_label.at(*candidants.begin()) = objnumber;
-	objstack.push(*candidants.begin());
-	points_of_one_object++;
-	candidants.erase(candidants.begin());
-	while(!objstack.empty())
-	{
-	    int seed = objstack.top();
-	    objstack.pop();
-	    for(std::vector<int>::iterator it=candidants.begin(); it<candidants.end(); it++)
-	    {
-		if (dist(points.at(seed).p, points.at(*it).p)<split_threshold)
-		{
-		    S_label.at(*it) = S_label.at(seed);
-		    objstack.push(*it);
-		    points_of_one_object++;
-		    candidants.erase(it);
-		}
-	    }
-	}//cout<<"points_of_one_object =  "<<points_of_one_object<<endl;cout<<"candidants.size() =  "<<candidants.size()<<endl;
-	if (points_of_one_object>obj_number_threshold)
-	{
-	    labels = S_label;
-	    objnumber++;
-	}
-	else
-	    S_label = labels;
-	points_of_one_object = 0;
-    }
-    objnumber--;
-}
-
-double PlanePopOut::Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
-{
-    double max_x = -99999.0;
-    double min_x = 99999.0;
-    double max_y = -99999.0;
-    double min_y = 99999.0;
-    double max_z = -99999.0;
-    double min_z = 99999.0;
-
-    for(unsigned int i=0; i<points.size(); i++)
-    {
-	if (labels.at(i) == -2)
-	{
-	    Vector3 v3Obj = points.at(i).p;
-	    if (v3Obj.x>max_x) max_x = v3Obj.x;
-	    if (v3Obj.x<min_x) min_x = v3Obj.x;
-	    if (v3Obj.y>max_y) max_y = v3Obj.y;
-	    if (v3Obj.y<min_y) min_y = v3Obj.y;
-	    if (v3Obj.z>max_z) max_z = v3Obj.z;
-	    if (v3Obj.z<min_z) min_z = v3Obj.z;
-	}
-    }
-    return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/25;
 }
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI)
@@ -1830,61 +1176,17 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
     //return the probability of matching of two objects, 0.0~1.0
 
-    float wS, wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
-    IpPairVec matches;
+    float wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
     wP = 0.1;
-    if (obj1.surf.size() == 0 || obj2.surf.size()==0) wS = 0.0;
-    else if (obj1.surf.size() < 40 || obj2.surf.size()<40)
-    {
-	if (obj1.surf.size() < 10 || obj2.surf.size()<10)
-	    wS = 0;
-	else
-	    wS = 0.1;
-	getMatches(obj1.surf,obj2.surf,matches);
-    }
-    else
-    {
-	wS = 0.3;
-	getMatches(obj1.surf,obj2.surf,matches);
-    }
-    wC = 1.0-wS-wP;
+    wC = 1.0-wP;
     double dist_histogram = CompareHistKLD(obj1.hist, obj2.hist);
-    double surfmacthingRatio;
-    if (matches.size()== 0 || obj1.surf.size() == 0 || obj2.surf.size()==0)	surfmacthingRatio = 0.0;
-    else 
-    {
-	if(obj1.surf.size()>obj2.surf.size())
-	    surfmacthingRatio =1.0-(float)matches.size()/(float)obj1.surf.size();
-	else
-	    surfmacthingRatio =1.0- (float)matches.size()/(float)obj2.surf.size();
-    }
-    /*  
-	log("Finish surf matching, there are %d features matched", matches.size());
-	log("Finish surf matching, there are %d features in obj1", obj1.surf.size());
-	log("Finish surf matching, there are %d features in obj2", obj2.surf.size());
-
-	log("Finish color histogram comparison, the distance is %f",dist_histogram);
-	*/   
     double sizeRatio;
-    //    int s1 = obj1.pointsInOneSOI.size();
-    //    int s2 = obj2.pointsInOneSOI.size();
     double s1, s2; 
-    //     s1 = obj1.r; s2 = obj2.r;
     s1 = obj1.pointsInOneSOI.size();  s2 = obj2.pointsInOneSOI.size();
     double smax; if (s1>s2) smax=s1; else smax=s2;
     sizeRatio = 1.0-exp(-(s2-s1)*(s2-s1)*3.14159/smax);
-    /*
-       if (obj1.r== 0 || obj2.r==0) sizeRatio = 0.0;
-       else
-       {
-       if (obj1.r>obj2.r)	sizeRatio = abs(obj1.r-obj2.r)/obj1.r;
-       else sizeRatio = abs(obj1.r-obj2.r)/obj2.r;
-       }
-       */
-    //     log("ratio = %f, %f, %f", wC, wS, wP);
-    //     log("dist_histogram, surfmacthingRatio, sizeRatio are %f, %f, %f",dist_histogram, surfmacthingRatio, sizeRatio);
 
-    return 1.0-wS*surfmacthingRatio-wC*abs(dist_histogram)-wP*sizeRatio;
+    return 1.0-wC*abs(dist_histogram)-wP*sizeRatio;
 }
 
 void PlanePopOut::AddConvexHullinWM()
@@ -1953,48 +1255,6 @@ void PlanePopOut::AddConvexHullinWM()
     mConvexHullRadius = 0.0;
     mConvexHullDensity = 0.0;
 }
-void PlanePopOut::DrawOneCuboid(Vector3 Max, Vector3 Min)
-{
-    glLineWidth(1);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //////////////////////top/////////////////////////////////////
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1.0,1.0,1.0);
-    glVertex3f(Max.x, Max.y, Max.z);
-    glVertex3f(Min.x, Max.y, Max.z);
-    glVertex3f(Min.x, Min.y, Max.z);
-    glVertex3f(Max.x, Min.y, Max.z);
-    glEnd();
-    /////////////////////////////bottom///////////////////////
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1.0,1.0,1.0);
-    glVertex3f(Min.x, Min.y, Min.z);
-    glVertex3f(Max.x, Min.y, Min.z);
-    glVertex3f(Max.x, Max.y, Min.z);
-    glVertex3f(Min.x, Max.y, Min.z);
-    glEnd();
-    //////////////////////verticle lines//////////////////////////
-    glBegin(GL_LINES);
-    glVertex3f(Min.x, Min.y, Min.z);
-    glVertex3f(Min.x, Min.y, Max.z);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(Max.x, Min.y, Min.z);
-    glVertex3f(Max.x, Min.y, Max.z);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(Max.x, Max.y, Min.z);
-    glVertex3f(Max.x, Max.y, Max.z);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(Min.x, Max.y, Min.z);
-    glVertex3f(Min.x, Max.y, Max.z);
-    glEnd();
-
-    glDisable(GL_BLEND);
-}
 
 void PlanePopOut::DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels)
 {
@@ -2042,22 +1302,8 @@ void PlanePopOut::DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <
 	double rad = norm(s);
 	vdradius.push_back(rad);
     }
-    /*
-       for (int i = 0; i<objnumber; i++)
-       {
-       DrawOneCuboid(Max.at(i),Min.at(i));
-       }
-       */
     Max.clear();
     Min.clear();
-}
-
-void PlanePopOut::DrawWireSphere(Vector3 center, double radius)
-{
-    glColor3f(1.0,1.0,1.0);
-    glTranslatef(center.x, center.y, center.z);
-    glutWireSphere(radius,10,10);
-    glTranslatef(-center.x, -center.y, -center.z);
 }
 
 Vector3 PlanePopOut::ProjectOnDominantPlane(Vector3 InputP)
@@ -2092,12 +1338,6 @@ Matrix33 PlanePopOut::GetAffineRotMatrix()
     setZero(vb);
 
     return rot;
-}
-
-Vector3 PlanePopOut::GetAffineTransVec(Vector3 v3p) // translation vector from p to original point
-{
-    Matrix33 m33 = GetAffineRotMatrix();
-    return -(m33*v3p);
 }
 
 inline Vector3 PlanePopOut::AffineTrans(Matrix33 m33, Vector3 v3)
@@ -2190,45 +1430,6 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 	OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
     }
     mObjSeq.push_back(OObj);
-
-    /*	double dd = D - hei*sqrt(A*A+B*B+C*C);
-	double half_dd = D- 0.5*hei*sqrt(A*A+B*B+C*C);
-	Vector3 v3core;
-	v3core.x =((C*C+B*B)*v3c.x-A*(C*v3c.z+B*v3c.y+half_dd))/(A*A+B*B+C*C);
-	v3core.y =((A*A+C*C)*v3c.y-B*(A*v3c.x+C*v3c.z+half_dd))/(A*A+B*B+C*C);
-	v3core.z =((A*A+B*B)*v3c.z-C*(A*v3c.x+B*v3c.y+half_dd))/(A*A+B*B+C*C);
-	v3c = v3core;
-	vector <Vector3> pphSeq;
-	VisionData::OneObj OObj;
-	for (unsigned int i = 0; i<ppSeq.size(); i++)
-	{
-	Vector3 v;
-	v.x =((C*C+B*B)*ppSeq.at(i).x-A*(C*ppSeq.at(i).z+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
-	v.y =((A*A+C*C)*ppSeq.at(i).y-B*(A*ppSeq.at(i).x+C*ppSeq.at(i).z+dd))/(A*A+B*B+C*C);
-	v.z =((A*A+B*B)*ppSeq.at(i).z-C*(A*ppSeq.at(i).x+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
-	pphSeq.push_back(v);
-	OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
-	}
-	mObjSeq.push_back(OObj);
-	*/
-    /*
-       glBegin(GL_POLYGON);
-       glColor3f(1.0,1.0,1.0);
-       for (unsigned int i = 0; i<ppSeq.size(); i++)
-       glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
-       glEnd();
-       glBegin(GL_POLYGON);
-       for (unsigned int i = 0; i<ppSeq.size(); i++)
-       glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
-       glEnd();
-       for (unsigned int i = 0; i<ppSeq.size(); i++)
-       {
-       glBegin(GL_LINES);
-       glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
-       glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
-       glEnd();
-       }
-       */
 }
 
 void PlanePopOut::BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels)
@@ -2343,7 +1544,6 @@ void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vecto
 */
     for (int i = 0; i<objnumber; i++)
     {
-	//if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
 	Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
 	for (unsigned int j = 0; j<points.size(); j++)
 	{
@@ -2369,31 +1569,7 @@ void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vecto
     pointsInOneSOI.clear();
 }
 
-void PlanePopOut::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-    VisualObjectPtr vis_obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-    if (vis_obj->model.get()) {
-	VisionData::VertexSeq ver_seq = vis_obj->model->vertices;
-	vlines.push_back(ver_seq.at(0).normal);
-	vlineConfidence.push_back(vis_obj->detectionConfidence);
-    }
-}
-
-void PlanePopOut::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc)
-{
-    vlines.clear();
-    vlineConfidence.clear();
-}
-
-void PlanePopOut::RefinePlaneEstimation(vector <Vector3> lines)
-{
-    if (lines.empty())	return;
-    Vector3 PlaneNormal;
-    PlaneNormal.x = A; PlaneNormal.y = B; PlaneNormal.z = C;
-    normalise(PlaneNormal);
-    double newD = PlaneNormal.x *D/A;
-}
 
 void PlanePopOut::Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
 {

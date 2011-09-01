@@ -13,7 +13,6 @@
 #include <VisionData.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "OpenSURF/surflib.h"
 #include "TomGineWraper/TomGineThread.hh"
 
 #include "StereoCamera.h"
@@ -50,7 +49,6 @@ typedef struct ObjP
 	PointCloud::SurfacePointSeq pointsInOneSOI;
 	PointCloud::SurfacePointSeq BGInOneSOI;
 	PointCloud::SurfacePointSeq EQInOneSOI;
-	IpVec surf;
 	CvHistogram* hist;
 	CvRect rect;
 }ObjPara;
@@ -76,6 +74,37 @@ typedef struct MatchingSOI
 }SOIMatch;
 
 private:
+
+///--------------------------------------------------------------------
+  
+    void GetImageData();
+    void GetPlaneAndSOIs();				/// Dominant plane detection and Euclidean Clustering
+    void CalSOIHist(PointCloud::SurfacePointSeq pcl_cloud, std::vector< int > label, std::vector <CvHistogram*> & vH);
+    
+    void ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+      Matrix33 GetAffineRotMatrix();
+      inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
+      Vector3 ProjectOnDominantPlane(Vector3 InputP);
+    void BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels);
+      void DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c);
+    void DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+    void BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+    
+    void DisplayInTG();
+      void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
+      
+    void AddConvexHullinWM();
+    void SOIManagement();
+      VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI);
+      int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
+      float Compare2SOI(ObjPara obj1, ObjPara obj2);
+	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
+      void SaveHistogramImg(CvHistogram* hist, std::string str);
+	
+      
+  
+///---------------------------------------------------------------------
+  
   /**
    * Which camera to get images from
    */
@@ -86,18 +115,10 @@ private:
 	bool useGlobalPoints;
 	// unit m, due to the error of stereo, >0.01 is suggested
 	double min_height_of_obj;
-	double Calc_SplitThreshold(PointCloud::SurfacePointSeq &points, std::vector <int> &label);
+
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
 	std::vector<ObjPara> Pre2CurrentList;
-	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI);
-	float Compare2SOI(ObjPara obj1, ObjPara obj2);
-	int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
-	//bool Compare2SOI(ObjPara obj1, ObjPara obj2);
-	void AddConvexHullinWM();
-	void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
-	void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
-	void RefinePlaneEstimation(vector <Vector3> lines);
 
 	vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
 	vector< PointCloud::SurfacePointSeq > BGPointsSeq;
@@ -121,11 +142,19 @@ private:
 	/// Default: true.
 	bool bWriteSoisToWm;
 
-	void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
-	void DisplayInTG();
+	
 	
 //-----------------------------------------------------------------------------------------------------------------------------------	
+	/**
+	* status of SOI matching results
+	*/
+	enum SOIMatchingResult {
+	  MISSING, STABLE, ADDING
+	};
 	
+	std::vector <CvHistogram*> vec_histogram;		 ///< vector with the histograms of all the SOIs
+	PointCloud::SurfacePointSeq points;	  		 ///< PointCloud type all the points in the scene
+	std::vector< int > points_label;			   ///< lables of all the points
 	cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
 	
@@ -145,13 +174,6 @@ private:
 	
 	bool single;                                              ///< Single shot mode for the stereo detector learner
 	bool showImages;                                          ///< Show images in openCV windows
-	void GetImageData();
-	void GetPlaneAndSOIs();					/// Dominant plane detection and Euclidean Clustering
-	bool SimpleSOIMatch();					/// when the no. of SOIs doesn't change, do the one-by-one matching
-	void ComplexSOIMatch();					/// when the no.of SOIs changes, find the missing/new SOIs
-	void TrackSOIs();
-	void GetHists(std::vector< CvHistogram* > &_hists);
-	CvHistogram* CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud);
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------	
 
 #ifdef FEAT_VISUALIZATION
@@ -191,53 +213,12 @@ protected:
   virtual void runComponent();
 
 public:
-
-
-	bool RANSAC(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	void SplitPoints(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	void DrawOneCuboid(Vector3 Max, Vector3 Min);
-	void DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	void BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	void BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels);
-	void DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c);
-	void ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-	inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
-	Vector3 GetAffineTransVec(Vector3 v3p);
-	Matrix33 GetAffineRotMatrix();
-	Vector3 ProjectOnDominantPlane(Vector3 InputP);
-	void DrawWireSphere(Vector3 center, double radius);
-
-	vector<double> Hypo2ParaSpace(vector<Vector3> vv3Hypo);
-	
-	
-	bool lessfitness(const Particle& p1, const Particle& p2);
-	
-	void CalRadiusCenter4BoundingSphere(PointCloud::SurfacePointSeq points, Vector3 &c, double &r);
-	
-	Vector3 ProjectPointOnPlane(Vector3 p, double A, double B, double C, double D);
 	
 	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	void CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points);
-	CvHistogram* GetSurfAndHistogram(PointCloud::SurfacePointSeq points, Video::Image img, IpVec& ips, CvRect &r);
-	void SOIManagement();
+	
 	void GetStableSOIs(std::vector<VisionData::SOIPtr>& soiList);
 	void onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc);
-	void SaveHistogramImg(CvHistogram* hist, std::string str);
-	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
-	bool IsMoving(IplImage * subimg);
-	Vector3 PixelRGB2HSV(cogx::Math::ColorRGB rgb);
-	void FindVerticalPlanes(PointCloud::SurfacePointSeq &points, std::vector <int> &labels, double B, double C);
-	
-	inline Particle InitialParticle()
-	{
-	    Particle P;
-	    P.v.assign(4,0.0); 		// velocity
-	    P.p.assign(4,0.0); 		// position in parameter space
-	    P.pbest.assign(4,0.0);	// best position for this particle
-	    P.fCurr = 9999999;		// current fitness
-	    P.fbest = 9999999;
-	    return P;
-	};	
 	
 	double para_a;
 	double para_b;
