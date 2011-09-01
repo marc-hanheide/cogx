@@ -37,9 +37,11 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     return;
   }
 
+#define CATCH_NULL 1
+#if CATCH_NULL
   try { // DEBUGGING: NullHandleException
   // XXX: a NullHandleException is raised if wrong object type is selected in execution GUI
-  // TODO: fix execution GUI to allow only sensible object/operation combiantions
+#endif
 
   pSoiFilter->println("analyze_task: read po");
   // pobj - The proto object to segment
@@ -100,9 +102,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   // find VO for this PO
-  cdl::WorkingMemoryAddress voAddr = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
+  VisualObjectRecordPtr pvorec = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
   VisualObjectPtr pvo;
+  cast::cdl::WorkingMemoryAddress voAddr;
   bool bNewVo = false;
+
+  if (pvorec.get())
+    voAddr = pvorec->addr;
+
   if (voAddr.id != "") {
     try {
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
@@ -122,7 +129,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   // XXX: Problems may arise because VO points to PO and PO points to VO !!!
-  // We write first the PO because usually PO is used throug the reference in VO.
+  // We write first the PO because usually PO is used through the reference in VO.
 
   pobj->visualObject.push_back(createWmPointer<VisualObject>(voAddr));
   try {
@@ -148,9 +155,13 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   pTask->deleteOnCompletion();
 
   cmd.succeed();
+
+#if CATCH_NULL
   } catch ( IceUtil::NullHandleException& e ) { // DEBUGGING
-    pSoiFilter->println("CAUGHT");
+    pSoiFilter->println("CAUGHT NullHandleException");
   }
+#endif
+#undef CATCH_NULL
 }
 
 } // namespace

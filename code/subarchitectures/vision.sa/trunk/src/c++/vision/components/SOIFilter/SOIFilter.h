@@ -52,29 +52,31 @@
 namespace cast
 {
 
-/**
- * status of SOI persistency
- */
-enum SOIStatus {
-  CANDIDATE, STABLE, PROTOOBJECT, OBJECT, DELETED
-};
-
 /** 
  * SOI data, contains also data used to evaluate SOI persistency.
  * Not important for Year 3 vision, this is now handled by PlanePopout.
  */	
-struct SOIData
+struct SoiRecord: public IceUtil::SimpleShared
 {
   cdl::WorkingMemoryAddress addr;
-  SOIStatus status;
-  int updCount;
-  std::string objId;
-  std::string sourceId;
-  cdl::CASTTime addTime;
-  cdl::CASTTime stableTime;
-  cdl::CASTTime objectTime;
-  cdl::CASTTime deleteTime;
+  cdl::WorkingMemoryAddress protoObjectAddr; // The associated PO
+  VisionData::SOIPtr psoi;
 };
+typedef IceUtil::Handle<SoiRecord> SoiRecordPtr;
+
+struct ProtoObjectRecord : public IceUtil::SimpleShared
+{
+  cdl::WorkingMemoryAddress addr;
+  VisionData::ProtoObjectPtr pobj;
+};
+typedef IceUtil::Handle<ProtoObjectRecord> ProtoObjectRecordPtr;
+
+struct VisualObjectRecord : public IceUtil::SimpleShared
+{
+  cdl::WorkingMemoryAddress addr;
+  VisionData::VisualObjectPtr pobj;
+};
+typedef IceUtil::Handle<VisualObjectRecord> VisualObjectRecordPtr;
 
 class SOIPointCloudClient: public PointCloudClient
 {
@@ -166,22 +168,25 @@ private:
 public:
   // The proto objects are kept locally so that we can match them by position with SOIs.
   // We don't keep all PO data locally! (see saveProtoObjectData)
-  std::map<cdl::WorkingMemoryAddress, VisionData::ProtoObjectPtr> m_protoObjects;
+  std::map<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> m_protoObjects;
 
   // The visual objects are kept locally so that we can match them to POs.
   // We don't keep all VO data locally! (see saveVisualObjectData)
-  std::map<cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> m_visualObjects;
+  std::map<cdl::WorkingMemoryAddress, VisualObjectRecordPtr> m_visualObjects;
 
-  std::map<std::string, SOIData> SOIMap;
+  // The sois are kept locally so register the SOI-PO connections.
+  std::map<cdl::WorkingMemoryAddress, SoiRecordPtr> m_sois;
 
 public:
-  VisionData::ProtoObjectPtr findProtoObjectAt(VisionData::SOIPtr psoi);
-  cdl::WorkingMemoryAddress findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
+  ProtoObjectRecordPtr findProtoObjectAt(const VisionData::SOIPtr &psoi);
+  ProtoObjectRecordPtr findProtoObjectAt(const cogx::Math::Vector3 &pos);
+  VisualObjectRecordPtr findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
   void updateRobotPosePtz();
   bool hasPtz() { return (ptzServer.get() != 0); }
   bool movePtz(double pan, double tilt, double zoom=0);
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
+  void saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy);
 
 private:
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);

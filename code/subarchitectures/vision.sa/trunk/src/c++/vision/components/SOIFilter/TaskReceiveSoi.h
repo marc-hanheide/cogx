@@ -23,6 +23,7 @@ public:
    {
       if (pEvent->change == cdl::ADD) handle_add_soi(pEvent);
       else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
+      // TODO: UPDATE to update the position; could cause too much data transfer ... 
    }
 };
 

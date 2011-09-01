@@ -44,13 +44,11 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 
   pSoiFilter->updateRobotPosePtz();
 
-  SOIData soi;
-  soi.addr = pEvent->wmc.address;
-  soi.addTime = psoi->time;
-  soi.status = STABLE;
-  soi.stableTime = pSoiFilter->getCASTTime();
-  soi.updCount = 0;
-  pSoiFilter->SOIMap.insert(make_pair(soi.addr.id, soi));
+  SoiRecordPtr psoirec = new SoiRecord();
+  psoirec->addr = pEvent->wmc.address;
+  psoirec->psoi = new SOI();
+  pSoiFilter->saveSoiData(psoi, psoirec->psoi);
+  pSoiFilter->m_sois[psoirec->addr] = psoirec;
 
   if (psoi->sourceId == pSoiFilter->m_coarseSource || psoi->sourceId == SOURCE_FAKE_SOI)
   {
@@ -59,17 +57,20 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // anything, except if we want to analyze the object in the center.
 
     ProtoObjectPtr pobj;
-    pSoiFilter->log("FIND SOI '%s'", soi.addr.id.c_str());
-    pobj = pSoiFilter->findProtoObjectAt(psoi);
+    pSoiFilter->log("FIND SOI '%s'", psoirec->addr.id.c_str());
+    ProtoObjectRecordPtr pporec = pSoiFilter->findProtoObjectAt(psoi);
+    if (pporec.get())
+      pobj = pporec->pobj;
     if (pobj.get()) {
-      pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", soi.addr.id.c_str());
+      pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", psoirec->addr.id.c_str());
       // XXX: Do we update the PO with the new SOI?
       // XXX: The object recognizer should verify if this is the same object
+      psoirec->protoObjectAddr = pporec->addr;
       return;
     }
 
     if (psoi->boundingSphere.pos.x < 0.6 && psoi->boundingSphere.pos.z < 0.5) {
-      pSoiFilter->log("SOI '%s' could be the Katana arm.", soi.addr.id.c_str());
+      pSoiFilter->log("SOI '%s' could be the Katana arm.", psoirec->addr.id.c_str());
       // XXX: may be looking at the katana arm, ignore
       return;
     }
@@ -183,6 +184,9 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   }
   else if (psoi->sourceId == pSoiFilter->m_fineSource)
   {
+    // This should never happen! Fine SOIs are retrieved with a WM command
+    // in TaskAnalyzePo:
+    //
     // If the SOI is in center of scene, find the PO we want to analyze and 
     // 'promote' the PO. Then somebody will have to generate a VO.
     //   - check if we have a pending recognition task
@@ -191,15 +195,30 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   }
 }
 
+//void WmTaskExecutor_Soi::handle_update_soi(WmEvent* pEvent)
+//{
+//  // TODO: update SOI position
+//}
+
 void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 {
   const cdl::WorkingMemoryChange &wmc = pEvent->wmc;
-  SOIData &soi = pSoiFilter->SOIMap[wmc.address.id];
-  soi.status = DELETED;
+  SoiRecordPtr psoirec = pSoiFilter->m_sois[wmc.address];
 
-  if (soi.objId.size() > 0)
+  pSoiFilter->println("Handle SOI %s DELETE", pEvent->wmc.address.id.c_str());
+
+  pSoiFilter->updateRobotPosePtz();
+
+  if (psoirec->psoi.get())
   {
-    // TODO: We have to load the PO and save it again. A lot of transfer !!!
+    ProtoObjectPtr pobj;
+    ProtoObjectRecordPtr pporec = pSoiFilter->findProtoObjectAt(psoirec->psoi->boundingSphere.pos);
+    if (pporec.get()) {
+      // TODO: We have to load the PO and save it again. A lot of transfer !!!
+      //    - SOIList changed; CameraLocation changed
+      // The associated VO:
+      //    - remove the link to this PO
+    }
   }
 }
 
