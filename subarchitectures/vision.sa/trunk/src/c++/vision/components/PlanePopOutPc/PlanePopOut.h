@@ -53,19 +53,6 @@ typedef struct ObjP
 	CvRect rect;
 }ObjPara;
 
-typedef struct Particle
-{
-    vector<double> v; 		// velocity
-    vector<double> p; 		// position in parameter space
-    vector<double> pbest;	// best position for this particle
-    double fCurr;		// current fitness
-    double fbest;		// best fitness
-    bool operator < (const Particle& rhs) const
-    {
-      return fCurr<rhs.fCurr;
-    }
-}PSOParticle;
-
 typedef struct MatchingSOI
 {
     int p;	//index in previous list of SOIs
@@ -77,17 +64,17 @@ private:
 
 ///--------------------------------------------------------------------
   
+    void CleanupAll();
     bool GetImageData();
     bool GetPlaneAndSOIs();				/// Dominant plane detection and Euclidean Clustering
     void CalSOIHist(PointCloud::SurfacePointSeq pcl_cloud, std::vector< int > label, std::vector <CvHistogram*> & vH);
     
-    void ConvexHullOfPlane(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+    void ConvexHullOfPlane(PointCloud::SurfacePointSeq points, std::vector <int> labels);
       Matrix33 GetAffineRotMatrix();
       inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
       Vector3 ProjectOnDominantPlane(Vector3 InputP);
-    void BoundingPrism(PointCloud::SurfacePointSeq &pointsN, std::vector <int> &labels);
-      void DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c);
-    void DrawCuboids(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
+    void CalCenterOfSOIs();
+    void CalSizeOfSOIs();
     void BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
     
     void DisplayInTG();
@@ -100,6 +87,8 @@ private:
       float Compare2SOI(ObjPara obj1, ObjPara obj2);
 	double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
       void SaveHistogramImg(CvHistogram* hist, std::string str);
+    
+    CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
 	
       
   
@@ -119,81 +108,39 @@ private:
       double pre_mConvexHullRadius;
       std::string pre_id;
       
-      std::vector<PointCloud::SurfacePoint> pcl_3Dpoints;       ///< 3D points from kinect view
-      PointCloud::SurfacePointSeq points;	  		 ///< PointCloud type all the points in the scene
-      std::vector< int > points_label;			   ///< lables of all the points
-      cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+      PointCloud::SurfacePointSeq points;	  			 ///< PointCloud type all the points in the scene
+      std::vector< int > points_label;			  		 ///< lables of all the points
+      cv::Mat_<cv::Vec4f> kinect_point_cloud;                  		 ///< Point cloud from the kinect
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;       		 ///< PCL point cloud
+      std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;    	 ///< Estimated sois from the PlanePopout
+      std::vector <CvHistogram*> vec_histogram;				 ///< vector with the histograms of all the SOIs
+      int objnumber;
+      double Shrink_SOI;
+      double Upper_BG;
+      double Lower_BG;
+      bool bWriteSoisToWm;
+      bool useGlobalPoints;
+      IplImage* previousImg; 
+      int camId;
 
+      vector< Vector3 > v3center;
+      vector<double> vdradius;
+      vector< Vector3 > v3size;      
+      vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
+      vector< PointCloud::SurfacePointSeq > BGPointsSeq;
+      vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points	
       
-///---------------------------------------------------------------------
-  /**
-   * Which camera to get images from
-   */
-  int camId;
-  /**
-   * whether to use stereo points in global or left camear coord system.
-   */
-	bool useGlobalPoints;
-	// unit m, due to the error of stereo, >0.01 is suggested
-	double min_height_of_obj;
+      TGThread::TomGineThread *tgRenderer;              ///< 3D render engine	
+      
+      Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
+      IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)     
+      
 
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
-	std::vector<ObjPara> Pre2CurrentList;
-
-	vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
-	vector< PointCloud::SurfacePointSeq > BGPointsSeq;
-	vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points
-	vector< Vector3 > v3center;
-	vector<double> vdradius;
-	vector< Vector3 > v3size;
-	vector <Vector3> vlines;
-	vector <double>	vlineConfidence;
-	IplImage* previousImg;
-	bool bIsMoving;
-	double CurrentBestDistSquared;
-	bool bHorizontalFound;
-	bool bVerticalOn;
-	std::string stereoconfig;                         ///< Config name of the stereo configuration file
-	TGThread::TomGineThread *tgRenderer;              ///< 3D render engine
-
-	/// When multiple point cloud servers are used one may want SOIs from only some of them.
-	/// To disable SOI generation, add the parameter --generate-sois 0.
-	/// The SOIs can still be obtained through a filter/wm-call (GetStableSOIs).
-	/// Default: true.
-	bool bWriteSoisToWm;
-
+	std::vector<ObjPara> Pre2CurrentList;      
 	
-	
-//-----------------------------------------------------------------------------------------------------------------------------------	
-	/**
-	* status of SOI matching results
-	*/
-	enum SOIMatchingResult {
-	  MISSING, STABLE, ADDING
-	};
-	
-	std::vector <CvHistogram*> vec_histogram;		 ///< vector with the histograms of all the SOIs
-
-	
-	std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;     ///< Estimated sois from the PlanePopout
-	std::vector<CvHistogram*> hists;				///< vector with histograms of all the SOIs
-	std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pre_sois; ///< keep the sois for tracking
-	std::vector<CvHistogram*> pre_hists;				///< keep the histograms
-
-	cv::Mat_<cv::Vec3b> patches;                              ///< 3D patches on 2D image
-	int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
-	int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
-	Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
-	IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
-
-      //  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
-      //  cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
-	
-	bool single;                                              ///< Single shot mode for the stereo detector learner
-	bool showImages;                                          ///< Show images in openCV windows
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------	
+//----------------------------------------------------------------------------------------------
 
 #ifdef FEAT_VISUALIZATION
 	bool m_bSendPoints;
@@ -240,26 +187,17 @@ protected:
 
 public:
 	
-	CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
-	void CollectDensePoints(Video::CameraParameters &cam, PointCloud::SurfacePointSeq points);
-	
+	/// When multiple point cloud servers are used one may want SOIs from only some of them.
+	/// To disable SOI generation, add the parameter --generate-sois 0.
+	/// The SOIs can still be obtained through a filter/wm-call (GetStableSOIs).
+	/// Default: true.
 	void GetStableSOIs(std::vector<VisionData::SOIPtr>& soiList);
 	void onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc);
-	
-	double para_a;
-	double para_b;
-	double para_c;
-	double para_d;
 
 
 	PlanePopOut() : camId(0) 
 	{
-		para_a = 0.0;
-		para_b = 0.0;
-		para_c = 0.0;
-		para_d = 0.0;
 		previousImg = 0;
-		min_height_of_obj = 0.04;
 		bWriteSoisToWm = true;
 	}
   virtual ~PlanePopOut() {}
