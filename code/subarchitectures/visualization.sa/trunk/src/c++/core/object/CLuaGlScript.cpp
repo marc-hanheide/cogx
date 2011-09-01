@@ -235,8 +235,11 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 
    try {
       int rv = pModel->loadScript(script.c_str());
+      if (rv != 0)
+         printf("      (in Lua loadScript %s/%s)\n\n", m_id.c_str(), partId.c_str());
    }
    catch (...) {
+      printf("      (Exception in Lua loadScript %s/%s)\n\n", m_id.c_str(), partId.c_str());
    }
 }
 
@@ -353,8 +356,11 @@ void CLuaGlScript_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, v
       if (!pPart) continue;
       if (!pState->m_childState[pPart->m_id].m_bVisible) continue;
       glPushMatrix();
-      pPart->exec((CGlTextWriter*)pContext);
+      int rv = pPart->exec((CGlTextWriter*)pContext);
       glPopMatrix();
+      if (rv != 0) {
+         printf("      (in Lua exec %s/%s)\n\n", pModel->m_id.c_str(), pPart->m_id.c_str());
+      }
    }
 }
 
