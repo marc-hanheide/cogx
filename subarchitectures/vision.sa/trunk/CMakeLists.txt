@@ -150,6 +150,11 @@ if (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3D2)
 endif (BUILD_SA_VISION_OBJRECOGNIZER_3D2)
 
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D3 "build Object Recognizer3 (new version)" NO)
+if (BUILD_SA_VISION_OBJRECOGNIZER_3D3)
+add_subdirectory (src/c++/vision/components/ObjectRecognizer3D3)
+endif (BUILD_SA_VISION_OBJRECOGNIZER_3D3)
+
 option(BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB "build convex hull display" YES)
 if (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
 add_subdirectory (src/c++/vision/components/DisplayConvexHullPB)
