@@ -211,7 +211,14 @@ private:
 		std::string getControlState(const std::string& ctrlId); /*override*/
 	};
 	CDisplayClient m_display;
+
 	void SendSyncAllSois();
+	void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img);
+	void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels, CMilliTimer& tmSendPoints);
+	void SendPlaneGrid();
+	void SendOverlays();
+	void SendSoi(PlanePopOut::ObjPara& soiobj);
+	void SendRemoveSoi(PlanePopOut::ObjPara& soiobj);
 #endif
 
 protected:
