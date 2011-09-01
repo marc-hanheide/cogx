@@ -5,6 +5,7 @@
 
 using namespace V4R;
 using namespace TomGine;
+using namespace Tracking;
 
 int main(int argc, char *argv[]){
 
