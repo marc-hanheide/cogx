@@ -21,6 +21,8 @@
 
 #include <v4r/TomGine/tgTomGine.h>
 
+using namespace std;
+
 struct Parameters{
 	int width;
 	int height;
