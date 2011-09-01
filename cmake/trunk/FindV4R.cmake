@@ -19,7 +19,7 @@ endif()
 message( STATUS " * V4R_DIR is '${V4R_DIR}'")
 if (NOT EXISTS ${V4R_DIR}  )
   message( FATAL_ERROR
-    "The library v4r (TUW ACIN) could not be found.\n"
+    "The library v4r (from TUW ACIN) could not be found.\n"
     "Your options:\n"
     "  a) check out the library into ${COGX_ROOT}/tools\n"
     "  b) check out the library into another directory and set the V4R_DIR environment variable\n"
@@ -27,3 +27,7 @@ if (NOT EXISTS ${V4R_DIR}  )
     )
 endif()
 
+set (V4R_LIBRARY_DIRS ${V4R_DIR}/lib)
+set (V4R_INCLUDE_DIRS ${V4R_DIR})
+link_directories(${V4R_LIBRARY_DIRS})
+include_directories(${V4R_INCLUDE_DIRS})
