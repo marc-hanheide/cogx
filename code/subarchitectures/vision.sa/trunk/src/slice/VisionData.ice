@@ -195,7 +195,23 @@ enum VisionCommandStatus {
     DoubleSeq points2D;
   };
 
+  /**
+   * Ask the 3D object recognizer to detect any of the objects given in the
+   * label list in the whole image.
+   * @author Michael Zillich
+   */
   class DetectionCommand {
+    StringSeq labels;
+  };
+
+  /**
+   * Ask the 3D object recognizer to recognize a given as yet unknown visual
+   * object, using only the image region defined by the bounding sphere of that
+   * object. It checks for all labels given in the list.
+   * @author Michael Zillich
+   */
+  class RecognitionCommand {
+    cast::cdl::WorkingMemoryPointer visualObject;
     StringSeq labels;
   };
 
