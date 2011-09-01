@@ -93,7 +93,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 								foundLargeGeneric = true;
 								if (addGenericCol && !compactGenericCol) {
 									setHtml(v11nObject, "999_info",
-											"(use the --compact option to reduce the size of the generic column)");
+											"(use the --compact option to reduce the size of the generic column; use --omit-fields to hide some fields)");
 								}
 							}
 						}
