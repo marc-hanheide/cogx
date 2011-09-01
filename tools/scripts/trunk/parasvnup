@@ -7,7 +7,15 @@ root=$(svn info | grep "^Repository Root: " | awk "{print \$3}")
 echo "Root: $root"
 echo "Url:  $url"
 
-#svn up --ignore-externals
+echo
+echo "Updating Repository"
+echo
+
+svn up --ignore-externals
+
+echo
+echo "Update Externals"
+echo
 
 IFS=$'\n'
 for a in $(svn pg svn:externals . | grep "^\^" ) ; do 
