@@ -3,6 +3,7 @@
 #include "Noise.h"
 
 using namespace Tracking;
+using namespace std;
 
 Predictor::Predictor(){
 	m_dTime = 0.0;

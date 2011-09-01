@@ -7,6 +7,7 @@
 
 #include "Pose.hh"
 
+using namespace std;
 
 namespace P 
 {

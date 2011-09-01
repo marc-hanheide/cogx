@@ -6,7 +6,7 @@
 #include <v4r/particlefilter/robot2d.h>
 #include <v4r/particlefilter/pfilter.h>
 
-
+using namespace std;
 
 int main(int argc, char *argv[]) {
 

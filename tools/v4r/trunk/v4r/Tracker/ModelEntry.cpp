@@ -3,6 +3,7 @@
 
 using namespace Tracking;
 using namespace TomGine;
+using namespace std;
 
 /** @brief class ModelEntry */
 ModelEntry::ModelEntry(float lpf) : c_comp(0.7), c_occ_comp(0.5), w_msp(0.5),

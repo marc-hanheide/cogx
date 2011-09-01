@@ -62,8 +62,8 @@ template<typename T1,typename T2, typename T3>
 inline void ProjectPoint2Image(const T1 p[3], const T2 C[9], T3 i[2]);
 inline void ProjectPoint2Image(double pin[3], double R[9], double t[3], double C[9], double i[2]);
 
-ostream& operator<<(ostream &os, const Pose &pose);
-istream& operator>>(istream &is, Pose &pose);
+std::ostream& operator<<(std::ostream &os, const Pose &pose);
+std::istream& operator>>(std::istream &is, Pose &pose);
 
 
 
@@ -97,7 +97,7 @@ inline bool Pose::empty()
 inline void Pose::GetHom(double pose[16])
 {
   //if (empty()) throw Except(__HERE__,"No pose available!");
-  if (empty()) throw runtime_error ("Pose::GetHom: No pose available!");
+  if (empty()) throw std::runtime_error ("Pose::GetHom: No pose available!");
 
   double *ptrR = R.ptr<double>(0);
   double *ptrt = t.ptr<double>(0);
@@ -188,7 +188,7 @@ inline void Rot2Quat(double R[9], double q[4])
   }
   else
   {
-    cout<<"komisch"<<endl;
+    std::cout<<"komisch"<<std::endl;
   }
   // enforce unit length
   mag=q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3];
@@ -251,7 +251,7 @@ inline void Vec32Rot(double d[3], double R[9])
 inline void InvPose(Pose &src, Pose &dst)
 {
   //if (src.empty()) throw Except(__HERE__,"No pose available!");
-  if (src.empty()) throw runtime_error ("Pose::InvPose: No pose available!");
+  if (src.empty()) throw std::runtime_error ("Pose::InvPose: No pose available!");
   if (dst.empty()) dst.create();
 
   PMat::Transpose33(src.R.ptr<double>(0), dst.R.ptr<double>(0));

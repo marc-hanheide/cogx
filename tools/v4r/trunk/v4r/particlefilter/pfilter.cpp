@@ -38,6 +38,8 @@
 #include <time.h>
 #include <stdlib.h>
 
+using namespace std;
+
 namespace V4R {
 
 const int PFilter::MAX_HISTORY = 1000;

@@ -42,7 +42,7 @@ private:
 	// Name lists
 	NameList		m_shaderNameList;
 	
-	string			m_shaderPath;
+	std::string			m_shaderPath;
 	
 	bool			m_showlog;
 	

@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <sys/time.h>
 
+using namespace std;
+
 namespace ak {
 namespace cv {
 

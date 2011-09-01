@@ -25,8 +25,6 @@
 #include  <v4r/daisy/general.h>
 #include  <v4r/daisy/interaction.h>
 
-using namespace std;
-
 namespace kutility
 {
    IplImage* load_ipl_image(const char *file_name);
@@ -38,13 +36,13 @@ namespace kutility
    uchar* load_ppm_image(const char* file_name, int &w, int&h, int &bit);
 
    template<class T>
-   int load( string filename, T* &out, int size=-1 )
+   int load( std::string filename, T* &out, int size=-1 )
    {
-      ifstream fin;
+      std::ifstream fin;
       fin.open( filename.c_str() );
       if( fin.fail() )
       {
-         cout<<"no such file: "<<filename<<endl;
+         std::cout<<"no such file: "<<filename<<std::endl;
          exit(1);
       }
 
@@ -86,19 +84,19 @@ namespace kutility
       fin.close();
 
       if( size!= -1 && size != counter )
-         cout<<"WARNING: I loaded only "<<counter<<" data points instead of "<<size<<"\n";
+         std::cout<<"WARNING: I loaded only "<<counter<<" data points instead of "<<size<<"\n";
 
       return counter;
    }
 
 
-   void* load_array( string filename, int size, int type=1 );
+   void* load_array( std::string filename, int size, int type=1 );
    void wait_key();
 
    /// saves an array given its size and the filename to save it. it
    /// uses a tab to seperate the data points if not specified
    /// otherwise.
-   template<class T> inline void save(T* data, int sz, string filename, string sep="\t")
+   template<class T> inline void save(T* data, int sz, std::string filename, string sep="\t")
    {
       std::ofstream fout;
       fout.open( filename.c_str(), std::ofstream::out );
@@ -114,7 +112,7 @@ namespace kutility
    /// saves an array with indexes given its size and the filename to
    /// save it. it uses a tab to seperate the data points and the
    /// indexes if not specified otherwise.
-   template<class T> inline void save_indexed(T* data, int sz, string filename, string sep="\t")
+   template<class T> inline void save_indexed(T* data, int sz, std::string filename, std::string sep="\t")
    {
       std::ofstream fout;
       fout.open( filename.c_str(), std::ofstream::out );
@@ -131,7 +129,7 @@ namespace kutility
 
 
    /// saves an array in matrix format with rs x cs
-   template<class T> inline void save(T* data, int rs, int cs, string filename)
+   template<class T> inline void save(T* data, int rs, int cs, std::string filename)
    {
       std::ofstream fout;
       fout.open( filename.c_str(), std::ofstream::out );
@@ -151,7 +149,7 @@ namespace kutility
    }
 
    /// saves a vector in matrix format with rs x cs
-   template<class T> inline void save(vector<T>* data, int rs, int cs, string filename)
+   template<class T> inline void save(std::vector<T>* data, int rs, int cs, std::string filename)
    {
       std::ofstream fout;
       fout.open( filename.c_str(), std::ofstream::out );
@@ -170,7 +168,7 @@ namespace kutility
    }
 
    /// saves a matrix with rs x cs
-   template<class T> inline void save(T** data, int rs, int cs, string filename)
+   template<class T> inline void save(T** data, int rs, int cs, std::string filename)
    {
       std::ofstream fout;
       fout.open( filename.c_str(), std::ofstream::out );
@@ -194,7 +192,7 @@ namespace kutility
    void convert_hex(int number, int* hex);
 
    template<class T> inline
-   void save_BMP( string str, int w , int h, T *mask, string mode, bool inverted=false)
+   void save_BMP( string str, int w , int h, T *mask, std::string mode, bool inverted=false)
    {
       enum { RGB32, BGR32, GBR32, GRAY, MASK };
 
