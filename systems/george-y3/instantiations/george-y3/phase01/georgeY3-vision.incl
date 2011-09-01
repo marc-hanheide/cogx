@@ -88,9 +88,9 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 
 ##### Monitors
 
-#JAVA MG vis.SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact
-JAVA MG vis.proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact
-JAVA MG vis.visual.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact
+JAVA MG vis.SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
+JAVA MG vis.proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
+JAVA MG vis.visual.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact --omit-fields "points2d model"
 JAVA MG vis.visual.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
 # JAVA MG vis.learning.tasks castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv"
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
