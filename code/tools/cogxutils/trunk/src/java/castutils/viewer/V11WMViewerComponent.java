@@ -20,6 +20,7 @@ import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
 import castutils.viewer.plugins.DefaultXMLInfo;
 import castutils.viewer.plugins.Plugin;
+import castutils.castextensions.IceXMLSerializer;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -33,6 +34,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 	public boolean addGenericCol = false;
 	public boolean logGenericCol = false;
 	public boolean compactGenericCol = false;
+	public String omittedFields = null;
 	private boolean foundLargeGeneric = false;
 	private final DefaultXMLInfo genericPlugin = new DefaultXMLInfo();
 
@@ -71,6 +73,16 @@ public class V11WMViewerComponent extends ManagedComponent {
 						logString += "<td>" + o.toString() + "</td>";
 					}
 					if (addGenericCol) {
+					  if (omittedFields != null) {
+							// @author: mmarko
+							// Don't serialize the fileds listed in omittedFields.
+							StringTokenizer st = new StringTokenizer(omittedFields);
+							while (st.hasMoreTokens()) {
+								String fieldName = st.nextToken();
+								IceXMLSerializer.omitField(newEntry.getClass(), fieldName);
+							}
+							omittedFields = null;
+					  }
 						String genericText = (String) genericPlugin.toVector(
 								newEntry).get(0);
 						if (genericText.length() < 500)
@@ -194,6 +206,10 @@ public class V11WMViewerComponent extends ManagedComponent {
 		}
 		if (arg0.get("--log-generic-col") != null) {
 			logGenericCol = true;
+		}
+		// space delimited list of fields to omit in generic col
+		if (arg0.get("--omit-fields") != null) {
+		  omittedFields = arg0.get("--omit-fields");
 		}
 		displayClient.configureDisplayClient(arg0);
 	}
