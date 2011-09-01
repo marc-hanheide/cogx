@@ -1,12 +1,28 @@
 #!/bin/bash
 # @author: Marko Mahnič
 
-svn up --ignore-externals
+url=$(svn info | grep "^URL: " | awk "{print \$2}")
+root=$(svn info | grep "^Repository Root: " | awk "{print \$3}")
 
-for a in $(svn pg svn:externals . | grep "^\^" | awk "{print \$2}") ; do 
-   echo "svn update $a"
-   svn up $a &
+echo "Root: $root"
+echo "Url:  $url"
+
+#svn up --ignore-externals
+
+IFS=$'\n'
+for a in $(svn pg svn:externals . | grep "^\^" ) ; do 
+   relurl=$(echo $a | awk "{print substr(\$1, 3)}")
+   path=$(echo $a | awk "{print \$2}")
+   if [ -d $path ]; then
+      echo "svn update --accept=postpone $path"
+      svn up --accept=postpone "$path" &
+   else
+      echo "*** NEW: $path"
+      echo "svn checkout ^/$relurl $path"
+      svn co "$root/$relurl" "$path" > /dev/null &
+   fi
 done
+unset IFS
 
 # Wait for all children to terminate
 wait
