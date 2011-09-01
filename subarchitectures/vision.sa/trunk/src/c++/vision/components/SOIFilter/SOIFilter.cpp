@@ -283,12 +283,14 @@ std::string SOIFilter::CSfDisplayClient::getControlState(const std::string& ctrl
 void SOIFilter::sendSyncAllProtoObjects()
 {
   // copy to minimize race conditions
-  std::map<cdl::WorkingMemoryAddress, VisionData::ProtoObjectPtr> objs = m_protoObjects;
+  std::map<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> objs = m_protoObjects;
   typeof(objs.begin()) it = objs.begin();
   for (; it != objs.end(); ++it) {
-    ProtoObjectPtr& pobj = it->second;
-    if (m_bShowProtoObjects) sendProtoObject(it->first, pobj);
-    else sendRemoveProtoObject(it->first);
+    ProtoObjectRecordPtr& pporec = it->second;
+
+    if (!pporec->pobj.get() || !m_bShowProtoObjects)
+      sendRemoveProtoObject(it->first);
+    else sendProtoObject(it->first, pporec->pobj);
   }
 }
 
@@ -297,8 +299,8 @@ void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const Vis
   // The first time the PO is analyzed, the VO may still not exist in WM, but 
   // PO already references it.
   // (Temporary) fix: send all POs again after every VO change (done in onXXX_VisualObject).
-  cdl::WorkingMemoryAddress voaddr = findVisualObjectFor(addr);
-  bool bHasVo = voaddr.id != "";
+  VisualObjectRecordPtr pvorec = findVisualObjectFor(addr);
+  bool bHasVo = pvorec.get() != NULL;
 
   ostringstream ss;
   ss << "function render()\n";
@@ -404,6 +406,10 @@ void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange &
   m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
+void SOIFilter::saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy)
+{
+  soiCopy->boundingSphere = soiOrig->boundingSphere;
+}
 
 // Save a part of a ProtoObject to the internal database
 void SOIFilter::saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy)
@@ -423,18 +429,25 @@ void SOIFilter::saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, Vision
 void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
   ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  m_protoObjects[_wmc.address] = new VisionData::ProtoObject();
-  saveProtoObjectData(pobj, m_protoObjects[_wmc.address]);
+  ProtoObjectRecordPtr pporec = new ProtoObjectRecord();
+  pporec->addr = _wmc.address;
+  pporec->pobj = new VisionData::ProtoObject();
+  saveProtoObjectData(pobj, pporec->pobj);
+  m_protoObjects[pporec->addr] = pporec;
+
   if (m_bShowProtoObjects) {
-    sendProtoObject(_wmc.address, pobj);
+    sendProtoObject(pporec->addr, pobj);
   }
 }
 
 void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
   ProtoObjectPtr pobj = getMemoryEntry<VisionData::ProtoObject>(_wmc.address);
-  m_protoObjects[_wmc.address] = new VisionData::ProtoObject();
-  saveProtoObjectData(pobj, m_protoObjects[_wmc.address]);
+  ProtoObjectRecordPtr pporec = new ProtoObjectRecord();
+  pporec->addr = _wmc.address;
+  pporec->pobj = new VisionData::ProtoObject();
+  saveProtoObjectData(pobj, pporec->pobj);
+  m_protoObjects[pporec->addr] = pporec;
 
   if (m_snapper.m_bAutoSnapshot) {
     // XXX: Added to saveSnapshot with SurfacePatches
@@ -458,16 +471,24 @@ void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  m_visualObjects[_wmc.address] = new VisionData::VisualObject();
-  saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+  VisualObjectRecordPtr pvorec = new VisualObjectRecord();
+  pvorec->addr = _wmc.address;
+  pvorec->pobj = new VisionData::VisualObject();
+  saveVisualObjectData(pobj, pvorec->pobj);
+  m_visualObjects[pvorec->addr] = pvorec;
+
   sendSyncAllProtoObjects();
 }
 
 void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  m_visualObjects[_wmc.address] = new VisionData::VisualObject();
-  saveVisualObjectData(pobj, m_visualObjects[_wmc.address]);
+  VisualObjectRecordPtr pvorec = new VisualObjectRecord();
+  pvorec->addr = _wmc.address;
+  pvorec->pobj = new VisionData::VisualObject();
+  saveVisualObjectData(pobj, pvorec->pobj);
+  m_visualObjects[pvorec->addr] = pvorec;
+
   sendSyncAllProtoObjects();
 }
 
@@ -596,20 +617,21 @@ void SOIFilter::runComponent()
 }
 
 // psoi is calculated at pSoiFilter->m_RobotPose
-ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
+ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
 {
-  if (!psoi.get()) 
-    return NULL;
-
   typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
   double dmin = 1e99;
   double d;
-  ProtoObjectPtr pBest;
-  Vector3& p0 = psoi->boundingSphere.pos;
-  log("Find PO near SOI (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
+  ProtoObjectRecordPtr pBest;
+  const Vector3& p0 = pos;
+  log("Find PO near (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
 
   for(; itpo != m_protoObjects.end(); ++itpo) {
-    ProtoObjectPtr& pobj = itpo->second;
+    ProtoObjectRecordPtr& pporec = itpo->second;
+    ProtoObjectPtr& pobj = pporec->pobj;
+    if (!pobj.get())
+      continue;
+
     // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
     //   => we only compare robo-centric positions
     Vector3& p1 = pobj->position;
@@ -618,7 +640,7 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
     log("PO %s (%.4lf, %.4lf, %.4lf): %.4lf", itpo->first.id.c_str(), p1.x, p1.y, p1.z, d);
     if (d < dmin) {
       dmin = d;
-      pBest = pobj;
+      pBest = pporec;
     }
   }
   if (dmin < 0.12)
@@ -627,28 +649,44 @@ ProtoObjectPtr SOIFilter::findProtoObjectAt(SOIPtr psoi)
   return NULL;
 }
 
-cdl::WorkingMemoryAddress SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
+ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const SOIPtr &psoi)
+{
+  if (!psoi.get()) 
+    return NULL;
+
+  return findProtoObjectAt(psoi->boundingSphere.pos);
+}
+
+VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
 {
   if (protoAddr.id == "") 
-    return cdl::WorkingMemoryAddress();
+    return NULL;
 
   // First check the visible objects
   typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
   for(; itvo != m_visualObjects.end(); ++itvo) {
-    VisualObjectPtr& pobj = itvo->second;
+    VisualObjectRecordPtr& pvorec = itvo->second;
+    VisualObjectPtr& pobj = pvorec->pobj;
+    if (!pobj.get())
+      continue;
+
     if (pobj->protoObject->address == protoAddr)
-      return itvo->first;
+      return itvo->second;
   }
 
   // The check the hidden objects
   itvo = m_visualObjects.begin();
   for(; itvo != m_visualObjects.end(); ++itvo) {
-    VisualObjectPtr& pobj = itvo->second;
+    VisualObjectRecordPtr& pvorec = itvo->second;
+    VisualObjectPtr& pobj = pvorec->pobj;
+    if (!pobj.get())
+      continue;
+
     if (pobj->lastProtoObject->address == protoAddr)
-      return itvo->first;
+      return itvo->second;
   }
 
-  return cdl::WorkingMemoryAddress();
+  return NULL;
 }
 
 } // namespace
