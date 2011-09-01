@@ -21,9 +21,6 @@
 
 #include <v4r/TomGine/tgTomGine.h>
 
-using namespace Tracking;
-using namespace std;
-
 struct Parameters{
 	int width;
 	int height;
@@ -177,7 +174,7 @@ void GetTrackingParameter( Tracking::Tracker::Parameter& params, const char* ini
 	params.max_kernel_size = cdfParams.GetInt("MaxKernelSize", "ImageProcessing");
 	params.model_sobel_th = cdfParams.GetFloat("ModelSobelThreshold", "ImageProcessing");
 	params.image_sobel_th = cdfParams.GetFloat("ImageSobelThreshold", "ImageProcessing");
-	params.method = (Method)cdfParams.GetInt("Method", "ImageProcessing");
+	params.method = (Tracking::Method)cdfParams.GetInt("Method", "ImageProcessing");
 }
 
 
@@ -203,7 +200,7 @@ void printUsage(){
 	printf(" \n\n");
 }
 
-bool InputControl(Tracker* tracker, V4R::Event& event){
+bool InputControl(Tracking::Tracker* tracker, V4R::Event& event){
 	
 	switch (event.type)
 	{
