@@ -1,0 +1,17 @@
+Add this to pcl/common/include/pcl/point_types.h
+
+POINT_CLOUD_REGISTER_POINT_STRUCT (pcl::Histogram<480>,
+    (float[480], histogram, histogram480)
+)
+
+POINT_CLOUD_REGISTER_POINT_STRUCT (pcl::Histogram<416>,
+    (float[416], histogram, histogram416)
+)
+
+after
+
+POINT_CLOUD_REGISTER_POINT_STRUCT (pcl::VFHSignature308,
+    (float[308], histogram, vfh)
+)
+
+... recompile PCL and then compile the project.

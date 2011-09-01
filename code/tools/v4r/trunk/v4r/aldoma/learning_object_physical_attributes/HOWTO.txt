@@ -1,0 +1,31 @@
+This project classifies a certain object and estimates their scale by aligning the most
+similar CAD model to the partial view of the object.
+
+Depends on the following projects:
+ * generic_trainer_recognizer
+ * alignment (needs CUDA 4.0)
+ * PCL 1.2 (check out last trunk version, tested with revision 2034)
+ 
+ 
+To start the code after compilation:
+
+    ./learn_object_attributes [path_to_CAD_models] [path_where_to_store_trained_descriptors] [path_where_to_store_the_scaled_models] [scale_factor (use always 1)] [descriptor_type] [number of nearest neighbours] [scene (optional)]
+
+    Example with a scene:
+    ./learn_object_attributes /home/aitor/data/CAD-net/Cat7_ModelDatabase /home/aitor/data/CAD-net/d2cr_trained /home/aitor/data/CAD-net/learned_scaled_models 1 D2CR 10 /home/aitor/data/CAD-net/points2/chair_1.pcd 
+
+    With the Kinect plugged in, the last scene parameter can be skipped and the scene obtained directly from the Kinect:
+    ./learn_object_attributes /home/aitor/data/CAD-net/Cat7_ModelDatabase /home/aitor/data/CAD-net/d2cr_trained /home/aitor/data/CAD-net/learned_scaled_models 1 D2CR 10
+
+    The pointcloud from the Kinect is visualized until the user closes the window and then the learning starts. 
+    Once an object has been learned, the visualization of the kinect pointcloud starts again.
+
+Things that are visualized:
+
+ * closest neighbours given by classification
+ * partial view aligned with the best CAD model of those in the nearest neighbour
+
+After the alignment is shown, the user is asked in the command line to accept or reject the alignment.
+
+The FIRST time the program is started, the CAD models need to be trained. You will see a 150x150 window with red background
+popping out. This window needs to be visible at all time.
