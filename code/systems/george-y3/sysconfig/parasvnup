@@ -1,0 +1,12 @@
+#!/bin/bash
+# @author: Marko Mahnič
+
+for a in $(svn pg svn:externals . | grep "^\^" | awk "{print \$2}") ; do 
+   echo "svn update $a"
+   svn up $a &
+done
+
+# Wait for all children to terminate
+wait
+
+echo " *** DONE ***"
