@@ -8,6 +8,7 @@
 #define _VISION_OBJECTS_H_0DAF_
 
 #include <VisionData.hpp>
+#include <Pose3.h>
 #include <cast/architecture/ManagedComponent.hpp>
 
 namespace cogx {
@@ -60,7 +61,7 @@ VisionData::ProtoObjectPtr createProtoObject()
 inline
 void initVisualObject(VisionData::VisualObject& vo)
 {
-  memset(&vo.pose, 0, sizeof(vo.pose));
+  cogx::Math::setIdentity(vo.pose);
   vo.detectionConfidence = 0;
   memset(&vo.boundingSphere, 0, sizeof(vo.boundingSphere));
   // Geometry Model - has only sequences
