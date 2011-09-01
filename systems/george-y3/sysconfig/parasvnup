@@ -1,6 +1,8 @@
 #!/bin/bash
 # @author: Marko Mahnič
 
+svn up --ignore-externals
+
 for a in $(svn pg svn:externals . | grep "^\^" | awk "{print \$2}") ; do 
    echo "svn update $a"
    svn up $a &
