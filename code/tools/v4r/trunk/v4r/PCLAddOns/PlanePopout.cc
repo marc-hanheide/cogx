@@ -102,7 +102,7 @@ PlanePopout::~PlanePopout()
  * - Build from the convex hull (perpendicular) a soi prism with bottom/top points of 
  *   the convex hull.
  */
-void PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+bool PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
 {
   sois.clear();
   pclA::CopyPointCloud(*cloud, *input_cloud);
@@ -114,7 +114,7 @@ void PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > cluster_hulls;
 
   FilterZ(cloud, *cloudFiltered);                                           // Filter the PointCloud in z-coordinate
-  DetectPopout(cloudFiltered, popouts);
+  if (DetectPopout(cloudFiltered, popouts) == false)	return false;
   
   pclA::EuclideanClustering(*cloudFiltered, popouts, clusters);             // Do euclidean clustering with all points of the popout-cloud
   for(unsigned i=0; i<clusters.size(); i++)
@@ -123,6 +123,10 @@ void PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
     {
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster_hull;
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr soi;
+//       CvHistogram* hist;
+//       
+//       hist = CalSOIHist(clusters[i]);
+//       hists.push_back(hist);
 
       double max_dist = 0;
       pclA::MaxDistanceToPlane(clusters[i], tableCoefficients, max_dist);     // Calculate the maximum distance to table plane
@@ -137,8 +141,58 @@ void PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
   }
   
   valid_computation = true;
+  return true;
 }
 
+/**
+ * Calculate the Histogram of all the points in the SOI.
+ */
+/*
+CvHistogram* PlanePopout::CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud)
+{
+    CvHistogram* h;
+    IplImage* tmp = cvCreateImage(cvSize(1, pcl_cloud->points.size()), 8, 3);		///temp image, store all the points in the SOI in a matrix way
+    for (unsigned int i=0; i<pcl_cloud->points.size(); i++)
+    {
+	CvScalar v;	  
+	v.val[0] = pcl_cloud->points[i].b;
+	v.val[1] = pcl_cloud->points[i].g;
+	v.val[2] = pcl_cloud->points[i].r;
+	cvSet2D(tmp, i, 0, v);
+    }
+    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
+    IplImage* planes[] = { h_plane, s_plane };
+    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
+    int h_bins = 16, s_bins = 8;
+    int hist_size[] = {h_bins, s_bins};
+    // hue varies from 0 (~0 deg red) to 180 (~360 deg red again)
+    float h_ranges[] = { 0, 180 };
+    // saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) 
+    float s_ranges[] = { 0, 255 };
+    float* ranges[] = { h_ranges, s_ranges };
+    float max_value = 0;
+
+    cvCvtColor( tmp, hsv, CV_BGR2HSV );
+    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
+    h = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
+    cvCalcHist( planes, h, 0, 0 );
+    cvGetMinMaxHistValue( h, 0, &max_value, 0, 0 );
+
+    cvReleaseImage(&h_plane);
+    cvReleaseImage(&s_plane);
+    cvReleaseImage(&v_plane);
+    cvReleaseImage(&hsv);
+    cvReleaseImage(&tmp);
+    return h;
+}
+*/
+// void PlanePopout::GetHists(std::vector< CvHistogram* > &_hists)
+// {
+//   for(unsigned i=0; i<hists.size(); i++)
+//     _hists.push_back(hists[i]);
+// }
 
 /**
  * Calculate the ROI mask with labels, starting with 1. 0 means no ROI.
@@ -238,14 +292,12 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
 /**
  * Detect table plane and objects which pop out
  */
-void PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
+bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                                pcl::PointIndices &popout)
 {
   if ((int)cloud->points.size () < param.nbNeighbours)
-  {
-    cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
-    return;
-  }
+    return false;
+  	else cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
 
   if (tableCoefficients.get()==0)
     tableCoefficients.reset(new pcl::ModelCoefficients());
@@ -263,8 +315,9 @@ void PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
   if (tableInliers->indices.size () == 0)
   {
     cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
-    return;
+    return false;
   }
+  else	cout<<"PlanePopout::DetectPopout: There are "<< tableInliers->indices.size()<<"Plane Inliers points!"<<endl;
 
   proj.setInputCloud (cloudDownsampled);
   proj.setIndices (tableInliers);
@@ -276,7 +329,15 @@ void PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 
   prism.setInputCloud (cloud);
   prism.setInputPlanarHull (tableHull);
-  prism.segment (popout); 
+  prism.segment (popout);
+
+  if (popout.indices.size () == 0)
+  {
+    cout<<"PlanePopout::DetectPopout: No popout points!"<<endl;
+    return false;
+  }
+  
+  return true;
 }
 
 /**
