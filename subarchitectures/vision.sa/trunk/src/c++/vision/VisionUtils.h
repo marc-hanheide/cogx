@@ -15,17 +15,27 @@
 #include "VisionObjects.h"
 
 /**
+ * Project a (bounding) sphere to an image rectangle.
+ */
+inline cogx::Math::Rect2 projectSphere(const Video::CameraParameters &cam, const cogx::Math::Sphere3 &sphere)
+{
+  cogx::Math::Rect2 rect;
+  rect.pos = projectPoint(cam, sphere.pos);
+  // assuming that the image is a raw, distorted camera image, we now have to
+  // distort the position to match the image
+  distortPoint(cam, rect.pos, rect.pos);
+  rect.width = projectSize(cam, sphere.pos, 2.*sphere.rad);
+  rect.height = projectSize(cam, sphere.pos, 2.*sphere.rad);
+  return rect;
+}
+
+/**
  * Project a SOI in world co-ordinates to an image ROI.
  */
 inline VisionData::ROIPtr projectSOI(const Video::CameraParameters &cam, const VisionData::SOI &soi)
 {
    VisionData::ROIPtr roi = new VisionData::ROI;
-   roi->rect.pos = projectPoint(cam, soi.boundingSphere.pos);
-   // assuming that the image is a raw, distorted camera image, we now have to
-   // to distort the position to match the image
-   distortPoint(cam, roi->rect.pos, roi->rect.pos);
-   roi->rect.width = projectSize(cam, soi.boundingSphere.pos, 2.*soi.boundingSphere.rad);//std::cout<<"roi->rect.width "<<roi->rect.width<<std::endl;
-   roi->rect.height = projectSize(cam, soi.boundingSphere.pos, 2.*soi.boundingSphere.rad);
+   roi->rect = projectSphere(cam, soi.boundingSphere);
    roi->time = soi.time;
    return roi;
 }
@@ -252,7 +262,7 @@ inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePo
   
   for(unsigned row = 0; row < height; row++)
   {
-    for(unsigned col = 0; col < width; col++)
+    for(unsigned col = 0; col < (unsigned)width; col++)
     {
       cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
       position = row*width + col;
