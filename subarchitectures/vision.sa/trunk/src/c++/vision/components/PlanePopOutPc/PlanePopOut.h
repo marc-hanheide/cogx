@@ -198,11 +198,15 @@ public:
     void onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc);
 
 
-    PlanePopOut() : camId(0) 
-{
-    previousImg = 0;
-    bWriteSoisToWm = true;
-}
+    PlanePopOut()
+    {
+	camId = 0;
+	previousImg = 0;
+	iplImage_l = 0;
+	iplImage_r = 0;
+	iplImage_k = 0;
+	bWriteSoisToWm = true;
+    }
     virtual ~PlanePopOut() {}
 };
 
