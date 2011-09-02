@@ -445,7 +445,7 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	str << "<h3>Plane popout - SendPoints</h3>";
 	str << "Labels: " << (bColorByLabels ? "ON" : "OFF") << "<br>";
 	str << "Points: " << points.size() << "<br>";
-	str << "Colors: " << colors << "<br>";
+	str << "Colors: " << colors << " color changes<br>";
 	str << "Strlen: " << S.length() << "<br>";
 	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
