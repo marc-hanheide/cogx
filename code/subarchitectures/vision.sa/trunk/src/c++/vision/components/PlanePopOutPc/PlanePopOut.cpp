@@ -59,18 +59,6 @@ long long gethrtime(void)
 
 #endif
 
-#define USE_MOTION_DETECTION
-//#define SAVE_SOI_PATCH  //todo: fix that !crop the ROI may cause the crash since the size of the ROI may exceeds the boundaries of img  
-#define USE_PSO	0	//0=use RANSAC, 1=use PSO to estimate multiple planes
-
-
-
-#define MAX_V 0.1
-#define label4initial		-3
-#define label4plane		0	//0, -10, -20, -30... for multiple planes
-#define label4objcandidant	-2
-#define label4objs		1	//1,2,3,4.....for multiple objs
-#define label4ambiguousness	-1
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
 #define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
@@ -98,16 +86,6 @@ using namespace cdl;
 
 
 
-PointCloud::SurfacePointSeq pointsN;
-
-const VisionData::ObjSeq mObjSeq;
-
-int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
-int StableTime; //this makes stable obj
-bool doDisplay;
-
-
-
 void PlanePopOut::configure(const map<string,string> & _config)
 {
     // first let the base classes configure themselves
@@ -122,7 +100,11 @@ void PlanePopOut::configure(const map<string,string> & _config)
     StableTime = 2;
     Shrink_SOI = 0.9;
     Upper_BG = 1.5;
-    Lower_BG = 1.1;	
+    Lower_BG = 1.1;
+    mConvexHullDensity = 0.0;
+    pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
+    pre_mConvexHullRadius = 0.0;
+    pre_id = "";
     if((it = _config.find("--globalPoints")) != _config.end())
     {
 	istringstream str(it->second);
@@ -170,10 +152,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
     }
 
     println("use global points: %d", (int)useGlobalPoints);
-    mConvexHullDensity = 0.0;
-    pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
-    pre_mConvexHullRadius = 0.0;
-    pre_id = "";
 
 #ifdef FEAT_VISUALIZATION
     m_display.configureDisplayClient(_config);
@@ -417,17 +395,20 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	}
 	else {
 	    int lab = labels.at(i);
+	    if (lab == -1) 
+	      continue; // skip this point
+	    
 	    if (plab != lab) {
 		colors++;
 		plab = lab;
 		switch (lab) {
-		    case 0:   str << "c(1.0,0.0,0.0)\n"; break;
+		    case 0: str << "c(0.0,0.0,1.0)\n"; break;
 		    case 1: str << "c(0.0,1.0,0.0)\n"; break;
-		    case 2: str << "c(0.0,0.0,1.0)\n"; break;
-		    case 3: str << "c(0.0,1.0,1.0)\n"; break;
+		    case 2: str << "c(1.0,0.0,.0)\n"; break;
+		    case 3: str << "c(0.0,0.5,0.5)\n"; break;
 		    case 4: str << "c(0.5,0.5,0.0)\n"; break;
-		    case 5:  str << "c(0.0,0.0,0.0)\n"; break;
-		    default:  str << "c(1.0,1.0,0.0)\n"; break;
+// 		    case -1: str << "c(0.5,0.0,0.5)\n"; break;
+ 		    default:  str << "c(1.0,1.0,1.0)\n"; break;
 		}
 	    }
 	}
@@ -608,6 +589,10 @@ void PlanePopOut::runComponent()
 	}
 #ifdef FEAT_VISUALIZATION
 	//log("Start to send points");
+// 	int debug_labels=0;
+// 	for (int i=0; i<points_label.size(); i++)
+// 	  if (points_label[i]== 0)	debug_labels++;
+// 	log("Thera are %d points on the plane", debug_labels);
 	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
 	if (m_bSendPlaneGrid) SendPlaneGrid();
 	//log("Done FEAT_VISUALIZATION");
@@ -623,6 +608,7 @@ void PlanePopOut::runComponent()
 	    log("SOI COUNT = %d",v3center.size());	
 	    lastSize = v3center.size();
 	}
+	CurrentObjList.clear();
 	for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 	{
 	    ObjPara OP;
@@ -666,7 +652,6 @@ void PlanePopOut::CleanupAll()
     SOIPointsSeq.clear();
     BGPointsSeq.clear();
     EQPointsSeq.clear();
-    CurrentObjList.clear();
     Pre2CurrentList.clear();
 }
 
@@ -804,7 +789,7 @@ void PlanePopOut::SOIManagement()
 		    {
 			// cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
-			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+// 			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
 			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
@@ -832,7 +817,7 @@ void PlanePopOut::SOIManagement()
 		    if (bWriteSoisToWm)
 		    {
 			SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			log("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+// 			log("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 #ifdef FEAT_VISUALIZATION
 			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
@@ -853,7 +838,7 @@ void PlanePopOut::SOIManagement()
 			CurrentObjList.at(i).bInWM = true;
 			CurrentObjList.at(i).id = newDataID();
 			SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+// 			log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			addToWorkingMemory(CurrentObjList.at(i).id, obj);
 
 #ifdef FEAT_VISUALIZATION
@@ -1067,7 +1052,7 @@ bool PlanePopOut::GetPlaneAndSOIs()
     for (unsigned i=0; i<planepoints->indices.size(); i++)	// use indices of plane points to lable them
     {
 	int index = planepoints->indices[i];		//index of plane point
-	points_label[index] = 0;	//plane points	== label 0
+	points_label.at(index) = 0;	//plane points	== label 0
 	PointCloud::SurfacePoint PushStructure;
 	Vector3 tmp;
 	tmp.x = pcl_cloud->points[index].x; tmp.y = pcl_cloud->points[index].y; tmp.z = pcl_cloud->points[index].z;
@@ -1331,10 +1316,11 @@ void PlanePopOut::ConvexHullOfPlane(PointCloud::SurfacePointSeq points, std::vec
     {cen.x=cen.x/tablehull->points.size(); cen.y=cen.y/tablehull->points.size(); cen.z=cen.z/tablehull->points.size();}
     mCenterOfHull = cen;
     mConvexHullRadius = dist(cen,tmp);
-    int No_Inliers = 0;
+    int Num_Inliers = 0;
     for (unsigned int i = 0; i<points.size(); i++)
-	if (labels[i]==0)	No_Inliers++;
-    if (mConvexHullRadius !=0) mConvexHullDensity = No_Inliers/PI/mConvexHullRadius/mConvexHullRadius;
+	if (labels[i]==0)	Num_Inliers++;
+    if (mConvexHullRadius !=0) mConvexHullDensity = Num_Inliers/PI/mConvexHullRadius/mConvexHullRadius;
+//     log("PlanePopOut::ConvexHullOfPlane, there are %d inliers on the plane!", Num_Inliers);
 }
 
 void PlanePopOut::CalCenterOfSOIs()

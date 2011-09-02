@@ -122,6 +122,12 @@ private:
     bool useGlobalPoints;
     bool bWithKinect;
     int camId;
+    const VisionData::ObjSeq mObjSeq;
+    PointCloud::SurfacePointSeq pointsN;
+
+    int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
+    int StableTime; //this makes stable obj
+    bool doDisplay;
 
     vector< Vector3 > v3center;
     vector<double> vdradius;
