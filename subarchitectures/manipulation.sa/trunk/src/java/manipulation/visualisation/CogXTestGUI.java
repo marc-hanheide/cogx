@@ -25,6 +25,7 @@ import manipulation.slice.FineArmMovementCommand;
 import manipulation.slice.GetCurrentArmPose;
 import manipulation.slice.ManipulationCommand;
 import manipulation.slice.ManipulationCommandStatus;
+import manipulation.slice.GraspingStatus;
 import manipulation.slice.ManipulationCompletion;
 import manipulation.slice.MoveArmToHomePositionCommand;
 import manipulation.slice.MoveArmToPose;
@@ -421,6 +422,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			FarArmMovementCommand farArmMovementCom = new FarArmMovementCommand();
 			farArmMovementCom.comp = ManipulationCompletion.COMPINIT;
 			farArmMovementCom.status = ManipulationCommandStatus.NEW;
+			farArmMovementCom.reachedPose = new Pose3(new Vector3(0, 0, 0),
+          new Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1));
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -486,6 +489,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			FineArmMovementCommand linGraspApp = new FineArmMovementCommand();
 			linGraspApp.comp = ManipulationCompletion.COMPINIT;
 			linGraspApp.status = ManipulationCommandStatus.NEW;
+			linGraspApp.graspStatus = GraspingStatus.GRASPINGSTATUSINIT;
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -543,6 +547,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			SimulateFarArmMovementCommand simGCmd = new SimulateFarArmMovementCommand();
 			simGCmd.comp = ManipulationCompletion.COMPINIT;
 			simGCmd.status = ManipulationCommandStatus.NEW;
+			simGCmd.simulatedReachablePose = new Pose3(new Vector3(0, 0, 0),
+          new Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1));
 
 			if (!txtItemXPosition.getText().isEmpty()) {
 				String visObjID = ((CogXRunner) manipulator.getRunner())
@@ -651,6 +657,7 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			CloseGripperCommand closeGripperCmd = new CloseGripperCommand();
 			closeGripperCmd.comp = ManipulationCompletion.COMPINIT;
 			closeGripperCmd.status = ManipulationCommandStatus.NEW;
+			closeGripperCmd.graspStatus = GraspingStatus.GRASPINGSTATUSINIT;
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -677,6 +684,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 							.parseDouble(txtrot20.getText()), Double
 							.parseDouble(txtrot21.getText()), Double
 							.parseDouble(txtrot22.getText())));
+			moveArmToPose.reachedPose = new Pose3(new Vector3(0, 0, 0),
+          new Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1));
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -698,6 +707,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 			GetCurrentArmPose getPose = new GetCurrentArmPose();
 			getPose.comp = ManipulationCompletion.COMPINIT;
 			getPose.status = ManipulationCommandStatus.NEW;
+      getPose.currentPose = new Pose3(new Vector3(0, 0, 0),
+          new Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1));
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
@@ -733,6 +744,8 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 							.parseDouble(txtrot20.getText()), Double
 							.parseDouble(txtrot21.getText()), Double
 							.parseDouble(txtrot22.getText())));
+			simMoveToPose.simulatedReachablePose = new Pose3(new Vector3(0, 0, 0),
+          new Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1));
 
 			try {
 				((CogXRunner) manipulator.getRunner()).addToWorkingMemory(id,
