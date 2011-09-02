@@ -58,10 +58,10 @@ public:
               double dwLeaf = 0.02,
               double dwLeafObj = 0.01,
               int nb = 10,
-              double thrSac = 0.01,
+              double thrSac = 0.05,
               double normalDistWeight = 0.1,
-              double minObjH = 0.005,
-              double maxObjH = 0.7,
+              double minObjH = 0.05,
+              double maxObjH = 0.8,
               float eucThr = 0.02,
               unsigned minClSize = 100)
       : minZ(_minZ), maxZ(_maxZ), downsampleLeaf(dwLeaf), downsampleLeafObjects(dwLeafObj), 

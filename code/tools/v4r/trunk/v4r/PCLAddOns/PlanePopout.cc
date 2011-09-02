@@ -297,7 +297,7 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 {
   if ((int)cloud->points.size () < param.nbNeighbours)
     return false;
-  	else cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
+  //	else cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
 
   if (tableCoefficients.get()==0)
     tableCoefficients.reset(new pcl::ModelCoefficients());
@@ -317,7 +317,7 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
     cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
     return false;
   }
-  else	cout<<"PlanePopout::DetectPopout: There are "<< tableInliers->indices.size()<<"Plane Inliers points!"<<endl;
+  //else	cout<<"PlanePopout::DetectPopout: There are "<< tableInliers->indices.size()<<"Plane Inliers points!"<<endl;
 
   proj.setInputCloud (cloudDownsampled);
   proj.setIndices (tableInliers);
