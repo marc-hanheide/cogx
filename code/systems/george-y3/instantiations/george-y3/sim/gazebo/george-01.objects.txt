@@ -5,6 +5,7 @@ weetabix
 bircher
 toppas
 chocos
+darjeeling
 [places]
 1 0 0.176
 1 -0.350 0.176
