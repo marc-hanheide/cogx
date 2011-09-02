@@ -94,10 +94,10 @@ private:
 
     ///---------------------------------------------------------------------
 
-    double A, B, C, D;					///< Plane Coefficients, Ax+By+Cz+D=0
+    double A, B, C, D;						///< Plane Coefficients, Ax+By+Cz+D=0
     pcl::ModelCoefficients::Ptr dpc;				///< Dominant plane Coefficients
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;		///< Table hull
-    pcl::PointIndices::Ptr planepoints;			///< the indices of points on the dominant plane
+    pcl::PointIndices::Ptr planepoints;				///< the indices of points on the dominant plane
 
     VisionData::Vector3Seq mConvexHullPoints;
     Vector3 mCenterOfHull;
@@ -129,6 +129,9 @@ private:
     vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
     vector< PointCloud::SurfacePointSeq > BGPointsSeq;
     vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points	
+    
+    vector <CvRect> vSOIonImg;
+    vector <std::string> vSOIid;
 
     TGThread::TomGineThread *tgRenderer;              ///< 3D render engine	
 
