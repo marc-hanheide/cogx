@@ -149,13 +149,15 @@ public class CogXTestGUI extends JPanel implements ActionListener {
 		initVisualObjViewArray[0] = initVisualObjView;
 		GeometryModel initGeomModel = new GeometryModel(initVertex, initFace);
 		String compID = ((CogXRunner) manipulator.getRunner()).getComponentID();
+		VisualObject visObj = new VisualObject();
+/*
 		VisualObject visObj = new VisualObject(initPos, intStringArray, 0,
 				initSphere, initTime, compID, initVisualObjViewArray,
 				initGeomModel, 0, intStringArray, initDoubleArray, 0, 0,
 				intStringArray, initDoubleArray, initDoubleArray, 0, 0,
 				intStringArray, initDoubleArray, initDoubleArray, 0, 0, "", "",
 				initDoubleArray);
-
+*/
 		return visObj;
 	}
 
