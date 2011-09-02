@@ -100,18 +100,11 @@ using namespace cdl;
 
 PointCloud::SurfacePointSeq pointsN;
 
-VisionData::ObjSeq mObjSeq;
+const VisionData::ObjSeq mObjSeq;
 
 int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
-int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
-//this makes stable obj
-
-
-int N;  // 1/N points will be used
-bool mbDrawWire;
+int StableTime; //this makes stable obj
 bool doDisplay;
-Vector3 v3dmax;
-Vector3 v3dmin;
 
 
 
@@ -576,8 +569,14 @@ void PlanePopOut::runComponent()
     while(isRunning())
     {
 	CleanupAll();
-	if (GetImageData() == false) 		continue;		//log("Hoho, we get the image data from PCL");
-	if (GetPlaneAndSOIs() == false)		continue;		//log("Haha, we get the Sois and Plane from PCL");
+	if ( ! GetImageData()) {
+	    sleepComponent(1);
+	    continue;		//log("Hoho, we get the image data from PCL");
+	}
+	if ( ! GetPlaneAndSOIs()) {
+	    sleepComponent(1);
+	    continue;		//log("Haha, we get the Sois and Plane from PCL");
+	}
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
 	//log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
@@ -645,6 +644,7 @@ void PlanePopOut::runComponent()
 	//log("Done SOIManagement");
     }
     sleepComponent(50);
+    CleanupAll();
 }
 
 void PlanePopOut::CleanupAll()
@@ -1000,7 +1000,7 @@ bool PlanePopOut::GetImageData()
     points.clear();
     //  getPoints(true, pointCloudWidth, points);
     getCompletePoints(true, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
-//     log("there are %d points from GetPoints",points.size());
+    //     log("there are %d points from GetPoints",points.size());
     ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
@@ -1010,7 +1010,7 @@ bool PlanePopOut::GetImageData()
     getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
     iplImage_l = convertImageToIpl(image_l);
     iplImage_r = convertImageToIpl(image_r);
-    
+
     if(bWithKinect == true)
     {
 	getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
@@ -1019,21 +1019,22 @@ bool PlanePopOut::GetImageData()
 
     if (pcl_cloud->points.size()<100)	
     {
-//       log("less than 100 points???");
-      return false;
+	//       log("less than 100 points???");
+	return false;
     }
     else 
     {
-//       log("there are %d points from pcl", pcl_cloud->points.size());
-      return true;
-      
+	//       log("there are %d points from pcl", pcl_cloud->points.size());
+	return true;
+
     }
 }
 
 bool PlanePopOut::GetPlaneAndSOIs()
 {
-    pclA::PlanePopout *planePopout;
-    planePopout = new pclA::PlanePopout();
+    if (! planePopout)
+	planePopout = new pclA::PlanePopout();
+
     if (!planePopout->CalculateSOIs(pcl_cloud))	
     {
 //       log("Cal SOIs error!!!");
@@ -1261,7 +1262,7 @@ void PlanePopOut::AddConvexHullinWM()
     }
 
     mConvexHullPoints.clear();
-    mObjSeq.clear();
+    //mObjSeq.clear();
     mCenterOfHull.x = mCenterOfHull.y = mCenterOfHull.z = 0.0;
     mConvexHullRadius = 0.0;
     mConvexHullDensity = 0.0;
