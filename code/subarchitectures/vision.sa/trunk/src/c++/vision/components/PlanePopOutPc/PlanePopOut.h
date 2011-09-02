@@ -121,7 +121,6 @@ private:
     bool bWriteSoisToWm;
     bool useGlobalPoints;
     bool bWithKinect;
-    IplImage* ROIMaskImg; 
     int camId;
 
     vector< Vector3 > v3center;
@@ -138,6 +137,7 @@ private:
 
     Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
     IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)     
+    IplImage* ROIMaskImg; 
 
 
     std::vector<ObjPara> PreviousObjList;
@@ -207,6 +207,7 @@ public:
 	iplImage_l = 0;
 	iplImage_r = 0;
 	iplImage_k = 0;
+	ROIMaskImg = 0;
 	bWriteSoisToWm = true;
     }
     virtual ~PlanePopOut()
@@ -216,6 +217,7 @@ public:
 	cvReleaseImage(&iplImage_l);
 	cvReleaseImage(&iplImage_r);
 	cvReleaseImage(&iplImage_k);
+	cvReleaseImage(&ROIMaskImg);
     }
 };
 

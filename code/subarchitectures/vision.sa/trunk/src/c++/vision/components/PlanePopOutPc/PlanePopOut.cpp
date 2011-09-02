@@ -1038,19 +1038,29 @@ bool PlanePopOut::GetPlaneAndSOIs()
     if (!planePopout->CalculateSOIs(pcl_cloud))	
     {
 //       log("Cal SOIs error!!!");
-      return false;
+	return false;
     }
     planePopout->GetSOIs(sois);
     planePopout->GetDominantPlaneCoefficients(dpc);
-    if (dpc->values[3]>0)  {A = dpc->values[0];		B = dpc->values[1];	C = dpc->values[2];	D = dpc->values[3];}
-    else	{A = -dpc->values[0];		B = -dpc->values[1];	C = -dpc->values[2];	D = -dpc->values[3];}
+    if (dpc->values[3]>0)  {
+	A = dpc->values[0]; B = dpc->values[1]; C = dpc->values[2]; D = dpc->values[3];
+    }
+    else {
+	A = -dpc->values[0]; B = -dpc->values[1]; C = -dpc->values[2]; D = -dpc->values[3];
+    }
     planePopout->GetTableHulls(tablehull);
     planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     int w,h;
-    if (bWithKinect)	
-    {	w =iplImage_k->width;	h=iplImage_k->height;	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);	cvCopy(iplImage_k, ROIMaskImg,NULL);}
-    else
-    {	w =iplImage_l->width;	h=iplImage_l->height;	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);	cvCopy(iplImage_l, ROIMaskImg,NULL);}
+    if (bWithKinect) {
+	w =iplImage_k->width;	h=iplImage_k->height;
+	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);
+	cvCopy(iplImage_k, ROIMaskImg,NULL);
+    }
+    else {
+	w =iplImage_l->width;	h=iplImage_l->height;
+	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);
+	cvCopy(iplImage_l, ROIMaskImg,NULL);
+    }
     objnumber=sois.size();	//log("There are %d SOIs !", objnumber);
     points.clear();	points.resize(pcl_cloud->points.size());
     points_label.clear();	points_label.assign(pcl_cloud->points.size(), -1);
