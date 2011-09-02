@@ -102,9 +102,6 @@ PointCloud::SurfacePointSeq pointsN;
 
 VisionData::ObjSeq mObjSeq;
 
-
-vector <CvRect> vSOIonImg;
-vector <std::string> vSOIid;
 int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
 int StableTime;	// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 //this makes stable obj
@@ -578,21 +575,21 @@ void PlanePopOut::runComponent()
     while(isRunning())
     {
 	CleanupAll();
-	if (GetImageData() == false) 		continue;		log("Hoho, we get the image data from PCL");
-	if (GetPlaneAndSOIs() == false)		continue;		log("Haha, we get the Sois and Plane from PCL");
+	if (GetImageData() == false) 		continue;		//log("Hoho, we get the image data from PCL");
+	if (GetPlaneAndSOIs() == false)		continue;		//log("Haha, we get the Sois and Plane from PCL");
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
-	log("Yeah, we get the color histograms of all the sois");
+	//log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
-	{						log("we get some sois, now analyze them");
-	    ConvexHullOfPlane(points,points_label);			log("get the convex hull of the dominant plane");
-	    CalCenterOfSOIs();				log("Cal center of all sois");
-	    CalSizeOfSOIs(); 				log("cal the center and the soze of bounding cuboids");	//cal bounding Cuboids and centers of the points cloud
-	    BoundingSphere(points,points_label); 	log("cal the radius of bounding spheres");			// get bounding spheres, SOIs and ROIs
+	{						//log("we get some sois, now analyze them");
+	    ConvexHullOfPlane(points,points_label);	//log("get the convex hull of the dominant plane");
+	    CalCenterOfSOIs();				//log("Cal center of all sois");
+	    CalSizeOfSOIs(); 				//log("cal the center and the soze of bounding cuboids");	//cal bounding Cuboids and centers of the points cloud
+	    BoundingSphere(points,points_label); 	//log("cal the radius of bounding spheres");			// get bounding spheres, SOIs and ROIs
 	    //if (SendDensePoints==1) CollectDensePoints(image.camPars, points);		/// TODO
 #ifdef FEAT_VISUALIZATION
 	    if (m_bSendImage)
 	    {
-		//  		SendImage(points,points_label,image, m_display, this);
+		//  		SendImage(points,points_label,image, m_display, this);		/// TODO
 		//cout<<"send Imgs"<<endl;
 	    }
 #endif
@@ -602,26 +599,25 @@ void PlanePopOut::runComponent()
 	    v3size.clear();
 	    v3center.clear();
 	    vdradius.clear();
-	    log("there is no objects, now strating cal convex hull");
-	    ConvexHullOfPlane(points,points_label);			log("although there is no object, we still can get the convex hull of the dominant plane");
+	    //log("there is no objects, now strating cal convex hull");
+	    ConvexHullOfPlane(points,points_label);			//log("although there is no object, we still can get the convex hull of the dominant plane");
 	}
 	if (doDisplay)
 	{
 	    DisplayInTG();
 	}
 #ifdef FEAT_VISUALIZATION
-	log("Start to send points");
-	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); log("Done sendpoints");
+	//log("Start to send points");
+	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
 	if (m_bSendPlaneGrid) SendPlaneGrid();
-	log("Done FEAT_VISUALIZATION");
+	//log("Done FEAT_VISUALIZATION");
 #endif
 
 	// 	AddConvexHullinWM();
 	//log("Done AddConvexHullinWM");
 
 	static int lastSize = -1;
-	log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
-	CurrentObjList.clear();
+	//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 	//Pre2CurrentList.clear();
 	if (lastSize != v3center.size()) {
 	    log("SOI COUNT = %d",v3center.size());	
@@ -643,9 +639,9 @@ void PlanePopOut::runComponent()
 	    OP.hist = vec_histogram.at(i);
 	    CurrentObjList.push_back(OP);
 	}
-	log("Start SOIManagement");
+	//log("Start SOIManagement");
 	SOIManagement();
-	log("Done SOIManagement");
+	//log("Done SOIManagement");
     }
     sleepComponent(50);
 }
@@ -654,15 +650,22 @@ void PlanePopOut::CleanupAll()
 {
     A=B=C=D=0.0;
     //     dpc->values[0]=dpc->values[1]=dpc->values[2]=dpc->values[3]=0.0;
+    cvReleaseImage(&iplImage_l);
+    cvReleaseImage(&iplImage_r);
+    cvReleaseImage(&iplImage_k);
     mConvexHullPoints.clear();
     points.clear();
     points_label.clear();
     v3center.clear();
     vdradius.clear();
     v3size.clear();
+    sois.clear();
+    vec_histogram.clear();
     SOIPointsSeq.clear();
     BGPointsSeq.clear();
     EQPointsSeq.clear();
+    CurrentObjList.clear();
+    Pre2CurrentList.clear();
 }
 
 void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
@@ -710,7 +713,6 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
 void PlanePopOut::SOIManagement()
 {
     //log("There are %d SOI in the Current scene", CurrentObjList.size());
-    Pre2CurrentList.clear();
     if (PreviousObjList.empty())
     {
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
@@ -736,7 +738,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+// 			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -775,7 +777,7 @@ void PlanePopOut::SOIManagement()
 		}
 	    }
 	}
-	//log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
+// 	log("The matching probability of %d in Current and %d in Previous is %f",matchingObjIndex, j, max_matching_probability);
 	if (max_matching_probability>Treshold_Comp2SOI)
 	{
 	    SOIMatch SOIm;
@@ -800,9 +802,9 @@ void PlanePopOut::SOIManagement()
 		    {
 			// cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
-			// cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+// 			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -828,10 +830,10 @@ void PlanePopOut::SOIManagement()
 		    if (bWriteSoisToWm)
 		    {
 			SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			debug("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			log("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+// 			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 		}
@@ -849,24 +851,23 @@ void PlanePopOut::SOIManagement()
 			CurrentObjList.at(i).bInWM = true;
 			CurrentObjList.at(i).id = newDataID();
 			SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-			debug("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+			log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			addToWorkingMemory(CurrentObjList.at(i).id, obj);
 
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+// 			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 #ifdef SAVE_SOI_PATCH
-		    std::string path = CurrentObjList.at(i).id;
-		    SaveHistogramImg(CurrentObjList.at(i).hist, path);
-		    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
-		    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
-		    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
-		    cvCopy( previousImg, cropped );
-		    cvResetImageROI( previousImg );
-		    cvSaveImage(path.c_str(), cropped);
-		    cvReleaseImage(&cropped);
-
+// 		    std::string path = CurrentObjList.at(i).id;
+// 		    SaveHistogramImg(CurrentObjList.at(i).hist, path);
+// 		    path.insert(0,"/tmp/"); path.insert(path.length(),".jpg");
+// 		    IplImage* cropped = cvCreateImage( cvSize(CurrentObjList.at(i).rect.width,CurrentObjList.at(i).rect.height), previousImg->depth, previousImg->nChannels );
+// 		    cvSetImageROI( previousImg, CurrentObjList.at(i).rect);
+// 		    cvCopy( previousImg, cropped );
+// 		    cvResetImageROI( previousImg );
+// 		    cvSaveImage(path.c_str(), cropped);
+// 		    cvReleaseImage(&cropped);
 #endif
 		    //	    log("222222222 Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 		    //    log("objects number = %u",objnumber);
@@ -900,6 +901,7 @@ void PlanePopOut::SOIManagement()
 	vSOIonImg.push_back(PreviousObjList.at(i).rect);
 	vSOIid.push_back(PreviousObjList.at(i).id);
     }
+    myMatchingSOIVector.clear();
 }
 
 int PlanePopOut::IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist)
@@ -996,7 +998,7 @@ bool PlanePopOut::GetImageData()
     points.clear();
     //  getPoints(true, pointCloudWidth, points);
     getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
-    log("there are %d points from GetPoints",points.size());
+//     log("there are %d points from GetPoints",points.size());
     ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
@@ -1009,21 +1011,34 @@ bool PlanePopOut::GetImageData()
     iplImage_r = convertImageToIpl(image_r);
     iplImage_k = convertImageToIpl(image_k);
 
-    if (pcl_cloud->points.size()<100)	{log("less than 100 points???"); return false;}
-    else {log("there are %d points from pcl", pcl_cloud->points.size()); return true;}
+    if (pcl_cloud->points.size()<100)	
+    {
+//       log("less than 100 points???");
+      return false;
+    }
+    else 
+    {
+//       log("there are %d points from pcl", pcl_cloud->points.size());
+      return true;
+      
+    }
 }
 
 bool PlanePopOut::GetPlaneAndSOIs()
 {
     pclA::PlanePopout *planePopout;
     planePopout = new pclA::PlanePopout();
-    if (!planePopout->CalculateSOIs(pcl_cloud))	{log("Cal SOIs error!!!"); return false;}
+    if (!planePopout->CalculateSOIs(pcl_cloud))	
+    {
+//       log("Cal SOIs error!!!");
+      return false;
+    }
     planePopout->GetSOIs(sois);
     planePopout->GetDominantPlaneCoefficients(dpc);
     if (dpc->values[3]>0)  {A = dpc->values[0];		B = dpc->values[1];	C = dpc->values[2];	D = dpc->values[3];}
     else	{A = -dpc->values[0];		B = -dpc->values[1];	C = -dpc->values[2];	D = -dpc->values[3];}
     planePopout->GetTableHulls(tablehull);
-    planePopout->GetPlanePoints(planepoints);	log("There are %d inliers on the plane !", planepoints->indices.size());
+    planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     objnumber=sois.size();	//log("There are %d SOIs !", objnumber);
     points.clear();	points.resize(pcl_cloud->points.size());
     points_label.clear();	points_label.assign(pcl_cloud->points.size(), -1);
@@ -1160,17 +1175,18 @@ float PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
     //return the probability of matching of two objects, 0.0~1.0
 
-    float wC, wP; //magic weight for SURF matching, color histogram and Size/Position/Pose
+    float wC, wP; //magic weight for color histogram and Size/Position/Pose
     wP = 0.1;
     wC = 1.0-wP;
     double dist_histogram = CompareHistKLD(obj1.hist, obj2.hist);
-    double sizeRatio;
-    double s1, s2; 
-    s1 = obj1.pointsInOneSOI.size();  s2 = obj2.pointsInOneSOI.size();
-    double smax; if (s1>s2) smax=s1; else smax=s2;
-    sizeRatio = 1.0-exp(-(s2-s1)*(s2-s1)*3.14159/smax);
+//     log("The KLD of two objects are %f.", dist_histogram);
+//     double sizeRatio;
+//     double s1, s2; 
+//     s1 = obj1.pointsInOneSOI.size();  s2 = obj2.pointsInOneSOI.size();
+//     double smax; if (s1>s2) smax=s1; else smax=s2;
+//     sizeRatio = 1.0-exp(-(s2-s1)*(s2-s1)*3.14159/smax);
 
-    return 1.0-wC*abs(dist_histogram)-wP*sizeRatio;
+    return 1.0-wC*abs(dist_histogram);//-wP*sizeRatio;
 }
 
 void PlanePopOut::AddConvexHullinWM()
