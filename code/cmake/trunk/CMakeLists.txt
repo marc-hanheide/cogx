@@ -116,6 +116,10 @@ if(BUILD_SA_EXECUTION)
 add_subdirectory (subarchitectures/execution.sa)
 endif(BUILD_SA_EXECUTION)
 
+option(BUILD_SA_MANIPULATION "Build manipulation subarchitecure" NO)
+if(BUILD_SA_MANIPULATION)
+add_subdirectory (subarchitectures/manipulation.sa)
+endif(BUILD_SA_MANIPULATION)
 
 option(BUILD_SA_DIALOGUE "Build dialogue subarchitecure" NO)
 if(BUILD_SA_DIALOGUE)
@@ -235,6 +239,16 @@ option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" NO)
 if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
+
+option(BUILD_CALIB "Build system calibration tools" YES)
+if(BUILD_CALIB)
+add_subdirectory (tools/syscalb)
+endif(BUILD_CALIB)
+
+option(BUILD_GRIPPER "Build simple player gripper tool" NO)
+if(BUILD_GRIPPER)
+add_subdirectory (tools/gripper)
+endif(BUILD_GRIPPER)
 
 add_subdirectory(tools/scripts)
 
