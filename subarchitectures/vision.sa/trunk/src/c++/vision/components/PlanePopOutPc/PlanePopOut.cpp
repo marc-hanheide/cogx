@@ -124,6 +124,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
     useGlobalPoints = true;
     doDisplay = false;
+    bWithKinect = false;
     AgonalTime = 30;
     StableTime = 2;
     Shrink_SOI = 0.9;
@@ -148,7 +149,10 @@ void PlanePopOut::configure(const map<string,string> & _config)
 	istringstream str(it->second);
 	str >> StableTime;
     }
-
+    if((it = _config.find("--useKinect")) != _config.end())
+    {
+	bWithKinect = true;
+    }
     bWriteSoisToWm = true;
     if((it = _config.find("--generate-sois")) != _config.end())
     {
@@ -177,7 +181,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
     pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
     pre_mConvexHullRadius = 0.0;
     pre_id = "";
-    previousImg=cvCreateImage(cvSize(1,1),8,3);
 
 #ifdef FEAT_VISUALIZATION
     m_display.configureDisplayClient(_config);
@@ -329,51 +332,49 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
     return "";
 }
 
-void PlanePopOut::SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels,
-	const Video::Image& img)
+void PlanePopOut::SendImage()
 {
     //static CMilliTimer tmSendImage(true);
     //if (tmSendImage.elapsed() < 500) // 2Hz
     //    return;
-    //tmSendImage.restart();
+    //tmSendImage.restart();iplImage_l
 
     CMilliTimer tm(true);
-    IplImage *iplImg = convertImageToIpl(img);
-    Video::CameraParameters c = img.camPars;
-
-    for (unsigned int i=0 ; i<points.size() ; i++)
-    {
-	int m_label = labels.at(i);
-	PointCloud::SurfacePoint& pt = points.at(i);
-	switch (m_label)
-	{
-	    case 0:   cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
-	    case -10: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
-	    case -20: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
-	    case -30: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
-	    case -40: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
-	    case -50: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
-	}
-    }
-    CvFont a;
-    cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
-    for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
-    {
-	CvPoint p;
-	CvRect& rsoi = vSOIonImg.at(i);
-	p.x = (int)(rsoi.x+0.3 * rsoi.width);
-	p.y = (int)(rsoi.y+0.5 * rsoi.height);
-	cvPutText(iplImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
-    }
+//     IplImage *iplImg = convertImageToIpl(img);
+//     Video::CameraParameters c = img.camPars;
+// 
+//     for (unsigned int i=0 ; i<points.size() ; i++)
+//     {
+// 	int m_label = labels.at(i);
+// 	PointCloud::SurfacePoint& pt = points.at(i);
+// 	switch (m_label)
+// 	{
+// 	    case 0:   cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
+// 	    case -10: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
+// 	    case -20: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
+// 	    case -30: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
+// 	    case -40: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
+// 	    case -50: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
+// 	}
+//     }
+//     CvFont a;
+//     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
+//     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
+//     {
+// 	CvPoint p;
+// 	CvRect& rsoi = vSOIonImg.at(i);
+// 	p.x = (int)(rsoi.x+0.3 * rsoi.width);
+// 	p.y = (int)(rsoi.y+0.5 * rsoi.height);
+// 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
+//     }
 
     bool bSaveImage = true;
     long long t1 = tm.elapsed();
-    m_display.setImage(ID_OBJECT_IMAGE, iplImg);
+    m_display.setImage(ID_OBJECT_IMAGE, ROIMaskImg);
     long long t2 = tm.elapsed();
     if (bSaveImage)
-	cvSaveImage("/tmp/planes_image.jpg", iplImg);
-    long size = iplImg->imageSize;
-    cvReleaseImage(&iplImg);
+	cvSaveImage("/tmp/planes_image.jpg", ROIMaskImg);
+    long size = ROIMaskImg->imageSize;
     long long t3 = tm.elapsed();
 
     if (1) {
@@ -589,7 +590,7 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
 	    if (m_bSendImage)
 	    {
-		//  		SendImage(points,points_label,image, m_display, this);		/// TODO
+		SendImage();		/// TODO
 		//cout<<"send Imgs"<<endl;
 	    }
 #endif
@@ -653,6 +654,7 @@ void PlanePopOut::CleanupAll()
     cvReleaseImage(&iplImage_l);
     cvReleaseImage(&iplImage_r);
     cvReleaseImage(&iplImage_k);
+    cvReleaseImage(&ROIMaskImg);
     mConvexHullPoints.clear();
     points.clear();
     points_label.clear();
@@ -738,7 +740,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-// 			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -804,7 +806,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-// 			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -833,7 +835,7 @@ void PlanePopOut::SOIManagement()
 			log("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 #ifdef FEAT_VISUALIZATION
-// 			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 		}
@@ -855,7 +857,7 @@ void PlanePopOut::SOIManagement()
 			addToWorkingMemory(CurrentObjList.at(i).id, obj);
 
 #ifdef FEAT_VISUALIZATION
-// 			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 #ifdef SAVE_SOI_PATCH
@@ -894,11 +896,11 @@ void PlanePopOut::SOIManagement()
 	for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
 	    PreviousObjList.push_back(Pre2CurrentList.at(i));
 
-    vSOIonImg.clear();
+//     vSOIonImg.clear();
     vSOIid.clear();
     for (unsigned int i=0; i<PreviousObjList.size(); i++)
     {
-	vSOIonImg.push_back(PreviousObjList.at(i).rect);
+// 	vSOIonImg.push_back(PreviousObjList.at(i).rect);
 	vSOIid.push_back(PreviousObjList.at(i).id);
     }
     myMatchingSOIVector.clear();
@@ -997,7 +999,7 @@ bool PlanePopOut::GetImageData()
 
     points.clear();
     //  getPoints(true, pointCloudWidth, points);
-    getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+    getCompletePoints(true, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
 //     log("there are %d points from GetPoints",points.size());
     ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -1006,10 +1008,14 @@ bool PlanePopOut::GetImageData()
     // get rectified images from point cloud server
     getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
     getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
-    getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
     iplImage_l = convertImageToIpl(image_l);
     iplImage_r = convertImageToIpl(image_r);
-    iplImage_k = convertImageToIpl(image_k);
+    
+    if(bWithKinect == true)
+    {
+	getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+	iplImage_k = convertImageToIpl(image_k);
+    }
 
     if (pcl_cloud->points.size()<100)	
     {
@@ -1039,6 +1045,11 @@ bool PlanePopOut::GetPlaneAndSOIs()
     else	{A = -dpc->values[0];		B = -dpc->values[1];	C = -dpc->values[2];	D = -dpc->values[3];}
     planePopout->GetTableHulls(tablehull);
     planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
+    int w,h;
+    if (bWithKinect)	
+    {	w =iplImage_k->width;	h=iplImage_k->height;	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);	cvCopy(iplImage_k, ROIMaskImg,NULL);}
+    else
+    {	w =iplImage_l->width;	h=iplImage_l->height;	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);	cvCopy(iplImage_l, ROIMaskImg,NULL);}
     objnumber=sois.size();	//log("There are %d SOIs !", objnumber);
     points.clear();	points.resize(pcl_cloud->points.size());
     points_label.clear();	points_label.assign(pcl_cloud->points.size(), -1);

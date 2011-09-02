@@ -120,7 +120,8 @@ private:
     double Lower_BG;
     bool bWriteSoisToWm;
     bool useGlobalPoints;
-    IplImage* previousImg; 
+    bool bWithKinect;
+    IplImage* ROIMaskImg; 
     int camId;
 
     vector< Vector3 > v3center;
@@ -130,7 +131,7 @@ private:
     vector< PointCloud::SurfacePointSeq > BGPointsSeq;
     vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points	
     
-    vector <CvRect> vSOIonImg;
+//     vector <CvRect> vSOIonImg;
     vector <std::string> vSOIid;
 
     TGThread::TomGineThread *tgRenderer;              ///< 3D render engine	
@@ -166,7 +167,7 @@ private:
     CDisplayClient m_display;
 
     void SendSyncAllSois();
-    void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img);
+    void SendImage();
     void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels, CMilliTimer& tmSendPoints);
     void SendPlaneGrid();
     void SendOverlays();
@@ -201,7 +202,6 @@ public:
     PlanePopOut()
     {
 	camId = 0;
-	previousImg = 0;
 	iplImage_l = 0;
 	iplImage_r = 0;
 	iplImage_k = 0;
