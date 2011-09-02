@@ -568,9 +568,9 @@ void PlanePopOut::runComponent()
     sleepComponent(3000);
     log("Component PlanePopOut is running now");
     // note: this must be called in the run loop, not in configure or start as these are all different threads!
-//     int argc = 1;
-//     char argv0[] = "PlanePopOut";
-//     char *argv[1] = {argv0};
+    //     int argc = 1;
+    //     char argv0[] = "PlanePopOut";
+    //     char *argv[1] = {argv0};
 
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
@@ -581,7 +581,7 @@ void PlanePopOut::runComponent()
 	if (GetImageData() == false) 		continue;		log("Hoho, we get the image data from PCL");
 	if (GetPlaneAndSOIs() == false)		continue;		log("Haha, we get the Sois and Plane from PCL");
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
-				log("Yeah, we get the color histograms of all the sois");
+	log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
 	{						log("we get some sois, now analyze them");
 	    ConvexHullOfPlane(points,points_label);			log("get the convex hull of the dominant plane");
@@ -592,7 +592,7 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
 	    if (m_bSendImage)
 	    {
-//  		SendImage(points,points_label,image, m_display, this);
+		//  		SendImage(points,points_label,image, m_display, this);
 		//cout<<"send Imgs"<<endl;
 	    }
 #endif
@@ -602,7 +602,7 @@ void PlanePopOut::runComponent()
 	    v3size.clear();
 	    v3center.clear();
 	    vdradius.clear();
-							log("there is no objects, now strating cal convex hull");
+	    log("there is no objects, now strating cal convex hull");
 	    ConvexHullOfPlane(points,points_label);			log("although there is no object, we still can get the convex hull of the dominant plane");
 	}
 	if (doDisplay)
@@ -616,7 +616,7 @@ void PlanePopOut::runComponent()
 	log("Done FEAT_VISUALIZATION");
 #endif
 
-// 	AddConvexHullinWM();
+	// 	AddConvexHullinWM();
 	//log("Done AddConvexHullinWM");
 
 	static int lastSize = -1;
@@ -640,7 +640,7 @@ void PlanePopOut::runComponent()
 	    OP.pointsInOneSOI = SOIPointsSeq.at(i);
 	    OP.BGInOneSOI = BGPointsSeq.at(i);
 	    OP.EQInOneSOI = EQPointsSeq.at(i);
- 	    OP.hist = vec_histogram.at(i);
+	    OP.hist = vec_histogram.at(i);
 	    CurrentObjList.push_back(OP);
 	}
 	log("Start SOIManagement");
@@ -653,7 +653,7 @@ void PlanePopOut::runComponent()
 void PlanePopOut::CleanupAll()
 {
     A=B=C=D=0.0;
-//     dpc->values[0]=dpc->values[1]=dpc->values[2]=dpc->values[3]=0.0;
+    //     dpc->values[0]=dpc->values[1]=dpc->values[2]=dpc->values[3]=0.0;
     mConvexHullPoints.clear();
     points.clear();
     points_label.clear();
@@ -941,12 +941,12 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     class CCmd:
 	public VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>
     {
-    public:
-	CCmd(cast::WorkingMemoryReaderComponent* pReader)
-	: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
-    protected:
-	virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
-	virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+	public:
+	    CCmd(cast::WorkingMemoryReaderComponent* pReader)
+		: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
+	protected:
+	    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+	    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
     } cmd(this);
 
     println("PlanePopOut: GetStableSoisCommand.");
@@ -987,30 +987,30 @@ CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p, const Video::CameraParameter
  */
 bool PlanePopOut::GetImageData()
 {
-  sois.clear();
-  int pointCloudWidth = 320;                                /// TODO get from cast-file!
-  int pointCloudHeight = pointCloudWidth *3/4;
-  int kinectImageWidth = 640;
-  int kinectImageHeight = kinectImageWidth *3/4;
- 
-  points.clear();
-//  getPoints(true, pointCloudWidth, points);
-    getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
-  log("there are %d points from GetPoints",points.size());
-  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
-  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
+    sois.clear();
+    int pointCloudWidth = 320;                                /// TODO get from cast-file!
+    int pointCloudHeight = pointCloudWidth *3/4;
+    int kinectImageWidth = 640;
+    int kinectImageHeight = kinectImageWidth *3/4;
 
-  // get rectified images from point cloud server
-  getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
-  getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
-  getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
-  iplImage_l = convertImageToIpl(image_l);
-  iplImage_r = convertImageToIpl(image_r);
-  iplImage_k = convertImageToIpl(image_k);
-  
-  	if (pcl_cloud->points.size()<100)	{log("less than 100 points???"); return false;}
-	else {log("there are %d points from pcl", pcl_cloud->points.size()); return true;}
+    points.clear();
+    //  getPoints(true, pointCloudWidth, points);
+    getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+    log("there are %d points from GetPoints",points.size());
+    ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
+    pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
+
+    // get rectified images from point cloud server
+    getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
+    getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
+    getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+    iplImage_l = convertImageToIpl(image_l);
+    iplImage_r = convertImageToIpl(image_r);
+    iplImage_k = convertImageToIpl(image_k);
+
+    if (pcl_cloud->points.size()<100)	{log("less than 100 points???"); return false;}
+    else {log("there are %d points from pcl", pcl_cloud->points.size()); return true;}
 }
 
 bool PlanePopOut::GetPlaneAndSOIs()
@@ -1065,14 +1065,14 @@ void PlanePopOut::CalSOIHist(PointCloud::SurfacePointSeq pcloud, std::vector< in
     std::vector <PointCloud::SurfacePointSeq> VpointsOfSOI;
     PointCloud::SurfacePointSeq pseq = pcloud; pseq.clear();
     VpointsOfSOI.assign(max, pseq);
-    
+
     for (unsigned int i=0; i<pcloud.size(); i++)
     {
 	int k = label[i];
 	if (k>0)
 	    VpointsOfSOI[k-1].push_back(pcloud[i]);
     }
-    
+
     for (unsigned j=0; j<VpointsOfSOI.size(); j++)
     {
 	CvHistogram* h;
@@ -1287,7 +1287,7 @@ void PlanePopOut::ConvexHullOfPlane(PointCloud::SurfacePointSeq points, std::vec
     {
 	cen.x=cen.x+tablehull->points[i].x; cen.y=cen.y+tablehull->points[i].y; cen.z=cen.z+tablehull->points[i].z;
 	tmp.x=tablehull->points[i].x; tmp.y=tablehull->points[i].y; tmp.z=tablehull->points[i].z;
-    	mConvexHullPoints.push_back(tmp);
+	mConvexHullPoints.push_back(tmp);
     }
     if (tablehull->points.size()!=0)
     {cen.x=cen.x/tablehull->points.size(); cen.y=cen.y/tablehull->points.size(); cen.z=cen.z/tablehull->points.size();}
@@ -1325,7 +1325,7 @@ void PlanePopOut::CalSizeOfSOIs()
     Vector3 t; t.x=0.0; t.y=0.0; t.z=0.0;	double maxdist=0.0;
     v3size.clear();	v3size.assign(n,t);
     vdradius.clear(); vdradius.assign(n,0.0);
-    
+
     for (unsigned i=0; i<n; i++)
     {
 	for (unsigned j=0; j<sois[i]->points.size()/2; j++)
@@ -1425,4 +1425,4 @@ void PlanePopOut::DisplayInTG()
 }
 
 }
-// vim: set sw=4 ts=8 et list :vim
+// vim: set sw=4 ts=8 noet list :vim
