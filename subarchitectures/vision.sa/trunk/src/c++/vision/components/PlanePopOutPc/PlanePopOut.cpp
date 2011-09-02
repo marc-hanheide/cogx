@@ -412,6 +412,9 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
     for(size_t i = 0; i < points.size(); i++)
     {
 	const PointCloud::SurfacePoint &p = points[i];
+	if ( isinf(p.p.x) || isinf(p.p.y) || isinf(p.p.z) )
+	    continue;
+
 	if (!bColorByLabels) {
 #define CO3(bc) int(1000.0*bc/255)/1000.0
 	    if (coPrev != p.c) {
@@ -437,7 +440,6 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 		}
 	    }
 	}
-	if (isinf(p.p.x) == false || isinf(p.p.y) == false || isinf(p.p.z) == false)
 	str << "v(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
     }
     str << "glEnd()\nend\n";
@@ -1423,4 +1425,4 @@ void PlanePopOut::DisplayInTG()
 }
 
 }
-// vim: set sw=4 ts=8 noet list :vim
+// vim: set sw=4 ts=8 et list :vim
