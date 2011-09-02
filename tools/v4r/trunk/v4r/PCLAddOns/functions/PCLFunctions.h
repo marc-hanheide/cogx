@@ -51,11 +51,11 @@ bool FitPlanesRecursive(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
                         std::vector< pcl::ModelCoefficients::Ptr > &model_coefficients,
                         bool sac_optimal_distance = false,
                         double sac_optimal_weight_factor = 1.5,
-                        double sac_distance = 0.008,
+                        double sac_distance = 0.05,
                         int sac_max_iterations = 100,
                         int sac_min_inliers = 25,
-                        double ec_cluster_tolerance = 0.015, 
-                        int ec_min_cluster_size = 25,
+                        double ec_cluster_tolerance = 0.01, 
+                        int ec_min_cluster_size = 50,
                         int ec_max_cluster_size = 1000000);
                         
 /**
@@ -67,11 +67,11 @@ bool FitPlanesRecursiveWithNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
                         std::vector< pcl::ModelCoefficients::Ptr > &model_coefficients,
                         bool sac_optimal_distance = false,
                         double sac_optimal_weight_factor = 1.5,
-                        double sac_distance = 0.008,
+                        double sac_distance = 0.05,
                         int sac_max_iterations = 100,
                         int sac_min_inliers = 25,
-                        double ec_cluster_tolerance = 0.015, 
-                        int ec_min_cluster_size = 25,
+                        double ec_cluster_tolerance = 0.01, 
+                        int ec_min_cluster_size = 50,
                         int ec_max_cluster_size = 1000000);
          
 
@@ -93,9 +93,9 @@ bool SingleSACSegmentation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
                            std::vector< pcl::ModelCoefficients::Ptr > &model_coefficients,
                            bool sac_optimal_distance = true,
                            double sac_optimal_weight_factor = 1.5,
-                           double sac_distance = 0.008, 
+                           double sac_distance = 0.05, 
                            int maxIterations = 100,
-                           int minInliers = 25);
+                           int minInliers = 50);
                            
 /**
  * @brief See SingleSACSegmentation().
@@ -141,8 +141,8 @@ bool EuclideanClustering(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
 void EuclideanClustering(const pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud, 
                            const pcl::PointIndices popout,
                            std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pcl_cluster_clouds,
-                           double cluster_tolerance = 0.015,
-                           double min_cluster_size = 10,
+                           double cluster_tolerance = 0.02,
+                           double min_cluster_size = 50,
                            double max_cluster_size = 1000000);
                          
 /**
