@@ -21,3 +21,8 @@ option(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE "build gazebo turn table for learn
 if(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
   add_subdirectory (src/c++/components/GazeboTurntable)
 endif(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
+
+option(BUILD_SA_MANIPULATION_POINTINGTEST "build pointing test component" NO)
+if(BUILD_SA_MANIPULATION_POINTINGTEST)
+  add_subdirectory (src/c++/components/PointingTest)
+endif(BUILD_SA_MANIPULATION_POINTINGTEST)
