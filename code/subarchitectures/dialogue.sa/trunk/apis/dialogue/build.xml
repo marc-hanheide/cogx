@@ -7,7 +7,7 @@
   <!-- Add JAR files to classpath                                          -->
   <!-- =================================================================== -->
   <path id="build.classpath">
-    <fileset dir="${jar.dir}" includes="*.jar"/>
+    <!--<fileset dir="${localjar.dir}" includes="*.jar"/>-->
     <pathelement path="${ice.jar}"/>
     <pathelement path="${cast.jar}"/>
     <pathelement path="${antice.jar}"/>
@@ -52,7 +52,7 @@
 
   <!-- Controls where the JAR archive goes -->
 
-  <property name="jar.dir" value="../../jar"/>
+  <property name="localjar.dir" value="../../jar"/>
 
   <!-- =================================================================== -->
   <!-- Set up classpath for unit testing                                   -->
@@ -228,7 +228,7 @@
   <!-- =================================================================== -->
 
   <target name="jar">
-    <jar destfile="${jar.dir}/dialogue-v60.jar"
+    <jar destfile="${localjar.dir}/dialogue-v60.jar"
          basedir ="${output.dir}"
          excludes = "de/dfki/lt/tr/dialogue/*/*Test.class"
          />
