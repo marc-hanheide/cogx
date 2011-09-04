@@ -11,7 +11,6 @@ import java.util.Vector;
 
 import javax.swing.Timer;
 
-
 import NavData.FNode;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
@@ -48,11 +47,11 @@ public class RouteTraveller extends ManagedComponent implements ActionListener {
 	}
 
 	public RouteTraveller() {
-		this(0, 30);
+		this(0, 9);
 	}
 
 	public RouteTraveller(int start, int end) {
-
+		nodes = new Vector<FNode>();
 		this.start = start;
 		this.end = end;
 	}
@@ -149,13 +148,14 @@ public class RouteTraveller extends ManagedComponent implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		println("timer finished");
 		timer.stop();
-		RouteFinder p = new RouteFinder(pathTimes,nodes);
+		RouteFinder p = new RouteFinder(pathTimes, nodes);
 		Vector<Integer> route = p.getRoute(start, end);
 		println("route is: ");
 		for (Integer i : route) {
 			println(i);
 		}
 		runRoute(route);
+		println("destination reached");
 	}
 
 	private void runRoute(Vector<Integer> route) {
