@@ -7,7 +7,7 @@
      <!-- Add JAR files to classpath                                          -->
      <!-- =================================================================== -->
      <path id="build.classpath">
-         <fileset dir="${localjar.dir}" includes="*.jar"/>
+         <fileset dir="${jar.dir}" includes="*.jar"/>
          <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
          <pathelement path="${antice.jar}"/>
