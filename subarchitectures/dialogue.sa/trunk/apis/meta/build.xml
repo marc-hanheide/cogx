@@ -48,7 +48,7 @@
 
 	<!-- Controls where the JAR archive goes -->
 
-	<property name="jar.dir" value="../../jar"/>
+	<property name="localjar.dir" value="../../jar"/>
 
 	<!-- =================================================================== -->
 	<!-- Set up classpath for unit testing                                   -->
@@ -188,7 +188,7 @@
 	<!-- =================================================================== -->
 	
 	<target name="jar">
-	  <jar destfile="${jar.dir}/sdl-v112.jar"
+	  <jar destfile="${localjar.dir}/sdl-v112.jar"
 	       basedir ="${output.dir}"
 	       excludes = "de/dfki/lt/tr/dialogue/*/*Test.class"
           />
