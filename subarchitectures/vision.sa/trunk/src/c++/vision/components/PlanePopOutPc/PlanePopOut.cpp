@@ -61,7 +61,7 @@ long long gethrtime(void)
 
 
 #define SendDensePoints  1 	//0 send sparse points ,1 send dense points (recollect them after the segmentation)
-#define Treshold_Comp2SOI	0.8	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
+#define Treshold_Comp2SOI	0.75	//the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 
 /**
  * The function called to create a new instance of our component.
@@ -96,7 +96,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
     useGlobalPoints = true;
     doDisplay = false;
     bWithKinect = false;
-    AgonalTime = 30;
+    AgonalTime = 10;
     StableTime = 2;
     Shrink_SOI = 0.9;
     Upper_BG = 1.5;
@@ -105,6 +105,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
     pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
     pre_mConvexHullRadius = 0.0;
     pre_id = "";
+    bSaveImage = true;
     if((it = _config.find("--globalPoints")) != _config.end())
     {
 	istringstream str(it->second);
@@ -339,12 +340,11 @@ void PlanePopOut::SendImage()
 // 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
 //     }
 
-    bool bSaveImage = true;
     long long t1 = tm.elapsed();
     m_display.setImage(ID_OBJECT_IMAGE, ROIMaskImg);
     long long t2 = tm.elapsed();
-    if (bSaveImage)
-	cvSaveImage("/tmp/planes_image.jpg", ROIMaskImg);
+//     if (bSaveImage)
+// 	cvSaveImage("/tmp/planes_image.jpg", ROIMaskImg);
     long size = ROIMaskImg->imageSize;
     long long t3 = tm.elapsed();
 
@@ -525,12 +525,12 @@ void PlanePopOut::SendRemoveSoi(PlanePopOut::ObjPara& soiobj)
 
 void PlanePopOut::SendSyncAllSois()
 {
-    vector<ObjPara> sois = CurrentObjList; // copy to minimize race conditions
-    for (int i = 0; i < sois.size(); i++) {
-	ObjPara& soi = sois.at(i);
-	if (m_bSendSois) SendSoi(soi);
-	else SendRemoveSoi(soi);
-    }
+//     vector<ObjPara> sois = PreviousObjList; // copy to minimize race conditions
+//     for (int i = 0; i < sois.size(); i++) {
+// 	ObjPara& soi = sois.at(i);
+// 	if (m_bSendSois) SendSoi(soi);
+// 	else SendRemoveSoi(soi);
+//     }
 }
 
 #endif
@@ -588,11 +588,12 @@ void PlanePopOut::runComponent()
 	    DisplayInTG();
 	}
 #ifdef FEAT_VISUALIZATION
-	//log("Start to send points");
-// 	int debug_labels=0;
-// 	for (int i=0; i<points_label.size(); i++)
-// 	  if (points_label[i]== 0)	debug_labels++;
+// 	log("Start to send points");
+	int debug_labels=0;
+	for (int i=0; i<points_label.size(); i++)
+	  if (points_label[i]== 0)	{debug_labels++; /*log("plane point is at (%f, %f, %f)", points[i].p.x, points[i].p.y, points[i].p.z);*/}
 // 	log("Thera are %d points on the plane", debug_labels);
+	
 	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
 	if (m_bSendPlaneGrid) SendPlaneGrid();
 	//log("Done FEAT_VISUALIZATION");
@@ -605,7 +606,7 @@ void PlanePopOut::runComponent()
 	//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
 	//Pre2CurrentList.clear();
 	if (lastSize != v3center.size()) {
-	    log("SOI COUNT = %d",v3center.size());	
+// 	    log("SOI COUNT = %d",v3center.size());	
 	    lastSize = v3center.size();
 	}
 	CurrentObjList.clear();
@@ -699,7 +700,7 @@ void PlanePopOut::SaveHistogramImg(CvHistogram* hist, std::string str)
 
 void PlanePopOut::SOIManagement()
 {
-    //log("There are %d SOI in the Current scene", CurrentObjList.size());
+//     log("Start SOI Management! There are %d SOI in the previous scene", PreviousObjList.size());
     if (PreviousObjList.empty())
     {
 	for(unsigned int i=0; i<CurrentObjList.size(); i++)
@@ -756,7 +757,7 @@ void PlanePopOut::SOIManagement()
 	    if (CurrentObjList.at(i).bComCurrentPre == false)
 	    {
 		float probability = Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j));
-		//log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
+// 		log("The matching probability of %d SOI in Current and %s in Previous is %f",i+1, PreviousObjList.at(j).id.c_str(), probability);
 		if (probability > max_matching_probability)
 		{
 		    max_matching_probability = probability;
@@ -825,7 +826,12 @@ void PlanePopOut::SOIManagement()
 		    }
 		}
 		else
+		{
 		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
+#ifdef FEAT_VISUALIZATION
+			if (m_bSendSois) {SendRemoveSoi(PreviousObjList.at(j)); SendSoi(CurrentObjList.at(matchingResult));}
+#endif
+		}
 	    }
 	    else
 	    {
@@ -872,8 +878,8 @@ void PlanePopOut::SOIManagement()
 	    // 	    log("We have new object, Wooo Hooo.... There are %d objects in CurrentObjList and this is the %d one", CurrentObjList.size(), i);
 	}
     }
-    //     for (unsigned int j=0; j<CurrentObjList.size(); j++)
-    // 	/*log*/("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
+//         for (unsigned int j=0; j<CurrentObjList.size(); j++)
+// 	    log("id in CurrentObjList are %s", CurrentObjList.at(j).id.c_str()); 
     PreviousObjList.clear();
     for (unsigned int i=0; i<CurrentObjList.size(); i++)
 	PreviousObjList.push_back(CurrentObjList.at(i));
@@ -1034,7 +1040,8 @@ bool PlanePopOut::GetPlaneAndSOIs()
 	A = -dpc->values[0]; B = -dpc->values[1]; C = -dpc->values[2]; D = -dpc->values[3];
     }
     planePopout->GetTableHulls(tablehull);
-    planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
+    planePopout->CollectTableInliers(pcl_cloud);	//log("There are %d inliers on the plane !", planepoints->indices.size());
+    planePopout->GetPlanePoints(planepoints);
     int w,h;
     if (bWithKinect) {
 	w =iplImage_k->width;	h=iplImage_k->height;
@@ -1052,10 +1059,12 @@ bool PlanePopOut::GetPlaneAndSOIs()
     for (unsigned i=0; i<planepoints->indices.size(); i++)	// use indices of plane points to lable them
     {
 	int index = planepoints->indices[i];		//index of plane point
+// 	log("the index of plane point is %d", index);
 	points_label.at(index) = 0;	//plane points	== label 0
 	PointCloud::SurfacePoint PushStructure;
 	Vector3 tmp;
 	tmp.x = pcl_cloud->points[index].x; tmp.y = pcl_cloud->points[index].y; tmp.z = pcl_cloud->points[index].z;
+// 	log("plane point at (%f, %f, %f)", tmp.x, tmp.y, tmp.z);
 	PushStructure.p = tmp;
 	PushStructure.c.r = pcl_cloud->points[index].r;	PushStructure.c.g = pcl_cloud->points[index].g;	PushStructure.c.b = pcl_cloud->points[index].b;
 	points[index] = PushStructure;
@@ -1379,7 +1388,6 @@ void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vecto
     PointCloud::SurfacePoint InitialStructure;
     InitialStructure.p = initial_vector;
     center.assign(objnumber,InitialStructure);
-
 
     for (int i = 0; i<objnumber; i++)
     {
