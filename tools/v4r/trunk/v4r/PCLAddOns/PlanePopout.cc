@@ -288,6 +288,23 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
   return label;
 }
 
+/**
+ * Detect table plane and objects which pop out
+ */
+bool PlanePopout::CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+{
+    for (unsigned i=0; i<cloud->points.size(); i++)
+    {
+      float dist=abs(tableCoefficients->values[0]*cloud->points[i].x
+		    +tableCoefficients->values[1]*cloud->points[i].y
+		    +tableCoefficients->values[2]*cloud->points[i].z
+		    +tableCoefficients->values[3])
+      /sqrt(tableCoefficients->values[0]*tableCoefficients->values[0]
+	   +tableCoefficients->values[1]*tableCoefficients->values[1]
+	   +tableCoefficients->values[2]*tableCoefficients->values[2]);
+      if (dist < param.thr)	tableInliers->indices.push_back(i);
+    }
+}
 
 /**
  * Detect table plane and objects which pop out
@@ -317,6 +334,11 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
     cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
     return false;
   }
+//   else
+//   {
+//       for (int i=0; i<tableInliers->indices.size(); i++)
+// 	cout<<"PlanePopout::DetectPopout: there is a point at ( "<<cloud->points.at(tableInliers->indices.at(i)).x <<" ,"<<cloud->points.at(tableInliers->indices.at(i)).y<<" ,"<<cloud->points.at(tableInliers->indices.at(i)).z<<" )"<<endl;
+//   }
   //else	cout<<"PlanePopout::DetectPopout: There are "<< tableInliers->indices.size()<<"Plane Inliers points!"<<endl;
 
   proj.setInputCloud (cloudDownsampled);
