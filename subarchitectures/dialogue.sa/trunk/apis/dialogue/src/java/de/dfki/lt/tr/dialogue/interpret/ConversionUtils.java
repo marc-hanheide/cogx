@@ -187,6 +187,28 @@ public abstract class ConversionUtils {
 		}
 	}
 
+	public static List<Term> listTermToListOfTerms(Term t) {
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals("[]") && ft.args.isEmpty()) {
+				return new LinkedList<Term>();
+			}
+			if (ft.functor.equals("[|]") && ft.args.size() == 2) {
+				List<Term> result = new LinkedList<Term>();
+				result.add(ft.args.get(0));
+				List<Term> tail = listTermToListOfTerms(ft.args.get(1));
+				if (tail == null) {
+					return null;
+				}
+				else {
+					result.addAll(tail);
+				}
+				return result;
+			}
+		}
+		return null;
+	}
+
 	public static dFormula uniTermToFormula(Term t) {
 
 		if (t instanceof FunctionTerm) {
