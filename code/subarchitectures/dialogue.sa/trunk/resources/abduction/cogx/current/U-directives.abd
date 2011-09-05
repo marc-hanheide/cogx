@@ -144,45 +144,18 @@ understand : event : utter(S, H, Nom) <-
 % COMMAND: ACTION-NON-MOTION
 %-------------------------------------------------------------------------
 
-% find/bring X
 understand : event : utter(S, H, Nom) <-
 	i : sort(Nom, 'action-non-motion'),
-%	i : 'feat_Mood'(Nom, imp),  % "could you please" is in int here
-	i : 'rel_Actor'(Nom, ActorNom),
-%		i : prop(ActorNom, addressee),  % TODO:
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
 	find_patient(Nom, RefNom),
-	understand : topic(S, H, EpSt, Int, RefNom, RefNom),
-	i : prop(Nom, ActionProp),
-	nm_action_effects(S, H, EpSt, Nom, Int, RefNom, ActionProp).
+		i : sort(RefNom, thing),
+		i : prop(RefNom, Class),
+	i : prop(Nom, Prop),
+	nm_intention_postcondition(Int, S, H, Class, Prop).
 
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-nm_action_effects(S, H, EpSt, RootNom, Int, Ref, find) <-
-	int : pre(Int, belief(Ref, EpSt, fv(inRoom, unknown))) / p(1.0),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(location, not(unknown)))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state([found, agent(H), patient(BId)])) / p(1.0).
-
-nm_action_effects(S, H, EpSt, RootNom, Int, Ref, bring) <-
-	determine_recipient(RootNom, S, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
-
-nm_action_effects(S, H, EpSt, RootNom, Int, Ref, get) <-
-	determine_recipient(RootNom, H, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
-
-nm_action_effects(S, H, EpSt, RootNom, Int, Ref, give) <-
-	determine_recipient(RootNom, H, S, H, Recipient),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),
-	int : post(Int, state([possession, agent(Recipient), patient(BId)])) / p(1.0).
+nm_intention_postcondition(Int, S, H, Class, find) <-
+	int : post(Int, state(['found-object', agent(H), class(Class)])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

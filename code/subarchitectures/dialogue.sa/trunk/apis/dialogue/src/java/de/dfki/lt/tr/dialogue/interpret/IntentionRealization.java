@@ -28,6 +28,7 @@ import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
@@ -41,6 +42,8 @@ import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class IntentionRealization {
@@ -120,13 +123,61 @@ public class IntentionRealization {
 		}
 	}
 
-	private ContentPlanningGoal proofToProtoLF(List<MarkedQuery> proof) {
-		List<ModalisedAtom> imfs = ProofUtils.filterStripByModalityPrefix(
-				ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof)),
-				new ArrayList<Modality>(Arrays.asList(new Modality[] {Modality.Truth})));
-		LogicalForm lf = AbducerUtils.factsToLogicalForm(imfs, "dn1_1");
+	// Sun should burn in hell for not having such a function in the standard library!
+	public static String join(String separator, List<String> args) {
+		StringBuilder sb = new StringBuilder();
+		if (args != null) {
+			Iterator<String> iter = args.iterator();
+			while (iter.hasNext()) {
+				sb.append(iter.next());
+				if (iter.hasNext()) {
+					sb.append(separator);
+				}
+			}
+		}
+		return sb.toString();
+	}
 
+	private ContentPlanningGoal proofToProtoLF(List<MarkedQuery> proof) {
+
+		List<ModalisedAtom> events = ProofUtils.filterStripByModalityPrefix(
+				ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof)),
+				new ArrayList<Modality>(Arrays.asList(new Modality[] {Modality.Event})));
+
+		LogicalForm lf = null;
 		NominalReference nr = null;
+
+		if (events.size() == 1 && events.get(0).a.predSym.equals("produce_text") && events.get(0).a.args.size() == 1) {
+			List<Term> terms = ConversionUtils.listTermToListOfTerms(events.get(0).a.args.get(0));
+
+			List<String> words = new LinkedList<String>();
+			for (Term t : terms) {
+				String word = null;
+				if (t instanceof FunctionTerm) {
+					word = ((FunctionTerm) t).functor;
+				}
+
+				if (word == null) {
+					return null;
+				}
+				else {
+					words.add(word);
+				}
+			}
+
+			String cannedString = join("_", words);
+			if (cannedString != null && !cannedString.equals("")) {
+				lf = LFUtils.convertFromString("@d:dvp(<CannedText>" + cannedString + ")");
+			}
+		}
+		else {
+			List<ModalisedAtom> imfs = ProofUtils.filterStripByModalityPrefix(
+					ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof)),
+					new ArrayList<Modality>(Arrays.asList(new Modality[] {Modality.Truth})));
+
+			lf = AbducerUtils.factsToLogicalForm(imfs, "dn1_1");
+		}
+
 		List<ModalisedAtom> rrs = ProofUtils.stripMarking(ProofUtils.filterAssumedAndForget(proof));
 		for (ModalisedAtom ma : rrs) {
 			if (ma.m.size() == 1 && ma.m.get(0) == Modality.Generation && ma.a.predSym.equals("dialogue_move_topic") && ma.a.args.size() == 2) {
@@ -138,11 +189,12 @@ public class IntentionRealization {
 			}
 		}
 
-		ContentPlanningGoal plf = new ContentPlanningGoal();
-		plf.cpgid = idGen.newIdentifier();
-		plf.lform = lf;
-		plf.topic = nr;
-		return plf;
+		if (lf != null) {
+			return new ContentPlanningGoal(idGen.newIdentifier(), lf, nr);
+		}
+		else {
+			return null;
+		}
 	}
 
 	public void clearContext() {
