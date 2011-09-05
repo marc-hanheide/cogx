@@ -128,6 +128,7 @@ private:
     int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
     int StableTime; //this makes stable obj
     bool doDisplay;
+    bool bSaveImage;
 
     vector< Vector3 > v3center;
     vector<double> vdradius;
