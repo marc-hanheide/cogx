@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.4)
 
 set(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem signals)
+FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem system signals)
 FIND_PACKAGE (OpenCV REQUIRED)
 
+
+add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
 option(BUILD_CALIB_CAM "Build single monocular camera calibration" YES)
 if(BUILD_CALIB_CAM)
@@ -42,7 +44,7 @@ if(BUILD_CALIB_ARM)
   SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-O2 -fPIC -DLINUX -DNX64")
 
   ADD_EXECUTABLE(armcalib armcalib.cpp)
-  TARGET_LINK_LIBRARIES(armcalib ${OPENCV_LDFLAGS} GolemDemoCommon GolemTiny)
+  TARGET_LINK_LIBRARIES(armcalib ${OPENCV_LDFLAGS} ${Boost_LIBRARIES} GolemDemoCommon GolemTiny)
   INSTALL(TARGETS armcalib RUNTIME DESTINATION bin)
 
   # SET(ARMCALIB_ICE_SOURCES
