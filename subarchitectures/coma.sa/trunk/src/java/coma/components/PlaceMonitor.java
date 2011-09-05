@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
 
-import coma.aux.ComaHelper;
 import comadata.ComaReasonerInterfacePrx;
 import comadata.ComaRoom;
 import cast.AlreadyExistsOnWMException;
@@ -37,14 +35,11 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
-import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribList;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
-import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
@@ -52,7 +47,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.utils.BeliefUtils;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
@@ -728,8 +722,8 @@ public class PlaceMonitor extends ManagedComponent {
 					// current place can be a seed for a new room
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
-					// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
-					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
+					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
+					// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
 					
 					// create new room on the reasoner
 					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
@@ -869,8 +863,8 @@ public class PlaceMonitor extends ManagedComponent {
 								log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
 								
 								// compare the set(!) of already known asserted room categories with the new set
-								// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
-								HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
+								HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
+								// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
 								if (!prevKnownAssertedRoomCats.equals(_assertedRoomCats)) {
 									log("there are new asserted room categories not previosuly known.");
 									HashSet<String> allKnownAssertedRoomsCats = new HashSet<String>();
@@ -879,7 +873,7 @@ public class PlaceMonitor extends ManagedComponent {
 									String[] newAssertedLabels = allKnownAssertedRoomsCats.toArray(new String[allKnownAssertedRoomsCats.size()]);
 								
 									// if there is a new room category, we need to overwrite the room WME
-									// _currRoom.assertedLabels = newAssertedLabels; //uncomment this
+									_currRoom.assertedLabels = newAssertedLabels; //uncomment this
 									_currRoom.categories=new ProbabilityDistribution();
 									// overwriting must be safe: lock + unlock WME
 									debug("locking ComaRoom WME.");
