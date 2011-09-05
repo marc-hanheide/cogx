@@ -193,6 +193,11 @@ if(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
 add_subdirectory (src/c++/vision/components/ShapeDescriptor3D)
 endif(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
 
+option(BUILD_SA_VISION_CHECK_SYS_CALIB "build system calibration check" NO)
+if (BUILD_SA_VISION_CHECK_SYS_CALIB)
+add_subdirectory (src/c++/vision/components/CheckSystemCalibration)
+endif (BUILD_SA_VISION_CHECK_SYS_CALIB)
+
 option(BUILD_SA_VISION_GAZEBO "build gazebo simulated vision" NO)
 if (BUILD_SA_VISION_GAZEBO)
 add_subdirectory (src/c++/vision/components/GazeboVision)
