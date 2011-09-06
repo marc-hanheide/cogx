@@ -255,12 +255,6 @@ void PlanePopOut::start()
 
     ss  << "function setSoi(id, x, y, z, sx, sy, sz)\n"
 	<<  "sois[id] = {x=x, y=y, z=z, sx=sx, sy=sy, sz=sz}\n"
-	//<<  "sois[id].x = x\n"
-	//<<  "sois[id].y = y\n"
-	//<<  "sois[id].z = z\n"
-	//<<  "sois[id].sx = sx\n"
-	//<<  "sois[id].sy = sy\n"
-	//<<  "sois[id].sz = sz\n"
 	<< "end\n";
 
     ss  << "function removeSoi(id)\n"
