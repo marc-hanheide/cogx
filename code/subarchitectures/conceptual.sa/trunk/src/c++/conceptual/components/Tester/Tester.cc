@@ -169,6 +169,8 @@ void Tester::runComponent()
 		_defaultChainGraphInferencerServerInterfacePrx->getSizes();
 	_appearances =
 		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
+	_humanAssertions =
+		_defaultChainGraphInferencerServerInterfacePrx->getHumanAssertions();
 	// Sort room categories for nice display
 	sort (_roomCategories.begin(), _roomCategories.end());
 	sort (_shapes.begin(), _shapes.end());
