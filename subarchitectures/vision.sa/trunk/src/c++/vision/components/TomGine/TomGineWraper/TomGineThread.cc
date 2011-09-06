@@ -729,13 +729,13 @@ void TomGineThread::AddConvexHull(std::vector<cv::Vec4f> &vecHull)
     cv::Vec4f s = vecHull[j];
     cv::Vec4f e = vecHull[j+1];
     color.float_value = s[3];
-    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
+    AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.r, color.g, color.b);
   }
   // add line from first to last matrix element
   cv::Vec4f s = vecHull[0];
   cv::Vec4f e = vecHull[vecHull.size()-1];
   color.float_value = s[3];
-  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.b, color.g, color.r);
+  AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], color.r, color.g, color.b);
 }
 
 
