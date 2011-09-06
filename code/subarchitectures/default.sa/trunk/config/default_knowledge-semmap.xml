@@ -237,4 +237,18 @@
 	<item object_category="book"	relation="on"		support_object_category="table"	true_positive_probability="0.95" true_negative_probability="0.75"/>
     </object_observation_models>
     <default_object_observation_model true_positive_probability="0.8" true_negative_probability="0.8"/>
+    <human_asserted_knowledge_property_given_room_category>
+	<item room_category1="hallway" human_assertion_property="anteroom" 		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="bathroom"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="computerlab" 		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="conferencehall"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="doubleoffice"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="hallway"		probability="0.9"/>
+	<item room_category1="hallway" human_assertion_property="kitchen"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="meetingroom"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="professorsoffice"	probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="robotlab"		probability="0.01"/>
+	<item room_category1="hallway" human_assertion_property="singleoffice"		probability="0.01"/>
+    </human_asserted_knowledge_property_given_room_category>
+    <default_human_asserted_knowledge_property_given_room_category matching_probability="0.8"/>
 </default>
