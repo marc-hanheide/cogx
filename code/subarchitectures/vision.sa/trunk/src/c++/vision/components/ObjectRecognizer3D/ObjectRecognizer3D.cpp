@@ -28,6 +28,7 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
 	m_showCV = true;
 	m_confidence = 0.08;
 	m_simulationOnly=false;
+
 	// initial pose for tracking when learning a new object:
   // useful values for a user presenting an object to the system:
   // 1.0 meters away and rotated 90 deg around x, so the object stands upright
@@ -38,6 +39,7 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
   initPose.pos.y = 0.0;
   initPose.pos.z = 1.0;
   fromRotVector(initPose.rot, vector3(M_PI/2., 0., 0.));
+	m_noLearning=false;
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -59,6 +61,10 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 
   if((it = _config.find("--simulation-only")) != _config.end()){
     m_simulationOnly=true;
+  }
+
+  if((it = _config.find("--no-learning")) != _config.end()){
+    m_noLearning=true;
   }
 
   if((it = _config.find("--camid")) != _config.end())  {
@@ -177,10 +183,19 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
 }
 #endif
 
-void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc){
-log("Fake 3D Object Received");  
-Post3DObjectPtr f = getMemoryEntry<Post3DObject>(_wmc.address);
-  loadVisualModelToWM(m_recEntries[f->label],f->pose,f->label,true);
+void ObjectRecognizer3D::PostFake3DObject(const cdl::WorkingMemoryChange & _wmc) {
+	log("Fake 3D Object Received");
+	Post3DObjectPtr f = getMemoryEntry<Post3DObject> (_wmc.address);
+
+	if (f->positiveDetection) {
+		m_recEntries[f->label].object->conf=0.99;
+		loadVisualModelToWM(m_recEntries[f->label], f->pose, f->label, false);
+	} else {
+		Pose3 nullPose;
+		m_recEntries[f->label].object->conf=0.0;
+		setIdentity(nullPose);
+		loadVisualModelToWM(m_recEntries[f->label], nullPose, f->label, false);
+	}
 }
 
 
@@ -206,61 +221,75 @@ void ObjectRecognizer3D::runComponent(){
   	}else if(m_task == RECSTOP){
   		m_starttask = false;
 
-  		if(m_recCommandList.empty())
-  			sleepComponent(500);
-  		else{
-  			lockComponent();
-  			m_rec_cmd = m_recCommandList.front();
-  			m_recCommandList.erase(m_recCommandList.begin());
-  			m_rec_cmd_id = m_recCommandID.front();
-  			m_recCommandID.erase(m_recCommandID.begin());
+  		if (m_recCommandList.empty())
+				sleepComponent(500);
+			else {
+				lockComponent();
+				m_rec_cmd = m_recCommandList.front();
+				m_recCommandList.erase(m_recCommandList.begin());
+				m_rec_cmd_id = m_recCommandID.front();
+				m_recCommandID.erase(m_recCommandID.begin());
 
-  			m_task = m_rec_cmd->cmd;
-  			m_label = m_rec_cmd->label;
+				m_task = m_rec_cmd->cmd;
+				m_label = m_rec_cmd->label;
 
-  			if(m_rec_cmd->cmd == RECOGNIZE)
-  			{
-          if(m_recEntries.find(m_label) != m_recEntries.end() && m_recEntries[m_label].learn)
-          {
-            log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
-            m_rec_cmd->cmd = RECLEARN;
-            m_task = RECLEARN;
-          }
-          // HACK
-          // (this must be one of the ugliest hacks I have ever perpetrated)
-          // if we received a detection command with several labels, we created a corresponding
-          // number of single-label recognition commands in m_recCommandList with identical
-          // IDs in m_recCommandID, which is the ID of the original *detection* command.
-          // Now we only want to delete this detection command from WM (within recognizeSiftModel()) when
-          // the last of these single-label recognition commands was executed, i.e. when the
-          // complete original detection command was executed.
-          // So we remember here whether the next command ID is different or it was the last command ID,
-          // and only then do the delete from WM (in recognizeSiftModel())
-          if(m_recCommandID.empty())
-          {
-            m_delete_command_from_wm = true;
-          }
-          else
-          {
-            std::string next_cmd_id = m_recCommandID.front();
-            if(next_cmd_id != m_rec_cmd_id)
-              m_delete_command_from_wm = true;
-            else
-              m_delete_command_from_wm = false;
-          }
-  			}
-        else if(m_rec_cmd->cmd == RECLEARN)
-        {
-          if(m_rec_cmd->visualObjectID.empty())
-          {
-            log("%s: Warning no VisualObject given", m_label.c_str());
-            loadVisualModelToWM(m_recEntries[m_label], initPose, m_label);
-            m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
-          }
-        }
-  			m_starttask = true;
-  			unlockComponent();
-  		}
+				if (m_rec_cmd->cmd == RECOGNIZE) {
+
+					if (m_recEntries.find(m_label) != m_recEntries.end()
+							&& m_recEntries[m_label].learn) {
+						if (m_noLearning) {
+							println("%s: couldn't find a SIFT file and learning is disabled, so we ignore this one", m_label.c_str());
+							m_rec_cmd->cmd=RECSTOP;
+							m_task=RECSTOP;
+						} else {
+							log(
+									"%s: Warning no Sift file available: starting to learn",
+									m_label.c_str());
+							m_rec_cmd->cmd = RECLEARN;
+							m_task = RECLEARN;
+						}
+					}
+					// HACK
+					// (this must be one of the ugliest hacks I have ever perpetrated)
+					// if we received a detection command with several labels, we created a corresponding
+					// number of single-label recognition commands in m_recCommandList with identical
+					// IDs in m_recCommandID, which is the ID of the original *detection* command.
+					// Now we only want to delete this detection command from WM (within recognizeSiftModel()) when
+					// the last of these single-label recognition commands was executed, i.e. when the
+					// complete original detection command was executed.
+					// So we remember here whether the next command ID is different or it was the last command ID,
+					// and only then do the delete from WM (in recognizeSiftModel())
+					if (m_recCommandID.empty()) {
+						m_delete_command_from_wm = true;
+					} else {
+						std::string next_cmd_id = m_recCommandID.front();
+						if (next_cmd_id != m_rec_cmd_id)
+							m_delete_command_from_wm = true;
+						else
+							m_delete_command_from_wm = false;
+					}
+				} else if (m_rec_cmd->cmd == RECLEARN) {
+					if (m_rec_cmd->visualObjectID.empty()) {
+						log("%s: Warning no VisualObject given",
+								m_label.c_str());
+						Math::Pose3 pose;
+						setIdentity(pose);
+						// NOTE: useful values for a user presenting an object to the system:
+						// 1.0 meters away and rotated 90 deg around x, so the object stands upright
+						// assuming that the objects local z axis points "up"
+						pose.pos.x = 0.0;
+						pose.pos.y = 0.0;
+						pose.pos.z = 1.0;
+						fromRotVector(pose.rot, vector3(M_PI / 2., 0., 0.));
+						loadVisualModelToWM(m_recEntries[m_label], pose,
+								m_label);
+						m_rec_cmd->visualObjectID
+								= m_recEntries[m_label].visualObjectID;
+					}
+				}
+				m_starttask = true;
+				unlockComponent();
+			}
 
   	}
     sleepComponent(500);  
@@ -293,6 +322,7 @@ void ObjectRecognizer3D::receiveImages(const std::vector<Video::Image>& images){
  */
 void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc){
   log("Receiving receiveDetectionCommand");
+  try {
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
   
   for(size_t i = 0; i < det_cmd->labels.size(); i++)
@@ -303,6 +333,9 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
     m_recCommandList.push_back(rec_cmd);
     // note: here we add (multiple times) the WM Id of the detection command
     m_recCommandID.push_back(_wmc.address.id);
+  }
+  } catch (const DoesNotExistOnWMException& e) {
+	  getLogger()->warn("detection command has already disappeared. not detecting.");
   }
 }
 
@@ -639,10 +672,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
   if(m_recEntries.find(m_label) == m_recEntries.end())
   {
     log("%s: Unknown model", m_label.c_str());
-    std::string newID = loadEmptyVisualModelToWM(m_label);
-    m_rec_cmd->confidence = 0.;
+         std::string newID = loadEmptyVisualModelToWM(m_label);
+ m_rec_cmd->confidence = 0.;
     m_rec_cmd->visualObjectID = newID;
-  }
+}
   else
   {
 	log("%s: Detecting object", m_label.c_str());
