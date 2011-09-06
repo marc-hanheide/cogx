@@ -262,10 +262,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	    shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
 	      getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
 
-	    if(pcmd){
-	      aborted = 
-		(pcmd->getData()->comp == SpatialData::COMMANDABORTED ||
-		 pcmd->getData()->comp == SpatialData::COMMANDSUCCEEDED ); 
+      if(pcmd){
+        status = pcmd->getData()->status;
+        aborted = (status != SpatialData::NONE);
+        debug("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
 	      // I.e. someone outside decided we're done now - the internal cmd needs
 	      // to be cancelled either way.
 	    }else{
@@ -326,7 +326,11 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
     delete rv;
 		
     debug("before cancel current task");
-    if(aborted) cancelCurrentTask(true, navCtrlCmdId);
+    if (aborted) {
+      cancelCurrentTask(true, navCtrlCmdId);
+      result = SpatialData::COMMANDABORTED;
+      changeNavCmdCompletion(navCmdId, result, status);
+    }
     debug("after cancel current task");
 		
   }else{ // if(!m_Tasks.m_Abort)
