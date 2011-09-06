@@ -106,6 +106,10 @@ void PlanePopOut::configure(const map<string,string> & _config)
     pre_mConvexHullRadius = 0.0;
     pre_id = "";
     bSaveImage = true;
+    fx = 525;
+    fy = 525;
+    cx = 320;
+    cy = 240;
     if((it = _config.find("--globalPoints")) != _config.end())
     {
 	istringstream str(it->second);
@@ -333,29 +337,22 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 
 void PlanePopOut::SendImage()
 {
-    //static CMilliTimer tmSendImage(true);
-    //if (tmSendImage.elapsed() < 500) // 2Hz
-    //    return;
-    //tmSendImage.restart();iplImage_l
-
     CMilliTimer tm(true);
-//     IplImage *iplImg = convertImageToIpl(img);
-//     Video::CameraParameters c = img.camPars;
-// 
-//     for (unsigned int i=0 ; i<points.size() ; i++)
-//     {
-// 	int m_label = labels.at(i);
-// 	PointCloud::SurfacePoint& pt = points.at(i);
-// 	switch (m_label)
-// 	{
-// 	    case 0:   cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,0,0)); break;
-// 	    case -10: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,0)); break;
-// 	    case -20: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,0,255)); break;
-// 	    case -30: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(0,255,255)); break;
-// 	    case -40: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(128,128,0)); break;
-// 	    case -50: cvCircle(iplImg, ProjectPointOnImage(pt.p,c), 2, CV_RGB(255,255,255)); break;
-// 	}
-//     }
+
+    for (unsigned int i=0 ; i<points.size() ; i++)
+    {
+	int m_label = points_label.at(i);
+	PointCloud::SurfacePoint& pt = points.at(i);
+	switch (m_label)
+	{
+	    case 0: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(255,0,0)); break;
+	    case 1: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(0,255,0)); break;
+	    case 2: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(0,0,255)); break;
+	    case 3: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(0,255,255)); break;
+	    case 4: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(128,128,0)); break;
+	    case 5: cvCircle(ROIMaskImg, ProjectPointOnImage(pt.p), 2, CV_RGB(255,255,255)); break;
+	}
+    }
 //     CvFont a;
 //     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
 //     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
@@ -564,7 +561,6 @@ void PlanePopOut::runComponent()
 #endif
     while(isRunning())
     {
-	CleanupAll();
 	if ( ! GetImageData()) {
 	    sleepComponent(1);
 	    continue;		//log("Hoho, we get the image data from PCL");
@@ -982,13 +978,18 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", cmd.pcmd->sois.size());
 }
 
-CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam)
+CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p)
 {
-    cogx::Math::Vector2 p2 = projectPoint(cam, p);
-    int x = p2.x;
-    int y = p2.y;
+    double u, v;
+    double scale = 1;
+    if(p.x == 0.) p.x=0.000001;   // instead: assert(Z != 0.);
+
+    u = fx*p.x/scale + cx*p.z/scale;
+    v = fy*p.y/scale + cy*p.z/scale;
+    u /= p.z;
+    v /= p.z;
     CvPoint re;
-    re.x = x; re.y = y;
+    re.x = (int) u; re.y = (int) v;
     return re;
 }
 

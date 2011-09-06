@@ -88,7 +88,7 @@ private:
     double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
     void SaveHistogramImg(CvHistogram* hist, std::string str);
 
-    CvPoint ProjectPointOnImage(Vector3 p, const Video::CameraParameters &cam);
+    CvPoint ProjectPointOnImage(Vector3 p);
 
 
 
@@ -124,6 +124,7 @@ private:
     int camId;
     const VisionData::ObjSeq mObjSeq;
     PointCloud::SurfacePointSeq pointsN;
+    float fx,fy,cx,cy;							///< Parameters of kinect
 
     int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
     int StableTime; //this makes stable obj
