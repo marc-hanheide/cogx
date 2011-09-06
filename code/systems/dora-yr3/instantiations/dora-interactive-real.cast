@@ -41,12 +41,12 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-blobfinder.cast
-COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 INCLUDE includes/spatial.sa/spatial-mediator.cast
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --pcserver pcserver #--no-nodeclass #--no-areaclass #--log #--read-ptu
 
 CPP MG spatial.translation 	SpatialTranslation 
 CPP GD spatial.control 		SpatialControl -c instantiations/cureconfig/cogxp3.ccf  --log --pcserver pcserver --explore-range 2.0 --min-obstacle-height 0.25 #--debug --no-x-window 
@@ -59,41 +59,41 @@ CPP GD path.query 		PathQueryProcessor #--no-indirect-paths
 JAVA MG exe-spatial 		spatial.execution.SpatialActionInterface  --detections 4
 JAVA MG spatial-manual 		spatial.manual.ManualNavControl
 
-CPP GD relation.manager 	ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
+####CPP GD relation.manager 	ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
 
-CPP MG avs.cpplanner 		AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.1 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
+####CPP MG avs.cpplanner 		AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.1 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
 
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
 INCLUDE includes/coma.sa/coma-crowl.cast
 
-JAVA MG pm-coma			eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats)
-JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediator
+####JAVA MG pm-coma			eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats)
+####JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediator
 
 
 # Default.SA ################################################################
-INCLUDE includes/default.sa/default-base.cast
-INCLUDE includes/coma.sa/coma-defaultsa.cast
+####INCLUDE includes/default.sa/default-base.cast
+####INCLUDE includes/coma.sa/coma-defaultsa.cast
 
-CPP GD default.queryhandler 		DefaultQueryHandler
-CPP GD default.chaingraphinferencer 	DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(defaults)
+####CPP GD default.queryhandler 		DefaultQueryHandler
+####CPP GD default.chaingraphinferencer 	DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(defaults)
 
 # Conceptual.SA  ############################################################
-INCLUDE includes/conceptual.sa/conceptual-base.cast
-CPP GD conceptual.queryhandler ConceptualQueryHandler
+####INCLUDE includes/conceptual.sa/conceptual-base.cast
+####CPP GD conceptual.queryhandler ConceptualQueryHandler
 
-CPP GD conceptual.observer 		ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
-CPP GD conceptual.chaingraphinferencer 	ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
-CPP GD conceptual.comaroomupdater 	ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+####CPP GD conceptual.observer 		ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
+####CPP GD conceptual.chaingraphinferencer 	ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+####CPP GD conceptual.comaroomupdater 	ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
 
 
-INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
-INCLUDE includes/conceptual.sa/conceptual-test.cast
+####INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+####INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+####INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 
 
 # Vision ######################################################################
@@ -105,10 +105,12 @@ CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --cami
 CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(calib_root)/camcalib-kinect.xml" --create-viewcone
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(calib_root)/ptu-pose-cam-left-sim.xml %(calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(calib_root)/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
+####CPP MG pointcloudviewer PointCloudViewer --pcserver pcserver
 
 JAVA MG ptzJavaServer 	ptz.ptzServer.PanTiltZoomServer --testGUI
 
-CPP MG recognizer.3D 	ObjectRecognizer3D --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+CPP MG recognizer.3D 	ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 JAVA MG person.runner 	vision.components.PersonDetectorRunner
 JAVA MG pm.people 	eu.cogx.perceptmediator.dora.PersonMediator
@@ -118,18 +120,18 @@ JAVA MG pt.people 	eu.cogx.percepttracker.dora.DoraPersonTracker
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini
-COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
-INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning 	eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(exists (?p - person) (kval (is-in ?p)));(and )"
+####COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini
+####COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+####INCLUDE includes/planner.sa/planner-base.cast
+####INCLUDE includes/planner.sa/viz-plan.cast
+####JAVA MG manual.planning 	eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(exists (?p - person) (kval (is-in ?p)));(and )"
 # exection ####################################################################
-JAVA MG manual-execution 	dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
-JAVA MG executor 		dora.execution.components.DoraExecutionMediator
+####JAVA MG manual-execution 	dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
+####JAVA MG executor 		dora.execution.components.DoraExecutionMediator
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-base.cast
-INCLUDE includes/dialogue.sa/dialogue-exe.cast
+####INCLUDE includes/dialogue.sa/dialogue-base.cast
+####INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 
 # stuff for experiments #######################################################
