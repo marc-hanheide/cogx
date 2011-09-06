@@ -19,6 +19,11 @@ include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)
 
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+
+
+
 # Set the sources.
 SET(SOURCES 
 		ObjectRecognizer3D.cpp

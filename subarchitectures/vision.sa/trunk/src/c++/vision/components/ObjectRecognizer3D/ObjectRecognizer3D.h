@@ -86,6 +86,7 @@ private:
   bool m_wait4data;
   bool m_delete_command_from_wm;
   bool m_showCV;
+  bool m_noLearning;
 
 #ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient

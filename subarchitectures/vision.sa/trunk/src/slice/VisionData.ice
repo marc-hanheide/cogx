@@ -570,9 +570,8 @@ enum VisionCommandStatus {
     // possible direction of movement in last update
     double deltaX;
     double deltaZ;
-	// seems to be missing...
-	double existProb;
-};
+    double existProb;
+  };
 
  /**
   * Command to trigger people detection
@@ -597,6 +596,17 @@ enum VisionCommandStatus {
 	bool positiveDetection;
   };
 
+
+  // A gerenic RPC call that uses WM filters.
+  // The receiver responds and deletes the entry after it has been read.
+  // Created for the purpose of VisualLearner/test/gy2article, used in Analyzer.
+  dictionary<string, string> TStringMap;
+  class WMRemoteProcedureCall {
+     // TODO: component id: only this component will react to the call.
+     string method;
+     TStringMap argmap;
+  };
+  
   /**
   *
   * Command for AR tag recognizer
@@ -605,7 +615,6 @@ enum VisionCommandStatus {
   class ARTagCommand{
   	string label;
   };
-
 };
 
 #endif
