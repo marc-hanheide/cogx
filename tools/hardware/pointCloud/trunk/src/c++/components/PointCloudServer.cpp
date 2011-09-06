@@ -13,6 +13,7 @@
 #include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
 #include "Video.hpp"
+#include "PTZ.hpp"
 
 #include "PointCloudServer.h"
 
@@ -214,7 +215,30 @@ void PointCloudServer::start()
 
   addChangeFilter(createLocalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receiveCameraParameters));
+
+  addChangeFilter(createLocalTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
+
+  addChangeFilter(createLocalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
+
 }
+
+/**
+ * @brief Receive camera parameters from the camera mount
+ */
+void PointCloudServer::receivePTZCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  ptz::SetPTZPoseCommandPtr ptzCmd = getMemoryEntry<ptz::SetPTZPoseCommand>(_wmc.address);
+  if (ptzCmd->comp==ptz::COMPINIT) {
+    println("reading is suspended because PTZ is moving");
+    suspendReading=true;
+  } else {
+    println("reading is working again");
+    suspendReading=false;
+  }
+}
+
 
 /**
  * @brief Receive camera parameters from the camera mount

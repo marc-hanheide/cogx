@@ -81,6 +81,8 @@ protected:
   virtual void runComponent() {}
   virtual void start();
   virtual void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
+  virtual void receivePTZCommand(const cdl::WorkingMemoryChange & _wmc);
+  bool suspendReading;
 
 
 public:
