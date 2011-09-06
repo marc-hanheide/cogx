@@ -240,7 +240,7 @@ void PlanePopOut::start()
 
     ss.str("");
     ss  << "sois = {}\n"
-	<< "showSois = true\n";
+	<< "showSois = " << (m_bSendSois ? "true" : "false") << "\n";
 
     ss  << "function render()\n"
 	<<  "if not showSois then return end\n"
