@@ -66,6 +66,9 @@ public:
 	const DefaultData::StringSeq &getAppearances()
 		{ return _appearances; }
 
+	const DefaultData::StringSeq &getHumanAssertions()
+		{ return _humanAssertions; }
+
 	const std::vector<std::string> &getVisualizedObjects()
 		{ return _visualizedObjects; }
 
@@ -157,6 +160,9 @@ private:
 
 	/** Names of all appearances. */
 	DefaultData::StringSeq _appearances;
+
+	/** Names of all human assertions. */
+	DefaultData::StringSeq _humanAssertions;
 
 	/** List of objects to be shown in the visualizations. */
 	std::vector<std::string> _visualizedObjects;
