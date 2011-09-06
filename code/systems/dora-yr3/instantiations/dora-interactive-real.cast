@@ -50,8 +50,9 @@ INCLUDE includes/spatial.sa/spatial-mediator.cast
 
 CPP MG spatial.translation 	SpatialTranslation 
 CPP GD spatial.control 		SpatialControl -c instantiations/cureconfig/cogxp3.ccf  --log --pcserver pcserver --explore-range 2.0 --min-obstacle-height 0.25 #--debug --no-x-window 
-CPP GD navgraph.process 	NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --filter-doors --min-door-width 0.7 --max-door-width 0.9#--no-file-output
 CPP GD slam.process 		SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD navgraph.process 	NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --filter-doors --min-door-width 0.7 --max-door-width 0.9#--no-file-output
+CPP GD place.manager 		PlaceManager --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2
 CPP GD map.manager 		LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --no-tentative-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls #--load-nodemap #--debug 
 CPP GD path.query 		PathQueryProcessor #--no-indirect-paths 
 
