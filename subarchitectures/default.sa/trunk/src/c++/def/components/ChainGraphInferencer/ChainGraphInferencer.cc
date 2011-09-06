@@ -1224,6 +1224,64 @@ SpatialProbabilities::ProbabilityDistribution
 	}
 
 
+	// room_category1 -> human_asertion_property
+	if ((variables.size()==2) &&
+		(variables[0]=="room_category1") && (variables[1]=="human_assertion_property"))
+	{
+		// Set of all pairs category -> assertion
+		set< pair<string, string> > catAssertion;
+		for ( vector<string>::iterator it = _chainGraphInferencer->_roomCategories.begin();
+			  it!=_chainGraphInferencer->_roomCategories.end(); ++it )
+		{
+			for ( vector<string>::iterator it2 = _chainGraphInferencer->_humanAssertions.begin();
+				  it2!=_chainGraphInferencer->_humanAssertions.end(); ++it2 )
+			{
+				catAssertion.insert(pair<string,string>((*it), (*it2)));
+			}
+		}
+
+		// Add the connectivities from the data file
+		for(list<HumanAssertionPropertyGivenRoomCategory>::iterator it =
+				_chainGraphInferencer->_humanAssertionPropertyGivenRoomCategory.begin();
+				it!=_chainGraphInferencer->_humanAssertionPropertyGivenRoomCategory.end(); ++it)
+		{
+			catAssertion.erase(pair<string, string>(it->roomCategory1, it->humanAssertionProperty));
+
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->roomCategory1);
+			SpatialProbabilities::StringRandomVariableValuePtr humanAssertionPropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->humanAssertionProperty);
+			SpatialProbabilities::JointProbabilityValue jpv;
+			jpv.probability=it->probability;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(humanAssertionPropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		// Calculate the probability for the non-matching human assertion
+		double defaultNonMatchingHumanAssertionProbability = (1.0-_chainGraphInferencer->_defaultMatchingHumanAssertionProbability) /
+				static_cast<double>(_chainGraphInferencer->_humanAssertions.size()-1);
+
+		// Add default potential for those connectivities that we don't know
+		for (set< pair<string, string> >::iterator it=catAssertion.begin();
+				it!=catAssertion.end(); ++it)
+		{
+			SpatialProbabilities::StringRandomVariableValuePtr roomCategory1RVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->first);
+			SpatialProbabilities::StringRandomVariableValuePtr humanAssertionPropertyRVVPtr =
+					new SpatialProbabilities::StringRandomVariableValue(it->second);
+			SpatialProbabilities::JointProbabilityValue jpv;
+
+			jpv.probability = (it->first.compare(it->second)==0)?_chainGraphInferencer->_defaultMatchingHumanAssertionProbability:defaultNonMatchingHumanAssertionProbability;
+			jpv.variableValues.push_back(roomCategory1RVVPtr);
+			jpv.variableValues.push_back(humanAssertionPropertyRVVPtr);
+			factor.massFunction.push_back(jpv);
+		}
+
+		return factor;
+	}
+
+
 	// Factor not found!!
 	throw CASTException("Factor '"+factorStr+"' not found!");
 }
