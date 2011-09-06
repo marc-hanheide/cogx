@@ -209,6 +209,7 @@ void PointCloudServer::configure(const map<string,string> & _config) throw(runti
 
 void PointCloudServer::start()
 {
+  suspendReading=false;
   // add change filter for camera mount
   addChangeFilter(createLocalTypeFilter<Video::CameraParametersWrapper>(cdl::ADD),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receiveCameraParameters));
@@ -216,10 +217,10 @@ void PointCloudServer::start()
   addChangeFilter(createLocalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receiveCameraParameters));
 
-  addChangeFilter(createLocalTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
+  addChangeFilter(createTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
 
-  addChangeFilter(createLocalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
+  addChangeFilter(createTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
 
 }
