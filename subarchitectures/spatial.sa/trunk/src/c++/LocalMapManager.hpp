@@ -19,7 +19,6 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
-#include <PointCloudClient.h>
 #include <NavData.hpp>
 
 #include <SensorData/LaserScan2d.hh>
@@ -42,25 +41,6 @@
 
 
 namespace spatial {
-
-// camera constant parameters
-const double camFocalIR = 5.8e-3;
-const double camAx = 615.956787;
-const double camAy = 615.956787;
-const double camU0 = 321.940572;
-const double camV0 = 226.489246;
-const double Xcam_r = 0.1; // meter
-const double Ycam_r = 0.0; // meter
-const double Zcam_r = 0.79; // meter
-const unsigned int XRes = 640;
-const unsigned int YRes = 480;
-const unsigned int DEADZONE = 8;
-// some constants
-const double MaxHeightToPass = 1.35; // meter
-const double MinHeightToPass = 0.03; // meter
-const double MaxDistanceToInclude = 2.0; // meter
-const double MinDistanceToInclude = 0.45; // meter
-const double pi = 3.14159265;
 
   typedef std::vector<std::pair<double, double> > PlaneList;
 	
@@ -137,8 +117,7 @@ typedef Cure::LocalGridMap<PlaneData> PlaneMap;
  */
 class LocalMapManager : public cast::ManagedComponent,
   		  								public OdometryReceiver,
-		  									public Scan2dReceiver,
-												public cast::PointCloudClient
+		  									public Scan2dReceiver
 {
   private:
     class EvaluationServer: public FrontierInterface::HypothesisEvaluator {

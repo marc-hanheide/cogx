@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <utility>
 
 namespace spatial {
 
@@ -54,6 +55,8 @@ class PlaceManager : public cast::ManagedComponent
       virtual SpatialData::PlacePtr getCurrentPlace(const Ice::Current &_context);
       virtual FrontierInterface::PlaceMembership getPlaceMembership(double x, double y,
 	  const Ice::Current &_context);
+      int updatePlaceholderEdge(int placeholderId, const Ice::Current &_context);
+      FrontierInterface::AdjacencyLists getAdjacencyLists(const Ice::Current &_context);
 
       PlaceManager *m_pOwner;
       PlaceServer(PlaceManager *owner) : m_pOwner(owner)
@@ -95,6 +98,12 @@ class PlaceManager : public cast::ManagedComponent
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
 
     void evaluateUnexploredPaths();
+    IceUtil::Mutex m_PlaceholderMutex;
+
+    std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
+    void updateReachablePlaceholderProperties(int placeID);
+    void updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers);
+    SpatialData::PlacePtr getCurrentPlace();
     NavData::FNodePtr getCurrentNavNode();
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
@@ -116,6 +125,7 @@ class PlaceManager : public cast::ManagedComponent
     FrontierInterface::NodeHypothesisPtr getHypFromPlaceID(int placeID);
     NavData::FNodePtr getNodeFromPlaceID(int placeID);
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
+    void refreshPlaceholders(std::vector<std::pair<double,double> > coords);
 
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
@@ -125,12 +135,20 @@ class PlaceManager : public cast::ManagedComponent
 	NavData::FNodePtr newNode, int hypothesisID);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
+    void deletePlaceholder(int placeId);
+    bool createPlaceholder(int curPlaceId, double x, double y);
+    int updatePlaceholderEdge(int placeholderId);
+    bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
+
+    std::map<int, std::vector<int> > getAdjacencyLists();
 
     double getGatewayness(double x, double y);
     void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
 	int placeholderID, double value);
 
+    std::string concatenatePlaceIDs(int place1ID, int place2ID);
     void createConnectivityProperty(double cost, int place1ID, int place2ID);
+    bool deleteConnectivityProperty(int place1ID, int place2ID);
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
 
@@ -138,21 +156,19 @@ class PlaceManager : public cast::ManagedComponent
     int addPlaceForNode(NavData::FNodePtr node);
 
     // Abort any movement commands
-    void cancelMovement();
+    void cancelMovement(bool failed);
 
     // Methods to deal with synchronisation of edge addition
     void checkUnassignedEdges(int newPlaceID);
     void processEdge(NavData::AEdgePtr edge);
 
     // Frontier based exploration path parameters
-    double m_maxFrontierDist; // Culling distance for frontiers around a given node
     double m_minFrontierDist; // Culling distance for frontiers around a given node
-    double m_minFrontierLength; // Minimum size of frontiers to consider
     double m_minNodeSeparation; // Min distance that has to exist between the new
-    // hypothetical nodes generated at a place
+                                // hypothetical nodes generated at a place
+
     double m_hypPathLength;     // How far to try and move in the direction of the
-    // frontier
-    double m_minPlaceholderToWallDistance; // Don't place placeholders closer to a wall than this
+                                // frontier
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
@@ -169,10 +185,13 @@ class PlaceManager : public cast::ManagedComponent
     				   // came from last
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
     				   // thought it was going
+    int m_currentNodeOnPath; // During path following, stores the current node the robot is on
+
     std::map<int, std::set<int> > m_connectivities; // Keeps track of the
     					// connectivity properties maintained
-    std::map<std::pair<int, int>, std::string> m_connectivityToWMIDMap;
+    std::map<std::string, std::string> m_placeIDsToConnectivityWMID;
     std::map<int, std::string> m_gatewayProperties;
+    IceUtil::Mutex m_PlacePropsMutex;
 
     struct ForbiddenZone {
       double minX;

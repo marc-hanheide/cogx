@@ -38,7 +38,7 @@
 #include <Navigation/NavGraph.hh>
 #include <Navigation/NavController.hh>
 #include <Navigation/FrontierExplorer.hh>
-#include <Navigation/GridLineRayTracer.hh>
+#include "GridLineRayTracerModified.hh"
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
@@ -74,13 +74,8 @@ class SpatialControl : public cast::ManagedComponent ,
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-				m_pOwner->log("lock in getFrontiers");
-				m_pOwner->lockComponent();
-				m_pOwner->log("lock acquired");
 				FrontierInterface::FrontierPtSeq ret =
 					m_pOwner->getFrontiers();
-				m_pOwner->unlockComponent();
-				m_pOwner->log("unlocked in getFrontiers");
 				return ret;
       }
       SpatialControl *m_pOwner;
@@ -96,9 +91,16 @@ class SpatialControl : public cast::ManagedComponent ,
         virtual bool isCircleObstacleFree(double x, double y, double radius, const Ice::Current &_context) {
           if(!m_pOwner->m_lgm)
             throw "No map exists. Can not check for obstacles.";
+          if (radius < 0)
+            radius = 0.5 * m_pOwner->getRobotWidth();
 
-          return m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
+          m_pOwner->m_MapsMutex.lock();
+          bool ret = m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
+          m_pOwner->m_MapsMutex.unlock();
+          return ret;
         }
+
+        virtual int findClosestNode(double x, double y, const Ice::Current &_context);
         SpatialControl *m_pOwner;
         MapServer(SpatialControl *owner) : m_pOwner(owner) {}
         friend class SpatialControl;
@@ -125,6 +127,12 @@ protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
+  void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex) const;
+  virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
+  virtual int findClosestNode(double x, double y);
+
+  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY);
+  void updateGridMaps();
 
   double m_MaxExplorationRange; 
 
@@ -132,20 +140,26 @@ protected:
   Cure::NavGraph m_NavGraph;
   bool m_bNoNavGraph;
 
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
-  Cure::FrontierExplorer* m_Explorer;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmK;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplaylgmLM;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt; // This is from our customized cure raytracer. GridLineRayTracerModified.hh in spatial.sa
 
+  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_displayObstacleMap;
+
+  Cure::FrontierFinder<unsigned char>* m_FrontierFinder;
+  std::list<Cure::FrontierPt> m_Frontiers;
 
   IceUtil::Mutex m_Mutex;
+  IceUtil::Mutex m_MapsMutex;
+  IceUtil::Mutex m_ScanQueueMutex;
   Cure::LocalGridMap<unsigned char>* m_lgm;
-  Cure::LocalGridMap<unsigned char>* m_lgmK; // LGM filled by Kinect
-  Cure::LocalGridMap<unsigned char>* m_lgmL; // LGM filled by Laser
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
 
+  Cure::LocalGridMap<unsigned char>* m_binaryMap;
+  Cure::LocalGridMap<unsigned char>* m_obstacleMap; 
+
+  IceUtil::Monitor<IceUtil::Mutex> m_LScanMonitor;
 	std::queue<Cure::LaserScan2d> m_LScanQueue;	
 
   int m_Npts;
@@ -217,6 +231,7 @@ protected:
   bool m_UsePointCloud;
   double m_obstacleMinHeight;
   double m_obstacleMaxHeight;
+  bool m_DisplayCureObstacleMap;
 
 protected:
   /* 

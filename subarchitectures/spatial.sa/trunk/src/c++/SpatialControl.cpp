@@ -26,7 +26,8 @@
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 
-#include <ctime>
+#include <utility>
+#include <queue>
 
 using namespace cast;
 using namespace std;
@@ -46,6 +47,10 @@ extern "C" {
   cast::interfaces::CASTComponentPtr newComponent() {
     return new SpatialControl();
   }
+}
+
+int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Current &_context) {
+  return m_pOwner->findClosestNode(x,y);
 }
 
 SpatialControl::SpatialControl()
@@ -138,38 +143,27 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmK = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmL = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmLM = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
-  if (m_UsePointCloud) {
-    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgmL);
-  }
-  else {
-    m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
+  m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+
+  m_DisplayCureObstacleMap = false;
+  if (_config.find("--display-cure-obstacle-map") != _config.end()) {
+    m_DisplayCureObstacleMap = true;
+    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
+    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
   }
 
-  m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
-  //m_Explorer->setExplorationConfinedByGateways(true);
-  m_Explorer->addEventListener(this);
+  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
+  m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
   if (_config.find("--no-x-window") == _config.end()) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
-    if (m_UsePointCloud) {
-      m_DisplaylgmK = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmK);
-      m_DisplaylgmLM = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgmLM);
-    } else {
-      m_DisplaylgmK = 0;
-      m_DisplaylgmLM = 0;
-    }
     println("Will use X window to show the exploration map");
-
   } else {
     m_Displaylgm = 0;
-    m_DisplaylgmK = 0;
-		m_DisplaylgmLM = 0;
     println("Will NOT use X window to show the exploration map");
   }
 
@@ -373,165 +367,248 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
+void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY)
+{
+  int xi, yi;
+
+  if (minX <= -lgm.getSize())
+    minX = -lgm.getSize() + 1;
+  if (maxX >= lgm.getSize())
+    maxX = lgm.getSize() - 1;
+  if (minY <= -lgm.getSize())
+    minY = -lgm.getSize() + 1;
+  if (maxY >= lgm.getSize())
+    maxY = lgm.getSize() - 1;
+
+  /* Project the height map on to the local map */
+  for (xi = minX; xi <= maxX; xi++) {
+    for (yi = minY; yi <= maxY; yi++) {
+      if ((*m_lgmKH)(xi, yi) > m_obstacleMinHeight && (*m_lgmKH)(xi, yi) < m_obstacleMaxHeight) {
+        lgm(xi, yi) = '1';
+      }
+      else if ((*m_lgmKH)(xi, yi) != FLT_MAX) {
+        // Don't overwrite obstacles seen by the laser with (possibly old)
+        // free space from the point cloud
+        if (lgm(xi, yi) == '1')
+          continue;
+
+        lgm(xi, yi) = '0';
+      }
+    }
+  }
+
+  /* Filtering */
+  for (xi = minX+1; xi < maxX; xi++) {
+    for (yi = minY+1; yi < maxY; yi++) {
+      if (lgm(xi,yi) == '1' && 
+          lgm(xi-1,yi) != '1' && lgm(xi+1,yi) != '1' &&
+          lgm(xi-1,yi-1) != '1' && lgm(xi+1,yi-1) != '1' &&
+          lgm(xi-1,yi+1) != '1' && lgm(xi+1,yi+1) != '1' &&
+          lgm(xi,yi-1) != '1' && lgm(xi,yi+1) != '1') {
+        lgm(xi,yi) = '0';
+      }
+    }
+  }
+}
+
 class ComparePoints {
   public:
     bool operator()(const PointCloud::SurfacePoint& lhs, const PointCloud::SurfacePoint& rhs) const {
       return lhs.p.z < rhs.p.z;
     }
 };
-void SpatialControl::runComponent() 
+void SpatialControl::updateGridMaps()
 {
-  setupPushScan2d(*this, 0.1);
-  setupPushOdometry(*this);
-  log("I am running!");
-	std::ofstream depthfile;
-
   Cure::Pose3D scanPose;
 	Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
  	int xi,yi;
 
-  /* Local references so we don't have to dereference the pointers all the time */
-  Cure::LocalGridMap<unsigned char>& lgm = *m_lgm;
-  Cure::LocalGridMap<unsigned char>& lgmL = *m_lgmL;
-  Cure::LocalGridMap<unsigned char>& lgmK = *m_lgmK;
+  /* Update a temporary local map so we don't hog the lock */
+  Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
+  Cure::GridLineRayTracer<unsigned char> tmp_glrt(tmp_lgm);
+
+  /* Local reference so we don't have to dereference the pointer all the time */
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
+
+  /* Bounding box for laser scan */
+  double laserMinX = INT_MAX, laserMaxX = INT_MIN;
+  double laserMinY = INT_MAX, laserMaxY = INT_MIN;
+
+  /* Add all queued laser scans */
+  m_ScanQueueMutex.lock();
+  while (!m_LScanQueue.empty()){
+    if (m_TOPP.isTransformDefined() && m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {
+      lpW.add(LscanPose, m_LaserPoseR);		
+      tmp_glrt.addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+      tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0');                                  
+      m_firstScanAdded = true;
+
+      /* Update bounding box */
+      if (LscanPose.getX() < laserMinX)
+        laserMinX = LscanPose.getX();
+      if (LscanPose.getX() > laserMaxX)
+        laserMaxX = LscanPose.getX();
+      if (LscanPose.getY() < laserMinY)
+        laserMinY = LscanPose.getY();
+      if (LscanPose.getY() > laserMaxY)
+        laserMaxY = LscanPose.getY();
+    }
+    m_LScanQueue.pop();
+  }
+  m_ScanQueueMutex.unlock();
+  /* Only proceed if we got any new scans */
+  if (laserMinX == INT_MAX || laserMinY == INT_MAX || laserMaxX == INT_MIN || laserMaxY == INT_MIN) {
+    return;
+  }
+  laserMinX -= m_MaxExplorationRange;
+  laserMinY -= m_MaxExplorationRange;
+  laserMaxX += m_MaxExplorationRange;
+  laserMaxY += m_MaxExplorationRange;
+  int laserMinXi, laserMinYi, laserMaxXi, laserMaxYi;
+  if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
+    laserMinXi = -tmp_lgm.getSize() + 1;
+    laserMinYi = -tmp_lgm.getSize() + 1;
+  }
+  if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxXi, laserMaxYi) != 0) {
+    laserMaxXi = tmp_lgm.getSize() - 1;
+    laserMaxYi = tmp_lgm.getSize() - 1;
+  }
+
+  /* Bounding box for new point cloud data */
+  int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
+  int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
+
+  /* Update height map */
+  cdl::CASTTime frameTime = getCASTTime();
+  bool hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
+  if (hasScanPose) {
+    PointCloud::SurfacePointSeq points;
+    getPoints(true, 640/4, points);
+    std::sort(points.begin(), points.end(), ComparePoints());
+    for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+      /* Ignore points not in the current view cone */
+      if (!isPointInViewCone(it->p))
+        continue;
+      /* Transform point in cloud with regards to the robot pose */
+      Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+      Cure::Vector3D to;
+      scanPose.invTransform(from, to);
+      double pX = to.X[0];
+      double pY = to.X[1];
+      double pZ = to.X[2];
+      if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
+        /* Check if we can safely remove an old obstacle */
+        bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
+        bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+        if (oldObstacle && !newObstacle) {
+          /* Undo robot pose transform since it is not known by the point cloud */
+          Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
+          scanPose.transform(old, to);
+          cogx::Math::Vector3 oldPoint;
+          oldPoint.x = to.X[0];
+          oldPoint.y = to.X[1];
+          oldPoint.z = to.X[2];
+          /* If the old obstable is not currently in view don't remove it */
+          if (!isPointInViewCone(oldPoint))
+            continue;
+        }
+        /* If the above tests passed update the height map */ 
+        lgmKH(xi, yi) = pZ;
+
+        /* Update bounding box */
+        if (xi < pointcloudMinXi)
+          pointcloudMinXi = xi;
+        if (xi > pointcloudMaxXi)
+          pointcloudMaxXi = xi;
+        if (yi < pointcloudMinYi)
+          pointcloudMinYi = yi;
+        if (yi > pointcloudMaxYi)
+          pointcloudMaxYi = yi;
+      }
+    }
+
+    /* Project the height map onto the 2D obstacle map */ 
+    if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
+      blitHeightMap(tmp_lgm, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi);
+      tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0'); 
+    }
+  }
+
+  /* Project the height map onto the 2D obstacle map */ 
+  blitHeightMap(tmp_lgm, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi);
+
+  const int deltaN = 3;
+  double d = tmp_lgm.getCellSize()/deltaN;
+  int maxcellstocheck = int (5.0/d);
+  double xWT,yWT;
+  double theta;
+
+  /* Update the nav map */
+  m_Mutex.lock();
+  m_LMap.clearMap();
+  Cure::Pose3D currPose = m_TOPP.getPose();		
+  tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
+      0.55*Cure::NavController::getRobotWidth(), '0');                                  
+  for (int i = 0; i < m_Npts; i++) {
+    theta = m_StartAngle + m_AngleStep * i;
+    for (int j = 1; j < deltaN*maxcellstocheck; j++){
+      xWT = currPose.getX()+j*d*cos(theta);
+      yWT = currPose.getY()+j*d*sin(theta);
+      if(tmp_lgm.worldCoords2Index(xWT,yWT,xi,yi)==0){
+        if(tmp_lgm(xi,yi) == '1'){
+          m_LMap.addObstacle(xWT, yWT, 1);
+          break;    
+        }
+      }
+    }
+  }
+  m_Mutex.unlock();
+
+  /* Copy the temporary map */
+  m_MapsMutex.lock();
+  *m_lgm = tmp_lgm;
+  m_MapsMutex.unlock();
+}
+
+void SpatialControl::runComponent() 
+{
+  setupPushScan2d(*this, 0.1);
+  setupPushOdometry(*this);
 
   while(isRunning()){
     if (m_UsePointCloud) {
-      /* Add all queued laser scans */
-      while (!m_LScanQueue.empty()){
-        if (m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {		
-          lpW.add(LscanPose, m_LaserPoseR);		
-          m_Mutex.lock();
-          m_Glrt->addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
-          m_Mutex.unlock();
-          m_lgmL->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-              0.55*Cure::NavController::getRobotWidth(), '0');                                  
-          m_firstScanAdded = true;
-          m_LScanQueue.pop();
-        }
-      }
-
-      /* Update height map */
-      cdl::CASTTime frameTime;
-      std::vector<int> depthData; /* not used */
-      getDepthMap(frameTime, depthData); /* get scan time */
-      if (m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0) {
-        PointCloud::SurfacePointSeq points;
-        getPoints(true, 0 /* unused */, points);
-        std::sort(points.begin(), points.end(), ComparePoints());
-        for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
-          /* Transform point in cloud with regards to the robot pose */
-          Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
-          Cure::Vector3D to;
-          scanPose.invTransform(from, to);
-          double pX = to.X[0];
-          double pY = to.X[1];
-          double pZ = to.X[2];
-          if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
-            /* Check if we can safely remove an old obstacle */
-            bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
-            bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
-            if (oldObstacle && !newObstacle) {
-              /* Undo robot pose transform since it is not known by the point cloud */
-              Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
-              scanPose.transform(old, to);
-              cogx::Math::Vector3 point;
-              point.x = to.X[0];
-              point.y = to.X[1];
-              point.z = to.X[2];
-              if (!isPointInViewCone(point))
-                continue;
-            }
-            /* If the above tests passed update the height map */ 
-            lgmKH(xi, yi) = pZ;
-          }
-        }
-
-        /* Create 2D map from height map */
-        for (int i = 0; i < m_lgmKH->getNumCells(); i++) {
-          if (lgmKH[i] > m_obstacleMinHeight && lgmKH[i] < m_obstacleMaxHeight)
-            lgmK[i] = '1';
-          else if (lgmKH[i] != FLT_MAX)
-            lgmK[i] = '0';
-        }
-        m_lgmK->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-            0.55*Cure::NavController::getRobotWidth(), '0');                                  
-      }
-
-      m_Mutex.lock();    				
-      /* Merge the laser map and the 2D point cloud map */
-      lgm = lgmL;			   
-      for(long i=0; i<m_lgmK->getNumCells(); i++){
-        // Don't overwrite obstacles seen by the laser with (possibly old)
-        // free space from the point cloud
-        if (lgmK[i] == '0' && lgm[i] == '1')
-          continue;
-
-        if(lgmK[i] != '2')
-          lgm[i] = lgmK[i];
-      } 						
-
-      // filtering
-      unsigned int bound = m_lgm->getSize();
-
-      for(unsigned int x=-bound+1; x<bound-1; x++){
-        for(unsigned int y=-bound+1; y<bound-1; y++){
-          if( lgm(x,y) == '1' && 
-              lgm(x-1,y) != '1' && lgm(x+1,y) != '1' &&
-              lgm(x-1,y-1) != '1' && lgm(x+1,y-1) != '1' &&
-              lgm(x-1,y+1) != '1' && lgm(x+1,y+1) != '1' &&
-              lgm(x,y-1) != '1' && lgm(x,y-1) != '1' ) lgm(x,y) = '0';
-        }
-      }
-      m_Mutex.unlock();
-
-
-      const int deltaN = 3;
-      double d = m_lgm->getCellSize()/deltaN;
-      int maxcellstocheck = int (5.0/d);
-      double xWT,yWT;
-      double theta;
-
-      m_Mutex.lock();    							
-      /* Update the nav map */
-      m_LMap.clearMap();
-      for(long i=0; i<m_lgmLM->getNumCells(); i++){
-        (*m_lgmLM)[i] = lgmL[i];
-      }               
-      Cure::Pose3D currPose = m_TOPP.getPose();		
-      m_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
-          0.55*Cure::NavController::getRobotWidth(), '0');                                  
-      for (int i = 0; i < m_Npts; i++) {
-        theta = m_StartAngle + m_AngleStep * i;
-        for (int j = 1; j < deltaN*maxcellstocheck; j++){
-          xWT = currPose.getX()+j*d*cos(theta);
-          yWT = currPose.getY()+j*d*sin(theta);
-          if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
-            if(lgm(xi,yi) == '1'){
-              (*m_lgmLM)(xi,yi) = '1';   							
-              m_LMap.addObstacle(xWT, yWT, 1);
-              break;    
-            }
-          }
-        }
-      }
-      m_Mutex.unlock();	
+      updateGridMaps();
     }	
 
-		m_Mutex.lock();
+		m_MapsMutex.lock();
+    Cure::Pose3D currentPose = m_TOPP.getPose();
 		if (m_Displaylgm) {
-			Cure::Pose3D currentPose = m_TOPP.getPose();
 			m_Displaylgm->updateDisplay(&currentPose,
 						                      &m_NavGraph, 
-						                      &m_Explorer->m_Fronts);
-      if (m_UsePointCloud) {
-        m_DisplaylgmLM->updateDisplay(&currentPose);
-        m_DisplaylgmK->updateDisplay(&currentPose);
-      }
+						                      &m_Frontiers);
+      m_displayBinaryMap->updateDisplay(&currentPose);
 		}
-		m_Mutex.unlock();	
+
+    if(m_DisplayCureObstacleMap)
+      m_displayObstacleMap->updateDisplay(&currentPose);
+
+    if(m_DisplayCureObstacleMap) {
+      // Clear out obstacle map (that's used for visualization only)
+      int radius = m_obstacleMap->getSize();
+      for(int i = -radius; i < radius; ++i) {
+        for(int j = -radius; j < radius; ++j) {
+          (*m_obstacleMap)(i,j) = '0';
+        }
+      }
+      for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+        ObstPt obspt = m_LMap.obstRef(i);
+        (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+      }
+    }
+		m_MapsMutex.unlock();	
 	  
     usleep(250000);
   }
@@ -596,11 +673,6 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
     m_NavGraph.connectNodes();
 
     debug("Got a new graph with %d doors and a total of %d nodes", m_NavGraph.m_Gateways.size(), m_NavGraph.m_Nodes.size());
-    if(gateway) // if a new gateway is detected, let Cure::FrontierExplorer know so that it can back off (if confinedbygateways is set).
-    { 
-      m_Explorer->newGateway( ( *m_NavGraph.m_Gateways.back() ) );
-      gateway = false;
-    }
     
     if (!m_ready) m_ready = true;
 
@@ -878,9 +950,12 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
         Cure::NavController::setOrientationTolerance(m_TolRot);
         ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
 				//Clean out path; use only final waypoint
-				Cure::NavGraphNode lastNode = m_Path.back();
-				m_Path.clear();
-				m_Path.push_back(lastNode);
+        if(!m_Path.empty()) {
+          Cure::NavGraphNode lastNode = m_Path.back();
+          m_Path.clear();
+          m_Path.push_back(lastNode);
+        }
+        log("sent command.");
       }
       
       // GOTO_POLAR
@@ -971,26 +1046,6 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
       
       // EXPLORE
 
-      else if ((m_commandType == NavData::lEXPLORE)) {
-        
-        log("executing command EXPLORE");
-         m_TolRot = Cure::HelpFunctions::deg2rad(45);
-        m_Explorer->setExplorationConfinedByGateways(ExplorationConfinedByGateways);
-        ret = m_Explorer->startNextExplorationStep(currentTaskId);
-        m_currentTaskIsExploration = true;
-
-        // The EXPLORE command which calls Frontier Explorer from CURE
-        
-      }
-      else if ((m_commandType == NavData::lEXPLOREFLOOR)) {
-      	log("executing command EXPLOREFLOOR"); 
-  	m_TolRot = Cure::HelpFunctions::deg2rad(45);
-      	m_Explorer->setExplorationConfinedByGateways(ExplorationConfinedByGateways);
-        ret = m_Explorer->startNextExplorationStep(currentTaskId);
-        m_currentTaskIsExploration = true;
-       
-      	
-	}
       
       // Change completion now
       
@@ -1076,22 +1131,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
         m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
         m_Mutex.unlock();
 
-        /*
-        static int id = 0;
-        std::fstream fs;
-        char buf[128];
-        sprintf(buf, "lm%02d.txt", id);
-        fs.open(buf, std::ios::out);
-        for (unsigned int i = 0; i < m_LMap.nObst(); i++) {
-          fs << m_LMap.obstRef(i).x << " "
-            << m_LMap.obstRef(i).y << " ";
-        }
-        fs << std::endl;
-        fs.close();
-        println("Saved %s, map has %d obstacles", buf, m_LMap.nObst());
-        id = (id + 1) % 100;
-        */
-
+        m_MapsMutex.lock();
         Cure::Pose3D lpW;
         m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
             0.5*Cure::NavController::getRobotWidth(), 
@@ -1099,13 +1139,14 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
         lpW.add(scanPose, m_LaserPoseR);
         m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
         m_firstScanAdded = true;
+        m_MapsMutex.unlock();
       }
     }
   }
   else {
-    m_Mutex.lock();
+    m_ScanQueueMutex.lock();
     m_LScanQueue.push(cureScan);
-    m_Mutex.unlock();
+    m_ScanQueueMutex.unlock();
   }
 
   /* Person following stuff */    
@@ -1193,23 +1234,220 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
   m_RobotServer->execMotionCommand(cmd);
 }
 
+/* Fills map with an expanded version of gridmap, where unknown space is
+   also set as obstacles */
+void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex = true) const {
+  
+  if(lockMapsMutex)
+    m_MapsMutex.lock();
+
+  int gridmapSize = gridmap->getSize();
+
+  /* The Cure documentation recommends keeping columns as a multiple
+     of 32 to be able to exploit the performance improvements of doing
+     calculations on 32 bit longs. However, we use both 32 and 64 bit
+     operating systems now and longs on unix systems are usually different
+     sizes for these architectures. If anyone knows the correct way of
+     handling this, please modify the code below. */
+  Cure::BinaryMatrix ungrown_map;
+  ungrown_map.reallocate(2*gridmapSize, 2*gridmapSize);
+  ungrown_map = 0; // Set all cells to zero
+
+  // Transfer obstacles for the local gridmap
+  for(int x = -gridmapSize; x < gridmapSize; ++x) {
+    for(int y = -gridmapSize; y < gridmapSize; ++y) {
+      if((*gridmap)(x,y) == '1') {
+        ungrown_map.setBit(x + gridmapSize, y + gridmapSize, true);
+      }
+    }
+  }
+
+  // Grow each occupied cell to account for the size of the robot.
+  ungrown_map.growInto(map, 0.5*Cure::NavController::getRobotWidth() / m_lgm->getCellSize());
+
+  /* Set unknown space as obstacles, since we don't want to find paths
+  going through space we don't know anything about */
+  for(int x = -gridmapSize; x < gridmapSize; ++x) {
+    for(int y = -gridmapSize; y < gridmapSize; ++y) {
+      if((*gridmap)(x,y) == '2') {
+        map.setBit(x + gridmapSize, y + gridmapSize, true);
+      }
+    }
+  }
+
+  if(lockMapsMutex)
+    m_MapsMutex.unlock();
+}
+
+void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &frontiers) {
+  Cure::BinaryMatrix map;
+  getExpandedBinaryMap(m_lgm, map, false);
+
+  for(std::list<Cure::FrontierPt>::iterator it = frontiers.begin();
+      it != frontiers.end(); ++it) {
+    it->m_State = Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE;
+  }
+
+  /* Update the map used for visualization of the binarymap.
+     Note that we don't lock the map mutex here, since m_binaryMap
+     is not important for robot behaviour, only visualization.
+     Not waiting for a lock takes precedence to always getting the
+     correct visualization */
+  for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
+    for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
+      (*m_binaryMap)(x,y) = map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
+    }
+  }
+  
+  int rX, rY; // Robot position index
+
+  // Get robot position
+  Cure::Pose3D robotPose = m_TOPP.getPose();
+  if(m_lgm->worldCoords2Index(robotPose.getX(), robotPose.getY(), rX, rY) != 0) {
+    log("Robot position is outside of gridmap! Returning.");
+    return;
+  }
+
+  // Offset the indices so that top left is (0,0).
+  rX += m_lgm->getSize();
+  rY += m_lgm->getSize();
+
+  /* Do a BFS over the reachable parts of the map to see if the coorinates in
+     points are reachable */
+  std::queue<std::pair<int, int> > toVisit;
+  toVisit.push(make_pair(rX,rY));
+
+  while (!toVisit.empty()) {
+    std::pair<int,int> coord = toVisit.front();
+    toVisit.pop();
+
+    int x = coord.first;
+    int y = coord.second;
+
+    map.setBit(x,y, true); // Set as visited
+
+    // Check if this coordinate is in points
+    for(list<Cure::FrontierPt>::iterator it = frontiers.begin();
+        it != frontiers.end(); ++it) {
+      int pX, pY;
+      if(m_lgm->worldCoords2Index(it->getX(),it->getY(), pX,pY) != 0) {
+        log("Coordinate is outside of map.");
+        continue;
+      }
+
+      // Offset the indices so that top left is (0,0)
+      pX += m_lgm->getSize();
+      pY += m_lgm->getSize();
+
+      if(pX == x && pY == y)
+        it->m_State = Cure::FrontierPt::FRONTIER_STATUS_OPEN;
+    }
+
+    // Add neighbors if they are in free space, has not been visited before
+    // and are not out of bounds
+    if(y-1 >= 0 && !map(x  , y-1)) {
+      toVisit.push(make_pair(x  , y-1));
+      map.setBit(x,y-1,true);
+    }
+    if(x-1 >= 0 && !map(x-1, y  )){
+      toVisit.push(make_pair(x-1, y  ));
+      map.setBit(x-1,y,true);
+    }
+    if(x+1 < map.Columns-1 && !map(x+1, y  )){
+      toVisit.push(make_pair(x+1, y  ));
+      map.setBit(x+1,y,true);
+    }
+    if(y+1 < map.Rows-1 && !map(x  , y+1)) {
+      toVisit.push(make_pair(x  , y+1));
+      map.setBit(x,y+1,true);
+    }
+  }
+}
+
+/* Finds the node with the shortest path from (x,y) in an expanded binarymap
+   Returns -1 on error of if there are no nodes to search or if no node
+   was found */
+int SpatialControl::findClosestNode(double x, double y) {
+  double maxDist = 20; // The first maximum distance to try
+  Cure::BinaryMatrix map;
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map);
+
+  // Get all the navigation nodes
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  if(nodes.size() == 0)
+    return -1;
+
+  int xi, yi;
+  if(m_lgm->worldCoords2Index(x, y, xi, yi) != 0) {
+    return -1;
+  }
+  
+  // Offset the indices so that top left is (0,0).
+  xi += m_lgm->getSize();
+  yi += m_lgm->getSize();
+
+  int closestNodeId = -1;
+  double minDistance = FLT_MAX;
+  Cure::ShortMatrix path;
+  while(closestNodeId == -1) {
+    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
+      try {
+
+        int nodexi, nodeyi;
+        if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
+          continue;
+
+        // Offset the indices so that top left is (0,0).
+        nodexi += m_lgm->getSize();
+        nodeyi += m_lgm->getSize();
+
+        double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+        if(dist >= 0) { // If a path was found.. 
+          if(dist < minDistance) {
+            closestNodeId = (*nodeIt)->nodeId;
+            minDistance = dist;
+          }
+        }
+      } catch(IceUtil::NullHandleException e) {
+        log("Node suddenly disappeared..");
+      }
+    }
+
+    if(maxDist > map.Columns*map.Rows)
+      return -1;
+
+    maxDist *= 2; // Double the maximum distance to search for the next loop
+  }
+
+  return closestNodeId;
+}
+
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {
   log("SpatialControl::getFrontiers() called");
+
+  m_MapsMutex.lock();
+
   while (!m_firstScanAdded) {
     log("  Waiting for first scan to be added...");
-    unlockComponent();
+    m_MapsMutex.unlock();
     usleep(1000000);
-    lockComponent();
+    m_MapsMutex.lock();
   }
 
-  m_Explorer->updateFrontiers();
+  m_Frontiers.clear();
+  m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
+  setFrontierReachability(m_Frontiers);
 
   FrontierInterface::FrontierPtSeq outArray;
-  log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());
-  for (list<Cure::FrontierPt>::iterator it =  m_Explorer->m_Fronts.begin();
-      it != m_Explorer->m_Fronts.end(); it++) {
+  log("m_Frontiers contains %i frontiers", m_Frontiers.size());
+  for (list<Cure::FrontierPt>::iterator it =  m_Frontiers.begin();
+      it != m_Frontiers.end(); it++) {
     FrontierInterface::FrontierPtPtr newPt = new FrontierInterface::FrontierPt;
     newPt->mWidth = it->m_Width;
     switch (it->m_State) {
@@ -1236,5 +1474,7 @@ SpatialControl::getFrontiers()
     newPt->y = it->getY();
     outArray.push_back(newPt);
   }
+  m_MapsMutex.unlock();
+  log("exit getFrontiers");
   return outArray;
 }
