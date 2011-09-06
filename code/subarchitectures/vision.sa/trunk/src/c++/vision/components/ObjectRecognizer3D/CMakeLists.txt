@@ -13,6 +13,8 @@ include_directories(./SiftGPU/src/SiftGPU)
 include_directories(../ObjectTracker)
 include_directories(../ObjectTracker/Tracker/include)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)

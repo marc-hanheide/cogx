@@ -1,5 +1,8 @@
 FIND_PACKAGE( OpenCV REQUIRED )
 
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
+
 # Set the sources.
 SET(SOURCES VideoViewer.cpp)
 include_directories(

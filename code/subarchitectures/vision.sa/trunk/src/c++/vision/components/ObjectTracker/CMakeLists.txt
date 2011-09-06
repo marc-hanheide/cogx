@@ -5,6 +5,8 @@ FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(.)
 include_directories(Tracker/include)
 include_directories(/usr/include/SDL)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 
 add_subdirectory(Tracker)
 

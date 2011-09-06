@@ -102,6 +102,11 @@ if(BUILD_SA_VISION_VISMEDIATOR)
 add_subdirectory (src/c++/vision/components/VisualMediator)
 endif(BUILD_SA_VISION_VISMEDIATOR)
 
+option(BUILD_SA_VISION_PCVIEWER "build point cloud viewer" YES)
+if(BUILD_SA_VISION_PCVIEWER)
+add_subdirectory (src/c++/vision/components/PointCloudViewer)
+endif(BUILD_SA_VISION_PCVIEWER)
+
 option(BUILD_SA_VISION_VIRTUALSCENE "build 3D Virtual Scene" YES)
 if(BUILD_SA_VISION_VIRTUALSCENE)
 add_subdirectory (src/c++/vision/components/VirtualScene)
@@ -194,6 +199,11 @@ option(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D "build 3D shape descriptor" NO)
 if(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
 add_subdirectory (src/c++/vision/components/ShapeDescriptor3D)
 endif(BUILD_SA_VISION_SHAPEDESCRIPTOR_3D)
+
+option(BUILD_SA_VISION_CHECK_SYSTEM_CALIB "build calibration check" NO)
+if(BUILD_SA_VISION_CHECK_SYSTEM_CALIB)
+add_subdirectory (src/c++/vision/components/CheckSystemCalibration)
+endif(BUILD_SA_VISION_CHECK_SYSTEM_CALIB)
 
 if(BUILD_PYTHON_COMPONENTS)
    add_subdirectory (src/python)

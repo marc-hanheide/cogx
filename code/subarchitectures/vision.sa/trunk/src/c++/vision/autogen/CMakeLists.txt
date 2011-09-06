@@ -1,8 +1,8 @@
 include(Slice2Cpp)
 
 include_directories(.)
-include_directories(${COGX_ROOT}/tools/hardware/laser/src/slice)
-include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/slice)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 # expects to find .ice file under PROJECT/src/slice e.g. laser/src/slice
 # 

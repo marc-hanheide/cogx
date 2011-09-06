@@ -1,4 +1,6 @@
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 # Set the sources.
 SET(SOURCES CheckSystemCalibration.cpp)
