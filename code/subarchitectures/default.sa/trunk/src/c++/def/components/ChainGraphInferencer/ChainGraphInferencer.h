@@ -179,6 +179,9 @@ private:
 	/** List of all the appearances. */
 	std::vector<std::string> _appearances;
 
+	/** List of all the human assertions. */
+	std::vector<std::string> _humanAssertions;
+
 	struct ShapePropertyGivenRoomCategory
 	{
 		std::string roomCategory1;

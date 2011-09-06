@@ -513,6 +513,15 @@ void ChainGraphInferencer::generateLists()
 		appearances.insert(it->appearanceProperty);
 	_appearances = vector<string>(appearances.begin(), appearances.end());
 
+	// Generate list of human assertions. Include room categories into those as well.
+	set<string> humanAssertions;
+	humanAssertions.insert(roomCategories.begin(), roomCategories.end()); // Include room categories into those as well.
+	for(std::list<HumanAssertionPropertyGivenRoomCategory>::iterator it =
+			_humanAssertionPropertyGivenRoomCategory.begin();
+			it!=_humanAssertionPropertyGivenRoomCategory.end(); ++it)
+		humanAssertions.insert(it->humanAssertionProperty);
+	_humanAssertions = vector<string>(humanAssertions.begin(), humanAssertions.end());
+
 }
 
 
@@ -724,6 +733,14 @@ DefaultData::StringSeq
 	ChainGraphInferencer::Server::getAppearances(const Ice::Current &)
 {
 	return _chainGraphInferencer->_appearances;
+}
+
+
+// -------------------------------------------------------
+DefaultData::StringSeq
+	ChainGraphInferencer::Server::getHumanAssertions(const Ice::Current &)
+{
+	return _chainGraphInferencer->_humanAssertions;
 }
 
 
