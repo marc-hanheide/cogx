@@ -3,6 +3,8 @@
 
 HOST localhost
 
+VARDEFAULT calib_root=instantiations/calibration/alu-robot-at-kth
+
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --max-v 0.2 --max-w 0.4 --max-joyv 10 --max-joyw 10 --cure-config-file  instantiations/cureconfig/cogxp3.ccf #--rand-data
 COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
 COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host localhost #--log
@@ -12,13 +14,15 @@ CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 # With pan tilt
 JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
-#CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971" --pt_base_xml "instantiations/kinect/camPose/ptu-pose-base-sim.xml" --pt_pan_xml "instantiations/kinect/camPose/ptu-pose-pan-sim.xml" --pt_tilt_xml "instantiations/kinect/camPose/ptu-pose-tilt-sim.xml" --cam_poses_xml "instantiations/kinect/camPose/ptu-pose-cam-left-sim.xml"
+CPP MG cameramount CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(calib_root)/ptu-pose-cam-left-sim.xml %(calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(calib_root)/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
+#CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971" --pt_base_xml "instantiations/kinect/camPose/ptu-pose-base-sim.xml" --pt_pan_xml "instantiations/kinect/camPose/ptu-pose-pan-sim.xml" --pt_tilt_xml "instantiations/kinect/camPose/ptu-pose-tilt-sim.xml" --cam_poses_xml "instantiations/kinect/camPose/ptu-pose-kinect-sim.xml" --ptzserver ptz.server
 # Without pan tilt
-CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971"
+#CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "kinectpics/distorted/campose-right.xml" --fixed_pan_tilt "0 -0.52324971"
 
 
 #CPP MG cameramounttest CameraMountTest --pan 0.0 --tilt -0.52324971 # -30 degrees
-CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --create-viewcone
+
 
 SUBARCHITECTURE spatial.sa
 CPP WM SubarchitectureWorkingMemory #--log #--debug
@@ -32,4 +36,4 @@ CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cure
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --no-tentative-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls #--load-nodemap #--debug 
 #CPP GD test.component TestComponent
 #CPP MG placeholderexplorer.navigation PlaceholderExplorer
-JAVA MG manual.nav spatial.manual.ManualNavControl
+#JAVA MG manual.nav spatial.manual.ManualNavControl
