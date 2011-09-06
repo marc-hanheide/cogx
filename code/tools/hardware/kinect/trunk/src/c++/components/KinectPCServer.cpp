@@ -177,7 +177,9 @@ void KinectPCServer::runComponent() {
 
 	::kinect::slice::PersonsDict persons;
 
-	kinect->NextFrame();
+  if (!suspendReading) {
+    kinect->NextFrame();
+  }
 	int count=userGenerator->GetNumberOfUsers();
 	XnUserID aUsers[count];
 	XnUInt16 nUsers=count;
@@ -252,7 +254,9 @@ void KinectPCServer::saveNextFrameToFile() {
 bool KinectPCServer::createViewCone()
 {
   kinect::changeRegistration(0);
-  kinect->NextFrame();
+  if (!suspendReading) {
+    kinect->NextFrame();
+  }
   
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
@@ -261,7 +265,7 @@ bool KinectPCServer::createViewCone()
   Pose3 global_kinect_pose, zeroPose;
   setIdentity(zeroPose);
   setIdentity(global_kinect_pose);
-  transform(camPars[0].pose, zeroPose, global_kinect_pose);
+  transform(lastValidCamPose, zeroPose, global_kinect_pose);
 
   for (int i = 0; i < N_PLANES; i++) {
     if (fovPlanes[i])
@@ -305,8 +309,10 @@ bool KinectPCServer::createViewCone()
 void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
 {
   lockComponent();
+
   if (!suspendReading) {
     kinect->NextFrame();
+    lastValidCamPose=camPars[0].pose;
   }
   
   cv::Mat_<cv::Point3f> cloud;
@@ -317,10 +323,10 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
   setIdentity(zeroPose);
   setIdentity(global_kinect_pose);
   if(transformToGlobal)
-    transform(camPars[0].pose, zeroPose, global_kinect_pose);
+    transform(lastValidCamPose, zeroPose, global_kinect_pose);
 
   // copy clouds to points-vector (dense!)
-  int scale = cloud.size().width / imgWidth;
+  int scale = imgWidth == 0 ? 1 : cloud.size().width / imgWidth;
   for (int row=0; row < cloud.size().height; row += scale)   /// SLOW conversion
   {
     for (int col=0; col < cloud.size().width; col += scale)

@@ -47,6 +47,7 @@ private:
   std::string kinectConfig;                     ///< Kinect configuration file
   CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
+  cogx::Math::Pose3 lastValidCamPose; 
 
   void getResolution(int camIdx, CvSize &size);
   bool setResolution(int camIdx, CvSize &size);
