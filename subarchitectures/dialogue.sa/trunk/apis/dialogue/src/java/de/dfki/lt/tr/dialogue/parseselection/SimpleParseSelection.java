@@ -71,6 +71,9 @@ public class SimpleParseSelection implements ParseSelector {
 			else if (lf.root.sort.startsWith("q-")) {
 				// fine as well
 			}
+			else if (lf.root.sort.startsWith("e-")) {
+				// fine as well
+			}
 			else {
 				if (LFUtils.lfNominalGetFeature(lf.root, "Mood").isEmpty()) {
 					ok = false;

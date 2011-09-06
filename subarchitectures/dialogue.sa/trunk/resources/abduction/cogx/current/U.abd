@@ -277,8 +277,10 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 	i : sort(Nom, 'e-place'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	int : pre(Int, belief(Ref, attrib(H, S), fv(placetype, PolarProp))) / p(1.0),
-	int : post(Int, belief(Ref, shared(S, H), fv(placetype, PolarProp))) / p(1.0).
+	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
+	int : pointer(given, assertion, 'referring-expression') / p(1.0),
+	int : pre(Int, belief(Ref, attrib(H, S), fv(identity, PolarProp))) / p(1.0),
+	int : post(Int, belief(Ref, shared(S, H), fv(identity, PolarProp))) / p(1.0).
 
 %understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 %	i : sort(Nom, 'm-location'),
@@ -349,6 +351,10 @@ polar_query_prop(Nom, objecttype, PropValue) <-
 	i : feat_Delimitation(Nom, existential),
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific).
+
+polar_query_prop(Nom, identity, PropValue) <-
+	i : sort(Nom, 'e-place'),
+	i : prop(Nom, PropValue).
 
 %-------------------------------------------------------------------------
 
