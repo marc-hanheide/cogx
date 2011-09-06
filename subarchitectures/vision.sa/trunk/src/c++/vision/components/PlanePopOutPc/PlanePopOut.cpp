@@ -185,7 +185,7 @@ void PlanePopOut::start()
     m_bSendPoints = false;
     m_bSendPlaneGrid = true;
     m_bSendImage = true;
-    m_bSendSois = false;
+    m_bSendSois = true;
     m_bColorByLabel = true;
     m_display.connectIceClient(*this);
     m_display.setClientData(this);
@@ -233,9 +233,41 @@ void PlanePopOut::start()
     ss <<  "function render()\nend\n"
 	<< "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, ss.str());
+    m_tmSendPoints.restart();
+
     //Video::Image image;
     //m_display.setImage(ID_OBJECT_IMAGE, image);
-    m_tmSendPoints.restart();
+
+    ss.str("");
+    ss  << "sois = {}\n"
+	<< "showSois = true\n";
+
+    ss  << "function render()\n"
+	<<  "if not showSois then return end\n"
+	<<  "glColor(0.0, 0.0, 1.0, 0.2)\n"
+	<<  "for k,v in pairs(sois) do\n"
+	<<   "glPushMatrix()\n"
+	<<   "glTranslate(v.x, v.y, v.z)\n"
+	<<   "StdModel:cylinder(v.sx, v.sy, v.sz, 12)\n"
+	<<   "glPopMatrix()\n"
+	<<  "end\n"
+	<< "end\n";
+
+    ss  << "function setSoi(id, x, y, z, sx, sy, sz)\n"
+	<<  "sois[id] = {x=x, y=y, z=z, sx=sx, sy=sy, sz=sz}\n"
+	//<<  "sois[id].x = x\n"
+	//<<  "sois[id].y = y\n"
+	//<<  "sois[id].z = z\n"
+	//<<  "sois[id].sx = sx\n"
+	//<<  "sois[id].sy = sy\n"
+	//<<  "sois[id].sz = sz\n"
+	<< "end\n";
+
+    ss  << "function removeSoi(id)\n"
+	<<  "sois[id] = nil\n"
+	<< "end\n";
+
+    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
 #endif
 
     // @author: mmarko
@@ -273,7 +305,8 @@ void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event
     else if (event.sourceId == IDC_POPOUT_SOIS) {
 	if (event.data == "0" || event.data=="") pPopout->m_bSendSois = false;
 	else pPopout->m_bSendSois = true;
-	pPopout->SendSyncAllSois();
+	pPopout->m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, 
+		pPopout->m_bSendSois ? "showSois=true" : "showSois=false");
     }
 }
 
@@ -397,7 +430,7 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	    int lab = labels.at(i);
 	    if (lab == -1) 
 	      continue; // skip this point
-	    
+
 	    if (plab != lab) {
 		colors++;
 		plab = lab;
@@ -408,7 +441,7 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 		    case 3: str << "c(0.0,0.5,0.5)\n"; break;
 		    case 4: str << "c(0.5,0.5,0.0)\n"; break;
 // 		    case -1: str << "c(0.5,0.0,0.5)\n"; break;
- 		    default:  str << "c(1.0,1.0,1.0)\n"; break;
+ 		    default:  str << "c(1.0,1.0,0.0)\n"; break;
 		}
 	    }
 	}
@@ -482,16 +515,17 @@ void PlanePopOut::SendOverlays()
 {
     std::ostringstream str;
     str << "function render()\n";
+    str << "v=glVertex\nc=glColor\n";
     str << "glBegin(GL_LINES)\n";
-    str << "glColor(1.0,0.0,0.0)\n";
-    str << "glVertex(0., 0., 0.)\n";
-    str << "glVertex(0.1, 0., 0.)\n";
-    str << "glColor(0.0,1.0,0.0)\n";
-    str << "glVertex(0., 0., 0.)\n";
-    str << "glVertex(0., 0.1, 0.)\n";
-    str << "glColor(0.0,0.0,1.0)\n";
-    str << "glVertex(0., 0., 0.)\n";
-    str << "glVertex(0., 0., 0.1)\n";
+    str << "c(1.0,0.0,0.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0.1, 0., 0.)\n";
+    str << "c(0.0,1.0,0.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0., 0.1, 0.)\n";
+    str << "c(0.0,0.0,1.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0., 0., 0.1)\n";
     str << "glEnd()\n";
     str << "showLabel(0.1, 0, 0, 'x', 12)\n";
     str << "showLabel(0, 0.1, 0, 'y', 12)\n";
@@ -503,34 +537,21 @@ void PlanePopOut::SendOverlays()
 void PlanePopOut::SendSoi(PlanePopOut::ObjPara& soiobj)
 {
     ostringstream ss;
-    ss << "function render()\n";
-    ss << "glPushMatrix()\n";
-    ss << "glColor(0.0, 0.0, 1.0, 0.2)\n";
-    ss << "glTranslate("
+    ss  << "setSoi('" << soiobj.id << "',"
 	<< soiobj.c.x << ","
 	<< soiobj.c.y << ","
-	<< soiobj.c.z << ")\n";
-    ss << "StdModel:cylinder(" << soiobj.s.x << "," << soiobj.s.y << "," << soiobj.s.z << ",12)\n";
-    ss << "glPopMatrix()\n";
-    ss << "end\n";
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, ss.str());
+	<< soiobj.c.z << ","
+	<< soiobj.s.x << ","
+	<< soiobj.s.y << ","
+	<< soiobj.s.z << ")\n";
+    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
 }
 
 void PlanePopOut::SendRemoveSoi(PlanePopOut::ObjPara& soiobj)
 {
-    // XXX: ATM the parts are not removed from LuaGL, so we just create an empty render()
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id, "function render()\nend\n");
-    m_display.removePart(ID_OBJECT_3D, ID_PART_3D_SOI + soiobj.id);
-}
-
-void PlanePopOut::SendSyncAllSois()
-{
-//     vector<ObjPara> sois = PreviousObjList; // copy to minimize race conditions
-//     for (int i = 0; i < sois.size(); i++) {
-// 	ObjPara& soi = sois.at(i);
-// 	if (m_bSendSois) SendSoi(soi);
-// 	else SendRemoveSoi(soi);
-//     }
+    ostringstream ss;
+    ss  << "removeSoi('" << soiobj.id << "')";
+    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
 }
 
 #endif
@@ -726,7 +747,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+			SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -792,7 +813,7 @@ void PlanePopOut::SOIManagement()
 			deleteFromWorkingMemory(PreviousObjList.at(j).id);
 // 			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendRemoveSoi(PreviousObjList.at(j));
+			SendRemoveSoi(PreviousObjList.at(j));
 #endif
 		    }
 		}
@@ -821,7 +842,7 @@ void PlanePopOut::SOIManagement()
 // 			log("Overwrite Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
 			overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+			SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 		}
@@ -829,7 +850,8 @@ void PlanePopOut::SOIManagement()
 		{
 		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) {SendRemoveSoi(PreviousObjList.at(j)); SendSoi(CurrentObjList.at(matchingResult));}
+		    SendRemoveSoi(PreviousObjList.at(j));
+		    SendSoi(CurrentObjList.at(matchingResult));
 #endif
 		}
 	    }
@@ -848,7 +870,7 @@ void PlanePopOut::SOIManagement()
 			addToWorkingMemory(CurrentObjList.at(i).id, obj);
 
 #ifdef FEAT_VISUALIZATION
-			if (m_bSendSois) SendSoi(CurrentObjList.at(i));
+			SendSoi(CurrentObjList.at(i));
 #endif
 		    }
 #ifdef SAVE_SOI_PATCH

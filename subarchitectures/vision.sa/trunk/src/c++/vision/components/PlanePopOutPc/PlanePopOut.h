@@ -173,7 +173,6 @@ private:
 };
     CDisplayClient m_display;
 
-    void SendSyncAllSois();
     void SendImage();
     void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels, CMilliTimer& tmSendPoints);
     void SendPlaneGrid();
