@@ -305,7 +305,9 @@ bool KinectPCServer::createViewCone()
 void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
 {
   lockComponent();
-  kinect->NextFrame();
+  if (!suspendReading) {
+    kinect->NextFrame();
+  }
   
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
