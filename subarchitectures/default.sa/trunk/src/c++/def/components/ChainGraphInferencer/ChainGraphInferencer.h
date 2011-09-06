@@ -1,7 +1,7 @@
 /**
  * @author Andrzej Pronobis
  *
- * Declaration of the conceptual::ChainGraphInferencer class.
+ * Declaration of the def::ChainGraphInferencer class.
  */
 
 #ifndef DEFAULT_CHAINGRAPHINFERENCER_H
@@ -45,6 +45,8 @@ class ChainGraphInferencer: public cast::ManagedComponent
 		virtual DefaultData::StringSeq getSizes(const Ice::Current &);
 
 		virtual DefaultData::StringSeq getAppearances(const Ice::Current &);
+
+		virtual DefaultData::StringSeq getHumanAssertions(const Ice::Current &);
 
 		virtual SpatialProbabilities::ProbabilityDistribution
 			getFactor(const std::string &factorStr, const Ice::Current &);
@@ -91,6 +93,8 @@ private:
 	/** Loads the avs default knowledge file (defaultprob.txt) */
 	void loadAvsDefaultKnowledge();
 
+	/** Generates a list of objects, room categories etc.. */
+	void generateLists();
 
 private:
 
@@ -227,6 +231,18 @@ private:
 	};
 
 	std::list<DefaultAppearancePropertyGivenRoomCategory> _defaultAppearancePropertyGivenRoomCategory;
+
+
+	struct HumanAssertionPropertyGivenRoomCategory
+	{
+		std::string roomCategory1;
+		std::string humanAssertionProperty;
+		double probability;
+	};
+
+	std::list<HumanAssertionPropertyGivenRoomCategory> _humanAssertionPropertyGivenRoomCategory;
+	double _defaultMatchingHumanAssertionProbability;
+
 
 	/** Determines from where the object information should be loaded. */
 	LoadObjectsFrom _loadObjectsFrom;

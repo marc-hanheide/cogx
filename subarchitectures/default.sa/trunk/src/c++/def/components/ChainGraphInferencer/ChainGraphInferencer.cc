@@ -159,7 +159,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=shapePropVector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException("The numbers of room_category1, shape_property and potential keys do not match.");
+		throw CASTException("The numbers of room_category1, shape_property and probability keys do not match.");
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
 	{
@@ -177,7 +177,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	config.getValueList("default.default_shape_property_given_room_category", "probability", potentialVector);
 
 	if ( shapePropVector.size()!=potentialVector.size() )
-		throw CASTException("The numbers of shape_property and potential keys do not match.");
+		throw CASTException("The numbers of shape_property and probability keys do not match.");
 
 	for(unsigned int i=0; i<shapePropVector.size(); ++i)
 	{
@@ -198,7 +198,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=sizePropVector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException("The numbers of room_category1, size_property and potential keys do not match.");
+		throw CASTException("The numbers of room_category1, size_property and probability keys do not match.");
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
 	{
@@ -216,7 +216,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	config.getValueList("default.default_size_property_given_room_category", "probability", potentialVector);
 
 	if ( sizePropVector.size()!=potentialVector.size() )
-		throw CASTException("The numbers of size_property and potential keys do not match.");
+		throw CASTException("The numbers of size_property and probability keys do not match.");
 
 	for(unsigned int i=0; i<sizePropVector.size(); ++i)
 	{
@@ -236,7 +236,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 
 	if ( (roomCat1Vector.size()!=appearancePropVector.size()) ||
 		 (roomCat1Vector.size()!=potentialVector.size()) )
-		throw CASTException(exceptionMessage(__HERE__, "The numbers of room_category1, appearance_property and potential keys do not match. %d %d %d",
+		throw CASTException(exceptionMessage(__HERE__, "The numbers of room_category1, appearance_property and probability keys do not match. %d %d %d",
 				roomCat1Vector.size(), appearancePropVector.size(), potentialVector.size()));
 
 	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
@@ -255,7 +255,7 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 	config.getValueList("default.default_appearance_property_given_room_category", "probability", potentialVector);
 
 	if ( appearancePropVector.size()!=potentialVector.size() )
-		throw CASTException("The numbers of appearance_property and potential keys do not much.");
+		throw CASTException("The numbers of appearance_property and probability keys do not much.");
 
 	for(unsigned int i=0; i<appearancePropVector.size(); ++i)
 	{
@@ -265,10 +265,39 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 		_defaultAppearancePropertyGivenRoomCategory.push_back(dspgrc);
 	}
 
+
+	// Properties (human assertion)
+	roomCat1Vector.clear();
+	config.getValueList("default.human_asserted_knowledge_property_given_room_category", "room_category1", roomCat1Vector);
+	vector<string> humanAssertionPropVector;
+	config.getValueList("default.human_asserted_knowledge_property_given_room_category", "human_assertion_property", humanAssertionPropVector);
+	potentialVector.clear();
+	config.getValueList("default.human_asserted_knowledge_property_given_room_category", "probability", potentialVector);
+
+	if ( (roomCat1Vector.size()!=humanAssertionPropVector.size()) ||
+		 (roomCat1Vector.size()!=potentialVector.size()) )
+		throw CASTException(exceptionMessage(__HERE__, "The numbers of room_category1, human_assertion_property and probability keys do not match. %d %d %d",
+				roomCat1Vector.size(), humanAssertionPropVector.size(), potentialVector.size()));
+
+	for(unsigned int i=0; i<roomCat1Vector.size(); ++i)
+	{
+		HumanAssertionPropertyGivenRoomCategory hapgrc;
+		hapgrc.roomCategory1=roomCat1Vector[i];
+		hapgrc.humanAssertionProperty=humanAssertionPropVector[i];
+		hapgrc.probability=potentialVector[i];
+		_humanAssertionPropertyGivenRoomCategory.push_back(hapgrc);
+	}
+
+	// Properties (human assertion) default
+	_defaultMatchingHumanAssertionProbability =
+			config.getValue("default.default_human_asserted_knowledge_property_given_room_category.matching_probability", 0.95);
+
+
 	// Load object information from AVS DefaultProb file
 	if (_loadObjectsFrom == LOF_DEFAULTPROB)
 	{
 		loadAvsDefaultKnowledge();
+		generateLists(); // If we load knowledge from the AVS data file, we can generate the lists already now so that they are available in start()
 	}
 
 	// Register the ICE Server
@@ -342,6 +371,16 @@ void ChainGraphInferencer::configure(const map<string,string> & _config)
 				it->appearanceProperty.c_str(), it->probability);
 	}
 
+
+	log("-> Human assertion property given room category:");
+	for(list<HumanAssertionPropertyGivenRoomCategory>::iterator it = _humanAssertionPropertyGivenRoomCategory.begin();
+			it!=_humanAssertionPropertyGivenRoomCategory.end(); ++it)
+	{
+		log("----> rc1=%s hap=%s p=%f",
+				it->roomCategory1.c_str(), it->humanAssertionProperty.c_str(), it->probability);
+	}
+	log("-> Default matching human assertion probability: %g", _defaultMatchingHumanAssertionProbability);
+
 }
 
 
@@ -403,22 +442,32 @@ void ChainGraphInferencer::start()
 			debug("---> room=%s object=%s p=%f", hfcItem.roomCategory.c_str(), hfcItem.objectCategory.c_str(), hfcItem.probability);
 		}
 
+		generateLists(); // In case when we load from HFC, we can generate lists only now.
 	} // if (_loadObjectsFrom = LOF_HFC)
 
-	// Generate list of object variables
-	set<string> objectPropertyVariables;
-	for(list<ObjectPropertyGivenRoomCategory>::iterator it = _objectPropertyGivenRoomCategory.begin();
-			it!=_objectPropertyGivenRoomCategory.end(); ++it)
-		objectPropertyVariables.insert(
-				VariableNameGenerator::getDefaultObjectPropertyVarName(
-						it->objectCategory, it->relation, it->supportObjectCategory));
-	_objectPropertyVariables = vector<string>(objectPropertyVariables.begin(), objectPropertyVariables.end());
 
-	// Generate list of objects
+	// Local filter on DefaultData::InferenceQuery
+	addChangeFilter(createLocalTypeFilter<DefaultData::InferenceQuery>(cdl::ADD),
+			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
+					&ChainGraphInferencer::inferenceQueryAdded));
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::generateLists()
+{
+	// Generate list of object categories and variables
+	set<string> objectPropertyVariables;
 	set<string> objectCategories;
 	for(list<ObjectPropertyGivenRoomCategory>::iterator it = _objectPropertyGivenRoomCategory.begin();
 			it!=_objectPropertyGivenRoomCategory.end(); ++it)
+	{
+		objectPropertyVariables.insert(
+				VariableNameGenerator::getDefaultObjectPropertyVarName(
+						it->objectCategory, it->relation, it->supportObjectCategory));
 		objectCategories.insert(it->objectCategory);
+	}
+	_objectPropertyVariables = vector<string>(objectPropertyVariables.begin(), objectPropertyVariables.end());
 	_objectCategories = vector<string>(objectCategories.begin(), objectCategories.end());
 
 	// Generate list of room categories mentioned ANYWHERE
@@ -456,7 +505,6 @@ void ChainGraphInferencer::start()
 		sizes.insert(it->sizeProperty);
 	_sizes = vector<string>(sizes.begin(), sizes.end());
 
-
 	// Generate list of appearances
 	set<string> appearances;
 	for(std::list<AppearancePropertyGivenRoomCategory>::iterator it =
@@ -465,12 +513,7 @@ void ChainGraphInferencer::start()
 		appearances.insert(it->appearanceProperty);
 	_appearances = vector<string>(appearances.begin(), appearances.end());
 
-	// Local filter on DefaultData::InferenceQuery
-	addChangeFilter(createLocalTypeFilter<DefaultData::InferenceQuery>(cdl::ADD),
-			new MemberFunctionChangeReceiver<ChainGraphInferencer>(this,
-					&ChainGraphInferencer::inferenceQueryAdded));
 }
-
 
 
 // -------------------------------------------------------
