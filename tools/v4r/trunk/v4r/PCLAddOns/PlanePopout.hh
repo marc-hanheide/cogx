@@ -60,8 +60,8 @@ public:
               int nb = 10,
               double thrSac = 0.05,
               double normalDistWeight = 0.1,
-              double minObjH = 0.05,
-              double maxObjH = 0.8,
+              double minObjH = -0.8,
+              double maxObjH = -0.05,
               float eucThr = 0.02,
               unsigned minClSize = 100)
       : minZ(_minZ), maxZ(_maxZ), downsampleLeaf(dwLeaf), downsampleLeafObjects(dwLeafObj), 
