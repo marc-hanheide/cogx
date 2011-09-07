@@ -23,7 +23,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 
 	private static final int TIME_WAIT_MS = 200;
 
-	private static final double TOLERANCE = 0.05;
+	private static final double TOLERANCE = 0.0005;
 
 	private static final int MAX_LOOPS = TIMEOUT_MS / TIME_WAIT_MS;
 
@@ -65,7 +65,9 @@ public class PanTiltZoomServer extends ManagedComponent {
 	}
 
 	private double ptzPosError(PTZPose pos1, PTZPose pos2) {
-		return Math.abs(pos1.pan - pos2.pan) + Math.abs(pos1.tilt - pos2.tilt);
+		double panError = 1-(Math.sin(pos1.pan)*Math.sin(pos2.pan) + Math.cos(pos1.pan)*Math.cos(pos2.pan)); 
+		double tiltError = 1-(Math.sin(pos1.tilt)*Math.sin(pos2.tilt) + Math.cos(pos1.tilt)*Math.cos(pos2.tilt)); 
+		return panError+tiltError;
 	}
 
 	private void movePTZ(WorkingMemoryChange _wmc) {
