@@ -176,7 +176,10 @@ void KinectPCServer::runComponent() {
 ::kinect::slice::PersonsDict KinectPCServer::detectPersons() {
 
 	::kinect::slice::PersonsDict persons;
-
+	if (userGenerator==NULL || !userGenerator->IsValid()) {
+		println("we don't have a valid userGenerator");
+		return persons;
+	}
   if (!suspendReading) {
     kinect->NextFrame();
   }
