@@ -81,7 +81,7 @@ bool Rectangle3D::GetLinks(vector<GraphLink> &links)
  * @param tgRenderer Render engine
  * @param randomColor Use random color  TODO unused
  */
-void Rectangle3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor)
+void Rectangle3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
 {
   RGBValue color;
   color.float_value = hull[0][3];

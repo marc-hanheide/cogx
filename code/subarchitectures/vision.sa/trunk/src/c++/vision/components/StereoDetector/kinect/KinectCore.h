@@ -12,13 +12,18 @@
 #include <opencv/cxcore.h>
 #include <opencv/cv.h>
 #include <stdexcept>
+#include <set>
 
-#include "TomGineThread.hh"
 
 #include "KinectBase.h"
 #include "Gestalt3D.h"
 
 #include "Vector.hh"
+
+#include "v4r/PCLAddOns/PlanePopout.hh"
+#include "v4r/PCLAddOns/utils/PCLUtils.h"
+#include "v4r/PCLAddOns/functions/PCLFunctions.h"
+#include "v4r/TomGine/tgTomGineThread.h"
 
 namespace Z
 {
@@ -35,6 +40,8 @@ private:
   Z::VisionCore *vcore;                                             ///< left and right vision core
   IplImage *iplImg;                                                 ///< current left and right image
   cv::Mat_<cv::Vec4f> points;                                       ///< point cloud of the kinect camera
+  
+  std::set<unsigned> graphCutGroups;                                  ///< group numbers of graph-cut result.
 
   KinectBase* kinectPrinciples[KinectBase::MAX_TYPE];               ///< Kinect 3D Gestalt principle list.
   Z::Array<Z::Gestalt3D*> kinectGestalts[Gestalt3D::MAX_TYPE];      ///< Kinect 3D Gestalt list 
@@ -55,20 +62,30 @@ public:
   unsigned NumGestalts3D(Gestalt3D::Type type) {return kinectGestalts[type].Size();}                    ///< Ruturns number of Gestalts of "type"
   void NewGestalt3D(Gestalt3D* g);
   
-  void DrawGestalts3D(TGThread::TomGineThread *tgRenderer, Gestalt3D::Type type);                       ///< Draw Gestalt to 3d render engine
+  void DrawGestalts3D(TomGine::tgTomGineThread *tgRenderer, Gestalt3D::Type type);                       ///< Draw Gestalt to 3d render engine
   void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image,
                              Gestalt3D::Type type,
                              Video::CameraParameters camPars);                                          ///< Draw Gestalt to image
 
+  
+  void DrawObjects3D(TomGine::tgTomGineThread *tgRenderer);
+  void DrawGraphCut3D(TomGine::tgTomGineThread *tgRenderer);
+  
   void PrintGestalts3D(Gestalt3D::Type type);
   const char* GetKinectTypeName(KinectBase::Type type);
 
-  void ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);
+  void Process(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points);
   
   const char* GetGestaltListInfo();
   const char* GetGestaltTypeName(Z::Gestalt3D::Type type);
   int NumMonoGestalts(Gestalt::Type type) {return vcore->Gestalts(type).Size();}
   void PrintVCoreStatistics();
+  
+  void SetObjectLabels(pclA::PlanePopout *pp);
+  void SetGraphCutGroups(std::set<unsigned> &gcg) {graphCutGroups = gcg;}
+
+  void PrintNodeIDs();                                                ///< TODO Remove
+
 };
 
 }

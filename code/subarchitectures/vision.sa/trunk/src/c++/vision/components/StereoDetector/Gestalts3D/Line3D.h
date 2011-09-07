@@ -23,11 +23,11 @@ class Line3D : public Gestalt3D
 {
 public:
   cv::Vec4f point[2];                   ///< Start/End point of the line in 3D (with color).
+  cv::Point3f center3D;                 ///< 3D center point of the line
+  cv::Point3f dir;                      ///< Direction of the line
   std::vector<cv::Vec4f> edge;          ///< Edge of the line (Segment3D edgels)
 
-//  Vertex3D point[2];                      ///< Start/end point of the 3D line
-
- Vertex3D isct3D[2];                    ///< 3D intersection point [START/END]   // TODO Which intersection?
+  Vertex3D isct3D[2];                    ///< 3D intersection point [START/END]   // TODO Which intersection?
 //  Vertex3D armPoints3D[2];            ///< 3D arm points
 //  Vector3 armDir3D[2];                ///< 3D direction of the 3 arms of the L-Junction
 
@@ -36,10 +36,18 @@ public:
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
   
   bool GetLinks(vector<GraphLink> &links);
+  cv::Point3f GetCenter3D() {return center3D;}
+  void GetCenter3D(cv::Point3f &c) {c = center3D;}
+  cv::Point3f GetDirection() {return dir;}
 
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true);
+//   void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor) {DrawGestalt3D(tgRenderer, false, 0);}
+//   void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color = false, float color = 0.0);
+  void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars);
   void PrintGestalt3D();
 
+  double LLProximity(Line3D *l);
+  double LLParallelity(Line3D *l);
 };
 
 

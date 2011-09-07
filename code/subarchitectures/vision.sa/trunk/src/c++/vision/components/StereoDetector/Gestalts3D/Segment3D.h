@@ -35,7 +35,7 @@ public:
   
   bool GetLinks(vector<GraphLink> &links);
   
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor = true);
   void PrintGestalt3D();
 };
 

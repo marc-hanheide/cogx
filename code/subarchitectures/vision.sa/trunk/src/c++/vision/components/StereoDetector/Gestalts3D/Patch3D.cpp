@@ -8,6 +8,7 @@
 
 #include "Patch3D.h"
 #include "MathUtils.h"
+#include "../../../VisionUtils.h"
 
 namespace Z
 {
@@ -78,6 +79,7 @@ void Patch3D::CalculatePlaneNormal()
  */
 void Patch3D::CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz)
 {
+  printf("Patch3D::CalculateSignificance: Time to implement!\n");
 //   // Significance is between 0 and 1
 //   double sig2Dleft = fabs(angle2Dleft/(M_PI/2.));
 //   double sig2Dright = fabs(angle2Dright/(M_PI/2.));
@@ -92,7 +94,7 @@ void Patch3D::CalculateSignificance(double angle2Dleft, double angle2Dright, dou
  * @param p Patch to compare with
  * @return Returns the distance in meter.
  */
-double Patch3D::IsClose(Patch3D *p)
+double Patch3D::CalculateProximity(Patch3D *p)
 {
   double distance = 100.;
   for(unsigned i=0; i<hull_points.size(); i++)
@@ -117,15 +119,20 @@ double Patch3D::CompareColor(Patch3D *p)
   return hist->Compare(p->hist);
 }
 
-double DistancePoint2Plane(double a, double b, double c, double d, double x, double y, double z)
+double Patch3D::DistancePoint2Plane(double a, double b, double c, double d, double x, double y, double z)
 {
- return (fabs(a*x + b*y + c*z + d) / sqrt(a*a + b*b + c*c));
+    return (fabs(a*x + b*y + c*z - d) / sqrt(a*a + b*b + c*c));
 }
 
+double Patch3D::CalculatePointDistance(double x, double y, double z)
+{
+  double np = normal.x*center3D.x + normal.y*center3D.y + normal.z*center3D.z;
+  return DistancePoint2Plane(normal.x, normal.y, normal.z, np, x, y, z);
+}
 
 /**
  * @brief Compare two patches for coplanarity. Extract difference of normals and
- * the distance after 
+ * the distance of the planes 
  * @param p Patch to compare with
  * @param normal_angle Angle between the two plane normals
  * @param plane_distance Distance between planes, after rotation to mean normal.
@@ -165,6 +172,7 @@ void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &pla
 //   normal_angle = acos(dot_p_pp);
 // //   printf("NormalAngle: %4.4f\n", normal_angle);
 //   
+
   // calculate plane distance:
   // calculate mean normal
   cv::Point3f meanNormal;
@@ -175,9 +183,21 @@ void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &pla
   meanNormal.y = meanNormal.y/norm;
   meanNormal.z = meanNormal.z/norm;
   
-  plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, cv::norm(center3D), p->center3D.x, p->center3D.y, p->center3D.z);
+  double np = meanNormal.x*center3D.x + meanNormal.y*center3D.y + meanNormal.z*center3D.z;
+  plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, np, p->center3D.x, p->center3D.y, p->center3D.z);
 }
 
+/**
+ * @brief Calculate parallelity between (line) direction and plane patch.
+ * @param dir Direction of visual feature (normalised).
+ * @return Returns the angle between dir and the plane normal -M_PI/2.
+ */
+double Patch3D::CalculateParallelity(cv::Point3f &dir)
+{
+  // calculate opening angle!!!
+  double dot = normal.x * dir.x + normal.y * dir.y + normal.z * dir.z;
+  return (acos(dot) - (M_PI/2.));
+}
 
 /**
  * @brief Get the nodes vector for this 3D Gestalt.
@@ -204,31 +224,49 @@ printf("Patch3D::GetLinks: Not yet implemented!\n");
 /**
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
- * @param use_color Use specific color
+ * @param use_color Use specific color, or random color
  * @param float color
  */
-void Patch3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool use_color, float color)
+void Patch3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color, float color)
 {
-  if(use_color) //printf("Patch3D::DrawGestalt3D: Use specific color not yet implemented!\n");
+  if(use_color)
   {
+    RGBValue col;
+    col.float_value = color;
     std::vector<cv::Vec4f> col_points, col_hull_points;
     for(unsigned i=0; i<points.size(); i++)
     {
       col_points.push_back(points[i]);
       col_points[i][3] = color;
     }
-    for(unsigned i=0; i<hull_points.size(); i++)
-    {
-      col_hull_points.push_back(hull_points[i]);
-      col_hull_points[i][3] = color;
-    }    
     tgRenderer->AddPointCloud(col_points);
-    tgRenderer->AddConvexHull(col_hull_points);    
+    
+    // add convex hull of patch
+    for(unsigned j=0; j < hull_points.size(); j++)
+    {
+      int k = j+1;
+      if(k == hull_points.size()) k=0;
+      cv::Vec4f s = hull_points[j];
+      cv::Vec4f e = hull_points[k];
+      tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+                            col.r, col.g, col.b, 2);
+    }  
   }    
   else
   {
     tgRenderer->AddPointCloud(points);
-    tgRenderer->AddConvexHull(hull_points);    
+    // add convex hull of patch
+    for(unsigned j=0; j < hull_points.size(); j++)
+    {
+      int k = j+1;
+      if(k == hull_points.size()) k=0;
+      cv::Vec4f s = hull_points[j];
+      cv::Vec4f e = hull_points[k];
+      RGBValue col;
+      col.float_value = hull_points[j][3];
+      tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+                            col.r, col.g, col.b, 2);
+    }  
   }
 }
 
@@ -236,7 +274,7 @@ void Patch3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool use_color,
 /**
  * @brief Draw this 3D Gestalt to an image
  * @param image Image
- * @param type Type of 3D Gestalt
+ * @param camPars CameraParameters
  */
 void Patch3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars)
 {
@@ -289,7 +327,7 @@ void Patch3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraPar
   int c_y = (int) (c_v / center3D.z);
     
   char labl[5];
-  snprintf(labl, 5, "%u", /*GetObjectLabel()*/GetNodeID());
+  snprintf(labl, 5, "%u", GetNodeID());
   cv::putText(image, string(labl), cv::Point(c_x, c_y), cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,0,0), 2);
 }
 

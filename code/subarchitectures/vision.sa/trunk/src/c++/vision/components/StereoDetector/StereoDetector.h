@@ -32,7 +32,7 @@
 #include "Array.hh"
 
 #include "ObjRep.h"
-#include "TomGineThread.hh"
+#include "v4r/TomGine/tgTomGineThread.h"
 
 #include "StereoCamera.h"
 
@@ -48,7 +48,7 @@ class StereoDetector : public ManagedComponent,
                        public PointCloudClient
 {
 private:
-  TGThread::TomGineThread *tgRenderer;            ///< 3D render engine
+  TomGine::tgTomGineThread *tgRenderer;           ///< 3D render engine
   std::vector<PointCloud::SurfacePoint> points;   ///< 3D point vector
   IplImage *backProjPointCloud;                   ///< Back projected point cloud
   cast::StereoCamera *stereo_cam;                       ///< stereo camera parameters and functions

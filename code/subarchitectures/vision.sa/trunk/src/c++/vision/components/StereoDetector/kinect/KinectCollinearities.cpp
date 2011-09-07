@@ -14,53 +14,20 @@
 namespace Z
 {
 
-static double MAXIMUM_DISTANCE = 0.05;
+static double MAXIMUM_DISTANCE = 0.05;    ///< Maximum depth distance between points = 5cm
 
 /**
  * @brief Constructor of StereoLines: Calculate stereo matching of Lines
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-KinectCollinearities::KinectCollinearities(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                       : KinectBase(kc, vc, iplI, p)
+KinectCollinearities::KinectCollinearities(KinectCore *kc, 
+                                           VisionCore *vc, 
+                                           IplImage *iplI, 
+                                           cv::Mat_<cv::Vec4f> &p) 
+                     : KinectBase(kc, vc, iplI, p)
 {
   numLines = 0;
 }
-
-
-/**
- * @brief Draw matched Lines.
- * @param side Left or right image from stereo rig.
- * @param single Draw single feature
- * @param id ID of single feature
- * @param detail Degree of detail
- */
-// void KinectCollinearities::DrawMatched(int side, bool single, int id, int detail)
-// {
-//   if(single)
-//   {
-//     if(id < 0 || id >= lineMatches)
-//     {
-//       printf("StereoLines::DrawMatched: warning: id out of range!\n");
-//       return;
-//     }
-//     DrawSingleMatched(side, id, detail);
-//   }
-//   else
-//     for(int i=0; i< lineMatches; i++)
-//       DrawSingleMatched(side, i, detail);
-// }
-
-/**
- * @brief Draw single matched line.
- * @param side Left or right image from stereo rig.
- * @param id ID of single feature
- * @param detail Degree of detail
- */
-// void KinectCollinearities::DrawSingleMatched(int side, int id, int detail)
-// {
-//   lines[side][id].Draw(detail);
-// }
-
 
 /**
  * @brief Clear all arrays.
@@ -168,8 +135,13 @@ bool KinectCollinearities::CheckLineValidity(Z::Collinearity *col, Z::Line3D *li
     if(edgels3d.size() > 1 /*&& line_finished*/)
     {
 // printf("    => new line, because end of edge reached\n");
-      line[side] = new Z::Line3D(col->line[0]->ID(), edgels3d);
-      succeed[side] = true;
+      if((edgels3d[0][0] - edgels3d[edgels3d.size()-1][0]) != 0 ||
+         (edgels3d[0][1] - edgels3d[edgels3d.size()-1][1]) != 0 ||
+         (edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]) != 0)
+      {
+        line[side] = new Z::Line3D(col->line[0]->ID(), edgels3d);   /// TODO why again a new line?
+        succeed[side] = true;
+      }
     }
   }  
   

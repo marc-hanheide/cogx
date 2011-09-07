@@ -10,14 +10,13 @@
 #define Z_PATCH3D_HH
 
 #include <vector>
+#include <math.h>
 #include "Gestalt3D.h"
 #include "StereoTypes.h"
 #include "StereoCore.h"
-// #include "VisionUtils.h"
 #include "ColorHistogram.h"
 
 #include "highgui.h"
-// #include <opencv2/highgui/highgui.hpp>
 
 namespace Z
 {
@@ -28,20 +27,19 @@ namespace Z
 class Patch3D : public Gestalt3D
 {
 private:
- cv::Point3f normal;                      ///< Normal of the plane
- cv::Point3f center3D;                    ///< Center point of the 3D patch
- std::vector<cv::Vec4f> points;           ///< All (projected) points of the plane patch
- std::vector<cv::Vec4f> hull_points;      ///< Hull points of the plane
- 
- unsigned oLabel;                         ///< Object label for learning objects
- 
- void CalculatePlaneNormal();
+  cv::Point3f normal;                       ///< Normal of the plane
+  cv::Point3f center3D;                     ///< Center point of the 3D patch
+  std::vector<cv::Vec4f> points;            ///< All (projected) points of the plane patch
+  std::vector<cv::Vec4f> hull_points;       ///< Hull points of the plane
+  
+  void CalculatePlaneNormal();
+  double DistancePoint2Plane(double a, double b, double c, double d, 
+                             double x, double y, double z);
 
 public:
  ColorHistogram *hist;                    ///< ColorHistogram of patch
 
 public:
-//   Patch3D(cv::Mat_<cv::Vec4f> _p, cv::Mat_<cv::Vec4f> _h_p);
   Patch3D(std::vector<cv::Vec4f> _p, std::vector<cv::Vec4f> _h_p);
 
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
@@ -49,20 +47,21 @@ public:
   cv::Point3f GetCenter3D() {return center3D;}
   cv::Point3f GetPlaneNormal() {return normal;}
   void GetCenter3D(cv::Point3f &c) {c = center3D;}
+  std::vector<cv::Vec4f> GetHullPoints() {return hull_points;}
   
   // Learning functions
-  double IsClose(Patch3D *p);
+  double CalculateProximity(Patch3D *p);
   double CompareColor(Patch3D *p);
   void CalculateCoplanarity(Patch3D *p, double &normal_angle, double &plane_distance);
+  double CalculatePointDistance(double x, double y, double z);
+  double CalculateParallelity(cv::Point3f &dir);
   
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor) {DrawGestalt3D(tgRenderer, false, 0);}
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool use_color = false, float color = 0.0);
+  // Drawing functions
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor) {DrawGestalt3D(tgRenderer, false, 0);}
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color = false, float color = 0.0);
   void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars);
   
   void PrintGestalt3D();
-  
-  void SetObjectLabel(const unsigned i) {oLabel = i;}
-  unsigned GetObjectLabel() {return oLabel;}
 };
 
 

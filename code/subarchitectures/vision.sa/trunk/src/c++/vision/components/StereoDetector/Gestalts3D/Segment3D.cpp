@@ -7,7 +7,6 @@
  */
 
 #include "Segment3D.h"
-//#include "VisionUtils.h"
 
 namespace Z
 {
@@ -76,7 +75,7 @@ printf("Segment3D::GetLinks: Not yet implemented!\n");
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
  */
-void Segment3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor)
+void Segment3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
 {
   RGBValue color;
   if(randomColor)

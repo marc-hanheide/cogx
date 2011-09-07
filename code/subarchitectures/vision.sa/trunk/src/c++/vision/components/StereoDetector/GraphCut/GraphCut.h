@@ -9,6 +9,8 @@
 #ifndef Z_GRAPHCUT_H
 #define Z_GRAPHCUT_H
 
+#include <set>
+
 #include "KinectCore.h"
 #include "CalculateRelations.h"
 #include "Learner.h"
@@ -18,14 +20,13 @@
 #include "disjoint-set.h"
 
 #include <../../../VisionUtils.h>
-#include "TomGineThread.hh"
 
 namespace Z
 {
 
-// THRESHOLD_CONSTANT: 3 - xx
-#define THRESHOLD_CONSTANT 2
-#define MIN_SIZE 2
+// THRESHOLD_CONSTANT: 1 - 10? => 2
+#define THRESHOLD_CONSTANT 4.0
+#define MIN_SIZE 1                /// minimum size of element-sets
 
 #define THRESHOLD(size, c) (c/size)
 
@@ -39,7 +40,6 @@ public:
 private:
   KinectCore *kcore;
   CalculateRelations *relations;
-  Learner *learner;
   Graph *graph;
   
   E::Edge *edges;         // Edges between the nodes, representing a probability
@@ -49,13 +49,13 @@ private:
   bool initialized;       // true, if graph is initialized
 
 public:
-  GraphCut(KinectCore *kc, Learner *l, CalculateRelations *r);
+  GraphCut(KinectCore *kc, CalculateRelations *r);
   ~GraphCut();
   
   
   bool Initialize();
   void Cut();
-  void Show(TGThread::TomGineThread *tgRenderer);
+  void CopyGroupIDToFeatures();
 
 };
 

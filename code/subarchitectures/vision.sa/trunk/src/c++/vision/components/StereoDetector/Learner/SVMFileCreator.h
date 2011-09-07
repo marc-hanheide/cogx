@@ -11,13 +11,11 @@
 
 #include "KinectCore.h"
 #include "CalculateRelations.h"
-// #include "LearnPropBase.h"
 
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
 #include "v4r/PCLAddOns/functions/PCLFunctions.h"
 
-// #include "TomGineThread.hh"
 
 namespace Z
 {
@@ -31,15 +29,17 @@ public:
   
 private:
   KinectCore *kcore;
-  pclA::PlanePopout *planePopout;
+//   pclA::PlanePopout *planePopout;
   CalculateRelations *relations;
 
+  double cam_fx, cam_fy, cam_cx, cam_cy;
 
 public:
   SVMFileCreator();
   ~SVMFileCreator();
   
-  void Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineThread *tgR);
+  void Process(/*pclA::PlanePopout *pp,*/ KinectCore *kc,
+               double cam_fx, double cam_fy, double cam_cx, double cam_cy);
 
   void WriteResults2File(std::vector<Relation> &rel);
 //   void ReadResultsFromFile();

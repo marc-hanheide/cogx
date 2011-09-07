@@ -125,8 +125,16 @@ void KinectLines::Process()
               if(edgels3d.size() > 1)
               {
 // printf("    => new segment, because of broken edge\n");
-                Z::Line3D *l3d = new Z::Line3D(l->ID(), edgels3d);
-                kcore->NewGestalt3D(l3d);
+
+                // when start and end point is different
+                if((edgels3d[0][0] - edgels3d[edgels3d.size()-1][0]) != 0 ||
+                   (edgels3d[0][1] - edgels3d[edgels3d.size()-1][1]) != 0 ||
+                   (edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]) != 0)
+                {
+// printf("p: %4.3f-%4.3f-%4.3f\n", edgels3d[0][0] - edgels3d[edgels3d.size()-1][0], edgels3d[0][1] - edgels3d[edgels3d.size()-1][1], edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]);
+                  Z::Line3D *l3d = new Z::Line3D(l->ID(), edgels3d);
+                  kcore->NewGestalt3D(l3d);
+                }
               }
               edgels3d.clear();
               last_point = point3D;
@@ -138,13 +146,19 @@ void KinectLines::Process()
       }
       else
         printf("StereoDetectorKinectLines::calc3DSegements: point is out of the image space: %u-%u\n", (int) edgePoint2D.x, (int) edgePoint2D.y);
-    } 
+    }
     
     if(edgels3d.size() > 1)
-    {
+    {          
+      if((edgels3d[0][0] - edgels3d[edgels3d.size()-1][0]) != 0 ||
+         (edgels3d[0][1] - edgels3d[edgels3d.size()-1][1]) != 0 ||
+         (edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]) != 0)
+      {
+// printf("p: %4.3f-%4.3f-%4.3f\n", edgels3d[0][0] - edgels3d[edgels3d.size()-1][0], edgels3d[0][1] - edgels3d[edgels3d.size()-1][1], edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]);
 // printf("    => new segment, because end of edge reached\n");
-      Z::Line3D *l3d = new Z::Line3D(l->ID(), edgels3d);
-      kcore->NewGestalt3D(l3d);
+        Z::Line3D *l3d = new Z::Line3D(l->ID(), edgels3d);
+        kcore->NewGestalt3D(l3d);
+      }
     }
   }
   

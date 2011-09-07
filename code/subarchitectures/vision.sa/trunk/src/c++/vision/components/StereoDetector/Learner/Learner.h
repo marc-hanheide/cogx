@@ -15,8 +15,7 @@
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
 #include "v4r/PCLAddOns/functions/PCLFunctions.h"
-
-#include "TomGineThread.hh"
+#include "v4r/TomGine/tgTomGineThread.h"
 
 namespace Z
 {
@@ -29,7 +28,7 @@ class Learner
 public:
   
 private:
-  TGThread::TomGineThread *tgRenderer;                      ///< TODO 3D render engine => only for debugging necessary
+  TomGine::tgTomGineThread *tgRenderer;                      ///< TODO 3D render engine => only for debugging necessary
 
   KinectCore *kcore;
   pclA::PlanePopout *planePopout;
@@ -62,7 +61,7 @@ public:
   Learner();
   ~Learner();
   
-  void Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineThread *tgR);
+  void Process(pclA::PlanePopout *pp, KinectCore *kc, TomGine::tgTomGineThread *tgR);
 
   void GetPosProximityBetweenPatches(double &mean, double &variance, double &st_devi);
   void GetNegProximityBetweenPatches(double &mean, double &variance, double &st_devi);

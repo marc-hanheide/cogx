@@ -38,7 +38,7 @@ public:
   void CalculateSignificance(double sigLeft, double sigRight);
   unsigned GetSurfaceSize() {return surf.vertices.Size();}
   bool GetLinks(vector<GraphLink> &links);
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor);
 };
 
 

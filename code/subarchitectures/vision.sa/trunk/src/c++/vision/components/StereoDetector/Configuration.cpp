@@ -203,11 +203,11 @@ void StereoDetector::configure(const map<string,string> & _config)
   cv::Vec3d rotCenter(0,0,0.4);
   
   // Initialize 3D render engine 
-  tgRenderer = new TGThread::TomGineThread(1280, 1024);
-  tgRenderer->SetParameter(intrinsic);
-  tgRenderer->SetCamera(R, t, rotCenter);     /// TODO funktioniert nicht => Wieso?
-//   tgRenderer->SetRotationCenter(rotCenter);      /// TODO funktioniert nicht => Wieso?
-  tgRenderer->SetCoordinateFrame();
+  tgRenderer = new TomGine::tgTomGineThread(1280, 1024);
+  tgRenderer->SetCamera(intrinsic);
+  tgRenderer->SetCamera(R, t);                    /// TODO funktioniert nicht => Wieso?
+  tgRenderer->SetRotationCenter(rotCenter);       /// TODO funktioniert nicht => Wieso?
+//   tgRenderer->SetCoordinateFrame();
   
   // initialize object representation
   objRep = new Z::ObjRep();

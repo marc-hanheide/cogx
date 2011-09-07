@@ -36,23 +36,15 @@ SVMFileCreator::~SVMFileCreator()
 /**
  * @brief Process the relation extraction algorithm
  */
-void SVMFileCreator::Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineThread *tgR)
+void SVMFileCreator::Process(/*pclA::PlanePopout *pp, */KinectCore *kc,                               /// TODO Remove planePopout: not used anymore!
+                             double cam_fx, double cam_fy, double cam_cx, double cam_cy)
 {
   kcore = kc;
-  planePopout = pp;
-//   tgRenderer = tgR;
+//   planePopout = pp;
   
-  // get number of patches and the labels
-  unsigned nrPatches = kcore->NumGestalts3D(Gestalt3D::PATCH);
-  for(unsigned i=0; i<nrPatches; i++)
-  {
-    Patch3D *p = (Patch3D*) kcore->Gestalts3D(Gestalt3D::PATCH, i);
-    p->SetObjectLabel(planePopout->IsInSOI(p->GetCenter3D()));
-  }
-
   std::vector<Relation> relation_vector;
-  relations->Initialize(kc);
-  relations->CalcRelations(relation_vector);
+  relations->Initialize(kc, cam_fx, cam_fy, cam_cx, cam_cy);
+  relations->CalcSVMRelations(relation_vector);
   
   // add relations to file!
   WriteResults2File(relation_vector);
@@ -63,15 +55,37 @@ void SVMFileCreator::Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::To
  */
 void SVMFileCreator::WriteResults2File(std::vector<Relation> &rel)
 {
-  FILE *file = fopen("SVM-Trainingsset.txt", "w");
-    for(unsigned i=0; i<rel.size(); i++)
+  
+  FILE *PPfile = fopen("PP-Trainingsset.txt", "w");
+  FILE *PLfile = fopen("PL-Trainingsset.txt", "w");
+  FILE *LLfile = fopen("LL-Trainingsset.txt", "w");
+  for(unsigned i=0; i<rel.size(); i++)
   {
-    fprintf(file,"%u ", rel[i].groundTruth);
-    for(unsigned j=0; j<rel[i].rel_value.size(); j++)
-      fprintf(file,"%u:%6.5f ", j, rel[i].rel_value[j]);
-    fprintf(file,"\n");
+    if(rel[i].type == 1)
+    {
+      fprintf(PPfile,"%u ", rel[i].groundTruth);
+      for(unsigned j=0; j<rel[i].rel_value.size(); j++)
+        fprintf(PPfile,"%u:%6.5f ", j, rel[i].rel_value[j]);
+      fprintf(PPfile,"\n");
+    }
+    if(rel[i].type == 2)
+    {
+      fprintf(PLfile,"%u ", rel[i].groundTruth);
+      for(unsigned j=0; j<rel[i].rel_value.size(); j++)
+        fprintf(PLfile,"%u:%6.5f ", j, rel[i].rel_value[j]);
+      fprintf(PLfile,"\n");
+    }
+    if(rel[i].type == 3)
+    {
+      fprintf(LLfile,"%u ", rel[i].groundTruth);
+      for(unsigned j=0; j<rel[i].rel_value.size(); j++)
+        fprintf(LLfile,"%u:%6.5f ", j, rel[i].rel_value[j]);
+      fprintf(LLfile,"\n");
+    }
   }
-  fclose(file);
+  fclose(PPfile);
+  fclose(PLfile);
+  fclose(LLfile);
 }
 
 /** 
