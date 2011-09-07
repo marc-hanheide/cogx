@@ -24,6 +24,18 @@ person(S, H, Nom, H) <-
 % TOPIC
 %-------------------------------------------------------------------------
 
+understand : is_reference(Nom, Ref) <-
+	understand : resolves_to_epobject(Nom, Ref, _EpSt) / reference_resolution.
+
+understand : is_reference(Nom, Ref) <-
+	understand : unknown_reference(Nom, Ref) / p(0.55),
+	? understand : ungroundable(Nom, Ref).
+
+%-------------------------------------------------------------------------
+
+understand : topic(S, H, EpSt, Int, Ref, Nom) <-
+	?( understand : is_reference(Ref, X) ).
+
 understand : topic(S, H, shared(S, H), Int, Ref, Nom) <-
 	does_not_specify_topic(Nom) / p(0.001).
 
