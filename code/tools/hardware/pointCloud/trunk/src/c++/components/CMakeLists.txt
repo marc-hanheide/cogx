@@ -23,7 +23,7 @@ endif(BUILD_HAL_STEREO_GPU)
 # POINT CLOUD SERVER
 add_cast_component(PointCloudServer PointCloudServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} CASTCore CDL CASTArchitecture)
-link_cast_component(${CAST_COMPONENT_NAME} PointCloud Video VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud Video VideoUtils PTZ)
 
 # STEREO SERVER
 add_cast_component(StereoServer StereoServer.cpp)
