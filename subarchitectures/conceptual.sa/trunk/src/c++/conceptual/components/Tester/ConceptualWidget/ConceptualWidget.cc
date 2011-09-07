@@ -316,6 +316,18 @@ void ConceptualWidget::refreshWsButtonClicked()
 				QTreeWidgetItem *appearanceItem = new QTreeWidgetItem(placeItem, QStringList("Appearance Place Properties"));
 				appearanceItem->setIcon(0, QIcon(":/icons/icons/appearance.png"));
 			}
+			if (pi.humanAssertionProperties.size())
+			{
+				QTreeWidgetItem *humanAssertionsItem = new QTreeWidgetItem(placeItem, QStringList("Human Assertion Place Properties"));
+				humanAssertionsItem->setIcon(0, QIcon(":/icons/icons/humanassertion.png"));
+				for (unsigned int h=0; h<pi.humanAssertionProperties.size(); ++h)
+				{
+					HumanAssertionPlacePropertyInfo happi = pi.humanAssertionProperties[h];
+					QTreeWidgetItem *haItem = new QTreeWidgetItem(humanAssertionsItem,
+							QStringList(QString::fromStdString(happi.assertion)));
+					haItem->setIcon(0, QIcon(":/icons/icons/humanassertion.png"));
+				}
+			}
 		}
 		QTreeWidgetItem *placeholdersItem = new QTreeWidgetItem(roomItem, QStringList("Placeholders"));
 		placeholdersItem->setIcon(0, QIcon(":/icons/icons/placeholder.png"));
@@ -596,6 +608,18 @@ void ConceptualWidget::addEvent(conceptual::ConceptualEvent event)
 			break;
 		case ConceptualData::EventAppearancePlacePropertyChanged:
 			eventStr+="AppearancePlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+")";
+			break;
+		case ConceptualData::EventHumanAssertionPlacePropertyAdded:
+			eventStr+="HumanAssertionPlacePropertyAdded (pid="+QString::number(event.infos[i].place1Id)+
+				", assertion="+QString::fromStdString(event.infos[i].propertyInfo)+")";
+			break;
+		case ConceptualData::EventHumanAssertionPlacePropertyDeleted:
+			eventStr+="HumanAssertionPlacePropertyDeleted (pid="+QString::number(event.infos[i].place1Id)+
+				", assertion="+QString::fromStdString(event.infos[i].propertyInfo)+")";
+			break;
+		case ConceptualData::EventHumanAssertionPlacePropertyChanged:
+			eventStr+="HumanAssertionPlacePropertyChanged (pid="+QString::number(event.infos[i].place1Id)+
+				", assertion="+QString::fromStdString(event.infos[i].propertyInfo)+")";
 			break;
 		case ConceptualData::EventGatewayPlaceholderPropertyAdded:
 			eventStr+="GatewayPlaceholderPropertyAdded (pid="+QString::number(event.infos[i].place1Id)+")";
