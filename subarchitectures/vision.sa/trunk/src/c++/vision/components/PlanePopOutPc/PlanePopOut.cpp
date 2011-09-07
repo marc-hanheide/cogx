@@ -391,6 +391,11 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	return;
     tmSendPoints.restart();
 
+    if (points.size() != labels.size()) {
+	error(" *** MISMATCH IN SIZE of points and labels (in SendPoints) ***");
+	return;
+    }
+
     std::ostringstream str;
     str.unsetf(ios::floatfield); // unset floatfield
     str.precision(5); // set the _maximum_ precision
