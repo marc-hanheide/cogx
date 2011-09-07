@@ -13,13 +13,14 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                             ConceptualWidget/ObjectSearchResultDialog.ui ConceptualWidget/GraphDialog.ui 
                             ConceptualWidget/EventVisualizer.ui AVSMainWidget/AVSMainWidget.ui 
                             DefaultWidget/DefaultWidget.ui NavWidget/NavWidget.ui DemoWidget/DemoWidget.ui 
-                            CategoricalWidget/CategoricalWidget.ui)
+                            CategoricalWidget/CategoricalWidget.ui ConceptualWidget/HumanAssertionDialog.ui)
     qt4_wrap_cpp( MOC_SOURCES MainDialog.h ConceptualWidget/ConceptualWidget.h ConceptualWidget/ObjectPlacePropertyDialog.h 
                               ConceptualWidget/ObjectSearchResultDialog.h ConceptualWidget/GraphDialog.h 
                               ConceptualWidget/EventVisualizer.h NavWidget/NavWidget.h 
                               AVSMainWidget/AVSMainWidget.h DefaultWidget/DefaultWidget.h
                               DemoWidget/DemoWidget.h CategoricalWidget/CategoricalWidget.h
-                              CategoricalWidget/LaserScanView.h CategoricalWidget/OdometryView.h )
+                              CategoricalWidget/LaserScanView.h CategoricalWidget/OdometryView.h 
+                              ConceptualWidget/HumanAssertionDialog.h)
     include_directories( ${CMAKE_BINARY_DIR}/subarchitectures/conceptual.sa/src/c++/conceptual/components/Tester )
     include_directories(.)
     include_directories(./ConceptualWidget)
@@ -40,6 +41,7 @@ if(BUILD_SA_CONCEPTUAL_TESTER)
                                         NavWidget/NavWidget.cc DemoWidget/DemoWidget.cc CategoricalWidget/CategoricalWidget.cc
                                         DefaultWidget/DefaultWidget.cc ConceptualWidget/EventView.cc
                                         CategoricalWidget/LaserScanView.cc CategoricalWidget/OdometryView.cc
+                                        ConceptualWidget/HumanAssertionDialog.cc
                                         ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} ${MOC_SOURCES_EVENT_VISUALIZER} ${UI_HEADERS_EVENT_VISUALIZER} )
     link_cast_component(${CAST_COMPONENT_NAME} ConceptualData QtGui ConceptualShared DefaultData SpatialData 
                                                SpatialProperties SpatialProbabilities FrontierInterface VisionData

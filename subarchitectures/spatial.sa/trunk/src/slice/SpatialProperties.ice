@@ -118,6 +118,12 @@ module SpatialProperties
   const bool ObjectPresent = true;
   const bool ObjectNotPresent = false;
 
+  /** Represents the room category human assertion class property for a place. */
+  class RoomHumanAssertionPlaceProperty extends PlaceProperty
+  {
+  	string assertion;
+  };
+
   /** Represents the room appearance class property for a place. */
   class RoomAppearancePlaceProperty extends PlaceProperty
   {

@@ -1290,6 +1290,134 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int room1Id,
+		const std::string humanAssertion)
+{
+	// Find the assertion value id
+	int humanAssertionValueId = -1;
+	for (unsigned int i=0; i<_humanAssertions.size(); ++i)
+	{
+		if (humanAssertion == _humanAssertions[i])
+			humanAssertionValueId = i;
+	}
+	if (humanAssertionValueId<0)
+	{
+		error("Human assertion '%s' not recognized!", humanAssertion.c_str());
+		return;
+	}
+
+	// Create variables
+	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
+	string defaultHumanAssertionVarName = "humanassertion_property";
+	string observedHumanAssertionVarName = VariableNameGenerator::getHumanAssertionPropertyObservationVarName(room1Id);
+	debug("Creating DAI observed human assertion property factor for variable '%s'", room1VarName.c_str());
+
+	createAndSetObservedVariable(observedHumanAssertionVarName, _humanAssertions, humanAssertionValueId);
+	createDaiVariable(room1VarName, _roomCategories);
+	DaiVariable &dv1 = _variableNameToDai[room1VarName];
+
+	// Create factor
+	dai::Factor daiFactor( dv1.var );
+
+	// Go over room categories
+	int index=0;
+	for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
+	{
+		string var1ValueName = dv1.valueIdToName[i1]; // Room category
+//		// Get the lambda value for the poisson distribution
+//		double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
+//		// Check for errors
+//		if (lambda<0)
+//			return;
+//		// Get the poisson prob distribution
+		double probability = 0; //getPoissonProabability(beta*lambda, objectCount);
+		daiFactor.set(index, probability);
+		++index;
+	}
+
+	// Add factor to the list
+	_factors.push_back(daiFactor);
+	_factorNames.push_back("ObservedHumanAssertionPropertyFactor");
+
+
+
+
+
+
+
+
+//	int index=0;
+//	for (unsigned int i = 0; i<dv.var.states(); ++i)
+//	{
+//		// Find probability for the appearance
+//		string appearance = _appearances[i];
+//		double potential = -1;
+//		for (unsigned int j=0; j<dist.size(); ++j)
+//		{
+//			if (dist[j].value == appearance)
+//			{
+//				potential = dist[j].potential;
+//				break;
+//			}
+//		}
+//		if (potential<0)
+//		{
+//			log("Warning: Can't find potential for an appearance %s while building observed appearance property DAI factor!"
+//					"This probably means that the appearance value is not present in the model for this property.",
+//					appearance.c_str());
+//
+//			potential=0.01;
+//		}
+//		daiFactor.set(index, potential);
+//		++index;
+//	}
+
+}
+
+
+
+
+
 // -------------------------------------------------------
 void ChainGraphInferencer::addDaiFactors()
 {

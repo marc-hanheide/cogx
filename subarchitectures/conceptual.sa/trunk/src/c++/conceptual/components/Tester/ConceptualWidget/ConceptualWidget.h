@@ -25,6 +25,7 @@ namespace conceptual
 
 class ObjectPlacePropertyDialog;
 class ObjectSearchResultDialog;
+class HumanAssertionDialog;
 
 class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 {
@@ -32,6 +33,7 @@ class ConceptualWidget : public QWidget, public Ui::ConceptualWidgetClass
 
     friend class ObjectPlacePropertyDialog;
     friend class ObjectSearchResultDialog;
+    friend class HumanAssertionDialog;
 
 
 public:
@@ -64,6 +66,7 @@ private slots:
 	void posTimerTimeout();
 	void addObjectPlacePropertyButtonClicked();
 	void addObjectSearchResultButtonClicked();
+	void addHumanAssertionButtonClicked();
 	void addEvent(conceptual::ConceptualEvent event);
 	void collectInfoCheckBoxToggled(bool);
 

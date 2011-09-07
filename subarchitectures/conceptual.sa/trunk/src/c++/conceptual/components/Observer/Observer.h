@@ -84,6 +84,9 @@ private:
 	void appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
+	void humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
+	/** Change event. */
 	void connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
 	/** Change event. */
@@ -134,6 +137,9 @@ private:
 	/** Returns all object properties of the place. */
 	void getAppearancePlaceProperties(int placeId, std::vector<SpatialProperties::RoomAppearancePlacePropertyPtr> &properties);
 
+	/** Returns all object properties of the place. */
+	void getHumanAssertionPlaceProperties(int placeId, std::vector<SpatialProperties::RoomHumanAssertionPlacePropertyPtr> &properties);
+
 	/** Returns id of the room to which the given place belongs. Returns -1 if not found. */
 	int getRoomForPlace(int placeId);
 
@@ -182,6 +188,10 @@ private:
 	/** Map of place wmAddress -> AppearancePlaceProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearancePlacePropertyWmAddressMap;
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomAppearancePlacePropertyPtr> _acceptedAppearancePlacePropertyWmAddressMap;
+
+	/** Map of place wmAddress -> HumanAssertionPlaceProperty*/
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomHumanAssertionPlacePropertyPtr> _humanAssertionPlacePropertyWmAddressMap;
+	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomHumanAssertionPlacePropertyPtr> _acceptedHumanAssertionPlacePropertyWmAddressMap;
 
 	/** Map of place wmAddress -> ConnectivityPathProperty*/
 	std::map<cast::cdl::WorkingMemoryAddress, SpatialProperties::ConnectivityPathPropertyPtr> _connectivityPathPropertyWmAddressMap;

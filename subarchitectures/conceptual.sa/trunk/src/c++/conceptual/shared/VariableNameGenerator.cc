@@ -86,6 +86,12 @@ std::string VariableNameGenerator::getObjectObservationVarName(int roomId, std::
 	return objVarName;
 }
 
+// -------------------------------------------------------
+std::string VariableNameGenerator::getHumanAssertionPropertyObservationVarName(int roomId)
+{
+	return "room"+lexical_cast<string>(roomId)+"_humanassertion_property_observation";
+}
+
 
 // -------------------------------------------------------
 std::string VariableNameGenerator::relationToString(SpatialData::SpatialRelation relation)

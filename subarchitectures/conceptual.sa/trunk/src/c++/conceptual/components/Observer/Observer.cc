@@ -147,6 +147,11 @@ void Observer::start()
 			new MemberFunctionChangeReceiver<Observer>(this,
 					&Observer::appearancePlacePropertyChanged));
 
+	// Global filter on SpatialProperties::RoomHumanAssertionPlaceProperty
+	addChangeFilter(createGlobalTypeFilter<SpatialProperties::RoomHumanAssertionPlaceProperty>(cdl::WILDCARD),
+			new MemberFunctionChangeReceiver<Observer>(this,
+					&Observer::humanAssertionPlacePropertyChanged));
+
 	// Global filter on SpatialProperties::ConnectivityPathProperty
 	addChangeFilter(createGlobalTypeFilter<SpatialProperties::ConnectivityPathProperty>(cdl::WILDCARD),
 			new MemberFunctionChangeReceiver<Observer>(this,
@@ -402,6 +407,19 @@ void Observer::updateWorldState()
 					sppi.distribution.push_back(vpp);
 				}
 				pi.appearanceProperties.push_back(sppi);
+			}
+
+			// Human Assertion properties
+			std::vector<SpatialProperties::RoomHumanAssertionPlacePropertyPtr> humanAssertionPlaceProperties;
+			getHumanAssertionPlaceProperties(placeId, humanAssertionPlaceProperties);
+			for (unsigned int j=0; j<humanAssertionPlaceProperties.size(); ++j)
+			{
+				SpatialProperties::RoomHumanAssertionPlacePropertyPtr humanAssertionPlacePropertyPtr =
+						humanAssertionPlaceProperties[j];
+
+				ConceptualData::HumanAssertionPlacePropertyInfo happi;
+				happi.assertion = humanAssertionPlacePropertyPtr->assertion;
+				pi.humanAssertionProperties.push_back(happi);
 			}
 
 			// Add the place info
@@ -1564,6 +1582,125 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 }
 
 
+// -------------------------------------------------------
+void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
+{
+	// Decide what change has been made
+	switch (wmChange.operation)
+	{
+	case cdl::ADD:
+	{
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr humanAssertionPlacePropertyPtr;
+		try
+		{
+			humanAssertionPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomHumanAssertionPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		_humanAssertionPlacePropertyWmAddressMap[wmChange.address] = humanAssertionPlacePropertyPtr;
+		_acceptedHumanAssertionPlacePropertyWmAddressMap[wmChange.address] = humanAssertionPlacePropertyPtr;
+
+		if (isGatewayPlace(humanAssertionPlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
+			return;
+		}
+
+		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
+		ei.type = ConceptualData::EventHumanAssertionPlacePropertyAdded;
+		ei.roomId = -1;
+		ei.place1Id = humanAssertionPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		ei.propertyInfo = humanAssertionPlacePropertyPtr->assertion;
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::OVERWRITE:
+	{
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr humanAssertionPlacePropertyPtr;
+		try
+		{
+			humanAssertionPlacePropertyPtr =
+					getMemoryEntry<SpatialProperties::RoomHumanAssertionPlaceProperty>(wmChange.address);
+		}
+		catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			return;
+		}
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr old = _humanAssertionPlacePropertyWmAddressMap[wmChange.address];
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr oldAccepted = _acceptedHumanAssertionPlacePropertyWmAddressMap[wmChange.address];
+	  	_humanAssertionPlacePropertyWmAddressMap[wmChange.address] = humanAssertionPlacePropertyPtr;
+
+	  	// Check wmAddresss and ID
+		if (old->placeId != humanAssertionPlacePropertyPtr->placeId)
+			throw cast::CASTException("The mapping between RoomHumanAssertionPlaceProperty WMAddress and Place ID changed!");
+
+		if (isGatewayPlace(humanAssertionPlacePropertyPtr->placeId))
+		{
+			pthread_mutex_unlock(&_worldStateMutex);
+			return;
+		}
+
+		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
+		ei.type = ConceptualData::EventHumanAssertionPlacePropertyChanged;
+		ei.roomId = -1;
+		ei.place1Id = humanAssertionPlacePropertyPtr->placeId;
+		ei.place2Id = -1;
+		ei.propertyInfo = humanAssertionPlacePropertyPtr->assertion;
+		_accumulatedEvents.push_back(ei);
+
+		_acceptedHumanAssertionPlacePropertyWmAddressMap[wmChange.address] = humanAssertionPlacePropertyPtr;
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	case cdl::DELETE:
+	{
+		pthread_mutex_lock(&_worldStateMutex);
+
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr old = _humanAssertionPlacePropertyWmAddressMap[wmChange.address];
+		ConceptualData::EventInfo ei;
+		ei.time = castTimeToSeconds(getCASTTime());
+		ei.type = ConceptualData::EventHumanAssertionPlacePropertyDeleted;
+		ei.roomId = -1;
+		ei.place1Id = old->placeId;
+		ei.place2Id = -1;
+		ei.propertyInfo = old->assertion;
+		_humanAssertionPlacePropertyWmAddressMap.erase(wmChange.address);
+		_acceptedHumanAssertionPlacePropertyWmAddressMap.erase(wmChange.address);
+		_accumulatedEvents.push_back(ei);
+
+		updateWorldState();
+
+		pthread_mutex_unlock(&_worldStateMutex);
+		break;
+	}
+
+	default:
+		break;
+	} // switch
+}
+
+
+
 void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 {
 	// Decide what change has been made
@@ -2041,6 +2178,22 @@ void Observer::getAppearancePlaceProperties(int placeId,
 		// Get only the observed properties
 		if ((appearancePlacePropertyPtr->placeId == placeId) && (!appearancePlacePropertyPtr->inferred))
 			properties.push_back(appearancePlacePropertyPtr);
+	}
+}
+
+
+// -------------------------------------------------------
+void Observer::getHumanAssertionPlaceProperties(int placeId,
+		std::vector<SpatialProperties::RoomHumanAssertionPlacePropertyPtr> &properties)
+{
+	map<cast::cdl::WorkingMemoryAddress, SpatialProperties::RoomHumanAssertionPlacePropertyPtr>::iterator humanAssertionPlacePropertyIt;
+	for( humanAssertionPlacePropertyIt=_humanAssertionPlacePropertyWmAddressMap.begin();
+			humanAssertionPlacePropertyIt!=_humanAssertionPlacePropertyWmAddressMap.end(); ++humanAssertionPlacePropertyIt)
+	{
+		SpatialProperties::RoomHumanAssertionPlacePropertyPtr humanAssertionPlacePropertyPtr = humanAssertionPlacePropertyIt->second;
+		// Get only the observed properties
+		if ((humanAssertionPlacePropertyPtr->placeId == placeId) && (!humanAssertionPlacePropertyPtr->inferred))
+			properties.push_back(humanAssertionPlacePropertyPtr);
 	}
 }
 
