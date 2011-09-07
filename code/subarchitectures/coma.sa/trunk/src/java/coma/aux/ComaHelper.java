@@ -1,5 +1,8 @@
 package coma.aux;
 
+import java.util.Set;
+import java.util.HashSet;
+
 /**
  * This class is a collection of static helper methods.
  * 
@@ -43,5 +46,12 @@ public final class ComaHelper {
         if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
+	
+	
+	public static <T> HashSet<T> computeSetDifference(Set<T> setA, Set<T> setB) {
+	    HashSet<T> tmp = new HashSet<T>(setA);
+	    tmp.removeAll(setB);
+	    return tmp;
+	  }
 	
 }
