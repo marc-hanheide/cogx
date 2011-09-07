@@ -10,14 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 
+import DefaultData.ChainGraphInferencerServerInterfacePrx;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
+import SpatialData.SpatialRelation;
 import SpatialProbabilities.ProbabilityDistribution;
+import SpatialProperties.BinaryValue;
 import SpatialProperties.ConnectivityPathProperty;
+import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
 
+import coma.aux.ComaHelper;
 import comadata.ComaReasonerInterfacePrx;
 import comadata.ComaRoom;
 import cast.AlreadyExistsOnWMException;
@@ -73,6 +79,8 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
+	private String m_chaingraph_component_name;
+	private ChainGraphInferencerServerInterfacePrx m_chaingraphinferencer;
 	
 	private HashSet<Long> m_placeholders;
 	private HashSet<Long> m_trueplaces;
@@ -90,6 +98,12 @@ public class PlaceMonitor extends ManagedComponent {
 	public void configure(Map<String, String> args) {
 		log("configure() called");
 
+		if (args.containsKey("--chaingraph-name")) {
+			m_chaingraph_component_name=args.get("--chaingraph-name");
+		}
+		else {
+			log("Argument --chaingraph-name not specified.");
+		}
 		if (args.containsKey("--reasoner-name")) {
 			m_comareasoner_component_name=args.get("--reasoner-name");
 		}
@@ -150,16 +164,16 @@ public class PlaceMonitor extends ManagedComponent {
 		});
 
 		// track objects found by AVS
-/*		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
 			throws CASTException {
 				processAddedObjectProperty(_wmc);
 			}
-		}); */
+		});
 
 		
-		// initiate ice server connections
+		// initialize ice server connections
 		
 		// connection to the coma reasoner
 		try {
@@ -172,8 +186,58 @@ public class PlaceMonitor extends ManagedComponent {
 			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
 			System.exit(-1);
 		}	
+		
+		// connection to chaingraph inferencer
+
+		if (m_chaingraph_component_name!=null) {
+			log("initiating connection to Ice server " + m_chaingraph_component_name);
+			try {
+				m_chaingraphinferencer = getIceServer(m_chaingraph_component_name, DefaultData.ChainGraphInferencerServerInterface.class , DefaultData.ChainGraphInferencerServerInterfacePrx.class);
+				log("initiated comareasoner connection");
+				
+				// query chaingraph inferencer for object and room categories
+				String[] objCats = m_chaingraphinferencer.getObjectCategories();
+				StringBuffer _objTypes = new StringBuffer();
+				for (String _currObjType : objCats) {
+					if (_objTypes != null) _objTypes.append(", ");
+					_objTypes.append(_currObjType);
+				}
+				log("Queried the chaingraph/default.sa, and the known object categories are " + _objTypes.toString());
+				for (String _currObjType : objCats) {
+					String _addQuery = 
+						"INSERT { dora:" + ComaHelper.firstCapRestSmall(_currObjType) + 
+						" rdfs:subClassOf " + 
+						" dora:Object }";
+					m_comareasoner.executeSPARQL(_addQuery);
+					log("executed " + _addQuery);
+				}
+				
+				String[] roomCats = m_chaingraphinferencer.getRoomCategories();
+				StringBuffer _roomTypes = new StringBuffer();
+				for (String _currRoomType : roomCats) {
+					if (_roomTypes != null) _roomTypes.append(", ");
+					_roomTypes.append(_currRoomType);
+				}
+				log("Queried the chaingraph/default.sa, and the known room categories are " + _roomTypes.toString());
+				for (String _currRoomType : roomCats) {
+					String _addQuery = 
+						"INSERT { dora:" + ComaHelper.firstCapRestSmall(_currRoomType) + 
+						" rdfs:subClassOf " + 
+						" dora:PhysicalRoom }";
+					m_comareasoner.executeSPARQL(_addQuery);
+					log("executed " + _addQuery);
+				}
+				
+			} catch (CASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else { 
+			log("No chaingraph inferencer component name specified. Ignoring...");
+		}
 	}
-	
+
 	@Override
 	protected void runComponent() {
 		while (isRunning()) {
@@ -392,16 +456,62 @@ public class PlaceMonitor extends ManagedComponent {
 		log("processAddedObjectProperty() called.");
 		// get object from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
+		debug("got a callback for an ADDED ObjectPlaceProperty for " + 
+				_objProp.category + " with relation "+ _objProp.relation.toString() + " to support object " +
+				_objProp.supportObjectId + " of category " + _objProp.supportObjectCategory +
+				" observed from a place with ID " + _objProp.placeId + 
+				" with a probability of ");
 		
-//		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + " and mapValue " + ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
 		
-		// TODO handle probability distribution 
-//		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
+		if (_objProp.inferred) {
+			debug("the added ObjectPlaceProperty was inferred from conceptual and not observed by AVS. Doing nothing.");
+			return;
+		}
 		
-//		boolean _objectCreated = createObject(_objProp);
-		// trigger room creation, splitting, merging, maintenance
-		// because their class might have changed
-//		if (_objectCreated) maintainRooms();
+		DiscreteProbabilityDistribution dpd = (DiscreteProbabilityDistribution) _objProp.distribution;
+		if (!((((BinaryValue) dpd.data[0].value).value == true && dpd.data[0].probability > 0.5)
+				|| (((BinaryValue) dpd.data[1].value).value == true && dpd.data[1].probability > 0.5)))  {
+			debug("The ObjectPlaceProperty object observation has a probability <= 0.5. Doing nothing.");
+			return;
+		}
+		
+		log("ready to add an object to the coma KB.");
+		// TODO add object to coma KB!!!
+		
+		// _objProp.category; // cat of the obj
+		// _objProp.distribution; // 
+		// _objProp.inferred; // must be false, otherwise it is inferred by conceptual
+		// _objProp.mapValue; // ignore max a posteriori
+		// _objProp.mapValueReliable; // ignore max a posteriori
+		// _objProp.placeId; // place from which it was seen
+		// _objProp.relation; // enum := ON, INOBJECT, INROOM
+		// _objProp.supportObjectCategory; // category of the supporting/related object or "" if INROOM
+		// _objProp.supportObjectId; // unique id of the supporting object
+		
+		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id;
+		String objCatName = "dora:" + ComaHelper.firstCap(_objProp.category);
+		
+		String placeName = "dora:place" + _objProp.placeId;
+		
+		// check if the object is immediately in the room or related via a supportObject
+		if (_objProp.supportObjectCategory.equals("") && _objProp.relation.equals(SpatialRelation.INROOM)) {
+			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
+			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
+			
+			// m_comareasoner
+		}
+		
+		/*
+		for (String _currObjType : objCats) {
+			String _addQuery = 
+				"INSERT { dora:" + ComaHelper.firstCapRestSmall(_currObjType) + 
+				" rdfs:subClassOf " + 
+				" dora:Object }";
+			m_comareasoner.executeSPARQL(_addQuery);
+			log("executed " + _addQuery);
+		}
+		*/
+
 	}
 		
 //	private boolean createObject(ObjectPlaceProperty _objProp) {
@@ -676,7 +786,20 @@ public class PlaceMonitor extends ManagedComponent {
 						_hasChanged = true;
 					}
 					
-					// removed for Dora yr2: room categories inferred by Andrzej
+					// new code: no longer contained places must no longer have 
+					// a constituency relationship with their former rooms
+					HashSet<Long> noLongerConstituentPlaces = ComaHelper.computeSetDifference(_oldSetOfContainedPlaces, _setOfPlaceIDsInTheSameRoom);
+					for (Long _nlcPlace : noLongerConstituentPlaces) {
+						m_comareasoner.deleteRelation("dora:place" + _nlcPlace,
+								"dora:constituentOfRoom", 
+								"dora:room" + _currentRoomStruct.roomId);
+						log("deleted relation to the coma reasoner: " 
+								+ "dora:place" + _nlcPlace 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _currentRoomStruct.roomId);
+					}
+					
+					// removed for Dora yr2 and yr3: room categories inferred by Andrzej
 					/*
 					log("checking whether new room concepts are known...");
 					if (!new TreeSet<String>(Arrays.asList(_currentRoomStruct.concepts)).
@@ -774,7 +897,7 @@ public class PlaceMonitor extends ManagedComponent {
 					logRoom(_newRoom, "added new room WME. ", _newRoomWMEID);
 					// 2010-09-13-YR2 maintainRoomProxy(_newRoom, _newRoomWMEID);
 				} // end else create a new room for non-doorway seeds
-				debug("remaining places: " + _remainingPlaceIds);
+				debug("remaining places: " + _remainingPlaceIds);				
 			} // end for each remaining place loop
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 				if (existsOnWorkingMemory(comaRoomWME.getID())) {
