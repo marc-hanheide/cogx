@@ -193,15 +193,15 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
   cv::Vec3d rotCenter(0,0,0.4);
   
   // Initialize 3D render engine 
-  tgRenderer = new TGThread::TomGineThread(1280, 1024);
-  tgRenderer->SetParameter(intrinsic);
-  tgRenderer->SetCamera(R, t, rotCenter);
-//   tgRenderer->SetRotationCenter(rotCenter);      /// TODO funktioniert nicht => Wieso?
+  tgRenderer = new TomGine::tgTomGineThread(1280, 1024);
+  tgRenderer->SetCamera(intrinsic);
+  tgRenderer->SetCamera(R, t);
+//   tgRenderer->SetRotationCenter(rotCenter);
   tgRenderer->SetCoordinateFrame();
   
   relations = new Z::CalculateRelations();
-  svmPredictor = new Z::SVMPredictor();
-  graphCutter = new Z::GraphCut(kcore, learner, relations);
+  svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
+  graphCutter = new Z::GraphCut(kcore, relations);
 }
 
 /**
@@ -214,13 +214,8 @@ void StereoDetectorKinectLines::start()
 
   if(showImages) 
   {
-//     cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
-//     cvNamedWindow("Stereo right", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
-
-//     cvMoveWindow("Stereo left", 10, 10);
-//     cvMoveWindow("Stereo right", 680, 10);
-    cvMoveWindow("Kinect image",  10, 500);
+    cvMoveWindow("Kinect image",  10, 10);
   }
 }
 
@@ -245,64 +240,12 @@ void StereoDetectorKinectLines::runComponent()
   if(showImages)
   {
     log("destroy openCV windows.");
-//     cvDestroyWindow("Stereo left");
-//     cvDestroyWindow("Stereo right");
     cvDestroyWindow("Kinect image");
   }
   log("windows destroyed");
 }
 
-  
-/**
- * @brief Convert points from point cloud server to a depth map from view of left stereo camera.
- * @param sc Stereo camera
- * @param c Point vector with kinect data
- * @param cc Color point vector
- * @param depthImage Depth color image
- * @param depthMap Depth map from the kinect
- */
-// void StereoDetectorKinectLines::Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap)
-// {
-//   printf("StereoDetectorKinectLines::Points2DepthMap: Antiquated!\n");
-//   int imgWidth = 320;                                                                                               /// TODO get image width/height
-//   int imgHeight = 240;
-// 
-//   depthImage = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
-//   depthMap = cv::Mat_<cv::Point3f>(imgHeight, imgWidth);
-//   
-//   for(unsigned i = 0; i<imgWidth; i++)
-//     for(unsigned j = 0; j<imgHeight; j++)
-//     {
-//       depthImage(j, i).x = 0;
-//       depthImage(j, i).y = 0;
-//       depthImage(j, i).z = 0;
-//       depthMap(j, i).x = 0;
-//       depthMap(j, i).y = 0;
-//       depthMap(j, i).z = 0;
-//     }
-//     
-//   for(unsigned i = 0; i < imgWidth*imgHeight; i++) // only one row!
-//   {
-//     cv::Point2d imgPoint;
-// 
-//     if(c(0, i).z != 0)
-//     {
-//       sc->ProjectPoint(c(0, i).x, c(0, i).y, c(0, i).z, imgPoint.x, imgPoint.y, 0, imgWidth);   // 0 == LEFT
-// 
-//       if(imgPoint.x > 0 && imgPoint.x < imgWidth && imgPoint.y > 0 && imgPoint.y < imgHeight)
-//       {
-//         depthImage((int) imgPoint.y, (int) imgPoint.x).x = ((float) cc(0, i).z)/255.;   /// change rgb
-//         depthImage((int) imgPoint.y, (int) imgPoint.x).y = ((float) cc(0, i).y)/255.;
-//         depthImage((int) imgPoint.y, (int) imgPoint.x).z = ((float) cc(0, i).x)/255.;
-//         
-//         depthMap((int) imgPoint.y, (int) imgPoint.x).x = ((float) c(0, i).z)/4.;
-//         depthMap((int) imgPoint.y, (int) imgPoint.x).y = ((float) c(0, i).z)/4.;
-//         depthMap((int) imgPoint.y, (int) imgPoint.x).z = ((float) c(0, i).z)/4.;
-//       }
-//     }
-//   }
-// }
-  
+ 
   
 /// TODO Project a 3D point on the 2D image plane
 // void StereoDetectorKinectLines::ProjectPoint(double X, double Y, double Z, double &u, double &v, int imgWidth)
@@ -410,7 +353,7 @@ last = current;
 
   /// Run kinect core
 printf("Run Kinect Core: start\n");
-  kcore->ProcessKinectData(vcore, iplImage_k, kinect_point_cloud);
+  kcore->Process(vcore, iplImage_k, kinect_point_cloud);
 printf("Run Kinect Core: end\n");
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -418,12 +361,12 @@ printf("Runtime for StereoDetectorKinectLines: KinectCore: %4.3f\n", timespec_di
 last = current;
 
   /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
-  pclA::PlanePopout *planePopout;
-  planePopout = new pclA::PlanePopout();
-  planePopout->CalculateSOIs(pcl_cloud);
-  planePopout->GetSOIs(sois);
-  if(!planePopout->CalculateROIMask()) 
-    printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
+//   pclA::PlanePopout *planePopout;
+//   planePopout = new pclA::PlanePopout();
+//   planePopout->CalculateSOIs(pcl_cloud);
+//   planePopout->GetSOIs(sois);
+//   if(!planePopout->CalculateROIMask()) 
+//     printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for StereoDetectorKinectLines: PlanePopout: %4.3f\n", timespec_diff(&current, &last));
@@ -432,74 +375,80 @@ last = current;
 
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 
-  /// Label all the plane patches, according to plane-popout sois
-  unsigned nrPatches = kcore->NumGestalts3D(Z::Gestalt3D::PATCH);
-  for(unsigned i=0; i<nrPatches; i++)
-  {
-    Z::Patch3D *p = (Z::Patch3D*) kcore->Gestalts3D(Z::Gestalt3D::PATCH, i);
-    p->SetObjectLabel(planePopout->IsInSOI(p->GetCenter3D()));
-  }
+  /// Label all 3D Gestalts, according to plane-popout sois
+  // TODO TODO Where do implement this Object-Labeling?
+//   unsigned nrPatches = kcore->NumGestalts3D(Z::Gestalt3D::PATCH);
+//   for(unsigned i=0; i<nrPatches; i++)
+//   {
+//     Z::Patch3D *p = (Z::Patch3D*) kcore->Gestalts3D(Z::Gestalt3D::PATCH, i);
+//     p->SetObjectLabel(planePopout->IsInSOI(p->GetCenter3D()));
+//   }
   
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 
   /// Learned relation probabilieties (load from file and print)
-  static bool first = true;
-  if(first){
-    learner->ReadResultsFromFile();
-    first = false;
-  }
-  // learner->Process(planePopout, kcore, tgRenderer);
-  
-  double mean, variance, st_devi;
-  /// Proximity between patches
-  learner->GetPosProximityBetweenPatches(mean, variance, st_devi);
-  printf("Pos proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-  learner->GetNegProximityBetweenPatches(mean, variance, st_devi);
-  printf("Neg proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-
-  /// Color similarity between patches
-  learner->GetPosColorSimilarityBetweenPatches(mean, variance, st_devi);
-  printf("Pos color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-  learner->GetNegColorSimilarityBetweenPatches(mean, variance, st_devi);
-  printf("Neg color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-
-  /// Coplanarity between patches
-  learner->GetPosCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
-  printf("Pos normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-  learner->GetNegCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
-  printf("Neg normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-
-  // Coplanarity distance between patches
-//   learner->GetPosCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
-//   printf("Pos distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-//   learner->GetNegCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
-//   printf("Neg distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-
-//   learner->GetClosenessBetweenPatchesProp(const double &val, double &prop);
+//   static bool first = true;
+//   if(first){
+//     learner->ReadResultsFromFile();
+//     first = false;
+//   }
+//   // learner->Process(planePopout, kcore, tgRenderer);
+//   
+//   double mean, variance, st_devi;
+//   /// Proximity between patches
+//   learner->GetPosProximityBetweenPatches(mean, variance, st_devi);
+//   printf("Pos proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+//   learner->GetNegProximityBetweenPatches(mean, variance, st_devi);
+//   printf("Neg proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+// 
+//   /// Color similarity between patches
+//   learner->GetPosColorSimilarityBetweenPatches(mean, variance, st_devi);
+//   printf("Pos color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+//   learner->GetNegColorSimilarityBetweenPatches(mean, variance, st_devi);
+//   printf("Neg color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+// 
+//   /// Coplanarity between patches
+//   learner->GetPosCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
+//   printf("Pos normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+//   learner->GetNegCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
+//   printf("Neg normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+// 
+//   // Coplanarity distance between patches
+// //   learner->GetPosCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
+// //   printf("Pos distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+// //   learner->GetNegCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
+// //   printf("Neg distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
+// 
+// //   learner->GetClosenessBetweenPatchesProp(const double &val, double &prop);
 
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 
+printf("StereoDetectorKinectLines: CalculateRelations start!\n");
   std::vector<Z::Relation> relation_vector;
-  relations->Initialize(kcore);
+  relations->Initialize(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
   relations->CalcAllRelations(relation_vector);   // without ground-truth
 
+printf("StereoDetectorKinectLines: CalculateRelations end!\n");
+
+printf("StereoDetectorKinectLines: Prediction start!\n");
   for(unsigned i=0; i<relation_vector.size(); i++)
   {
     std::vector<double> probability;
-    relation_vector[i].prediction = svmPredictor->GetResult(relation_vector[i].rel_value, relation_vector[i].rel_probability);
-    relations->AddPrediction(i, relation_vector[i].prediction);
+    relation_vector[i].prediction = svmPredictor->GetResult(relation_vector[i].type, relation_vector[i].rel_value, relation_vector[i].rel_probability);
+    relations->AddPrediction(i, relation_vector[i].prediction);                           /// TODO We add from here the prediction value and the probability???
     relations->AddProbability(i, relation_vector[i].rel_probability);
   }
+printf("StereoDetectorKinectLines: Prediction end!\n");
   relations->PrintResults();
   
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 
   /// TODO Nächste Baustelle => Graph cutter
-printf("    graphCutter: Initialize: start\n");
+// printf("    graphCutter: Initialize: start\n");
   graphCutter->Initialize();
-printf("    graphCutter: Initialize: end\n");
+// printf("    graphCutter: Initialize: end\n");
   graphCutter->Cut();
-printf("    graphCutter: Cut end\n");
+// printf("    graphCutter: Cut end\n");
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for StereoDetectorKinectLines: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
@@ -552,27 +501,12 @@ void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
  * @brief Single shot mode of the stereo detector for debugging.\n
  * Catch keyboard events and change displayed results:\n
  *   F1 ... Show this help
- *   F2 ... Print number of Gestalts
- *   F3 ... Print information about the visual feature (show single gestalts == on)
- *   F4 ... Print runtime statistics
- *   F5 ... Refresh display
  *   F9 ... Process single shot \n
- *   F10 .. Process pruned image (Format7 & ROI) \n
- *   F11 .. Process HR image (pruned & ROI)
  * 
- *   key: 1 ... Szene: Show all stereo features on virtual szene (on/off) \n
- *   key: 2 ... Stereo: Show all matched features (on/off) \n
- *   key: 3 ... Stereo: Show matched features (on/off) \n
- *   key: 4 ... Stereo: Show single stereo match (on/off) \n
- *   key: 5 ... Mono: Show all edge segments (on/off) \n
- *   key: 6 ... Mono: Show detected Gestalts (on/off) \n
- *   key: 7 ... Mono: Show the masked Gestalts (on/off) \n
- *   key: 8 ... Mono: Show single Gestalts \n
- *   key: 9 ... Mono: Show ROI windows \n
- *   key: + ... Increase degree of detail \n
- *   key: - ... Decrease degree of detail \n
- *   key: . ... Increase ID of single showed Gestalt \n
- *   key: , ... Decrease ID of single showed Gestalt \n
+ *   key: 1 ...   \n
+ *   key: 2 ...   \n
+ *   key: 3 ...   \n
+ *   key: 4 ...   \n
  *   key: x ... Stop single-shot processing mode.\n\n
  *
  *   key: q ... Show SEGMENTS \n
@@ -581,23 +515,9 @@ void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
  *   key: r ... Show L-JUNCTIONS \n
  *   key: t ... Show CLOSURES \n
  *   key: z ... Show RECTANGLES \n
- *   key: u ... Show FLAPS \n
- *   key: i ... Show FLAPS_ARI \n
- *   key: o ... Show CUBES \n
  *
  *   key: a ... Show ARCS \n
- *   key: s ... Show A-JUNCTIONS \n
- *   key: d ... Show CONVEX ARC-GROUPS \n
- *   key: f ... Show ELLIPSES \n
- *   key: g ... Show E-JUNCTIONS \n
- *   key: h ... Show EXT-ELLIPSES: not yet implemented \n
- *   key: j ... Show CYLINDERS \n
- *   key: k ... Show CONES \n
- *   key: l ... Show SPHERES \n
  *   
- *   key: y ... Show REASONER results \n
- *   
- *   key: < ... Switch to older frames \n
  */
 void StereoDetectorKinectLines::SingleShotMode()
 {
@@ -608,26 +528,18 @@ void StereoDetectorKinectLines::SingleShotMode()
 
   if (key == 65471 || key == 1114047) // F2
   {
-//     const char* text = score->GetGestaltListInfo();
-//     printf("\n%s\n", text);
     const char* text = kcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
 
   if (key == 65472 || key == 1114048) // F3
   {
-//     if(showSingleGestalt && showID != -1 && (mouseSide == 0 || mouseSide == 1)) 
-//     {
-//       const char* text = (score->GetMonoCore(mouseSide))->GetInfo(showType, showID);
-//       log("Gestalt infos:\n%s\n", text);
-//     }
     const char* text = vcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
 
   if (key == 65473 || key == 1114049) // F4
   {
-//     score->PrintVCoreStatistics();
     kcore->PrintVCoreStatistics();
   }
 
@@ -645,20 +557,7 @@ void StereoDetectorKinectLines::SingleShotMode()
     processImage();
     unlockComponent();
   }
-//   if (key == 65479 || key == 1114055) // F10
-//   {
-//     log("process pruned stereo images (single shot with ROI).");
-//     lockComponent();
-//     ProcessPrunedHRImages();
-//     unlockComponent();
-//   }
-//   if (key == 65480 || key == 1114056) // F11
-//   {
-//     log("process HR stereo images (single shot with ROI).");
-//     lockComponent();
-//     ProcessHRImages();
-//     unlockComponent();
-//   }
+
 
 
 //  if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
@@ -676,14 +575,16 @@ void StereoDetectorKinectLines::SingleShotMode()
       {
         std::vector<cv::Vec4f> soi_hulls;
         pclA::ConvertPCLCloud2CvVec(*sois[i], soi_hulls);  // convert pcl cloud to cvVec cloud
-        tgRenderer->AddHullPrism(soi_hulls);
+//         tgRenderer->AddHullPrism(soi_hulls);
+        printf("StereoDetectorKinectLines::SingleShotMode: AddHullPrism is antiquated!\n");
       }
       break;
       
     case '3':
       log("Show GRAPH-CUT");
       tgRenderer->Clear();
-      graphCutter->Show(tgRenderer);
+//       graphCutter->Show(tgRenderer);
+      printf("StereoDetectorKinectLines::SingleShotMode: graphCutter->Show is antiquated: change to kcore-> ...\n");
       break;
 
     case 'q':
