@@ -141,7 +141,7 @@ public:
   bool DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                     pcl::PointIndices &popout);
   
-  bool CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+  bool CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::ModelCoefficients::Ptr dpc);
 
   void FilterZ(const cv::Mat_<cv::Vec4f> &cloud,                                                                /// TODO Move to pcl functions!!!
                pcl::PointCloud<pcl::PointXYZRGB> &filtered);

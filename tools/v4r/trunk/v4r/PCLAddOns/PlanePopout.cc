@@ -291,19 +291,25 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
 /**
  * Detect table plane and objects which pop out
  */
-bool PlanePopout::CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+bool PlanePopout::CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::ModelCoefficients::Ptr dpc)
 {
-    for (unsigned i=0; i<cloud->points.size(); i++)
-    {
-      float dist=abs(tableCoefficients->values[0]*cloud->points[i].x
-		    +tableCoefficients->values[1]*cloud->points[i].y
-		    +tableCoefficients->values[2]*cloud->points[i].z
-		    +tableCoefficients->values[3])
-      /sqrt(tableCoefficients->values[0]*tableCoefficients->values[0]
-	   +tableCoefficients->values[1]*tableCoefficients->values[1]
-	   +tableCoefficients->values[2]*tableCoefficients->values[2]);
-      if (dist < param.thr)	tableInliers->indices.push_back(i);
-    }
+//     if (dpc->values[0]!=0 && dpc->values[1]!=0 && dpc->values[2]!=0 && dpc->values[3]!=0)
+//     {
+// cout<<"PlanePopout::DetectPopout: dpc= (" << dpc->values[0] << ", "<<dpc->values[1]<<", "<<","<<dpc->values[2]<<","<<dpc->values[3]<<")"<<endl;
+	tableInliers.reset (new pcl::PointIndices());
+	for (unsigned i=0; i<cloud->points.size(); i++)
+	{
+	  float dist=abs(dpc->values[0]*cloud->points[i].x
+			+dpc->values[1]*cloud->points[i].y
+			+dpc->values[2]*cloud->points[i].z
+			+dpc->values[3])
+	  /sqrt(dpc->values[0]*dpc->values[0]
+	       +dpc->values[1]*dpc->values[1]
+	       +dpc->values[2]*dpc->values[2]);
+	  if (dist < param.thr)	(*tableInliers).indices.push_back(i);
+	}
+// cout<<"Done the collection of inliers"<<endl;
+//     }
 }
 
 /**
@@ -331,7 +337,7 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 
   if (tableInliers->indices.size () == 0)
   {
-    cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
+//     cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
     return false;
   }
 //   else
@@ -355,7 +361,7 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 
   if (popout.indices.size () == 0)
   {
-    cout<<"PlanePopout::DetectPopout: No popout points!"<<endl;
+//     cout<<"PlanePopout::DetectPopout: No popout points!"<<endl;
     return false;
   }
   
