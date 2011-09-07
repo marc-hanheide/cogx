@@ -13,12 +13,15 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import castutils.castextensions.WMEventQueue;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.util.NonBlockingActionExecutor;
 
 public abstract class PanAndLookExecutor<ActionType extends Action> extends
 		NonBlockingActionExecutor<ActionType> {
+
+	private static final double FIXED_TILT = -40 * Math.PI / 180.0;
 
 	private final int m_detections;
 
@@ -59,8 +62,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 								+ CASTUtils.toString(_wmc));
 
 				if (!m_remainingCommands.empty()) {
-					getComponent().log(
-							"more commands exists");
+					getComponent().log("more commands exists");
 					m_PanCmd = getComponent().newDataID();
 					getComponent().addChangeFilter(
 							ChangeFilterFactory.createIDFilter(m_PanCmd,
@@ -115,6 +117,28 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 	abstract protected void publishActionOutcome();
 
+	@Override
+	protected void executionComplete(TriBool success) {
+		SetPTZPoseCommand ptzCommand = new SetPTZPoseCommand(new PTZPose(0,
+				FIXED_TILT, 1), PTZCompletion.COMPINIT);
+		String id = getComponent().newDataID();
+		WMEventQueue queue = new WMEventQueue();
+		getComponent().addChangeFilter(
+				ChangeFilterFactory.createIDFilter(id,
+						WorkingMemoryOperation.OVERWRITE), queue);
+		// wait for the command to overwritten
+		try {
+			getComponent().addToWorkingMemory(id, ptzCommand);
+			queue.take();
+			getComponent().deleteFromWorkingMemory(id);
+		} catch (InterruptedException e) {
+			logException(e);
+		} catch (CASTException e) {
+			logException(e);
+		}
+		super.executionComplete(success);
+	}
+
 	protected WorkingMemoryChangeReceiver getAfterDetectionReceiver() {
 		return m_afterDetect;
 	}
@@ -140,7 +164,6 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 			m_remainingCommands.clear();
 			getComponent().removeChangeFilter(m_afterTurn);
-
 
 		} catch (SubarchitectureComponentException e) {
 			getComponent().logException(e);
