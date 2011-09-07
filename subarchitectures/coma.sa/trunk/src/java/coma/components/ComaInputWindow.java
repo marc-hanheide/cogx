@@ -74,7 +74,7 @@ public class ComaInputWindow extends ManagedComponent {
 			if (m_hfcserver_component_name!=null) log("initiating connection to Ice server " + m_hfcserver_component_name);
 			if (m_hfcserver_component_name!=null) m_hfcserver = getIceServer(m_hfcserver_component_name, comadata.HFCInterface.class , comadata.HFCInterfacePrx.class);
 			if (m_hfcserver!=null) log("initiated hfcserver connection");
-			else throw new CASTException();
+			else log("no hfcserver connection. ignoring."); // throw new CASTException();
 		} catch (CASTException e) {
 			e.printStackTrace();
 			log("Connection to the hfcserver Ice server at "+ m_hfcserver_component_name + " failed! Exiting. (Specify the hfcserver component name using --hfcserver-name)");
@@ -300,17 +300,21 @@ public class ComaInputWindow extends ManagedComponent {
 		getHFCTBox3.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				debug("getHFCTBox3 button pressed.");
-				outputArea.append("Listing HFC TBox triples:" + newline);
-				QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y WHERE ?x ?y ?z");
-				for (int i = 0; i < _results.bt.length; i++) {
-					String[] _currLine = _results.bt[i];
-					StringBuffer _currLineResult = new StringBuffer();
-					for (int j = 0; j < _currLine.length; j++) {
-						String _res  = _currLine[j];
-						_currLineResult.append(_res + " ");
+				if (m_hfcserver==null) {
+					outputArea.append("No HFC server present.");
+				} else {
+					outputArea.append("Listing HFC TBox triples:" + newline);
+					QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y WHERE ?x ?y ?z");
+					for (int i = 0; i < _results.bt.length; i++) {
+						String[] _currLine = _results.bt[i];
+						StringBuffer _currLineResult = new StringBuffer();
+						for (int j = 0; j < _currLine.length; j++) {
+							String _res  = _currLine[j];
+							_currLineResult.append(_res + " ");
+						}
+						log(_currLineResult);
+						outputArea.append(_currLineResult + newline);
 					}
-					log(_currLineResult);
-					outputArea.append(_currLineResult + newline);
 				}
 				outputArea.append("-----" + newline);
 				//Make sure the new text is visible, even if there
@@ -322,17 +326,21 @@ public class ComaInputWindow extends ManagedComponent {
 		getHFCTBox4.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				debug("getHFCTBox4 button pressed.");
-				outputArea.append("Listing HFC TBox triples:" + newline);
-				QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y ?num WHERE ?x ?y ?z ?num");
-				for (int i = 0; i < _results.bt.length; i++) {
-					String[] _currLine = _results.bt[i];
-					StringBuffer _currLineResult = new StringBuffer();
-					for (int j = 0; j < _currLine.length; j++) {
-						String _res  = _currLine[j];
-						_currLineResult.append(_res + " ");
+				if (m_hfcserver==null) {
+					outputArea.append("No HFC server present.");
+				} else {
+					outputArea.append("Listing HFC TBox triples:" + newline);
+					QueryResults _results = m_hfcserver.querySelect("SELECT ?x ?z ?y ?num WHERE ?x ?y ?z ?num");
+					for (int i = 0; i < _results.bt.length; i++) {
+						String[] _currLine = _results.bt[i];
+						StringBuffer _currLineResult = new StringBuffer();
+						for (int j = 0; j < _currLine.length; j++) {
+							String _res  = _currLine[j];
+							_currLineResult.append(_res + " ");
+						}
+						log(_currLineResult);
+						outputArea.append(_currLineResult + newline);
 					}
-					log(_currLineResult);
-					outputArea.append(_currLineResult + newline);
 				}
 				outputArea.append("-----" + newline);
 				//Make sure the new text is visible, even if there
@@ -344,27 +352,31 @@ public class ComaInputWindow extends ManagedComponent {
 		freeFormQDL.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				debug("freeFormQDL button pressed.");
-				String str = (String) JOptionPane.showInputDialog(null, null, "Enter a QDL query: ", JOptionPane.PLAIN_MESSAGE, null, null, lastInputFreeFormQDL);
-				if(str != null) {
-					outputArea.append("Executing QDL query: " + str + newline);
-					log("Executing QDL query: " + str);
-					QueryResults _results = m_hfcserver.querySelect(str);
-					lastInputFreeFormQDL = str;
-					for (int i = 0; i < _results.bt.length; i++) {
-						String[] _currLine = _results.bt[i];
-						StringBuffer _currLineResult = new StringBuffer();
-						for (int j = 0; j < _currLine.length; j++) {
-							String _res  = _currLine[j];
-							_currLineResult.append(_res + " ");
+				if (m_hfcserver==null) {
+					outputArea.append("No HFC server present.");
+				} else { 
+					String str = (String) JOptionPane.showInputDialog(null, null, "Enter a QDL query: ", JOptionPane.PLAIN_MESSAGE, null, null, lastInputFreeFormQDL);
+					if(str != null) {
+						outputArea.append("Executing QDL query: " + str + newline);
+						log("Executing QDL query: " + str);
+						QueryResults _results = m_hfcserver.querySelect(str);
+						lastInputFreeFormQDL = str;
+						for (int i = 0; i < _results.bt.length; i++) {
+							String[] _currLine = _results.bt[i];
+							StringBuffer _currLineResult = new StringBuffer();
+							for (int j = 0; j < _currLine.length; j++) {
+								String _res  = _currLine[j];
+								_currLineResult.append(_res + " ");
+							}
+							log(_currLineResult);
+							outputArea.append(_currLineResult + newline);
 						}
-						log(_currLineResult);
-						outputArea.append(_currLineResult + newline);
 					}
-					outputArea.append("-----" + newline);
+					else {
+						debug("QDL input cancelled!");
+					}
 				}
-				else {
-					debug("QDL input cancelled!");
-				}
+				outputArea.append("-----" + newline);
 				//Make sure the new text is visible, even if there
 				//was a selection in the text area.
 				outputArea.setCaretPosition(outputArea.getDocument().getLength());
