@@ -65,8 +65,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 	}
 
 	private double ptzPosError(PTZPose pos1, PTZPose pos2) {
-		return Math.abs(pos1.pan - pos2.pan) + Math.abs(pos1.tilt - pos2.tilt)
-				+ Math.abs(pos1.zoom - pos2.zoom);
+		return Math.abs(pos1.pan - pos2.pan) + Math.abs(pos1.tilt - pos2.tilt);
 	}
 
 	private void movePTZ(WorkingMemoryChange _wmc) {
@@ -75,7 +74,8 @@ public class PanTiltZoomServer extends ManagedComponent {
 					SetPTZPoseCommand.class);
 
 			ptzInterface.setPose(cmd.pose);
-
+			logger.debug("moving to pose: " + cmd.pose.pan + ", " + cmd.pose.tilt);
+			
 			double different = Double.MAX_VALUE;
 
 			PTZPose currentPose = null;
