@@ -25,6 +25,8 @@
 #include <RobotbaseClientUtils.hpp>
 #include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
+#include "PTZ.hpp"
+#include <Rendezvous.h>
 
 #include <utility>
 #include <queue>
@@ -76,10 +78,65 @@ SpatialControl::SpatialControl()
   m_SentInhibitStop = false;
 }
 
+bool
+SpatialControl::MovePanTilt(double pan, double tilt, double tolerance) 
+{
+  ptz::SetPTZPoseCommandPtr newPTZPoseCommand = new ptz::SetPTZPoseCommand;
+  newPTZPoseCommand->pose.pan = pan;
+  newPTZPoseCommand->pose.tilt = tilt;
+  newPTZPoseCommand->comp = ptz::COMPINIT;
+
+  string cmdId = newDataID();
+  addToWorkingMemory(cmdId, newPTZPoseCommand);
+
+  Rendezvous *rv = new Rendezvous(*this);
+  rv->addChangeFilter(createIDFilter(cmdId, cdl::WILDCARD));
+
+  bool ret = false;
+  cdl::WorkingMemoryChange change = rv->wait();
+  try {
+    ptz::SetPTZPoseCommandPtr overwritten =
+      getMemoryEntry<ptz::SetPTZPoseCommand>(change.address);
+    if (overwritten->comp == ptz::SUCCEEDED) {
+      ret = true;
+    }
+    deleteFromWorkingMemory(change.address);
+  }
+  catch (DoesNotExistOnWMException e)
+  {
+    log ("Error: SetPTZPoseCommand went missing! "); 
+  }
+
+  delete rv;
+
+  return ret;
+}
+
 SpatialControl::~SpatialControl() 
 { }
 
-
+//REMOVEME
+void SpatialControl::SaveGridMap(){
+  log("Saving node gridmaps");
+  ofstream fout("NodeGridMaps.txt");
+  //write size
+  fout << m_lgm->getSize() << endl;
+  // then map center
+  fout<<m_lgm->getCentXW();
+  fout << " " ;
+  fout << m_lgm->getCentYW();
+  fout << endl;
+  fout << endl;
+  //after an empty line go for the map data
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      fout <<(* (m_lgm))(x, y);
+    }
+    //fout << endl;
+  }
+  fout << endl;
+  fout.close();
+}
 
 void SpatialControl::configure(const map<string,string>& _config) 
 {
@@ -97,6 +154,12 @@ void SpatialControl::configure(const map<string,string>& _config)
     it = _config.find("--max-obstacle-height");
     if (it != _config.end()) {
       m_obstacleMaxHeight = atof(it->second.c_str());
+    }
+
+    m_sendPTZCommands = false;
+    if (_config.find("--ctrl-ptu") != _config.end()) {
+      m_sendPTZCommands = true;
+      log("will use ptu");
     }
   }
 
@@ -804,6 +867,13 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
                                      NavData::REPLACEDBYNEWCMD);
     }
     m_CurrentCmdAddress = objID.address;
+
+    if (m_sendPTZCommands) {
+      bool success = MovePanTilt(0, -M_PI/4, 0);
+      if (!success) {
+	log("Warning: moving without PTU in desired positions!");
+      }
+    }
     
     m_commandType = oobj->getData()->cmd;
     m_commandX = oobj->getData()->x;

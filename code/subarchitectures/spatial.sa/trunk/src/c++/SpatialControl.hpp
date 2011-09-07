@@ -131,6 +131,9 @@ protected:
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   virtual int findClosestNode(double x, double y);
 
+  //REMOVEME
+  void SaveGridMap();
+
   void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY);
   void updateGridMaps();
 
@@ -224,6 +227,7 @@ protected:
   int m_NumInhibitors;
   bool m_SentInhibitStop;
 
+  bool m_sendPTZCommands;
   ptz::PTZInterfacePrx m_ptzInterface;
 
   bool m_firstScanAdded;
@@ -251,6 +255,8 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
+
+  bool MovePanTilt(double pan, double tilt, double tolerance);
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
