@@ -1226,7 +1226,7 @@ SpatialProbabilities::ProbabilityDistribution
 
 	// room_category1 -> human_asertion_property
 	if ((variables.size()==2) &&
-		(variables[0]=="room_category1") && (variables[1]=="human_assertion_property"))
+		(variables[0]=="room_category1") && (variables[1]=="humanassertion_property"))
 	{
 		// Set of all pairs category -> assertion
 		set< pair<string, string> > catAssertion;

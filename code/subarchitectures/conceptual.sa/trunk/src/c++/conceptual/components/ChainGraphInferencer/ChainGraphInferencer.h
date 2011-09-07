@@ -121,6 +121,7 @@ private:
 	void createDaiObservedSizePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
 	void createDaiAppearancePropertyGivenRoomCategoryFactor(int room1Id, int placeId);
 	void createDaiObservedAppearancePropertyFactor(int placeId, ConceptualData::ValuePotentialPairs dist);
+	void createDaiObservedHumanAssertionPropertyFactor(int room1Id, const std::string humanAssertion);
 
 	/** Adds factors related to the factor graph */
 	void addDaiFactors();
@@ -269,6 +270,8 @@ private:
 	/** Names of all appearances. */
 	DefaultData::StringSeq _appearances;
 
+	/** Names of all human assertions. */
+	DefaultData::StringSeq _humanAssertions;
 
 	/** Information about DAI variable. */
 	struct DaiVariable

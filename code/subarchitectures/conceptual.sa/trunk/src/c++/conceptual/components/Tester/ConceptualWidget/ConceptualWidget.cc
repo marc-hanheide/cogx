@@ -11,6 +11,7 @@
 #include "SpatialProbabilities.hpp"
 #include "ObjectPlacePropertyDialog.h"
 #include "ObjectSearchResultDialog.h"
+#include "HumanAssertionDialog.h"
 #include "EventVisualizer.h"
 
 // Qt & std
@@ -58,6 +59,7 @@ ConceptualWidget::ConceptualWidget(QWidget *parent, Tester *component)
 	connect(_posTimer, SIGNAL(timeout()), this, SLOT(posTimerTimeout()));
 	connect(addObjectPlacePropertyButton, SIGNAL(clicked()), this, SLOT(addObjectPlacePropertyButtonClicked()));
 	connect(addObjectSearchResultButton, SIGNAL(clicked()), this, SLOT(addObjectSearchResultButtonClicked()));
+	connect(addHumanAssertionButton, SIGNAL(clicked()), this, SLOT(addHumanAssertionButtonClicked()));
 
 	_wsTimer->start(1000);
 	_posTimer->start(100);
@@ -413,6 +415,14 @@ void ConceptualWidget::showGraphButtonClicked()
 void ConceptualWidget::addObjectPlacePropertyButtonClicked()
 {
 	ObjectPlacePropertyDialog *d = new ObjectPlacePropertyDialog(this, _component);
+	d->show();
+}
+
+
+// -------------------------------------------------------
+void ConceptualWidget::addHumanAssertionButtonClicked()
+{
+	HumanAssertionDialog *d = new HumanAssertionDialog(this, _component);
 	d->show();
 }
 

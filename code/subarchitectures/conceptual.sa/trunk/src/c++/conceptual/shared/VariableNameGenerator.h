@@ -50,6 +50,11 @@ public:
 			SpatialData::SpatialRelation relation, std::string supportObjectCategory,
 			std::string supportObjectId);
 
+	/**
+	 * Generates name of the variable for the observation of the human assertion property.
+	 */
+	static std::string getHumanAssertionPropertyObservationVarName(int roomId);
+
 	/** Converts relation type to string. */
 	static std::string relationToString(SpatialData::SpatialRelation relation);
 

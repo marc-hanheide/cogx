@@ -77,7 +77,6 @@ module ConceptualData
 		QueryType type; 
 		string queryString;
 	};
-
 	
 	/** Result of a single inference. */
 	class InferenceResult
@@ -145,6 +144,12 @@ module ConceptualData
 	
 	sequence<AppearancePlacePropertyInfo> AppearancePlacePropertyInfos;
 
+	struct HumanAssertionPlacePropertyInfo
+	{
+		string assertion;
+	};
+	
+	sequence<HumanAssertionPlacePropertyInfo> HumanAssertionPlacePropertyInfos;
 
 	/** Relevant information about a place. */
 	struct PlaceInfo
@@ -154,6 +159,7 @@ module ConceptualData
 		ShapePlacePropertyInfos shapeProperties;
 		SizePlacePropertyInfos sizeProperties;
 		AppearancePlacePropertyInfos appearanceProperties;
+		HumanAssertionPlacePropertyInfos humanAssertionProperties;
 	};
 
 	/** Sequence of PlaceInfos. */
@@ -252,7 +258,9 @@ module ConceptualData
 		// 24 25 26
 		EventGatewayPlaceholderPropertyAdded, EventGatewayPlaceholderPropertyChanged, EventGatewayPlaceholderPropertyDeleted,
 		// 27 28 29
-		EventAssociatedSpacePlaceholderPropertyAdded, EventAssociatedSpacePlaceholderPropertyChanged, EventAssociatedSpacePlaceholderPropertyDeleted 
+		EventAssociatedSpacePlaceholderPropertyAdded, EventAssociatedSpacePlaceholderPropertyChanged, EventAssociatedSpacePlaceholderPropertyDeleted, 
+		// 30 31 32
+		EventHumanAssertionPlacePropertyAdded, EventHumanAssertionPlacePropertyDeleted, EventHumanAssertionPlacePropertyChanged
 	};
 	
 	struct EventInfo
