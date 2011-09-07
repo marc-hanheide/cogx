@@ -24,7 +24,7 @@
 #include "StereoCore.h"
 #include "KinectCore.h"
 #include "CalculateRelations.h"
-#include "Learner.h"
+//#include "Learner.h"
 #include "GraphCut.h"
 #include "SVMPredictor.h"
 
@@ -34,11 +34,11 @@
 #include "Array.hh"
 
 #include "ObjRep.h"
-#include "TomGineThread.hh"
 
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
 #include "v4r/PCLAddOns/functions/PCLFunctions.h"
+#include "v4r/TomGine/tgTomGineThread.h"
 
 
 namespace cast
@@ -51,7 +51,7 @@ class StereoDetectorKinectLines : public ManagedComponent,
                                   public PointCloudClient
 {
 private:
-  TGThread::TomGineThread *tgRenderer;                      ///< 3D render engine
+  TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
   std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect view
 //  std::vector<PointCloud::SurfacePoint> points_fromLeft;    ///< 3D point vector from view of left stereo camera!
 //   IplImage *backProjPointCloud;                            ///< Back projected point cloud
@@ -84,13 +84,9 @@ private:
 
   cv::Mat_<cv::Vec3b> patches;                              ///< 3D patches on 2D image
 
-//  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
-//  cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
-  
   bool single;                                              ///< Single shot mode for the stereo detector learner
   bool showImages;                                          ///< Show images in openCV windows
 
-//   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
   
   void processImage();
