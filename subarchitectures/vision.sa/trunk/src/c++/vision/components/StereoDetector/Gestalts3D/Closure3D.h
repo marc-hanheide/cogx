@@ -37,7 +37,7 @@ public:
   double Compare(Closure3D *c);
 
   void CalculateSignificance(double sigLeft, double sigRight);
-  void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor);
 
 };
 

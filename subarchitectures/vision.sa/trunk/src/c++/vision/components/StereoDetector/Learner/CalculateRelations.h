@@ -12,6 +12,7 @@
 #include <vector>
 #include "KinectCore.h"
 #include "Patch3D.h"
+#include "Line3D.h"
 
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
@@ -22,45 +23,53 @@ namespace Z
  
 struct Relation
 {
-  unsigned type;                          ///< Type of relation (Patch-Patch = 1 / ...)
+  unsigned type;                          ///< Type of relation (Patch-Patch = 1 / Patch-Line = 2 / Line-Line = 3 / ...)
   unsigned id_0;                          ///< id of first feature
   unsigned id_1;                          ///< id of second feature
-  std::vector<double> rel_value;          ///< relation values
-  std::vector<double> rel_probability;    ///< probabilities of relations
+  std::vector<double> rel_value;          ///< relation values (feature vector)
+  std::vector<double> rel_probability;    ///< probabilities of correct prediction
   unsigned groundTruth;                   ///< 0=false / 1=true
   unsigned prediction;                    ///< 0=false / 1=true
+  bool remove;                            ///< delete flag
 };
 
 
 class CalculateRelations
 {
 private:
-  
-  bool isInitialized;                     ///< initialize flag
   KinectCore *kcore;                      ///< Kinect core
   
-  std::vector<Relation> allRelations;     ///< all relations between features
-  std::vector<Relation> ppRelations;      ///< patch-patch relations              /// TODO Inkonsistent, weil AddPrediction und AddProbability nur bei allRelations eintragen.
-  std::vector<Relation> plRelations;      ///< patch-line relations               /// TODO Inkonsistent, weil AddPrediction und AddProbability nur bei allRelations eintragen.
+  std::vector<Relation> relations;        ///< all relations between features
   
-  void CalcPatchPatchRelations(std::vector<Relation> &rel);
-//   void GetPatchLineRelations(std::vector<Relation> &rel);
+  void CalcSVMPatchPatchRelations();      ///< Calculate relations between patches
+  void CalcSVMPatchLineRelations();       ///< Calculate relations between patches and lines
+  void CalcSVMLineLineRelations();        ///< Calculate relations between lines
+
+  bool PLLineInPlaneROI(Patch3D *p, Line3D *l);
+  double PLProximity(Patch3D *p, Line3D *l);
+  double PLParallelity(Patch3D *p, Line3D *l);
+  
+  double cam_fx, cam_fy, cam_cx, cam_cy;  ///< Internal camera parameters
 
 public:
   
   CalculateRelations();
   ~CalculateRelations() {}
   
-  void Initialize(KinectCore *k);
+  void Initialize(KinectCore *k, double fx, double fy, double cx, double cy);
   
-  void CalcRelations(std::vector<Relation> &rel);
+  void CalcSVMRelations(std::vector<Relation> &rel);
+  void CalcTestRelations(std::vector<Relation> &rel);
   void CalcAllRelations(std::vector<Relation> &rel);
   
-  void AddPrediction(unsigned id, double prediction) {allRelations[id].prediction = prediction;}
-  void AddProbability(unsigned id, std::vector<double> probability) {allRelations[id].rel_probability = probability;}
-  void GetRelations(std::vector<Relation> &rel) {rel = allRelations;}
+  void AddPrediction(unsigned id, double prediction) {relations[id].prediction = prediction;}
+  void AddProbability(unsigned id, std::vector<double> probability) {relations[id].rel_probability = probability;}
+  void GetRelations(std::vector<Relation> &rel) {rel = relations;}
+
+  void ConstrainRelations();
 
   void PrintResults();
+  void PrintRelations();
   double CheckAccuracy();
 };
 

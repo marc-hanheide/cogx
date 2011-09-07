@@ -45,7 +45,7 @@ Learner::~Learner()
 /**
  * @brief Process the learning algorithms
  */
-void Learner::Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineThread *tgR)
+void Learner::Process(pclA::PlanePopout *pp, KinectCore *kc, TomGine::tgTomGineThread *tgR)
 {
   kcore = kc;
   planePopout = pp;
@@ -65,14 +65,13 @@ void Learner::Process(pclA::PlanePopout *pp, KinectCore *kc, TGThread::TomGineTh
 void Learner::LearnProximityPP()
 {
   std::vector<double> positive, negative;
-  
   for(unsigned i=0; i<nrPatches-1; i++)
   {
     Patch3D *p0 = (Patch3D*) kcore->Gestalts3D(Gestalt3D::PATCH, i);
     for(unsigned j=i+1; j<nrPatches; j++)
     {
       Patch3D *px = (Patch3D*) kcore->Gestalts3D(Gestalt3D::PATCH, j);
-      double closeness = p0->IsClose(px);
+      double closeness = p0->CalculateProximity(px);
 
       if(p0->GetObjectLabel() != 0 && p0->GetObjectLabel() == px->GetObjectLabel())
         positive.push_back(closeness);

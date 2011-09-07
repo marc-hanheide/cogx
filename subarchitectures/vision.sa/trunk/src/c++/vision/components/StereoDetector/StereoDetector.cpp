@@ -245,8 +245,9 @@ void StereoDetector::DrawIntoTomGine()
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
   Points2Cloud(points, cloud, colCloud);
-  tgRenderer->SetPointCloud(cloud, colCloud);
 
+//   tgRenderer->SetPointCloud(cloud, colCloud);
+  printf("StereoDetector::DrawIntoTomGine: SetPointCloud is antiquated: reimplement!\n");
   
   /// get a registered point cloud, related to the left stereo image.
 //   points.resize(0);

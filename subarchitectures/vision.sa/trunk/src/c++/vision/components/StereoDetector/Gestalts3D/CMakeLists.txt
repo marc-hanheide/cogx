@@ -38,6 +38,6 @@ SET(SOURCES
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} opencv_core opencv_highgui opencv_imgproc opencv_objdetect opencv_features2d opencv_flann)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} opencv_core opencv_highgui opencv_imgproc opencv_objdetect opencv_features2d opencv_flann)# v4rtomgine)
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 

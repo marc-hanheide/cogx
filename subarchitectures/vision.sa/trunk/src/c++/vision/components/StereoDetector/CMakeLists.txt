@@ -9,15 +9,15 @@ include_directories(/usr/include/ni)
 if (HAVE_PCL_LIBRARY)
 option(HAVE_V4R "TUW v4r library is available" NO)
 if (HAVE_V4R)
-include(${COGX_ROOT}/cmake/v4r.cmake)
+include(${COGX_ROOT}/cmake/FindV4R.cmake)
 include_directories(${V4R_DIR})
 link_directories(${V4R_DIR}/lib)
 
 
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision)
-include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine)
-include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGine)
-include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGineWraper)
+#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine)
+#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGine)
+#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGineWraper)
 
 include_directories(matas)
 include_directories(math)
@@ -56,11 +56,11 @@ SET(SOURCES
 )
 add_cast_component(StereoDetector ${SOURCES} ${HEADERS})
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDLearner SDGraphCut)
-link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow) #TomGine TomGineWraper)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 
-target_link_libraries(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions)
+target_link_libraries(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions v4rtomgine)
 endif (HAVE_V4R)
 endif (HAVE_PCL_LIBRARY)
 

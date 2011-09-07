@@ -49,7 +49,7 @@ void Closure3D::CalculateSignificance(double sigLeft, double sigRight)
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
  */
-void Closure3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor)
+void Closure3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
 {
   RGBValue color;
   color.float_value = hull[0][3];

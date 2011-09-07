@@ -72,6 +72,8 @@ Gestalt3D::Gestalt3D(Type _type)
   sig = 0.;
   id = -1;
   nodeID = -1;
+  objectLabel = -1;
+  graphCutLabel = -1;
 }
 
 }

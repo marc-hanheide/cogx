@@ -6,8 +6,12 @@
  * @brief Managment of processing kinect data.
  */
 
+#include <set>
+
 #include "KinectCore.h"
 #include "Gestalt3D.h"
+#include "Patch3D.h"
+#include "Line3D.h"
 
 #include "KinectPatches.h"
 #include "KinectSegments.h"
@@ -19,6 +23,17 @@
 namespace Z
 {
 
+inline float GetRandomColor()
+{
+  RGBValue x;
+  x.b = std::rand()%255;
+  x.g = std::rand()%255;
+  x.r = std::rand()%255;
+  x.a = 0.; 
+  return x.float_value;
+}
+  
+  
 extern void SetActiveDrawArea(IplImage *iI);
 
 /**
@@ -56,12 +71,25 @@ KinectCore::~KinectCore()
  */
 void KinectCore::SetNodeIDs()
 {
+printf("KinectCore::SetNodeID: we initialize now only patches and lines!\n");
+  unsigned nodeID = 0;
+//   for(unsigned i=0; i<Gestalts3D::MAX_TYPE; i++)
+//     for(unsigned j=0; j<kinectGestalts[i].Size(); j++)
+//       kinectGestalts[i][j]->SetNodeID(nodeID++);
+
+ for(unsigned j=0; j<kinectGestalts[Gestalt3D::PATCH].Size(); j++)
+   kinectGestalts[Gestalt3D::PATCH][j]->SetNodeID(nodeID++);
+ for(unsigned j=0; j</*kinectGestalts[Gestalt3D::LINE].Size()*/5; j++)
+   kinectGestalts[Gestalt3D::LINE][j]->SetNodeID(nodeID++);
+}
+
+void KinectCore::PrintNodeIDs()                                                       /// TODO TODO TODO Delete later!!!
+{
   unsigned nodeID = 0;
   for(unsigned i=0; i<KinectBase::MAX_TYPE; i++)
     for(unsigned j=0; j<kinectGestalts[i].Size(); j++)
-      kinectGestalts[i][j]->SetNodeID(nodeID++);
+      printf(" nodeID: %u\n", kinectGestalts[i][j]->GetNodeID());
 }
-
 
 /**
  * @brief Initialisation of the Kinect Gestalt clases.
@@ -125,11 +153,13 @@ void KinectCore::ClearResults()
  * @param tgRenderer TomGine render engine.
  * @param type Type of Gestalt3D to draw.
  */
-void KinectCore::DrawGestalts3D(TGThread::TomGineThread *tgRenderer, Gestalt3D::Type type)
+void KinectCore::DrawGestalts3D(TomGine::tgTomGineThread *tgRenderer,
+                                Gestalt3D::Type type)
 { 
   for(unsigned i=0; i < NumGestalts3D(type); i++)
     Gestalts3D(type, i)->DrawGestalt3D(tgRenderer);
 }
+
 
 /**
  * @brief Draw results into TomGine render engine.
@@ -140,19 +170,6 @@ void KinectCore::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image,
                                        Gestalt3D::Type type,
                                        Video::CameraParameters camPars)
 { 
-  // initialize black
-//   int width = 640; 
-//   int height = 480;
-//   image = cv::Mat_<cv::Vec3b>(height, width);
-//   for (int u = 0; u < width; ++u)
-//   {
-//     for (int v = 0; v < height; ++v)
-//     {
-//       cv::Vec3b &ptCol = image(v,u);
-//       ptCol[0] = 0; ptCol[1] = 0; ptCol[2] = 0;
-//     }
-//   }
-  
   for(unsigned i=0; i < NumGestalts3D(type); i++)
     Gestalts3D(type, i)->DrawGestalts3DToImage(image, camPars);
 }
@@ -194,7 +211,7 @@ void KinectCore::PrintGestalts3D(Gestalt3D::Type type)
  * @param _iplImage Color image of the kinect camera
  * @param _points Point cloud of the Kinect
  */
-void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points)
+void KinectCore::Process(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points)
 {
   vcore = _vcore;
   iplImg = _iplImg;
@@ -221,7 +238,7 @@ void KinectCore::ProcessKinectData(VisionCore *_vcore, IplImage *_iplImg, cv::Ma
     std::cout << e.what() << std::endl;
   }
 
-  SetNodeIDs();
+  SetNodeIDs(); // give node id's to all kinect-Gestalts
 }
 
 /**
@@ -297,5 +314,113 @@ void KinectCore::PrintVCoreStatistics()
 {
   vcore->PrintRunTime();
 }
+
+/**
+ * @brief Set object labels for all kinect-Gestalts, according to the
+ * plane-popout results.
+ * @param pp Plane-Popout
+ */
+void KinectCore::SetObjectLabels(pclA::PlanePopout *pp)
+{
+  // set object labels, according to planePopout-SOIs
+  unsigned nrPatches = NumGestalts3D(Gestalt3D::PATCH);
+  for(unsigned i=0; i<nrPatches; i++)
+  {
+    Patch3D *p = (Patch3D*) Gestalts3D(Gestalt3D::PATCH, i);
+// printf("P: %u => %u\n", p->GetNodeID(), pp->IsInSOI(p->GetCenter3D()));
+    p->SetObjectLabel(pp->IsInSOI(p->GetCenter3D()));
+  }
+  unsigned nrLines = NumGestalts3D(Gestalt3D::LINE);
+  for(unsigned i=0; i<nrLines; i++)
+  {
+    Line3D *l = (Line3D*) Gestalts3D(Gestalt3D::LINE, i);
+// printf("L: %u => label %u\n", l->GetNodeID(), pp->IsInSOI(l->GetCenter3D()));
+    l->SetObjectLabel(pp->IsInSOI(l->GetCenter3D()));
+  }
+}
+
+/**
+ * @brief Draw Gestalts into TomGine, colored by object labels.
+ * @param tgRenderer TomGine render engine.
+ */
+void KinectCore::DrawObjects3D(TomGine::tgTomGineThread *tgRenderer)
+{ 
+  std::set<unsigned> objectIDs;
+  set<unsigned>::iterator it;
+
+  std::vector<float> color;
+  
+  for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
+  {
+    Gestalt3D::Type t = (Gestalt3D::Type) type;
+    for(unsigned i=0; i < NumGestalts3D(t); i++)
+    {
+      unsigned pos = 0;
+      unsigned objID = Gestalts3D(t, i)->GetObjectLabel();
+      if(objID != UNDEF_ID)
+      {
+        if(objectIDs.find(objID) == objectIDs.end())
+        {
+          objectIDs.insert(objID);
+          float col =  GetRandomColor();
+          color.push_back(col);
+          pos = color.size()-1;
+        }
+        else 
+        {
+          for(it=objectIDs.find(objID); it != objectIDs.begin(); it--)
+            pos++;
+        }
+          
+        Gestalts3D(t, i)->DrawGestalt3D(tgRenderer, true, color[pos]);
+      }
+    }
+  }
+}
+
+
+/**
+ * @brief Draw features into TomGine, colored by graph-cut labels.
+ * @param tgRenderer TomGine render engine.
+ */
+void KinectCore::DrawGraphCut3D(TomGine::tgTomGineThread *tgRenderer)
+{ 
+printf("KinectCore::DrawGraphCut3D: All graph cut groups: %u\n", graphCutGroups.size());
+//   for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
+//   {
+//     Gestalt3D::Type t = (Gestalt3D::Type) type;
+//     for(unsigned i=0; i < NumGestalts3D(t); i++)
+//     {
+//       unsigned label = Gestalts3D(t, i)->GetGraphCutLabel();
+// printf("  %u with label: %u\n", Gestalts3D(t, i)->GetNodeID(), label);
+//     }
+//   }
+        
+  
+//   printf("KinectCore::DrawGraphCut3D: Number of groups: %u\n", graphCutGroups.size());
+  
+  set<unsigned>::iterator it;
+  for(it=graphCutGroups.begin(); it != graphCutGroups.end(); it++)
+  {
+// printf("graphCutGroup: %u\n", *it);
+    float col =  GetRandomColor();
+    
+    for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
+    {
+      Gestalt3D::Type t = (Gestalt3D::Type) type;
+      for(unsigned i=0; i < NumGestalts3D(t); i++)
+      {
+        unsigned label = Gestalts3D(t, i)->GetGraphCutLabel();
+        if(label == *it && label != -1)
+        {
+// printf("  %u is same label\n", Gestalts3D(t, i)->GetNodeID());
+          Gestalts3D(t, i)->DrawGestalt3D(tgRenderer, true, col);
+        }
+      }
+    }
+  }
+}
+
+
 
 } 

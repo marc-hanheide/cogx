@@ -2,7 +2,7 @@ PROJECT(SDKinect)
 
 include_directories(.)
 
-find_package(PCL 1.0.1 REQUIRED COMPONENTS)
+find_package(PCL 1.1 REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
 
 # Set the sources.

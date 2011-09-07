@@ -25,9 +25,9 @@ namespace Z
 {
   
 typedef struct {
-  int rank;
-  int p;
-  int size;
+  int rank;         // rank of element (starts with 0)
+  int p;            // ??? TODO Parent element???
+  int size;         // ??? TODO How many elements are in a set
 } uni_elt;
 
 
@@ -39,6 +39,7 @@ public:
   void join(int x, int y);
   int size(int x) const { return elts[x].size; }
   int num_sets() const { return num; }
+  void printAll();
 
 private:
   uni_elt *elts;
@@ -72,7 +73,9 @@ int universe::find(int x) {
   return y;
 }
 
-void universe::join(int x, int y) {
+void universe::join(int x, int y) 
+{
+// printf("  ==> universe join: %u-%u\n", x, y);  
   if (elts[x].rank > elts[y].rank) {
     elts[y].p = x;
     elts[x].size += elts[y].size;
@@ -83,6 +86,14 @@ void universe::join(int x, int y) {
       elts[y].rank++;
   }
   num--;
+}
+
+void universe::printAll() 
+{
+  for(int i=0; i<num; i++)
+  {
+    printf("  %u: elts: rank: %u - p: %u - size: %u\n", i, elts[i].rank, elts[i].p, elts[i].size);
+  }
 }
 
 }

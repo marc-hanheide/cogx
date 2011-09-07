@@ -31,22 +31,21 @@ public:
   
 private:
 
-  struct svm_node *x;             ///< node of svm
-  int max_nr_attr;                ///< Maximum attributes = maximum size of feature vector
+  struct svm_node *x;                           ///< node of svm TODO Rename to node
+  int max_nr_attr;                              ///< Maximum attributes = maximum size of feature vector
 
-  struct svm_model* model;        ///< SVM-model
-  bool predict_probability;       ///< Predict with probability values
+  int max_type_svm;                             ///< Maximum types of SVM's
+  std::vector<struct svm_model*> models;        ///< SVM-models
+  bool predict_probability;                     ///< Predict with probability values
 
-  bool Predict(const std::vector<double> &vec, std::vector<double> &prob);
+  bool Predict(int type, const std::vector<double> &vec, std::vector<double> &prob);
   
   
 public:
-  SVMPredictor(const char* filename = "svm.model");
+  SVMPredictor(int max_svm, const char* filename = "svm.model");
   ~SVMPredictor();
   
-  bool GetResult(const std::vector<double> &val, std::vector<double> &prob);
-  void GetResults(std::vector< std::vector<double> > vals);
-//   void GetResults(std::vector<Relation> &rel);
+  bool GetResult(int type, const std::vector<double> &val, std::vector<double> &prob);
 };
 
 }

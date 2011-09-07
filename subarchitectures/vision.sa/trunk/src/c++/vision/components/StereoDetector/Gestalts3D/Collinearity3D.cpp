@@ -95,7 +95,7 @@ printf("Collinearity3D::GetLinks: Not yet implemented!\n");
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
  */
-void Collinearity3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor)
+void Collinearity3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
 {
   line[0]->DrawGestalt3D(tgRenderer);
   line[1]->DrawGestalt3D(tgRenderer);
@@ -108,10 +108,9 @@ void Collinearity3D::DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool ran
     color.b = 0;    //std::rand()%255;
   }
 
-  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 0.4);
-  tgRenderer->AddLine3D(point[2][0], point[2][1], point[2][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 0.4);
-
-  tgRenderer->AddPoint3D(point[1][0], point[1][1], point[1][2], 255, 0, 0, 1);
+  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 5);
+  tgRenderer->AddLine3D(point[2][0], point[2][1], point[2][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 5);
+  tgRenderer->AddPoint3D(point[1][0], point[1][1], point[1][2], 255, 0, 0, 5);
 }
 
 /**

@@ -58,7 +58,6 @@ void KinectRectangles::Process()
     vector<cv::Vec4f> rectangle_jcts;                       // all jcts of the rectangle (hull points)
     vector<cv::Vec4f> rectangle_points;                     // all points inside of the rectangle
 
-    bool firstPoint = true;
     Z::Rectangle *r = (Z::Rectangle*) vcore->Gestalts(Z::Gestalt::RECTANGLE, i);
 //     if(!r->IsMasked())
     if(true)
