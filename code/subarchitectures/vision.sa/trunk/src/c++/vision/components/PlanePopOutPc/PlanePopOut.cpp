@@ -88,6 +88,7 @@ using namespace cdl;
 
 void PlanePopOut::configure(const map<string,string> & _config)
 {
+//     log("start the configuration!!!!!!!");
     // first let the base classes configure themselves
     configureServerCommunication(_config);
 
@@ -184,6 +185,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
 void PlanePopOut::start()
 {
     startPCCServerCommunication(*this);
+//     log("start the component!!!!!!!!!");
 #ifdef FEAT_VISUALIZATION
 
     m_bSendPoints = false;
@@ -267,7 +269,7 @@ void PlanePopOut::start()
 
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
 #endif
-
+//     log("In start, finish the initialization of visualization");
     // @author: mmarko
     // we want to receive GetStableSoisCommand-s
     addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
@@ -555,7 +557,7 @@ void PlanePopOut::SendRemoveSoi(PlanePopOut::ObjPara& soiobj)
 void PlanePopOut::runComponent()
 {
     sleepComponent(3000);
-    log("Component PlanePopOut is running now");
+//     log("Component PlanePopOut is running now");
     // note: this must be called in the run loop, not in configure or start as these are all different threads!
     //     int argc = 1;
     //     char argv0[] = "PlanePopOut";
@@ -567,15 +569,15 @@ void PlanePopOut::runComponent()
     while(isRunning())
     {
 	if ( ! GetImageData()) {
-	    sleepComponent(1);
-	    continue;		//log("Hoho, we get the image data from PCL");
-	}
+	    sleepComponent(1);		
+	    continue;		
+	}		//log("Hoho, we get the image data from PCL");
 	if ( ! GetPlaneAndSOIs()) {
 	    sleepComponent(1);
-	    continue;		//log("Haha, we get the Sois and Plane from PCL");
-	}
+	    continue;		
+	}	//log("Haha, we get the Sois and Plane from PCL");
 	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
-	//log("Yeah, we get the color histograms of all the sois");
+// 	log("Yeah, we get the color histograms of all the sois");
 	if (sois.size() != 0)
 	{						//log("we get some sois, now analyze them");
 	    ConvexHullOfPlane(points,points_label);	//log("get the convex hull of the dominant plane");
@@ -586,8 +588,8 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
 	    if (m_bSendImage)
 	    {
-		SendImage();		/// TODO
-		//cout<<"send Imgs"<<endl;
+		SendImage();
+// 		cout<<"send Imgs"<<endl;
 	    }
 #endif
 	}
@@ -596,7 +598,7 @@ void PlanePopOut::runComponent()
 	    v3size.clear();
 	    v3center.clear();
 	    vdradius.clear();
-	    //log("there is no objects, now strating cal convex hull");
+// 	    log("there is no objects, now strating cal convex hull");
 	    ConvexHullOfPlane(points,points_label);			//log("although there is no object, we still can get the convex hull of the dominant plane");
 	}
 	if (doDisplay)
@@ -605,16 +607,15 @@ void PlanePopOut::runComponent()
 	}
 #ifdef FEAT_VISUALIZATION
 // 	log("Start to send points");
-	int debug_labels=0;
-	for (int i=0; i<points_label.size(); i++)
-	  if (points_label[i]== 0)	{debug_labels++; /*log("plane point is at (%f, %f, %f)", points[i].p.x, points[i].p.y, points[i].p.z);*/}
+// 	int debug_labels=0;
+// 	for (int i=0; i<points_label.size(); i++)
+// 	  if (points_label[i]== 0)	{debug_labels++; /*log("plane point is at (%f, %f, %f)", points[i].p.x, points[i].p.y, points[i].p.z);*/}
 // 	log("Thera are %d points on the plane", debug_labels);
 	
 	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
 	if (m_bSendPlaneGrid) SendPlaneGrid();
-	//log("Done FEAT_VISUALIZATION");
+// 	log("Done FEAT_VISUALIZATION");
 #endif
-
 	// 	AddConvexHullinWM();
 	//log("Done AddConvexHullinWM");
 
@@ -626,28 +627,29 @@ void PlanePopOut::runComponent()
 	    lastSize = v3center.size();
 	}
 	CurrentObjList.clear();
+// 	log("start create objects");
 	for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 	{
-	    ObjPara OP;
-	    OP.c = v3center.at(i);
-	    OP.s = v3size.at(i);
+	    ObjPara OP;				//log("v3center size is %d", v3center.size());
+	    OP.c = v3center.at(i);		//log("v3size size is %d, i = %d",v3size.size(),i);
+	    OP.s = v3size.at(i);		//log("vdradius size is %d", vdradius.size());
 	    OP.r = vdradius.at(i);
 	    OP.id = "";
 	    OP.bComCurrentPre = false;
 	    OP.bInWM = false;
-	    OP.count = 0;
-	    OP.pointsInOneSOI = SOIPointsSeq.at(i);
-	    OP.BGInOneSOI = BGPointsSeq.at(i);
-	    OP.EQInOneSOI = EQPointsSeq.at(i);
+	    OP.count = 0;				//log("SOIPointsSeq size is %d", SOIPointsSeq.size());
+	    OP.pointsInOneSOI = SOIPointsSeq.at(i);	//log("BGPointsSeq size is %d", BGPointsSeq.size());
+	    OP.BGInOneSOI = BGPointsSeq.at(i);		//log("EQPointsSeq size is %d", EQPointsSeq.size());
+	    OP.EQInOneSOI = EQPointsSeq.at(i);		//log("vec_histogram size is %d", vec_histogram.size());
 	    OP.hist = vec_histogram.at(i);
 	    CurrentObjList.push_back(OP);
 	}
-	//log("Start SOIManagement");
+// 	log("Start SOIManagement");
 	SOIManagement();
-	//log("Done SOIManagement");
+// 	log("Done SOIManagement");
+	CleanupAll();
     }
     sleepComponent(50);
-    CleanupAll();
 }
 
 void PlanePopOut::CleanupAll()
@@ -1063,9 +1065,9 @@ bool PlanePopOut::GetPlaneAndSOIs()
     else {
 	A = -dpc->values[0]; B = -dpc->values[1]; C = -dpc->values[2]; D = -dpc->values[3];
     }
-    planePopout->GetTableHulls(tablehull);
-    planePopout->CollectTableInliers(pcl_cloud);	//log("There are %d inliers on the plane !", planepoints->indices.size());
-    planePopout->GetPlanePoints(planepoints);
+    planePopout->GetTableHulls(tablehull);	//log("We get the table hull");
+    planePopout->CollectTableInliers(pcl_cloud,dpc);	
+    planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     int w,h;
     if (bWithKinect) {
 	w =iplImage_k->width;	h=iplImage_k->height;
@@ -1077,7 +1079,7 @@ bool PlanePopOut::GetPlaneAndSOIs()
 	ROIMaskImg=cvCreateImage(cvSize(w,h),8,3);
 	cvCopy(iplImage_l, ROIMaskImg,NULL);
     }
-    objnumber=sois.size();	//log("There are %d SOIs !", objnumber);
+    objnumber=sois.size();	//log("In GetPlaneAndSOIs: There are %d SOIs !", objnumber);
     points.clear();	points.resize(pcl_cloud->points.size());
     points_label.clear();	points_label.assign(pcl_cloud->points.size(), -1);
     for (unsigned i=0; i<planepoints->indices.size(); i++)	// use indices of plane points to lable them
@@ -1088,11 +1090,11 @@ bool PlanePopOut::GetPlaneAndSOIs()
 	PointCloud::SurfacePoint PushStructure;
 	Vector3 tmp;
 	tmp.x = pcl_cloud->points[index].x; tmp.y = pcl_cloud->points[index].y; tmp.z = pcl_cloud->points[index].z;
-// 	log("plane point at (%f, %f, %f)", tmp.x, tmp.y, tmp.z);
+//  	log("plane point at (%f, %f, %f)", tmp.x, tmp.y, tmp.z);
 	PushStructure.p = tmp;
 	PushStructure.c.r = pcl_cloud->points[index].r;	PushStructure.c.g = pcl_cloud->points[index].g;	PushStructure.c.b = pcl_cloud->points[index].b;
 	points[index] = PushStructure;
-    }
+    }	//log("label all the plane points");
     for (unsigned i=0; i<pcl_cloud->points.size(); i++)		// check all the points in which SOI and lable them
     {
 	if (points_label[i] != 0)
@@ -1105,7 +1107,7 @@ bool PlanePopOut::GetPlaneAndSOIs()
 	    int index_of_SOI_point = planePopout->IsInSOI(tmp.x,tmp.y,tmp.z);
 	    if (index_of_SOI_point !=0) points_label[i] = index_of_SOI_point;
 	}
-    }
+    }	//log("lable all the SOI points");
     return true;
 }
 
