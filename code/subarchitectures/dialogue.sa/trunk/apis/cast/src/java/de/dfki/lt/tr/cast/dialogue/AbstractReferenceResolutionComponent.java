@@ -41,7 +41,10 @@ implements ReferenceResolver {
 						processResolutionRequest(_wmc);
 					};
 		});
+		onStart();
 	}
+
+	protected abstract void onStart();
 
 	@Override
 	public void stop() {
@@ -63,6 +66,7 @@ implements ReferenceResolver {
 				@Override
 				public void run() {
 					try {
+						getLogger().debug("will act on the ResolutionRequest [" + _wmc.address.id + "," + _wmc.address.subarchitecture + "]");
 						ResolutionResult res = resolve(rr);
 						if (res != null) {
 							getLogger().debug("overwriting the request [" + _wmc.address.id + "," + _wmc.address.subarchitecture + "] with result:\n" + ReferenceUtils.resolutionResultToString(res));
