@@ -223,6 +223,8 @@ void PointCloudServer::start()
   addChangeFilter(createTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
 
+  addChangeFilter(createTypeFilter<ptz::SetPTZPoseCommand>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
 }
 
 /**
@@ -230,13 +232,23 @@ void PointCloudServer::start()
  */
 void PointCloudServer::receivePTZCommand(const cdl::WorkingMemoryChange & _wmc)
 {
-  ptz::SetPTZPoseCommandPtr ptzCmd = getMemoryEntry<ptz::SetPTZPoseCommand>(_wmc.address);
-  if (ptzCmd->comp==ptz::COMPINIT) {
-    println("reading is suspended because PTZ is moving");
-    suspendReading=true;
-  } else {
-    println("reading is working again");
-    suspendReading=false;
+  try {
+    ptz::SetPTZPoseCommandPtr ptzCmd = getMemoryEntry<ptz::SetPTZPoseCommand>(_wmc.address);
+    if (_wmc.operation == cdl::DELETE) {
+      println("reading is working again (after deletion)");
+      suspendReading=false;
+    } else {
+      if (ptzCmd->comp==ptz::COMPINIT) {
+        println("reading is suspended because PTZ is moving");
+        suspendReading=true;
+      } else {
+        println("reading is working again (after status update)");
+        suspendReading=false;
+      }
+    }
+  } catch (const CASTException& e) {
+        println("reading is working again (after exception)");
+        suspendReading=false;
   }
 }
 
