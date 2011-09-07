@@ -739,11 +739,11 @@ void PlanePopOut::SOIManagement()
 		{
 		    if (bWriteSoisToWm)
 		    {
-			deleteFromWorkingMemory(PreviousObjList.at(j).id);
-			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
 			SendRemoveSoi(PreviousObjList.at(j));
 #endif
+			deleteFromWorkingMemory(PreviousObjList.at(j).id);
+			//  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 		    }
 		}
 	    }
@@ -804,12 +804,12 @@ void PlanePopOut::SOIManagement()
 		{
 		    if (bWriteSoisToWm)
 		    {
-			// cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
-			deleteFromWorkingMemory(PreviousObjList.at(j).id);
-// 			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 #ifdef FEAT_VISUALIZATION
 			SendRemoveSoi(PreviousObjList.at(j));
 #endif
+			// cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
+			deleteFromWorkingMemory(PreviousObjList.at(j).id);
+// 			cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 		    }
 		}
 	    }
@@ -843,9 +843,11 @@ void PlanePopOut::SOIManagement()
 		}
 		else
 		{
-		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
 #ifdef FEAT_VISUALIZATION
 		    SendRemoveSoi(PreviousObjList.at(j));
+#endif
+		    CurrentObjList.at(matchingResult).c = PreviousObjList.at(j).c;
+#ifdef FEAT_VISUALIZATION
 		    SendSoi(CurrentObjList.at(matchingResult));
 #endif
 		}
