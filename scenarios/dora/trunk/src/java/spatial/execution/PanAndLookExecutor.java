@@ -129,7 +129,9 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 		// wait for the command to overwritten
 		try {
 			getComponent().addToWorkingMemory(id, ptzCommand);
+			println("going back to original pose");
 			queue.take();
+			println("pose command overwritten");
 			getComponent().deleteFromWorkingMemory(id);
 		} catch (InterruptedException e) {
 			logException(e);
