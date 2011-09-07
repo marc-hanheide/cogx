@@ -1290,45 +1290,6 @@ void ChainGraphInferencer::createDaiObservedAppearancePropertyFactor(int placeId
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // -------------------------------------------------------
 void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int room1Id,
 		const std::string humanAssertion)
@@ -1346,9 +1307,19 @@ void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int roo
 		return;
 	}
 
+	// Get the default factor
+	string factorName = "f(room_category1,humanassertion_property)";
+	std::map<std::string, SpatialProbabilities::ProbabilityDistribution>::iterator dnfIt =
+			_defaultKnowledgeFactors.find(factorName);
+	if (dnfIt == _defaultKnowledgeFactors.end())
+	{
+		error("Factor \'%s\' not found. This indicates a serious implementation error!", factorName.c_str());
+		return;
+	}
+	const SpatialProbabilities::ProbabilityDistribution &factor = dnfIt->second;
+
 	// Create variables
 	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
-	string defaultHumanAssertionVarName = "humanassertion_property";
 	string observedHumanAssertionVarName = VariableNameGenerator::getHumanAssertionPropertyObservationVarName(room1Id);
 	debug("Creating DAI observed human assertion property factor for variable '%s'", room1VarName.c_str());
 
@@ -1364,13 +1335,11 @@ void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int roo
 	for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 	{
 		string var1ValueName = dv1.valueIdToName[i1]; // Room category
-//		// Get the lambda value for the poisson distribution
-//		double lambda = getPoissonLambda(var1ValueName, objectCategory, relation, supportObjectCategory);
-//		// Check for errors
-//		if (lambda<0)
-//			return;
-//		// Get the poisson prob distribution
-		double probability = 0; //getPoissonProabability(beta*lambda, objectCount);
+		double probability = getProbabilityValue(factor, var1ValueName, humanAssertion);
+		if (probability<0)
+			throw CASTException(exceptionMessage(__HERE__,
+					"Probability not found for values '%s' and '%s'", var1ValueName.c_str(), humanAssertion.c_str()));
+
 		daiFactor.set(index, probability);
 		++index;
 	}
@@ -1378,44 +1347,7 @@ void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int roo
 	// Add factor to the list
 	_factors.push_back(daiFactor);
 	_factorNames.push_back("ObservedHumanAssertionPropertyFactor");
-
-
-
-
-
-
-
-
-//	int index=0;
-//	for (unsigned int i = 0; i<dv.var.states(); ++i)
-//	{
-//		// Find probability for the appearance
-//		string appearance = _appearances[i];
-//		double potential = -1;
-//		for (unsigned int j=0; j<dist.size(); ++j)
-//		{
-//			if (dist[j].value == appearance)
-//			{
-//				potential = dist[j].potential;
-//				break;
-//			}
-//		}
-//		if (potential<0)
-//		{
-//			log("Warning: Can't find potential for an appearance %s while building observed appearance property DAI factor!"
-//					"This probably means that the appearance value is not present in the model for this property.",
-//					appearance.c_str());
-//
-//			potential=0.01;
-//		}
-//		daiFactor.set(index, potential);
-//		++index;
-//	}
-
 }
-
-
-
 
 
 // -------------------------------------------------------
@@ -1503,6 +1435,14 @@ void ChainGraphInferencer::addDaiFactors()
 			{
 				createDaiAppearancePropertyGivenRoomCategoryFactor(cri.roomId, pi.placeId);
 			}
+
+			// Human assertion properties
+			for (unsigned int h=0; h<pi.humanAssertionProperties.size(); ++h)
+			{
+				const ConceptualData::HumanAssertionPlacePropertyInfo &happi = pi.humanAssertionProperties[h];
+				createDaiObservedHumanAssertionPropertyFactor(cri.roomId, happi.assertion);
+			} // h
+
 		} // p
 
 		// Place independent Object properties
@@ -2150,6 +2090,8 @@ void ChainGraphInferencer::getDefaultKnowledge()
 		_defaultChainGraphInferencerServerInterfacePrx->getSizes();
 	_appearances =
 		_defaultChainGraphInferencerServerInterfacePrx->getAppearances();
+	_humanAssertions =
+		_defaultChainGraphInferencerServerInterfacePrx->getHumanAssertions();
 
 
 	// Error checking
@@ -2210,6 +2152,14 @@ void ChainGraphInferencer::getDefaultKnowledge()
 			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
 	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
 		throw CASTException(exceptionMessage(__HERE__, "Did not receive information from Default.SA. Is everything started?"));
+
+	// Get the room1_category -> humanassertion_property factor
+	factorStr = "f(room_category1,humanassertion_property)";
+	_defaultKnowledgeFactors[factorStr] =
+			_defaultChainGraphInferencerServerInterfacePrx->getFactor(factorStr);
+	if (_defaultKnowledgeFactors[factorStr].massFunction.empty())
+		throw CASTException(exceptionMessage(__HERE__, "Did not receive information from Default.SA. Is everything started?"));
+
 }
 
 
