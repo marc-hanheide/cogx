@@ -493,13 +493,10 @@ void KinectStereoSeqServer::start()
  */
 void KinectStereoSeqServer::runComponent()
 {
-  while(isRunning())
+  while(isRunning() && !noContinousGrabing)
   {
-    if(!noContinousGrabing)
-    {
-      grabFramesInternal();
-      sleepComponent(framerateMillis);
-    }
+    grabFramesInternal();
+    sleepComponent(framerateMillis);
   }
 }
 
