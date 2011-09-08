@@ -3,23 +3,6 @@
 
 # NOTE: stereo_config_file is set in cameras-X.incl
 
-VARDEFAULT finePointCloud=stereoserver
-SETVAR FinePlanePopOut_Params=<multiline>
-   --generate-sois false
-   --pcserver "%(finePointCloud)"
-   --stereoconfig %(stereo_config_file)
-   --displayserver "display.srv"
-   --minObjHeight 0.015
-   --totalPoints 8000
-   --LeastPointsInOneObj 40
-   --agonalTime 10
-   --stableTime 5 
-   #--display
-   # --log
-</multiline>
-# CPP MG vis.ppo.fine PlanePopOut %(FinePlanePopOut_Params) 
-VARDEFAULT finePcSource=vis.ppo.fine
-
 VARDEFAULT coarsePointCloud=stereoserver
 SETVAR CoarsePlanePopOut_Params=<multiline>
    --generate-sois true
@@ -34,9 +17,25 @@ SETVAR CoarsePlanePopOut_Params=<multiline>
    #--display
    #--log
 </multiline>
-CPP MG vis.ppo.coarse PlanePopOut %(CoarsePlanePopOut_Params)
+CPP MG vis.ppo.coarse PlanePopOutPc %(CoarsePlanePopOut_Params)
 VARDEFAULT coarsePcSource=vis.ppo.coarse
 
+VARDEFAULT finePointCloud=stereoserver
+SETVAR FinePlanePopOut_Params=<multiline>
+   --generate-sois false
+   --pcserver "%(finePointCloud)"
+   --stereoconfig %(stereo_config_file)
+   --displayserver "display.srv"
+   --minObjHeight 0.015
+   --totalPoints 8000
+   --LeastPointsInOneObj 40
+   --agonalTime 10
+   --stableTime 5 
+   #--display
+   # --log
+</multiline>
+#CPP MG vis.ppo.fine PlanePopOutPc %(FinePlanePopOut_Params) 
+VARDEFAULT finePcSource=vis.ppo.fine
 # XXX: until more than one instance of PPO can be run we use only one
 SETVAR finePcSource=%(coarsePcSource)
 
@@ -75,7 +74,7 @@ INCLUDE  includes/vision.sa/vision-visual-learner.cast
 # the ProtoObject.
 #CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
 
-# INCLUDE ../includes/vision.sa/vision-recognizer-3d.cast
+INCLUDE  object-recognizer.incl
 
 CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
 #CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"
