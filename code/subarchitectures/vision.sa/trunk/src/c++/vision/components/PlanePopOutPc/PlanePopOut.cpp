@@ -1053,7 +1053,7 @@ bool PlanePopOut::GetImageData()
 
     points.clear();
     //  getPoints(true, pointCloudWidth, points);
-    getCompletePoints(true, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+    getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
     //     log("there are %d points from GetPoints",points.size());
     ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -1159,19 +1159,17 @@ bool PlanePopOut::GetPlaneAndSOIs()
 void PlanePopOut::CalSOIHist(PointCloud::SurfacePointSeq pcloud, std::vector< int > label, std::vector <CvHistogram*> & vH)
 {
     vH.clear();
-    int max = *max_element(label.begin(), label.end());
-    if (max == 0)	return;
     std::vector <PointCloud::SurfacePointSeq> VpointsOfSOI;
     PointCloud::SurfacePointSeq pseq = pcloud; pseq.clear();
-    VpointsOfSOI.assign(max, pseq);
-
+    VpointsOfSOI.assign(objnumber, pseq);
+// log("pcloud.size() = %d", pcloud.size());
     for (unsigned int i=0; i<pcloud.size(); i++)
     {
 	int k = label[i];
 	if (k>0)
 	    VpointsOfSOI[k-1].push_back(pcloud[i]);
     }
-
+// log("VpointsOfSOI.size() = %d", VpointsOfSOI.size());
     for (unsigned j=0; j<VpointsOfSOI.size(); j++)
     {
 	CvHistogram* h;
@@ -1467,7 +1465,7 @@ void PlanePopOut::BoundingSphere(PointCloud::SurfacePointSeq &points, std::vecto
 	    PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
 	    Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 	    int label = labels.at(j);
-	    if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*vdradius.at(i))
+	    if (label > 0)
 		SOIPointsSeq.at(label-1).push_back(PushStructure);
 
 	    if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*vdradius.at(i)) // equivocal points
