@@ -15,7 +15,7 @@
 #include "PointCloudServer.h"
 #include "VideoUtils.h"
 #include <cast/core/CASTTimer.hpp>
-#include "cv.h"
+#include "opencv/cv.h"
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
