@@ -265,10 +265,8 @@ bool KinectPCServer::createViewCone()
   cv::Mat_<cv::Point3f> colCloud;
   kinect->Get3dWorldPointCloud(cloud, colCloud);
 
-  Pose3 global_kinect_pose, zeroPose;
-  setIdentity(zeroPose);
-  setIdentity(global_kinect_pose);
-  transform(lastValidCamPose, zeroPose, global_kinect_pose);
+  Pose3 global_kinect_pose;
+  global_kinect_pose = lastValidCamPose;
 
   for (int i = 0; i < N_PLANES; i++) {
     if (fovPlanes[i])
@@ -322,11 +320,9 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
   cv::Mat_<cv::Point3f> colCloud;
   kinect->Get3dWorldPointCloud(cloud, colCloud);
 
-  Pose3 global_kinect_pose, zeroPose;
-  setIdentity(zeroPose);
-  setIdentity(global_kinect_pose);
+  Pose3 global_kinect_pose;
   if(transformToGlobal)
-    transform(lastValidCamPose, zeroPose, global_kinect_pose);
+    global_kinect_pose = lastValidCamPose;
 
   // copy clouds to points-vector (dense!)
   int scale = imgWidth == 0 ? 1 : cloud.size().width / imgWidth;

@@ -443,15 +443,12 @@ void KinectStereoServer::getPoints(bool transformToGlobal, int imgWidth, vector<
   videoServer->getScaledImages(stereoSizes[res].width, stereoSizes[res].height, images);
 
 
-  // ######################## kinect procesing ######################## //
   points.resize(0);
-  Pose3 global_kinect_pose, zeroPose;
-  setIdentity(zeroPose);
-  if(transformToGlobal)
-    transform(camPars[2].pose, zeroPose, global_kinect_pose);
 
-if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", global_kinect_pose.pos.x, global_kinect_pose.pos.y, global_kinect_pose.pos.z);
-if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", camPars[2].pose.pos.x, camPars[2].pose.pos.y, camPars[2].pose.pos.z);
+  // ######################## kinect procesing ######################## //
+  Pose3 global_kinect_pose, zeroPose;
+  if(transformToGlobal)
+    global_kinect_pose = camPars[2].pose;
 
   // copy clouds to points-vector (dense!)
   for(unsigned row=0; row< cloud.size().height; row++)    /// TODO SLOW!!!
@@ -483,14 +480,14 @@ if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: 
     // pose of ideal left camera w.r.t. to real left camera
     // the pose is a rotation given by the rectification matrix
     setRow33(ideal_pose.rot, (double*)stereoCam->cam[LEFT].rect);
+    // NOTE: stereo camera rect matrix is the rotation matrix of real to ideal.
+    // So to get from ideal to real, we have to invert.
+    inverse(ideal_pose, ideal_pose);
     // get from ideal left pose to real left pose
     transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
     // get from relative left pose to global left pose
     transform(stereoCam->pose, rel_pose, global_left_pose);
   }
-
-if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", camPars[0].pose.pos.x, camPars[0].pose.pos.y, camPars[0].pose.pos.z);
-if(transformToGlobal) printf("KinectStereoServer::getPoints: transformToGlobal: %4.4f / %4.4f / %4.4f\n", global_left_pose.pos.x, global_left_pose.pos.y, global_left_pose.pos.z);
 
   for(int y = 0; y < imgSet.disparityImg->height; y++)
     for(int x = 0; x < imgSet.disparityImg->width; x++)
@@ -564,11 +561,16 @@ void KinectStereoServer::getRectImage(int side, int imgWidth, Video::Image& imag
     image.camPars.cy = stereoCam->cam[side].proj[1][2];
 //       changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
 
+    // set stereo camera pose to pose of left (=0) camera
+    stereoCam->pose = camPars[LEFT].pose;
     Pose3 ideal_pose, rel_pose, global_pose;
     setIdentity(global_pose);
     // pose of ideal left/right camera w.r.t. to actual left/right camera
     // the pose is a rotation given by the rectification matrix
     setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
+    // NOTE: stereo camera rect matrix is the rotation matrix of real to ideal.
+    // So to get from ideal to real, we have to invert.
+    inverse(ideal_pose, ideal_pose);
     // get from ideal left/right pose to real left/right pose
     transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
     // get from relative left/right pose to global left/right pose

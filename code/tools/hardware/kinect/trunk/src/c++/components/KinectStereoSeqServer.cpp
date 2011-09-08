@@ -710,7 +710,8 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
   int res = findClosestResolution(imgWidth);
   StereoCamera *stereoCam = stereoCams[res];
 
-  stereoCam->pose = camPars[0].pose;  // first get actual stereoCam parameters from the base class
+  // set stereo camera pose to pose of left (=0) camera
+  stereoCam->pose = camPars[LEFT].pose;
 
   cvReleaseImage(&scaledStereoImages[0]);
   cvReleaseImage(&scaledStereoImages[1]);
@@ -763,13 +764,14 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
   stereoCam->CalculateDisparity(rectifiedGrayStereoImages[LEFT], rectifiedGrayStereoImages[RIGHT], disparityImg);
 #endif
 
+
+  points.resize(0);
   
   // ######################## kinect procesing ######################## //
-  points.resize(0);
   Pose3 global_kinect_pose;
   if(transformToGlobal)
-    transform(camPars[2].pose, stereoCam->cam[0].pose, global_kinect_pose);    /// TODO stereoCam->cam[0].pose ??? is left stereo!!!
-    
+    global_kinect_pose = camPars[2].pose;
+
   int scale = (int) cloud.size().width / imgWidth;        // scale down to imageWidth (in full steps)
   for(unsigned row=0; row< cloud.size().height; row+=scale)                /// TODO SLOW!!!
   {
@@ -798,6 +800,9 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
     // pose of ideal left camera w.r.t. to real left camera
     // the pose is a rotation given by the rectification matrix
     setRow33(ideal_pose.rot, (double*)stereoCam->cam[LEFT].rect);
+    // NOTE: stereo camera rect matrix is the rotation matrix of real to ideal.
+    // So to get from ideal to real, we have to invert.
+    inverse(ideal_pose, ideal_pose);
     // get from ideal left pose to real left pose
     transform(stereoCam->cam[LEFT].pose, ideal_pose, rel_pose);
     // get from relative left pose to global left pose
@@ -914,12 +919,16 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
     image.camPars.cy = stereoCam->cam[side].proj[1][2];
 //       changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
 
-    stereoCam->pose = camPars[0].pose;  // get actual stereoCam pose
+    // set stereo camera pose to pose of left (=0) camera
+    stereoCam->pose = camPars[LEFT].pose;
     Pose3 ideal_pose, rel_pose, global_pose;
-    setIdentity(global_pose);
+    setIdentity(ideal_pose);
     // pose of ideal left/right camera w.r.t. to actual left/right camera
     // the pose is a rotation given by the rectification matrix
     setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
+    // NOTE: stereo camera rect matrix is the rotation matrix of real to ideal.
+    // So to get from ideal to real, we have to invert.
+    inverse(ideal_pose, ideal_pose);
     // get from ideal left/right pose to real left/right pose
     transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
     // get from relative left/right pose to global left/right pose
@@ -931,15 +940,16 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
   else if(side == 2)
   {
     initCameraParameters(image.camPars);
+    image.camPars = camPars[side];
     image.camPars.id = side;
     image.camPars.width = imgWidth;
     image.camPars.height = imgWidth*3/4;
-    image.camPars = camPars[2];
 
     Pose3 global_pose, zeroPose;
     setIdentity(zeroPose);
     transform(camPars[side].pose, zeroPose, global_pose);
     image.camPars.pose = global_pose;
+
     image.camPars.time = getCASTTime();
   }
   unlockComponent();
