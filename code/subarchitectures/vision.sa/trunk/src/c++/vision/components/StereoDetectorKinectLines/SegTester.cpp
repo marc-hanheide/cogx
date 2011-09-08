@@ -298,10 +298,6 @@ void SegTester::GetImageData()
 void SegTester::processImage()
 {  
 printf("\nSegTester::processImage: start\n");
-static struct timespec start, last, current;
-clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-printf("Runtime for SegTester::Since last processImage call: %4.3f\n", timespec_diff(&start, &last));
-last = start;
 
   log("Process new images with runtime: %ums", runtime);
   kcore->ClearResults();
@@ -309,9 +305,9 @@ last = start;
   vcore->ClearGestalts();
   sois.clear();
 
-clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-printf("Runtime for SegTester::Clear cores: %4.3f\n", timespec_diff(&current, &last));
-last = current;
+static struct timespec start, last, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+last = start;
 
   /// Get kinect data
   GetImageData();
@@ -323,6 +319,10 @@ last = current;
   /// Run vision core
   vcore->NewImage(iplImage_k);
   vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester::VisionCore: %4.3f\n", timespec_diff(&current, &last));
+last = current;
 
   /// Run stereo core
   // Stereo core calculations (TODO needs perfekt calibration => solve problem)
@@ -350,8 +350,7 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester::PlanePopout: %4.3f\n", timespec_diff(&current, &last));
 last = current;  
 
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
+  /// CalculateRelations
 printf("SegTester: CalculateRelations start!\n");
   std::vector<Z::Relation> relation_vector;
   relations->CalcTestRelations(relation_vector);   // with ground-truth relations
@@ -361,6 +360,8 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: CalculateRelations: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
+
+  /// SVM-Prediction
 printf("SegTester: Prediction start: relation_vector.size: %u\n", relation_vector.size());
   for(unsigned i=0; i<relation_vector.size(); i++)
   {
@@ -379,26 +380,23 @@ last = current;
   relations->ConstrainRelations();
   relations->PrintRelations();
   
-//   kcore->PrintNodeIDs();       /// TODO Delete later
-  
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-  /// TODO Nächste Baustelle => Graph cutter
-// printf("    graphCutter: Initialize: start\n");
+  /// Graph cutter
+printf("    graphCutter: start\n");
   graphCutter->Initialize();
-// printf("    graphCutter: Initialize: end\n");
   graphCutter->Cut();
-// printf("    graphCutter: Cut end\n");
   graphCutter->CopyGroupIDToFeatures();
-// printf("    graphCutter: Copy group id to kinect features end.\n");
+printf("    graphCutter: end.\n");
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
+last = current;
+
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-
-
   
   
   /// Draw VisionCore image
@@ -465,7 +463,7 @@ void SegTester::SingleShotMode()
 {
 //   sleepComponent(10);
   int key = 0;
-  key = cvWaitKey(10000);
+  key = cvWaitKey(100);
   
   if (key == 65471 || key == 1114047) // F2
   {
