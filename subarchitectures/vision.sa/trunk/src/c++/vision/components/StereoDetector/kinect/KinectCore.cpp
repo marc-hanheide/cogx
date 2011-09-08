@@ -79,7 +79,7 @@ printf("KinectCore::SetNodeID: we initialize now only patches and lines!\n");
 
  for(unsigned j=0; j<kinectGestalts[Gestalt3D::PATCH].Size(); j++)
    kinectGestalts[Gestalt3D::PATCH][j]->SetNodeID(nodeID++);
- for(unsigned j=0; j</*kinectGestalts[Gestalt3D::LINE].Size()*/5; j++)
+ for(unsigned j=0; j<kinectGestalts[Gestalt3D::LINE].Size()/*5*/; j++)
    kinectGestalts[Gestalt3D::LINE][j]->SetNodeID(nodeID++);
 }
 
@@ -226,9 +226,9 @@ void KinectCore::Process(VisionCore *_vcore, IplImage *_iplImg, cv::Mat_<cv::Vec
       if(kinectPrinciples[i] != 0)
         if(kinectPrinciples[i]->IsEnabled())
         {
-          printf("KinectCore::ProcessKinectData: Processing kinect principle: %u\n", i);
+//           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u\n", i);
           kinectPrinciples[i]->Process();
-          printf("KinectCore::ProcessKinectData: Processing kinect principle: %u ended\n", i);
+//           printf("KinectCore::ProcessKinectData: Processing kinect principle: %u ended\n", i);
         }
     }
   }
@@ -316,8 +316,8 @@ void KinectCore::PrintVCoreStatistics()
 }
 
 /**
- * @brief Set object labels for all kinect-Gestalts, according to the
- * plane-popout results.
+ * @brief Set object labels for kinect-Gestalts, according to the
+ * plane-popout results. Currently for patches and lines!
  * @param pp Plane-Popout
  */
 void KinectCore::SetObjectLabels(pclA::PlanePopout *pp)
@@ -327,14 +327,12 @@ void KinectCore::SetObjectLabels(pclA::PlanePopout *pp)
   for(unsigned i=0; i<nrPatches; i++)
   {
     Patch3D *p = (Patch3D*) Gestalts3D(Gestalt3D::PATCH, i);
-// printf("P: %u => %u\n", p->GetNodeID(), pp->IsInSOI(p->GetCenter3D()));
     p->SetObjectLabel(pp->IsInSOI(p->GetCenter3D()));
   }
   unsigned nrLines = NumGestalts3D(Gestalt3D::LINE);
   for(unsigned i=0; i<nrLines; i++)
   {
     Line3D *l = (Line3D*) Gestalts3D(Gestalt3D::LINE, i);
-// printf("L: %u => label %u\n", l->GetNodeID(), pp->IsInSOI(l->GetCenter3D()));
     l->SetObjectLabel(pp->IsInSOI(l->GetCenter3D()));
   }
 }
@@ -385,7 +383,7 @@ void KinectCore::DrawObjects3D(TomGine::tgTomGineThread *tgRenderer)
  */
 void KinectCore::DrawGraphCut3D(TomGine::tgTomGineThread *tgRenderer)
 { 
-printf("KinectCore::DrawGraphCut3D: All graph cut groups: %u\n", graphCutGroups.size());
+// printf("KinectCore::DrawGraphCut3D: All graph cut groups: %u\n", graphCutGroups.size());
 //   for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
 //   {
 //     Gestalt3D::Type t = (Gestalt3D::Type) type;
@@ -394,17 +392,13 @@ printf("KinectCore::DrawGraphCut3D: All graph cut groups: %u\n", graphCutGroups.
 //       unsigned label = Gestalts3D(t, i)->GetGraphCutLabel();
 // printf("  %u with label: %u\n", Gestalts3D(t, i)->GetNodeID(), label);
 //     }
-//   }
-        
-  
+//   }  
 //   printf("KinectCore::DrawGraphCut3D: Number of groups: %u\n", graphCutGroups.size());
   
   set<unsigned>::iterator it;
   for(it=graphCutGroups.begin(); it != graphCutGroups.end(); it++)
   {
-// printf("graphCutGroup: %u\n", *it);
     float col =  GetRandomColor();
-    
     for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
     {
       Gestalt3D::Type t = (Gestalt3D::Type) type;
@@ -412,15 +406,10 @@ printf("KinectCore::DrawGraphCut3D: All graph cut groups: %u\n", graphCutGroups.
       {
         unsigned label = Gestalts3D(t, i)->GetGraphCutLabel();
         if(label == *it && label != -1)
-        {
-// printf("  %u is same label\n", Gestalts3D(t, i)->GetNodeID());
           Gestalts3D(t, i)->DrawGestalt3D(tgRenderer, true, col);
-        }
       }
     }
   }
 }
-
-
 
 } 

@@ -25,7 +25,7 @@ namespace Z
 {
 
 // THRESHOLD_CONSTANT: 1 - 10? => 2
-#define THRESHOLD_CONSTANT 4.0
+#define THRESHOLD_CONSTANT 3.0
 #define MIN_SIZE 1                /// minimum size of element-sets
 
 #define THRESHOLD(size, c) (c/size)

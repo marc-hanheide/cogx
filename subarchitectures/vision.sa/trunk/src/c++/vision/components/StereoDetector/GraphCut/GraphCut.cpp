@@ -12,6 +12,8 @@
 #include<math.h>
 #include "GraphCut.h"
 
+#define debug false
+
 namespace Z
 {
 
@@ -57,7 +59,7 @@ bool GraphCut::Initialize()
   {
     u = new universe(num_edges);
     initialized = true;
-printf("GraphCut::Initialize: num_edges: %u\n", num_edges);
+if(debug) printf("GraphCut::Initialize: num_edges: %u\n", num_edges);
   }
   return true;
 }
@@ -86,7 +88,7 @@ void GraphCut::Cut()
     return;
   }
 
-printf("GraphCut::Cut: start\n");
+if(debug) printf("GraphCut::Cut: start\n");
 
 // printf("Edges again: %u\n", num_edges);
 // for(unsigned i=0; i<num_edges; i++)
@@ -103,7 +105,7 @@ printf("GraphCut::Cut: start\n");
   for (int i = 0; i < num_edges; i++)
     threshold[i] = THRESHOLD(1, THRESHOLD_CONSTANT);
   
-printf("THRESHOLD: %4.3f\n", threshold[0]);
+if(debug) printf("THRESHOLD: %4.3f\n", threshold[0]);
 
 // printf("GraphCut::Cut: start 2: num_sets: %u\n", u->num_sets());
 
@@ -114,34 +116,35 @@ printf("THRESHOLD: %4.3f\n", threshold[0]);
   /// for each edge, in non-decreasing weight order...
   for (int i = 0; i < num_edges; i++) 
   {
-    
+ 
+if(debug) {
 u->printAll();
 for (int i = 0; i < num_edges; i++) 
 {
   E::Edge *pedge = &edges[i];
   printf("all edges: %u: %u-%u with thrd: %4.3f => universe: %u-%u\n", i, pedge->a, pedge->b, threshold[i], u->find(pedge->a), u->find(pedge->b));
 }
+}
     
-    
-printf("\nstart with edge %u: ", i);
+if(debug) printf("\nstart with edge %u: ", i);
     E::Edge *pedge = &edges[i];
     
     // components conected by this edge
     int a = u->find(pedge->a);
     int b = u->find(pedge->b);
     
-printf("node: %u-%u / universe: %u-%u: ", pedge->a, pedge->b, a, b);
+if(debug) printf("node: %u-%u / universe: %u-%u: ", pedge->a, pedge->b, a, b);
     
     if (a != b) 
     {
-printf("weight: %4.3f and thds: %4.3f-%4.3f\n", pedge->w, threshold[a], threshold[b]);
+if(debug)printf("weight: %4.3f and thds: %4.3f-%4.3f\n", pedge->w, threshold[a], threshold[b]);
       if ((pedge->w <= threshold[a]) && (pedge->w <= threshold[b])) 
       {
         u->join(a, b);
         a = u->find(a);
-printf("  => join: threshold[%u] = %4.3f => ", a, threshold[a]);
+if(debug)printf("  => join: threshold[%u] = %4.3f => ", a, threshold[a]);
         threshold[a] = pedge->w + THRESHOLD(u->size(a), THRESHOLD_CONSTANT);
-printf("%4.3f (size: %u)\n", threshold[a], u->size(a));
+if(debug)printf("%4.3f (size: %u)\n", threshold[a], u->size(a));
       }
     }
   }
@@ -181,7 +184,6 @@ if(num_edges > 0)
   }
 }*/ 
   
-// printf("GraphCut::Cut: end\n");
 
   /// free up
   delete threshold;
@@ -196,28 +198,18 @@ if(num_edges > 0)
  */
 void GraphCut::CopyGroupIDToFeatures()
 {  
-// printf("GraphCut::CopyGroupIDToFeatures: start!\n");
   std::set<unsigned> graphCutLabels;
   set<unsigned>::iterator it;
   
   for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
   {
-// printf("GraphCut::CopyGroupIDToFeatures: start 2\n");
     Gestalt3D::Type t = (Gestalt3D::Type) type;
     for(unsigned i=0; i < kcore->NumGestalts3D(t); i++)
     {
-// printf("GraphCut::CopyGroupIDToFeatures: start 3\n");
-      // get node id of feature
       unsigned nodeID = kcore->Gestalts3D(t, i)->GetNodeID();
-// printf("GraphCut::CopyGroupIDToFeatures: start 3: nodeID: %u\n", nodeID);
-
-      // find node in graph
-      if(nodeID != -1)                                                            /// TODO Wie kann eine NodeID = -1 sein? Alle werden durchnummeriert?
+      if(nodeID != -1)    /// NOTE Only nodes with a valid id will be processed (KinectCore::SetNodeIDs())
       {
-// printf("GraphCut::CopyGroupIDToFeatures: start 4: nodeID: %u\n", nodeID);
-
         int cut_id = u->find(nodeID);
-// printf("GraphCut::CopyGroupIDToFeatures: start 4: found cut_id: %u\n", cut_id);
         kcore->Gestalts3D(t, i)->SetGraphCutLabel(cut_id);
         
         if(graphCutLabels.find(cut_id) == graphCutLabels.end())
@@ -226,7 +218,6 @@ void GraphCut::CopyGroupIDToFeatures()
     }
   }
   kcore->SetGraphCutGroups(graphCutLabels);
-// printf("GraphCut::CopyGroupIDToFeatures: end!\n");
 }
 
 } 
