@@ -31,9 +31,7 @@ namespace cast
 class PointCloudClient
 {
 private:
-  //std::string stereoServerHost;											/// TODO Unused?
   std::string pointCloudServerName;
-//   int stereoServerPort;												/// TODO Unused?
   PointCloud::PointCloudInterfacePrx pointCloudServer;
 
 protected:
