@@ -1,3 +1,7 @@
+# A macro that is used to build a list of ICE files to be included
+# in a single ICE interface library.
+# @author: Marko Mahnič
+# @created: July 2010
 
 set(COLLECT_SLICE_INCLUDE_DIRS
    -I/usr/share/slice
