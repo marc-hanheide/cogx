@@ -1027,7 +1027,7 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
 CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p)
 {
     double u, v;
-    double scale = 1;
+    double scale = 0.5;
     if(p.x == 0.) p.x=0.000001;   // instead: assert(Z != 0.);
 
     u = fx*p.x/scale + cx*p.z/scale;
@@ -1053,7 +1053,7 @@ bool PlanePopOut::GetImageData()
 
     points.clear();
     //  getPoints(true, pointCloudWidth, points);
-    getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+    getCompletePoints(true, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
     //     log("there are %d points from GetPoints",points.size());
     ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
