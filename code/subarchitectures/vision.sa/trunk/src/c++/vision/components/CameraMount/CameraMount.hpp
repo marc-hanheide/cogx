@@ -60,19 +60,37 @@ private:
    * If true, ask the PTZ server regularly for pan/tilt angles to update camera poses.
    */
   bool usePTZ;
+  /**
+   * CAST component name of PTZ server
+   */
   std::string ptzServerComponent;
 
   /**
    * Fixed pan and tilt angle, for which we have precise calibration.
    */
   ptz::PTZReading fixedPanTilt;
-
+  /**
+   * ID of the reference camera.
+   * For a fixed camera setup (such as stereo, or stereo plus kinect)
+   * one camera (e.g. the left) is typically the reference to which the other
+   * cameras are calibrated, i.e. this is what a typical stereo calibration
+   * procedure such as the one in tools/syscalb will output.
+   * So the pose of a camera is its pose relative to the reference cam, which
+   * is in turn relative to the head or fixed.
+   * If the ID is set to -1 this means there is no reference camera and all
+   * camera poses are relative to the head or fixed.
+   */
+  int ref_cam_id;
 
   /**
    * for given pan and tilt angles, calculate poses of cameras w.r.t. robot ego
    * system
    */
   void calculatePoses(ptz::PTZReading &ptz, std::vector<cogx::Math::Pose3> &camPosesToEgo);
+  /**
+   * obtain fixed poses of cameras, taking into account the reference camera
+   */
+  void calculateFixedPoses(std::vector<cogx::Math::Pose3> &camPosesToEgo);
 
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config) throw(std::runtime_error);
