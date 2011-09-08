@@ -47,6 +47,7 @@ CameraMount::CameraMount()
   setIdentity(ptPanPose);
   setIdentity(ptTiltPose);
   ptzServerComponent = "";
+  ref_cam_id = -1;
 }
 
 void CameraMount::configure(const map<string,string> & _config)
@@ -54,6 +55,11 @@ void CameraMount::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
   bool have_fixed_pan_tilt = false;
+  // NOTE: OpenCV calibration procedures return the inverse poses, e.g. the pose
+  // of the calibration pattern (=world) to the camera, while we need the camera
+  // to world poses. Use this flag if you suspect that to be the case.
+  // Unfortunately there is no single clear convention.
+  bool invert_poses = false;
 
   if((it = _config.find("--camids")) != _config.end())
   {
@@ -116,6 +122,17 @@ void CameraMount::configure(const map<string,string> & _config)
     have_fixed_pan_tilt = true;
   }
 
+  if((it = _config.find("--reference_cam_id")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> ref_cam_id;
+  }
+
+  if((it = _config.find("--invert_poses")) != _config.end())
+  {
+    invert_poses = true;
+  }
+
   if((it = _config.find("--ptzserver")) != _config.end())
   {
     ptzServerComponent = it->second;
@@ -127,29 +144,41 @@ void CameraMount::configure(const map<string,string> & _config)
     throw runtime_error("number of camera IDs must match number of camera poses");
   if(camFixedPoses.size() != 0 && camIds.size() != camFixedPoses.size())
     throw runtime_error("number of camera IDs must match number of camera fixed poses");
+  if(camPoses.size() == 0 && camFixedPoses.size() == 0)
+    throw runtime_error("you must provide either --cam_poses_xml or --cam_fixed_poses_xml");
   if(!usePTZ && camFixedPoses.size() == 0)
     throw runtime_error("if you are not using the PTZ you must supply fixed camera poses");
   if(camFixedPoses.size() != 0 && !have_fixed_pan_tilt)
     throw runtime_error("if you supply fixed camera poses you also must supply a fixed pan/tilt position");
+
+  if(invert_poses)
+  {
+    for(size_t i = 0; i < camPoses.size(); i++)
+      inverse(camPoses[i], camPoses[i]);
+    for(size_t i = 0; i < camFixedPoses.size(); i++)
+      inverse(camFixedPoses[i], camFixedPoses[i]);
+  }
 }
 
 void CameraMount::start()
 {
   if(usePTZ)
   {
-	m_PTUServer = getIceServer<PTZInterface>(ptzServerComponent);
+    m_PTUServer = getIceServer<PTZInterface>(ptzServerComponent);
   }
 }
 
 void CameraMount::runComponent()
 {
-  int size = camIds.size();
+  size_t size = camIds.size();
   bool camsAddedToWM[size];
-    for(unsigned i=0; i<size; i++)
-      camsAddedToWM[i] = false;
+
+  for(size_t i = 0; i < size; i++)
+    camsAddedToWM[i] = false;
   camWMIds.resize(camIds.size());
   for(size_t i = 0; i < camIds.size(); i++)
     camWMIds[i] = newDataID();
+
   while(isRunning())
   {
     vector<Pose3> camPosesToEgo(camIds.size());
@@ -158,18 +187,14 @@ void CameraMount::runComponent()
     {
       ptz::PTZReading ptz = m_PTUServer->getPose();
       if(camFixedPoses.size() != 0 && equals(ptz, fixedPanTilt, FIXED_POSITION_TOLERANCE))
-      {
-        camPosesToEgo = camFixedPoses;
-      }
+        calculateFixedPoses(camPosesToEgo);
       else
-      {
         calculatePoses(ptz, camPosesToEgo);
-      }
       time = ptz.time;
     }
     else
     {
-      camPosesToEgo = camFixedPoses;
+      calculateFixedPoses(camPosesToEgo);
       time = getCASTTime();
     }
     for(size_t i = 0; i < camIds.size(); i++)
@@ -217,11 +242,30 @@ void CameraMount::calculatePoses(ptz::PTZReading &ptz, vector<Pose3> &camPosesTo
   camPosesToEgo.resize(camPoses.size());
   for(size_t i = 0; i < camPoses.size(); i++)
   {
-    transform(tiltRot, camPoses[i], poses[i]);
+    // if my pose is relative to the reference cam
+    if(ref_cam_id != -1 && ref_cam_id != camIds[i])
+      transform(camPoses[ref_cam_id], camPoses[i], poses[i]);
+    else
+      poses[i] = camPoses[i];
+    transform(tiltRot, poses[i], poses[i]);
     transform(ptTiltPose, poses[i], poses[i]);
     transform(panRot, poses[i], poses[i]);
     transform(ptPanPose, poses[i], poses[i]);
     transform(ptBasePose, poses[i], camPosesToEgo[i]);
   }
 }
+
+void CameraMount::calculateFixedPoses(std::vector<cogx::Math::Pose3> &camPosesToEgo)
+{
+  camPosesToEgo.resize(camFixedPoses.size());
+  for(size_t i = 0; i < camFixedPoses.size(); i++)
+  {
+    // if my pose is relative to the reference cam
+    if(ref_cam_id != -1 && ref_cam_id != camIds[i])
+      transform(camFixedPoses[ref_cam_id], camFixedPoses[i], camPosesToEgo[i]);
+    else
+      camPosesToEgo[i] = camFixedPoses[i];
+  }
+}
+
 
