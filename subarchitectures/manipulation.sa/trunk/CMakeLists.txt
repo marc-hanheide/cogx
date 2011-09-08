@@ -22,6 +22,11 @@ if(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
   add_subdirectory (src/c++/components/GazeboTurntable)
 endif(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
 
+option(BUILD_SA_MANIPULATION_ARMMANAGER "build arm manager component" NO)
+if(BUILD_SA_MANIPULATION_ARMMANAGER)
+  add_subdirectory (src/c++/components/ArmManager)
+endif(BUILD_SA_MANIPULATION_ARMMANAGER)
+
 option(BUILD_SA_MANIPULATION_POINTINGTEST "build pointing test component" NO)
 if(BUILD_SA_MANIPULATION_POINTINGTEST)
   add_subdirectory (src/c++/components/PointingTest)
