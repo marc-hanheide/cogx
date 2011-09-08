@@ -228,8 +228,6 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
       printf(" VisionCore::ProcessImage: NO VOTE IMAGE AVAILABLE!!!!\n");
       return;
     }
-printf("VisionCore::ProcessImage: start incremental processing: echter start!\n");
-
     vote_img->Initialize();			// initialize vote image after creating arcs and lines!
     do // start
     {
@@ -240,7 +238,7 @@ printf("VisionCore::ProcessImage: start incremental processing: echter start!\n"
 	  InformNewIntersection(sline, iscts);
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
-printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", timespec_diff(&cur, &start));
+// printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", timespec_diff(&cur, &start));
 
     // ------------------------------ //
     // -------- post-operate -------- //
