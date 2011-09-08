@@ -188,6 +188,11 @@ if(BUILD_HAL_TESTS)
 add_subdirectory (tools/hardware/tests)
 endif(BUILD_HAL_TESTS)
 
+option(BUILD_CALIB "Build system calibration" NO)
+if(BUILD_CALIB)
+add_subdirectory (tools/syscalb)
+endif(BUILD_CALIB)
+
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
 add_subdirectory (tools/math)
@@ -203,6 +208,7 @@ endif(BUILD_HAL_VIDEO)
 #endif(BUILD_HAL_STEREO)
 
 option(BUILD_HAL_POINT_CLOUD "Build point cloud server/client" NO)
+option(HAVE_PCL_LIBRARY "have pcl library installed." NO)
 if(BUILD_HAL_POINT_CLOUD)
 add_subdirectory (tools/hardware/pointCloud)
 endif(BUILD_HAL_POINT_CLOUD)
