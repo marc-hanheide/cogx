@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdarg.h>
 #include "svm.h"
+
+namespace Z
+{
+
 int libsvm_version = LIBSVM_VERSION;
 typedef float Qfloat;
 typedef signed char schar;
@@ -3069,4 +3073,6 @@ void svm_set_print_string_function(void (*print_func)(const char *))
 		svm_print_string = &print_string_stdout;
 	else
 		svm_print_string = print_func;
+}
+
 }
