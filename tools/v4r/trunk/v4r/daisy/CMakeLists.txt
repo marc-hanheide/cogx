@@ -29,6 +29,7 @@ IF(UNIX AND NOT WIN32)
 ENDIF(UNIX AND NOT WIN32)
 
 add_library(v4rdaisy SHARED ${DAISY_CPP}  ${DAISY_H})
+target_link_libraries(v4rdaisy ${OPENCV_LIBRARIES})
 add_subdirectory(example)
 
 set(DAISY_DIR ${CMAKE_CURRENT_SOURCE_DIR})

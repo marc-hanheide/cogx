@@ -101,7 +101,7 @@ void Pendulum::convertFrom(const std::list< boost::shared_ptr<Storage> > &histor
     if ((radius < set_->range_(2,0)) || (radius > set_->range_(2,1))) {
         radius = distUniform(set_->range_(2,0), set_->range_(2,1));
     }
-    if (isinf(radius)) {
+    if (std::isinf(radius)) {
         std::cerr << "Pendulum::convertFrom() radius is inf!!" << std::endl;
         std::cerr << human_readable() << std::endl;
     }
@@ -220,7 +220,7 @@ void Pendulum::update() {
     if ((radius_e < set_->range_(2,0)) || (radius_e > set_->range_(2,1))) {
         radius_e = distUniform(set_->range_(2,0), set_->range_(2,1));
     }
-    if (isinf(radius_e)) {
+    if (std::isinf(radius_e)) {
         std::cerr << "Pendulum::convertFrom() radius is inf!!" << std::endl;
         std::cerr << human_readable() << std::endl;
     }

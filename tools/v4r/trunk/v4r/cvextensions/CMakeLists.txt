@@ -9,6 +9,6 @@ set (CVEXTENSIONS_H
 
 
 INSTALL(FILES ${CVEXTENSIONS_H} 
- DESTINATION /usr/include/v4r/cvextensions)
+ DESTINATION include/v4r/cvextensions)
  
 ENDIF(V4R_CVEXTENSION)

@@ -30,11 +30,11 @@ private:
 public:
    CzString() { s = string(""); }
    CzString(const char *pCharStr) { s = string(pCharStr); }
-   CzString(CzString &pStr) { s = string(pStr.GetStr()); }
+   CzString(const CzString &pStr) { s = string(pStr.GetStr()); }
 
 //   CzString& operator =( const char *pCharStr ) { s = string(pCharStr); }
-   const char *GetStr() { return (char*)s.c_str(); }
-   const char *GetCharStr() { return s.c_str(); }
+   const char *GetStr() const { return (char*)s.c_str(); } 
+   const char *GetCharStr() const { return s.c_str(); }
 //   operator const char*() { return s.c_str(); }
 };
 
@@ -49,8 +49,8 @@ class CString
 private:
    CzN::CzString s;
 public:
-   CString() { s = ""; }
-   CString(const char *pCharStr) { s = CzN::CzString(pCharStr); }
+   CString() : s("") { }
+   CString(const char *pCharStr) :  s(CzN::CzString(pCharStr)) { }
 
    const char *GetStr() { return s.GetStr(); }
 };
@@ -60,7 +60,7 @@ class CT2CA: public std::string
 private: 
 	 CString s;
 public:
-   CT2CA(CString &pStr) { s = CString(pStr); }
+   CT2CA(const CString &pStr) { s = CString(pStr); }
 //   const char *GetStr() { return s.GetStr(); }
 };
 

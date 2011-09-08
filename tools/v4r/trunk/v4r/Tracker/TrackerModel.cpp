@@ -296,14 +296,14 @@ TomGine::tgRect2Di MakeBBPow2(const TomGine::tgRect2Di &bb){
 	tgRect2Di bb_new;
 
 	int ix = 1;
-	while(bb.w>pow(2,ix))
+	while(bb.w>pow(2.0,ix))
 		ix++;
-	bb_new.w=pow(2,ix);
+	bb_new.w=pow(2.0,ix);
 
 	int iy = 1;
-	while(bb.h>pow(2,iy))
+	while(bb.h>pow(2.0,iy))
 		iy++;
-	bb_new.h=pow(2,iy);
+	bb_new.h=pow(2.0,iy);
 
 	bb_new.x = bb.x + (bb.w>>1) - (bb_new.w>>1);
 	bb_new.y = bb.y + (bb.h>>1) - (bb_new.h>>1);

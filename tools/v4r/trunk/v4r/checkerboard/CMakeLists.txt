@@ -10,6 +10,7 @@ set(SOURCE_H
 
 )
 add_library(v4rcheckerboard SHARED ${SOURCE_H} ${SOURCE_CPP})
+target_link_libraries(v4rcheckerboard ${OPENCV_LIBRARIES})
 
 add_subdirectory(example)
 

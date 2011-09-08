@@ -4,7 +4,7 @@ IF(V4R_ARMARKER)
 PROJECT(ARMarker)
 
 IF ( "x${OPENCV_LIBRARIES}x" STREQUAL "xx"  )
-  SET ( OPENCV_LIBRARIES  cv cxcore highgui )
+  SET ( cv cxcore highgui  cv cxcore highgui )
   SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
   SET(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 ENDIF("x${OPENCV_LIBRARIES}x" STREQUAL "xx" )
@@ -26,15 +26,15 @@ set (ARMARKER_CPP  detection.cpp pattern.cpp hdl.cpp)
 
 include_directories(./)
 add_library(v4rmarker SHARED ${ARMARKER_H} ${ARMARKER_CPP})
-target_link_libraries(v4rmarker ar)
+target_link_libraries(v4rmarker ar ${OPENCV_LIBRARIES})
 
 add_subdirectory(AR)
 add_subdirectory(examples)
 
 INSTALL(FILES ${ARMARKER_H} 
- DESTINATION /usr/include/v4r/armarker)
+ DESTINATION include/v4r/armarker)
 INSTALL(TARGETS v4rmarker
- LIBRARY DESTINATION /usr/lib/
+ LIBRARY DESTINATION lib
 )
 
 ENDIF(V4R_ARMARKER)

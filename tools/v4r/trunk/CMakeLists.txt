@@ -13,6 +13,7 @@ SET(LIBRARY_OUTPUT_PATH "${V4R_DIR}/lib")
 SET(EXECUTABLE_OUTPUT_PATH "${V4R_DIR}/bin")
 
 add_definitions(-DDEBUG)
+add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
 include_directories(${V4R_DIR})
 

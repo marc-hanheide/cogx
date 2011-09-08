@@ -9,9 +9,17 @@ set(FW_CPP
 set(FW_H 
  fw.h
 )
-set(FW_LIBRARIES  dc1394 raw1394)
+
+IF (NOT APPLE)
+  set(FW_LIBRARIES  dc1394 raw1394)
+ELSE (NOT APPLE)
+  set(FW_LIBRARIES  dc1394) 
+ENDIF (NOT APPLE)
+
 
 add_library(v4rfw SHARED ${FW_H} ${FW_CPP})
+target_link_libraries(v4rfw ${OPENCV_LIBRARIES} ${FW_LIBRARIES})
+
 add_subdirectory(examples)
 
 ENDIF(V4R_FW)

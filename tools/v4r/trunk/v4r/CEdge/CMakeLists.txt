@@ -33,8 +33,13 @@ SET(SOURCES
 set(CMAKE_CXX_FLAGS "-Wall -g") #debug
 
 ADD_LIBRARY(CEdge SHARED ${SOURCES})
+target_link_libraries(CEdge ${OPENCV_LIBRARIES})
+
 INSTALL(TARGETS CEdge LIBRARY DESTINATION lib)
 
-add_subdirectory(example)
+IF (NOT APPLE)
+  add_subdirectory(example)
+ENDIF (NOT APPLE)
+
 
 ENDIF(V4R_CEDGE)

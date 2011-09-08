@@ -19,6 +19,7 @@ set(GEOMETRTY_H
 )
 
 add_library(v4rgeometry SHARED ${GEOMETRTY_H} ${GEOMETRTY_CPP})
+target_link_libraries(v4rgeometry ${OPENCV_LIBRARIES})
 
 set(STATISTIC_CPP 
  average.cpp

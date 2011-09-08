@@ -35,6 +35,15 @@ private:
 	double m_fAppTime;			// Time since application started
 	double m_fTime;				// Time between two Update calls
 
+#ifdef __APPLE__
+    ///Converts timespec to timeval to allow OSX to use timer 
+	void timeval2timespec(const timeval &m_tv, timespec &m_ts) {
+		m_ts.tv_sec = m_tv.tv_sec;
+		m_ts.tv_nsec = m_tv.tv_usec * 1000; //microseconds to nanoseconds;
+	}
+#endif
+
+
 public:
 	/** @brief Create and start timer. */
 	tgTimer(void);

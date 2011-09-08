@@ -10,6 +10,11 @@ Timer::Timer(void) {
 	QueryPerformanceFrequency((LARGE_INTEGER*) &m_Frequency);
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_StartTicks));
 	m_EndTicks = m_StartTicks;
+#elif __APPLE__ //nah: OSX does not have clock_gettime
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	timeval2timespec(tv,AppStart);
+	timeval2timespec(tv,old);
 #else
 	clock_gettime(CLOCK_REALTIME, &AppStart);
 	clock_gettime(CLOCK_REALTIME, &old);
@@ -25,6 +30,11 @@ void Timer::Reset() {
 	QueryPerformanceFrequency((LARGE_INTEGER*) &m_Frequency);
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_StartTicks));
 	m_EndTicks = m_StartTicks;
+#elif __APPLE__ //nah: OSX does not have clock_gettime
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	timeval2timespec(tv,AppStart);
+	timeval2timespec(tv,old);	
 #else
 	clock_gettime(CLOCK_REALTIME, &AppStart);
 	clock_gettime(CLOCK_REALTIME, &old);
@@ -38,6 +48,13 @@ double Timer::Update() {
 	fNow = (double)(m_EndTicks - m_StartTicks) / m_Frequency;
 	m_fTime = fNow - m_fAppTime;
 	m_fAppTime = fNow;
+#elif __APPLE__ //nah: OSX does not have clock_gettime
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	timeval2timespec(tv,act);
+	m_fTime = (act.tv_sec - old.tv_sec) + (act.tv_nsec - old.tv_nsec) / 1e9;
+	old = act;		
+	m_fAppTime += m_fTime;	
 #else
 	clock_gettime(CLOCK_REALTIME, &act);
 	m_fTime = (act.tv_sec - old.tv_sec) + (act.tv_nsec - old.tv_nsec) / 1e9;

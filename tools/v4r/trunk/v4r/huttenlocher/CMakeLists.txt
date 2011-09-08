@@ -6,6 +6,8 @@ project ( nao2010 )
 set(HUTTENLOCHER_CPP hl.cpp)
 set(HUTTENLOCHER_H hl.h)
 add_library(v4rhl SHARED ${HUTTENLOCHER_CPP}  ${HUTTENLOCHER_H})
+target_link_libraries(v4rhl ${OPENCV_LIBRARIES})
+
 add_subdirectory(example)
 
 set(HUTTENLOCHER_DIR ${CMAKE_CURRENT_SOURCE_DIR})

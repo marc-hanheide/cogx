@@ -20,8 +20,13 @@ add_subdirectory(yml_for_matlab)
 add_subdirectory(PCLAddOns)
 add_subdirectory(PGeometry)
 add_subdirectory(PMath)
+
+# Nick: I couldn't be bothered updating the clock usage in here. Why not use a timer class from somewhere else?
+IF (NOT APPLE) 
 add_subdirectory(elldetect)
 add_subdirectory(EllCalib)
+ENDIF (NOT APPLE)
+
 add_subdirectory(GLWindow)
 add_subdirectory(TomGine)
 add_subdirectory(Tracker)
