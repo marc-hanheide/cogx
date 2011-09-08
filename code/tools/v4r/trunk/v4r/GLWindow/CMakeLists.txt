@@ -5,7 +5,12 @@ add_definitions(-DLINUX)
 
 SET(SOURCES GLXWindow.cpp GLXWindowGetEvent.cpp)
 add_library(v4rglwindow SHARED ${SOURCES})
-target_link_libraries(v4rglwindow GL GLU rt)
+target_link_libraries(v4rglwindow GL GLU X11)
+
+IF (NOT APPLE)
+  target_link_libraries(v4rglwindow rt)
+ENDIF (NOT APPLE)
+
 
 add_subdirectory(example)
 

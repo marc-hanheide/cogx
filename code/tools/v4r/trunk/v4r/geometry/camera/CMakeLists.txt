@@ -12,4 +12,5 @@ set(GEOMETRTY_H
 
 
 add_library(v4rcamerageometry SHARED ${GEOMETRTY_H} ${GEOMETRTY_CPP})
+target_link_libraries(v4rcamerageometry ${OPENCV_LIBRARIES})
 

@@ -2,7 +2,7 @@ SET(APPS_CAMCALIB 1 CACHE BOOL "Add description here." )
 IF(APPS_CAMCALIB)
 
 set(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem signals)
+FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem signals system)
 set (BOOST_LIBRARIES ${Boost_LIBRARIES})
 
 set(CAMCALIB_CPP main_camcalib.cpp)

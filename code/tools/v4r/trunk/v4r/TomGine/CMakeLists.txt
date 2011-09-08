@@ -31,7 +31,11 @@ SET(TOMGINE_CPP ply.c
 	tgTimer.cpp
 	tgTomGineThread.cpp)
 add_library(v4rtomgine SHARED ${TOMGINE_CPP})
-target_link_libraries(v4rtomgine ${OPENCV_LIBRARIES} ftgl freetype v4rglwindow pthread rt)
+target_link_libraries(v4rtomgine ${OPENCV_LIBRARIES} ftgl freetype v4rglwindow pthread)
+IF (NOT APPLE)
+  target_link_libraries(v4rtomgine rt)
+ENDIF (NOT APPLE)
+
 add_subdirectory(example)
 
 ENDIF(V4R_TOMGINE)

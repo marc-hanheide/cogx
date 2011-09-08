@@ -827,6 +827,10 @@ public:
 template <typename T>
 class TObject : public Pose3D<T> {
 public:
+	
+	//Added by Nick Hawes to allow compilation on OSX 10.7
+	typedef cv::Vec<T,3> CvVec3;
+	
     static const unsigned int SHAPE_NA = 0;
     static const unsigned int SHAPE_BOX = 1;
     static const unsigned int SHAPE_CYLINDER = 1;
@@ -876,12 +880,14 @@ public:
     const T& height() const {
         return mDimensions[2];
     }
-    void init(const cv::Vec<T, 6> pose = Pose3D<T>(0.0), unsigned int id = 0, unsigned int shape = SHAPE_NA, const cv::Vec<T, 3> &dimensions  = cv::Vec<T, 3>(0,0,0)) {
+    void init(const cv::Vec<T, 6> pose = Pose3D<T>(0.0), 
+			  unsigned int id = 0, 
+			  unsigned int shape = SHAPE_NA, 
+			  const CvVec3 &dimensions = CvVec3(0,0,0)) {
         *((cv::Vec<T, 6>*) this) = pose;
         mID = id;
         mShapeID = shape;
         mDimensions  = dimensions;
-
     }
 protected:
     unsigned int mID;

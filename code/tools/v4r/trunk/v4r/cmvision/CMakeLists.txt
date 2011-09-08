@@ -6,6 +6,7 @@ include_directories(./CMVision-1.2.0/include )
 
 add_library(v4rcmvision SHARED segmentation.cpp segmentation.h )
 target_link_libraries(v4rcmvision cmvision1.2)
+target_link_libraries(v4rcmvision ${OPENCV_LIBRARIES})
 add_subdirectory(examples)
 
 ENDIF(V4R_CMVISION)

@@ -26,6 +26,7 @@ add_library(v4rpfrobot STATIC robot2d.h robot2d.cpp robot2d_set.cpp)
 add_library(v4rpfpendulum STATIC pendulum.cpp pendulum_fnc.cpp pendulum_set.cpp)
 add_library(v4rpf SHARED ${PF_CPP} ${PF_H})
 target_link_libraries(v4rpf v4rpfrobot )
+target_link_libraries(v4rpf v4rutils ${OPENCV_LIBRARIES})
 
 add_subdirectory(example)
 
