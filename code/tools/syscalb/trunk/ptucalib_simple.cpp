@@ -157,6 +157,7 @@ int main ( int argc, char *argv[] ) {
     float fBoardBoxHeight = CHESSBOARD_BOXES_HEIGHT;
     bool bShowImages = true;
     bool bShowCalibration = true;
+    bool bInvertPoses = false;
 
     char *pImageFile = NULL;
     char *pCalibFile = NULL;
@@ -165,13 +166,15 @@ int main ( int argc, char *argv[] ) {
     CvMat *pRotVecPattern2World = 0;
 
     if ( argc < 3 ) {
-        printf ( "usage: %s <image> <camera calibration> [ -c -o -i -m ]\n", argv[0] );
+        printf ( "usage: %s <image> <camera calibration> [ -c -o -i -m -v]\n", argv[0] );
         printf ( "sample Linux  : %s img.png camcal.xml -c 8 6 80 80 -o offset.xml\n", argv[0] );
         printf ( "sample Windows: %s img.gif camcal.xml -c 8 6 80 80 -o offset.xml\n", argv[0] );
         printf ( "-c	<width> <height> <boxwidth> <boxheight> default is 8 x 6 boxes size of 80 mm\n" );
         printf ( "-o	<pose> pose offset file of calibration pattern w.r.t. world\n" );
         printf ( "-m	display the calibration off\n" );
         printf ( "-i	display images off \n" );
+        printf ( "-v	invert poses: return pose of cam w.r.t. world instead of "
+            "world w.r.t. cam (which is the OpenCV convention)\n");
         exit ( 1 );
     }
     pImageFile = argv[1];
@@ -194,6 +197,9 @@ int main ( int argc, char *argv[] ) {
         }
         if ( strcmp ( argv[i], "-i" ) == 0 ) {
             bShowImages = false;
+        }
+        if ( strcmp ( argv[i], "-v" ) == 0 ) {
+            bInvertPoses = true;
         }
         if ( strcmp ( argv[i], "-m" ) == 0 ) {
             bShowCalibration = false;
@@ -291,12 +297,24 @@ int main ( int argc, char *argv[] ) {
     cvFindExtrinsicCameraParams2( pObjectPoints, pImagePoints, pIntrinsic, pDistortions,
         pRotVecPattern2Cam, pTraVecPattern2Cam );
 
+    // calculate the pose of the camera w.r.t. the world, which is the inverse
+    // of the OpenCV convention
     invertPose(pTraVecPattern2Cam, pRotVecPattern2Cam, pTraVecCam2Pattern, pRotVecCam2Pattern);
     multPose(pTraVecPattern2World, pRotVecPattern2World, pTraVecCam2Pattern, pRotVecCam2Pattern,
         pTraVecCam2World, pRotVecCam2World);
 
     cv::FileStorage poseFile( "campose.xml", cv::FileStorage::WRITE );
-    storeOpenCvPose(poseFile, pTraVecCam2World, pRotVecCam2World);
+    if ( bInvertPoses ) {
+        storeOpenCvPose(poseFile, pTraVecCam2World, pRotVecCam2World);
+    } else {
+        // if we do not want the inverse, i.e. we want world w.r.t. camera
+        CvMat *pTraVecWorld2Cam = cvCreateMat( 3, 1, CV_64FC1 );
+        CvMat *pRotVecWorld2Cam = cvCreateMat( 3, 1, CV_64FC1 );
+        invertPose(pTraVecCam2World, pRotVecCam2World, pTraVecWorld2Cam,
+            pRotVecWorld2Cam);
+        storeOpenCvPose(poseFile, pTraVecWorld2Cam, pRotVecWorld2Cam);
+    }
+
     printf("\nparameters saved to file: %s\n", "campose.xml");
 
     /*double o[6] = {0., 0., 0., 0., 0., 0.}, oi[4];
