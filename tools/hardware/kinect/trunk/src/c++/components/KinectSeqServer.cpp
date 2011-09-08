@@ -533,9 +533,10 @@ void KinectSeqServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poi
   lockComponent();
 
   points.resize(0);
+
   Pose3 global_kinect_pose;
-//   if(transformToGlobal)
-//    transform(camPars[2].pose, stereoCam->cam[0].pose, global_kinect_pose);    /// TODO stereoCam->cam[0].pose ??? is left stereo!!!
+  if(transformToGlobal)
+    global_kinect_pose = camPars[0].pose;
     
   int scale = (int) pcl_cloud.width / imgWidth;
   for(unsigned y=0; y < pcl_cloud.height; y+=scale)  /// SLOW conversion
@@ -553,8 +554,8 @@ void KinectSeqServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poi
       pt.c.r = grabbedImage->imageData[pos];
       pt.c.g = grabbedImage->imageData[pos + 1];
       pt.c.b = grabbedImage->imageData[pos + 2];
-//       if(transformToGlobal)
-//         pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
+       if(transformToGlobal)
+         pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
 
       points.push_back(pt);
     }
@@ -585,10 +586,10 @@ void KinectSeqServer::getRectImage(int side, int imgWidth, Video::Image& image)
    convertImageFromIpl(grabbedImage, image);
   
   initCameraParameters(image.camPars);
+  image.camPars = camPars[0];
   image.camPars.id = side;
   image.camPars.width = imgWidth;
   image.camPars.height = imgWidth*3/4;
-  image.camPars = camPars[0];
 
   Pose3 global_pose, zeroPose;
   setIdentity(zeroPose);
