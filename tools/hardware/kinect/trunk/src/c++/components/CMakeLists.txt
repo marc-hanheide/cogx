@@ -22,11 +22,11 @@ include_directories(${OPENCV_CFLAGS})
   add_cast_component(KinectVideoServer KinectVideoServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils Kinect)
 
-  add_cast_component(KinectPCServer KinectPCServer.cpp)
-  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect KinectPersonDetect OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
+#  add_cast_component(KinectPCServer KinectPCServer.cpp)
+#  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect KinectPersonDetect OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
 
-  add_cast_component(KinectStereoServer KinectStereoServer.cpp)
-  link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
+#  add_cast_component(KinectStereoServer KinectStereoServer.cpp)
+#  link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
 
   add_cast_component(KinectStereoSeqServer KinectStereoSeqServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
