@@ -313,7 +313,7 @@ void KinectSeqServer::start()
 
 void KinectSeqServer::runComponent() {
   log("I am running");
-  while(isRunning()) {
+  while(isRunning() && !noContinousGrabing) {
 //       if (m_saveToFile) {
 //         saveNextFrameToFile();
 //         usleep(50000);
