@@ -19,6 +19,8 @@
 namespace P
 {
 
+using namespace std;
+
 class View;
 
 class PKeypoint

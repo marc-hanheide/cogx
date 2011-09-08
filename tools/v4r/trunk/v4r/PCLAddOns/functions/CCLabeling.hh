@@ -20,6 +20,8 @@
 namespace pclA
 {
 
+using namespace std;
+
 class Label
 {
 public:

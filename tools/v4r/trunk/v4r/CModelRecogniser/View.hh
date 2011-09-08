@@ -12,12 +12,14 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "PKeypoint.hh"
-#include "v4r/PMath/PMatrix.hh"
-#include "v4r/PGeometry/Pose.hh"
+#include <v4r/PMath/PMatrix.hh>
+#include <v4r/PGeometry/Pose.hh>
 
 
 namespace P
 {
+
+using namespace std;
 
 class PKeypoint;
 
