@@ -566,88 +566,125 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 #endif
-    while(isRunning())
-    {
-	if ( ! GetImageData()) {
-	    sleepComponent(1);		
-	    continue;		
-	}		//log("Hoho, we get the image data from PCL");
-	if ( ! GetPlaneAndSOIs()) {
-	    sleepComponent(1);
-	    continue;		
-	}	//log("Haha, we get the Sois and Plane from PCL");
-	CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
-// 	log("Yeah, we get the color histograms of all the sois");
-	if (sois.size() != 0)
-	{						//log("we get some sois, now analyze them");
-	    ConvexHullOfPlane(points,points_label);	//log("get the convex hull of the dominant plane");
-	    CalCenterOfSOIs();				//log("Cal center of all sois");
-	    CalSizeOfSOIs(); 				//log("cal the center and the soze of bounding cuboids");	//cal bounding Cuboids and centers of the points cloud
-	    BoundingSphere(points,points_label); 	//log("cal the radius of bounding spheres");			// get bounding spheres, SOIs and ROIs
-	    //if (SendDensePoints==1) CollectDensePoints(image.camPars, points);		/// TODO
+
+    try {
+	while(isRunning())
+	{
+	    try{
+		if ( ! GetImageData()) {
+		    sleepComponent(1);		
+		    continue;		
+		}		//log("Hoho, we get the image data from PCL");
+		if ( ! GetPlaneAndSOIs()) {
+		    sleepComponent(1);
+		    continue;		
+		}	//log("Haha, we get the Sois and Plane from PCL");
+	    }
+	    catch (...) {
+		error(" *** PPO GetImageData or GetPlaneAndSOIs is FUCKED UP *** ");
+	    }
+	    try{
+		CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
+	    }
+	    catch (...) {
+		error(" *** PPO CalSOIHist is FUCKED UP *** ");
+	    }
+	    // 	log("Yeah, we get the color histograms of all the sois");
+	    try{
+		if (sois.size() != 0)
+		{						//log("we get some sois, now analyze them");
+		    ConvexHullOfPlane(points,points_label);	//log("get the convex hull of the dominant plane");
+		    CalCenterOfSOIs();				//log("Cal center of all sois");
+		    CalSizeOfSOIs(); 				//log("cal the center and the soze of bounding cuboids");	//cal bounding Cuboids and centers of the points cloud
+		    BoundingSphere(points,points_label); 	//log("cal the radius of bounding spheres");			// get bounding spheres, SOIs and ROIs
+		    //if (SendDensePoints==1) CollectDensePoints(image.camPars, points);		/// TODO
 #ifdef FEAT_VISUALIZATION
-	    if (m_bSendImage)
-	    {
-		SendImage();
-// 		cout<<"send Imgs"<<endl;
+		    if (m_bSendImage)
+		    {
+			SendImage();
+			// 		cout<<"send Imgs"<<endl;
+		    }
+#endif
+		}
+		else
+		{
+		    v3size.clear();
+		    v3center.clear();
+		    vdradius.clear();
+		    // 	    log("there is no objects, now strating cal convex hull");
+		    ConvexHullOfPlane(points,points_label);			//log("although there is no object, we still can get the convex hull of the dominant plane");
+		}
+	    }
+	    catch (...) {
+		error(" *** PPO ConvexHullOfPlane is FUCKED UP *** ");
+	    }
+
+	    try {
+		if (doDisplay)
+		{
+		    DisplayInTG();
+		}
+#ifdef FEAT_VISUALIZATION
+		// 	log("Start to send points");
+		// 	int debug_labels=0;
+		// 	for (int i=0; i<points_label.size(); i++)
+		// 	  if (points_label[i]== 0)	{debug_labels++; /*log("plane point is at (%f, %f, %f)", points[i].p.x, points[i].p.y, points[i].p.z);*/}
+		// 	log("Thera are %d points on the plane", debug_labels);
+
+		if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
+		if (m_bSendPlaneGrid) SendPlaneGrid();
+		// 	log("Done FEAT_VISUALIZATION");
+	    }
+	    catch (...) {
+		error(" *** PPO display is FUCKED UP *** ");
 	    }
 #endif
-	}
-	else
-	{
-	    v3size.clear();
-	    v3center.clear();
-	    vdradius.clear();
-// 	    log("there is no objects, now strating cal convex hull");
-	    ConvexHullOfPlane(points,points_label);			//log("although there is no object, we still can get the convex hull of the dominant plane");
-	}
-	if (doDisplay)
-	{
-	    DisplayInTG();
-	}
-#ifdef FEAT_VISUALIZATION
-// 	log("Start to send points");
-// 	int debug_labels=0;
-// 	for (int i=0; i<points_label.size(); i++)
-// 	  if (points_label[i]== 0)	{debug_labels++; /*log("plane point is at (%f, %f, %f)", points[i].p.x, points[i].p.y, points[i].p.z);*/}
-// 	log("Thera are %d points on the plane", debug_labels);
-	
-	if (m_bSendPoints) SendPoints(points, points_label, m_bColorByLabel, m_tmSendPoints); //log("Done sendpoints");
-	if (m_bSendPlaneGrid) SendPlaneGrid();
-// 	log("Done FEAT_VISUALIZATION");
-#endif
-	// 	AddConvexHullinWM();
-	//log("Done AddConvexHullinWM");
+	    // 	AddConvexHullinWM();
+	    //log("Done AddConvexHullinWM");
 
-	static int lastSize = -1;
-	//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
-	//Pre2CurrentList.clear();
-	if (lastSize != v3center.size()) {
-// 	    log("SOI COUNT = %d",v3center.size());	
-	    lastSize = v3center.size();
+	    try {
+		static int lastSize = -1;
+		//log("A, B, C, D = %f, %f, %f, %f", A,B,C,D);
+		//Pre2CurrentList.clear();
+		if (lastSize != v3center.size()) {
+		    // 	    log("SOI COUNT = %d",v3center.size());	
+		    lastSize = v3center.size();
+		}
+		CurrentObjList.clear();
+		// 	log("start create objects");
+		for(unsigned int i=0; i<v3center.size(); i++)  //create objects
+		{
+		    ObjPara OP;				//log("v3center size is %d", v3center.size());
+		    OP.c = v3center.at(i);		//log("v3size size is %d, i = %d",v3size.size(),i);
+		    OP.s = v3size.at(i);		//log("vdradius size is %d", vdradius.size());
+		    OP.r = vdradius.at(i);
+		    OP.id = "";
+		    OP.bComCurrentPre = false;
+		    OP.bInWM = false;
+		    OP.count = 0;				//log("SOIPointsSeq size is %d", SOIPointsSeq.size());
+		    OP.pointsInOneSOI = SOIPointsSeq.at(i);	//log("BGPointsSeq size is %d", BGPointsSeq.size());
+		    OP.BGInOneSOI = BGPointsSeq.at(i);		//log("EQPointsSeq size is %d", EQPointsSeq.size());
+		    OP.EQInOneSOI = EQPointsSeq.at(i);		//log("vec_histogram size is %d", vec_histogram.size());
+		    OP.hist = vec_histogram.at(i);
+		    CurrentObjList.push_back(OP);
+		}
+		// 	log("Start SOIManagement");
+		SOIManagement();
+	    }
+	    catch (...) {
+		error(" *** PPO SOIManagement is FUCKED UP *** ");
+	    }
+	    // 	log("Done SOIManagement");
+	    try {
+		CleanupAll();
+	    }
+	    catch (...) {
+		error(" *** PPO CleanupAll is FUCKED UP *** ");
+	    }
 	}
-	CurrentObjList.clear();
-// 	log("start create objects");
-	for(unsigned int i=0; i<v3center.size(); i++)  //create objects
-	{
-	    ObjPara OP;				//log("v3center size is %d", v3center.size());
-	    OP.c = v3center.at(i);		//log("v3size size is %d, i = %d",v3size.size(),i);
-	    OP.s = v3size.at(i);		//log("vdradius size is %d", vdradius.size());
-	    OP.r = vdradius.at(i);
-	    OP.id = "";
-	    OP.bComCurrentPre = false;
-	    OP.bInWM = false;
-	    OP.count = 0;				//log("SOIPointsSeq size is %d", SOIPointsSeq.size());
-	    OP.pointsInOneSOI = SOIPointsSeq.at(i);	//log("BGPointsSeq size is %d", BGPointsSeq.size());
-	    OP.BGInOneSOI = BGPointsSeq.at(i);		//log("EQPointsSeq size is %d", EQPointsSeq.size());
-	    OP.EQInOneSOI = EQPointsSeq.at(i);		//log("vec_histogram size is %d", vec_histogram.size());
-	    OP.hist = vec_histogram.at(i);
-	    CurrentObjList.push_back(OP);
-	}
-// 	log("Start SOIManagement");
-	SOIManagement();
-// 	log("Done SOIManagement");
-	CleanupAll();
+    }
+    catch (...) {
+	error(" *** PPO isRunning is FUCKED UP *** ");
     }
     sleepComponent(50);
 }
@@ -1052,22 +1089,27 @@ bool PlanePopOut::GetPlaneAndSOIs()
     if (! planePopout)
 	planePopout = new pclA::PlanePopout();
 
-    if (!planePopout->CalculateSOIs(pcl_cloud))	
-    {
-//       log("Cal SOIs error!!!");
-	return false;
+    try {
+	if (!planePopout->CalculateSOIs(pcl_cloud))	{
+	    //       log("Cal SOIs error!!!");
+	    return false;
+	}
+
+	planePopout->GetSOIs(sois);
+	planePopout->GetDominantPlaneCoefficients(dpc);
+	if (dpc->values[3]>0)  {
+	    A = dpc->values[0]; B = dpc->values[1]; C = dpc->values[2]; D = dpc->values[3];
+	}
+	else {
+	    A = -dpc->values[0]; B = -dpc->values[1]; C = -dpc->values[2]; D = -dpc->values[3];
+	}
+	planePopout->GetTableHulls(tablehull);	//log("We get the table hull");
+	planePopout->CollectTableInliers(pcl_cloud,dpc);	
+	planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     }
-    planePopout->GetSOIs(sois);
-    planePopout->GetDominantPlaneCoefficients(dpc);
-    if (dpc->values[3]>0)  {
-	A = dpc->values[0]; B = dpc->values[1]; C = dpc->values[2]; D = dpc->values[3];
+    catch (...) {
+	error(" *** PPO CalculateSOIs ... GetPlanePoints is FUCKED UP *** ");
     }
-    else {
-	A = -dpc->values[0]; B = -dpc->values[1]; C = -dpc->values[2]; D = -dpc->values[3];
-    }
-    planePopout->GetTableHulls(tablehull);	//log("We get the table hull");
-    planePopout->CollectTableInliers(pcl_cloud,dpc);	
-    planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     int w,h;
     if (bWithKinect) {
 	w =iplImage_k->width;	h=iplImage_k->height;
