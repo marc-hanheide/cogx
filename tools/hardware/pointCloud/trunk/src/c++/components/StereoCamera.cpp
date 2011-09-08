@@ -109,6 +109,8 @@ void StereoCamera::ReadFromXML(const string &filename, int side, bool usePose)
   cam[side].proj[2][2] = cvmGet(proj, 2, 2);
   cam[side].proj[2][3] = cvmGet(proj, 2, 3);  
 
+  // NOTE: stereo camera rect matrix is the rotation matrix of real to ideal.
+  // So to get from ideal to real, this will have to be inverted.
   cam[side].rect[0][0] = cvmGet(rect, 0, 0);
   cam[side].rect[0][1] = cvmGet(rect, 0, 1);
   cam[side].rect[0][2] = cvmGet(rect, 0, 2);
