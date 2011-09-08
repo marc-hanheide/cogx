@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+namespace Z
+{
+
 extern int libsvm_version;
 
 struct svm_node
@@ -97,5 +100,7 @@ void svm_set_print_string_function(void (*print_func)(const char *));
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace Z
 
 #endif /* _LIBSVM_H */
