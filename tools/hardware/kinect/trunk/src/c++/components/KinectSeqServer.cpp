@@ -318,11 +318,8 @@ void KinectSeqServer::runComponent() {
 //         saveNextFrameToFile();
 //         usleep(50000);
 //       }
-    if(!noContinousGrabing)
-    {
-      grabFramesInternal();
-      sleepComponent(framerateMillis);
-    }
+    grabFramesInternal();
+    sleepComponent(framerateMillis);
   }
 }
   
