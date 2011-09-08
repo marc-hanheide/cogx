@@ -211,6 +211,7 @@ int main ( int argc, char *argv[] ) {
     double pattern_boxheight, pattern_boxwidth;
     std::string nameConfigFile, nameFolderA, nameFolderB, strRegExA, strRegExB, strOut;
     std::vector<std::string> nameFilesA, nameFilesB;
+    std::string nameIntrLeft, nameIntrRight;
     po::options_description desc("Allowed Parameters");
     desc.add_options()
     ("help", "get this help message")
@@ -224,7 +225,9 @@ int main ( int argc, char *argv[] ) {
     ("every,e", po::value<int>(&every)->default_value(1), "If set it uses only every x file")
     ("out,o", po::value<std::string>(&strOut)->default_value(""), "output folder")
     ("regexA,a", po::value<std::string>(&strRegExA)->default_value("(.*)bmp"), "Regular expression (.*)bmp")
-    ("regexB,b", po::value<std::string>(&strRegExB)->default_value("(.*)bmp"), "Regular expression (.*)bmp");
+    ("regexB,b", po::value<std::string>(&strRegExB)->default_value("(.*)bmp"), "Regular expression (.*)bmp")
+    ("leftintr,y", po::value<std::string>(&nameIntrLeft)->default_value(""), "left intrinsic paramters")
+    ("rightintr,z", po::value<std::string>(&nameIntrRight)->default_value(""), "right intrinsic paramters");
 
     po::variables_map vm;
     try {
@@ -356,10 +359,36 @@ int main ( int argc, char *argv[] ) {
         cv::waitKey(10);
     }
     if (objectPoints.size() > 0)  {
-        cv::calibrateCamera(objectPoints, imagePoints1, imageSize, cameraMatrix1, distCoeffs1, rvecs1, tvecs1, 0);
+        if (nameIntrLeft.empty() && nameIntrRight.empty()) {
+            cv::calibrateCamera(objectPoints, imagePoints1, imageSize, cameraMatrix1, distCoeffs1, rvecs1, tvecs1, 0);
+            cv::calibrateCamera(objectPoints, imagePoints2, imageSize, cameraMatrix2, distCoeffs2, rvecs2, tvecs2, 0);
+        } else {
+            CvMat *intr, *dist;
+            printf("left calibration file:    %s\n", nameIntrLeft.c_str());
+            printf("right calibration file:    %s\n", nameIntrRight.c_str());
+
+            cv::FileStorage leftFile(nameIntrLeft, cv::FileStorage::READ);
+            if (leftFile.isOpened()) {
+                intr = (CvMat*)leftFile["intrinsic"].readObj();
+                dist = (CvMat*)leftFile["distortion"].readObj();
+                cameraMatrix1 = intr;
+                distCoeffs1 = dist;
+            } else {
+                throw runtime_error("failed to read left calibration file");
+            }
+            
+            cv::FileStorage rightFile(nameIntrRight, cv::FileStorage::READ);
+            if (rightFile.isOpened()) {
+                intr = (CvMat*)rightFile["intrinsic"].readObj();
+                dist = (CvMat*)rightFile["distortion"].readObj();
+                cameraMatrix2 = intr;
+                distCoeffs2 = dist;
+            } else {
+                throw runtime_error("failed to read left calibration file");
+            }
+        }
         CVPRINT(cameraMatrix1);
         CVPRINT(distCoeffs1);
-        cv::calibrateCamera(objectPoints, imagePoints2, imageSize, cameraMatrix2, distCoeffs2, rvecs2, tvecs2, 0);
         CVPRINT(cameraMatrix2);
         CVPRINT(distCoeffs2);
         fflush(stdout);
@@ -372,6 +401,8 @@ int main ( int argc, char *argv[] ) {
             }
             cv::TermCriteria term_crit = cv::TermCriteria(cv::TermCriteria::COUNT +  cv::TermCriteria::EPS, 30, 1e-6);
             int flags = CV_CALIB_USE_INTRINSIC_GUESS; //cv::CALIB_FIX_INTRINSIC;
+            if (!nameIntrLeft.empty() && !nameIntrRight.empty())
+                flags += cv::CALIB_FIX_INTRINSIC;
             cv::stereoCalibrate(objectPoints, imagePoints1, imagePoints2, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize, R, T, E, F, term_crit, flags);
             CVPRINT(cameraMatrix1);
             CVPRINT(distCoeffs1);
@@ -412,7 +443,7 @@ int main ( int argc, char *argv[] ) {
             cv::Mat P1(3,4, CV_32F), P2(3,4, CV_32F);   // projection matrices
             cv::Mat Q(4,4, CV_32F);
             cv::stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize, R, T, R1, R2, P1, P2, Q, flags);
-            
+
             // Image size as cv::Mat
             cv::Mat size = cv::Mat_<double>(2, 1);
             size.at<double>(0, 0) = imageSize.width;
