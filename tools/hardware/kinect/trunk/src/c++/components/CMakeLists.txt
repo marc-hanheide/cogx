@@ -30,3 +30,13 @@ include_directories(${OPENCV_CFLAGS})
 
   add_cast_component(KinectStereoSeqServer KinectStereoSeqServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
+
+  if (HAVE_PCL_LIBRARY)
+    find_package(PCL REQUIRED)
+    include_directories(${PCL_INCLUDE_DIRS})
+    link_directories(${PCL_LIBRARY_DIRS})
+    add_definitions(${PCL_DEFINITIONS})
+
+    add_cast_component(KinectSeqServer KinectSeqServer.cpp)
+    link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} VideoUtils PointCloud PointCloudServer ${OPENCV_LDFLAGS} KinectStereoSeqServer)
+  endif (HAVE_PCL_LIBRARY)
