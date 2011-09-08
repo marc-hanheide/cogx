@@ -576,6 +576,7 @@ class CCastControlWnd(QtGui.QMainWindow):
                 continue
             if not csi:
                 p.start()
+                time.sleep(0.3)
                 continue
             if not csi.enabled:
                 continue
@@ -587,6 +588,7 @@ class CCastControlWnd(QtGui.QMainWindow):
                 for k,v in params.items():
                     params[k] = self._options.xe(v, environ=extenv)
             p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+            time.sleep(0.3)
 
     def startRemoteProcesses(self, procGroup):
         log4 = self._getLog4jConfig()
