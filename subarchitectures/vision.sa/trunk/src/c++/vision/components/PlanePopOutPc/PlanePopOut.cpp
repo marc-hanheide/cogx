@@ -107,10 +107,6 @@ void PlanePopOut::configure(const map<string,string> & _config)
     pre_mConvexHullRadius = 0.0;
     pre_id = "";
     bSaveImage = true;
-    fx = 525;
-    fy = 525;
-    cx = 320;
-    cy = 240;
     if((it = _config.find("--globalPoints")) != _config.end())
     {
 	istringstream str(it->second);
@@ -651,9 +647,10 @@ void PlanePopOut::runComponent()
 		    lastSize = v3center.size();
 		}
 		CurrentObjList.clear();
-		// 	log("start create objects");
+
 		for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 		{
+// 		    log("center of soi %d is (%f,%f,%f)",i,v3center.at(i).x,v3center.at(i).y,v3center.at(i).z);
 		    ObjPara OP;				//log("v3center size is %d", v3center.size());
 		    OP.c = v3center.at(i);		//log("v3size size is %d, i = %d",v3size.size(),i);
 		    OP.s = v3size.at(i);		//log("vdradius size is %d", vdradius.size());
@@ -674,7 +671,6 @@ void PlanePopOut::runComponent()
 	    catch (...) {
 		error(" *** PPO SOIManagement is FUCKED UP *** ");
 	    }
-	    // 	log("Done SOIManagement");
 	    try {
 		CleanupAll();
 	    }
@@ -1027,11 +1023,11 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
 CvPoint PlanePopOut::ProjectPointOnImage(Vector3 p)
 {
     double u, v;
-    double scale = 0.5;
+    double scale = 1;
     if(p.x == 0.) p.x=0.000001;   // instead: assert(Z != 0.);
 
-    u = fx*p.x/scale + cx*p.z/scale;
-    v = fy*p.y/scale + cy*p.z/scale;
+    u = cam_k.fx*p.x/scale + cam_k.cx*p.z/scale;
+    v = cam_k.fy*p.y/scale + cam_k.cy*p.z/scale;
     u /= p.z;
     v /= p.z;
     CvPoint re;
@@ -1062,6 +1058,7 @@ bool PlanePopOut::GetImageData()
     // get rectified images from point cloud server
     getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
     getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
+    cam_s = image_l.camPars;
     iplImage_l = convertImageToIpl(image_l);
     iplImage_r = convertImageToIpl(image_r);
 
@@ -1069,6 +1066,7 @@ bool PlanePopOut::GetImageData()
     {
 	getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
 	iplImage_k = convertImageToIpl(image_k);
+	cam_k = image_k.camPars;
     }
 
     if (pcl_cloud->points.size()<100)	
@@ -1427,6 +1425,7 @@ void PlanePopOut::CalSizeOfSOIs()
 
     for (unsigned i=0; i<n; i++)
     {
+	maxdist = 0.0;
 	for (unsigned j=0; j<sois[i]->points.size()/2; j++)
 	{
 	    t.x= sois[i]->points[j].x;
@@ -1436,7 +1435,7 @@ void PlanePopOut::CalSizeOfSOIs()
 	    if(dd> maxdist) maxdist= dd;
 	}
 	vdradius[i] =maxdist;
-	Vector3 tm; tm.x=tm.y=tm.z=2*maxdist/sqrt(3);
+	Vector3 tm; tm.x=tm.y=tm.z=maxdist;//2*maxdist/sqrt(3);
 	v3size[i] =tm;
     }
 }
