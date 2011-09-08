@@ -124,7 +124,6 @@ private:
     int camId;
     const VisionData::ObjSeq mObjSeq;
     PointCloud::SurfacePointSeq pointsN;
-    float fx,fy,cx,cy;							///< Parameters of kinect
 
     int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
     int StableTime; //this makes stable obj
@@ -150,7 +149,10 @@ private:
 
     std::vector<ObjPara> PreviousObjList;
     std::vector<ObjPara> CurrentObjList;
-    std::vector<ObjPara> Pre2CurrentList;      
+    std::vector<ObjPara> Pre2CurrentList;
+    
+    Video::CameraParameters cam_k;			///< kinect parameter 
+    Video::CameraParameters cam_s;			///< stereo parameter
 
     //----------------------------------------------------------------------------------------------
 
