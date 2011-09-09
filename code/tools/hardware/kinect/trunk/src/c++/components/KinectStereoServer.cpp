@@ -268,11 +268,66 @@ void KinectStereoServer::configure(const map<string,string> & _config) throw(run
 //   } 
 //   else throw runtime_error(exceptionMessage(__HERE__, "no camIDs specified."));
 
-  if((it = _config.find("--stereoconfig")) != _config.end())
+  if((it = _config.find("--stereoconfig_xml")) != _config.end())
   {
-    stereoCalibFile = it->second;
-  }
-  else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file specified"));
+    istringstream str(it->second);
+    string fileLeft, fileRight;
+    str >> fileLeft;
+    str >> fileRight;
+      
+    // if no image size was specified, use the original image size as given by the stereo config
+    if(stereoSizes.empty())
+    {
+      StereoCamera *sc = new StereoCamera();
+      sc->ReadFromXML(fileLeft, 0, false);    // 0 = left
+      sc->ReadFromXML(fileRight, 1, false);   // 1 = right
+      sc->SetupImageRectification();
+      stereoCams.push_back(sc);
+      stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
+    }
+    else  // else: we have a set of resolutions, create a stereo camera for each
+    {
+      for(size_t i = 0; i < stereoSizes.size(); i++)
+      {
+        StereoCamera *sc = new StereoCamera();
+        sc->ReadFromXML(fileLeft, 0, true);    // 0 = left
+        sc->ReadFromXML(fileRight, 1, true);   // 1 = right
+        sc->SetInputImageSize(stereoSizes[i]);
+        sc->SetupImageRectification();
+        stereoCams.push_back(sc);
+      }
+    }
+  } else throw runtime_error(exceptionMessage(__HERE__, "no stereo config files given."));
+
+/// TODO old --stereoconfig things: delete it later
+//   if((it = _config.find("--stereoconfig")) != _config.end())
+//   {
+//     stereoCalibFile = it->second;
+//   }
+//   else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file specified"));
+  
+// if no image size was specified, use the original image size as given by the stereo config
+//   if(stereoSizes.empty())
+//   {
+//     StereoCamera *sc = new StereoCamera();
+//     sc->ReadSVSCalib(stereoCalibFile);
+//     sc->SetupImageRectification();
+//     stereoCams.push_back(sc);
+//     stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
+//   }
+//   // else: we have a set of resolutions, create a stereo camera for each
+//   else
+//   {
+//     for(size_t i = 0; i < stereoSizes.size(); i++)
+//     {
+//       StereoCamera *sc = new StereoCamera();
+//       sc->ReadSVSCalib(stereoCalibFile);
+//       // now set the input image size to be used by stereo matching
+//       sc->SetInputImageSize(stereoSizes[i]);
+//       sc->SetupImageRectification();
+//       stereoCams.push_back(sc);
+//     }
+//   }
 
   if((it = _config.find("--imgsize")) != _config.end())							/// TODO nicht notwendige mit log oder debug Meldungen ausstatten
   {
@@ -322,29 +377,6 @@ void KinectStereoServer::configure(const map<string,string> & _config) throw(run
     logImages = true;
   }
   
-  // if no image size was specified, use the original image size as given by the stereo config
-  if(stereoSizes.empty())
-  {
-    StereoCamera *sc = new StereoCamera();
-    sc->ReadSVSCalib(stereoCalibFile);
-    sc->SetupImageRectification();
-    stereoCams.push_back(sc);
-    stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
-  }
-  // else: we have a set of resolutions, create a stereo camera for each
-  else
-  {
-    for(size_t i = 0; i < stereoSizes.size(); i++)
-    {
-      StereoCamera *sc = new StereoCamera();
-      sc->ReadSVSCalib(stereoCalibFile);
-      // now set the input image size to be used by stereo matching
-      sc->SetInputImageSize(stereoSizes[i]);
-      sc->SetupImageRectification();
-      stereoCams.push_back(sc);
-    }
-  }
-
   if(!maxDisps.empty())
   {
     if(maxDisps.size() != stereoCams.size())
