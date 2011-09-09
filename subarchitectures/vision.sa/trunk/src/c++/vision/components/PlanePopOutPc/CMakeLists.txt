@@ -2,6 +2,11 @@ FIND_PACKAGE( V4R REQUIRED )
 #include_directories(${V4R_DIR})
 #link_directories(${V4R_DIR}/lib)
 
+
+find_package(PkgConfig REQUIRED)
+pkg_search_module(EIGEN3 REQUIRED eigen3)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
