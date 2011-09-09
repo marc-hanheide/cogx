@@ -3,7 +3,7 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 FIND_PACKAGE( OpenCV REQUIRED )
 
-find_package(CG REQUIRED)
+find_package(Cg REQUIRED)
 include_directories(${CG_INCLUDE_PATH})
 
 include_directories(.)
