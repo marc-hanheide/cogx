@@ -397,6 +397,13 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	return;
     }
 
+    if (points.size() < 1) {
+	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
+	m_display.setHtml("LOG", "log.PPO.SendPoints", 
+		"<h3>Plane popout - SendPoints</h3>No points");
+	return;
+    }
+
     std::ostringstream str;
     str.unsetf(ios::floatfield); // unset floatfield
     str.precision(5); // set the _maximum_ precision
@@ -404,8 +411,23 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
     str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
     str << "v=glVertex\nc=glColor\n";
     int plab = -9999;
-    int colors = 1;
+    int cntColors = 1;
+    int cntPoints = 0;
     cogx::Math::ColorRGB coPrev;
+
+    // pct: limit the total number of sent points to approx 5000 (when not colored by label)
+    int pct = floor(0.5 + 100 * (5000.0 / points.size()));
+    // labelPct: limit the number of sent points to approx 3000 for every group of labels
+    map<int, int> labelPct;
+    if (bColorByLabels) {
+	for(size_t i = 0; i < points.size(); i++) labelPct[labels[i]] = 0;
+	for(size_t i = 0; i < points.size(); i++) ++labelPct[labels[i]];
+	typeof(labelPct.begin()) it;
+	for (it = labelPct.begin(); it != labelPct.end(); ++it) {
+	    it->second = floor(0.5 + 100 * (3000.0 / it->second)); 
+	}
+    }
+
     coPrev.r = coPrev.g = coPrev.b = 0;
     str << "glColor(0,0,0)\n";
     for(size_t i = 0; i < points.size(); i++)
@@ -415,9 +437,12 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	    continue;
 
 	if (!bColorByLabels) {
+	    if (rand() % 100 > pct)
+		continue;
+
 #define CO3(bc) int(1000.0*bc/255)/1000.0
 	    if (coPrev != p.c) {
-		colors++;
+		++cntColors;
 		str << "c(" << CO3(p.c.r) << "," << CO3(p.c.g) << "," << CO3(p.c.b) << ")\n";
 		coPrev = p.c;
 	    }
@@ -426,23 +451,28 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	else {
 	    int lab = labels.at(i);
 	    if (lab == -1) 
-	      continue; // skip this point
+		continue; // skip this point
+
+	    if (rand() % 100 > labelPct[lab])
+		continue;
 
 	    if (plab != lab) {
-		colors++;
+		++cntColors;
 		plab = lab;
 		switch (lab) {
-		    case 0: str << "c(0.0,0.0,1.0)\n"; break;
+		    default: str << "c(1.0,1.0,0.0)\n"; break;
+		    case -1: str << "c(0.5,0.0,0.5)\n"; break; // background
+		    case 0: str << "c(0.0,0.0,1.0)\n"; break; // plane
+			    // SOIs
 		    case 1: str << "c(0.0,1.0,0.0)\n"; break;
 		    case 2: str << "c(1.0,0.0,.0)\n"; break;
 		    case 3: str << "c(0.0,0.5,0.5)\n"; break;
 		    case 4: str << "c(0.5,0.5,0.0)\n"; break;
-// 		    case -1: str << "c(0.5,0.0,0.5)\n"; break;
- 		    default:  str << "c(1.0,1.0,0.0)\n"; break;
 		}
 	    }
 	}
 	str << "v(" << p.p.x << "," << p.p.y << "," << p.p.z << ")\n";
+	++cntPoints;
     }
     str << "glEnd()\nend\n";
     long long t1 = tmSendPoints.elapsed();
@@ -455,8 +485,8 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	str.clear();
 	str << "<h3>Plane popout - SendPoints</h3>";
 	str << "Labels: " << (bColorByLabels ? "ON" : "OFF") << "<br>";
-	str << "Points: " << points.size() << "<br>";
-	str << "Colors: " << colors << " color changes<br>";
+	str << "Points: " << cntPoints << " / " << points.size() << "<br>";
+	str << "Colors: " << cntColors << " color changes<br>";
 	str << "Strlen: " << S.length() << "<br>";
 	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
