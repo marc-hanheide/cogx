@@ -417,7 +417,7 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 
     // pct: limit the total number of sent points to approx 5000 (when not colored by label)
     int pct = floor(0.5 + 100 * (5000.0 / points.size()));
-    // labelPct: limit the number of sent points to approx 3000 for every group of labels
+    // labelPct: limit the number of sent points to approx 3000 for every label
     map<int, int> labelPct;
     if (bColorByLabels) {
 	for(size_t i = 0; i < points.size(); i++) labelPct[labels[i]] = 0;
