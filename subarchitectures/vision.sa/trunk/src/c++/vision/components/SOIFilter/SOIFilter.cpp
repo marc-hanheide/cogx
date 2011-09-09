@@ -157,6 +157,9 @@ void SOIFilter::configure(const map<string,string> & _config)
 
 void SOIFilter::connectPtz() {
   ptzServer = getIceServer<ptz::PTZInterface>(ptzServerName);
+  if (! ptzServer.get()) {
+    println(" *** PTZ SERVER NOT FOUND ***");
+  }
 }
 
 #define IDC_SOIF_PROTOOBJECTS "popout.show.protoobjects"
@@ -353,6 +356,7 @@ void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogI
     const std::string& command, const std::string& params)
 {
   if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
+    //pFilter->println(" *** handleDialogCommand *** " + command);
     if (command == "sendStateToDialog") {
       pFilter->println(" *** sendStateToDialog *** ");
       ptz::PTZReading ptup;

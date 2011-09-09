@@ -16,6 +16,8 @@ class WmTaskExecutor_Soi: public WmTaskExecutor
 protected:
    virtual void handle_add_soi(WmEvent *pEvent);
    virtual void handle_delete_soi(WmEvent *pEvent);
+   void MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAddr);
+
 public:
    WmTaskExecutor_Soi(SOIFilter* soif) : WmTaskExecutor(soif) {}
 
