@@ -193,6 +193,7 @@ protected:
      * called by the framework after configuration, before run loop
      */
     virtual void start();
+    void startV11N();
     /**
      * called by the framework to start compnent run loop
      */
