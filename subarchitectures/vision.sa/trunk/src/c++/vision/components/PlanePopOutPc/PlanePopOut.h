@@ -8,19 +8,15 @@
 #ifndef PLANE_POPOUT_H
 #define PLANE_POPOUT_H
 
-#include <cast/architecture/ManagedComponent.hpp>
-#include <PointCloudClient.h>
-#include <VisionData.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "TomGineWraper/TomGineThread.hh"
-
-#include "StereoCamera.h"
-
-
+#include <cast/architecture/ManagedComponent.hpp>
 #include <v4r/PCLAddOns/PlanePopout.hh>
 #include <v4r/PCLAddOns/utils/PCLUtils.h>
 #include <v4r/PCLAddOns/functions/PCLFunctions.h>
+#include <PointCloudClient.h>
+#include <VisionData.hpp>
+#include "TomGineWraper/TomGineThread.hh"
 
 //#undef FEAT_VISUALIZATION
 
@@ -33,155 +29,152 @@ namespace cast
 using namespace cogx;
 using namespace cogx::Math;
 
-class PlanePopOut : public PointCloudClient,
-public ManagedComponent
+class PlanePopOut : public PointCloudClient, public ManagedComponent
 {
 public:
-    typedef struct ObjP
+    class PlaneEntry
     {
-	Vector3 c;
-	Vector3 s;
-	double r;
-	std::string id;
-	bool bComCurrentPre;
-	bool bInWM;
-	int count;
-	PointCloud::SurfacePointSeq pointsInOneSOI;
-	PointCloud::SurfacePointSeq BGInOneSOI;
-	PointCloud::SurfacePointSeq EQInOneSOI;
-	CvHistogram* hist;
-	CvRect rect;
-    }ObjPara;
+    public:
+        Plane3 plane;
+        vector<PointCloud::SurfacePoint> planePoints;        
+        vector<Vector3> hullPoints;
+        bool valid;
+        RGBValue dispColor;
 
-    typedef struct MatchingSOI
+        PlaneEntry() {
+            dispColor.r = 255;
+            dispColor.g = 255;
+            dispColor.b = 255;
+            dispColor.a = 0;
+            valid = false;
+        }
+        void clear() {
+            planePoints.clear();
+            hullPoints.clear();
+            valid = false;
+        }
+        void init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
+            pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
+            pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull);
+    };
+
+    class SOIEntry
     {
-	int p;	//index in previous list of SOIs
-	int c;	//index in current list of SOIs
-	double pro;	//probability of matching
-    }SOIMatch;
+    public:
+        Sphere3 boundingSphere;
+        Box3 boundingBox;
+        std::vector<PointCloud::SurfacePoint> points;
+        std::vector<PointCloud::SurfacePoint> BGpoints;
+				std::string WMId;
+				CvHistogram* hist;
+        int numFramesNotSeen;
+        int numStableFrames;
+        RGBValue dispColor;
+
+        SOIEntry() {
+            hist = 0;
+            numFramesNotSeen = 0;
+            numStableFrames = 0;
+            dispColor.float_value = GetRandomColor();
+        }
+        ~SOIEntry() {
+            cvReleaseHist(&hist);
+        }
+        void init(PlaneEntry &domPlane);
+        void calcHistogram();
+        double compare(SOIEntry &other);
+        double matchProbability(PlanePopOut::SOIEntry &other);
+        void updateFrom(SOIEntry &other);
+        VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
+    };
 
 private:
-
-    ///--------------------------------------------------------------------
-
-    void CleanupAll();
-    bool GetImageData();
-    bool GetPlaneAndSOIs();				/// Dominant plane detection and Euclidean Clustering
-    void CalSOIHist(PointCloud::SurfacePointSeq pcl_cloud, std::vector< int > label, std::vector <CvHistogram*> & vH);
-
-    void ConvexHullOfPlane(PointCloud::SurfacePointSeq points, std::vector <int> labels);
-    Matrix33 GetAffineRotMatrix();
-    inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
-    Vector3 ProjectOnDominantPlane(Vector3 InputP);
-    void CalCenterOfSOIs();
-    void CalSizeOfSOIs();
-    void BoundingSphere(PointCloud::SurfacePointSeq &points, std::vector <int> &labels);
-
-    void DisplayInTG();
-    void Points2Cloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
-
-    void AddConvexHullinWM();
-    void SOIManagement();
-    VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, PointCloud::SurfacePointSeq psIn1SOI, PointCloud::SurfacePointSeq BGpIn1SOI, PointCloud::SurfacePointSeq EQpIn1SOI);
-    int IsMatchingWithOneSOI(int index, std::vector <SOIMatch> mlist);
-    float Compare2SOI(ObjPara obj1, ObjPara obj2);
-    double CompareHistKLD(CvHistogram* h1, CvHistogram* h2);
-    void SaveHistogramImg(CvHistogram* hist, std::string str);
-
-    CvPoint ProjectPointOnImage(Vector3 p);
-
-
-
-    ///---------------------------------------------------------------------
-
-    double A, B, C, D;						///< Plane Coefficients, Ax+By+Cz+D=0
-    pcl::ModelCoefficients::Ptr dpc;				///< Dominant plane Coefficients
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;		///< Table hull
-    pcl::PointIndices::Ptr planepoints;				///< the indices of points on the dominant plane
-
-    VisionData::Vector3Seq mConvexHullPoints;
-    Vector3 mCenterOfHull;
-    double mConvexHullRadius;
-    double mConvexHullDensity;
-
-    Vector3 pre_mCenterOfHull;
-    double pre_mConvexHullRadius;
-    std::string pre_id;
-
-    PointCloud::SurfacePointSeq points;	  			 ///< PointCloud type all the points in the scene
-    std::vector< int > points_label;			  		 ///< lables of all the points
-    cv::Mat_<cv::Vec4f> kinect_point_cloud;                  		 ///< Point cloud from the kinect
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;       		 ///< PCL point cloud
-    std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois;    	 ///< Estimated sois from the PlanePopout
-    std::vector <CvHistogram*> vec_histogram;				 ///< vector with the histograms of all the SOIs
-    int objnumber;
-    double Shrink_SOI;
-    double Upper_BG;
-    double Lower_BG;
-    bool bWriteSoisToWm;
-    bool useGlobalPoints;
-    bool bWithKinect;
-    int camId;
-    const VisionData::ObjSeq mObjSeq;
-    PointCloud::SurfacePointSeq pointsN;
-
-    int AgonalTime;	//The dying object could be "remembered" for "AgonalTime" of frames
-    int StableTime; //this makes stable obj
+		/**
+     * Camera ID from where to get images in case we want to display image and
+     * backprojections etc. for visualisation.
+     */
+		int camId;
+		/**
+     * Rectified image from point cloud server, in case we want to display image and
+     * backprojections etc. for visualisation.
+     */
+    IplImage *iplDispImage;
+		/**
+		 * If set to true, use own OpenGL visualisation.
+     */
     bool doDisplay;
-    bool bSaveImage;
+    /**
+     * 3D render engine for own OpenGL visualisation.
+     */
+    TGThread::TomGineThread *tgRenderer;
 
-    vector< Vector3 > v3center;
-    vector<double> vdradius;
-    vector< Vector3 > v3size;      
-    vector< PointCloud::SurfacePointSeq > SOIPointsSeq;
-    vector< PointCloud::SurfacePointSeq > BGPointsSeq;
-    vector< PointCloud::SurfacePointSeq > EQPointsSeq; //equivocal points	
-    
-//     vector <CvRect> vSOIonImg;
-    vector <std::string> vSOIid;
+		/**
+     * CAST type PointCloud, all the points in the scene
+     */
+    PointCloud::SurfacePointSeq points;
+    /**
+     * as above, but in PCL format
+     */
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;
+		/**
+     * Core class: V4R Plane and SOI detection.
+     */
+    pclA::PlanePopout* planePopout;
+	  /**
+     * a SOI not seen for this time will be deleted from WM
+     */
+    int AgonalTime;
+ 		/**
+     * only if a SOI has been seen longer than that, will it be added to WM
+     */
+    int StableTime;
+    /**
+     * the single dominant plane, including its points and convec hull
+     */
+    PlaneEntry dominantPlane;
+    /**
+     * list of all tracked SOIs, where the stable ones have been added to WM 
+     */
+		list<SOIEntry> trackedSOIs;
+    /**
+     * map of current SOIs. the SOI label as it is returned by the PlanePopout class
+     * is used as the key.
+     */
+		std::map<unsigned, SOIEntry> currentSOIs;
 
-    TGThread::TomGineThread *tgRenderer;              ///< 3D render engine	
-
-    Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
-    IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)     
-    IplImage* ROIMaskImg; 
-
-
-    std::vector<ObjPara> PreviousObjList;
-    std::vector<ObjPara> CurrentObjList;
-    std::vector<ObjPara> Pre2CurrentList;
-    
-    Video::CameraParameters cam_k;			///< kinect parameter 
-    Video::CameraParameters cam_s;			///< stereo parameter
-
-    //----------------------------------------------------------------------------------------------
+    void GetImageData();
+    void GetPlaneAndSOIs();
+    void TrackSOIs();
+    void Points2Cloud(const PointCloud::SurfacePointSeq &points,
+        cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
+    void DisplayInTG();
+    // void SaveHistogramImg(CvHistogram* hist, std::string str);
 
 #ifdef FEAT_VISUALIZATION
     bool m_bSendPoints;
     bool m_bSendPlaneGrid;
     bool m_bSendImage;
     bool m_bSendSois;
-    // Color the poitns by labels or send the color from image
+    // Color the points by labels or send the color from image
     bool m_bColorByLabel;
-    CMilliTimer m_tmSendPoints;
 
     class CDisplayClient: public cogx::display::CDisplayClient
-{
-    PlanePopOut* pPopout;
-    public:
-    CDisplayClient() { pPopout = NULL; }
-    void setClientData(PlanePopOut* pPlanePopout) { pPopout = pPlanePopout; }
-    void handleEvent(const Visualization::TEvent &event); /*override*/
-    std::string getControlState(const std::string& ctrlId); /*override*/
-};
+		{
+				PlanePopOut* pPopout;
+				public:
+				CDisplayClient() { pPopout = NULL; }
+				void setClientData(PlanePopOut* pPlanePopout) { pPopout = pPlanePopout; }
+				void handleEvent(const Visualization::TEvent &event); /*override*/
+				std::string getControlState(const std::string& ctrlId); /*override*/
+		};
     CDisplayClient m_display;
 
     void SendImage();
-    void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels, CMilliTimer& tmSendPoints);
+    void SendPoints(bool bColorByLabels);
     void SendPlaneGrid();
     void SendOverlays();
-    void SendSoi(PlanePopOut::ObjPara& soiobj);
-    void SendRemoveSoi(PlanePopOut::ObjPara& soiobj);
+    void SendSOI(PlanePopOut::SOIEntry& soi);
+    void SendRemovedSOI(PlanePopOut::SOIEntry& soi);
 #endif
 
 protected:
@@ -200,6 +193,8 @@ protected:
     virtual void runComponent();
 
 public:
+    PlanePopOut();
+    virtual ~PlanePopOut();
 
     /// When multiple point cloud servers are used one may want SOIs from only some of them.
     /// To disable SOI generation, add the parameter --generate-sois 0.
@@ -207,28 +202,6 @@ public:
     /// Default: true.
     void GetStableSOIs(std::vector<VisionData::SOIPtr>& soiList);
     void onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc);
-
-
-    pclA::PlanePopout* planePopout;
-    PlanePopOut()
-    {
-	camId = 0;
-	planePopout = 0;
-	iplImage_l = 0;
-	iplImage_r = 0;
-	iplImage_k = 0;
-	ROIMaskImg = 0;
-	bWriteSoisToWm = true;
-    }
-    virtual ~PlanePopOut()
-    {
-	if (planePopout)
-	    delete planePopout;
-	cvReleaseImage(&iplImage_l);
-	cvReleaseImage(&iplImage_r);
-	cvReleaseImage(&iplImage_k);
-	cvReleaseImage(&ROIMaskImg);
-    }
 };
 
 }
