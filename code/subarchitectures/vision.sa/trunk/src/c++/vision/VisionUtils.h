@@ -215,32 +215,32 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv:
  * @param points Points from the point cloud as vector
  * @param cloud Point cloud
  */
-inline void ConvertPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Vec4f> &cloud)
-{
-  unsigned pcWidth = sqrt(points.size()*4/3);
-  unsigned pcHeight = pcWidth *3/4;
-  unsigned position = 0;
-  
-  cloud = cv::Mat_<cv::Vec4f>(pcHeight, pcWidth);    // rows = height / cols = width
-  RGBValue color;
-  color.a = 0;
-  
-  for(unsigned row = 0; row < pcHeight; row++)
-  {
-    for(unsigned col = 0; col < pcWidth; col++)
-    {
-      cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
-      position = row*pcWidth + col;
-      p[0] = (float) points[position].p.x;
-      p[1] = (float) points[position].p.y;
-      p[2] = (float) points[position].p.z;
-      color.r = points[position].c.r;
-      color.g = points[position].c.g;
-      color.b = points[position].c.b;
-      p[3] = color.float_value;
-    }
-  }
-}
+// inline void ConvertPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> &points, cv::Mat_<cv::Vec4f> &cloud)
+// {
+//   unsigned pcWidth = sqrt(points.size()*4/3);
+//   unsigned pcHeight = pcWidth *3/4;
+//   unsigned position = 0;
+//   
+//   cloud = cv::Mat_<cv::Vec4f>(pcHeight, pcWidth);    // rows = height / cols = width
+//   RGBValue color;
+//   color.a = 0;
+//   
+//   for(unsigned row = 0; row < pcHeight; row++)
+//   {
+//     for(unsigned col = 0; col < pcWidth; col++)
+//     {
+//       cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
+//       position = row*pcWidth + col;
+//       p[0] = (float) points[position].p.x;
+//       p[1] = (float) points[position].p.y;
+//       p[2] = (float) points[position].p.z;
+//       color.r = points[position].c.r;
+//       color.g = points[position].c.g;
+//       color.b = points[position].c.b;
+//       p[3] = color.float_value;
+//     }
+//   }
+// }
 
 /**
  * @brief Convert ONLY kinect points from point cloud server to opencv matrix.
@@ -249,10 +249,11 @@ inline void ConvertPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> p
  * @param cloud Point cloud
  * @param width Width of the cloud
  */
-inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> points, 
+inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> &points, 
                                          cv::Mat_<cv::Vec4f> &cloud,
                                          int width)
 {
+printf("VisionUtils::ConvertKinectPoints2MatCloud: Warning: Experimental function.!\n");
   unsigned height = width *3/4;
   unsigned position = 0;
   
@@ -269,9 +270,9 @@ inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePo
       p[0] = (float) points[position].p.x;
       p[1] = (float) points[position].p.y;
       p[2] = (float) points[position].p.z;
-      color.r = points[position].c.r;
+      color.r = points[position].c.b;
       color.g = points[position].c.g;
-      color.b = points[position].c.b;
+      color.b = points[position].c.r;
       p[3] = color.float_value;
     }
   }
