@@ -47,10 +47,27 @@
 #include <string>
 #include <queue>
 #include <map>
+#include <stdexcept>
 
 
 namespace cast
 {
+
+template<typename TK, typename TV>
+class mmap: public std::map<TK, TV>
+{
+public:
+  bool has_key(const TK& key)
+  {
+    return find(key) != this->end();
+  }
+  TV& get(const TK& key)
+  {
+    if (this->find(key) == this->end())
+      throw std::range_error("Key does not exist in map.");
+    return std::map<TK,TV>::operator[](key);
+  }
+};
 
 /** 
  * Cached SOI data
@@ -167,14 +184,14 @@ private:
 public:
   // The proto objects are kept locally so that we can match them by position with SOIs.
   // We don't keep all PO data locally! (see saveProtoObjectData)
-  std::map<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> m_protoObjects;
+  mmap<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> m_protoObjects;
 
   // The visual objects are kept locally so that we can match them to POs.
   // We don't keep all VO data locally! (see saveVisualObjectData)
-  std::map<cdl::WorkingMemoryAddress, VisualObjectRecordPtr> m_visualObjects;
+  mmap<cdl::WorkingMemoryAddress, VisualObjectRecordPtr> m_visualObjects;
 
   // The sois are kept locally so register the SOI-PO connections.
-  std::map<cdl::WorkingMemoryAddress, SoiRecordPtr> m_sois;
+  mmap<cdl::WorkingMemoryAddress, SoiRecordPtr> m_sois;
 
 public:
   ProtoObjectRecordPtr findProtoObjectAt(const VisionData::SOIPtr &psoi);
