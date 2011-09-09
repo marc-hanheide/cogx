@@ -577,13 +577,13 @@ void PlanePopOut::runComponent()
 		}	//log("Haha, we get the Sois and Plane from PCL");
 	    }
 	    catch (...) {
-		error(" *** PPO GetImageData or GetPlaneAndSOIs is FUCKED UP *** ");
+		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** ");
 	    }
 	    try{
 		CalSOIHist(points,points_label, vec_histogram);			/// clear vec_histogram before store the new inside
 	    }
 	    catch (...) {
-		error(" *** PPO CalSOIHist is FUCKED UP *** ");
+		error(" *** PPO CalSOIHist HAS CRASHED *** ");
 	    }
 	    // 	log("Yeah, we get the color histograms of all the sois");
 	    try{
@@ -612,7 +612,7 @@ void PlanePopOut::runComponent()
 		}
 	    }
 	    catch (...) {
-		error(" *** PPO ConvexHullOfPlane is FUCKED UP *** ");
+		error(" *** PPO ConvexHullOfPlane HAS CRASHED *** ");
 	    }
 
 	    try {
@@ -632,7 +632,7 @@ void PlanePopOut::runComponent()
 		// 	log("Done FEAT_VISUALIZATION");
 	    }
 	    catch (...) {
-		error(" *** PPO display is FUCKED UP *** ");
+		error(" *** PPO display HAS CRASHED *** ");
 	    }
 #endif
 	    // 	AddConvexHullinWM();
@@ -669,18 +669,18 @@ void PlanePopOut::runComponent()
 		SOIManagement();
 	    }
 	    catch (...) {
-		error(" *** PPO SOIManagement is FUCKED UP *** ");
+		error(" *** PPO SOIManagement HAS CRASHED *** ");
 	    }
 	    try {
 		CleanupAll();
 	    }
 	    catch (...) {
-		error(" *** PPO CleanupAll is FUCKED UP *** ");
+		error(" *** PPO CleanupAll HAS CRASHED *** ");
 	    }
 	}
     }
     catch (...) {
-	error(" *** PPO isRunning is FUCKED UP *** ");
+	error(" *** PPO isRunning HAS CRASHED *** ");
     }
     sleepComponent(50);
 }
@@ -1106,7 +1106,7 @@ bool PlanePopOut::GetPlaneAndSOIs()
 	planePopout->GetPlanePoints(planepoints);	//log("There are %d inliers on the plane !", planepoints->indices.size());
     }
     catch (...) {
-	error(" *** PPO CalculateSOIs ... GetPlanePoints is FUCKED UP *** ");
+	error(" *** PPO CalculateSOIs ... GetPlanePoints HAS CRASHED *** ");
     }
     int w,h;
     if (bWithKinect) {
