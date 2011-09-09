@@ -43,11 +43,11 @@ public:
 
   virtual void getPoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&);
   virtual void getCompletePoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&);
-  virtual void getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&);
+  virtual void getRectImage(Ice::Int camId, int imgWidth, Video::Image& image, const Ice::Current&);
   virtual void getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&);
   virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data, const Ice::Current&);
   virtual void getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&);
-  virtual bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars, const Ice::Current&);
+  virtual bool getCameraParameters(Ice::Int camId, Video::CameraParameters& camPars, const Ice::Current&);
   virtual bool isPointInViewCone(const cogx::Math::Vector3&, const Ice::Current&);
 };
 
@@ -90,7 +90,7 @@ public:
   virtual ~PointCloudServer();
 
   /**
-   * Returns the 3D point cloud.
+   * @brief Returns the 3D point cloud.
    * @param transformToGlobal If true use the camera's pose to return points in global coordinates.
    *        Otherwise return in left camera coordinates.
    * @param imgWidth Specifies at which image resolution stereo matching should be performed.
@@ -102,14 +102,33 @@ public:
    *        The rectangular grid structure of points is thus maintained, which can help in finding
    *        nearest neighours etc.
    */
-  
   virtual void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete) {}
-  virtual void getRectImage(int side, int imgWidth, Video::Image& image) {}
+  
+  /**
+   * @brief Get rectified image
+   * @param camID Camera id.
+   * @param imgWidth Image width
+   * @param image Rectified image
+   */
+  virtual void getRectImage(int camID, int imgWidth, Video::Image& image) {}
+  
+  /**                                                                                                         /// TODO TODO
+   * @brief Get disparity image of ....
+   * @param imgWidth Image width
+   * @param image Rectified image
+   */  
   virtual void getDisparityImage(int imgWidth, Video::Image& image) {}
+
   virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data) {}
-  virtual bool getCameraParameters(int side, Video::CameraParameters& camPars) { return false; }
   virtual bool isPointInViewCone(const cogx::Math::Vector3& point) { return true; }
 
+
+  /**
+   * @brief Get camera parameters of one camera
+   * @param camID Camera id.
+   * @param camPars Camera parameters.
+   */    
+  virtual bool getCameraParameters(int camID, Video::CameraParameters& camPars) {return false;}
 
   /**
    * The callback function for 2D points extracted from the Kinect depth data
@@ -119,6 +138,7 @@ public:
   /**
    * The callback function for images pushed by the image server.
    * To be overwritten by derived classes.
+   * @param images Images to be received.
    */
   virtual void receiveImages(const std::vector<Video::Image>& images) {}
 };

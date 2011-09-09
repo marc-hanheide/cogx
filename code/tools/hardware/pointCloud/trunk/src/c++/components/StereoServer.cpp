@@ -94,8 +94,7 @@ StereoServer::~StereoServer()
 
 void StereoServer::configure(const map<string,string> & _config) throw(runtime_error)
 {
-  // configure base class
-  PointCloudServer::configure(_config);
+  PointCloudServer::configure(_config);     // configure base class
 
   map<string,string>::const_iterator it;
   string stereoCalibFile;
@@ -104,22 +103,7 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   {
     videoServerName = it->second;
   }
-  else throw runtime_error(exceptionMessage(__HERE__, "no video config file (videoname) given"));			/// TODO Notwendige mit throw exception ausstatten
-
-//   if((it = _config.find("--camids")) != _config.end())     // moved to Point Cloud Server
-//   {
-//     istringstream str(it->second);
-//     int id;
-//     while(str >> id)
-//       camIds.push_back(id);
-//   } 
-//   else printf("StereoServer::configure: Warning: No camids specified.\n");
-
-  if((it = _config.find("--stereoconfig")) != _config.end())
-  {
-    stereoCalibFile = it->second;
-  }
-  else throw runtime_error(exceptionMessage(__HERE__, "no stereo config file given"));
+  else throw runtime_error(exceptionMessage(__HERE__, "no video config file (videoname) given"));
 
   if((it = _config.find("--imgsize")) != _config.end())							/// TODO nicht notwendige mit log oder debug Meldungen ausstatten
   {
@@ -127,7 +111,7 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
     int w, h;
     while(str >> w >> h)
       stereoSizes.push_back(cvSize(w, h));
-  }  
+  } else printf("StereoServer::configure: Warning: No imagesize given.\n");
 
   if((it = _config.find("--maxdisp")) != _config.end())
   {
@@ -135,7 +119,7 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
     int disp;
     while(str >> disp)
       maxDisps.push_back(disp);
-  }
+  } else printf("StereoServer::configure: Warning: No maximum disparity given.\n");
 
 #ifdef HAVE_GPU_STEREO
   if((it = _config.find("--median")) != _config.end())
@@ -167,31 +151,38 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   {
     logImages = true;
   }
-
-  // if no image size was specified, use the original image size as given by the stereo config
-  if(stereoSizes.empty())
+  
+  if((it = _config.find("--stereoconfig_xml")) != _config.end())
   {
-    StereoCamera *sc = new StereoCamera();
-    sc->ReadSVSCalib(stereoCalibFile);
-    sc->SetupImageRectification();
-    stereoCams.push_back(sc);
-    stereoSizes.push_back(cvSize(sc->cam[LEFT].width,
-                                 sc->cam[LEFT].height));
-  }
-  // else: we have a set of resolutions, create a stereo camera for each
-  else
-  {
-    for(size_t i = 0; i < stereoSizes.size(); i++)
+    istringstream str(it->second);
+    string fileLeft, fileRight;
+    str >> fileLeft;
+    str >> fileRight;
+      
+    // if no image size was specified, use the original image size as given by the stereo config
+    if(stereoSizes.empty())
     {
       StereoCamera *sc = new StereoCamera();
-      sc->ReadSVSCalib(stereoCalibFile);
-      // now set the input image size to be used by stereo matching
-      sc->SetInputImageSize(stereoSizes[i]);
+      sc->ReadFromXML(fileLeft, 0, false);    // 0 = left
+      sc->ReadFromXML(fileRight, 1, false);   // 1 = right
       sc->SetupImageRectification();
       stereoCams.push_back(sc);
+      stereoSizes.push_back(cvSize(sc->cam[0].width, sc->cam[0].height));
     }
-  }
-
+    else  // else: we have a set of resolutions, create a stereo camera for each
+    {
+      for(size_t i = 0; i < stereoSizes.size(); i++)
+      {
+        StereoCamera *sc = new StereoCamera();
+        sc->ReadFromXML(fileLeft, 0, true);    // 0 = left
+        sc->ReadFromXML(fileRight, 1, true);   // 1 = right
+        sc->SetInputImageSize(stereoSizes[i]);
+        sc->SetupImageRectification();
+        stereoCams.push_back(sc);
+      }
+    }
+  } else throw runtime_error(exceptionMessage(__HERE__, "no stereo config files given."));
+  
   if(!maxDisps.empty())
   {
     if(maxDisps.size() != stereoCams.size())
@@ -207,8 +198,6 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
     imgSets[i].init(stereoSizes[i], IPL_DEPTH_32F);
   }
 
-  // sanity checks: Have all important things be configured? Is the
-  // configuration consistent?
   if(camIds.size() != 2)
     throw runtime_error(exceptionMessage(__HERE__, "need exactly 2 camera IDs"));
 
@@ -216,8 +205,8 @@ void StereoServer::configure(const map<string,string> & _config) throw(runtime_e
   // allocate the actual stereo matcher with given max disparity
   census = new CensusGPU();
 #endif
-
 }
+
 
 void StereoServer::start()
 {
@@ -237,9 +226,10 @@ void StereoServer::start()
 
   if(doDisplay)
   {
-    cvNamedWindow("left", 1);
-    cvNamedWindow("right", 1);
-    cvNamedWindow("disparity", 1);
+    cvNamedWindow("left", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("right", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("disparity", CV_WINDOW_AUTOSIZE);
+    //cvWaitKey(10);
   }
   
   PointCloudServer::start();
@@ -400,7 +390,7 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
   return true;
 }
 
-void StereoServer::getDisparityImage(int imgWidth, Video::Image& image)
+void StereoServer::getDisparityImage(int imgWidth, Video::Image& image)        /// TODO Reimplement?
 {
   throw runtime_error(exceptionMessage(__HERE__, "not implemented"));
 	/*lockComponent();
@@ -414,8 +404,6 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   // save the head pose for this pair of images
   stereoCam->pose = images[LEFT].camPars.pose;
 
-  double t1 = gethrtime_d();
-
   for(int i = LEFT; i <= RIGHT; i++)
   {
     convertImageToIpl(images[i], &imgSet.colorImg[i]);
@@ -423,8 +411,6 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
     cvCvtColor(imgSet.rectColorImg[i], imgSet.rectGreyImg[i], CV_RGB2GRAY);
   }
   cvSet(imgSet.disparityImg, cvScalar(0));
-
-  double t2 = gethrtime_d();
 
 #ifdef HAVE_GPU_STEREO
   int res = findClosestResolution(imgSet.disparityImg->width);
@@ -450,8 +436,6 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
   stereoCam->CalculateDisparity(imgSet.rectGreyImg[LEFT], imgSet.rectGreyImg[RIGHT], imgSet.disparityImg);
 #endif
 
-  double t3 = gethrtime_d();
-
   if(logImages)
   {
     for(int i = LEFT; i <= RIGHT; i++)
@@ -470,9 +454,10 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
     cvWaitKey(10);
   }
 
+/*
   double t4 = gethrtime_d();
 
-  /*log("%s at %d x %d: copy/rectify/convert images: %lf, stereo: %lf, log/display images: %lf - total: %lf / frame rate: %lf",
+  log("%s at %d x %d: copy/rectify/convert images: %lf, stereo: %lf, log/display images: %lf - total: %lf / frame rate: %lf",
 #ifdef HAVE_GPU_STEREO
       "gpustereo",
 #else
@@ -482,12 +467,12 @@ void StereoServer::stereoProcessing(StereoCamera *stereoCam, ImageSet &imgSet, c
     t2 - t1, t3 - t2, t4 - t3, t4 - t1, 1./(t4 - t1));*/
 }
 
-void StereoServer::receiveImages(const vector<Video::Image>& images)
+void StereoServer::receiveImages(const vector<Video::Image>& images)        /// TODO Reimplement?
 {
-  lockComponent();
+//   lockComponent();
   printf("StereoServer::receiveImages: Warning: Not yet implemented!\n");
-  //stereoProcessing();
-  unlockComponent();
+//   stereoProcessing(stereoCams[0], imgSets[0], images);
+//   unlockComponent();
 }
 
 void StereoServer::runComponent()
