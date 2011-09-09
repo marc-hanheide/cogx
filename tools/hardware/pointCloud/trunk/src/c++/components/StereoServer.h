@@ -81,13 +81,6 @@ private:
   };
 
   /**
-   * Camera IDs for getting left and right images
-   * this must be a vector of length 2 with camIds[LEFT] and camIds[RIGHT] the
-   * ids of the left and right cameras respectively
-   */
-//   std::vector<int> camIds; // TODO shifted to PointCloud server!!!
-
-  /**
    * component ID of the video server to connect to
    */
   std::string videoServerName;
@@ -130,8 +123,8 @@ private:
   int medianSize;
 #endif
 
-  bool doDisplay;               // display the stereo images
-  bool logImages;		//
+  bool doDisplay;   // display the stereo images
+  bool logImages;   // log the images to the disk
 
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);
   virtual void start();

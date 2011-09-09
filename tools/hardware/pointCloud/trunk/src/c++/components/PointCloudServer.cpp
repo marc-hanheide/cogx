@@ -39,36 +39,36 @@ using namespace cogx;
 using namespace cogx::Math;
 
 
-#ifdef __APPLE__ //nah: OS X doesn't have CLOCK_MONOTONIC
+// #ifdef __APPLE__ //nah: OS X doesn't have CLOCK_MONOTONIC
 
-static double gethrtime_d()
-{
-	timeval tv;
-	int ret = gettimeofday(&tv, NULL);  
-	if(ret != 0) {
-    	return 0;
-	}
-	return (double)tv.tv_sec + 1e-6*(double)tv.tv_usec;
-}
+// static double gethrtime_d()
+// {
+// 	timeval tv;
+// 	int ret = gettimeofday(&tv, NULL);  
+// 	if(ret != 0) {
+//     	return 0;
+// 	}
+// 	return (double)tv.tv_sec + 1e-6*(double)tv.tv_usec;
+// }
 
 
-#else
+// #else
 
-static double gethrtime_d()
-{
-  struct timespec ts;
-  int ret;
-#ifdef CLOCK_MONOTONIC_HR
-  ret = clock_gettime(CLOCK_MONOTONIC_HR, &ts);
-#else
-  ret = clock_gettime(CLOCK_MONOTONIC, &ts);
-#endif
-  if(ret != 0)
-    return 0;
-  return (double)ts.tv_sec + 1e-9*(double)ts.tv_nsec;
-}
+// static double gethrtime_d()
+// {
+//   struct timespec ts;
+//   int ret;
+// #ifdef CLOCK_MONOTONIC_HR
+//   ret = clock_gettime(CLOCK_MONOTONIC_HR, &ts);
+// #else
+//   ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+// #endif
+//   if(ret != 0)
+//     return 0;
+//   return (double)ts.tv_sec + 1e-9*(double)ts.tv_nsec;
+// }
 
-#endif
+// #endif
 
 /// ************** Point Cloud Server Interface ************** ///
 void PointCloudServerI::getPoints(bool transformToGlobal, int imgWidth, PointCloud::SurfacePointSeq& points, const Ice::Current&)
@@ -81,9 +81,9 @@ void PointCloudServerI::getCompletePoints(bool transformToGlobal, int imgWidth, 
   ptCloudSrv->getPoints(transformToGlobal, imgWidth, points, true);
 }
 
-void PointCloudServerI::getRectImage(Ice::Int side, int imgWidth, Video::Image& image, const Ice::Current&)
+void PointCloudServerI::getRectImage(Ice::Int camId, int imgWidth, Video::Image& image, const Ice::Current&)
 {
-  ptCloudSrv->getRectImage(side, imgWidth, image);
+  ptCloudSrv->getRectImage(camId, imgWidth, image);
 }
 
 void PointCloudServerI::getDisparityImage(int imgWidth, Video::Image& image, const Ice::Current&)
@@ -96,9 +96,9 @@ void PointCloudServerI::getDepthMap(cast::cdl::CASTTime &time, vector<int>& data
   ptCloudSrv->getDepthMap(time, data);
 }
 
-bool PointCloudServerI::getCameraParameters(Ice::Int side, Video::CameraParameters& cam, const Ice::Current&)
+bool PointCloudServerI::getCameraParameters(Ice::Int camId, Video::CameraParameters& cam, const Ice::Current&)
 {
-  return ptCloudSrv->getCameraParameters(side, cam);
+  return ptCloudSrv->getCameraParameters(camId, cam);
 }
 
 bool PointCloudServerI::isPointInViewCone(const cogx::Math::Vector3& point, const Ice::Current&)
@@ -149,8 +149,7 @@ void PointCloudServer::configure(const map<string,string> & _config) throw(runti
       // the stereo rig.
       if(file.find(":") == string::npos)
       {
-        // monocular files can be either .cal (INI style) or .xml (from OpenCV
-        // file storage)
+        // monocular files can be either .cal (INI style) or .xml (from OpenCV)
         if(file.find(".xml") == string::npos)
           loadCameraParameters(pars, file);
         else
@@ -227,9 +226,6 @@ void PointCloudServer::start()
       new MemberFunctionChangeReceiver<PointCloudServer>(this, &PointCloudServer::receivePTZCommand));
 }
 
-/**
- * @brief Receive camera parameters from the camera mount
- */
 void PointCloudServer::receivePTZCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   try {
