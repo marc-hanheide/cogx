@@ -415,16 +415,19 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
     int cntPoints = 0;
     cogx::Math::ColorRGB coPrev;
 
-    // pct: limit the total number of sent points to approx 5000 (when not colored by label)
-    int pct = floor(0.5 + 100 * (5000.0 / points.size()));
-    // labelPct: limit the number of sent points to approx 3000 for every label
-    map<int, int> labelPct;
+    // (Approximately) Limit the number of points sent to the display server
+    const double MAX_TOTAL = 5000.0;
+    const double MAX_PER_LABEL = 2000.0;
+    // pctLimit: % of points sent when sending colored points (! bColorByLabels)
+    int pctLimit = floor(0.5 + 100 * (MAX_TOTAL / points.size()));
+    // pctLabelLimit: % of points sent when sending colors by label (bColorByLabels)
+    map<int, int> pctLabelLimit;
     if (bColorByLabels) {
-	for(size_t i = 0; i < points.size(); i++) labelPct[labels[i]] = 0;
-	for(size_t i = 0; i < points.size(); i++) ++labelPct[labels[i]];
-	typeof(labelPct.begin()) it;
-	for (it = labelPct.begin(); it != labelPct.end(); ++it) {
-	    it->second = floor(0.5 + 100 * (3000.0 / it->second)); 
+	for(size_t i = 0; i < points.size(); i++) pctLabelLimit[labels[i]] = 0;
+	for(size_t i = 0; i < points.size(); i++) ++pctLabelLimit[labels[i]];
+	typeof(pctLabelLimit.begin()) it;
+	for (it = pctLabelLimit.begin(); it != pctLabelLimit.end(); ++it) {
+	    it->second = floor(0.5 + 100 * (MAX_PER_LABEL / it->second)); 
 	}
     }
 
@@ -437,10 +440,10 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	    continue;
 
 	if (!bColorByLabels) {
-	    if (rand() % 100 > pct)
+#define CO3(bc) int(1000.0*bc/255)/1000.0
+	    if (rand() % 100 > pctLimit)
 		continue;
 
-#define CO3(bc) int(1000.0*bc/255)/1000.0
 	    if (coPrev != p.c) {
 		++cntColors;
 		str << "c(" << CO3(p.c.r) << "," << CO3(p.c.g) << "," << CO3(p.c.b) << ")\n";
@@ -453,7 +456,7 @@ void PlanePopOut::SendPoints(const PointCloud::SurfacePointSeq& points, std::vec
 	    if (lab == -1) 
 		continue; // skip this point
 
-	    if (rand() % 100 > labelPct[lab])
+	    if (rand() % 100 > pctLabelLimit[lab])
 		continue;
 
 	    if (plab != lab) {
