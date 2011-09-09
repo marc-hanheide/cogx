@@ -6,20 +6,16 @@ Find_package(X11 REQUIRED)
 # set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Peekabot REQUIRED)
+include_directories(${PEEKABOT_INSTALLROOT}/include)
+link_directories(${PEEKABOT_INSTALLROOT}/lib)
 
 # Find QT4 
 find_package( Qt4 REQUIRED )
 include(${QT_USE_FILE})
 
-find_package(Eigen)
-include_directories(${EIGEN_INCLUDE_DIRS})
-include_directories(/usr/include/eigen2)
-include_directories(${PEEKABOT_INSTALLROOT}/include)
-link_directories(${PEEKABOT_INSTALLROOT}/lib)
+find_package(Eigen2 REQUIRED)
+include_directories(${EIGEN2_INCLUDE_DIRS})
 
-
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
@@ -129,7 +125,7 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(SpatialControl SpatialControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
