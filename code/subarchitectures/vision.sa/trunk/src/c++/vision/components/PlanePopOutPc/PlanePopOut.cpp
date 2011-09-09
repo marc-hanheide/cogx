@@ -166,7 +166,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
 #define ID_OBJECT_3D       "PlanePopout.3D"
 #define ID_PART_3D_POINTS  "3D points"
 #define ID_PART_3D_PLANE   "Plane grid"
-#define ID_PART_3D_SOI     "SOI:"
+#define ID_PART_3D_SOI     "SOIs"
 #define ID_PART_3D_OVERLAY "Overlay"
 #define ID_OBJECT_IMAGE    "PlanePopout.Image"
 
@@ -181,9 +181,20 @@ void PlanePopOut::configure(const map<string,string> & _config)
 void PlanePopOut::start()
 {
     startPCCServerCommunication(*this);
-//     log("start the component!!!!!!!!!");
-#ifdef FEAT_VISUALIZATION
+    startV11N();
 
+//     log("In start, finish the initialization of visualization");
+
+    // @author: mmarko
+    // we want to receive GetStableSoisCommand-s
+    addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
+	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
+		&PlanePopOut::onAdd_GetStableSoisCommand));
+}
+
+#ifdef FEAT_VISUALIZATION
+void PlanePopOut::startV11N()
+{
     m_bSendPoints = false;
     m_bSendPlaneGrid = true;
     m_bSendImage = true;
@@ -264,16 +275,8 @@ void PlanePopOut::start()
 	<< "end\n";
 
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
-#endif
-//     log("In start, finish the initialization of visualization");
-    // @author: mmarko
-    // we want to receive GetStableSoisCommand-s
-    addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
-	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		&PlanePopOut::onAdd_GetStableSoisCommand));
 }
 
-#ifdef FEAT_VISUALIZATION
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
     if (!pPopout) return;
