@@ -92,9 +92,10 @@ void StereoCamera::ReadFromXML(const string &filename, int side, bool usePose)
   
   cam[side].k1 = cvmGet(distortion, 0, 0);
   cam[side].k2 = cvmGet(distortion, 0, 1);
-  cam[side].k3 = cvmGet(distortion, 0, 4);
   cam[side].t1 = cvmGet(distortion, 0, 2);
   cam[side].t2 = cvmGet(distortion, 0, 3);
+  if(distortion->rows == 5 || distortion->cols == 5)
+    cam[side].k3 = cvmGet(distortion, 0, 4);
   
   cam[side].proj[0][0] = cvmGet(proj, 0, 0);
   cam[side].proj[0][1] = cvmGet(proj, 0, 1);
