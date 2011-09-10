@@ -69,13 +69,19 @@ public:
 				CvHistogram* hist;
         int numFramesNotSeen;
         int numStableFrames;
+        bool hasMatch;
         RGBValue dispColor;
 
         SOIEntry() {
             hist = 0;
             numFramesNotSeen = 0;
             numStableFrames = 0;
-            dispColor.float_value = GetRandomColor();
+            hasMatch = false;
+            dispColor.r = rand()%255;
+            dispColor.g = rand()%255;
+            dispColor.b = rand()%255;
+            dispColor.a = 0;
+            //dispColor.float_value = GetRandomColor();
         }
         ~SOIEntry() {
             cvReleaseHist(&hist);
@@ -141,6 +147,8 @@ private:
      * is used as the key.
      */
 		std::map<unsigned, SOIEntry> currentSOIs;
+   	// detected SOIs from PlanePopout
+    vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
     void GetImageData();
     void GetPlaneAndSOIs();
@@ -174,6 +182,7 @@ private:
     void SendPlaneGrid();
     void SendOverlays();
     void SendSOI(PlanePopOut::SOIEntry& soi);
+    void SendSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &sois);
     void SendRemovedSOI(PlanePopOut::SOIEntry& soi);
 #endif
 
