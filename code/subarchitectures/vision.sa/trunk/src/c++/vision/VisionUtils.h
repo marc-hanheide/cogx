@@ -188,7 +188,7 @@ inline float GetRandomColor()
  * @param cloud Point cloud
  * @param colCloud Color values for the point cloud
  */
-inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> points, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
+inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> &points, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
 {
   printf("VisionUtils::Points2Cloud: Antiquated function: Use the cv::Vec4f matrix!\n");
   
