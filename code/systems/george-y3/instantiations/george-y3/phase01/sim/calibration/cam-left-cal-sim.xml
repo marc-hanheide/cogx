@@ -15,8 +15,8 @@
 			0.00  772.55  240.00
 			0.00    0.00    1.00</data></intrinsic>
 <distortion type_id="opencv-matrix">
-  <rows>4</rows>
-  <cols>1</cols>
+  <rows>1</rows>
+  <cols>4</cols>
   <dt>d</dt>
   <data>
     0 0 0 0</data></distortion>

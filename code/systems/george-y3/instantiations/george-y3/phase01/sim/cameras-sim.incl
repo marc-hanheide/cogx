@@ -2,7 +2,7 @@
 
 SETVAR camera_config_dir=%(CURRENT_DIR)/calibration
 #SETVAR camera_config_file=%(camera_config_dir)/ul_stereo_20101005.ini
-SETVAR stereo_config_file=%(camera_config_dir)/stereo-sim.ini
+SETVAR stereo_config_file="%(camera_config_dir)/cam-left-cal-sim.xml %(camera_config_dir)/cam-right-cal-sim.xml"
 
 VARDEFAULT PlayerCameraConfigs_01=<multiline>
    %(camera_config_dir)/cam-left-cal-sim.xml
@@ -22,8 +22,8 @@ CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
 SETVAR StereoServer_Params=<multiline>
    --videoname videoserver
    --camids "0 1"
-   --stereoconfig "%(stereo_config_file)"
-   #--camconfigs "%(camera_config_file):L %(camera_config_file):R"
+   --stereoconfig_xml "%(PlayerCameraConfigs_01)"
+   --camconfigs "%(PlayerCameraConfigs_01)"
    #--imgsize "640 480 320 240" --maxdisp "192 96"
    --imgsize "320 240" --maxdisp "96"
    --displayserver "display.srv"
