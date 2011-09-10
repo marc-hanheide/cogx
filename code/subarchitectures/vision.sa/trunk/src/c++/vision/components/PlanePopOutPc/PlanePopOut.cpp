@@ -238,6 +238,9 @@ void PlanePopOut::SOIEntry::updateFrom(PlanePopOut::SOIEntry &other)
     // this SOI has just been seen
     numFramesNotSeen = 0;
     numStableFrames++;
+    // these two SOIs are matched now
+    hasMatch = true;
+    other.hasMatch = true;
     // and dispColor are not copied
     // of course WMId is also not changed
 }
@@ -296,7 +299,18 @@ void PlanePopOut::SOIEntry::calcHistogram()
 PlanePopOut::PlanePopOut()
 {
     iplDispImage = 0;
-    planePopout = new pclA::PlanePopout();
+
+    // TODO: these settings should come from CAST config.
+    pclA::PlanePopout::Parameter par;
+    // Minimum and maximum object height (default 0.005m, and 0.7m))
+    // for origin in camera
+    //par.minObjectHeight = 0.005;
+    //par.maxObjectHeight = 1.;
+    // for origin in robot ego
+    par.minObjectHeight = -1.;
+    par.maxObjectHeight = -0.05;
+    //par.thrSacDistance = 0.03;
+    planePopout = new pclA::PlanePopout(par);
 }
 
 PlanePopOut::~PlanePopOut()
@@ -381,8 +395,6 @@ void PlanePopOut::start()
     startPCCServerCommunication(*this);
 
 #ifdef FEAT_VISUALIZATION
-void PlanePopOut::startV11N()
-{
     m_bSendPoints = false;
     m_bSendPlaneGrid = true;
     m_bSendImage = true;
@@ -471,6 +483,7 @@ void PlanePopOut::startV11N()
 		&PlanePopOut::onAdd_GetStableSoisCommand));
 }
 
+#ifdef FEAT_VISUALIZATION
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
     if (!pPopout) return;
@@ -575,10 +588,9 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 
     int pointCnt = 0;
     if (points.size() < 1) {
-	m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
-	m_display.setHtml("LOG", "log.PPO.SendPoints", 
-		"<h3>Plane popout - SendPoints</h3>No points");
-	return;
+        m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
+        m_display.setHtml("LOG", "log.PPO.SendPoints", "<h3>Plane popout - SendPoints</h3>No points");
+        return;
     }
 
     std::ostringstream str;
@@ -587,7 +599,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
     str << "v=glVertex\nc=glColor\n";
 
-    if (dominantPlane.valid) {
+    /*if (dominantPlane.valid) {
         str << "c(" << (float)dominantPlane.dispColor.r/255. << ","
             << (float)dominantPlane.dispColor.g/255. << ","
             << (float)dominantPlane.dispColor.b/255. << ")\n";
@@ -598,8 +610,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
                 << (int)dominantPlane.planePoints[i].p.z << ")\n";
             pointCnt++;
         }
-	++cntPoints;
-    }
+    }*/
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
         str << "c(" << (float)it->dispColor.r/255. << ","
@@ -654,13 +665,10 @@ void PlanePopOut::SendPlaneGrid()
             << (float)dominantPlane.dispColor.g/255. << ","
             << (float)dominantPlane.dispColor.b/255. << ")\n";
         str << "v=glVertex\n";
-        for(int i = 0; i < dominantPlane.hullPoints.size(); i++)
+        for(size_t i = 0; i < dominantPlane.hullPoints.size(); i++)
             str << "v(" << dominantPlane.hullPoints[i].x << ","
                 << dominantPlane.hullPoints[i].y << ","
                 << dominantPlane.hullPoints[i].z << ")\n";
-        str << "v(" << dominantPlane.hullPoints[0].x << ","
-            << dominantPlane.hullPoints[0].y << ","
-            << dominantPlane.hullPoints[0].z << ")\n";
         str << "glEnd()\n";
     }
     str << "end\n";
@@ -724,6 +732,42 @@ void PlanePopOut::SendRemovedSOI(PlanePopOut::SOIEntry& soi)
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
 }
 
+void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &sois)
+{
+    ostringstream str;
+    str << "function render()\n";
+    str << "v=glVertex\nc=glColor\n";
+    str << "c(0.0,1.0,0.0)\n";
+    for(size_t i = 0; i < pcl_sois.size(); i++)
+    {
+        size_t n = sois[i]->points.size();
+        str << "glBegin(GL_LINE_LOOP)\n";
+        for(size_t j = 0; j < n/2; j++)
+            str << "v(" << sois[i]->points[j].x << ","
+                << sois[i]->points[j].y << ","
+                << sois[i]->points[j].z << ")\n";
+        str << "glEnd()\n";
+        str << "glBegin(GL_LINE_LOOP)\n";
+        for(size_t j = n/2; j < n; j++)
+            str << "v(" << sois[i]->points[j].x << ","
+                << sois[i]->points[j].y << ","
+                << sois[i]->points[j].z << ")\n";
+        str << "glEnd()\n";
+        str << "glBegin(GL_LINES)\n";
+        for(size_t j = 0; j < n/2; j++)
+        {
+            str << "v(" << sois[i]->points[j].x << ","
+                << sois[i]->points[j].y << ","
+                << sois[i]->points[j].z << ")\n";
+            str << "v(" << sois[i]->points[j + n/2].x << ","
+                << sois[i]->points[j + n/2].y << ","
+                << sois[i]->points[j + n/2].z << ")\n";
+        }
+        str << "glEnd()\n";
+    }
+    str << "end\n";
+    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, str.str());
+}
 #endif
 
 void PlanePopOut::runComponent()
@@ -812,11 +856,58 @@ void PlanePopOut::DisplayInTG()
 {
     cv::Mat_<cv::Point3f> cloud;
     cv::Mat_<cv::Point3f> colCloud;
-    Points2Cloud(points, cloud, colCloud);
-    if(doDisplay)
+    int cnt = 0;
+
+    /*Points2Cloud(points, cloud, colCloud);
+    tgRenderer->Clear();
+    tgRenderer->SetPointCloud(cloud, colCloud);
+    return;  // HACK*/
+
+    if (dominantPlane.valid)
+        for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+            cnt++;
+    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
+        for(size_t i = 0; i < it->points.size(); i++)
+            cnt++;
+    cloud = cv::Mat_<cv::Point3f>(1, cnt);
+    colCloud = cv::Mat_<cv::Point3f>(1, cnt);    
+    cnt = 0;
+    if (dominantPlane.valid) {
+        for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+        {
+            cv::Point3f p, cp;
+            p.x = (float)dominantPlane.planePoints[i].p.x;
+            p.y = (float)dominantPlane.planePoints[i].p.y;
+            p.z = (float)dominantPlane.planePoints[i].p.z;
+            //cp.x = dominantPlane.planePoints[i].p.r;
+            //cp.y = dominantPlane.planePoints[i].p.g;
+            //cp.z = dominantPlane.planePoints[i].p.b;
+            cp.x = (float)dominantPlane.dispColor.r;
+            cp.y = (float)dominantPlane.dispColor.g;
+            cp.z = (float)dominantPlane.dispColor.b;
+            cloud.at<cv::Point3f>(0, cnt) = p;
+            colCloud.at<cv::Point3f>(0, cnt) = cp;
+            cnt++;
+        }
+    }
+    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
-				tgRenderer->Clear();
-				tgRenderer->SetPointCloud(cloud, colCloud);
+        for(size_t i = 0; i < it->points.size(); i++)
+        {
+		        cv::Point3f p, cp;
+		        p.x = (float)it->points[i].p.x;
+		        p.y = (float)it->points[i].p.y;
+		        p.z = (float)it->points[i].p.z;
+            //cp.x = it->points[i].p.r;
+				    //cp.y = it->points[i].p.g;
+				    //cp.z = it->points[i].p.b;
+				    cp.x = (float)it->dispColor.r;
+				    cp.y = (float)it->dispColor.g;
+				    cp.z = (float)it->dispColor.b;
+		        cloud.at<cv::Point3f>(0, cnt) = p;
+		        colCloud.at<cv::Point3f>(0, cnt) = cp;
+            cnt++;
+        }
     }
 }
 
@@ -869,8 +960,6 @@ void PlanePopOut::GetPlaneAndSOIs()
         if (!planePopout->CalculateSOIs(pcl_cloud))
 	          return;
 
-       	// detected SOIs from PlanePopout
-        vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
         // Dominant plane coefficients
         pcl::ModelCoefficients::Ptr pcl_domplane;
         // table hull points
@@ -878,16 +967,26 @@ void PlanePopOut::GetPlaneAndSOIs()
         // the indices of points on the dominant plane
         pcl::PointIndices::Ptr planepoints;
 
+        pcl_sois.clear();
         planePopout->GetSOIs(pcl_sois);
         planePopout->GetDominantPlaneCoefficients(pcl_domplane);
         planePopout->GetTableHulls(tablehull);
         planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
         planePopout->GetPlanePoints(planepoints); 
 
+#ifdef FEAT_VISUALIZATION
+        // NOTE: not nice having visualisiaton code here, but ok
+        if (m_bSendSois)
+            SendSOIs(pcl_sois);
+#endif
+
         // fill our dominant plane structure
         dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
 
         // fill our SOI structures
+        // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
+        // vertices of the bounding prism. We are however interested in all original
+        // points inside the SOI.
         for (size_t i = 0; i < pcl_cloud->points.size(); i++)
         {
             int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
@@ -915,11 +1014,13 @@ void PlanePopOut::GetPlaneAndSOIs()
  */
 void PlanePopOut::TrackSOIs()
 {
-    // need to remember which current SOI was claimed by one of the tracked SOIs,
-    // so that unused current SOIs can create new tracked SOIs
-    map<unsigned, bool> soi_was_used;
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
-        soi_was_used[jt->first] = false;
+    {
+        ostringstream str;
+        str << "current SOI " << jt->first << " at: "
+            << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
+        log("%s", str.str().c_str());
+    }
 
     // for each tracked SOI find the best match among current SOIs, if any
     // NOTE: this is rather primitive, more elaborate schemes are possible
@@ -938,7 +1039,6 @@ void PlanePopOut::TrackSOIs()
         }
         if (best != -1) {
             it->updateFrom(currentSOIs[best]);
-            soi_was_used[best] = true;
 
             // if the SOI is already in WM, overwrite it
             if (!it->WMId.empty()) {
@@ -952,7 +1052,8 @@ void PlanePopOut::TrackSOIs()
                     addToWorkingMemory(it->WMId, wmsoi);
 #ifdef FEAT_VISUALIZATION
                     // NOTE: not nice having visualisiaton code here, but ok
-                    SendSOI(*it);
+                    if (m_bSendSois)
+                        SendSOI(*it);
 #endif
                 }
             }
@@ -960,14 +1061,16 @@ void PlanePopOut::TrackSOIs()
             // no update, i.e. not seen
             it->numFramesNotSeen++;
             it->numStableFrames = 0;
+            it->hasMatch = false;
         }
     }
 
     // all current SOIs that were not used instantiate a new tracked SOI
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
-        log("soi %d was used : %s", (int)jt->first, (soi_was_used[jt->first] ? "yes" : "no"));
-        if (!soi_was_used[jt->first]) {
+        log("current soi %d found a matching tracked soi : %s",
+           (int)jt->first, (jt->second.hasMatch ? "yes" : "no"));
+        if (!jt->second.hasMatch) {
             trackedSOIs.push_back(SOIEntry());
             trackedSOIs.back().updateFrom(jt->second);
             // NOTE: no WM action yet here. only once a SOI has been seen longer than StableTime
@@ -989,7 +1092,7 @@ void PlanePopOut::TrackSOIs()
             }
             it = trackedSOIs.erase(it);
         } else {
-            it++;
+            it++; 
         }
     }
 }
