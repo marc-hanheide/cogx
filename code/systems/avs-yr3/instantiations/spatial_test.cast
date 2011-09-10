@@ -1,0 +1,40 @@
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base-slow.cast
+INCLUDE includes/spatial.sa/spatial-unknown-map.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+#INCLUDE includes/spatial.sa/spatial-objsearch-no-tilt.cast
+#INCLUDE includes/spatial.sa/spatial-avs-cpplanner.cast
+
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --create-viewcone
+JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG  VideoServer ProsilicaServer --videoname video --camids "0" --devnums "0" -camconfigs "instantiations/test-recognition3d/dora.right.cal"
+
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+#INCLUDE includes/default.sa/default-test.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
+INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-teknikringen-shape-appearance.cast
+#INCLUDE includes/categorical.sa/categorical-shape-sim.cast
+
+
