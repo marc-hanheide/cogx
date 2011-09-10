@@ -696,7 +696,8 @@ void KinectStereoSeqServer::tryNextSequence()
  */
 void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
 { 
-  if(imgWidth >= 640) log("getPoints: Warning: Point clouds >= 640x480 may exceed memory limit of ice streams."); 
+  if(imgWidth >= 640)
+    log("getPoints: Warning: Point clouds >= 640x480 may exceed memory limit of ice streams."); 
   
   if(noContinousGrabing) grabFramesInternal();
 
@@ -827,12 +828,7 @@ void KinectStereoSeqServer::getPoints(bool transformToGlobal, int imgWidth, vect
       }
       else if(complete)
       {
-printf("KinectStereoSeqServer::getPoints: get complete stereo points: not yet implemented?\n");
-        stereoCam->ReconstructPoint((double)x, (double)y, 64, p.p.x, p.p.y, p.p.z);
-        if(transformToGlobal)
-          // now get from left cam coord sys to global coord sys
-          p.p = transform(global_left_pose, p.p);
-//         p.p = vector3(0., 0., 0.);
+        p.p = vector3(0., 0., 0.);
         cogx::Math::ColorRGB *c = (cogx::Math::ColorRGB*) Video::cvAccessImageData(rectifiedStereoImages[0], x, y);
         p.c = *c;
         points.push_back(p);
