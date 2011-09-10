@@ -56,3 +56,18 @@ if(BUILD_HAL_VIDEO_PLAYER)
    link_cast_component(${CAST_COMPONENT_NAME} ${PLAYER_LIBRARIES})
 endif(BUILD_HAL_VIDEO_PLAYER)
 
+option(BUILD_HAL_VIDEO_PROSILICA "Build Prosilica video server" NO)
+if(BUILD_HAL_VIDEO_PROSILICA)
+include_directories(./prosilica/inc-pc)
+
+if (UNIX AND NOT WIN32)
+    if (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	ADD_DEFINITIONS(-D_LINUX -D_x64)
+    else (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	ADD_DEFINITIONS(-D_LINUX -D_x86)
+    endif (CMAKE_SIZEOF_VOID_P MATCHES "8")
+endif (UNIX AND NOT WIN32)
+
+add_cast_component(ProsilicaServer ProsilicaServer.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils PvAPI)
+endif(BUILD_HAL_VIDEO_PROSILICA)
