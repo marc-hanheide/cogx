@@ -60,8 +60,8 @@ public:
               int nb = 10,
               double thrSac = 0.05,
               double normalDistWeight = 0.1,
-              double minObjH = -0.8,
-              double maxObjH = -0.05,
+              double minObjH = 0.005,
+              double maxObjH = 0.7,
               float eucThr = 0.02,
               unsigned minClSize = 100)
       : minZ(_minZ), maxZ(_maxZ), downsampleLeaf(dwLeaf), downsampleLeafObjects(dwLeafObj), 
@@ -89,7 +89,6 @@ protected:
   pcl::ModelCoefficients::Ptr tableCoefficients;                    ///< Coefficients of the dominant plane (table)
   cv::Mat_<ushort> roi_label_mask;                                  ///< Mask of the rois with labels!
   std::vector<SOI> sois;                                            ///< vector with stored SOIs
-//   std::vector<CvHistogram*> hists;				    ///< vector with histograms of all the SOIs
 
 private:
   Parameter param;
@@ -129,7 +128,6 @@ public:
 
   void GetTableHulls(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_tablehulls) {_tablehulls = tableHull;}
   void GetPlanePoints(pcl::PointIndices::Ptr &_planepointsindices) {_planepointsindices = tableInliers;}
-//   void GetHists(std::vector< CvHistogram* > &_hists);
 
   void GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois);
   

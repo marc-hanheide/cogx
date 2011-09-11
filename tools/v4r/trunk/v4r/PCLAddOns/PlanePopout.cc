@@ -123,10 +123,6 @@ bool PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
     {
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster_hull;
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr soi;
-//       CvHistogram* hist;
-//       
-//       hist = CalSOIHist(clusters[i]);
-//       hists.push_back(hist);
 
       double max_dist = 0;
       pclA::MaxDistanceToPlane(clusters[i], tableCoefficients, max_dist);     // Calculate the maximum distance to table plane
@@ -143,56 +139,6 @@ bool PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
   valid_computation = true;
   return true;
 }
-
-/**
- * Calculate the Histogram of all the points in the SOI.
- */
-/*
-CvHistogram* PlanePopout::CalSOIHist(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud)
-{
-    CvHistogram* h;
-    IplImage* tmp = cvCreateImage(cvSize(1, pcl_cloud->points.size()), 8, 3);		///temp image, store all the points in the SOI in a matrix way
-    for (unsigned int i=0; i<pcl_cloud->points.size(); i++)
-    {
-	CvScalar v;	  
-	v.val[0] = pcl_cloud->points[i].b;
-	v.val[1] = pcl_cloud->points[i].g;
-	v.val[2] = pcl_cloud->points[i].r;
-	cvSet2D(tmp, i, 0, v);
-    }
-    IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* v_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
-    IplImage* planes[] = { h_plane, s_plane };
-    IplImage* hsv = cvCreateImage( cvGetSize(tmp), 8, 3 );
-    int h_bins = 16, s_bins = 8;
-    int hist_size[] = {h_bins, s_bins};
-    // hue varies from 0 (~0 deg red) to 180 (~360 deg red again)
-    float h_ranges[] = { 0, 180 };
-    // saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) 
-    float s_ranges[] = { 0, 255 };
-    float* ranges[] = { h_ranges, s_ranges };
-    float max_value = 0;
-
-    cvCvtColor( tmp, hsv, CV_BGR2HSV );
-    cvCvtPixToPlane( hsv, h_plane, s_plane, v_plane, 0 );
-    h = cvCreateHist( 2, hist_size, CV_HIST_ARRAY, ranges, 1 );
-    cvCalcHist( planes, h, 0, 0 );
-    cvGetMinMaxHistValue( h, 0, &max_value, 0, 0 );
-
-    cvReleaseImage(&h_plane);
-    cvReleaseImage(&s_plane);
-    cvReleaseImage(&v_plane);
-    cvReleaseImage(&hsv);
-    cvReleaseImage(&tmp);
-    return h;
-}
-*/
-// void PlanePopout::GetHists(std::vector< CvHistogram* > &_hists)
-// {
-//   for(unsigned i=0; i<hists.size(); i++)
-//     _hists.push_back(hists[i]);
-// }
 
 /**
  * Calculate the ROI mask with labels, starting with 1. 0 means no ROI.
@@ -256,16 +202,17 @@ void PlanePopout::GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > 
  */ 
 unsigned PlanePopout::IsInSOI(float x, float y, float z)
 {
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);
+  /*pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);*/
 
-  pcl::PointXYZRGB p, pn, pp;
+  pcl::PointXYZRGB p;
   p.x = x;
   p.y = y;
   p.z = z;
+  /*pcl::PointXYZRGB pn, pp;
   pcl_cloud->push_back(p);
   pclA::GetProjectedPoints(pcl_cloud, tableCoefficients, pcl_cloud_projected);
-  pn = pcl_cloud_projected->points[0];
+  pn = pcl_cloud_projected->points[0];*/
   
   unsigned label = 0;
   for(unsigned i=0; i<sois.size(); i++)
@@ -273,7 +220,7 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
     unsigned newLabel = sois[i].IsInSOI(p);
     if(newLabel > 0) 
     {
-      // check, if point is "under" table (depends on view!!!)
+      /*// check, if point is "under" table (depends on view!!!)
       pp.x = pn.x - p.x;
       pp.y = pn.y - p.y;
       pp.z = pn.z - p.z;
@@ -282,7 +229,8 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
       double dot_p_pp = p.x*pp.x + p.y*pp.y + p.z*pp.z;
       double angle = acos(dot_p_pp/(norm_p*norm_pp));
       if(angle < 1.57)  // Pi/2
-        label = newLabel;
+        label = newLabel;*/
+      label = newLabel;
     }
   }
   return label;
