@@ -738,7 +738,7 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
     str << "function render()\n";
     str << "v=glVertex\nc=glColor\n";
     str << "c(0.0,1.0,0.0)\n";
-    for(size_t i = 0; i < pcl_sois.size(); i++)
+    for(size_t i = 0; i < sois.size(); i++)
     {
         size_t n = sois[i]->points.size();
         str << "glBegin(GL_LINE_LOOP)\n";
@@ -909,6 +909,8 @@ void PlanePopOut::DisplayInTG()
             cnt++;
         }
     }
+    tgRenderer->Clear();
+    tgRenderer->SetPointCloud(cloud, colCloud);
 }
 
 /**
@@ -966,8 +968,10 @@ void PlanePopOut::GetPlaneAndSOIs()
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
         // the indices of points on the dominant plane
         pcl::PointIndices::Ptr planepoints;
+       	// detected SOIs: convex hull prisms, with first half of points the bottom
+        // and second half the top polygon
+        vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
-        pcl_sois.clear();
         planePopout->GetSOIs(pcl_sois);
         planePopout->GetDominantPlaneCoefficients(pcl_domplane);
         planePopout->GetTableHulls(tablehull);
@@ -987,7 +991,7 @@ void PlanePopOut::GetPlaneAndSOIs()
         // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
         // vertices of the bounding prism. We are however interested in all original
         // points inside the SOI.
-        for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+        /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
         {
             int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
             // if point is in any SOI
@@ -999,9 +1003,35 @@ void PlanePopOut::GetPlaneAndSOIs()
                 p.c.b = pcl_cloud->points[i].b;
                 currentSOIs[soi_label].points.push_back(p);
             }
+        }*/
+
+        // NOTE: the above does not work for some as yet unknown reason, so we essentially
+        // do the same thing "by hand"
+        for (size_t i = 0; i < pcl_sois.size(); i++)
+        {
+            // dummy call to create map entry
+            currentSOIs[i].hist = 0;
+            // NOTE: the following isPointIn2DPolygon() function needs the bottom
+            // polygon of SOI prism, i.e. only the first half of the points 
+            pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
+        }
+        for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+        {
+            for(size_t j = 0; j < pcl_sois.size(); j++)
+            {
+                if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
+                    SurfacePoint p;
+                    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+                    p.c.r = pcl_cloud->points[i].r;
+                  	p.c.g = pcl_cloud->points[i].g;
+                    p.c.b = pcl_cloud->points[i].b;
+                    currentSOIs[j].points.push_back(p);
+                }
+            }
         }
         for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
             it->second.init(dominantPlane);
+        log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
     }
     catch (runtime_error &e) {
         error(" *** PPO CalculateSOIs ... GetPlanePoints is FUCKED UP *** : %s", e.what());

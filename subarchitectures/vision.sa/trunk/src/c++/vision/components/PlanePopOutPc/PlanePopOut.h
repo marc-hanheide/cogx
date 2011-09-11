@@ -147,8 +147,6 @@ private:
      * is used as the key.
      */
 		std::map<unsigned, SOIEntry> currentSOIs;
-   	// detected SOIs from PlanePopout
-    vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
     void GetImageData();
     void GetPlaneAndSOIs();
