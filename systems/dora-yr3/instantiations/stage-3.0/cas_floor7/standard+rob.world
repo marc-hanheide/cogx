@@ -1,0 +1,93 @@
+# Adapated from simple.world from Stage-1.6.2
+# Patric Jensfelt
+
+# defines Pioneer-like robots
+include "../common/pioneer.inc"
+
+# defines 'map' object used for floorplans
+include "../common/map.inc"
+
+# defines sick laser
+include "../common/sick.inc"
+
+define human position
+(
+  size [0.1 0.3]
+  origin [0 0 0]
+
+  gui_node 1
+  gui_boundary 0	
+
+  obstacle_return 1
+  laser_return 1
+  ranger_return 1
+  blobfinder_return 1
+  fiducial_return 1
+  gripper_return 0
+  audio_return 0
+
+  # this polygon approximates the two legs of a human close together
+  polygons 1
+  polygon[0].points 18
+  polygon[0].point[0] [ 0.003 0.000 ]
+  polygon[0].point[1] [ 0.055 0.024 ]
+  polygon[0].point[2] [ 0.075 0.078 ]
+  polygon[0].point[3] [ 0.051 0.130 ]
+  polygon[0].point[4] [ -0.003 0.150 ]
+  polygon[0].point[5] [ -0.055 0.126 ]
+  polygon[0].point[6] [ -0.075 0.072 ]
+  polygon[0].point[7] [ -0.051 0.020 ]
+  polygon[0].point[8] [ -0.003 0.000 ]
+  polygon[0].point[9] [ -0.003 -0.000 ]
+  polygon[0].point[10] [ -0.055 -0.024 ]
+  polygon[0].point[11] [ -0.075 -0.078 ]
+  polygon[0].point[12] [ -0.051 -0.130 ]
+  polygon[0].point[13] [ 0.003 -0.150 ]
+  polygon[0].point[14] [ 0.055 -0.126 ]
+  polygon[0].point[15] [ 0.075 -0.072 ]
+  polygon[0].point[16] [ 0.051 -0.020 ]
+  polygon[0].point[17] [ 0.003 -0.000 ]
+
+  # differential steering model
+  drive "diff"
+)
+
+# set the size of a pixel in meters
+resolution 0.05
+
+# disable gui
+#gui_disable 1
+
+# configure the GUI window
+window
+( 
+  size [ 800.00 340.000 ] 
+  center [0 0] 
+  scale 0.05 
+)
+
+# load an environment bitmap
+map
+(
+  bitmap "../common/cas_floor7.jpg"
+  size [38.95 12.6]
+  #boundary 1
+  name "cas_floor7"
+)
+
+# create a robot
+pioneer2dx
+(
+  name "robot"
+  pose [0 0 0]
+  sick_laser( samples 361 laser_sample_skip 4 )
+)
+
+# create a second robot
+pioneer2dx
+(
+  name "robot2"
+  pose [7 0.7 0]
+  sick_laser( samples 361 laser_sample_skip 4 )
+  color "blue"
+)
