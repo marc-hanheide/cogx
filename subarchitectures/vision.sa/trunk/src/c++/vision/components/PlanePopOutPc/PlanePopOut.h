@@ -175,6 +175,9 @@ private:
     };
     CDisplayClient m_display;
 
+    std::string guiid(const std::string &myid) {
+	return myid + "_" + getComponentID();
+    }
     void startV11N();
     void SendImage();
     void SendPoints(bool bColorByLabels);

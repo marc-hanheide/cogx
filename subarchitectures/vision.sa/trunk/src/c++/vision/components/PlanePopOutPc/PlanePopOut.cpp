@@ -223,7 +223,7 @@ double PlanePopOut::SOIEntry::matchProbability(PlanePopOut::SOIEntry &other)
     // NOTE: that this is of course not a proper probability
     // better probabilistic matches could be implemented
     // but we leave as is for the moment
-    return 1. - compare(other);
+    return 1.0 - compare(other);
 }
 
 void PlanePopOut::SOIEntry::updateFrom(PlanePopOut::SOIEntry &other)
@@ -254,7 +254,7 @@ SOIPtr PlanePopOut::SOIEntry::createWMSOI(ManagedComponent *comp)
     obs->boundingBox = boundingBox;
     obs->time = comp->getCASTTime();
     obs->points = points;
-    obs->BGpoints =	BGpoints;
+    obs->BGpoints = BGpoints;
     // TODO: for now do not set EQpoints, don't know what thes are really
     return obs;
 }
@@ -412,41 +412,42 @@ void PlanePopOut::startV11N()
     m_bSendPlaneGrid = true;
     m_bSendImage = true;
     m_bSendSois = true;
-    m_bColorByLabel = true;
+    m_bColorByLabel = false;
     m_display.connectIceClient(*this);
     m_display.setClientData(this);
     m_display.installEventReceiver();
 
     Visualization::ActionInfo act;
-    act.id = IDC_POPOUT_LABEL_COLOR;
-    act.label = "Color by label";
-    act.iconLabel = "Color";
-    act.iconSvg = "text:Co";
-    act.checkable = true;
-    m_display.addAction(ID_OBJECT_3D, act);
 
-    act.id = IDC_POPOUT_POINTS;
+    //act.id = IDC_POPOUT_LABEL_COLOR;
+    //act.label = "Color by label";
+    //act.iconLabel = "Color";
+    //act.iconSvg = "text:Co";
+    //act.checkable = true;
+    //m_display.addAction(ID_OBJECT_3D, act);
+
+    act.id = guiid(IDC_POPOUT_POINTS);
     act.label = "Toggle Update 3D Points";
     act.iconLabel = "3D Points";
     act.iconSvg = "text:Pts";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
-    act.id = IDC_POPOUT_SOIS;
+    act.id = guiid(IDC_POPOUT_SOIS);
     act.label = "Toggle Update SOIs";
     act.iconLabel = "SOIs";
     act.iconSvg = "text:Soi";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
-    act.id = IDC_POPOUT_PLANEGRID;
+    act.id = guiid(IDC_POPOUT_PLANEGRID);
     act.label = "Toggle Update Convex Hull of Principal Plane";
     act.iconLabel = "Plane Hull";
     act.iconSvg = "text:Hul";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
-    act.id = IDC_POPOUT_IMAGE;
+    act.id = guiid(IDC_POPOUT_IMAGE);
     act.label = "Toggle Update Image";
     act.iconLabel = "Image";
     act.iconSvg = "text:Img";
@@ -458,65 +459,55 @@ void PlanePopOut::startV11N()
     ostringstream ss;
     ss <<  "function render()\nend\n"
 	<< "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, ss.str());
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_POINTS), ss.str());
 
     //Video::Image image;
     //m_display.setImage(ID_OBJECT_IMAGE, image);
 
     ss.str("");
-    ss  << "sois = {}\n"
-	<< "showSois = " << (m_bSendSois ? "true" : "false") << "\n";
+    ss  << "showSois = " << (m_bSendSois ? "true" : "false") << "\n"
+	<< "function render()\nend\n";
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_SOI), ss.str());
 
-    ss  << "function render()\n"
-	<<  "if not showSois then return end\n"
-	<<  "glColor(0.0, 0.0, 1.0, 0.2)\n"
-	<<  "for k,v in pairs(sois) do\n"
-	<<   "glPushMatrix()\n"
-	<<   "glTranslate(v.x, v.y, v.z)\n"
-	<<   "StdModel:cylinder(v.sx, v.sy, v.sz, 12)\n"
-	<<   "glPopMatrix()\n"
-	<<  "end\n"
-	<< "end\n";
+    ss.str("");
+    ss  << "showPoints = " << (m_bSendPoints ? "true" : "false") << "\n"
+	<< "function render()\nend\n";
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_POINTS), ss.str());
 
-    ss  << "function setSoi(id, x, y, z, sx, sy, sz)\n"
-	<<  "sois[id] = {x=x, y=y, z=z, sx=sx, sy=sy, sz=sz}\n"
-	<< "end\n";
-
-    ss  << "function removeSoi(id)\n"
-	<<  "sois[id] = nil\n"
-	<< "end\n";
-
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
+    ss.str("");
+    ss  << "showPlaneGrid = " << (m_bSendPlaneGrid ? "true" : "false") << "\n"
+	<< "function render()\nend\n";
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_PLANE), ss.str());
 }
 
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
     if (!pPopout) return;
     pPopout->println("Got event: %s", event.sourceId.c_str());
-    if (event.sourceId == IDC_POPOUT_POINTS) {
+    if (event.sourceId == pPopout->guiid(IDC_POPOUT_POINTS)) {
 	if (event.data == "0" || event.data=="") pPopout->m_bSendPoints = false;
 	else pPopout->m_bSendPoints = true;
-	if (!pPopout->m_bSendPoints)
-	    setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
+	pPopout->m_display.setLuaGlObject(ID_OBJECT_3D, pPopout->guiid(ID_PART_3D_POINTS), 
+		pPopout->m_bSendPoints ? "showPoints=true" : "showPoints=false");
     }
-    else if (event.sourceId == IDC_POPOUT_PLANEGRID) {
+    else if (event.sourceId == pPopout->guiid(IDC_POPOUT_PLANEGRID)) {
 	if (event.data == "0" || event.data=="") pPopout->m_bSendPlaneGrid = false;
 	else pPopout->m_bSendPlaneGrid = true;
-	if (!pPopout->m_bSendPlaneGrid)
-	    setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_PLANE, "function render()\nend\n");
+	pPopout->m_display.setLuaGlObject(ID_OBJECT_3D, pPopout->guiid(ID_PART_3D_PLANE), 
+		pPopout->m_bSendPlaneGrid ? "showPlaneGrid=true" : "showPlaneGrid=false");
     }
-    else if (event.sourceId == IDC_POPOUT_LABEL_COLOR) {
-	if (event.data == "0" || event.data=="") pPopout->m_bColorByLabel = false;
-	else pPopout->m_bColorByLabel = true;
-    }
-    else if (event.sourceId == IDC_POPOUT_IMAGE) {
+    //else if (event.sourceId == IDC_POPOUT_LABEL_COLOR) {
+    //    if (event.data == "0" || event.data=="") pPopout->m_bColorByLabel = false;
+    //    else pPopout->m_bColorByLabel = true;
+    //}
+    else if (event.sourceId == pPopout->guiid(IDC_POPOUT_IMAGE)) {
 	if (event.data == "0" || event.data=="") pPopout->m_bSendImage = false;
 	else pPopout->m_bSendImage = true;
     }
-    else if (event.sourceId == IDC_POPOUT_SOIS) {
+    else if (event.sourceId == pPopout->guiid(IDC_POPOUT_SOIS)) {
 	if (event.data == "0" || event.data=="") pPopout->m_bSendSois = false;
 	else pPopout->m_bSendSois = true;
-	pPopout->m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, 
+	pPopout->m_display.setLuaGlObject(ID_OBJECT_3D, pPopout->guiid(ID_PART_3D_SOI), 
 		pPopout->m_bSendSois ? "showSois=true" : "showSois=false");
     }
 }
@@ -525,23 +516,23 @@ string PlanePopOut::CDisplayClient::getControlState(const string& ctrlId)
 {
     if (!pPopout) return "";
     pPopout->println("Get control state: %s", ctrlId.c_str());
-    if (ctrlId == IDC_POPOUT_POINTS) {
+    if (ctrlId == pPopout->guiid(IDC_POPOUT_POINTS)) {
 	if (pPopout->m_bSendPoints) return "2";
 	else return "0";
     }
-    if (ctrlId == IDC_POPOUT_PLANEGRID) {
+    if (ctrlId == pPopout->guiid(IDC_POPOUT_PLANEGRID)) {
 	if (pPopout->m_bSendPlaneGrid) return "2";
 	else return "0";
     }
-    if (ctrlId == IDC_POPOUT_LABEL_COLOR) {
-	if (pPopout->m_bColorByLabel) return "2";
-	else return "0";
-    }
-    if (ctrlId == IDC_POPOUT_IMAGE) {
+    //if (ctrlId == IDC_POPOUT_LABEL_COLOR) {
+    //    if (pPopout->m_bColorByLabel) return "2";
+    //    else return "0";
+    //}
+    if (ctrlId == pPopout->guiid(IDC_POPOUT_IMAGE)) {
 	if (pPopout->m_bSendImage) return "2";
 	else return "0";
     }
-    if (ctrlId == IDC_POPOUT_SOIS) {
+    if (ctrlId == pPopout->guiid(IDC_POPOUT_SOIS)) {
 	if (pPopout->m_bSendSois) return "2";
 	else return "0";
     }
@@ -552,7 +543,7 @@ void PlanePopOut::SendImage()
 {
     CMilliTimer tm(true);
 
-    m_display.setImage(ID_OBJECT_IMAGE, iplDispImage);
+    m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
 
     //     CvFont a;
     //     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
@@ -588,16 +579,12 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     CMilliTimer tm(true);
 
     int pointCnt = 0;
-    //if (points.size() < 1) {
-    //    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
-    //    m_display.setHtml("LOG", "log.PPO.SendPoints", "<h3>Plane popout - SendPoints</h3>No points");
-    //    return;
-    //}
-
     std::ostringstream str;
     str.unsetf(ios::floatfield); // unset floatfield
     str.precision(3); // set the _maximum_ precision
-    str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
+    str << "function render()\n";
+    str << "if not showPoints then return end\n";
+    str << "glPointSize(2)\nglBegin(GL_POINTS)\n";
     str << "v=glVertex\nc=glColor\n";
 
 #define FCHN(x) (float)x/255.0
@@ -653,7 +640,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     long long t1 = tm.elapsed();
     string S = str.str();
     long long t2 = tm.elapsed();
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, S);
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_POINTS), S);
     long long t3 = tm.elapsed();
     if (1) {
 	str.str("");
@@ -673,6 +660,7 @@ void PlanePopOut::SendPlaneGrid()
     CMilliTimer tm(true);
     ostringstream str;
     str << "function render()\n";
+    str << "if not showPlaneGrid then return end\n";
 
 #define FCHN(x) (float)x/255.0
     if (dominantPlane.valid) {
@@ -694,7 +682,7 @@ void PlanePopOut::SendPlaneGrid()
 
     long long t1 = tm.elapsed_micros();
     string S = str.str();
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_PLANE, S);
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_PLANE), S);
     long long t2 = tm.elapsed_micros();
 
     if (1) {
@@ -735,7 +723,8 @@ void PlanePopOut::SendOverlays()
 void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &sois)
 {
     ostringstream str;
-    str << "function render()\n";
+    str << "function render()\n"
+	<< "if not showSois then return end\n";
     str << "v=glVertex\nc=glColor\n";
     str << "c(0.0,1.0,0.0)\n";
     for(size_t i = 0; i < sois.size(); i++)
@@ -770,7 +759,7 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
 	str << "glEnd()\n";
     }
     str << "end\n";
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, str.str());
+    m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_SOI), str.str());
 }
 #endif
 
@@ -1162,12 +1151,12 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     class CCmd:
 	public VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>
     {
-	public:
-	    CCmd(cast::WorkingMemoryReaderComponent* pReader)
-		: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
-	protected:
-	    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
-	    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+    public:
+	CCmd(cast::WorkingMemoryReaderComponent* pReader)
+	    : VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
+    protected:
+	virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+	virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
     } cmd(this);
 
     println("PlanePopOut: GetStableSoisCommand.");
