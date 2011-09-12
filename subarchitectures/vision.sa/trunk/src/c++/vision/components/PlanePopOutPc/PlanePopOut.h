@@ -163,7 +163,6 @@ private:
     bool m_bSendSois;
     // Color the points by labels or send the color from image
     bool m_bColorByLabel;
-    CMilliTimer m_tmSendPoints;
 
     class CDisplayClient: public cogx::display::CDisplayClient
     {

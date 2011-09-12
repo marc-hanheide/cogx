@@ -29,7 +29,7 @@ extern "C"
 {
     cast::CASTComponentPtr newComponent()
     {
-        return new cast::PlanePopOut();
+	return new cast::PlanePopOut();
     }
 }
 
@@ -38,34 +38,34 @@ extern "C"
 
 static long long gethrtime(void)
 {
-  timeval tv;
-  int ret;
-  long long v;
-  ret = gettimeofday(&tv, NULL);
-  if(ret!=0) return 0;  
-  v=1000000000LL; /* seconds->nanonseconds */
-  v*=tv.tv_sec;
-  v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
-  return v;
+    timeval tv;
+    int ret;
+    long long v;
+    ret = gettimeofday(&tv, NULL);
+    if(ret!=0) return 0;  
+    v=1000000000LL; /* seconds->nanonseconds */
+    v*=tv.tv_sec;
+    v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
+    return v;
 }
 
 #else
 
 static long long gethrtime(void)
 {
-  struct timespec sp;
-  int ret;
-  long long v;
+    struct timespec sp;
+    int ret;
+    long long v;
 #ifdef CLOCK_MONOTONIC_HR
-  ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
+    ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
 #else
-  ret=clock_gettime(CLOCK_MONOTONIC, &sp);
+    ret=clock_gettime(CLOCK_MONOTONIC, &sp);
 #endif
-  if(ret!=0) return 0;
-  v=1000000000LL; /* seconds->nanonseconds */
-  v*=sp.tv_sec;
-  v+=sp.tv_nsec;
-  return v;
+    if(ret!=0) return 0;
+    v=1000000000LL; /* seconds->nanonseconds */
+    v*=sp.tv_sec;
+    v+=sp.tv_nsec;
+    return v;
 }
 
 #endif
@@ -459,7 +459,6 @@ void PlanePopOut::startV11N()
     ss <<  "function render()\nend\n"
 	<< "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, ss.str());
-    m_tmSendPoints.restart();
 
     //Video::Image image;
     //m_display.setImage(ID_OBJECT_IMAGE, image);
@@ -586,9 +585,7 @@ void PlanePopOut::SendImage()
  */
 void PlanePopOut::SendPoints(bool bColorByLabels)
 {
-    if (m_tmSendPoints.elapsed() < 500) // 2Hz
-	return;
-    m_tmSendPoints.restart();
+    CMilliTimer tm(true);
 
     int pointCnt = 0;
     //if (points.size() < 1) {
@@ -603,7 +600,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
     str << "v=glVertex\nc=glColor\n";
 
-#define FCHN(x) x/255.0
+#define FCHN(x) (float)x/255.0
     // (Approximately) Limit the number of points sent to the display server
     const double MAX_IN_PLANE = 2000.0;
     const double MAX_IN_SOI = 300.0;
@@ -653,11 +650,11 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     str << "end\n";
 
     // logging
-    long long t1 = m_tmSendPoints.elapsed();
+    long long t1 = tm.elapsed();
     string S = str.str();
-    long long t2 = m_tmSendPoints.elapsed();
+    long long t2 = tm.elapsed();
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, S);
-    long long t3 = m_tmSendPoints.elapsed();
+    long long t3 = tm.elapsed();
     if (1) {
 	str.str("");
 	str.clear();
@@ -673,22 +670,18 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 
 void PlanePopOut::SendPlaneGrid()
 {
-    static CMilliTimer tmSendPlaneGrid(true);
-
-    if (tmSendPlaneGrid.elapsed() < 100) // 10Hz
-	return;
-    tmSendPlaneGrid.restart();
-
     CMilliTimer tm(true);
     ostringstream str;
     str << "function render()\n";
 
+#define FCHN(x) (float)x/255.0
     if (dominantPlane.valid) {
 	str << "glBegin(GL_LINE_LOOP)\n";
 	str << "glPointSize(2.0)\n";
-	str << "glColor(" << (float)dominantPlane.dispColor.r/255. << ","
-	    << (float)dominantPlane.dispColor.g/255. << ","
-	    << (float)dominantPlane.dispColor.b/255. << ")\n";
+	str << "glColor("
+	    << FCHN(dominantPlane.dispColor.r) << ","
+	    << FCHN(dominantPlane.dispColor.g) << ","
+	    << FCHN(dominantPlane.dispColor.b) << ")\n";
 	str << "v=glVertex\n";
 	for(size_t i = 0; i < dominantPlane.hullPoints.size(); i++)
 	    str << "v(" << dominantPlane.hullPoints[i].x << ","
@@ -696,6 +689,7 @@ void PlanePopOut::SendPlaneGrid()
 		<< dominantPlane.hullPoints[i].z << ")\n";
 	str << "glEnd()\n";
     }
+#undef FCHN
     str << "end\n";
 
     long long t1 = tm.elapsed_micros();
@@ -749,23 +743,27 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
 	size_t n = sois[i]->points.size();
 	str << "glBegin(GL_LINE_LOOP)\n";
 	for(size_t j = 0; j < n/2; j++)
-	    str << "v(" << sois[i]->points[j].x << ","
+	    str << "v("
+		<< sois[i]->points[j].x << ","
 		<< sois[i]->points[j].y << ","
 		<< sois[i]->points[j].z << ")\n";
 	str << "glEnd()\n";
 	str << "glBegin(GL_LINE_LOOP)\n";
 	for(size_t j = n/2; j < n; j++)
-	    str << "v(" << sois[i]->points[j].x << ","
+	    str << "v("
+		<< sois[i]->points[j].x << ","
 		<< sois[i]->points[j].y << ","
 		<< sois[i]->points[j].z << ")\n";
 	str << "glEnd()\n";
 	str << "glBegin(GL_LINES)\n";
 	for(size_t j = 0; j < n/2; j++)
 	{
-	    str << "v(" << sois[i]->points[j].x << ","
+	    str << "v("
+		<< sois[i]->points[j].x << ","
 		<< sois[i]->points[j].y << ","
 		<< sois[i]->points[j].z << ")\n";
-	    str << "v(" << sois[i]->points[j + n/2].x << ","
+	    str << "v("
+		<< sois[i]->points[j + n/2].x << ","
 		<< sois[i]->points[j + n/2].y << ","
 		<< sois[i]->points[j + n/2].z << ")\n";
 	}
@@ -778,15 +776,29 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
 
 void PlanePopOut::runComponent()
 {
-    // TODO: why is that needed?
-    sleepComponent(3000);
-
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 #endif
 
+    long tickMs = 1000 / 5; // run (at most) at 5Hz
+    CMilliTimer tmRunning(true);
+
+    long sendPointsMs = 500; // send points at most every X ms
+    CMilliTimer tmSendPoints(true);
+
+    long sendPlaneGridMs = 500; // send plane grid at most every X ms
+    CMilliTimer tmSendPlaneGrid(true);
+
+    long sendImageMs = 750; // send image at most every X ms
+    CMilliTimer tmSendImage(true);
+
     try {
 	while(isRunning()) {
+	    long tickDelay = tickMs - tmRunning.elapsed();
+	    if (tickDelay > 0)
+		sleepComponent(tickDelay);
+	    tmRunning.restart();
+
 	    try{
 		GetImageData();
 		GetPlaneAndSOIs();
@@ -799,18 +811,28 @@ void PlanePopOut::runComponent()
 	    }
 
 #ifdef FEAT_VISUALIZATION
-	    if (m_bSendImage)
-		SendImage();
-	    if (m_bSendPoints)
-		SendPoints(m_bColorByLabel);
-	    if (m_bSendPlaneGrid)
-		SendPlaneGrid();
+	    if (m_bSendImage) {
+		if (tmSendImage.elapsed() > sendImageMs) {
+		    SendImage();
+		    tmSendImage.restart();
+		}
+	    }
+
+	    if (m_bSendPoints) {
+		if (tmSendPoints.elapsed() > sendPointsMs) {
+		    SendPoints(m_bColorByLabel);
+		    tmSendPoints.restart();
+		}
+	    }
+	    if (m_bSendPlaneGrid) {
+		if (tmSendPlaneGrid.elapsed() > sendPlaneGridMs) {
+		    SendPlaneGrid();
+		    tmSendPlaneGrid.restart();
+		}
+	    }
 #endif
 	    if (doDisplay)
 		DisplayInTG();
-
-	    // HACK: need this stupid sleep to avoid hogging the CPU
-	    sleepComponent(200);
 	}
     }
     catch (...) {
@@ -1127,7 +1149,7 @@ void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
     // TODO: implement locking of CurrentObjList.
     list<SOIEntry> allTrackedSOIs = trackedSOIs;
 
-    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); )
+    for (list<SOIEntry>::iterator it = allTrackedSOIs.begin(); it != allTrackedSOIs.end(); it++)
     {
 	if (it->numStableFrames >= StableTime)
 	    soiList.push_back(it->createWMSOI(this));
