@@ -5,8 +5,6 @@
 package navigation;
 
 import java.awt.geom.Line2D;
-import java.util.Vector;
-
 
 import NavData.FNode;
 
@@ -17,22 +15,32 @@ import NavData.FNode;
 public class AStarNode {
 
     private int nodeId;
-    private double cost;
+    private double costToNode;
+    private double heuristic;
     private int prevNode;
     private static long turnTime;//the amount of time taken to turn 1 rad
 
     public AStarNode(double costSoFar, Path path, FNode precursorNode, FNode prevNode, FNode node, FNode endNode) {
         nodeId = (int) node.nodeId;
         double turnCost = turnTime*requiredHeading(prevNode, precursorNode, node);
-        cost = costSoFar + turnCost + path.getCost() + distance(node, endNode); // f(x) = costSoFar + paths's cost + distance to end
+        costToNode =costSoFar + turnCost + path.getCost();
+        heuristic = costToNode + 4000*distance(node, endNode); // f(x) = costSoFar + paths's cost + distance to end
+      //4000 represents that it takes approx  seconds to go a metre, this should probably be calibrated
+  
         this.prevNode = (int) prevNode.nodeId;
     }
 
+    public static FNode northNode(FNode node){
+    	FNode f = new FNode();
+    	f.x=node.x;
+    	f.y=node.y+1;
+    	return f;
+    }
+    
     public AStarNode(double costSoFar, Path path, FNode prevNode, FNode node, FNode endNode) {
-        nodeId = (int) node.nodeId;
+    	
+    	this(costSoFar,path, northNode(node),prevNode,node,endNode);
 
-        cost = costSoFar + path.getCost() + distance(node, endNode); // f(x) = costSoFar + paths's cost + distance to end
-        this.prevNode = (int) prevNode.nodeId;
     }
 
     /**
@@ -40,10 +48,17 @@ public class AStarNode {
      * sets how long it takes to turn 1 rad
      * @param time2Turn 
      */
-    public static void setWholeTurn(long time2Turn) {
-        turnTime = (long)(time2Turn/(2*Math.PI));
+    public static void setRadTurn(long time2Turn) {
+        turnTime = time2Turn;
+        System.out.println("turn time set to "+ turnTime);
     }
 
+    /**
+     * returns the straight line distance between two FNodes
+     * @param prevNode
+     * @param nextNode
+     * @return
+     */
     private static double distance(FNode prevNode, FNode nextNode) {
         double xComp = Math.pow(prevNode.x - nextNode.x, 2);
         double yComp = Math.pow(prevNode.y - nextNode.y, 2);
@@ -54,21 +69,25 @@ public class AStarNode {
         return nodeId;
     }
 
-    public double getCost() {
-        return cost;
+    public double getCostToNode() {
+        return costToNode;
     }
 
+    public double getHeuristic(){
+    	return heuristic;
+    }
+    
     public int getPrevNode() {
         return prevNode;
     }
 
     @Override
     public String toString() {
-        return "AStar node from " + prevNode + " to " + nodeId + " cost " + cost;
+        return "AStar node from " + prevNode + " to " + nodeId + " costToNode " + costToNode + " heuristic "+heuristic;
     }
 
     /**
-     * given the index of a FNode, compute the heading from the current FNode
+     * given the 3 (x,y) coordinates, return the angel between them (with P0 being the common point between the two lines)
      * 
      * @param index
      * @return
@@ -81,6 +100,13 @@ public class AStarNode {
 
     }
 
+    /**
+     * given 3 FNodes will return the angle between them
+     * @param centre
+     * @param p1
+     * @param p2
+     * @return
+     */
     public double requiredHeading(FNode centre, FNode p1, FNode p2) {
         double temp = Math.abs(requiredHeading((int) centre.x, (int) centre.y, (int) p2.x, (int) p2.y, (int) p1.x, (int) p1.y));
 
@@ -88,10 +114,7 @@ public class AStarNode {
         if (temp >= Math.PI) {
             temp -= Math.PI;
         }
-        System.out.println("centre " + centre.nodeId);
-        System.out.println("prec " + p1.nodeId);
-        System.out.println("post " + p2.nodeId);
-        System.out.println("turn amount " + temp);
+       
         return temp;
     }
 

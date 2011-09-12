@@ -3,71 +3,55 @@ package exploration;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.Timer;
 
+import util.CastComponent;
 import NavData.FNode;
-import NavData.RobotPose2d;
-import SpatialData.CommandType;
-import SpatialData.Completion;
 import SpatialData.NavCommand;
-import SpatialData.Priority;
-import SpatialData.StatusError;
 import SpatialProperties.PathProperty;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
-import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import castutils.castextensions.WMEventQueue;
-
 
 /**
  * class that will explore a network/graph
+ * 
  * @author ken
- *
+ * 
  */
-public class GraphExplorer extends ManagedComponent implements ActionListener {
+public class GraphExplorer extends CastComponent implements ActionListener {
 
 	private String begin = "begin";
 	private String running = "running";
 	private String idle = "idle";
-
-	private Timer timer;
-	private Vector<FNode> nodes;
 	private Vector<PathProperty> tempPaths;
-	private Vector<PathTimes> pathTimes;
-	private int pos; // the node the robot is currently on
-	private boolean loaded;
-	private double heading; // the direction in which the robot is heading
-
+	
+	
 	public GraphExplorer() {
-		timer = new Timer(2000, this);
+		timer = new Timer(10000, this);
 		tempPaths = new Vector<PathProperty>();
 		nodes = new Vector<FNode>();
 		pathTimes = new Vector<PathTimes>();
 		pos = 0;
 		loaded = false;
 		heading = 0;
+		start = true;
 	}
 
-	public void runComponent() {
-		println("explorer is running");
-	}
+	
 
 	/**
 	 * adds in filters and begins the timer
@@ -96,11 +80,14 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 		println("number of nodes found " + nodes.size());
 		println("number of paths found " + tempPaths.size());
 		convertToPathTimes();
+		if (nodes.size() > 1) {
+			goTo(getClosestNode(x, y, nodes));
+						simpleRun();
 
-		simpleRun();
-
-		printPathTimes();
-
+			printPathTimes();
+		} else {
+			println("graph is not compiled, ken grab the controller ");
+		}
 		timer.setActionCommand(idle);
 
 	}
@@ -148,14 +135,7 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 		return false;
 	}
 
-	/**
-	 * prints out the paths and their times to the command line
-	 */
-	public void printPathTimes() {
-		for (PathTimes times : pathTimes) {
-			println(times);
-		}
-	}
+	
 
 	/**
 	 * runs through the provided lists of paths and saves them
@@ -204,7 +184,10 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 	 * simply how the paths were found
 	 */
 	public void simpleRun() {
-		runPaths(new TourFinder(pathTimes, pos).getBestPath());
+
+		Vector<PathTimes> times = new TourFinder(pathTimes, pos).getBestPath();
+
+		runPaths(times);
 	}
 
 	/**
@@ -223,94 +206,6 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 			}
 		}
 
-	}
-
-	/**
-	 * goes to the given place (where the place is the nodeId of an FNode/Place
-	 * 
-	 * @param place
-	 */
-	public void goTo(int place) {
-
-		NavCommand nav = createNavCommand(place);
-		pos = place;
-
-		try {
-			println("heading to " + nav.destId[0]);
-
-			executeNavCommand(nav);
-
-		} catch (CASTException e) {
-			println("error");
-			println(e);
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			println("error");
-			println(e);
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * create a NavCommand to send the robot to the provided node modified from
-	 * TourGiver
-	 * 
-	 * @param io
-	 * @return
-	 */
-	public static NavCommand createNavCommand(int nodeId) {
-		return new NavCommand(CommandType.GOTOPLACE, Priority.NORMAL,
-				new long[] { nodeId }, new double[0], new double[0],
-				new double[0], new double[0], StatusError.UNKNOWN,
-				Completion.COMMANDPENDING);
-	}
-
-	/**
-	 * create a NavCommand to turn the robot the provided amount modified from
-	 * TurnAndLookExecutor
-	 * 
-	 * @param degrees
-	 *            : number of degrees to turn (in radians)
-	 * @return
-	 */
-	public NavCommand generateTurn(double degrees) {
-		NavCommand cmd = new NavCommand(CommandType.TURN, Priority.NORMAL,
-				new long[0], new double[0], new double[] { -degrees },
-				new double[0], new double[0], StatusError.UNKNOWN,
-				Completion.COMMANDPENDING);
-
-		return cmd;
-	}
-
-	/**
-	 * code copied from TourGiver the robot will execute the provided navCommand
-	 * 
-	 * @param navCommand
-	 * @return
-	 * @throws CASTException
-	 * @throws InterruptedException
-	 */
-	private Completion executeNavCommand(NavCommand navCommand)
-			throws CASTException, InterruptedException {
-		String id = newDataID();
-		WMEventQueue queue = new WMEventQueue();
-		addChangeFilter(ChangeFilterFactory.createIDFilter(id), queue);
-		addToWorkingMemory(id, "spatial.sa", navCommand);
-		Completion completion = Completion.COMMANDFAILED;
-		while (isRunning()) {
-			WorkingMemoryChange ev = queue.take();
-			if (ev.operation == WorkingMemoryOperation.OVERWRITE) {
-				NavCommand nc = getMemoryEntry(ev.address, NavCommand.class);
-				completion = nc.comp;
-				if (completion == Completion.COMMANDPENDING
-						|| completion == Completion.COMMANDINPROGRESS)
-					continue;
-				else
-					break;
-			}
-		}
-		removeChangeFilter(queue);
-		return completion;
 	}
 
 	/**
@@ -393,35 +288,7 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 		return angle1 - angle2;
 	}
 
-	/**
-	 * add an FNode filter this will look at working memory and report if any
-	 * FNodes are added
-	 */
-	public void addFNodeFilter() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(FNode.class,
-				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-
-				try {
-					FNode f = getMemoryEntry(_wmc.address, FNode.class);
-					nodes.add(f);
-
-					timer.restart();
-				} catch (DoesNotExistOnWMException e) {
-
-					println("error");
-					println(e.getMessage());
-					e.printStackTrace();
-				} catch (UnknownSubarchitectureException e) {
-
-					println("error");
-					println(e.getMessage());
-					e.printStackTrace();
-				}
-			}
-
-		});
-	}
+	
 
 	/**
 	 * add a Path filter this will look at working memory and report if any
@@ -456,66 +323,9 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 				});
 	}
 
-	/**
-	 * add a Pose filter this will look at working memory and report if the
-	 * robot's pose is modified
-	 */
-	private void addPoseFilter() {
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+	
 
-						try {
-							RobotPose2d p = getMemoryEntry(_wmc.address,
-									RobotPose2d.class);
-							heading = -p.theta;
-						} catch (DoesNotExistOnWMException e) {
-
-							println("error");
-							println(e.getMessage());
-							e.printStackTrace();
-						} catch (UnknownSubarchitectureException e) {
-
-							println("error");
-							println(e.getMessage());
-							e.printStackTrace();
-						}
-					}
-
-				});
-
-	}
-
-	/**
-	 * loads a set of path times from file
-	 * 
-	 * @throws FileNotFoundException
-	 */
-	public void load() throws FileNotFoundException {
-		try {
-			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
-
-			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
-			printPathTimes();
-			in.close();
-		} catch (FileNotFoundException e) {
-			println("unable to find file, load failed");
-			throw e;
-
-		} catch (IOException e) {
-			println(e);
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			println(e);
-			e.printStackTrace();
-
-		}
-		loaded = true;
-		println("load finished");
-
-	}
+	
 
 	/**
 	 * saves a set of path times to file
@@ -540,5 +350,7 @@ public class GraphExplorer extends ManagedComponent implements ActionListener {
 		}
 
 	}
+
+
 
 }

@@ -10,7 +10,7 @@ import java.util.Vector;
 import NavData.FNode;
 
 /**
- *
+ * class for listing the paths that are connected to a node
  * @author ken
  */
 public class PathsFromNode {
