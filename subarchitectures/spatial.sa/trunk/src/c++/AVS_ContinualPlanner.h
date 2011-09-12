@@ -154,6 +154,7 @@ private:
 	double m_tiltstep;
 	double m_panstep;
 	double m_coneGroupNormalization;
+  double m_pdfthreshold;
 
 	SpatialGridMap::GridMapData m_defaultBloxelCell;
 	Cure::SensorPose m_LaserPoseR;

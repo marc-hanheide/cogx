@@ -615,7 +615,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			m_templateRoomGridMaps[newVPCommand->roomId],
 			m_objectBloxelMaps[id], m_samplesize, m_sampleawayfromobs,
 			m_conedepth, m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance, pdfmass,
-			0.7, node->x, node->y);
+			m_pdfthreshold, node->x, node->y);
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones();
 
@@ -1045,7 +1045,7 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
 		log("Got conegroup beliefs probability %f ", floatformula->val);
 		log("Will substract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
-		floatformula->val = floatformula->val - differenceMapPDFSum*m_coneGroupNormalization; // remove current conesum's result
+		floatformula->val = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization); // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], "binder", belief);
 
@@ -1304,6 +1304,11 @@ void AVS_ContinualPlanner::configure(
 		log("Loaded tagged objects.");
 		for (unsigned int i = 0; i < m_ARtaggedObjects.size(); i++)
 			log("%s , ", m_ARtaggedObjects[i].c_str());
+
+    m_pdfthreshold = 0.7;
+    if((it = _config.find("--pdfthreshold")) != _config.end()) {
+      m_pdfthreshold = atof(it->second.c_str());
+    }
 
 		m_allObjects.reserve((m_siftObjects.size() + m_ARtaggedObjects.size()));
 		m_allObjects.insert(m_allObjects.end(), m_siftObjects.begin(), m_siftObjects.end());

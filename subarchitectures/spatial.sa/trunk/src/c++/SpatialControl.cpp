@@ -655,9 +655,6 @@ void SpatialControl::runComponent()
       m_displayBinaryMap->updateDisplay(&currentPose);
 		}
 
-    if(m_DisplayCureObstacleMap)
-      m_displayObstacleMap->updateDisplay(&currentPose);
-
     if(m_DisplayCureObstacleMap) {
       // Clear out obstacle map (that's used for visualization only)
       int radius = m_obstacleMap->getSize();
@@ -670,6 +667,8 @@ void SpatialControl::runComponent()
         ObstPt obspt = m_LMap.obstRef(i);
         (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
       }
+
+      m_displayObstacleMap->updateDisplay(&currentPose);
     }
 		m_MapsMutex.unlock();	
 	  

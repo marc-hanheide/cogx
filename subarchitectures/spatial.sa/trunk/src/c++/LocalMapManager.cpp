@@ -336,8 +336,9 @@ void LocalMapManager::start()
       << " -h localhost"
       << " -p " << cast::cdl::CPPSERVERPORT;
 
-    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+//    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+//    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+    m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
 */
   }
 }

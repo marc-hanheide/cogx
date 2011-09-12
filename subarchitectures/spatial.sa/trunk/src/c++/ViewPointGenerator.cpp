@@ -69,7 +69,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		// We have the VC candidate list ordered according to their 2D pdf sums
 		// now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
 		double xW, yW;
-		for (unsigned int j = 0; j < 10; j++) {
+    int maxiterations = 10 < ordered2DVClist.size() ? 10 : ordered2DVClist.size();
+		for (unsigned int j = 0; j < maxiterations; j++) {
 	//	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) {
 			lgm->index2WorldCoords(m_samples2D[ordered2DVClist[j].first].getX(),
 					m_samples2D[ordered2DVClist[j].first].getY(), xW, yW);
@@ -368,7 +369,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 	bool haspoint;
 	Cure::Pose3D singlesample;
 	int giveup = 0;
-	while (i < m_samplesize) {
+	while (i < m_samplesize && giveup < m_samplesize*20) {
 		giveup++;
 		haspoint = false;
 		randx = (rand() % (2 * lgm->getSize())) - lgm->getSize();
