@@ -5,7 +5,7 @@
 package navigation;
 
 /**
- *
+ * represents the connection between two nodes
  * @author ken
  */
 public class Path {
