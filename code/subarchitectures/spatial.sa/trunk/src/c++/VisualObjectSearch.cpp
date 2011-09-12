@@ -2628,8 +2628,8 @@ log("filled");
 	  point.push_back(1.4);
 	  sampled2Dpoints.push_back(point);
 	}
-	if(m_usePeekabot)	
-	  pbVis->Add3DPointCloud(sampled2Dpoints, true, "sample_points");
+	//if(m_usePeekabot)	
+	  //pbVis->Add3DPointCloud(sampled2Dpoints, true, "sample_points");
 	/* Display Samples in PB END */
 	/*Sampling free space END*/
 	return samples;
