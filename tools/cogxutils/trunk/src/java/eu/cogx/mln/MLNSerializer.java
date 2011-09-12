@@ -34,7 +34,8 @@ public class MLNSerializer extends ManagedComponent {
 	private String stateId = null;
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 
-	static void addToMLN(dBelief bel, Vector<String> facts,
+	static void addToMLN(dBelief bel, Vector<String> types,
+			Vector<String> ids, Vector<String> facts,
 			Vector<Double> probs) throws BeliefException {
 
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
@@ -46,6 +47,10 @@ public class MLNSerializer extends ManagedComponent {
 				} else {
 					double logProb = weight(v.getProbability());
 					probs.add(logProb);
+					
+					types.add(bel.type);
+					ids.add(b.getId());
+					
 					String formula = v.getFormula().toString();
 					if (v.getFormula().get() instanceof PointerFormula) {
 						PointerFormula pf = (PointerFormula) v.getFormula()
@@ -56,7 +61,7 @@ public class MLNSerializer extends ManagedComponent {
 								.getFormula().get();
 						formula = pf.prop;
 					}
-					facts.add("   " + d.getKey() + "(" + b.getId() + ", "
+					facts.add("   " + d.getKey() + "(" + b.getType() + "_" + b.getId() + ", "
 							+ formula + ")");
 				}
 			}
@@ -77,9 +82,13 @@ public class MLNSerializer extends ManagedComponent {
 
 	@Override
 	protected void runComponent() {
-		Vector<String> facts = new Vector<String>();
-		Vector<Double> probs = new Vector<Double>();
+		
 		while (isRunning()) {
+			Vector<String> types = new Vector<String>();
+			Vector<String> ids = new Vector<String>();
+			Vector<String> facts = new Vector<String>();
+			Vector<Double> probs = new Vector<Double>();
+			
 			try {
 				queue.take();
 				log("got an belief update event, will wait now for "
@@ -93,26 +102,27 @@ public class MLNSerializer extends ManagedComponent {
 					dBelief b;
 					try {
 						b = getMemoryEntry(adr, dBelief.class);
-						addToMLN(b, facts, probs);
+						addToMLN(b, types, ids, facts, probs);
 					} catch (DoesNotExistOnWMException e) {
 						// ignore this, it could happen
+					} catch (Exception e) {
+						logException(e);
 					}
 				}
-
 				
-				
-				MLNState mlnState = new MLNState(facts.toArray(new String[0]),
-						toDoubleArray(probs));
+				MLNState mlnState = new MLNState(types.toArray(new String[0]),
+					ids.toArray(new String[0]), facts.toArray(new String[0]),
+					toDoubleArray(probs));
 				
 				for (int i = 0; i < probs.size(); i++)
-					log(mlnState.probs[i] +" "+mlnState.facts[i]);
+					log(mlnState.types[i] + " | " + mlnState.ids[i] + " | " +
+						mlnState.probs[i] + " | " + mlnState.facts[i]);
 				if (stateId == null) {
 					stateId = newDataID();
 					addToWorkingMemory(stateId, mlnState);
 				} else {
 					overwriteWorkingMemory(stateId, mlnState);
 				}
-
 			} catch (InterruptedException e) {
 				logException(e);
 			} catch (CASTException e) {
@@ -142,7 +152,7 @@ public class MLNSerializer extends ManagedComponent {
 						if (arg0.operation == WorkingMemoryOperation.ADD)
 							allBeliefWMA.add(arg0.address);
 						if (arg0.operation == WorkingMemoryOperation.DELETE)
-							queue.remove(arg0);
+							allBeliefWMA.remove(arg0.address);
 						queue.add(arg0);
 					}
 				});
@@ -169,10 +179,13 @@ public class MLNSerializer extends ManagedComponent {
 		fd.add("VBlue", 0.1);
 
 		b.getContent().put("color", fd);
+		Vector<String> types = new Vector<String>();
+		Vector<String> ids = new Vector<String>();
 		Vector<String> facts = new Vector<String>();
 		Vector<Double> probs = new Vector<Double>();
-		addToMLN(b.get(), facts, probs);
-		MLNState mlnState = new MLNState(facts.toArray(new String[0]),
+		addToMLN(b.get(), types, ids,facts, probs);
+		MLNState mlnState = new MLNState(types.toArray(new String[0]),
+				ids.toArray(new String[0]), facts.toArray(new String[0]),
 				toDoubleArray(probs));
 		
 
