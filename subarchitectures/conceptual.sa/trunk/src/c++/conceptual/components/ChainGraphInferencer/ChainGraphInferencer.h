@@ -172,6 +172,10 @@ private:
 	/** Retrieves the elements of the variable name. */
 	void parseVariable(std::string variableName, std::vector<std::string> &elements);
 
+	/** Retrieves the value of the variable from the var=val string. */
+	void parseVariableValue(const std::string variableString,
+			std::string &variableName, std::string &variableValue);
+
 	/** Adds room connectivity factor for 2 variables representing room categories. */
 	void createDaiConnectivityFactor(std::vector<dai::Factor> &factors, dai::Var &var1, dai::Var &var2);
 
