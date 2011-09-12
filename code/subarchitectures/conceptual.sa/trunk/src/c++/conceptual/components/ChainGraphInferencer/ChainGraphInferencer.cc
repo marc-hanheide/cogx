@@ -1800,116 +1800,235 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 {
 	debug("Preparing inference results for inference query '"+queryString+"'");
 
-	// Check
-	if (queryVariables.size()!=1)
+	// ---------------------------------------
+	// Single variable
+	// ---------------------------------------
+	if (queryVariables.size()==1)
+	{
+		string varName;
+		string valueName;
+
+		// Check if there is '=' in the name and if yes, extract the components.
+		parseVariableValue(queryVariables[0], varName, valueName);
+
+		// Find all unobserved variables that match
+		vector< map<string, DaiVariable>::iterator > varIters;
+		for (map<string, DaiVariable>::iterator it = _variableNameToDai.begin();
+				it != _variableNameToDai.end(); ++it)
+		{
+			if ( wildcmp(varName.c_str(), it->first.c_str()))
+				varIters.push_back(it);
+		}
+		// Find all observed variables that match
+		vector< map<string, ObservedVariable>::iterator > observedVarIters;
+		for (map<string, ObservedVariable>::iterator it = _observedVariableNameToInfo.begin();
+				it != _observedVariableNameToInfo.end(); ++it)
+		{
+			if ( wildcmp(varName.c_str(), it->first.c_str()))
+				observedVarIters.push_back(it);
+		}
+		if ((varIters.empty()) && (observedVarIters.empty()))
+		{
+			string msg;
+			msg = "Variable '" + varName + "' not found! Variables we know:";
+			for (map<string, DaiVariable>::iterator varIter = _variableNameToDai.begin(); varIter
+			!= _variableNameToDai.end(); ++varIter)
+				msg += varIter->first + " ";
+			for (map<string, ObservedVariable>::iterator varIter = _observedVariableNameToInfo.begin(); varIter
+			!= _observedVariableNameToInfo.end(); ++varIter)
+				msg += varIter->first + " ";
+			log(msg.c_str());
+			return;
+		}
+
+		// Unobserved
+		for (unsigned int v=0; v<varIters.size(); ++v)
+		{
+			map<string, DaiVariable>::iterator varIter = varIters[v];
+
+			// Prepare the resulting distribution
+			SpatialProbabilities::ProbabilityDistribution resultDistribution;
+			resultDistribution.description = queryString;
+			resultDistribution.variableNameToPositionMap[varIter->first]=0;
+			resultDistribution.massFunction.clear();
+
+			// Retrieve marginal
+			//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+			dai::Factor marginal = _bp.belief(varIter->second.var);
+			// Convert to probability distribution
+			for (unsigned int i = 0; i < marginal.nrStates(); ++i)
+			{
+				double marginalProb = marginal.get(i);
+				string vn = varIter->second.valueIdToName[i];
+				if ((valueName.empty()) || (vn==valueName))
+				{
+					SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+							new SpatialProbabilities::StringRandomVariableValue(
+									vn);
+					SpatialProbabilities::JointProbabilityValue jpv;
+					jpv.probability = marginalProb;
+					jpv.variableValues.push_back(rvvPtr);
+					resultDistribution.massFunction.push_back(jpv);
+				}
+			}
+
+			resultDistributions.push_back(resultDistribution);
+		}
+
+		// Observed
+		for (unsigned int v=0; v<observedVarIters.size(); ++v)
+		{
+			map<string, ObservedVariable>::iterator varIter = observedVarIters[v];
+
+			// Prepare the resulting distribution
+			SpatialProbabilities::ProbabilityDistribution resultDistribution;
+			resultDistribution.description = queryString;
+			resultDistribution.variableNameToPositionMap[varIter->first]=0;
+			resultDistribution.massFunction.clear();
+
+			// Fill in "distribution"
+			for (unsigned int i = 0; i < varIter->second.valueIdToName.size(); ++i)
+			{
+				string vn = varIter->second.valueIdToName[i];
+				if ((valueName.empty()) || (vn==valueName))
+				{
+					SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
+							new SpatialProbabilities::StringRandomVariableValue(
+									vn);
+					SpatialProbabilities::JointProbabilityValue jpv;
+					jpv.probability = (i == varIter->second.observedValue)?1.0:0.0;
+					jpv.variableValues.push_back(rvvPtr);
+					resultDistribution.massFunction.push_back(jpv);
+				}
+			}
+
+			resultDistributions.push_back(resultDistribution);
+		}
+	}
+	// ---------------------------------------
+	// Two variables
+	// ---------------------------------------
+	else if (queryVariables.size()==2)
+	{
+		string var1Name;
+		string var1Value;
+		string var2Name;
+		string var2Value;
+
+		// Parse vairable values
+		parseVariableValue(queryVariables[0], var1Name, var1Value);
+		parseVariableValue(queryVariables[1], var2Name, var2Value);
+
+		// Find the unobserved variables that match
+		vector< map<string, DaiVariable>::iterator > var1Iters;
+		vector< map<string, DaiVariable>::iterator > var2Iters;
+		for (map<string, DaiVariable>::iterator it = _variableNameToDai.begin();
+				it != _variableNameToDai.end(); ++it)
+		{
+			if ( wildcmp(var1Name.c_str(), it->first.c_str()))
+				var1Iters.push_back(it);
+			if ( wildcmp(var2Name.c_str(), it->first.c_str()))
+				var2Iters.push_back(it);
+		}
+		if ((var1Iters.empty()) || (var2Iters.empty()))
+		{
+			string msg;
+			msg = "Variable '" + (var1Iters.empty())?var1Name:var2Name + "' not found! Variables we know:";
+			for (map<string, DaiVariable>::iterator varIter = _variableNameToDai.begin(); varIter
+			!= _variableNameToDai.end(); ++varIter)
+				msg += varIter->first + " ";
+			for (map<string, ObservedVariable>::iterator varIter = _observedVariableNameToInfo.begin(); varIter
+			!= _observedVariableNameToInfo.end(); ++varIter)
+				msg += varIter->first + " ";
+			log(msg.c_str());
+			return;
+		}
+
+		// Return distribution
+		for (unsigned int v1=0; v1<var1Iters.size(); ++v1)
+		{
+			map<string, DaiVariable>::iterator var1Iter = var1Iters[v1];
+
+			for (unsigned int v2=0; v2<var2Iters.size(); ++v2)
+			{
+				map<string, DaiVariable>::iterator var2Iter = var2Iters[v2];
+
+				// Prepare the resulting distribution
+				SpatialProbabilities::ProbabilityDistribution resultDistribution;
+				resultDistribution.description = queryString;
+				resultDistribution.variableNameToPositionMap[var1Iter->first]=0;
+				resultDistribution.variableNameToPositionMap[var2Iter->first]=1;
+				resultDistribution.massFunction.clear();
+
+				// Retrieve marginal
+				//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
+				dai::Factor marginal = _bp.belief(dai::VarSet(var1Iter->second.var,var2Iter->second.var));
+				unsigned int v1States = var1Iter->second.var.states();
+				unsigned int v2States = var2Iter->second.var.states();
+
+				// Check if the variables in the factor are order the way they should
+				bool switchVars=false;
+				if (marginal.vars().elements()[0].label() != var1Iter->second.var.label())
+				{
+					switchVars=true;
+					int tmp = v1States;
+					v1States=v2States;
+					v2States=tmp;
+				}
+
+				// Note: first variable changes faster
+				// Go over the second variable
+				int index=0;
+				for (unsigned int i2 = 0; i2<v2States; ++i2)
+				{
+					// Go over the first variable
+					for (unsigned int i1 = 0; i1<v1States; ++i1)
+					{
+						double marginalProb = marginal.get(index);
+						string v1n;
+						string v2n;
+
+						if (switchVars)
+						{
+							v2n = var1Iter->second.valueIdToName[i1];
+							v1n = var2Iter->second.valueIdToName[i2];
+						}
+						else
+						{
+							v1n = var1Iter->second.valueIdToName[i1];
+							v2n = var2Iter->second.valueIdToName[i2];
+						}
+
+						if ( ((var1Value.empty()) || (v1n==var1Value)) &&
+							 ((var2Value.empty()) || (v2n==var2Value)) )
+						{
+							SpatialProbabilities::StringRandomVariableValuePtr rvv1Ptr =
+									new SpatialProbabilities::StringRandomVariableValue(
+											v1n);
+							SpatialProbabilities::StringRandomVariableValuePtr rvv2Ptr =
+									new SpatialProbabilities::StringRandomVariableValue(
+											v2n);
+							SpatialProbabilities::JointProbabilityValue jpv;
+							jpv.probability = marginalProb;
+							jpv.variableValues.push_back(rvv1Ptr);
+							jpv.variableValues.push_back(rvv2Ptr);
+							resultDistribution.massFunction.push_back(jpv);
+						}
+						++index;
+					}
+				}
+
+				resultDistributions.push_back(resultDistribution);
+			}
+		}
+
+
+	}
+	else
 	{
 		error("Unhandled query \'%s\'. This indicates serious implementation error.", queryString.c_str());
 		return;
 	}
-	string varName = queryVariables[0];
-
-	// Check if there is '=' in the name and if yes, extract the components.
-	vector<string> elems;
-	split(elems, varName, is_any_of("=") );
-	varName=elems[0];
-	string valueName;
-	if (elems.size()>1)
-		valueName=elems[1];
-
-	// Find all unobserved variables that match
-	vector< map<string, DaiVariable>::iterator > varIters;
-	for (map<string, DaiVariable>::iterator it = _variableNameToDai.begin();
-			it != _variableNameToDai.end(); ++it)
-	{
-		if ( wildcmp(varName.c_str(), it->first.c_str()))
-				varIters.push_back(it);
-	}
-	// Find all observed variables that match
-	vector< map<string, ObservedVariable>::iterator > observedVarIters;
-	for (map<string, ObservedVariable>::iterator it = _observedVariableNameToInfo.begin();
-			it != _observedVariableNameToInfo.end(); ++it)
-	{
-		if ( wildcmp(varName.c_str(), it->first.c_str()))
-				observedVarIters.push_back(it);
-	}
-	if ((varIters.empty()) && (observedVarIters.empty()))
-	{
-		string msg;
-		msg = "Variable '" + varName + "' not found! Variables we know:";
-		for (map<string, DaiVariable>::iterator varIter = _variableNameToDai.begin(); varIter
-				!= _variableNameToDai.end(); ++varIter)
-			msg += varIter->first + " ";
-		for (map<string, ObservedVariable>::iterator varIter = _observedVariableNameToInfo.begin(); varIter
-				!= _observedVariableNameToInfo.end(); ++varIter)
-			msg += varIter->first + " ";
-		log(msg.c_str());
-		return;
-	}
-
-	// Unobserved
-	for (unsigned int v=0; v<varIters.size(); ++v)
-	{
-		map<string, DaiVariable>::iterator varIter = varIters[v];
-
-		// Prepare the resulting distribution
-		SpatialProbabilities::ProbabilityDistribution resultDistribution;
-		resultDistribution.description = queryString;
-		resultDistribution.variableNameToPositionMap[varIter->first]=0;
-		resultDistribution.massFunction.clear();
-
-		// Retrieve marginal
-		//        dai::Factor marginal = _junctionTree.belief(varIter->second.var);
-		dai::Factor marginal = _bp.belief(varIter->second.var);
-		// Convert to probability distribution
-		for (unsigned int i = 0; i < marginal.nrStates(); ++i)
-		{
-			double marginalProb = marginal.get(i);
-			string vn = varIter->second.valueIdToName[i];
-			if ((valueName.empty()) || (vn==valueName))
-			{
-				SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
-						new SpatialProbabilities::StringRandomVariableValue(
-								vn);
-				SpatialProbabilities::JointProbabilityValue jpv;
-				jpv.probability = marginalProb;
-				jpv.variableValues.push_back(rvvPtr);
-				resultDistribution.massFunction.push_back(jpv);
-			}
-		}
-
-		resultDistributions.push_back(resultDistribution);
-	}
-
-	// Observed
-	for (unsigned int v=0; v<observedVarIters.size(); ++v)
-	{
-		map<string, ObservedVariable>::iterator varIter = observedVarIters[v];
-
-		// Prepare the resulting distribution
-		SpatialProbabilities::ProbabilityDistribution resultDistribution;
-		resultDistribution.description = queryString;
-		resultDistribution.variableNameToPositionMap[varIter->first]=0;
-		resultDistribution.massFunction.clear();
-
-		// Fill in "distribution"
-		for (unsigned int i = 0; i < varIter->second.valueIdToName.size(); ++i)
-		{
-			string vn = varIter->second.valueIdToName[i];
-			if ((valueName.empty()) || (vn==valueName))
-			{
-				SpatialProbabilities::StringRandomVariableValuePtr rvvPtr =
-						new SpatialProbabilities::StringRandomVariableValue(
-								vn);
-				SpatialProbabilities::JointProbabilityValue jpv;
-				jpv.probability = (i == varIter->second.observedValue)?1.0:0.0;
-				jpv.variableValues.push_back(rvvPtr);
-				resultDistribution.massFunction.push_back(jpv);
-			}
-		}
-
-		resultDistributions.push_back(resultDistribution);
-	}
-
 }
 
 
@@ -2048,6 +2167,18 @@ void ChainGraphInferencer::parseVariable(string variableName, vector<string> &el
 	// Extract variable names
 	trim(variableName);
 	split(elements, variableName, is_any_of("_") );
+}
+
+
+// -------------------------------------------------------
+void ChainGraphInferencer::parseVariableValue(const std::string variableString,
+		std::string &variableName, std::string &variableValue)
+{
+	vector<string> elems;
+	split(elems, variableString, is_any_of("=") );
+	variableName=elems[0];
+	if (elems.size()>1)
+		variableValue=elems[1];
 }
 
 
